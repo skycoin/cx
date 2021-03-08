@@ -61,3 +61,33 @@ func GetOffsetI32(fp int, arg *CXArgument) int {
 func GetOffsetI64(fp int, arg *CXArgument) int {
 	return GetFinalOffset(fp, arg)
 }
+
+// GetOffsetUI8 ...
+func GetOffsetUI8(fp int, arg *CXArgument) int {
+	return GetFinalOffset(fp, arg)
+}
+
+// GetOffsetUI16 ...
+func GetOffsetUI16(fp int, arg *CXArgument) int {
+	return GetFinalOffset(fp, arg)
+}
+
+// GetOffsetUI32 ...
+func GetOffsetUI32(fp int, arg *CXArgument) int {
+	return GetFinalOffset(fp, arg)
+}
+
+// GetOffsetUI64 ...
+func GetOffsetUI64(fp int, arg *CXArgument) int {
+	return GetFinalOffset(fp, arg)
+}
+
+// GetOffsetBool ...
+func GetOffsetBool(fp int, arg *CXArgument) int {
+	return GetFinalOffset(fp, arg)
+}
+
+// GetOffsetStr ...
+func GetOffsetStr(fp int, arg *CXArgument) int {
+	return GetFinalOffset(fp, arg)
+}
