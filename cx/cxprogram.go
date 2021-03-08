@@ -26,18 +26,18 @@ type CXProgram struct {
 	Packages []*CXPackage // Packages in a CX program
 
 	// Runtime information
-	Inputs         []*CXArgument // OS input arguments
-	Outputs        []*CXArgument // outputs to the OS
-	Memory         []byte        // Used when running the program
-	StackSize      int           // This field stores the size of a CX program's stack
-	HeapSize       int           // This field stores the size of a CX program's heap
-	HeapStartsAt   int           // Offset at which the heap starts in a CX program's memory
-	StackPointer   int           // At what byte the current stack frame is
-	CallStack      []CXCall      // Collection of function calls
-	CallCounter    int           // What function call is the currently being executed in the CallStack
-	HeapPointer    int           // At what offset a CX program can insert a new object to the heap
-	Terminated     bool          // Utility field for the runtime. Indicates if a CX program has already finished or not.
-	Version        string        // CX version used to build this CX program.
+	Inputs       []*CXArgument // OS input arguments
+	Outputs      []*CXArgument // outputs to the OS
+	Memory       []byte        // Used when running the program
+	StackSize    int           // This field stores the size of a CX program's stack
+	HeapSize     int           // This field stores the size of a CX program's heap
+	HeapStartsAt int           // Offset at which the heap starts in a CX program's memory
+	StackPointer int           // At what byte the current stack frame is
+	CallStack    []CXCall      // Collection of function calls
+	CallCounter  int           // What function call is the currently being executed in the CallStack
+	HeapPointer  int           // At what offset a CX program can insert a new object to the heap
+	Terminated   bool          // Utility field for the runtime. Indicates if a CX program has already finished or not.
+	Version      string        // CX version used to build this CX program.
 
 	// Used by the REPL and parser
 	CurrentPackage *CXPackage // Represents the currently active package in the REPL or when parsing a CX file.
@@ -423,7 +423,7 @@ func (prgrm *CXProgram) PrintAllObjects() {
 		op := prgrm.CallStack[c].Operator
 
 		for _, ptr := range op.ListOfPointers {
-			heapOffset := mustDeserializeI32(prgrm.Memory[fp+ptr.Offset : fp+ptr.Offset+TYPE_POINTER_SIZE])
+			heapOffset := Deserialize_i32(prgrm.Memory[fp+ptr.Offset : fp+ptr.Offset+TYPE_POINTER_SIZE])
 
 			var byts []byte
 

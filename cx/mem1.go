@@ -12,7 +12,7 @@ func GetStrOffset(fp int, arg *CXArgument) int {
 	strOffset := GetFinalOffset(fp, arg)
 	if arg.Name != "" {
 		// then it's not a literal
-		offset := mustDeserializeI32(PROGRAM.Memory[strOffset : strOffset+TYPE_POINTER_SIZE])
+		offset := Deserialize_i32(PROGRAM.Memory[strOffset : strOffset+TYPE_POINTER_SIZE])
 		strOffset = int(offset)
 	}
 	return strOffset

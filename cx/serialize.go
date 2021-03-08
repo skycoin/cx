@@ -838,10 +838,10 @@ func opDeserialize(expr *CXExpression, fp int) {
 
 	inpOffset := GetFinalOffset(fp, inp)
 
-	off := mustDeserializeI32(PROGRAM.Memory[inpOffset : inpOffset+TYPE_POINTER_SIZE])
+	off := Deserialize_i32(PROGRAM.Memory[inpOffset : inpOffset+TYPE_POINTER_SIZE])
 
 	_l := PROGRAM.Memory[off+OBJECT_HEADER_SIZE : off+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE]
-	l := mustDeserializeI32(_l[4:8])
+	l := Deserialize_i32(_l[4:8])
 
 	Deserialize(PROGRAM.Memory[off+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE : off+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE+l]) // BUG : should be l * elt.TotalSize ?
 }
@@ -852,7 +852,7 @@ func dsName(off int32, size int32, s *sAll) string {
 	}
 
 	var name string
-	mustDeserializeRaw(s.Names[off:off+size], &name)
+	DeserializeRaw(s.Names[off:off+size], &name)
 
 	return name
 }
@@ -1184,15 +1184,15 @@ func Deserialize(byts []byte) (prgrm *CXProgram) {
 
 	var s sAll
 
-	mustDeserializeRaw(byts[:idxSize], &s.Index)
-	mustDeserializeRaw(byts[s.Index.ProgramOffset:s.Index.CallsOffset], &s.Program)
-	mustDeserializeRaw(byts[s.Index.CallsOffset:s.Index.PackagesOffset], &s.Calls)
-	mustDeserializeRaw(byts[s.Index.PackagesOffset:s.Index.StructsOffset], &s.Packages)
-	mustDeserializeRaw(byts[s.Index.StructsOffset:s.Index.FunctionsOffset], &s.Structs)
-	mustDeserializeRaw(byts[s.Index.FunctionsOffset:s.Index.ExpressionsOffset], &s.Functions)
-	mustDeserializeRaw(byts[s.Index.ExpressionsOffset:s.Index.ArgumentsOffset], &s.Expressions)
-	mustDeserializeRaw(byts[s.Index.ArgumentsOffset:s.Index.IntegersOffset], &s.Arguments)
-	mustDeserializeRaw(byts[s.Index.IntegersOffset:s.Index.NamesOffset], &s.Integers)
+	DeserializeRaw(byts[:idxSize], &s.Index)
+	DeserializeRaw(byts[s.Index.ProgramOffset:s.Index.CallsOffset], &s.Program)
+	DeserializeRaw(byts[s.Index.CallsOffset:s.Index.PackagesOffset], &s.Calls)
+	DeserializeRaw(byts[s.Index.PackagesOffset:s.Index.StructsOffset], &s.Packages)
+	DeserializeRaw(byts[s.Index.StructsOffset:s.Index.FunctionsOffset], &s.Structs)
+	DeserializeRaw(byts[s.Index.FunctionsOffset:s.Index.ExpressionsOffset], &s.Functions)
+	DeserializeRaw(byts[s.Index.ExpressionsOffset:s.Index.ArgumentsOffset], &s.Expressions)
+	DeserializeRaw(byts[s.Index.ArgumentsOffset:s.Index.IntegersOffset], &s.Arguments)
+	DeserializeRaw(byts[s.Index.IntegersOffset:s.Index.NamesOffset], &s.Integers)
 	s.Names = byts[s.Index.NamesOffset:s.Index.MemoryOffset]
 	s.Memory = byts[s.Index.MemoryOffset:]
 
@@ -1210,14 +1210,14 @@ func CopyProgramState(sPrgrm1, sPrgrm2 *[]byte) {
 	var index1 sIndex
 	var index2 sIndex
 
-	mustDeserializeRaw((*sPrgrm1)[:idxSize], &index1)
-	mustDeserializeRaw((*sPrgrm2)[:idxSize], &index2)
+	DeserializeRaw((*sPrgrm1)[:idxSize], &index1)
+	DeserializeRaw((*sPrgrm2)[:idxSize], &index2)
 
 	var prgrm1Info sProgram
-	mustDeserializeRaw((*sPrgrm1)[index1.ProgramOffset:index1.CallsOffset], &prgrm1Info)
+	DeserializeRaw((*sPrgrm1)[index1.ProgramOffset:index1.CallsOffset], &prgrm1Info)
 
 	var prgrm2Info sProgram
-	mustDeserializeRaw((*sPrgrm2)[index2.ProgramOffset:index2.CallsOffset], &prgrm2Info)
+	DeserializeRaw((*sPrgrm2)[index2.ProgramOffset:index2.CallsOffset], &prgrm2Info)
 
 	// the stack segment should be 0 for prgrm1, but just in case
 	var prgrmState []byte
@@ -1245,14 +1245,14 @@ func ExtractBlockchainProgram(sPrgrm1, sPrgrm2 []byte) []byte {
 	var index1 sIndex
 	var index2 sIndex
 
-	mustDeserializeRaw(sPrgrm1[:idxSize], &index1)
-	mustDeserializeRaw(sPrgrm2[:idxSize], &index2)
+	DeserializeRaw(sPrgrm1[:idxSize], &index1)
+	DeserializeRaw(sPrgrm2[:idxSize], &index2)
 
 	var prgrm1Info sProgram
-	mustDeserializeRaw(sPrgrm1[index1.ProgramOffset:index1.CallsOffset], &prgrm1Info)
+	DeserializeRaw(sPrgrm1[index1.ProgramOffset:index1.CallsOffset], &prgrm1Info)
 
 	var prgrm2Info sProgram
-	mustDeserializeRaw(sPrgrm2[index2.ProgramOffset:index2.CallsOffset], &prgrm2Info)
+	DeserializeRaw(sPrgrm2[index2.ProgramOffset:index2.CallsOffset], &prgrm2Info)
 
 	var extracted []byte
 	// must match the index from sPrgrm1
@@ -1260,7 +1260,7 @@ func ExtractBlockchainProgram(sPrgrm1, sPrgrm2 []byte) []byte {
 
 	// Program
 	var sPrgrm sProgram
-	mustDeserializeRaw(sPrgrm1[index1.ProgramOffset:index1.CallsOffset], &sPrgrm)
+	DeserializeRaw(sPrgrm1[index1.ProgramOffset:index1.CallsOffset], &sPrgrm)
 	// We need the heap pointer calculated after running the program, which is
 	// present in `sPrgrm2`.
 	sPrgrm.HeapPointer = prgrm2Info.HeapPointer
@@ -1305,14 +1305,14 @@ func ExtractTransactionProgram(sPrgrm1, sPrgrm2 []byte) []byte {
 	var index1 sIndex
 	var index2 sIndex
 
-	mustDeserializeRaw(sPrgrm1[:idxSize], &index1)
-	mustDeserializeRaw(sPrgrm2[:idxSize], &index2)
+	DeserializeRaw(sPrgrm1[:idxSize], &index1)
+	DeserializeRaw(sPrgrm2[:idxSize], &index2)
 
 	var prgrm1Info sProgram
-	mustDeserializeRaw(sPrgrm1[index1.ProgramOffset:index1.CallsOffset], &prgrm1Info)
+	DeserializeRaw(sPrgrm1[index1.ProgramOffset:index1.CallsOffset], &prgrm1Info)
 
 	var prgrm2Info sProgram
-	mustDeserializeRaw(sPrgrm2[index2.ProgramOffset:index2.CallsOffset], &prgrm2Info)
+	DeserializeRaw(sPrgrm2[index2.ProgramOffset:index2.CallsOffset], &prgrm2Info)
 
 	var extracted []byte
 	// must match the index from sPrgrm2
@@ -1345,7 +1345,7 @@ func ExtractTransactionProgram(sPrgrm1, sPrgrm2 []byte) []byte {
 func GetSerializedMemoryOffset(sPrgrm []byte) int {
 	idxSize := encoder.Size(sIndex{})
 	var index sIndex
-	mustDeserializeRaw(sPrgrm[:idxSize], &index)
+	DeserializeRaw(sPrgrm[:idxSize], &index)
 	return int(index.MemoryOffset)
 }
 
@@ -1353,10 +1353,10 @@ func GetSerializedMemoryOffset(sPrgrm []byte) int {
 func GetSerializedStackSize(sPrgrm []byte) int {
 	idxSize := encoder.Size(sIndex{})
 	var index sIndex
-	mustDeserializeRaw(sPrgrm[:idxSize], &index)
+	DeserializeRaw(sPrgrm[:idxSize], &index)
 
 	var prgrmInfo sProgram
-	mustDeserializeRaw(sPrgrm[index.ProgramOffset:index.CallsOffset], &prgrmInfo)
+	DeserializeRaw(sPrgrm[index.ProgramOffset:index.CallsOffset], &prgrmInfo)
 
 	return int(prgrmInfo.StackSize)
 }
@@ -1365,10 +1365,10 @@ func GetSerializedStackSize(sPrgrm []byte) int {
 func GetSerializedDataSize(sPrgrm []byte) int {
 	idxSize := encoder.Size(sIndex{})
 	var index sIndex
-	mustDeserializeRaw(sPrgrm[:idxSize], &index)
+	DeserializeRaw(sPrgrm[:idxSize], &index)
 
 	var prgrmInfo sProgram
-	mustDeserializeRaw(sPrgrm[index.ProgramOffset:index.CallsOffset], &prgrmInfo)
+	DeserializeRaw(sPrgrm[index.ProgramOffset:index.CallsOffset], &prgrmInfo)
 
 	return int(prgrmInfo.HeapStartsAt - prgrmInfo.StackSize)
 }
