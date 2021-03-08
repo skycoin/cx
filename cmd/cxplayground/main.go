@@ -38,7 +38,6 @@ func main() {
 		fmt.Println("Fail to initiating palyground examples")
 	}
 
-	mux.HandleFunc("/playground", playground.GetPlayground)
 	mux.HandleFunc("/playground/examples", playground.GetExampleFileList)
 	mux.HandleFunc("/playground/examples/code", playground.GetExampleFileContent)
 

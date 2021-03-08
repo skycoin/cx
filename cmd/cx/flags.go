@@ -21,21 +21,6 @@ type cxCmdFlags struct {
 	initialHeap      string
 	maxHeap          string
 	stackSize        string
-	blockchainMode   bool
-	publisherMode    bool
-	peerMode         bool
-	transactionMode  bool
-	broadcastMode    bool
-	walletMode       bool
-	genAddress       bool
-	port             int
-	walletId         string
-	walletSeed       string
-	programName      string
-	secKey           string
-	pubKey           string
-	genesisAddress   string
-	genesisSignature string
 	minHeapFreeRatio float64
 	maxHeapFreeRatio float64
 	cxpath           string
@@ -53,17 +38,6 @@ func defaultCmdFlags() cxCmdFlags {
 		printHelp:        false,
 		printEnv:         false,
 		printVersion:     false,
-		blockchainMode:   false,
-		transactionMode:  false,
-		broadcastMode:    false,
-		port:             6001,
-		programName:      "cxcoin",
-		walletId:         "cxcoin_cli.wlt",
-		secKey:           "",
-		pubKey:           "",
-		genesisAddress:   "",
-		genesisSignature: "",
-
 		debugLexer:   false,
 		debugProfile: 0,
 	}
@@ -105,29 +79,7 @@ func parseFlags(options *cxCmdFlags, args []string) {
 	commandLine.StringVar(&options.stackSize, "ss", options.stackSize, "alias for -stack-size")
 	commandLine.Float64Var(&options.minHeapFreeRatio, "--min-heap-free", options.minHeapFreeRatio, "Minimum heap space percentage that should be free after calling the garbage collector. Value must be in the range of 0.0 and 1.0.")
 	commandLine.Float64Var(&options.maxHeapFreeRatio, "--max-heap-free", options.maxHeapFreeRatio, "Maximum heap space percentage that should be free after calling the garbage collector. Value must be in the range of 0.0 and 1.0.")
-
-	// commandLine.BoolVar(&options.blockchainMode, "bc", options.blockchainMode, "alias for -blockchain")
-	// commandLine.BoolVar(&options.publisherMode, "pb", options.publisherMode, "alias for -publisher")
-	// commandLine.BoolVar(&options.transactionMode, "txn", options.transactionMode, "alias for -transaction")
-	commandLine.BoolVar(&options.broadcastMode, "broadcast", options.broadcastMode, "Broadcast a CX blockchain transaction")
-	commandLine.BoolVar(&options.walletMode, "create-wallet", options.walletMode, "Create a wallet from a seed")
 	commandLine.StringVar(&options.cxpath, "cxpath", options.cxpath, "Used for dynamically setting the value of the environment variable CXPATH")
-
-	//deprecated
-
-	//commandLine.BoolVar(&options.blockchainMode, "blockchain", options.blockchainMode, "Start a CX blockchain program")
-	//commandLine.BoolVar(&options.genAddress, "generate-address", options.genAddress, "Generate a CX chain address")
-	//commandLine.StringVar(&options.genesisAddress, "genesis-address", options.genesisAddress, "CX blockchain program genesis address")
-	//commandLine.StringVar(&options.genesisSignature, "genesis-signature", options.genesisSignature, "CX blockchain program genesis address")
-	//commandLine.BoolVar(&options.peerMode, "peer", options.peerMode, "Run a CX chain peer node")
-	//commandLine.IntVar(&options.port, "port", options.port, "Port used when running a CX chain peer node")
-	//commandLine.StringVar(&options.programName, "program-name", options.programName, "Name of the initial CX program on the blockchain")
-	//commandLine.StringVar(&options.pubKey, "public-key", options.pubKey, "CX program blockchain public key")
-	//commandLine.BoolVar(&options.publisherMode, "publisher", options.publisherMode, "Start a CX blockchain program block publisher")
-	//commandLine.StringVar(&options.secKey, "secret-key", options.secKey, "CX program blockchain security key")
-	//commandLine.BoolVar(&options.transactionMode, "transaction", options.transactionMode, "Test a CX blockchain transaction")
-	//commandLine.StringVar(&options.walletSeed, "wallet-seed", options.walletSeed, "Seed to use for a new wallet")
-	//commandLine.StringVar(&options.walletId, "wallet-id", options.walletId, "Wallet ID to use for signing transactions")
 
 	// Debug flags
 	commandLine.BoolVar(&options.debugLexer, "debug-lexer", options.debugLexer, "Debug the lexer by printing all scanner tokens")

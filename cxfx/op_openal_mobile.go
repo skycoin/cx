@@ -9,128 +9,104 @@ import (
 	  "github.com/mjibson/go-dsp/wav"
 	  "golang.org/x/mobile/exp/audio/al"*/)
 
-func opAlCloseDevice(_ *CXProgram) {
+func opAlCloseDevice(expr *CXExpression, fp int) {
 	//panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opAlDeleteBuffers(prgrm *CXProgram) {
+func opAlDeleteBuffers(expr *CXExpression, fp int) {
 	//panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opAlDeleteSources(prgrm *CXProgram) {
+func opAlDeleteSources(expr *CXExpression, fp int) {
 	//panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opAlDeviceError(prgrm *CXProgram) {
+func opAlDeviceError(expr *CXExpression, fp int) {
 	//panic(CX_RUNTIME_NOT_IMPLEMENTED)
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
 	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), 0)
 }
 
-func opAlError(prgrm *CXProgram) {
+func opAlError(expr *CXExpression, fp int) {
 	//panic(CX_RUNTIME_NOT_IMPLEMENTED)
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
 	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), 0)
 }
 
-func opAlExtensions(prgrm *CXProgram) {
+func opAlExtensions(expr *CXExpression, fp int) {
 	//panic(CX_RUNTIME_NOT_IMPLEMENTED)
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
 	WriteObject(GetFinalOffset(fp, expr.Outputs[0]), FromStr("CX_RUNTIME_NOT_IMPLEMENTED"))
 }
 
-func opAlOpenDevice(_ *CXProgram) {
+func opAlOpenDevice(expr *CXExpression, fp int) {
 	//panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opAlPauseSources(prgrm *CXProgram) {
+func opAlPauseSources(expr *CXExpression, fp int) {
 	//panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opAlPlaySources(prgrm *CXProgram) {
+func opAlPlaySources(expr *CXExpression, fp int) {
 	//panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opAlRenderer(prgrm *CXProgram) {
+func opAlRenderer(expr *CXExpression, fp int) {
 	//panic(CX_RUNTIME_NOT_IMPLEMENTED)
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
 	WriteObject(GetFinalOffset(fp, expr.Outputs[0]), FromStr("CX_RUNTIME_NOT_IMPLEMENTED"))
 }
 
-func opAlRewindSources(prgrm *CXProgram) {
+func opAlRewindSources(expr *CXExpression, fp int) {
 	//panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opAlStopSources(prgrm *CXProgram) {
+func opAlStopSources(expr *CXExpression, fp int) {
 	//panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opAlVendor(prgrm *CXProgram) {
+func opAlVendor(expr *CXExpression, fp int) {
 	//panic(CX_RUNTIME_NOT_IMPLEMENTED)
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
 	WriteObject(GetFinalOffset(fp, expr.Outputs[0]), FromStr("CX_RUNTIME_NOT_IMPLEMENTED"))
 }
 
-func opAlVersion(prgrm *CXProgram) {
+func opAlVersion(expr *CXExpression, fp int) {
 	//panic(CX_RUNTIME_NOT_IMPLEMENTED)
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
 	WriteObject(GetFinalOffset(fp, expr.Outputs[0]), FromStr("CX_RUNTIME_NOT_IMPLEMENTED"))
 }
 
-func opAlGenBuffers(prgrm *CXProgram) {
+func opAlGenBuffers(expr *CXExpression, fp int) {
 	//panic(CX_RUNTIME_NOT_IMPLEMENTED)
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
 	outputSlice := expr.Outputs[0]
 	outputSlicePointer := GetFinalOffset(fp, outputSlice)
 	outputSliceOffset := GetPointerOffset(int32(outputSlicePointer))
 	WriteI32(outputSlicePointer, outputSliceOffset)
 }
 
-func opAlBufferData(prgrm *CXProgram) {
+func opAlBufferData(expr *CXExpression, fp int) {
 	//panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opAlGenSources(prgrm *CXProgram) {
+func opAlGenSources(expr *CXExpression, fp int) {
 	//panic(CX_RUNTIME_NOT_IMPLEMENTED)
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
 	outputSlice := expr.Outputs[0]
 	outputSlicePointer := GetFinalOffset(fp, outputSlice)
 	outputSliceOffset := GetPointerOffset(int32(outputSlicePointer))
 	WriteI32(outputSlicePointer, outputSliceOffset)
 }
 
-func opAlSourceBuffersProcessed(prgrm *CXProgram) {
+func opAlSourceBuffersProcessed(expr *CXExpression, fp int) {
 	//panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opAlSourceBuffersQueued(prgrm *CXProgram) {
+func opAlSourceBuffersQueued(expr *CXExpression, fp int) {
 	//panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opAlSourceQueueBuffers(prgrm *CXProgram) {
+func opAlSourceQueueBuffers(expr *CXExpression, fp int) {
 	//panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opAlSourceState(prgrm *CXProgram) {
+func opAlSourceState(expr *CXExpression, fp int) {
 	//panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opAlSourceUnqueueBuffers(prgrm *CXProgram) {
+func opAlSourceUnqueueBuffers(expr *CXExpression, fp int) {
 	//panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }

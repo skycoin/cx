@@ -597,10 +597,7 @@ func opHTTPDo(prgrm *CXProgram) {
 	WriteString(fp, string(body), &resp)
 }
 
-func opDMSGDo(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opDMSGDo(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	var req http.Request
 	byts1 := ReadMemory(GetFinalOffset(fp, inp1), inp1)

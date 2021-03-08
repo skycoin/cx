@@ -37,7 +37,6 @@ type CXProgram struct {
 	CallCounter    int           // What function call is the currently being executed in the CallStack
 	HeapPointer    int           // At what offset a CX program can insert a new object to the heap
 	Terminated     bool          // Utility field for the runtime. Indicates if a CX program has already finished or not.
-	BCPackageCount int           // In case of a CX chain, how many packages of this program are part of blockchain code.
 	Version        string        // CX version used to build this CX program.
 
 	// Used by the REPL and parser
@@ -249,15 +248,18 @@ func (prgrm *CXProgram) GetFunction(fnName string, pkgName string) (*CXFunction,
 
 }
 
-// GetCall returns the current CXCall
-func (prgrm *CXProgram) GetCall() *CXCall {
-	return &prgrm.CallStack[prgrm.CallCounter]
-}
-
 // GetExpr returns the current CXExpression
 func (prgrm *CXProgram) GetExpr() *CXExpression {
-	call := prgrm.GetCall()
+	//call := prgrm.GetCall()
+	//return call.Operator.Expressions[call.Line]
+	call := &prgrm.CallStack[prgrm.CallCounter]
 	return call.Operator.Expressions[call.Line]
+}
+
+// GetCall returns the current CXCall
+//TODO: What does this do?
+func (prgrm *CXProgram) GetCall() *CXCall {
+	return &prgrm.CallStack[prgrm.CallCounter]
 }
 
 // GetOpCode returns the current OpCode
