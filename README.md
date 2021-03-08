@@ -187,3 +187,10 @@ If you are interested in learning more about CX, please refer to the [resources 
 If you want to get started with some basic example programs and tutorials check out the [tutorials section](docs/cx-tutorials.md). 
 
 The docs also provide a high level [overview](docs/overview.md) over the language. 
+
+
+Guide for  cx compiler development
+* [Compiler Development](docs/CompilerDevelopment.md)
+
+how  to write cx wrapping libraty in Go Programming Language
+* [Wrapping golang libraries](docs/Wrappinggolanglibraries.md)
