@@ -128,39 +128,39 @@ func opF32Pow(expr *CXExpression, fp int) {
 
 // The built-in gt function returns true if operand 1 is greater than operand 2.
 func opF32Gt(expr *CXExpression, fp int) {
-	outV0 := ReadF32(fp, expr.Inputs[0]) > ReadF32(fp, expr.Inputs[1])
+	var outV0 bool = (ReadF32(fp, expr.Inputs[0]) > ReadF32(fp, expr.Inputs[1]))
 	WriteBool(GetOffset_bool(fp, expr.Outputs[0]), outV0)
 }
 
 // The built-in gteq function returns true if the operand 1 is greater than or
 // equal to operand 2.
 func opF32Gteq(expr *CXExpression, fp int) {
-	outV0 := ReadF32(fp, expr.Inputs[0]) >= ReadF32(fp, expr.Inputs[1])
+	var outV0 bool = (ReadF32(fp, expr.Inputs[0]) >= ReadF32(fp, expr.Inputs[1]))
 	WriteBool(GetOffset_bool(fp, expr.Outputs[0]), outV0)
 }
 
 // The built-in lt function returns true if operand 1 is less than operand 2.
 func opF32Lt(expr *CXExpression, fp int) {
-	outV0 := ReadF32(fp, expr.Inputs[0]) < ReadF32(fp, expr.Inputs[1])
+	var outV0 bool = (ReadF32(fp, expr.Inputs[0]) < ReadF32(fp, expr.Inputs[1]))
 	WriteBool(GetOffset_bool(fp, expr.Outputs[0]), outV0)
 }
 
 // The built-in lteq function returns true if operand 1 is less than or
 // equal to operand 2.
 func opF32Lteq(expr *CXExpression, fp int) {
-	outV0 := ReadF32(fp, expr.Inputs[0]) <= ReadF32(fp, expr.Inputs[1])
+	var outV0 bool = (ReadF32(fp, expr.Inputs[0]) <= ReadF32(fp, expr.Inputs[1]))
 	WriteBool(GetOffset_bool(fp, expr.Outputs[0]), outV0)
 }
 
 // The built-in eq function returns true if operand 1 is equal to operand 2.
 func opF32Eq(expr *CXExpression, fp int) {
-	outV0 := ReadF32(fp, expr.Inputs[0]) == ReadF32(fp, expr.Inputs[1])
+	var outV0 bool = (ReadF32(fp, expr.Inputs[0]) == ReadF32(fp, expr.Inputs[1]))
 	WriteBool(GetOffset_bool(fp, expr.Outputs[0]), outV0)
 }
 
 // The built-in uneq function returns true operand1 is different from operand 2.
 func opF32Uneq(expr *CXExpression, fp int) {
-	outV0 := ReadF32(fp, expr.Inputs[0]) != ReadF32(fp, expr.Inputs[1])
+	var outV0 bool = (ReadF32(fp, expr.Inputs[0]) != ReadF32(fp, expr.Inputs[1]))
 	WriteBool(GetOffset_bool(fp, expr.Outputs[0]), outV0)
 }
 
