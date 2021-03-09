@@ -140,8 +140,8 @@ func GetOffset_f64(fp int, arg *CXArgument) int {
 // GetOffset_bool ...
 //NOTE: BOOL is not ready for migration yet
 func GetOffset_bool(fp int, arg *CXArgument) int {
-	return GetFinalOffset(fp, arg)
-	//return GetOffsetAtomic(fp, arg)
+	//return GetFinalOffset(fp, arg)
+	return GetOffsetAtomic(fp, arg)
 }
 
 // GetOffset_str ...

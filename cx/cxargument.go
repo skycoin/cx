@@ -39,6 +39,13 @@ type CXArgument struct {
 	DoesEscape            bool
 }
 
+/*
+IsDereferenceFirst - is this both an array and a pointer, and if so, 
+is the pointer first? Mutually exclusive with IsArrayFirst.
+
+
+*
+
 // MakeArgument ...
 func MakeArgument(name string, fileName string, fileLine int) *CXArgument {
 	return &CXArgument{
