@@ -1,4 +1,4 @@
-import time
+from datetime import datetime
 
 def fib(n):
     if n < 2:
@@ -6,10 +6,10 @@ def fib(n):
     return (fib(n-2) + fib(n-1))
 
 def test():
-    start = time.time()
+    start = datetime.now()
     print(fib(30))
-    end = time.time()
-    print (end - start)
+    end = datetime.now()
+    delta = end - start
 
-print("Fib Recursive time elapsed (in seconds):")
+    print(f'Fib Recursive time elapsed (in seconds):{delta.total_seconds():.3f}s')
 test()
