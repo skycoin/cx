@@ -9,7 +9,7 @@ def factorial(n):
 def test():
     start = time.time()
     
-    print "Factorial 10: {}".format(factorial(10))
+    print(f'Factorial 10: {factorial(10)}')
 
     end = time.time()
     print (end - start)
