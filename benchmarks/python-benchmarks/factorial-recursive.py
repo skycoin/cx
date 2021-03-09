@@ -1,4 +1,4 @@
-import time
+from datetime import datetime
 
 def factorial(n):
     if n == 0: 
@@ -7,11 +7,13 @@ def factorial(n):
         return n * factorial(n - 1) 
 
 def test():
-    start = time.time()
+    start = datetime.now()
     
     print(f'Factorial 10: {factorial(10)}')
 
-    end = time.time()
-    print (end - start)
+    end = datetime.now()
+    delta = end - start
+
+    print(f'{delta.total_seconds():.3f}s')
 
 test()
