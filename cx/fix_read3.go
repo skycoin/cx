@@ -176,7 +176,7 @@ func ReadSliceBytes(fp int, inp *CXArgument, dataType int) []byte {
 // ReadBool ...
 func ReadBool(fp int, inp *CXArgument) (out bool) {
 	offset := GetFinalOffset(fp, inp)
-	out = mustDeserializeBool(ReadMemory(offset, inp))
+	out = DeserializeBool(ReadMemory(offset, inp))
 	return
 }
 
@@ -188,7 +188,7 @@ func ReadStr(fp int, inp *CXArgument) (out string) {
 		// Then it's a literal.
 		offset = int32(off)
 	} else {
-		offset = mustDeserializeI32(PROGRAM.Memory[off : off+TYPE_POINTER_SIZE])
+		offset = Deserialize_i32(PROGRAM.Memory[off : off+TYPE_POINTER_SIZE])
 	}
 
 	if offset == 0 {
@@ -200,11 +200,11 @@ func ReadStr(fp int, inp *CXArgument) (out string) {
 	// We need to check if the string lives on the data segment or on the
 	// heap to know if we need to take into consideration the object header's size.
 	if int(offset) > PROGRAM.HeapStartsAt {
-		size := mustDeserializeI32(PROGRAM.Memory[offset+OBJECT_HEADER_SIZE : offset+OBJECT_HEADER_SIZE+STR_HEADER_SIZE])
-		mustDeserializeRaw(PROGRAM.Memory[offset+OBJECT_HEADER_SIZE:offset+OBJECT_HEADER_SIZE+STR_HEADER_SIZE+size], &out)
+		size := Deserialize_i32(PROGRAM.Memory[offset+OBJECT_HEADER_SIZE : offset+OBJECT_HEADER_SIZE+STR_HEADER_SIZE])
+		DeserializeRaw(PROGRAM.Memory[offset+OBJECT_HEADER_SIZE:offset+OBJECT_HEADER_SIZE+STR_HEADER_SIZE+size], &out)
 	} else {
-		size := mustDeserializeI32(PROGRAM.Memory[offset : offset+STR_HEADER_SIZE])
-		mustDeserializeRaw(PROGRAM.Memory[offset:offset+STR_HEADER_SIZE+size], &out)
+		size := Deserialize_i32(PROGRAM.Memory[offset : offset+STR_HEADER_SIZE])
+		DeserializeRaw(PROGRAM.Memory[offset:offset+STR_HEADER_SIZE+size], &out)
 	}
 
 	return out

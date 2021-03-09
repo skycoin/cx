@@ -16,7 +16,7 @@ import (
 	"github.com/skycoin/cx/cxgo/parser"
 )
 
-const VERSION = "0.7.1"
+const VERSION = "0.8.0"
 
 func main() {
 	//cx.CXLogFile(true)
