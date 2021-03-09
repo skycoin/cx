@@ -1,7 +1,5 @@
 package cxcore
 
-import()
-
 // ReadData ...
 
 func readDataI8(bytes []byte) (out []int8) {
@@ -9,7 +7,7 @@ func readDataI8(bytes []byte) (out []int8) {
 	if count > 0 {
 		out = make([]int8, count)
 		for i := 0; i < count; i++ {
-			out[i] = mustDeserializeI8(bytes[i:])
+			out[i] = Deserialize_i8(bytes[i:])
 		}
 	}
 	return
@@ -20,7 +18,7 @@ func readDataUI8(bytes []byte) (out []uint8) {
 	if count > 0 {
 		out = make([]uint8, count)
 		for i := 0; i < count; i++ {
-			out[i] = mustDeserializeUI8(bytes[i:])
+			out[i] = Deserialize_ui8(bytes[i:])
 		}
 	}
 	return
@@ -31,7 +29,7 @@ func readDataI16(bytes []byte) (out []int16) {
 	if count > 0 {
 		out = make([]int16, count)
 		for i := 0; i < count; i++ {
-			out[i] = mustDeserializeI16(bytes[i*2:])
+			out[i] = Deserialize_i16(bytes[i*2:])
 		}
 	}
 	return
@@ -42,7 +40,7 @@ func readDataUI16(bytes []byte) (out []uint16) {
 	if count > 0 {
 		out = make([]uint16, count)
 		for i := 0; i < count; i++ {
-			out[i] = mustDeserializeUI16(bytes[i*2:])
+			out[i] = Deserialize_ui16(bytes[i*2:])
 		}
 	}
 	return
@@ -53,7 +51,7 @@ func readDataI32(bytes []byte) (out []int32) {
 	if count > 0 {
 		out = make([]int32, count)
 		for i := 0; i < count; i++ {
-			out[i] = mustDeserializeI32(bytes[i*4:])
+			out[i] = Deserialize_i32(bytes[i*4:])
 		}
 	}
 	return
@@ -64,7 +62,7 @@ func readDataUI32(bytes []byte) (out []uint32) {
 	if count > 0 {
 		out = make([]uint32, count)
 		for i := 0; i < count; i++ {
-			out[i] = mustDeserializeUI32(bytes[i*4:])
+			out[i] = Deserialize_ui32(bytes[i*4:])
 		}
 	}
 	return
@@ -75,7 +73,7 @@ func readDataI64(bytes []byte) (out []int64) {
 	if count > 0 {
 		out = make([]int64, count)
 		for i := 0; i < count; i++ {
-			out[i] = mustDeserializeI64(bytes[i*8:])
+			out[i] = Deserialize_i64(bytes[i*8:])
 		}
 	}
 	return
@@ -86,7 +84,7 @@ func readDataUI64(bytes []byte) (out []uint64) {
 	if count > 0 {
 		out = make([]uint64, count)
 		for i := 0; i < count; i++ {
-			out[i] = mustDeserializeUI64(bytes[i*8:])
+			out[i] = Deserialize_ui64(bytes[i*8:])
 		}
 	}
 	return
@@ -97,7 +95,7 @@ func readDataF32(bytes []byte) (out []float32) {
 	if count > 0 {
 		out = make([]float32, count)
 		for i := 0; i < count; i++ {
-			out[i] = mustDeserializeF32(bytes[i*4:])
+			out[i] = Deserialize_f32(bytes[i*4:])
 		}
 	}
 	return
@@ -108,10 +106,8 @@ func readDataF64(bytes []byte) (out []float64) {
 	if count > 0 {
 		out = make([]float64, count)
 		for i := 0; i < count; i++ {
-			out[i] = mustDeserializeF64(bytes[i*8:])
+			out[i] = Deserialize_f64(bytes[i*8:])
 		}
 	}
 	return
 }
-
-
