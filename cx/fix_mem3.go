@@ -80,7 +80,7 @@ func GetOffsetAtomic(fp int, arg *CXArgument) int {
 		if offset1 != finalOffset {
 			log.Panicf("fix_mem3.go, GetOffsetAtomic(), offfset1 != finalOffset, offset1= %d, finalOffset= %d \n", offset1, finalOffset)
 		}
-		if len(arg.Field) != 0 {
+		if len(arg.Fields) != 0 {
 			log.Panic("fix_mem4.go, GetOffsetAtomic(): arg.Fields cannot be greater than 0 for atomic types\n")
 		}
 	}
