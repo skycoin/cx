@@ -1,4 +1,4 @@
-import time
+from datetime import datetime
 
 def digital_root (n):
     ap = 0
@@ -9,10 +9,11 @@ def digital_root (n):
     return ap, n
  
 def test():
-    start = time.time()
+    start = datetime.now()
     persistance, root = digital_root(79563)
     print(f' 79563 has additive persistance {persistance} and digital root {root}.')
-    end = time.time()
-    print (end - start)
+    end = datetime.now()
+    delta = end - start
+    print(f'{delta.total_seconds():.3f}s')
 
 test()
