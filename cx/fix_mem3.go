@@ -49,12 +49,10 @@ func GetFinalOffset(fp int, arg *CXArgument) int {
 
 
 //OMFG. set ENABLE_MIRACLE_BUG to true and do `make build; make test`
-var ENABLE_MIRACLE_BUG bool = false
+var ENABLE_MIRACLE_BUG bool = true //uses GetFinalOffset for everything
+var ENHANCED_DEBUGING bool = true //runs asserts to find error
 
 func GetOffsetAtomic(fp int, arg *CXArgument) int {
-
-	//return GetFinalOffset(fp, arg)
-
 	if ENABLE_MIRACLE_BUG == false {
 		return GetFinalOffset(fp, arg)
 	}
@@ -66,32 +64,19 @@ func GetOffsetAtomic(fp int, arg *CXArgument) int {
 		finalOffset += fp
 	}
 
-
-	offset1 := finalOffset //save value
-	CalculateDereferences(arg, &offset1, fp)
-
-	if offset1 != finalOffset {
-		log.Panicf("fix_mem3.go, GetOffsetAtomic(), offfset1 != finalOffset, offset1= %d, finalOffset= %d \n", offset1, finalOffset)
-	}
-
-	offset2 := finalOffset //save value
-	CalculateDereferences(arg, &offset2, fp)
-
-	if offset2 != finalOffset {
-		log.Panicf("fix_mem3.go, GetOffsetAtomic(), offfset2 != finalOffset, offset2= %d, finalOffset= %d \n", offset2, finalOffset)
-	}
-
-	for _, fld := range arg.Fields {
-		log.Panic("fix_mem4.go, GetOffsetAtomic(): arg.Fields condition for atomic types\n")
-		finalOffset += fld.Offset
-		CalculateDereferences(fld, &finalOffset, fp)
-	}
-
-
+	if ENHANCED_DEBUGING {
+		offset1 := finalOffset //save value
+		CalculateDereferences(arg, &offset1, fp)
+		if offset1 != finalOffset {
+			log.Panicf("fix_mem3.go, GetOffsetAtomic(), offfset1 != finalOffset, offset1= %d, finalOffset= %d \n", offset1, finalOffset)
+		}
+		if len(arg.Field) != 0 {
+			log.Panic("fix_mem4.go, GetOffsetAtomic(): arg.Fields cannot be greater than 0 for atomic types\n")
+		}
 
 	return finalOffset
-
 }
+
 // GetOffset_i8 ...
 func GetOffset_i8(fp int, arg *CXArgument) int {
 	//return GetFinalOffset(fp, arg)
