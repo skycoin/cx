@@ -1,5 +1,7 @@
 package main
 
+import "time"
+
 // Function to add each digit form the value
 func Sum(i i32, base i32) (out i32){
 	out = 0 
@@ -10,6 +12,8 @@ func Sum(i i32, base i32) (out i32){
 
 //  Main function to calculate Digital Root
 func digiatlRoot(in i32, base i32) (r []i32){
+	r = append(r, 1)
+	r = append(r, 2)
 	r[0] = in
 	r[1] = 0
 	var x i32
