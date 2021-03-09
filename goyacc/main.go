@@ -141,8 +141,6 @@ import (
 
 	parser "github.com/skycoin/cx/goyacc/parser/yacc"
 	"github.com/skycoin/cx/goyacc/y"
-
-	"github.com/skycoin/cx/goyacc/sortutil"
 )
 
 var (
@@ -479,7 +477,7 @@ type %[1]sXError struct {
 	}
 	f.Format("%sParseTab = [%d][]uint%d{%i\n", *oPref, len(p.Table), tbits)
 	nCells := 0
-	var tabRow sortutil.Uint64Slice
+	var tabRow util.Uint64Slice
 	for si, state := range p.Table {
 		tabRow = tabRow[:0]
 		max := 0

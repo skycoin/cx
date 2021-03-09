@@ -13,6 +13,8 @@ mem.prof
 *.pprof
 *.nn.go
 
+gocraft.db
+
 ## Binaries.
 /bin
 ### JetBrains template

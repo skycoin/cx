@@ -18,10 +18,7 @@ func EscapeAnalysis(fp int, inpOffset, outOffset int, arg *CXArgument) {
 	WriteI32(outOffset, int32(heapOffset))
 }
 
-func opIdentity(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opIdentity(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	inp1Offset := GetFinalOffset(fp, inp1)
 	out1Offset := GetFinalOffset(fp, out1)
@@ -45,11 +42,8 @@ func opIdentity(prgrm *CXProgram) {
 	}
 }
 
-func opJmp(prgrm *CXProgram) {
-	call := prgrm.GetCall()
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opJmp(expr *CXExpression, fp int) {
+	call := PROGRAM.GetCall()
 	inp1 := expr.Inputs[0]
 	var predicate bool
 
@@ -60,7 +54,7 @@ func opJmp(prgrm *CXProgram) {
 		inp1Offset := GetFinalOffset(fp, inp1)
 
 		predicateB := PROGRAM.Memory[inp1Offset : inp1Offset+GetSize(inp1)]
-		predicate = mustDeserializeBool(predicateB)
+		predicate = DeserializeBool(predicateB)
 
 		if predicate {
 			call.Line = call.Line + expr.ThenLines

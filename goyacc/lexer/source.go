@@ -8,7 +8,7 @@ import (
 	"go/token"
 	"io"
 
-	"github.com/skycoin/cx/goyacc/fileutil"
+	"github.com/skycoin/cx/goyacc/util"
 )
 
 // EOFReader implements a RuneReader allways returning 0 (EOF)
@@ -65,7 +65,7 @@ func (s *Source) Read() (r ScannerRune) {
 	for {
 		r.Position = s.Position()
 		r.Rune, r.Size, r.Err = s.tos.reader.ReadRune()
-		if r.Err == nil || !fileutil.IsEOF(r.Err) {
+		if r.Err == nil || !util.IsEOF(r.Err) {
 			p := &s.tos.position
 			p.Offset += r.Size
 			if r.Rune != '\n' {

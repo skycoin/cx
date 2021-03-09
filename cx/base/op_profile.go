@@ -34,18 +34,12 @@ func stopCPUProfile(f *os.File) {
 	defer pprof.StopCPUProfile()
 }
 
-func opStartProfile(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opStartProfile(expr *CXExpression, fp int) {
 	profilePath := ReadStr(fp, expr.Inputs[0])
 	openProfiles[profilePath] = startCPUProfile(profilePath, int(ReadI32(fp, expr.Inputs[1])))
 }
 
-func opStopProfile(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opStopProfile(expr *CXExpression, fp int) {
 	profilePath := ReadStr(fp, expr.Inputs[0])
 	stopCPUProfile(openProfiles[profilePath])
 }

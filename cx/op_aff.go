@@ -26,17 +26,17 @@ var ofMessages = map[string]string{
 func GetInferActions(inp *CXArgument, fp int) []string {
 	inpOffset := GetFinalOffset(fp, inp)
 
-	off := mustDeserializeI32(PROGRAM.Memory[inpOffset : inpOffset+TYPE_POINTER_SIZE])
+	off := Deserialize_i32(PROGRAM.Memory[inpOffset : inpOffset+TYPE_POINTER_SIZE])
 
-	l := mustDeserializeI32(GetSliceHeader(GetSliceOffset(fp, inp))[4:8])
+	l := Deserialize_i32(GetSliceHeader(GetSliceOffset(fp, inp))[4:8])
 
 	result := make([]string, l)
 
 	// for c := int(l); c > 0; c-- {
 	for c := 0; c < int(l); c++ {
-		// elof := mustDeserializeI32(PROGRAM.Memory[int(off) + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + (c - 1) * TYPE_POINTER_SIZE : int(off) + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + c * STR_HEADER_SIZE])
-		elOff := mustDeserializeI32(PROGRAM.Memory[int(off)+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE+c*TYPE_POINTER_SIZE : int(off)+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE+(c+1)*STR_HEADER_SIZE])
-		// size := mustDeserializeI32(PROGRAM.Memory[elOff : elOff+STR_HEADER_SIZE])
+		// elof := Deserialize_i32(PROGRAM.Memory[int(off) + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + (c - 1) * TYPE_POINTER_SIZE : int(off) + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + c * STR_HEADER_SIZE])
+		elOff := Deserialize_i32(PROGRAM.Memory[int(off)+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE+c*TYPE_POINTER_SIZE : int(off)+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE+(c+1)*STR_HEADER_SIZE])
+		// size := Deserialize_i32(PROGRAM.Memory[elOff : elOff+STR_HEADER_SIZE])
 		// var res string
 		// _, err := encoder.DeserializeRaw(PROGRAM.Memory[elOff:elOff+STR_HEADER_SIZE+size], &res)
 		// if err != nil {
@@ -50,10 +50,7 @@ func GetInferActions(inp *CXArgument, fp int) []string {
 	return result
 }
 
-func opAffPrint(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opAffPrint(expr *CXExpression, fp int) {
 	inp1 := expr.Inputs[0]
 	fmt.Println(GetInferActions(inp1, fp))
 	// for _, aff := range GetInferActions(inp1, fp) {
@@ -608,10 +605,7 @@ func getAffordances(inp1 *CXArgument, fp int,
 	}
 }
 
-func opAffOn(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opAffOn(expr *CXExpression, fp int) {
 	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
 
 	prevPkg := PROGRAM.CurrentPackage
@@ -647,10 +641,7 @@ func opAffOn(prgrm *CXProgram) {
 	}
 }
 
-func opAffOf(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opAffOf(expr *CXExpression, fp int) {
 	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
 
 	prevPkg := PROGRAM.CurrentPackage
@@ -748,10 +739,7 @@ func readArgAff(aff string, tgtFn *CXFunction) *CXArgument {
 
 }
 
-func opAffInform(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opAffInform(expr *CXExpression, fp int) {
 	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
 
 	prevPkg := PROGRAM.CurrentPackage
@@ -850,10 +838,7 @@ func opAffInform(prgrm *CXProgram) {
 	PROGRAM.CurrentPackage.CurrentFunction.CurrentExpression = prevExpr
 }
 
-func opAffRequest(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opAffRequest(expr *CXExpression, fp int) {
 	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
 
 	prevPkg := PROGRAM.CurrentPackage
@@ -972,10 +957,7 @@ func opAffRequest(prgrm *CXProgram) {
 	PROGRAM.CurrentPackage.CurrentFunction.CurrentExpression = prevExpr
 }
 
-func opAffQuery(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opAffQuery(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 
 	out1Offset := GetFinalOffset(fp, out1)

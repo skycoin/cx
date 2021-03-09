@@ -10,6 +10,24 @@ go:
 env:
   - GOARCH=amd64
 
+addons:
+  apt:
+    packages:
+    - make
+    - glade
+    - xvfb
+    - libxinerama-dev 
+    - libxcursor-dev
+    - libxrandr-dev
+    - libgl1-mesa-dev
+    - libxi-dev
+    - libperl-dev
+    - libcairo2-dev
+    - libpango1.0-dev
+    - libglib2.0-dev
+    - libopenal-dev
+    - libxxf86vm-dev
+
 # Use a matrix to define SO and possible future changes
 matrix:
   include:

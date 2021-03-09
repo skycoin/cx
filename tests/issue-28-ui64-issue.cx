@@ -1,0 +1,57 @@
+package main
+
+
+func main() {
+
+    testIncrementOperatortypeII()
+    testIncrementOperatortypeI()
+    testDecrementOperatortypeI()
+    testDecrementOperatortypeII()
+}
+
+
+//error: tests/issue-28-ui64-issue.cx:16 function 'ui64.sub' expected input argument of type 'ui64'; 'i32' was provided
+func testDecrementOperatortypeI() {
+
+	var b ui64 = 2B
+
+    b--
+
+	test(b ,1B, "test ui64 Increment Operator (b--)failed")
+}
+
+//error: tests/issue-28-ui64-issue.cx:16 function 'ui64.sub' expected input argument of type 'ui64'; 'i32' was provided
+func testDecrementOperatortypeII() {
+
+	var b ui64 = i32.ui64(2B)
+
+    b--
+
+	test(b ,1B, "test ui64 Increment Operator (b--)failed")
+}
+
+
+//error message 
+//error: tests/issue-28-ui64-issue.cx:17 function 'ui64.add' expected input argument of type 'ui64'; 'i32' was provided
+
+func testIncrementOperatortypeII() {
+
+	var b ui64 = i32.ui64(1UL)
+
+    b++
+
+	test(b ,2UL, "test ui64 Increment Operator (b++)failed")
+}
+
+func testIncrementOperatortypeI() {
+
+	var b ui64 = 1UL
+
+    b++
+
+	test(b ,2UL, "test ui64 Increment Operator (b++)failed")
+}
+
+
+//error message 
+//error: tests/issue-28-ui64-issue.cx:26 function 'ui64.add' expected input argument of type 'ui64'; 'i32' was provided

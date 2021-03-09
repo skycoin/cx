@@ -1,7 +1,6 @@
 package main
-import "serial"
 
 func main () {
 	var foo *i32
-	i32.print(**foo)
+	i32.print(*foo)
 }

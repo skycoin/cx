@@ -1,0 +1,53 @@
+package main
+
+
+func main() {
+
+    testIncrementOperatortypeII()
+    testIncrementOperatortypeI()
+}
+
+
+//error: tests/issue-28-f32-issue.cx:16 function 'f32.sub' expected input argument of type 'f32'; 'i32' was provided
+func testDecrementOperatortypeI() {
+
+	var b f32 = 2B
+
+    b--
+
+	test(b ,1B, "test f32 Increment Operator (b--)failed")
+}
+
+//error: tests/issue-28-f32-issue.cx:16 function 'f32.sub' expected input argument of type 'f32'; 'i32' was provided
+func testDecrementOperatortypeII() {
+
+	var b f32 = i32.f32(2B)
+
+    b--
+
+	test(b ,1B, "test f32 Increment Operator (b--)failed")
+}
+
+//error message 
+//error: tests/issue-28-f32-issue.cx:17 function 'f32.add' expected input argument of type 'f32'; 'i32' was provided
+
+func testIncrementOperatortypeII() {
+
+	var b f32 = 1.0L
+
+    b++
+
+	test(b ,2.0L, "test f32 Increment Operator (b++)failed")
+}
+
+func testIncrementOperatortypeI() {
+
+	var b f32 = 1.0L
+    b++
+
+	test(b ,2.0L, "test f32 Increment Operator (b++)failed")
+}
+
+
+//error message 
+//error: tests/issue-28-f32-issue.cx:26 function 'f32.add' expected input argument of type 'f32'; 'i32' was provided

@@ -86,13 +86,11 @@ func init() {
 	PROGRAM.AddPackage(httpPkg)
 }
 
-func opHTTPHandle(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
+func opHTTPHandle(expr *CXExpression, fp int) {
 	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
 
 	// Getting handler function.
-	handlerPkg, err := prgrm.GetPackage(inp2.Package.Name)
+	handlerPkg, err := PROGRAM.GetPackage(inp2.Package.Name)
 	if err != nil {
 		panic(err)
 	}
@@ -133,14 +131,11 @@ func opHTTPHandle(prgrm *CXProgram) {
 
 var server *http.Server
 
-func opHTTPClose(prgrm *CXProgram) {
+func opHTTPClose(expr *CXExpression, fp int) {
 	server.Close()
 }
 
-func opHTTPListenAndServe(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-
-	fp := prgrm.GetFramePointer()
+func opHTTPListenAndServe(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	url := ReadStr(fp, inp1)
 
@@ -150,10 +145,7 @@ func opHTTPListenAndServe(prgrm *CXProgram) {
 	WriteString(fp, err.Error(), out1)
 }
 
-func opHTTPServe(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-
-	fp := prgrm.GetFramePointer()
+func opHTTPServe(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	url := ReadStr(fp, inp1)
 
@@ -168,12 +160,9 @@ func opHTTPServe(prgrm *CXProgram) {
 	}
 }
 
-func opHTTPNewRequest(prgrm *CXProgram) {
+func opHTTPNewRequest(expr *CXExpression, fp int) {
 	// TODO: This whole OP needs rewriting/finishing.
 	// Seems more a prototype.
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
 	inp1, inp2, inp3, out1 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Outputs[0]
 
 	method := ReadStr(fp, inp1)
@@ -317,10 +306,7 @@ func writeHTTPRequest(fp int, param *CXArgument, request *http.Request) {
 	WriteMemory(GetFinalOffset(fp, &req), FromBool(request.URL.ForceQuery))
 }
 
-func opHTTPDo(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opHTTPDo(expr *CXExpression, fp int) {
 	inp1, out1, out2 := expr.Inputs[0], expr.Outputs[0], expr.Outputs[1]
 	//TODO read req from the inputs
 	// reqByts := ReadMemory(GetFinalOffset(fp, inp1), inp1)
@@ -484,10 +470,7 @@ func opHTTPDo(prgrm *CXProgram) {
 	WriteString(fp, string(body), &resp)
 }
 
-func opDMSGDo(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opDMSGDo(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	var req http.Request
 	byts1 := ReadMemory(GetFinalOffset(fp, inp1), inp1)

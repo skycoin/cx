@@ -16,7 +16,7 @@ import (
 	"github.com/skycoin/cx/cxgo/parser"
 )
 
-const VERSION = "0.7.1"
+const VERSION = "0.8.0"
 
 func main() {
 	//cx.CXLogFile(true)
@@ -152,25 +152,6 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 		panic(err)
 	}
 	actions.PRGRM.Packages = corePkgsPrgrm.Packages
-
-	if options.webMode {
-		ServiceMode()
-		return false, nil, nil
-	}
-
-	// TODO @evanlinjin: Do we need this? What is the 'leaps' command?
-	if options.ideMode {
-		WebIdeServiceMode()
-		ServiceMode()
-		return false, nil, nil
-	}
-
-	// TODO @evanlinjin: We do not need a persistent mode?
-	if options.webPersistentMode {
-		go ServiceMode()
-		PersistentServiceMode()
-		return false, nil, nil
-	}
 
 	// var bcPrgrm *CXProgram
 	var sPrgrm []byte

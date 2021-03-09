@@ -1,0 +1,318 @@
+package main
+
+
+func main() {
+
+    testAdditionAssignmentOperator()
+    testSubtractionAssignmentOperator()
+    testAdditionIncrement()
+    testPositiveLiteralIncrement()
+    testVariableLiteralIncrement() 
+    testArithmeticOperatorAddition()
+    testArithmeticOperatorSubstraction() 
+    testArithmeticOperatorMultiplication()
+    testArithmeticOperatorDivision()
+    testMultiplicationAssignmentOperator()
+    testDivisionAssignmentOperator()
+    testRightShiftAssignmentOperator()
+    testLeftShiftAssignmentOperator()
+    testModulusAssignmentOperator()
+    testAndAssignmentOperator()
+    testOrAssignmentOperator()
+    testXorAssignmentOperator()
+    TestRightBitManipulationOperator()
+    TestLeftBitManipulationOperator()
+    TestModulusBitManipulationOperator()
+    TestAndBitManipulationOperator()
+    TestOrBitManipulationOperator()
+    TestXorBitManipulationOperator()
+}
+
+
+
+
+
+
+func testAdditionAssignmentOperator() {
+
+	var b ui32 = 100U
+    var a ui32 = 101U
+   
+    b+= a
+    
+    test(b,201U, "test ui32 Addition Assignment Operator ( b+= a) failed")
+ 
+ }
+
+
+func testSubtractionAssignmentOperator() {
+
+	var b ui32 = 202U
+    var a ui32 = 101U
+    b-= a
+    test(b,101U, "test ui32 subtraction assignment operator (b-= a) failed")
+
+   
+}
+
+  func testAdditionIncrement() {
+
+	var b ui32 = 1U
+ 
+
+    b+=1U
+
+	test(b ,2U, "test ui32 Addition Increment (b+=1)failed")
+}
+
+func testPositiveLiteralIncrement(){
+
+    var b ui32 = 2U
+
+ 
+    b += 3U
+
+	test(b ,5U, "test ui32 Positive Literal Increment (b += 3) failed")   
+}
+
+
+
+
+
+
+
+
+func testVariableLiteralIncrement(){
+
+    var b ui32
+    var a ui32
+
+    b = 5U
+
+    a = 1U
+
+    b +=a
+
+	test(b ,6U, "test ui32  Variable Literal Increment (b +=a) failed")   
+}
+
+
+
+
+ func testArithmeticOperatorAddition(){
+
+    var a ui32
+
+    var b ui32
+    
+    var c ui32
+    
+    
+    a = 5U
+
+    b = 5U
+
+    c = a + b
+
+	test(c ,10U, "test ui32 Arithmetic Operator Addition (c = a + b) failed")   
+}
+
+
+ func testArithmeticOperatorSubstraction(){
+
+    var a ui32
+
+    var b ui32
+    
+    var c ui32
+    
+    
+    a = 10U
+
+    b = 5U
+
+    c = a - b
+
+	test(c ,5U, "test ui32 Arithmetic Operator Substraction (c = a - b) failed")   
+}
+
+
+ func testArithmeticOperatorMultiplication(){
+
+    var a ui32
+
+    var b ui32
+    
+    var c ui32
+    
+    
+    a = 5U
+
+    b = 5U
+
+    c = a * b
+
+	test(c ,25U, "test ui32 Arithmetic Operators Multiplication (c = a * b) failed")   
+}
+
+ func testArithmeticOperatorDivision(){
+
+    var a ui32
+
+    var b ui32
+    
+    var c ui32
+    
+    
+    a = 50U
+
+    b = 5U
+
+    c = a / b
+
+	test(c ,10U, "test ui32 Arithmetic Operators Division (c = a / b) failed")   
+}
+
+
+
+func testMultiplicationAssignmentOperator(){
+
+    var b ui32 = 10U
+    var a ui32 = 10U
+    b*= a
+    test(b,100U, "test ui32 Multiplication Assignment Operators( b*= a) failed")
+}
+
+
+func testDivisionAssignmentOperator(){
+
+    var b ui32 = 100U
+    var a ui32 = 10U
+    b/= a
+    test(b,10U, "test ui32 Division Assignment Operators(b/= a) failed")
+}
+
+
+func testRightShiftAssignmentOperator(){
+
+
+    var b ui32 = 2U
+    var a ui32 = 100U
+    a >>= b  
+    test(a,25U, "test ui32 Right Shift Assignment Operator (a >>= b  ) failed")
+
+}	
+
+
+func testLeftShiftAssignmentOperator(){
+
+
+    var b ui32 = 2U
+    var a ui32 = 10U
+    a <<= b  
+    test(a,40U, "test ui32 Left Shift Assignment Operator ( a <<= b ) failed")
+
+}
+
+func testModulusAssignmentOperator(){
+
+    var b ui32 = 10U
+    var a ui32 = 102U
+    a %= b
+    test(a,2U, "test ui32 Modulus Assignment Operator (  a %= b ) failed")
+
+}
+
+
+
+func testAndAssignmentOperator(){
+
+     var b ui32 = 10U
+    var a ui32 = 102U
+    a &= b
+    test(a,2U, "test ui32 AND Assignment Operator (  a &= b ) failed")
+}
+
+func testOrAssignmentOperator(){
+
+     var b ui32 = 10U
+    var a ui32 = 102U
+    a  |= b
+    test(a,110U, "test ui32 OR Assignment Operator ( a  |= b ) failed")
+}
+
+
+func testXorAssignmentOperator(){
+
+     var b ui32 = 10U
+    var a ui32 = 102U
+    a  ^=  b
+    test(a,108U, "test ui32 XOR Assignment Operator ( a  ^=  b ) failed")
+}
+
+func TestRightBitManipulationOperator(){
+
+    var b ui32 = 111U
+    var a ui32 = 111U
+    var c ui32 
+    c = b >> a
+
+ 
+    test(c,0U, "test ui32 Right Bit Manipulation Operator ( c = b >> a) failed")
+}
+
+
+func TestLeftBitManipulationOperator(){
+
+    var b ui32 = 111U
+    var a ui32 = 101U
+    var c ui32 
+    c = b << a
+   
+    test(c,0U, "test ui32 Left Bit Manipulation Operator ( c = b << a) failed")
+}
+
+
+func TestModulusBitManipulationOperator(){
+
+    var b ui32 = 111U
+    var a ui32 = 101U
+    var c ui32 
+    c = b % a
+   
+    test(c,10U, "test ui32 Modulus Bit Manipulation Operator (c = b % a) failed")
+}
+
+func TestAndBitManipulationOperator(){
+
+    var b ui32 = 111U
+    var a ui32 = 101U
+    var c ui32 
+    c = b & a
+   
+
+    test(c,101U, "test ui32 AND Bit Manipulation Operator (c = b & a) failed")
+}
+
+
+func TestOrBitManipulationOperator(){
+
+    var b ui32 = 111U
+    var a ui32 = 101U
+    var c ui32 
+    c = b | a
+   
+    test(c,111U, "test ui32 OR Bit Manipulation Operator (c = b | a) failed")
+}
+
+func TestXorBitManipulationOperator(){
+
+    var b ui32 = 111U
+    var a ui32 = 101U
+    var c ui32 
+    c = b ^ a
+   
+    test(c,10U, "test ui32 XOR Bit Manipulation Operator (c = b ^ a) failed")
+}
+
+

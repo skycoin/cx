@@ -458,7 +458,7 @@ const (
 )
 
 // OpcodeHandler ...
-type OpcodeHandler func(prgrm *CXProgram)
+type OpcodeHandler func(expr *CXExpression, fp int)
 
 var (
 	// OpNames ...
@@ -471,11 +471,6 @@ var (
 	Natives        = map[int]*CXFunction{}
 	opcodeHandlers []OpcodeHandler
 )
-
-func execNative(prgrm *CXProgram) {
-	//defer RuntimeError() // High runtime cost.
-	opcodeHandlers[prgrm.GetOpCode()](prgrm)
-}
 
 // RegisterPackage registers a package on the CX standard library. This does not create a `CXPackage` structure,
 // it only tells the CX runtime that `pkgName` will exist by the time a CX program is run.
@@ -653,8 +648,8 @@ func Out(params ...*CXArgument) []*CXArgument {
 	return params
 }
 
-func opDebug(prgrm *CXProgram) {
-	prgrm.PrintStack()
+func opDebug(*CXExpression, int) {
+	PROGRAM.PrintStack()
 }
 
 func init() {

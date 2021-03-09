@@ -47,7 +47,6 @@ type Event struct {
 }
 
 type CXCallback struct {
-	prgrm           *CXProgram
 	expr            *CXExpression
 	fp              int
 	windowNameBytes []byte
@@ -56,8 +55,7 @@ type CXCallback struct {
 	functionName    string
 }
 
-func (cb *CXCallback) init(prgrm *CXProgram, expr *CXExpression, fp int, packageName string) {
-	cb.prgrm = prgrm
+func (cb *CXCallback) init(expr *CXExpression, fp int, packageName string) {
 	cb.expr = expr
 	cb.fp = fp
 	cb.windowName = ReadStr(fp, expr.Inputs[0])
@@ -66,20 +64,18 @@ func (cb *CXCallback) init(prgrm *CXProgram, expr *CXExpression, fp int, package
 	cb.packageName = packageName
 }
 
-func (cb *CXCallback) Init(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-	cb.init(prgrm, expr, fp, expr.Package.Name)
+func (cb *CXCallback) Init(expr *CXExpression, fp int) {
+	cb.init(expr, fp, expr.Package.Name)
 }
 
-func (cb *CXCallback) InitEx(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-	cb.init(prgrm, expr, fp, ReadStr(fp, expr.Inputs[2]))
+func (cb *CXCallback) InitEx(expr *CXExpression, fp int) {
+	cb.init(expr, fp, ReadStr(fp, expr.Inputs[2]))
 }
 
 func (cb *CXCallback) Call(inputs [][]byte) {
-	cb.prgrm.Callback(cb.expr.Operator, inputs)
+	if fn, err := PROGRAM.GetFunction(cb.functionName, cb.packageName); err == nil {
+		PROGRAM.Callback(fn, inputs)
+	}
 }
 
 var appKeyboardCallback CXCallback

@@ -1,0 +1,188 @@
+package main
+
+
+
+
+func testAdditionAssignmentOperator() {
+
+	var b f64 = 100.0D
+    var a f64 = 101.0D
+    b+= a
+
+   test(b,201.0D, "test f64 Addition Assignment Operator ( b+= a) failed")
+  }
+
+
+func testSubtractionAssignmentOperator() {
+
+	var b f64 = 202.0D
+    var a f64 = 101.0D
+    b-= a
+
+     
+    test(b,101.0D, "test f64 subtraction assignment operator (b-= a) failed")
+  }
+
+  func testAdditionIncrement() {
+
+	var b f64
+
+    b = 1.0D
+ 
+   b+=1.0D
+
+ test(b ,2.0D, "test f64 Addition Increment (b+=1)failed")
+}
+
+
+func testPositiveLiteralIncrement(){
+
+    var b i64 = 2L
+
+ 
+    b += 3L
+
+	test(b ,5L, "test i64 Positive Literal Increment (b += 3) failed")   
+}
+
+
+func testNegativeLiteralIncrement(){
+
+    var b i64
+
+    b = 5L
+
+    b += -3L
+
+	test(b ,2L, "test i64  Negative Literal Increment(b += -3) failed")   
+}
+
+func testVariableLiteralIncrement(){
+
+    var b i64
+    var a i64
+
+    b = 5L
+
+    a = 1L
+
+    b +=a
+
+	test(b ,6L, "test i64  Variable Literal Increment (b +=a) failed")   
+}
+
+ func testArithmeticOperatorAddition(){
+
+    var a i64
+
+    var b i64
+    
+    var c i64
+    
+    
+    a = 5L
+
+    b = 5L
+
+    c = a + b
+
+	test(c ,10L, "test i64 Arithmetic Operator Addition (c = a + b) failed")   
+}
+
+
+func testArithmeticOperatorSubstraction(){
+
+    var a i64
+
+    var b i64
+    
+    var c i64
+    
+    
+    a = 10L
+
+    b = 5L
+
+    c = a - b
+
+	test(c ,5L, "test i64 Arithmetic Operator Substraction (c = a - b) failed")   
+}
+
+
+ func testArithmeticOperatorMultiplication(){
+
+    var a i64
+
+    var b i64
+    
+    var c i64
+    
+    
+    a = 5L
+
+    b = 5L
+
+    c = a * b
+
+	test(c ,25L, "test i64 Arithmetic Operators Multiplication (c = a * b) failed")   
+}
+
+ func testArithmeticOperatorDivision(){
+
+    var a i64
+
+    var b i64
+    
+    var c i64
+    
+    
+    a = 50L
+
+    b = 5L
+
+    c = a / b
+
+	test(c ,10L, "test i64 Arithmetic Operators Division (c = a / b) failed")   
+}
+
+
+
+func testMultiplicationAssignmentOperator(){
+
+    var b i64 = 10L
+    var a i64 = 10L
+    b*= a
+    test(b,100L, "test i64 Multiplication Assignment Operators( b*= a) failed")
+}
+
+
+func testDivisionAssignmentOperator(){
+
+    var b i64 = 100L
+    var a i64 = 10L
+    b/= a
+    test(b,10L, "test i64 Division Assignment Operators(b/= a) failed")
+}
+
+
+
+
+func main() {
+
+    testAdditionAssignmentOperator()
+    testSubtractionAssignmentOperator()
+    testAdditionIncrement()
+    testPositiveLiteralIncrement()
+    testNegativeLiteralIncrement()
+    testVariableLiteralIncrement() 
+    testArithmeticOperatorAddition()
+    testArithmeticOperatorSubstraction() 
+    testArithmeticOperatorMultiplication()
+    testArithmeticOperatorDivision()
+    testMultiplicationAssignmentOperator()
+    testDivisionAssignmentOperator()  
+}
+
+
+
+

@@ -9,7 +9,7 @@ func FahrenheitCelsius(in i32) (out f32) {
 }
 
 func CelsiusKelvin(in f32) (out f32) {
-    out = 273 + in
+    out = 273.0 + in
 }
 
 func main () () {

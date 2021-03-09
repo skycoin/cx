@@ -108,7 +108,7 @@ if %ERRORLEVEL% neq 0 (
 
 
 rem run CX tests
-%BIN_PATH%\cx.exe %SKYCOIN_PATH%\cx\tests\main.cx ++wdir=tests\ ++disable-tests=gui,issue
+%BIN_PATH%\cx.exe %SKYCOIN_PATH%\cx\lib\args.cx %SKYCOIN_PATH%\cx\tests\main.cx ++wdir=tests\ ++disable-tests=gui,issue
 call :showResults cx\tests "Tested" "ERROR while testing"
 
 call :echoWithColor yellow "You can re-run CX tests with:"
@@ -235,8 +235,8 @@ exit /b
   call :showResults "goyacc cxgo" "2nd pass -" "ERROR in 2nd pass -"
 
 
-  go build -tags="base opengl" -i -o %BIN_PATH%/cx.exe github.com/skycoin/cx/cxgo/
-  call :showResults skycoin\CX\CXGO "            Built CX.EXE from:" "ERROR building CX.EXE from:"
+  go build -tags="base cxfx" -i -o %BIN_PATH%\cx.exe github.com\skycoin\cx\cmd\cx
+  call :showResults skycoin\CX\CMD\CX "            Built CX.EXE from:" "ERROR building CX.EXE from:"
 exit /b
 
 

@@ -11,37 +11,19 @@ import (
 )
 
 type cxCmdFlags struct {
-	baseOutput        bool
-	compileOutput     string
-	replMode          bool
-	webMode           bool
-	ideMode           bool
-	webPersistentMode bool
-	printHelp         bool
-	printVersion      bool
-	printEnv          bool
-	tokenizeMode      bool
-	initialHeap       string
-	maxHeap           string
-	stackSize         string
-	blockchainMode    bool
-	publisherMode     bool
-	peerMode          bool
-	transactionMode   bool
-	broadcastMode     bool
-	walletMode        bool
-	genAddress        bool
-	port              int
-	walletId          string
-	walletSeed        string
-	programName       string
-	secKey            string
-	pubKey            string
-	genesisAddress    string
-	genesisSignature  string
-	minHeapFreeRatio  float64
-	maxHeapFreeRatio  float64
-	cxpath            string
+	baseOutput       bool
+	compileOutput    string
+	replMode         bool
+	printHelp        bool
+	printVersion     bool
+	printEnv         bool
+	tokenizeMode     bool
+	initialHeap      string
+	maxHeap          string
+	stackSize        string
+	minHeapFreeRatio float64
+	maxHeapFreeRatio float64
+	cxpath           string
 
 	// Debug flags for the CX developers
 	debugLexer   bool
@@ -50,26 +32,12 @@ type cxCmdFlags struct {
 
 func defaultCmdFlags() cxCmdFlags {
 	return cxCmdFlags{
-		baseOutput:        false,
-		compileOutput:     "",
-		replMode:          false,
-		webMode:           false,
-		ideMode:           false,
-		webPersistentMode: false,
-		printHelp:         false,
-		printEnv:          false,
-		printVersion:      false,
-		blockchainMode:    false,
-		transactionMode:   false,
-		broadcastMode:     false,
-		port:              6001,
-		programName:       "cxcoin",
-		walletId:          "cxcoin_cli.wlt",
-		secKey:            "",
-		pubKey:            "",
-		genesisAddress:    "",
-		genesisSignature:  "",
-
+		baseOutput:       false,
+		compileOutput:    "",
+		replMode:         false,
+		printHelp:        false,
+		printEnv:         false,
+		printVersion:     false,
 		debugLexer:   false,
 		debugProfile: 0,
 	}
@@ -77,10 +45,22 @@ func defaultCmdFlags() cxCmdFlags {
 
 var commandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 
+func appendDash(args []string) {
+
+	for k, v := range args {
+		switch v {
+		case "version":
+			args[k] = "-version"
+		}
+	}
+}
+
 func parseFlags(options *cxCmdFlags, args []string) {
 	if len(args) <= 0 {
 		options.replMode = true
 	}
+
+	appendDash(args)
 
 	commandLine.BoolVar(&options.printVersion, "version", options.printVersion, "Print CX version")
 	commandLine.BoolVar(&options.printVersion, "v", options.printVersion, "alias for -version")
@@ -91,10 +71,6 @@ func parseFlags(options *cxCmdFlags, args []string) {
 
 	commandLine.BoolVar(&options.replMode, "repl", options.replMode, "Loads source files into memory and starts a read-eval-print loop")
 	commandLine.BoolVar(&options.replMode, "r", options.replMode, "alias for -repl")
-	commandLine.BoolVar(&options.webMode, "web", options.webMode, "Start CX as a web service.")
-	commandLine.BoolVar(&options.webMode, "w", options.webMode, "alias for -web")
-	commandLine.BoolVar(&options.ideMode, "ide", options.ideMode, "Start CX as a web service, and Leaps service start also.")
-	commandLine.BoolVar(&options.webPersistentMode, "pw", options.webPersistentMode, "Start CX as a web service with a persistent web REPL session")
 	commandLine.StringVar(&options.initialHeap, "heap-initial", options.initialHeap, "Set the initial heap for the CX virtual machine. The value is in bytes, but the suffixes 'G', 'M' or 'K' can be used to express gigabytes, megabytes or kilobytes, respectively. Lowercase suffixes are allowed.")
 	commandLine.StringVar(&options.initialHeap, "hi", options.initialHeap, "alias for -initial-heap")
 	commandLine.StringVar(&options.maxHeap, "heap-max", options.maxHeap, "Set the max heap for the CX virtual machine. The value is in bytes, but the suffixes 'G', 'M' or 'K' can be used to express gigabytes, megabytes or kilobytes, respectively. Lowercase suffixes are allowed. Note that this parameter overrides --heap-initial if --heap-max is equal to a lesser value than --heap-max's.")
@@ -103,29 +79,7 @@ func parseFlags(options *cxCmdFlags, args []string) {
 	commandLine.StringVar(&options.stackSize, "ss", options.stackSize, "alias for -stack-size")
 	commandLine.Float64Var(&options.minHeapFreeRatio, "--min-heap-free", options.minHeapFreeRatio, "Minimum heap space percentage that should be free after calling the garbage collector. Value must be in the range of 0.0 and 1.0.")
 	commandLine.Float64Var(&options.maxHeapFreeRatio, "--max-heap-free", options.maxHeapFreeRatio, "Maximum heap space percentage that should be free after calling the garbage collector. Value must be in the range of 0.0 and 1.0.")
-
-	// commandLine.BoolVar(&options.blockchainMode, "bc", options.blockchainMode, "alias for -blockchain")
-	// commandLine.BoolVar(&options.publisherMode, "pb", options.publisherMode, "alias for -publisher")
-	// commandLine.BoolVar(&options.transactionMode, "txn", options.transactionMode, "alias for -transaction")
-	commandLine.BoolVar(&options.broadcastMode, "broadcast", options.broadcastMode, "Broadcast a CX blockchain transaction")
-	commandLine.BoolVar(&options.walletMode, "create-wallet", options.walletMode, "Create a wallet from a seed")
 	commandLine.StringVar(&options.cxpath, "cxpath", options.cxpath, "Used for dynamically setting the value of the environment variable CXPATH")
-
-	//deprecated
-
-	//commandLine.BoolVar(&options.blockchainMode, "blockchain", options.blockchainMode, "Start a CX blockchain program")
-	//commandLine.BoolVar(&options.genAddress, "generate-address", options.genAddress, "Generate a CX chain address")
-	//commandLine.StringVar(&options.genesisAddress, "genesis-address", options.genesisAddress, "CX blockchain program genesis address")
-	//commandLine.StringVar(&options.genesisSignature, "genesis-signature", options.genesisSignature, "CX blockchain program genesis address")
-	//commandLine.BoolVar(&options.peerMode, "peer", options.peerMode, "Run a CX chain peer node")
-	//commandLine.IntVar(&options.port, "port", options.port, "Port used when running a CX chain peer node")
-	//commandLine.StringVar(&options.programName, "program-name", options.programName, "Name of the initial CX program on the blockchain")
-	//commandLine.StringVar(&options.pubKey, "public-key", options.pubKey, "CX program blockchain public key")
-	//commandLine.BoolVar(&options.publisherMode, "publisher", options.publisherMode, "Start a CX blockchain program block publisher")
-	//commandLine.StringVar(&options.secKey, "secret-key", options.secKey, "CX program blockchain security key")
-	//commandLine.BoolVar(&options.transactionMode, "transaction", options.transactionMode, "Test a CX blockchain transaction")
-	//commandLine.StringVar(&options.walletSeed, "wallet-seed", options.walletSeed, "Seed to use for a new wallet")
-	//commandLine.StringVar(&options.walletId, "wallet-id", options.walletId, "Wallet ID to use for signing transactions")
 
 	// Debug flags
 	commandLine.BoolVar(&options.debugLexer, "debug-lexer", options.debugLexer, "Debug the lexer by printing all scanner tokens")
@@ -152,7 +106,7 @@ Notes:
 }
 
 func printVersion() {
-	fmt.Println("CX version", VERSION)
+	fmt.Printf("CX version %v %v/%v\n", VERSION, runtime.GOOS, runtime.GOARCH)
 }
 
 func checkHelp(args []string) bool {

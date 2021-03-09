@@ -10,480 +10,477 @@ import (
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-func opLt(prgrm *CXProgram) {
-	switch prgrm.GetExpr().Inputs[0].Type {
+func opLt(expr *CXExpression, fp int) {
+	switch expr.Inputs[0].Type {
 	case TYPE_STR:
-		opStrLt(prgrm)
+		opStrLt(expr, fp)
 	case TYPE_I8:
-		opI8Lt(prgrm)
+		opI8Lt(expr, fp)
 	case TYPE_I16:
-		opI16Lt(prgrm)
+		opI16Lt(expr, fp)
 	case TYPE_I32:
-		opI32Lt(prgrm)
+		opI32Lt(expr, fp)
 	case TYPE_I64:
-		opI64Lt(prgrm)
+		opI64Lt(expr, fp)
 	case TYPE_UI8:
-		opUI8Lt(prgrm)
+		opUI8Lt(expr, fp)
 	case TYPE_UI16:
-		opUI16Lt(prgrm)
+		opUI16Lt(expr, fp)
 	case TYPE_UI32:
-		opUI32Lt(prgrm)
+		opUI32Lt(expr, fp)
 	case TYPE_UI64:
-		opUI64Lt(prgrm)
+		opUI64Lt(expr, fp)
 	case TYPE_F32:
-		opF32Lt(prgrm)
+		opF32Lt(expr, fp)
 	case TYPE_F64:
-		opF64Lt(prgrm)
+		opF64Lt(expr, fp)
 	default:
 		panic(CX_INTERNAL_ERROR)
 	}
 }
 
-func opGt(prgrm *CXProgram) {
-	switch prgrm.GetExpr().Inputs[0].Type {
+func opGt(expr *CXExpression, fp int) {
+	switch expr.Inputs[0].Type {
 	case TYPE_STR:
-		opStrGt(prgrm)
+		opStrGt(expr, fp)
 	case TYPE_I8:
-		opI8Gt(prgrm)
+		opI8Gt(expr, fp)
 	case TYPE_I16:
-		opI16Gt(prgrm)
+		opI16Gt(expr, fp)
 	case TYPE_I32:
-		opI32Gt(prgrm)
+		opI32Gt(expr, fp)
 	case TYPE_I64:
-		opI64Gt(prgrm)
+		opI64Gt(expr, fp)
 	case TYPE_UI8:
-		opUI8Gt(prgrm)
+		opUI8Gt(expr, fp)
 	case TYPE_UI16:
-		opUI16Gt(prgrm)
+		opUI16Gt(expr, fp)
 	case TYPE_UI32:
-		opUI32Gt(prgrm)
+		opUI32Gt(expr, fp)
 	case TYPE_UI64:
-		opUI64Gt(prgrm)
+		opUI64Gt(expr, fp)
 	case TYPE_F32:
-		opF32Gt(prgrm)
+		opF32Gt(expr, fp)
 	case TYPE_F64:
-		opF64Gt(prgrm)
+		opF64Gt(expr, fp)
 	default:
 		panic(CX_INTERNAL_ERROR)
 	}
 }
 
-func opLteq(prgrm *CXProgram) {
-	switch prgrm.GetExpr().Inputs[0].Type {
+func opLteq(expr *CXExpression, fp int) {
+	switch expr.Inputs[0].Type {
 	case TYPE_STR:
-		opStrLteq(prgrm)
+		opStrLteq(expr, fp)
 	case TYPE_I8:
-		opI8Lteq(prgrm)
+		opI8Lteq(expr, fp)
 	case TYPE_I16:
-		opI16Lteq(prgrm)
+		opI16Lteq(expr, fp)
 	case TYPE_I32:
-		opI32Lteq(prgrm)
+		opI32Lteq(expr, fp)
 	case TYPE_I64:
-		opI64Lteq(prgrm)
+		opI64Lteq(expr, fp)
 	case TYPE_UI8:
-		opUI8Lteq(prgrm)
+		opUI8Lteq(expr, fp)
 	case TYPE_UI16:
-		opUI16Lteq(prgrm)
+		opUI16Lteq(expr, fp)
 	case TYPE_UI32:
-		opUI32Lteq(prgrm)
+		opUI32Lteq(expr, fp)
 	case TYPE_UI64:
-		opUI64Lteq(prgrm)
+		opUI64Lteq(expr, fp)
 	case TYPE_F32:
-		opF32Lteq(prgrm)
+		opF32Lteq(expr, fp)
 	case TYPE_F64:
-		opF64Lteq(prgrm)
+		opF64Lteq(expr, fp)
 	default:
 		panic(CX_INTERNAL_ERROR)
 	}
 }
 
-func opGteq(prgrm *CXProgram) {
-	switch prgrm.GetExpr().Inputs[0].Type {
+func opGteq(expr *CXExpression, fp int) {
+	switch expr.Inputs[0].Type {
 	case TYPE_STR:
-		opStrGteq(prgrm)
+		opStrGteq(expr, fp)
 	case TYPE_I8:
-		opI8Gteq(prgrm)
+		opI8Gteq(expr, fp)
 	case TYPE_I16:
-		opI16Gteq(prgrm)
+		opI16Gteq(expr, fp)
 	case TYPE_I32:
-		opI32Gteq(prgrm)
+		opI32Gteq(expr, fp)
 	case TYPE_I64:
-		opI64Gteq(prgrm)
+		opI64Gteq(expr, fp)
 	case TYPE_UI8:
-		opUI8Gteq(prgrm)
+		opUI8Gteq(expr, fp)
 	case TYPE_UI16:
-		opUI16Gteq(prgrm)
+		opUI16Gteq(expr, fp)
 	case TYPE_UI32:
-		opUI32Gteq(prgrm)
+		opUI32Gteq(expr, fp)
 	case TYPE_UI64:
-		opUI64Gteq(prgrm)
+		opUI64Gteq(expr, fp)
 	case TYPE_F32:
-		opF32Gteq(prgrm)
+		opF32Gteq(expr, fp)
 	case TYPE_F64:
-		opF64Gteq(prgrm)
+		opF64Gteq(expr, fp)
 	default:
 		panic(CX_INTERNAL_ERROR)
 	}
 }
 
-func opEqual(prgrm *CXProgram) {
-	switch prgrm.GetExpr().Inputs[0].Type {
+func opEqual(expr *CXExpression, fp int) {
+	switch expr.Inputs[0].Type {
 	case TYPE_BOOL:
-		opBoolEqual(prgrm)
+		opBoolEqual(expr, fp)
 	case TYPE_STR:
-		opStrEq(prgrm)
+		opStrEq(expr, fp)
 	case TYPE_I8:
-		opI8Eq(prgrm)
+		opI8Eq(expr, fp)
 	case TYPE_I16:
-		opI16Eq(prgrm)
+		opI16Eq(expr, fp)
 	case TYPE_I32:
-		opI32Eq(prgrm)
+		opI32Eq(expr, fp)
 	case TYPE_I64:
-		opI64Eq(prgrm)
+		opI64Eq(expr, fp)
 	case TYPE_UI8:
-		opUI8Eq(prgrm)
+		opUI8Eq(expr, fp)
 	case TYPE_UI16:
-		opUI16Eq(prgrm)
+		opUI16Eq(expr, fp)
 	case TYPE_UI32:
-		opUI32Eq(prgrm)
+		opUI32Eq(expr, fp)
 	case TYPE_UI64:
-		opUI64Eq(prgrm)
+		opUI64Eq(expr, fp)
 	case TYPE_F32:
-		opF32Eq(prgrm)
+		opF32Eq(expr, fp)
 	case TYPE_F64:
-		opF64Eq(prgrm)
+		opF64Eq(expr, fp)
 	default:
 		panic(CX_INTERNAL_ERROR)
 	}
 }
 
-func opUnequal(prgrm *CXProgram) {
-	switch prgrm.GetExpr().Inputs[0].Type {
+func opUnequal(expr *CXExpression, fp int) {
+	switch expr.Inputs[0].Type {
 	case TYPE_BOOL:
-		opBoolUnequal(prgrm)
+		opBoolUnequal(expr, fp)
 	case TYPE_STR:
-		opStrUneq(prgrm)
+		opStrUneq(expr, fp)
 	case TYPE_I8:
-		opI8Uneq(prgrm)
+		opI8Uneq(expr, fp)
 	case TYPE_I16:
-		opI16Uneq(prgrm)
+		opI16Uneq(expr, fp)
 	case TYPE_I32:
-		opI32Uneq(prgrm)
+		opI32Uneq(expr, fp)
 	case TYPE_I64:
-		opI64Uneq(prgrm)
+		opI64Uneq(expr, fp)
 	case TYPE_UI8:
-		opUI8Uneq(prgrm)
+		opUI8Uneq(expr, fp)
 	case TYPE_UI16:
-		opUI16Uneq(prgrm)
+		opUI16Uneq(expr, fp)
 	case TYPE_UI32:
-		opUI32Uneq(prgrm)
+		opUI32Uneq(expr, fp)
 	case TYPE_UI64:
-		opUI64Uneq(prgrm)
+		opUI64Uneq(expr, fp)
 	case TYPE_F32:
-		opF32Uneq(prgrm)
+		opF32Uneq(expr, fp)
 	case TYPE_F64:
-		opF64Uneq(prgrm)
+		opF64Uneq(expr, fp)
 	default:
 		panic(CX_INTERNAL_ERROR)
 	}
 }
 
-func opBitand(prgrm *CXProgram) {
-	switch prgrm.GetExpr().Inputs[0].Type {
+func opBitand(expr *CXExpression, fp int) {
+	switch expr.Inputs[0].Type {
 	case TYPE_I8:
-		opI8Bitand(prgrm)
+		opI8Bitand(expr, fp)
 	case TYPE_I16:
-		opI16Bitand(prgrm)
+		opI16Bitand(expr, fp)
 	case TYPE_I32:
-		opI32Bitand(prgrm)
+		opI32Bitand(expr, fp)
 	case TYPE_I64:
-		opI64Bitand(prgrm)
+		opI64Bitand(expr, fp)
 	case TYPE_UI8:
-		opUI8Bitand(prgrm)
+		opUI8Bitand(expr, fp)
 	case TYPE_UI16:
-		opUI16Bitand(prgrm)
+		opUI16Bitand(expr, fp)
 	case TYPE_UI32:
-		opUI32Bitand(prgrm)
+		opUI32Bitand(expr, fp)
 	case TYPE_UI64:
-		opUI64Bitand(prgrm)
+		opUI64Bitand(expr, fp)
 	default:
 		panic(CX_INTERNAL_ERROR)
 	}
 }
 
-func opBitor(prgrm *CXProgram) {
-	switch prgrm.GetExpr().Inputs[0].Type {
+func opBitor(expr *CXExpression, fp int) {
+	switch expr.Inputs[0].Type {
 	case TYPE_I8:
-		opI8Bitor(prgrm)
+		opI8Bitor(expr, fp)
 	case TYPE_I16:
-		opI16Bitor(prgrm)
+		opI16Bitor(expr, fp)
 	case TYPE_I32:
-		opI32Bitor(prgrm)
+		opI32Bitor(expr, fp)
 	case TYPE_I64:
-		opI64Bitor(prgrm)
+		opI64Bitor(expr, fp)
 	case TYPE_UI8:
-		opUI8Bitor(prgrm)
+		opUI8Bitor(expr, fp)
 	case TYPE_UI16:
-		opUI16Bitor(prgrm)
+		opUI16Bitor(expr, fp)
 	case TYPE_UI32:
-		opUI32Bitor(prgrm)
+		opUI32Bitor(expr, fp)
 	case TYPE_UI64:
-		opUI64Bitor(prgrm)
+		opUI64Bitor(expr, fp)
 	default:
 		panic(CX_INTERNAL_ERROR)
 	}
 }
 
-func opBitxor(prgrm *CXProgram) {
-	switch prgrm.GetExpr().Inputs[0].Type {
+func opBitxor(expr *CXExpression, fp int) {
+	switch expr.Inputs[0].Type {
 	case TYPE_I8:
-		opI8Bitxor(prgrm)
+		opI8Bitxor(expr, fp)
 	case TYPE_I16:
-		opI16Bitxor(prgrm)
+		opI16Bitxor(expr, fp)
 	case TYPE_I32:
-		opI32Bitxor(prgrm)
+		opI32Bitxor(expr, fp)
 	case TYPE_I64:
-		opI64Bitxor(prgrm)
+		opI64Bitxor(expr, fp)
 	case TYPE_UI8:
-		opUI8Bitxor(prgrm)
+		opUI8Bitxor(expr, fp)
 	case TYPE_UI16:
-		opUI16Bitxor(prgrm)
+		opUI16Bitxor(expr, fp)
 	case TYPE_UI32:
-		opUI32Bitxor(prgrm)
+		opUI32Bitxor(expr, fp)
 	case TYPE_UI64:
-		opUI64Bitxor(prgrm)
+		opUI64Bitxor(expr, fp)
 	default:
 		panic(CX_INTERNAL_ERROR)
 	}
 }
 
-func opMul(prgrm *CXProgram) {
-	switch prgrm.GetExpr().Inputs[0].Type {
+func opMul(expr *CXExpression, fp int) {
+	switch expr.Inputs[0].Type {
 	case TYPE_I8:
-		opI8Mul(prgrm)
+		opI8Mul(expr, fp)
 	case TYPE_I16:
-		opI16Mul(prgrm)
+		opI16Mul(expr, fp)
 	case TYPE_I32:
-		opI32Mul(prgrm)
+		opI32Mul(expr, fp)
 	case TYPE_I64:
-		opI64Mul(prgrm)
+		opI64Mul(expr, fp)
 	case TYPE_UI8:
-		opUI8Mul(prgrm)
+		opUI8Mul(expr, fp)
 	case TYPE_UI16:
-		opUI16Mul(prgrm)
+		opUI16Mul(expr, fp)
 	case TYPE_UI32:
-		opUI32Mul(prgrm)
+		opUI32Mul(expr, fp)
 	case TYPE_UI64:
-		opUI64Mul(prgrm)
+		opUI64Mul(expr, fp)
 	case TYPE_F32:
-		opF32Mul(prgrm)
+		opF32Mul(expr, fp)
 	case TYPE_F64:
-		opF64Mul(prgrm)
+		opF64Mul(expr, fp)
 	default:
 		panic(CX_INTERNAL_ERROR)
 	}
 }
 
-func opDiv(prgrm *CXProgram) {
-	switch prgrm.GetExpr().Inputs[0].Type {
+func opDiv(expr *CXExpression, fp int) {
+	switch expr.Inputs[0].Type {
 	case TYPE_I8:
-		opI8Div(prgrm)
+		opI8Div(expr, fp)
 	case TYPE_I16:
-		opI16Div(prgrm)
+		opI16Div(expr, fp)
 	case TYPE_I32:
-		opI32Div(prgrm)
+		opI32Div(expr, fp)
 	case TYPE_I64:
-		opI64Div(prgrm)
+		opI64Div(expr, fp)
 	case TYPE_UI8:
-		opUI8Div(prgrm)
+		opUI8Div(expr, fp)
 	case TYPE_UI16:
-		opUI16Div(prgrm)
+		opUI16Div(expr, fp)
 	case TYPE_UI32:
-		opUI32Div(prgrm)
+		opUI32Div(expr, fp)
 	case TYPE_UI64:
-		opUI64Div(prgrm)
+		opUI64Div(expr, fp)
 	case TYPE_F32:
-		opF32Div(prgrm)
+		opF32Div(expr, fp)
 	case TYPE_F64:
-		opF64Div(prgrm)
+		opF64Div(expr, fp)
 	default:
 		panic(CX_INTERNAL_ERROR)
 	}
 }
 
-func opMod(prgrm *CXProgram) {
-	switch prgrm.GetExpr().Inputs[0].Type {
+func opMod(expr *CXExpression, fp int) {
+	switch expr.Inputs[0].Type {
 	case TYPE_I8:
-		opI8Mod(prgrm)
+		opI8Mod(expr, fp)
 	case TYPE_I16:
-		opI16Mod(prgrm)
+		opI16Mod(expr, fp)
 	case TYPE_I32:
-		opI32Mod(prgrm)
+		opI32Mod(expr, fp)
 	case TYPE_I64:
-		opI64Mod(prgrm)
+		opI64Mod(expr, fp)
 	case TYPE_UI8:
-		opUI8Mod(prgrm)
+		opUI8Mod(expr, fp)
 	case TYPE_UI16:
-		opUI16Mod(prgrm)
+		opUI16Mod(expr, fp)
 	case TYPE_UI32:
-		opUI32Mod(prgrm)
+		opUI32Mod(expr, fp)
 	case TYPE_UI64:
-		opUI64Mod(prgrm)
+		opUI64Mod(expr, fp)
 	case TYPE_F32:
-		opF32Mod(prgrm)
+		opF32Mod(expr, fp)
 	case TYPE_F64:
-		opF64Mod(prgrm)
+		opF64Mod(expr, fp)
 	default:
 		panic(CX_INTERNAL_ERROR)
 	}
 }
 
-func opAdd(prgrm *CXProgram) {
-	switch prgrm.GetExpr().Inputs[0].Type {
+func opAdd(expr *CXExpression, fp int) {
+	switch expr.Inputs[0].Type {
 	case TYPE_I8:
-		opI8Add(prgrm)
+		opI8Add(expr, fp)
 	case TYPE_I16:
-		opI16Add(prgrm)
+		opI16Add(expr, fp)
 	case TYPE_I32:
-		opI32Add(prgrm)
+		opI32Add(expr, fp)
 	case TYPE_I64:
-		opI64Add(prgrm)
+		opI64Add(expr, fp)
 	case TYPE_UI8:
-		opUI8Add(prgrm)
+		opUI8Add(expr, fp)
 	case TYPE_UI16:
-		opUI16Add(prgrm)
+		opUI16Add(expr, fp)
 	case TYPE_UI32:
-		opUI32Add(prgrm)
+		opUI32Add(expr, fp)
 	case TYPE_UI64:
-		opUI64Add(prgrm)
+		opUI64Add(expr, fp)
 	case TYPE_F32:
-		opF32Add(prgrm)
+		opF32Add(expr, fp)
 	case TYPE_F64:
-		opF64Add(prgrm)
+		opF64Add(expr, fp)
 	default:
 		panic(CX_INTERNAL_ERROR)
 	}
 }
 
-func opSub(prgrm *CXProgram) {
-	switch prgrm.GetExpr().Inputs[0].Type {
+func opSub(expr *CXExpression, fp int) {
+	switch expr.Inputs[0].Type {
 	case TYPE_I8:
-		opI8Sub(prgrm)
+		opI8Sub(expr, fp)
 	case TYPE_I16:
-		opI16Sub(prgrm)
+		opI16Sub(expr, fp)
 	case TYPE_I32:
-		opI32Sub(prgrm)
+		opI32Sub(expr, fp)
 	case TYPE_I64:
-		opI64Sub(prgrm)
+		opI64Sub(expr, fp)
 	case TYPE_UI8:
-		opUI8Sub(prgrm)
+		opUI8Sub(expr, fp)
 	case TYPE_UI16:
-		opUI16Sub(prgrm)
+		opUI16Sub(expr, fp)
 	case TYPE_UI32:
-		opUI32Sub(prgrm)
+		opUI32Sub(expr, fp)
 	case TYPE_UI64:
-		opUI64Sub(prgrm)
+		opUI64Sub(expr, fp)
 	case TYPE_F32:
-		opF32Sub(prgrm)
+		opF32Sub(expr, fp)
 	case TYPE_F64:
-		opF64Sub(prgrm)
+		opF64Sub(expr, fp)
 	default:
 		panic(CX_INTERNAL_ERROR)
 	}
 }
 
-func opNeg(prgrm *CXProgram) {
-	switch prgrm.GetExpr().Inputs[0].Type {
+func opNeg(expr *CXExpression, fp int) {
+	switch expr.Inputs[0].Type {
 	case TYPE_I8:
-		opI8Neg(prgrm)
+		opI8Neg(expr, fp)
 	case TYPE_I16:
-		opI16Neg(prgrm)
+		opI16Neg(expr, fp)
 	case TYPE_I32:
-		opI32Neg(prgrm)
+		opI32Neg(expr, fp)
 	case TYPE_I64:
-		opI64Neg(prgrm)
+		opI64Neg(expr, fp)
 	case TYPE_F32:
-		opF32Neg(prgrm)
+		opF32Neg(expr, fp)
 	case TYPE_F64:
-		opF64Neg(prgrm)
+		opF64Neg(expr, fp)
 	default:
 		panic(CX_INTERNAL_ERROR)
 	}
 }
 
-func opBitshl(prgrm *CXProgram) {
-	switch prgrm.GetExpr().Inputs[0].Type {
+func opBitshl(expr *CXExpression, fp int) {
+	switch expr.Inputs[0].Type {
 	case TYPE_I8:
-		opI8Bitshl(prgrm)
+		opI8Bitshl(expr, fp)
 	case TYPE_I16:
-		opI16Bitshl(prgrm)
+		opI16Bitshl(expr, fp)
 	case TYPE_I32:
-		opI32Bitshl(prgrm)
+		opI32Bitshl(expr, fp)
 	case TYPE_I64:
-		opI64Bitshl(prgrm)
+		opI64Bitshl(expr, fp)
 	case TYPE_UI8:
-		opUI8Bitshl(prgrm)
+		opUI8Bitshl(expr, fp)
 	case TYPE_UI16:
-		opUI16Bitshl(prgrm)
+		opUI16Bitshl(expr, fp)
 	case TYPE_UI32:
-		opUI32Bitshl(prgrm)
+		opUI32Bitshl(expr, fp)
 	case TYPE_UI64:
-		opUI64Bitshl(prgrm)
+		opUI64Bitshl(expr, fp)
 	default:
 		panic(CX_INTERNAL_ERROR)
 	}
 }
 
-func opBitshr(prgrm *CXProgram) {
-	switch prgrm.GetExpr().Inputs[0].Type {
+func opBitshr(expr *CXExpression, fp int) {
+	switch expr.Inputs[0].Type {
 	case TYPE_I8:
-		opI8Bitshr(prgrm)
+		opI8Bitshr(expr, fp)
 	case TYPE_I16:
-		opI16Bitshr(prgrm)
+		opI16Bitshr(expr, fp)
 	case TYPE_I32:
-		opI32Bitshr(prgrm)
+		opI32Bitshr(expr, fp)
 	case TYPE_I64:
-		opI64Bitshr(prgrm)
+		opI64Bitshr(expr, fp)
 	case TYPE_UI8:
-		opUI8Bitshr(prgrm)
+		opUI8Bitshr(expr, fp)
 	case TYPE_UI16:
-		opUI16Bitshr(prgrm)
+		opUI16Bitshr(expr, fp)
 	case TYPE_UI32:
-		opUI32Bitshr(prgrm)
+		opUI32Bitshr(expr, fp)
 	case TYPE_UI64:
-		opUI64Bitshr(prgrm)
+		opUI64Bitshr(expr, fp)
 	default:
 		panic(CX_INTERNAL_ERROR)
 	}
 }
 
-func opBitclear(prgrm *CXProgram) {
-	switch prgrm.GetExpr().Inputs[0].Type {
+func opBitclear(expr *CXExpression, fp int) {
+	switch expr.Inputs[0].Type {
 	case TYPE_I8:
-		opI8Bitclear(prgrm)
+		opI8Bitclear(expr, fp)
 	case TYPE_I16:
-		opI16Bitclear(prgrm)
+		opI16Bitclear(expr, fp)
 	case TYPE_I32:
-		opI32Bitclear(prgrm)
+		opI32Bitclear(expr, fp)
 	case TYPE_I64:
-		opI64Bitclear(prgrm)
+		opI64Bitclear(expr, fp)
 	case TYPE_UI8:
-		opUI8Bitclear(prgrm)
+		opUI8Bitclear(expr, fp)
 	case TYPE_UI16:
-		opUI16Bitclear(prgrm)
+		opUI16Bitclear(expr, fp)
 	case TYPE_UI32:
-		opUI32Bitclear(prgrm)
+		opUI32Bitclear(expr, fp)
 	case TYPE_UI64:
-		opUI64Bitclear(prgrm)
+		opUI64Bitclear(expr, fp)
 	default:
 		panic(CX_INTERNAL_ERROR)
 	}
 }
 
-func opLen(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opLen(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	elt := GetAssignmentElement(inp1)
 
@@ -515,10 +512,7 @@ func opLen(prgrm *CXProgram) {
 	}
 }
 
-func opAppend(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opAppend(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 
 	eltInp1 := GetAssignmentElement(inp1)
@@ -552,10 +546,7 @@ func opAppend(prgrm *CXProgram) {
 	WriteI32(outputSlicePointer, outputSliceOffset)
 }
 
-func opResize(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opResize(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 
 	if inp1.Type != out1.Type || !GetAssignmentElement(inp1).IsSlice || !GetAssignmentElement(out1).IsSlice {
@@ -567,10 +558,7 @@ func opResize(prgrm *CXProgram) {
 	WriteI32(outputSlicePointer, outputSliceOffset)
 }
 
-func opInsert(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opInsert(expr *CXExpression, fp int) {
 	inp1, inp2, inp3, out1 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Outputs[0]
 
 	if inp1.Type != inp3.Type || inp1.Type != out1.Type || !GetAssignmentElement(inp1).IsSlice || !GetAssignmentElement(out1).IsSlice {
@@ -591,10 +579,7 @@ func opInsert(prgrm *CXProgram) {
 	}
 }
 
-func opRemove(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opRemove(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 
 	if inp1.Type != out1.Type || !GetAssignmentElement(inp1).IsSlice || !GetAssignmentElement(out1).IsSlice {
@@ -606,10 +591,7 @@ func opRemove(prgrm *CXProgram) {
 	WriteI32(outputSlicePointer, outputSliceOffset)
 }
 
-func opCopy(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opCopy(expr *CXExpression, fp int) {
 	dstInput := expr.Inputs[0]
 	srcInput := expr.Inputs[1]
 	dstOffset := GetSliceOffset(fp, dstInput)
@@ -744,10 +726,7 @@ func buildString(expr *CXExpression, fp int) []byte {
 	return res
 }
 
-func opSprintf(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opSprintf(expr *CXExpression, fp int) {
 	out1 := expr.Outputs[0]
 	out1Offset := GetFinalOffset(fp, out1)
 
@@ -755,17 +734,11 @@ func opSprintf(prgrm *CXProgram) {
 	WriteObject(out1Offset, byts)
 }
 
-func opPrintf(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opPrintf(expr *CXExpression, fp int) {
 	fmt.Print(string(buildString(expr, fp)))
 }
 
-func opRead(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opRead(expr *CXExpression, fp int) {
 	out1 := expr.Outputs[0]
 	out1Offset := GetFinalOffset(fp, out1)
 

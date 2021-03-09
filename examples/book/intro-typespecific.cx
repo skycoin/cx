@@ -2,7 +2,7 @@ package main
 
 func main () {
     str.print("type-specific function")
-    print("type-generalized function")
+    printf("type-generalized function\n") //printf does not create new line
     i32.print(i32.add(10, 10))
     i32.print(10 + 10)
 }

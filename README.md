@@ -12,25 +12,16 @@ the concept of affordances.
 ## Table of Contents
 
    * [CX Programming Language](#cx-programming-language-1)
-   * [CX Chains (CX Skycoin Blockchain)](#cx-chains-cx--skycoin-blockchain)
-   * [Compiler Development](CompilerDevelopment.md)
    * [Installation](#installation)
       * [Binary Releases](#binary-releases)  
       * [Compiling from Source](#compiling-from-source)
-         * [Installing Go](#installing-go)
-         * [Compiling CX on *nix](#compiling-cx-on-nix)
-         * [Compiling CX on Windows](#compiling-cx-on-windows)
+         * [Compiling CX on Linux](#compiling-on-linux)
+         * [Compiling CX on MacOS](#compiling-on-macos)
+         * [Compiling CX on Windows](#compiling-on-windows)
       * [Updating CX](#updating-cx)
    * [Resources and libraries](#resources-and-libraries)
-   * [Running CX](#running-cx)
-      * [Hello World](#hello-world)
-      * [Basic Options](#other-options)
-         * [Running CX Programs](#running-cx-programs)
-      * [REPL tutorial](#cx-repl)
-   * [Learning CX](#learning-cx)
 
 # CX Programming Language
-[[Back to the Table of Contents] ↑](#table-of-contents)
 
 CX is a general purpose, interpreted and compiled programming
 language, with a very strict type system and a syntax
@@ -56,10 +47,12 @@ You can find binary releases for most major systems on the [release page](https:
 If you are using a `apt` compatible system, install the dependencies with"
 
 ```
-sudo apt-get update -qq
+sudo apt-get update
 
-sudo apt-get install -y glade xvfb libxinerama-dev libxcursor-dev libxrandr-dev libgl1-mesa-dev libxi-dev libperl-dev libcairo2-dev libpango1.0-dev libglib2.0-dev libopenal-dev libxxf86vm-dev --no-install-recommends
+sudo apt-get install -y glade xvfb libxinerama-dev libxcursor-dev libxrandr-dev libgl1-mesa-dev libxi-dev libperl-dev libcairo2-dev libpango1.0-dev libglib2.0-dev libopenal-dev libxxf86vm-dev make
 ```
+
+If you have not setup Golang on your machine, follow this [guide](https://www.tecmint.com/install-go-in-ubuntu/) to install and setup Go. 
 
 Download CX's repository using Go:
 
@@ -75,22 +68,25 @@ go get -u modernc.org/goyacc
 go get golang.org/x/mobile/gl 
 ```
 
-Navigate to CX's repository via:
-
-```
-cd $GOPATH/src/github.com/skycoin/cx
-```
+Navigate to CX's repository.
 
 Build CX's binary and install by running:
 
 ```
+make build
 make install
 ```
 
-`make install` builds a CX binary and installs it into `$HOME/cx/bin`. Add the CX binary path to your operating system's `$PATH`. For example, in Linux:
+Add the CX binary path to your operating system's `$PATH`. For example, in Linux:
 
 ```
 export PATH=$PATH:$HOME/cx/bin
+```
+
+Afterwards, add Golang binaries to your `$PATH`. For example, in Linux:
+
+```
+export PATH=$PATH:$HOME/go/bin
 ```
 
 You should test your installation by running:
@@ -99,13 +95,15 @@ You should test your installation by running:
 make test
 ```
 
-If you intend to develop games with CX, then run:
-
-```
-make test-full
-```
-
 ### Compiling on MacOS
+
+If you have not setup Golang on your machine, follow this [guide](https://www.digitalocean.com/community/tutorials/how-to-install-go-and-set-up-a-local-programming-environment-on-macos) to install and setup Go. 
+
+If you do not have `git` installed, do so with:
+
+```
+brew install git
+```
 
 Download CX's repository using Go:
 
@@ -113,19 +111,16 @@ Download CX's repository using Go:
 go get github.com/skycoin/cx
 ```
 
-Navigate to CX's repository via:
-
-```
-cd $GOPATH/src/github.com/skycoin/cx
-```
+Navigate to CX's repository.
 
 Build CX's binary and install by running:
 
 ```
+make build
 make install
 ```
 
-`make install` builds a CX binary and installs it into `$HOME/cx/bin`. Add the CX binary path to your operating system's `$PATH`. For example, in Linux:
+Add the CX binary path to your operating system's `$PATH`. For example, in Linux:
 
 ```
 export PATH=$PATH:$HOME/cx/bin
@@ -137,22 +132,22 @@ You should test your installation by running:
 make test
 ```
 
-If you intend to develop games with CX, then run:
-
-```
-make test-full
-```
-
-### Compiling CX on Windows
+### Compiling on Windows
 
 Compiling CX on Windows requires a recent version of Git to be installed. 
 
-Before compiling CX, install dependencies with `pacman`:
+Pacman is a utility which manages software packages.   
+
+To install pacman, download [Mysys2](https://www.msys2.org) and run the installer.
+
+When the installation is complete, click ` Run MSYS2 now `.     
+
+If MSYS2 has already been installed, run it through the start menu.
+
+You can run a full system upgrade and install required dependencies with: 
 
 ```
-pacman -Sy
-
-pacman -S mingw-w64-x86_64-openal
+pacman -Syu git mingw-w64-x86_64-openal base-devel mingw-w64-x86_64-toolchain
 
 if [ ! -a /mingw64/lib/libOpenAL32.a ]; then ln -s /mingw64/lib/libopenal.a /mingw64/lib/libOpenAL32.a; fi
 

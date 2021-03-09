@@ -1,7 +1,7 @@
 export GO111MODULE=on
 
 .DEFAULT_GOAL := help
-.PHONY: build-parser build test
+.PHONY: build-parser build test build-core
 .PHONY: install
 .PHONY: dep
 
@@ -65,19 +65,23 @@ ifeq ($(UNAME_S), Linux)
 endif
 
 build:  ## Build CX from sources
-	go build $(GO_OPTS) -tags="base" -o ./bin/cx github.com/skycoin/cx/cmd/cx
+	$(GO_OPTS) go build -tags="base cxfx" -o ./bin/cx github.com/skycoin/cx/cmd/cx
 	chmod +x ./bin/cx
+
+build-core: ## Build CX with CXFX support. Done via satisfying 'cxfx' build tag.
+	$(GO_OPTS) go build -tags="base" -o ./bin/cx github.com/skycoin/cx/cmd/cx
+	chmod +x ./bin/cx
+
+build-parser: ## Generate lexer and parser for CX grammar
+	./bin/goyacc -o cxgo/cxgo0/cxgo0.go cxgo/cxgo0/cxgo0.y
+	./bin/goyacc -o cxgo/parser/cxgo.go cxgo/parser/cxgo.y
 
 clean: ## Removes binaries.
 	rm -r ./bin/cx
 
 token-fuzzer:
 	go build $(GO_OPTS) -o ./bin/cx-token-fuzzer $(PWD)/development/token-fuzzer/main.go
-	chmod +x ${GOPATH}/bin/cx-token-fuzzer
-
-build-parser: ## Generate lexer and parser for CX grammar
-	./bin/goyacc -o cxgo/cxgo0/cxgo0.go cxgo/cxgo0/cxgo0.y
-	./bin/goyacc -o cxgo/parser/cxgo.go cxgo/parser/cxgo.y
+	chmod +x ./bin/cx-token-fuzzer
 
 install: configure-workspace ## Install CX from sources. Build dependencies
 	@echo 'NOTE:\tWe recommend you to test your CX installation by running "cx ./tests"'
@@ -102,9 +106,9 @@ format: ## Formats the code. Must have goimports installed (use make install-lin
 	goimports -w -local github.com/skycoin/cx ./cxgo
 
 dep: ## Update go vendor
-	go mod $(GO_OPTS) vendor
-	go mod $(GO_OPTS) verify
-	go mod $(GO_OPTS) tidy
+	go mod vendor
+	go mod verify
+	go mod tidy
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
