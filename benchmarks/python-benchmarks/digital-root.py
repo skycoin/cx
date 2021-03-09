@@ -11,7 +11,7 @@ def digital_root (n):
 def test():
     start = time.time()
     persistance, root = digital_root(79563)
-    print("%i has additive persistance %i and digital root %i." % (79563, persistance, root))
+    print(f' 79563 has additive persistance {persistance} and digital root {root}.')
     end = time.time()
     print (end - start)
 
