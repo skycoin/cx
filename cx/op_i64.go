@@ -9,55 +9,55 @@ import (
 // The built-in str function returns the base 10 string representation of operand 1.
 func opI64ToStr(expr *CXExpression, fp int) {
 	outB0 := FromStr(strconv.FormatInt(ReadI64(fp, expr.Inputs[0]), 10))
-	WriteObject(GetOffset_i64(fp, expr.Outputs[0]), outB0)
+	WriteObject(GetOffset_str(fp, expr.Outputs[0]), outB0)
 }
 
 // The built-in i8 function returns operand 1 casted from type i64 to type i8.
 func opI64ToI8(expr *CXExpression, fp int) {
 	outB0 := int8(ReadI64(fp, expr.Inputs[0]))
-	WriteI8(GetOffset_i64(fp, expr.Outputs[0]), outB0)
+	WriteI8(GetOffset_i8(fp, expr.Outputs[0]), outB0)
 }
 
 // The built-in i16 function returns operand 1 casted from type i64 to type i16.
 func opI64ToI16(expr *CXExpression, fp int) {
 	outB0 := int16(ReadI64(fp, expr.Inputs[0]))
-	WriteI16(GetOffset_i64(fp, expr.Outputs[0]), outB0)
+	WriteI16(GetOffset_i16(fp, expr.Outputs[0]), outB0)
 }
 
 // The built-in i32 function returns operand 1 casted from type i64 to type i32.
 func opI64ToI32(expr *CXExpression, fp int) {
 	outB0 := int32(ReadI64(fp, expr.Inputs[0]))
-	WriteI32(GetOffset_i64(fp, expr.Outputs[0]), outB0)
+	WriteI32(GetOffset_i32(fp, expr.Outputs[0]), outB0)
 }
 
 // The built-in ui8 function returns operand 1 casted from type i64 to type ui8.
 func opI64ToUI8(expr *CXExpression, fp int) {
 	outB0 := uint8(ReadI64(fp, expr.Inputs[0]))
-	WriteUI8(GetOffset_i64(fp, expr.Outputs[0]), outB0)
+	WriteUI8(GetOffset_ui8(fp, expr.Outputs[0]), outB0)
 }
 
 // The built-in ui16 function returns the operand 1 casted from type i64 to type ui16.
 func opI64ToUI16(expr *CXExpression, fp int) {
 	outB0 := uint16(ReadI64(fp, expr.Inputs[0]))
-	WriteUI16(GetOffset_i64(fp, expr.Outputs[0]), outB0)
+	WriteUI16(GetOffset_ui16(fp, expr.Outputs[0]), outB0)
 }
 
 // The built-in ui32 function returns the operand 1 casted from type i64 to type ui32.
 func opI64ToUI32(expr *CXExpression, fp int) {
 	outB0 := uint32(ReadI64(fp, expr.Inputs[0]))
-	WriteUI32(GetOffset_i64(fp, expr.Outputs[0]), outB0)
+	WriteUI32(GetOffset_ui32(fp, expr.Outputs[0]), outB0)
 }
 
 // The built-in ui64 function returns the operand 1 casted from type i64 to type ui64.
 func opI64ToUI64(expr *CXExpression, fp int) {
 	outB0 := uint64(ReadI64(fp, expr.Inputs[0]))
-	WriteUI64(GetOffset_i64(fp, expr.Outputs[0]), outB0)
+	WriteUI64(GetOffset_ui64(fp, expr.Outputs[0]), outB0)
 }
 
 // The built-in f32 function returns operand 1 casted from type i64 to type f32.
 func opI64ToF32(expr *CXExpression, fp int) {
 	outB0 := float32(ReadI64(fp, expr.Inputs[0]))
-	WriteF32(GetOffset_i64(fp, expr.Outputs[0]), outB0)
+	WriteF32(GetOffset_i32(fp, expr.Outputs[0]), outB0)
 }
 
 // The built-in f64 function returns operand 1 casted from type i64 to type f64.
@@ -111,40 +111,40 @@ func opI64Abs(expr *CXExpression, fp int) {
 
 // The built-in gt function returns true if operand 1 is greater than operand 2.
 func opI64Gt(expr *CXExpression, fp int) {
-	outB0 := ReadI64(fp, expr.Inputs[0]) > ReadI64(fp, expr.Inputs[1])
-	WriteBool(GetOffset_i64(fp, expr.Outputs[0]), outB0)
+	var outB0 bool = (ReadI64(fp, expr.Inputs[0]) > ReadI64(fp, expr.Inputs[1]))
+	WriteBool(GetOffset_bool(fp, expr.Outputs[0]), outB0)
 }
 
 // The built-in gteq function returns true if operand 1 is greater than or
 // equal to operand 2.
 func opI64Gteq(expr *CXExpression, fp int) {
-	outB0 := ReadI64(fp, expr.Inputs[0]) >= ReadI64(fp, expr.Inputs[1])
-	WriteBool(GetOffset_i64(fp, expr.Outputs[0]), outB0)
+	var outB0 bool = (ReadI64(fp, expr.Inputs[0]) >= ReadI64(fp, expr.Inputs[1]))
+	WriteBool(GetOffset_bool(fp, expr.Outputs[0]), outB0)
 }
 
 // The built-in lt function returns true if operand 1 is less than oeprand 2.
 func opI64Lt(expr *CXExpression, fp int) {
-	outB0 := ReadI64(fp, expr.Inputs[0]) < ReadI64(fp, expr.Inputs[1])
-	WriteBool(GetOffset_i64(fp, expr.Outputs[0]), outB0)
+	var outB0 bool = (ReadI64(fp, expr.Inputs[0]) < ReadI64(fp, expr.Inputs[1]))
+	WriteBool(GetOffset_bool(fp, expr.Outputs[0]), outB0)
 }
 
 // The built-in lteq function returns true if operand 1 is less than or
 // equal to operand 2.
 func opI64Lteq(expr *CXExpression, fp int) {
-	outB0 := ReadI64(fp, expr.Inputs[0]) <= ReadI64(fp, expr.Inputs[1])
-	WriteBool(GetOffset_i64(fp, expr.Outputs[0]), outB0)
+	var outB0 bool = (ReadI64(fp, expr.Inputs[0]) <= ReadI64(fp, expr.Inputs[1]))
+	WriteBool(GetOffset_bool(fp, expr.Outputs[0]), outB0)
 }
 
 // The built-in eq function returns true if operand 1 is equal to operand 2.
 func opI64Eq(expr *CXExpression, fp int) {
-	outB0 := ReadI64(fp, expr.Inputs[0]) == ReadI64(fp, expr.Inputs[1])
-	WriteBool(GetOffset_i64(fp, expr.Outputs[0]), outB0)
+	var outB0 bool = (ReadI64(fp, expr.Inputs[0]) == ReadI64(fp, expr.Inputs[1]))
+	WriteBool(GetOffset_bool(fp, expr.Outputs[0]), outB0)
 }
 
 // The built-in uneq function returns true if operand 1 is different from operand 2.
 func opI64Uneq(expr *CXExpression, fp int) {
-	outB0 := ReadI64(fp, expr.Inputs[0]) != ReadI64(fp, expr.Inputs[1])
-	WriteBool(GetOffset_i64(fp, expr.Outputs[0]), outB0)
+	var outB0 bool = (ReadI64(fp, expr.Inputs[0]) != ReadI64(fp, expr.Inputs[1]))
+	WriteBool(GetOffset_bool(fp, expr.Outputs[0]), outB0)
 }
 
 // The built-in mod function returns the remainder of operand 1 divided by operand 2.
