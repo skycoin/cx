@@ -13,7 +13,7 @@ func opStrToI8(expr *CXExpression, fp int) {
 	if err != nil {
 		panic(CX_RUNTIME_ERROR)
 	}
-	WriteI8(GetOffset_str(fp, expr.Outputs[0]), int8(outV0))
+	WriteI8(GetOffset_i8(fp, expr.Outputs[0]), int8(outV0))
 }
 
 func opStrToI16(expr *CXExpression, fp int) {
@@ -21,7 +21,7 @@ func opStrToI16(expr *CXExpression, fp int) {
 	if err != nil {
 		panic(CX_RUNTIME_ERROR)
 	}
-	WriteI16(GetOffset_str(fp, expr.Outputs[0]), int16(outV0))
+	WriteI16(GetOffset_i16(fp, expr.Outputs[0]), int16(outV0))
 }
 
 func opStrToI32(expr *CXExpression, fp int) {
@@ -29,7 +29,7 @@ func opStrToI32(expr *CXExpression, fp int) {
 	if err != nil {
 		panic(CX_RUNTIME_ERROR)
 	}
-	WriteI32(GetOffset_str(fp, expr.Outputs[0]), int32(outV0))
+	WriteI32(GetOffset_i32(fp, expr.Outputs[0]), int32(outV0))
 }
 
 func opStrToI64(expr *CXExpression, fp int) {
@@ -37,7 +37,7 @@ func opStrToI64(expr *CXExpression, fp int) {
 	if err != nil {
 		panic(CX_RUNTIME_ERROR)
 	}
-	WriteI64(GetOffset_str(fp, expr.Outputs[0]), outV0)
+	WriteI64(GetOffset_i64(fp, expr.Outputs[0]), outV0)
 }
 
 func opStrToUI8(expr *CXExpression, fp int) {
@@ -45,7 +45,7 @@ func opStrToUI8(expr *CXExpression, fp int) {
 	if err != nil {
 		panic(CX_RUNTIME_ERROR)
 	}
-	WriteUI8(GetOffset_str(fp, expr.Outputs[0]), uint8(outV0))
+	WriteUI8(GetOffset_ui8(fp, expr.Outputs[0]), uint8(outV0))
 }
 
 func opStrToUI16(expr *CXExpression, fp int) {
@@ -53,7 +53,7 @@ func opStrToUI16(expr *CXExpression, fp int) {
 	if err != nil {
 		panic(CX_RUNTIME_ERROR)
 	}
-	WriteUI16(GetOffset_str(fp, expr.Outputs[0]), uint16(outV0))
+	WriteUI16(GetOffset_ui16(fp, expr.Outputs[0]), uint16(outV0))
 }
 
 func opStrToUI32(expr *CXExpression, fp int) {
@@ -61,7 +61,7 @@ func opStrToUI32(expr *CXExpression, fp int) {
 	if err != nil {
 		panic(CX_RUNTIME_ERROR)
 	}
-	WriteUI32(GetOffset_str(fp, expr.Outputs[0]), uint32(outV0))
+	WriteUI32(GetOffset_ui32(fp, expr.Outputs[0]), uint32(outV0))
 }
 
 func opStrToUI64(expr *CXExpression, fp int) {
@@ -69,7 +69,7 @@ func opStrToUI64(expr *CXExpression, fp int) {
 	if err != nil {
 		panic(CX_RUNTIME_ERROR)
 	}
-	WriteUI64(GetOffset_str(fp, expr.Outputs[0]), outV0)
+	WriteUI64(GetOffset_ui64(fp, expr.Outputs[0]), outV0)
 }
 
 func opStrToF32(expr *CXExpression, fp int) {
@@ -77,7 +77,7 @@ func opStrToF32(expr *CXExpression, fp int) {
 	if err != nil {
 		panic(CX_RUNTIME_ERROR)
 	}
-	WriteF32(GetOffset_str(fp, expr.Outputs[0]), float32(outV0))
+	WriteF32(GetOffset_f32(fp, expr.Outputs[0]), float32(outV0))
 }
 
 func opStrToF64(expr *CXExpression, fp int) {
@@ -85,7 +85,7 @@ func opStrToF64(expr *CXExpression, fp int) {
 	if err != nil {
 		panic(CX_RUNTIME_ERROR)
 	}
-	WriteF64(GetOffset_str(fp, expr.Outputs[0]), outV0)
+	WriteF64(GetOffset_f64(fp, expr.Outputs[0]), outV0)
 }
 
 func opStrPrint(expr *CXExpression, fp int) {
@@ -94,33 +94,33 @@ func opStrPrint(expr *CXExpression, fp int) {
 }
 
 func opStrEq(expr *CXExpression, fp int) {
-	outB0 := ReadStr(fp, expr.Inputs[0]) == ReadStr(fp, expr.Inputs[1])
-	WriteBool(GetOffset_str(fp, expr.Outputs[0]), outB0)
+	var outB0 bool = (ReadStr(fp, expr.Inputs[0]) == ReadStr(fp, expr.Inputs[1]))
+	WriteBool(GetOffset_bool(fp, expr.Outputs[0]), outB0)
 }
 
 func opStrUneq(expr *CXExpression, fp int) {
-	outB0 := ReadStr(fp, expr.Inputs[0]) != ReadStr(fp, expr.Inputs[1])
-	WriteBool(GetOffset_str(fp, expr.Outputs[0]), outB0)
+	var outB0 bool = (ReadStr(fp, expr.Inputs[0]) != ReadStr(fp, expr.Inputs[1]))
+	WriteBool(GetOffset_bool(fp, expr.Outputs[0]), outB0)
 }
 
 func opStrLt(expr *CXExpression, fp int) {
-	outB0 := ReadStr(fp, expr.Inputs[0]) < ReadStr(fp, expr.Inputs[1])
-	WriteBool(GetOffset_str(fp, expr.Outputs[0]), outB0)
+	var outB0 bool = (ReadStr(fp, expr.Inputs[0]) < ReadStr(fp, expr.Inputs[1]))
+	WriteBool(GetOffset_bool(fp, expr.Outputs[0]), outB0)
 }
 
 func opStrLteq(expr *CXExpression, fp int) {
-	outB0 := ReadStr(fp, expr.Inputs[0]) <= ReadStr(fp, expr.Inputs[1])
-	WriteBool(GetOffset_str(fp, expr.Outputs[0]), outB0)
+	var outB0 bool = (ReadStr(fp, expr.Inputs[0]) <= ReadStr(fp, expr.Inputs[1]))
+	WriteBool(GetOffset_bool(fp, expr.Outputs[0]), outB0)
 }
 
 func opStrGt(expr *CXExpression, fp int) {
-	outB0 := ReadStr(fp, expr.Inputs[0]) >= ReadStr(fp, expr.Inputs[1])
-	WriteBool(GetOffset_str(fp, expr.Outputs[0]), outB0)
+	var outB0 bool = (ReadStr(fp, expr.Inputs[0]) >= ReadStr(fp, expr.Inputs[1]))
+	WriteBool(GetOffset_bool(fp, expr.Outputs[0]), outB0)
 }
 
 func opStrGteq(expr *CXExpression, fp int) {
-	outB0 := ReadStr(fp, expr.Inputs[0]) >= ReadStr(fp, expr.Inputs[1])
-	WriteBool(GetOffset_str(fp, expr.Outputs[0]), outB0)
+	var outB0 bool = (ReadStr(fp, expr.Inputs[0]) >= ReadStr(fp, expr.Inputs[1]))
+	WriteBool(GetOffset_bool(fp, expr.Outputs[0]), outB0)
 }
 
 // WriteString writes the string `str` on memory, starting at byte number `fp`.
