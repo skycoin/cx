@@ -1,0 +1,90 @@
+package main
+
+
+ 
+
+
+func main(){
+
+
+var a i32  = 10
+
+var b i32  = 20
+
+
+    var c i32
+
+
+    var c32Ptr *i32 
+
+
+    var a32Ptr *i32 
+
+    *a32Ptr  = a
+
+
+    str.print("*a32Ptr")
+
+     i32.print(*a32Ptr)
+
+    var b32Ptr *i32 
+
+    *b32Ptr  = b
+
+
+     str.print("*b32Ptr")
+ 
+     i32.print(*b32Ptr)
+
+
+
+    str.print("*a32Ptr")
+
+    i32.print(*a32Ptr)
+
+
+    swap(a32Ptr,b32Ptr)
+
+    str.print("*a32Ptr")
+
+     i32.print(*a32Ptr)
+
+    str.print("*b32Ptr")
+
+    i32.print(*b32Ptr)
+
+
+
+     str.print("C")
+
+    i32.print(c)
+
+  
+   str.print("ptr")
+
+    c32Ptr = assign(c)
+
+ i32.print(*c32Ptr)
+}
+
+
+
+
+
+
+func assign(c i32)(ptr *i32){
+
+
+    c = 100
+	ptr = &c
+}
+
+func swap(a32Ptr *i32,  b32Ptr *i32){
+
+    var c i32
+    
+    c = *a32Ptr
+    *a32Ptr=*b32Ptr
+    *b32Ptr =c
+
+}
