@@ -8,119 +8,114 @@ import (
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-func opStrToI8(expr *CXExpression, fp int) {
-	outV0, err := strconv.ParseInt(ReadStr(fp, expr.Inputs[0]), 10, 8)
+func opStrToI8(inputs []CXValue, outputs []CXValue) {
+	outV0, err := strconv.ParseInt(inputs[0].Get_str(), 10, 8)
 	if err != nil {
 		panic(CX_RUNTIME_ERROR)
 	}
-	WriteI8(GetOffset_i8(fp, expr.Outputs[0]), int8(outV0))
+    outputs[0].Set_i8(int8(outV0))
 }
 
-func opStrToI16(expr *CXExpression, fp int) {
-	outV0, err := strconv.ParseInt(ReadStr(fp, expr.Inputs[0]), 10, 16)
+func opStrToI16(inputs []CXValue, outputs []CXValue) {
+	outV0, err := strconv.ParseInt(inputs[0].Get_str(), 10, 16)
 	if err != nil {
 		panic(CX_RUNTIME_ERROR)
 	}
-	WriteI16(GetOffset_i16(fp, expr.Outputs[0]), int16(outV0))
+    outputs[0].Set_i16(int16(outV0))
 }
 
-func opStrToI32(expr *CXExpression, fp int) {
-	outV0, err := strconv.ParseInt(ReadStr(fp, expr.Inputs[0]), 10, 32)
+func opStrToI32(inputs []CXValue, outputs []CXValue) {
+	outV0, err := strconv.ParseInt(inputs[0].Get_str(), 10, 32)
 	if err != nil {
 		panic(CX_RUNTIME_ERROR)
 	}
-	WriteI32(GetOffset_i32(fp, expr.Outputs[0]), int32(outV0))
+    outputs[0].Set_i32(int32(outV0))
 }
 
-func opStrToI64(expr *CXExpression, fp int) {
-	outV0, err := strconv.ParseInt(ReadStr(fp, expr.Inputs[0]), 10, 64)
+func opStrToI64(inputs []CXValue, outputs []CXValue) {
+	outV0, err := strconv.ParseInt(inputs[0].Get_str(), 10, 64)
 	if err != nil {
 		panic(CX_RUNTIME_ERROR)
 	}
-	WriteI64(GetOffset_i64(fp, expr.Outputs[0]), outV0)
+    outputs[0].Set_i64(int64(outV0))
 }
 
-func opStrToUI8(expr *CXExpression, fp int) {
-	outV0, err := strconv.ParseUint(ReadStr(fp, expr.Inputs[0]), 10, 8)
+func opStrToUI8(inputs []CXValue, outputs []CXValue) {
+	outV0, err := strconv.ParseUint(inputs[0].Get_str(), 10, 8)
 	if err != nil {
 		panic(CX_RUNTIME_ERROR)
 	}
-	WriteUI8(GetOffset_ui8(fp, expr.Outputs[0]), uint8(outV0))
+    outputs[0].Set_ui8(uint8(outV0))
 }
 
-func opStrToUI16(expr *CXExpression, fp int) {
-	outV0, err := strconv.ParseUint(ReadStr(fp, expr.Inputs[0]), 10, 16)
+func opStrToUI16(inputs []CXValue, outputs []CXValue) {
+	outV0, err := strconv.ParseUint(inputs[0].Get_str(), 10, 16)
 	if err != nil {
 		panic(CX_RUNTIME_ERROR)
 	}
-	WriteUI16(GetOffset_ui16(fp, expr.Outputs[0]), uint16(outV0))
+    outputs[0].Set_ui16(uint16(outV0))
 }
 
-func opStrToUI32(expr *CXExpression, fp int) {
-	outV0, err := strconv.ParseUint(ReadStr(fp, expr.Inputs[0]), 10, 32)
+func opStrToUI32(inputs []CXValue, outputs []CXValue) {
+	outV0, err := strconv.ParseUint(inputs[0].Get_str(), 10, 32)
 	if err != nil {
 		panic(CX_RUNTIME_ERROR)
 	}
-	WriteUI32(GetOffset_ui32(fp, expr.Outputs[0]), uint32(outV0))
+    outputs[0].Set_ui32(uint32(outV0))
 }
 
-func opStrToUI64(expr *CXExpression, fp int) {
-	outV0, err := strconv.ParseUint(ReadStr(fp, expr.Inputs[0]), 10, 64)
+func opStrToUI64(inputs []CXValue, outputs []CXValue) {
+	outV0, err := strconv.ParseUint(inputs[0].Get_str(), 10, 64)
 	if err != nil {
 		panic(CX_RUNTIME_ERROR)
 	}
-	WriteUI64(GetOffset_ui64(fp, expr.Outputs[0]), outV0)
+    outputs[0].Set_ui64(uint64(outV0))
 }
 
-func opStrToF32(expr *CXExpression, fp int) {
-	outV0, err := strconv.ParseFloat(ReadStr(fp, expr.Inputs[0]), 32)
+func opStrToF32(inputs []CXValue, outputs []CXValue) {
+	outV0, err := strconv.ParseFloat(inputs[0].Get_str(), 32)
 	if err != nil {
 		panic(CX_RUNTIME_ERROR)
 	}
-	WriteF32(GetOffset_f32(fp, expr.Outputs[0]), float32(outV0))
+    outputs[0].Set_f32(float32(outV0))
 }
 
-func opStrToF64(expr *CXExpression, fp int) {
-	outV0, err := strconv.ParseFloat(ReadStr(fp, expr.Inputs[0]), 64)
+func opStrToF64(inputs []CXValue, outputs []CXValue) {
+	outV0, err := strconv.ParseFloat(inputs[0].Get_str(), 64)
 	if err != nil {
 		panic(CX_RUNTIME_ERROR)
 	}
-	WriteF64(GetOffset_f64(fp, expr.Outputs[0]), outV0)
+    outputs[0].Set_f64(float64(outV0))
 }
 
-func opStrPrint(expr *CXExpression, fp int) {
-	inp1 := expr.Inputs[0]
-	fmt.Println(ReadStr(fp, inp1))
+func opStrEq(inputs []CXValue, outputs []CXValue) {
+	outV0 := inputs[0].Get_str() == inputs[1].Get_str()
+	outputs[0].Set_bool(outV0)
 }
 
-func opStrEq(expr *CXExpression, fp int) {
-	var outB0 bool = (ReadStr(fp, expr.Inputs[0]) == ReadStr(fp, expr.Inputs[1]))
-	WriteBool(GetOffset_bool(fp, expr.Outputs[0]), outB0)
+func opStrUneq(inputs []CXValue, outputs []CXValue) {
+	outV0 := inputs[0].Get_str() != inputs[1].Get_str()
+	outputs[0].Set_bool(outV0)
 }
 
-func opStrUneq(expr *CXExpression, fp int) {
-	var outB0 bool = (ReadStr(fp, expr.Inputs[0]) != ReadStr(fp, expr.Inputs[1]))
-	WriteBool(GetOffset_bool(fp, expr.Outputs[0]), outB0)
+func opStrLt(inputs []CXValue, outputs []CXValue) {
+	outV0 := inputs[0].Get_str() < inputs[1].Get_str()
+	outputs[0].Set_bool(outV0)
 }
 
-func opStrLt(expr *CXExpression, fp int) {
-	var outB0 bool = (ReadStr(fp, expr.Inputs[0]) < ReadStr(fp, expr.Inputs[1]))
-	WriteBool(GetOffset_bool(fp, expr.Outputs[0]), outB0)
+func opStrLteq(inputs []CXValue, outputs []CXValue) {
+	outV0 := inputs[0].Get_str() <= inputs[1].Get_str()
+	outputs[0].Set_bool(outV0)
 }
 
-func opStrLteq(expr *CXExpression, fp int) {
-	var outB0 bool = (ReadStr(fp, expr.Inputs[0]) <= ReadStr(fp, expr.Inputs[1]))
-	WriteBool(GetOffset_bool(fp, expr.Outputs[0]), outB0)
+func opStrGt(inputs []CXValue, outputs []CXValue) {
+	outV0 := inputs[0].Get_str() >= inputs[1].Get_str()
+	outputs[0].Set_bool(outV0)
 }
 
-func opStrGt(expr *CXExpression, fp int) {
-	var outB0 bool = (ReadStr(fp, expr.Inputs[0]) >= ReadStr(fp, expr.Inputs[1]))
-	WriteBool(GetOffset_bool(fp, expr.Outputs[0]), outB0)
-}
-
-func opStrGteq(expr *CXExpression, fp int) {
-	var outB0 bool = (ReadStr(fp, expr.Inputs[0]) >= ReadStr(fp, expr.Inputs[1]))
-	WriteBool(GetOffset_bool(fp, expr.Outputs[0]), outB0)
+func opStrGteq(inputs []CXValue, outputs []CXValue) {
+	outV0 := inputs[0].Get_str() >= inputs[1].Get_str()
+	outputs[0].Set_bool(outV0)
 }
 
 // WriteString writes the string `str` on memory, starting at byte number `fp`.
@@ -136,6 +131,10 @@ func WriteString(fp int, str string, out *CXArgument) {
 
 	WriteMemory(heapOffset, obj)
 	WriteI32(GetOffset_str(fp, out), int32(heapOffset))
+}
+
+func opStrPrint(inputs []CXValue, outputs []CXValue) {
+	fmt.Println(inputs[0].Get_str())
 }
 
 func opStrConcat(expr *CXExpression, fp int) {

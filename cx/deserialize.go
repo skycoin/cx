@@ -20,6 +20,10 @@ func DeserializeBool(b []byte) bool {
 	}
 }
 
+func Deserialize_bool(b []byte) bool {
+	return b[0] != 0
+}
+
 func Deserialize_i8(b []byte) int8 {
 	return int8(b[0])
 }

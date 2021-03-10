@@ -10,471 +10,472 @@ import (
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-func opLt(expr *CXExpression, fp int) {
-	switch expr.Inputs[0].Type {
+func opLt(inputs []CXValue, outputs []CXValue) {
+	switch inputs[0].Type {
 	case TYPE_STR:
-		opStrLt(expr, fp)
+		opStrLt(inputs, outputs)
 	case TYPE_I8:
-		opI8Lt(expr, fp)
+		opI8Lt(inputs, outputs)
 	case TYPE_I16:
-		opI16Lt(expr, fp)
+		opI16Lt(inputs, outputs)
 	case TYPE_I32:
-		opI32Lt(expr, fp)
+		opI32Lt(inputs, outputs)
 	case TYPE_I64:
-		opI64Lt(expr, fp)
+		opI64Lt(inputs, outputs)
 	case TYPE_UI8:
-		opUI8Lt(expr, fp)
+		opUI8Lt(inputs, outputs)
 	case TYPE_UI16:
-		opUI16Lt(expr, fp)
+		opUI16Lt(inputs, outputs)
 	case TYPE_UI32:
-		opUI32Lt(expr, fp)
+		opUI32Lt(inputs, outputs)
 	case TYPE_UI64:
-		opUI64Lt(expr, fp)
+		opUI64Lt(inputs, outputs)
 	case TYPE_F32:
-		opF32Lt(expr, fp)
+		opF32Lt(inputs, outputs)
 	case TYPE_F64:
-		opF64Lt(expr, fp)
+		opF64Lt(inputs, outputs)
 	default:
 		panic(CX_INTERNAL_ERROR)
 	}
 }
 
-func opGt(expr *CXExpression, fp int) {
-	switch expr.Inputs[0].Type {
+func opGt(inputs []CXValue, outputs []CXValue) {
+	switch inputs[0].Type {
 	case TYPE_STR:
-		opStrGt(expr, fp)
+		opStrGt(inputs, outputs)
 	case TYPE_I8:
-		opI8Gt(expr, fp)
+		opI8Gt(inputs, outputs)
 	case TYPE_I16:
-		opI16Gt(expr, fp)
+		opI16Gt(inputs, outputs)
 	case TYPE_I32:
-		opI32Gt(expr, fp)
+		opI32Gt(inputs, outputs)
 	case TYPE_I64:
-		opI64Gt(expr, fp)
+		opI64Gt(inputs, outputs)
 	case TYPE_UI8:
-		opUI8Gt(expr, fp)
+		opUI8Gt(inputs, outputs)
 	case TYPE_UI16:
-		opUI16Gt(expr, fp)
+		opUI16Gt(inputs, outputs)
 	case TYPE_UI32:
-		opUI32Gt(expr, fp)
+		opUI32Gt(inputs, outputs)
 	case TYPE_UI64:
-		opUI64Gt(expr, fp)
+		opUI64Gt(inputs, outputs)
 	case TYPE_F32:
-		opF32Gt(expr, fp)
+		opF32Gt(inputs, outputs)
 	case TYPE_F64:
-		opF64Gt(expr, fp)
+		opF64Gt(inputs, outputs)
 	default:
 		panic(CX_INTERNAL_ERROR)
 	}
 }
 
-func opLteq(expr *CXExpression, fp int) {
-	switch expr.Inputs[0].Type {
+func opLteq(inputs []CXValue, outputs []CXValue) {
+	switch inputs[0].Type {
 	case TYPE_STR:
-		opStrLteq(expr, fp)
+		opStrLteq(inputs, outputs)
 	case TYPE_I8:
-		opI8Lteq(expr, fp)
+		opI8Lteq(inputs, outputs)
 	case TYPE_I16:
-		opI16Lteq(expr, fp)
+		opI16Lteq(inputs, outputs)
 	case TYPE_I32:
-		opI32Lteq(expr, fp)
+		opI32Lteq(inputs, outputs)
 	case TYPE_I64:
-		opI64Lteq(expr, fp)
+		opI64Lteq(inputs, outputs)
 	case TYPE_UI8:
-		opUI8Lteq(expr, fp)
+		opUI8Lteq(inputs, outputs)
 	case TYPE_UI16:
-		opUI16Lteq(expr, fp)
+		opUI16Lteq(inputs, outputs)
 	case TYPE_UI32:
-		opUI32Lteq(expr, fp)
+		opUI32Lteq(inputs, outputs)
 	case TYPE_UI64:
-		opUI64Lteq(expr, fp)
+		opUI64Lteq(inputs, outputs)
 	case TYPE_F32:
-		opF32Lteq(expr, fp)
+		opF32Lteq(inputs, outputs)
 	case TYPE_F64:
-		opF64Lteq(expr, fp)
+		opF64Lteq(inputs, outputs)
 	default:
 		panic(CX_INTERNAL_ERROR)
 	}
 }
 
-func opGteq(expr *CXExpression, fp int) {
-	switch expr.Inputs[0].Type {
+func opGteq(inputs []CXValue, outputs []CXValue) {
+	switch inputs[0].Type {
 	case TYPE_STR:
-		opStrGteq(expr, fp)
+		opStrGteq(inputs, outputs)
 	case TYPE_I8:
-		opI8Gteq(expr, fp)
+		opI8Gteq(inputs, outputs)
 	case TYPE_I16:
-		opI16Gteq(expr, fp)
+		opI16Gteq(inputs, outputs)
 	case TYPE_I32:
-		opI32Gteq(expr, fp)
+		opI32Gteq(inputs, outputs)
 	case TYPE_I64:
-		opI64Gteq(expr, fp)
+		opI64Gteq(inputs, outputs)
 	case TYPE_UI8:
-		opUI8Gteq(expr, fp)
+		opUI8Gteq(inputs, outputs)
 	case TYPE_UI16:
-		opUI16Gteq(expr, fp)
+		opUI16Gteq(inputs, outputs)
 	case TYPE_UI32:
-		opUI32Gteq(expr, fp)
+		opUI32Gteq(inputs, outputs)
 	case TYPE_UI64:
-		opUI64Gteq(expr, fp)
+		opUI64Gteq(inputs, outputs)
 	case TYPE_F32:
-		opF32Gteq(expr, fp)
+		opF32Gteq(inputs, outputs)
 	case TYPE_F64:
-		opF64Gteq(expr, fp)
+		opF64Gteq(inputs, outputs)
 	default:
 		panic(CX_INTERNAL_ERROR)
 	}
 }
 
-func opEqual(expr *CXExpression, fp int) {
-	switch expr.Inputs[0].Type {
+func opEqual(inputs []CXValue, outputs []CXValue) {
+	switch inputs[0].Type {
 	case TYPE_BOOL:
-		opBoolEqual(expr, fp)
+		opBoolEqual(inputs, outputs)
 	case TYPE_STR:
-		opStrEq(expr, fp)
+		opStrEq(inputs, outputs)
 	case TYPE_I8:
-		opI8Eq(expr, fp)
+		opI8Eq(inputs, outputs)
 	case TYPE_I16:
-		opI16Eq(expr, fp)
+		opI16Eq(inputs, outputs)
 	case TYPE_I32:
-		opI32Eq(expr, fp)
+		opI32Eq(inputs, outputs)
 	case TYPE_I64:
-		opI64Eq(expr, fp)
+		opI64Eq(inputs, outputs)
 	case TYPE_UI8:
-		opUI8Eq(expr, fp)
+		opUI8Eq(inputs, outputs)
 	case TYPE_UI16:
-		opUI16Eq(expr, fp)
+		opUI16Eq(inputs, outputs)
 	case TYPE_UI32:
-		opUI32Eq(expr, fp)
+		opUI32Eq(inputs, outputs)
 	case TYPE_UI64:
-		opUI64Eq(expr, fp)
+		opUI64Eq(inputs, outputs)
 	case TYPE_F32:
-		opF32Eq(expr, fp)
+		opF32Eq(inputs, outputs)
 	case TYPE_F64:
-		opF64Eq(expr, fp)
+		opF64Eq(inputs, outputs)
 	default:
 		panic(CX_INTERNAL_ERROR)
 	}
 }
 
-func opUnequal(expr *CXExpression, fp int) {
-	switch expr.Inputs[0].Type {
+func opUnequal(inputs []CXValue, outputs []CXValue) {
+	switch inputs[0].Type {
 	case TYPE_BOOL:
-		opBoolUnequal(expr, fp)
+		opBoolUnequal(inputs, outputs)
 	case TYPE_STR:
-		opStrUneq(expr, fp)
+		opStrUneq(inputs, outputs)
 	case TYPE_I8:
-		opI8Uneq(expr, fp)
+		opI8Uneq(inputs, outputs)
 	case TYPE_I16:
-		opI16Uneq(expr, fp)
+		opI16Uneq(inputs, outputs)
 	case TYPE_I32:
-		opI32Uneq(expr, fp)
+		opI32Uneq(inputs, outputs)
 	case TYPE_I64:
-		opI64Uneq(expr, fp)
+		opI64Uneq(inputs, outputs)
 	case TYPE_UI8:
-		opUI8Uneq(expr, fp)
+		opUI8Uneq(inputs, outputs)
 	case TYPE_UI16:
-		opUI16Uneq(expr, fp)
+		opUI16Uneq(inputs, outputs)
 	case TYPE_UI32:
-		opUI32Uneq(expr, fp)
+		opUI32Uneq(inputs, outputs)
 	case TYPE_UI64:
-		opUI64Uneq(expr, fp)
+		opUI64Uneq(inputs, outputs)
 	case TYPE_F32:
-		opF32Uneq(expr, fp)
+		opF32Uneq(inputs, outputs)
 	case TYPE_F64:
-		opF64Uneq(expr, fp)
+		opF64Uneq(inputs, outputs)
 	default:
 		panic(CX_INTERNAL_ERROR)
 	}
 }
 
-func opBitand(expr *CXExpression, fp int) {
-	switch expr.Inputs[0].Type {
+func opBitand(inputs []CXValue, outputs []CXValue) {
+	switch inputs[0].Type {
 	case TYPE_I8:
-		opI8Bitand(expr, fp)
+		opI8Bitand(inputs, outputs)
 	case TYPE_I16:
-		opI16Bitand(expr, fp)
+		opI16Bitand(inputs, outputs)
 	case TYPE_I32:
-		opI32Bitand(expr, fp)
+		opI32Bitand(inputs, outputs)
 	case TYPE_I64:
-		opI64Bitand(expr, fp)
+		opI64Bitand(inputs, outputs)
 	case TYPE_UI8:
-		opUI8Bitand(expr, fp)
+		opUI8Bitand(inputs, outputs)
 	case TYPE_UI16:
-		opUI16Bitand(expr, fp)
+		opUI16Bitand(inputs, outputs)
 	case TYPE_UI32:
-		opUI32Bitand(expr, fp)
+		opUI32Bitand(inputs, outputs)
 	case TYPE_UI64:
-		opUI64Bitand(expr, fp)
+		opUI64Bitand(inputs, outputs)
 	default:
 		panic(CX_INTERNAL_ERROR)
 	}
 }
 
-func opBitor(expr *CXExpression, fp int) {
-	switch expr.Inputs[0].Type {
+func opBitor(inputs []CXValue, outputs []CXValue) {
+	switch inputs[0].Type {
 	case TYPE_I8:
-		opI8Bitor(expr, fp)
+		opI8Bitor(inputs, outputs)
 	case TYPE_I16:
-		opI16Bitor(expr, fp)
+		opI16Bitor(inputs, outputs)
 	case TYPE_I32:
-		opI32Bitor(expr, fp)
+		opI32Bitor(inputs, outputs)
 	case TYPE_I64:
-		opI64Bitor(expr, fp)
+		opI64Bitor(inputs, outputs)
 	case TYPE_UI8:
-		opUI8Bitor(expr, fp)
+		opUI8Bitor(inputs, outputs)
 	case TYPE_UI16:
-		opUI16Bitor(expr, fp)
+		opUI16Bitor(inputs, outputs)
 	case TYPE_UI32:
-		opUI32Bitor(expr, fp)
+		opUI32Bitor(inputs, outputs)
 	case TYPE_UI64:
-		opUI64Bitor(expr, fp)
+		opUI64Bitor(inputs, outputs)
 	default:
 		panic(CX_INTERNAL_ERROR)
 	}
 }
 
-func opBitxor(expr *CXExpression, fp int) {
-	switch expr.Inputs[0].Type {
+func opBitxor(inputs []CXValue, outputs []CXValue) {
+	switch inputs[0].Type {
 	case TYPE_I8:
-		opI8Bitxor(expr, fp)
+		opI8Bitxor(inputs, outputs)
 	case TYPE_I16:
-		opI16Bitxor(expr, fp)
+		opI16Bitxor(inputs, outputs)
 	case TYPE_I32:
-		opI32Bitxor(expr, fp)
+		opI32Bitxor(inputs, outputs)
 	case TYPE_I64:
-		opI64Bitxor(expr, fp)
+		opI64Bitxor(inputs, outputs)
 	case TYPE_UI8:
-		opUI8Bitxor(expr, fp)
+		opUI8Bitxor(inputs, outputs)
 	case TYPE_UI16:
-		opUI16Bitxor(expr, fp)
+		opUI16Bitxor(inputs, outputs)
 	case TYPE_UI32:
-		opUI32Bitxor(expr, fp)
+		opUI32Bitxor(inputs, outputs)
 	case TYPE_UI64:
-		opUI64Bitxor(expr, fp)
+		opUI64Bitxor(inputs, outputs)
 	default:
 		panic(CX_INTERNAL_ERROR)
 	}
 }
 
-func opMul(expr *CXExpression, fp int) {
-	switch expr.Inputs[0].Type {
+func opMul(inputs []CXValue, outputs []CXValue) {
+	switch inputs[0].Type {
 	case TYPE_I8:
-		opI8Mul(expr, fp)
+		opI8Mul(inputs, outputs)
 	case TYPE_I16:
-		opI16Mul(expr, fp)
+		opI16Mul(inputs, outputs)
 	case TYPE_I32:
-		opI32Mul(expr, fp)
+		opI32Mul(inputs, outputs)
 	case TYPE_I64:
-		opI64Mul(expr, fp)
+		opI64Mul(inputs, outputs)
 	case TYPE_UI8:
-		opUI8Mul(expr, fp)
+		opUI8Mul(inputs, outputs)
 	case TYPE_UI16:
-		opUI16Mul(expr, fp)
+		opUI16Mul(inputs, outputs)
 	case TYPE_UI32:
-		opUI32Mul(expr, fp)
+		opUI32Mul(inputs, outputs)
 	case TYPE_UI64:
-		opUI64Mul(expr, fp)
+		opUI64Mul(inputs, outputs)
 	case TYPE_F32:
-		opF32Mul(expr, fp)
+		opF32Mul(inputs, outputs)
 	case TYPE_F64:
-		opF64Mul(expr, fp)
+		opF64Mul(inputs, outputs)
 	default:
 		panic(CX_INTERNAL_ERROR)
 	}
 }
 
-func opDiv(expr *CXExpression, fp int) {
-	switch expr.Inputs[0].Type {
+func opDiv(inputs []CXValue, outputs []CXValue) {
+	switch inputs[0].Type {
 	case TYPE_I8:
-		opI8Div(expr, fp)
+		opI8Div(inputs, outputs)
 	case TYPE_I16:
-		opI16Div(expr, fp)
+		opI16Div(inputs, outputs)
 	case TYPE_I32:
-		opI32Div(expr, fp)
+		opI32Div(inputs, outputs)
 	case TYPE_I64:
-		opI64Div(expr, fp)
+		opI64Div(inputs, outputs)
 	case TYPE_UI8:
-		opUI8Div(expr, fp)
+		opUI8Div(inputs, outputs)
 	case TYPE_UI16:
-		opUI16Div(expr, fp)
+		opUI16Div(inputs, outputs)
 	case TYPE_UI32:
-		opUI32Div(expr, fp)
+		opUI32Div(inputs, outputs)
 	case TYPE_UI64:
-		opUI64Div(expr, fp)
+		opUI64Div(inputs, outputs)
 	case TYPE_F32:
-		opF32Div(expr, fp)
+		opF32Div(inputs, outputs)
 	case TYPE_F64:
-		opF64Div(expr, fp)
+		opF64Div(inputs, outputs)
 	default:
 		panic(CX_INTERNAL_ERROR)
 	}
 }
 
-func opMod(expr *CXExpression, fp int) {
-	switch expr.Inputs[0].Type {
+func opMod(inputs []CXValue, outputs []CXValue) {
+	switch inputs[0].Type {
 	case TYPE_I8:
-		opI8Mod(expr, fp)
+		opI8Mod(inputs, outputs)
 	case TYPE_I16:
-		opI16Mod(expr, fp)
+		opI16Mod(inputs, outputs)
 	case TYPE_I32:
-		opI32Mod(expr, fp)
+		opI32Mod(inputs, outputs)
 	case TYPE_I64:
-		opI64Mod(expr, fp)
+		opI64Mod(inputs, outputs)
 	case TYPE_UI8:
-		opUI8Mod(expr, fp)
+		opUI8Mod(inputs, outputs)
 	case TYPE_UI16:
-		opUI16Mod(expr, fp)
+		opUI16Mod(inputs, outputs)
 	case TYPE_UI32:
-		opUI32Mod(expr, fp)
+		opUI32Mod(inputs, outputs)
 	case TYPE_UI64:
-		opUI64Mod(expr, fp)
+		opUI64Mod(inputs, outputs)
 	case TYPE_F32:
-		opF32Mod(expr, fp)
+		opF32Mod(inputs, outputs)
 	case TYPE_F64:
-		opF64Mod(expr, fp)
+		opF64Mod(inputs, outputs)
 	default:
 		panic(CX_INTERNAL_ERROR)
 	}
 }
 
-func opAdd(expr *CXExpression, fp int) {
-	switch expr.Inputs[0].Type {
+func opAdd(inputs []CXValue, outputs []CXValue) {
+	switch inputs[0].Type {
 	case TYPE_I8:
-		opI8Add(expr, fp)
+		opI8Add(inputs, outputs)
 	case TYPE_I16:
-		opI16Add(expr, fp)
+		opI16Add(inputs, outputs)
 	case TYPE_I32:
-		opI32Add(expr, fp)
+		opI32Add(inputs, outputs)
 	case TYPE_I64:
-		opI64Add(expr, fp)
+		opI64Add(inputs, outputs)
 	case TYPE_UI8:
-		opUI8Add(expr, fp)
+		opUI8Add(inputs, outputs)
 	case TYPE_UI16:
-		opUI16Add(expr, fp)
+		opUI16Add(inputs, outputs)
 	case TYPE_UI32:
-		opUI32Add(expr, fp)
+		opUI32Add(inputs, outputs)
 	case TYPE_UI64:
-		opUI64Add(expr, fp)
+		opUI64Add(inputs, outputs)
 	case TYPE_F32:
-		opF32Add(expr, fp)
+		opF32Add(inputs, outputs)
 	case TYPE_F64:
-		opF64Add(expr, fp)
+		opF64Add(inputs, outputs)
 	default:
-		panic(CX_INTERNAL_ERROR)
+
+		panic(inputs[0].Type)
 	}
 }
 
-func opSub(expr *CXExpression, fp int) {
-	switch expr.Inputs[0].Type {
+func opSub(inputs []CXValue, outputs []CXValue) {
+	switch inputs[0].Type {
 	case TYPE_I8:
-		opI8Sub(expr, fp)
+		opI8Sub(inputs, outputs)
 	case TYPE_I16:
-		opI16Sub(expr, fp)
+		opI16Sub(inputs, outputs)
 	case TYPE_I32:
-		opI32Sub(expr, fp)
+		opI32Sub(inputs, outputs)
 	case TYPE_I64:
-		opI64Sub(expr, fp)
+		opI64Sub(inputs, outputs)
 	case TYPE_UI8:
-		opUI8Sub(expr, fp)
+		opUI8Sub(inputs, outputs)
 	case TYPE_UI16:
-		opUI16Sub(expr, fp)
+		opUI16Sub(inputs, outputs)
 	case TYPE_UI32:
-		opUI32Sub(expr, fp)
+		opUI32Sub(inputs, outputs)
 	case TYPE_UI64:
-		opUI64Sub(expr, fp)
+		opUI64Sub(inputs, outputs)
 	case TYPE_F32:
-		opF32Sub(expr, fp)
+		opF32Sub(inputs, outputs)
 	case TYPE_F64:
-		opF64Sub(expr, fp)
+		opF64Sub(inputs, outputs)
 	default:
 		panic(CX_INTERNAL_ERROR)
 	}
 }
 
-func opNeg(expr *CXExpression, fp int) {
-	switch expr.Inputs[0].Type {
+func opNeg(inputs []CXValue, outputs []CXValue) {
+	switch inputs[0].Type {
 	case TYPE_I8:
-		opI8Neg(expr, fp)
+		opI8Neg(inputs, outputs)
 	case TYPE_I16:
-		opI16Neg(expr, fp)
+		opI16Neg(inputs, outputs)
 	case TYPE_I32:
-		opI32Neg(expr, fp)
+		opI32Neg(inputs, outputs)
 	case TYPE_I64:
-		opI64Neg(expr, fp)
+		opI64Neg(inputs, outputs)
 	case TYPE_F32:
-		opF32Neg(expr, fp)
+		opF32Neg(inputs, outputs)
 	case TYPE_F64:
-		opF64Neg(expr, fp)
+		opF64Neg(inputs, outputs)
 	default:
 		panic(CX_INTERNAL_ERROR)
 	}
 }
 
-func opBitshl(expr *CXExpression, fp int) {
-	switch expr.Inputs[0].Type {
+func opBitshl(inputs []CXValue, outputs []CXValue) {
+	switch inputs[0].Type {
 	case TYPE_I8:
-		opI8Bitshl(expr, fp)
+		opI8Bitshl(inputs, outputs)
 	case TYPE_I16:
-		opI16Bitshl(expr, fp)
+		opI16Bitshl(inputs, outputs)
 	case TYPE_I32:
-		opI32Bitshl(expr, fp)
+		opI32Bitshl(inputs, outputs)
 	case TYPE_I64:
-		opI64Bitshl(expr, fp)
+		opI64Bitshl(inputs, outputs)
 	case TYPE_UI8:
-		opUI8Bitshl(expr, fp)
+		opUI8Bitshl(inputs, outputs)
 	case TYPE_UI16:
-		opUI16Bitshl(expr, fp)
+		opUI16Bitshl(inputs, outputs)
 	case TYPE_UI32:
-		opUI32Bitshl(expr, fp)
+		opUI32Bitshl(inputs, outputs)
 	case TYPE_UI64:
-		opUI64Bitshl(expr, fp)
+		opUI64Bitshl(inputs, outputs)
 	default:
 		panic(CX_INTERNAL_ERROR)
 	}
 }
 
-func opBitshr(expr *CXExpression, fp int) {
-	switch expr.Inputs[0].Type {
+func opBitshr(inputs []CXValue, outputs []CXValue) {
+	switch inputs[0].Type {
 	case TYPE_I8:
-		opI8Bitshr(expr, fp)
+		opI8Bitshr(inputs, outputs)
 	case TYPE_I16:
-		opI16Bitshr(expr, fp)
+		opI16Bitshr(inputs, outputs)
 	case TYPE_I32:
-		opI32Bitshr(expr, fp)
+		opI32Bitshr(inputs, outputs)
 	case TYPE_I64:
-		opI64Bitshr(expr, fp)
+		opI64Bitshr(inputs, outputs)
 	case TYPE_UI8:
-		opUI8Bitshr(expr, fp)
+		opUI8Bitshr(inputs, outputs)
 	case TYPE_UI16:
-		opUI16Bitshr(expr, fp)
+		opUI16Bitshr(inputs, outputs)
 	case TYPE_UI32:
-		opUI32Bitshr(expr, fp)
+		opUI32Bitshr(inputs, outputs)
 	case TYPE_UI64:
-		opUI64Bitshr(expr, fp)
+		opUI64Bitshr(inputs, outputs)
 	default:
 		panic(CX_INTERNAL_ERROR)
 	}
 }
 
-func opBitclear(expr *CXExpression, fp int) {
-	switch expr.Inputs[0].Type {
+func opBitclear(inputs []CXValue, outputs []CXValue) {
+	switch inputs[0].Type {
 	case TYPE_I8:
-		opI8Bitclear(expr, fp)
+		opI8Bitclear(inputs, outputs)
 	case TYPE_I16:
-		opI16Bitclear(expr, fp)
+		opI16Bitclear(inputs, outputs)
 	case TYPE_I32:
-		opI32Bitclear(expr, fp)
+		opI32Bitclear(inputs, outputs)
 	case TYPE_I64:
-		opI64Bitclear(expr, fp)
+		opI64Bitclear(inputs, outputs)
 	case TYPE_UI8:
-		opUI8Bitclear(expr, fp)
+		opUI8Bitclear(inputs, outputs)
 	case TYPE_UI16:
-		opUI16Bitclear(expr, fp)
+		opUI16Bitclear(inputs, outputs)
 	case TYPE_UI32:
-		opUI32Bitclear(expr, fp)
+		opUI32Bitclear(inputs, outputs)
 	case TYPE_UI64:
-		opUI64Bitclear(expr, fp)
+		opUI64Bitclear(inputs, outputs)
 	default:
 		panic(CX_INTERNAL_ERROR)
 	}
