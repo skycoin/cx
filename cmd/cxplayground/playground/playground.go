@@ -1,22 +1,35 @@
 package playground
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"path/filepath"
+	"runtime"
+	"time"
+
+	cxcore "github.com/skycoin/cx/cx"
+	"github.com/skycoin/cx/cxgo/actions"
+	"github.com/skycoin/cx/cxgo/cxgo"
+	"github.com/skycoin/cx/cxgo/cxgo0"
+	"github.com/skycoin/cx/cxgo/parser"
 )
 
-var exampleCollection map[string]string
-var exampleNames []string
-var examplesDir string
+var (
+	exampleCollection map[string]string
+	exampleNames      []string
+	examplesDir       string
+)
 
 type ExampleContent struct {
 	ExampleName string
 }
 
-func InitPlayground(workingDir string) error {
+var InitPlayground = func(workingDir string) error {
 	examplesDir = filepath.Join(workingDir, "examples")
 	exampleCollection = make(map[string]string)
 
@@ -25,13 +38,11 @@ func InitPlayground(workingDir string) error {
 		fmt.Printf("Fail to get file list under examples dir: %s\n", err.Error())
 		return err
 	}
-
 	for _, exp := range exampleInfoList {
 		if exp.IsDir() {
 			continue
 		}
 		path := filepath.Join(examplesDir, exp.Name())
-
 		bytes, err := ioutil.ReadFile(path)
 		if err != nil {
 			fmt.Printf("Fail to read example file %s\n", path)
@@ -59,13 +70,15 @@ func GetExampleFileList(w http.ResponseWriter, r *http.Request) {
 
 func GetExampleFileContent(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
-	var b []byte
-	var err error
+	var (
+		b   []byte
+		err error
+	)
 	if b, err = ioutil.ReadAll(r.Body); err != nil {
 		http.Error(w, err.Error(), 500)
 		return
 	}
-	fmt.Println(string(b))
+
 	var example ExampleContent
 	if err := json.Unmarshal(b, &example); err != nil {
 		http.Error(w, err.Error(), 500)
@@ -89,4 +102,100 @@ var getExampleFileContent = func(exampleName string) (string, error) {
 		return "", err
 	}
 	return exampleContent, nil
+}
+
+type SourceCode struct {
+	Code string `json:"code,omitempty"`
+}
+
+func RunProgram(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	var b []byte
+	var err error
+	if b, err = ioutil.ReadAll(r.Body); err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	fmt.Println(string(b))
+	var source SourceCode
+	if err := json.Unmarshal(b, &source); err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	if err := r.ParseForm(); err == nil {
+		fmt.Fprintf(w, "%s", eval(source.Code+"\n"))
+	}
+}
+
+func unsafeeval(code string) (out string) {
+	var lexer *parser.Lexer
+	defer func() {
+		if r := recover(); r != nil {
+			out = fmt.Sprintf("%v", r)
+			lexer.Stop()
+		}
+	}()
+
+	// storing strings sent to standard output
+	old := os.Stdout
+	r, w, _ := os.Pipe()
+	os.Stdout = w
+
+	actions.LineNo = 0
+
+	actions.PRGRM = cxcore.MakeProgram()
+	cxgo0.PRGRM0 = actions.PRGRM
+
+	cxgo0.Parse(code)
+
+	actions.PRGRM = cxgo0.PRGRM0
+
+	lexer = parser.NewLexer(bytes.NewBufferString(code))
+	parser.Parse(lexer)
+	//yyParse(lexer)
+
+	cxgo.AddInitFunction(actions.PRGRM)
+
+	if err := actions.PRGRM.RunCompiled(0, nil); err != nil {
+		actions.PRGRM = cxcore.MakeProgram()
+		return fmt.Sprintf("%s", err)
+	}
+
+	outC := make(chan string)
+	go func() {
+		var buf bytes.Buffer
+		io.Copy(&buf, r)
+		outC <- buf.String()
+	}()
+
+	w.Close()
+	os.Stdout = old // restoring the real stdout
+	out = <-outC
+
+	actions.PRGRM = cxcore.MakeProgram()
+	return out
+}
+
+func eval(code string) string {
+	runtime.GOMAXPROCS(2)
+	ch := make(chan string, 1)
+
+	var result string
+
+	go func() {
+		result = unsafeeval(code)
+		ch <- result
+	}()
+
+	timer := time.NewTimer(20 * time.Second)
+	defer timer.Stop()
+
+	select {
+	case <-ch:
+		return result
+	case <-timer.C:
+		actions.PRGRM = cxcore.MakeProgram()
+		return "Timed out."
+	}
 }
