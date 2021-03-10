@@ -48,12 +48,12 @@ func InitPlayground(workingDir string) error {
 }
 
 func GetExampleFileList(w http.ResponseWriter, r *http.Request) {
+
 	exampleNamesBytes, err := json.Marshal(exampleNames)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
 	}
-
 	fmt.Fprintf(w, string(exampleNamesBytes))
 }
 
@@ -65,7 +65,7 @@ func GetExampleFileContent(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 500)
 		return
 	}
-
+	fmt.Println(string(b))
 	var example ExampleContent
 	if err := json.Unmarshal(b, &example); err != nil {
 		http.Error(w, err.Error(), 500)
@@ -81,7 +81,7 @@ func GetExampleFileContent(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, content)
 }
 
-func getExampleFileContent(exampleName string) (string, error) {
+var getExampleFileContent = func(exampleName string) (string, error) {
 	exampleContent, ok := exampleCollection[exampleName]
 	if !ok {
 		err := fmt.Errorf("example name %s not found", exampleName)

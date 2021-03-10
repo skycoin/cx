@@ -31,7 +31,6 @@ func main() {
 	host := ":5336"
 
 	mux := http.NewServeMux()
-
 	workingDir, _ := os.Getwd()
 	if err := playground.InitPlayground(workingDir); err != nil {
 		// error captured while initiating the playground examples, should be handled in the future

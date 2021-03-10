@@ -24,6 +24,9 @@ github.com/magefile/mage/sh
 # github.com/mjibson/go-dsp v0.0.0-20180508042940-11479a337f12
 ## explicit
 github.com/mjibson/go-dsp/wav
+# github.com/prashantv/gostub v1.0.0
+## explicit
+github.com/prashantv/gostub
 # github.com/satori/go.uuid v1.2.0
 ## explicit
 github.com/satori/go.uuid

@@ -8,6 +8,7 @@ require (
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/jinzhu/copier v0.2.4
 	github.com/mjibson/go-dsp v0.0.0-20180508042940-11479a337f12
+	github.com/prashantv/gostub v1.0.0
 	github.com/satori/go.uuid v1.2.0
 	github.com/sirupsen/logrus v1.8.0
 	github.com/skycoin/gltext v0.0.0-20200425002731-afdd8ff94e14
