@@ -1,9 +1,11 @@
 package main 
 
+import "time"
+
 //goto keyword isn't implemented 
 
 func ackermann (a i32, b i32) (out i32) {
-	if bool.not(a){
+	if bool.not(i32.bool(a)){
 		out = i32.add(b, 1)
 	} else {
 		if bool.not(b){

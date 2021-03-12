@@ -68,6 +68,7 @@ func GetOffsetAtomic(fp int, arg *CXArgument) int {
 		return GetFinalOffset(fp, arg)
 	}
 
+
 	finalOffset := arg.Offset
 	//Todo: find way to eliminate this check
 	if finalOffset < PROGRAM.StackSize {
