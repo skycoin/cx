@@ -92,7 +92,7 @@ ifndef CXVERSION
 	@echo "cx not found in $(PWD)/bin, please run make install first"
 else
 	# go test $(GO_OPTS) -race -tags base github.com/skycoin/cx/cxgo/
-	../cxgood ./lib/args.cx ./tests/main.cx ++wdir=./tests ++log=fail  ++disable-tests=gui,issue ++cxpath=$(PWD)/bin/cx
+	./bin/cx ./lib/args.cx ./tests/main.cx ++wdir=./tests ++log=fail,stderr ++disable-tests=gui,issue ++cxpath=$(PWD)/bin/cx
 endif
 
 configure-workspace: ## Configure CX workspace environment
