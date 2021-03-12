@@ -33,7 +33,7 @@ func opAlError(expr *CXExpression, fp int) {
 
 func opAlExtensions(expr *CXExpression, fp int) {
 	//panic(CX_RUNTIME_NOT_IMPLEMENTED)
-	WriteObject(GetFinalOffset(fp, expr.Outputs[0]), FromStr("CX_RUNTIME_NOT_IMPLEMENTED"))
+	WriteString(fp, "CX_RUNTIME_NOT_IMPLEMENTED", expr.Outputs[0])
 }
 
 func opAlOpenDevice(expr *CXExpression, fp int) {
@@ -50,7 +50,7 @@ func opAlPlaySources(expr *CXExpression, fp int) {
 
 func opAlRenderer(expr *CXExpression, fp int) {
 	//panic(CX_RUNTIME_NOT_IMPLEMENTED)
-	WriteObject(GetFinalOffset(fp, expr.Outputs[0]), FromStr("CX_RUNTIME_NOT_IMPLEMENTED"))
+	WriteString(fp, "CX_RUNTIME_NOT_IMPLEMENTED", expr.Outputs[0])
 }
 
 func opAlRewindSources(expr *CXExpression, fp int) {
@@ -63,12 +63,12 @@ func opAlStopSources(expr *CXExpression, fp int) {
 
 func opAlVendor(expr *CXExpression, fp int) {
 	//panic(CX_RUNTIME_NOT_IMPLEMENTED)
-	WriteObject(GetFinalOffset(fp, expr.Outputs[0]), FromStr("CX_RUNTIME_NOT_IMPLEMENTED"))
+	WriteString(fp, "CX_RUNTIME_NOT_IMPLEMENTED", expr.Outputs[0])
 }
 
 func opAlVersion(expr *CXExpression, fp int) {
 	//panic(CX_RUNTIME_NOT_IMPLEMENTED)
-	WriteObject(GetFinalOffset(fp, expr.Outputs[0]), FromStr("CX_RUNTIME_NOT_IMPLEMENTED"))
+	WriteString(fp, "CX_RUNTIME_NOT_IMPLEMENTED", expr.Outputs[0])
 }
 
 func opAlGenBuffers(expr *CXExpression, fp int) {

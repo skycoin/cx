@@ -425,13 +425,19 @@ func (call *CXCall) ccall(prgrm *CXProgram) error {
 
 					for inputIndex := 0; inputIndex < inputCount; inputIndex++ { // TODO: remove in release builds
 						if inputValues[inputIndex].Used != int8(inputs[inputIndex].Type) { // TODO: remove cast
-							panic("Input value not used in opcode")
+							panic(fmt.Sprintf("Input value not used for opcode: '%s'. Expected type '%s', used type '%s'.",
+							 	OpNames[expr.Operator.OpCode],
+							 	TypeNames[inputs[inputIndex].Type],
+								TypeNames[int(inputValues[inputIndex].Used)]))
 						}
 					}
 
 					for outputIndex := 0; outputIndex < outputCount; outputIndex++ { // TODO: remove in release builds
 						if outputValues[outputIndex].Used != int8(outputs[outputIndex].Type) { // TODO: remove cast
-							panic("Output value not used in opcode")
+							panic(fmt.Sprintf("Output value not used for opcode: '%s'. Expected type '%s', used type '%s'.",
+							 	OpNames[expr.Operator.OpCode],
+							 	TypeNames[outputs[outputIndex].Type],
+								TypeNames[int(outputValues[outputIndex].Used)]))
 						}
 					}
 

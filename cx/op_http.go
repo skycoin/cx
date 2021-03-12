@@ -273,7 +273,7 @@ func writeHTTPRequest(fp int, param *CXArgument, request *http.Request) {
 	accessURLForceQuery := []*CXArgument{&derefURLFld, forceQueryFld}
 
 	// Creating empty `http.Request` object on heap.
-	reqOff := writeObj(make([]byte, requestType.Size))
+	reqOff := WriteObjectData(make([]byte, requestType.Size))
 	reqOffByts := encoder.SerializeAtomic(int32(reqOff))
 	WriteMemory(GetFinalOffset(fp, &req), reqOffByts)
 
@@ -281,7 +281,7 @@ func writeHTTPRequest(fp int, param *CXArgument, request *http.Request) {
 
 	// Creating empty `http.URL` object on heap.
 	req.Fields = accessURL
-	urlOff := writeObj(make([]byte, urlType.Size))
+	urlOff := WriteObjectData(make([]byte, urlType.Size))
 	urlOffByts := encoder.SerializeAtomic(int32(urlOff))
 	WriteMemory(GetFinalOffset(fp, &req), urlOffByts)
 

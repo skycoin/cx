@@ -728,11 +728,7 @@ func buildString(expr *CXExpression, fp int) []byte {
 }
 
 func opSprintf(expr *CXExpression, fp int) {
-	out1 := expr.Outputs[0]
-	out1Offset := GetFinalOffset(fp, out1)
-
-	byts := encoder.Serialize(string(buildString(expr, fp)))
-	WriteObject(out1Offset, byts)
+	WriteString(fp, string(buildString(expr, fp)), expr.Outputs[0])
 }
 
 func opPrintf(expr *CXExpression, fp int) {

@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-
-	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 func opStrToI8(inputs []CXValue, outputs []CXValue) {
@@ -118,47 +116,33 @@ func opStrGteq(inputs []CXValue, outputs []CXValue) {
 	outputs[0].Set_bool(outV0)
 }
 
-// WriteString writes the string `str` on memory, starting at byte number `fp`.
-func WriteString(fp int, str string, out *CXArgument) {
-
-	byts := encoder.Serialize(str)
-	size := len(byts) + OBJECT_HEADER_SIZE
-	heapOffset := AllocateSeq(size)
-
-	var header = make([]byte, OBJECT_HEADER_SIZE)
-	WriteMemI32(header, 5, int32(size))
-	obj := append(header, byts...)
-
-	WriteMemory(heapOffset, obj)
-	WriteI32(GetOffset_str(fp, out), int32(heapOffset))
-}
-
 func opStrPrint(inputs []CXValue, outputs []CXValue) {
 	fmt.Println(inputs[0].Get_str())
 }
 
-func opStrConcat(expr *CXExpression, fp int) {
-	WriteString(fp, ReadStr(fp, expr.Inputs[0])+ReadStr(fp, expr.Inputs[1]), expr.Outputs[0])
+func opStrConcat(inputs []CXValue, outputs []CXValue) {
+	outputs[0].Set_str(inputs[0].Get_str() + inputs[1].Get_str())
 }
 
-func opStrSubstr(expr *CXExpression, fp int) {
-	str := ReadStr(fp, expr.Inputs[0])
-	begin := ReadI32(fp, expr.Inputs[1])
-	end := ReadI32(fp, expr.Inputs[2])
-
-	WriteString(fp, str[begin:end], expr.Outputs[0])
+func opStrSubstr(inputs []CXValue, outputs []CXValue) {
+	str := inputs[0].Get_str()
+	begin := inputs[1].Get_i32()
+	end := inputs[2].Get_i32()
+	outputs[0].Set_str(str[begin:end])
 }
 
-func opStrIndex(expr *CXExpression, fp int) {
-	str := ReadStr(fp, expr.Inputs[0])
-	substr := ReadStr(fp, expr.Inputs[1])
-	WriteI32(GetOffset_str(fp, expr.Outputs[0]), int32(strings.Index(str, substr)))
+func opStrIndex(inputs []CXValue, outputs []CXValue) {
+	str := inputs[0].Get_str()
+	substr := inputs[1].Get_str()
+	outputs[0].Set_i32(int32(strings.Index(str, substr)))
 }
 
-func opStrLastIndex(expr *CXExpression, fp int) {
-	WriteI32(GetOffset_str(fp, expr.Outputs[0]), int32(strings.LastIndex(ReadStr(fp, expr.Inputs[0]), ReadStr(fp, expr.Inputs[1]))))
+func opStrLastIndex(inputs []CXValue, outputs []CXValue) {
+	str := inputs[0].Get_str()
+	substr := inputs[1].Get_str()
+	outputs[0].Set_i32(int32(strings.LastIndex(str, substr)))
 }
 
-func opStrTrimSpace(expr *CXExpression, fp int) {
-	WriteString(fp, strings.TrimSpace(ReadStr(fp, expr.Inputs[0])), expr.Outputs[0])
+func opStrTrimSpace(inputs []CXValue, outputs []CXValue) {
+	outputs[0].Set_str(strings.TrimSpace(inputs[0].Get_str()))
 }
