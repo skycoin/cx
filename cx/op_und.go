@@ -3,6 +3,7 @@ package cxcore
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -361,8 +362,8 @@ func opAdd(inputs []CXValue, outputs []CXValue) {
 	case TYPE_F64:
 		opF64Add(inputs, outputs)
 	default:
-
-		panic(inputs[0].Type)
+		log.Println("CX_INTERNAL_ERROR :")
+		panic(CX_INTERNAL_ERROR)
 	}
 }
 

@@ -1,0 +1,10 @@
+package main
+import "tcp"
+
+func main() () {
+
+   	err := tcp.Listen("tcp", ":9000")
+
+    printf("Error while making the request %v", err)
+}
+

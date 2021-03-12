@@ -116,6 +116,20 @@ func checkHelp(args []string) bool {
 	return false
 }
 
+func checkversion(args []string) bool {
+	if strings.Contains(args[0], "version") {
+		return true
+	}
+	return false
+}
+
+func checkenv(args []string) bool {
+	if strings.Contains(args[0], "env") {
+		return true
+	}
+	return false
+}
+
 func printEnv() {
 	ex, _ := os.Executable()
 

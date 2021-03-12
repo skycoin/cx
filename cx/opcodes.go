@@ -7,7 +7,7 @@ import (
 // CorePackages ...
 var CorePackages = []string{
 	// temporary solution until we can implement these packages in pure CX I guess
-	"al", "gl", "glfw", "time", "http", "os", "explorer", "aff", "gltext", "cx", "json", "regexp", "cipher",
+	"al", "gl", "glfw", "time", "http", "os", "explorer", "aff", "gltext", "cx", "json", "regexp", "cipher", "tcp",
 }
 
 // op codes
@@ -451,6 +451,14 @@ const (
 	OP_HTTP_CLOSE
 
 	OP_DMSG_DO
+
+	OP_TCP_DIAL
+
+	OP_TCP_LISTEN
+
+	OP_TCP_ACCEPT
+
+	OP_TCP_CLOSE
 
 	OP_EVOLVE_EVOLVE
 
@@ -1255,6 +1263,14 @@ func init() {
 	Op(OP_HTTP_NEW_REQUEST, "http.NewRequest", opHTTPNewRequest, In(ASTR, ASTR, ASTR), Out(ASTR))
 	Op(OP_HTTP_DO, "http.Do", opHTTPDo, In(AUND), Out(AUND, ASTR))
 	Op(OP_DMSG_DO, "http.DmsgDo", opDMSGDo, In(AUND), Out(ASTR))
+
+	Op(OP_TCP_DIAL, "tcp.Dial", opTCPDial, In(ASTR, ASTR), Out(ASTR))
+
+	Op(OP_TCP_LISTEN, "tcp.Listen", opTCPListen, In(ASTR, ASTR), Out(ASTR))
+
+	Op(OP_TCP_ACCEPT, "tcp.Accept", opTCPAccept, In(ASTR, ASTR), Out(ASTR))
+
+	Op(OP_TCP_CLOSE, "tcp.Close", opTCPClose, nil, nil)
 
 	// Op(OP_EVOLVE_EVOLVE, "evolve.evolve", opEvolve, In(Slice(TYPE_AFF), Slice(TYPE_AFF), Slice(TYPE_F64), Slice(TYPE_F64), AI32, AI32, AI32, AF64), nil)
 	// Op(OP_EVOLVE_EVOLVE, "evolve.evolve", opEvolve, In(Slice(TYPE_AFF), Slice(TYPE_AFF), Slice(TYPE_AFF), Slice(TYPE_AFF), Slice(TYPE_AFF), AI32, AI32, AI32, AF64), nil)
