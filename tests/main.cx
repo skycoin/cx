@@ -402,6 +402,9 @@ func main ()() {
 	runTest("issue-28-ui32.cx", cx.SUCCESS, "ui32")
 	runTest("issue-28-ui64.cx", cx.SUCCESS, "ui64")
 
+	runTestEx("issue-519.cx", cx.SUCCESS, "Wrong type inferred for variable declared with short declaration operator :=.", TEST_ISSUE, 0)
+	runTestEx("issue-520.cx", cx.SUCCESS, "CX_RUNTIME_ERROR when using a negative i32 variable to initialize a f32 variable", TEST_ISSUE, 0)
+	runTestEx("issue-521.cx", cx.SUCCESS, "Compilation error when declaring array of struct defined in other package", TEST_ISSUE, 0)
 
 	var end i64
 	end = time.UnixMilli()

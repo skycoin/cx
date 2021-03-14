@@ -1,0 +1,6 @@
+package main
+
+func main()() {
+    var f1 f32 = -1
+}
+
