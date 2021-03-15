@@ -1,5 +1,14 @@
-package main; 
+package main
+
+func sumInt(a i32, b i32) (sum i32) {
+	sum = i32.add(a, b)
+}
 
 func main() {
-	str.print("Hello, world example1!");
+	var num1 i32 = 4
+	var num2 f32 = 6.5
+	var s str = "Addition of two numbers:"
+
+	str.print(s)
+	i32.print(sumInt(num1, f32.i32(num2)))
 }

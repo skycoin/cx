@@ -1,0 +1,18 @@
+package slice_pkg
+
+func showSlice(){
+    var slice []i32
+
+    slice = append(slice, 3) //add new element
+    slice = append(slice, 7)
+
+    i32.print(slice[1])
+    i32.print(len(slice)) //slice's lenght
+}
+
+package main
+import "slice_pkg" // importing package
+
+func main () {
+    slice_pkg.showSlice() // calling function from imported package
+}
