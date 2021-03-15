@@ -37,9 +37,7 @@ func init() {
 }
 
 // opCipherGenerateKeyPair generates a PubKey and a SecKey.
-func opCipherGenerateKeyPair(expr *CXExpression, fp int) {
-	out1, out2 := expr.Outputs[0], expr.Outputs[1]
-
+func opCipherGenerateKeyPair(inputs []CXValue, outputs []CXValue) {
 	pubKey, secKey := cipher.GenerateKeyPair()
 
 	bPubKey := make([]byte, len(pubKey))
@@ -53,6 +51,6 @@ func opCipherGenerateKeyPair(expr *CXExpression, fp int) {
 		bSecKey[i] = byt
 	}
 
-	WriteMemory(GetFinalOffset(fp, out1), bPubKey)
-	WriteMemory(GetFinalOffset(fp, out2), bSecKey)
+    outputs[0].Set_bytes(bPubKey)
+    outputs[1].Set_bytes(bSecKey)
 }
