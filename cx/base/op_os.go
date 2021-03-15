@@ -14,8 +14,6 @@ import (
 	"time"
 
 	. "github.com/skycoin/cx/cx"
-
-	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 const (
@@ -49,7 +47,7 @@ func opOsReadAllText(expr *CXExpression, fp int) {
 	success := false
 
 	if byts, err := CXReadFile(ReadStr(fp, expr.Inputs[0])); err == nil {
-		WriteObject(GetFinalOffset(fp, expr.Outputs[0]), encoder.Serialize(string(byts)))
+		WriteString(fp, string(byts), expr.Outputs[0])
 		success = true
 	}
 
@@ -750,8 +748,7 @@ func opOsWriteI8Slice(expr *CXExpression, fp int) {
 }
 
 func opOsGetWorkingDirectory(expr *CXExpression, fp int) {
-	byts := encoder.Serialize(PROGRAM.Path)
-	WriteObject(GetFinalOffset(fp, expr.Outputs[0]), byts)
+	WriteString(fp, PROGRAM.Path, expr.Outputs[0])
 }
 
 func opOsExit(expr *CXExpression, fp int) {
@@ -827,5 +824,5 @@ func opOsRun(expr *CXExpression, fp int) {
 
 	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), runError)
 	WriteI32(GetFinalOffset(fp, expr.Outputs[1]), cmdError)
-	WriteObject(GetFinalOffset(fp, expr.Outputs[2]), FromStr(string(stdOutBytes)))
+	WriteString(fp, string(stdOutBytes), expr.Outputs[2])
 }

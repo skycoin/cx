@@ -99,7 +99,7 @@ func opAlError(expr *CXExpression, fp int) {
 
 func opAlExtensions(expr *CXExpression, fp int) {
 	extensions := al.Extensions()
-	WriteObject(GetFinalOffset(fp, expr.Outputs[0]), FromStr(extensions))
+	WriteString(fp, expr.Outputs[0], extensions)
 }
 
 func opAlOpenDevice(expr *CXExpression, fp int) {
@@ -120,7 +120,7 @@ func opAlPlaySources(expr *CXExpression, fp int) {
 
 func opAlRenderer(expr *CXExpression, fp int) {
 	renderer := al.Renderer()
-	WriteObject(GetFinalOffset(fp, expr.Outputs[0]), FromStr(renderer))
+	WriteString(fp, expr.Outputs[0], renderer))
 }
 
 func opAlRewindSources(expr *CXExpression, fp int) {
@@ -135,12 +135,12 @@ func opAlStopSources(expr *CXExpression, fp int) {
 
 func opAlVendor(expr *CXExpression, fp int) {
 	vendor := al.Vendor()
-	WriteObject(GetFinalOffset(fp, expr.Outputs[0]), FromStr(vendor))
+	WriteString(fp, expr.Outputs[0], vendor)
 }
 
 func opAlVersion(expr *CXExpression, fp int) {
 	version := al.Version()
-	WriteObject(GetFinalOffset(fp, expr.Outputs[0]), FromStr(version))
+	WriteString(fp, expr.Outputs[0], version)
 }
 
 func opAlGenBuffers(expr *CXExpression, fp int) {

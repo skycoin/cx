@@ -59,7 +59,7 @@ func (cb *CXCallback) init(expr *CXExpression, fp int, packageName string) {
 	cb.expr = expr
 	cb.fp = fp
 	cb.windowName = ReadStr(fp, expr.Inputs[0])
-	cb.windowNameBytes = FromI32(int32(NewWriteObj(FromStr(cb.windowName))))
+	cb.windowNameBytes = FromI32(int32(WriteStringData(cb.windowName)))
 	cb.functionName = ReadStr(fp, expr.Inputs[1])
 	cb.packageName = packageName
 }

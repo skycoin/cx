@@ -10,8 +10,6 @@ import (
 	"strconv"
 	"strings"
 	"text/tabwriter"
-
-	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 // Debug ...
@@ -838,58 +836,6 @@ func WriteToSlice(off int, inp []byte) int {
 
 }
 
-// refactoring reuse in WriteObject and WriteObjectRetOff
-func writeObj(obj []byte) int {
-	// QUARENTINED: Check if `newwriteObj` can supersede this `writeObj`.
-	// Especially check usage on CX chains.
-	size := len(obj) + OBJECT_HEADER_SIZE
-	sizeB := encoder.SerializeAtomic(int32(size))
-	// heapOffset := AllocateSeq(size + OBJECT_HEADER_SIZE)
-	heapOffset := AllocateSeq(size)
-
-	// var finalObj = make([]byte, OBJECT_HEADER_SIZE+size)
-	var finalObj = make([]byte, size)
-
-	for c := OBJECT_GC_HEADER_SIZE; c < OBJECT_HEADER_SIZE; c++ {
-		finalObj[c] = sizeB[c-OBJECT_GC_HEADER_SIZE]
-	}
-	// for c := OBJECT_HEADER_SIZE; c < size+OBJECT_HEADER_SIZE; c++ {
-	for c := OBJECT_HEADER_SIZE; c < size; c++ {
-		finalObj[c] = obj[c-OBJECT_HEADER_SIZE]
-	}
-
-	WriteMemory(heapOffset, finalObj)
-	return heapOffset
-}
-
-// NewWriteObj refactoring reuse in WriteObject and WriteObjectRetOff
-func NewWriteObj(obj []byte) int {
-	// 2dbug introduces this new version of `writeObj`. It is unknown to me
-	// (amherag) at the moment if it is safe to replace `writeObj` with
-	// this version. Leaving `writeObj` in quarentine.
-	size := len(obj)
-	heapOffset := AllocateSeq(size + OBJECT_HEADER_SIZE)
-	var finalObj = make([]byte, OBJECT_HEADER_SIZE+size)
-
-	WriteMemI32(finalObj, OBJECT_GC_HEADER_SIZE, int32(size))
-	for c := OBJECT_HEADER_SIZE; c < size+OBJECT_HEADER_SIZE; c++ {
-		finalObj[c] = obj[c-OBJECT_HEADER_SIZE]
-	}
-
-	WriteMemory(heapOffset, finalObj)
-	return heapOffset
-}
-
-// WriteObject ...
-func WriteObject(out1Offset int, obj []byte) {
-	WriteI32(out1Offset, int32(NewWriteObj(obj)))
-}
-
-// WriteObjectRetOff ...
-func WriteObjectRetOff(obj []byte) int {
-	return NewWriteObj(obj)
-}
-
 // ErrorHeader ...
 func ErrorHeader(currentFile string, lineNo int) string {
 	return "error: " + currentFile + ":" + strconv.FormatInt(int64(lineNo), 10)
@@ -1328,26 +1274,3 @@ func IsPointer(sym *CXArgument) bool {
 	return false
 }
 
-// WriteStringObj writes `str` to the heap as an object and returns its absolute offset.
-func WriteStringObj(str string) int {
-	strB := encoder.Serialize(str)
-	return NewWriteObj(strB)
-}
-
-// ReadStringFromObject reads the string located at offset `off`.
-func ReadStringFromObject(off int32) string {
-	var plusOff int32
-	if int(off) > PROGRAM.HeapStartsAt {
-		// Found in heap segment.
-		plusOff += OBJECT_HEADER_SIZE
-	}
-
-	size := Deserialize_i32(PROGRAM.Memory[off+plusOff : off+plusOff+STR_HEADER_SIZE])
-
-	str := ""
-	_, err := encoder.DeserializeRaw(PROGRAM.Memory[off+plusOff:off+plusOff+STR_HEADER_SIZE+size], &str)
-	if err != nil {
-		panic(err)
-	}
-	return str
-}

@@ -436,7 +436,7 @@ func init() {
 	// gltext
 	Op(OP_GLTEXT_LOAD_TRUE_TYPE, "gltext.LoadTrueType", opGltextLoadTrueType, In(AI32, ASTR, AI32, AI32, AI32, AI32), nil)
 	Op(OP_GLTEXT_LOAD_TRUE_TYPE_CORE, "gltext.LoadTrueTypeCore", opGltextLoadTrueTypeCore, In(AI32, ASTR, AI32, AI32, AI32, AI32), nil)
-	Op(OP_GLTEXT_PRINTF, "gltext.Printf", opGltextPrintf, In(ASTR, AI32, AI32, ASTR), nil)
+	Op(OP_GLTEXT_PRINTF, "gltext.Printf", opGltextPrintf, In(ASTR, AF32, AF32, ASTR), nil)
 	Op(OP_GLTEXT_METRICS, "gltext.Metrics", opGltextMetrics, In(ASTR, ASTR), Out(AI32, AI32))
 	Op(OP_GLTEXT_TEXTURE, "gltext.Texture", opGltextTexture, In(ASTR), Out(AI32))
 	Op(OP_GLTEXT_NEXT_GLYPH, "gltext.NextGlyph", opGltextNextGlyph, In(ASTR, ASTR, AI32), Out(AI32, AI32, AI32, AI32, AI32, AI32, AI32))

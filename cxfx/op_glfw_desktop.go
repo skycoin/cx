@@ -230,7 +230,7 @@ func opGlfwSetShouldClose(expr *CXExpression, fp int) {
 func getWindowName(w *glfw.Window) []byte {
 	for key, win := range windows {
 		if w == win {
-			return FromI32(int32(NewWriteObj(FromStr(key))))
+			return FromI32(int32(WriteStringData(key)))
 		}
 	}
 

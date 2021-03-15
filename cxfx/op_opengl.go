@@ -731,7 +731,7 @@ func opGlGetProgramInfoLog(expr *CXExpression, fp int) {
 	outV0 := cxglGetProgramInfoLog(
 		uint32(ReadI32(fp, expr.Inputs[0])),
 		ReadI32(fp, expr.Inputs[1]))
-	WriteObject(GetFinalOffset(fp, expr.Outputs[0]), FromStr(outV0))
+	WriteString(fp, outV0, expr.Outputs[0])
 }
 
 func opGlGetShaderiv(expr *CXExpression, fp int) {
@@ -745,7 +745,7 @@ func opGlGetShaderInfoLog(expr *CXExpression, fp int) {
 	outV0 := cxglGetShaderInfoLog(
 		uint32(ReadI32(fp, expr.Inputs[0])),
 		ReadI32(fp, expr.Inputs[1]))
-	WriteObject(GetFinalOffset(fp, expr.Outputs[0]), FromStr(outV0))
+	WriteString(fp, outV0, expr.Outputs[0])
 }
 
 func opGlGetUniformLocation(expr *CXExpression, fp int) {

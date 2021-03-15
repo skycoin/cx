@@ -23,13 +23,15 @@ func main () {
 	wd = os.GetWorkingDirectory()
 	fontFile := str.concat(wd, "fonts/roboto-light.ttf")
 
-	os.Open(fontFile)
-	gltext.LoadTrueType("Roboto100", fontFile, 100, 32, 127, gltext.LeftToRight)
-	os.Close(fontFile)
+	var handle i32
+	var closeHandle bool
+	handle = os.Open(fontFile)
+	gltext.LoadTrueType(handle, "Roboto100", 100, 55, 127, gltext.LeftToRight)
+	closeHandle = os.Close(handle)
 	
-	os.Open(fontFile)
-	gltext.LoadTrueType("Roboto50", fontFile, 50, 32, 127, gltext.LeftToRight)
-	os.Close(fontFile)
+	handle = os.Open(fontFile)
+	gltext.LoadTrueType(handle, "Roboto30", 30, 32, 127, gltext.LeftToRight)
+	closeHandle = os.Close(handle)
 
 	gl.Enable(gl.DEPTH_TEST)
 	gl.DepthFunc(gl.LESS)
@@ -37,24 +39,24 @@ func main () {
 	gl.ClearColor(0.1, 0.1, 0.1, 0.0)
 
 	var width1 i32
-	var height1 i32
+	var height1 i32 
 	var width2 i32
 	var height2 i32
 	
 	width1, height1 = gltext.Metrics("Roboto100", "Hello World")
 	printf("`Hello World` metrics\nWidth: %d\nHeight: %d\n", width1, height1)
 
-	width2, height2 = gltext.Metrics("Roboto50", "I'm some text")
+	width2, height2 = gltext.Metrics("Roboto30", "I'm some text")
 	printf("`I'm some text` metrics\nWidth: %d\nHeight: %d\n", width2, height2)
 
 	for bool.not(glfw.ShouldClose("window")) {
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
 		gl.Color4f(0.5, 0.3, 0.8, 1.0)
-		gltext.Printf("Roboto100", 0.0, 0.0, "Hello World")
+		gltext.Printf("Roboto100", 0, 0, "Hello World")
 		gl.Color4f(0.5, 0.7, 0.5, 1.0)
 
-		gltext.Printf("Roboto50", 200.0, 400.0, "I'm some text")
+		gltext.Printf("Roboto30", 200, 400, "I'm some text")
 
 		glfw.PollEvents()
 		glfw.SwapBuffers("window")
