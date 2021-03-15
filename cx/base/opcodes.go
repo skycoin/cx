@@ -167,16 +167,16 @@ func init() {
 	Op(OP_OS_EXIT, "os.Exit", opOsExit, In(AI32), nil)
 
 	// json
-	Op(OP_JSON_OPEN, "json.Open", opJsonOpen, In(ASTR), Out(AI32))
-	Op(OP_JSON_CLOSE, "json.Close", opJsonClose, In(AI32), Out(ABOOL))
-	Op(OP_JSON_TOKEN_MORE, "json.More", opJsonTokenMore, In(AI32), Out(ABOOL, ABOOL))
-	Op(OP_JSON_TOKEN_NEXT, "json.Next", opJsonTokenNext, In(AI32), Out(AI32, ABOOL))
-	Op(OP_JSON_TOKEN_TYPE, "json.Type", opJsonTokenType, In(AI32), Out(AI32, ABOOL))
-	Op(OP_JSON_TOKEN_DELIM, "json.Delim", opJsonTokenDelim, In(AI32), Out(AI32, ABOOL))
-	Op(OP_JSON_TOKEN_BOOL, "json.Bool", opJsonTokenBool, In(AI32), Out(ABOOL, ABOOL))
-	Op(OP_JSON_TOKEN_F64, "json.Float64", opJsonTokenF64, In(AI32), Out(AF64, ABOOL))
-	Op(OP_JSON_TOKEN_I64, "json.Int64", opJsonTokenI64, In(AI32), Out(AI64, ABOOL))
-	Op(OP_JSON_TOKEN_STR, "json.Str", opJsonTokenStr, In(AI32), Out(ASTR, ABOOL))
+	Op_V2(OP_JSON_OPEN, "json.Open", opJsonOpen, In(ASTR), Out(AI32))
+	Op_V2(OP_JSON_CLOSE, "json.Close", opJsonClose, In(AI32), Out(ABOOL))
+	Op_V2(OP_JSON_TOKEN_MORE, "json.More", opJsonTokenMore, In(AI32), Out(ABOOL, ABOOL))
+	Op_V2(OP_JSON_TOKEN_NEXT, "json.Next", opJsonTokenNext, In(AI32), Out(AI32, ABOOL))
+	Op_V2(OP_JSON_TOKEN_TYPE, "json.Type", opJsonTokenType, In(AI32), Out(AI32, ABOOL))
+	Op_V2(OP_JSON_TOKEN_DELIM, "json.Delim", opJsonTokenDelim, In(AI32), Out(AI32, ABOOL))
+	Op_V2(OP_JSON_TOKEN_BOOL, "json.Bool", opJsonTokenBool, In(AI32), Out(ABOOL, ABOOL))
+	Op_V2(OP_JSON_TOKEN_F64, "json.Float64", opJsonTokenF64, In(AI32), Out(AF64, ABOOL))
+	Op_V2(OP_JSON_TOKEN_I64, "json.Int64", opJsonTokenI64, In(AI32), Out(AI64, ABOOL))
+	Op_V2(OP_JSON_TOKEN_STR, "json.Str", opJsonTokenStr, In(AI32), Out(ASTR, ABOOL))
 
 	// profile
 	Op_V2(OP_START_CPU_PROFILE, "StartCPUProfile", opStartProfile, In(ASTR, AI32), nil)
