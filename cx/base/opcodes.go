@@ -179,8 +179,8 @@ func init() {
 	Op(OP_JSON_TOKEN_STR, "json.Str", opJsonTokenStr, In(AI32), Out(ASTR, ABOOL))
 
 	// profile
-	Op(OP_START_CPU_PROFILE, "StartCPUProfile", opStartProfile, In(ASTR, AI32), nil)
-	Op(OP_STOP_CPU_PROFILE, "StopCPUProfile", opStopProfile, In(ASTR), nil)
+	Op_V2(OP_START_CPU_PROFILE, "StartCPUProfile", opStartProfile, In(ASTR, AI32), nil)
+	Op_V2(OP_STOP_CPU_PROFILE, "StopCPUProfile", opStopProfile, In(ASTR), nil)
 
 	// regexp
 	Op(OP_REGEXP_COMPILE, "regexp.Compile", opRegexpCompile, In(ASTR), Out(Struct("regexp", "Regexp", "r"), ASTR))
