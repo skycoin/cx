@@ -103,9 +103,9 @@ const (
 
 func init() {
 	// time
-	Op(OP_TIME_SLEEP, "time.Sleep", opTimeSleep, In(AI32), nil)
-	Op(OP_TIME_UNIX_MILLI, "time.UnixMilli", opTimeUnixMilli, nil, Out(AI64))
-	Op(OP_TIME_UNIX_NANO, "time.UnixNano", opTimeUnixNano, nil, Out(AI64))
+	Op_V2(OP_TIME_SLEEP, "time.Sleep", opTimeSleep, In(AI32), nil)
+	Op_V2(OP_TIME_UNIX_MILLI, "time.UnixMilli", opTimeUnixMilli, nil, Out(AI64))
+	Op_V2(OP_TIME_UNIX_NANO, "time.UnixNano", opTimeUnixNano, nil, Out(AI64))
 
 	// http
 	// Op(OP_HTTP_GET, "http.Get", opHttpGet, In(ASTR), Out(ASTR))

@@ -12,14 +12,14 @@ func makeTimestamp() int64 {
 	return time.Now().UnixNano() / (int64(time.Millisecond) / int64(time.Nanosecond))
 }
 
-func opTimeUnixMilli(expr *CXExpression, fp int) {
-	WriteI64(GetFinalOffset(fp, expr.Outputs[0]), makeTimestamp())
+func opTimeUnixMilli(inputs []CXValue, outputs []CXValue) {
+	outputs[0].Set_i64(makeTimestamp())
 }
 
-func opTimeUnixNano(expr *CXExpression, fp int) {
-	WriteI64(GetFinalOffset(fp, expr.Outputs[0]), time.Now().UnixNano())
+func opTimeUnixNano(inputs []CXValue, outputs []CXValue) {
+    outputs[0].Set_i64(time.Now().UnixNano())
 }
 
-func opTimeSleep(expr *CXExpression, fp int) {
-	time.Sleep(time.Duration(ReadI32(fp, expr.Inputs[0])) * time.Millisecond)
+func opTimeSleep(inputs []CXValue, outputs []CXValue) {
+	time.Sleep(time.Duration(inputs[0].Get_i32()) * time.Millisecond)
 }
