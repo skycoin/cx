@@ -24,7 +24,8 @@ func unsafeEval(code string) (out string) {
 	defer func() {
 		if r := recover(); r != nil {
 			out = fmt.Sprintf("%v", r)
-			lexer.Stop()
+			// lexer.Stop()
+			return
 		}
 	}()
 
@@ -45,9 +46,10 @@ func unsafeEval(code string) (out string) {
 	lexer = parser.NewLexer(bytes.NewBufferString(code))
 	parser.Parse(lexer)
 	//yyParse(lexer)
-
-	cxgo.AddInitFunction(actions.PRGRM)
-
+	err := cxgo.AddInitFunction(actions.PRGRM)
+	if err != nil {
+		return fmt.Sprintf("%s", err)
+	}
 	if err := actions.PRGRM.RunCompiled(0, nil); err != nil {
 		actions.PRGRM = cxcore.MakeProgram()
 		return fmt.Sprintf("%s", err)

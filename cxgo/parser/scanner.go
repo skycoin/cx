@@ -47,7 +47,9 @@ func (s *Lexer) init(r io.Reader, errh func(l, c int, msg string)) {
 }
 
 func (s *Lexer) start() { s.b = s.r - s.chw }
-func (s *Lexer) stop()  { s.b = -1 }
+func (s *Lexer) stop() {
+	s.b = -1
+}
 func (s *Lexer) segment() []byte {
 	return s.buf[s.b : s.r-s.chw]
 }

@@ -8,7 +8,7 @@ editor.getSession().setTabSize(4);
 editor.session.setUseSoftTabs(true);
 editor.getSession().setUseWrapMode(true);
 
-// ount
+// export
 var editorid_export = ace.edit('editorid_export');
 editorid_export.setTheme(theme);
 editorid_export.getSession().setMode(mode);
@@ -34,6 +34,7 @@ $().ready(function () {
     $.getJSON("playground/examples", function (inputData) {
         $.each(inputData, function (i) {
             $("#list").append("<option value='" + i + "'>" + inputData[i] + "</option>");
+            // $("#list").append("<li>" + inputData[i] + "</li>");
         });
     });
     $("#list").bind("change", function () {
@@ -68,15 +69,9 @@ $().ready(function () {
             cache: false,
             success: function (message) {
                 editorid_export.getSession().setValue(message)
-                // $("#editorid_export").text(function (i, origText) {
-                //     return message;
-                // });
             },
             error: function (message) {
                 editorid_export.getSession().setValue(message)
-                // $("#editorid_export").text(function (i, origText) {
-                //     return message;
-                // });
             }
         });
     });
