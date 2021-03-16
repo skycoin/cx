@@ -1,8 +1,0 @@
-// https://github.com/skycoin/cx/issues/279
-
-package main
-
-func main()() {
-	for i := 0; i < 8; ++i {
-	}
-}
