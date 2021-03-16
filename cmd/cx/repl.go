@@ -24,7 +24,8 @@ func unsafeEval(code string) (out string) {
 	defer func() {
 		if r := recover(); r != nil {
 			out = fmt.Sprintf("%v", r)
-			lexer.Stop()
+			// lexer.Stop()
+			return
 		}
 	}()
 
