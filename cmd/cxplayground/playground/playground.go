@@ -132,7 +132,8 @@ func unsafeeval(code string) (out string) {
 	defer func(lexer *parser.Lexer) {
 		if r := recover(); r != nil {
 			out = fmt.Sprintf("%v", r)
-			lexer.Stop()
+			// lexer.Stop()
+			return
 		}
 	}(lexer)
 
@@ -157,8 +158,10 @@ func unsafeeval(code string) (out string) {
 	parser.Parse(lexer)
 	//yyParse(lexer)
 
-	cxgo.AddInitFunction(actions.PRGRM)
-
+	err = cxgo.AddInitFunction(actions.PRGRM)
+	if err != nil {
+		return fmt.Sprintf("%s", err)
+	}
 	if err := actions.PRGRM.RunCompiled(0, nil); err != nil {
 		actions.PRGRM = cxcore.MakeProgram()
 		return fmt.Sprintf("%s", err)

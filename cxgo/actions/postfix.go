@@ -310,7 +310,9 @@ func PostfixExpressionField(prevExprs []*CXExpression, ident string) []*CXExpres
 		} else if strct, err := PRGRM.GetStruct(ident, imp.Name); err == nil {
 			prevExprs[len(prevExprs)-1].Outputs[0].CustomType = strct
 		} else {
-			panic(err)
+			// panic(err)
+			fmt.Println(err)
+			return nil
 		}
 	} else {
 		// then left is not a package name
