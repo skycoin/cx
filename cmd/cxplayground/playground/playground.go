@@ -30,7 +30,7 @@ type ExampleContent struct {
 }
 
 var InitPlayground = func(workingDir string) error {
-	examplesDir = filepath.Join(workingDir, "examples")
+	examplesDir = filepath.Join(workingDir, "../../examples")
 	exampleCollection = make(map[string]string)
 
 	exampleInfoList, err := ioutil.ReadDir(examplesDir)
@@ -116,7 +116,6 @@ func RunProgram(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 500)
 		return
 	}
-	fmt.Println(string(b))
 	var source SourceCode
 	if err := json.Unmarshal(b, &source); err != nil {
 		http.Error(w, err.Error(), 500)
@@ -130,16 +129,19 @@ func RunProgram(w http.ResponseWriter, r *http.Request) {
 
 func unsafeeval(code string) (out string) {
 	var lexer *parser.Lexer
-	defer func() {
+	defer func(lexer *parser.Lexer) {
 		if r := recover(); r != nil {
 			out = fmt.Sprintf("%v", r)
 			lexer.Stop()
 		}
-	}()
+	}(lexer)
 
 	// storing strings sent to standard output
 	old := os.Stdout
-	r, w, _ := os.Pipe()
+	r, w, err := os.Pipe()
+	if err != nil {
+		return fmt.Sprintf("%v", err)
+	}
 	os.Stdout = w
 
 	actions.LineNo = 0
