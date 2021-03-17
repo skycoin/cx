@@ -470,25 +470,74 @@ const (
 
 
 type CXValue struct {
-    arg *CXArgument
+    Arg *CXArgument
     Type int
-    fp int
     memory []byte
-    offset int
+    Offset int
     size int
-
+    FramePointer int
 
 	Used int8
 }
 
-func (value *CXValue) Get_bytes()([]byte) {
-    value.Used = TYPE_CUSTOM
-    return make([]byte, 0)
+func (value *CXValue) GetSlice_i8() interface{} {
+    value.Used = TYPE_SLICE
+    return ReadData_i8(value.FramePointer, value.Arg, TYPE_I8)
+}
+
+func (value *CXValue) GetSlice_i16() interface{} {
+    value.Used = TYPE_SLICE
+    return ReadData_ui16(value.FramePointer, value.Arg, TYPE_I16)
+}
+
+func (value *CXValue) GetSlice_i32() interface{} {
+    value.Used = TYPE_SLICE
+    return ReadData_i32(value.FramePointer, value.Arg, TYPE_I32)
+}
+
+func (value *CXValue) GetSlice_i64() interface{} {
+    value.Used = TYPE_SLICE
+    return ReadData_i64(value.FramePointer, value.Arg, TYPE_I64)
+}
+
+func (value *CXValue) GetSlice_ui8() interface{} {
+    value.Used = TYPE_SLICE
+    return ReadData_ui8(value.FramePointer, value.Arg, TYPE_UI8)
+}
+
+func (value *CXValue) GetSlice_ui16() interface{} {
+    value.Used = TYPE_SLICE
+    return ReadData_ui16(value.FramePointer, value.Arg, TYPE_UI16)
+}
+
+func (value *CXValue) GetSlice_ui32() interface{} {
+    value.Used = TYPE_SLICE
+    return ReadData_ui32(value.FramePointer, value.Arg, TYPE_UI32)
+}
+
+func (value *CXValue) GetSlice_ui64() interface{} {
+    value.Used = TYPE_SLICE
+    return ReadData_ui64(value.FramePointer, value.Arg, TYPE_UI64)
+}
+
+func (value *CXValue) GetSlice_f32() interface{} {
+    value.Used = TYPE_F32
+    return ReadData_f32(value.FramePointer, value.Arg, TYPE_F32)
+}
+
+func (value *CXValue) GetSlice_f64() interface{} {
+    value.Used = TYPE_SLICE
+    return ReadData_f64(value.FramePointer, value.Arg, TYPE_F64)
+}
+
+func (value *CXValue) SetSlice(data int32) {
+    value.Used = int8(value.Type)
+    WriteI32(value.Offset, data)
 }
 
 func (value *CXValue) Set_bytes(data []byte)() {
     value.Used = TYPE_CUSTOM
-    WriteMemory(value.offset, data)
+    WriteMemory(value.Offset, data)
 }
 
 func (value *CXValue) Get_i8()(int8) {
@@ -498,7 +547,7 @@ func (value *CXValue) Get_i8()(int8) {
 
 func (value *CXValue) Set_i8(data int8) {
 	value.Used = TYPE_I8
-    WriteI8(value.offset, data)
+    WriteI8(value.Offset, data)
 }
 
 func (value *CXValue) Get_i16()(int16) {
@@ -508,7 +557,7 @@ func (value *CXValue) Get_i16()(int16) {
 
 func (value *CXValue) Set_i16(data int16) {
 	value.Used = TYPE_I16
-    WriteI16(value.offset, data)
+    WriteI16(value.Offset, data)
 }
 
 func (value *CXValue) Get_i32()(int32) {
@@ -518,7 +567,7 @@ func (value *CXValue) Get_i32()(int32) {
 
 func (value *CXValue) Set_i32(data int32) {
 	value.Used = TYPE_I32
-    WriteI32(value.offset, data)
+    WriteI32(value.Offset, data)
 }
 
 func (value *CXValue) Get_i64()(int64) {
@@ -528,7 +577,7 @@ func (value *CXValue) Get_i64()(int64) {
 
 func (value *CXValue) Set_i64(data int64) {
 	value.Used = TYPE_I64
-    WriteI64(value.offset, data)
+    WriteI64(value.Offset, data)
 }
 
 func (value *CXValue) Get_ui8()(uint8) {
@@ -538,7 +587,7 @@ func (value *CXValue) Get_ui8()(uint8) {
 
 func (value *CXValue) Set_ui8(data uint8) {
 	value.Used = TYPE_UI8
-    WriteUI8(value.offset, data)
+    WriteUI8(value.Offset, data)
 }
 
 func (value *CXValue) Get_ui16()(uint16) {
@@ -548,7 +597,7 @@ func (value *CXValue) Get_ui16()(uint16) {
 
 func (value *CXValue) Set_ui16(data uint16) {
 	value.Used = TYPE_UI16
-    WriteUI16(value.offset, data)
+    WriteUI16(value.Offset, data)
 }
 
 func (value *CXValue) Get_ui32()(uint32) {
@@ -558,7 +607,7 @@ func (value *CXValue) Get_ui32()(uint32) {
 
 func (value *CXValue) Set_ui32(data uint32) {
 	value.Used = TYPE_UI32
-    WriteUI32(value.offset, data)
+    WriteUI32(value.Offset, data)
 }
 
 func (value *CXValue) Get_ui64()(uint64) {
@@ -568,7 +617,7 @@ func (value *CXValue) Get_ui64()(uint64) {
 
 func (value *CXValue) Set_ui64(data uint64) {
 	value.Used = TYPE_UI64
-    WriteUI64(value.offset, data)
+    WriteUI64(value.Offset, data)
 }
 
 func (value *CXValue) Get_f32()(float32) {
@@ -578,7 +627,7 @@ func (value *CXValue) Get_f32()(float32) {
 
 func (value *CXValue) Set_f32(data float32) {
 	value.Used = TYPE_F32
-    WriteF32(value.offset, data)
+    WriteF32(value.Offset, data)
 }
 
 func (value *CXValue) Get_f64()(float64) {
@@ -588,7 +637,7 @@ func (value *CXValue) Get_f64()(float64) {
 
 func (value *CXValue) Set_f64(data float64) {
 	value.Used = TYPE_F64
-    WriteF64(value.offset, data)
+    WriteF64(value.Offset, data)
 }
 
 func (value *CXValue) Get_bool()(bool) {
@@ -598,17 +647,17 @@ func (value *CXValue) Get_bool()(bool) {
 
 func (value *CXValue) Set_bool(data bool) {
 	value.Used = TYPE_BOOL
-    WriteBool(value.offset, data)
+    WriteBool(value.Offset, data)
 }
 
 func (value *CXValue) Get_str()(string) {
 	value.Used = TYPE_STR
-    return ReadStrFromOffset(value.offset, value.arg)
+    return ReadStrFromOffset(value.Offset, value.Arg)
 }
 
 func (value *CXValue) Set_str(data string) {
 	value.Used = TYPE_STR
-    WriteObject(value.offset, encoder.Serialize(data))
+    WriteObject(value.Offset, encoder.Serialize(data))
 }
 
 // OpcodeHandler ...

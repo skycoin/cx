@@ -13,7 +13,7 @@ import (
 	"syscall"
 	"time"
 
-	. "github.com/skycoin/cx/cx"
+    . "github.com/skycoin/cx/cx"
 )
 
 const (
@@ -25,12 +25,6 @@ const (
 var openFiles []*os.File
 var freeFiles []int32
 
-// helper function used to validate json handle from expr
-func validFileFromExpr(expr *CXExpression, fp int) *os.File {
-	handle := ReadI32(fp, expr.Inputs[0])
-	return ValidFile(handle)
-}
-
 // helper function used to validate file handle from i32
 func ValidFile(handle int32) *os.File {
 	if handle >= 0 && handle < int32(len(openFiles)) && openFiles[handle] != nil {
@@ -39,19 +33,19 @@ func ValidFile(handle int32) *os.File {
 	return nil
 }
 
-func opOsLogFile(expr *CXExpression, fp int) {
-	CXLogFile(ReadBool(fp, expr.Inputs[0]))
+func opOsLogFile(inputs []CXValue, outputs []CXValue) {
+	CXLogFile(inputs[0].Get_bool())
 }
 
-func opOsReadAllText(expr *CXExpression, fp int) {
+func opOsReadAllText(inputs []CXValue, outputs []CXValue) {
 	success := false
 
-	if byts, err := CXReadFile(ReadStr(fp, expr.Inputs[0])); err == nil {
-		WriteString(fp, string(byts), expr.Outputs[0])
+	if byts, err := CXReadFile(inputs[0].Get_str()); err == nil {
+        outputs[0].Set_str(string(byts))
 		success = true
 	}
 
-	WriteBool(GetFinalOffset(fp, expr.Outputs[1]), success)
+	outputs[1].Set_bool(success)
 }
 
 func getFileHandle(file *os.File) int32 {
@@ -74,28 +68,28 @@ func getFileHandle(file *os.File) int32 {
 	return handle
 }
 
-func opOsOpen(expr *CXExpression, fp int) {
+func opOsOpen(inputs []CXValue, outputs []CXValue) {
 	handle := int32(-1)
-	if file, err := CXOpenFile(ReadStr(fp, expr.Inputs[0])); err == nil {
+	if file, err := CXOpenFile(inputs[0].Get_str()); err == nil {
 		handle = getFileHandle(file)
 	}
 
-	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), int32(handle))
+	outputs[0].Set_i32(int32(handle))
 }
 
-func opOsCreate(expr *CXExpression, fp int) {
+func opOsCreate(inputs []CXValue, outputs []CXValue) {
 	handle := int32(-1)
-	if file, err := CXCreateFile(ReadStr(fp, expr.Inputs[0])); err == nil {
+	if file, err := CXCreateFile(inputs[0].Get_str()); err == nil {
 		handle = getFileHandle(file)
 	}
 
-	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), int32(handle))
+	outputs[0].Set_i32(int32(handle))
 }
 
-func opOsClose(expr *CXExpression, fp int) {
+func opOsClose(inputs []CXValue, outputs []CXValue) {
 	success := false
 
-	handle := ReadI32(fp, expr.Inputs[0])
+	handle := inputs[0].Get_i32()
 	if file := ValidFile(handle); file != nil {
 		if err := file.Close(); err == nil {
 			success = true
@@ -105,25 +99,25 @@ func opOsClose(expr *CXExpression, fp int) {
 		freeFiles = append(freeFiles, handle)
 	}
 
-	WriteBool(GetFinalOffset(fp, expr.Outputs[0]), success)
+	outputs[0].Set_bool(success)
 }
 
-func opOsSeek(expr *CXExpression, fp int) {
+func opOsSeek(inputs []CXValue, outputs []CXValue) {
 	offset := int64(-1)
-	if file := validFileFromExpr(expr, fp); file != nil {
+	if file := ValidFile(inputs[0].Get_i32()); file != nil {
 		var err error
-		if offset, err = file.Seek(ReadI64(fp, expr.Inputs[1]), int(ReadI32(fp, expr.Inputs[2]))); err != nil {
+		if offset, err = file.Seek(inputs[1].Get_i64(), int(inputs[2].Get_i32())); err != nil {
 			offset = -1
 		}
 	}
-	WriteI64(GetFinalOffset(fp, expr.Outputs[0]), offset)
+	outputs[0].Set_i64(offset)
 }
 
-func opOsReadStr(expr *CXExpression, fp int) {
+func opOsReadStr(inputs []CXValue, outputs []CXValue) {
 	var len uint64
 	var value string
 	success := false
-	if file := validFileFromExpr(expr, fp); file != nil {
+	if file := ValidFile(inputs[0].Get_i32()); file != nil {
 		if err := binary.Read(file, binary.LittleEndian, &len); err == nil {
 			bytes := make([]byte, len)
 			if err := binary.Read(file, binary.LittleEndian, &bytes); err == nil {
@@ -132,157 +126,157 @@ func opOsReadStr(expr *CXExpression, fp int) {
 			}
 		}
 	}
-	WriteString(fp, value, expr.Outputs[0])
-	WriteBool(GetFinalOffset(fp, expr.Outputs[1]), success)
+    outputs[0].Set_str(value)
+	outputs[1].Set_bool(success)
 }
 
-func opOsReadF64(expr *CXExpression, fp int) {
+func opOsReadF64(inputs []CXValue, outputs []CXValue) {
 	var value float64
 	success := false
-	if file := validFileFromExpr(expr, fp); file != nil {
+	if file := ValidFile(inputs[0].Get_i32()); file != nil {
 		if err := binary.Read(file, binary.LittleEndian, &value); err == nil {
 			success = true
 		}
 	}
 
-	WriteF64(GetFinalOffset(fp, expr.Outputs[0]), value)
-	WriteBool(GetFinalOffset(fp, expr.Outputs[1]), success)
+	outputs[0].Set_f64(value)
+	outputs[1].Set_bool(success)
 }
 
-func opOsReadF32(expr *CXExpression, fp int) {
+func opOsReadF32(inputs []CXValue, outputs []CXValue) {
 	var value float32
 	success := false
-	if file := validFileFromExpr(expr, fp); file != nil {
+	if file := ValidFile(inputs[0].Get_i32()); file != nil {
 		if err := binary.Read(file, binary.LittleEndian, &value); err == nil {
 			success = true
 		}
 	}
 
-	WriteF32(GetFinalOffset(fp, expr.Outputs[0]), value)
-	WriteBool(GetFinalOffset(fp, expr.Outputs[1]), success)
+    outputs[0].Set_f32(value)
+	outputs[1].Set_bool(success)
 }
 
-func opOsReadUI64(expr *CXExpression, fp int) {
+func opOsReadUI64(inputs []CXValue, outputs []CXValue) {
 	var value uint64
 	success := false
-	if file := validFileFromExpr(expr, fp); file != nil {
+	if file := ValidFile(inputs[0].Get_i32()); file != nil {
 		if err := binary.Read(file, binary.LittleEndian, &value); err == nil {
 			success = true
 		}
 	}
 
-	WriteUI64(GetFinalOffset(fp, expr.Outputs[0]), value)
-	WriteBool(GetFinalOffset(fp, expr.Outputs[1]), success)
+    outputs[0].Set_ui64(value)
+	outputs[1].Set_bool(success)
 }
 
-func opOsReadUI32(expr *CXExpression, fp int) {
+func opOsReadUI32(inputs []CXValue, outputs []CXValue) {
 	var value uint32
 	success := false
-	if file := validFileFromExpr(expr, fp); file != nil {
+	if file := ValidFile(inputs[0].Get_i32()); file != nil {
 		if err := binary.Read(file, binary.LittleEndian, &value); err == nil {
 			success = true
 		}
 	}
 
-	WriteUI32(GetFinalOffset(fp, expr.Outputs[0]), value)
-	WriteBool(GetFinalOffset(fp, expr.Outputs[1]), success)
+    outputs[0].Set_ui32(value)
+	outputs[1].Set_bool(success)
 }
 
-func opOsReadUI16(expr *CXExpression, fp int) {
+func opOsReadUI16(inputs []CXValue, outputs []CXValue) {
 	var value uint16
 	success := false
-	if file := validFileFromExpr(expr, fp); file != nil {
+	if file := ValidFile(inputs[0].Get_i32()); file != nil {
 		if err := binary.Read(file, binary.LittleEndian, &value); err == nil {
 			success = true
 		}
 	}
 
-	WriteUI16(GetFinalOffset(fp, expr.Outputs[0]), value)
-	WriteBool(GetFinalOffset(fp, expr.Outputs[1]), success)
+    outputs[0].Set_ui16(value)
+	outputs[1].Set_bool(success)
 }
 
-func opOsReadUI8(expr *CXExpression, fp int) {
+func opOsReadUI8(inputs []CXValue, outputs []CXValue) {
 	var value uint8
 	success := false
-	if file := validFileFromExpr(expr, fp); file != nil {
+	if file := ValidFile(inputs[0].Get_i32()); file != nil {
 		if err := binary.Read(file, binary.LittleEndian, &value); err == nil {
 			success = true
 		}
 	}
 
-	WriteUI8(GetFinalOffset(fp, expr.Outputs[0]), value)
-	WriteBool(GetFinalOffset(fp, expr.Outputs[1]), success)
+    outputs[0].Set_ui8(value)
+	outputs[1].Set_bool(success)
 }
 
-func opOsReadI64(expr *CXExpression, fp int) {
+func opOsReadI64(inputs []CXValue, outputs []CXValue) {
 	var value int64
 	success := false
-	if file := validFileFromExpr(expr, fp); file != nil {
+	if file := ValidFile(inputs[0].Get_i32()); file != nil {
 		if err := binary.Read(file, binary.LittleEndian, &value); err == nil {
 			success = true
 		}
 	}
 
-	WriteI64(GetFinalOffset(fp, expr.Outputs[0]), value)
-	WriteBool(GetFinalOffset(fp, expr.Outputs[1]), success)
+	outputs[0].Set_i64(value)
+	outputs[1].Set_bool(success)
 }
 
-func opOsReadI32(expr *CXExpression, fp int) {
+func opOsReadI32(inputs []CXValue, outputs []CXValue) {
 	var value int32
 	success := false
-	if file := validFileFromExpr(expr, fp); file != nil {
+	if file := ValidFile(inputs[0].Get_i32()); file != nil {
 		if err := binary.Read(file, binary.LittleEndian, &value); err == nil {
 			success = true
 		}
 	}
 
-	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), value)
-	WriteBool(GetFinalOffset(fp, expr.Outputs[1]), success)
+	outputs[0].Set_i32(value)
+	outputs[1].Set_bool(success)
 }
 
-func opOsReadI16(expr *CXExpression, fp int) {
+func opOsReadI16(inputs []CXValue, outputs []CXValue) {
 	var value int16
 	success := false
-	if file := validFileFromExpr(expr, fp); file != nil {
+	if file := ValidFile(inputs[0].Get_i32()); file != nil {
 		if err := binary.Read(file, binary.LittleEndian, &value); err == nil {
 			success = true
 		}
 	}
 
-	WriteI16(GetFinalOffset(fp, expr.Outputs[0]), value)
-	WriteBool(GetFinalOffset(fp, expr.Outputs[1]), success)
+    outputs[0].Set_i16(value)
+	outputs[1].Set_bool(success)
 }
 
-func opOsReadI8(expr *CXExpression, fp int) {
+func opOsReadI8(inputs []CXValue, outputs []CXValue) {
 	var value int8
 	success := false
-	if file := validFileFromExpr(expr, fp); file != nil {
+	if file := ValidFile(inputs[0].Get_i32()); file != nil {
 		if err := binary.Read(file, binary.LittleEndian, &value); err == nil {
 			success = true
 		}
 	}
 
-	WriteI8(GetFinalOffset(fp, expr.Outputs[0]), value)
-	WriteBool(GetFinalOffset(fp, expr.Outputs[1]), success)
+    outputs[0].Set_i8(value)
+	outputs[1].Set_bool(success)
 }
 
-func opOsReadBOOL(expr *CXExpression, fp int) {
+func opOsReadBOOL(inputs []CXValue, outputs []CXValue) {
 	var value bool
 	success := false
-	if file := validFileFromExpr(expr, fp); file != nil {
+	if file := ValidFile(inputs[0].Get_i32()); file != nil {
 		if err := binary.Read(file, binary.LittleEndian, &value); err == nil {
 			success = true
 		}
 	}
 
-	WriteBool(GetFinalOffset(fp, expr.Outputs[0]), value)
-	WriteBool(GetFinalOffset(fp, expr.Outputs[1]), success)
+	outputs[0].Set_bool(value)
+	outputs[1].Set_bool(success)
 }
 
-func opOsWriteStr(expr *CXExpression, fp int) {
+func opOsWriteStr(inputs []CXValue, outputs []CXValue) {
 	success := false
-	if file := validFileFromExpr(expr, fp); file != nil {
-		value := ReadStr(fp, expr.Inputs[1])
+	if file := ValidFile(inputs[0].Get_i32()); file != nil {
+		value := inputs[1].Get_str()
 		len := len(value)
 		if err := binary.Write(file, binary.LittleEndian, uint64(len)); err == nil {
 			if err := binary.Write(file, binary.LittleEndian, []byte(value)); err == nil {
@@ -291,147 +285,149 @@ func opOsWriteStr(expr *CXExpression, fp int) {
 		}
 	}
 
-	WriteBool(GetFinalOffset(fp, expr.Outputs[0]), success)
+	outputs[0].Set_bool(success)
 }
 
-func opOsWriteF64(expr *CXExpression, fp int) {
+func opOsWriteF64(inputs []CXValue, outputs []CXValue) {
 	success := false
-	if file := validFileFromExpr(expr, fp); file != nil {
-		if err := binary.Write(file, binary.LittleEndian, ReadF64(fp, expr.Inputs[1])); err == nil {
+	if file := ValidFile(inputs[0].Get_i32()); file != nil {
+		if err := binary.Write(file, binary.LittleEndian, inputs[1].Get_f64()); err == nil {
 			success = true
 		}
 	}
 
-	WriteBool(GetFinalOffset(fp, expr.Outputs[0]), success)
+	outputs[0].Set_bool(success)
 }
 
-func opOsWriteF32(expr *CXExpression, fp int) {
+func opOsWriteF32(inputs []CXValue, outputs []CXValue) {
 	success := false
-	if file := validFileFromExpr(expr, fp); file != nil {
-		if err := binary.Write(file, binary.LittleEndian, ReadF32(fp, expr.Inputs[1])); err == nil {
+	if file := ValidFile(inputs[0].Get_i32()); file != nil {
+		if err := binary.Write(file, binary.LittleEndian, inputs[1].Get_f32()); err == nil {
 			success = true
 		}
 	}
 
-	WriteBool(GetFinalOffset(fp, expr.Outputs[0]), success)
+	outputs[0].Set_bool(success)
 }
 
-func opOsWriteUI64(expr *CXExpression, fp int) {
+func opOsWriteUI64(inputs []CXValue, outputs []CXValue) {
 	success := false
-	if file := validFileFromExpr(expr, fp); file != nil {
-		if err := binary.Write(file, binary.LittleEndian, ReadUI64(fp, expr.Inputs[1])); err == nil {
+	if file := ValidFile(inputs[0].Get_i32()); file != nil {
+		if err := binary.Write(file, binary.LittleEndian, inputs[1].Get_ui64()); err == nil {
 			success = true
 		}
 	}
 
-	WriteBool(GetFinalOffset(fp, expr.Outputs[0]), success)
+	outputs[0].Set_bool(success)
 }
 
-func opOsWriteUI32(expr *CXExpression, fp int) {
+func opOsWriteUI32(inputs []CXValue, outputs []CXValue) {
 	success := false
-	if file := validFileFromExpr(expr, fp); file != nil {
-		if err := binary.Write(file, binary.LittleEndian, ReadUI32(fp, expr.Inputs[1])); err == nil {
+	if file := ValidFile(inputs[0].Get_i32()); file != nil {
+		if err := binary.Write(file, binary.LittleEndian, inputs[1].Get_i32()); err == nil {
 			success = true
 		}
 	}
 
-	WriteBool(GetFinalOffset(fp, expr.Outputs[0]), success)
+	outputs[0].Set_bool(success)
 }
 
-func opOsWriteUI16(expr *CXExpression, fp int) {
+func opOsWriteUI16(inputs []CXValue, outputs []CXValue) {
 	success := false
-	if file := validFileFromExpr(expr, fp); file != nil {
-		if err := binary.Write(file, binary.LittleEndian, ReadUI16(fp, expr.Inputs[1])); err == nil {
+	if file := ValidFile(inputs[0].Get_i32()); file != nil {
+		if err := binary.Write(file, binary.LittleEndian, inputs[1].Get_ui16()); err == nil {
 			success = true
 		}
 	}
 
-	WriteBool(GetFinalOffset(fp, expr.Outputs[0]), success)
+	outputs[0].Set_bool(success)
 }
 
-func opOsWriteUI8(expr *CXExpression, fp int) {
+func opOsWriteUI8(inputs []CXValue, outputs []CXValue) {
 	success := false
-	if file := validFileFromExpr(expr, fp); file != nil {
-		if err := binary.Write(file, binary.LittleEndian, ReadUI8(fp, expr.Inputs[1])); err == nil {
+	if file := ValidFile(inputs[0].Get_i32()); file != nil {
+		if err := binary.Write(file, binary.LittleEndian, inputs[1].Get_ui8()); err == nil {
 			success = true
 		}
 	}
 
-	WriteBool(GetFinalOffset(fp, expr.Outputs[0]), success)
+	outputs[0].Set_bool(success)
 }
 
-func opOsWriteI64(expr *CXExpression, fp int) {
+func opOsWriteI64(inputs []CXValue, outputs []CXValue) {
 	success := false
-	if file := validFileFromExpr(expr, fp); file != nil {
-		if err := binary.Write(file, binary.LittleEndian, ReadI64(fp, expr.Inputs[1])); err == nil {
+	if file := ValidFile(inputs[0].Get_i32()); file != nil {
+		if err := binary.Write(file, binary.LittleEndian, inputs[1].Get_i64()); err == nil {
 			success = true
 		}
 	}
 
-	WriteBool(GetFinalOffset(fp, expr.Outputs[0]), success)
+	outputs[0].Set_bool(success)
 }
 
-func opOsWriteI32(expr *CXExpression, fp int) {
+func opOsWriteI32(inputs []CXValue, outputs []CXValue) {
 	success := false
-	if file := validFileFromExpr(expr, fp); file != nil {
-		if err := binary.Write(file, binary.LittleEndian, ReadI32(fp, expr.Inputs[1])); err == nil {
+	if file := ValidFile(inputs[0].Get_i32()); file != nil {
+		if err := binary.Write(file, binary.LittleEndian, inputs[1].Get_i32()); err == nil {
 			success = true
 		}
 	}
 
-	WriteBool(GetFinalOffset(fp, expr.Outputs[0]), success)
+	outputs[0].Set_bool(success)
 }
 
-func opOsWriteI16(expr *CXExpression, fp int) {
+func opOsWriteI16(inputs []CXValue, outputs []CXValue) {
 	success := false
-	if file := validFileFromExpr(expr, fp); file != nil {
-		if err := binary.Write(file, binary.LittleEndian, ReadI16(fp, expr.Inputs[1])); err == nil {
+	if file := ValidFile(inputs[0].Get_i32()); file != nil {
+		if err := binary.Write(file, binary.LittleEndian, inputs[1].Get_i16()); err == nil {
 			success = true
 		}
 	}
 
-	WriteBool(GetFinalOffset(fp, expr.Outputs[0]), success)
+	outputs[0].Set_bool(success)
 }
 
-func opOsWriteI8(expr *CXExpression, fp int) {
+func opOsWriteI8(inputs []CXValue, outputs []CXValue) {
 	success := false
-	if file := validFileFromExpr(expr, fp); file != nil {
-		if err := binary.Write(file, binary.LittleEndian, ReadI8(fp, expr.Inputs[1])); err == nil {
+	if file := ValidFile(inputs[0].Get_i32()); file != nil {
+		if err := binary.Write(file, binary.LittleEndian, inputs[1].Get_i8()); err == nil {
 			success = true
 		}
 	}
 
-	WriteBool(GetFinalOffset(fp, expr.Outputs[0]), success)
+	outputs[0].Set_bool(success)
 }
 
-func opOsWriteBOOL(expr *CXExpression, fp int) {
+func opOsWriteBOOL(inputs []CXValue, outputs []CXValue) {
 	success := false
-	if file := validFileFromExpr(expr, fp); file != nil {
-		if err := binary.Write(file, binary.LittleEndian, ReadBool(fp, expr.Inputs[1])); err == nil {
+	if file := ValidFile(inputs[0].Get_i32()); file != nil {
+		if err := binary.Write(file, binary.LittleEndian, inputs[1].Get_bool()); err == nil {
 			success = true
 		}
 	}
 
-	WriteBool(GetFinalOffset(fp, expr.Outputs[0]), success)
+	outputs[0].Set_bool(success)
 }
 
-func getSlice(expr *CXExpression, fp int) (outputSlicePointer int, outputSliceOffset int32, sizeofElement int, count uint64) {
-	inp1, out0 := expr.Inputs[1], expr.Outputs[0]
+func getSlice(inputs []CXValue, outputs []CXValue) (outputSlicePointer int, outputSliceOffset int32, sizeofElement int, count uint64) {
+	inp1, out0 := inputs[1].Arg, outputs[0].Arg
+    
 	if inp1.Type != out0.Type || !GetAssignmentElement(inp1).IsSlice || !GetAssignmentElement(out0).IsSlice {
 		panic(CX_RUNTIME_INVALID_ARGUMENT)
 	}
-	count = ReadUI64(fp, expr.Inputs[2])
-	outputSlicePointer = GetFinalOffset(fp, out0)
+    inputs[1].Used = int8(inp1.Type)
+	count = inputs[2].Get_ui64()
+	outputSlicePointer = outputs[0].Offset
 	sizeofElement = GetAssignmentElement(inp1).Size
-	outputSliceOffset = int32(SliceResize(fp, out0, inp1, int32(count), sizeofElement))
+	outputSliceOffset = int32(SliceResize(outputs[0].FramePointer, out0, inp1, int32(count), sizeofElement))
 	return
 }
 
-func opOsReadF64Slice(expr *CXExpression, fp int) {
+func opOsReadF64Slice(inputs []CXValue, outputs []CXValue) {
 	success := false
-	outputSlicePointer, outputSliceOffset, sizeofElement, count := getSlice(expr, fp)
+    _, outputSliceOffset, sizeofElement, count := getSlice(inputs, outputs)
 	if count > 0 {
-		if file := validFileFromExpr(expr, fp); file != nil {
+		if file := ValidFile(inputs[0].Get_i32()); file != nil {
 			values := make([]float64, count)
 			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
 				success = true
@@ -443,15 +439,15 @@ func opOsReadF64Slice(expr *CXExpression, fp int) {
 		}
 	}
 
-	WriteI32(outputSlicePointer, outputSliceOffset)
-	WriteBool(GetFinalOffset(fp, expr.Outputs[1]), success)
+	outputs[0].SetSlice(outputSliceOffset)
+	outputs[1].Set_bool(success)
 }
 
-func opOsReadF32Slice(expr *CXExpression, fp int) {
+func opOsReadF32Slice(inputs []CXValue, outputs []CXValue) {
 	success := false
-	outputSlicePointer, outputSliceOffset, sizeofElement, count := getSlice(expr, fp)
+	_, outputSliceOffset, sizeofElement, count := getSlice(inputs, outputs)
 	if count > 0 {
-		if file := validFileFromExpr(expr, fp); file != nil {
+		if file := ValidFile(inputs[0].Get_i32()); file != nil {
 			values := make([]float32, count)
 			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
 				success = true
@@ -463,15 +459,15 @@ func opOsReadF32Slice(expr *CXExpression, fp int) {
 		}
 	}
 
-	WriteI32(outputSlicePointer, outputSliceOffset)
-	WriteBool(GetFinalOffset(fp, expr.Outputs[1]), success)
+    outputs[0].SetSlice(outputSliceOffset)
+	outputs[1].Set_bool(success)
 }
 
-func opOsReadUI64Slice(expr *CXExpression, fp int) {
+func opOsReadUI64Slice(inputs []CXValue, outputs []CXValue) {
 	success := false
-	outputSlicePointer, outputSliceOffset, sizeofElement, count := getSlice(expr, fp)
+	_, outputSliceOffset, sizeofElement, count := getSlice(inputs, outputs)
 	if count > 0 {
-		if file := validFileFromExpr(expr, fp); file != nil {
+		if file := ValidFile(inputs[0].Get_i32()); file != nil {
 			values := make([]uint64, count)
 			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
 				success = true
@@ -483,15 +479,15 @@ func opOsReadUI64Slice(expr *CXExpression, fp int) {
 		}
 	}
 
-	WriteI32(outputSlicePointer, outputSliceOffset)
-	WriteBool(GetFinalOffset(fp, expr.Outputs[1]), success)
+	outputs[0].SetSlice(outputSliceOffset)
+	outputs[1].Set_bool(success)
 }
 
-func opOsReadUI32Slice(expr *CXExpression, fp int) {
+func opOsReadUI32Slice(inputs []CXValue, outputs []CXValue) {
 	success := false
-	outputSlicePointer, outputSliceOffset, sizeofElement, count := getSlice(expr, fp)
+	_, outputSliceOffset, sizeofElement, count := getSlice(inputs, outputs)
 	if count > 0 {
-		if file := validFileFromExpr(expr, fp); file != nil {
+		if file := ValidFile(inputs[0].Get_i32()); file != nil {
 			values := make([]uint32, count)
 			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
 				success = true
@@ -503,15 +499,15 @@ func opOsReadUI32Slice(expr *CXExpression, fp int) {
 		}
 	}
 
-	WriteI32(outputSlicePointer, outputSliceOffset)
-	WriteBool(GetFinalOffset(fp, expr.Outputs[1]), success)
+	outputs[0].SetSlice(outputSliceOffset)
+	outputs[1].Set_bool(success)
 }
 
-func opOsReadUI16Slice(expr *CXExpression, fp int) {
+func opOsReadUI16Slice(inputs []CXValue, outputs []CXValue) {
 	success := false
-	outputSlicePointer, outputSliceOffset, sizeofElement, count := getSlice(expr, fp)
+    _, outputSliceOffset, sizeofElement, count := getSlice(inputs, outputs)
 	if count > 0 {
-		if file := validFileFromExpr(expr, fp); file != nil {
+		if file := ValidFile(inputs[0].Get_i32()); file != nil {
 			values := make([]uint16, count)
 			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
 				success = true
@@ -523,15 +519,15 @@ func opOsReadUI16Slice(expr *CXExpression, fp int) {
 		}
 	}
 
-	WriteI32(outputSlicePointer, outputSliceOffset)
-	WriteBool(GetFinalOffset(fp, expr.Outputs[1]), success)
+	outputs[0].SetSlice(outputSliceOffset)
+	outputs[1].Set_bool(success)
 }
 
-func opOsReadUI8Slice(expr *CXExpression, fp int) {
+func opOsReadUI8Slice(inputs []CXValue, outputs []CXValue) {
 	success := false
-	outputSlicePointer, outputSliceOffset, sizeofElement, count := getSlice(expr, fp)
+	_, outputSliceOffset, sizeofElement, count := getSlice(inputs, outputs)
 	if count > 0 {
-		if file := validFileFromExpr(expr, fp); file != nil {
+		if file := ValidFile(inputs[0].Get_i32()); file != nil {
 			values := make([]uint8, count)
 			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
 				success = true
@@ -543,15 +539,15 @@ func opOsReadUI8Slice(expr *CXExpression, fp int) {
 		}
 	}
 
-	WriteI32(outputSlicePointer, outputSliceOffset)
-	WriteBool(GetFinalOffset(fp, expr.Outputs[1]), success)
+	outputs[0].SetSlice(outputSliceOffset)
+	outputs[1].Set_bool(success)
 }
 
-func opOsReadI64Slice(expr *CXExpression, fp int) {
+func opOsReadI64Slice(inputs []CXValue, outputs []CXValue) {
 	success := false
-	outputSlicePointer, outputSliceOffset, sizeofElement, count := getSlice(expr, fp)
+    _, outputSliceOffset, sizeofElement, count := getSlice(inputs, outputs)
 	if count > 0 {
-		if file := validFileFromExpr(expr, fp); file != nil {
+		if file := ValidFile(inputs[0].Get_i32()); file != nil {
 			values := make([]int64, count)
 			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
 				success = true
@@ -563,15 +559,15 @@ func opOsReadI64Slice(expr *CXExpression, fp int) {
 		}
 	}
 
-	WriteI32(outputSlicePointer, outputSliceOffset)
-	WriteBool(GetFinalOffset(fp, expr.Outputs[1]), success)
+	outputs[0].SetSlice(outputSliceOffset)
+	outputs[1].Set_bool(success)
 }
 
-func opOsReadI32Slice(expr *CXExpression, fp int) {
+func opOsReadI32Slice(inputs []CXValue, outputs []CXValue) {
 	success := false
-	outputSlicePointer, outputSliceOffset, sizeofElement, count := getSlice(expr, fp)
+	_, outputSliceOffset, sizeofElement, count := getSlice(inputs, outputs)
 	if count > 0 {
-		if file := validFileFromExpr(expr, fp); file != nil {
+		if file := ValidFile(inputs[0].Get_i32()); file != nil {
 			values := make([]int32, count)
 			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
 				success = true
@@ -583,15 +579,15 @@ func opOsReadI32Slice(expr *CXExpression, fp int) {
 		}
 	}
 
-	WriteI32(outputSlicePointer, outputSliceOffset)
-	WriteBool(GetFinalOffset(fp, expr.Outputs[1]), success)
+	outputs[0].SetSlice(outputSliceOffset)
+	outputs[1].Set_bool(success)
 }
 
-func opOsReadI16Slice(expr *CXExpression, fp int) {
+func opOsReadI16Slice(inputs []CXValue, outputs []CXValue) {
 	success := false
-	outputSlicePointer, outputSliceOffset, sizeofElement, count := getSlice(expr, fp)
+	_, outputSliceOffset, sizeofElement, count := getSlice(inputs, outputs)
 	if count > 0 {
-		if file := validFileFromExpr(expr, fp); file != nil {
+		if file := ValidFile(inputs[0].Get_i32()); file != nil {
 			values := make([]int16, count)
 			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
 				success = true
@@ -603,15 +599,15 @@ func opOsReadI16Slice(expr *CXExpression, fp int) {
 		}
 	}
 
-	WriteI32(outputSlicePointer, outputSliceOffset)
-	WriteBool(GetFinalOffset(fp, expr.Outputs[1]), success)
+	outputs[0].SetSlice(outputSliceOffset)
+	outputs[1].Set_bool(success)
 }
 
-func opOsReadI8Slice(expr *CXExpression, fp int) {
+func opOsReadI8Slice(inputs []CXValue, outputs []CXValue) {
 	success := false
-	outputSlicePointer, outputSliceOffset, sizeofElement, count := getSlice(expr, fp)
+	_, outputSliceOffset, sizeofElement, count := getSlice(inputs, outputs)
 	if count > 0 {
-		if file := validFileFromExpr(expr, fp); file != nil {
+		if file := ValidFile(inputs[0].Get_i32()); file != nil {
 			values := make([]int8, count)
 			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
 				success = true
@@ -623,144 +619,144 @@ func opOsReadI8Slice(expr *CXExpression, fp int) {
 		}
 	}
 
-	WriteI32(outputSlicePointer, outputSliceOffset)
-	WriteBool(GetFinalOffset(fp, expr.Outputs[1]), success)
+	outputs[0].SetSlice(outputSliceOffset)
+	outputs[1].Set_bool(success)
 }
 
-func opOsWriteF64Slice(expr *CXExpression, fp int) {
+func opOsWriteF64Slice(inputs []CXValue, outputs []CXValue) {
 	success := false
-	if file := validFileFromExpr(expr, fp); file != nil {
-		if data := ReadData_f64(fp, expr.Inputs[1], TYPE_F64); data != nil {
+	if file := ValidFile(inputs[0].Get_i32()); file != nil {
+		if data := inputs[1].GetSlice_f64(); data != nil {
 			if err := binary.Write(file, binary.LittleEndian, data); err == nil {
 				success = true
 			}
 		}
 	}
-	WriteBool(GetFinalOffset(fp, expr.Outputs[0]), success)
+	outputs[0].Set_bool(success)
 }
 
-func opOsWriteF32Slice(expr *CXExpression, fp int) {
+func opOsWriteF32Slice(inputs []CXValue, outputs []CXValue) {
 	success := false
-	if file := validFileFromExpr(expr, fp); file != nil {
-		if data := ReadData_f32(fp, expr.Inputs[1], TYPE_F32); data != nil {
+	if file := ValidFile(inputs[0].Get_i32()); file != nil {
+		if data := inputs[1].GetSlice_f32(); data != nil {
 			if err := binary.Write(file, binary.LittleEndian, data); err == nil {
 				success = true
 			}
 		}
 	}
-	WriteBool(GetFinalOffset(fp, expr.Outputs[0]), success)
+	outputs[0].Set_bool(success)
 }
 
-func opOsWriteUI64Slice(expr *CXExpression, fp int) {
+func opOsWriteUI64Slice(inputs []CXValue, outputs []CXValue) {
 	success := false
-	if file := validFileFromExpr(expr, fp); file != nil {
-		if data := ReadData_ui64(fp, expr.Inputs[1], TYPE_UI64); data != nil {
+	if file := ValidFile(inputs[0].Get_i32()); file != nil {
+		if data := inputs[1].GetSlice_f64(); data != nil {
 			if err := binary.Write(file, binary.LittleEndian, data); err == nil {
 				success = true
 			}
 		}
 	}
-	WriteBool(GetFinalOffset(fp, expr.Outputs[0]), success)
+	outputs[0].Set_bool(success)
 }
 
-func opOsWriteUI32Slice(expr *CXExpression, fp int) {
+func opOsWriteUI32Slice(inputs []CXValue, outputs []CXValue) {
 	success := false
-	if file := validFileFromExpr(expr, fp); file != nil {
-		if data := ReadData_ui32(fp, expr.Inputs[1], TYPE_UI32); data != nil {
+	if file := ValidFile(inputs[0].Get_i32()); file != nil {
+		if data := inputs[1].GetSlice_ui32(); data != nil {
 			if err := binary.Write(file, binary.LittleEndian, data); err == nil {
 				success = true
 			}
 		}
 	}
-	WriteBool(GetFinalOffset(fp, expr.Outputs[0]), success)
+	outputs[0].Set_bool(success)
 }
 
-func opOsWriteUI16Slice(expr *CXExpression, fp int) {
+func opOsWriteUI16Slice(inputs []CXValue, outputs []CXValue) {
 	success := false
-	if file := validFileFromExpr(expr, fp); file != nil {
-		if data := ReadData_ui16(fp, expr.Inputs[1], TYPE_UI16); data != nil {
+	if file := ValidFile(inputs[0].Get_i32()); file != nil {
+		if data := inputs[1].GetSlice_ui16(); data != nil {
 			if err := binary.Write(file, binary.LittleEndian, data); err == nil {
 				success = true
 			}
 		}
 	}
-	WriteBool(GetFinalOffset(fp, expr.Outputs[0]), success)
+	outputs[0].Set_bool(success)
 }
 
-func opOsWriteUI8Slice(expr *CXExpression, fp int) {
+func opOsWriteUI8Slice(inputs []CXValue, outputs []CXValue) {
 	success := false
-	if file := validFileFromExpr(expr, fp); file != nil {
-		if data := ReadData_ui8(fp, expr.Inputs[1], TYPE_UI8); data != nil {
+	if file := ValidFile(inputs[0].Get_i32()); file != nil {
+		if data := inputs[1].GetSlice_ui8(); data != nil {
 			if err := binary.Write(file, binary.LittleEndian, data); err == nil {
 				success = true
 			}
 		}
 	}
-	WriteBool(GetFinalOffset(fp, expr.Outputs[0]), success)
+	outputs[0].Set_bool(success)
 }
 
-func opOsWriteI64Slice(expr *CXExpression, fp int) {
+func opOsWriteI64Slice(inputs []CXValue, outputs []CXValue) {
 	success := false
-	if file := validFileFromExpr(expr, fp); file != nil {
-		if data := ReadData_i64(fp, expr.Inputs[1], TYPE_I64); data != nil {
+	if file := ValidFile(inputs[0].Get_i32()); file != nil {
+		if data := inputs[1].GetSlice_i64(); data != nil {
 			if err := binary.Write(file, binary.LittleEndian, data); err == nil {
 				success = true
 			}
 		}
 	}
-	WriteBool(GetFinalOffset(fp, expr.Outputs[0]), success)
+	outputs[0].Set_bool(success)
 }
 
-func opOsWriteI32Slice(expr *CXExpression, fp int) {
+func opOsWriteI32Slice(inputs []CXValue, outputs []CXValue) {
 	success := false
-	if file := validFileFromExpr(expr, fp); file != nil {
-		if data := ReadData_i32(fp, expr.Inputs[1], TYPE_I32); data != nil {
+	if file := ValidFile(inputs[0].Get_i32()); file != nil {
+		if data := inputs[1].GetSlice_i32(); data != nil {
 			if err := binary.Write(file, binary.LittleEndian, data); err == nil {
 				success = true
 			}
 		}
 	}
-	WriteBool(GetFinalOffset(fp, expr.Outputs[0]), success)
+	outputs[0].Set_bool(success)
 }
 
-func opOsWriteI16Slice(expr *CXExpression, fp int) {
+func opOsWriteI16Slice(inputs []CXValue, outputs []CXValue) {
 	success := false
-	if file := validFileFromExpr(expr, fp); file != nil {
-		if data := ReadData_i16(fp, expr.Inputs[1], TYPE_I16); data != nil {
+	if file := ValidFile(inputs[0].Get_i32()); file != nil {
+		if data := inputs[1].GetSlice_i16(); data != nil {
 			if err := binary.Write(file, binary.LittleEndian, data); err == nil {
 				success = true
 			}
 		}
 	}
-	WriteBool(GetFinalOffset(fp, expr.Outputs[0]), success)
+	outputs[0].Set_bool(success)
 }
 
-func opOsWriteI8Slice(expr *CXExpression, fp int) {
+func opOsWriteI8Slice(inputs []CXValue, outputs []CXValue) {
 	success := false
-	if file := validFileFromExpr(expr, fp); file != nil {
-		if data := ReadData_i8(fp, expr.Inputs[1], TYPE_I8); data != nil {
+	if file := ValidFile(inputs[0].Get_i32()); file != nil {
+		if data := inputs[1].GetSlice_i8(); data != nil {
 			if err := binary.Write(file, binary.LittleEndian, data); err == nil {
 				success = true
 			}
 		}
 	}
-	WriteBool(GetFinalOffset(fp, expr.Outputs[0]), success)
+	outputs[0].Set_bool(success)
 }
 
-func opOsGetWorkingDirectory(expr *CXExpression, fp int) {
-	WriteString(fp, PROGRAM.Path, expr.Outputs[0])
+func opOsGetWorkingDirectory(inputs []CXValue, outputs []CXValue) {
+    outputs[0].Set_str(PROGRAM.Path)
 }
 
-func opOsExit(expr *CXExpression, fp int) {
-	exitCode := ReadI32(fp, expr.Inputs[0])
+func opOsExit(inputs []CXValue, outputs []CXValue) {
+	exitCode := inputs[0].Get_i32()
 	os.Exit(int(exitCode))
 }
 
-func opOsRun(expr *CXExpression, fp int) {
+func opOsRun(inputs []CXValue, outputs []CXValue) {
 	var runError int32 = OS_RUN_SUCCESS
 
-	command := ReadStr(fp, expr.Inputs[0])
-	dir := ReadStr(fp, expr.Inputs[3])
+	command := inputs[0].Get_str()
+	dir := inputs[3].Get_str()
 	args := strings.Split(command, " ")
 	if len(args) <= 0 {
 		runError = OS_RUN_EMPTY_CMD
@@ -781,7 +777,7 @@ func opOsRun(expr *CXExpression, fp int) {
 
 	var cmdError int32 = 0
 
-	timeoutMs := ReadI32(fp, expr.Inputs[2])
+	timeoutMs := inputs[2].Get_i32()
 	timeout := time.Duration(math.MaxInt64)
 	if timeoutMs > 0 {
 		timeout = time.Duration(timeoutMs) * time.Millisecond
@@ -817,12 +813,12 @@ func opOsRun(expr *CXExpression, fp int) {
 	}
 
 	stdOutBytes := out.Bytes()
-	maxSize := ReadI32(fp, expr.Inputs[1])
+	maxSize := inputs[1].Get_i32()
 	if (maxSize > 0) && (len(stdOutBytes) > int(maxSize)) {
 		stdOutBytes = stdOutBytes[0:maxSize]
 	}
 
-	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), runError)
-	WriteI32(GetFinalOffset(fp, expr.Outputs[1]), cmdError)
-	WriteString(fp, string(stdOutBytes), expr.Outputs[2])
+	outputs[0].Set_i32(runError)
+	outputs[1].Set_i32(cmdError)
+    outputs[2].Set_str(string(stdOutBytes))
 }

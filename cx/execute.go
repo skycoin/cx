@@ -351,10 +351,11 @@ func (call *CXCall) ccall(prgrm *CXProgram) error {
                         input := inputs[inputIndex]
                         offset := GetFinalOffset(fp, input)
                         value := &inputValues[inputIndex]
-                        value.arg = input
+                        value.Arg = input
                         value.Used = -1
-                        value.offset = offset
+                        value.Offset = offset
 						value.Type = input.Type
+                        value.FramePointer = fp
                         value.memory = PROGRAM.Memory[offset : offset+GetSize(input)]
                         argIndex++
 					}
@@ -363,10 +364,11 @@ func (call *CXCall) ccall(prgrm *CXProgram) error {
 						output := outputs[outputIndex]
                         offset := GetFinalOffset(fp, output)
                         value := &outputValues[outputIndex]
-                        value.arg = output
+                        value.Arg = output
                         value.Used = -1
-                        value.offset = offset
+                        value.Offset = offset
                         value.Type = output.Type
+                        value.FramePointer = fp
                         argIndex++
 					}
 
