@@ -47,29 +47,25 @@ type Event struct {
 }
 
 type CXCallback struct {
-	expr            *CXExpression
-	fp              int
-	windowNameBytes []byte
+    windowNameBytes []byte
 	windowName      string
 	packageName     string
 	functionName    string
 }
 
-func (cb *CXCallback) init(expr *CXExpression, fp int, packageName string) {
-	cb.expr = expr
-	cb.fp = fp
-	cb.windowName = ReadStr(fp, expr.Inputs[0])
+func (cb *CXCallback) init(inputs []CXValue, outputs []CXValue, packageName string) {
+	cb.windowName = inputs[0].Get_str()
 	cb.windowNameBytes = FromI32(int32(WriteStringData(cb.windowName)))
-	cb.functionName = ReadStr(fp, expr.Inputs[1])
+	cb.functionName = inputs[1].Get_str()
 	cb.packageName = packageName
 }
 
-func (cb *CXCallback) Init(expr *CXExpression, fp int) {
-	cb.init(expr, fp, expr.Package.Name)
+func (cb *CXCallback) Init(inputs []CXValue, outputs []CXValue) {
+	cb.init(inputs, outputs, inputs[0].Expr.Package.Name)
 }
 
-func (cb *CXCallback) InitEx(expr *CXExpression, fp int) {
-	cb.init(expr, fp, ReadStr(fp, expr.Inputs[2]))
+func (cb *CXCallback) InitEx(inputs []CXValue, outputs []CXValue) {
+	cb.init(inputs, outputs, inputs[2].Get_str())
 }
 
 func (cb *CXCallback) Call(inputs [][]byte) {

@@ -471,12 +471,12 @@ const (
 
 type CXValue struct {
     Arg *CXArgument
+    Expr *CXExpression
     Type int
     memory []byte
     Offset int
     size int
     FramePointer int
-
 	Used int8
 }
 
