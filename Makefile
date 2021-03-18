@@ -65,7 +65,7 @@ ifeq ($(UNAME_S), Linux)
 endif
 
 build:  ## Build CX from sources
-	$(GO_OPTS) go build -tags="base cxfx" -o ./bin/cx github.com/skycoin/cx/cmd/cx
+	$(GO_OPTS) go build -tags="os cxfx" -o ./bin/cx github.com/skycoin/cx/cmd/cx
 	chmod +x ./bin/cx
 
 build-core: ## Build CX with CXFX support. Done via satisfying 'cxfx' build tag.

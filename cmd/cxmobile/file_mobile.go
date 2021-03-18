@@ -1,4 +1,4 @@
-// +build base,mobile
+// +build os,mobile
 
 package cxcore
 
