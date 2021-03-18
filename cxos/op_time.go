@@ -1,4 +1,4 @@
-// +build base
+// +build os
 
 package cxcore
 

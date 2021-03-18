@@ -6,12 +6,12 @@ package cxfx
 
 import (
 	. "github.com/skycoin/cx/cx"
-	. "github.com/skycoin/cx/cx/base"
+	cxos "github.com/skycoin/cx/cxos"
 )
 
 const (
 	// gogl
-	OP_GL_INIT = iota + END_OF_BASE_OPS
+	OP_GL_INIT = iota + cxos.END_OF_OS_OPS
 	OP_GL_DESTROY
 	OP_GL_STRS
 	OP_GL_FREE

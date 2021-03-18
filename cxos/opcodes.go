@@ -1,4 +1,4 @@
-// +build base
+// +build os
 
 package cxcore
 
@@ -98,7 +98,7 @@ const (
 	// cipher
 	OP_CIPHER_GENERATE_KEY_PAIR
 
-	END_OF_BASE_OPS
+	END_OF_OS_OPS
 )
 
 func init() {

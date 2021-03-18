@@ -8,14 +8,14 @@ import (
 	"github.com/skycoin/gltext"
 
 	. "github.com/skycoin/cx/cx"
-	. "github.com/skycoin/cx/cx/base"
+	cxos "github.com/skycoin/cx/cxos"
 )
 
 var fonts map[string]*gltext.Font = make(map[string]*gltext.Font, 0)
 
 func loadTrueType(expr *CXExpression, fp int, fixedPipeline bool) {
 	inp1, inp2, inp3, inp4, inp5, inp6 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Inputs[3], expr.Inputs[4], expr.Inputs[5]
-	if file := ValidFile(ReadI32(fp, inp1)); file != nil {
+	if file := cxos.ValidFile(ReadI32(fp, inp1)); file != nil {
 		if theFont, err := gltext.LoadTruetype(file, ReadI32(fp, inp3), rune(ReadI32(fp, inp4)), rune(ReadI32(fp, inp5)), gltext.Direction(ReadI32(fp, inp6)), fixedPipeline); err == nil {
 			fonts[ReadStr(fp, inp2)] = theFont
 		}
