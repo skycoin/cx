@@ -434,15 +434,15 @@ func init() {
 	Op_V2(OP_GLFW_GET_MONITOR_CONTENT_SCALE, "glfw.GetMonitorContentScale", opGlfwGetMonitorContentScale, nil, Out(AF32, AF32))
 
 	// gltext
-	Op(OP_GLTEXT_LOAD_TRUE_TYPE, "gltext.LoadTrueType", opGltextLoadTrueType, In(AI32, ASTR, AI32, AI32, AI32, AI32), nil)
-	Op(OP_GLTEXT_LOAD_TRUE_TYPE_CORE, "gltext.LoadTrueTypeCore", opGltextLoadTrueTypeCore, In(AI32, ASTR, AI32, AI32, AI32, AI32), nil)
-	Op(OP_GLTEXT_PRINTF, "gltext.Printf", opGltextPrintf, In(ASTR, AF32, AF32, ASTR), nil)
-	Op(OP_GLTEXT_METRICS, "gltext.Metrics", opGltextMetrics, In(ASTR, ASTR), Out(AI32, AI32))
-	Op(OP_GLTEXT_TEXTURE, "gltext.Texture", opGltextTexture, In(ASTR), Out(AI32))
-	Op(OP_GLTEXT_NEXT_GLYPH, "gltext.NextGlyph", opGltextNextGlyph, In(ASTR, ASTR, AI32), Out(AI32, AI32, AI32, AI32, AI32, AI32, AI32))
-	Op(OP_GLTEXT_GLYPH_BOUNDS, "gltext.GlyphBounds", opGltextGlyphBounds, nil, Out(AI32, AI32))
-	Op(OP_GLTEXT_GLYPH_METRICS, "gltext.GlyphMetrics", opGltextGlyphMetrics, In(ASTR, AI32), Out(AI32, AI32))
-	Op(OP_GLTEXT_GLYPH_INFO, "gltext.GlyphInfo", opGltextGlyphInfo, In(ASTR, AI32), Out(AI32, AI32, AI32, AI32, AI32))
+	Op_V2(OP_GLTEXT_LOAD_TRUE_TYPE, "gltext.LoadTrueType", opGltextLoadTrueType, In(AI32, ASTR, AI32, AI32, AI32, AI32), nil)
+	Op_V2(OP_GLTEXT_LOAD_TRUE_TYPE_CORE, "gltext.LoadTrueTypeCore", opGltextLoadTrueTypeCore, In(AI32, ASTR, AI32, AI32, AI32, AI32), nil)
+	Op_V2(OP_GLTEXT_PRINTF, "gltext.Printf", opGltextPrintf, In(ASTR, AF32, AF32, ASTR), nil)
+	Op_V2(OP_GLTEXT_METRICS, "gltext.Metrics", opGltextMetrics, In(ASTR, ASTR), Out(AI32, AI32))
+	Op_V2(OP_GLTEXT_TEXTURE, "gltext.Texture", opGltextTexture, In(ASTR), Out(AI32))
+	Op_V2(OP_GLTEXT_NEXT_GLYPH, "gltext.NextGlyph", opGltextNextGlyph, In(ASTR, ASTR, AI32), Out(AI32, AI32, AI32, AI32, AI32, AI32, AI32))
+	Op_V2(OP_GLTEXT_GLYPH_BOUNDS, "gltext.GlyphBounds", opGltextGlyphBounds, nil, Out(AI32, AI32))
+	Op_V2(OP_GLTEXT_GLYPH_METRICS, "gltext.GlyphMetrics", opGltextGlyphMetrics, In(ASTR, AI32), Out(AI32, AI32))
+	Op_V2(OP_GLTEXT_GLYPH_INFO, "gltext.GlyphInfo", opGltextGlyphInfo, In(ASTR, AI32), Out(AI32, AI32, AI32, AI32, AI32))
 
 	// goal
 	Op(OP_AL_LOAD_WAV, "al.LoadWav", opAlLoadWav, In(ASTR), Out(AI32, AI32, AI32, AI32, AI32, AI32, AI32, AI64, Slice(TYPE_UI8)))
