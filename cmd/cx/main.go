@@ -193,7 +193,10 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 	actions.ReplTargetFn = cxcore.MAIN_FUNC
 
 	// Adding *init function that initializes all the global variables.
-	cxgo.AddInitFunction(actions.PRGRM)
+	err = cxgo.AddInitFunction(actions.PRGRM)
+	if err != nil {
+		return false, nil, nil
+	}
 
 	actions.LineNo = 0
 

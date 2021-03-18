@@ -41,6 +41,7 @@ type CXProgram struct {
 
 	// Used by the REPL and parser
 	CurrentPackage *CXPackage // Represents the currently active package in the REPL or when parsing a CX file.
+	Error          error
 }
 
 // CXCall ...
@@ -61,7 +62,6 @@ func MakeProgram() *CXProgram {
 		HeapSize:    minHeapSize,
 		HeapPointer: NULL_HEAP_ADDRESS_OFFSET, // We can start adding objects to the heap after the NULL (nil) bytes.
 	}
-
 	return newPrgrm
 }
 
