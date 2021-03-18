@@ -1,0 +1,21 @@
+// https://github.com/skycoin/cx/issues/22
+
+package main
+
+type Shape struct {
+	Cells [][][][]bool
+}
+
+var Curr Shape
+
+func main() {
+	Curr.Cells[0] = append(Curr.Cells[0], true)
+	Curr.Cells[0,0] = append(Curr.Cells[0,0], true)
+	Curr.Cells[0,0] = append(Curr.Cells[0,0], true)
+	Curr.Cells[0,0,0] = append(Curr.Cells[0,0,0], true)
+	Curr.Cells[0,0,0] = append(Curr.Cells[0,0,0], true)
+	Curr.Cells[0,0,0] = append(Curr.Cells[0,0,0], true)
+	i32.print(len(Curr.Cells[0]))
+	i32.print(len(Curr.Cells[0,0]))
+	i32.print(len(Curr.Cells[0,0,0]))
+}

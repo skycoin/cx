@@ -1,0 +1,15 @@
+// https://github.com/skycoin/cx/issues/34
+
+package main
+
+func foo()(i i32, f f32) {
+	i = 5
+	f = 1.0
+}
+
+func main()(){
+	i, f := foo()
+
+	test(i, 5, "")
+	test(f, 1.0, "")
+}

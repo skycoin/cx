@@ -1,0 +1,28 @@
+// https://github.com/skycoin/cx/issues/40
+
+package main
+
+func main() {
+  foo()
+  bar()
+}
+
+func foo() {
+  if cat() {
+    //var i i32 - if declaring `i` here, no panic
+    for i := 0; i < 4; i++ {
+    }
+    
+    if cat() {
+    }
+  }
+  
+  if cat() {
+  }
+}
+
+func bar() {
+}
+
+func cat() (b bool) {
+}
