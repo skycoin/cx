@@ -91,7 +91,11 @@ In golang, for last element of array it is expected to be , (comma) or } (RBRACE
 Although, C++ supports this kind of syntax.
 ```
 
-## "break" exits all(?) outer "for loops" 
+## Behavior of Break and Continue
+
+Also
+- "continue" exits the entire current loop, AND an OUTER loop #15
+- "break" exits all(?) outer "for loops" 
 
 https://github.com/skycoin/cx/issues/17
 
@@ -116,3 +120,14 @@ printf("j: %d \n", j)
 We need to do break, and break(1), break(2) to denote how many levels break should break out of.
 
 Also for continue.
+
+AND/OR introduced "labeled statements"
+```
+I think “labeled statements” would be ideal here, if CX doesn’t already support them. Go supports them, but I haven’t coded in Go. Here’s what they look like in Swift:
+```
+
+Labels are just integer identifiers for stack depth and is same as break(1), break(2), etc
+
+## Maps for CX
+
+CX needs to have maps implemented
