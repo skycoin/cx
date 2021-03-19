@@ -13,6 +13,7 @@ require (
 	github.com/sirupsen/logrus v1.8.0
 	github.com/skycoin/gltext v0.0.0-20200425002731-afdd8ff94e14
 	github.com/skycoin/skycoin v0.27.1
+	github.com/urfave/cli/v2 v2.3.0
 	golang.org/x/exp v0.0.0-20210220032938-85be41e4509f
 	golang.org/x/image v0.0.0-20210220032944-ac19c3e999fb // indirect
 	golang.org/x/mobile v0.0.0-20210220033013-bdb1ca9a1e08
