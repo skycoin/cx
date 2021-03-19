@@ -379,8 +379,9 @@ func (call *CXCall) ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 
 					for inputIndex := 0; inputIndex < inputCount; inputIndex++ { // TODO: remove in release builds
 						if inputValues[inputIndex].Used != int8(inputs[inputIndex].Type) { // TODO: remove cast
-							panic(fmt.Sprintf("Input value not used for opcode: '%s'. Expected type %d, '%s', used type %d, '%s'.",
+							panic(fmt.Sprintf("Input value not used for opcode: '%s', param #%d. Expected type %d, '%s', used type %d, '%s'.",
 							 	OpNames[expr.Operator.OpCode],
+                                inputIndex + 1,
 							 	inputs[inputIndex].Type, TypeNames[inputs[inputIndex].Type],
 								inputValues[inputIndex].Used, TypeNames[int(inputValues[inputIndex].Used)]))
 						}
@@ -388,8 +389,9 @@ func (call *CXCall) ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 
 					for outputIndex := 0; outputIndex < outputCount; outputIndex++ { // TODO: remove in release builds
 						if outputValues[outputIndex].Used != int8(outputs[outputIndex].Type) { // TODO: remove cast
-							panic(fmt.Sprintf("Output value not used for opcode: '%s'. Expected type %d, '%s', used type %d '%s'.",
+							panic(fmt.Sprintf("Output value not used for opcode: '%s', param #%d. Expected type %d, '%s', used type %d '%s'.",
 							 	OpNames[expr.Operator.OpCode],
+                                outputIndex + 1,
 							 	outputs[outputIndex].Type, TypeNames[outputs[outputIndex].Type],
 								outputValues[outputIndex].Used, TypeNames[int(outputValues[outputIndex].Used)]))
 						}

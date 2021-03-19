@@ -481,58 +481,80 @@ type CXValue struct {
 }
 
 func (value *CXValue) GetSlice_i8() interface{} {
-    value.Used = TYPE_SLICE
+    //value.Used = TYPE_SLICE
+    value.Used = int8(value.Type) // TODO: type checking for slice is not working
     return ReadData_i8(value.FramePointer, value.Arg, TYPE_I8)
 }
 
 func (value *CXValue) GetSlice_i16() interface{} {
-    value.Used = TYPE_SLICE
+    //value.Used = TYPE_SLICE
+    value.Used = int8(value.Type) // TODO: type checking for slice is not working
     return ReadData_ui16(value.FramePointer, value.Arg, TYPE_I16)
 }
 
 func (value *CXValue) GetSlice_i32() interface{} {
-    value.Used = TYPE_SLICE
+    //value.Used = TYPE_SLICE
+    value.Used = int8(value.Type) // TODO: type checking for slice is not working
     return ReadData_i32(value.FramePointer, value.Arg, TYPE_I32)
 }
 
 func (value *CXValue) GetSlice_i64() interface{} {
-    value.Used = TYPE_SLICE
+    //value.Used = TYPE_SLICE
+    value.Used = int8(value.Type) // TODO: type checking for slice is not working
     return ReadData_i64(value.FramePointer, value.Arg, TYPE_I64)
 }
 
 func (value *CXValue) GetSlice_ui8() interface{} {
-    value.Used = TYPE_SLICE
+    //value.Used = TYPE_SLICE
+    value.Used = int8(value.Type) // TODO: type checking for slice is not working
     return ReadData_ui8(value.FramePointer, value.Arg, TYPE_UI8)
 }
 
 func (value *CXValue) GetSlice_ui16() interface{} {
-    value.Used = TYPE_SLICE
+    //value.Used = TYPE_SLICE
+    value.Used = int8(value.Type) // TODO: type checking for slice is not working
     return ReadData_ui16(value.FramePointer, value.Arg, TYPE_UI16)
 }
 
 func (value *CXValue) GetSlice_ui32() interface{} {
-    value.Used = TYPE_SLICE
+    //value.Used = TYPE_SLICE
+    value.Used = int8(value.Type) // TODO: type checking for slice is not working
     return ReadData_ui32(value.FramePointer, value.Arg, TYPE_UI32)
 }
 
 func (value *CXValue) GetSlice_ui64() interface{} {
-    value.Used = TYPE_SLICE
+    //value.Used = TYPE_SLICE
+    value.Used = int8(value.Type) // TODO: type checking for slice is not working
     return ReadData_ui64(value.FramePointer, value.Arg, TYPE_UI64)
 }
 
 func (value *CXValue) GetSlice_f32() interface{} {
-    value.Used = TYPE_F32
+    //value.Used = TYPE_SLICE
+    value.Used = int8(value.Type) // TODO: type checking for slice is not working
     return ReadData_f32(value.FramePointer, value.Arg, TYPE_F32)
 }
 
 func (value *CXValue) GetSlice_f64() interface{} {
-    value.Used = TYPE_SLICE
+    //value.Used = TYPE_SLICE
+    value.Used = int8(value.Type) // TODO: type checking for slice is not working
     return ReadData_f64(value.FramePointer, value.Arg, TYPE_F64)
 }
 
+func (value *CXValue) GetSlice() interface{} {
+    //value.Used = TYPE_SLICE
+    value.Used = int8(value.Type) // TODO: type checking for slice is not working
+    return ReadData(value.FramePointer, value.Arg, -1)
+}
+
 func (value *CXValue) SetSlice(data int32) {
-    value.Used = int8(value.Type)
-    WriteI32(value.Offset, data)
+     value.Used = int8(value.Type) // TODO: type checking for slice is not working
+   WriteI32(value.Offset, data)
+}
+
+func (value *CXValue) Get_bytes() ([]byte) {
+    //value.Used = TYPE_SLICE
+    value.Used = int8(value.Type) // TODO: type checking for slice is not working
+	return ReadMemory(value.Offset, value.Arg)
 }
 
 func (value *CXValue) Set_bytes(data []byte)() {
