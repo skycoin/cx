@@ -1,0 +1,20 @@
+// https://github.com/skycoin/cx/issues/17
+
+package main
+
+func main() {
+	for h := 0; h < 5; h++ {
+		for i := 0; i < 5; i++ {
+			for j := 0; j < 5; j++ {
+				break
+				printf("j: %d \n", j)
+			}
+			
+			str.print("out of j loop")
+		}
+		
+		str.print("out of i loop")
+	}
+	
+	str.print("out of h loop")
+}

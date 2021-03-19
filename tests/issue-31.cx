@@ -1,0 +1,11 @@
+// https://github.com/skycoin/cx/issues/31
+
+package main
+
+func main()() {
+	var s[]str
+	s = append(s, "33")
+	i := len(s)
+	test(i, 1, "")
+	test(s[0], "33", "")
+}
