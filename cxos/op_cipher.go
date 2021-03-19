@@ -1,6 +1,6 @@
 // +build os
 
-package cxcore
+package cxos
 
 import (
 	"github.com/skycoin/skycoin/src/cipher"
