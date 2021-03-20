@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 
-	cxcore "github.com/skycoin/cx/cx"
+	"github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cxgo/actions"
 	"github.com/skycoin/cx/cxgo/cxgo"
 	"github.com/skycoin/cx/cxgo/cxgo0"
@@ -193,7 +193,10 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 	actions.ReplTargetFn = cxcore.MAIN_FUNC
 
 	// Adding *init function that initializes all the global variables.
-	cxgo.AddInitFunction(actions.PRGRM)
+	err = cxgo.AddInitFunction(actions.PRGRM)
+	if err != nil {
+		return false, nil, nil
+	}
 
 	actions.LineNo = 0
 

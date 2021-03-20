@@ -2,6 +2,8 @@ package cxcore
 
 import (
 	"fmt"
+	"github.com/skycoin/skycoin/src/cipher/encoder"
+
 )
 
 // CorePackages ...
@@ -465,151 +467,219 @@ const (
 	END_OF_CORE_OPS
 )
 
+
+
 type CXValue struct {
- 	Type int8
+    Arg *CXArgument
+    Expr *CXExpression
+    Type int
+    memory []byte
+    Offset int
+    size int
+    FramePointer int
 	Used int8
-
-
-	Value_i8 int8
-	Value_ui8 uint8
-
-	Value_i16 int16
-	Value_ui16 uint16
-
-	Value_i32 int32
-	Value_ui32 uint32
-
-	Value_i64 int64
-	Value_ui64 uint64
-
-	Value_f32 float32
-	Value_f64 float64
-
-	Value_str string
-
-	Value_bool bool
 }
 
+func (value *CXValue) GetSlice_i8() interface{} {
+    //value.Used = TYPE_SLICE
+    value.Used = int8(value.Type) // TODO: type checking for slice is not working
+    return ReadData_i8(value.FramePointer, value.Arg, TYPE_I8)
+}
 
+func (value *CXValue) GetSlice_i16() interface{} {
+    //value.Used = TYPE_SLICE
+    value.Used = int8(value.Type) // TODO: type checking for slice is not working
+    return ReadData_ui16(value.FramePointer, value.Arg, TYPE_I16)
+}
+
+func (value *CXValue) GetSlice_i32() interface{} {
+    //value.Used = TYPE_SLICE
+    value.Used = int8(value.Type) // TODO: type checking for slice is not working
+    return ReadData_i32(value.FramePointer, value.Arg, TYPE_I32)
+}
+
+func (value *CXValue) GetSlice_i64() interface{} {
+    //value.Used = TYPE_SLICE
+    value.Used = int8(value.Type) // TODO: type checking for slice is not working
+    return ReadData_i64(value.FramePointer, value.Arg, TYPE_I64)
+}
+
+func (value *CXValue) GetSlice_ui8() interface{} {
+    //value.Used = TYPE_SLICE
+    value.Used = int8(value.Type) // TODO: type checking for slice is not working
+    return ReadData_ui8(value.FramePointer, value.Arg, TYPE_UI8)
+}
+
+func (value *CXValue) GetSlice_ui16() interface{} {
+    //value.Used = TYPE_SLICE
+    value.Used = int8(value.Type) // TODO: type checking for slice is not working
+    return ReadData_ui16(value.FramePointer, value.Arg, TYPE_UI16)
+}
+
+func (value *CXValue) GetSlice_ui32() interface{} {
+    //value.Used = TYPE_SLICE
+    value.Used = int8(value.Type) // TODO: type checking for slice is not working
+    return ReadData_ui32(value.FramePointer, value.Arg, TYPE_UI32)
+}
+
+func (value *CXValue) GetSlice_ui64() interface{} {
+    //value.Used = TYPE_SLICE
+    value.Used = int8(value.Type) // TODO: type checking for slice is not working
+    return ReadData_ui64(value.FramePointer, value.Arg, TYPE_UI64)
+}
+
+func (value *CXValue) GetSlice_f32() interface{} {
+    //value.Used = TYPE_SLICE
+    value.Used = int8(value.Type) // TODO: type checking for slice is not working
+    return ReadData_f32(value.FramePointer, value.Arg, TYPE_F32)
+}
+
+func (value *CXValue) GetSlice_f64() interface{} {
+    //value.Used = TYPE_SLICE
+    value.Used = int8(value.Type) // TODO: type checking for slice is not working
+    return ReadData_f64(value.FramePointer, value.Arg, TYPE_F64)
+}
+
+func (value *CXValue) GetSlice() interface{} {
+    //value.Used = TYPE_SLICE
+    value.Used = int8(value.Type) // TODO: type checking for slice is not working
+    return ReadData(value.FramePointer, value.Arg, -1)
+}
+
+func (value *CXValue) SetSlice(data int32) {
+     value.Used = int8(value.Type) // TODO: type checking for slice is not working
+   WriteI32(value.Offset, data)
+}
+
+func (value *CXValue) Get_bytes() ([]byte) {
+    //value.Used = TYPE_SLICE
+    value.Used = int8(value.Type) // TODO: type checking for slice is not working
+	return ReadMemory(value.Offset, value.Arg)
+}
+
+func (value *CXValue) Set_bytes(data []byte)() {
+    value.Used = TYPE_CUSTOM
+    WriteMemory(value.Offset, data)
+}
 
 func (value *CXValue) Get_i8()(int8) {
 	value.Used = TYPE_I8
-	return value.Value_i8
+	return Deserialize_i8(value.memory)
 }
 
 func (value *CXValue) Set_i8(data int8) {
 	value.Used = TYPE_I8
-	value.Value_i8 = data
+    WriteI8(value.Offset, data)
 }
 
 func (value *CXValue) Get_i16()(int16) {
 	value.Used = TYPE_I16
-	return value.Value_i16
+    return Deserialize_i16(value.memory)
 }
 
 func (value *CXValue) Set_i16(data int16) {
 	value.Used = TYPE_I16
-	value.Value_i16 = data
+    WriteI16(value.Offset, data)
 }
 
 func (value *CXValue) Get_i32()(int32) {
 	value.Used = TYPE_I32
-	return value.Value_i32
+    return Deserialize_i32(value.memory)
 }
 
 func (value *CXValue) Set_i32(data int32) {
 	value.Used = TYPE_I32
-	value.Value_i32 = data
+    WriteI32(value.Offset, data)
 }
 
 func (value *CXValue) Get_i64()(int64) {
 	value.Used = TYPE_I64
-	return value.Value_i64
+    return Deserialize_i64(value.memory)
 }
 
 func (value *CXValue) Set_i64(data int64) {
 	value.Used = TYPE_I64
-	value.Value_i64 = data
+    WriteI64(value.Offset, data)
 }
 
 func (value *CXValue) Get_ui8()(uint8) {
 	value.Used = TYPE_UI8
-	return value.Value_ui8
+    return Deserialize_ui8(value.memory)
 }
 
 func (value *CXValue) Set_ui8(data uint8) {
 	value.Used = TYPE_UI8
-	value.Value_ui8 = data
+    WriteUI8(value.Offset, data)
 }
 
 func (value *CXValue) Get_ui16()(uint16) {
 	value.Used = TYPE_UI16
-	return value.Value_ui16
+    return Deserialize_ui16(value.memory)
 }
 
 func (value *CXValue) Set_ui16(data uint16) {
 	value.Used = TYPE_UI16
-	value.Value_ui16 = data
+    WriteUI16(value.Offset, data)
 }
 
 func (value *CXValue) Get_ui32()(uint32) {
 	value.Used = TYPE_UI32
-	return value.Value_ui32
+    return Deserialize_ui32(value.memory)
 }
 
 func (value *CXValue) Set_ui32(data uint32) {
 	value.Used = TYPE_UI32
-	value.Value_ui32 = data
+    WriteUI32(value.Offset, data)
 }
 
 func (value *CXValue) Get_ui64()(uint64) {
 	value.Used = TYPE_UI64
-	return value.Value_ui64
+    return Deserialize_ui64(value.memory)
 }
 
 func (value *CXValue) Set_ui64(data uint64) {
 	value.Used = TYPE_UI64
-	value.Value_ui64 = data
+    WriteUI64(value.Offset, data)
 }
 
 func (value *CXValue) Get_f32()(float32) {
 	value.Used = TYPE_F32
-	return value.Value_f32
+    return Deserialize_f32(value.memory)
 }
 
 func (value *CXValue) Set_f32(data float32) {
 	value.Used = TYPE_F32
-	value.Value_f32 = data
+    WriteF32(value.Offset, data)
 }
 
 func (value *CXValue) Get_f64()(float64) {
 	value.Used = TYPE_F64
-	return value.Value_f64
+    return Deserialize_f64(value.memory)
 }
 
 func (value *CXValue) Set_f64(data float64) {
 	value.Used = TYPE_F64
-	value.Value_f64 = data
+    WriteF64(value.Offset, data)
 }
 
 func (value *CXValue) Get_bool()(bool) {
 	value.Used = TYPE_BOOL
-	return value.Value_bool
+    return Deserialize_bool(value.memory)
 }
 
 func (value *CXValue) Set_bool(data bool) {
 	value.Used = TYPE_BOOL
-	value.Value_bool = data
+    WriteBool(value.Offset, data)
 }
 
 func (value *CXValue) Get_str()(string) {
 	value.Used = TYPE_STR
-	return value.Value_str
+    return ReadStrFromOffset(value.Offset, value.Arg)
 }
 
 func (value *CXValue) Set_str(data string) {
 	value.Used = TYPE_STR
-	value.Value_str = data
+    WriteObject(value.Offset, encoder.Serialize(data))
 }
 
 // OpcodeHandler ...

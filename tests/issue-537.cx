@@ -1,0 +1,18 @@
+// https://github.com/skycoin/cx/issues/537
+
+package main
+
+func cat(t i32) (ret i32) {
+    ret = t
+}
+
+func main() {
+
+    if i32.eq(0,0){  
+        for i:=0;i<2;i++ (){
+            str.print("Works fine")
+        }
+        var v1 i32
+    }
+    var v2 i32
+}

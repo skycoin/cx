@@ -65,7 +65,7 @@ ifeq ($(UNAME_S), Linux)
 endif
 
 build:  ## Build CX from sources
-	$(GO_OPTS) go build -tags="base cxfx" -o ./bin/cx github.com/skycoin/cx/cmd/cx
+	$(GO_OPTS) go build -tags="os cxfx" -o ./bin/cx github.com/skycoin/cx/cmd/cx
 	chmod +x ./bin/cx
 
 build-core: ## Build CX with CXFX support. Done via satisfying 'cxfx' build tag.
@@ -92,8 +92,18 @@ ifndef CXVERSION
 	@echo "cx not found in $(PWD)/bin, please run make install first"
 else
 	# go test $(GO_OPTS) -race -tags base github.com/skycoin/cx/cxgo/
-	./bin/cx ./lib/args.cx ./tests/main.cx ++wdir=./tests ++log=fail,stderr ++disable-tests=gui,issue ++cxpath=$(PWD)/bin/cx
+	go run -mod=vendor ./cmd/cxtest --cxpath=$(PWD)/bin/cx --wdir=./tests --log=fail,stderr --disable-tests=gui,issue
+
 endif
+
+test-all:  ## Run CX test suite.
+ifndef CXVERSION
+	@echo "cx not found in $(PWD)/bin, please run make install first"
+else
+	# go test $(GO_OPTS) -race -tags base github.com/skycoin/cx/cxgo/
+	go run -mod=vendor ./cmd/cxtest --cxpath=$(PWD)/bin/cx --wdir=./tests --log=fail,stderr
+endif
+
 
 configure-workspace: ## Configure CX workspace environment
 	mkdir -p $(CX_PATH)/src $(CX_PATH)/bin $(CX_PATH)/pkg
