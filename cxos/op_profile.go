@@ -8,13 +8,13 @@ import (
 	"runtime"
 	"runtime/pprof"
 
-	. "github.com/skycoin/cx/cx"
+	"github.com/skycoin/cx/cx"
 )
 
 var openProfiles map[string]*os.File = make(map[string]*os.File, 0)
 
 func startCPUProfile(name string, rate int) *os.File {
-	f, err := CXCreateFile(fmt.Sprintf("%s_%s_cpu.pprof", os.Args[0], name))
+	f, err := cxcore.CXCreateFile(fmt.Sprintf("%s_%s_cpu.pprof", os.Args[0], name))
 	if err != nil {
 		fmt.Println("Failed to create CPU profile: ", err)
 	}
@@ -34,12 +34,12 @@ func stopCPUProfile(f *os.File) {
 	defer pprof.StopCPUProfile()
 }
 
-func opStartProfile(inputs []CXValue, outputs []CXValue) {
+func opStartProfile(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	profilePath := inputs[0].Get_str()
 	openProfiles[profilePath] = startCPUProfile(profilePath, int(inputs[1].Get_i32()))
 }
 
-func opStopProfile(inputs []CXValue, outputs []CXValue) {
+func opStopProfile(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	profilePath := inputs[0].Get_str()
 	stopCPUProfile(openProfiles[profilePath])
 }

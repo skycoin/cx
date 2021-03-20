@@ -6,7 +6,7 @@ package cxfx
 
 import (
 	. "github.com/skycoin/cx/cx"
-	cxos "github.com/skycoin/cx/cxos"
+	"github.com/skycoin/cx/cxos"
 )
 
 const (

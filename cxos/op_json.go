@@ -8,7 +8,7 @@ import (
 	"io"
 	"os"
 
-	. "github.com/skycoin/cx/cx"
+	"github.com/skycoin/cx/cx"
 )
 
 const (
@@ -42,10 +42,10 @@ var jsons []JSONFile
 var freeJsons []int32
 
 // Open the named json file for reading, returns an i32 identifying the json parser.
-func opJsonOpen(inputs []CXValue, outputs []CXValue) {
+func opJsonOpen(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	handle := int32(-1)
 
-	file, err := CXOpenFile(inputs[0].Get_str())
+	file, err := cxcore.CXOpenFile(inputs[0].Get_str())
 	if err == nil {
 		freeCount := len(freeJsons)
 		if freeCount > 0 {
@@ -74,7 +74,7 @@ func opJsonOpen(inputs []CXValue, outputs []CXValue) {
 }
 
 // Close json parser (and all underlying resources) idendified by it's i32 handle.
-func opJsonClose(inputs []CXValue, outputs []CXValue) {
+func opJsonClose(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	success := false
     handle := inputs[0].Get_i32()
 	if jsonFile := validJsonFile(handle); jsonFile != nil {
@@ -91,7 +91,7 @@ func opJsonClose(inputs []CXValue, outputs []CXValue) {
 }
 
 // More return true if there is another element in the current array or object being parsed.
-func opJsonTokenMore(inputs []CXValue, outputs []CXValue) {
+func opJsonTokenMore(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	more := false
 	success := false
 
@@ -105,7 +105,7 @@ func opJsonTokenMore(inputs []CXValue, outputs []CXValue) {
 }
 
 // Token parses the next token.
-func opJsonTokenNext(inputs []CXValue, outputs []CXValue) {
+func opJsonTokenNext(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	tokenType := int32(JSON_TOKEN_INVALID)
 	success := false
 
@@ -152,7 +152,7 @@ func opJsonTokenNext(inputs []CXValue, outputs []CXValue) {
 }
 
 // Type returns the type of the current token.
-func opJsonTokenType(inputs []CXValue, outputs []CXValue) {
+func opJsonTokenType(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	tokenType := int32(JSON_TOKEN_INVALID)
 	success := false
 
@@ -166,7 +166,7 @@ func opJsonTokenType(inputs []CXValue, outputs []CXValue) {
 }
 
 // Delim returns current token as an int32 delimiter.
-func opJsonTokenDelim(inputs []CXValue, outputs []CXValue) {
+func opJsonTokenDelim(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	tokenDelim := int32(JSON_TOKEN_INVALID)
 	success := false
 
@@ -182,7 +182,7 @@ func opJsonTokenDelim(inputs []CXValue, outputs []CXValue) {
 }
 
 // Bool returns current token as a bool value.
-func opJsonTokenBool(inputs []CXValue, outputs []CXValue) {
+func opJsonTokenBool(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	tokenBool := false
 	success := false
 
@@ -198,7 +198,7 @@ func opJsonTokenBool(inputs []CXValue, outputs []CXValue) {
 }
 
 // Float64 returns current token as float64 value.
-func opJsonTokenF64(inputs []CXValue, outputs []CXValue) {
+func opJsonTokenF64(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	var tokenF64 float64
 	success := false
 
@@ -219,7 +219,7 @@ func opJsonTokenF64(inputs []CXValue, outputs []CXValue) {
 }
 
 // Int64 returns current token as int64 value.
-func opJsonTokenI64(inputs []CXValue, outputs []CXValue) {
+func opJsonTokenI64(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	var tokenI64 int64
 	success := false
 
@@ -237,7 +237,7 @@ func opJsonTokenI64(inputs []CXValue, outputs []CXValue) {
 }
 
 // Str returns current token as string value.
-func opJsonTokenStr(inputs []CXValue, outputs []CXValue) {
+func opJsonTokenStr(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	var tokenStr string
 	success := false
 

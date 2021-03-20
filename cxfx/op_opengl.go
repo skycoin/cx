@@ -18,7 +18,7 @@ import (
 	"runtime"
 	"strings"
 
-	. "github.com/skycoin/cx/cx"
+	"github.com/skycoin/cx/cx"
 )
 
 type Texture struct {
@@ -212,16 +212,16 @@ func decodeHdr(file *os.File) (data []byte, iwidth int32, iheight int32) {
 			g := float32(exponent * float64(line[loffset+1]) / 256.0)
 			b := float32(exponent * float64(line[loffset+2]) / 256.0)
 
-			WriteMemF32(data, xoffset, r)
-			WriteMemF32(data, xoffset+4, g)
-			WriteMemF32(data, xoffset+8, b)
+			cxcore.WriteMemF32(data, xoffset, r)
+			cxcore.WriteMemF32(data, xoffset+4, g)
+			cxcore.WriteMemF32(data, xoffset+8, b)
 		}
 	}
 	return
 }
 
 func uploadTexture(path string, target uint32, level uint32, cpuCopy bool) {
-	file, err := CXOpenFile(path)
+	file, err := cxcore.CXOpenFile(path)
 	defer file.Close()
 	if err != nil {
 		panic(fmt.Sprintf("texture %q not found on disk: %v\n", path, err))
@@ -273,7 +273,7 @@ func uploadTexture(path string, target uint32, level uint32, cpuCopy bool) {
 }
 
 // gogl
-func opGlNewTexture(inputs []CXValue, outputs []CXValue) {
+func opGlNewTexture(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	var texture uint32
 	cxglEnable(cxglTEXTURE_2D)
 	cxglGenTextures(1, &texture)
@@ -288,7 +288,7 @@ func opGlNewTexture(inputs []CXValue, outputs []CXValue) {
 	outputs[0].Set_i32(int32(texture))
 }
 
-func opGlNewTextureCube(inputs []CXValue, outputs []CXValue) {
+func opGlNewTextureCube(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	var texture uint32
 	cxglEnable(cxglTEXTURE_CUBE_MAP)
 	cxglGenTextures(1, &texture)
@@ -308,11 +308,11 @@ func opGlNewTextureCube(inputs []CXValue, outputs []CXValue) {
 	outputs[0].Set_i32(int32(texture))
 }
 
-func opCxReleaseTexture(inputs []CXValue, outputs []CXValue) {
+func opCxReleaseTexture(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	textures[inputs[0].Get_str()] = Texture{}
 }
 
-func opCxTextureGetPixel(inputs []CXValue, outputs []CXValue) {
+func opCxTextureGetPixel(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	var r float32
 	var g float32
 	var b float32
@@ -336,14 +336,14 @@ func opCxTextureGetPixel(inputs []CXValue, outputs []CXValue) {
 	outputs[3].Set_f32(a)
 }
 
-func opGlUploadImageToTexture(inputs []CXValue, outputs []CXValue) {
+func opGlUploadImageToTexture(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	uploadTexture(inputs[0].Get_str(), uint32(inputs[1].Get_i32()), uint32(inputs[2].Get_i32()), inputs[3].Get_bool())
 }
 
-func opGlNewGIF(inputs []CXValue, outputs []CXValue) {
+func opGlNewGIF(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	path := inputs[0].Get_str()
 
-	file, err := CXOpenFile(path)
+	file, err := cxcore.CXOpenFile(path)
 	defer file.Close()
 	if err != nil {
 		panic(fmt.Sprintf("file not found %q, %v", path, err))
@@ -363,11 +363,11 @@ func opGlNewGIF(inputs []CXValue, outputs []CXValue) {
 	outputs[3].Set_i32(int32(gif.Config.Height))
 }
 
-func opGlFreeGIF(inputs []CXValue, outputs []CXValue) {
+func opGlFreeGIF(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	gifs[inputs[0].Get_str()] = nil
 }
 
-func opGlGIFFrameToTexture(inputs []CXValue, outputs []CXValue) {
+func opGlGIFFrameToTexture(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	path := inputs[0].Get_str()
 	frame := inputs[1].Get_i32()
 	texture := inputs[2].Get_i32()
@@ -396,43 +396,43 @@ func opGlGIFFrameToTexture(inputs []CXValue, outputs []CXValue) {
 	outputs[1].Set_i32(disposal)
 }
 
-func opGlAppend(inputs []CXValue, outputs []CXValue) {
+func opGlAppend(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputSlicePointer := outputs[0].Offset
-	outputSliceOffset := GetPointerOffset(int32(outputSlicePointer))
+	outputSliceOffset := cxcore.GetPointerOffset(int32(outputSlicePointer))
 
     inputs[0].Used = int8(inputs[0].Type)
 
-    inputSliceOffset := GetSliceOffset(inputs[0].FramePointer, inputs[0].Arg)
+    inputSliceOffset := cxcore.GetSliceOffset(inputs[0].FramePointer, inputs[0].Arg)
 	var inputSliceLen int32
 	if inputSliceOffset != 0 {
-		inputSliceLen = GetSliceLen(inputSliceOffset)
+		inputSliceLen = cxcore.GetSliceLen(inputSliceOffset)
 	}
 
 	obj := inputs[1].Get_bytes()
 
 	objLen := int32(len(obj))
-	outputSliceOffset = int32(SliceResizeEx(outputSliceOffset, inputSliceLen+objLen, 1))
-	SliceCopyEx(outputSliceOffset, inputSliceOffset, inputSliceLen+objLen, 1)
-	SliceAppendWriteByte(outputSliceOffset, obj, inputSliceLen)
+	outputSliceOffset = int32(cxcore.SliceResizeEx(outputSliceOffset, inputSliceLen+objLen, 1))
+	cxcore.SliceCopyEx(outputSliceOffset, inputSliceOffset, inputSliceLen+objLen, 1)
+	cxcore.SliceAppendWriteByte(outputSliceOffset, obj, inputSliceLen)
 	outputs[0].SetSlice(outputSliceOffset)
 }
 
 // gl_1_0
-func opGlCullFace(inputs []CXValue, outputs []CXValue) {
+func opGlCullFace(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglCullFace(uint32(inputs[0].Get_i32()))
 }
 
-func opGlFrontFace(inputs []CXValue, outputs []CXValue) {
+func opGlFrontFace(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglFrontFace(uint32(inputs[0].Get_i32()))
 }
 
-func opGlHint(inputs []CXValue, outputs []CXValue) {
+func opGlHint(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglHint(
 		uint32(inputs[0].Get_i32()),
 		uint32(inputs[1].Get_i32()))
 }
 
-func opGlScissor(inputs []CXValue, outputs []CXValue) {
+func opGlScissor(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglScissor(
 		inputs[0].Get_i32(),
 		inputs[1].Get_i32(),
@@ -440,14 +440,14 @@ func opGlScissor(inputs []CXValue, outputs []CXValue) {
 		inputs[3].Get_i32())
 }
 
-func opGlTexParameteri(inputs []CXValue, outputs []CXValue) {
+func opGlTexParameteri(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglTexParameteri(
 		uint32(inputs[0].Get_i32()),
 		uint32(inputs[1].Get_i32()),
 		inputs[2].Get_i32())
 }
 
-func opGlTexImage2D(inputs []CXValue, outputs []CXValue) {
+func opGlTexImage2D(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglTexImage2D(
 		uint32(inputs[0].Get_i32()),
 		inputs[1].Get_i32(),
@@ -460,11 +460,11 @@ func opGlTexImage2D(inputs []CXValue, outputs []CXValue) {
         inputs[8].GetSlice())
 }
 
-func opGlClear(inputs []CXValue, outputs []CXValue) {
+func opGlClear(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglClear(uint32(inputs[0].Get_i32()))
 }
 
-func opGlClearColor(inputs []CXValue, outputs []CXValue) {
+func opGlClearColor(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglClearColor(
 		inputs[0].Get_f32(),
 		inputs[1].Get_f32(),
@@ -472,19 +472,19 @@ func opGlClearColor(inputs []CXValue, outputs []CXValue) {
 		inputs[3].Get_f32())
 }
 
-func opGlClearStencil(inputs []CXValue, outputs []CXValue) {
+func opGlClearStencil(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglClearStencil(inputs[0].Get_i32())
 }
 
-func opGlClearDepth(inputs []CXValue, outputs []CXValue) {
+func opGlClearDepth(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglClearDepth(inputs[0].Get_f64())
 }
 
-func opGlStencilMask(inputs []CXValue, outputs []CXValue) {
+func opGlStencilMask(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglStencilMask(uint32(inputs[0].Get_i32()))
 }
 
-func opGlColorMask(inputs []CXValue, outputs []CXValue) {
+func opGlColorMask(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglColorMask(
 		inputs[0].Get_bool(),
 		inputs[1].Get_bool(),
@@ -492,47 +492,47 @@ func opGlColorMask(inputs []CXValue, outputs []CXValue) {
 		inputs[3].Get_bool())
 }
 
-func opGlDepthMask(inputs []CXValue, outputs []CXValue) {
+func opGlDepthMask(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglDepthMask(inputs[0].Get_bool())
 }
 
-func opGlDisable(inputs []CXValue, outputs []CXValue) {
+func opGlDisable(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglDisable(uint32(inputs[0].Get_i32()))
 }
 
-func opGlEnable(inputs []CXValue, outputs []CXValue) {
+func opGlEnable(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglEnable(uint32(inputs[0].Get_i32()))
 }
 
-func opGlBlendFunc(inputs []CXValue, outputs []CXValue) {
+func opGlBlendFunc(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglBlendFunc(
 		uint32(inputs[0].Get_i32()),
 		uint32(inputs[1].Get_i32()))
 }
 
-func opGlStencilFunc(inputs []CXValue, outputs []CXValue) {
+func opGlStencilFunc(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglStencilFunc(
 		uint32(inputs[0].Get_i32()),
 		inputs[1].Get_i32(),
 		uint32(inputs[2].Get_i32()))
 }
 
-func opGlStencilOp(inputs []CXValue, outputs []CXValue) {
+func opGlStencilOp(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglStencilOp(
 		uint32(inputs[0].Get_i32()),
 		uint32(inputs[1].Get_i32()),
 		uint32(inputs[2].Get_i32()))
 }
 
-func opGlDepthFunc(inputs []CXValue, outputs []CXValue) {
+func opGlDepthFunc(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglDepthFunc(uint32(inputs[0].Get_i32()))
 }
 
-func opGlGetError(inputs []CXValue, outputs []CXValue) {
+func opGlGetError(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputs[0].Set_i32(int32(cxglGetError()))
 }
 
-func opGlGetTexLevelParameteriv(inputs []CXValue, outputs []CXValue) {
+func opGlGetTexLevelParameteriv(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	var outValue int32 = 0
 	cxglGetTexLevelParameteriv(
 		uint32(inputs[0].Get_i32()),
@@ -542,13 +542,13 @@ func opGlGetTexLevelParameteriv(inputs []CXValue, outputs []CXValue) {
 	outputs[0].Set_i32(outValue)
 }
 
-func opGlDepthRange(inputs []CXValue, outputs []CXValue) {
+func opGlDepthRange(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglDepthRange(
 		inputs[0].Get_f64(),
 		inputs[1].Get_f64())
 }
 
-func opGlViewport(inputs []CXValue, outputs []CXValue) {
+func opGlViewport(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglViewport(
 		inputs[0].Get_i32(),
 		inputs[1].Get_i32(),
@@ -557,14 +557,14 @@ func opGlViewport(inputs []CXValue, outputs []CXValue) {
 }
 
 // gl_1_1
-func opGlDrawArrays(inputs []CXValue, outputs []CXValue) {
+func opGlDrawArrays(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglDrawArrays(
 		uint32(inputs[0].Get_i32()),
 		inputs[1].Get_i32(),
 		inputs[2].Get_i32())
 }
 
-func opGlDrawElements(inputs []CXValue, outputs []CXValue) {
+func opGlDrawElements(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglDrawElements(
 		uint32(inputs[0].Get_i32()),
 		inputs[1].Get_i32(),
@@ -572,30 +572,30 @@ func opGlDrawElements(inputs []CXValue, outputs []CXValue) {
 		inputs[3].GetSlice())
 }
 
-func opGlBindTexture(inputs []CXValue, outputs []CXValue) {
+func opGlBindTexture(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglBindTexture(
 		uint32(inputs[0].Get_i32()),
 		uint32(inputs[1].Get_i32()))
 }
 
-func opGlDeleteTextures(inputs []CXValue, outputs []CXValue) {
+func opGlDeleteTextures(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	inpV1 := uint32(inputs[1].Get_i32())
 	cxglDeleteTextures(inputs[0].Get_i32(), &inpV1) // will panic if inp0 > 1
 }
 
-func opGlGenTextures(inputs []CXValue, outputs []CXValue) {
+func opGlGenTextures(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	inpV1 := uint32(inputs[1].Get_i32())
 	cxglGenTextures(inputs[0].Get_i32(), &inpV1) // will panic if inp0 > 1
 	outputs[0].Set_i32(int32(inpV1))
 }
 
 // gl_1_3
-func opGlActiveTexture(inputs []CXValue, outputs []CXValue) {
+func opGlActiveTexture(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglActiveTexture(uint32(inputs[0].Get_i32()))
 }
 
 // gl_1_4
-func opGlBlendFuncSeparate(inputs []CXValue, outputs []CXValue) {
+func opGlBlendFuncSeparate(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglBlendFuncSeparate(
 		uint32(inputs[0].Get_i32()),
 		uint32(inputs[1].Get_i32()),
@@ -604,20 +604,20 @@ func opGlBlendFuncSeparate(inputs []CXValue, outputs []CXValue) {
 }
 
 // gl_1_5
-func opGlBindBuffer(inputs []CXValue, outputs []CXValue) {
+func opGlBindBuffer(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglBindBuffer(
 		uint32(inputs[0].Get_i32()),
 		uint32(inputs[1].Get_i32()))
 }
 
-func opGlDeleteBuffers(inputs []CXValue, outputs []CXValue) {
+func opGlDeleteBuffers(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	inpV1 := uint32(inputs[1].Get_i32())
 	cxglDeleteBuffers(
 		inputs[0].Get_i32(),
 		&inpV1) // will panic if inp0 > 1
 }
 
-func opGlGenBuffers(inputs []CXValue, outputs []CXValue) {
+func opGlGenBuffers(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	inpV1 := uint32(inputs[1].Get_i32())
 	cxglGenBuffers(
 		inputs[0].Get_i32(),
@@ -625,7 +625,7 @@ func opGlGenBuffers(inputs []CXValue, outputs []CXValue) {
 	outputs[0].Set_i32(int32(inpV1))
 }
 
-func opGlBufferData(inputs []CXValue, outputs []CXValue) {
+func opGlBufferData(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglBufferData(
 		uint32(inputs[0].Get_i32()),
 		int(inputs[1].Get_i32()),
@@ -633,7 +633,7 @@ func opGlBufferData(inputs []CXValue, outputs []CXValue) {
 		uint32(inputs[3].Get_i32()))
 }
 
-func opGlBufferSubData(inputs []CXValue, outputs []CXValue) {
+func opGlBufferSubData(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglBufferSubData(
 		uint32(inputs[0].Get_i32()),
 		int(inputs[1].Get_i32()),
@@ -641,13 +641,13 @@ func opGlBufferSubData(inputs []CXValue, outputs []CXValue) {
 		inputs[3].GetSlice())
 }
 
-func opGlDrawBuffers(inputs []CXValue, outputs []CXValue) {
+func opGlDrawBuffers(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglDrawBuffers(
 		inputs[0].Get_i32(),
 		inputs[1].GetSlice_ui32())
 }
 
-func opGlStencilOpSeparate(inputs []CXValue, outputs []CXValue) {
+func opGlStencilOpSeparate(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglStencilOpSeparate(
 		uint32(inputs[0].Get_i32()),
 		uint32(inputs[1].Get_i32()),
@@ -655,7 +655,7 @@ func opGlStencilOpSeparate(inputs []CXValue, outputs []CXValue) {
 		uint32(inputs[3].Get_i32()))
 }
 
-func opGlStencilFuncSeparate(inputs []CXValue, outputs []CXValue) {
+func opGlStencilFuncSeparate(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglStencilFuncSeparate(
 		uint32(inputs[0].Get_i32()),
 		uint32(inputs[1].Get_i32()),
@@ -663,129 +663,129 @@ func opGlStencilFuncSeparate(inputs []CXValue, outputs []CXValue) {
 		uint32(inputs[3].Get_i32()))
 }
 
-func opGlStencilMaskSeparate(inputs []CXValue, outputs []CXValue) {
+func opGlStencilMaskSeparate(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglStencilMaskSeparate(
 		uint32(inputs[0].Get_i32()),
 		uint32(inputs[1].Get_i32()))
 }
 
-func opGlAttachShader(inputs []CXValue, outputs []CXValue) {
+func opGlAttachShader(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglAttachShader(
 		uint32(inputs[0].Get_i32()),
 		uint32(inputs[1].Get_i32()))
 }
 
-func opGlBindAttribLocation(inputs []CXValue, outputs []CXValue) {
+func opGlBindAttribLocation(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglBindAttribLocation(
 		uint32(inputs[0].Get_i32()),
 		uint32(inputs[1].Get_i32()),
 		inputs[2].Get_str())
 }
 
-func opGlCompileShader(inputs []CXValue, outputs []CXValue) {
+func opGlCompileShader(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	shader := uint32(inputs[0].Get_i32())
 	cxglCompileShader(shader)
 }
 
-func opGlCreateProgram(inputs []CXValue, outputs []CXValue) {
+func opGlCreateProgram(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputs[0].Set_i32(int32(cxglCreateProgram()))
 }
 
-func opGlCreateShader(inputs []CXValue, outputs []CXValue) {
+func opGlCreateShader(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outV0 := int32(cxglCreateShader(uint32(inputs[0].Get_i32())))
 	outputs[0].Set_i32(outV0)
 }
 
-func opGlDeleteProgram(inputs []CXValue, outputs []CXValue) {
+func opGlDeleteProgram(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglDeleteShader(uint32(inputs[0].Get_i32()))
 }
 
-func opGlDeleteShader(inputs []CXValue, outputs []CXValue) {
+func opGlDeleteShader(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglDeleteShader(uint32(inputs[0].Get_i32()))
 }
 
-func opGlDetachShader(inputs []CXValue, outputs []CXValue) {
+func opGlDetachShader(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglDetachShader(
 		uint32(inputs[0].Get_i32()),
 		uint32(inputs[1].Get_i32()))
 }
 
-func opGlEnableVertexAttribArray(inputs []CXValue, outputs []CXValue) {
+func opGlEnableVertexAttribArray(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglEnableVertexAttribArray(uint32(inputs[0].Get_i32()))
 }
 
-func opGlGetAttribLocation(inputs []CXValue, outputs []CXValue) {
+func opGlGetAttribLocation(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outV0 := cxglGetAttribLocation(
 		uint32(inputs[0].Get_i32()),
 		inputs[1].Get_str())
 	outputs[0].Set_i32(outV0)
 }
 
-func opGlGetProgramiv(inputs []CXValue, outputs []CXValue) {
+func opGlGetProgramiv(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outV0 := cxglGetProgramiv(
 		uint32(inputs[0].Get_i32()),
 		uint32(inputs[1].Get_i32()))
 	outputs[0].Set_i32(outV0)
 }
 
-func opGlGetProgramInfoLog(inputs []CXValue, outputs []CXValue) {
+func opGlGetProgramInfoLog(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outV0 := cxglGetProgramInfoLog(
 		uint32(inputs[0].Get_i32()),
 		inputs[1].Get_i32())
 	outputs[0].Set_str(outV0)
 }
 
-func opGlGetShaderiv(inputs []CXValue, outputs []CXValue) {
+func opGlGetShaderiv(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outV0 := cxglGetShaderiv(
 		uint32(inputs[0].Get_i32()),
 		uint32(inputs[1].Get_i32()))
 	outputs[0].Set_i32(outV0)
 }
 
-func opGlGetShaderInfoLog(inputs []CXValue, outputs []CXValue) {
+func opGlGetShaderInfoLog(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outV0 := cxglGetShaderInfoLog(
 		uint32(inputs[0].Get_i32()),
 		inputs[1].Get_i32())
 	outputs[0].Set_str(outV0)
 }
 
-func opGlGetUniformLocation(inputs []CXValue, outputs []CXValue) {
+func opGlGetUniformLocation(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outV0 := cxglGetUniformLocation(
 		uint32(inputs[0].Get_i32()),
 		inputs[1].Get_str())
 	outputs[0].Set_i32(outV0)
 }
 
-func opGlLinkProgram(inputs []CXValue, outputs []CXValue) {
+func opGlLinkProgram(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	program := uint32(inputs[0].Get_i32())
 	cxglLinkProgram(program)
 }
 
-func opGlShaderSource(inputs []CXValue, outputs []CXValue) {
+func opGlShaderSource(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglShaderSource(
 		uint32(inputs[0].Get_i32()),
 		inputs[1].Get_i32(),
 		inputs[2].Get_str())
 }
 
-func opGlUseProgram(inputs []CXValue, outputs []CXValue) {
+func opGlUseProgram(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglUseProgram(uint32(inputs[0].Get_i32()))
 }
 
-func opGlUniform1f(inputs []CXValue, outputs []CXValue) {
+func opGlUniform1f(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglUniform1f(
 		inputs[0].Get_i32(),
 		inputs[1].Get_f32())
 }
 
-func opGlUniform2f(inputs []CXValue, outputs []CXValue) {
+func opGlUniform2f(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglUniform2f(
 		inputs[0].Get_i32(),
 		inputs[1].Get_f32(),
 		inputs[2].Get_f32())
 }
 
-func opGlUniform3f(inputs []CXValue, outputs []CXValue) {
+func opGlUniform3f(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglUniform3f(
 		inputs[0].Get_i32(),
 		inputs[1].Get_f32(),
@@ -793,7 +793,7 @@ func opGlUniform3f(inputs []CXValue, outputs []CXValue) {
 		inputs[3].Get_f32())
 }
 
-func opGlUniform4f(inputs []CXValue, outputs []CXValue) {
+func opGlUniform4f(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglUniform4f(
 		inputs[0].Get_i32(),
 		inputs[1].Get_f32(),
@@ -802,20 +802,20 @@ func opGlUniform4f(inputs []CXValue, outputs []CXValue) {
 		inputs[4].Get_f32())
 }
 
-func opGlUniform1i(inputs []CXValue, outputs []CXValue) {
+func opGlUniform1i(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglUniform1i(
 		inputs[0].Get_i32(),
 		inputs[1].Get_i32())
 }
 
-func opGlUniform2i(inputs []CXValue, outputs []CXValue) {
+func opGlUniform2i(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglUniform2i(
 		inputs[0].Get_i32(),
 		inputs[1].Get_i32(),
 		inputs[2].Get_i32())
 }
 
-func opGlUniform3i(inputs []CXValue, outputs []CXValue) {
+func opGlUniform3i(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglUniform3i(
 		inputs[0].Get_i32(),
 		inputs[1].Get_i32(),
@@ -823,7 +823,7 @@ func opGlUniform3i(inputs []CXValue, outputs []CXValue) {
 		inputs[3].Get_i32())
 }
 
-func opGlUniform4i(inputs []CXValue, outputs []CXValue) {
+func opGlUniform4i(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglUniform4i(
 		inputs[0].Get_i32(),
 		inputs[1].Get_i32(),
@@ -832,63 +832,63 @@ func opGlUniform4i(inputs []CXValue, outputs []CXValue) {
 		inputs[4].Get_i32())
 }
 
-func opGlUniform1fv(inputs []CXValue, outputs []CXValue) {
+func opGlUniform1fv(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglUniform1fv(
 		inputs[0].Get_i32(),
 		inputs[1].Get_i32(),
 		inputs[2].GetSlice_f32())
 }
 
-func opGlUniform2fv(inputs []CXValue, outputs []CXValue) {
+func opGlUniform2fv(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglUniform2fv(
 		inputs[0].Get_i32(),
 		inputs[1].Get_i32(),
 		inputs[2].GetSlice_f32())
 }
 
-func opGlUniform3fv(inputs []CXValue, outputs []CXValue) {
+func opGlUniform3fv(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglUniform3fv(
 		inputs[0].Get_i32(),
 		inputs[1].Get_i32(),
 		inputs[2].GetSlice_f32())
 }
 
-func opGlUniform4fv(inputs []CXValue, outputs []CXValue) {
+func opGlUniform4fv(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglUniform4fv(
 		inputs[0].Get_i32(),
 		inputs[1].Get_i32(),
 		inputs[2].GetSlice_f32())
 }
 
-func opGlUniform1iv(inputs []CXValue, outputs []CXValue) {
+func opGlUniform1iv(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglUniform1iv(
 		inputs[0].Get_i32(),
 		inputs[1].Get_i32(),
 		inputs[2].GetSlice_i32())
 }
 
-func opGlUniform2iv(inputs []CXValue, outputs []CXValue) {
+func opGlUniform2iv(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglUniform2iv(
 		inputs[0].Get_i32(),
 		inputs[1].Get_i32(),
 		inputs[2].GetSlice_i32())
 }
 
-func opGlUniform3iv(inputs []CXValue, outputs []CXValue) {
+func opGlUniform3iv(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglUniform3iv(
 		inputs[0].Get_i32(),
 		inputs[1].Get_i32(),
 		inputs[2].GetSlice_i32())
 }
 
-func opGlUniform4iv(inputs []CXValue, outputs []CXValue) {
+func opGlUniform4iv(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglUniform4iv(
 		inputs[0].Get_i32(),
 		inputs[1].Get_i32(),
 		inputs[2].GetSlice_i32())
 }
 
-func opGlUniformMatrix2fv(inputs []CXValue, outputs []CXValue) {
+func opGlUniformMatrix2fv(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglUniformMatrix2fv(
 		inputs[0].Get_i32(),
 		inputs[1].Get_i32(),
@@ -896,7 +896,7 @@ func opGlUniformMatrix2fv(inputs []CXValue, outputs []CXValue) {
 		inputs[3].GetSlice_f32())
 }
 
-func opGlUniformMatrix3fv(inputs []CXValue, outputs []CXValue) {
+func opGlUniformMatrix3fv(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglUniformMatrix3fv(
 		inputs[0].Get_i32(),
 		inputs[1].Get_i32(),
@@ -904,7 +904,7 @@ func opGlUniformMatrix3fv(inputs []CXValue, outputs []CXValue) {
 		inputs[3].GetSlice_f32())
 }
 
-func opGlUniformMatrix4fv(inputs []CXValue, outputs []CXValue) {
+func opGlUniformMatrix4fv(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglUniformMatrix4fv(
 		inputs[0].Get_i32(),
 		inputs[1].Get_i32(),
@@ -912,14 +912,14 @@ func opGlUniformMatrix4fv(inputs []CXValue, outputs []CXValue) {
 		inputs[3].GetSlice_f32())
 }
 
-func opGlUniformV4F(inputs []CXValue, outputs []CXValue) {
+func opGlUniformV4F(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglUniform4fv(
 		inputs[0].Get_i32(),
 		1,
 		inputs[1].GetSlice())
 }
 
-func opGlUniformM44F(inputs []CXValue, outputs []CXValue) {
+func opGlUniformM44F(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglUniformMatrix4fv(
 		inputs[0].Get_i32(),
 		1,
@@ -927,7 +927,7 @@ func opGlUniformM44F(inputs []CXValue, outputs []CXValue) {
 		inputs[2].GetSlice())
 }
 
-func opGlUniformM44FV(inputs []CXValue, outputs []CXValue) {
+func opGlUniformM44FV(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglUniformMatrix4fv(
 		inputs[0].Get_i32(),
 		inputs[1].Get_i32(),
@@ -935,7 +935,7 @@ func opGlUniformM44FV(inputs []CXValue, outputs []CXValue) {
 		inputs[3].GetSlice())
 }
 
-func opGlVertexAttribPointer(inputs []CXValue, outputs []CXValue) {
+func opGlVertexAttribPointer(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglVertexAttribPointer(
 		uint32(inputs[0].Get_i32()),
 		inputs[1].Get_i32(),
@@ -944,7 +944,7 @@ func opGlVertexAttribPointer(inputs []CXValue, outputs []CXValue) {
 		inputs[4].Get_i32(), 0)
 }
 
-func opGlVertexAttribPointerI32(inputs []CXValue, outputs []CXValue) {
+func opGlVertexAttribPointerI32(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglVertexAttribPointer(
 		uint32(inputs[0].Get_i32()),
 		inputs[1].Get_i32(),
@@ -954,7 +954,7 @@ func opGlVertexAttribPointerI32(inputs []CXValue, outputs []CXValue) {
 		inputs[5].Get_i32())
 }
 
-func opGlClearBufferI(inputs []CXValue, outputs []CXValue) {
+func opGlClearBufferI(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	color := []int32{
 		inputs[2].Get_i32(),
 		inputs[3].Get_i32(),
@@ -967,7 +967,7 @@ func opGlClearBufferI(inputs []CXValue, outputs []CXValue) {
 		color)
 }
 
-func opGlClearBufferUI(inputs []CXValue, outputs []CXValue) {
+func opGlClearBufferUI(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	color := []uint32{
 		inputs[2].Get_ui32(),
 		inputs[3].Get_ui32(),
@@ -980,7 +980,7 @@ func opGlClearBufferUI(inputs []CXValue, outputs []CXValue) {
 		color)
 }
 
-func opGlClearBufferF(inputs []CXValue, outputs []CXValue) {
+func opGlClearBufferF(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	color := []float32{
 		inputs[2].Get_f32(),
 		inputs[3].Get_f32(),
@@ -993,24 +993,24 @@ func opGlClearBufferF(inputs []CXValue, outputs []CXValue) {
 		color)
 }
 
-func opGlBindRenderbuffer(inputs []CXValue, outputs []CXValue) {
+func opGlBindRenderbuffer(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglBindRenderbuffer(
 		uint32(inputs[0].Get_i32()),
 		uint32(inputs[1].Get_i32()))
 }
 
-func opGlDeleteRenderbuffers(inputs []CXValue, outputs []CXValue) {
+func opGlDeleteRenderbuffers(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	inpV1 := uint32(inputs[1].Get_i32())
 	cxglDeleteRenderbuffers(inputs[0].Get_i32(), &inpV1) // will panic if inp0 > 1
 }
 
-func opGlGenRenderbuffers(inputs []CXValue, outputs []CXValue) {
+func opGlGenRenderbuffers(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	inpV1 := uint32(inputs[1].Get_i32())
 	cxglGenRenderbuffers(inputs[0].Get_i32(), &inpV1) // will panic if inp0 > 1
 	outputs[0].Set_i32(int32(inpV1))
 }
 
-func opGlRenderbufferStorage(inputs []CXValue, outputs []CXValue) {
+func opGlRenderbufferStorage(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglRenderbufferStorage(
 		uint32(inputs[0].Get_i32()),
 		uint32(inputs[1].Get_i32()),
@@ -1018,29 +1018,29 @@ func opGlRenderbufferStorage(inputs []CXValue, outputs []CXValue) {
 		inputs[3].Get_i32())
 }
 
-func opGlBindFramebuffer(inputs []CXValue, outputs []CXValue) {
+func opGlBindFramebuffer(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglBindFramebuffer(
 		uint32(inputs[0].Get_i32()),
 		uint32(inputs[1].Get_i32()))
 }
 
-func opGlDeleteFramebuffers(inputs []CXValue, outputs []CXValue) {
+func opGlDeleteFramebuffers(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	inpV1 := uint32(inputs[1].Get_i32())
 	cxglDeleteFramebuffers(inputs[0].Get_i32(), &inpV1) // will panic if inp0 > 1
 }
 
-func opGlGenFramebuffers(inputs []CXValue, outputs []CXValue) {
+func opGlGenFramebuffers(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	inpV1 := uint32(inputs[1].Get_i32())
 	cxglGenFramebuffers(inputs[0].Get_i32(), &inpV1) // will panic if inp0 > 1
 	outputs[0].Set_i32(int32(inpV1))
 }
 
-func opGlCheckFramebufferStatus(inputs []CXValue, outputs []CXValue) {
+func opGlCheckFramebufferStatus(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outV0 := int32(cxglCheckFramebufferStatus(uint32(inputs[0].Get_i32())))
 	outputs[0].Set_i32(outV0)
 }
 
-func opGlFramebufferTexture2D(inputs []CXValue, outputs []CXValue) {
+func opGlFramebufferTexture2D(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglFramebufferTexture2D(
 		uint32(inputs[0].Get_i32()),
 		uint32(inputs[1].Get_i32()),
@@ -1049,7 +1049,7 @@ func opGlFramebufferTexture2D(inputs []CXValue, outputs []CXValue) {
 		inputs[4].Get_i32())
 }
 
-func opGlFramebufferRenderbuffer(inputs []CXValue, outputs []CXValue) {
+func opGlFramebufferRenderbuffer(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglFramebufferRenderbuffer(
 		uint32(inputs[0].Get_i32()),
 		uint32(inputs[1].Get_i32()),
@@ -1057,11 +1057,11 @@ func opGlFramebufferRenderbuffer(inputs []CXValue, outputs []CXValue) {
 		uint32(inputs[3].Get_i32()))
 }
 
-func opGlGenerateMipmap(inputs []CXValue, outputs []CXValue) {
+func opGlGenerateMipmap(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglGenerateMipmap(uint32(inputs[0].Get_i32()))
 }
 
-func opGlBindVertexArray(inputs []CXValue, outputs []CXValue) {
+func opGlBindVertexArray(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	inpV0 := uint32(inputs[0].Get_i32())
 	if runtime.GOOS == "darwin" {
 		cxglBindVertexArrayAPPLE(inpV0)
@@ -1070,11 +1070,11 @@ func opGlBindVertexArray(inputs []CXValue, outputs []CXValue) {
 	}
 }
 
-func opGlBindVertexArrayCore(inputs []CXValue, outputs []CXValue) {
+func opGlBindVertexArrayCore(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglBindVertexArray(uint32(inputs[0].Get_i32()))
 }
 
-func opGlDeleteVertexArrays(inputs []CXValue, outputs []CXValue) {
+func opGlDeleteVertexArrays(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	inpV0 := inputs[0].Get_i32()
 	inpV1 := uint32(inputs[1].Get_i32())
 	if runtime.GOOS == "darwin" {
@@ -1084,12 +1084,12 @@ func opGlDeleteVertexArrays(inputs []CXValue, outputs []CXValue) {
 	}
 }
 
-func opGlDeleteVertexArraysCore(inputs []CXValue, outputs []CXValue) {
+func opGlDeleteVertexArraysCore(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	inpV1 := uint32(inputs[1].Get_i32())
 	cxglDeleteVertexArrays(inputs[0].Get_i32(), &inpV1) // will panic if inp0 > 1
 }
 
-func opGlGenVertexArrays(inputs []CXValue, outputs []CXValue) {
+func opGlGenVertexArrays(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	inpV0 := inputs[0].Get_i32()
 	inpV1 := uint32(inputs[1].Get_i32())
 	if runtime.GOOS == "darwin" {
@@ -1100,7 +1100,7 @@ func opGlGenVertexArrays(inputs []CXValue, outputs []CXValue) {
 	outputs[0].Set_i32(int32(inpV1))
 }
 
-func opGlGenVertexArraysCore(inputs []CXValue, outputs []CXValue) {
+func opGlGenVertexArraysCore(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	inpV1 := uint32(inputs[1].Get_i32())
 	cxglGenVertexArrays(inputs[0].Get_i32(), &inpV1) // will panic if inp0 > 1
 	outputs[0].Set_i32(int32(inpV1))

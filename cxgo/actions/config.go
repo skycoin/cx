@@ -1,13 +1,13 @@
 package actions
 
 import (
-	. "github.com/skycoin/cx/cx"
+	"github.com/skycoin/cx/cx"
 )
 
 /* [2020 Jun 07 (ReewassSquared)] we should add verbose compilation options */
 
-var PRGRM *CXProgram
-var DataOffset int = STACK_SIZE
+var PRGRM *cxcore.CXProgram
+var DataOffset int = cxcore.STACK_SIZE
 
 var CurrentFile string
 var LineNo int
@@ -15,7 +15,7 @@ var ReplTargetFn string = ""
 var ReplTargetStrct string = ""
 var ReplTargetMod string = ""
 
-var SysInitExprs []*CXExpression
+var SysInitExprs []*cxcore.CXExpression
 
 // var dStack bool = false
 var InFn bool = false

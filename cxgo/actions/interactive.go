@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	. "github.com/skycoin/cx/cx"
+	"github.com/skycoin/cx/cx"
 )
 
 func Stepping(steps int, delay int, withDelay bool) {
@@ -52,7 +52,7 @@ func Stepping(steps int, delay int, withDelay bool) {
 func Selector(ident string, selTyp int) string {
 	switch selTyp {
 	case SELECT_TYP_PKG:
-		var previousModule *CXPackage
+		var previousModule *cxcore.CXPackage
 		if mod, err := PRGRM.GetCurrentPackage(); err == nil {
 			previousModule = mod
 		} else {
@@ -70,7 +70,7 @@ func Selector(ident string, selTyp int) string {
 
 		return previousModule.Name
 	case SELECT_TYP_FUNC:
-		var previousFunction *CXFunction
+		var previousFunction *cxcore.CXFunction
 		if fn, err := PRGRM.GetCurrentFunction(); err == nil {
 			previousFunction = fn
 		} else {
@@ -88,7 +88,7 @@ func Selector(ident string, selTyp int) string {
 
 		return previousFunction.Name
 	case SELECT_TYP_STRCT:
-		var previousStruct *CXStruct
+		var previousStruct *cxcore.CXStruct
 		if fn, err := PRGRM.GetCurrentStruct(); err == nil {
 			previousStruct = fn
 		} else {

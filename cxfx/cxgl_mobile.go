@@ -10,7 +10,7 @@ import (
 	"github.com/skycoin/gltext"
 	"golang.org/x/mobile/gl"
 
-	. "github.com/skycoin/cx/cx"
+	"github.com/skycoin/cx/cx"
 )
 
 func Ptr(data interface{}) (unsafe.Pointer, uintptr) {

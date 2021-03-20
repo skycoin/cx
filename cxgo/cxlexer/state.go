@@ -1,7 +1,7 @@
 package cxlexer
 
 import (
-	cxcore "github.com/skycoin/cx/cx"
+	"github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cxgo/actions"
 )
 

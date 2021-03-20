@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	. "github.com/skycoin/cx/cx"
+	"github.com/skycoin/cx/cx"
 )
 
 // DeclareGlobal creates a global variable in the current package.
@@ -16,8 +16,8 @@ import (
 // FIXME: This function should be merged with DeclareGlobalInPackage.
 //        Just use pkg=nil to indicate that CurrentPackage should be used.
 //
-func DeclareGlobal(declarator *CXArgument, declarationSpecifiers *CXArgument,
-	initializer []*CXExpression, doesInitialize bool) {
+func DeclareGlobal(declarator *cxcore.CXArgument, declarationSpecifiers *cxcore.CXArgument,
+	initializer []*cxcore.CXExpression, doesInitialize bool) {
 	pkg, err := PRGRM.GetCurrentPackage()
 	if err != nil {
 		panic(err)
@@ -31,9 +31,9 @@ func DeclareGlobal(declarator *CXArgument, declarationSpecifiers *CXArgument,
 // If `doesInitialize` is true, then `initializer` is used to initialize the
 // new variable.
 //
-func DeclareGlobalInPackage(pkg *CXPackage,
-	declarator *CXArgument, declaration_specifiers *CXArgument,
-	initializer []*CXExpression, doesInitialize bool) {
+func DeclareGlobalInPackage(pkg *cxcore.CXPackage,
+	declarator *cxcore.CXArgument, declaration_specifiers *cxcore.CXArgument,
+	initializer []*cxcore.CXExpression, doesInitialize bool) {
 	declaration_specifiers.Package = pkg
 
 	// Treat the name a bit different whether it's defined already or not.
@@ -42,7 +42,7 @@ func DeclareGlobalInPackage(pkg *CXPackage,
 
 		if glbl.Offset < 0 || glbl.Size == 0 || glbl.TotalSize == 0 {
 			// then it was only added a reference to the symbol
-			var offExpr []*CXExpression
+			var offExpr []*cxcore.CXExpression
 			if declaration_specifiers.IsSlice {
 				offExpr = WritePrimary(declaration_specifiers.Type,
 					make([]byte, declaration_specifiers.Size), true)
@@ -74,7 +74,7 @@ func DeclareGlobalInPackage(pkg *CXPackage,
 				initializer[len(initializer)-1].AddInput(initializer[len(initializer)-1].Outputs[0])
 				initializer[len(initializer)-1].Outputs = nil
 				initializer[len(initializer)-1].AddOutput(glbl)
-				initializer[len(initializer)-1].Operator = Natives[OP_IDENTITY]
+				initializer[len(initializer)-1].Operator = cxcore.Natives[cxcore.OP_IDENTITY]
 				initializer[len(initializer)-1].Package = glbl.Package
 
 				SysInitExprs = append(SysInitExprs, initializer...)
@@ -88,7 +88,7 @@ func DeclareGlobalInPackage(pkg *CXPackage,
 				*glbl = *declaration_specifiers
 
 				if initializer[len(initializer)-1].IsStructLiteral {
-					initializer = StructLiteralAssignment([]*CXExpression{&CXExpression{Outputs: []*CXArgument{glbl}}}, initializer)
+					initializer = StructLiteralAssignment([]*cxcore.CXExpression{&cxcore.CXExpression{Outputs: []*cxcore.CXArgument{glbl}}}, initializer)
 				} else {
 					initializer[len(initializer)-1].Outputs = nil
 					initializer[len(initializer)-1].AddOutput(glbl)
@@ -106,7 +106,7 @@ func DeclareGlobalInPackage(pkg *CXPackage,
 		}
 	} else {
 		// then it hasn't been defined
-		var offExpr []*CXExpression
+		var offExpr []*cxcore.CXExpression
 		if declaration_specifiers.IsSlice {
 			offExpr = WritePrimary(declaration_specifiers.Type, make([]byte, declaration_specifiers.Size), true)
 		} else {
@@ -128,7 +128,7 @@ func DeclareGlobalInPackage(pkg *CXPackage,
 				declaration_specifiers.TotalSize = offExpr[0].Outputs[0].TotalSize
 				declaration_specifiers.Package = pkg
 
-				initializer[len(initializer)-1].Operator = Natives[OP_IDENTITY]
+				initializer[len(initializer)-1].Operator = cxcore.Natives[cxcore.OP_IDENTITY]
 				initializer[len(initializer)-1].AddInput(initializer[len(initializer)-1].Outputs[0])
 				initializer[len(initializer)-1].Outputs = nil
 				initializer[len(initializer)-1].AddOutput(declaration_specifiers)
@@ -146,7 +146,7 @@ func DeclareGlobalInPackage(pkg *CXPackage,
 				declaration_specifiers.Package = pkg
 
 				if initializer[len(initializer)-1].IsStructLiteral {
-					initializer = StructLiteralAssignment([]*CXExpression{&CXExpression{Outputs: []*CXArgument{declaration_specifiers}}}, initializer)
+					initializer = StructLiteralAssignment([]*cxcore.CXExpression{&cxcore.CXExpression{Outputs: []*cxcore.CXArgument{declaration_specifiers}}}, initializer)
 				} else {
 					initializer[len(initializer)-1].Outputs = nil
 					initializer[len(initializer)-1].AddOutput(declaration_specifiers)
@@ -174,7 +174,7 @@ func DeclareGlobalInPackage(pkg *CXPackage,
 // DeclareStruct takes a name of a struct and a slice of fields representing
 // the members and adds the struct to the package.
 //
-func DeclareStruct(ident string, strctFlds []*CXArgument) {
+func DeclareStruct(ident string, strctFlds []*cxcore.CXArgument) {
 	// Make sure we are inside a package.
 	pkg, err := PRGRM.GetCurrentPackage()
 	if err != nil {
@@ -193,7 +193,7 @@ func DeclareStruct(ident string, strctFlds []*CXArgument) {
 	strct.Size = 0
 	for _, fld := range strctFlds {
 		if _, err := strct.GetField(fld.Name); err == nil {
-			println(CompilationError(fld.FileName, fld.FileLine), "Multiply defined struct field:", fld.Name)
+			println(cxcore.CompilationError(fld.FileName, fld.FileLine), "Multiply defined struct field:", fld.Name)
 		} else {
 			strct.AddField(fld)
 		}
@@ -205,7 +205,7 @@ func DeclareStruct(ident string, strctFlds []*CXArgument) {
 func DeclarePackage(ident string) {
 	// Add a new package to the program if it's not previously defined.
 	if pkg, err := PRGRM.GetPackage(ident); err != nil {
-		pkg = MakePackage(ident)
+		pkg = cxcore.MakePackage(ident)
 		PRGRM.AddPackage(pkg)
 	}
 
@@ -257,8 +257,8 @@ func DeclareImport(name string, currentFile string, lineNo int) {
 	// All packages are read during the first pass of the compilation.  So
 	// if we get here during the 2nd pass, it's either a core package or
 	// something is panic-level wrong.
-	if IsCorePackage(ident) {
-		imp := MakePackage(ident)
+	if cxcore.IsCorePackage(ident) {
+		imp := cxcore.MakePackage(ident)
 		pkg.AddImport(imp)
 		PRGRM.AddPackage(imp)
 		PRGRM.CurrentPackage = pkg
@@ -268,8 +268,8 @@ func DeclareImport(name string, currentFile string, lineNo int) {
 		}
 	} else {
 		// This should never happen.
-		println(CompilationError(currentFile, lineNo), fmt.Sprintf("unkown error when trying to read package '%s'", ident))
-		os.Exit(CX_COMPILATION_ERROR)
+		println(cxcore.CompilationError(currentFile, lineNo), fmt.Sprintf("unkown error when trying to read package '%s'", ident))
+		os.Exit(cxcore.CX_COMPILATION_ERROR)
 	}
 }
 
@@ -279,9 +279,9 @@ func DeclareImport(name string, currentFile string, lineNo int) {
 //
 // Returns a list of expressions that contains the initialization, if any.
 //
-func DeclareLocal(declarator *CXArgument, declarationSpecifiers *CXArgument,
-	initializer []*CXExpression, doesInitialize bool) []*CXExpression {
-	if FoundCompileErrors {
+func DeclareLocal(declarator *cxcore.CXArgument, declarationSpecifiers *cxcore.CXArgument,
+	initializer []*cxcore.CXExpression, doesInitialize bool) []*cxcore.CXExpression {
+	if cxcore.FoundCompileErrors {
 		return nil
 	}
 
@@ -295,7 +295,7 @@ func DeclareLocal(declarator *CXArgument, declarationSpecifiers *CXArgument,
 	// Declaration expression to handle the inline initialization.
 	// For example, `var foo i32 = 11` needs to be divided into two expressions:
 	// one that declares `foo`, and another that assigns 11 to `foo`
-	decl := MakeExpression(nil, declarator.FileName, declarator.FileLine)
+	decl := cxcore.MakeExpression(nil, declarator.FileName, declarator.FileLine)
 	decl.Package = pkg
 
 	declarationSpecifiers.Name = declarator.Name
@@ -314,7 +314,7 @@ func DeclareLocal(declarator *CXArgument, declarationSpecifiers *CXArgument,
 		if initializer[len(initializer)-1].Operator == nil {
 			// we need to create an expression that links the initializer expressions
 			// with the declared variable
-			expr := MakeExpression(Natives[OP_IDENTITY], CurrentFile, LineNo)
+			expr := cxcore.MakeExpression(cxcore.Natives[cxcore.OP_IDENTITY], CurrentFile, LineNo)
 			expr.Package = pkg
 
 			initOut := initializer[len(initializer)-1].Outputs[0]
@@ -328,7 +328,7 @@ func DeclareLocal(declarator *CXArgument, declarationSpecifiers *CXArgument,
 
 			initializer[len(initializer)-1] = expr
 
-			return append([]*CXExpression{decl}, initializer...)
+			return append([]*cxcore.CXExpression{decl}, initializer...)
 		} else {
 			expr := initializer[len(initializer)-1]
 
@@ -336,16 +336,16 @@ func DeclareLocal(declarator *CXArgument, declarationSpecifiers *CXArgument,
 			// handling a dot notation initializer, and it needs to be replaced
 			// ELSE we simply add it using `AddOutput`
 			if len(expr.Outputs) > 0 {
-				expr.Outputs = []*CXArgument{declarationSpecifiers}
+				expr.Outputs = []*cxcore.CXArgument{declarationSpecifiers}
 			} else {
 				expr.AddOutput(declarationSpecifiers)
 			}
 
-			return append([]*CXExpression{decl}, initializer...)
+			return append([]*cxcore.CXExpression{decl}, initializer...)
 		}
 	} else {
 		// There is no initialization.
-		expr := MakeExpression(nil, declarator.FileName, declarator.FileLine)
+		expr := cxcore.MakeExpression(nil, declarator.FileName, declarator.FileLine)
 		expr.Package = pkg
 
 		declarationSpecifiers.Name = declarator.Name
@@ -354,7 +354,7 @@ func DeclareLocal(declarator *CXArgument, declarationSpecifiers *CXArgument,
 		declarationSpecifiers.PreviouslyDeclared = true
 		expr.AddOutput(declarationSpecifiers)
 
-		return []*CXExpression{expr}
+		return []*cxcore.CXExpression{expr}
 	}
 }
 
@@ -363,19 +363,19 @@ func DeclareLocal(declarator *CXArgument, declarationSpecifiers *CXArgument,
 // It is called repeatedly while the type is parsed.
 //
 //   declSpec:     The incoming type
-//   arrayLengths: The lengths of the array if `opTyp` = DECL_ARRAY
+//   arrayLengths: The lengths of the array if `opTyp` = cxcore.DECL_ARRAY
 //   opTyp:        The type of modification to `declSpec` (array of, pointer to, ...)
 //
 // Returns the new type build from `declSpec` and `opTyp`.
 //
-func DeclarationSpecifiers(declSpec *CXArgument, arrayLengths []int, opTyp int) *CXArgument {
+func DeclarationSpecifiers(declSpec *cxcore.CXArgument, arrayLengths []int, opTyp int) *cxcore.CXArgument {
 	switch opTyp {
-	case DECL_POINTER:
-		declSpec.DeclarationSpecifiers = append(declSpec.DeclarationSpecifiers, DECL_POINTER)
+	case cxcore.DECL_POINTER:
+		declSpec.DeclarationSpecifiers = append(declSpec.DeclarationSpecifiers, cxcore.DECL_POINTER)
 		if !declSpec.IsPointer {
 			declSpec.IsPointer = true
-			declSpec.Size = TYPE_POINTER_SIZE
-			declSpec.TotalSize = TYPE_POINTER_SIZE
+			declSpec.Size = cxcore.TYPE_POINTER_SIZE
+			declSpec.TotalSize = cxcore.TYPE_POINTER_SIZE
 			declSpec.IndirectionLevels++
 		} else {
 			pointer := declSpec
@@ -387,14 +387,14 @@ func DeclarationSpecifiers(declSpec *CXArgument, arrayLengths []int, opTyp int) 
 
 			declSpec.IndirectionLevels++
 
-			pointer.Size = TYPE_POINTER_SIZE
-			pointer.TotalSize = TYPE_POINTER_SIZE
+			pointer.Size = cxcore.TYPE_POINTER_SIZE
+			pointer.TotalSize = cxcore.TYPE_POINTER_SIZE
 		}
 
 		return declSpec
-	case DECL_ARRAY:
+	case cxcore.DECL_ARRAY:
 		for range arrayLengths {
-			declSpec.DeclarationSpecifiers = append(declSpec.DeclarationSpecifiers, DECL_ARRAY)
+			declSpec.DeclarationSpecifiers = append(declSpec.DeclarationSpecifiers, cxcore.DECL_ARRAY)
 		}
 		arg := declSpec
 		arg.IsArray = true
@@ -402,33 +402,33 @@ func DeclarationSpecifiers(declSpec *CXArgument, arrayLengths []int, opTyp int) 
 		arg.TotalSize = arg.Size * TotalLength(arg.Lengths)
 
 		return arg
-	case DECL_SLICE:
+	case cxcore.DECL_SLICE:
 		// for range arrayLengths {
-		// 	declSpec.DeclarationSpecifiers = append(declSpec.DeclarationSpecifiers, DECL_SLICE)
+		// 	declSpec.DeclarationSpecifiers = append(declSpec.DeclarationSpecifiers, cxcore.DECL_SLICE)
 		// }
 
 		arg := declSpec
 
-		arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, DECL_SLICE)
+		arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, cxcore.DECL_SLICE)
 
 		arg.IsSlice = true
 		arg.IsReference = true
 		arg.IsArray = true
-		arg.PassBy = PASSBY_REFERENCE
+		arg.PassBy = cxcore.PASSBY_REFERENCE
 
 		arg.Lengths = append([]int{0}, arg.Lengths...)
 		// arg.Lengths = arrayLengths
 		// arg.TotalSize = arg.Size
-		// arg.Size = TYPE_POINTER_SIZE
-		arg.TotalSize = TYPE_POINTER_SIZE
+		// arg.Size = cxcore.TYPE_POINTER_SIZE
+		arg.TotalSize = cxcore.TYPE_POINTER_SIZE
 
 		return arg
-	case DECL_BASIC:
+	case cxcore.DECL_BASIC:
 		arg := declSpec
-		// arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, DECL_BASIC)
+		// arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, cxcore.DECL_BASIC)
 		arg.TotalSize = arg.Size
 		return arg
-	case DECL_FUNC:
+	case cxcore.DECL_FUNC:
 		// Creating this case if additional operations are needed in the
 		// future.
 		return declSpec
@@ -439,24 +439,24 @@ func DeclarationSpecifiers(declSpec *CXArgument, arrayLengths []int, opTyp int) 
 
 // DeclarationSpecifiersBasic() returns a type specifier created from one of the builtin types.
 //
-func DeclarationSpecifiersBasic(typ int) *CXArgument {
-	arg := MakeArgument("", CurrentFile, LineNo)
-	arg.AddType(TypeNames[typ])
+func DeclarationSpecifiersBasic(typ int) *cxcore.CXArgument {
+	arg := cxcore.MakeArgument("", CurrentFile, LineNo)
+	arg.AddType(cxcore.TypeNames[typ])
 	arg.Type = typ
 
-	arg.Size = GetArgSize(typ)
+	arg.Size = cxcore.GetArgSize(typ)
 
-	if typ == TYPE_AFF {
+	if typ == cxcore.TYPE_AFF {
 		// equivalent to slice of strings
-		return DeclarationSpecifiers(arg, []int{0}, DECL_SLICE)
+		return DeclarationSpecifiers(arg, []int{0}, cxcore.DECL_SLICE)
 	}
 
-	return DeclarationSpecifiers(arg, []int{0}, DECL_BASIC)
+	return DeclarationSpecifiers(arg, []int{0}, cxcore.DECL_BASIC)
 }
 
 // DeclarationSpecifiersStruct() declares a struct
 func DeclarationSpecifiersStruct(ident string, pkgName string,
-	isExternal bool, currentFile string, lineNo int) *CXArgument {
+	isExternal bool, currentFile string, lineNo int) *cxcore.CXArgument {
 	pkg, err := PRGRM.GetCurrentPackage()
 	if err != nil {
 		panic(err)
@@ -471,31 +471,31 @@ func DeclarationSpecifiersStruct(ident string, pkgName string,
 
 		strct, err := PRGRM.GetStruct(ident, imp.Name)
 		if err != nil {
-			println(CompilationError(currentFile, lineNo), err.Error())
+			println(cxcore.CompilationError(currentFile, lineNo), err.Error())
 			return nil
 		}
 
-		arg := MakeArgument("", currentFile, lineNo)
-		arg.Type = TYPE_CUSTOM
+		arg := cxcore.MakeArgument("", currentFile, lineNo)
+		arg.Type = cxcore.TYPE_CUSTOM
 		arg.CustomType = strct
 		arg.Size = strct.Size
 		arg.TotalSize = strct.Size
 
 		arg.Package = pkg
-		arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, DECL_STRUCT)
+		arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, cxcore.DECL_STRUCT)
 
 		return arg
 	} else {
 		// custom type in the current package
 		strct, err := PRGRM.GetStruct(ident, pkg.Name)
 		if err != nil {
-			println(CompilationError(currentFile, lineNo), err.Error())
+			println(cxcore.CompilationError(currentFile, lineNo), err.Error())
 			return nil
 		}
 
-		arg := MakeArgument("", currentFile, lineNo)
-		arg.Type = TYPE_CUSTOM
-		arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, DECL_STRUCT)
+		arg := cxcore.MakeArgument("", currentFile, lineNo)
+		arg.Type = cxcore.TYPE_CUSTOM
+		arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, cxcore.DECL_STRUCT)
 		arg.CustomType = strct
 		arg.Size = strct.Size
 		arg.TotalSize = strct.Size

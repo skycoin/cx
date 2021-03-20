@@ -5,7 +5,7 @@ package cxfx
 import (
 	"golang.org/x/mobile/app"
 
-	. "github.com/skycoin/cx/cx"
+	"github.com/skycoin/cx/cx"
 	//"golang.org/x/mobile/event/paint"
 )
 

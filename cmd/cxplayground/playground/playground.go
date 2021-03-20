@@ -12,7 +12,7 @@ import (
 	"runtime"
 	"time"
 
-	cxcore "github.com/skycoin/cx/cx"
+	"github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cxgo/actions"
 	"github.com/skycoin/cx/cxgo/cxgo"
 	"github.com/skycoin/cx/cxgo/cxgo0"

@@ -8,12 +8,12 @@ import (
 	"github.com/mjibson/go-dsp/wav"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 
-	. "github.com/skycoin/cx/cx"
+	"github.com/skycoin/cx/cx"
 	//"golang.org/x/mobile/exp/audio/al"
 )
 
-func opAlLoadWav(inputs []CXValue, outputs []CXValue) {
-	file, err := CXOpenFile(inputs[0].Get_str())
+func opAlLoadWav(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+	file, err := cxcore.CXOpenFile(inputs[0].Get_str())
 	defer file.Close()
 	if err != nil {
 		panic(err)
@@ -42,9 +42,9 @@ func opAlLoadWav(inputs []CXValue, outputs []CXValue) {
 	outputs[7].Set_i64(int64(wav.Duration))
 
 	outputSlicePointer := outputs[8].Offset
-	outputSliceOffset := GetPointerOffset(int32(outputSlicePointer))
-	outputSliceOffset = int32(SliceResizeEx(outputSliceOffset, int32(len(data)), 1))
-	copy(GetSliceData(outputSliceOffset, 1), data)
+	outputSliceOffset := cxcore.GetPointerOffset(int32(outputSlicePointer))
+	outputSliceOffset = int32(cxcore.SliceResizeEx(outputSliceOffset, int32(len(data)), 1))
+	copy(cxcore.GetSliceData(outputSliceOffset, 1), data)
 	outputs[8].SetSlice(outputSliceOffset)
 }
 
