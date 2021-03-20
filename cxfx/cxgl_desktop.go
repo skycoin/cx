@@ -7,7 +7,7 @@ import (
 
 	"github.com/go-gl/gl/v3.2-compatibility/gl"
 
-	. "github.com/skycoin/cx/cx"
+	"github.com/skycoin/cx/cx"
 )
 
 const (
@@ -75,41 +75,41 @@ func ito_pf32(i interface{}) *float32 {
 	return to_pf32(ito_pui8(i))
 }
 
-// TODO: change to ReadData_i64
-func readPtr(fp int, inp *CXArgument, dataType int) *uint8 {
-	// return (*uint8)(gl.Ptr(ReadData(fp, inp, dataType)))
-	return (*uint8)(gl.Ptr(ReadData_i32(fp, inp, dataType)))
+// TODO: change to cxcore.ReadData_i64
+func readPtr(fp int, inp *cxcore.CXArgument, dataType int) *uint8 {
+	// return (*uint8)(gl.Ptr(cxcore.ReadData(fp, inp, dataType)))
+	return (*uint8)(gl.Ptr(cxcore.ReadData_i32(fp, inp, dataType)))
 }
 
-func readF32Ptr(fp int, inp *CXArgument) *float32 {
-	return to_pf32(readPtr(fp, inp, TYPE_F32))
+func readF32Ptr(fp int, inp *cxcore.CXArgument) *float32 {
+	return to_pf32(readPtr(fp, inp, cxcore.TYPE_F32))
 }
 
-func readI32Ptr(fp int, inp *CXArgument) *int32 {
-	return to_pi32(readPtr(fp, inp, TYPE_I32))
+func readI32Ptr(fp int, inp *cxcore.CXArgument) *int32 {
+	return to_pi32(readPtr(fp, inp, cxcore.TYPE_I32))
 }
 
-func readUI32Ptr(fp int, inp *CXArgument) *uint32 {
-	return to_pui32(readPtr(fp, inp, TYPE_UI32))
+func readUI32Ptr(fp int, inp *cxcore.CXArgument) *uint32 {
+	return to_pui32(readPtr(fp, inp, cxcore.TYPE_UI32))
 }
 
 // gogl
-func opGlInit(expr *CXExpression, fp int) {
+func opGlInit(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	gl.Init()
 }
 
-func opGlDestroy(expr *CXExpression, fp int) {
+func opGlDestroy(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	for k, _ := range cSources {
 		freeCString(k)
 	}
 }
 
-func opGlStrs(expr *CXExpression, fp int) {
-	getCString(ReadStr(fp, expr.Inputs[0]), ReadStr(fp, expr.Inputs[1]))
+func opGlStrs(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+	getCString(inputs[0].Get_str(), inputs[1].Get_str())
 }
 
-func opGlFree(expr *CXExpression, fp int) {
-	freeCString(ReadStr(fp, expr.Inputs[0]))
+func opGlFree(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+	freeCString(inputs[0].Get_str())
 }
 
 // cxgl_1_0
@@ -220,14 +220,14 @@ func cxglBindTexture(target uint32, texture uint32) {
 
 func cxglDeleteTextures(n int32, textures *uint32) {
 	if n > 1 {
-		panic(CX_RUNTIME_NOT_IMPLEMENTED)
+		panic(cxcore.CX_RUNTIME_NOT_IMPLEMENTED)
 	}
 	gl.DeleteTextures(n, textures)
 }
 
 func cxglGenTextures(n int32, textures *uint32) {
 	if n > 1 {
-		panic(CX_RUNTIME_NOT_IMPLEMENTED)
+		panic(cxcore.CX_RUNTIME_NOT_IMPLEMENTED)
 	}
 	gl.GenTextures(n, textures)
 }
@@ -249,14 +249,14 @@ func cxglBindBuffer(target uint32, buffer uint32) {
 
 func cxglDeleteBuffers(n int32, buffers *uint32) {
 	if n > 1 {
-		panic(CX_RUNTIME_NOT_IMPLEMENTED)
+		panic(cxcore.CX_RUNTIME_NOT_IMPLEMENTED)
 	}
 	gl.DeleteBuffers(n, buffers)
 }
 
 func cxglGenBuffers(n int32, buffers *uint32) {
 	if n > 1 {
-		panic(CX_RUNTIME_NOT_IMPLEMENTED)
+		panic(cxcore.CX_RUNTIME_NOT_IMPLEMENTED)
 	}
 	gl.GenBuffers(n, buffers)
 }
@@ -360,7 +360,7 @@ func cxglLinkProgram(program uint32) {
 
 func cxglShaderSource(shader uint32, count int32, glstring string) {
 	if count > 1 {
-		panic(CX_RUNTIME_NOT_IMPLEMENTED)
+		panic(cxcore.CX_RUNTIME_NOT_IMPLEMENTED)
 	}
 	gl.ShaderSource(shader, count, getCString(glstring, glstring), nil)
 }
@@ -468,14 +468,14 @@ func cxglBindRenderbuffer(buffer uint32, renderbuffer uint32) {
 
 func cxglDeleteRenderbuffers(n int32, renderbuffers *uint32) {
 	if n > 1 {
-		panic(CX_RUNTIME_NOT_IMPLEMENTED)
+		panic(cxcore.CX_RUNTIME_NOT_IMPLEMENTED)
 	}
 	gl.DeleteRenderbuffers(n, renderbuffers)
 }
 
 func cxglGenRenderbuffers(n int32, renderbuffers *uint32) {
 	if n > 1 {
-		panic(CX_RUNTIME_NOT_IMPLEMENTED)
+		panic(cxcore.CX_RUNTIME_NOT_IMPLEMENTED)
 	}
 	gl.GenRenderbuffers(n, renderbuffers)
 }
@@ -490,14 +490,14 @@ func cxglBindFramebuffer(target uint32, framebuffer uint32) {
 
 func cxglDeleteFramebuffers(n int32, framebuffers *uint32) {
 	if n > 1 {
-		panic(CX_RUNTIME_NOT_IMPLEMENTED)
+		panic(cxcore.CX_RUNTIME_NOT_IMPLEMENTED)
 	}
 	gl.DeleteFramebuffers(n, framebuffers)
 }
 
 func cxglGenFramebuffers(n int32, framebuffers *uint32) {
 	if n > 1 {
-		panic(CX_RUNTIME_NOT_IMPLEMENTED)
+		panic(cxcore.CX_RUNTIME_NOT_IMPLEMENTED)
 	}
 	gl.GenFramebuffers(n, framebuffers)
 }
@@ -528,130 +528,114 @@ func cxglBindVertexArray(array uint32) {
 
 func cxglDeleteVertexArraysAPPLE(n int32, arrays *uint32) {
 	if n > 1 {
-		panic(CX_RUNTIME_NOT_IMPLEMENTED)
+		panic(cxcore.CX_RUNTIME_NOT_IMPLEMENTED)
 	}
 	gl.DeleteVertexArraysAPPLE(n, arrays)
 }
 
 func cxglDeleteVertexArrays(n int32, arrays *uint32) {
 	if n > 1 {
-		panic(CX_RUNTIME_NOT_IMPLEMENTED)
+		panic(cxcore.CX_RUNTIME_NOT_IMPLEMENTED)
 	}
 	gl.DeleteVertexArrays(n, arrays)
 }
 
 func cxglGenVertexArraysAPPLE(n int32, arrays *uint32) {
 	if n > 1 {
-		panic(CX_RUNTIME_NOT_IMPLEMENTED)
+		panic(cxcore.CX_RUNTIME_NOT_IMPLEMENTED)
 	}
 	gl.GenVertexArraysAPPLE(n, arrays)
 }
 
 func cxglGenVertexArrays(n int32, arrays *uint32) {
 	if n > 1 {
-		panic(CX_RUNTIME_NOT_IMPLEMENTED)
+		panic(cxcore.CX_RUNTIME_NOT_IMPLEMENTED)
 	}
 	gl.GenVertexArrays(n, arrays)
 }
 
 // gl_0_0
-func opGlMatrixMode(expr *CXExpression, fp int) {
-	inp1 := expr.Inputs[0]
-	gl.MatrixMode(uint32(ReadI32(fp, inp1)))
+func opGlMatrixMode(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+	gl.MatrixMode(uint32(inputs[0].Get_i32()))
 }
 
-func opGlRotatef(expr *CXExpression, fp int) {
-	inp1, inp2, inp3, inp4 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Inputs[3]
-	gl.Rotatef(ReadF32(fp, inp1), ReadF32(fp, inp2), ReadF32(fp, inp3), ReadF32(fp, inp4))
+func opGlRotatef(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+	gl.Rotatef(inputs[0].Get_f32(), inputs[1].Get_f32(), inputs[2].Get_f32(), inputs[4].Get_f32())
 }
 
-func opGlTranslatef(expr *CXExpression, fp int) {
-	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
-	gl.Translatef(ReadF32(fp, inp1), ReadF32(fp, inp2), ReadF32(fp, inp3))
+func opGlTranslatef(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+	gl.Translatef(inputs[0].Get_f32(), inputs[1].Get_f32(), inputs[2].Get_f32())
 }
 
-func opGlLoadIdentity(expr *CXExpression, fp int) {
+func opGlLoadIdentity(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	gl.LoadIdentity()
 }
 
-func opGlPushMatrix(expr *CXExpression, fp int) {
+func opGlPushMatrix(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	gl.PushMatrix()
 }
 
-func opGlPopMatrix(expr *CXExpression, fp int) {
+func opGlPopMatrix(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	gl.PopMatrix()
 }
 
-func opGlEnableClientState(expr *CXExpression, fp int) {
-	inp1 := expr.Inputs[0]
-	gl.EnableClientState(uint32(ReadI32(fp, inp1)))
+func opGlEnableClientState(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+	gl.EnableClientState(uint32(inputs[0].Get_i32()))
 }
 
-func opGlColor3f(expr *CXExpression, fp int) {
-	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
-	gl.Color3f(ReadF32(fp, inp1), ReadF32(fp, inp2), ReadF32(fp, inp3))
+func opGlColor3f(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+	gl.Color3f(inputs[0].Get_f32(), inputs[1].Get_f32(), inputs[2].Get_f32())
 }
 
-func opGlColor4f(expr *CXExpression, fp int) {
-	inp1, inp2, inp3, inp4 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Inputs[3]
-	gl.Color4f(ReadF32(fp, inp1), ReadF32(fp, inp2), ReadF32(fp, inp3), ReadF32(fp, inp4))
+func opGlColor4f(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+	gl.Color4f(inputs[0].Get_f32(), inputs[1].Get_f32(), inputs[2].Get_f32(), inputs[4].Get_f32())
 }
 
-func opGlBegin(expr *CXExpression, fp int) {
-	inp1 := expr.Inputs[0]
-	gl.Begin(uint32(ReadI32(fp, inp1)))
+func opGlBegin(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+	gl.Begin(uint32(inputs[0].Get_i32()))
 }
 
-func opGlEnd(expr *CXExpression, fp int) {
+func opGlEnd(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	gl.End()
 }
 
-func opGlNormal3f(expr *CXExpression, fp int) {
-	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
-	gl.Normal3f(ReadF32(fp, inp1), ReadF32(fp, inp2), ReadF32(fp, inp3))
+func opGlNormal3f(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+	gl.Normal3f(inputs[0].Get_f32(), inputs[1].Get_f32(), inputs[2].Get_f32())
 }
 
-func opGlVertex2f(expr *CXExpression, fp int) {
-	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
-	gl.Vertex2f(ReadF32(fp, inp1), ReadF32(fp, inp2))
+func opGlVertex2f(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+	gl.Vertex2f(inputs[0].Get_f32(), inputs[1].Get_f32())
 }
 
-func opGlVertex3f(expr *CXExpression, fp int) {
-	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
-	gl.Vertex3f(ReadF32(fp, inp1), ReadF32(fp, inp2), ReadF32(fp, inp3))
+func opGlVertex3f(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+	gl.Vertex3f(inputs[0].Get_f32(), inputs[1].Get_f32(), inputs[2].Get_f32())
 }
 
-func opGlLightfv(expr *CXExpression, fp int) {
+func opGlLightfv(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	// pointers
 	panic("gl.Lightfv")
 }
 
-func opGlFrustum(expr *CXExpression, fp int) {
-	inp1, inp2, inp3, inp4, inp5, inp6 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Inputs[3], expr.Inputs[4], expr.Inputs[5]
-	gl.Frustum(ReadF64(fp, inp1), ReadF64(fp, inp2), ReadF64(fp, inp3), ReadF64(fp, inp4), ReadF64(fp, inp5), ReadF64(fp, inp6))
+func opGlFrustum(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+	gl.Frustum(inputs[0].Get_f64(), inputs[1].Get_f64(), inputs[2].Get_f64(), inputs[3].Get_f64(), inputs[4].Get_f64(), inputs[5].Get_f64())
 }
 
-func opGlTexEnvi(expr *CXExpression, fp int) {
-	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
-	gl.TexEnvi(uint32(ReadI32(fp, inp1)), uint32(ReadI32(fp, inp2)), ReadI32(fp, inp3))
+func opGlTexEnvi(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+	gl.TexEnvi(uint32(inputs[0].Get_i32()), uint32(inputs[1].Get_i32()), inputs[2].Get_i32())
 }
 
-func opGlOrtho(expr *CXExpression, fp int) {
-	inp1, inp2, inp3, inp4, inp5, inp6 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Inputs[3], expr.Inputs[4], expr.Inputs[5]
-	gl.Ortho(ReadF64(fp, inp1), ReadF64(fp, inp2), ReadF64(fp, inp3), ReadF64(fp, inp4), ReadF64(fp, inp5), ReadF64(fp, inp6))
+func opGlOrtho(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+	gl.Ortho(inputs[0].Get_f64(), inputs[1].Get_f64(), inputs[2].Get_f64(), inputs[3].Get_f64(), inputs[4].Get_f64(), inputs[5].Get_f64())
 }
 
-func opGlScalef(expr *CXExpression, fp int) {
-	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
-	gl.Scalef(ReadF32(fp, inp1), ReadF32(fp, inp2), ReadF32(fp, inp3))
+func opGlScalef(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+	gl.Scalef(inputs[0].Get_f32(), inputs[1].Get_f32(), inputs[2].Get_f32())
 }
 
-func opGlTexCoord2d(expr *CXExpression, fp int) {
-	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
-	gl.TexCoord2d(ReadF64(fp, inp1), ReadF64(fp, inp2))
+func opGlTexCoord2d(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+	gl.TexCoord2d(inputs[0].Get_f64(), inputs[1].Get_f64())
 }
 
-func opGlTexCoord2f(expr *CXExpression, fp int) {
-	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
-	gl.TexCoord2f(ReadF32(fp, inp1), ReadF32(fp, inp2))
+func opGlTexCoord2f(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+	gl.TexCoord2f(inputs[0].Get_f32(), inputs[1].Get_f32())
 }

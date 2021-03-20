@@ -1,13 +1,13 @@
 // +build os
 
-package cxcore
+package cxos
 
 import (
 	"regexp"
 
 	"github.com/jinzhu/copier"
 
-	cxcore "github.com/skycoin/cx/cx"
+	"github.com/skycoin/cx/cx"
 )
 
 var regexps map[string]*regexp.Regexp = make(map[string]*regexp.Regexp, 0)

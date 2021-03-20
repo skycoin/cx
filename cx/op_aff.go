@@ -81,10 +81,12 @@ func CallAffPredicate(fn *CXFunction, predValue []byte) byte {
 		GetFinalOffset(newFP, newCall.Operator.Inputs[0]),
 		predValue)
 
+    var inputs []CXValue
+    var outputs []CXValue
 	prevCC := PROGRAM.CallCounter
 	for {
 		call := &PROGRAM.CallStack[PROGRAM.CallCounter]
-		err := call.ccall(PROGRAM)
+		err := call.ccall(PROGRAM, &inputs, &outputs)
 		if err != nil {
 			panic(err)
 		}

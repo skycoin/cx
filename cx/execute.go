@@ -64,6 +64,8 @@ func (prgrm *CXProgram) Run(untilEnd bool, nCalls *int, untilCall int) error {
 	defer RuntimeError()
 	var err error
 
+    var inputs []CXValue
+    var outputs []CXValue
 	for !prgrm.Terminated && (untilEnd || *nCalls != 0) && prgrm.CallCounter > untilCall {
 		call := &prgrm.CallStack[prgrm.CallCounter]
 
@@ -116,7 +118,7 @@ func (prgrm *CXProgram) Run(untilEnd bool, nCalls *int, untilCall int) error {
 			*nCalls--
 		}
 
-		err = call.ccall(prgrm)
+		err = call.ccall(prgrm, &inputs, &outputs)
 		if err != nil {
 			return err
 		}
@@ -170,6 +172,8 @@ func (prgrm *CXProgram) RunCompiled(nCalls int, args []string) error {
 		// initializing program resources
 		// prgrm.Stacks = append(prgrm.Stacks, MakeStack(1024))
 
+        var inputs []CXValue
+        var outputs []CXValue
 		if prgrm.CallStack[0].Operator == nil {
 			// then the program is just starting and we need to run the SYS_INIT_FUNC
 			if fn, err := mod.SelectFunction(SYS_INIT_FUNC); err == nil {
@@ -182,7 +186,7 @@ func (prgrm *CXProgram) RunCompiled(nCalls int, args []string) error {
 
 				for !prgrm.Terminated {
 					call := &prgrm.CallStack[prgrm.CallCounter]
-					err = call.ccall(prgrm)
+                    err = call.ccall(prgrm, &inputs, &outputs)
 					if err != nil {
 						return err
 					}
@@ -259,10 +263,7 @@ func (prgrm *CXProgram) RunCompiled(nCalls int, args []string) error {
 
 }
 
-var globalInputs []CXValue
-var globalOutputs []CXValue
-
-func (call *CXCall) ccall(prgrm *CXProgram) error {
+func (call *CXCall) ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutputs *[]CXValue) error {
 	// CX is still single-threaded, so only one stack
 	if call.Line >= call.Operator.Length {
 		/*
@@ -332,18 +333,18 @@ func (call *CXCall) ccall(prgrm *CXProgram) error {
 
 					inputs := expr.Inputs
 					inputCount := len(inputs)
-					if inputCount > len(globalInputs) {
-						globalInputs = make([]CXValue, inputCount)
+					if inputCount > len(*globalInputs) {
+						*globalInputs = make([]CXValue, inputCount)
 					}
-					inputValues := globalInputs[:inputCount]
+					inputValues := (*globalInputs)[:inputCount]
 
 
 			        outputs := expr.Outputs
 			        outputCount := len(outputs)
-					if outputCount > len(globalOutputs) {
-						globalOutputs = make([]CXValue, outputCount)
+					if outputCount > len(*globalOutputs) {
+						*globalOutputs = make([]CXValue, outputCount)
 					}
-					outputValues := globalOutputs[:outputCount]
+					outputValues := (*globalOutputs)[:outputCount]
 
 
 		            argIndex := 0;
@@ -356,6 +357,7 @@ func (call *CXCall) ccall(prgrm *CXProgram) error {
                         value.Offset = offset
 						value.Type = input.Type
                         value.FramePointer = fp
+                        value.Expr = expr
                         value.memory = PROGRAM.Memory[offset : offset+GetSize(input)]
                         argIndex++
 					}
@@ -369,6 +371,7 @@ func (call *CXCall) ccall(prgrm *CXProgram) error {
                         value.Offset = offset
                         value.Type = output.Type
                         value.FramePointer = fp
+                        value.Expr = expr
                         argIndex++
 					}
 
@@ -376,8 +379,9 @@ func (call *CXCall) ccall(prgrm *CXProgram) error {
 
 					for inputIndex := 0; inputIndex < inputCount; inputIndex++ { // TODO: remove in release builds
 						if inputValues[inputIndex].Used != int8(inputs[inputIndex].Type) { // TODO: remove cast
-							panic(fmt.Sprintf("Input value not used for opcode: '%s'. Expected type %d, '%s', used type %d, '%s'.",
+							panic(fmt.Sprintf("Input value not used for opcode: '%s', param #%d. Expected type %d, '%s', used type %d, '%s'.",
 							 	OpNames[expr.Operator.OpCode],
+                                inputIndex + 1,
 							 	inputs[inputIndex].Type, TypeNames[inputs[inputIndex].Type],
 								inputValues[inputIndex].Used, TypeNames[int(inputValues[inputIndex].Used)]))
 						}
@@ -385,8 +389,9 @@ func (call *CXCall) ccall(prgrm *CXProgram) error {
 
 					for outputIndex := 0; outputIndex < outputCount; outputIndex++ { // TODO: remove in release builds
 						if outputValues[outputIndex].Used != int8(outputs[outputIndex].Type) { // TODO: remove cast
-							panic(fmt.Sprintf("Output value not used for opcode: '%s'. Expected type %d, '%s', used type %d '%s'.",
+							panic(fmt.Sprintf("Output value not used for opcode: '%s', param #%d. Expected type %d, '%s', used type %d '%s'.",
 							 	OpNames[expr.Operator.OpCode],
+                                outputIndex + 1,
 							 	outputs[outputIndex].Type, TypeNames[outputs[outputIndex].Type],
 								outputValues[outputIndex].Used, TypeNames[int(outputValues[outputIndex].Used)]))
 						}
