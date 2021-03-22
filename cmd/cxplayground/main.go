@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/skycoin/cx/cxgo/actions"
-	"github.com/skycoin/cx/cxgo/api"
+	"github.com/skycoin/cx/cxgo/webapi"
 
 	"github.com/skycoin/cx/cmd/cxplayground/playground"
 )
@@ -26,7 +26,7 @@ func main() {
 	mux.HandleFunc("/playground/examples/code", playground.GetExampleFileContent)
 
 	mux.Handle("/", http.FileServer(http.Dir("./dist")))
-	mux.Handle("/program/", api.NewAPI("/program", actions.PRGRM))
+	mux.Handle("/program/", webapi.NewAPI("/program", actions.PRGRM))
 	mux.HandleFunc("/eval", playground.RunProgram)
 
 	if listener, err := net.Listen("tcp", host); err == nil {

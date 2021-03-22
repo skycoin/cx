@@ -14,7 +14,7 @@ import (
 	"github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cxgo/actions"
 	"github.com/skycoin/cx/cxgo/cxgo0"
-	"github.com/skycoin/cx/cxgo/cxprof"
+	"github.com/skycoin/cx/cxgo/util/cxprof"
 	"github.com/skycoin/cx/cxgo/parser"
 )
 

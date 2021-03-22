@@ -72,16 +72,8 @@ build-core: ## Build CX with CXFX support. Done via satisfying 'cxfx' build tag.
 	$(GO_OPTS) go build -tags="base" -o ./bin/cx github.com/skycoin/cx/cmd/cx
 	chmod +x ./bin/cx
 
-build-parser: ## Generate lexer and parser for CX grammar
-	./bin/goyacc -o cxgo/cxgo0/cxgo0.go cxgo/cxgo0/cxgo0.y
-	./bin/goyacc -o cxgo/parser/cxgo.go cxgo/parser/cxgo.y
-
 clean: ## Removes binaries.
 	rm -r ./bin/cx
-
-token-fuzzer:
-	go build $(GO_OPTS) -o ./bin/cx-token-fuzzer $(PWD)/development/token-fuzzer/main.go
-	chmod +x ./bin/cx-token-fuzzer
 
 install: configure-workspace ## Install CX from sources. Build dependencies
 	@echo 'NOTE:\tWe recommend you to test your CX installation by running "cx ./tests"'
@@ -104,6 +96,17 @@ else
 	go run -mod=vendor ./cmd/cxtest --cxpath=$(PWD)/bin/cx --wdir=./tests --log=fail,stderr
 endif
 
+build-goyacc: ## Builds goyacc into /bin/goyacc
+	go build -o ./bin/goyacc ./cmd/goyacc/main.go
+
+build-parser: ## Generate lexer and parser for CX grammar
+	#go build -o ./bin/goyacc ./cmd/goyacc/main.go
+	./bin/goyacc -o cxgo/cxgo0/cxgo0.go cxgo/cxgo0/cxgo0.y
+	./bin/goyacc -o cxgo/parser/cxgo.go cxgo/parser/cxgo.y
+
+token-fuzzer:
+	go build $(GO_OPTS) -o ./bin/cx-token-fuzzer $(PWD)/development/token-fuzzer/main.go
+	chmod +x ./bin/cx-token-fuzzer
 
 configure-workspace: ## Configure CX workspace environment
 	mkdir -p $(CX_PATH)/src $(CX_PATH)/bin $(CX_PATH)/pkg

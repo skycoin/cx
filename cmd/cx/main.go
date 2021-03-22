@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/skycoin/cx/cx"
+	cxcore "github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cxgo/actions"
 	"github.com/skycoin/cx/cxgo/cxgo"
 	"github.com/skycoin/cx/cxgo/cxgo0"
@@ -107,6 +107,11 @@ func Run(args []string) {
 	DebugProfile = DebugProfileRate > 0
 
 	if run, bcHeap, sPrgrm := parseProgram(options, fileNames, sourceCode); run {
+		if checkAST(args) {
+			printProgramAST(options, cxArgs, sourceCode, bcHeap, sPrgrm)
+			return
+		}
+
 		runProgram(options, cxArgs, sourceCode, bcHeap, sPrgrm)
 	}
 }
@@ -226,6 +231,24 @@ func runProgram(options cxCmdFlags, cxArgs []string, sourceCode []*os.File, bcHe
 	if err != nil {
 		panic(err)
 	}
+
+	if cxcore.AssertFailed() {
+		os.Exit(cxcore.CX_ASSERT)
+	}
+}
+
+func printProgramAST(options cxCmdFlags, cxArgs []string, sourceCode []*os.File, bcHeap []byte, sPrgrm []byte) {
+	StartProfile("run")
+	defer StopProfile("run")
+
+	if options.replMode || len(sourceCode) == 0 {
+		actions.PRGRM.SelectProgram()
+		Repl()
+		return
+	}
+
+	// Print CX program.
+	actions.PRGRM.PrintProgram()
 
 	if cxcore.AssertFailed() {
 		os.Exit(cxcore.CX_ASSERT)
