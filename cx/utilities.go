@@ -464,7 +464,7 @@ func (prgrm *CXProgram) PrintProgram() {
 // string format.
 func (prgrm *CXProgram) ToString() string {
 	var ast string
-	ast += "Program"
+	ast += "Program\n"
 
 	var currentFunction *CXFunction
 	var currentPackage *CXPackage
