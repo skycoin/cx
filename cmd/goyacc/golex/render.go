@@ -10,8 +10,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/skycoin/cx/goyacc/lex"
-	"github.com/skycoin/cx/goyacc/lexer"
+	"github.com/skycoin/cx/cmd/goyacc/lex"
+	"github.com/skycoin/cx/cmd/goyacc/lexer"
 )
 
 type renderGo struct {

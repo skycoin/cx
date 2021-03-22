@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package y // import "github.com/skycoin/cx/goyacc/y"
+package y // import "github.com/skycoin/cx/cmd/goyacc/y"
 
 import (
 	"bytes"
@@ -22,7 +22,7 @@ import (
 	"testing"
 	"time"
 
-	yparser "github.com/skycoin/cx/goyacc/parser/yacc"
+	yparser "github.com/skycoin/cx/cmd/goyacc/parser/yacc"
 )
 
 func init() {

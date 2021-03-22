@@ -15,7 +15,7 @@ import (
 	"os"
 	"unicode"
 
-	"github.com/skycoin/cx/goyacc/lex"
+	"github.com/skycoin/cx/cmd/goyacc/lex"
 )
 
 const (

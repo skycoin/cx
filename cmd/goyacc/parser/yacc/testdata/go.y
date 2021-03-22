@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/skycoin/cx/goyacc/util"
+	"github.com/skycoin/cx/cmd/goyacc/util"
 )
 
 %}

@@ -4,6 +4,6 @@
 
 // +build go1.4
 
-package lexer // import "github.com/skycoin/cx/goyacc/lexer"
+package lexer // import "github.com/skycoin/cx/cmd/goyacc/lexer"
 
 const stdlib = ""

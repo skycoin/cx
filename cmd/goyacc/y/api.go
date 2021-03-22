@@ -26,7 +26,7 @@
 //  [4]: https://www.gnu.org/software/bison/manual/html_node/Using-Mid_002dRule-Actions.html
 //  [5]: http://www.gnu.org/software/bison/manual/html_node/Precedence-Only.html#Precedence-Only
 //  [6]: http://www.gnu.org/software/bison/manual/html_node/Token-Decl.html#Token-Decl
-package y // import "github.com/skycoin/cx/goyacc/y"
+package y // import "github.com/skycoin/cx/cmd/goyacc/y"
 
 import (
 	"bytes"
@@ -39,8 +39,8 @@ import (
 	"strconv"
 	"strings"
 
-	yparser "github.com/skycoin/cx/goyacc/parser/yacc"
-	"github.com/skycoin/cx/goyacc/util"
+	yparser "github.com/skycoin/cx/cmd/goyacc/parser/yacc"
+	"github.com/skycoin/cx/cmd/goyacc/util"
 )
 
 // Values of {AssocDef,Rule,Sym}.Associativity

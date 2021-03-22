@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package lex // import "github.com/skycoin/cx/goyacc/lex"
+package lex // import "github.com/skycoin/cx/cmd/goyacc/lex"
 
 import (
 	"fmt"
-	"github.com/skycoin/cx/goyacc/lexer"
+	"github.com/skycoin/cx/cmd/goyacc/lexer"
 )
 
 func (t *tokenizer) Lex(lval *yySymType) (c int) {

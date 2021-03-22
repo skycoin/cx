@@ -12,7 +12,7 @@ import (
   "io"
 	"unicode"
 
-	"github.com/skycoin/cx/goyacc/golex/lex"
+	"github.com/skycoin/cx/cmd/goyacc/golex/lex"
 )
 
 // Allocate Character classes anywhere in [0x80, 0xFF].

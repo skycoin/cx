@@ -137,10 +137,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/skycoin/cx/goyacc/util"
+	"github.com/skycoin/cx/cmd/goyacc/util"
 
-	parser "github.com/skycoin/cx/goyacc/parser/yacc"
-	"github.com/skycoin/cx/goyacc/y"
+	parser "github.com/skycoin/cx/cmd/goyacc/parser/yacc"
+	"github.com/skycoin/cx/cmd/goyacc/y"
 )
 
 var (

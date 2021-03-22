@@ -183,7 +183,7 @@ Unicode character class names--scripts:
 	Yi                     Yi
 
 */
-package lexer // import "github.com/skycoin/cx/goyacc/lexer"
+package lexer // import "github.com/skycoin/cx/cmd/goyacc/lexer"
 
 import (
 	"bytes"

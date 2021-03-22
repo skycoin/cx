@@ -14,7 +14,7 @@
 //
 // Grammar for the input to yacc.
 
-package parser // import "github.com/skycoin/cx/goyacc/parser/yacc"
+package parser // import "github.com/skycoin/cx/cmd/goyacc/parser/yacc"
 
 import (
 	"fmt"

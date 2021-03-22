@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package scanner // import "github.com/skycoin/cx/goyacc/scanner/nquads"
+package scanner // import "github.com/skycoin/cx/cmd/goyacc/scanner/nquads"
 
 import (
 	"encoding/hex"

@@ -21,7 +21,7 @@
 //
 // Run time library
 //
-// Please see http://godoc.org/github.com/skycoin/cx/goyacc/golex/lex.
+// Please see http://godoc.org/github.com/skycoin/cx/cmd/goyacc/golex/lex.
 //
 // Changelog
 //

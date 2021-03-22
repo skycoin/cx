@@ -16,14 +16,14 @@
 //	string		Eg. "Start" represents rule component Start
 //
 //	*Action		Mid rule action or rule semantic action
-package parser // import "github.com/skycoin/cx/goyacc/parser/yacc"
+package parser // import "github.com/skycoin/cx/cmd/goyacc/parser/yacc"
 
 import (
 	"bytes"
 	"fmt"
 	"go/token"
 
-	"github.com/skycoin/cx/goyacc/golex/lex"
+	"github.com/skycoin/cx/cmd/goyacc/golex/lex"
 )
 
 const (

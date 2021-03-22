@@ -8,7 +8,7 @@
 package parser
 
 import (
-	"github.com/skycoin/cx/goyacc/golex/lex"
+	"github.com/skycoin/cx/cmd/goyacc/golex/lex"
 )
 
 func (l *lexer) scan() lex.Char {

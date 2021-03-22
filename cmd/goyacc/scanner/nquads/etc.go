@@ -16,7 +16,7 @@
 //  [3]: http://www.w3.org/TR/n-quads/#grammar-production-IRIREF
 //  [4]: http://www.w3.org/TR/n-quads/#grammar-production-LANGTAG
 //  [5]: http://www.w3.org/TR/n-quads/#grammar-production-STRING_LITERAL_QUOTE
-package scanner // import "github.com/skycoin/cx/goyacc/scanner/nquads"
+package scanner // import "github.com/skycoin/cx/cmd/goyacc/scanner/nquads"
 
 import (
 	"errors"

@@ -18,13 +18,13 @@
 //  [7]: http://www.w3.org/TR/n-quads/#grammar-production-predicate
 //  [8]: http://www.w3.org/TR/n-quads/#grammar-production-object
 //  [9]: http://www.w3.org/TR/n-quads/#grammar-production-graphLabel
-package parser // import "github.com/skycoin/cx/goyacc/parser/nquads"
+package parser // import "github.com/skycoin/cx/cmd/goyacc/parser/nquads"
 
 import (
 	"fmt"
 	"strings"
 
-	"github.com/skycoin/cx/goyacc/scanner/nquads"
+	"github.com/skycoin/cx/cmd/goyacc/scanner/nquads"
 )
 
 type lexer struct {
