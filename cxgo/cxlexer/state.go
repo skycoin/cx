@@ -51,6 +51,7 @@ func LoadProgFromBytes(prog *cxcore.CXProgram, progS []byte) (*ProgBytes, error)
 	}, nil
 }
 
+/*
 // MergeChainHeap adds the heap `bcHeap` found in the program state of a CX
 // chain to the program to be run `PRGRM` and updates all the references to heap
 // objects found in the transaction code considering the data segment found in
@@ -89,3 +90,4 @@ func (pb *ProgBytes) MergeChainHeap() error {
 
 	return nil
 }
+*/
