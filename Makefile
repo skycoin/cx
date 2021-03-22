@@ -73,6 +73,7 @@ build-core: ## Build CX with CXFX support. Done via satisfying 'cxfx' build tag.
 	chmod +x ./bin/cx
 
 build-parser: ## Generate lexer and parser for CX grammar
+	#go build -o ./bin/goyacc ./cmd/goyacc/main.go
 	./bin/goyacc -o cxgo/cxgo0/cxgo0.go cxgo/cxgo0/cxgo0.y
 	./bin/goyacc -o cxgo/parser/cxgo.go cxgo/parser/cxgo.y
 
