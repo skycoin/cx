@@ -1239,6 +1239,7 @@ func updateSerializedSize(byts *[]byte, off1, off2 int32, n int) {
 }
 
 // ExtractBlockchainProgram extracts the blockchain program from `sPrgrm2` by removing the contents of `sPrgrm1` from `sPrgrm2`. TxnPrgrm = sPrgrm2 - sPrgrm1.
+/*
 func ExtractBlockchainProgram(sPrgrm1, sPrgrm2 []byte) []byte {
 	idxSize := encoder.Size(sIndex{})
 
@@ -1297,7 +1298,9 @@ func ExtractBlockchainProgram(sPrgrm1, sPrgrm2 []byte) []byte {
 
 	return extracted
 }
+*/
 
+/*
 // ExtractTransactionProgram extracts the transaction code (serialized) from a full CX program.
 func ExtractTransactionProgram(sPrgrm1, sPrgrm2 []byte) []byte {
 	idxSize := encoder.Size(sIndex{})
@@ -1340,6 +1343,7 @@ func ExtractTransactionProgram(sPrgrm1, sPrgrm2 []byte) []byte {
 
 	return extracted
 }
+*/
 
 // GetSerializedMemoryOffset returns the offset at which the memory of a serialized CX program starts.
 func GetSerializedMemoryOffset(sPrgrm []byte) int {
