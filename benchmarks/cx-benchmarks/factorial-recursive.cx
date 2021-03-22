@@ -1,5 +1,7 @@
 package main 
 
+import "time"
+
 func factorial(in i32) (out i32) {
 	if (i32.eq(in, 0)){
 		out = 1
