@@ -1230,14 +1230,6 @@ func CopyProgramState(sPrgrm1, sPrgrm2 *[]byte) {
 	}
 }
 
-// updateSerializedSize updates the header of each of the serialized parts of a CX program. For example, if in a full CX program there were 5 packages and after extracting the transaction or blockchain parts of it, there are now 3 packages, updateSerializedSize updates this size in the header of the serialization.
-func updateSerializedSize(byts *[]byte, off1, off2 int32, n int) {
-	if len((*byts)[off1:off2]) == 0 {
-		return
-	}
-	WriteMemI32(*byts, int(off1), int32((off2-off1-4)/int32(n)))
-}
-
 // GetSerializedMemoryOffset returns the offset at which the memory of a serialized CX program starts.
 func GetSerializedMemoryOffset(sPrgrm []byte) int {
 	idxSize := encoder.Size(sIndex{})
