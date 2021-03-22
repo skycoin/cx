@@ -13,7 +13,7 @@ import (
 	"github.com/skycoin/cx/cxgo/actions"
 	"github.com/skycoin/cx/cxgo/cxgo0"
 	"github.com/skycoin/cx/cxgo/parser"
-	"github.com/skycoin/cx/cxgo/profiling"
+	"github.com/skycoin/cx/cxgo/util/profiling"
 )
 
 // ParseSourceCode takes a group of files representing CX `sourceCode` and
