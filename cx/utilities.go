@@ -290,7 +290,7 @@ func getFormattedParam(params []*CXArgument, pkg *CXPackage, buf *bytes.Buffer) 
 // string representation all the imported packages of `pkg`.
 func buildStrImports(pkg *CXPackage, ast *string) {
 	if len(pkg.Imports) > 0 {
-		*ast += "\tImports"
+		*ast += "\tImports\n"
 	}
 
 	for j, imp := range pkg.Imports {
@@ -302,7 +302,7 @@ func buildStrImports(pkg *CXPackage, ast *string) {
 // string representation of all the global variables of `pkg`.
 func buildStrGlobals(pkg *CXPackage, ast *string) {
 	if len(pkg.Globals) > 0 {
-		*ast += "\tGlobals"
+		*ast += "\tGlobals\n"
 	}
 
 	for j, v := range pkg.Globals {
@@ -324,7 +324,7 @@ func SignatureStringOfStruct(s *CXStruct) string {
 // string representation of all the structures defined in `pkg`.
 func buildStrStructs(pkg *CXPackage, ast *string) {
 	if len(pkg.Structs) > 0 {
-		*ast += "\tStructs"
+		*ast += "\tStructs\n"
 	}
 
 	for j, strct := range pkg.Structs {
@@ -352,7 +352,7 @@ func SignatureStringOfFunction(pkg *CXPackage, f *CXFunction) string {
 // string representation of all the functions defined in `pkg`.
 func buildStrFunctions(pkg *CXPackage, ast *string) {
 	if len(pkg.Functions) > 0 {
-		*ast += "\tFunctions"
+		*ast += "\tFunctions\n"
 	}
 
 	// We need to declare the counter outside so we can
