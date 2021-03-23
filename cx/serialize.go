@@ -206,6 +206,19 @@ type sAll struct {
 	Memory []byte
 }
 
+type SerializeDataSize struct {
+	Program     int `json:"program"`
+	Calls       int `json:"calls"`
+	Packages    int `json:"packages"`
+	Structs     int `json:"structs"`
+	Functions   int `json:"functions"`
+	Expressions int `json:"expressions"`
+	Arguments   int `json:"arguments"`
+	Integers    int `json:"integers"`
+	Names       int `json:"names"`
+	Memory      int `json:"memory"`
+}
+
 func serializeName(name string, s *sAll) (int32, int32) {
 	if name == "" {
 		return int32(-1), int32(-1)
@@ -821,24 +834,40 @@ func Serialize(prgrm *CXProgram, split int) (byts []byte) {
 }
 
 // SerializeDebugInfo prints the name of the serialized segment and byte size.
-func SerializeDebugInfo(prgrm *CXProgram, split int) {
+func SerializeDebugInfo(prgrm *CXProgram, split int) SerializeDataSize {
 	idxSize := encoder.Size(sIndex{})
 	var s sAll
 
 	bytes := Serialize(prgrm, split)
 	DeserializeRaw(bytes[:idxSize], &s.Index)
+
+	data := &SerializeDataSize{
+		Program:     len(bytes[s.Index.ProgramOffset:s.Index.CallsOffset]),
+		Calls:       len(bytes[s.Index.CallsOffset:s.Index.PackagesOffset]),
+		Packages:    len(bytes[s.Index.PackagesOffset:s.Index.StructsOffset]),
+		Structs:     len(bytes[s.Index.StructsOffset:s.Index.FunctionsOffset]),
+		Functions:   len(bytes[s.Index.FunctionsOffset:s.Index.ExpressionsOffset]),
+		Expressions: len(bytes[s.Index.ExpressionsOffset:s.Index.ArgumentsOffset]),
+		Arguments:   len(bytes[s.Index.ArgumentsOffset:s.Index.IntegersOffset]),
+		Integers:    len(bytes[s.Index.IntegersOffset:s.Index.NamesOffset]),
+		Names:       len(bytes[s.Index.NamesOffset:s.Index.MemoryOffset]),
+		Memory:      len(bytes[s.Index.MemoryOffset:]),
+	}
+
 	fmt.Println("Serialize Debug")
 	fmt.Println("Segment Name: Number of Bytes")
-	fmt.Printf("Program: %v bytes\n", len(bytes[s.Index.ProgramOffset:s.Index.CallsOffset]))
-	fmt.Printf("Calls: %v bytes\n", len(bytes[s.Index.CallsOffset:s.Index.PackagesOffset]))
-	fmt.Printf("Packages: %v bytes\n", len(bytes[s.Index.PackagesOffset:s.Index.StructsOffset]))
-	fmt.Printf("Structs: %v bytes\n", len(bytes[s.Index.StructsOffset:s.Index.FunctionsOffset]))
-	fmt.Printf("Functions: %v bytes\n", len(bytes[s.Index.FunctionsOffset:s.Index.ExpressionsOffset]))
-	fmt.Printf("Expressions: %v bytes\n", len(bytes[s.Index.ExpressionsOffset:s.Index.ArgumentsOffset]))
-	fmt.Printf("Arguments: %v bytes\n", len(bytes[s.Index.ArgumentsOffset:s.Index.IntegersOffset]))
-	fmt.Printf("Integers: %v bytes\n", len(bytes[s.Index.IntegersOffset:s.Index.NamesOffset]))
-	fmt.Printf("Names: %v bytes\n", len(bytes[s.Index.NamesOffset:s.Index.MemoryOffset]))
-	fmt.Printf("Memory: %v bytes\n", len(bytes[s.Index.MemoryOffset:]))
+	fmt.Printf("Program: %v bytes\n", data.Program)
+	fmt.Printf("Calls: %v bytes\n", data.Calls)
+	fmt.Printf("Packages: %v bytes\n", data.Packages)
+	fmt.Printf("Structs: %v bytes\n", data.Structs)
+	fmt.Printf("Functions: %v bytes\n", data.Functions)
+	fmt.Printf("Expressions: %v bytes\n", data.Expressions)
+	fmt.Printf("Arguments: %v bytes\n", data.Arguments)
+	fmt.Printf("Integers: %v bytes\n", data.Integers)
+	fmt.Printf("Names: %v bytes\n", data.Names)
+	fmt.Printf("Memory: %v bytes\n", data.Memory)
+
+	return *data
 }
 
 func opSerialize(expr *CXExpression, fp int) {
