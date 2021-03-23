@@ -635,7 +635,7 @@ func sFunctionIntegers(fn *CXFunction, s *sAll) {
 	}
 }
 
-func initSerialization(prgrm *CXProgram, s *sAll, excludeMemory ...bool) {
+func initSerialization(prgrm *CXProgram, s *sAll, includeMemory bool) {
 	s.PackagesMap = make(map[string]int)
 	s.StructsMap = make(map[string]int)
 	s.FunctionsMap = make(map[string]int)
@@ -644,13 +644,7 @@ func initSerialization(prgrm *CXProgram, s *sAll, excludeMemory ...bool) {
 	s.Calls = make([]sCall, prgrm.CallCounter)
 	s.Packages = make([]sPackage, len(prgrm.Packages))
 
-	excludeMem := false
-	for _, val := range excludeMemory {
-		excludeMem = val
-		break
-	}
-
-	if !excludeMem {
+	if includeMemory {
 		// s.Memory = prgrm.Memory[:PROGRAM.HeapStartsAt+PROGRAM.HeapPointer]
 		s.Memory = prgrm.Memory
 	}
@@ -782,11 +776,11 @@ func splitSerialize(prgrm *CXProgram, s *sAll, fnCounter, strctCounter *int32, f
 }
 
 // Serialize ...
-func Serialize(prgrm *CXProgram, split int, excludeMemory ...bool) (byts []byte) {
+func Serialize(prgrm *CXProgram, split int, includeMemory bool) (byts []byte) {
 	// prgrm.PrintProgram()
 
 	s := sAll{}
-	initSerialization(prgrm, &s, excludeMemory...)
+	initSerialization(prgrm, &s, includeMemory)
 
 	var fnCounter int32
 	var strctCounter int32
@@ -840,11 +834,11 @@ func Serialize(prgrm *CXProgram, split int, excludeMemory ...bool) (byts []byte)
 }
 
 // SerializeDebugInfo prints the name of the serialized segment and byte size.
-func SerializeDebugInfo(prgrm *CXProgram, split int, excludeMemory ...bool) SerializeDataSize {
+func SerializeDebugInfo(prgrm *CXProgram, split int, includeMemory bool) SerializeDataSize {
 	idxSize := encoder.Size(sIndex{})
 	var s sAll
 
-	bytes := Serialize(prgrm, split, excludeMemory...)
+	bytes := Serialize(prgrm, split, includeMemory)
 	DeserializeRaw(bytes[:idxSize], &s.Index)
 
 	data := &SerializeDataSize{
