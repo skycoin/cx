@@ -446,6 +446,8 @@ func serializeCall(call *CXCall, s *sAll) int {
 	return callOff
 }
 
+// serializeProgram serializes
+// program of cx program.
 func serializeProgram(prgrm *CXProgram, s *sAll) {
 	s.Program = sProgram{}
 	sPrgrm := &s.Program
@@ -635,6 +637,10 @@ func sFunctionIntegers(fn *CXFunction, s *sAll) {
 	}
 }
 
+// initSerialization initializes the
+// container for our serialized cx program.
+// Program memory is also added here to our container
+// if memory is to be included.
 func initSerialization(prgrm *CXProgram, s *sAll, includeMemory bool) {
 	s.PackagesMap = make(map[string]int)
 	s.StructsMap = make(map[string]int)
@@ -662,8 +668,9 @@ func initSerialization(prgrm *CXProgram, s *sAll, includeMemory bool) {
 	// args and exprs need to be appended as they are found
 }
 
-// SplitSerialize ...
-// WHAT DOES THIS DO? WHY ARE THERE NO COMMENTS?
+// SplitSerialize serializes the packages, structs,
+// globals, functions, integers, arguemnts, and
+// expressions of cx program.
 func splitSerialize(prgrm *CXProgram, s *sAll, fnCounter, strctCounter *int32, from, to int) {
 	// indexing packages and serializing their names
 	for _, pkg := range prgrm.Packages[from:to] {
@@ -775,7 +782,9 @@ func splitSerialize(prgrm *CXProgram, s *sAll, fnCounter, strctCounter *int32, f
 	}
 }
 
-// Serialize ...
+// Serialize translates cx program to slice of bytes that we can save.
+// These slice of bytes can then be deserialized in the future and
+// be translated back to cx program.
 func Serialize(prgrm *CXProgram, split int, includeMemory bool) (byts []byte) {
 	// prgrm.PrintProgram()
 
