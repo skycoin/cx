@@ -131,3 +131,421 @@ Labels are just integer identifiers for stack depth and is same as break(1), bre
 ## Maps for CX
 
 CX needs to have maps implemented
+
+## Using BREAK outside intended structures (loops)
+
+CX should warn users that `break` is used incorrectly (for examples: if break is used in IF statement)
+
+## Better error message for slice/array index missuse (when using commas inside square brackets)
+
+```
+package main
+
+type Shape struct {
+   Cells [][]bool
+}
+
+var Curr Shape
+
+func main() {
+   Curr.Cells[0] = append(Curr.Cells[0], true)
+   Curr.Cells[0,0] = append(Curr.Cells[0,0], true)
+
+
+   i32.print(len(Curr.Cells[0]))
+   i32.print(len(Curr.Cells[0,0]))
+}
+```
+
+https://github.com/skycoin/cx/issues/22
+
+## Compilation error when using logical NOT operator on the return value of a function call
+
+```
+package main
+
+func foo()(out bool) {
+	out = true
+}
+
+func main()() {
+	var b bool = !foo()
+	test(b, false, "")
+}
+```
+
+Expected behaviour: No compilation error
+
+## No compilation error when redeclaring a global variable in the same package
+
+```
+package main
+
+var i i32 = 5
+var i i32 = 4
+
+func main()() {
+	panic(false, true, "must not compile")
+}
+```
+
+Should give compile error for redeclaration of `i` variable
+
+## No compilation error when appending a value of type B in a slice of type []A
+
+```
+package main
+
+type fooA struct {
+	f f32
+}
+
+type fooB struct {
+	d f64
+	i i32
+}
+
+func main()() {
+	var sa []fooA
+	var b fooB
+	sa = append(sa, b)
+	panic(true, false, "must not compile")
+}
+```
+
+Should give compile error.
+
+## Compilation error when using NEG operator on struct fields
+
+```
+package main
+
+type too struct {
+	x i32
+}
+
+func main()() {
+	var t too
+	t.x = -12
+
+	t.x = -t.x // gives compile error
+}
+```
+
+Expected behaviour: No compilation error
+
+## Runtime error when calling str.i32 with a string not representing a valid i32 number.
+
+To Reproduce:
+```
+package main
+func main()() {
+	i := str.i32("a") // gives runtime error
+	k := str.i32("-2147483649") // gives runtime error
+}
+```
+
+Parsing methods (str.*) should return an error on failure.
+Should return error instead of crashing. 
+If string is literal, then should be converted at compile time and not run time?
+
+## Compilation error when using return value of len function in short hand expression
+
+```
+var s[]str
+s = append(s, "33")
+i := len(s)
+```
+
+Should not give compilation error.
+
+## Panic when trying to print a negative literal as a string with printf
+
+```
+package main
+
+func main()() {
+	printf("%s\n", -1)
+}
+```
+
+This should only give a runtime error and continue, but should not panic.
+Ideally this should be done at compile time when the format string is a literal.
+
+## No compilation error when appending to a pointer to a slice
+
+```
+var si []i32
+var psi *[]i32 = &si
+psi = append(psi, 4)
+```
+
+Should give compile error.
+Error in golang: `first argument to append must be slice; have *[]int32`
+
+## Compilation error when using multiple return values in short hand expression
+
+```
+package main
+func foo()(i i32, f f32) {
+	i = 5
+	f = 1.0
+}
+
+func main(){	
+	i, f := foo()
+}
+```
+
+Expected behavior: No compilation error
+
+##Compilation error when initializing multidimensiona arrays/slices with values
+
+```
+package main
+func main() {
+	var i [][]i32 = [][]i32{ {1, 2}, {3, 4} }
+}
+```
+NOTE: Adding `[][]i32` before `{1, 2}` and `{3, 4}` compiles program without errors.
+Expected behavior: No compilation error
+
+## Compilation error when using inline initalization of a slice var as function argument
+
+```
+package main
+
+func fooi(slice []i32) {}
+
+func foos(slice []str) {}
+
+func main()() {
+	fooi([]i32{1, 2, 3})
+	foos([]str {"foo", "slice", "str"})
+}
+```
+
+Current error when running above code: `error: test1.cx:19 identifier '*tmp_4' does not exist`
+Expected behavior: No compilation error
+
+## No compilation error when using empty argument list after function call
+
+```
+package main
+func foo()() {
+	printf("foo\n")
+}
+func main()() {
+	foo() () // should give compile error here
+}
+```
+
+It appeares parenthesis after foo() are being ignored. Following doesn't give error either:
+`foo() ()()()()()()()()`
+
+## Compile error when using boolean variable in for loop
+
+```
+package main
+func main()() {
+	var b bool = true
+	for b {
+		printf("true\n")
+	}
+}
+```
+Expected behavior: No compilation error
+
+## No compilation error when using void return value of a function in a for loop expression
+
+```
+package main
+func foo()() {
+}
+
+func main() {
+	for foo() { // panic, runtime error
+		printf("true\n")
+	}
+}
+```
+Expected behavior: Should give compilation error
+
+## Compilation error when using unary negative operator on a function call
+
+```
+package main
+
+func foo()(out i32) {
+    out = 4
+}
+
+func main()() {
+    var a i32 = -foo()
+}
+```
+Expected behavior: No compilation error
+
+## No Compilation Error when function is called without parentheses
+
+```package pkg
+
+func FuncInPkg () {
+str.print("FuncInPkg called with NO parentheses")
+}
+
+package main
+import "pkg"
+
+func main () {
+pkg.FuncInPkg
+}
+```
+Expected behavior: Some kind of error or at least a warning that you didn't use parentheses.
+
+## Compilation error when using i32.add() in/as array's index (inside brackets)
+
+```
+package main
+
+func main (){
+        var nums [5]i32
+        var temp i32
+        for i := 0; i < 5; i++{
+        	for j := 0; j < 5; j++{
+        		if nums[j] > nums[i32.add(j, 1)]{ 
+		                temp = nums[j]
+			        nums[j] = nums[i32.add(j, 1)] // works here
+			        nums[i32.add(j, 1)] = temp // here it produces compiler error
+		        }
+	        }
+        }
+}
+```
+Expected behavior: No compilation error
+
+## Compiler Error Improvement for indexing non-indexable types 
+
+```
+package main
+
+func main()() {
+	var b bool = true
+	var bb bool = b[0]
+	panic(true, false, "must not compile")
+}
+```
+Expected behavior: No panic.
+Behavior should throw compiler error at compile time, 
+"variable is not indexable type" or error stating that type cannot be indexed.
+Should be compile time error, not run time error.
+
+## Compilation error when declaring array of struct defined in other package
+
+```
+package pack
+
+type Too struct {
+    i i32
+}
+
+package main
+
+type Moo struct {
+    i i32
+}
+
+func main()() {
+    var moo [3]Moo
+    var too [3]pack.Too
+}
+```
+Expected behavior: No compilation error
+
+## CX_RUNTIME_ERROR when using a negative i32 variable to initialize a f32 variable
+
+```
+package main
+
+func main()() {
+    var f1 f32 = -1
+}
+```
+Expected behavior: Compilation Error: `invalid implicit type conversion from i32 to f32`
+
+## Compilation error: Wrong type inferred for variable declared with short declaration operator :=
+
+```
+package main
+
+import "os"
+
+func foo(i i32) (s str) {
+s = "test"
+}
+
+func main()() {
+    file0 := foo("test")
+    file := os.Open("test")
+    fileC := os.Close("test")
+}
+```
+Expected behavior: No compilation error
+
+## Compilation error when running declaring Pointer to Array
+
+```
+package main
+
+type Point struct {
+	x i32
+	y i32
+}
+
+func testArrayPointerPnts (pnums [2]*Point) {}
+func testArrayPointer (pnums [2]*i32) {}
+
+func main () {
+	var pnums [2]*i32
+	n1 := 1
+	n2 := 2
+
+	pnums[0] = &n1
+	pnums[1] = &n2
+
+	testArrayPointer(pnums)
+
+	i32.print(*pnums[0])
+
+	var apPnts [2]*Point
+	testArrayPointerPnts(apPnts)
+}
+```
+Expected behavior: No compilation error
+
+## Compilation error when redeclaring variables from different scopes/blocks
+
+```
+package main
+
+type test_s struct {
+    f f32
+}
+func test_()(out test_s) {
+    out.f = 0.0
+}
+
+func main()() {
+    {
+        var s test_s = test_()
+        var i i32 = 0
+        var t test_s
+    }
+    {
+        var s test_s = test_()
+        var i i32 = 0
+        var t test_s
+    }
+}
+```
+Expected behavior: No compilation error
