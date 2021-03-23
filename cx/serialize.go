@@ -1,8 +1,6 @@
 package cxcore
 
 import (
-	"fmt"
-
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
@@ -853,19 +851,6 @@ func SerializeDebugInfo(prgrm *CXProgram, split int) SerializeDataSize {
 		Names:       len(bytes[s.Index.NamesOffset:s.Index.MemoryOffset]),
 		Memory:      len(bytes[s.Index.MemoryOffset:]),
 	}
-
-	fmt.Println("Serialize Debug")
-	fmt.Println("Segment Name: Number of Bytes")
-	fmt.Printf("Program: %v bytes\n", data.Program)
-	fmt.Printf("Calls: %v bytes\n", data.Calls)
-	fmt.Printf("Packages: %v bytes\n", data.Packages)
-	fmt.Printf("Structs: %v bytes\n", data.Structs)
-	fmt.Printf("Functions: %v bytes\n", data.Functions)
-	fmt.Printf("Expressions: %v bytes\n", data.Expressions)
-	fmt.Printf("Arguments: %v bytes\n", data.Arguments)
-	fmt.Printf("Integers: %v bytes\n", data.Integers)
-	fmt.Printf("Names: %v bytes\n", data.Names)
-	fmt.Printf("Memory: %v bytes\n", data.Memory)
 
 	return *data
 }
