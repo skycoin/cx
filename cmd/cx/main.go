@@ -45,7 +45,7 @@ func Run(args []string) {
 
 	// Does the user want to print the command-line help?
 	//options.printHelp works when flags are provided.
-	//$ cx version --vesion
+	//$ cx --vesion
 	if options.printHelp {
 		printHelp()
 		return
@@ -71,7 +71,7 @@ func Run(args []string) {
 	}
 
 	//checkenv check command line argumenets
-	//$ cx env
+	//$ cx
 	if checkenv(args) {
 		printEnv()
 		return
@@ -112,6 +112,15 @@ func Run(args []string) {
 			return
 		}
 
+		if options.tokenizeMode {
+			optionTokenize(options, fileNames)
+			return
+		}
+
+		if checktokenizeMode(args) {
+			optionTokenize(options, fileNames)
+			return
+		}
 		runProgram(options, cxArgs, sourceCode, bcHeap, sPrgrm)
 	}
 }
