@@ -1,0 +1,16 @@
+package pack
+
+type Too struct {
+    i i32
+}
+
+package main
+
+type Moo struct {
+    i i32
+}
+
+func main()() {
+    var moo [3]Moo
+    var too [3]pack.Too
+}

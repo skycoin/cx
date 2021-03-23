@@ -27,9 +27,9 @@ func (yylex *Lexer) Next() int {
 	return yylex.tok.yys
 }
 
-func (yylex *Lexer) Stop() {
-	yylex.stop()
-}
+// func (yylex *Lexer) Stop() {
+// 	// yylex.stop() //bug???? # https://github.com/skycoin/cx/issues/529
+// }
 
 func NewLexer(rdr io.Reader) *Lexer {
 	lx := &Lexer{}

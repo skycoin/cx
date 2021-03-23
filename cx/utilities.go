@@ -10,8 +10,6 @@ import (
 	"strconv"
 	"strings"
 	"text/tabwriter"
-
-	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 // Debug ...
@@ -266,7 +264,7 @@ func GetFormattedType(arg *CXArgument) string {
 	return typ
 }
 
-// getFormattedParam is an auxiliary function for `PrintProgram`. It formats the
+// getFormattedParam is an auxiliary function for `ToString`. It formats the
 // name of a `CXExpression`'s input and output parameters (`CXArgument`s). Examples
 // of these formattings are "pkg.foo[0]", "&*foo.field1". The result is written to
 // `buf`.
@@ -288,27 +286,27 @@ func getFormattedParam(params []*CXArgument, pkg *CXPackage, buf *bytes.Buffer) 
 	}
 }
 
-// printImports is an auxiliary function for `printProgram`. It prints all the
-// imported packages of `pkg`.
-func printImports(pkg *CXPackage) {
+// buildStrImports is an auxiliary function for `toString`. It builds
+// string representation all the imported packages of `pkg`.
+func buildStrImports(pkg *CXPackage, ast *string) {
 	if len(pkg.Imports) > 0 {
-		fmt.Println("\tImports")
+		*ast += "\tImports\n"
 	}
 
 	for j, imp := range pkg.Imports {
-		fmt.Printf("\t\t%d.- Import: %s\n", j, imp.Name)
+		*ast += fmt.Sprintf("\t\t%d.- Import: %s\n", j, imp.Name)
 	}
 }
 
-// printGlobals is an auxiliary function for `printProgram`. It prints all the
-// global variables of `pkg`.
-func printGlobals(pkg *CXPackage) {
+// buildStrGlobals is an auxiliary function for `toString`. It builds
+// string representation of all the global variables of `pkg`.
+func buildStrGlobals(pkg *CXPackage, ast *string) {
 	if len(pkg.Globals) > 0 {
-		fmt.Println("\tGlobals")
+		*ast += "\tGlobals\n"
 	}
 
 	for j, v := range pkg.Globals {
-		fmt.Printf("\t\t%d.- Global: %s %s\n", j, v.Name, GetFormattedType(v))
+		*ast += fmt.Sprintf("\t\t%d.- Global: %s %s\n", j, v.Name, GetFormattedType(v))
 	}
 }
 
@@ -322,18 +320,18 @@ func SignatureStringOfStruct(s *CXStruct) string {
 	return fmt.Sprintf("%s struct {%s }", s.Name, fields)
 }
 
-// printStructs is an auxiliary function for `printProgram`. It prints all the
-// structures defined in `pkg`.
-func printStructs(pkg *CXPackage) {
+// buildStrStructs is an auxiliary function for `toString`. It builds
+// string representation of all the structures defined in `pkg`.
+func buildStrStructs(pkg *CXPackage, ast *string) {
 	if len(pkg.Structs) > 0 {
-		fmt.Println("\tStructs")
+		*ast += "\tStructs\n"
 	}
 
 	for j, strct := range pkg.Structs {
-		fmt.Printf("\t\t%d.- Struct: %s\n", j, strct.Name)
+		*ast += fmt.Sprintf("\t\t%d.- Struct: %s\n", j, strct.Name)
 
 		for k, fld := range strct.Fields {
-			fmt.Printf("\t\t\t%d.- Field: %s %s\n",
+			*ast += fmt.Sprintf("\t\t\t%d.- Field: %s %s\n",
 				k, fld.Name, GetFormattedType(fld))
 		}
 	}
@@ -350,11 +348,11 @@ func SignatureStringOfFunction(pkg *CXPackage, f *CXFunction) string {
 		f.Name, ins.String(), outs.String())
 }
 
-// printFunctions is an auxiliary function for `printProgram`. It prints all the
-// functions defined in `pkg`.
-func printFunctions(pkg *CXPackage) {
+// buildStrFunctions is an auxiliary function for `toString`. It builds
+// string representation of all the functions defined in `pkg`.
+func buildStrFunctions(pkg *CXPackage, ast *string) {
 	if len(pkg.Functions) > 0 {
-		fmt.Println("\tFunctions")
+		*ast += "\tFunctions\n"
 	}
 
 	// We need to declare the counter outside so we can
@@ -374,7 +372,7 @@ func printFunctions(pkg *CXPackage) {
 		getFormattedParam(fn.Inputs, pkg, &inps)
 		getFormattedParam(fn.Outputs, pkg, &outs)
 
-		fmt.Printf("\t\t%d.- Function: %s (%s) (%s)\n",
+		*ast += fmt.Sprintf("\t\t%d.- Function: %s (%s) (%s)\n",
 			j, fn.Name, inps.String(), outs.String())
 
 		for k, expr := range fn.Expressions {
@@ -407,7 +405,7 @@ func printFunctions(pkg *CXPackage) {
 				if outs.Len() > 0 {
 					assignOp = " = "
 				}
-				fmt.Printf("\t\t\t%d.- Expression%s: %s%s%s(%s)\n",
+				*ast += fmt.Sprintf("\t\t\t%d.- Expression%s: %s%s%s(%s)\n",
 					k,
 					lbl,
 					outs.String(),
@@ -421,7 +419,7 @@ func printFunctions(pkg *CXPackage) {
 				if len(expr.Outputs) > 0 {
 					out := expr.Outputs[len(expr.Outputs)-1]
 
-					fmt.Printf("\t\t\t%d.- Declaration%s: %s %s\n",
+					*ast += fmt.Sprintf("\t\t\t%d.- Declaration%s: %s %s\n",
 						k,
 						lbl,
 						expr.Outputs[0].Name,
@@ -434,9 +432,9 @@ func printFunctions(pkg *CXPackage) {
 	}
 }
 
-// printPackages is an auxiliary function for `PrintProgram`. It starts the
-// process of printing the abstract syntax tree of a CX program.
-func printPackages(prgrm *CXProgram) {
+// buildStrPackages is an auxiliary function for `ToString`. It starts the
+// process of building string format of the abstract syntax tree of a CX program.
+func buildStrPackages(prgrm *CXProgram, ast *string) {
 	// We need to declare the counter outside so we can
 	// ignore the increments from core or stdlib packages.
 	var i int
@@ -445,12 +443,12 @@ func printPackages(prgrm *CXProgram) {
 			continue
 		}
 
-		fmt.Printf("%d.- Package: %s\n", i, pkg.Name)
+		*ast += fmt.Sprintf("%d.- Package: %s\n", i, pkg.Name)
 
-		printImports(pkg)
-		printGlobals(pkg)
-		printStructs(pkg)
-		printFunctions(pkg)
+		buildStrImports(pkg, ast)
+		buildStrGlobals(pkg, ast)
+		buildStrStructs(pkg, ast)
+		buildStrFunctions(pkg, ast)
 
 		i++
 	}
@@ -459,12 +457,19 @@ func printPackages(prgrm *CXProgram) {
 // PrintProgram prints the abstract syntax tree of a CX program in a
 // human-readable format.
 func (prgrm *CXProgram) PrintProgram() {
-	fmt.Println("Program")
+	fmt.Println(prgrm.ToString())
+}
+
+// ToString returns the abstract syntax tree of a CX program in a
+// string format.
+func (prgrm *CXProgram) ToString() string {
+	var ast string
+	ast += "Program\n"
 
 	var currentFunction *CXFunction
 	var currentPackage *CXPackage
 
-	// Saving current program state because PrintProgram uses SelectXXX.
+	// Saving current program state because ToString uses SelectXXX.
 	// If we don't do this, calling `:dp` in a REPL will always switch the
 	// user to the last function in the last package in the `CXProgram`
 	// structure.
@@ -476,7 +481,7 @@ func (prgrm *CXProgram) PrintProgram() {
 		currentFunction = fn
 	}
 
-	printPackages(prgrm)
+	buildStrPackages(prgrm, &ast)
 
 	// Restoring a program's state (what package and function were
 	// selected.)
@@ -497,6 +502,8 @@ func (prgrm *CXProgram) PrintProgram() {
 	if currentPackage != nil {
 		currentPackage.CurrentFunction = currentFunction
 	}
+
+	return ast
 }
 
 // CheckArithmeticOp ...
@@ -838,58 +845,6 @@ func WriteToSlice(off int, inp []byte) int {
 
 }
 
-// refactoring reuse in WriteObject and WriteObjectRetOff
-func writeObj(obj []byte) int {
-	// QUARENTINED: Check if `newwriteObj` can supersede this `writeObj`.
-	// Especially check usage on CX chains.
-	size := len(obj) + OBJECT_HEADER_SIZE
-	sizeB := encoder.SerializeAtomic(int32(size))
-	// heapOffset := AllocateSeq(size + OBJECT_HEADER_SIZE)
-	heapOffset := AllocateSeq(size)
-
-	// var finalObj = make([]byte, OBJECT_HEADER_SIZE+size)
-	var finalObj = make([]byte, size)
-
-	for c := OBJECT_GC_HEADER_SIZE; c < OBJECT_HEADER_SIZE; c++ {
-		finalObj[c] = sizeB[c-OBJECT_GC_HEADER_SIZE]
-	}
-	// for c := OBJECT_HEADER_SIZE; c < size+OBJECT_HEADER_SIZE; c++ {
-	for c := OBJECT_HEADER_SIZE; c < size; c++ {
-		finalObj[c] = obj[c-OBJECT_HEADER_SIZE]
-	}
-
-	WriteMemory(heapOffset, finalObj)
-	return heapOffset
-}
-
-// NewWriteObj refactoring reuse in WriteObject and WriteObjectRetOff
-func NewWriteObj(obj []byte) int {
-	// 2dbug introduces this new version of `writeObj`. It is unknown to me
-	// (amherag) at the moment if it is safe to replace `writeObj` with
-	// this version. Leaving `writeObj` in quarentine.
-	size := len(obj)
-	heapOffset := AllocateSeq(size + OBJECT_HEADER_SIZE)
-	var finalObj = make([]byte, OBJECT_HEADER_SIZE+size)
-
-	WriteMemI32(finalObj, OBJECT_GC_HEADER_SIZE, int32(size))
-	for c := OBJECT_HEADER_SIZE; c < size+OBJECT_HEADER_SIZE; c++ {
-		finalObj[c] = obj[c-OBJECT_HEADER_SIZE]
-	}
-
-	WriteMemory(heapOffset, finalObj)
-	return heapOffset
-}
-
-// WriteObject ...
-func WriteObject(out1Offset int, obj []byte) {
-	WriteI32(out1Offset, int32(NewWriteObj(obj)))
-}
-
-// WriteObjectRetOff ...
-func WriteObjectRetOff(obj []byte) int {
-	return NewWriteObj(obj)
-}
-
 // ErrorHeader ...
 func ErrorHeader(currentFile string, lineNo int) string {
 	return "error: " + currentFile + ":" + strconv.FormatInt(int64(lineNo), 10)
@@ -1090,7 +1045,6 @@ func GetPrintableValue(fp int, arg *CXArgument) string {
 
 	return getNonCollectionValue(fp, arg, elt, typ)
 }
-
 
 // DebugHeap prints the symbols that are acting as pointers in a CX program at certain point during the execution of the program along with the addresses they are pointing. Additionally, a list of the objects in the heap is printed, which shows their address in the heap, if they are marked as alive or as dead by the garbage collector, the address where they used to live after a garbage collector call, the full size of the object, the object itself as a slice of bytes and the pointers that are pointing to that object.
 func DebugHeap() {
@@ -1326,28 +1280,4 @@ func IsPointer(sym *CXArgument) bool {
 	// 	return isPointer(sym.Fields[len(sym.Fields)-1])
 	// }
 	return false
-}
-
-// WriteStringObj writes `str` to the heap as an object and returns its absolute offset.
-func WriteStringObj(str string) int {
-	strB := encoder.Serialize(str)
-	return NewWriteObj(strB)
-}
-
-// ReadStringFromObject reads the string located at offset `off`.
-func ReadStringFromObject(off int32) string {
-	var plusOff int32
-	if int(off) > PROGRAM.HeapStartsAt {
-		// Found in heap segment.
-		plusOff += OBJECT_HEADER_SIZE
-	}
-
-	size := Deserialize_i32(PROGRAM.Memory[off+plusOff : off+plusOff+STR_HEADER_SIZE])
-
-	str := ""
-	_, err := encoder.DeserializeRaw(PROGRAM.Memory[off+plusOff:off+plusOff+STR_HEADER_SIZE+size], &str)
-	if err != nil {
-		panic(err)
-	}
-	return str
 }

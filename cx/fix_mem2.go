@@ -3,7 +3,7 @@ package cxcore
 //NOTE: Temp file for resolving CalculateDereferences issue
 //TODO: What should this function be called?
 
-// CalculateDereferences ... ...
+
 //Todo: This function needs comments? What does it do?
 //Todo: Can this function be specialized?
 //CalculateDeference
@@ -15,6 +15,18 @@ package cxcore
 //TODO: Why are we calling this function for fixed data types in flow path
 //TODO: For int32, f32, etc, this function should not be called at all
 //reduce loops and switches in op code execution flow path
+
+/*
+// GetDerefSize ...
+func GetDerefSize(arg *CXArgument) int {
+	if arg.CustomType != nil {
+		return arg.CustomType.Size
+	}
+	return arg.Size
+}
+*/
+
+
 func CalculateDereferences(arg *CXArgument, finalOffset *int, fp int) {
 	var isPointer bool
 	var baseOffset int
@@ -43,7 +55,7 @@ func CalculateDereferences(arg *CXArgument, finalOffset *int, fp int) {
 			*finalOffset += OBJECT_HEADER_SIZE
 			*finalOffset += SLICE_HEADER_SIZE
 
-			sizeToUse := GetDerefSize(arg)
+			sizeToUse := GetDerefSize(arg) //GetDerefSize
 			*finalOffset += int(ReadI32(fp, arg.Indexes[idxCounter])) * sizeToUse
 			if !IsValidSliceIndex(baseOffset, *finalOffset, sizeToUse) {
 				panic(CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)
@@ -59,7 +71,7 @@ func CalculateDereferences(arg *CXArgument, finalOffset *int, fp int) {
 				subSize *= len
 			}
 
-			sizeToUse := GetDerefSize(arg)
+			sizeToUse := GetDerefSize(arg) //GetDerefSize
 
 			baseOffset = *finalOffset
 			sizeofElement = subSize * sizeToUse
@@ -150,3 +162,4 @@ func CalculateDereferences_str(arg *CXArgument, finalOffset *int, fp int) {
 func CalculateDereferences_bool(arg *CXArgument, finalOffset *int, fp int) {
 	CalculateDereferences(arg, finalOffset, fp)
 }
+

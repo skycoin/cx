@@ -3,7 +3,7 @@
 
 package main
 
-main() {
+func main() {
 	var a f32 = 1.0E+4 // Remove the "E+4" and it will work
 	f32.print(a)
 }

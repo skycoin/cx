@@ -16,7 +16,7 @@ import (
 	"github.com/skycoin/cx/cxgo/parser"
 )
 
-const VERSION = "0.7.1"
+const VERSION = "0.8.0"
 
 func main() {
 	//cx.CXLogFile(true)
@@ -36,12 +36,16 @@ func Run(args []string) {
 	// or by setting the `--cxpath` flag.
 	checkCXPathSet(options)
 
+	//checkHelp check command line argumenets
+	//$ cx help
 	if checkHelp(args) {
 		commandLine.PrintDefaults()
 		return
 	}
 
 	// Does the user want to print the command-line help?
+	//options.printHelp works when flags are provided.
+	//$ cx version --vesion
 	if options.printHelp {
 		printHelp()
 		return
@@ -53,8 +57,22 @@ func Run(args []string) {
 		return
 	}
 
+	//checkversion check command line argumenets
+	//$ cx version
+	if checkversion(args) {
+		printVersion()
+		return
+	}
+
 	// User wants to print CX env
 	if options.printEnv {
+		printEnv()
+		return
+	}
+
+	//checkenv check command line argumenets
+	//$ cx env
+	if checkenv(args) {
 		printEnv()
 		return
 	}
@@ -89,6 +107,11 @@ func Run(args []string) {
 	DebugProfile = DebugProfileRate > 0
 
 	if run, bcHeap, sPrgrm := parseProgram(options, fileNames, sourceCode); run {
+		if checkAST(args) {
+			printProgramAST(options, cxArgs, sourceCode, bcHeap, sPrgrm)
+			return
+		}
+
 		runProgram(options, cxArgs, sourceCode, bcHeap, sPrgrm)
 	}
 }
@@ -175,7 +198,10 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 	actions.ReplTargetFn = cxcore.MAIN_FUNC
 
 	// Adding *init function that initializes all the global variables.
-	cxgo.AddInitFunction(actions.PRGRM)
+	err = cxgo.AddInitFunction(actions.PRGRM)
+	if err != nil {
+		return false, nil, nil
+	}
 
 	actions.LineNo = 0
 
@@ -205,6 +231,24 @@ func runProgram(options cxCmdFlags, cxArgs []string, sourceCode []*os.File, bcHe
 	if err != nil {
 		panic(err)
 	}
+
+	if cxcore.AssertFailed() {
+		os.Exit(cxcore.CX_ASSERT)
+	}
+}
+
+func printProgramAST(options cxCmdFlags, cxArgs []string, sourceCode []*os.File, bcHeap []byte, sPrgrm []byte) {
+	StartProfile("run")
+	defer StopProfile("run")
+
+	if options.replMode || len(sourceCode) == 0 {
+		actions.PRGRM.SelectProgram()
+		Repl()
+		return
+	}
+
+	// Print CX program.
+	actions.PRGRM.PrintProgram()
 
 	if cxcore.AssertFailed() {
 		os.Exit(cxcore.CX_ASSERT)

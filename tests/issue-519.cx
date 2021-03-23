@@ -1,0 +1,12 @@
+package main
+
+import "os"
+
+func foo(i i32) (s str) {
+s = "test"
+}
+
+func main()() {
+    file0 := foo("test")
+    file := os.Open("test")
+}

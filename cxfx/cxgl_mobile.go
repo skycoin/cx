@@ -10,7 +10,7 @@ import (
 	"github.com/skycoin/gltext"
 	"golang.org/x/mobile/gl"
 
-	. "github.com/skycoin/cx/cx"
+	"github.com/skycoin/cx/cx"
 )
 
 func Ptr(data interface{}) (unsafe.Pointer, uintptr) {
@@ -104,19 +104,19 @@ func SetGLContext(ctx gl.Context) {
 }
 
 // gogl
-func opGlInit(expr *CXExpression, fp int) {
+func opGlInit(inputs []CXValue, outputs []CXValue) {
 	//panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opGlDestroy(expr *CXExpression, fp int) {
+func opGlDestroy(inputs []CXValue, outputs []CXValue) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opGlStrs(expr *CXExpression, fp int) {
+func opGlStrs(inputs []CXValue, outputs []CXValue) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opGlFree(expr *CXExpression, fp int) {
+func opGlFree(inputs []CXValue, outputs []CXValue) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
@@ -582,86 +582,86 @@ func cxglGenVertexArrays(n int32, arrays *uint32) {
 }
 
 // gl_0_0
-func opGlMatrixMode(expr *CXExpression, fp int) {
+func opGlMatrixMode(inputs []CXValue, outputs []CXValue) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opGlRotatef(expr *CXExpression, fp int) {
+func opGlRotatef(inputs []CXValue, outputs []CXValue) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opGlTranslatef(expr *CXExpression, fp int) {
+func opGlTranslatef(inputs []CXValue, outputs []CXValue) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opGlLoadIdentity(expr *CXExpression, fp int) {
+func opGlLoadIdentity(inputs []CXValue, outputs []CXValue) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opGlPushMatrix(expr *CXExpression, fp int) {
+func opGlPushMatrix(inputs []CXValue, outputs []CXValue) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opGlPopMatrix(expr *CXExpression, fp int) {
+func opGlPopMatrix(inputs []CXValue, outputs []CXValue) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opGlEnableClientState(expr *CXExpression, fp int) {
+func opGlEnableClientState(inputs []CXValue, outputs []CXValue) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opGlColor3f(expr *CXExpression, fp int) {
+func opGlColor3f(inputs []CXValue, outputs []CXValue) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opGlColor4f(expr *CXExpression, fp int) {
+func opGlColor4f(inputs []CXValue, outputs []CXValue) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opGlBegin(expr *CXExpression, fp int) {
+func opGlBegin(inputs []CXValue, outputs []CXValue) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opGlEnd(expr *CXExpression, fp int) {
+func opGlEnd(inputs []CXValue, outputs []CXValue) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opGlNormal3f(expr *CXExpression, fp int) {
+func opGlNormal3f(inputs []CXValue, outputs []CXValue) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opGlVertex2f(expr *CXExpression, fp int) {
+func opGlVertex2f(inputs []CXValue, outputs []CXValue) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opGlVertex3f(expr *CXExpression, fp int) {
+func opGlVertex3f(inputs []CXValue, outputs []CXValue) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opGlLightfv(expr *CXExpression, fp int) {
+func opGlLightfv(inputs []CXValue, outputs []CXValue) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opGlFrustum(expr *CXExpression, fp int) {
+func opGlFrustum(inputs []CXValue, outputs []CXValue) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opGlTexEnvi(expr *CXExpression, fp int) {
+func opGlTexEnvi(inputs []CXValue, outputs []CXValue) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opGlOrtho(expr *CXExpression, fp int) {
+func opGlOrtho(inputs []CXValue, outputs []CXValue) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opGlScalef(expr *CXExpression, fp int) {
+func opGlScalef(inputs []CXValue, outputs []CXValue) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opGlTexCoord2d(expr *CXExpression, fp int) {
+func opGlTexCoord2d(inputs []CXValue, outputs []CXValue) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opGlTexCoord2f(expr *CXExpression, fp int) {
+func opGlTexCoord2f(inputs []CXValue, outputs []CXValue) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }

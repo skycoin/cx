@@ -1,5 +1,10 @@
 # Changelog
 
+### v0.8.0
+* Additions
+  * Preperation for CX 1.0 Milestone
+  * Massive internal compiler refactoring. Too many changes to list. See commit log
+
 ### v0.7.3
 * Additions
   * Preperation for CX 1.0 Milestone
