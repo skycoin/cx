@@ -1,6 +1,8 @@
 package cxcore
 
 import (
+	"fmt"
+
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
@@ -816,6 +818,27 @@ func Serialize(prgrm *CXProgram, split int) (byts []byte) {
 	byts = append(byts, s.Memory...)
 
 	return byts
+}
+
+// SerializeDebugInfo prints the name of the serialized segment and byte size.
+func SerializeDebugInfo(prgrm *CXProgram, split int) {
+	idxSize := encoder.Size(sIndex{})
+	var s sAll
+
+	bytes := Serialize(prgrm, split)
+	DeserializeRaw(bytes[:idxSize], &s.Index)
+	fmt.Println("Serialize Debug")
+	fmt.Println("Segment Name: Number of Bytes")
+	fmt.Printf("Program: %v bytes\n", len(bytes[s.Index.ProgramOffset:s.Index.CallsOffset]))
+	fmt.Printf("Calls: %v bytes\n", len(bytes[s.Index.CallsOffset:s.Index.PackagesOffset]))
+	fmt.Printf("Packages: %v bytes\n", len(bytes[s.Index.PackagesOffset:s.Index.StructsOffset]))
+	fmt.Printf("Structs: %v bytes\n", len(bytes[s.Index.StructsOffset:s.Index.FunctionsOffset]))
+	fmt.Printf("Functions: %v bytes\n", len(bytes[s.Index.FunctionsOffset:s.Index.ExpressionsOffset]))
+	fmt.Printf("Expressions: %v bytes\n", len(bytes[s.Index.ExpressionsOffset:s.Index.ArgumentsOffset]))
+	fmt.Printf("Arguments: %v bytes\n", len(bytes[s.Index.ArgumentsOffset:s.Index.IntegersOffset]))
+	fmt.Printf("Integers: %v bytes\n", len(bytes[s.Index.IntegersOffset:s.Index.NamesOffset]))
+	fmt.Printf("Names: %v bytes\n", len(bytes[s.Index.NamesOffset:s.Index.MemoryOffset]))
+	fmt.Printf("Memory: %v bytes\n", len(bytes[s.Index.MemoryOffset:]))
 }
 
 func opSerialize(expr *CXExpression, fp int) {
