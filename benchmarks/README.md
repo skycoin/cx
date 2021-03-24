@@ -16,3 +16,4 @@ Inside the golang-benchmarks folder we can run the tests using the `make` comman
 
 ### Run all the tests
 Run `make` here to run all the tests for cx, golang and python
+
