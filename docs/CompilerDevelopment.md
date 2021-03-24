@@ -15,7 +15,7 @@ When submitting changes to CX core, the development team uses Git pull requests 
 
 # CX Compiler Stages
 
-The compiler creates an AST first by using regular expression parsing (found in [parse.go](https://github.com/skycoin/cx/blob/develop/cxgo/cxlexer/parse.go) which structures the AST to include all package declarations, import chains, struct declarations, and globals, skipping over comments. This preliminary stage of parsing aids further stages since the structure of a CX repository and the names of custom types are already known. 
+The compiler creates an AST first by using regular expression parsing (found in [parse.go](https://github.com/skycoin/cx/blob/develop/cxgo/cxgo/cxgo.go#L90) which structures the AST to include all package declarations, import chains, struct declarations, and globals, skipping over comments. This preliminary stage of parsing aids further stages since the structure of a CX repository and the names of custom types are already known. 
 
 After this preliminary stage, the first parsing stage compiles function primitives and types, along with the structure of their parameters and global variables. This stage also finalizes compilation of structs and ensures packages and their imports are correct. This uses `goyacc` for parsing and creates a chain of tokens for the parser using an in-house lexer known as `Lexer`. 
 
