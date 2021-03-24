@@ -264,52 +264,7 @@ func UndefinedTypeOperation(leftExprs []*cxcore.CXExpression, rightExprs []*cxco
 }
 
 func ShorthandExpression(leftExprs []*cxcore.CXExpression, rightExprs []*cxcore.CXExpression, op int) []*cxcore.CXExpression {
-	var operator *cxcore.CXFunction
-	rightLen := len(rightExprs) - 1
-	switch op {
-	case OP_EQUAL:
-		operator = cxcore.Natives[cxcore.OP_INT_EQUAL]
-	case OP_UNEQUAL:
-		operator = cxcore.Natives[cxcore.OP_INT_UNEQUAL]
-	case OP_BITAND:
-		operator = cxcore.Natives[cxcore.OP_INT_BITAND]
-	case OP_BITXOR:
-		operator = cxcore.Natives[cxcore.OP_INT_BITXOR]
-	case OP_BITOR:
-		operator = cxcore.Natives[cxcore.OP_INT_BITOR]
-	case OP_MUL:
-		operator = cxcore.Natives[cxcore.OP_INT_MUL]
-	case OP_DIV:
-		operator = cxcore.Natives[cxcore.OP_INT_DIV]
-	case OP_MOD:
-		operator = cxcore.Natives[cxcore.OP_INT_MOD]
-	case OP_ADD:
-		// Handling special case of arguments being strings.
-		// In this case we use `str.concat`.
-		if rightLen >= 0 && len(rightExprs[rightLen].Outputs) > 0 && rightExprs[rightLen].Outputs[0].Type == cxcore.TYPE_STR {
-			operator = cxcore.Natives[cxcore.OP_STR_CONCAT]
-		} else {
-			operator = cxcore.Natives[cxcore.OP_INT_ADD]
-		}
-	case OP_SUB:
-		operator = cxcore.Natives[cxcore.OP_INT_SUB]
-	case OP_BITSHL:
-		operator = cxcore.Natives[cxcore.OP_INT_BITSHL]
-	case OP_BITSHR:
-		operator = cxcore.Natives[cxcore.OP_INT_BITSHR]
-	case OP_BITCLEAR:
-		operator = cxcore.Natives[cxcore.OP_INT_BITCLEAR]
-	case OP_LT:
-		operator = cxcore.Natives[cxcore.OP_INT_LT]
-	case OP_GT:
-		operator = cxcore.Natives[cxcore.OP_INT_GT]
-	case OP_LTEQ:
-		operator = cxcore.Natives[cxcore.OP_INT_LTEQ]
-	case OP_GTEQ:
-		operator = cxcore.Natives[cxcore.OP_INT_GTEQ]
-	}
-
-	return UndefinedTypeOperation(leftExprs, rightExprs, operator)
+    return UndefinedTypeOperation(leftExprs, rightExprs, cxcore.Natives[op])
 }
 
 func UnaryExpression(op string, prevExprs []*cxcore.CXExpression) []*cxcore.CXExpression {
@@ -354,7 +309,7 @@ func UnaryExpression(op string, prevExprs []*cxcore.CXExpression) []*cxcore.CXEx
 		}
 	case "-":
 		if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
-			expr := cxcore.MakeExpression(cxcore.Natives[cxcore.OP_INT_NEG], CurrentFile, LineNo)
+			expr := cxcore.MakeExpression(cxcore.Natives[cxcore.OP_NEG], CurrentFile, LineNo)
 			expr.Package = pkg
 			expr.AddInput(exprOut)
 			prevExprs[len(prevExprs)-1] = expr

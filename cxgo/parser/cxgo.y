@@ -1012,15 +1012,15 @@ multiplicative_expression:
                 unary_expression
         |       multiplicative_expression MUL_OP unary_expression
                 {
-			$$ = actions.ShorthandExpression($1, $3, actions.OP_MUL)
+			$$ = actions.ShorthandExpression($1, $3, cxcore.OP_MUL)
                 }
         |       multiplicative_expression DIV_OP unary_expression
                 {
-			$$ = actions.ShorthandExpression($1, $3, actions.OP_DIV)
+			$$ = actions.ShorthandExpression($1, $3, cxcore.OP_DIV)
                 }
         |       multiplicative_expression MOD_OP unary_expression
                 {
-			$$ = actions.ShorthandExpression($1, $3, actions.OP_MOD)
+			$$ = actions.ShorthandExpression($1, $3, cxcore.OP_MOD)
                 }
                 ;
 
@@ -1028,11 +1028,11 @@ additive_expression:
                 multiplicative_expression
         |       additive_expression ADD_OP multiplicative_expression
                 {
-			$$ = actions.ShorthandExpression($1, $3, actions.OP_ADD)
+			$$ = actions.ShorthandExpression($1, $3, cxcore.OP_ADD)
                 }
 	|       additive_expression SUB_OP multiplicative_expression
                 {
-			$$ = actions.ShorthandExpression($1, $3, actions.OP_SUB)
+			$$ = actions.ShorthandExpression($1, $3, cxcore.OP_SUB)
                 }
                 ;
 
@@ -1040,15 +1040,15 @@ shift_expression:
                 additive_expression
         |       shift_expression LEFT_OP additive_expression
                 {
-			$$ = actions.ShorthandExpression($1, $3, actions.OP_BITSHL)
+			$$ = actions.ShorthandExpression($1, $3, cxcore.OP_BITSHL)
                 }
         |       shift_expression RIGHT_OP additive_expression
                 {
-			$$ = actions.ShorthandExpression($1, $3, actions.OP_BITSHR)
+			$$ = actions.ShorthandExpression($1, $3, cxcore.OP_BITSHR)
                 }
         |       shift_expression BITCLEAR_OP additive_expression
                 {
-			$$ = actions.ShorthandExpression($1, $3, actions.OP_BITCLEAR)
+			$$ = actions.ShorthandExpression($1, $3, cxcore.OP_BITCLEAR)
                 }
                 ;
 
@@ -1056,34 +1056,34 @@ relational_expression:
                 shift_expression
         |       relational_expression EQ_OP shift_expression
                 {
-			$$ = actions.ShorthandExpression($1, $3, actions.OP_EQUAL)
+			$$ = actions.ShorthandExpression($1, $3, cxcore.OP_EQUAL)
                 }
         |       relational_expression NE_OP shift_expression
                 {
-			$$ = actions.ShorthandExpression($1, $3, actions.OP_UNEQUAL)
+			$$ = actions.ShorthandExpression($1, $3, cxcore.OP_UNEQUAL)
                 }
         |       relational_expression LT_OP shift_expression
                 {
-			$$ = actions.ShorthandExpression($1, $3, actions.OP_LT)
+			$$ = actions.ShorthandExpression($1, $3, cxcore.OP_LT)
                 }
         |       relational_expression GT_OP shift_expression
                 {
-			$$ = actions.ShorthandExpression($1, $3, actions.OP_GT)
+			$$ = actions.ShorthandExpression($1, $3, cxcore.OP_GT)
                 }
         |       relational_expression LTEQ_OP shift_expression
                 {
-			$$ = actions.ShorthandExpression($1, $3, actions.OP_LTEQ)
+			$$ = actions.ShorthandExpression($1, $3, cxcore.OP_LTEQ)
                 }
         |       relational_expression GTEQ_OP shift_expression
                 {
-			$$ = actions.ShorthandExpression($1, $3, actions.OP_GTEQ)
+			$$ = actions.ShorthandExpression($1, $3, cxcore.OP_GTEQ)
                 }
                 ;
 
 and_expression: relational_expression
         |       and_expression REF_OP relational_expression
                 {
-			$$ = actions.ShorthandExpression($1, $3, actions.OP_BITAND)
+			$$ = actions.ShorthandExpression($1, $3, cxcore.OP_BITAND)
                 }
                 ;
 
@@ -1091,7 +1091,7 @@ exclusive_or_expression:
                 and_expression
         |       exclusive_or_expression BITXOR_OP and_expression
                 {
-			$$ = actions.ShorthandExpression($1, $3, actions.OP_BITXOR)
+			$$ = actions.ShorthandExpression($1, $3, cxcore.OP_BITXOR)
                 }
                 ;
 
@@ -1099,7 +1099,7 @@ inclusive_or_expression:
                 exclusive_or_expression
         |       inclusive_or_expression BITOR_OP exclusive_or_expression
                 {
-			$$ = actions.ShorthandExpression($1, $3, actions.OP_BITOR)
+			$$ = actions.ShorthandExpression($1, $3, cxcore.OP_BITOR)
                 }
                 ;
 

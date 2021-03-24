@@ -169,34 +169,34 @@ func Assignment(to []*cxcore.CXExpression, assignOp string, from []*cxcore.CXExp
 
 		to = append([]*cxcore.CXExpression{expr}, to...)
 	case ">>=":
-		expr = cxcore.MakeExpression(cxcore.Natives[cxcore.OP_INT_BITSHR], CurrentFile, LineNo)
+		expr = cxcore.MakeExpression(cxcore.Natives[cxcore.OP_BITSHR], CurrentFile, LineNo)
 		return ShortAssignment(expr, to, from, pkg, idx)
 	case "<<=":
-		expr = cxcore.MakeExpression(cxcore.Natives[cxcore.OP_INT_BITSHL], CurrentFile, LineNo)
+		expr = cxcore.MakeExpression(cxcore.Natives[cxcore.OP_BITSHL], CurrentFile, LineNo)
 		return ShortAssignment(expr, to, from, pkg, idx)
 	case "+=":
-		expr = cxcore.MakeExpression(cxcore.Natives[cxcore.OP_INT_ADD], CurrentFile, LineNo)
+		expr = cxcore.MakeExpression(cxcore.Natives[cxcore.OP_ADD], CurrentFile, LineNo)
 		return ShortAssignment(expr, to, from, pkg, idx)
 	case "-=":
-		expr = cxcore.MakeExpression(cxcore.Natives[cxcore.OP_INT_SUB], CurrentFile, LineNo)
+		expr = cxcore.MakeExpression(cxcore.Natives[cxcore.OP_SUB], CurrentFile, LineNo)
 		return ShortAssignment(expr, to, from, pkg, idx)
 	case "*=":
-		expr = cxcore.MakeExpression(cxcore.Natives[cxcore.OP_INT_MUL], CurrentFile, LineNo)
+		expr = cxcore.MakeExpression(cxcore.Natives[cxcore.OP_MUL], CurrentFile, LineNo)
 		return ShortAssignment(expr, to, from, pkg, idx)
 	case "/=":
-		expr = cxcore.MakeExpression(cxcore.Natives[cxcore.OP_INT_DIV], CurrentFile, LineNo)
+		expr = cxcore.MakeExpression(cxcore.Natives[cxcore.OP_DIV], CurrentFile, LineNo)
 		return ShortAssignment(expr, to, from, pkg, idx)
 	case "%=":
-		expr = cxcore.MakeExpression(cxcore.Natives[cxcore.OP_INT_MOD], CurrentFile, LineNo)
+		expr = cxcore.MakeExpression(cxcore.Natives[cxcore.OP_MOD], CurrentFile, LineNo)
 		return ShortAssignment(expr, to, from, pkg, idx)
 	case "&=":
-		expr = cxcore.MakeExpression(cxcore.Natives[cxcore.OP_INT_BITAND], CurrentFile, LineNo)
+		expr = cxcore.MakeExpression(cxcore.Natives[cxcore.OP_BITAND], CurrentFile, LineNo)
 		return ShortAssignment(expr, to, from, pkg, idx)
 	case "^=":
-		expr = cxcore.MakeExpression(cxcore.Natives[cxcore.OP_INT_BITXOR], CurrentFile, LineNo)
+		expr = cxcore.MakeExpression(cxcore.Natives[cxcore.OP_BITXOR], CurrentFile, LineNo)
 		return ShortAssignment(expr, to, from, pkg, idx)
 	case "|=":
-		expr = cxcore.MakeExpression(cxcore.Natives[cxcore.OP_INT_BITOR], CurrentFile, LineNo)
+		expr = cxcore.MakeExpression(cxcore.Natives[cxcore.OP_BITOR], CurrentFile, LineNo)
 		return ShortAssignment(expr, to, from, pkg, idx)
 	}
 
