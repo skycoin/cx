@@ -260,6 +260,7 @@ const (
 
 var TypeCounter int
 var TypeCodes map[string]int = map[string]int{
+	"unused": TPYE_UNUSED, //if this appears, should be error; program should crash
 	"ident": TYPE_IDENTIFIER,
 	"aff":   TYPE_AFF,
 	"bool":  TYPE_BOOL,
@@ -279,6 +280,7 @@ var TypeCodes map[string]int = map[string]int{
 }
 
 var TypeNames map[int]string = map[int]string{
+	TPYE_UNUSED: "UNUSED", //if this appears, should trigger asset; is error
 	TYPE_IDENTIFIER: "ident",
 	TYPE_AFF:        "aff",
 	TYPE_BOOL:       "bool",
