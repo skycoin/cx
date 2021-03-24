@@ -81,6 +81,14 @@ var BASIC_TYPES []string = []string{
 //VERY WEIRD
 //gives error, "cx" not found, even if it exists when changed
 
+//works
+// BUG
+const (
+	PARAM_DEFAULT = iota
+	PARAM_SLICE
+	PARAM_STRUCT
+)
+
 /*
 //doesnt work
 const (
@@ -91,13 +99,6 @@ const (
 )
 */
 
-//works
-const (
-	PARAM_UNUSED = iota
-	PARAM_DEFAULT //= iota
-	PARAM_SLICE
-	PARAM_STRUCT
-)
 
 const (
 	//CX_UNUSED = iota //reserve default value
