@@ -113,15 +113,14 @@ var ErrorStrings map[int]string = map[int]string{
 }
 
 const (
-	DECL_UNUSED = iota   //DONT USE value zero
-	DECL_POINTER		 // 1
-	DECL_DEREF           // 2
-	DECL_ARRAY           // 3
-	DECL_SLICE           // 4
-	DECL_STRUCT          // 5
-	DECL_INDEXING        // 6
-	DECL_BASIC           // 7
-	DECL_FUNC            // 8
+	DECL_POINTER  = iota // 0
+	DECL_DEREF           // 1
+	DECL_ARRAY           // 2
+	DECL_SLICE           // 3
+	DECL_STRUCT          // 4
+	DECL_INDEXING        // 5
+	DECL_BASIC           // 6
+	DECL_FUNC            // 7
 )
 
 // create a new scope or return to the previous scope
@@ -132,17 +131,16 @@ const (
 
 // what to write
 const (
-	PASSBY_VALUE = iota+1
+	PASSBY_VALUE = iota
 	PASSBY_REFERENCE
 )
 
 const (
-	DEREF_UNUSED  = iota //DONT USE value zero
-	DEREF_ARRAY   		 // 1
-	DEREF_FIELD          // 2
-	DEREF_POINTER        // 3
-	DEREF_DEREF          // 4
-	DEREF_SLICE          // 5x
+	DEREF_ARRAY   = iota // 0
+	DEREF_FIELD          // 1
+	DEREF_POINTER        // 2
+	DEREF_DEREF          // 3
+	DEREF_SLICE          // 4
 )
 
 const (
@@ -210,7 +208,7 @@ var TypeNames map[int]string = map[int]string{
 
 // memory locations
 const (
-	MEM_UNUSED = iota //reserve the zero value
+	MEM_UNUSED = iota
 	MEM_STACK
 	MEM_HEAP
 	MEM_DATA
