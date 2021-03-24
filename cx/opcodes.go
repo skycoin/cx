@@ -488,75 +488,99 @@ type CXValue struct {
 	Used int8
 }
 
-func (value *CXValue) GetSlice_i8() interface{} {
+func (value *CXValue) GetSlice_i8() []int8 {
     //value.Used = TYPE_SLICE
     value.Used = int8(value.Type) // TODO: type checking for slice is not working
-    return ReadData_i8(value.FramePointer, value.Arg, TYPE_I8)
+    if mem := GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
+        return readDataI8(mem)
+    }
+    return nil
 }
 
-func (value *CXValue) GetSlice_i16() interface{} {
+func (value *CXValue) GetSlice_i16() []int16 {
     //value.Used = TYPE_SLICE
     value.Used = int8(value.Type) // TODO: type checking for slice is not working
-    return ReadData_ui16(value.FramePointer, value.Arg, TYPE_I16)
+    if mem := GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
+        return readDataI16(mem)
+    }
+    return nil
 }
 
-func (value *CXValue) GetSlice_i32() interface{} {
+func (value *CXValue) GetSlice_i32() []int32 {
     //value.Used = TYPE_SLICE
     value.Used = int8(value.Type) // TODO: type checking for slice is not working
-    return ReadData_i32(value.FramePointer, value.Arg, TYPE_I32)
+    if mem := GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
+        return readDataI32(mem)
+    }
+    return nil
 }
 
-func (value *CXValue) GetSlice_i64() interface{} {
+func (value *CXValue) GetSlice_i64() []int64 {
     //value.Used = TYPE_SLICE
     value.Used = int8(value.Type) // TODO: type checking for slice is not working
-    return ReadData_i64(value.FramePointer, value.Arg, TYPE_I64)
+    if mem := GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
+        return readDataI64(mem)
+    }
+    return nil
 }
 
-func (value *CXValue) GetSlice_ui8() interface{} {
+func (value *CXValue) GetSlice_ui8() []uint8 {
     //value.Used = TYPE_SLICE
     value.Used = int8(value.Type) // TODO: type checking for slice is not working
-    return ReadData_ui8(value.FramePointer, value.Arg, TYPE_UI8)
+    if mem := GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
+        return readDataUI8(mem)
+    }
+    return nil
 }
 
-func (value *CXValue) GetSlice_ui16() interface{} {
+func (value *CXValue) GetSlice_ui16() []uint16 {
     //value.Used = TYPE_SLICE
     value.Used = int8(value.Type) // TODO: type checking for slice is not working
-    return ReadData_ui16(value.FramePointer, value.Arg, TYPE_UI16)
+    if mem := GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
+        return readDataUI16(mem)
+    }
+    return nil
 }
 
-func (value *CXValue) GetSlice_ui32() interface{} {
+func (value *CXValue) GetSlice_ui32() []uint32 {
     //value.Used = TYPE_SLICE
     value.Used = int8(value.Type) // TODO: type checking for slice is not working
-    return ReadData_ui32(value.FramePointer, value.Arg, TYPE_UI32)
+    if mem := GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
+        return readDataUI32(mem)
+    }
+    return nil
 }
 
-func (value *CXValue) GetSlice_ui64() interface{} {
+func (value *CXValue) GetSlice_ui64() []uint64 {
     //value.Used = TYPE_SLICE
     value.Used = int8(value.Type) // TODO: type checking for slice is not working
-    return ReadData_ui64(value.FramePointer, value.Arg, TYPE_UI64)
+    if mem := GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
+        return readDataUI64(mem)
+    }
+    return nil
 }
 
-func (value *CXValue) GetSlice_f32() interface{} {
+func (value *CXValue) GetSlice_f32() []float32 {
     //value.Used = TYPE_SLICE
     value.Used = int8(value.Type) // TODO: type checking for slice is not working
-    return ReadData_f32(value.FramePointer, value.Arg, TYPE_F32)
+    if mem := GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
+        return readDataF32(mem)
+    }
+    return nil
 }
 
-func (value *CXValue) GetSlice_f64() interface{} {
+func (value *CXValue) GetSlice_f64() []float64 {
     //value.Used = TYPE_SLICE
     value.Used = int8(value.Type) // TODO: type checking for slice is not working
-    return ReadData_f64(value.FramePointer, value.Arg, TYPE_F64)
-}
-
-func (value *CXValue) GetSlice() interface{} {
-    //value.Used = TYPE_SLICE
-    value.Used = int8(value.Type) // TODO: type checking for slice is not working
-    return ReadData(value.FramePointer, value.Arg, -1)
+    if mem := GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
+        return readDataF64(mem)
+    }
+    return nil
 }
 
 func (value *CXValue) SetSlice(data int32) {
-     value.Used = int8(value.Type) // TODO: type checking for slice is not working
-   WriteI32(value.Offset, data)
+    value.Used = int8(value.Type) // TODO: type checking for slice is not working
+    WriteI32(value.Offset, data)
 }
 
 func (value *CXValue) Get_bytes() ([]byte) {
@@ -568,6 +592,11 @@ func (value *CXValue) Get_bytes() ([]byte) {
 func (value *CXValue) Set_bytes(data []byte)() {
     value.Used = TYPE_CUSTOM
     WriteMemory(value.Offset, data)
+}
+
+func (value *CXValue) GetSlice_bytes() ([]byte) {
+    value.Used = int8(value.Type) // TODO: type checking for slice is not working
+    return GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size)
 }
 
 func (value *CXValue) Get_i8()(int8) {
