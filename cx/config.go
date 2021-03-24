@@ -81,6 +81,25 @@ var BASIC_TYPES []string = []string{
 //VERY WEIRD
 //gives error, "cx" not found, even if it exists when changed
 
+
+/*
+grep -rn "PARAM_DEFAULT" .
+./cx/config.go:87:	PARAM_DEFAULT = iota
+./cx/config.go:96:	PARAM_DEFAULT 
+./cx/opcodes.go:843:	case PARAM_DEFAULT:
+
+grep -rn "PARAM_SLICE" .
+./cx/config.go:88:	PARAM_SLICE
+./cx/config.go:97:	PARAM_SLICE
+./cx/opcodes.go:845:	case PARAM_SLICE:
+
+grep -rn "PARAM_STRUCT" .
+./cx/config.go:89:	PARAM_STRUCT
+./cx/config.go:98:	PARAM_STRUCT
+./cx/opcodes.go:847:	case PARAM_STRUCT:
+
+*/
+
 //works
 // BUG
 const (
@@ -101,8 +120,7 @@ const (
 
 
 const (
-	//CX_UNUSED = iota //reserve default value
-	CX_SUCCESS = iota
+	CX_SUCCESS = iota //zero can be success
 	CX_COMPILATION_ERROR
 	CX_PANIC // 2
 	CX_INTERNAL_ERROR
@@ -148,12 +166,63 @@ const (
 	SCOPE_REM            // 2
 )
 
-// what to write
+/*
+grep -rn "PASSBY_VALUE" .
+./cxgo/actions/functions.go:666:					out.PassBy = cxcore.PASSBY_VALUE
+./cxgo/actions/functions.go:712:			out.PassBy = cxcore.PASSBY_VALUE
+./cxgo/actions/functions.go:723:				assignElt.PassBy = cxcore.PASSBY_VALUE
+./cx/config.go:172:	PASSBY_VALUE = iota
+./cx/config.go:180:	PASSBY_VALUE //= iota
+./cx/ast.go:1507:./cxgo/actions/functions.go:666:				out.PassBy = PASSBY_VALUE
+./cx/ast.go:1509:./cxgo/actions/functions.go:712:			out.PassBy = PASSBY_VALUE
+./cx/ast.go:1510:./cxgo/actions/functions.go:723:				assignElt.PassBy = PASSBY_VALUE
+./cx/op_misc.go:37:		case PASSBY_VALUE:
+
+grep -rn "PASSBY_REFERENCE" .
+./cxgo/actions/misc.go:425:			arg.PassBy = cxcore.PASSBY_REFERENCE
+./cxgo/actions/functions.go:678:		if elt.PassBy == cxcore.PASSBY_REFERENCE &&
+./cxgo/actions/functions.go:915:			expr.Inputs[0].PassBy = cxcore.PASSBY_REFERENCE
+./cxgo/actions/functions.go:1157:						nameFld.PassBy = cxcore.PASSBY_REFERENCE
+./cxgo/actions/literals.go:219:				sym.PassBy = cxcore.PASSBY_REFERENCE
+./cxgo/actions/expressions.go:336:		baseOut.PassBy = cxcore.PASSBY_REFERENCE
+./cxgo/actions/assignment.go:57:		out.PassBy = cxcore.PASSBY_REFERENCE
+./cxgo/actions/declarations.go:417:		arg.PassBy = cxcore.PASSBY_REFERENCE
+./cx/config.go:173:	PASSBY_REFERENCE
+./cx/config.go:181:	PASSBY_REFERENCE
+./cx/op_http.go:50:	headerFld.PassBy = PASSBY_REFERENCE
+./cx/op_http.go:75:	transferEncodingFld.PassBy = PASSBY_REFERENCE
+./cx/execute.go:442:						if inp.PassBy == PASSBY_REFERENCE {
+./cx/ast.go:1506:./cxgo/actions/misc.go:425:			arg.PassBy = PASSBY_REFERENCE
+./cx/ast.go:1508:./cxgo/actions/functions.go:678:		if elt.PassBy == PASSBY_REFERENCE &&
+./cx/ast.go:1511:./cxgo/actions/functions.go:915:			expr.Inputs[0].PassBy = PASSBY_REFERENCE
+./cx/ast.go:1513:./cxgo/actions/functions.go:1157:						nameFld.PassBy = PASSBY_REFERENCE
+./cx/ast.go:1514:./cxgo/actions/literals.go:219:				sym.PassBy = PASSBY_REFERENCE
+./cx/ast.go:1515:./cxgo/actions/expressions.go:336:		baseOut.PassBy = PASSBY_REFERENCE
+./cx/ast.go:1516:./cxgo/actions/assignment.go:57:		out.PassBy = PASSBY_REFERENCE
+./cx/ast.go:1525:./cxgo/actions/declarations.go:417:		arg.PassBy = PASSBY_REFERENCE
+./cx/ast.go:1528:./cx/op_http.go:50:	headerFld.PassBy = PASSBY_REFERENCE
+./cx/ast.go:1529:./cx/op_http.go:75:	transferEncodingFld.PassBy = PASSBY_REFERENCE
+./cx/ast.go:1533:./cx/execute.go:366:				if inp.PassBy == PASSBY_REFERENCE {
+./cx/ast.go:1536:./cx/utilities.go:184:	if arg.PassBy == PASSBY_REFERENCE {
+./cx/op_misc.go:39:		case PASSBY_REFERENCE:
+./cx/utilities.go:182:	if arg.PassBy == PASSBY_REFERENCE {
+*/
+
+//ERROR: see below, 
 const (
-	//PASSBY_RESERVED = iota
+	//PASSBY_UNUSED = iota
 	PASSBY_VALUE = iota
 	PASSBY_REFERENCE
 )
+
+/*
+// massive problem
+const (
+	PASSBY_UNUSED = iota
+	PASSBY_VALUE //= iota
+	PASSBY_REFERENCE
+)
+*/
 
 const (
 	DEREF_UNUSED = iota //reserve zero value
