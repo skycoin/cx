@@ -248,6 +248,10 @@ func (prgrm *CXProgram) GetFunction(fnName string, pkgName string) (*CXFunction,
 
 }
 
+// grep -rn "GetExpr()" .
+// ./cx/cxprogram.go:252:func (prgrm *CXProgram) GetExpr() *CXExpression {
+// ./cx/cxprogram.go:276:	return prgrm.GetExpr().Operator.OpCode
+
 // GetExpr returns the current CXExpression
 func (prgrm *CXProgram) GetExpr() *CXExpression {
 	//call := prgrm.GetCall()
@@ -256,16 +260,29 @@ func (prgrm *CXProgram) GetExpr() *CXExpression {
 	return call.Operator.Expressions[call.Line]
 }
 
+//grep -rn "GetCall" .
+//./cx/cxprogram.go:253:	//call := prgrm.GetCall()
+//./cx/cxprogram.go:259:// GetCall returns the current CXCall
+//./cx/cxprogram.go:261:func (prgrm *CXProgram) GetCall() *CXCall {
+//./cx/cxprogram.go:272:	return prgrm.GetCall().FramePointer
+//./cx/op_misc.go:46:	call := PROGRAM.GetCall()
+
 // GetCall returns the current CXCall
 //TODO: What does this do?
 func (prgrm *CXProgram) GetCall() *CXCall {
 	return &prgrm.CallStack[prgrm.CallCounter]
 }
 
+//grep -rn "GetOpCode" .
+//./cx/cxprogram.go:271:// GetOpCode returns the current OpCode
+//./cx/cxprogram.go:272:func (prgrm *CXProgram) GetOpCode() int {
+
 // GetOpCode returns the current OpCode
 func (prgrm *CXProgram) GetOpCode() int {
 	return prgrm.GetExpr().Operator.OpCode
 }
+
+//./cx/cxprogram.go:280:func (prgrm *CXProgram) GetFramePointer() int {
 
 // GetFramePointer returns the current frame pointer
 func (prgrm *CXProgram) GetFramePointer() int {
