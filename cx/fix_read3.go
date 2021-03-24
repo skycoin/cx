@@ -177,13 +177,6 @@ func ReadSliceBytes(fp int, inp *CXArgument, dataType int) []byte {
 
 // second section
 
-// ReadBool ...
-func ReadBool(fp int, inp *CXArgument) (out bool) {
-	offset := GetFinalOffset(fp, inp)
-	out = DeserializeBool(ReadMemory(offset, inp))
-	return
-}
-
 // ReadStrFromOffset ...
 func ReadStrFromOffset(off int, inp *CXArgument) (out string) {
 	var offset int32

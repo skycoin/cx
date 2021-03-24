@@ -13,8 +13,9 @@ type CXFunction struct {
 	Package  *CXPackage // The package it's a member of
 	IsNative bool       // True if the function is native to CX, e.g. int32.add()
 	OpCode   int        // opcode if IsNative = true
+    IntCode int
 
-	// Contents
+    // Contents
 	Inputs      []*CXArgument   // Input parameters to the function
 	Outputs     []*CXArgument   // Output parameters from the function
 	Expressions []*CXExpression // Expressions, including control flow statements, in the function
@@ -51,6 +52,7 @@ func MakeNativeFunction(opCode int, inputs []*CXArgument, outputs []*CXArgument)
 	fn := &CXFunction{
 		IsNative: true,
 		OpCode:   opCode,
+        IntCode: -1,
 		Version:1,
 	}
 
@@ -79,6 +81,7 @@ func MakeNativeFunctionV2(opCode int, inputs []*CXArgument, outputs []*CXArgumen
 	fn := &CXFunction{
 		IsNative: true,
 		OpCode:   opCode,
+        IntCode: -1,
 		Version:2,
 	}
 

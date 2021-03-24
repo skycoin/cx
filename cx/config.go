@@ -165,6 +165,7 @@ const (
 	TYPE_ARRAY
 	TYPE_SLICE
 	TYPE_IDENTIFIER
+    TYPE_COUNT
 )
 
 var TypeCounter int

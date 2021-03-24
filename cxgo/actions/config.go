@@ -45,6 +45,7 @@ const (
 	OP_GT
 	OP_LTEQ
 	OP_GTEQ
+    END_OF_INSTRINSICS
 )
 
 const (

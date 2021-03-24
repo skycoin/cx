@@ -98,10 +98,10 @@ func CheckUndValidTypes(expr *cxcore.CXExpression) {
 	}
 }
 
-// CheckConcatStr checks if `expr`'s operator is cxcore.OP_UND_ADD and if its operands are of type str.
+// CheckConcatStr checks if `expr`'s operator is cxcore.OP_INT_ADD and if its operands are of type str.
 // If this is the case, the operator is changed to cxcore.OP_STR_CONCAT to concatenate the strings.
 func CheckConcatStr(expr *cxcore.CXExpression) {
-	if expr.Operator != nil && expr.Operator.OpCode == cxcore.OP_UND_ADD &&
+	if expr.Operator != nil && expr.Operator.OpCode == cxcore.OP_INT_ADD &&
 		expr.Inputs[0].Type == cxcore.TYPE_STR && expr.Inputs[1].Type == cxcore.TYPE_STR {
 		expr.Operator = cxcore.Natives[cxcore.OP_STR_CONCAT]
 	}
@@ -256,7 +256,7 @@ func FunctionCall(exprs []*cxcore.CXExpression, args []*cxcore.CXExpression) []*
 // Depending on the operator, we're going to return the input's size or a prefixed size (like a Boolean)
 func undOutputSize(expr *cxcore.CXExpression) int {
 	switch expr.Operator.OpCode {
-	case cxcore.OP_UND_EQUAL, cxcore.OP_UND_UNEQUAL, cxcore.OP_UND_LT, cxcore.OP_UND_GT, cxcore.OP_UND_LTEQ, cxcore.OP_UND_GTEQ:
+	case cxcore.OP_INT_EQUAL, cxcore.OP_INT_UNEQUAL, cxcore.OP_INT_LT, cxcore.OP_INT_GT, cxcore.OP_INT_LTEQ, cxcore.OP_INT_GTEQ:
 		// the result is a Boolean for any of these
 		return 1
 	default:
@@ -280,29 +280,29 @@ func checkSameNativeType(expr *cxcore.CXExpression) error {
 	return nil
 }
 
-// isUndOpSameInputTypes checks if the received operator belongs to a list of cxcore.OP_UND_***
+// isUndOpSameInputTypes checks if the received operator belongs to a list of cxcore.OP_INT_***
 // where its inputs' types must be of the same type
 func isUndOpSameInputTypes(op *cxcore.CXFunction) bool {
 	switch op.OpCode {
 	case
-		cxcore.OP_UND_EQUAL,
-		cxcore.OP_UND_UNEQUAL,
-		cxcore.OP_UND_BITAND,
-		cxcore.OP_UND_BITXOR,
-		cxcore.OP_UND_BITOR,
-		cxcore.OP_UND_BITCLEAR,
-		cxcore.OP_UND_MUL,
-		cxcore.OP_UND_DIV,
-		cxcore.OP_UND_MOD,
-		cxcore.OP_UND_ADD,
-		cxcore.OP_UND_SUB,
-		cxcore.OP_UND_NEG,
-		cxcore.OP_UND_LT,
-		cxcore.OP_UND_GT,
-		cxcore.OP_UND_LTEQ,
-		cxcore.OP_UND_GTEQ,
-		cxcore.OP_UND_BITSHL,
-		cxcore.OP_UND_BITSHR:
+		cxcore.OP_INT_EQUAL,
+		cxcore.OP_INT_UNEQUAL,
+		cxcore.OP_INT_BITAND,
+		cxcore.OP_INT_BITOR,
+		cxcore.OP_INT_BITXOR,
+		cxcore.OP_INT_BITCLEAR,
+		cxcore.OP_INT_BITSHL,
+		cxcore.OP_INT_BITSHR,
+		cxcore.OP_INT_MUL,
+		cxcore.OP_INT_DIV,
+		cxcore.OP_INT_MOD,
+		cxcore.OP_INT_ADD,
+		cxcore.OP_INT_SUB,
+		cxcore.OP_INT_NEG,
+		cxcore.OP_INT_LT,
+		cxcore.OP_INT_GT,
+		cxcore.OP_INT_LTEQ,
+		cxcore.OP_INT_GTEQ:
 		return true
 	}
 	return false

@@ -648,26 +648,26 @@ func IsAllArgsBasicTypes(expr *cxcore.CXExpression) bool {
 }
 
 // IsUndOp returns true if the operator receives undefined types as input parameters.
-func IsUndOp(fn *cxcore.CXFunction) bool {
+/*func IsUndOp(fn *cxcore.CXFunction) bool {
 	switch fn.OpCode {
 	case
-		cxcore.OP_UND_EQUAL,
-		cxcore.OP_UND_UNEQUAL,
-		cxcore.OP_UND_BITAND,
-		cxcore.OP_UND_BITXOR,
-		cxcore.OP_UND_BITOR,
-		cxcore.OP_UND_BITCLEAR,
-		cxcore.OP_UND_MUL,
-		cxcore.OP_UND_DIV,
-		cxcore.OP_UND_MOD,
-		cxcore.OP_UND_ADD,
-		cxcore.OP_UND_SUB,
-		cxcore.OP_UND_BITSHL,
-		cxcore.OP_UND_BITSHR,
-		cxcore.OP_UND_LT,
-		cxcore.OP_UND_GT,
-		cxcore.OP_UND_LTEQ,
-		cxcore.OP_UND_GTEQ,
+		cxcore.OP_INT_EQUAL,
+		cxcore.OP_INT_UNEQUAL,
+		cxcore.OP_INT_BITAND,
+		cxcore.OP_INT_BITOR,
+		cxcore.OP_INT_BITXOR,
+		cxcore.OP_INT_BITCLEAR,
+		cxcore.OP_INT_BITSHL,
+		cxcore.OP_INT_BITSHR,
+		cxcore.OP_INT_MUL,
+		cxcore.OP_INT_DIV,
+		cxcore.OP_INT_MOD,
+		cxcore.OP_INT_ADD,
+		cxcore.OP_INT_SUB,
+		cxcore.OP_INT_LT,
+		cxcore.OP_INT_GT,
+		cxcore.OP_INT_LTEQ,
+		cxcore.OP_INT_GTEQ,
 		cxcore.OP_UND_LEN,
 		cxcore.OP_UND_PRINTF,
 		cxcore.OP_UND_SPRINTF,
@@ -675,24 +675,25 @@ func IsUndOp(fn *cxcore.CXFunction) bool {
 		return true
 	}
 	return false
-}
+}*/
 
 // IsUndOpMimicInput returns true if the operator receives undefined types as input parameters but also an operator that needs to mimic its input's type. For example, == should not return its input type, as it is always going to return a boolean.
 func IsUndOpMimicInput(fn *cxcore.CXFunction) bool {
 	switch fn.OpCode {
 	case
-		cxcore.OP_UND_BITAND,
-		cxcore.OP_UND_BITXOR,
-		cxcore.OP_UND_BITOR,
-		cxcore.OP_UND_BITCLEAR,
-		cxcore.OP_UND_MUL,
-		cxcore.OP_UND_DIV,
-		cxcore.OP_UND_MOD,
-		cxcore.OP_UND_ADD,
-		cxcore.OP_UND_SUB,
-		cxcore.OP_UND_NEG,
-		cxcore.OP_UND_BITSHL, cxcore.OP_UND_BITSHR:
-		return true
+		cxcore.OP_INT_BITAND,
+		cxcore.OP_INT_BITOR,
+		cxcore.OP_INT_BITXOR,
+		cxcore.OP_INT_BITCLEAR,
+		cxcore.OP_INT_BITSHL,
+        cxcore.OP_INT_BITSHR,
+	    cxcore.OP_INT_MUL,
+		cxcore.OP_INT_DIV,
+		cxcore.OP_INT_MOD,
+		cxcore.OP_INT_ADD,
+		cxcore.OP_INT_SUB,
+		cxcore.OP_INT_NEG:
+			return true
 	}
 	return false
 }
@@ -701,24 +702,24 @@ func IsUndOpMimicInput(fn *cxcore.CXFunction) bool {
 func IsUndOpBasicTypes(fn *cxcore.CXFunction) bool {
 	switch fn.OpCode {
 	case
-		cxcore.OP_UND_EQUAL,
-		cxcore.OP_UND_UNEQUAL,
-		cxcore.OP_UND_BITAND,
-		cxcore.OP_UND_BITXOR,
-		cxcore.OP_UND_BITOR,
-		cxcore.OP_UND_BITCLEAR,
-		cxcore.OP_UND_MUL,
-		cxcore.OP_UND_DIV,
-		cxcore.OP_UND_MOD,
-		cxcore.OP_UND_ADD,
-		cxcore.OP_UND_SUB,
-		cxcore.OP_UND_NEG,
-		cxcore.OP_UND_BITSHL,
-		cxcore.OP_UND_BITSHR,
-		cxcore.OP_UND_LT,
-		cxcore.OP_UND_GT,
-		cxcore.OP_UND_LTEQ,
-		cxcore.OP_UND_GTEQ,
+		cxcore.OP_INT_EQUAL,
+		cxcore.OP_INT_UNEQUAL,
+		cxcore.OP_INT_BITAND,
+		cxcore.OP_INT_BITOR,
+		cxcore.OP_INT_BITXOR,
+		cxcore.OP_INT_BITCLEAR,
+		cxcore.OP_INT_BITSHL,
+		cxcore.OP_INT_BITSHR,
+		cxcore.OP_INT_MUL,
+		cxcore.OP_INT_DIV,
+		cxcore.OP_INT_MOD,
+		cxcore.OP_INT_ADD,
+		cxcore.OP_INT_SUB,
+		cxcore.OP_INT_NEG,
+		cxcore.OP_INT_LT,
+		cxcore.OP_INT_GT,
+		cxcore.OP_INT_LTEQ,
+		cxcore.OP_INT_GTEQ,
 		cxcore.OP_UND_PRINTF,
 		cxcore.OP_UND_SPRINTF,
 		cxcore.OP_UND_READ:

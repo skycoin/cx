@@ -330,7 +330,12 @@ func (call *CXCall) ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 					call.Line++
 				case 2: // new version
 					fp := call.FramePointer;
-
+                    if expr.Operator.IntCode == -1 && expr.Operator.OpCode > START_OF_INTRINSIC_OPS && expr.Operator.OpCode < END_OF_INTRINSIC_OPS{
+                        //linking at runtime
+                        atomicType := GetType(expr.Inputs[0])
+                        offset := atomicType * INTRINSIC_COUNT + expr.Operator.OpCode - START_OF_INTRINSIC_OPS - 1
+                        expr.Operator = Intrinsics[offset];
+                    }
 					inputs := expr.Inputs
 					inputCount := len(inputs)
 					if inputCount > len(*globalInputs) {
