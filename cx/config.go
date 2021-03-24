@@ -131,8 +131,8 @@ const (
 
 // what to write
 const (
-	PASSBY_RESERVED = iota
-	PASSBY_VALUE
+	//PASSBY_RESERVED = iota
+	PASSBY_VALUE = iota
 	PASSBY_REFERENCE
 )
 
