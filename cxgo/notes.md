@@ -14,3 +14,10 @@ Seperate out pipelines
 2> Where is the code for the AST inpreter (the VM)?
 
 3> Can the AST construction be moved out from module that has the compiler?
+
+---
+
+The compiler needs to be seperated into stages
+- stage1
+- stage2
+- stage3
