@@ -14,9 +14,11 @@ var (
 )
 
 // MakeElementID ...
+/*
 func MakeElementID() uuid.UUID {
 	return uuid.NewV4()
 }
+*/
 
 // MakeGenSym ...
 func MakeGenSym(name string) string {
@@ -26,18 +28,10 @@ func MakeGenSym(name string) string {
 	return gensym
 }
 
-// MakeDefaultValue Used only for native types
-func MakeDefaultValue(typName string) []byte {
-	return make([]byte, GetArgSizeFromTypeName(typName))
-}
-
-// MakeValue ...
-func MakeValue(value string) *[]byte {
-	byts := encoder.Serialize(value)
-	return &byts
-}
-
 // MakeCall ...
+//./cx/execute.go:181:				mainCall := MakeCall(fn)
+//./cx/execute.go:210:				mainCall := MakeCall(fn)
+
 func MakeCall(op *CXFunction) CXCall {
 	return CXCall{
 		Operator:     op,
@@ -48,7 +42,34 @@ func MakeCall(op *CXFunction) CXCall {
 	}
 }
 
+// MakeCallStack ...
+//./cx/execute.go:14:// 	prgrm.CallStack = MakeCallStack(0)
+func MakeCallStack(size int) []CXCall {
+	return make([]CXCall, 0)
+	// return &CXCallStack{
+	// 	Calls: make([]*CXCall, size),
+	// }
+}
+
+
+/*
+// MakeDefaultValue Used only for native types
+func MakeDefaultValue(typName string) []byte {
+	return make([]byte, GetArgSizeFromTypeName(typName))
+}
+*/
+
+/*
+// MakeValue ...
+func MakeValue(value string) *[]byte {
+	byts := encoder.Serialize(value)
+	return &byts
+}
+*/
+
 // MakeIdentityOpName ...
+// Not called by anything
+/*
 func MakeIdentityOpName(typeName string) string {
 	switch typeName {
 	case "str":
@@ -105,6 +126,7 @@ func MakeIdentityOpName(typeName string) string {
 		return ""
 	}
 }
+*/
 
 // func MakeParameterCopy(param *CXArgument) *CXArgument {
 // 	return &CXArgument{
@@ -249,13 +271,6 @@ func MakeIdentityOpName(typeName string) string {
 // 	}
 // }
 
-// MakeCallStack ...
-func MakeCallStack(size int) []CXCall {
-	return make([]CXCall, 0)
-	// return &CXCallStack{
-	// 	Calls: make([]*CXCall, size),
-	// }
-}
 
 // func MakeContextCopy(cxt *CXProgram, stepNumber int) *CXProgram {
 // 	newContext := &CXProgram{}

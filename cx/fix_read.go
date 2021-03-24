@@ -6,6 +6,22 @@ import()
 
 //second section
 
+/*
+Read Memory is in fix_read3.go
+- WTF
+
+func ReadMemory(offset int, arg *CXArgument) []byte {
+	size := GetSize(arg)
+	return PROGRAM.Memory[offset : offset+size]
+}
+
+For atomics, is always same
+
+//Should use GetFinalOffset Atomic Atomic
+- for each atomic type
+
+*/
+
 // ReadI8 ...
 func ReadI8(fp int, inp *CXArgument) int8 {
 	return Deserialize_i8(ReadMemory(GetFinalOffset(fp, inp), inp))
