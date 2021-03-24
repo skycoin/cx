@@ -1,0 +1,9 @@
+package main
+import "tcp"
+
+func main() () {
+
+    err := tcp.Dial("tcp", "localhost:9000")
+
+    printf("Error while making the request %v", err)
+}

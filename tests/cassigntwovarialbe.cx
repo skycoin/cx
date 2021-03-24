@@ -1,0 +1,18 @@
+package main
+
+
+
+
+
+
+func main(){
+
+  
+  a,b := 20,10 
+
+   i32.print(a)
+
+    i32.print(b)
+
+}
+

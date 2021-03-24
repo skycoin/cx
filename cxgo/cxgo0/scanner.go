@@ -8,7 +8,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	cxcore "github.com/skycoin/cx/cx"
+	"github.com/skycoin/cx/cx"
 )
 
 type Lexer struct {

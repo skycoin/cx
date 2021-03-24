@@ -90,5 +90,5 @@ func opPanicIfNot(expr *CXExpression, fp int) {
 }
 
 func opStrError(expr *CXExpression, fp int) {
-	WriteObject(GetFinalOffset(fp, expr.Outputs[0]), FromStr(ErrorString(int(ReadI32(fp, expr.Inputs[0])))))
+	WriteString(fp, ErrorString(int(ReadI32(fp, expr.Inputs[0]))), expr.Outputs[0])
 }

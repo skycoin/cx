@@ -1,5 +1,9 @@
 package cxcore
 
+import (
+	"github.com/skycoin/skycoin/src/cipher/encoder"
+)
+
 //Why do these functions need CXArgument as imput!?
 
 func ReadData(fp int, inp *CXArgument, dataType int) interface{} {
@@ -180,10 +184,9 @@ func ReadBool(fp int, inp *CXArgument) (out bool) {
 	return
 }
 
-// ReadStr ...
-func ReadStr(fp int, inp *CXArgument) (out string) {
+// ReadStrFromOffset ...
+func ReadStrFromOffset(off int, inp *CXArgument) (out string) {
 	var offset int32
-	off := GetFinalOffset(fp, inp)
 	if inp.Name == "" {
 		// Then it's a literal.
 		offset = int32(off)
@@ -207,5 +210,29 @@ func ReadStr(fp int, inp *CXArgument) (out string) {
 		DeserializeRaw(PROGRAM.Memory[offset:offset+STR_HEADER_SIZE+size], &out)
 	}
 
-	return out
+	return out	
+}
+
+// ReadStr ...
+func ReadStr(fp int, inp *CXArgument) (out string) {
+	off := GetFinalOffset(fp, inp)
+	return ReadStrFromOffset(off, inp)
+}
+
+// ReadStringFromObject reads the string located at offset `off`.
+func ReadStringFromObject(off int32) string {
+	var plusOff int32
+	if int(off) > PROGRAM.HeapStartsAt {
+		// Found in heap segment.
+		plusOff += OBJECT_HEADER_SIZE
+	}
+
+	size := Deserialize_i32(PROGRAM.Memory[off+plusOff : off+plusOff+STR_HEADER_SIZE])
+
+	str := ""
+	_, err := encoder.DeserializeRaw(PROGRAM.Memory[off+plusOff:off+plusOff+STR_HEADER_SIZE+size], &str)
+	if err != nil {
+		panic(err)
+	}
+	return str
 }

@@ -1,0 +1,14 @@
+// https://github.com/skycoin/cx/issues/136
+
+package main
+import "pkg"
+
+func main () {
+	pkg.FuncInPkg
+}
+
+package pkg
+
+func FuncInPkg () {
+	str.print("FuncInPkg called WITH NO PARENTHESES")
+}

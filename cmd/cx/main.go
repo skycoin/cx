@@ -26,22 +26,28 @@ func main() {
 }
 
 func Run(args []string) {
+
 	runtime.LockOSThread()
 	runtime.GOMAXPROCS(2)
 
 	options := defaultCmdFlags()
+
 	parseFlags(&options, args)
 
 	// Checking if CXPATH is set, either by setting an environment variable
 	// or by setting the `--cxpath` flag.
 	checkCXPathSet(options)
 
+	//checkHelp check command line argumenets
+	//$ cx help
 	if checkHelp(args) {
 		commandLine.PrintDefaults()
 		return
 	}
 
 	// Does the user want to print the command-line help?
+	//options.printHelp works when flags are provided.
+	//$ cx --vesion
 	if options.printHelp {
 		printHelp()
 		return
@@ -53,8 +59,22 @@ func Run(args []string) {
 		return
 	}
 
+	//checkversion check command line argumenets
+	//$ cx version
+	if checkversion(args) {
+		printVersion()
+		return
+	}
+
 	// User wants to print CX env
 	if options.printEnv {
+		printEnv()
+		return
+	}
+
+	//checkenv check command line argumenets
+	//$ cx
+	if checkenv(args) {
 		printEnv()
 		return
 	}
@@ -89,6 +109,22 @@ func Run(args []string) {
 	DebugProfile = DebugProfileRate > 0
 
 	if run, bcHeap, sPrgrm := parseProgram(options, fileNames, sourceCode); run {
+
+		if checkAST(args) {
+			printProgramAST(options, cxArgs, sourceCode, bcHeap, sPrgrm)
+			return
+		}
+
+		if options.tokenizeMode {
+			printTokenize(options, fileNames)
+			return
+		}
+
+		if checktokenizeMode(args) {
+			printTokenize(options, fileNames)
+			return
+		}
+
 		runProgram(options, cxArgs, sourceCode, bcHeap, sPrgrm)
 	}
 }
@@ -102,7 +138,7 @@ func initMainPkg(prgrm *cxcore.CXProgram) {
 }
 
 // optionTokenize checks if the user wants to use CX to generate the lexer tokens
-func optionTokenize(options cxCmdFlags, fileNames []string) {
+func printTokenize(options cxCmdFlags, fileNames []string) {
 	var r *os.File
 	var w *os.File
 	var err error
@@ -175,7 +211,10 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 	actions.ReplTargetFn = cxcore.MAIN_FUNC
 
 	// Adding *init function that initializes all the global variables.
-	cxgo.AddInitFunction(actions.PRGRM)
+	err = cxgo.AddInitFunction(actions.PRGRM)
+	if err != nil {
+		return false, nil, nil
+	}
 
 	actions.LineNo = 0
 
@@ -205,6 +244,24 @@ func runProgram(options cxCmdFlags, cxArgs []string, sourceCode []*os.File, bcHe
 	if err != nil {
 		panic(err)
 	}
+
+	if cxcore.AssertFailed() {
+		os.Exit(cxcore.CX_ASSERT)
+	}
+}
+
+func printProgramAST(options cxCmdFlags, cxArgs []string, sourceCode []*os.File, bcHeap []byte, sPrgrm []byte) {
+	StartProfile("run")
+	defer StopProfile("run")
+
+	if options.replMode || len(sourceCode) == 0 {
+		actions.PRGRM.SelectProgram()
+		Repl()
+		return
+	}
+
+	// Print CX program.
+	actions.PRGRM.PrintProgram()
 
 	if cxcore.AssertFailed() {
 		os.Exit(cxcore.CX_ASSERT)

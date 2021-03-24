@@ -15,7 +15,7 @@ import (
 	"golang.org/x/mobile/event/touch"
 	"golang.org/x/mobile/gl"
 
-	. "github.com/skycoin/cx/cx"
+	"github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cxfx"
 )
 

@@ -9,11 +9,11 @@ import (
 	"regexp"
 	"strings"
 
-	cxcore "github.com/skycoin/cx/cx"
+	"github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cxgo/actions"
 	"github.com/skycoin/cx/cxgo/cxgo0"
 	"github.com/skycoin/cx/cxgo/parser"
-	"github.com/skycoin/cx/cxgo/profiling"
+	"github.com/skycoin/cx/cxgo/util/profiling"
 )
 
 // ParseSourceCode takes a group of files representing CX `sourceCode` and
@@ -27,7 +27,7 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 	for i, source := range sourceCode {
 		tmp := bytes.NewBuffer(nil)
 		io.Copy(tmp, source)
-		sourceCodeCopy[i] = string(tmp.Bytes())
+		sourceCodeCopy[i] = tmp.String()
 	}
 
 	// We need to traverse the elements by hierarchy first add all the
@@ -350,10 +350,10 @@ func lexerStep0(srcStrs, srcNames []string) int {
 	return parseErrors
 }
 
-func AddInitFunction(prgrm *cxcore.CXProgram) {
+func AddInitFunction(prgrm *cxcore.CXProgram) error {
 	mainPkg, err := prgrm.GetPackage(cxcore.MAIN_PKG)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	initFn := cxcore.MakeFunction(cxcore.SYS_INIT_FUNC, actions.CurrentFile, actions.LineNo)
@@ -361,6 +361,7 @@ func AddInitFunction(prgrm *cxcore.CXProgram) {
 
 	actions.FunctionDeclaration(initFn, nil, nil, actions.SysInitExprs)
 	if _, err := mainPkg.SelectFunction(cxcore.MAIN_FUNC); err != nil {
-		panic(err)
+		return err
 	}
+	return nil
 }

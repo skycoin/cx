@@ -17,6 +17,7 @@ type cxCmdFlags struct {
 	printHelp        bool
 	printVersion     bool
 	printEnv         bool
+	printAST         bool
 	tokenizeMode     bool
 	initialHeap      string
 	maxHeap          string
@@ -32,14 +33,14 @@ type cxCmdFlags struct {
 
 func defaultCmdFlags() cxCmdFlags {
 	return cxCmdFlags{
-		baseOutput:       false,
-		compileOutput:    "",
-		replMode:         false,
-		printHelp:        false,
-		printEnv:         false,
-		printVersion:     false,
-		debugLexer:   false,
-		debugProfile: 0,
+		baseOutput:    false,
+		compileOutput: "",
+		replMode:      false,
+		printHelp:     false,
+		printEnv:      false,
+		printVersion:  false,
+		debugLexer:    false,
+		debugProfile:  0,
 	}
 }
 
@@ -51,6 +52,8 @@ func appendDash(args []string) {
 		switch v {
 		case "version":
 			args[k] = "-version"
+		case "ast":
+			args[k] = "-ast"
 		}
 	}
 }
@@ -65,6 +68,7 @@ func parseFlags(options *cxCmdFlags, args []string) {
 	commandLine.BoolVar(&options.printVersion, "version", options.printVersion, "Print CX version")
 	commandLine.BoolVar(&options.printVersion, "v", options.printVersion, "alias for -version")
 	commandLine.BoolVar(&options.printEnv, "env", options.printEnv, "Print CX environment information")
+	commandLine.BoolVar(&options.printAST, "ast", options.printAST, "Print CX Program AST")
 	commandLine.BoolVar(&options.tokenizeMode, "tokenize", options.tokenizeMode, "generate a 'out.cx.txt' text file with parsed tokens")
 	commandLine.BoolVar(&options.tokenizeMode, "t", options.tokenizeMode, "alias for -tokenize")
 	commandLine.StringVar(&options.compileOutput, "co", options.compileOutput, "alias for -compile-output")
@@ -111,6 +115,34 @@ func printVersion() {
 
 func checkHelp(args []string) bool {
 	if strings.Contains(args[0], "help") {
+		return true
+	}
+	return false
+}
+
+func checkversion(args []string) bool {
+	if strings.Contains(args[0], "version") {
+		return true
+	}
+	return false
+}
+
+func checkenv(args []string) bool {
+	if strings.Contains(args[0], "env") {
+		return true
+	}
+	return false
+}
+
+func checkAST(args []string) bool {
+	if strings.Contains(args[0], "ast") {
+		return true
+	}
+	return false
+}
+
+func checktokenizeMode(args []string) bool {
+	if strings.Contains(args[0], "tokenize") {
 		return true
 	}
 	return false
