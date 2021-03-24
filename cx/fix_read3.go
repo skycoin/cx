@@ -1,5 +1,9 @@
 package cxcore
 
+import (
+	"github.com/skycoin/skycoin/src/cipher/encoder"
+)
+
 /*
 ./cxfx/op_opengl.go:437:	obj := ReadMemory(GetFinalOffset(fp, inp1), inp1)
 ./cx/op_http.go:326:	// reqByts := ReadMemory(GetFinalOffset(fp, inp1), inp1)
@@ -246,10 +250,21 @@ func ReadSliceBytes(fp int, inp *CXArgument, dataType int) []byte {
 
 // second section
 
+<<<<<<< HEAD
 // ReadStr ...
 func ReadStr(fp int, inp *CXArgument) (out string) {
+=======
+// ReadBool ...
+func ReadBool(fp int, inp *CXArgument) (out bool) {
+	offset := GetFinalOffset(fp, inp)
+	out = DeserializeBool(ReadMemory(offset, inp))
+	return
+}
+
+// ReadStrFromOffset ...
+func ReadStrFromOffset(off int, inp *CXArgument) (out string) {
+>>>>>>> 726af7a298e484de24fd8426b4ddb6c56ca7dbe3
 	var offset int32
-	off := GetFinalOffset(fp, inp)
 	if inp.Name == "" {
 		// Then it's a literal.
 		offset = int32(off)
@@ -273,5 +288,29 @@ func ReadStr(fp int, inp *CXArgument) (out string) {
 		DeserializeRaw(PROGRAM.Memory[offset:offset+STR_HEADER_SIZE+size], &out)
 	}
 
-	return out
+	return out	
+}
+
+// ReadStr ...
+func ReadStr(fp int, inp *CXArgument) (out string) {
+	off := GetFinalOffset(fp, inp)
+	return ReadStrFromOffset(off, inp)
+}
+
+// ReadStringFromObject reads the string located at offset `off`.
+func ReadStringFromObject(off int32) string {
+	var plusOff int32
+	if int(off) > PROGRAM.HeapStartsAt {
+		// Found in heap segment.
+		plusOff += OBJECT_HEADER_SIZE
+	}
+
+	size := Deserialize_i32(PROGRAM.Memory[off+plusOff : off+plusOff+STR_HEADER_SIZE])
+
+	str := ""
+	_, err := encoder.DeserializeRaw(PROGRAM.Memory[off+plusOff:off+plusOff+STR_HEADER_SIZE+size], &str)
+	if err != nil {
+		panic(err)
+	}
+	return str
 }

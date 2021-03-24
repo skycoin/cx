@@ -7,7 +7,7 @@ import (
 	"runtime/pprof"
 	"time"
 
-	cxcore "github.com/skycoin/cx/cx"
+	"github.com/skycoin/cx/cx"
 )
 
 var DebugProfile bool

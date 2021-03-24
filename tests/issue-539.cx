@@ -1,0 +1,11 @@
+// https://github.com/skycoin/cx/issues/539
+
+package main
+
+type Color3 struct {
+	R i32
+}
+
+func main() {
+	var colors [1]Color3 = [1]Color3{Color3{R: 1}}
+}

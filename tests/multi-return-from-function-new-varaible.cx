@@ -1,0 +1,26 @@
+package main
+
+
+func swap(a i32, b i32)(a i32,b i32){
+
+    var c i32
+    
+    c = a
+    a=b
+    b =c
+
+}
+
+
+
+func main(){
+
+    var a i32 =10
+
+    var b i32 =20
+    
+
+  
+   p,q :=swap(a,b)
+   
+}

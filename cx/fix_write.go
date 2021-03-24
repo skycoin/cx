@@ -2,6 +2,7 @@ package cxcore
 
 import(
 	"math"
+	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 // WriteMemory ...
@@ -12,6 +13,32 @@ func WriteMemory(offset int, byts []byte) {
 }
 
 // Utilities
+
+// WriteObjectRef
+func WriteObjectData(obj []byte) int {
+	size := len(obj) + OBJECT_HEADER_SIZE
+	heapOffset := AllocateSeq(size)
+	WriteI32(heapOffset, int32(size))
+	WriteMemory(heapOffset + OBJECT_HEADER_SIZE, obj)
+	return heapOffset
+}
+
+// WriteObject ...
+func WriteObject(out1Offset int, obj []byte) {
+	heapOffset := WriteObjectData(obj)
+	WriteI32(out1Offset, int32(heapOffset))
+}
+
+// WriteStringData writes `str` to the heap as an object and returns its absolute offset.
+func WriteStringData(str string) int {
+	return WriteObjectData(encoder.Serialize(str))
+}
+
+// WriteString writes the string `str` on memory, starting at byte number `fp`.
+func WriteString(fp int, str string, out *CXArgument) {
+	WriteObject(GetOffset_str(fp, out), encoder.Serialize(str))
+}
+
 
 // WriteBool ...
 func WriteBool(offset int, b bool) {
