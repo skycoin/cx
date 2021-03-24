@@ -647,129 +647,129 @@ func initSerialization(prgrm *CXProgram, s *sAll) {
 	// args and exprs need to be appended as they are found
 }
 
-// splitSerialize is mainly used for CX chains. It splits a `prgrm`'s
-// elements (packages, structs, functions, etc.) into two parts: the
-// parts that will belong to the blockchain code and the parts that
-// will belong to the transaction code. The process in general
-// consists in serializing the CX packages from `from` to `to`. In
-// practice, this function will most likely be called twice, so we can
-// serialize from 0 to a "cut point", and then from that "cut point"
-// to the last CX package. The serialized structures are added to `s`.
-// 
-// `fnCounter` and `strctCounter` are counters for functions and
-// structures, respectively. These pointers to integers help
-// `splitSerialize` know how many functions and structures have been
-// serialized across multiple calls to `splitSerialize`.
-func splitSerialize(prgrm *CXProgram, s *sAll, fnCounter, strctCounter *int32, from, to int) {
-	// indexing packages and serializing their names
-	for _, pkg := range prgrm.Packages[from:to] {
-		indexPackage(pkg, s)
-		sPackageName(pkg, s)
-	}
-	// we first needed to populate references to all packages
-	// now we add the imports' references
-	for _, pkg := range prgrm.Packages[from:to] {
-		sPackageImports(pkg, s)
-	}
+// // splitSerialize is mainly used for CX chains. It splits a `prgrm`'s
+// // elements (packages, structs, functions, etc.) into two parts: the
+// // parts that will belong to the blockchain code and the parts that
+// // will belong to the transaction code. The process in general
+// // consists in serializing the CX packages from `from` to `to`. In
+// // practice, this function will most likely be called twice, so we can
+// // serialize from 0 to a "cut point", and then from that "cut point"
+// // to the last CX package. The serialized structures are added to `s`.
+// // 
+// // `fnCounter` and `strctCounter` are counters for functions and
+// // structures, respectively. These pointers to integers help
+// // `splitSerialize` know how many functions and structures have been
+// // serialized across multiple calls to `splitSerialize`.
+// func splitSerialize(prgrm *CXProgram, s *sAll, fnCounter, strctCounter *int32, from, to int) {
+// 	// indexing packages and serializing their names
+// 	for _, pkg := range prgrm.Packages[from:to] {
+// 		indexPackage(pkg, s)
+// 		sPackageName(pkg, s)
+// 	}
+// 	// we first needed to populate references to all packages
+// 	// now we add the imports' references
+// 	for _, pkg := range prgrm.Packages[from:to] {
+// 		sPackageImports(pkg, s)
+// 	}
 
-	// structs
-	for _, pkg := range prgrm.Packages[from:to] {
-		for _, strct := range pkg.Structs {
-			indexStruct(strct, s)
-			sStructName(strct, s)
-			sStructPackage(strct, s)
-			sStructIntegers(strct, s)
-		}
-	}
-	// we first needed to populate references to all structs
-	// now we add fields
-	for _, pkg := range prgrm.Packages[from:to] {
-		for _, strct := range pkg.Structs {
-			sStructArguments(strct, s)
-		}
-	}
+// 	// structs
+// 	for _, pkg := range prgrm.Packages[from:to] {
+// 		for _, strct := range pkg.Structs {
+// 			indexStruct(strct, s)
+// 			sStructName(strct, s)
+// 			sStructPackage(strct, s)
+// 			sStructIntegers(strct, s)
+// 		}
+// 	}
+// 	// we first needed to populate references to all structs
+// 	// now we add fields
+// 	for _, pkg := range prgrm.Packages[from:to] {
+// 		for _, strct := range pkg.Structs {
+// 			sStructArguments(strct, s)
+// 		}
+// 	}
 
-	// globals
-	for _, pkg := range prgrm.Packages[from:to] {
-		sPackageGlobals(pkg, s)
-	}
+// 	// globals
+// 	for _, pkg := range prgrm.Packages[from:to] {
+// 		sPackageGlobals(pkg, s)
+// 	}
 
-	// functions
-	for _, pkg := range prgrm.Packages[from:to] {
-		for _, fn := range pkg.Functions {
-			indexFunction(fn, s)
-			sFunctionName(fn, s)
-			sFunctionPackage(fn, s)
-			sFunctionIntegers(fn, s)
-			sFunctionArguments(fn, s)
-		}
-	}
+// 	// functions
+// 	for _, pkg := range prgrm.Packages[from:to] {
+// 		for _, fn := range pkg.Functions {
+// 			indexFunction(fn, s)
+// 			sFunctionName(fn, s)
+// 			sFunctionPackage(fn, s)
+// 			sFunctionIntegers(fn, s)
+// 			sFunctionArguments(fn, s)
+// 		}
+// 	}
 
-	// package elements' offsets and sizes
-	for _, pkg := range prgrm.Packages[from:to] {
-		if pkgOff, found := s.PackagesMap[pkg.Name]; found {
-			sPkg := &s.Packages[pkgOff]
+// 	// package elements' offsets and sizes
+// 	for _, pkg := range prgrm.Packages[from:to] {
+// 		if pkgOff, found := s.PackagesMap[pkg.Name]; found {
+// 			sPkg := &s.Packages[pkgOff]
 
-			if len(pkg.Structs) == 0 {
-				sPkg.StructsOffset = int32(-1)
-				sPkg.StructsSize = int32(-1)
-			} else {
-				sPkg.StructsOffset = *strctCounter
-				lenStrcts := int32(len(pkg.Structs))
-				sPkg.StructsSize = lenStrcts
-				*strctCounter += lenStrcts
-			}
+// 			if len(pkg.Structs) == 0 {
+// 				sPkg.StructsOffset = int32(-1)
+// 				sPkg.StructsSize = int32(-1)
+// 			} else {
+// 				sPkg.StructsOffset = *strctCounter
+// 				lenStrcts := int32(len(pkg.Structs))
+// 				sPkg.StructsSize = lenStrcts
+// 				*strctCounter += lenStrcts
+// 			}
 
-			if len(pkg.Functions) == 0 {
-				sPkg.FunctionsOffset = int32(-1)
-				sPkg.FunctionsSize = int32(-1)
-			} else {
-				sPkg.FunctionsOffset = *fnCounter
-				lenFns := int32(len(pkg.Functions))
-				sPkg.FunctionsSize = lenFns
-				*fnCounter += lenFns
-			}
-		} else {
-			panic("package reference not found")
-		}
-	}
+// 			if len(pkg.Functions) == 0 {
+// 				sPkg.FunctionsOffset = int32(-1)
+// 				sPkg.FunctionsSize = int32(-1)
+// 			} else {
+// 				sPkg.FunctionsOffset = *fnCounter
+// 				lenFns := int32(len(pkg.Functions))
+// 				sPkg.FunctionsSize = lenFns
+// 				*fnCounter += lenFns
+// 			}
+// 		} else {
+// 			panic("package reference not found")
+// 		}
+// 	}
 
-	// package integers
-	// we needed the references to all functions and structs first
-	for _, pkg := range prgrm.Packages[from:to] {
-		sPackageIntegers(pkg, s)
-	}
+// 	// package integers
+// 	// we needed the references to all functions and structs first
+// 	for _, pkg := range prgrm.Packages[from:to] {
+// 		sPackageIntegers(pkg, s)
+// 	}
 
-	// expressions
-	for _, pkg := range prgrm.Packages[from:to] {
-		for _, fn := range pkg.Functions {
-			fnName := fn.Package.Name + "." + fn.Name
-			if fnOff, found := s.FunctionsMap[fnName]; found {
-				sFn := &s.Functions[fnOff]
+// 	// expressions
+// 	for _, pkg := range prgrm.Packages[from:to] {
+// 		for _, fn := range pkg.Functions {
+// 			fnName := fn.Package.Name + "." + fn.Name
+// 			if fnOff, found := s.FunctionsMap[fnName]; found {
+// 				sFn := &s.Functions[fnOff]
 
-				if len(fn.Expressions) == 0 {
-					sFn.ExpressionsOffset = int32(-1)
-					sFn.ExpressionsSize = int32(-1)
-					sFn.CurrentExpressionOffset = int32(-1)
-				} else {
-					exprs := make([]int, len(fn.Expressions))
-					for i, expr := range fn.Expressions {
-						exprIdx := serializeExpression(expr, s)
-						if fn.CurrentExpression == expr {
-							// sFn.CurrentExpressionOffset = int32(exprIdx)
-							sFn.CurrentExpressionOffset = int32(i)
-						}
-						exprs[i] = exprIdx
-					}
+// 				if len(fn.Expressions) == 0 {
+// 					sFn.ExpressionsOffset = int32(-1)
+// 					sFn.ExpressionsSize = int32(-1)
+// 					sFn.CurrentExpressionOffset = int32(-1)
+// 				} else {
+// 					exprs := make([]int, len(fn.Expressions))
+// 					for i, expr := range fn.Expressions {
+// 						exprIdx := serializeExpression(expr, s)
+// 						if fn.CurrentExpression == expr {
+// 							// sFn.CurrentExpressionOffset = int32(exprIdx)
+// 							sFn.CurrentExpressionOffset = int32(i)
+// 						}
+// 						exprs[i] = exprIdx
+// 					}
 
-					sFn.ExpressionsOffset, sFn.ExpressionsSize = serializeIntegers(exprs, s)
-				}
-			} else {
-				panic("function reference not found")
-			}
-		}
-	}
-}
+// 					sFn.ExpressionsOffset, sFn.ExpressionsSize = serializeIntegers(exprs, s)
+// 				}
+// 			} else {
+// 				panic("function reference not found")
+// 			}
+// 		}
+// 	}
+// }
 
 // Serialize ...
 func Serialize(prgrm *CXProgram, split int) (byts []byte) {
