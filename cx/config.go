@@ -79,7 +79,8 @@ var BASIC_TYPES []string = []string{
 }
 
 const (
-	PARAM_DEFAULT = iota
+	PARAM_UNUSED = iota
+	PARAM_DEFAULT //= iota
 	PARAM_SLICE
 	PARAM_STRUCT
 )
