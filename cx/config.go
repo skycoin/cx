@@ -78,6 +78,20 @@ var BASIC_TYPES []string = []string{
 	"[]bool", "[]str", "[]i8", "[]i16", "[]i32", "[]i64", "[]ui8", "[]ui16", "[]ui32", "[]ui64", "[]f32", "[]f64",
 }
 
+//VERY WEIRD
+//gives error, "cx" not found, even if it exists when changed
+
+/*
+//doesnt work
+const (
+	PARAM_UNUSED = iota
+	PARAM_DEFAULT 
+	PARAM_SLICE
+	PARAM_STRUCT
+)
+*/
+
+//works
 const (
 	PARAM_UNUSED = iota
 	PARAM_DEFAULT //= iota
