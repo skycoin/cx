@@ -250,10 +250,6 @@ func ReadSliceBytes(fp int, inp *CXArgument, dataType int) []byte {
 
 // second section
 
-<<<<<<< HEAD
-// ReadStr ...
-func ReadStr(fp int, inp *CXArgument) (out string) {
-=======
 // ReadBool ...
 func ReadBool(fp int, inp *CXArgument) (out bool) {
 	offset := GetFinalOffset(fp, inp)
@@ -261,9 +257,8 @@ func ReadBool(fp int, inp *CXArgument) (out bool) {
 	return
 }
 
-// ReadStrFromOffset ...
-func ReadStrFromOffset(off int, inp *CXArgument) (out string) {
->>>>>>> 726af7a298e484de24fd8426b4ddb6c56ca7dbe3
+// ReadStr ...
+func ReadStr(fp int, inp *CXArgument) (out string) {
 	var offset int32
 	if inp.Name == "" {
 		// Then it's a literal.
