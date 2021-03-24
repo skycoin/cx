@@ -85,6 +85,7 @@ const (
 )
 
 const (
+	//CX_UNUSED = iota //reserve default value
 	CX_SUCCESS = iota
 	CX_COMPILATION_ERROR
 	CX_PANIC // 2
@@ -113,7 +114,8 @@ var ErrorStrings map[int]string = map[int]string{
 }
 
 const (
-	DECL_POINTER  = iota // 0
+	DECL_UNUSED = iota
+	DECL_POINTER		 // 0
 	DECL_DEREF           // 1
 	DECL_ARRAY           // 2
 	DECL_SLICE           // 3
@@ -125,7 +127,8 @@ const (
 
 // create a new scope or return to the previous scope
 const (
-	SCOPE_NEW = iota + 1 // 1
+	SCOPE_UNUSED = iota
+	SCOPE_NEW //= iota + 1 // 1
 	SCOPE_REM            // 2
 )
 
@@ -146,7 +149,8 @@ const (
 )
 
 const (
-	TYPE_UNDEFINED = iota
+	TPYE_UNUSED = iota //reserve zero value
+	TYPE_UNDEFINED
 	TYPE_AFF
 	TYPE_BOOL
 	TYPE_STR
