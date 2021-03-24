@@ -136,11 +136,12 @@ const (
 )
 
 const (
-	DEREF_ARRAY   = iota // 0
-	DEREF_FIELD          // 1
-	DEREF_POINTER        // 2
-	DEREF_DEREF          // 3
-	DEREF_SLICE          // 4
+	DEREF_UNUSED = iota //reserve zero value
+	DEREF_ARRAY   		// 1
+	DEREF_FIELD          // 2
+	DEREF_POINTER        // 3
+	DEREF_DEREF          // 4
+	DEREF_SLICE          // 5
 )
 
 const (
