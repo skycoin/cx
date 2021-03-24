@@ -1,7 +1,6 @@
 package cxcore
 
 import (
-	"os"
 )
 
 // var COREPATH = ""
