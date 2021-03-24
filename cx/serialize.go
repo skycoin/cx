@@ -647,8 +647,19 @@ func initSerialization(prgrm *CXProgram, s *sAll) {
 	// args and exprs need to be appended as they are found
 }
 
-// SplitSerialize ...
-// WHAT DOES THIS DO? WHY ARE THERE NO COMMENTS?
+// splitSerialize is mainly used for CX chains. It splits a `prgrm`'s
+// elements (packages, structs, functions, etc.) into two parts: the
+// parts that will belong to the blockchain code and the parts that
+// will belong to the transaction code. The process in general
+// consists in serializing the CX packages from `from` to `to`. In
+// practice, this function will most likely be called twice, so we can
+// serialize from 0 to a "cut point", and then from that "cut point"
+// to the last CX package. The serialized structures are added to `s`.
+// 
+// `fnCounter` and `strctCounter` are counters for functions and
+// structures, respectively. These pointers to integers help
+// `splitSerialize` know how many functions and structures have been
+// serialized across multiple calls to `splitSerialize`.
 func splitSerialize(prgrm *CXProgram, s *sAll, fnCounter, strctCounter *int32, from, to int) {
 	// indexing packages and serializing their names
 	for _, pkg := range prgrm.Packages[from:to] {
