@@ -228,7 +228,7 @@ exit /b
 
 
 :buildCX
-  %BIN_PATH%\goyacc -o %CXGO_PATH%\cxgo0\cxgo0.go %CXGO_PATH%\cxgo0\cxgo0.y
+  %BIN_PATH%\goyacc -o %CXGO_PATH%\cxgrammer\cxgrammer.go %CXGO_PATH%\cxgrammer\cxgrammer.go
   call :showResults "goyacc cxgo0" "1st pass -" "ERROR in 1st pass -"
 
   %BIN_PATH%\goyacc -o %CXGO_PATH%\parser\cxgo.go %CXGO_PATH%\parser\cxgo.y
