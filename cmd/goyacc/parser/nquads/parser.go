@@ -33,7 +33,8 @@ type yySymType struct {
 const daccent = 57346
 const dot = 57347
 const eol = 57348
-const illegal = 57349
+
+// const illegal = 57349
 const iriref = 57350
 const label = 57351
 const langtag = 57352
@@ -61,11 +62,11 @@ var yyExca = []int{
 	-2, 0,
 }
 
-const yyNprod = 31
+// const yyNprod = 31
 const yyPrivate = 57344
 
-var yyTokenNames []string
-var yyStates []string
+// var yyTokenNames []string
+// var yyStates []string
 
 const yyLast = 35
 

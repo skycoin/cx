@@ -141,7 +141,7 @@ func Example_completeGeneratedProgram() { // main
 }
 
 func (l *lexer) scan() lex.Char {
-	c := l.Enter()
+	// c := l.Enter()
 
 yystate0:
 	yyrule := -1
