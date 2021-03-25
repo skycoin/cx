@@ -45,7 +45,7 @@ func CopyAssetsTo(path string, dest string) bool {
 	assetList := asset.GetAssetList(path)
 	if len(assetList) == 0 {
 		if success := CopyAssetTo(path, dest); success == false {
-			fmt.Printf("Error copying file '%s' to '%s'\n", path, dest)
+			fmt.Printf("ProgramError copying file '%s' to '%s'\n", path, dest)
 			return false
 		}
 	} else {
@@ -55,7 +55,7 @@ func CopyAssetsTo(path string, dest string) bool {
 		if os.IsNotExist(err) {
 			//fmt.Printf("MKDIR '%s', '%v'\n", destPath, err)
 			if err := os.Mkdir(destPath, 0766); err != nil {
-				fmt.Printf("Error creating dir '%s', err '%v'\n", destPath, err)
+				fmt.Printf("ProgramError creating dir '%s', err '%v'\n", destPath, err)
 				return false
 			}
 		} else {
@@ -69,7 +69,7 @@ func CopyAssetsTo(path string, dest string) bool {
 				//fmt.Printf("SOURCE_PATH_EMPTY '%s' ADD '%s'\n", sourcePath, s)
 			}
 			if success := CopyAssetsTo(sourcePath, dest); success == false {
-				fmt.Printf("Error copying file or dir '%s' to '%s'\n", sourcePath, dest)
+				fmt.Printf("ProgramError copying file or dir '%s' to '%s'\n", sourcePath, dest)
 				return false
 			}
 		}

@@ -160,7 +160,7 @@ grep -rn "PASSBY_VALUE" .
 grep -rn "PASSBY_REFERENCE" .
 ./cxgo/actions/misc.go:425:			arg.PassBy = cxcore.PASSBY_REFERENCE
 ./cxgo/actions/functions.go:678:		if elt.PassBy == cxcore.PASSBY_REFERENCE &&
-./cxgo/actions/functions.go:915:			expr.Inputs[0].PassBy = cxcore.PASSBY_REFERENCE
+./cxgo/actions/functions.go:915:			expr.ProgramInput[0].PassBy = cxcore.PASSBY_REFERENCE
 ./cxgo/actions/functions.go:1157:						nameFld.PassBy = cxcore.PASSBY_REFERENCE
 ./cxgo/actions/literals.go:219:				sym.PassBy = cxcore.PASSBY_REFERENCE
 ./cxgo/actions/expressions.go:336:		baseOut.PassBy = cxcore.PASSBY_REFERENCE
@@ -173,7 +173,7 @@ grep -rn "PASSBY_REFERENCE" .
 ./cx/execute.go:442:						if inp.PassBy == PASSBY_REFERENCE {
 ./cx/ast.go:1506:./cxgo/actions/misc.go:425:			arg.PassBy = PASSBY_REFERENCE
 ./cx/ast.go:1508:./cxgo/actions/functions.go:678:		if elt.PassBy == PASSBY_REFERENCE &&
-./cx/ast.go:1511:./cxgo/actions/functions.go:915:			expr.Inputs[0].PassBy = PASSBY_REFERENCE
+./cx/ast.go:1511:./cxgo/actions/functions.go:915:			expr.ProgramInput[0].PassBy = PASSBY_REFERENCE
 ./cx/ast.go:1513:./cxgo/actions/functions.go:1157:						nameFld.PassBy = PASSBY_REFERENCE
 ./cx/ast.go:1514:./cxgo/actions/literals.go:219:				sym.PassBy = PASSBY_REFERENCE
 ./cx/ast.go:1515:./cxgo/actions/expressions.go:336:		baseOut.PassBy = PASSBY_REFERENCE

@@ -121,7 +121,7 @@ func main2() (err error) {
 	}
 
 	cmd := exec.Command("pcregrep", append([]string{"-nM", `failed|panic|\/\/ <nil>|// false|// -1|Output:\n}`}, matches...)...)
-	if out, _ = cmd.CombinedOutput(); len(out) != 0 { // Error != nil when no matches
+	if out, _ = cmd.CombinedOutput(); len(out) != 0 { // ProgramError != nil when no matches
 		log.Printf("%s", out)
 	}
 	return nil

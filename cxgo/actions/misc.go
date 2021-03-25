@@ -18,7 +18,7 @@ func SetCorrectArithmeticOp(expr *cxcore.CXExpression) {
     code := expr.Operator.OpCode
     if code > cxcore.START_OF_OPERATORS && code < cxcore.END_OF_OPERATORS {
 	    // TODO: argument type are not fully resolved here, should be move elsewhere.
-        //expr.Operator = cxcore.GetTypedOperator(cxcore.GetType(expr.Inputs[0]), code)
+        //expr.Operator = cxcore.GetTypedOperator(cxcore.GetType(expr.ProgramInput[0]), code)
     }
 }
 
@@ -232,7 +232,7 @@ func PrimaryIdentifier(ident string) []*cxcore.CXExpression {
 		arg.Name = ident
 		arg.Package = pkg
 
-		// expr := &cxcore.CXExpression{Outputs: []*cxcore.CXArgument{arg}}
+		// expr := &cxcore.CXExpression{ProgramOutput: []*cxcore.CXArgument{arg}}
 		expr := cxcore.MakeExpression(nil, CurrentFile, LineNo)
 		expr.Outputs = []*cxcore.CXArgument{arg}
 		expr.Package = pkg

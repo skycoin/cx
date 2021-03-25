@@ -144,14 +144,14 @@ func MakeIdentityOpName(typeName string) string {
 // }
 
 // func MakeExpressionCopy(expr *CXExpression, fn *CXFunction, mod *CXPackage, cxt *CXProgram) *CXExpression {
-// 	argsCopy := make([]*CXArgument, len(expr.Inputs))
-// 	for i, arg := range expr.Inputs {
+// 	argsCopy := make([]*CXArgument, len(expr.ProgramInput))
+// 	for i, arg := range expr.ProgramInput {
 // 		argsCopy[i] = MakeArgumentCopy(arg)
 // 	}
 // 	return &CXExpression{
 // 		Operator: expr.Operator,
-// 		Inputs:   argsCopy,
-// 		Outputs:  expr.Outputs,
+// 		ProgramInput:   argsCopy,
+// 		ProgramOutput:  expr.ProgramOutput,
 // 		Line:     expr.Line,
 // 		Function: fn,
 // 		Package:  mod,
@@ -161,13 +161,13 @@ func MakeIdentityOpName(typeName string) string {
 
 // func MakeFunctionCopy(fn *CXFunction, mod *CXPackage, cxt *CXProgram) *CXFunction {
 // 	newFn := &CXFunction{}
-// 	inputsCopy := make([]*CXArgument, len(fn.Inputs))
-// 	outputsCopy := make([]*CXArgument, len(fn.Outputs))
+// 	inputsCopy := make([]*CXArgument, len(fn.ProgramInput))
+// 	outputsCopy := make([]*CXArgument, len(fn.ProgramOutput))
 // 	exprsCopy := make([]*CXExpression, len(fn.Expressions))
-// 	for i, inp := range fn.Inputs {
+// 	for i, inp := range fn.ProgramInput {
 // 		inputsCopy[i] = MakeParameterCopy(inp)
 // 	}
-// 	for i, out := range fn.Outputs {
+// 	for i, out := range fn.ProgramOutput {
 // 		outputsCopy[i] = MakeParameterCopy(out)
 // 	}
 
@@ -176,8 +176,8 @@ func MakeIdentityOpName(typeName string) string {
 // 	}
 
 // 	newFn.Name = fn.Name
-// 	newFn.Inputs = inputsCopy
-// 	newFn.Outputs = outputsCopy
+// 	newFn.ProgramInput = inputsCopy
+// 	newFn.ProgramOutput = outputsCopy
 
 // 	// if fn.Output != nil {
 // 	// 	newFn.Output = MakeParameterCopy(fn.Output)

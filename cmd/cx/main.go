@@ -152,7 +152,7 @@ func printTokenize(options cxCmdFlags, fileNames []string) {
 		}
 		r, err = cxcore.CXOpenFile(sourceFilename)
 		if err != nil {
-			fmt.Fprintln(os.Stderr, "Error reading:", sourceFilename, err)
+			fmt.Fprintln(os.Stderr, "ProgramError reading:", sourceFilename, err)
 			return
 		}
 		defer r.Close()
@@ -164,7 +164,7 @@ func printTokenize(options cxCmdFlags, fileNames []string) {
 		tokenFilename := options.compileOutput
 		w, err = cxcore.CXCreateFile(tokenFilename)
 		if err != nil {
-			fmt.Fprintln(os.Stderr, "Error writing:", tokenFilename, err)
+			fmt.Fprintln(os.Stderr, "ProgramError writing:", tokenFilename, err)
 			return
 		}
 		defer w.Close()

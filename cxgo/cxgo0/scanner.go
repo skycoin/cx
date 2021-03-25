@@ -93,7 +93,7 @@ redo:
 	//EOF
 	if s.r == s.e || s.ioerr == io.EOF {
 		if s.ioerr != io.EOF {
-			s.errorf("IO Error: " + s.ioerr.Error())
+			s.errorf("IO ProgramError: " + s.ioerr.Error())
 			s.ioerr = nil
 		}
 		s.ch = -1

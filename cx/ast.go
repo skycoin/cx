@@ -26,9 +26,9 @@ type CXProgram struct {
 	Packages []*CXPackage // Packages in a CX program
 
 	// Runtime information
-	Inputs       []*CXArgument // OS input arguments
-	Outputs      []*CXArgument // outputs to the OS
-	Memory       []byte        // Used when running the program
+	ProgramInput  []*CXArgument // OS input arguments
+	ProgramOutput []*CXArgument // outputs to the OS
+	Memory        []byte        // Used when running the program
 	
 	StackSize    int           // This field stores the size of a CX program's stack
 	StackPointer int           // At what byte the current stack frame is
@@ -44,7 +44,7 @@ type CXProgram struct {
 
 	// Used by the REPL and parser
 	CurrentPackage *CXPackage // Represents the currently active package in the REPL or when parsing a CX file.
-	Error          error
+	ProgramError   error
 }
 
 // CXPackage is used to represent a CX package.
@@ -179,11 +179,11 @@ type CXArgument struct {
 	Fields                []*CXArgument
 	// Inputs defines the input parameters of a first-class
 	// function. The `CXArgument` is of type `TYPE_FUNC` if
-	// `Inputs` is non-nil.
+	// `ProgramInput` is non-nil.
 	Inputs                []*CXArgument
 	// Outputs defines the output parameters of a first-class
 	// function. The `CXArgument` is of type `TYPE_FUNC` if
-	// `Outputs` is non-nil.
+	// `ProgramOutput` is non-nil.
 	Outputs               []*CXArgument
 	// Name defines the name of the `CXArgument`. Most of the
 	// time, this field will be non-nil as this defines the name
@@ -1134,7 +1134,7 @@ func MakeNativeFunction(opCode int, inputs []*CXArgument, outputs []*CXArgument)
 	}
 	for _, out := range outputs {
 		// for _, typCode := range outputs {
-		// fn.Outputs = append(fn.Outputs, MakeArgument("", "", -1).AddType(TypeNames[typCode]))
+		// fn.ProgramOutput = append(fn.ProgramOutput, MakeArgument("", "", -1).AddType(TypeNames[typCode]))
 		// out := MakeArgument("", "", -1).AddType(TypeNames[typCode])
 		fn.Outputs = append(fn.Outputs, out)
 		out.Offset = offset
@@ -1163,7 +1163,7 @@ func MakeNativeFunctionV2(opCode int, inputs []*CXArgument, outputs []*CXArgumen
 	}
 	for _, out := range outputs {
 		// for _, typCode := range outputs {
-		// fn.Outputs = append(fn.Outputs, MakeArgument("", "", -1).AddType(TypeNames[typCode]))
+		// fn.ProgramOutput = append(fn.ProgramOutput, MakeArgument("", "", -1).AddType(TypeNames[typCode]))
 		// out := MakeArgument("", "", -1).AddType(TypeNames[typCode])
 		fn.Outputs = append(fn.Outputs, out)
 		out.Offset = offset
@@ -1513,16 +1513,16 @@ grep -rn "PassBy" .
 ./cxgo/actions/functions.go:678:		if elt.PassBy == PASSBY_REFERENCE &&
 ./cxgo/actions/functions.go:712:			out.PassBy = PASSBY_VALUE
 ./cxgo/actions/functions.go:723:				assignElt.PassBy = PASSBY_VALUE
-./cxgo/actions/functions.go:915:			expr.Inputs[0].PassBy = PASSBY_REFERENCE
+./cxgo/actions/functions.go:915:			expr.ProgramInput[0].PassBy = PASSBY_REFERENCE
 ./cxgo/actions/functions.go:1153:					nameFld.PassBy = fld.PassBy
 ./cxgo/actions/functions.go:1157:						nameFld.PassBy = PASSBY_REFERENCE
 ./cxgo/actions/literals.go:219:				sym.PassBy = PASSBY_REFERENCE
 ./cxgo/actions/expressions.go:336:		baseOut.PassBy = PASSBY_REFERENCE
 ./cxgo/actions/assignment.go:57:		out.PassBy = PASSBY_REFERENCE
-./cxgo/actions/assignment.go:208:		to[0].Outputs[0].PassBy = from[idx].Outputs[0].PassBy
-./cxgo/actions/assignment.go:234:			to[0].Outputs[0].PassBy = from[idx].Operator.Outputs[0].PassBy
-./cxgo/actions/assignment.go:244:			to[0].Outputs[0].PassBy = from[idx].Operator.Outputs[0].PassBy
-./cxgo/actions/declarations.go:55:			glbl.PassBy = offExpr[0].Outputs[0].PassBy
+./cxgo/actions/assignment.go:208:		to[0].ProgramOutput[0].PassBy = from[idx].ProgramOutput[0].PassBy
+./cxgo/actions/assignment.go:234:			to[0].ProgramOutput[0].PassBy = from[idx].Operator.ProgramOutput[0].PassBy
+./cxgo/actions/assignment.go:244:			to[0].ProgramOutput[0].PassBy = from[idx].Operator.ProgramOutput[0].PassBy
+./cxgo/actions/declarations.go:55:			glbl.PassBy = offExpr[0].ProgramOutput[0].PassBy
 ./cxgo/actions/declarations.go:69:				declaration_specifiers.PassBy = glbl.PassBy
 ./cxgo/actions/declarations.go:85:				declaration_specifiers.PassBy = glbl.PassBy
 ./cxgo/actions/declarations.go:103:			declaration_specifiers.PassBy = glbl.PassBy
