@@ -15,6 +15,8 @@ func WriteMemory(offset int, byts []byte) {
 // Utilities
 
 // WriteObjectRef
+// WARNING, is using heap variables?
+//Is this "Write object ot heap?"
 func WriteObjectData(obj []byte) int {
 	size := len(obj) + OBJECT_HEADER_SIZE
 	heapOffset := AllocateSeq(size)

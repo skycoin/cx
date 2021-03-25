@@ -17,16 +17,8 @@ import (
 // 	//prgrm.ProgramSteps = nil
 // }
 
-/*
-grep -rn "UnRun" .
-./cxgo/actions/interactive.go:16:				PRGRM.UnRun(steps)
-./cxgo/actions/interactive.go:39:				// PRGRM.UnRun(int(nCalls))
-./cxgo/actions/interactive.go:40:				PRGRM.UnRun(steps)
-./cx/execute.go:20:// UnRun ...
-./cx/execute.go:21:func (prgrm *CXProgram) UnRun(nCalls int) {
-*/
-
 // UnRun ...
+/*
 func (prgrm *CXProgram) UnRun(nCalls int) {
 	if nCalls >= 0 || prgrm.CallCounter < 0 {
 		return
@@ -52,6 +44,7 @@ func (prgrm *CXProgram) UnRun(nCalls int) {
 		}
 	}
 }
+*/
 
 // ToCall ...
 func (prgrm *CXProgram) ToCall() *CXExpression {
@@ -155,7 +148,7 @@ func minHeapSize() int {
 
 // EnsureHeap ensures that `prgrm` has `minHeapSize()`
 // bytes allocated after the data segment.
-func (prgrm *CXProgram) EnsureHeap() {
+func (prgrm *CXProgram) EnsureMinimumHeapSize() {
 	currHeapSize := len(prgrm.Memory) - prgrm.HeapStartsAt
 	minHeapSize := minHeapSize()
 	if currHeapSize < minHeapSize {
@@ -169,7 +162,7 @@ func (prgrm *CXProgram) RunCompiled(nCalls int, args []string) error {
 	if err != nil {
 		panic(err)
 	}
-	prgrm.EnsureHeap()
+	prgrm.EnsureMinimumHeapSize()
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	var untilEnd bool
@@ -339,7 +332,11 @@ func (call *CXCall) ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 					call.Line++
 				case 2: // new version
 					fp := call.FramePointer;
-
+                    if expr.Operator.IntCode == -1 && IsOperator(expr.Operator.OpCode) {
+                        // TODO: resolve this at compile time
+                        atomicType := GetType(expr.Inputs[0])
+                        expr.Operator = GetTypedOperator(atomicType, expr.Operator.OpCode)
+                    }
 					inputs := expr.Inputs
 					inputCount := len(inputs)
 					if inputCount > len(*globalInputs) {

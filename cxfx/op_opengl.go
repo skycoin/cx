@@ -5,6 +5,7 @@ package cxfx
 import (
 	"bufio"
 	//"bytes"
+    "unsafe"
 	"fmt"
 	"image"
 	"image/draw"
@@ -27,6 +28,38 @@ type Texture struct {
 	height int32
 	level  uint32
 	pixels []float32
+}
+
+func Slice_ui8_ToPtr(value []uint8) unsafe.Pointer {
+    count := len(value)
+    if count == 0 {
+        return unsafe.Pointer(nil)
+    }
+    return unsafe.Pointer(&value[0])
+}
+
+func Slice_ui32_ToPtr(value []uint32) unsafe.Pointer {
+    count := len(value)
+    if count == 0 {
+        return unsafe.Pointer(nil)
+    }
+    return unsafe.Pointer(&value[0])
+}
+
+func Slice_i32_ToPtr(value []int32) unsafe.Pointer {
+    count := len(value)
+    if count == 0 {
+        return unsafe.Pointer(nil)
+    }
+    return unsafe.Pointer(&value[0])
+}
+
+func Slice_f32_ToPtr(value []float32) unsafe.Pointer {
+    count := len(value)
+    if count == 0 {
+        return unsafe.Pointer(nil)
+    }
+    return unsafe.Pointer(&value[0])
 }
 
 var gifs map[string]*gif.GIF = make(map[string]*gif.GIF, 0)
@@ -457,7 +490,7 @@ func opGlTexImage2D(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 		inputs[5].Get_i32(),
 		uint32(inputs[6].Get_i32()),
 		uint32(inputs[7].Get_i32()),
-        inputs[8].GetSlice())
+        inputs[8].GetSlice_bytes())
 }
 
 func opGlClear(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
@@ -569,7 +602,7 @@ func opGlDrawElements(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 		uint32(inputs[0].Get_i32()),
 		inputs[1].Get_i32(),
 		uint32(inputs[2].Get_i32()),
-		inputs[3].GetSlice())
+		nil)
 }
 
 func opGlBindTexture(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
@@ -629,7 +662,7 @@ func opGlBufferData(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglBufferData(
 		uint32(inputs[0].Get_i32()),
 		int(inputs[1].Get_i32()),
-		inputs[2].GetSlice_ui8(),
+		inputs[2].GetSlice_bytes(),
 		uint32(inputs[3].Get_i32()))
 }
 
@@ -638,13 +671,13 @@ func opGlBufferSubData(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 		uint32(inputs[0].Get_i32()),
 		int(inputs[1].Get_i32()),
 		int(inputs[2].Get_i32()),
-		inputs[3].GetSlice())
+		inputs[3].GetSlice_bytes())
 }
 
 func opGlDrawBuffers(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglDrawBuffers(
 		inputs[0].Get_i32(),
-		inputs[1].GetSlice_ui32())
+		inputs[1].GetSlice_bytes())
 }
 
 func opGlStencilOpSeparate(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
@@ -836,56 +869,56 @@ func opGlUniform1fv(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglUniform1fv(
 		inputs[0].Get_i32(),
 		inputs[1].Get_i32(),
-		inputs[2].GetSlice_f32())
+		inputs[2].GetSlice_bytes())
 }
 
 func opGlUniform2fv(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglUniform2fv(
 		inputs[0].Get_i32(),
 		inputs[1].Get_i32(),
-		inputs[2].GetSlice_f32())
+		inputs[2].GetSlice_bytes())
 }
 
 func opGlUniform3fv(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglUniform3fv(
 		inputs[0].Get_i32(),
 		inputs[1].Get_i32(),
-		inputs[2].GetSlice_f32())
+		inputs[2].GetSlice_bytes())
 }
 
 func opGlUniform4fv(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglUniform4fv(
 		inputs[0].Get_i32(),
 		inputs[1].Get_i32(),
-		inputs[2].GetSlice_f32())
+		inputs[2].GetSlice_bytes())
 }
 
 func opGlUniform1iv(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglUniform1iv(
 		inputs[0].Get_i32(),
 		inputs[1].Get_i32(),
-		inputs[2].GetSlice_i32())
+		inputs[2].GetSlice_bytes())
 }
 
 func opGlUniform2iv(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglUniform2iv(
 		inputs[0].Get_i32(),
 		inputs[1].Get_i32(),
-		inputs[2].GetSlice_i32())
+		inputs[2].GetSlice_bytes())
 }
 
 func opGlUniform3iv(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglUniform3iv(
 		inputs[0].Get_i32(),
 		inputs[1].Get_i32(),
-		inputs[2].GetSlice_i32())
+		inputs[2].GetSlice_bytes())
 }
 
 func opGlUniform4iv(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglUniform4iv(
 		inputs[0].Get_i32(),
 		inputs[1].Get_i32(),
-		inputs[2].GetSlice_i32())
+		inputs[2].GetSlice_bytes())
 }
 
 func opGlUniformMatrix2fv(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
@@ -893,7 +926,7 @@ func opGlUniformMatrix2fv(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 		inputs[0].Get_i32(),
 		inputs[1].Get_i32(),
 		inputs[2].Get_bool(),
-		inputs[3].GetSlice_f32())
+		inputs[3].GetSlice_bytes())
 }
 
 func opGlUniformMatrix3fv(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
@@ -901,7 +934,7 @@ func opGlUniformMatrix3fv(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 		inputs[0].Get_i32(),
 		inputs[1].Get_i32(),
 		inputs[2].Get_bool(),
-		inputs[3].GetSlice_f32())
+		inputs[3].GetSlice_bytes())
 }
 
 func opGlUniformMatrix4fv(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
@@ -909,14 +942,14 @@ func opGlUniformMatrix4fv(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 		inputs[0].Get_i32(),
 		inputs[1].Get_i32(),
 		inputs[2].Get_bool(),
-		inputs[3].GetSlice_f32())
+		inputs[3].GetSlice_bytes())
 }
 
 func opGlUniformV4F(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglUniform4fv(
 		inputs[0].Get_i32(),
 		1,
-		inputs[1].GetSlice())
+		inputs[1].Get_bytes())
 }
 
 func opGlUniformM44F(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
@@ -924,7 +957,7 @@ func opGlUniformM44F(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 		inputs[0].Get_i32(),
 		1,
 		inputs[1].Get_bool(),
-		inputs[2].GetSlice())
+		inputs[2].Get_bytes())
 }
 
 func opGlUniformM44FV(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
@@ -932,7 +965,7 @@ func opGlUniformM44FV(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 		inputs[0].Get_i32(),
 		inputs[1].Get_i32(),
 		inputs[2].Get_bool(),
-		inputs[3].GetSlice())
+		inputs[3].GetSlice_bytes())
 }
 
 func opGlVertexAttribPointer(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
@@ -955,7 +988,7 @@ func opGlVertexAttribPointerI32(inputs []cxcore.CXValue, outputs []cxcore.CXValu
 }
 
 func opGlClearBufferI(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
-	color := []int32{
+	color := [4]int32{
 		inputs[2].Get_i32(),
 		inputs[3].Get_i32(),
 		inputs[4].Get_i32(),
@@ -964,11 +997,11 @@ func opGlClearBufferI(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglClearBufferiv(
 		uint32(inputs[0].Get_i32()),
 		inputs[1].Get_i32(),
-		color)
+		color[:])
 }
 
 func opGlClearBufferUI(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
-	color := []uint32{
+	color := [4]uint32{
 		inputs[2].Get_ui32(),
 		inputs[3].Get_ui32(),
 		inputs[4].Get_ui32(),
@@ -977,11 +1010,11 @@ func opGlClearBufferUI(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglClearBufferuiv(
 		uint32(inputs[0].Get_i32()),
 		inputs[1].Get_i32(),
-		color)
+		color[:])
 }
 
 func opGlClearBufferF(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
-	color := []float32{
+	color := [4]float32{
 		inputs[2].Get_f32(),
 		inputs[3].Get_f32(),
 		inputs[4].Get_f32(),
@@ -990,7 +1023,7 @@ func opGlClearBufferF(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	cxglClearBufferfv(
 		uint32(inputs[0].Get_i32()),
 		inputs[1].Get_i32(),
-		color)
+		color[:])
 }
 
 func opGlBindRenderbuffer(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {

@@ -5,42 +5,40 @@
 package parser // import "github.com/skycoin/cx/cmd/goyacc/parser/nquads"
 
 import (
-	"encoding/hex"
 	"fmt"
 	"path"
 	"runtime"
-	"strings"
 	"testing"
 )
 
-func caller(s string, va ...interface{}) {
-	_, fn, fl, _ := runtime.Caller(2)
-	fmt.Printf("caller: %s:%d: ", path.Base(fn), fl)
-	fmt.Printf(s, va...)
-	fmt.Println()
-	_, fn, fl, _ = runtime.Caller(1)
-	fmt.Printf("\tcallee: %s:%d: ", path.Base(fn), fl)
-	fmt.Println()
-}
+// func caller(s string, va ...interface{}) {
+// 	_, fn, fl, _ := runtime.Caller(2)
+// 	fmt.Printf("caller: %s:%d: ", path.Base(fn), fl)
+// 	fmt.Printf(s, va...)
+// 	fmt.Println()
+// 	_, fn, fl, _ = runtime.Caller(1)
+// 	fmt.Printf("\tcallee: %s:%d: ", path.Base(fn), fl)
+// 	fmt.Println()
+// }
 
-func dbg(s string, va ...interface{}) {
-	if s == "" {
-		s = strings.Repeat("%v ", len(va))
-	}
-	_, fn, fl, _ := runtime.Caller(1)
-	fmt.Printf("dbg %s:%d: ", path.Base(fn), fl)
-	fmt.Printf(s, va...)
-	fmt.Println()
-}
+// func dbg(s string, va ...interface{}) {
+// 	if s == "" {
+// 		s = strings.Repeat("%v ", len(va))
+// 	}
+// 	_, fn, fl, _ := runtime.Caller(1)
+// 	fmt.Printf("dbg %s:%d: ", path.Base(fn), fl)
+// 	fmt.Printf(s, va...)
+// 	fmt.Println()
+// }
 
 func TODO(...interface{}) string {
 	_, fn, fl, _ := runtime.Caller(1)
 	return fmt.Sprintf("TODO: %s:%d:\n", path.Base(fn), fl)
 }
 
-func use(...interface{}) {}
+// func use(...interface{}) {}
 
-func hd(b []byte) string { return hex.Dump(b) }
+// func hd(b []byte) string { return hex.Dump(b) }
 
 // ============================================================================
 

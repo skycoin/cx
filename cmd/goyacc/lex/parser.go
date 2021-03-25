@@ -13,7 +13,7 @@ import __yyfmt__ "fmt"
 
 //line parser.y:10
 import (
-	"fmt"
+	// "fmt"
 	"strings"
 
 	"go/token"
@@ -99,11 +99,11 @@ var yyExca = [...]int{
 	-2, 0,
 }
 
-const yyNprod = 49
+// const yyNprod = 49
 const yyPrivate = 57344
 
-var yyTokenNames []string
-var yyStates []string
+// var yyTokenNames []string
+// var yyStates []string
 
 const yyLast = 70
 
