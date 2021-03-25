@@ -2,8 +2,8 @@ package api
 
 import (
 	"encoding/json"
-	"net/http"
 	"fmt"
+	"net/http"
 )
 
 // WriteJSON writes a json object on a http.ResponseWriter with the given code,
@@ -14,7 +14,7 @@ func WriteJSON(w http.ResponseWriter, r *http.Request, code int, v interface{}) 
 	enc := json.NewEncoder(w)
 	pretty, err := BoolFromQuery(r, "pretty", false)
 	if err != nil {
-		fmt.Errorf("Failed to get bool from query")
+		fmt.Fprint(w, "Failed to get bool from query")
 	}
 	if pretty {
 		enc.SetIndent("", "  ")

@@ -99,18 +99,18 @@ func lexerStep0(srcStrs, srcNames []string) int {
 	reComment := regexp.MustCompile("//")
 
 	rePkg := regexp.MustCompile("package")
-	rePkgName := regexp.MustCompile("(^|[\\s])package\\s+([_a-zA-Z][_a-zA-Z0-9]*)")
+	rePkgName := regexp.MustCompile(`(^|[\s])package\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
 	reStrct := regexp.MustCompile("type")
-	reStrctName := regexp.MustCompile("(^|[\\s])type\\s+([_a-zA-Z][_a-zA-Z0-9]*)?\\s")
+	reStrctName := regexp.MustCompile(`(^|[\s])type\s+([_a-zA-Z][_a-zA-Z0-9]*)?\s`)
 
 	reGlbl := regexp.MustCompile("var")
-	reGlblName := regexp.MustCompile("(^|[\\s])var\\s([_a-zA-Z][_a-zA-Z0-9]*)")
+	reGlblName := regexp.MustCompile(`(^|[\s])var\s([_a-zA-Z][_a-zA-Z0-9]*)`)
 
 	reBodyOpen := regexp.MustCompile("{")
 	reBodyClose := regexp.MustCompile("}")
 
 	reImp := regexp.MustCompile("import")
-	reImpName := regexp.MustCompile("(^|[\\s])import\\s+\"([_a-zA-Z][_a-zA-Z0-9/-]*)\"")
+	reImpName := regexp.MustCompile(`(^|[\s])import\s+"([_a-zA-Z][_a-zA-Z0-9/-]*)"`)
 
 	profiling.StartProfile("1. packages/structs")
 	// 1. Identify all the packages and structs
