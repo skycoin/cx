@@ -91,13 +91,14 @@ func GetOffsetAtomic(fp int, arg *CXArgument) int {
 // GetOffset_i8 ...
 func GetOffset_i8(fp int, arg *CXArgument) int {
 	//return GetFinalOffset(fp, arg)
+	//return GetOffsetAtomic(fp,arg)
 	return GetOffsetAtomicSimple(fp,arg)
 }
 
 // GetOffset_i16 ...
 func GetOffset_i16(fp int, arg *CXArgument) int {
 	//return GetFinalOffset(fp, arg)
-	return GetOffsetAtomicSimple(fp, arg)
+	return GetOffsetAtomic(fp, arg)
 }
 
 // GetOffset_i32 ...
