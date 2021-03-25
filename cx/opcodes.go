@@ -896,31 +896,13 @@ func Param(typCode int) *CXArgument {
 	return arg
 }
 
-// ParamData ...
-type ParamData struct {
-	typCode   int           // The type code of the parameter.
-	paramType int           // Type of the parameter (struct, slice, etc.).
-	strctName string        // Name of the struct in case we're handling a struct instance.
-	pkg       *CXPackage    // To what package does this param belongs to.
-	inputs    []*CXArgument // Input parameters to a TYPE_FUNC parameter.
-	outputs   []*CXArgument // Output parameters to a TYPE_FUNC parameter.
-}
-
-// ParamEx Helper function for creating parameters for standard library operators.
+// Func Helper function for creating function parameters for standard library operators.
 // The current standard library only uses basic types and slices. If more options are needed, modify this function
-func ParamEx(paramData ParamData) *CXArgument {
-	var arg *CXArgument
-	switch paramData.paramType {
-	case PARAM_DEFAULT:
-		arg = Param(paramData.typCode)
-	case PARAM_SLICE:
-		arg = Slice(paramData.typCode)
-	case PARAM_STRUCT:
-		arg = Struct(paramData.pkg.Name, paramData.strctName, "")
-	}
-	arg.Inputs = paramData.inputs
-	arg.Outputs = paramData.outputs
-	arg.Package = paramData.pkg
+func Func(pkg *CXPackage, inputs []*CXArgument, outputs []*CXArgument) *CXArgument {
+	arg := Param(TYPE_FUNC)
+	arg.Package = pkg
+	arg.Inputs = inputs
+	arg.Outputs = outputs
 	return arg
 }
 
@@ -1422,9 +1404,7 @@ func init() {
 	// Op(OP_EVOLVE_EVOLVE, "evolve.evolve", opEvolve, In(Slice(TYPE_AFF), Slice(TYPE_AFF), Slice(TYPE_AFF), Slice(TYPE_AFF), Slice(TYPE_AFF), AI32, AI32, AI32, AF64), nil)
 
 	Op(OP_HTTP_HANDLE, "http.Handle", opHTTPHandle,
-		In(
-			ASTR,
-			ParamEx(ParamData{typCode: TYPE_FUNC, pkg: httpPkg, inputs: In(MakeArgument("ResponseWriter", "", -1).AddType(TypeNames[TYPE_STR]), Pointer(Struct("http", "Request", "r")))})),
+		In(ASTR, Func(httpPkg, In(MakeArgument("ResponseWriter", "", -1).AddType(TypeNames[TYPE_STR]), Pointer(Struct("http", "Request", "r"))), nil)),
 		Out())
 
 	Op(OP_HTTP_CLOSE, "http.Close", opHTTPClose, nil, nil)

@@ -79,25 +79,6 @@ grep -rn "PARAM_STRUCT" .
 
 */
 
-//works
-// BUG
-const (
-	PARAM_DEFAULT = iota
-	PARAM_SLICE
-	PARAM_STRUCT
-)
-
-/*
-//doesnt work
-const (
-	PARAM_UNUSED = iota
-	PARAM_DEFAULT 
-	PARAM_SLICE
-	PARAM_STRUCT
-)
-*/
-
-
 const (
 	CX_SUCCESS = iota //zero can be success
 	CX_COMPILATION_ERROR
