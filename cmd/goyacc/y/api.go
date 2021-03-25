@@ -604,11 +604,11 @@ type State struct {
 	parent    *State               // On path to state 0.
 	psym      *Symbol              // Label for the edge parent -> state.
 	resolved  []string             //TODO non string data.
-	sym       *Symbol              // Sym transfering from parent to state.
-	trans     map[trans]stateItem  // sym.i -> stateItem
-	xitems    itemSet              // {x ∈ closure(kernel) | x.rule -> ε }.
-	xla       []symSet             // xitems LA.
-	y         *y                   //
+	// sym       *Symbol              // Sym transfering from parent to state.
+	trans  map[trans]stateItem // sym.i -> stateItem
+	xitems itemSet             // {x ∈ closure(kernel) | x.rule -> ε }.
+	xla    []symSet            // xitems LA.
+	y      *y                  //
 }
 
 func newState(y *y, s itemSet) *State {
@@ -622,13 +622,13 @@ func newState(y *y, s itemSet) *State {
 	}
 }
 
-func (s *State) zpath() []int {
-	if s == nil {
-		return nil
-	}
+// func (s *State) zpath() []int {
+// 	if s == nil {
+// 		return nil
+// 	}
 
-	return append(s.parent.zpath(), s.id)
-}
+// 	return append(s.parent.zpath(), s.id)
+// }
 
 func (s *State) syms0() []*Symbol {
 	s.y.zeroPaths()
