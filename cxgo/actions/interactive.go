@@ -7,46 +7,49 @@ import (
 	"github.com/skycoin/cx/cx"
 )
 
+/*
+./cxgo/parser/cxgo.y:234:			actions.Stepping(int($2), int($3), true)
+./cxgo/parser/cxgo.y:238:			actions.Stepping(int($2), 0, false)
+./cxgo/parser/cxgo.go:1693:			actions.Stepping(int(yyS[yypt-1].i32), int(yyS[yypt-0].i32), true)
+./cxgo/parser/cxgo.go:1697:			actions.Stepping(int(yyS[yypt-0].i32), 0, false)
+./cxgo/actions/interactive.go:10:func Stepping(steps int, delay int, withDelay bool) {
+*/
+
+//DELETE THIS, only calls RunCompiled
+func SteppingNoDelay(steps int) {
+	if steps < 0 {
+		panic("error, should not be negative")
+	}
+	//steps=0 for running infinitely
+	if err := PRGRM.RunCompiled(steps, nil); err != nil {
+		fmt.Println(err)
+	}
+}
+
+//DELETE THIS, only calls RunCompiled
+func SteppingWithDelay(steps int, delay int, withDelay bool) {
+	if steps < 0 {
+		panic("error, should not be negative")
+	}
+
+	for i := 0; i < steps; i++ {
+		time.Sleep(time.Duration(int32(delay)) * time.Second)
+		err := PRGRM.RunCompiled(1, nil)
+		if PRGRM.Terminated {
+			break
+		}
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
+}
+
+//delete this function, its retarded
 func Stepping(steps int, delay int, withDelay bool) {
-	if withDelay {
-		if steps == 0 {
-			// Maybe nothing for now
-		} else {
-			if steps < 0 {
-				panic("error, should not be negative")
-				//PRGRM.UnRun(steps)
-			} else {
-				for i := 0; i < steps; i++ {
-					time.Sleep(time.Duration(int32(delay)) * time.Second)
-					err := PRGRM.RunCompiled(1, nil)
-					if PRGRM.Terminated {
-						break
-					}
-					if err != nil {
-						fmt.Println(err)
-					}
-				}
-			}
-		}
+	if !withDelay {
+		SteppingNoDelay(steps)
 	} else {
-		if steps == 0 {
-			// we run until halt or end of program;
-			if err := PRGRM.RunCompiled(0, nil); err != nil {
-				fmt.Println(err)
-			}
-		} else {
-			if steps < 0 {
-				// nCalls := steps * -1
-				// PRGRM.UnRun(int(nCalls))
-				PRGRM.UnRun(steps)
-			} else {
-				PRGRM.RunCompiled(steps, nil)
-				// err := PRGRM.RunInterpreted(dStack, int(steps))
-				// if err != nil {
-				// 	fmt.Println(err)
-				// }
-			}
-		}
+		SteppingWithDelay(steps, delay, withDelay)
 	}
 }
 
