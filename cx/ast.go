@@ -101,7 +101,8 @@ type CXFunction struct {
 
 	// Used by the REPL and parser
 	CurrentExpression *CXExpression
-	Version int
+
+    Version int // TODO: remove when all opcodes use new signature.
 }
 
 // CXExpression is used represent a CX expression.
@@ -1160,35 +1161,6 @@ func MakeNativeFunction(opCode int, inputs []*CXArgument, outputs []*CXArgument)
 		OpCode:   opCode,
         IntCode: -1,
 		Version:1,
-	}
-
-	offset := 0
-	for _, inp := range inputs {
-		// for _, typCode := range inputs {
-		// inp := MakeArgument("", "", -1).AddType(TypeNames[typCode])
-		inp.Offset = offset
-		offset += GetSize(inp)
-		fn.Inputs = append(fn.Inputs, inp)
-	}
-	for _, out := range outputs {
-		// for _, typCode := range outputs {
-		// fn.Outputs = append(fn.Outputs, MakeArgument("", "", -1).AddType(TypeNames[typCode]))
-		// out := MakeArgument("", "", -1).AddType(TypeNames[typCode])
-		fn.Outputs = append(fn.Outputs, out)
-		out.Offset = offset
-		offset += GetSize(out)
-	}
-
-	return fn
-}
-
-
-func MakeNativeFunctionV2(opCode int, inputs []*CXArgument, outputs []*CXArgument) *CXFunction {
-	fn := &CXFunction{
-		IsNative: true,
-		OpCode:   opCode,
-        IntCode: -1,
-		Version:2,
 	}
 
 	offset := 0

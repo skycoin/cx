@@ -734,9 +734,6 @@ var (
 	// OpCodes ...
 	OpCodes = map[string]int{}
 
-	// Versions ...
-	OpVersions = map[int]int{}
-
 	// Natives ...
 	Natives        = map[int]*CXFunction{}
 
@@ -798,7 +795,6 @@ func Op_V2(code int, name string, handler OpcodeHandler_V2, inputs []*CXArgument
 
 	OpNames[code] = name
 	OpCodes[name] = code
-	OpVersions[code] = 2
 
 	if inputs == nil {
 		inputs = []*CXArgument{}
@@ -806,7 +802,9 @@ func Op_V2(code int, name string, handler OpcodeHandler_V2, inputs []*CXArgument
 	if outputs == nil {
 		outputs = []*CXArgument{}
 	}
-	Natives[code] = MakeNativeFunctionV2(code, inputs, outputs)
+    opCode := MakeNativeFunction(code, inputs, outputs)
+    opCode.Version = 2
+    Natives[code] = opCode
 }
 
 
@@ -822,7 +820,6 @@ func Op(code int, name string, handler OpcodeHandler, inputs []*CXArgument, outp
 
 	OpNames[code] = name
 	OpCodes[name] = code
-	OpVersions[code] = 1
 	if inputs == nil {
 		inputs = []*CXArgument{}
 	}
