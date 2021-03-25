@@ -854,9 +854,9 @@ func (s *Lexer) stdString() {
 		}
 		if s.ch == '\\' {
 			s.nextch()
-			if !s.escape('"') {
-
-			}
+			//if !s.escape('"') {
+				//nothing? Empty Branch?
+			//}
 			continue
 		}
 		if s.ch == '\n' {
