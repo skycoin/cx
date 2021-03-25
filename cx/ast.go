@@ -29,13 +29,16 @@ type CXProgram struct {
 	Inputs       []*CXArgument // OS input arguments
 	Outputs      []*CXArgument // outputs to the OS
 	Memory       []byte        // Used when running the program
+	
 	StackSize    int           // This field stores the size of a CX program's stack
+	StackPointer int           // At what byte the current stack frame is
+
 	HeapSize     int           // This field stores the size of a CX program's heap
 	HeapStartsAt int           // Offset at which the heap starts in a CX program's memory
-	StackPointer int           // At what byte the current stack frame is
+	HeapPointer  int           // At what offset a CX program can insert a new object to the heap
+
 	CallStack    []CXCall      // Collection of function calls
 	CallCounter  int           // What function call is the currently being executed in the CallStack
-	HeapPointer  int           // At what offset a CX program can insert a new object to the heap
 	Terminated   bool          // Utility field for the runtime. Indicates if a CX program has already finished or not.
 	Version      string        // CX version used to build this CX program.
 
@@ -81,7 +84,7 @@ type CXFunction struct {
 	Package  *CXPackage // The package it's a member of
 	IsNative bool       // True if the function is native to CX, e.g. int32.add()
 	OpCode   int        // opcode if IsNative = true
-
+    IntCode int // TODO: remove
 	// Contents
 	Inputs      []*CXArgument   // Input parameters to the function
 	Outputs     []*CXArgument   // Output parameters from the function
@@ -1117,6 +1120,7 @@ func MakeNativeFunction(opCode int, inputs []*CXArgument, outputs []*CXArgument)
 	fn := &CXFunction{
 		IsNative: true,
 		OpCode:   opCode,
+        IntCode: -1,
 		Version:1,
 	}
 
@@ -1145,6 +1149,7 @@ func MakeNativeFunctionV2(opCode int, inputs []*CXArgument, outputs []*CXArgumen
 	fn := &CXFunction{
 		IsNative: true,
 		OpCode:   opCode,
+        IntCode: -1,
 		Version:2,
 	}
 

@@ -91,68 +91,79 @@ func GetOffsetAtomic(fp int, arg *CXArgument) int {
 // GetOffset_i8 ...
 func GetOffset_i8(fp int, arg *CXArgument) int {
 	//return GetFinalOffset(fp, arg)
-	return GetOffsetAtomic(fp,arg)
+	//return GetOffsetAtomic(fp,arg)
+	return GetOffsetAtomicSimple(fp,arg)
 }
 
 // GetOffset_i16 ...
 func GetOffset_i16(fp int, arg *CXArgument) int {
 	//return GetFinalOffset(fp, arg)
-	return GetOffsetAtomic(fp, arg)
+	//return GetOffsetAtomic(fp, arg)
+	return GetOffsetAtomicSimple(fp,arg)
 }
 
 // GetOffset_i32 ...
 func GetOffset_i32(fp int, arg *CXArgument) int {
 	//return GetFinalOffset(fp, arg)
-	return GetOffsetAtomic(fp, arg)
+	//return GetOffsetAtomic(fp, arg)
+	return GetOffsetAtomicSimple(fp,arg)
 }
 
 // GetOffset_i64 ...
 func GetOffset_i64(fp int, arg *CXArgument) int {
 	//return GetFinalOffset(fp, arg)
-	return GetOffsetAtomic(fp, arg)
+	//return GetOffsetAtomic(fp, arg)
+	return GetOffsetAtomicSimple(fp,arg)
 }
 
 // GetOffset_ui8 ...
 func GetOffset_ui8(fp int, arg *CXArgument) int {
 	//return GetFinalOffset(fp, arg)
-	return GetOffsetAtomic(fp, arg)
+	//return GetOffsetAtomic(fp, arg)
+	return GetOffsetAtomicSimple(fp,arg)
 }
 
 // GetOffset_ui16 ...
 func GetOffset_ui16(fp int, arg *CXArgument) int {
 	//return GetFinalOffset(fp, arg)
-	return GetOffsetAtomic(fp, arg)
+	//return GetOffsetAtomic(fp, arg)
+	return GetOffsetAtomicSimple(fp,arg)
 }
 
 // GetOffset_ui32 ...
 func GetOffset_ui32(fp int, arg *CXArgument) int {
 	//return GetFinalOffset(fp, arg)
-	return GetOffsetAtomic(fp, arg)
+	//return GetOffsetAtomic(fp, arg)
+	return GetOffsetAtomicSimple(fp,arg)
 }
 
 // GetOffset_ui64 ...
 func GetOffset_ui64(fp int, arg *CXArgument) int {
 	//return GetFinalOffset(fp, arg)
-	return GetOffsetAtomic(fp, arg)
+	//return GetOffsetAtomic(fp, arg)
+	return GetOffsetAtomicSimple(fp,arg)
 }
 
 // GetOffset_f32 ...
 func GetOffset_f32(fp int, arg *CXArgument) int {
 	//return GetFinalOffset(fp, arg)
-	return GetOffsetAtomic(fp, arg)
+	//return GetOffsetAtomic(fp, arg)
+	return GetOffsetAtomicSimple(fp,arg)
 }
 
 // GetOffset_f64 ...
 func GetOffset_f64(fp int, arg *CXArgument) int {
 	//return GetFinalOffset(fp, arg)
-	return GetOffsetAtomic(fp, arg)
+	// return GetOffsetAtomic(fp, arg)
+	return GetOffsetAtomicSimple(fp,arg)
 }
 
 // GetOffset_bool ...
 //NOTE: BOOL is not ready for migration yet
 func GetOffset_bool(fp int, arg *CXArgument) int {
 	//return GetFinalOffset(fp, arg)
-	return GetOffsetAtomic(fp, arg)
+	//return GetOffsetAtomic(fp, arg)
+	return GetOffsetAtomicSimple(fp,arg)
 }
 
 // GetOffset_str ...

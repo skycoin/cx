@@ -93,17 +93,8 @@ func isParseOp(expr *cxcore.CXExpression) bool {
 // accept `cxcore.TYPE_UNDEFINED` arguments) is receiving arguments of valid types. For example,
 // the expression `sa + sb` is not valid if they are struct instances.
 func CheckUndValidTypes(expr *cxcore.CXExpression) {
-	if expr.Operator != nil && IsUndOpBasicTypes(expr.Operator) && !IsAllArgsBasicTypes(expr) {
+	if expr.Operator != nil && cxcore.IsOperator(expr.Operator.OpCode) && !IsAllArgsBasicTypes(expr) {
 		println(cxcore.CompilationError(CurrentFile, LineNo), fmt.Sprintf("invalid argument types for '%s' operator", cxcore.OpNames[expr.Operator.OpCode]))
-	}
-}
-
-// CheckConcatStr checks if `expr`'s operator is cxcore.OP_UND_ADD and if its operands are of type str.
-// If this is the case, the operator is changed to cxcore.OP_STR_CONCAT to concatenate the strings.
-func CheckConcatStr(expr *cxcore.CXExpression) {
-	if expr.Operator != nil && expr.Operator.OpCode == cxcore.OP_UND_ADD &&
-		expr.Inputs[0].Type == cxcore.TYPE_STR && expr.Inputs[1].Type == cxcore.TYPE_STR {
-		expr.Operator = cxcore.Natives[cxcore.OP_STR_CONCAT]
 	}
 }
 
@@ -126,18 +117,18 @@ func FunctionDeclaration(fn *cxcore.CXFunction, inputs, outputs []*cxcore.CXArgu
 	var symbols *[]map[string]*cxcore.CXArgument
 	tmp := make([]map[string]*cxcore.CXArgument, 0)
 	symbols = &tmp
-	*symbols = append(*symbols, make(map[string]*cxcore.CXArgument, 0))
+	*symbols = append(*symbols, make(map[string]*cxcore.CXArgument))
 
 	// this variable only handles the difference between local and global scopes
 	// local being function constrained variables, and global being global variables
-	var symbolsScope map[string]bool = make(map[string]bool, 0)
+	var symbolsScope map[string]bool = make(map[string]bool)
 
 	FunctionProcessParameters(symbols, &symbolsScope, &offset, fn, fn.Inputs)
 	FunctionProcessParameters(symbols, &symbolsScope, &offset, fn, fn.Outputs)
 
 	for i, expr := range fn.Expressions {
 		if expr.ScopeOperation == cxcore.SCOPE_NEW {
-			*symbols = append(*symbols, make(map[string]*cxcore.CXArgument, 0))
+			*symbols = append(*symbols, make(map[string]*cxcore.CXArgument))
 		}
 
 		ProcessMethodCall(expr, symbols, &offset, true)
@@ -167,7 +158,6 @@ func FunctionDeclaration(fn *cxcore.CXFunction, inputs, outputs []*cxcore.CXArgu
 
 		CheckTypes(expr)
 		CheckUndValidTypes(expr)
-		CheckConcatStr(expr)
 
 		if expr.ScopeOperation == cxcore.SCOPE_REM {
 			*symbols = (*symbols)[:len(*symbols)-1]
@@ -253,17 +243,6 @@ func FunctionCall(exprs []*cxcore.CXExpression, args []*cxcore.CXExpression) []*
 	return append(nestedExprs, exprs...)
 }
 
-// Depending on the operator, we're going to return the input's size or a prefixed size (like a Boolean)
-func undOutputSize(expr *cxcore.CXExpression) int {
-	switch expr.Operator.OpCode {
-	case cxcore.OP_UND_EQUAL, cxcore.OP_UND_UNEQUAL, cxcore.OP_UND_LT, cxcore.OP_UND_GT, cxcore.OP_UND_LTEQ, cxcore.OP_UND_GTEQ:
-		// the result is a Boolean for any of these
-		return 1
-	default:
-		return cxcore.GetSize(cxcore.GetAssignmentElement(expr.Inputs[0]))
-	}
-}
-
 // checkSameNativeType checks if all the inputs of an expression are of the same type.
 // It is used mainly to prevent implicit castings in arithmetic operations
 func checkSameNativeType(expr *cxcore.CXExpression) error {
@@ -280,44 +259,20 @@ func checkSameNativeType(expr *cxcore.CXExpression) error {
 	return nil
 }
 
-// isUndOpSameInputTypes checks if the received operator belongs to a list of cxcore.OP_UND_***
-// where its inputs' types must be of the same type
-func isUndOpSameInputTypes(op *cxcore.CXFunction) bool {
-	switch op.OpCode {
-	case
-		cxcore.OP_UND_EQUAL,
-		cxcore.OP_UND_UNEQUAL,
-		cxcore.OP_UND_BITAND,
-		cxcore.OP_UND_BITXOR,
-		cxcore.OP_UND_BITOR,
-		cxcore.OP_UND_BITCLEAR,
-		cxcore.OP_UND_MUL,
-		cxcore.OP_UND_DIV,
-		cxcore.OP_UND_MOD,
-		cxcore.OP_UND_ADD,
-		cxcore.OP_UND_SUB,
-		cxcore.OP_UND_NEG,
-		cxcore.OP_UND_LT,
-		cxcore.OP_UND_GT,
-		cxcore.OP_UND_LTEQ,
-		cxcore.OP_UND_GTEQ,
-		cxcore.OP_UND_BITSHL,
-		cxcore.OP_UND_BITSHR:
-		return true
-	}
-	return false
-}
-
 func ProcessUndExpression(expr *cxcore.CXExpression) {
-	if expr.Operator != nil && isUndOpSameInputTypes(expr.Operator) {
+	if expr.Operator != nil && cxcore.IsOperator(expr.Operator.OpCode) {
 		if err := checkSameNativeType(expr); err != nil {
 			println(cxcore.CompilationError(CurrentFile, LineNo), err.Error())
 		}
 	}
 	if expr.IsUndType {
 		for _, out := range expr.Outputs {
-			out.Size = undOutputSize(expr)
-			out.TotalSize = out.Size
+            size := 1
+            if !cxcore.IsComparisonOperator(expr.Operator.OpCode) {
+		        size = cxcore.GetSize(cxcore.GetAssignmentElement(expr.Inputs[0]))
+            }
+            out.Size = size
+			out.TotalSize = size
 		}
 	}
 }
@@ -696,7 +651,7 @@ func ProcessSlice(inp *cxcore.CXArgument) {
 	if elt.IsSlice && len(elt.DereferenceOperations) > 0 && elt.DereferenceOperations[len(elt.DereferenceOperations)-1] == cxcore.DEREF_POINTER {
 		elt.DereferenceOperations = elt.DereferenceOperations[:len(elt.DereferenceOperations)-1]
 		return
-	} 
+	}
 
 	if elt.IsSlice && len(elt.DereferenceOperations) > 0 && len(inp.Fields) == 0 {
 		return
@@ -936,7 +891,7 @@ func GiveOffset(symbols *[]map[string]*cxcore.CXArgument, sym *cxcore.CXArgument
 }
 
 func ProcessTempVariable(expr *cxcore.CXExpression) {
-	if expr.Operator != nil && (expr.Operator == cxcore.Natives[cxcore.OP_IDENTITY] || IsUndOpMimicInput(expr.Operator)) && len(expr.Outputs) > 0 && len(expr.Inputs) > 0 {
+	if expr.Operator != nil && (expr.Operator == cxcore.Natives[cxcore.OP_IDENTITY] || cxcore.IsArithmeticOperator(expr.Operator.OpCode)) && len(expr.Outputs) > 0 && len(expr.Inputs) > 0 {
 		name := expr.Outputs[0].Name
 		arg := expr.Outputs[0]
 		if cxcore.IsTempVar(name) {
@@ -966,13 +921,13 @@ func CopyArgFields(sym *cxcore.CXArgument, arg *cxcore.CXArgument) {
 					if declSpec[len(declSpec)-1] == cxcore.DECL_ARRAY || declSpec[len(declSpec)-1] == cxcore.DECL_SLICE {
 						declSpec = declSpec[:len(declSpec)-1]
 					} else {
-						println(cxcore.CompilationError(sym.FileName, sym.FileLine), fmt.Sprintf("invalid indexing"))
+						println(cxcore.CompilationError(sym.FileName, sym.FileLine), "invalid indexing")
 					}
 				case cxcore.DECL_DEREF:
 					if declSpec[len(declSpec)-1] == cxcore.DECL_POINTER {
 						declSpec = declSpec[:len(declSpec)-1]
 					} else {
-						println(cxcore.CompilationError(sym.FileName, sym.FileLine), fmt.Sprintf("invalid indirection"))
+						println(cxcore.CompilationError(sym.FileName, sym.FileLine), "invalid indirection")
 					}
 				default:
 					declSpec = append(declSpec, elt.DeclarationSpecifiers[c])
@@ -995,13 +950,13 @@ func CopyArgFields(sym *cxcore.CXArgument, arg *cxcore.CXArgument) {
 					if declSpec[len(declSpec)-1] == cxcore.DECL_ARRAY || declSpec[len(declSpec)-1] == cxcore.DECL_SLICE {
 						declSpec = declSpec[:len(declSpec)-1]
 					} else {
-						println(cxcore.CompilationError(sym.FileName, sym.FileLine), fmt.Sprintf("invalid indexing"))
+						println(cxcore.CompilationError(sym.FileName, sym.FileLine), "invalid indexing")
 					}
 				case cxcore.DECL_DEREF:
 					if declSpec[len(declSpec)-1] == cxcore.DECL_POINTER {
 						declSpec = declSpec[:len(declSpec)-1]
 					} else {
-						println(cxcore.CompilationError(sym.FileName, sym.FileLine), fmt.Sprintf("invalid indirection"))
+						println(cxcore.CompilationError(sym.FileName, sym.FileLine), "invalid indirection")
 					}
 				case cxcore.DECL_POINTER:
 					if sym.FileLine != arg.FileLine {
