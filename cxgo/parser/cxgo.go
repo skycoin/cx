@@ -6,8 +6,8 @@ import __yyfmt__ "fmt"
 
 import (
 	// "fmt"
-	. "github.com/skycoin/cx/cx"
-	. "github.com/skycoin/cx/cxgo/actions"
+	"github.com/skycoin/cx/cx"
+	"github.com/skycoin/cx/cxgo/actions"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 	"strconv"
 )
@@ -24,7 +24,7 @@ build-parser: ## Generate lexer and parser for CX grammar
 - cxgo/cxgo0/cxgo0.y is input
 */
 
-// var PRGRM = MakeProgram(CALLSTACK_SIZE, STACK_SIZE, INIT_HEAP_SIZE)
+// var actions.PRGRM = MakeProgram(CALLSTACK_SIZE, STACK_SIZE, INIT_HEAP_SIZE)
 
 func Parse(lexer *Lexer) int {
 	return yyParse(lexer)
@@ -51,20 +51,20 @@ type yySymType struct {
 
 	line int
 
-	argument  *CXArgument
-	arguments []*CXArgument
+	argument  *cxcore.CXArgument
+	arguments []*cxcore.CXArgument
 
-	expression  *CXExpression
-	expressions []*CXExpression
+	expression  *cxcore.CXExpression
+	expressions []*cxcore.CXExpression
 
-	SelectStatement  SelectStatement
-	SelectStatements []SelectStatement
+	SelectStatement  actions.SelectStatement
+	SelectStatements []actions.SelectStatement
 
-	ReturnExpressions ReturnExpressions
+	ReturnExpressions actions.ReturnExpressions
 
-	arrayArguments [][]*CXExpression
+	arrayArguments [][]*cxcore.CXExpression
 
-	function *CXFunction
+	function *cxcore.CXFunction
 }
 
 type yyXError struct {
@@ -1686,33 +1686,33 @@ yynewstate:
 	switch r {
 	case 11:
 		{
-			PRGRM.PrintProgram()
+			actions.PRGRM.PrintProgram()
 		}
 	case 12:
 		{
-			Stepping(int(yyS[yypt-1].i32), int(yyS[yypt-0].i32), true)
+			actions.Stepping(int(yyS[yypt-1].i32), int(yyS[yypt-0].i32), true)
 		}
 	case 13:
 		{
-			Stepping(int(yyS[yypt-0].i32), 0, false)
+			actions.Stepping(int(yyS[yypt-0].i32), 0, false)
 		}
 	case 14:
 		{
-			yyVAL.string = Selector(yyS[yypt-1].tok, SELECT_TYP_PKG)
+			yyVAL.string = actions.Selector(yyS[yypt-1].tok, actions.SELECT_TYP_PKG)
 		}
 	case 15:
 		{
-			yyVAL.string = Selector(yyS[yypt-0].tok, SELECT_TYP_FUNC)
+			yyVAL.string = actions.Selector(yyS[yypt-0].tok, actions.SELECT_TYP_FUNC)
 		}
 	case 16:
 		{
 			if len(yyS[yypt-0].expressions) > 0 {
-				if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
-					if fn, err := PRGRM.GetFunction(yyS[yypt-1].string, pkg.Name); err == nil {
+				if pkg, err := actions.PRGRM.GetCurrentPackage(); err == nil {
+					if fn, err := actions.PRGRM.GetFunction(yyS[yypt-1].string, pkg.Name); err == nil {
 						for _, expr := range yyS[yypt-0].expressions {
 							fn.AddExpression(expr)
 						}
-						FunctionDeclaration(fn, nil, nil, nil)
+						actions.FunctionDeclaration(fn, nil, nil, nil)
 					} else {
 						panic(err)
 					}
@@ -1723,27 +1723,27 @@ yynewstate:
 
 			// if $<bool>4 {
 
-			// 	if _, err := PRGRM.SelectFunction($<string>3); err == nil {
+			// 	if _, err := actions.PRGRM.SelectFunction($<string>3); err == nil {
 			// 	}
 			// }
 		}
 	case 17:
 		{
-			yyVAL.string = Selector(yyS[yypt-1].tok, SELECT_TYP_STRCT)
+			yyVAL.string = actions.Selector(yyS[yypt-1].tok, actions.SELECT_TYP_STRCT)
 		}
 	case 18:
 		{
-			yyVAL.string = Selector(yyS[yypt-0].tok, SELECT_TYP_STRCT)
+			yyVAL.string = actions.Selector(yyS[yypt-0].tok, actions.SELECT_TYP_STRCT)
 		}
 	case 19:
 		{
 			if len(yyS[yypt-0].arguments) > 0 {
-				if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
-					if strct, err := PRGRM.GetStruct(yyS[yypt-1].string, pkg.Name); err == nil {
+				if pkg, err := actions.PRGRM.GetCurrentPackage(); err == nil {
+					if strct, err := actions.PRGRM.GetStruct(yyS[yypt-1].string, pkg.Name); err == nil {
 						for _, fld := range yyS[yypt-0].arguments {
 							strct.AddField(fld)
 						}
-						// FunctionDeclaration(fn, nil, nil, nil)
+						// actions.FunctionDeclaration(fn, nil, nil, nil)
 					} else {
 						panic(err)
 					}
@@ -1752,22 +1752,22 @@ yynewstate:
 				}
 			}
 			/* if $<bool>4 { */
-			/* 	if _, err := PRGRM.SelectStruct($<string>3); err == nil { */
+			/* 	if _, err := actions.PRGRM.SelectStruct($<string>3); err == nil { */
 			/* 		//fmt.Println(fmt.Sprintf("== Changed to struct '%s' ==", strct.Name)) */
 			/* 	} */
 			/* } */
 		}
 	case 20:
 		{
-			DeclareGlobal(yyS[yypt-2].argument, yyS[yypt-1].argument, nil, false)
+			actions.DeclareGlobal(yyS[yypt-2].argument, yyS[yypt-1].argument, nil, false)
 		}
 	case 21:
 		{
-			DeclareGlobal(yyS[yypt-4].argument, yyS[yypt-3].argument, yyS[yypt-1].expressions, true)
+			actions.DeclareGlobal(yyS[yypt-4].argument, yyS[yypt-3].argument, yyS[yypt-1].expressions, true)
 		}
 	case 22:
 		{
-			DeclareStruct(yyS[yypt-2].tok, yyS[yypt-0].arguments)
+			actions.DeclareStruct(yyS[yypt-2].tok, yyS[yypt-0].arguments)
 		}
 	case 23:
 		{
@@ -1779,7 +1779,7 @@ yynewstate:
 		}
 	case 25:
 		{
-			yyVAL.arguments = []*CXArgument{yyS[yypt-1].argument}
+			yyVAL.arguments = []*cxcore.CXArgument{yyS[yypt-1].argument}
 		}
 	case 26:
 		{
@@ -1787,7 +1787,7 @@ yynewstate:
 		}
 	case 27:
 		{
-			DeclarePackage(yyS[yypt-1].tok)
+			actions.DeclarePackage(yyS[yypt-1].tok)
 		}
 	case 28:
 		{
@@ -1796,13 +1796,13 @@ yynewstate:
 	case 29:
 		{
 			yylval.line = 0
-			yyVAL.function = FunctionHeader(yyS[yypt-0].tok, nil, false)
-			InFn = true
+			yyVAL.function = actions.FunctionHeader(yyS[yypt-0].tok, nil, false)
+			actions.InFn = true
 		}
 	case 30:
 		{
-			yyVAL.function = FunctionHeader(yyS[yypt-0].tok, yyS[yypt-2].arguments, true)
-			InFn = true
+			yyVAL.function = actions.FunctionHeader(yyS[yypt-0].tok, yyS[yypt-2].arguments, true)
+			actions.InFn = true
 		}
 	case 31:
 		{
@@ -1814,17 +1814,17 @@ yynewstate:
 		}
 	case 33:
 		{
-			FunctionDeclaration(yyS[yypt-2].function, yyS[yypt-1].arguments, nil, yyS[yypt-0].expressions)
-			InFn = false
+			actions.FunctionDeclaration(yyS[yypt-2].function, yyS[yypt-1].arguments, nil, yyS[yypt-0].expressions)
+			actions.InFn = false
 		}
 	case 34:
 		{
-			FunctionDeclaration(yyS[yypt-3].function, yyS[yypt-2].arguments, yyS[yypt-1].arguments, yyS[yypt-0].expressions)
-			InFn = false
+			actions.FunctionDeclaration(yyS[yypt-3].function, yyS[yypt-2].arguments, yyS[yypt-1].arguments, yyS[yypt-0].expressions)
+			actions.InFn = false
 		}
 	case 36:
 		{
-			yyVAL.arguments = []*CXArgument{yyS[yypt-0].argument}
+			yyVAL.arguments = []*cxcore.CXArgument{yyS[yypt-0].argument}
 		}
 	case 37:
 		{
@@ -1839,9 +1839,9 @@ yynewstate:
 		}
 	case 40:
 		{
-			if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
-				arg := MakeArgument("", CurrentFile, LineNo)
-				arg.AddType(TypeNames[TYPE_UNDEFINED])
+			if pkg, err := actions.PRGRM.GetCurrentPackage(); err == nil {
+				arg := cxcore.MakeArgument("", actions.CurrentFile, actions.LineNo)
+				arg.AddType(cxcore.TypeNames[cxcore.TYPE_UNDEFINED])
 				arg.Name = yyS[yypt-0].tok
 				arg.Package = pkg
 				yyVAL.argument = arg
@@ -1855,22 +1855,22 @@ yynewstate:
 		}
 	case 42:
 		{
-			arg := DeclarationSpecifiersStruct(yyS[yypt-0].tok, "", false, CurrentFile, LineNo)
-			yyVAL.arguments = []*CXArgument{arg}
+			arg := actions.DeclarationSpecifiersStruct(yyS[yypt-0].tok, "", false, actions.CurrentFile, actions.LineNo)
+			yyVAL.arguments = []*cxcore.CXArgument{arg}
 		}
 	case 43:
 		{
-			arg := DeclarationSpecifiersBasic(yyS[yypt-0].i)
-			yyVAL.arguments = []*CXArgument{arg}
+			arg := actions.DeclarationSpecifiersBasic(yyS[yypt-0].i)
+			yyVAL.arguments = []*cxcore.CXArgument{arg}
 		}
 	case 44:
 		{
-			arg := DeclarationSpecifiersStruct(yyS[yypt-0].tok, "", false, CurrentFile, LineNo)
+			arg := actions.DeclarationSpecifiersStruct(yyS[yypt-0].tok, "", false, actions.CurrentFile, actions.LineNo)
 			yyVAL.arguments = append(yyS[yypt-2].arguments, arg)
 		}
 	case 45:
 		{
-			arg := DeclarationSpecifiersBasic(yyS[yypt-0].i)
+			arg := actions.DeclarationSpecifiersBasic(yyS[yypt-0].i)
 			yyVAL.arguments = append(yyS[yypt-2].arguments, arg)
 		}
 	case 46:
@@ -1885,96 +1885,96 @@ yynewstate:
 		}
 	case 48:
 		{
-			arg := MakeArgument("", CurrentFile, LineNo).AddType("func")
+			arg := cxcore.MakeArgument("", actions.CurrentFile, actions.LineNo).AddType("func")
 			arg.Inputs = yyS[yypt-1].arguments
 			arg.Outputs = yyS[yypt-0].arguments
-			yyVAL.argument = DeclarationSpecifiers(arg, []int{0}, DECL_FUNC)
+			yyVAL.argument = actions.DeclarationSpecifiers(arg, []int{0}, cxcore.DECL_FUNC)
 		}
 	case 49:
 		{
-			yyVAL.argument = DeclarationSpecifiers(yyS[yypt-0].argument, []int{0}, DECL_POINTER)
+			yyVAL.argument = actions.DeclarationSpecifiers(yyS[yypt-0].argument, []int{0}, cxcore.DECL_POINTER)
 		}
 	case 50:
 		{
-			yyVAL.argument = DeclarationSpecifiers(yyS[yypt-0].argument, []int{0}, DECL_SLICE)
+			yyVAL.argument = actions.DeclarationSpecifiers(yyS[yypt-0].argument, []int{0}, cxcore.DECL_SLICE)
 		}
 	case 51:
 		{
-			yyVAL.argument = DeclarationSpecifiersBasic(yyS[yypt-0].i)
+			yyVAL.argument = actions.DeclarationSpecifiersBasic(yyS[yypt-0].i)
 		}
 	case 52:
 		{
-			yyVAL.argument = DeclarationSpecifiersStruct(yyS[yypt-0].tok, "", false, CurrentFile, LineNo)
+			yyVAL.argument = actions.DeclarationSpecifiersStruct(yyS[yypt-0].tok, "", false, actions.CurrentFile, actions.LineNo)
 		}
 	case 53:
 		{
-			basic := DeclarationSpecifiersBasic(yyS[yypt-0].i)
-			yyVAL.argument = DeclarationSpecifiers(basic, yyS[yypt-1].ints, DECL_ARRAY)
+			basic := actions.DeclarationSpecifiersBasic(yyS[yypt-0].i)
+			yyVAL.argument = actions.DeclarationSpecifiers(basic, yyS[yypt-1].ints, cxcore.DECL_ARRAY)
 		}
 	case 54:
 		{
-			strct := DeclarationSpecifiersStruct(yyS[yypt-0].tok, "", false, CurrentFile, LineNo)
-			yyVAL.argument = DeclarationSpecifiers(strct, yyS[yypt-1].ints, DECL_ARRAY)
+			strct := actions.DeclarationSpecifiersStruct(yyS[yypt-0].tok, "", false, actions.CurrentFile, actions.LineNo)
+			yyVAL.argument = actions.DeclarationSpecifiers(strct, yyS[yypt-1].ints, cxcore.DECL_ARRAY)
 		}
 	case 55:
 		{
-			yyVAL.argument = DeclarationSpecifiersStruct(yyS[yypt-0].tok, yyS[yypt-2].tok, true, CurrentFile, LineNo)
+			yyVAL.argument = actions.DeclarationSpecifiersStruct(yyS[yypt-0].tok, yyS[yypt-2].tok, true, actions.CurrentFile, actions.LineNo)
 		}
 	case 56:
 		{
-			yyVAL.argument = DeclarationSpecifiersStruct(yyS[yypt-0].tok, TypeNames[yyS[yypt-2].i], true, CurrentFile, LineNo)
+			yyVAL.argument = actions.DeclarationSpecifiersStruct(yyS[yypt-0].tok, cxcore.TypeNames[yyS[yypt-2].i], true, actions.CurrentFile, actions.LineNo)
 		}
 	case 57:
 		{
-			yyVAL.i = TYPE_AFF
+			yyVAL.i = cxcore.TYPE_AFF
 		}
 	case 58:
 		{
-			yyVAL.i = TYPE_BOOL
+			yyVAL.i = cxcore.TYPE_BOOL
 		}
 	case 59:
 		{
-			yyVAL.i = TYPE_STR
+			yyVAL.i = cxcore.TYPE_STR
 		}
 	case 60:
 		{
-			yyVAL.i = TYPE_F32
+			yyVAL.i = cxcore.TYPE_F32
 		}
 	case 61:
 		{
-			yyVAL.i = TYPE_F64
+			yyVAL.i = cxcore.TYPE_F64
 		}
 	case 62:
 		{
-			yyVAL.i = TYPE_I8
+			yyVAL.i = cxcore.TYPE_I8
 		}
 	case 63:
 		{
-			yyVAL.i = TYPE_I16
+			yyVAL.i = cxcore.TYPE_I16
 		}
 	case 64:
 		{
-			yyVAL.i = TYPE_I32
+			yyVAL.i = cxcore.TYPE_I32
 		}
 	case 65:
 		{
-			yyVAL.i = TYPE_I64
+			yyVAL.i = cxcore.TYPE_I64
 		}
 	case 66:
 		{
-			yyVAL.i = TYPE_UI8
+			yyVAL.i = cxcore.TYPE_UI8
 		}
 	case 67:
 		{
-			yyVAL.i = TYPE_UI16
+			yyVAL.i = cxcore.TYPE_UI16
 		}
 	case 68:
 		{
-			yyVAL.i = TYPE_UI32
+			yyVAL.i = cxcore.TYPE_UI32
 		}
 	case 69:
 		{
-			yyVAL.i = TYPE_UI64
+			yyVAL.i = cxcore.TYPE_UI64
 		}
 	case 70:
 		{
@@ -1983,17 +1983,17 @@ yynewstate:
 	case 71:
 		{
 			if yyS[yypt-0].expressions[0].IsStructLiteral {
-				yyVAL.expressions = StructLiteralAssignment([]*CXExpression{StructLiteralFields(yyS[yypt-2].tok)}, yyS[yypt-0].expressions)
+				yyVAL.expressions = actions.StructLiteralAssignment([]*cxcore.CXExpression{actions.StructLiteralFields(yyS[yypt-2].tok)}, yyS[yypt-0].expressions)
 			} else {
-				yyVAL.expressions = Assignment([]*CXExpression{StructLiteralFields(yyS[yypt-2].tok)}, "=", yyS[yypt-0].expressions)
+				yyVAL.expressions = actions.Assignment([]*cxcore.CXExpression{actions.StructLiteralFields(yyS[yypt-2].tok)}, "=", yyS[yypt-0].expressions)
 			}
 		}
 	case 72:
 		{
 			if yyS[yypt-0].expressions[0].IsStructLiteral {
-				yyVAL.expressions = append(yyS[yypt-4].expressions, StructLiteralAssignment([]*CXExpression{StructLiteralFields(yyS[yypt-2].tok)}, yyS[yypt-0].expressions)...)
+				yyVAL.expressions = append(yyS[yypt-4].expressions, actions.StructLiteralAssignment([]*cxcore.CXExpression{actions.StructLiteralFields(yyS[yypt-2].tok)}, yyS[yypt-0].expressions)...)
 			} else {
-				yyVAL.expressions = append(yyS[yypt-4].expressions, Assignment([]*CXExpression{StructLiteralFields(yyS[yypt-2].tok)}, "=", yyS[yypt-0].expressions)...)
+				yyVAL.expressions = append(yyS[yypt-4].expressions, actions.Assignment([]*cxcore.CXExpression{actions.StructLiteralFields(yyS[yypt-2].tok)}, "=", yyS[yypt-0].expressions)...)
 			}
 		}
 	case 73:
@@ -2032,7 +2032,7 @@ yynewstate:
 		}
 	case 81:
 		{
-			yyVAL.expressions = ArrayLiteralExpression(yyS[yypt-4].ints, yyS[yypt-3].i, yyS[yypt-1].expressions)
+			yyVAL.expressions = actions.ArrayLiteralExpression(yyS[yypt-4].ints, yyS[yypt-3].i, yyS[yypt-1].expressions)
 		}
 	case 82:
 		{
@@ -2059,7 +2059,7 @@ yynewstate:
 		}
 	case 87:
 		{
-			yyVAL.expressions = SliceLiteralExpression(yyS[yypt-3].i, yyS[yypt-1].expressions)
+			yyVAL.expressions = actions.SliceLiteralExpression(yyS[yypt-3].i, yyS[yypt-1].expressions)
 		}
 	case 88:
 		{
@@ -2070,7 +2070,7 @@ yynewstate:
 			for _, expr := range yyS[yypt-0].expressions {
 				if expr.Outputs[0].Name == yyS[yypt-0].expressions[len(yyS[yypt-0].expressions)-1].Inputs[0].Name {
 					expr.Outputs[0].Lengths = append(expr.Outputs[0].Lengths, 0)
-					expr.Outputs[0].DeclarationSpecifiers = append(expr.Outputs[0].DeclarationSpecifiers, DECL_SLICE)
+					expr.Outputs[0].DeclarationSpecifiers = append(expr.Outputs[0].DeclarationSpecifiers, cxcore.DECL_SLICE)
 				}
 			}
 
@@ -2087,7 +2087,7 @@ yynewstate:
 		}
 	case 92:
 		{
-			yyVAL.string = TypeNames[yyS[yypt-2].i] + "." + yyS[yypt-0].tok
+			yyVAL.string = cxcore.TypeNames[yyS[yypt-2].i] + "." + yyS[yypt-0].tok
 		}
 	case 93:
 		{
@@ -2119,18 +2119,18 @@ yynewstate:
 		}
 	case 99:
 		{
-			yyVAL.expressions = SliceLiteralExpression(TYPE_AFF, nil)
+			yyVAL.expressions = actions.SliceLiteralExpression(cxcore.TYPE_AFF, nil)
 		}
 	case 100:
 		{
-			var exprs []*CXExpression
+			var exprs []*cxcore.CXExpression
 			for _, str := range yyS[yypt-0].stringA {
-				expr := WritePrimary(TYPE_AFF, encoder.Serialize(str), false)
+				expr := actions.WritePrimary(cxcore.TYPE_AFF, encoder.Serialize(str), false)
 				expr[len(expr)-1].IsArrayLiteral = true
 				exprs = append(exprs, expr...)
 			}
 
-			yyVAL.expressions = SliceLiteralExpression(TYPE_AFF, exprs)
+			yyVAL.expressions = actions.SliceLiteralExpression(cxcore.TYPE_AFF, exprs)
 		}
 	case 101:
 		{
@@ -2142,7 +2142,7 @@ yynewstate:
 		}
 	case 103:
 		{
-			yyVAL.expressions = PrimaryIdentifier(yyS[yypt-0].tok)
+			yyVAL.expressions = actions.PrimaryIdentifier(yyS[yypt-0].tok)
 		}
 	case 104:
 		{
@@ -2154,52 +2154,52 @@ yynewstate:
 		}
 	case 106:
 		{
-			yyVAL.expressions = WritePrimary(TYPE_STR, encoder.Serialize(yyS[yypt-0].tok), false)
+			yyVAL.expressions = actions.WritePrimary(cxcore.TYPE_STR, encoder.Serialize(yyS[yypt-0].tok), false)
 		}
 	case 107:
 		{
-			exprs := WritePrimary(TYPE_BOOL, encoder.Serialize(yyS[yypt-0].bool), false)
+			exprs := actions.WritePrimary(cxcore.TYPE_BOOL, encoder.Serialize(yyS[yypt-0].bool), false)
 			yyVAL.expressions = exprs
 		}
 	case 108:
 		{
-			yyVAL.expressions = WritePrimary(TYPE_I8, encoder.Serialize(yyS[yypt-0].i8), false)
+			yyVAL.expressions = actions.WritePrimary(cxcore.TYPE_I8, encoder.Serialize(yyS[yypt-0].i8), false)
 		}
 	case 109:
 		{
-			yyVAL.expressions = WritePrimary(TYPE_I16, encoder.Serialize(yyS[yypt-0].i16), false)
+			yyVAL.expressions = actions.WritePrimary(cxcore.TYPE_I16, encoder.Serialize(yyS[yypt-0].i16), false)
 		}
 	case 110:
 		{
-			yyVAL.expressions = WritePrimary(TYPE_I32, encoder.Serialize(yyS[yypt-0].i32), false)
+			yyVAL.expressions = actions.WritePrimary(cxcore.TYPE_I32, encoder.Serialize(yyS[yypt-0].i32), false)
 		}
 	case 111:
 		{
-			yyVAL.expressions = WritePrimary(TYPE_I64, encoder.Serialize(yyS[yypt-0].i64), false)
+			yyVAL.expressions = actions.WritePrimary(cxcore.TYPE_I64, encoder.Serialize(yyS[yypt-0].i64), false)
 		}
 	case 112:
 		{
-			yyVAL.expressions = WritePrimary(TYPE_UI8, encoder.Serialize(yyS[yypt-0].ui8), false)
+			yyVAL.expressions = actions.WritePrimary(cxcore.TYPE_UI8, encoder.Serialize(yyS[yypt-0].ui8), false)
 		}
 	case 113:
 		{
-			yyVAL.expressions = WritePrimary(TYPE_UI16, encoder.Serialize(yyS[yypt-0].ui16), false)
+			yyVAL.expressions = actions.WritePrimary(cxcore.TYPE_UI16, encoder.Serialize(yyS[yypt-0].ui16), false)
 		}
 	case 114:
 		{
-			yyVAL.expressions = WritePrimary(TYPE_UI32, encoder.Serialize(yyS[yypt-0].ui32), false)
+			yyVAL.expressions = actions.WritePrimary(cxcore.TYPE_UI32, encoder.Serialize(yyS[yypt-0].ui32), false)
 		}
 	case 115:
 		{
-			yyVAL.expressions = WritePrimary(TYPE_UI64, encoder.Serialize(yyS[yypt-0].ui64), false)
+			yyVAL.expressions = actions.WritePrimary(cxcore.TYPE_UI64, encoder.Serialize(yyS[yypt-0].ui64), false)
 		}
 	case 116:
 		{
-			yyVAL.expressions = WritePrimary(TYPE_F32, encoder.Serialize(yyS[yypt-0].f32), false)
+			yyVAL.expressions = actions.WritePrimary(cxcore.TYPE_F32, encoder.Serialize(yyS[yypt-0].f32), false)
 		}
 	case 117:
 		{
-			yyVAL.expressions = WritePrimary(TYPE_F64, encoder.Serialize(yyS[yypt-0].f64), false)
+			yyVAL.expressions = actions.WritePrimary(cxcore.TYPE_F64, encoder.Serialize(yyS[yypt-0].f64), false)
 		}
 	case 118:
 		{
@@ -2215,35 +2215,35 @@ yynewstate:
 		}
 	case 121:
 		{
-			yyVAL.tok = TypeNames[yyS[yypt-0].i]
+			yyVAL.tok = cxcore.TypeNames[yyS[yypt-0].i]
 		}
 	case 124:
 		{
-			yyVAL.expressions = PostfixExpressionArray(yyS[yypt-3].expressions, yyS[yypt-1].expressions)
+			yyVAL.expressions = actions.PostfixExpressionArray(yyS[yypt-3].expressions, yyS[yypt-1].expressions)
 		}
 	case 125:
 		{
-			yyVAL.expressions = PostfixExpressionNative(int(yyS[yypt-2].i), yyS[yypt-0].tok)
+			yyVAL.expressions = actions.PostfixExpressionNative(int(yyS[yypt-2].i), yyS[yypt-0].tok)
 		}
 	case 126:
 		{
-			yyVAL.expressions = PostfixExpressionEmptyFunCall(yyS[yypt-2].expressions)
+			yyVAL.expressions = actions.PostfixExpressionEmptyFunCall(yyS[yypt-2].expressions)
 		}
 	case 127:
 		{
-			yyVAL.expressions = PostfixExpressionFunCall(yyS[yypt-3].expressions, yyS[yypt-1].expressions)
+			yyVAL.expressions = actions.PostfixExpressionFunCall(yyS[yypt-3].expressions, yyS[yypt-1].expressions)
 		}
 	case 128:
 		{
-			yyVAL.expressions = PostfixExpressionIncDec(yyS[yypt-1].expressions, true)
+			yyVAL.expressions = actions.PostfixExpressionIncDec(yyS[yypt-1].expressions, true)
 		}
 	case 129:
 		{
-			yyVAL.expressions = PostfixExpressionIncDec(yyS[yypt-1].expressions, false)
+			yyVAL.expressions = actions.PostfixExpressionIncDec(yyS[yypt-1].expressions, false)
 		}
 	case 130:
 		{
-			yyVAL.expressions = PostfixExpressionField(yyS[yypt-2].expressions, yyS[yypt-0].tok)
+			yyVAL.expressions = actions.PostfixExpressionField(yyS[yypt-2].expressions, yyS[yypt-0].tok)
 		}
 	case 132:
 		{
@@ -2261,95 +2261,95 @@ yynewstate:
 		}
 	case 136:
 		{
-			yyVAL.expressions = UnaryExpression(yyS[yypt-1].tok, yyS[yypt-0].expressions)
+			yyVAL.expressions = actions.UnaryExpression(yyS[yypt-1].tok, yyS[yypt-0].expressions)
 		}
 	case 143:
 		{
-			yyVAL.expressions = ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, OP_MUL)
+			yyVAL.expressions = actions.ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, cxcore.OP_MUL)
 		}
 	case 144:
 		{
-			yyVAL.expressions = ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, OP_DIV)
+			yyVAL.expressions = actions.ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, cxcore.OP_DIV)
 		}
 	case 145:
 		{
-			yyVAL.expressions = ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, OP_MOD)
+			yyVAL.expressions = actions.ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, cxcore.OP_MOD)
 		}
 	case 147:
 		{
-			yyVAL.expressions = ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, OP_ADD)
+			yyVAL.expressions = actions.ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, cxcore.OP_ADD)
 		}
 	case 148:
 		{
-			yyVAL.expressions = ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, OP_SUB)
+			yyVAL.expressions = actions.ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, cxcore.OP_SUB)
 		}
 	case 150:
 		{
-			yyVAL.expressions = ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, OP_BITSHL)
+			yyVAL.expressions = actions.ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, cxcore.OP_BITSHL)
 		}
 	case 151:
 		{
-			yyVAL.expressions = ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, OP_BITSHR)
+			yyVAL.expressions = actions.ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, cxcore.OP_BITSHR)
 		}
 	case 152:
 		{
-			yyVAL.expressions = ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, OP_BITCLEAR)
+			yyVAL.expressions = actions.ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, cxcore.OP_BITCLEAR)
 		}
 	case 154:
 		{
-			yyVAL.expressions = ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, OP_EQUAL)
+			yyVAL.expressions = actions.ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, cxcore.OP_EQUAL)
 		}
 	case 155:
 		{
-			yyVAL.expressions = ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, OP_UNEQUAL)
+			yyVAL.expressions = actions.ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, cxcore.OP_UNEQUAL)
 		}
 	case 156:
 		{
-			yyVAL.expressions = ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, OP_LT)
+			yyVAL.expressions = actions.ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, cxcore.OP_LT)
 		}
 	case 157:
 		{
-			yyVAL.expressions = ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, OP_GT)
+			yyVAL.expressions = actions.ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, cxcore.OP_GT)
 		}
 	case 158:
 		{
-			yyVAL.expressions = ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, OP_LTEQ)
+			yyVAL.expressions = actions.ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, cxcore.OP_LTEQ)
 		}
 	case 159:
 		{
-			yyVAL.expressions = ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, OP_GTEQ)
+			yyVAL.expressions = actions.ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, cxcore.OP_GTEQ)
 		}
 	case 161:
 		{
-			yyVAL.expressions = ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, OP_BITAND)
+			yyVAL.expressions = actions.ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, cxcore.OP_BITAND)
 		}
 	case 163:
 		{
-			yyVAL.expressions = ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, OP_BITXOR)
+			yyVAL.expressions = actions.ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, cxcore.OP_BITXOR)
 		}
 	case 165:
 		{
-			yyVAL.expressions = ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, OP_BITOR)
+			yyVAL.expressions = actions.ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, cxcore.OP_BITOR)
 		}
 	case 167:
 		{
-			yyVAL.expressions = UndefinedTypeOperation(yyS[yypt-2].expressions, yyS[yypt-0].expressions, Natives[OP_BOOL_AND])
+			yyVAL.expressions = actions.UndefinedTypeOperation(yyS[yypt-2].expressions, yyS[yypt-0].expressions, cxcore.Natives[cxcore.OP_BOOL_AND])
 		}
 	case 169:
 		{
-			yyVAL.expressions = UndefinedTypeOperation(yyS[yypt-2].expressions, yyS[yypt-0].expressions, Natives[OP_BOOL_OR])
+			yyVAL.expressions = actions.UndefinedTypeOperation(yyS[yypt-2].expressions, yyS[yypt-0].expressions, cxcore.Natives[cxcore.OP_BOOL_OR])
 		}
 	case 173:
 		{
-			yyVAL.expressions = PrimaryStructLiteral(yyS[yypt-3].tok, yyS[yypt-1].expressions)
+			yyVAL.expressions = actions.PrimaryStructLiteral(yyS[yypt-3].tok, yyS[yypt-1].expressions)
 		}
 	case 174:
 		{
-			yyVAL.expressions = UnaryExpression(yyS[yypt-4].tok, PrimaryStructLiteral(yyS[yypt-3].tok, yyS[yypt-1].expressions))
+			yyVAL.expressions = actions.UnaryExpression(yyS[yypt-4].tok, actions.PrimaryStructLiteral(yyS[yypt-3].tok, yyS[yypt-1].expressions))
 		}
 	case 175:
 		{
-			yyVAL.expressions = PrimaryStructLiteralExternal(yyS[yypt-5].expressions[0].Outputs[0].Name, yyS[yypt-3].tok, yyS[yypt-1].expressions)
+			yyVAL.expressions = actions.PrimaryStructLiteralExternal(yyS[yypt-5].expressions[0].Outputs[0].Name, yyS[yypt-3].tok, yyS[yypt-1].expressions)
 		}
 	case 177:
 		{
@@ -2367,7 +2367,7 @@ yynewstate:
 							from.Outputs[0].PreviouslyDeclared = true
 						}
 					}
-					yyVAL.expressions = ArrayLiteralAssignment(yyS[yypt-2].expressions, yyS[yypt-0].expressions)
+					yyVAL.expressions = actions.ArrayLiteralAssignment(yyS[yypt-2].expressions, yyS[yypt-0].expressions)
 				} else if yyS[yypt-0].expressions[len(yyS[yypt-0].expressions)-1].IsStructLiteral {
 					if yyS[yypt-1].tok != "=" && yyS[yypt-1].tok != ":=" {
 						panic("")
@@ -2378,9 +2378,9 @@ yynewstate:
 							from.Outputs[0].PreviouslyDeclared = true
 						}
 					}
-					yyVAL.expressions = StructLiteralAssignment(yyS[yypt-2].expressions, yyS[yypt-0].expressions)
+					yyVAL.expressions = actions.StructLiteralAssignment(yyS[yypt-2].expressions, yyS[yypt-0].expressions)
 				} else {
-					yyVAL.expressions = Assignment(yyS[yypt-2].expressions, yyS[yypt-1].tok, yyS[yypt-0].expressions)
+					yyVAL.expressions = actions.Assignment(yyS[yypt-2].expressions, yyS[yypt-1].tok, yyS[yypt-0].expressions)
 				}
 			}
 		}
@@ -2391,11 +2391,11 @@ yynewstate:
 		}
 	case 193:
 		{
-			yyVAL.expressions = DeclareLocal(yyS[yypt-2].argument, yyS[yypt-1].argument, nil, false)
+			yyVAL.expressions = actions.DeclareLocal(yyS[yypt-2].argument, yyS[yypt-1].argument, nil, false)
 		}
 	case 194:
 		{
-			yyVAL.expressions = DeclareLocal(yyS[yypt-4].argument, yyS[yypt-3].argument, yyS[yypt-1].expressions, true)
+			yyVAL.expressions = actions.DeclareLocal(yyS[yypt-4].argument, yyS[yypt-3].argument, yyS[yypt-1].expressions, true)
 		}
 	case 202:
 		{
@@ -2446,9 +2446,9 @@ yynewstate:
 			if len(yyS[yypt-1].expressions) > 0 && yyS[yypt-1].expressions[len(yyS[yypt-1].expressions)-1].Operator == nil && !yyS[yypt-1].expressions[len(yyS[yypt-1].expressions)-1].IsMethodCall {
 				outs := yyS[yypt-1].expressions[len(yyS[yypt-1].expressions)-1].Outputs
 				if len(outs) > 0 {
-					println(CompilationError(outs[0].FileName, outs[0].FileLine), "invalid expression")
+					println(cxcore.CompilationError(outs[0].FileName, outs[0].FileLine), "invalid expression")
 				} else {
-					println(CompilationError(CurrentFile, LineNo), "invalid expression")
+					println(cxcore.CompilationError(actions.CurrentFile, actions.LineNo), "invalid expression")
 				}
 				yyVAL.expressions = nil
 			} else {
@@ -2458,33 +2458,33 @@ yynewstate:
 		}
 	case 216:
 		{
-			yyVAL.expressions = SelectionStatement(yyS[yypt-6].expressions, yyS[yypt-4].expressions, yyS[yypt-2].SelectStatements, yyS[yypt-1].expressions, SEL_ELSEIFELSE)
+			yyVAL.expressions = actions.SelectionStatement(yyS[yypt-6].expressions, yyS[yypt-4].expressions, yyS[yypt-2].SelectStatements, yyS[yypt-1].expressions, actions.SEL_ELSEIFELSE)
 		}
 	case 217:
 		{
-			yyVAL.expressions = SelectionExpressions(yyS[yypt-5].expressions, yyS[yypt-3].expressions, yyS[yypt-1].expressions)
+			yyVAL.expressions = actions.SelectionExpressions(yyS[yypt-5].expressions, yyS[yypt-3].expressions, yyS[yypt-1].expressions)
 		}
 	case 218:
 		{
-			yyVAL.expressions = SelectionExpressions(yyS[yypt-4].expressions, nil, yyS[yypt-1].expressions)
+			yyVAL.expressions = actions.SelectionExpressions(yyS[yypt-4].expressions, nil, yyS[yypt-1].expressions)
 		}
 	case 219:
 		{
-			yyVAL.expressions = SelectionStatement(yyS[yypt-5].expressions, yyS[yypt-3].expressions, yyS[yypt-1].SelectStatements, nil, SEL_ELSEIF)
+			yyVAL.expressions = actions.SelectionStatement(yyS[yypt-5].expressions, yyS[yypt-3].expressions, yyS[yypt-1].SelectStatements, nil, actions.SEL_ELSEIF)
 		}
 	case 220:
 		{
 			//
-			yyVAL.expressions = SelectionStatement(yyS[yypt-4].expressions, nil, yyS[yypt-1].SelectStatements, nil, SEL_ELSEIF)
+			yyVAL.expressions = actions.SelectionStatement(yyS[yypt-4].expressions, nil, yyS[yypt-1].SelectStatements, nil, actions.SEL_ELSEIF)
 		}
 	case 221:
 		{
 			//
-			yyVAL.expressions = SelectionStatement(yyS[yypt-5].expressions, nil, yyS[yypt-2].SelectStatements, yyS[yypt-1].expressions, SEL_ELSEIFELSE)
+			yyVAL.expressions = actions.SelectionStatement(yyS[yypt-5].expressions, nil, yyS[yypt-2].SelectStatements, yyS[yypt-1].expressions, actions.SEL_ELSEIFELSE)
 		}
 	case 222:
 		{
-			yyVAL.expressions = SelectionExpressions(yyS[yypt-1].expressions, yyS[yypt-0].expressions, nil)
+			yyVAL.expressions = actions.SelectionExpressions(yyS[yypt-1].expressions, yyS[yypt-0].expressions, nil)
 		}
 	case 223:
 		{
@@ -2492,21 +2492,21 @@ yynewstate:
 		}
 	case 224:
 		{
-			yyVAL.SelectStatement = SelectStatement{
+			yyVAL.SelectStatement = actions.SelectStatement{
 				Condition: yyS[yypt-3].expressions,
 				Then:      yyS[yypt-1].expressions,
 			}
 		}
 	case 225:
 		{
-			yyVAL.SelectStatement = SelectStatement{
+			yyVAL.SelectStatement = actions.SelectStatement{
 				Condition: yyS[yypt-2].expressions,
 				Then:      nil,
 			}
 		}
 	case 226:
 		{
-			yyVAL.SelectStatements = []SelectStatement{yyS[yypt-0].SelectStatement}
+			yyVAL.SelectStatements = []actions.SelectStatement{yyS[yypt-0].SelectStatement}
 		}
 	case 227:
 		{
@@ -2522,60 +2522,60 @@ yynewstate:
 		}
 	case 230:
 		{
-			yyVAL.expressions = IterationExpressions(nil, yyS[yypt-1].expressions, nil, yyS[yypt-0].expressions)
+			yyVAL.expressions = actions.IterationExpressions(nil, yyS[yypt-1].expressions, nil, yyS[yypt-0].expressions)
 		}
 	case 231:
 		{
-			yyVAL.expressions = IterationExpressions(yyS[yypt-2].expressions, yyS[yypt-1].expressions, nil, yyS[yypt-0].expressions)
+			yyVAL.expressions = actions.IterationExpressions(yyS[yypt-2].expressions, yyS[yypt-1].expressions, nil, yyS[yypt-0].expressions)
 		}
 	case 232:
 		{
-			yyVAL.expressions = IterationExpressions(yyS[yypt-3].expressions, yyS[yypt-2].expressions, yyS[yypt-1].expressions, yyS[yypt-0].expressions)
+			yyVAL.expressions = actions.IterationExpressions(yyS[yypt-3].expressions, yyS[yypt-2].expressions, yyS[yypt-1].expressions, yyS[yypt-0].expressions)
 		}
 	case 233:
 		{
-			retExprs := ReturnExpressions{Expressions: AssociateReturnExpressions(0, yyS[yypt-0].expressions)}
+			retExprs := actions.ReturnExpressions{Expressions: actions.AssociateReturnExpressions(0, yyS[yypt-0].expressions)}
 			retExprs.Size++
 			yyVAL.ReturnExpressions = retExprs
 		}
 	case 234:
 		{
-			yyS[yypt-2].ReturnExpressions.Expressions = append(yyS[yypt-2].ReturnExpressions.Expressions, AssociateReturnExpressions(yyS[yypt-2].ReturnExpressions.Size, yyS[yypt-0].expressions)...)
+			yyS[yypt-2].ReturnExpressions.Expressions = append(yyS[yypt-2].ReturnExpressions.Expressions, actions.AssociateReturnExpressions(yyS[yypt-2].ReturnExpressions.Size, yyS[yypt-0].expressions)...)
 			yyS[yypt-2].ReturnExpressions.Size++
 			yyVAL.ReturnExpressions = yyS[yypt-2].ReturnExpressions
 		}
 	case 235:
 		{
-			if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
-				expr := MakeExpression(Natives[OP_JMP], CurrentFile, LineNo)
+			if pkg, err := actions.PRGRM.GetCurrentPackage(); err == nil {
+				expr := cxcore.MakeExpression(cxcore.Natives[cxcore.OP_JMP], actions.CurrentFile, actions.LineNo)
 				expr.Package = pkg
 				expr.Label = yyS[yypt-1].tok
 
-				arg := MakeArgument("", CurrentFile, LineNo).AddType("bool")
+				arg := cxcore.MakeArgument("", actions.CurrentFile, actions.LineNo).AddType("bool")
 				arg.Package = pkg
 
 				expr.AddInput(arg)
 
-				yyVAL.expressions = []*CXExpression{expr}
+				yyVAL.expressions = []*cxcore.CXExpression{expr}
 			} else {
 				panic(err)
 			}
 		}
 	case 236:
 		{
-			yyVAL.expressions = ContinueExpressions()
+			yyVAL.expressions = actions.ContinueExpressions()
 		}
 	case 237:
 		{
-			yyVAL.expressions = BreakExpressions()
+			yyVAL.expressions = actions.BreakExpressions()
 		}
 	case 238:
 		{
-			yyVAL.expressions = AddJmpToReturnExpressions(ReturnExpressions{})
+			yyVAL.expressions = actions.AddJmpToReturnExpressions(actions.ReturnExpressions{})
 		}
 	case 239:
 		{
-			yyVAL.expressions = AddJmpToReturnExpressions(yyS[yypt-1].ReturnExpressions)
+			yyVAL.expressions = actions.AddJmpToReturnExpressions(yyS[yypt-1].ReturnExpressions)
 		}
 
 	}

@@ -288,7 +288,7 @@ func init() {
 	Op_V2(OP_GL_HINT, "gl.Hint", opGlHint, In(AI32, AI32), nil)
 	Op_V2(OP_GL_SCISSOR, "gl.Scissor", opGlScissor, In(AI32, AI32, AI32, AI32), nil)
 	Op_V2(OP_GL_TEX_PARAMETERI, "gl.TexParameteri", opGlTexParameteri, In(AI32, AI32, AI32), nil)
-	Op_V2(OP_GL_TEX_IMAGE_2D, "gl.TexImage2D", opGlTexImage2D, In(AI32, AI32, AI32, AI32, AI32, AI32, AI32, AI32, Slice(TYPE_UNDEFINED)), nil)
+	Op_V2(OP_GL_TEX_IMAGE_2D, "gl.TexImage2D", opGlTexImage2D, In(AI32, AI32, AI32, AI32, AI32, AI32, AI32, AI32, Slice(TYPE_UI32)), nil)
 	Op_V2(OP_GL_CLEAR, "gl.Clear", opGlClear, In(AI32), nil)
 	Op_V2(OP_GL_CLEAR_COLOR, "gl.ClearColor", opGlClearColor, In(AF32, AF32, AF32, AF32), nil)
 	Op_V2(OP_GL_CLEAR_STENCIL, "gl.ClearStencil", opGlClearStencil, In(AI32), nil)
@@ -309,7 +309,7 @@ func init() {
 
 	// gl_1_1
 	Op_V2(OP_GL_DRAW_ARRAYS, "gl.DrawArrays", opGlDrawArrays, In(AI32, AI32, AI32), nil)
-	Op_V2(OP_GL_DRAW_ELEMENTS, "gl.DrawElements", opGlDrawElements, In(AI32, AI32, AI32, AUND), nil)
+	Op_V2(OP_GL_DRAW_ELEMENTS, "gl.DrawElements", opGlDrawElements, In(AI32, AI32, AI32), nil)
 	Op_V2(OP_GL_BIND_TEXTURE, "gl.BindTexture", opGlBindTexture, In(AI32, AI32), nil)
 	Op_V2(OP_GL_DELETE_TEXTURES, "gl.DeleteTextures", opGlDeleteTextures, In(AI32, AI32), nil)
 	Op_V2(OP_GL_GEN_TEXTURES, "gl.GenTextures", opGlGenTextures, In(AI32, AI32), Out(AI32))
@@ -324,8 +324,8 @@ func init() {
 	Op_V2(OP_GL_BIND_BUFFER, "gl.BindBuffer", opGlBindBuffer, In(AI32, AI32), nil)
 	Op_V2(OP_GL_DELETE_BUFFERS, "gl.DeleteBuffers", opGlDeleteBuffers, In(AI32, AI32), nil)
 	Op_V2(OP_GL_GEN_BUFFERS, "gl.GenBuffers", opGlGenBuffers, In(AI32, AI32), Out(AI32))
-	Op_V2(OP_GL_BUFFER_DATA, "gl.BufferData", opGlBufferData, In(AI32, AI32, AUND, AI32), nil)
-	Op_V2(OP_GL_BUFFER_SUB_DATA, "gl.BufferSubData", opGlBufferSubData, In(AI32, AI32, AI32, AUND), nil)
+	Op_V2(OP_GL_BUFFER_DATA, "gl.BufferData", opGlBufferData, In(AI32, AI32, Slice(TYPE_UI8), AI32), nil)
+	Op_V2(OP_GL_BUFFER_SUB_DATA, "gl.BufferSubData", opGlBufferSubData, In(AI32, AI32, AI32, Slice(TYPE_UI8)), nil)
 
 	//gl_2_0
 	Op_V2(OP_GL_DRAW_BUFFERS, "gl.DrawBuffers", opGlDrawBuffers, In(AI32, Slice(TYPE_UI32)), nil)

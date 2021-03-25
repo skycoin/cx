@@ -339,7 +339,11 @@ func (call *CXCall) ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 					call.Line++
 				case 2: // new version
 					fp := call.FramePointer;
-
+                    if expr.Operator.IntCode == -1 && IsOperator(expr.Operator.OpCode) {
+                        // TODO: resolve this at compile time
+                        atomicType := GetType(expr.Inputs[0])
+                        expr.Operator = GetTypedOperator(atomicType, expr.Operator.OpCode)
+                    }
 					inputs := expr.Inputs
 					inputCount := len(inputs)
 					if inputCount > len(*globalInputs) {

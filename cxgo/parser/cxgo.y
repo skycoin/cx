@@ -4,8 +4,8 @@
 		// "fmt"
 		"strconv"
 		"github.com/skycoin/skycoin/src/cipher/encoder"
-		. "github.com/skycoin/cx/cx"
-		. "github.com/skycoin/cx/cxgo/actions"
+		"github.com/skycoin/cx/cx"
+		"github.com/skycoin/cx/cxgo/actions"
 	)
 
 /*
@@ -20,7 +20,7 @@ build-parser: ## Generate lexer and parser for CX grammar
 - cxgo/cxgo0/cxgo0.y is input
 */
         
-	// var PRGRM = MakeProgram(CALLSTACK_SIZE, STACK_SIZE, INIT_HEAP_SIZE)
+	// var actions.PRGRM = MakeProgram(CALLSTACK_SIZE, STACK_SIZE, INIT_HEAP_SIZE)
 	
 	func Parse (lexer *Lexer) int {
 		return yyParse(lexer)
@@ -47,20 +47,20 @@ build-parser: ## Generate lexer and parser for CX grammar
 
 	line int
 
-	argument *CXArgument
-	arguments []*CXArgument
+	argument *cxcore.CXArgument
+	arguments []*cxcore.CXArgument
 
-	expression *CXExpression
-	expressions []*CXExpression
+	expression *cxcore.CXExpression
+	expressions []*cxcore.CXExpression
 
-	SelectStatement SelectStatement
-	SelectStatements []SelectStatement
+	SelectStatement actions.SelectStatement
+	SelectStatements []actions.SelectStatement
 
-	ReturnExpressions ReturnExpressions
+	ReturnExpressions actions.ReturnExpressions
 
-	arrayArguments [][]*CXExpression
+	arrayArguments [][]*cxcore.CXExpression
 
-        function *CXFunction
+    function *cxcore.CXFunction
 }
 
 %token  <bool>          BOOLEAN_LITERAL
@@ -225,38 +225,38 @@ external_declaration:
 debugging:      
                 DPROGRAM
                 {
-			PRGRM.PrintProgram()
+			actions.PRGRM.PrintProgram()
                 }
         ;
 
 stepping:       TSTEP int_value int_value
                 {
-			Stepping(int($2), int($3), true)
+			actions.Stepping(int($2), int($3), true)
                 }
         |       STEP int_value
                 {
-			Stepping(int($2), 0, false)
+			actions.Stepping(int($2), 0, false)
                 }
         ;
 
 selector:
                 SPACKAGE IDENTIFIER SEMICOLON
                 {
-			$<string>$ = Selector($2, SELECT_TYP_PKG)
+			$<string>$ = actions.Selector($2, actions.SELECT_TYP_PKG)
                 }
         |       SFUNC IDENTIFIER
                 {
-			$<string>$ = Selector($2, SELECT_TYP_FUNC)
+			$<string>$ = actions.Selector($2, actions.SELECT_TYP_FUNC)
                 }
                 compound_statement
                 {
 			if len($4) > 0 {
-				if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
-					if fn, err := PRGRM.GetFunction($<string>3, pkg.Name); err == nil {
+				if pkg, err := actions.PRGRM.GetCurrentPackage(); err == nil {
+					if fn, err := actions.PRGRM.GetFunction($<string>3, pkg.Name); err == nil {
 						for _, expr := range $4 {
 							fn.AddExpression(expr)
 						}
-						FunctionDeclaration(fn, nil, nil, nil)
+						actions.FunctionDeclaration(fn, nil, nil, nil)
 					} else {
 						panic(err)
 					}
@@ -267,27 +267,27 @@ selector:
 			
 			// if $<bool>4 {
 				
-			// 	if _, err := PRGRM.SelectFunction($<string>3); err == nil {
+			// 	if _, err := actions.PRGRM.SelectFunction($<string>3); err == nil {
 			// 	}
 			// }
                 }
         |       SSTRUCT IDENTIFIER SEMICOLON
                 {
-			$<string>$ = Selector($2, SELECT_TYP_STRCT)
+			$<string>$ = actions.Selector($2, actions.SELECT_TYP_STRCT)
                 }
         |       SSTRUCT IDENTIFIER
                 {
-			$<string>$ = Selector($2, SELECT_TYP_STRCT)
+			$<string>$ = actions.Selector($2, actions.SELECT_TYP_STRCT)
                 }
                 struct_fields
                 {
 			if len($4) > 0 {
-				if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
-					if strct, err := PRGRM.GetStruct($<string>3, pkg.Name); err == nil {
+				if pkg, err := actions.PRGRM.GetCurrentPackage(); err == nil {
+					if strct, err := actions.PRGRM.GetStruct($<string>3, pkg.Name); err == nil {
 						for _, fld := range $4 {
 							strct.AddField(fld)
 						}
-						// FunctionDeclaration(fn, nil, nil, nil)
+						// actions.FunctionDeclaration(fn, nil, nil, nil)
 					} else {
 						panic(err)
 					}
@@ -296,7 +296,7 @@ selector:
 				}
 			}
 			/* if $<bool>4 { */
-			/* 	if _, err := PRGRM.SelectStruct($<string>3); err == nil { */
+			/* 	if _, err := actions.PRGRM.SelectStruct($<string>3); err == nil { */
 			/* 		//fmt.Println(fmt.Sprintf("== Changed to struct '%s' ==", strct.Name)) */
 			/* 	} */
 			/* } */
@@ -306,18 +306,18 @@ selector:
 global_declaration:
                 VAR declarator declaration_specifiers SEMICOLON
                 {
-			DeclareGlobal($2, $3, nil, false)
+			actions.DeclareGlobal($2, $3, nil, false)
                 }
         |       VAR declarator declaration_specifiers ASSIGN initializer SEMICOLON
                 {
-			DeclareGlobal($2, $3, $5, true)
+			actions.DeclareGlobal($2, $3, $5, true)
                 }
                 ;
 
 struct_declaration:
                 TYPE IDENTIFIER STRUCT struct_fields
                 {
-		        DeclareStruct($2, $4)
+		        actions.DeclareStruct($2, $4)
                 }
                 ;
 
@@ -330,7 +330,7 @@ struct_fields:
 
 fields:         parameter_declaration SEMICOLON
                 {
-			$$ = []*CXArgument{$1}
+			$$ = []*cxcore.CXArgument{$1}
                 }
         |       fields parameter_declaration SEMICOLON
                 {
@@ -341,7 +341,7 @@ fields:         parameter_declaration SEMICOLON
 package_declaration:
                 PACKAGE IDENTIFIER SEMICOLON
                 {
-			DeclarePackage($2)
+			actions.DeclarePackage($2)
                 }
                 ;
 
@@ -356,13 +356,13 @@ function_header:
                 FUNC IDENTIFIER
                 {
 			yylval.line = 0
-			$$ = FunctionHeader($2, nil, false)
-			InFn = true
+			$$ = actions.FunctionHeader($2, nil, false)
+			actions.InFn = true
                 }
         |       FUNC LPAREN parameter_type_list RPAREN IDENTIFIER
                 {
-			$$ = FunctionHeader($5, $3, true)
-			InFn = true
+			$$ = actions.FunctionHeader($5, $3, true)
+			actions.InFn = true
                 }
         ;
 
@@ -376,13 +376,13 @@ function_parameters:
 function_declaration:
                 function_header function_parameters compound_statement
                 {
-			FunctionDeclaration($1, $2, nil, $3)
-			InFn = false
+			actions.FunctionDeclaration($1, $2, nil, $3)
+			actions.InFn = false
                 }
         |       function_header function_parameters function_parameters compound_statement
                 {
-			FunctionDeclaration($1, $2, $3, $4)
-			InFn = false
+			actions.FunctionDeclaration($1, $2, $3, $4)
+			actions.InFn = false
                 }
         ;
 
@@ -393,7 +393,7 @@ parameter_type_list:
 parameter_list:
                 parameter_declaration
                 {
-			$$ = []*CXArgument{$1}
+			$$ = []*cxcore.CXArgument{$1}
                 }
 	|       parameter_list COMMA parameter_declaration
                 {
@@ -417,9 +417,9 @@ declarator:     direct_declarator
 direct_declarator:
                 IDENTIFIER
                 {
-			if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
-				arg := MakeArgument("", CurrentFile, LineNo)
-                                arg.AddType(TypeNames[TYPE_UNDEFINED])
+			if pkg, err := actions.PRGRM.GetCurrentPackage(); err == nil {
+				arg := cxcore.MakeArgument("", actions.CurrentFile, actions.LineNo)
+                                arg.AddType(cxcore.TypeNames[cxcore.TYPE_UNDEFINED])
 				arg.Name = $1
 				arg.Package = pkg
 				$$ = arg
@@ -463,22 +463,22 @@ direct_declarator:
 
 id_list:	IDENTIFIER
 		{
-			arg := DeclarationSpecifiersStruct($1, "", false, CurrentFile, LineNo)
-			$$ = []*CXArgument{arg}
+			arg := actions.DeclarationSpecifiersStruct($1, "", false, actions.CurrentFile, actions.LineNo)
+			$$ = []*cxcore.CXArgument{arg}
 		}
 	|	type_specifier
 		{
-			arg := DeclarationSpecifiersBasic($1)
-			$$ = []*CXArgument{arg}
+			arg := actions.DeclarationSpecifiersBasic($1)
+			$$ = []*cxcore.CXArgument{arg}
 		}
 	|	id_list COMMA IDENTIFIER
 		{
-			arg := DeclarationSpecifiersStruct($3, "", false, CurrentFile, LineNo)
+			arg := actions.DeclarationSpecifiersStruct($3, "", false, actions.CurrentFile, actions.LineNo)
 			$$ = append($1, arg)
 		}
 	|	id_list COMMA type_specifier
 		{
-			arg := DeclarationSpecifiersBasic($3)
+			arg := actions.DeclarationSpecifiersBasic($3)
 			$$ = append($1, arg)
 		}
 	;
@@ -503,52 +503,52 @@ types_list:
 declaration_specifiers:
                 FUNC types_list types_list
 		{
-			arg := MakeArgument("", CurrentFile, LineNo).AddType("func")
+			arg := cxcore.MakeArgument("", actions.CurrentFile, actions.LineNo).AddType("func")
 			arg.Inputs = $2
 			arg.Outputs = $3
-			$$ = DeclarationSpecifiers(arg, []int{0}, DECL_FUNC)
+			$$ = actions.DeclarationSpecifiers(arg, []int{0}, cxcore.DECL_FUNC)
 		}
         |       MUL_OP declaration_specifiers
                 {
-			$$ = DeclarationSpecifiers($2, []int{0}, DECL_POINTER)
+			$$ = actions.DeclarationSpecifiers($2, []int{0}, cxcore.DECL_POINTER)
                 }
         // |       LBRACK INT_LITERAL RBRACK declaration_specifiers
         //         {
-	// 		$$ = DeclarationSpecifiers($4, int($2), DECL_ARRAY)
+	// 		$$ = actions.DeclarationSpecifiers($4, int($2), cxcore.DECL_ARRAY)
         //         }
         |       LBRACK RBRACK declaration_specifiers
                 {
-			$$ = DeclarationSpecifiers($3, []int{0}, DECL_SLICE)
+			$$ = actions.DeclarationSpecifiers($3, []int{0}, cxcore.DECL_SLICE)
                 }
         |       type_specifier
                 {
-			$$ = DeclarationSpecifiersBasic($1)
+			$$ = actions.DeclarationSpecifiersBasic($1)
                 }
         |       IDENTIFIER
                 {
-			$$ = DeclarationSpecifiersStruct($1, "", false, CurrentFile, LineNo)
+			$$ = actions.DeclarationSpecifiersStruct($1, "", false, actions.CurrentFile, actions.LineNo)
                 }
         |       indexing_literal type_specifier
                 {
-			basic := DeclarationSpecifiersBasic($2)
-			$$ = DeclarationSpecifiers(basic, $1, DECL_ARRAY)
+			basic := actions.DeclarationSpecifiersBasic($2)
+			$$ = actions.DeclarationSpecifiers(basic, $1, cxcore.DECL_ARRAY)
                 }
         |       indexing_literal IDENTIFIER
                 {
-			strct := DeclarationSpecifiersStruct($2, "", false, CurrentFile, LineNo)
-			$$ = DeclarationSpecifiers(strct, $1, DECL_ARRAY)
+			strct := actions.DeclarationSpecifiersStruct($2, "", false, actions.CurrentFile, actions.LineNo)
+			$$ = actions.DeclarationSpecifiers(strct, $1, cxcore.DECL_ARRAY)
                 }
         |       IDENTIFIER PERIOD IDENTIFIER
                 {
-			$$ = DeclarationSpecifiersStruct($3, $1, true, CurrentFile, LineNo)
+			$$ = actions.DeclarationSpecifiersStruct($3, $1, true, actions.CurrentFile, actions.LineNo)
                 }
 	|       type_specifier PERIOD IDENTIFIER
                 {
-			$$ = DeclarationSpecifiersStruct($3, TypeNames[$1], true, CurrentFile, LineNo)
+			$$ = actions.DeclarationSpecifiersStruct($3, cxcore.TypeNames[$1], true, actions.CurrentFile, actions.LineNo)
                 }
         /* |       package_identifier */
         /*         { */
-	/* 		$$ = DeclarationSpecifiersStruct($1[1], $1[0], true) */
+	/* 		$$ = actions.DeclarationSpecifiersStruct($1[1], $1[0], true) */
         /*         } */
 		/* type_specifier declaration_specifiers */
 	/* |       type_specifier */
@@ -558,31 +558,31 @@ declaration_specifiers:
 
 type_specifier:
                 AFF
-                { $$ = TYPE_AFF }
+                { $$ = cxcore.TYPE_AFF }
         |       BOOL
-                { $$ = TYPE_BOOL }
+                { $$ = cxcore.TYPE_BOOL }
         |       STR
-                { $$ = TYPE_STR }
+                { $$ = cxcore.TYPE_STR }
         |       F32
-                { $$ = TYPE_F32 }
+                { $$ = cxcore.TYPE_F32 }
         |       F64
-                { $$ = TYPE_F64 }
+                { $$ = cxcore.TYPE_F64 }
         |       I8
-                { $$ = TYPE_I8 }
+                { $$ = cxcore.TYPE_I8 }
         |       I16
-                { $$ = TYPE_I16 }
+                { $$ = cxcore.TYPE_I16 }
         |       I32
-                { $$ = TYPE_I32 }
+                { $$ = cxcore.TYPE_I32 }
         |       I64
-                { $$ = TYPE_I64 }
+                { $$ = cxcore.TYPE_I64 }
         |       UI8
-                { $$ = TYPE_UI8 }
+                { $$ = cxcore.TYPE_UI8 }
         |       UI16
-                { $$ = TYPE_UI16 }
+                { $$ = cxcore.TYPE_UI16 }
         |       UI32
-                { $$ = TYPE_UI32 }
+                { $$ = cxcore.TYPE_UI32 }
         |       UI64
-                { $$ = TYPE_UI64 }
+                { $$ = cxcore.TYPE_UI64 }
                 ;
 
 
@@ -592,17 +592,17 @@ struct_literal_fields:
         |       IDENTIFIER COLON constant_expression
                 {
 			if $3[0].IsStructLiteral {
-				$$ = StructLiteralAssignment([]*CXExpression{StructLiteralFields($1)}, $3)
+				$$ = actions.StructLiteralAssignment([]*cxcore.CXExpression{actions.StructLiteralFields($1)}, $3)
 			} else {
-				$$ = Assignment([]*CXExpression{StructLiteralFields($1)}, "=", $3)
+				$$ = actions.Assignment([]*cxcore.CXExpression{actions.StructLiteralFields($1)}, "=", $3)
 			}
                 }
         |       struct_literal_fields COMMA IDENTIFIER COLON constant_expression
                 {
 			if $5[0].IsStructLiteral {
-				$$ = append($1, StructLiteralAssignment([]*CXExpression{StructLiteralFields($3)}, $5)...)
+				$$ = append($1, actions.StructLiteralAssignment([]*cxcore.CXExpression{actions.StructLiteralFields($3)}, $5)...)
 			} else {
-				$$ = append($1, Assignment([]*CXExpression{StructLiteralFields($3)}, "=", $5)...)
+				$$ = append($1, actions.Assignment([]*cxcore.CXExpression{actions.StructLiteralFields($3)}, "=", $5)...)
 			}
                 }
                 ;
@@ -654,7 +654,7 @@ array_literal_expression:
                 }
         |       indexing_literal type_specifier LBRACE array_literal_expression_list RBRACE
                 {
-			$$ = ArrayLiteralExpression($1, $2, $4)
+			$$ = actions.ArrayLiteralExpression($1, $2, $4)
                 }
         |       indexing_literal type_specifier LBRACE RBRACE
                 {
@@ -704,7 +704,7 @@ slice_literal_expression:
                 }
         |       LBRACK RBRACK type_specifier LBRACE slice_literal_expression_list RBRACE
                 {
-			$$ = SliceLiteralExpression($3, $5)
+			$$ = actions.SliceLiteralExpression($3, $5)
                 }
         |       LBRACK RBRACK type_specifier LBRACE RBRACE
                 {
@@ -715,7 +715,7 @@ slice_literal_expression:
 			for _, expr := range $3 {
 				if expr.Outputs[0].Name == $3[len($3) - 1].Inputs[0].Name {
 					expr.Outputs[0].Lengths = append(expr.Outputs[0].Lengths, 0)
-					expr.Outputs[0].DeclarationSpecifiers = append(expr.Outputs[0].DeclarationSpecifiers, DECL_SLICE)
+					expr.Outputs[0].DeclarationSpecifiers = append(expr.Outputs[0].DeclarationSpecifiers, cxcore.DECL_SLICE)
                                     }
 			}
 	
@@ -761,7 +761,7 @@ infer_action_arg:
                 }
 	|	type_specifier PERIOD IDENTIFIER
 		{
-			$$ = TypeNames[$1] + "." + $3
+			$$ = cxcore.TypeNames[$1] + "." + $3
 		}
         ;
 
@@ -820,30 +820,30 @@ infer_actions:
 
 infer_clauses:
                 {
-			$$ = SliceLiteralExpression(TYPE_AFF, nil)
+			$$ = actions.SliceLiteralExpression(cxcore.TYPE_AFF, nil)
                 }
         |       infer_actions
                 {
-			var exprs []*CXExpression
+			var exprs []*cxcore.CXExpression
 			for _, str := range $1 {
-				expr := WritePrimary(TYPE_AFF, encoder.Serialize(str), false)
+				expr := actions.WritePrimary(cxcore.TYPE_AFF, encoder.Serialize(str), false)
 				expr[len(expr) - 1].IsArrayLiteral = true
 				exprs = append(exprs, expr...)
 			}
 			
-			$$ = SliceLiteralExpression(TYPE_AFF, exprs)
+			$$ = actions.SliceLiteralExpression(cxcore.TYPE_AFF, exprs)
                 }
         /* |       infer_targets */
         /*         { */
-	/* 		var exprs []*CXExpression */
+	/* 		var exprs []*cxcore.CXExpression */
 	/* 		for _, str := range $1 { */
-	/* 			expr := WritePrimary(TYPE_AFF, encoder.Serialize(str), false) */
+	/* 			expr := actions.WritePrimary(cxcore.TYPE_AFF, encoder.Serialize(str), false) */
 	/* 			expr[len(expr) - 1].IsArrayLiteral = true */
 	/* 			exprs = append(exprs, expr...) */
 	/* 		} */
 			
-	/* 		// $$ = ArrayLiteralExpression(len(exprs), TYPE_STR, exprs) */
-	/* 		$$ = SliceLiteralExpression(TYPE_AFF, exprs) */
+	/* 		// $$ = actions.ArrayLiteralExpression(len(exprs), cxcore.TYPE_STR, exprs) */
+	/* 		$$ = actions.SliceLiteralExpression(cxcore.TYPE_AFF, exprs) */
         /*         } */
                 ;
 
@@ -861,11 +861,11 @@ int_value:
 primary_expression:
                 IDENTIFIER
                 {
-			$$ = PrimaryIdentifier($1)
+			$$ = actions.PrimaryIdentifier($1)
                 }
         /* |       IDENTIFIER LBRACE struct_literal_fields RBRACE */
         /*         { */
-	/* 		$$ = PrimaryStructLiteral($1, $3) */
+	/* 		$$ = actions.PrimaryStructLiteral($1, $3) */
         /*         } */
 	|	FUNC LPAREN RPAREN
 		{
@@ -877,52 +877,52 @@ primary_expression:
                 }
         |       STRING_LITERAL
                 {
-			$$ = WritePrimary(TYPE_STR, encoder.Serialize($1), false)
+			$$ = actions.WritePrimary(cxcore.TYPE_STR, encoder.Serialize($1), false)
                 }
         |       BOOLEAN_LITERAL
                 {
-			exprs := WritePrimary(TYPE_BOOL, encoder.Serialize($1), false)
+			exprs := actions.WritePrimary(cxcore.TYPE_BOOL, encoder.Serialize($1), false)
 			$$ = exprs
                 }
         |       BYTE_LITERAL
                 {
-			$$ = WritePrimary(TYPE_I8, encoder.Serialize($1), false)
+			$$ = actions.WritePrimary(cxcore.TYPE_I8, encoder.Serialize($1), false)
                 }
         |       SHORT_LITERAL
                 {
-			$$ = WritePrimary(TYPE_I16, encoder.Serialize($1), false)
+			$$ = actions.WritePrimary(cxcore.TYPE_I16, encoder.Serialize($1), false)
                 }
         |       INT_LITERAL
                 {
-			$$ = WritePrimary(TYPE_I32, encoder.Serialize($1), false)
+			$$ = actions.WritePrimary(cxcore.TYPE_I32, encoder.Serialize($1), false)
                 }
         |       LONG_LITERAL
                 {
-			$$ = WritePrimary(TYPE_I64, encoder.Serialize($1), false)
+			$$ = actions.WritePrimary(cxcore.TYPE_I64, encoder.Serialize($1), false)
                 }
         |       UNSIGNED_BYTE_LITERAL
                 {
-			$$ = WritePrimary(TYPE_UI8, encoder.Serialize($1), false)
+			$$ = actions.WritePrimary(cxcore.TYPE_UI8, encoder.Serialize($1), false)
                 }
         |       UNSIGNED_SHORT_LITERAL
                 {
-			$$ = WritePrimary(TYPE_UI16, encoder.Serialize($1), false)
+			$$ = actions.WritePrimary(cxcore.TYPE_UI16, encoder.Serialize($1), false)
                 }
         |       UNSIGNED_INT_LITERAL
                 {
-			$$ = WritePrimary(TYPE_UI32, encoder.Serialize($1), false)
+			$$ = actions.WritePrimary(cxcore.TYPE_UI32, encoder.Serialize($1), false)
                 }
         |       UNSIGNED_LONG_LITERAL
                 {
-			$$ = WritePrimary(TYPE_UI64, encoder.Serialize($1), false)
+			$$ = actions.WritePrimary(cxcore.TYPE_UI64, encoder.Serialize($1), false)
                 }
         |       FLOAT_LITERAL
                 {
-			$$ = WritePrimary(TYPE_F32, encoder.Serialize($1), false)
+			$$ = actions.WritePrimary(cxcore.TYPE_F32, encoder.Serialize($1), false)
                 }
         |       DOUBLE_LITERAL
                 {
-			$$ = WritePrimary(TYPE_F64, encoder.Serialize($1), false)
+			$$ = actions.WritePrimary(cxcore.TYPE_F64, encoder.Serialize($1), false)
                 }
         |       LPAREN expression RPAREN
                 { $$ = $2 }
@@ -938,7 +938,7 @@ primary_expression:
 
 after_period:   type_specifier
                 {
-			$$ = TypeNames[$1]
+			$$ = cxcore.TypeNames[$1]
                 }
         |       IDENTIFIER
         ;
@@ -947,31 +947,31 @@ postfix_expression:
 		primary_expression
 	|       postfix_expression LBRACK expression RBRACK
                 {
-			$$ = PostfixExpressionArray($1, $3)
+			$$ = actions.PostfixExpressionArray($1, $3)
                 }
         |       type_specifier PERIOD after_period
                 {
-			$$ = PostfixExpressionNative(int($1), $3)
+			$$ = actions.PostfixExpressionNative(int($1), $3)
                 }
 	|       postfix_expression LPAREN RPAREN
                 {
-			$$ = PostfixExpressionEmptyFunCall($1)
+			$$ = actions.PostfixExpressionEmptyFunCall($1)
                 }
 	|       postfix_expression LPAREN argument_expression_list RPAREN
                 {
-			$$ = PostfixExpressionFunCall($1, $3)
+			$$ = actions.PostfixExpressionFunCall($1, $3)
                 }
 	|       postfix_expression INC_OP
                 {
-			$$ = PostfixExpressionIncDec($1, true)
+			$$ = actions.PostfixExpressionIncDec($1, true)
                 }
         |       postfix_expression DEC_OP
                 {
-			$$ = PostfixExpressionIncDec($1, false)
+			$$ = actions.PostfixExpressionIncDec($1, false)
                 }
         |       postfix_expression PERIOD IDENTIFIER
                 {
-			$$ = PostfixExpressionField($1, $3)
+			$$ = actions.PostfixExpressionField($1, $3)
                 }
                 ;
 
@@ -997,7 +997,7 @@ unary_expression:
                 }
 	|       unary_operator unary_expression
                 {
-			$$ = UnaryExpression($1, $2)
+			$$ = actions.UnaryExpression($1, $2)
                 }
                 ;
 
@@ -1013,15 +1013,15 @@ multiplicative_expression:
                 unary_expression
         |       multiplicative_expression MUL_OP unary_expression
                 {
-			$$ = ShorthandExpression($1, $3, OP_MUL)
+			$$ = actions.ShorthandExpression($1, $3, cxcore.OP_MUL)
                 }
         |       multiplicative_expression DIV_OP unary_expression
                 {
-			$$ = ShorthandExpression($1, $3, OP_DIV)
+			$$ = actions.ShorthandExpression($1, $3, cxcore.OP_DIV)
                 }
         |       multiplicative_expression MOD_OP unary_expression
                 {
-			$$ = ShorthandExpression($1, $3, OP_MOD)
+			$$ = actions.ShorthandExpression($1, $3, cxcore.OP_MOD)
                 }
                 ;
 
@@ -1029,11 +1029,11 @@ additive_expression:
                 multiplicative_expression
         |       additive_expression ADD_OP multiplicative_expression
                 {
-			$$ = ShorthandExpression($1, $3, OP_ADD)
+			$$ = actions.ShorthandExpression($1, $3, cxcore.OP_ADD)
                 }
 	|       additive_expression SUB_OP multiplicative_expression
                 {
-			$$ = ShorthandExpression($1, $3, OP_SUB)
+			$$ = actions.ShorthandExpression($1, $3, cxcore.OP_SUB)
                 }
                 ;
 
@@ -1041,15 +1041,15 @@ shift_expression:
                 additive_expression
         |       shift_expression LEFT_OP additive_expression
                 {
-			$$ = ShorthandExpression($1, $3, OP_BITSHL)
+			$$ = actions.ShorthandExpression($1, $3, cxcore.OP_BITSHL)
                 }
         |       shift_expression RIGHT_OP additive_expression
                 {
-			$$ = ShorthandExpression($1, $3, OP_BITSHR)
+			$$ = actions.ShorthandExpression($1, $3, cxcore.OP_BITSHR)
                 }
         |       shift_expression BITCLEAR_OP additive_expression
                 {
-			$$ = ShorthandExpression($1, $3, OP_BITCLEAR)
+			$$ = actions.ShorthandExpression($1, $3, cxcore.OP_BITCLEAR)
                 }
                 ;
 
@@ -1057,34 +1057,34 @@ relational_expression:
                 shift_expression
         |       relational_expression EQ_OP shift_expression
                 {
-			$$ = ShorthandExpression($1, $3, OP_EQUAL)
+			$$ = actions.ShorthandExpression($1, $3, cxcore.OP_EQUAL)
                 }
         |       relational_expression NE_OP shift_expression
                 {
-			$$ = ShorthandExpression($1, $3, OP_UNEQUAL)
+			$$ = actions.ShorthandExpression($1, $3, cxcore.OP_UNEQUAL)
                 }
         |       relational_expression LT_OP shift_expression
                 {
-			$$ = ShorthandExpression($1, $3, OP_LT)
+			$$ = actions.ShorthandExpression($1, $3, cxcore.OP_LT)
                 }
         |       relational_expression GT_OP shift_expression
                 {
-			$$ = ShorthandExpression($1, $3, OP_GT)
+			$$ = actions.ShorthandExpression($1, $3, cxcore.OP_GT)
                 }
         |       relational_expression LTEQ_OP shift_expression
                 {
-			$$ = ShorthandExpression($1, $3, OP_LTEQ)
+			$$ = actions.ShorthandExpression($1, $3, cxcore.OP_LTEQ)
                 }
         |       relational_expression GTEQ_OP shift_expression
                 {
-			$$ = ShorthandExpression($1, $3, OP_GTEQ)
+			$$ = actions.ShorthandExpression($1, $3, cxcore.OP_GTEQ)
                 }
                 ;
 
 and_expression: relational_expression
         |       and_expression REF_OP relational_expression
                 {
-			$$ = ShorthandExpression($1, $3, OP_BITAND)
+			$$ = actions.ShorthandExpression($1, $3, cxcore.OP_BITAND)
                 }
                 ;
 
@@ -1092,7 +1092,7 @@ exclusive_or_expression:
                 and_expression
         |       exclusive_or_expression BITXOR_OP and_expression
                 {
-			$$ = ShorthandExpression($1, $3, OP_BITXOR)
+			$$ = actions.ShorthandExpression($1, $3, cxcore.OP_BITXOR)
                 }
                 ;
 
@@ -1100,7 +1100,7 @@ inclusive_or_expression:
                 exclusive_or_expression
         |       inclusive_or_expression BITOR_OP exclusive_or_expression
                 {
-			$$ = ShorthandExpression($1, $3, OP_BITOR)
+			$$ = actions.ShorthandExpression($1, $3, cxcore.OP_BITOR)
                 }
                 ;
 
@@ -1108,7 +1108,7 @@ logical_and_expression:
                 inclusive_or_expression
 	|       logical_and_expression AND_OP inclusive_or_expression
                 {
-			$$ = UndefinedTypeOperation($1, $3, Natives[OP_BOOL_AND])
+			$$ = actions.UndefinedTypeOperation($1, $3, cxcore.Natives[cxcore.OP_BOOL_AND])
                 }
                 ;
 
@@ -1116,7 +1116,7 @@ logical_or_expression:
                 logical_and_expression
 	|       logical_or_expression OR_OP logical_and_expression
                 {
-			$$ = UndefinedTypeOperation($1, $3, Natives[OP_BOOL_OR])
+			$$ = actions.UndefinedTypeOperation($1, $3, cxcore.Natives[cxcore.OP_BOOL_OR])
                 }
                 ;
 
@@ -1129,15 +1129,15 @@ struct_literal_expression:
 		conditional_expression
 	|       IDENTIFIER LBRACE struct_literal_fields RBRACE
                 {
-			$$ = PrimaryStructLiteral($1, $3)
+			$$ = actions.PrimaryStructLiteral($1, $3)
                 }
 	|       unary_operator IDENTIFIER LBRACE struct_literal_fields RBRACE
                 {
-			$$ = UnaryExpression($1, PrimaryStructLiteral($2, $4))
+			$$ = actions.UnaryExpression($1, actions.PrimaryStructLiteral($2, $4))
                 }
         |       postfix_expression PERIOD IDENTIFIER LBRACE struct_literal_fields RBRACE
                 {
-			$$ = PrimaryStructLiteralExternal($1[0].Outputs[0].Name, $3, $5)
+			$$ = actions.PrimaryStructLiteralExternal($1[0].Outputs[0].Name, $3, $5)
                 }
                 ;
 
@@ -1159,7 +1159,7 @@ assignment_expression:
 							from.Outputs[0].PreviouslyDeclared = true
 						}
 					}
-					$$ = ArrayLiteralAssignment($1, $3)
+					$$ = actions.ArrayLiteralAssignment($1, $3)
 				} else if $3[len($3) - 1].IsStructLiteral {
 					if $2 != "=" && $2 != ":=" {
 						panic("")
@@ -1170,9 +1170,9 @@ assignment_expression:
 							from.Outputs[0].PreviouslyDeclared = true
 						}
 					}
-					$$ = StructLiteralAssignment($1, $3)
+					$$ = actions.StructLiteralAssignment($1, $3)
 				} else {
-					$$ = Assignment($1, $2, $3)
+					$$ = actions.Assignment($1, $2, $3)
 				}
 			}
                 }
@@ -1208,11 +1208,11 @@ constant_expression:
 declaration:
                 VAR declarator declaration_specifiers SEMICOLON
                 {
-			$$ = DeclareLocal($2, $3, nil, false)
+			$$ = actions.DeclareLocal($2, $3, nil, false)
                 }
         |       VAR declarator declaration_specifiers ASSIGN initializer SEMICOLON
                 {
-			$$ = DeclareLocal($2, $3, $5, true)
+			$$ = actions.DeclareLocal($2, $3, $5, true)
                 }
                 ;
 
@@ -1285,9 +1285,9 @@ expression_statement:
 			if len($1) > 0 && $1[len($1) - 1].Operator == nil && !$1[len($1) - 1].IsMethodCall {
 				outs := $1[len($1) - 1].Outputs
 				if len(outs) > 0 {
-					println(CompilationError(outs[0].FileName, outs[0].FileLine), "invalid expression")
+					println(cxcore.CompilationError(outs[0].FileName, outs[0].FileLine), "invalid expression")
 				} else {
-					println(CompilationError(CurrentFile, LineNo), "invalid expression")
+					println(cxcore.CompilationError(actions.CurrentFile, actions.LineNo), "invalid expression")
 				}
 				$$ = nil
 			} else {
@@ -1300,33 +1300,33 @@ expression_statement:
 selection_statement:
                 IF conditional_expression LBRACE block_item_list RBRACE elseif_list else_statement SEMICOLON
                 {
-			$$ = SelectionStatement($2, $4, $6, $7, SEL_ELSEIFELSE)
+			$$ = actions.SelectionStatement($2, $4, $6, $7, actions.SEL_ELSEIFELSE)
                 }
         |       IF conditional_expression LBRACE block_item_list RBRACE else_statement SEMICOLON
                 {
-			$$ = SelectionExpressions($2, $4, $6)
+			$$ = actions.SelectionExpressions($2, $4, $6)
                 }
         |       IF conditional_expression LBRACE RBRACE else_statement SEMICOLON
                 {
-			$$ = SelectionExpressions($2, nil, $5)
+			$$ = actions.SelectionExpressions($2, nil, $5)
                 }
         |       IF conditional_expression LBRACE block_item_list RBRACE elseif_list SEMICOLON
                 {
-			$$ = SelectionStatement($2, $4, $6, nil, SEL_ELSEIF)
+			$$ = actions.SelectionStatement($2, $4, $6, nil, actions.SEL_ELSEIF)
                 }
         |       IF conditional_expression LBRACE RBRACE elseif_list SEMICOLON
                 {
 			//
-			$$ = SelectionStatement($2, nil, $5, nil, SEL_ELSEIF)
+			$$ = actions.SelectionStatement($2, nil, $5, nil, actions.SEL_ELSEIF)
                 }
         |       IF conditional_expression LBRACE RBRACE elseif_list else_statement SEMICOLON
                 {
 			//
-			$$ = SelectionStatement($2, nil, $5, $6, SEL_ELSEIFELSE)
+			$$ = actions.SelectionStatement($2, nil, $5, $6, actions.SEL_ELSEIFELSE)
                 }
         |       IF conditional_expression compound_statement
                 {
-			$$ = SelectionExpressions($2, $3, nil)
+			$$ = actions.SelectionExpressions($2, $3, nil)
                 }
 	|       SWITCH LPAREN expression RPAREN statement
                 { $$ = nil }
@@ -1334,14 +1334,14 @@ selection_statement:
 
 elseif:         ELSE IF conditional_expression LBRACE block_item_list RBRACE
                 {
-			$$ = SelectStatement{
+			$$ = actions.SelectStatement{
 				Condition: $3,
 				Then: $5,
 			}
                 }
 	|       ELSE IF conditional_expression LBRACE RBRACE
 		{
-			$$ = SelectStatement{
+			$$ = actions.SelectStatement{
 				Condition: $3,
 				Then: nil,
 			}
@@ -1350,7 +1350,7 @@ elseif:         ELSE IF conditional_expression LBRACE block_item_list RBRACE
 
 elseif_list:    elseif
                 {
-			$$ = []SelectStatement{$1}
+			$$ = []actions.SelectStatement{$1}
                 }
         |       elseif_list elseif
                 {
@@ -1372,28 +1372,28 @@ else_statement:
 iteration_statement:
                 FOR expression compound_statement
                 {
-			$$ = IterationExpressions(nil, $2, nil, $3)
+			$$ = actions.IterationExpressions(nil, $2, nil, $3)
                 }
         |       FOR expression_statement expression_statement compound_statement
                 {			
-			$$ = IterationExpressions($2, $3, nil, $4)
+			$$ = actions.IterationExpressions($2, $3, nil, $4)
                 }
         |       FOR expression_statement expression_statement expression compound_statement
                 {
-			$$ = IterationExpressions($2, $3, $4, $5)
+			$$ = actions.IterationExpressions($2, $3, $4, $5)
                 }
                 ;
 
 return_expression:
 		struct_literal_expression
 		{
-			retExprs := ReturnExpressions{Expressions: AssociateReturnExpressions(0, $1)}
+			retExprs := actions.ReturnExpressions{Expressions: actions.AssociateReturnExpressions(0, $1)}
 			retExprs.Size++
 			$$ = retExprs
 		}
 	|	return_expression COMMA struct_literal_expression
 		{
-			$1.Expressions = append($1.Expressions, AssociateReturnExpressions($1.Size, $3)...)
+			$1.Expressions = append($1.Expressions, actions.AssociateReturnExpressions($1.Size, $3)...)
 			$1.Size++
 			$$ = $1
 		}
@@ -1401,36 +1401,36 @@ return_expression:
 
 jump_statement: GOTO IDENTIFIER SEMICOLON
                 {
-			if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
-				expr := MakeExpression(Natives[OP_JMP], CurrentFile, LineNo)
+			if pkg, err := actions.PRGRM.GetCurrentPackage(); err == nil {
+				expr := cxcore.MakeExpression(cxcore.Natives[cxcore.OP_JMP], actions.CurrentFile, actions.LineNo)
 				expr.Package = pkg
 				expr.Label = $2
 
-				arg := MakeArgument("", CurrentFile, LineNo).AddType("bool")
+				arg := cxcore.MakeArgument("", actions.CurrentFile, actions.LineNo).AddType("bool")
 				arg.Package = pkg
 
 				expr.AddInput(arg)
 					
-				$$ = []*CXExpression{expr}
+				$$ = []*cxcore.CXExpression{expr}
 			} else {
 				panic(err)
 			}
                 }
 	|       CONTINUE SEMICOLON
 		{
-			$$ = ContinueExpressions()
+			$$ = actions.ContinueExpressions()
 		}
 	|       BREAK SEMICOLON
 		{
-			$$ = BreakExpressions()
+			$$ = actions.BreakExpressions()
 		}
 	|       RETURN SEMICOLON
                 {
-			$$ = AddJmpToReturnExpressions(ReturnExpressions{})
+			$$ = actions.AddJmpToReturnExpressions(actions.ReturnExpressions{})
                 }
 	|       RETURN return_expression SEMICOLON
                 {
-			$$ = AddJmpToReturnExpressions($2)
+			$$ = actions.AddJmpToReturnExpressions($2)
                 }
                 ;
 %%
