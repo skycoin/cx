@@ -3,8 +3,8 @@ package cxcore
 import (
 	"fmt"
 
-	uuid "github.com/satori/go.uuid"
-	"github.com/skycoin/skycoin/src/cipher/encoder"
+	//uuid "github.com/satori/go.uuid"
+	//"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 // Var
