@@ -59,7 +59,7 @@ var re = struct {
 	bodyClose: regexp.MustCompile("}"),
 
 	imp:     regexp.MustCompile("import"),
-	impName: regexp.MustCompile(`(^|[\s])import\\s+"([_a-zA-Z][_a-zA-Z0-9/-]*)"`),
+	impName: regexp.MustCompile(`(^|[\s])import\s+"([_a-zA-Z][_a-zA-Z0-9/-]*)"`),
 }
 
 // lg contains loggers
