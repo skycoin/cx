@@ -137,6 +137,44 @@ type CXExpression struct {
 	IsContinue      bool
 }
 
+
+/*
+grep -rn "IsShortDeclaration" .
+IsShortDeclaration - is this CXArgument the result of a `CASSIGN` operation (`:=`)?
+./cxgo/parser/cxgo.y:1158:							from.Outputs[0].IsShortDeclaration = true
+./cxgo/parser/cxgo.y:1169:							from.Outputs[0].IsShortDeclaration = true
+./cxgo/parser/cxgo.go:2366:							from.Outputs[0].IsShortDeclaration = true
+./cxgo/parser/cxgo.go:2377:							from.Outputs[0].IsShortDeclaration = true
+./cxgo/actions/functions.go:147:		if len(expr.Outputs) > 0 && len(expr.Inputs) > 0 && expr.Outputs[0].IsShortDeclaration && !expr.IsStructLiteral && !isParseOp(expr) {
+./cxgo/actions/assignment.go:161:		sym.IsShortDeclaration = true
+./cxgo/actions/assignment.go:167:			toExpr.Outputs[0].IsShortDeclaration = true
+Binary file ./bin/cx matches
+./docs/CompilerDevelopment.md:81:* IsShortDeclaration - is this CXArgument the result of a `CASSIGN` operation (`:=`)?
+./cx/serialize.go:168:	IsShortDeclaration int32
+./cx/serialize.go:337:	s.Arguments[argOff].IsShortDeclaration = serializeBoolean(arg.IsShortDeclaration)
+./cx/serialize.go:1051:	arg.IsShortDeclaration = dsBool(sArg.IsShortDeclaration)
+./cx/ast.go:234:	IsShortDeclaration    bool
+./cx/ast.go:1499:	IsShortDeclaration    bool
+*/
+
+/*
+grep -rn "IsRest" .
+./cxgo/actions/postfix.go:226:		out.IsRest = true
+./cxgo/actions/postfix.go:238:		inp.IsRest = true
+./cxgo/actions/postfix.go:254:	if left.IsRest {
+./cxgo/actions/postfix.go:255:		// right.IsRest = true
+./cxgo/actions/postfix.go:264:	left.IsRest = true
+Binary file ./bin/cx matches
+./docs/CompilerDevelopment.md:79:* IsRest - if this is a package global, is this CXArgument representing the actual global variable from that package?
+./cx/serialize.go:166:	IsRest             int32
+./cx/serialize.go:335:	s.Arguments[argOff].IsRest = serializeBoolean(arg.IsRest)
+./cx/serialize.go:1049:	arg.IsRest = dsBool(sArg.IsRest)
+./cx/ast.go:252:	IsRest                bool // pkg.var <- var is rest
+./cx/ast.go:1517:	IsRest                bool // pkg.var <- var is rest
+./vendor/golang.org/x/sys/windows/security_windows.go:841:// IsRestricted reports whether the access token t is a restricted token.
+./vendor/golang.org/x/sys/windows/security_windows.go:842:func (t Token) IsRestricted() (isRestricted bool, err error) {
+	*/
+	
 // CXArgument is used to define local variables, global variables,
 // literals (strings, numbers), inputs and outputs to function
 // calls. All of the fields in this structure are determined at

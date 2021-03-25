@@ -27,6 +27,7 @@ grep -rn "UnRun" .
 */
 
 // UnRun ...
+/*
 func (prgrm *CXProgram) UnRun(nCalls int) {
 	if nCalls >= 0 || prgrm.CallCounter < 0 {
 		return
@@ -52,6 +53,7 @@ func (prgrm *CXProgram) UnRun(nCalls int) {
 		}
 	}
 }
+*/
 
 // ToCall ...
 func (prgrm *CXProgram) ToCall() *CXExpression {
