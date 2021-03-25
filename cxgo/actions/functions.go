@@ -117,18 +117,18 @@ func FunctionDeclaration(fn *cxcore.CXFunction, inputs, outputs []*cxcore.CXArgu
 	var symbols *[]map[string]*cxcore.CXArgument
 	tmp := make([]map[string]*cxcore.CXArgument, 0)
 	symbols = &tmp
-	*symbols = append(*symbols, make(map[string]*cxcore.CXArgument, 0))
+	*symbols = append(*symbols, make(map[string]*cxcore.CXArgument))
 
 	// this variable only handles the difference between local and global scopes
 	// local being function constrained variables, and global being global variables
-	var symbolsScope map[string]bool = make(map[string]bool, 0)
+	var symbolsScope map[string]bool = make(map[string]bool)
 
 	FunctionProcessParameters(symbols, &symbolsScope, &offset, fn, fn.Inputs)
 	FunctionProcessParameters(symbols, &symbolsScope, &offset, fn, fn.Outputs)
 
 	for i, expr := range fn.Expressions {
 		if expr.ScopeOperation == cxcore.SCOPE_NEW {
-			*symbols = append(*symbols, make(map[string]*cxcore.CXArgument, 0))
+			*symbols = append(*symbols, make(map[string]*cxcore.CXArgument))
 		}
 
 		ProcessMethodCall(expr, symbols, &offset, true)
@@ -569,7 +569,7 @@ func CheckTypes(expr *cxcore.CXExpression) {
 	}
 
 	if expr.Operator != nil && expr.Operator.IsNative && expr.Operator.OpCode == cxcore.OP_IDENTITY {
-		for i, _ := range expr.Inputs {
+		for i := range expr.Inputs {
 			var expectedType string
 			var receivedType string
 			if cxcore.GetAssignmentElement(expr.Outputs[i]).CustomType != nil {
@@ -650,7 +650,11 @@ func ProcessSlice(inp *cxcore.CXArgument) {
 
 	if elt.IsSlice && len(elt.DereferenceOperations) > 0 && elt.DereferenceOperations[len(elt.DereferenceOperations)-1] == cxcore.DEREF_POINTER {
 		elt.DereferenceOperations = elt.DereferenceOperations[:len(elt.DereferenceOperations)-1]
-	} else if elt.IsSlice && len(elt.DereferenceOperations) > 0 && len(inp.Fields) == 0 {
+		return
+	}
+
+	if elt.IsSlice && len(elt.DereferenceOperations) > 0 && len(inp.Fields) == 0 {
+		return
 		// elt.DereferenceOperations = append([]int{cxcore.DEREF_POINTER}, elt.DereferenceOperations...)
 	}
 }
@@ -917,13 +921,13 @@ func CopyArgFields(sym *cxcore.CXArgument, arg *cxcore.CXArgument) {
 					if declSpec[len(declSpec)-1] == cxcore.DECL_ARRAY || declSpec[len(declSpec)-1] == cxcore.DECL_SLICE {
 						declSpec = declSpec[:len(declSpec)-1]
 					} else {
-						println(cxcore.CompilationError(sym.FileName, sym.FileLine), fmt.Sprintf("invalid indexing"))
+						println(cxcore.CompilationError(sym.FileName, sym.FileLine), "invalid indexing")
 					}
 				case cxcore.DECL_DEREF:
 					if declSpec[len(declSpec)-1] == cxcore.DECL_POINTER {
 						declSpec = declSpec[:len(declSpec)-1]
 					} else {
-						println(cxcore.CompilationError(sym.FileName, sym.FileLine), fmt.Sprintf("invalid indirection"))
+						println(cxcore.CompilationError(sym.FileName, sym.FileLine), "invalid indirection")
 					}
 				default:
 					declSpec = append(declSpec, elt.DeclarationSpecifiers[c])
@@ -946,13 +950,13 @@ func CopyArgFields(sym *cxcore.CXArgument, arg *cxcore.CXArgument) {
 					if declSpec[len(declSpec)-1] == cxcore.DECL_ARRAY || declSpec[len(declSpec)-1] == cxcore.DECL_SLICE {
 						declSpec = declSpec[:len(declSpec)-1]
 					} else {
-						println(cxcore.CompilationError(sym.FileName, sym.FileLine), fmt.Sprintf("invalid indexing"))
+						println(cxcore.CompilationError(sym.FileName, sym.FileLine), "invalid indexing")
 					}
 				case cxcore.DECL_DEREF:
 					if declSpec[len(declSpec)-1] == cxcore.DECL_POINTER {
 						declSpec = declSpec[:len(declSpec)-1]
 					} else {
-						println(cxcore.CompilationError(sym.FileName, sym.FileLine), fmt.Sprintf("invalid indirection"))
+						println(cxcore.CompilationError(sym.FileName, sym.FileLine), "invalid indirection")
 					}
 				case cxcore.DECL_POINTER:
 					if sym.FileLine != arg.FileLine {

@@ -64,7 +64,7 @@ func GetOffsetAtomicSimple(fp int, arg *CXArgument) int {
 var ENABLE_MIRACLE_BUG bool    = false
 //this is version with type assertions
 func GetOffsetAtomic(fp int, arg *CXArgument) int {
-	if ENABLE_MIRACLE_BUG == false {
+	if !ENABLE_MIRACLE_BUG {
 		return GetFinalOffset(fp, arg)
 	}
 

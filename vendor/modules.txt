@@ -25,8 +25,6 @@ github.com/mjibson/go-dsp/wav
 github.com/prashantv/gostub
 # github.com/russross/blackfriday/v2 v2.0.1
 github.com/russross/blackfriday/v2
-# github.com/satori/go.uuid v1.2.0
-github.com/satori/go.uuid
 # github.com/shurcooL/sanitized_anchor_name v1.0.0
 github.com/shurcooL/sanitized_anchor_name
 # github.com/sirupsen/logrus v1.8.0
@@ -70,7 +68,7 @@ golang.org/x/mobile/exp/audio/al
 golang.org/x/mobile/geom
 golang.org/x/mobile/gl
 golang.org/x/mobile/internal/mobileinit
-# golang.org/x/sys v0.0.0-20210301091718-77cc2087c03b
+# golang.org/x/sys v0.0.0-20210324051608-47abb6519492
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
 golang.org/x/sys/windows

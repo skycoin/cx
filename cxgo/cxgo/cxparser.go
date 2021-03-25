@@ -9,7 +9,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/skycoin/cx/cx"
+	cxcore "github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cxgo/actions"
 	"github.com/skycoin/cx/cxgo/cxgo0"
 	"github.com/skycoin/cx/cxgo/parser"
@@ -19,6 +19,8 @@ import (
 // ParseSourceCode takes a group of files representing CX `sourceCode` and
 // parses it into CX program structures for `PRGRM`.
 func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
+
+	//local
 	cxgo0.PRGRM0 = actions.PRGRM
 
 	// Copy the contents of the file pointers containing the CX source
@@ -39,6 +41,7 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 		parseErrors = lexerStep0(sourceCodeCopy, fileNames)
 	}
 
+	//package level program
 	actions.PRGRM.SelectProgram()
 
 	actions.PRGRM = cxgo0.PRGRM0
@@ -96,18 +99,18 @@ func lexerStep0(srcStrs, srcNames []string) int {
 	reComment := regexp.MustCompile("//")
 
 	rePkg := regexp.MustCompile("package")
-	rePkgName := regexp.MustCompile("(^|[\\s])package\\s+([_a-zA-Z][_a-zA-Z0-9]*)")
+	rePkgName := regexp.MustCompile(`(^|[\s])package\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
 	reStrct := regexp.MustCompile("type")
-	reStrctName := regexp.MustCompile("(^|[\\s])type\\s+([_a-zA-Z][_a-zA-Z0-9]*)?\\s")
+	reStrctName := regexp.MustCompile(`(^|[\s])type\s+([_a-zA-Z][_a-zA-Z0-9]*)?\s`)
 
 	reGlbl := regexp.MustCompile("var")
-	reGlblName := regexp.MustCompile("(^|[\\s])var\\s([_a-zA-Z][_a-zA-Z0-9]*)")
+	reGlblName := regexp.MustCompile(`(^|[\s])var\s([_a-zA-Z][_a-zA-Z0-9]*)`)
 
 	reBodyOpen := regexp.MustCompile("{")
 	reBodyClose := regexp.MustCompile("}")
 
 	reImp := regexp.MustCompile("import")
-	reImpName := regexp.MustCompile("(^|[\\s])import\\s+\"([_a-zA-Z][_a-zA-Z0-9/-]*)\"")
+	reImpName := regexp.MustCompile(`(^|[\s])import\s+"([_a-zA-Z][_a-zA-Z0-9/-]*)"`)
 
 	profiling.StartProfile("1. packages/structs")
 	// 1. Identify all the packages and structs
@@ -343,6 +346,7 @@ func lexerStep0(srcStrs, srcNames []string) int {
 		if len(srcNames) > 0 {
 			cxgo0.CurrentFileName = srcNames[i]
 		}
+		//Parse calls yyParse
 		parseErrors += cxgo0.Parse(source)
 		profiling.StopProfile(srcNames[i])
 	}

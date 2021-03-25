@@ -487,7 +487,7 @@ type CXValue struct {
     Type int
     memory []byte
     Offset int
-    size int
+    //size int. //unused field
     FramePointer int
 	Used int8
 }

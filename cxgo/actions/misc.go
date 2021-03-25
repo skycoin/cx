@@ -51,9 +51,7 @@ func WritePrimary(typ int, byts []byte, isGlobal bool) []*cxcore.CXExpression {
 		arg.AddType(cxcore.TypeNames[typ])
 		arg.Package = pkg
 
-		var size int
-
-		size = len(byts)
+		var size = len(byts)
 
 		arg.Size = cxcore.GetArgSize(typ)
 		arg.TotalSize = size

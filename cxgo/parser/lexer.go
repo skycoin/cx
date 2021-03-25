@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-	. "github.com/skycoin/cx/cxgo/actions"
+	"github.com/skycoin/cx/cxgo/actions"
 )
 
 var DebugLexer bool
@@ -17,7 +17,7 @@ func (yylex Lexer) Error(msg string) {
 func (yylex *Lexer) Lex(lval *yySymType) int {
 	yylex.next()
 	lval.scancopy(yylex.tok)
-	LineNo = lval.line
+	actions.LineNo = lval.line
 	return lval.yys
 }
 
@@ -69,6 +69,9 @@ func (lval *yySymType) scancopy(tok *yySymType) {
 	lval.yys = tok.yys
 }
 
+//Warning Unused
+//is duplicated in cxgo/cxgo0/lexer.go, also unused
+/*
 var tokenNames = map[int]string{
 	BYTE_LITERAL:    "BYTE_LITERAL",
 	BOOLEAN_LITERAL: "BOOLEAN_LITERAL",
@@ -191,13 +194,13 @@ var tokenNames = map[int]string{
 	CONTINUE:     "CONTINUE",
 	TYPE:         "TYPE",
 
-	/* Types */
+	// Types
 	BASICTYPE: "BASICTYPE",
-	/* Selectors */
+	// Selectors
 	SPACKAGE: "SPACKAGE",
 	SSTRUCT:  "SSTRUCT",
 	SFUNC:    "SFUNC",
-	/* Removers */
+	// Removers
 	REM:     "REM",
 	DEF:     "DEF",
 	EXPR:    "EXPR",
@@ -205,20 +208,21 @@ var tokenNames = map[int]string{
 	CLAUSES: "CLAUSES",
 	OBJECT:  "OBJECT",
 	OBJECTS: "OBJECTS",
-	/* Stepping */
+	// Stepping
 	STEP:  "STEP",
 	PSTEP: "PSTEP",
 	TSTEP: "TSTEP",
-	/* Debugging */
+	// Debugging
 	DSTACK:   "DSTACK",
 	DPROGRAM: "DPROGRAM",
 	DSTATE:   "DSTATE",
-	/* Affordances */
+	// Affordances
 	AFF:   "AFF",
 	CAFF:  "CAFF",
 	TAG:   "TAG",
 	INFER: "INFER",
 	VALUE: "VALUE",
-	/* Pointers */
+	// Pointers
 	ADDR: "ADDR",
 }
+*/
