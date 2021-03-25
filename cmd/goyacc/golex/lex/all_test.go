@@ -4,6 +4,8 @@
 
 package lex // import "github.com/skycoin/cx/cmd/goyacc/golex/lex"
 
+/*
+
 import (
 	"fmt"
 	"os"
@@ -45,3 +47,5 @@ func TODO(...interface{}) string {
 func Test(t *testing.T) {
 	t.Logf("TODO")
 }
+
+*/

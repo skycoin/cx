@@ -26,7 +26,7 @@ import (
 )
 
 func init() {
-	isTesting = true
+	//	isTesting = true
 }
 
 // func caller(s string, va ...interface{}) {

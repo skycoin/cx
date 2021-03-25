@@ -12,10 +12,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/skycoin/cx/cx"
+	cxcore "github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cxgo/actions"
-	"github.com/skycoin/cx/cxgo/cxgo"
-	"github.com/skycoin/cx/cxgo/cxgo0"
+	cxgo0 "github.com/skycoin/cx/cxgo/cxgrammer"
+	cxgo "github.com/skycoin/cx/cxgo/cxparser"
 	"github.com/skycoin/cx/cxgo/parser"
 )
 

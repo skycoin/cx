@@ -1,5 +1,5 @@
 %{
-	package cxgo0
+	package cxgrammer
 	import (
 		// "fmt"
 		"bytes"

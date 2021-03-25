@@ -11,7 +11,7 @@ import (
 
 	cxcore "github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cxgo/actions"
-	"github.com/skycoin/cx/cxgo/cxgo0"
+	cxgo0 "github.com/skycoin/cx/cxgo/cxgrammer"
 	"github.com/skycoin/cx/cxgo/parser"
 	"github.com/skycoin/cx/cxgo/util/profiling"
 )

@@ -41,6 +41,7 @@
 //	}
 package lex_test // import "github.com/skycoin/cx/cmd/goyacc/golex/lex"
 
+/*
 import (
 	"bytes"
 	"fmt"
@@ -289,3 +290,5 @@ yyabort: // no lexem recognized
 
 	goto yyAction
 }
+
+*/

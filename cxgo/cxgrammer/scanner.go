@@ -1,4 +1,4 @@
-package cxgo0
+package cxgrammer
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/skycoin/cx/cx"
+	cxcore "github.com/skycoin/cx/cx"
 )
 
 type Lexer struct {
