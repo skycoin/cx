@@ -16,14 +16,14 @@ func main() {
 		Usage: "cx programs tester",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:     "cxpath",
-				Usage:    "Set cx directory",
-				Required: true,
+				Name:        "cxpath",
+				Usage:       "cx binary path",
+				DefaultText: "../bin/cx",
 			},
 			&cli.StringFlag{
-				Name:     "wdir",
-				Usage:    "Set working directory",
-				Required: true,
+				Name:        "wdir",
+				Usage:       "working directory with *.cx tests",
+				DefaultText: "./tests",
 			},
 			&cli.StringFlag{
 				Name:  "log",
@@ -54,8 +54,16 @@ func main() {
 }
 
 func Execute(c *cli.Context) error {
-	workingDir := c.String("wdir")
 	cxPath := c.String("cxpath")
+	if cxPath == "" {
+		cxPath = "../bin/cx"
+	}
+
+	workingDir := c.String("wdir")
+	if workingDir == "" {
+		workingDir = "./tests"
+	}
+
 	debug := c.Bool("debug")
 
 	var parseBitMask = func(flagName string, bitsMap map[string]Bits, defaultBit Bits) Bits {
