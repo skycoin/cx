@@ -17,6 +17,15 @@ import (
 // 	//prgrm.ProgramSteps = nil
 // }
 
+/*
+grep -rn "UnRun" .
+./cxgo/actions/interactive.go:16:				PRGRM.UnRun(steps)
+./cxgo/actions/interactive.go:39:				// PRGRM.UnRun(int(nCalls))
+./cxgo/actions/interactive.go:40:				PRGRM.UnRun(steps)
+./cx/execute.go:20:// UnRun ...
+./cx/execute.go:21:func (prgrm *CXProgram) UnRun(nCalls int) {
+*/
+
 // UnRun ...
 func (prgrm *CXProgram) UnRun(nCalls int) {
 	if nCalls >= 0 || prgrm.CallCounter < 0 {
