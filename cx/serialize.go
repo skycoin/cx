@@ -203,7 +203,7 @@ type serializedCXProgram struct {
 	Memory []byte
 }
 
-type SerializeDataSize struct {
+type SerializedDataSize struct {
 	Program     int `json:"program"`
 	Calls       int `json:"calls"`
 	Packages    int `json:"packages"`
@@ -610,7 +610,7 @@ func initSerialization(prgrm *CXProgram, s *serializedCXProgram, includeMemory b
 	s.PackagesMap = make(map[string]int)
 	s.StructsMap = make(map[string]int)
 	s.FunctionsMap = make(map[string]int)
-	s.StringsMap = make(map[string]int) //A string map? Rename to STRINGS
+	s.StringsMap = make(map[string]int)
 
 	s.Calls = make([]serializedCall, prgrm.CallCounter)
 	s.Packages = make([]serializedPackage, len(prgrm.Packages))
@@ -787,21 +787,20 @@ func serializeCXProgramElements(prgrm *CXProgram, s *serializedCXProgram) {
 // These slice of bytes can then be deserialize in the future and
 // be translated back to cx program.
 func SerializeCXProgram(prgrm *CXProgram, includeMemory bool) (b []byte) {
-	// prgrm.PrintProgram()
-
 	s := serializedCXProgram{}
 	initSerialization(prgrm, &s, includeMemory)
 
+	// serialize cx program's packages,
+	// structs, functions, etc.
 	serializeCXProgramElements(prgrm, &s)
 
-	// program
+	// serialize cx program's program
 	serializeProgram(prgrm, &s)
 
 	s.Index = serializedCXProgramIndex{}
 	sIdx := &s.Index
 
 	// assigning relative offset
-
 	idxSize := encoder.Size(s.Index)
 	prgrmSize := encoder.Size(s.Program)
 	callSize := encoder.Size(s.Calls)
@@ -841,14 +840,14 @@ func SerializeCXProgram(prgrm *CXProgram, includeMemory bool) (b []byte) {
 }
 
 // SerializeDebugInfo prints the name of the serialized segment and byte size.
-func SerializeDebugInfo(prgrm *CXProgram, includeMemory bool) SerializeDataSize {
+func SerializeDebugInfo(prgrm *CXProgram, includeMemory bool) SerializedDataSize {
 	idxSize := encoder.Size(serializedCXProgramIndex{})
 	var s serializedCXProgram
 
 	bytes := SerializeCXProgram(prgrm, includeMemory)
 	DeserializeRaw(bytes[:idxSize], &s.Index)
 
-	data := &SerializeDataSize{
+	data := &SerializedDataSize{
 		Program:     len(bytes[s.Index.ProgramOffset:s.Index.CallsOffset]),
 		Calls:       len(bytes[s.Index.CallsOffset:s.Index.PackagesOffset]),
 		Packages:    len(bytes[s.Index.PackagesOffset:s.Index.StructsOffset]),
@@ -856,15 +855,15 @@ func SerializeDebugInfo(prgrm *CXProgram, includeMemory bool) SerializeDataSize 
 		Functions:   len(bytes[s.Index.FunctionsOffset:s.Index.ExpressionsOffset]),
 		Expressions: len(bytes[s.Index.ExpressionsOffset:s.Index.ArgumentsOffset]),
 		Arguments:   len(bytes[s.Index.ArgumentsOffset:s.Index.IntegersOffset]),
-		Integers:    len(bytes[s.Index.IntegersOffset:s.Index.StringsOffset]), //NAMES?
-		Strings:     len(bytes[s.Index.StringsOffset:s.Index.MemoryOffset]),   // NAMES?
+		Integers:    len(bytes[s.Index.IntegersOffset:s.Index.StringsOffset]),
+		Strings:     len(bytes[s.Index.StringsOffset:s.Index.MemoryOffset]),
 		Memory:      len(bytes[s.Index.MemoryOffset:]),
 	}
 
 	return *data
 }
 
-func deserializeName(off int64, size int64, s *serializedCXProgram) string {
+func deserializeString(off int64, size int64, s *serializedCXProgram) string {
 	if size < 1 {
 		return ""
 	}
@@ -886,7 +885,7 @@ func deserializePackages(s *serializedCXProgram, prgrm *CXProgram) {
 		pkg := CXPackage{}
 		prgrm.Packages[i] = &pkg
 
-		pkg.Name = deserializeName(sPkg.NameOffset, sPkg.NameSize, s)
+		pkg.Name = deserializeString(sPkg.NameOffset, sPkg.NameSize, s)
 
 		if sPkg.ImportsSize > 0 {
 			prgrm.Packages[i].Imports = make([]*CXPackage, sPkg.ImportsSize)
@@ -897,7 +896,7 @@ func deserializePackages(s *serializedCXProgram, prgrm *CXProgram) {
 
 			for j, sFn := range s.Functions[sPkg.FunctionsOffset : sPkg.FunctionsOffset+sPkg.FunctionsSize] {
 				var fn CXFunction
-				fn.Name = deserializeName(sFn.NameOffset, sFn.NameSize, s) //!??!
+				fn.Name = deserializeString(sFn.NameOffset, sFn.NameSize, s)
 				prgrm.Packages[i].Functions[j] = &fn
 			}
 		}
@@ -907,7 +906,7 @@ func deserializePackages(s *serializedCXProgram, prgrm *CXProgram) {
 
 			for j, sStrct := range s.Structs[sPkg.StructsOffset : sPkg.StructsOffset+sPkg.StructsSize] {
 				var strct CXStruct
-				strct.Name = deserializeName(sStrct.NameOffset, sStrct.NameSize, s) // !!>!>!
+				strct.Name = deserializeString(sStrct.NameOffset, sStrct.NameSize, s)
 				prgrm.Packages[i].Structs[j] = &strct
 			}
 		}
@@ -972,7 +971,7 @@ func deserializePackages(s *serializedCXProgram, prgrm *CXProgram) {
 }
 
 func deserializeStruct(sStrct *serializedStruct, strct *CXStruct, s *serializedCXProgram, prgrm *CXProgram) {
-	strct.Name = deserializeName(sStrct.NameOffset, sStrct.NameSize, s)
+	strct.Name = deserializeString(sStrct.NameOffset, sStrct.NameSize, s)
 	strct.Fields = deserializeArguments(sStrct.FieldsOffset, sStrct.FieldsSize, s, prgrm)
 	strct.Size = int(sStrct.Size)
 	strct.Package = prgrm.Packages[sStrct.PackageOffset]
@@ -1001,7 +1000,7 @@ func deserializeArguments(off int64, size int64, s *serializedCXProgram, prgrm *
 
 // 	//structTypePkg := prgrm.Packages[s.Structs[sArg.StructTypeOffset].PackageOffset]
 // 	sStrct := s.Structs[sArg.StructTypeOffset]
-// 	structTypeName := deserializeName(sStrct.NameOffset, sStrct.NameSize, s)
+// 	structTypeName := deserializeString(sStrct.NameOffset, sStrct.NameSize, s)
 
 // 	for _, strct := range structTypePkg.Structs {
 // 		if strct.Name == structTypeName {
@@ -1014,7 +1013,7 @@ func deserializeArguments(off int64, size int64, s *serializedCXProgram, prgrm *
 
 func deserializeArgument(sArg *serializedArgument, s *serializedCXProgram, prgrm *CXProgram) *CXArgument {
 	var arg CXArgument
-	arg.Name = deserializeName(sArg.NameOffset, sArg.NameSize, s)
+	arg.Name = deserializeString(sArg.NameOffset, sArg.NameSize, s)
 	arg.Type = int(sArg.Type)
 
 	//arg.CustomType = getStructType(sArg, s, prgrm)
@@ -1060,7 +1059,7 @@ func deserializeOperator(sExpr *serializedExpression, s *serializedCXProgram, pr
 
 	opPkg := prgrm.Packages[s.Functions[sExpr.OperatorOffset].PackageOffset]
 	sOp := s.Functions[sExpr.OperatorOffset]
-	opName := deserializeName(sOp.NameOffset, sOp.NameSize, s)
+	opName := deserializeString(sOp.NameOffset, sOp.NameSize, s)
 
 	for _, fn := range opPkg.Functions {
 		if fn.Name == opName {
@@ -1072,7 +1071,7 @@ func deserializeOperator(sExpr *serializedExpression, s *serializedCXProgram, pr
 }
 
 func deserializePackageImport(sImp *serializedPackage, s *serializedCXProgram, prgrm *CXProgram) *CXPackage {
-	impName := deserializeName(sImp.NameOffset, sImp.NameSize, s)
+	impName := deserializeString(sImp.NameOffset, sImp.NameSize, s)
 
 	for _, pkg := range prgrm.Packages {
 		if pkg.Name == impName {
@@ -1090,7 +1089,7 @@ func deserializeExpressionFunction(sExpr *serializedExpression, s *serializedCXP
 
 	fnPkg := prgrm.Packages[s.Functions[sExpr.FunctionOffset].PackageOffset]
 	sFn := s.Functions[sExpr.FunctionOffset]
-	fnName := deserializeName(sFn.NameOffset, sFn.NameSize, s)
+	fnName := deserializeString(sFn.NameOffset, sFn.NameSize, s)
 
 	for _, fn := range fnPkg.Functions {
 		if fn.Name == fnName {
@@ -1129,7 +1128,7 @@ func deserializeExpression(sExpr *serializedExpression, s *serializedCXProgram, 
 	expr.Inputs = deserializeArguments(sExpr.InputsOffset, sExpr.InputsSize, s, prgrm)
 	expr.Outputs = deserializeArguments(sExpr.OutputsOffset, sExpr.OutputsSize, s, prgrm)
 
-	expr.Label = deserializeName(sExpr.LabelOffset, sExpr.LabelSize, s)
+	expr.Label = deserializeString(sExpr.LabelOffset, sExpr.LabelSize, s)
 
 	expr.ThenLines = int(sExpr.ThenLines)
 	expr.ElseLines = int(sExpr.ElseLines)
@@ -1149,7 +1148,7 @@ func deserializeExpression(sExpr *serializedExpression, s *serializedCXProgram, 
 }
 
 func deserializeFunction(sFn *serializedFunction, fn *CXFunction, s *serializedCXProgram, prgrm *CXProgram) {
-	fn.Name = deserializeName(sFn.NameOffset, sFn.NameSize, s)
+	fn.Name = deserializeString(sFn.NameOffset, sFn.NameSize, s)
 	fn.Inputs = deserializeArguments(sFn.InputsOffset, sFn.InputsSize, s, prgrm)
 	fn.Outputs = deserializeArguments(sFn.OutputsOffset, sFn.OutputsSize, s, prgrm)
 	fn.ListOfPointers = deserializeArguments(sFn.ListOfPointersOffset, sFn.ListOfPointersSize, s, prgrm)
@@ -1190,7 +1189,7 @@ func initDeserialization(prgrm *CXProgram, s *serializedCXProgram) {
 	prgrm.HeapPointer = int(s.Program.HeapPointer)
 	prgrm.StackSize = int(s.Program.StackSize)
 	prgrm.HeapSize = int(s.Program.HeapSize)
-	prgrm.Version = deserializeName(s.Program.VersionOffset, s.Program.VersionSize, s)
+	prgrm.Version = deserializeString(s.Program.VersionOffset, s.Program.VersionSize, s)
 
 	deserializePackages(s, prgrm)
 }
