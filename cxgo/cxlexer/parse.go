@@ -14,8 +14,8 @@ import (
 	"github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cxgo/actions"
 	"github.com/skycoin/cx/cxgo/cxgo0"
-	"github.com/skycoin/cx/cxgo/util/cxprof"
 	"github.com/skycoin/cx/cxgo/parser"
+	"github.com/skycoin/cx/cxgo/util/cxprof"
 )
 
 // re contains all regular expressions used for lexing
@@ -48,18 +48,18 @@ var re = struct {
 	multiCommentClose: regexp.MustCompile(`\*/`),
 
 	pkg:     regexp.MustCompile("package"),
-	pkgName: regexp.MustCompile("(^|[\\s])package\\s+([_a-zA-Z][_a-zA-Z0-9]*)"),
+	pkgName: regexp.MustCompile(`(^|[\s])package\s+([_a-zA-Z][_a-zA-Z0-9]*)`),
 	str:     regexp.MustCompile("type"),
-	strName: regexp.MustCompile("(^|[\\s])type\\s+([_a-zA-Z][_a-zA-Z0-9]*)?\\s"),
+	strName: regexp.MustCompile(`(^|[\s])type\s+([_a-zA-Z][_a-zA-Z0-9]*)?\s`),
 
 	gl:     regexp.MustCompile("var"),
-	glName: regexp.MustCompile("(^|[\\s])var\\s([_a-zA-Z][_a-zA-Z0-9]*)"),
+	glName: regexp.MustCompile(`(^|[\s])var\s([_a-zA-Z][_a-zA-Z0-9]*)`),
 
 	bodyOpen:  regexp.MustCompile("{"),
 	bodyClose: regexp.MustCompile("}"),
 
 	imp:     regexp.MustCompile("import"),
-	impName: regexp.MustCompile("(^|[\\s])import\\s+\"([_a-zA-Z][_a-zA-Z0-9/-]*)\""),
+	impName: regexp.MustCompile(`(^|[\s])import\\s+"([_a-zA-Z][_a-zA-Z0-9/-]*)"`),
 }
 
 // lg contains loggers
@@ -343,7 +343,7 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) int {
 	for i, source := range sourceCode {
 		tmp := bytes.NewBuffer(nil)
 		io.Copy(tmp, source)
-		sourceCodeCopy[i] = string(tmp.Bytes())
+		sourceCodeCopy[i] = tmp.String()
 	}
 
 	// We need to traverse the elements by hierarchy first add all the
