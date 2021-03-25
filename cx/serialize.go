@@ -45,7 +45,6 @@ type sProgram struct {
 	HeapStartsAt int32
 	HeapSize     int32
 
-
 	Terminated int32
 
 	VersionOffset int32
