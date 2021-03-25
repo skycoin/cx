@@ -82,7 +82,7 @@ func ReadData_i8(fp int, inp *CXArgument, dataType int) interface{} {
 	//return ReadData(fp, inp, dataType)
 	//ReadData ALWAYS returns ReadObject for all Atomics
 	//SHOULD CALL ReadObject for all atomics
-	ReadObjectAtomic(fp, inp, dataType)
+	return ReadObjectAtomic(fp, inp, dataType)
 }
 
 // ReadData_i16 ...
@@ -94,50 +94,50 @@ func ReadData_i16(fp int, inp *CXArgument, dataType int) interface{} {
 // ReadData_i32 ...
 func ReadData_i32(fp int, inp *CXArgument, dataType int) interface{} {
 	//return ReadData(fp, inp, dataType)
-	ReadObjectAtomic(fp, inp, dataType)
+	return ReadObjectAtomic(fp, inp, dataType)
 }
 
 // ReadData_i64 ...
 func ReadData_i64(fp int, inp *CXArgument, dataType int) interface{} {
 	//return ReadData(fp, inp, dataType)
-	ReadObjectAtomic(fp, inp, dataType)
+	return ReadObjectAtomic(fp, inp, dataType)
 }
 
 // ReadData_ui8 ...
 func ReadData_ui8(fp int, inp *CXArgument, dataType int) interface{} {
 	//return ReadData(fp, inp, dataType)
-	ReadObjectAtomic(fp, inp, dataType)
+	return ReadObjectAtomic(fp, inp, dataType)
 }
 
 // ReadData_ui16 ...
 func ReadData_ui16(fp int, inp *CXArgument, dataType int) interface{} {
 	//return ReadData(fp, inp, dataType)
-	ReadObjectAtomic(fp, inp, dataType)
+	return ReadObjectAtomic(fp, inp, dataType)
 }
 
 // ReadData_ui32 ...
 func ReadData_ui32(fp int, inp *CXArgument, dataType int) interface{} {
 	//return ReadData(fp, inp, dataType)
-	ReadObjectAtomic(fp, inp, dataType)
+	return ReadObjectAtomic(fp, inp, dataType)
 }
 
 // ReadData_ui64 ...
 func ReadData_ui64(fp int, inp *CXArgument, dataType int) interface{} {
 	//return ReadData(fp, inp, dataType)
-	ReadObjectAtomic(fp, inp, dataType)
+	return ReadObjectAtomic(fp, inp, dataType)
 	}
 
 
 // ReadData_f32 ...
 func ReadData_f32(fp int, inp *CXArgument, dataType int) interface{} {
 	//return ReadData(fp, inp, dataType)
-	ReadObjectAtomic(fp, inp, dataType)
+	return ReadObjectAtomic(fp, inp, dataType)
 }
 
 // ReadData_f64 ...
 func ReadData_f64(fp int, inp *CXArgument, dataType int) interface{} {
 	//return ReadData(fp, inp, dataType)
-	ReadObjectAtomic(fp, inp, dataType)
+	return ReadObjectAtomic(fp, inp, dataType)
 }
 
 // ReadBool ...
@@ -145,7 +145,7 @@ func ReadData_f64(fp int, inp *CXArgument, dataType int) interface{} {
 func ReadBool(fp int, inp *CXArgument) (out bool) {
 	offset := GetFinalOffset(fp, inp)
 	out = DeserializeBool(ReadMemory(offset, inp))
-	return
+	return out
 }
 
 //Note: I modified this to crash if invalid type was used
