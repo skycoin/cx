@@ -38,6 +38,8 @@ import (
 ./cx/fix_readmemory.go:8:func ReadMemory(offset int, arg *CXArgument) []byte {
 */
 
+var DEBUG_FIX_READ3_ASSERTIONS bool
+
 // ReadMemory ...
 //TODO: DELETE THIS FUNCTION
 //TODO: Avoid all read memory commands for fixed width types (i32,f32,etc)
@@ -57,6 +59,17 @@ func ReadObject(fp int, inp *CXArgument, dataType int) interface{} {
 }
 
 func ReadObjectAtomic(fp int, inp *CXArgument, dataType int) interface{} {
+
+	if DEBUG_FIX_READ3_ASSERTIONS {
+		if inp.IsArray{
+			panic("CXArgument is slice" )
+		}else if inp.IsSlice {
+			panic("CXArgument is slice" )
+		}else if inp.IsPointer {
+			panic("CXArgument is slice" )
+		}
+	}
+
 	offset := GetOffsetAtomic(fp, inp) //SHOULD NOT BE CALLED FOR ATOMICS
 	//FOR ATOMIC TYPES, CALL GetOffsetAtomic()
 	array := ReadMemory(offset, inp)
