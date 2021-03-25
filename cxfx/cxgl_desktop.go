@@ -512,7 +512,7 @@ func opGlMatrixMode(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 }
 
 func opGlRotatef(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
-	gl.Rotatef(inputs[0].Get_f32(), inputs[1].Get_f32(), inputs[2].Get_f32(), inputs[4].Get_f32())
+	gl.Rotatef(inputs[0].Get_f32(), inputs[1].Get_f32(), inputs[2].Get_f32(), inputs[3].Get_f32())
 }
 
 func opGlTranslatef(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
@@ -540,7 +540,7 @@ func opGlColor3f(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 }
 
 func opGlColor4f(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
-	gl.Color4f(inputs[0].Get_f32(), inputs[1].Get_f32(), inputs[2].Get_f32(), inputs[4].Get_f32())
+	gl.Color4f(inputs[0].Get_f32(), inputs[1].Get_f32(), inputs[2].Get_f32(), inputs[3].Get_f32())
 }
 
 func opGlBegin(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
