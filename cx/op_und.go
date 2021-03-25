@@ -6,8 +6,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-
-	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 func opLen(expr *CXExpression, fp int) {
@@ -264,28 +262,16 @@ func opPrintf(expr *CXExpression, fp int) {
 	fmt.Print(string(buildString(expr, fp)))
 }
 
-func opRead(expr *CXExpression, fp int) {
-	out1 := expr.Outputs[0]
-	out1Offset := GetFinalOffset(fp, out1)
+func opRead(inputs []CXValue, outputs []CXValue) {
 
 	reader := bufio.NewReader(os.Stdin)
 	text, err := reader.ReadString('\n')
+    if err != nil {
+		panic(CX_INTERNAL_ERROR)
+	}
+
 	// text = strings.Trim(text, " \n")
 	text = strings.Replace(text, "\n", "", -1)
 	text = strings.Replace(text, "\r", "", -1)
-
-	if err != nil {
-		panic("")
-	}
-	byts := encoder.Serialize(text)
-	heapOffset := AllocateSeq(len(byts) + OBJECT_HEADER_SIZE)
-
-	var header = make([]byte, OBJECT_HEADER_SIZE)
-	WriteMemI32(header, 5, int32(len(byts)))
-
-	obj := append(header, byts...)
-
-	WriteMemory(heapOffset, obj)
-
-	WriteI32(out1Offset, int32(heapOffset+OBJECT_HEADER_SIZE))
+    outputs[0].Set_str(text)
 }

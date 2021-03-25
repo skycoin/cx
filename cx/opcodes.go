@@ -1016,7 +1016,7 @@ func init() {
     Op(OP_UND_LEN, "len", opLen, In(AUND), Out(AI32))
 	Op(OP_UND_PRINTF, "printf", opPrintf, In(AUND), nil)
 	Op(OP_UND_SPRINTF, "sprintf", opSprintf, In(AUND), Out(ASTR))
-	Op(OP_UND_READ, "read", opRead, nil, Out(ASTR))
+	Op_V2(OP_UND_READ, "read", opRead, nil, Out(ASTR))
 
 	Op_V2(OP_BOOL_PRINT, "bool.print", opBoolPrint, In(ABOOL), nil)
 	Operator(OP_BOOL_EQUAL, "bool.eq", opBoolEqual, In(ABOOL, ABOOL), Out(ABOOL), TYPE_BOOL, OP_EQUAL)
