@@ -204,6 +204,19 @@ type sAll struct {
 	Memory []byte
 }
 
+type SerializeDataSize struct {
+	Program     int `json:"program"`
+	Calls       int `json:"calls"`
+	Packages    int `json:"packages"`
+	Structs     int `json:"structs"`
+	Functions   int `json:"functions"`
+	Expressions int `json:"expressions"`
+	Arguments   int `json:"arguments"`
+	Integers    int `json:"integers"`
+	Names       int `json:"names"`
+	Memory      int `json:"memory"`
+}
+
 func serializeName(name string, s *sAll) (int32, int32) {
 	if name == "" {
 		return int32(-1), int32(-1)
@@ -433,6 +446,8 @@ func serializeCall(call *CXCall, s *sAll) int {
 	return callOff
 }
 
+// serializeProgram serializes
+// program of cx program.
 func serializeProgram(prgrm *CXProgram, s *sAll) {
 	s.Program = sProgram{}
 	sPrgrm := &s.Program
@@ -622,7 +637,11 @@ func sFunctionIntegers(fn *CXFunction, s *sAll) {
 	}
 }
 
-func initSerialization(prgrm *CXProgram, s *sAll) {
+// initSerialization initializes the
+// container for our serialized cx program.
+// Program memory is also added here to our container
+// if memory is to be included.
+func initSerialization(prgrm *CXProgram, s *sAll, includeMemory bool) {
 	s.PackagesMap = make(map[string]int)
 	s.StructsMap = make(map[string]int)
 	s.FunctionsMap = make(map[string]int)
@@ -631,8 +650,10 @@ func initSerialization(prgrm *CXProgram, s *sAll) {
 	s.Calls = make([]sCall, prgrm.CallCounter)
 	s.Packages = make([]sPackage, len(prgrm.Packages))
 
-	// s.Memory = prgrm.Memory[:PROGRAM.HeapStartsAt+PROGRAM.HeapPointer]
-	s.Memory = prgrm.Memory
+	if includeMemory {
+		// s.Memory = prgrm.Memory[:PROGRAM.HeapStartsAt+PROGRAM.HeapPointer]
+		s.Memory = prgrm.Memory
+	}
 
 	var numStrcts int
 	var numFns int
@@ -647,8 +668,9 @@ func initSerialization(prgrm *CXProgram, s *sAll) {
 	// args and exprs need to be appended as they are found
 }
 
-// SplitSerialize ...
-// WHAT DOES THIS DO? WHY ARE THERE NO COMMENTS?
+// SplitSerialize serializes the packages, structs,
+// globals, functions, integers, arguemnts, and
+// expressions of cx program.
 func splitSerialize(prgrm *CXProgram, s *sAll, fnCounter, strctCounter *int32, from, to int) {
 	// indexing packages and serializing their names
 	for _, pkg := range prgrm.Packages[from:to] {
@@ -760,12 +782,14 @@ func splitSerialize(prgrm *CXProgram, s *sAll, fnCounter, strctCounter *int32, f
 	}
 }
 
-// Serialize ...
-func Serialize(prgrm *CXProgram, split int) (byts []byte) {
+// Serialize translates cx program to slice of bytes that we can save.
+// These slice of bytes can then be deserialized in the future and
+// be translated back to cx program.
+func Serialize(prgrm *CXProgram, split int, includeMemory bool) (byts []byte) {
 	// prgrm.PrintProgram()
 
 	s := sAll{}
-	initSerialization(prgrm, &s)
+	initSerialization(prgrm, &s, includeMemory)
 
 	var fnCounter int32
 	var strctCounter int32
@@ -818,6 +842,30 @@ func Serialize(prgrm *CXProgram, split int) (byts []byte) {
 	return byts
 }
 
+// SerializeDebugInfo prints the name of the serialized segment and byte size.
+func SerializeDebugInfo(prgrm *CXProgram, split int, includeMemory bool) SerializeDataSize {
+	idxSize := encoder.Size(sIndex{})
+	var s sAll
+
+	bytes := Serialize(prgrm, split, includeMemory)
+	DeserializeRaw(bytes[:idxSize], &s.Index)
+
+	data := &SerializeDataSize{
+		Program:     len(bytes[s.Index.ProgramOffset:s.Index.CallsOffset]),
+		Calls:       len(bytes[s.Index.CallsOffset:s.Index.PackagesOffset]),
+		Packages:    len(bytes[s.Index.PackagesOffset:s.Index.StructsOffset]),
+		Structs:     len(bytes[s.Index.StructsOffset:s.Index.FunctionsOffset]),
+		Functions:   len(bytes[s.Index.FunctionsOffset:s.Index.ExpressionsOffset]),
+		Expressions: len(bytes[s.Index.ExpressionsOffset:s.Index.ArgumentsOffset]),
+		Arguments:   len(bytes[s.Index.ArgumentsOffset:s.Index.IntegersOffset]),
+		Integers:    len(bytes[s.Index.IntegersOffset:s.Index.NamesOffset]),
+		Names:       len(bytes[s.Index.NamesOffset:s.Index.MemoryOffset]),
+		Memory:      len(bytes[s.Index.MemoryOffset:]),
+	}
+
+	return *data
+}
+
 func opSerialize(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	out1Offset := GetFinalOffset(fp, out1)
@@ -825,7 +873,7 @@ func opSerialize(expr *CXExpression, fp int) {
 	_ = inp1
 
 	var slcOff int
-	byts := Serialize(PROGRAM, 0)
+	byts := Serialize(PROGRAM, 0, true)
 	for _, b := range byts {
 		slcOff = WriteToSlice(slcOff, []byte{b})
 	}
