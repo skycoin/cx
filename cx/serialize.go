@@ -446,40 +446,6 @@ func serializeCall(call *CXCall, s *sAll) int {
 	return callOff
 }
 
-// serializeProgram serializes
-// program of cx program.
-func serializeProgram(prgrm *CXProgram, s *sAll) {
-	s.Program = sProgram{}
-	sPrgrm := &s.Program
-	sPrgrm.PackagesOffset = int32(0)
-	sPrgrm.PackagesSize = int32(len(prgrm.Packages))
-
-	if pkgOff, found := s.PackagesMap[prgrm.CurrentPackage.Name]; found {
-		sPrgrm.CurrentPackageOffset = int32(pkgOff)
-	} else {
-		panic("package reference not found")
-	}
-
-	sPrgrm.InputsOffset, sPrgrm.InputsSize = serializeSliceOfArguments(prgrm.Inputs, s)
-	sPrgrm.OutputsOffset, sPrgrm.OutputsSize = serializeSliceOfArguments(prgrm.Outputs, s)
-
-	sPrgrm.CallStackOffset, sPrgrm.CallStackSize = serializeCalls(prgrm.CallStack[:prgrm.CallCounter], s)
-
-	sPrgrm.CallCounter = int32(prgrm.CallCounter)
-
-	sPrgrm.MemoryOffset = int32(0)
-	sPrgrm.MemorySize = int32(len(PROGRAM.Memory))
-
-	sPrgrm.HeapPointer = int32(prgrm.HeapPointer)
-	sPrgrm.StackPointer = int32(prgrm.StackPointer)
-	sPrgrm.StackSize = int32(prgrm.StackSize)
-	sPrgrm.HeapSize = int32(prgrm.HeapSize)
-	sPrgrm.HeapStartsAt = int32(prgrm.HeapStartsAt)
-
-	sPrgrm.Terminated = serializeBoolean(prgrm.Terminated)
-	sPrgrm.VersionOffset, sPrgrm.VersionSize = serializeName(prgrm.Version, s)
-}
-
 func sStructArguments(strct *CXStruct, s *sAll) {
 	strctName := strct.Package.Name + "." + strct.Name
 	if strctOff, found := s.StructsMap[strctName]; found {
@@ -780,6 +746,40 @@ func splitSerialize(prgrm *CXProgram, s *sAll, fnCounter, strctCounter *int32, f
 			}
 		}
 	}
+}
+
+// serializeProgram serializes
+// program of cx program.
+func serializeProgram(prgrm *CXProgram, s *sAll) {
+	s.Program = sProgram{}
+	sPrgrm := &s.Program
+	sPrgrm.PackagesOffset = int32(0)
+	sPrgrm.PackagesSize = int32(len(prgrm.Packages))
+
+	if pkgOff, found := s.PackagesMap[prgrm.CurrentPackage.Name]; found {
+		sPrgrm.CurrentPackageOffset = int32(pkgOff)
+	} else {
+		panic("package reference not found")
+	}
+
+	sPrgrm.InputsOffset, sPrgrm.InputsSize = serializeSliceOfArguments(prgrm.Inputs, s)
+	sPrgrm.OutputsOffset, sPrgrm.OutputsSize = serializeSliceOfArguments(prgrm.Outputs, s)
+
+	sPrgrm.CallStackOffset, sPrgrm.CallStackSize = serializeCalls(prgrm.CallStack[:prgrm.CallCounter], s)
+
+	sPrgrm.CallCounter = int32(prgrm.CallCounter)
+
+	sPrgrm.MemoryOffset = int32(0)
+	sPrgrm.MemorySize = int32(len(PROGRAM.Memory))
+
+	sPrgrm.HeapPointer = int32(prgrm.HeapPointer)
+	sPrgrm.StackPointer = int32(prgrm.StackPointer)
+	sPrgrm.StackSize = int32(prgrm.StackSize)
+	sPrgrm.HeapSize = int32(prgrm.HeapSize)
+	sPrgrm.HeapStartsAt = int32(prgrm.HeapStartsAt)
+
+	sPrgrm.Terminated = serializeBoolean(prgrm.Terminated)
+	sPrgrm.VersionOffset, sPrgrm.VersionSize = serializeName(prgrm.Version, s)
 }
 
 // Serialize translates cx program to slice of bytes that we can save.
