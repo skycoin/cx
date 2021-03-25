@@ -854,9 +854,12 @@ func (s *Lexer) stdString() {
 		}
 		if s.ch == '\\' {
 			s.nextch()
-			//if !s.escape('"') {
+			
+			if !s.IsEscape('"') {
+				continue
 				//nothing? Empty Branch?
-			//}
+			}
+			s.nextch()
 			continue
 		}
 		if s.ch == '\n' {
@@ -882,6 +885,67 @@ func (s *Lexer) stdString() {
 	s.nlsemi = true
 }
 
+func (s *Lexer) IsEscape(quote rune) bool {
+	var n int
+	var base, max uint32
+
+	switch s.ch {
+	case quote, 'a', 'b', 'f', 'n', 'r', 't', 'v', '\\':
+		return true
+	case '0', '1', '2', '3', '4', '5', '6', '7':
+		n, base, max = 3, 8, 255
+		//TODO <-- find way to trigger this condition in strings test
+	case 'x':
+		n, base, max = 2, 16, 255
+	case 'u':
+		n, base, max = 4, 16, unicode.MaxRune
+	case 'U':
+		n, base, max = 8, 16, unicode.MaxRune
+	default:
+		if s.ch < 0 {
+			return true // complain in caller about EOF
+		}
+		s.errorf("unknown escape")
+		return false
+	}
+
+	var x uint32
+	for i := n; i > 0; i-- {
+		if s.ch < 0 {
+			return true // complain in caller about EOF
+		}
+		d := base
+		if isDecimal(s.ch) {
+			d = uint32(s.ch) - '0'
+		} else if 'a' <= lower(s.ch) && lower(s.ch) <= 'f' {
+			d = uint32(lower(s.ch)) - 'a' + 10
+		}
+		if d >= base {
+			s.errorf(fmt.Sprintf("invalid character %q in %s escape", s.ch, baseName(int(base))))
+			return false
+		}
+		// d < base
+		x = x*base + d
+	}
+
+	if x > max && base == 8 {
+		s.errorf(fmt.Sprintf("octal escape value %d > 255", x))
+		return false
+	}
+
+	if x > max || 0xD800 <= x && x < 0xE000 /* surrogate range */ {
+		s.errorf(fmt.Sprintf("escape is invalid Unicode code point %#U", x))
+		return false
+	}
+
+	return true
+}
+
+
+//has side effects???
+//replace with "IsEscape" and call nextch() manuelly
+
+/*
 func (s *Lexer) escape(quote rune) bool {
 	var n int
 	var base, max uint32
@@ -892,6 +956,7 @@ func (s *Lexer) escape(quote rune) bool {
 		return true
 	case '0', '1', '2', '3', '4', '5', '6', '7':
 		n, base, max = 3, 8, 255
+		//ERROR!? Why isnt nextch() called here?
 	case 'x':
 		s.nextch()
 		n, base, max = 2, 16, 255
@@ -934,10 +999,11 @@ func (s *Lexer) escape(quote rune) bool {
 		return false
 	}
 
-	if x > max || 0xD800 <= x && x < 0xE000 /* surrogate range */ {
+	if x > max || 0xD800 <= x && x < 0xE000   { // surrogate range
 		s.errorf(fmt.Sprintf("escape is invalid Unicode code point %#U", x))
 		return false
 	}
 
 	return true
 }
+*/
