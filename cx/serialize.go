@@ -779,10 +779,11 @@ func serializeProgram(prgrm *CXProgram, s *sAll) {
 	sPrgrm.MemorySize = int32(len(PROGRAM.Memory))
 
 	sPrgrm.HeapPointer = int32(prgrm.HeapPointer)
-	sPrgrm.StackPointer = int32(prgrm.StackPointer)
-	sPrgrm.StackSize = int32(prgrm.StackSize)
 	sPrgrm.HeapSize = int32(prgrm.HeapSize)
 	sPrgrm.HeapStartsAt = int32(prgrm.HeapStartsAt)
+
+	sPrgrm.StackPointer = int32(prgrm.StackPointer)
+	sPrgrm.StackSize = int32(prgrm.StackSize)
 
 	sPrgrm.Terminated = serializeBoolean(prgrm.Terminated)
 	sPrgrm.VersionOffset, sPrgrm.VersionSize = serializeName(prgrm.Version, s)
