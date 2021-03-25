@@ -614,7 +614,7 @@ func CheckTypes(expr *cxcore.CXExpression) {
 	}
 
 	if expr.Operator != nil && expr.Operator.IsNative && expr.Operator.OpCode == cxcore.OP_IDENTITY {
-		for i, _ := range expr.Inputs {
+		for i := range expr.Inputs {
 			var expectedType string
 			var receivedType string
 			if cxcore.GetAssignmentElement(expr.Outputs[i]).CustomType != nil {
@@ -695,7 +695,11 @@ func ProcessSlice(inp *cxcore.CXArgument) {
 
 	if elt.IsSlice && len(elt.DereferenceOperations) > 0 && elt.DereferenceOperations[len(elt.DereferenceOperations)-1] == cxcore.DEREF_POINTER {
 		elt.DereferenceOperations = elt.DereferenceOperations[:len(elt.DereferenceOperations)-1]
-	} else if elt.IsSlice && len(elt.DereferenceOperations) > 0 && len(inp.Fields) == 0 {
+		return
+	} 
+
+	if elt.IsSlice && len(elt.DereferenceOperations) > 0 && len(inp.Fields) == 0 {
+		return
 		// elt.DereferenceOperations = append([]int{cxcore.DEREF_POINTER}, elt.DereferenceOperations...)
 	}
 }
