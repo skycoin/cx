@@ -204,8 +204,8 @@ func DeclareStruct(ident string, strctFlds []*cxcore.CXArgument) {
 //
 func DeclarePackage(ident string) {
 	// Add a new package to the program if it's not previously defined.
-	if pkg, err := PRGRM.GetPackage(ident); err != nil {
-		pkg = cxcore.MakePackage(ident)
+	if _, err := PRGRM.GetPackage(ident); err != nil {
+		pkg := cxcore.MakePackage(ident)
 		PRGRM.AddPackage(pkg)
 	}
 

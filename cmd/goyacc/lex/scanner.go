@@ -6,6 +6,7 @@ package lex // import "github.com/skycoin/cx/cmd/goyacc/lex"
 
 import (
 	"fmt"
+
 	"github.com/skycoin/cx/cmd/goyacc/lexer"
 )
 
@@ -28,7 +29,7 @@ func (t *tokenizer) Error(e string) {
 
 type tokenizer struct {
 	scanner *lexer.Scanner
-	val     string
+	// val     string
 }
 
 func newTokenizer(sc *lexer.Scanner) *tokenizer {

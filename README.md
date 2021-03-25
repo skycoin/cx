@@ -64,7 +64,6 @@ Get required Go dependencies with:
 
 ```
 go get -u golang.org/x/mobile/cmd/gomobile
-go get -u modernc.org/goyacc
 go get golang.org/x/mobile/gl 
 ```
 
@@ -75,18 +74,13 @@ Build CX's binary and install by running:
 ```
 make build
 make install
+make test
 ```
 
 Add the CX binary path to your operating system's `$PATH`. For example, in Linux:
 
 ```
 export PATH=$PATH:$HOME/cx/bin
-```
-
-Afterwards, add Golang binaries to your `$PATH`. For example, in Linux:
-
-```
-export PATH=$PATH:$HOME/go/bin
 ```
 
 You should test your installation by running:

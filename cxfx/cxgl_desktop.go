@@ -4,9 +4,7 @@ package cxfx
 
 import (
 	"strings"
-
 	"github.com/go-gl/gl/v3.2-compatibility/gl"
-
 	"github.com/skycoin/cx/cx"
 )
 
@@ -45,52 +43,6 @@ func freeCString(key string) {
 	(*freeFns[key])()
 	delete(freeFns, key)
 	delete(cSources, key)
-}
-
-func to_pf32(p *uint8) *float32 {
-	return (*float32)(gl.Ptr(p))
-}
-
-func to_pi32(p *uint8) *int32 {
-	return (*int32)(gl.Ptr(p))
-}
-
-func to_pui32(p *uint8) *uint32 {
-	return (*uint32)(gl.Ptr(p))
-}
-
-func ito_pui8(i interface{}) *uint8 {
-	return (*uint8)(gl.Ptr(i))
-}
-
-func ito_pui32(i interface{}) *uint32 {
-	return to_pui32(ito_pui8(i))
-}
-
-func ito_pi32(i interface{}) *int32 {
-	return to_pi32(ito_pui8(i))
-}
-
-func ito_pf32(i interface{}) *float32 {
-	return to_pf32(ito_pui8(i))
-}
-
-// TODO: change to cxcore.ReadData_i64
-func readPtr(fp int, inp *cxcore.CXArgument, dataType int) *uint8 {
-	// return (*uint8)(gl.Ptr(cxcore.ReadData(fp, inp, dataType)))
-	return (*uint8)(gl.Ptr(cxcore.ReadData_i32(fp, inp, dataType)))
-}
-
-func readF32Ptr(fp int, inp *cxcore.CXArgument) *float32 {
-	return to_pf32(readPtr(fp, inp, cxcore.TYPE_F32))
-}
-
-func readI32Ptr(fp int, inp *cxcore.CXArgument) *int32 {
-	return to_pi32(readPtr(fp, inp, cxcore.TYPE_I32))
-}
-
-func readUI32Ptr(fp int, inp *cxcore.CXArgument) *uint32 {
-	return to_pui32(readPtr(fp, inp, cxcore.TYPE_UI32))
 }
 
 // gogl
@@ -133,8 +85,8 @@ func cxglTexParameteri(target uint32, pname uint32, param int32) {
 	gl.TexParameteri(target, pname, param)
 }
 
-func cxglTexImage2D(target uint32, level int32, internalFormat int32, width int32, height int32, border int32, format uint32, gltype uint32, pixels interface{}) {
-	gl.TexImage2D(target, level, internalFormat, width, height, border, format, gltype, gl.Ptr(pixels))
+func cxglTexImage2D(target uint32, level int32, internalFormat int32, width int32, height int32, border int32, format uint32, gltype uint32, pixels []uint8) {
+	gl.TexImage2D(target, level, internalFormat, width, height, border, format, gltype, Slice_ui8_ToPtr(pixels))
 }
 
 func cxglClear(mask uint32) {
@@ -210,8 +162,8 @@ func cxglDrawArrays(mode uint32, first int32, count int32) {
 	gl.DrawArrays(mode, first, count)
 }
 
-func cxglDrawElements(mode uint32, count int32, gltype uint32, indices interface{}) {
-	gl.DrawElements(mode, count, gltype, gl.Ptr(indices))
+func cxglDrawElements(mode uint32, count int32, gltype uint32, indices []uint8) {
+	gl.DrawElements(mode, count, gltype, Slice_ui8_ToPtr(indices))
 }
 
 func cxglBindTexture(target uint32, texture uint32) {
@@ -262,16 +214,16 @@ func cxglGenBuffers(n int32, buffers *uint32) {
 }
 
 // cxgl_2_0
-func cxglBufferData(target uint32, size int, data interface{}, usage uint32) {
-	gl.BufferData(target, size, gl.Ptr(data), usage)
+func cxglBufferData(target uint32, size int, data []uint8, usage uint32) {
+	gl.BufferData(target, size, Slice_ui8_ToPtr(data), usage)
 }
 
-func cxglBufferSubData(target uint32, offset int, size int, data interface{}) {
-	gl.BufferSubData(target, offset, size, gl.Ptr(data))
+func cxglBufferSubData(target uint32, offset int, size int, data []uint8) {
+	gl.BufferSubData(target, offset, size, Slice_ui8_ToPtr(data))
 }
 
-func cxglDrawBuffers(size int32, bufs interface{}) {
-	gl.DrawBuffers(size, ito_pui32(bufs))
+func cxglDrawBuffers(size int32, bufs []uint8) {
+	gl.DrawBuffers(size, (*uint32)(Slice_ui8_ToPtr(bufs)))
 }
 
 func cxglStencilOpSeparate(face uint32, sfail uint32, dpfail uint32, dppass uint32) {
@@ -401,48 +353,48 @@ func cxglUniform4i(location int32, v0 int32, v1 int32, v2 int32, v3 int32) {
 	gl.Uniform4i(location, v0, v1, v2, v3)
 }
 
-func cxglUniform1fv(location int32, count int32, value interface{}) {
-	gl.Uniform1fv(location, count, ito_pf32(value))
+func cxglUniform1fv(location int32, count int32, value []uint8) {
+	gl.Uniform1fv(location, count, (*float32)(Slice_ui8_ToPtr(value)))
 }
 
-func cxglUniform2fv(location int32, count int32, value interface{}) {
-	gl.Uniform2fv(location, count, ito_pf32(value))
+func cxglUniform2fv(location int32, count int32, value []uint8) {
+	gl.Uniform2fv(location, count, (*float32)(Slice_ui8_ToPtr(value)))
 }
 
-func cxglUniform3fv(location int32, count int32, value interface{}) {
-	gl.Uniform3fv(location, count, ito_pf32(value))
+func cxglUniform3fv(location int32, count int32, value []uint8) {
+	gl.Uniform3fv(location, count, (*float32)(Slice_ui8_ToPtr(value)))
 }
 
-func cxglUniform4fv(location int32, count int32, value interface{}) {
-	gl.Uniform4fv(location, count, ito_pf32(value))
+func cxglUniform4fv(location int32, count int32, value []uint8) {
+	gl.Uniform4fv(location, count, (*float32)(Slice_ui8_ToPtr(value)))
 }
 
-func cxglUniform1iv(location int32, count int32, value interface{}) {
-	gl.Uniform1iv(location, count, ito_pi32(value))
+func cxglUniform1iv(location int32, count int32, value []uint8) {
+	gl.Uniform1iv(location, count, (*int32)(Slice_ui8_ToPtr(value)))
 }
 
-func cxglUniform2iv(location int32, count int32, value interface{}) {
-	gl.Uniform2iv(location, count, ito_pi32(value))
+func cxglUniform2iv(location int32, count int32, value []uint8) {
+	gl.Uniform2iv(location, count, (*int32)(Slice_ui8_ToPtr(value)))
 }
 
-func cxglUniform3iv(location int32, count int32, value interface{}) {
-	gl.Uniform3iv(location, count, ito_pi32(value))
+func cxglUniform3iv(location int32, count int32, value []uint8) {
+	gl.Uniform3iv(location, count, (*int32)(Slice_ui8_ToPtr(value)))
 }
 
-func cxglUniform4iv(location int32, count int32, value interface{}) {
-	gl.Uniform4iv(location, count, ito_pi32(value))
+func cxglUniform4iv(location int32, count int32, value []uint8) {
+	gl.Uniform4iv(location, count, (*int32)(Slice_ui8_ToPtr(value)))
 }
 
-func cxglUniformMatrix2fv(location int32, count int32, transpose bool, value interface{}) {
-	gl.UniformMatrix2fv(location, count, transpose, ito_pf32(value))
+func cxglUniformMatrix2fv(location int32, count int32, transpose bool, value []uint8) {
+	gl.UniformMatrix2fv(location, count, transpose, (*float32)(Slice_ui8_ToPtr(value)))
 }
 
-func cxglUniformMatrix3fv(location int32, count int32, transpose bool, value interface{}) {
-	gl.UniformMatrix3fv(location, count, transpose, ito_pf32(value))
+func cxglUniformMatrix3fv(location int32, count int32, transpose bool, value []uint8) {
+	gl.UniformMatrix3fv(location, count, transpose, (*float32)(Slice_ui8_ToPtr(value)))
 }
 
-func cxglUniformMatrix4fv(location int32, count int32, transpose bool, value interface{}) {
-	gl.UniformMatrix4fv(location, count, transpose, ito_pf32(value))
+func cxglUniformMatrix4fv(location int32, count int32, transpose bool, value []uint8) {
+	gl.UniformMatrix4fv(location, count, transpose, (*float32)(Slice_ui8_ToPtr(value)))
 }
 
 func cxglVertexAttribPointer(index uint32, size int32, gltype uint32, normalized bool, stride int32, pointer int32) {
@@ -451,15 +403,15 @@ func cxglVertexAttribPointer(index uint32, size int32, gltype uint32, normalized
 
 // cxgl_3_0
 func cxglClearBufferiv(buffer uint32, drawBuffer int32, value []int32) {
-	gl.ClearBufferiv(buffer, drawBuffer, (*int32)(gl.Ptr(&value[0])))
+	gl.ClearBufferiv(buffer, drawBuffer, (*int32)(Slice_i32_ToPtr(value)))
 }
 
 func cxglClearBufferuiv(buffer uint32, drawBuffer int32, value []uint32) {
-	gl.ClearBufferuiv(buffer, drawBuffer, (*uint32)(gl.Ptr(&value[0])))
+	gl.ClearBufferuiv(buffer, drawBuffer, (*uint32)(Slice_ui32_ToPtr(value)))
 }
 
 func cxglClearBufferfv(buffer uint32, drawBuffer int32, value []float32) {
-	gl.ClearBufferfv(buffer, drawBuffer, (*float32)(gl.Ptr(&value[0])))
+	gl.ClearBufferfv(buffer, drawBuffer, (*float32)(Slice_f32_ToPtr(value)))
 }
 
 func cxglBindRenderbuffer(buffer uint32, renderbuffer uint32) {
@@ -560,7 +512,7 @@ func opGlMatrixMode(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 }
 
 func opGlRotatef(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
-	gl.Rotatef(inputs[0].Get_f32(), inputs[1].Get_f32(), inputs[2].Get_f32(), inputs[4].Get_f32())
+	gl.Rotatef(inputs[0].Get_f32(), inputs[1].Get_f32(), inputs[2].Get_f32(), inputs[3].Get_f32())
 }
 
 func opGlTranslatef(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
@@ -588,7 +540,7 @@ func opGlColor3f(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 }
 
 func opGlColor4f(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
-	gl.Color4f(inputs[0].Get_f32(), inputs[1].Get_f32(), inputs[2].Get_f32(), inputs[4].Get_f32())
+	gl.Color4f(inputs[0].Get_f32(), inputs[1].Get_f32(), inputs[2].Get_f32(), inputs[3].Get_f32())
 }
 
 func opGlBegin(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {

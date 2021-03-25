@@ -6,6 +6,11 @@ import()
 
 //second section
 
+// ReadBool ...
+func ReadBool(fp int, inp *CXArgument) bool {
+	return DeserializeBool(ReadMemory(GetFinalOffset(fp, inp), inp))
+}
+
 // ReadI8 ...
 func ReadI8(fp int, inp *CXArgument) int8 {
 	return Deserialize_i8(ReadMemory(GetFinalOffset(fp, inp), inp))

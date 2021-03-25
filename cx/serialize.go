@@ -4,6 +4,7 @@ import (
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
+//NEEDS TO BE RENAMED; BETTER NAME
 type sIndex struct {
 	ProgramOffset     int32
 	CallsOffset       int32
@@ -17,6 +18,7 @@ type sIndex struct {
 	MemoryOffset      int32
 }
 
+//NEEDS TO BE RENAMED; BETTER NAME
 type sProgram struct {
 	PackagesOffset       int32
 	PackagesSize         int32
@@ -36,15 +38,14 @@ type sProgram struct {
 	MemoryOffset int32
 	MemorySize   int32
 
-	HeapPointer  int32
 	StackPointer int32
 	StackSize    int32
-	HeapSize     int32
+	
+	HeapPointer  int32 //HeapPointer is probably related to HeapStartsAt
 	HeapStartsAt int32
+	HeapSize     int32
 
 	Terminated int32
-
-	BCPackageCount int32
 
 	VersionOffset int32
 	VersionSize   int32
@@ -105,6 +106,7 @@ type sFunction struct {
 	PackageOffset           int32
 }
 
+//RENAME, WTF IS THIS
 type sExpression struct {
 	OperatorOffset int32
 	// we add these two fields here so we don't add every native sFunction to the serialization
@@ -135,11 +137,12 @@ type sExpression struct {
 	PackageOffset  int32
 }
 
+//RENAME, WTF IS THIS
 type sArgument struct {
 	NameOffset       int32
 	NameSize         int32
 	Type             int32
-	CustomTypeOffset int32
+	CustomTypeOffset int32 //WTF IS A CUSTOM TYPE!?
 	Size             int32
 	TotalSize        int32
 
@@ -182,6 +185,7 @@ type sArgument struct {
 	PackageOffset int32
 }
 
+//RENAME, WTF IS THIS
 type sAll struct {
 	Index   sIndex
 	Program sProgram
@@ -204,6 +208,21 @@ type sAll struct {
 	Memory []byte
 }
 
+type SerializeDataSize struct {
+	Program     int `json:"program"`
+	Calls       int `json:"calls"`
+	Packages    int `json:"packages"`
+	Structs     int `json:"structs"`
+	Functions   int `json:"functions"`
+	Expressions int `json:"expressions"`
+	Arguments   int `json:"arguments"`
+	Integers    int `json:"integers"`
+	Names       int `json:"names"` //Rename to "Strings". WTF
+	Memory      int `json:"memory"`
+}
+
+//RENAME TO SERIALIE STRING
+//WTF
 func serializeName(name string, s *sAll) (int32, int32) {
 	if name == "" {
 		return int32(-1), int32(-1)
@@ -433,38 +452,6 @@ func serializeCall(call *CXCall, s *sAll) int {
 	return callOff
 }
 
-func serializeProgram(prgrm *CXProgram, s *sAll) {
-	s.Program = sProgram{}
-	sPrgrm := &s.Program
-	sPrgrm.PackagesOffset = int32(0)
-	sPrgrm.PackagesSize = int32(len(prgrm.Packages))
-
-	if pkgOff, found := s.PackagesMap[prgrm.CurrentPackage.Name]; found {
-		sPrgrm.CurrentPackageOffset = int32(pkgOff)
-	} else {
-		panic("package reference not found")
-	}
-
-	sPrgrm.InputsOffset, sPrgrm.InputsSize = serializeSliceOfArguments(prgrm.Inputs, s)
-	sPrgrm.OutputsOffset, sPrgrm.OutputsSize = serializeSliceOfArguments(prgrm.Outputs, s)
-
-	sPrgrm.CallStackOffset, sPrgrm.CallStackSize = serializeCalls(prgrm.CallStack[:prgrm.CallCounter], s)
-
-	sPrgrm.CallCounter = int32(prgrm.CallCounter)
-
-	sPrgrm.MemoryOffset = int32(0)
-	sPrgrm.MemorySize = int32(len(PROGRAM.Memory))
-
-	sPrgrm.HeapPointer = int32(prgrm.HeapPointer)
-	sPrgrm.StackPointer = int32(prgrm.StackPointer)
-	sPrgrm.StackSize = int32(prgrm.StackSize)
-	sPrgrm.HeapSize = int32(prgrm.HeapSize)
-	sPrgrm.HeapStartsAt = int32(prgrm.HeapStartsAt)
-
-	sPrgrm.Terminated = serializeBoolean(prgrm.Terminated)
-	sPrgrm.VersionOffset, sPrgrm.VersionSize = serializeName(prgrm.Version, s)
-}
-
 func sStructArguments(strct *CXStruct, s *sAll) {
 	strctName := strct.Package.Name + "." + strct.Name
 	if strctOff, found := s.StructsMap[strctName]; found {
@@ -490,20 +477,20 @@ func sFunctionArguments(fn *CXFunction, s *sAll) {
 
 func sPackageName(pkg *CXPackage, s *sAll) {
 	sPkg := &s.Packages[s.PackagesMap[pkg.Name]]
-	sPkg.NameOffset, sPkg.NameSize = serializeName(pkg.Name, s)
+	sPkg.NameOffset, sPkg.NameSize = serializeName(pkg.Name, s) //Change Name to String
 }
 
 func sStructName(strct *CXStruct, s *sAll) {
 	strctName := strct.Package.Name + "." + strct.Name
 	sStrct := &s.Structs[s.StructsMap[strctName]]
-	sStrct.NameOffset, sStrct.NameSize = serializeName(strct.Name, s)
+	sStrct.NameOffset, sStrct.NameSize = serializeName(strct.Name, s) //Change Name to String
 }
 
 func sFunctionName(fn *CXFunction, s *sAll) {
 	fnName := fn.Package.Name + "." + fn.Name
 	if off, found := s.FunctionsMap[fnName]; found {
 		sFn := &s.Functions[off]
-		sFn.NameOffset, sFn.NameSize = serializeName(fn.Name, s)
+		sFn.NameOffset, sFn.NameSize = serializeName(fn.Name, s) //Change Name to String
 	} else {
 		panic("function reference not found")
 	}
@@ -622,17 +609,23 @@ func sFunctionIntegers(fn *CXFunction, s *sAll) {
 	}
 }
 
-func initSerialization(prgrm *CXProgram, s *sAll) {
+// initSerialization initializes the
+// container for our serialized cx program.
+// Program memory is also added here to our container
+// if memory is to be included.
+func initSerialization(prgrm *CXProgram, s *sAll, includeMemory bool) {
 	s.PackagesMap = make(map[string]int)
 	s.StructsMap = make(map[string]int)
 	s.FunctionsMap = make(map[string]int)
-	s.NamesMap = make(map[string]int)
+	s.NamesMap = make(map[string]int) //A string map? Rename to STRINGS
 
 	s.Calls = make([]sCall, prgrm.CallCounter)
 	s.Packages = make([]sPackage, len(prgrm.Packages))
 
-	// s.Memory = prgrm.Memory[:PROGRAM.HeapStartsAt+PROGRAM.HeapPointer]
-	s.Memory = prgrm.Memory
+	if includeMemory {
+		// s.Memory = prgrm.Memory[:PROGRAM.HeapStartsAt+PROGRAM.HeapPointer]
+		s.Memory = prgrm.Memory
+	}
 
 	var numStrcts int
 	var numFns int
@@ -647,8 +640,9 @@ func initSerialization(prgrm *CXProgram, s *sAll) {
 	// args and exprs need to be appended as they are found
 }
 
-// SplitSerialize ...
-// WHAT DOES THIS DO? WHY ARE THERE NO COMMENTS?
+// SplitSerialize serializes the packages, structs,
+// globals, functions, integers, arguemnts, and
+// expressions of cx program.
 func splitSerialize(prgrm *CXProgram, s *sAll, fnCounter, strctCounter *int32, from, to int) {
 	// indexing packages and serializing their names
 	for _, pkg := range prgrm.Packages[from:to] {
@@ -760,12 +754,49 @@ func splitSerialize(prgrm *CXProgram, s *sAll, fnCounter, strctCounter *int32, f
 	}
 }
 
-// Serialize ...
-func Serialize(prgrm *CXProgram, split int) (byts []byte) {
+// serializeProgram serializes
+// program of cx program.
+func serializeProgram(prgrm *CXProgram, s *sAll) {
+	s.Program = sProgram{}
+	sPrgrm := &s.Program
+	sPrgrm.PackagesOffset = int32(0)
+	sPrgrm.PackagesSize = int32(len(prgrm.Packages))
+
+	if pkgOff, found := s.PackagesMap[prgrm.CurrentPackage.Name]; found {
+		sPrgrm.CurrentPackageOffset = int32(pkgOff)
+	} else {
+		panic("package reference not found")
+	}
+
+	sPrgrm.InputsOffset, sPrgrm.InputsSize = serializeSliceOfArguments(prgrm.Inputs, s)
+	sPrgrm.OutputsOffset, sPrgrm.OutputsSize = serializeSliceOfArguments(prgrm.Outputs, s)
+
+	sPrgrm.CallStackOffset, sPrgrm.CallStackSize = serializeCalls(prgrm.CallStack[:prgrm.CallCounter], s)
+
+	sPrgrm.CallCounter = int32(prgrm.CallCounter)
+
+	sPrgrm.MemoryOffset = int32(0)
+	sPrgrm.MemorySize = int32(len(PROGRAM.Memory))
+
+	sPrgrm.HeapPointer = int32(prgrm.HeapPointer)
+	sPrgrm.HeapSize = int32(prgrm.HeapSize)
+	sPrgrm.HeapStartsAt = int32(prgrm.HeapStartsAt)
+
+	sPrgrm.StackPointer = int32(prgrm.StackPointer)
+	sPrgrm.StackSize = int32(prgrm.StackSize)
+
+	sPrgrm.Terminated = serializeBoolean(prgrm.Terminated)
+	sPrgrm.VersionOffset, sPrgrm.VersionSize = serializeName(prgrm.Version, s)
+}
+
+// Serialize translates cx program to slice of bytes that we can save.
+// These slice of bytes can then be deserialized in the future and
+// be translated back to cx program.
+func Serialize(prgrm *CXProgram, split int, includeMemory bool) (byts []byte) {
 	// prgrm.PrintProgram()
 
 	s := sAll{}
-	initSerialization(prgrm, &s)
+	initSerialization(prgrm, &s, includeMemory)
 
 	var fnCounter int32
 	var strctCounter int32
@@ -799,8 +830,8 @@ func Serialize(prgrm *CXProgram, split int) (byts []byte) {
 	sIdx.ExpressionsOffset += sIdx.FunctionsOffset + int32(fnSize)
 	sIdx.ArgumentsOffset += sIdx.ExpressionsOffset + int32(exprSize)
 	sIdx.IntegersOffset += sIdx.ArgumentsOffset + int32(argSize)
-	sIdx.NamesOffset += sIdx.IntegersOffset + int32(intSize)
-	sIdx.MemoryOffset += sIdx.NamesOffset + int32(len(s.Names))
+	sIdx.NamesOffset += sIdx.IntegersOffset + int32(intSize) //STRINGS, NOT NAMES
+	sIdx.MemoryOffset += sIdx.NamesOffset + int32(len(s.Names)) //STRINGS, NOT NAMES
 
 	// serializing everything
 	byts = append(byts, encoder.Serialize(s.Index)...)
@@ -812,38 +843,34 @@ func Serialize(prgrm *CXProgram, split int) (byts []byte) {
 	byts = append(byts, encoder.Serialize(s.Expressions)...)
 	byts = append(byts, encoder.Serialize(s.Arguments)...)
 	byts = append(byts, encoder.Serialize(s.Integers)...)
-	byts = append(byts, s.Names...)
+	byts = append(byts, s.Names...) //STRINGS NOT NAMES
 	byts = append(byts, s.Memory...)
 
 	return byts
 }
 
-func opSerialize(expr *CXExpression, fp int) {
-	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
-	out1Offset := GetFinalOffset(fp, out1)
+// SerializeDebugInfo prints the name of the serialized segment and byte size.
+func SerializeDebugInfo(prgrm *CXProgram, split int, includeMemory bool) SerializeDataSize {
+	idxSize := encoder.Size(sIndex{})
+	var s sAll
 
-	_ = inp1
+	bytes := Serialize(prgrm, split, includeMemory)
+	DeserializeRaw(bytes[:idxSize], &s.Index)
 
-	var slcOff int
-	byts := Serialize(PROGRAM, 0)
-	for _, b := range byts {
-		slcOff = WriteToSlice(slcOff, []byte{b})
+	data := &SerializeDataSize{
+		Program:     len(bytes[s.Index.ProgramOffset:s.Index.CallsOffset]),
+		Calls:       len(bytes[s.Index.CallsOffset:s.Index.PackagesOffset]),
+		Packages:    len(bytes[s.Index.PackagesOffset:s.Index.StructsOffset]),
+		Structs:     len(bytes[s.Index.StructsOffset:s.Index.FunctionsOffset]),
+		Functions:   len(bytes[s.Index.FunctionsOffset:s.Index.ExpressionsOffset]),
+		Expressions: len(bytes[s.Index.ExpressionsOffset:s.Index.ArgumentsOffset]),
+		Arguments:   len(bytes[s.Index.ArgumentsOffset:s.Index.IntegersOffset]),
+		Integers:    len(bytes[s.Index.IntegersOffset:s.Index.NamesOffset]), //NAMES?
+		Names:       len(bytes[s.Index.NamesOffset:s.Index.MemoryOffset]),  // NAMES?
+		Memory:      len(bytes[s.Index.MemoryOffset:]),
 	}
 
-	WriteI32(out1Offset, int32(slcOff))
-}
-
-func opDeserialize(expr *CXExpression, fp int) {
-	inp := expr.Inputs[0]
-
-	inpOffset := GetFinalOffset(fp, inp)
-
-	off := Deserialize_i32(PROGRAM.Memory[inpOffset : inpOffset+TYPE_POINTER_SIZE])
-
-	_l := PROGRAM.Memory[off+OBJECT_HEADER_SIZE : off+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE]
-	l := Deserialize_i32(_l[4:8])
-
-	Deserialize(PROGRAM.Memory[off+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE : off+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE+l]) // BUG : should be l * elt.TotalSize ?
+	return *data
 }
 
 func dsName(off int32, size int32, s *sAll) string {
@@ -879,7 +906,7 @@ func dsPackages(s *sAll, prgrm *CXProgram) {
 
 			for j, sFn := range s.Functions[sPkg.FunctionsOffset : sPkg.FunctionsOffset+sPkg.FunctionsSize] {
 				var fn CXFunction
-				fn.Name = dsName(sFn.NameOffset, sFn.NameSize, s)
+				fn.Name = dsName(sFn.NameOffset, sFn.NameSize, s) //!??!
 				prgrm.Packages[i].Functions[j] = &fn
 			}
 		}
@@ -889,7 +916,7 @@ func dsPackages(s *sAll, prgrm *CXProgram) {
 
 			for j, sStrct := range s.Structs[sPkg.StructsOffset : sPkg.StructsOffset+sPkg.StructsSize] {
 				var strct CXStruct
-				strct.Name = dsName(sStrct.NameOffset, sStrct.NameSize, s)
+				strct.Name = dsName(sStrct.NameOffset, sStrct.NameSize, s) // !!>!>!
 				prgrm.Packages[i].Structs[j] = &strct
 			}
 		}
@@ -976,30 +1003,31 @@ func dsArguments(off int32, size int32, s *sAll, prgrm *CXProgram) []*CXArgument
 	return args
 }
 
-func getCustomType(sArg *sArgument, s *sAll, prgrm *CXProgram) *CXStruct {
-	if sArg.CustomTypeOffset < 0 {
-		return nil
-	}
 
-	customTypePkg := prgrm.Packages[s.Structs[sArg.CustomTypeOffset].PackageOffset]
-	sStrct := s.Structs[sArg.CustomTypeOffset]
-	customTypeName := dsName(sStrct.NameOffset, sStrct.NameSize, s)
+// func getCustomType(sArg *sArgument, s *sAll, prgrm *CXProgram) *CXStruct {
+// 	if sArg.CustomTypeOffset < 0 {
+// 		return nil
+// 	}
 
-	for _, strct := range customTypePkg.Structs {
-		if strct.Name == customTypeName {
-			return strct
-		}
-	}
+// 	//customTypePkg := prgrm.Packages[s.Structs[sArg.CustomTypeOffset].PackageOffset]
+// 	sStrct := s.Structs[sArg.CustomTypeOffset]
+// 	customTypeName := dsName(sStrct.NameOffset, sStrct.NameSize, s)
 
-	return nil
-}
+// 	for _, strct := range customTypePkg.Structs {
+// 		if strct.Name == customTypeName {
+// 			return strct
+// 		}
+// 	}
+
+// 	return nil
+// }
 
 func dsArgument(sArg *sArgument, s *sAll, prgrm *CXProgram) *CXArgument {
 	var arg CXArgument
 	arg.Name = dsName(sArg.NameOffset, sArg.NameSize, s)
 	arg.Type = int(sArg.Type)
 
-	arg.CustomType = getCustomType(sArg, s, prgrm)
+	//arg.CustomType = getCustomType(sArg, s, prgrm)
 
 	arg.Size = int(sArg.Size)
 	arg.TotalSize = int(sArg.TotalSize)
@@ -1053,6 +1081,7 @@ func getOperator(sExpr *sExpression, s *sAll, prgrm *CXProgram) *CXFunction {
 	return nil
 }
 
+//rename DeserializePackageImports
 func getImport(sImp *sPackage, s *sAll, prgrm *CXProgram) *CXPackage {
 	impName := dsName(sImp.NameOffset, sImp.NameSize, s)
 
@@ -1065,6 +1094,7 @@ func getImport(sImp *sPackage, s *sAll, prgrm *CXProgram) *CXPackage {
 	return nil
 }
 
+//Rename DeserializeFunctions
 func getFunction(sExpr *sExpression, s *sAll, prgrm *CXProgram) *CXFunction {
 	if sExpr.FunctionOffset < 0 {
 		return nil
@@ -1083,6 +1113,7 @@ func getFunction(sExpr *sExpression, s *sAll, prgrm *CXProgram) *CXFunction {
 	return nil
 }
 
+//Rename DeserializeExpressions
 func dsExpressions(off int32, size int32, s *sAll, prgrm *CXProgram) []*CXExpression {
 	if size < 1 {
 		return nil
@@ -1130,6 +1161,7 @@ func dsExpression(sExpr *sExpression, s *sAll, prgrm *CXProgram) *CXExpression {
 	return &expr
 }
 
+//DeserializeFunction ???
 func dsFunction(sFn *sFunction, fn *CXFunction, s *sAll, prgrm *CXProgram) {
 	fn.Name = dsName(sFn.NameOffset, sFn.NameSize, s)
 	fn.Inputs = dsArguments(sFn.InputsOffset, sFn.InputsSize, s, prgrm)
