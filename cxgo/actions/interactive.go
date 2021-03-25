@@ -31,7 +31,6 @@ func SteppingWithDelay(steps int, delay int, withDelay bool) {
 	if steps < 0 {
 		panic("error, should not be negative")
 	}
-
 	for i := 0; i < steps; i++ {
 		time.Sleep(time.Duration(int32(delay)) * time.Second)
 		err := PRGRM.RunCompiled(1, nil)
