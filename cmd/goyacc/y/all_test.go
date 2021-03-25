@@ -29,32 +29,32 @@ func init() {
 	isTesting = true
 }
 
-func caller(s string, va ...interface{}) {
-	_, fn, fl, _ := runtime.Caller(2)
-	fmt.Fprintf(os.Stderr, "caller: %s:%d: ", path.Base(fn), fl)
-	fmt.Fprintf(os.Stderr, s, va...)
-	fmt.Fprintln(os.Stderr)
-	_, fn, fl, _ = runtime.Caller(1)
-	fmt.Fprintf(os.Stderr, "\tcallee: %s:%d: ", path.Base(fn), fl)
-	fmt.Fprintln(os.Stderr)
-}
+// func caller(s string, va ...interface{}) {
+// 	_, fn, fl, _ := runtime.Caller(2)
+// 	fmt.Fprintf(os.Stderr, "caller: %s:%d: ", path.Base(fn), fl)
+// 	fmt.Fprintf(os.Stderr, s, va...)
+// 	fmt.Fprintln(os.Stderr)
+// 	_, fn, fl, _ = runtime.Caller(1)
+// 	fmt.Fprintf(os.Stderr, "\tcallee: %s:%d: ", path.Base(fn), fl)
+// 	fmt.Fprintln(os.Stderr)
+// }
 
-func dbg(s string, va ...interface{}) {
-	if s == "" {
-		s = strings.Repeat("%v ", len(va))
-	}
-	_, fn, fl, _ := runtime.Caller(1)
-	fmt.Fprintf(os.Stderr, "dbg %s:%d: ", path.Base(fn), fl)
-	fmt.Fprintf(os.Stderr, s, va...)
-	fmt.Fprintln(os.Stderr)
-}
+// func dbg(s string, va ...interface{}) {
+// 	if s == "" {
+// 		s = strings.Repeat("%v ", len(va))
+// 	}
+// 	_, fn, fl, _ := runtime.Caller(1)
+// 	fmt.Fprintf(os.Stderr, "dbg %s:%d: ", path.Base(fn), fl)
+// 	fmt.Fprintf(os.Stderr, s, va...)
+// 	fmt.Fprintln(os.Stderr)
+// }
 
 func TODO(...interface{}) string {
 	_, fn, fl, _ := runtime.Caller(1)
 	return fmt.Sprintf("TODO: %s:%d:\n", path.Base(fn), fl)
 }
 
-func use(...interface{}) {}
+// func use(...interface{}) {}
 
 // ============================================================================
 
@@ -68,23 +68,23 @@ var (
 	oRE        = flag.String("re", "", "Regexp filter.")
 )
 
-func (s itemSet) dump(y *y) string {
-	var buf bytes.Buffer
-	for _, v := range s {
-		buf.WriteString(v.dump(y))
-		buf.WriteString("\n")
-	}
-	return buf.String()
-}
+// func (s itemSet) dump(y *y) string {
+// 	var buf bytes.Buffer
+// 	for _, v := range s {
+// 		buf.WriteString(v.dump(y))
+// 		buf.WriteString("\n")
+// 	}
+// 	return buf.String()
+// }
 
-func (s itemSet1) dump(y *y) string {
-	var a []string
-	for v := range s {
-		a = append(a, v.dump(y))
-	}
-	sort.Strings(a)
-	return strings.Join(a, "\n")
-}
+// func (s itemSet1) dump(y *y) string {
+// 	var a []string
+// 	for v := range s {
+// 		a = append(a, v.dump(y))
+// 	}
+// 	sort.Strings(a)
+// 	return strings.Join(a, "\n")
+// }
 
 func test0(t *testing.T, root string, filter func(pth string) bool, opts *Options, xerrors bool) {
 	const (

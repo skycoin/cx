@@ -76,9 +76,9 @@ type Scanner struct {
 	c      int
 	i      int
 	i0     int
-	sc     int
-	src    []byte
-	val    []byte
+	// sc     int
+	src []byte
+	val []byte
 }
 
 // New returns a newly created Scanner with fname as the name of the source.
@@ -96,11 +96,11 @@ func New(fname string, src []byte) (s *Scanner) {
 	return
 }
 
-func (s *Scanner) back() {
-	s.NCol--
-	s.i--
-	s.c = int(s.src[s.i])
-}
+// func (s *Scanner) back() {
+// 	s.NCol--
+// 	s.i--
+// 	s.c = int(s.src[s.i])
+// }
 
 func (s *Scanner) next() int {
 	if s.i <= len(s.src) && s.c >= 0 {

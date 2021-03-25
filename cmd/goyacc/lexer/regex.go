@@ -215,7 +215,7 @@ func (s *ScannerSource) parseChar(more string) (arune rune) {
 	s.Move()
 	switch arune = s.Current(); arune {
 	default:
-		if strings.IndexAny(string(arune), more) < 0 {
+		if !strings.ContainsAny(string(arune), more) {
 			panic(fmt.Errorf(`unknown escape sequence "\%s (more: %q)"`, string(arune), more))
 		}
 

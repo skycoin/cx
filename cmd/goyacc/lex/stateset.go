@@ -6,9 +6,10 @@ package lex // import "github.com/skycoin/cx/cmd/goyacc/lex"
 
 import (
 	"fmt"
-	"github.com/skycoin/cx/cmd/goyacc/lexer"
 	"sort"
 	"strings"
+
+	"github.com/skycoin/cx/cmd/goyacc/lexer"
 )
 
 type stateSet struct {
@@ -40,9 +41,9 @@ func newStateSet(n int) *stateSet {
 	return &stateSet{0, make([]dense, n), make([]uint, n)}
 }
 
-func (s *stateSet) clear() {
-	s.count = 0
-}
+// func (s *stateSet) clear() {
+// 	s.count = 0
+// }
 
 func (s *stateSet) has(state *lexer.NfaState, priority *int) bool {
 	id := state.Index
