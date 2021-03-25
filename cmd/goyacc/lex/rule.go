@@ -93,7 +93,7 @@ func (p *pat) move() {
 			p.pos += p.delta
 		}
 	}
-	return
+	// return
 }
 
 func (p *pat) accept(b rune) bool {
