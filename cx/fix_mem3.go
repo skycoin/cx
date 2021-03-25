@@ -147,7 +147,8 @@ func GetOffset_ui64(fp int, arg *CXArgument) int {
 // GetOffset_f32 ...
 func GetOffset_f32(fp int, arg *CXArgument) int {
 	//return GetFinalOffset(fp, arg)
-	return GetOffsetAtomic(fp, arg)
+	//return GetOffsetAtomic(fp, arg)
+	return GetOffsetAtomicSimple(fp,arg)
 }
 
 // GetOffset_f64 ...
