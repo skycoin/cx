@@ -1,7 +1,5 @@
 package cxcore
 
-import()
-
 func opSerialize(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	out1Offset := GetFinalOffset(fp, out1)
@@ -9,7 +7,7 @@ func opSerialize(expr *CXExpression, fp int) {
 	_ = inp1
 
 	var slcOff int
-	byts := Serialize(PROGRAM, 0, true)
+	byts := SerializeCXProgram(PROGRAM, true)
 	for _, b := range byts {
 		slcOff = WriteToSlice(slcOff, []byte{b})
 	}
