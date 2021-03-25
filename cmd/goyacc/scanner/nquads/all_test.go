@@ -127,7 +127,7 @@ func TestScanner1(t *testing.T) {
 		default:
 			if len(errs) == 0 {
 				t.Errorf("%d: errs %v %v", i, tok, val)
-				break
+				// break
 			}
 		}
 	}

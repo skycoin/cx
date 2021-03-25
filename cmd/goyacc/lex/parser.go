@@ -527,7 +527,7 @@ yydefault:
 	switch yynt {
 
 	case 2:
-		yyDollar = yyS[yypt-2 : yypt+1]
+		// yyDollar = yyS[yypt-2 : yypt+1]
 		//line parser.y:81
 		{
 			sc(yylex).Begin(_USER)
@@ -539,13 +539,13 @@ yydefault:
 			usrCode = yyDollar[4].str
 		}
 	case 6:
-		yyDollar = yyS[yypt-0 : yypt+1]
+		// yyDollar = yyS[yypt-0 : yypt+1]
 		//line parser.y:95
 		{
 			sc(yylex).PushState(_DEF_NAME)
 		}
 	case 7:
-		yyDollar = yyS[yypt-3 : yypt+1]
+		// yyDollar = yyS[yypt-3 : yypt+1]
 		//line parser.y:100
 		{
 			sc(yylex).PopState()
@@ -557,7 +557,7 @@ yydefault:
 			yyVAL.str = yyDollar[3].str
 		}
 	case 10:
-		yyDollar = yyS[yypt-1 : yypt+1]
+		// yyDollar = yyS[yypt-1 : yypt+1]
 		//line parser.y:111
 		{
 			defNamePos0 = sc(yylex).TokenStart()
@@ -588,7 +588,7 @@ yydefault:
 			defCode = append(defCode, yyDollar[1].str+"\n")
 		}
 	case 15:
-		yyDollar = yyS[yypt-1 : yypt+1]
+		// yyDollar = yyS[yypt-1 : yypt+1]
 		//line parser.y:136
 		{
 			sc(yylex).PushState(_VERBATIM)
@@ -601,7 +601,7 @@ yydefault:
 			sc(yylex).PopState()
 		}
 	case 17:
-		yyDollar = yyS[yypt-1 : yypt+1]
+		// yyDollar = yyS[yypt-1 : yypt+1]
 		//line parser.y:146
 		{
 			sc(yylex).PushState(_DEF_STARTS)
@@ -614,7 +614,7 @@ yydefault:
 			sc(yylex).PopState()
 		}
 	case 19:
-		yyDollar = yyS[yypt-1 : yypt+1]
+		// yyDollar = yyS[yypt-1 : yypt+1]
 		//line parser.y:155
 		{
 			sc(yylex).PushState(_DEF_STARTS)
@@ -671,7 +671,7 @@ yydefault:
 			}
 		}
 	case 29:
-		yyDollar = yyS[yypt-3 : yypt+1]
+		// yyDollar = yyS[yypt-3 : yypt+1]
 		//line parser.y:210
 		{
 			for s := range unrefStarts {
@@ -688,7 +688,7 @@ yydefault:
 			moreAction(yyDollar[1].str)
 		}
 	case 32:
-		yyDollar = yyS[yypt-1 : yypt+1]
+		// yyDollar = yyS[yypt-1 : yypt+1]
 		//line parser.y:227
 		{
 			sc(yylex).PushState(_VERBATIM)
@@ -710,13 +710,13 @@ yydefault:
 			rules = append(rules, rule{nil, pat, re, action, nil, nil, bol, eol})
 		}
 	case 35:
-		yyDollar = yyS[yypt-1 : yypt+1]
+		// yyDollar = yyS[yypt-1 : yypt+1]
 		//line parser.y:244
 		{
 			sc(yylex).PushState(_STARTS)
 		}
 	case 36:
-		yyDollar = yyS[yypt-4 : yypt+1]
+		// yyDollar = yyS[yypt-4 : yypt+1]
 		//line parser.y:249
 		{
 			sc(yylex).PopState()
@@ -731,7 +731,7 @@ yydefault:
 			rules = append(rules, rule{yyDollar[3].strs, pat, re, action, nil, nil, bol, eol})
 		}
 	case 38:
-		yyDollar = yyS[yypt-0 : yypt+1]
+		// yyDollar = yyS[yypt-0 : yypt+1]
 		//line parser.y:262
 		{
 			sc(yylex).PushState(_RULES)
@@ -775,13 +775,13 @@ yydefault:
 			yyVAL.strs = append(yyVAL.strs, yyDollar[3].str)
 		}
 	case 44:
-		yyDollar = yyS[yypt-1 : yypt+1]
+		// yyDollar = yyS[yypt-1 : yypt+1]
 		//line parser.y:303
 		{
 			yyVAL.strs = append(yyVAL.strs, "*")
 		}
 	case 45:
-		yyDollar = yyS[yypt-0 : yypt+1]
+		// yyDollar = yyS[yypt-0 : yypt+1]
 		//line parser.y:309
 		{
 			yyVAL.str = ""
@@ -793,7 +793,7 @@ yydefault:
 			yyVAL.str += yyDollar[2].str
 		}
 	case 47:
-		yyDollar = yyS[yypt-0 : yypt+1]
+		// yyDollar = yyS[yypt-0 : yypt+1]
 		//line parser.y:319
 		{
 			yyVAL.str = ""

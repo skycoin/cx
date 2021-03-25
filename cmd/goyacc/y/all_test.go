@@ -474,7 +474,7 @@ states:
 				continue
 			}
 
-			l = b.mustLine()
+			// l = b.mustLine()
 			//TODO process action
 		}
 

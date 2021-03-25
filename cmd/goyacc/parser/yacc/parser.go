@@ -487,7 +487,7 @@ yynewstate:
 				msg, ok = yyXErrors[yyXError{yyshift, yyxchar}]
 			}
 			if !ok {
-				msg, ok = yyXErrors[yyXError{yyshift, -1}]
+				msg = yyXErrors[yyXError{yyshift, -1}]
 			}
 			if yychar > 0 {
 				ls := yyTokenLiteralStrings[yychar]
