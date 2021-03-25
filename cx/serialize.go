@@ -667,33 +667,25 @@ func serializeProgram(prgrm *CXProgram, s *serializedCXProgram) {
 	sPrgrm.VersionOffset, sPrgrm.VersionSize = serializeString(prgrm.Version, s)
 }
 
-// // splitSerialize is mainly used for CX chains. It splits a `prgrm`'s
-// // elements (packages, structs, functions, etc.) into two parts: the
-// // parts that will belong to the blockchain code and the parts that
-// // will belong to the transaction code. The process in general
-// // consists in serializing the CX packages from `from` to `to`. In
-// // practice, this function will most likely be called twice, so we can
-// // serialize from 0 to a "cut point", and then from that "cut point"
-// // to the last CX package. The serialized structures are added to `s`.
-// //
-// // `fnCounter` and `strctCounter` are counters for functions and
-// // structures, respectively. These pointers to integers help
-// // `splitSerialize` know how many functions and structures have been
-// // serialized across multiple calls to `splitSerialize`.
-func splitSerialize(prgrm *CXProgram, s *serializedCXProgram, fnCounter, strctCounter *int64, from, to int) {
+// serializeCXProgramElements is used serializing CX program's
+// elements (packages, structs, functions, etc.).
+func serializeCXProgramElements(prgrm *CXProgram, s *serializedCXProgram) {
+	var fnCounter int64
+	var strctCounter int64
+
 	// indexing packages and serializing their names
-	for _, pkg := range prgrm.Packages[from:to] {
+	for _, pkg := range prgrm.Packages {
 		indexPackage(pkg, s)
 		serializePackageName(pkg, s)
 	}
 	// we first needed to populate references to all packages
 	// now we add the imports' references
-	for _, pkg := range prgrm.Packages[from:to] {
+	for _, pkg := range prgrm.Packages {
 		serializePackageImports(pkg, s)
 	}
 
 	// structs
-	for _, pkg := range prgrm.Packages[from:to] {
+	for _, pkg := range prgrm.Packages {
 		for _, strct := range pkg.Structs {
 			indexStruct(strct, s)
 			serializeStructName(strct, s)
@@ -703,19 +695,19 @@ func splitSerialize(prgrm *CXProgram, s *serializedCXProgram, fnCounter, strctCo
 	}
 	// we first needed to populate references to all structs
 	// now we add fields
-	for _, pkg := range prgrm.Packages[from:to] {
+	for _, pkg := range prgrm.Packages {
 		for _, strct := range pkg.Structs {
 			serializeStructArguments(strct, s)
 		}
 	}
 
 	// globals
-	for _, pkg := range prgrm.Packages[from:to] {
+	for _, pkg := range prgrm.Packages {
 		serializePackageGlobals(pkg, s)
 	}
 
 	// functions
-	for _, pkg := range prgrm.Packages[from:to] {
+	for _, pkg := range prgrm.Packages {
 		for _, fn := range pkg.Functions {
 			indexFunction(fn, s)
 			serializeFunctionName(fn, s)
@@ -726,7 +718,7 @@ func splitSerialize(prgrm *CXProgram, s *serializedCXProgram, fnCounter, strctCo
 	}
 
 	// package elements' offsets and sizes
-	for _, pkg := range prgrm.Packages[from:to] {
+	for _, pkg := range prgrm.Packages {
 		if pkgOff, found := s.PackagesMap[pkg.Name]; found {
 			sPkg := &s.Packages[pkgOff]
 
@@ -734,20 +726,20 @@ func splitSerialize(prgrm *CXProgram, s *serializedCXProgram, fnCounter, strctCo
 				sPkg.StructsOffset = int64(-1)
 				sPkg.StructsSize = int64(-1)
 			} else {
-				sPkg.StructsOffset = *strctCounter
+				sPkg.StructsOffset = strctCounter
 				lenStrcts := int64(len(pkg.Structs))
 				sPkg.StructsSize = lenStrcts
-				*strctCounter += lenStrcts
+				strctCounter += lenStrcts
 			}
 
 			if len(pkg.Functions) == 0 {
 				sPkg.FunctionsOffset = int64(-1)
 				sPkg.FunctionsSize = int64(-1)
 			} else {
-				sPkg.FunctionsOffset = *fnCounter
+				sPkg.FunctionsOffset = fnCounter
 				lenFns := int64(len(pkg.Functions))
 				sPkg.FunctionsSize = lenFns
-				*fnCounter += lenFns
+				fnCounter += lenFns
 			}
 		} else {
 			panic("package reference not found")
@@ -756,12 +748,12 @@ func splitSerialize(prgrm *CXProgram, s *serializedCXProgram, fnCounter, strctCo
 
 	// package integers
 	// we needed the references to all functions and structs first
-	for _, pkg := range prgrm.Packages[from:to] {
+	for _, pkg := range prgrm.Packages {
 		serializePackageIntegers(pkg, s)
 	}
 
 	// expressions
-	for _, pkg := range prgrm.Packages[from:to] {
+	for _, pkg := range prgrm.Packages {
 		for _, fn := range pkg.Functions {
 			fnName := fn.Package.Name + "." + fn.Name
 			if fnOff, found := s.FunctionsMap[fnName]; found {
@@ -800,10 +792,7 @@ func SerializeCXProgram(prgrm *CXProgram, includeMemory bool) (b []byte) {
 	s := serializedCXProgram{}
 	initSerialization(prgrm, &s, includeMemory)
 
-	var fnCounter int64
-	var strctCounter int64
-	splitSerialize(prgrm, &s, &fnCounter, &strctCounter, 0, 0)
-	splitSerialize(prgrm, &s, &fnCounter, &strctCounter, 0, len(prgrm.Packages))
+	serializeCXProgramElements(prgrm, &s)
 
 	// program
 	serializeProgram(prgrm, &s)
