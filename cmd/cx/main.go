@@ -231,6 +231,7 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 }
 
 func runProgram(options cxCmdFlags, cxArgs []string, sourceCode []*os.File, bcHeap []byte, sPrgrm []byte) {
+
 	StartProfile("run")
 	defer StopProfile("run")
 

@@ -64,8 +64,8 @@ func (prgrm *CXProgram) Run(untilEnd bool, nCalls *int, untilCall int) error {
 	defer RuntimeError()
 	var err error
 
-    var inputs []CXValue
-    var outputs []CXValue
+	var inputs []CXValue
+	var outputs []CXValue
 	for !prgrm.Terminated && (untilEnd || *nCalls != 0) && prgrm.CallCounter > untilCall {
 		call := &prgrm.CallStack[prgrm.CallCounter]
 
@@ -156,6 +156,7 @@ func (prgrm *CXProgram) EnsureHeap() {
 
 // RunCompiled ...
 func (prgrm *CXProgram) RunCompiled(nCalls int, args []string) error {
+
 	_, err := prgrm.SelectProgram()
 	if err != nil {
 		panic(err)
@@ -172,8 +173,8 @@ func (prgrm *CXProgram) RunCompiled(nCalls int, args []string) error {
 		// initializing program resources
 		// prgrm.Stacks = append(prgrm.Stacks, MakeStack(1024))
 
-        var inputs []CXValue
-        var outputs []CXValue
+		var inputs []CXValue
+		var outputs []CXValue
 		if prgrm.CallStack[0].Operator == nil {
 			// then the program is just starting and we need to run the SYS_INIT_FUNC
 			if fn, err := mod.SelectFunction(SYS_INIT_FUNC); err == nil {
@@ -186,7 +187,7 @@ func (prgrm *CXProgram) RunCompiled(nCalls int, args []string) error {
 
 				for !prgrm.Terminated {
 					call := &prgrm.CallStack[prgrm.CallCounter]
-                    err = call.ccall(prgrm, &inputs, &outputs)
+					err = call.ccall(prgrm, &inputs, &outputs)
 					if err != nil {
 						return err
 					}
@@ -325,142 +326,140 @@ func (call *CXCall) ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 			call.Line++
 		} else {
 			switch expr.Operator.Version {
-				case 1: // old version
-					opcodeHandlers[expr.Operator.OpCode](expr, call.FramePointer)
-					call.Line++
-				case 2: // new version
-					fp := call.FramePointer;
+			case 1: // old version
+				opcodeHandlers[expr.Operator.OpCode](expr, call.FramePointer)
+				call.Line++
+			case 2: // new version
+				fp := call.FramePointer
 
-					inputs := expr.Inputs
-					inputCount := len(inputs)
-					if inputCount > len(*globalInputs) {
-						*globalInputs = make([]CXValue, inputCount)
+				inputs := expr.Inputs
+				inputCount := len(inputs)
+				if inputCount > len(*globalInputs) {
+					*globalInputs = make([]CXValue, inputCount)
+				}
+				inputValues := (*globalInputs)[:inputCount]
+
+				outputs := expr.Outputs
+				outputCount := len(outputs)
+				if outputCount > len(*globalOutputs) {
+					*globalOutputs = make([]CXValue, outputCount)
+				}
+				outputValues := (*globalOutputs)[:outputCount]
+
+				argIndex := 0
+				for inputIndex := 0; inputIndex < inputCount; inputIndex++ {
+					input := inputs[inputIndex]
+					offset := GetFinalOffset(fp, input)
+					value := &inputValues[inputIndex]
+					value.Arg = input
+					value.Used = -1
+					value.Offset = offset
+					value.Type = input.Type
+					value.FramePointer = fp
+					value.Expr = expr
+					value.memory = PROGRAM.Memory[offset : offset+GetSize(input)]
+					argIndex++
+				}
+
+				for outputIndex := 0; outputIndex < outputCount; outputIndex++ {
+					output := outputs[outputIndex]
+					offset := GetFinalOffset(fp, output)
+					value := &outputValues[outputIndex]
+					value.Arg = output
+					value.Used = -1
+					value.Offset = offset
+					value.Type = output.Type
+					value.FramePointer = fp
+					value.Expr = expr
+					argIndex++
+				}
+
+				opcodeHandlers_V2[expr.Operator.OpCode](inputValues, outputValues)
+
+				for inputIndex := 0; inputIndex < inputCount; inputIndex++ { // TODO: remove in release builds
+					if inputValues[inputIndex].Used != int8(inputs[inputIndex].Type) { // TODO: remove cast
+						panic(fmt.Sprintf("Input value not used for opcode: '%s', param #%d. Expected type %d, '%s', used type %d, '%s'.",
+							OpNames[expr.Operator.OpCode],
+							inputIndex+1,
+							inputs[inputIndex].Type, TypeNames[inputs[inputIndex].Type],
+							inputValues[inputIndex].Used, TypeNames[int(inputValues[inputIndex].Used)]))
 					}
-					inputValues := (*globalInputs)[:inputCount]
+				}
 
-
-			        outputs := expr.Outputs
-			        outputCount := len(outputs)
-					if outputCount > len(*globalOutputs) {
-						*globalOutputs = make([]CXValue, outputCount)
+				for outputIndex := 0; outputIndex < outputCount; outputIndex++ { // TODO: remove in release builds
+					if outputValues[outputIndex].Used != int8(outputs[outputIndex].Type) { // TODO: remove cast
+						panic(fmt.Sprintf("Output value not used for opcode: '%s', param #%d. Expected type %d, '%s', used type %d '%s'.",
+							OpNames[expr.Operator.OpCode],
+							outputIndex+1,
+							outputs[outputIndex].Type, TypeNames[outputs[outputIndex].Type],
+							outputValues[outputIndex].Used, TypeNames[int(outputValues[outputIndex].Used)]))
 					}
-					outputValues := (*globalOutputs)[:outputCount]
+				}
 
+				call.Line++
+			default:
+				/*
+				   It was not a native, so we need to create another call
+				   with the current expression's operator
+				*/
+				// we're going to use the next call in the callstack
+				prgrm.CallCounter++
+				if prgrm.CallCounter >= CALLSTACK_SIZE {
+					panic(STACK_OVERFLOW_ERROR)
+				}
+				newCall := &prgrm.CallStack[prgrm.CallCounter]
+				// setting the new call
+				newCall.Operator = expr.Operator
+				newCall.Line = 0
+				newCall.FramePointer = prgrm.StackPointer
+				// the stack pointer is moved to create room for the next call
+				// prgrm.MemoryPointer += fn.Size
+				prgrm.StackPointer += newCall.Operator.Size
 
-		            argIndex := 0;
-					for inputIndex := 0; inputIndex < inputCount; inputIndex++ {
-                        input := inputs[inputIndex]
-                        offset := GetFinalOffset(fp, input)
-                        value := &inputValues[inputIndex]
-                        value.Arg = input
-                        value.Used = -1
-                        value.Offset = offset
-						value.Type = input.Type
-                        value.FramePointer = fp
-                        value.Expr = expr
-                        value.memory = PROGRAM.Memory[offset : offset+GetSize(input)]
-                        argIndex++
-					}
+				// checking if enough memory in stack
+				if prgrm.StackPointer > STACK_SIZE {
+					panic(STACK_OVERFLOW_ERROR)
+				}
 
-					for outputIndex := 0; outputIndex < outputCount; outputIndex++ {
-						output := outputs[outputIndex]
-                        offset := GetFinalOffset(fp, output)
-                        value := &outputValues[outputIndex]
-                        value.Arg = output
-                        value.Used = -1
-                        value.Offset = offset
-                        value.Type = output.Type
-                        value.FramePointer = fp
-                        value.Expr = expr
-                        argIndex++
-					}
+				fp := call.FramePointer
+				newFP := newCall.FramePointer
 
-					opcodeHandlers_V2[expr.Operator.OpCode](inputValues, outputValues)
+				// wiping next stack frame (removing garbage)
+				for c := 0; c < expr.Operator.Size; c++ {
+					prgrm.Memory[newFP+c] = 0
+				}
 
-					for inputIndex := 0; inputIndex < inputCount; inputIndex++ { // TODO: remove in release builds
-						if inputValues[inputIndex].Used != int8(inputs[inputIndex].Type) { // TODO: remove cast
-							panic(fmt.Sprintf("Input value not used for opcode: '%s', param #%d. Expected type %d, '%s', used type %d, '%s'.",
-							 	OpNames[expr.Operator.OpCode],
-                                inputIndex + 1,
-							 	inputs[inputIndex].Type, TypeNames[inputs[inputIndex].Type],
-								inputValues[inputIndex].Used, TypeNames[int(inputValues[inputIndex].Used)]))
+				for i, inp := range expr.Inputs {
+					var byts []byte
+					// finalOffset := inp.Offset
+					finalOffset := GetFinalOffset(fp, inp)
+					// finalOffset := fp + inp.Offset
+
+					// if inp.Indexes != nil {
+					// 	finalOffset = GetFinalOffset(&prgrm.Stacks[0], fp, inp)
+					// }
+					if inp.PassBy == PASSBY_REFERENCE {
+						// If we're referencing an inner element, like an element of a slice (&slc[0])
+						// or a field of a struct (&struct.fld) we no longer need to add
+						// the OBJECT_HEADER_SIZE to the offset
+						if inp.IsInnerReference {
+							finalOffset -= OBJECT_HEADER_SIZE
 						}
+						var finalOffsetB [4]byte
+						WriteMemI32(finalOffsetB[:], 0, int32(finalOffset))
+						byts = finalOffsetB[:]
+					} else {
+						size := GetSize(inp)
+						byts = prgrm.Memory[finalOffset : finalOffset+size]
 					}
 
-					for outputIndex := 0; outputIndex < outputCount; outputIndex++ { // TODO: remove in release builds
-						if outputValues[outputIndex].Used != int8(outputs[outputIndex].Type) { // TODO: remove cast
-							panic(fmt.Sprintf("Output value not used for opcode: '%s', param #%d. Expected type %d, '%s', used type %d '%s'.",
-							 	OpNames[expr.Operator.OpCode],
-                                outputIndex + 1,
-							 	outputs[outputIndex].Type, TypeNames[outputs[outputIndex].Type],
-								outputValues[outputIndex].Used, TypeNames[int(outputValues[outputIndex].Used)]))
-						}
-					}
-
-        			call.Line++
-        		default:
-					/*
-					   It was not a native, so we need to create another call
-					   with the current expression's operator
-					*/
-					// we're going to use the next call in the callstack
-					prgrm.CallCounter++
-					if prgrm.CallCounter >= CALLSTACK_SIZE {
-						panic(STACK_OVERFLOW_ERROR)
-					}
-					newCall := &prgrm.CallStack[prgrm.CallCounter]
-					// setting the new call
-					newCall.Operator = expr.Operator
-					newCall.Line = 0
-					newCall.FramePointer = prgrm.StackPointer
-					// the stack pointer is moved to create room for the next call
-					// prgrm.MemoryPointer += fn.Size
-					prgrm.StackPointer += newCall.Operator.Size
-
-					// checking if enough memory in stack
-					if prgrm.StackPointer > STACK_SIZE {
-						panic(STACK_OVERFLOW_ERROR)
-					}
-
-					fp := call.FramePointer
-					newFP := newCall.FramePointer
-
-					// wiping next stack frame (removing garbage)
-					for c := 0; c < expr.Operator.Size; c++ {
-						prgrm.Memory[newFP+c] = 0
-					}
-
-					for i, inp := range expr.Inputs {
-						var byts []byte
-						// finalOffset := inp.Offset
-						finalOffset := GetFinalOffset(fp, inp)
-						// finalOffset := fp + inp.Offset
-
-						// if inp.Indexes != nil {
-						// 	finalOffset = GetFinalOffset(&prgrm.Stacks[0], fp, inp)
-						// }
-						if inp.PassBy == PASSBY_REFERENCE {
-							// If we're referencing an inner element, like an element of a slice (&slc[0])
-							// or a field of a struct (&struct.fld) we no longer need to add
-							// the OBJECT_HEADER_SIZE to the offset
-							if inp.IsInnerReference {
-								finalOffset -= OBJECT_HEADER_SIZE
-							}
-							var finalOffsetB [4]byte
-							WriteMemI32(finalOffsetB[:], 0, int32(finalOffset))
-							byts = finalOffsetB[:]
-						} else {
-							size := GetSize(inp)
-							byts = prgrm.Memory[finalOffset : finalOffset+size]
-						}
-
-						// writing inputs to new stack frame
-						WriteMemory(
-							GetFinalOffset(newFP, newCall.Operator.Inputs[i]),
-							// newFP + newCall.Operator.Inputs[i].Offset,
-							// GetFinalOffset(prgrm.Memory, newFP, newCall.Operator.Inputs[i], MEM_WRITE),
-							byts)
-					}
+					// writing inputs to new stack frame
+					WriteMemory(
+						GetFinalOffset(newFP, newCall.Operator.Inputs[i]),
+						// newFP + newCall.Operator.Inputs[i].Offset,
+						// GetFinalOffset(prgrm.Memory, newFP, newCall.Operator.Inputs[i], MEM_WRITE),
+						byts)
+				}
 			}
 		}
 	}
