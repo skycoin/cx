@@ -110,7 +110,7 @@ func lexerStep0(srcStrs, srcNames []string) int {
 	reBodyClose := regexp.MustCompile("}")
 
 	reImp := regexp.MustCompile("import")
-	reImpName := regexp.MustCompile(`(^|[\s])import\\s+"([_a-zA-Z][_a-zA-Z0-9/-]*)"`)
+	reImpName := regexp.MustCompile(`(^|[\s])import\s+"([_a-zA-Z][_a-zA-Z0-9/-]*)"`)
 
 	profiling.StartProfile("1. packages/structs")
 	// 1. Identify all the packages and structs
