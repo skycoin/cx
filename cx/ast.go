@@ -377,21 +377,16 @@ func (cxprogram *CXProgram) GetGlobal(name string) (*CXArgument, error) {
 }
 
 // Refactor to return nil on error
-func (cxprogram *CXProgram) GetPackage(modName string) (*CXPackage, error) {
-	if cxprogram.Packages == nil {
-		return nil, fmt.Errorf("package '%s' not found", modName)
-	}
+func (cxprogram *CXProgram) GetPackage(packageNameToFind string) (*CXPackage, error) {
 	//iterate packages looking for package; same as GetPackage?
-	var found *CXPackage
-	for _, mod := range cxprogram.Packages {
-		if modName == mod.Name {
-			found = mod
+	for _, cxpackage := range cxprogram.Packages {
+		if cxpackage.Name == packageNameToFind {
 			//can return once found
-			return nil, fmt.Errorf("package '%s' not found", modName)
+			return cxpackage, nil
 		}
 	}
 	//not found
-	return nil, fmt.Errorf("package '%s' not found", modName)
+	return nil, fmt.Errorf("package '%s' not found", packageNameToFind)
 }
 
 // GetStruct ...
