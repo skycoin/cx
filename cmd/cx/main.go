@@ -214,7 +214,7 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 	initMainPkg(actions.PRGRM)
 
 	// Setting what function to start in if using the REPL.
-	actions.ReplTargetFn = cxcore.MAIN_FUNC
+	ReplTargetFn = cxcore.MAIN_FUNC
 
 	// Adding *init function that initializes all the global variables.
 	err = cxparser.AddInitFunction(actions.PRGRM)

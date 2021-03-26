@@ -19,6 +19,8 @@ import (
 	"github.com/skycoin/cx/cxgo/cxgo"
 )
 
+var ReplTargetFn string = ""
+
 func unsafeEval(code string) (out string) {
 	var lexer *cxgo.Lexer
 	defer func() {
@@ -110,8 +112,8 @@ func Repl() {
 		printPrompt()
 
 		if inp, ok = readline(fi); ok {
-			if actions.ReplTargetFn != "" {
-				inp = fmt.Sprintf(":func %s {\n%s\n}\n", actions.ReplTargetFn, inp)
+			if ReplTargetFn != "" {
+				inp = fmt.Sprintf(":func %s {\n%s\n}\n", ReplTargetFn, inp)
 			}
 			if actions.ReplTargetMod != "" {
 				inp = fmt.Sprintf("%s", inp)
@@ -125,8 +127,8 @@ func Repl() {
 			cxgo.Parse(cxgo.NewLexer(b))
 			//yyParse(NewLexer(b))
 		} else {
-			if actions.ReplTargetFn != "" {
-				actions.ReplTargetFn = ""
+			if ReplTargetFn != "" {
+				ReplTargetFn = ""
 				continue
 			}
 
@@ -150,8 +152,8 @@ func printPrompt() {
 	if actions.ReplTargetMod != "" {
 		fmt.Println(fmt.Sprintf(":package %s ...", actions.ReplTargetMod))
 		fmt.Printf("* ")
-	} else if actions.ReplTargetFn != "" {
-		fmt.Println(fmt.Sprintf(":func %s {...", actions.ReplTargetFn))
+	} else if ReplTargetFn != "" {
+		fmt.Println(fmt.Sprintf(":func %s {...", ReplTargetFn))
 		fmt.Printf("\t* ")
 	} else if actions.ReplTargetStrct != "" {
 		fmt.Println(fmt.Sprintf(":struct %s {...", actions.ReplTargetStrct))
