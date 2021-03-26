@@ -376,24 +376,22 @@ func (cxprogram *CXProgram) GetGlobal(name string) (*CXArgument, error) {
 	return foundArgument, nil
 }
 
-// GetPackage ...
+// Refactor to return nil on error
 func (cxprogram *CXProgram) GetPackage(modName string) (*CXPackage, error) {
-	if cxprogram.Packages != nil {
-		var found *CXPackage
-		for _, mod := range cxprogram.Packages {
-			if modName == mod.Name {
-				found = mod
-				break
-			}
-		}
-		if found != nil {
-			return found, nil
-		}
+	if cxprogram.Packages == nil {
 		return nil, fmt.Errorf("package '%s' not found", modName)
-
 	}
+	//iterate packages looking for package; same as GetPackage?
+	var found *CXPackage
+	for _, mod := range cxprogram.Packages {
+		if modName == mod.Name {
+			found = mod
+			//can return once found
+			return nil, fmt.Errorf("package '%s' not found", modName)
+		}
+	}
+	//not found
 	return nil, fmt.Errorf("package '%s' not found", modName)
-
 }
 
 // GetStruct ...
@@ -452,6 +450,7 @@ func (cxprogram *CXProgram) GetFunction(fnName string, pkgName string) (*CXFunct
 	}
 
 	//iterate packages until the package is found
+	//Same as GetPackage?
 	var foundPkg *CXPackage
 	for _, pkg := range cxprogram.Packages {
 		if pkgName == pkg.Name {
@@ -465,13 +464,14 @@ func (cxprogram *CXProgram) GetFunction(fnName string, pkgName string) (*CXFunct
 	if foundPkg == nil {
 		return nil, fmt.Errorf("package '%s' not found", pkgName)
 	}
+
+	//iterates package to find function
+	//same as GetFunction?
 	var foundFn *CXFunction
-	if foundPkg != nil { //is almosts non nill by this point
-		for _, fn := range foundPkg.Functions {
-			if fn.Name == fnName {
-				foundFn = fn
-				break
-			}
+	for _, fn := range foundPkg.Functions {
+		if fn.Name == fnName {
+			foundFn = fn
+			break
 		}
 	}
 
