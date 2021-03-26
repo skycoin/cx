@@ -1,8 +1,5 @@
 package cxcore
 
-import (
-)
-
 // var COREPATH = ""
 
 const STACK_OVERFLOW_ERROR = "stack overflow"
@@ -136,13 +133,6 @@ const (
 	DECL_INDEXING        // 6
 	DECL_BASIC           // 7
 	DECL_FUNC            // 8
-)
-
-// create a new scope or return to the previous scope
-const (
-	SCOPE_UNUSED = iota //if this value appears; program should crash
-	SCOPE_NEW //= iota + 1 // 1
-	SCOPE_REM            // 2
 )
 
 /*

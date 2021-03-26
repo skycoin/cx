@@ -1,8 +1,6 @@
 package actions
 
 import (
-	"os"
-	"runtime"
 	"github.com/skycoin/cx/cx"
 )
 
@@ -243,21 +241,11 @@ func PrimaryIdentifier(ident string) []*cxcore.CXExpression {
 	}
 }
 
-// DefineNewScope marks the first and last expressions to define the boundaries of a scope.
-func DefineNewScope(exprs []*cxcore.CXExpression) {
-	if len(exprs) > 1 {
-		// initialize new scope
-		exprs[0].ScopeOperation = cxcore.SCOPE_NEW
-		// remove last scope
-		exprs[len(exprs)-1].ScopeOperation = cxcore.SCOPE_REM
-	}
-}
-
 // IsArgBasicType returns true if `arg`'s type is a basic type, false otherwise.
 func IsArgBasicType(arg *cxcore.CXArgument) bool {
 	switch arg.Type {
 	case cxcore.TYPE_BOOL,
-		cxcore.TYPE_STR,
+		cxcore.TYPE_STR, //A STRING IS NOT AN ATOMIC TYPE
 		cxcore.TYPE_F32,
 		cxcore.TYPE_F64,
 		cxcore.TYPE_I8,
@@ -281,23 +269,4 @@ func IsAllArgsBasicTypes(expr *cxcore.CXExpression) bool {
 		}
 	}
 	return true
-}
-
-// UserHome returns the current user home path. Code taken from fiber-init.
-func UserHome() string {
-	// os/user relies on cgo which is disabled when cross compiling
-	// use fallbacks for various OSes instead
-	// usr, err := user.Current()
-	// if err == nil {
-	// 	return usr.HomeDir
-	// }
-	if runtime.GOOS == "windows" {
-		home := os.Getenv("HOMEDRIVE") + os.Getenv("HOMEPATH")
-		if home == "" {
-			home = os.Getenv("USERPROFILE")
-		}
-		return home
-	}
-
-	return os.Getenv("HOME")
 }

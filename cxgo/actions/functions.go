@@ -127,7 +127,7 @@ func FunctionDeclaration(fn *cxcore.CXFunction, inputs, outputs []*cxcore.CXArgu
 	FunctionProcessParameters(symbols, &symbolsScope, &offset, fn, fn.Outputs)
 
 	for i, expr := range fn.Expressions {
-		if expr.ScopeOperation == cxcore.SCOPE_NEW {
+		if expr.ScopeOperation == SCOPE_NEW {
 			*symbols = append(*symbols, make(map[string]*cxcore.CXArgument))
 		}
 
@@ -159,7 +159,7 @@ func FunctionDeclaration(fn *cxcore.CXFunction, inputs, outputs []*cxcore.CXArgu
 		CheckTypes(expr)
 		CheckUndValidTypes(expr)
 
-		if expr.ScopeOperation == cxcore.SCOPE_REM {
+		if expr.ScopeOperation == SCOPE_REM {
 			*symbols = (*symbols)[:len(*symbols)-1]
 		}
 	}

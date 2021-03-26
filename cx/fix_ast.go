@@ -51,23 +51,6 @@ func (pkg *CXPackage) GetFunction(fnName string) (*CXFunction, error) {
 	return nil, fmt.Errorf("function '%s' not found in package '%s' or its imports", fnName, pkg.Name)
 }
 
-// SelectExpression ...
-func (cxprogram *CXProgram) SelectExpression(line int) (*CXExpression, error) {
-	// prgrmStep := &CXProgramStep{
-	// 	Action: func(cxprogram *CXProgram) {
-	// 		cxprogram.SelectExpression(line)
-	// 	},
-	// }
-	// saveProgramStep(prgrmStep, cxprogram)
-
-	mod, err := cxprogram.GetCurrentPackage()
-	if err == nil {
-		return mod.SelectExpression(line)
-	}
-	return nil, err
-
-}
-
 // GetImport ...
 func (pkg *CXPackage) GetImport(impName string) (*CXPackage, error) {
 	for _, imp := range pkg.Imports {
@@ -194,7 +177,7 @@ func (pkg *CXPackage) SelectStruct(name string) (*CXStruct, error) {
 }
 */
 
-// SelectExpression ...
+/*
 func (pkg *CXPackage) SelectExpression(line int) (*CXExpression, error) {
 	// prgrmStep := &CXProgramStep{
 	// 	Action: func(cxt *CXProgram) {
@@ -210,3 +193,4 @@ func (pkg *CXPackage) SelectExpression(line int) (*CXExpression, error) {
 	}
 	return nil, err
 }
+*/
