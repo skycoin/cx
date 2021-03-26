@@ -17,7 +17,7 @@ func MakeFunction(name string, fileName string, fileLine int) *CXFunction {
 }
 
 // MakeNativeFunction creates a native function such as i32.add()
-//
+// not used
 func MakeNativeFunction(opCode int, inputs []*CXArgument, outputs []*CXArgument) *CXFunction {
 	fn := &CXFunction{
 		IsNative: true,
@@ -46,7 +46,7 @@ func MakeNativeFunction(opCode int, inputs []*CXArgument, outputs []*CXArgument)
 	return fn
 }
 
-
+//not used
 func MakeNativeFunctionV2(opCode int, inputs []*CXArgument, outputs []*CXArgument) *CXFunction {
 	fn := &CXFunction{
 		IsNative: true,
@@ -78,7 +78,7 @@ func MakeNativeFunctionV2(opCode int, inputs []*CXArgument, outputs []*CXArgumen
 // ----------------------------------------------------------------
 //                             `CXFunction` Getters
 
-// GetExpressions ...
+// GetExpressions is not used
 func (fn *CXFunction) GetExpressions() ([]*CXExpression, error) {
 	if fn.Expressions != nil {
 		return fn.Expressions, nil
@@ -87,18 +87,19 @@ func (fn *CXFunction) GetExpressions() ([]*CXExpression, error) {
 
 }
 
-// GetExpressionByLabel ...
+// GetExpressionByLabel
+// used 4 times in affordances
 func (fn *CXFunction) GetExpressionByLabel(lbl string) (*CXExpression, error) {
-	if fn.Expressions != nil {
-		for _, expr := range fn.Expressions {
-			if expr.Label == lbl {
-				return expr, nil
-			}
-		}
-
-		return nil, fmt.Errorf("expression '%s' not found in function '%s'", lbl, fn.Name)
+	if fn.Expressions == nil {
+		return nil, fmt.Errorf("function '%s' has no expressions", fn.Name)
 	}
-	return nil, fmt.Errorf("function '%s' has no expressions", fn.Name)
+	
+	for _, expr := range fn.Expressions {
+		if expr.Label == lbl {
+			return expr, nil
+		}
+	}
+	return nil, fmt.Errorf("expression '%s' not found in function '%s'", lbl, fn.Name)
 
 }
 
