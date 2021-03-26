@@ -470,13 +470,6 @@ func (cxprogram *CXProgram) GetFunction(functionNameToFind string, pkgName strin
 	return nil, fmt.Errorf("function '%s' not found in package '%s'", functionNameToFind, pkgName)
 }
 
-// GetExpr returns the current CXExpression
-func (cxprogram *CXProgram) GetExpr() *CXExpression {
-	//call := cxprogram.GetCall()
-	//return call.Operator.Expressions[call.Line]
-	call := &cxprogram.CallStack[cxprogram.CallCounter]
-	return call.Operator.Expressions[call.Line]
-}
 
 // GetCall returns the current CXCall
 //TODO: What does this do?
@@ -971,6 +964,13 @@ func (fn *CXFunction) GetExpressionByLine(line int) (*CXExpression, error) {
 	}
 	return nil, fmt.Errorf("function '%s' has no expressions", fn.Name)
 
+}
+
+
+// GetExpr returns the current CXExpression
+func (cxprogram *CXProgram) GetExpr() *CXExpression {
+	call := &cxprogram.CallStack[cxprogram.CallCounter]
+	return call.Operator.Expressions[call.Line]
 }
 
 // GetCurrentExpression ...
