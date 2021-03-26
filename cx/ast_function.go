@@ -88,19 +88,16 @@ func (fn *CXFunction) GetExpressions() ([]*CXExpression, error) {
 }
 
 // GetExpressionByLabel
-// used 4 times in affordances
 func (fn *CXFunction) GetExpressionByLabel(lbl string) (*CXExpression, error) {
 	if fn.Expressions == nil {
 		return nil, fmt.Errorf("function '%s' has no expressions", fn.Name)
 	}
-	
-	for _, expr := range fn.Expressions {
-		if expr.Label == lbl {
-			return expr, nil
+		for _, expr := range fn.Expressions {
+			if expr.Label == lbl {
+				return expr, nil
+			}
 		}
-	}
-	return nil, fmt.Errorf("expression '%s' not found in function '%s'", lbl, fn.Name)
-
+		return nil, fmt.Errorf("expression '%s' not found in function '%s'", lbl, fn.Name)
 }
 
 // GetExpressionByLine ...
