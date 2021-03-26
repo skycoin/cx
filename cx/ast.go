@@ -20,8 +20,8 @@ import (
 //
 type CXProgram struct {
 	// Metadata
-	//Remove Path
-	Path string // Path to the CX project in the filesystem
+	//Remove Path //moved to cx/globals
+	//Path string // Path to the CX project in the filesystem
 
 	// Contents
 	Packages []*CXPackage // Packages in a CX program

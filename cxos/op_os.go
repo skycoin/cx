@@ -5,6 +5,7 @@ package cxos
 import (
 	"bytes"
 	"encoding/binary"
+	"github.com/skycoin/cx/cx/globals"
 
 	"math"
 	"os"
@@ -744,7 +745,8 @@ func opOsWriteI8Slice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 }
 
 func opOsGetWorkingDirectory(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
-    outputs[0].Set_str(cxcore.PROGRAM.Path)
+    //outputs[0].Set_str(cxcore.PROGRAM.Path)
+	outputs[0].Set_str(globals.CxProgramPath)
 }
 
 func opOsExit(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
