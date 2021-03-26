@@ -495,6 +495,7 @@ func (cxprogram *CXProgram) ToString() string {
 
 	// Restoring a program's state (what package and function were
 	// selected.)
+/*
 	if currentPackage != nil {
 		_, err := cxprogram.SelectPackage(currentPackage.Name)
 		if err != nil {
@@ -507,7 +508,14 @@ func (cxprogram *CXProgram) ToString() string {
 			panic(err)
 		}
 	}
+*/
 
+	if currentPackage == nil {
+		panic("error")
+	}
+	if currentFunction == nil {
+		panic("error")
+	}
 	cxprogram.CurrentPackage = currentPackage
 	if currentPackage != nil {
 		currentPackage.CurrentFunction = currentFunction
