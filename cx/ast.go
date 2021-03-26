@@ -24,7 +24,7 @@ type CXProgram struct {
 	//Path string // Path to the CX project in the filesystem
 
 	// Contents
-	Packages []*CXPackage // Packages in a CX program
+	Packages []*CXPackage // Packages in a CX program; use map, so dont have to iterate for lookup
 
 	// Runtime information
 	Inputs       []*CXArgument // OS input arguments
@@ -451,6 +451,7 @@ func (cxprogram *CXProgram) GetFunction(fnName string, pkgName string) (*CXFunct
 		}
 	}
 
+	//iterate packages until the package is found
 	var foundPkg *CXPackage
 	for _, pkg := range cxprogram.Packages {
 		if pkgName == pkg.Name {
@@ -459,18 +460,19 @@ func (cxprogram *CXProgram) GetFunction(fnName string, pkgName string) (*CXFunct
 		}
 	}
 
+
+
+	if foundPkg == nil {
+		return nil, fmt.Errorf("package '%s' not found", pkgName)
+	}
 	var foundFn *CXFunction
-	if foundPkg != nil {
-		if foundPkg != nil {
-			for _, fn := range foundPkg.Functions {
-				if fn.Name == fnName {
-					foundFn = fn
-					break
-				}
+	if foundPkg != nil { //is almosts non nill by this point
+		for _, fn := range foundPkg.Functions {
+			if fn.Name == fnName {
+				foundFn = fn
+				break
 			}
 		}
-	} else {
-		return nil, fmt.Errorf("package '%s' not found", pkgName)
 	}
 
 	if foundPkg != nil && foundFn != nil {
