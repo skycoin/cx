@@ -493,23 +493,6 @@ func (cxprogram *CXProgram) ToString() string {
 
 	buildStrPackages(cxprogram, &ast)
 
-	// Restoring a program's state (what package and function were
-	// selected.)
-/*
-	if currentPackage != nil {
-		_, err := cxprogram.SelectPackage(currentPackage.Name)
-		if err != nil {
-			panic(err)
-		}
-	}
-	if currentFunction != nil {
-		_, err := cxprogram.Getfunction2(currentFunction.Name)
-		if err != nil {
-			panic(err)
-		}
-	}
-*/
-
 	if currentPackage == nil {
 		panic("error")
 	}

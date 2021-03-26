@@ -5,7 +5,12 @@ import (
 	"fmt"
 )
 
-// SelectPackage ...
+//cxprogram.CurrentPackag
+//current package is only used by affordances
+//also used by serialize
+//Should be moved to AstWalker
+
+// Only two useres, both in cx/execute.go
 func (cxprogram *CXProgram) SelectPackage(name string) (*CXPackage, error) {
 
 	var found *CXPackage
@@ -23,7 +28,7 @@ func (cxprogram *CXProgram) SelectPackage(name string) (*CXPackage, error) {
 	return found, nil
 }
 
-// GetFunction ...
+// Only Used by Affordances in op_aff.go
 func (pkg *CXPackage) GetFunction(fnName string) (*CXFunction, error) {
 	var found bool
 	for _, fn := range pkg.Functions {
@@ -46,6 +51,7 @@ func (pkg *CXPackage) GetFunction(fnName string) (*CXFunction, error) {
 	return nil, fmt.Errorf("function '%s' not found in package '%s' or its imports", fnName, pkg.Name)
 }
 
+/*
 //Only One Call in utilities.go ToString
 func (cxprogram *CXProgram) Getfunction2(name string) (*CXFunction, error) {
 	mod, err := cxprogram.GetCurrentPackage()
@@ -54,6 +60,7 @@ func (cxprogram *CXProgram) Getfunction2(name string) (*CXFunction, error) {
 	}
 	return nil, err
 }
+*/
 
 /*
 func (cxprogram *CXProgram) SelectStruct(name string) (*CXStruct, error) {
