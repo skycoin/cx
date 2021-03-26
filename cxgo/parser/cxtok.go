@@ -12,12 +12,12 @@ func Tokenize(r io.Reader, w io.Writer) {
 	lex := NewLexer(r)
 	token := lex.Lex(&sym)
 	for token > 0 {
-		fmt.Fprintln(w, tokenName(token), tokenValue(token, &sym))
+		fmt.Fprintln(w, TokenName(token), TokenValue(token, &sym))
 		token = lex.Lex(&sym)
 	}
 }
 
-func tokenValue(token int, sym *yySymType) interface{} {
+func TokenValue(token int, sym *yySymType) interface{} {
 	switch token {
 	case BOOLEAN_LITERAL:
 		return sym.bool
@@ -51,7 +51,7 @@ func tokenValue(token int, sym *yySymType) interface{} {
 	return ""
 }
 
-func tokenName(token int) string {
+func TokenName(token int) string {
 	switch token {
 	case ADDR:
 		return "  ADDR"

@@ -12,7 +12,6 @@ import (
 	cxcore "github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cxgo/actions"
 	"github.com/skycoin/cx/cxgo/cxgo"
-	"github.com/skycoin/cx/cxgo/cxgo0"
 	"github.com/skycoin/cx/cxgo/parser"
 )
 
@@ -199,10 +198,11 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 	// Parsing all the source code files sent as CLI arguments to CX.
 	cxgo.ParseSourceCode(sourceCode, fileNames)
 
+	//remove path variable, not used
 	// setting project's working directory
-	if !options.replMode && len(sourceCode) > 0 {
-		cxgo0.PRGRM0.Path = determineWorkDir(sourceCode[0].Name())
-	}
+	//if !options.replMode && len(sourceCode) > 0 {
+		//cxgo0.PRGRM0.Path = determineWorkDir(sourceCode[0].Name())
+	//}
 
 	// Checking if a main package exists. If not, create and add it to `PRGRM`.
 	if _, err := actions.PRGRM.GetFunction(cxcore.MAIN_FUNC, cxcore.MAIN_PKG); err != nil {

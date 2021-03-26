@@ -428,7 +428,7 @@ redonext:
 
 		s.eof = true
 	}
-	//fmt.Printf("%s\n", tokenName(s.tok.yys))
+	//fmt.Printf("%s\n", TokenName(s.tok.yys))
 }
 
 var keywordMap map[string]int = map[string]int{
