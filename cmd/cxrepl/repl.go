@@ -1,4 +1,4 @@
-package main
+package repl
 
 //put the repo command stuff here
 
@@ -12,12 +12,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/skycoin/cx/cx"
+	cxcore "github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cxgo/actions"
 	"github.com/skycoin/cx/cxgo/cxgo"
 	"github.com/skycoin/cx/cxgo/cxgo0"
 	"github.com/skycoin/cx/cxgo/cxparser"
 )
+
+const VERSION = "0.8.0"
 
 var ReplTargetFn string = ""
 var ReplTargetStrct string = ""
