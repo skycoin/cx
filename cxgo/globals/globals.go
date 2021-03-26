@@ -2,67 +2,9 @@ package globals
 
 import (
 	"github.com/skycoin/cx/cxgo/cxgo0"
-	"github.com/skycoin/cx/cxgo/parser"
 )
 
 var CxProgramPath string = ""
-
-var KeywordMap map[string]int = map[string]int{
-	"func":      parser.FUNC,
-	"var":       parser.VAR,
-	"package":   parser.PACKAGE,
-	"if":        parser.IF,
-	"else":      parser.ELSE,
-	"for":       parser.FOR,
-	"struct":    parser.STRUCT,
-	"import":    parser.IMPORT,
-	"return":    parser.RETURN,
-	"goto":      parser.GOTO,
-	"new":       parser.NEW,
-	"bool":      parser.BOOL,
-	"i8":        parser.I8,
-	"ui8":       parser.UI8,
-	"i16":       parser.I16,
-	"ui16":      parser.UI16,
-	"i32":       parser.I32,
-	"ui32":      parser.UI32,
-	"f32":       parser.F32,
-	"i64":       parser.I64,
-	"ui64":      parser.UI64,
-	"f64":       parser.F64,
-	"str":       parser.STR,
-	"aff":       parser.AFF,
-	"union":     parser.UNION,
-	"enum":      parser.ENUM,
-	"const":     parser.CONST,
-	"case":      parser.CASE,
-	"default":   parser.DEFAULT,
-	"switch":    parser.SWITCH,
-	"break":     parser.BREAK,
-	"continue":  parser.CONTINUE,
-	"type":      parser.TYPE,
-	":dl":       parser.DSTATE,
-	":dLocals":  parser.DSTATE,
-	":ds":       parser.DSTACK,
-	":dStack":   parser.DSTACK,
-	":dp":       parser.DPROGRAM,
-	":dProgram": parser.DPROGRAM,
-	":package":  parser.SPACKAGE,
-	":struct":   parser.SSTRUCT,
-	":func":     parser.SFUNC,
-	":rem":      parser.REM,
-	//":step":     STEP,
-	//":tStep":    TSTEP,
-	//":tstep":    TSTEP,
-	//":pStep":    PSTEP,
-	//":pstep":    PSTEP,
-	":aff":    parser.CAFF,
-	"def":     parser.DEF,
-	"clauses": parser.CLAUSES,
-	"field":   parser.FIELD,
-	"true":    parser.BOOLEAN_LITERAL,
-	"false":   parser.BOOLEAN_LITERAL,
-}
 
 var KeywordMap map[string]int = map[string]int{
 	"func":      cxgo0.FUNC,
