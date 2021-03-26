@@ -14,7 +14,7 @@ var LineNo int
 
 var SysInitExprs []*cxcore.CXExpression
 
-var InFn bool = false
+//var InFn bool = false
 
 const (
 	SEL_RESERVED = iota
