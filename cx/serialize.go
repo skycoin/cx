@@ -327,7 +327,7 @@ func serializeArgument(arg *CXArgument, s *serializedCXProgram) int {
 	s.Arguments[argOff].IsStruct = serializeBoolean(arg.IsStruct)
 	s.Arguments[argOff].IsRest = serializeBoolean(arg.IsRest)
 	s.Arguments[argOff].IsLocalDeclaration = serializeBoolean(arg.IsLocalDeclaration)
-	s.Arguments[argOff].IsShortDeclaration = serializeBoolean(arg.IsShortDeclaration)
+	s.Arguments[argOff].IsShortDeclaration = serializeBoolean(arg.IsShortAssignmentDeclaration)
 	s.Arguments[argOff].PreviouslyDeclared = serializeBoolean(arg.PreviouslyDeclared)
 
 	s.Arguments[argOff].PassBy = int64(arg.PassBy)
@@ -1037,7 +1037,7 @@ func deserializeArgument(sArg *serializedArgument, s *serializedCXProgram, prgrm
 	arg.IsStruct = deserializeBool(sArg.IsStruct)
 	arg.IsRest = deserializeBool(sArg.IsRest)
 	arg.IsLocalDeclaration = deserializeBool(sArg.IsLocalDeclaration)
-	arg.IsShortDeclaration = deserializeBool(sArg.IsShortDeclaration)
+	arg.IsShortAssignmentDeclaration = deserializeBool(sArg.IsShortDeclaration)
 	arg.PreviouslyDeclared = deserializeBool(sArg.PreviouslyDeclared)
 	arg.DoesEscape = deserializeBool(sArg.DoesEscape)
 

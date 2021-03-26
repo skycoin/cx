@@ -2241,7 +2241,7 @@ yynewstate:
 					}
 					if yyS[yypt-1].tok == ":=" {
 						for _, from := range yyS[yypt-0].expressions {
-							from.Outputs[0].IsShortDeclaration = true
+							from.Outputs[0].IsShortAssignmentDeclaration = true
 							from.Outputs[0].PreviouslyDeclared = true
 						}
 					}
@@ -2252,7 +2252,7 @@ yynewstate:
 					}
 					if yyS[yypt-1].tok == ":=" {
 						for _, from := range yyS[yypt-0].expressions {
-							from.Outputs[0].IsShortDeclaration = true
+							from.Outputs[0].IsShortAssignmentDeclaration = true
 							from.Outputs[0].PreviouslyDeclared = true
 						}
 					}

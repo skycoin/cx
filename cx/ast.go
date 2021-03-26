@@ -140,22 +140,22 @@ type CXExpression struct {
 
 
 /*
-grep -rn "IsShortDeclaration" .
-IsShortDeclaration - is this CXArgument the result of a `CASSIGN` operation (`:=`)?
-./cxparser/cxgo/cxparser.y:1158:							from.Outputs[0].IsShortDeclaration = true
-./cxparser/cxgo/cxparser.y:1169:							from.Outputs[0].IsShortDeclaration = true
-./cxparser/cxgo/cxparser.go:2366:							from.Outputs[0].IsShortDeclaration = true
-./cxparser/cxgo/cxparser.go:2377:							from.Outputs[0].IsShortDeclaration = true
-./cxparser/actions/functions.go:147:		if len(expr.Outputs) > 0 && len(expr.Inputs) > 0 && expr.Outputs[0].IsShortDeclaration && !expr.IsStructLiteral && !isParseOp(expr) {
-./cxparser/actions/assignment.go:161:		sym.IsShortDeclaration = true
-./cxparser/actions/assignment.go:167:			toExpr.Outputs[0].IsShortDeclaration = true
+grep -rn "IsShortAssignmentDeclaration" .
+IsShortAssignmentDeclaration - is this CXArgument the result of a `CASSIGN` operation (`:=`)?
+./cxparser/cxgo/cxparser.y:1158:							from.Outputs[0].IsShortAssignmentDeclaration = true
+./cxparser/cxgo/cxparser.y:1169:							from.Outputs[0].IsShortAssignmentDeclaration = true
+./cxparser/cxgo/cxparser.go:2366:							from.Outputs[0].IsShortAssignmentDeclaration = true
+./cxparser/cxgo/cxparser.go:2377:							from.Outputs[0].IsShortAssignmentDeclaration = true
+./cxparser/actions/functions.go:147:		if len(expr.Outputs) > 0 && len(expr.Inputs) > 0 && expr.Outputs[0].IsShortAssignmentDeclaration && !expr.IsStructLiteral && !isParseOp(expr) {
+./cxparser/actions/assignment.go:161:		sym.IsShortAssignmentDeclaration = true
+./cxparser/actions/assignment.go:167:			toExpr.Outputs[0].IsShortAssignmentDeclaration = true
 Binary file ./bin/cx matches
-./docs/CompilerDevelopment.md:81:* IsShortDeclaration - is this CXArgument the result of a `CASSIGN` operation (`:=`)?
-./cx/serialize.go:168:	IsShortDeclaration int32
-./cx/serialize.go:337:	s.Arguments[argOff].IsShortDeclaration = serializeBoolean(arg.IsShortDeclaration)
-./cx/serialize.go:1051:	arg.IsShortDeclaration = dsBool(sArg.IsShortDeclaration)
-./cx/ast.go:234:	IsShortDeclaration    bool
-./cx/ast.go:1499:	IsShortDeclaration    bool
+./docs/CompilerDevelopment.md:81:* IsShortAssignmentDeclaration - is this CXArgument the result of a `CASSIGN` operation (`:=`)?
+./cx/serialize.go:168:	IsShortAssignmentDeclaration int32
+./cx/serialize.go:337:	s.Arguments[argOff].IsShortAssignmentDeclaration = serializeBoolean(arg.IsShortAssignmentDeclaration)
+./cx/serialize.go:1051:	arg.IsShortAssignmentDeclaration = dsBool(sArg.IsShortAssignmentDeclaration)
+./cx/ast.go:234:	IsShortAssignmentDeclaration    bool
+./cx/ast.go:1499:	IsShortAssignmentDeclaration    bool
 */
 
 /*
@@ -260,20 +260,20 @@ type CXArgument struct {
 	FileLine              int
 
 	CustomType            *CXStruct
-	Package               *CXPackage
-	IsSlice               bool
-	IsArray               bool
-	IsArrayFirst          bool // and then dereference
-	IsPointer             bool
-	IsReference           bool
-	IsDereferenceFirst    bool // and then array
-	IsStruct              bool
-	IsRest                bool // pkg.var <- var is rest
-	IsLocalDeclaration    bool
-	IsShortDeclaration    bool
-	IsInnerReference      bool // for example: &slice[0] or &struct.field
-	PreviouslyDeclared    bool
-	DoesEscape            bool
+	Package                      *CXPackage
+	IsSlice                      bool
+	IsArray                      bool
+	IsArrayFirst                 bool // and then dereference
+	IsPointer                    bool
+	IsReference                  bool
+	IsDereferenceFirst           bool // and then array
+	IsStruct                     bool
+	IsRest                       bool // pkg.var <- var is rest
+	IsLocalDeclaration           bool
+	IsShortAssignmentDeclaration bool // variables defined with :=
+	IsInnerReference             bool // for example: &slice[0] or &struct.field
+	PreviouslyDeclared           bool
+	DoesEscape                   bool
 }
 
 // CXCall ...
@@ -1239,7 +1239,7 @@ All "Is" can be removed
 	IsStruct              bool
 	IsRest                bool // pkg.var <- var is rest
 	IsLocalDeclaration    bool
-	IsShortDeclaration    bool
+	IsShortAssignmentDeclaration    bool
 	IsInnerReference      bool // for example: &slice[0] or &struct.field
 
 */

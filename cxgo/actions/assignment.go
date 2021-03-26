@@ -158,13 +158,13 @@ func Assignment(to []*cxcore.CXExpression, assignOp string, from []*cxcore.CXExp
 		}
 		sym.Package = pkg
 		sym.PreviouslyDeclared = true
-		sym.IsShortDeclaration = true
+		sym.IsShortAssignmentDeclaration = true
 
 		expr.AddOutput(sym)
 
 		for _, toExpr := range to {
 			toExpr.Outputs[0].PreviouslyDeclared = true
-			toExpr.Outputs[0].IsShortDeclaration = true
+			toExpr.Outputs[0].IsShortAssignmentDeclaration = true
 		}
 
 		to = append([]*cxcore.CXExpression{expr}, to...)
