@@ -502,7 +502,7 @@ func (cxprogram *CXProgram) ToString() string {
 		}
 	}
 	if currentFunction != nil {
-		_, err := cxprogram.SelectFunction(currentFunction.Name)
+		_, err := cxprogram.Getfunction2(currentFunction.Name)
 		if err != nil {
 			panic(err)
 		}

@@ -23,11 +23,11 @@ func (cxprogram *CXProgram) SelectPackage(name string) (*CXPackage, error) {
 	return found, nil
 }
 
-// SelectFunction ...
-func (cxprogram *CXProgram) SelectFunction(name string) (*CXFunction, error) {
+// Getfunction2 ...
+func (cxprogram *CXProgram) Getfunction2(name string) (*CXFunction, error) {
 	// prgrmStep := &CXProgramStep{
 	// 	Action: func(cxprogram *CXProgram) {
-	// 		cxprogram.SelectFunction(name)
+	// 		cxprogram.Getfunction2(name)
 	// 	},
 	// }
 	// saveProgramStep(prgrmStep, cxprogram)

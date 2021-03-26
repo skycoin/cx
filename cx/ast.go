@@ -814,7 +814,7 @@ func (pkg *CXPackage) SelectFunction(name string) (*CXFunction, error) {
 	// 	Action: func(cxt *CXProgram) {
 
 	// 		if pkg, err := cxt.GetCurrentPackage(); err == nil {
-	// 			pkg.SelectFunction(name)
+	// 			pkg.Getfunction2(name)
 	// 		}
 	// 	},
 	// }
