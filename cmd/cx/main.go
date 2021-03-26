@@ -2,20 +2,18 @@ package main
 
 import (
 	"fmt"
+	globals2 "github.com/skycoin/cx/cxgo/globals"
+
+	cxcore "github.com/skycoin/cx/cx"
+	"github.com/skycoin/cx/cxgo/actions"
+	"github.com/skycoin/cx/cxgo/cxgo"
+	"github.com/skycoin/cx/cxgo/cxparser"
 	//"github.com/skycoin/cx/cxparser/cxgo0"
 	"os"
 	"os/user"
 	"path/filepath"
 	"runtime"
 	"strconv"
-	"strings"
-
-	cxcore "github.com/skycoin/cx/cx"
-	"github.com/skycoin/cx/cxgo/actions"
-	"github.com/skycoin/cx/cxgo/cxparser"
-	"github.com/skycoin/cx/cxgo/cxgo"
-
-	"github.com/skycoin/cx/cx/globals"
 )
 
 const VERSION = "0.8.0"
@@ -38,7 +36,7 @@ func Run(args []string) {
 
 	// Checking if CXPATH is set, either by setting an environment variable
 	// or by setting the `--cxpath` flag.
-	checkCXPathSet(options)
+	GetCXPath(options)
 
 	//checkHelp check command line argumenets
 	//$ cx help
@@ -206,7 +204,9 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 	//if !options.replMode && len(sourceCode) > 0 {
 		//cxgo0.PRGRM0.Path = determineWorkDir(sourceCode[0].Name())
 	//}
-	globals.CxProgramPath = determineWorkDir(sourceCode[0].Name())
+
+	//globals.CxProgramPath = determineWorkDir(sourceCode[0].Name())
+	globals2.SetWorkingDir(sourceCode[0].Name())
 
 	// Checking if a main package exists. If not, create and add it to `PRGRM`.
 	if _, err := actions.PRGRM.GetFunction(cxcore.MAIN_FUNC, cxcore.MAIN_PKG); err != nil {
@@ -317,27 +317,16 @@ type SourceCode struct {
 	Code string //Unused?
 }
 
-func determineWorkDir(filename string) string {
-	filename = filepath.FromSlash(filename)
-
-	i := strings.LastIndexByte(filename, os.PathSeparator)
-	if i == -1 {
-		i = 0
-	}
-	return filename[:i]
-}
-
-// checkCXPathSet checks if the user has set the environment variable
+// GetCXPath checks if the user has set the environment variable
 // `CXPATH`. If not, CX creates a workspace at $HOME/cx, along with $HOME/cx/bin,
 // $HOME/cx/pkg and $HOME/cx/src
-func checkCXPathSet(options cxCmdFlags) {
+func GetCXPath(options cxCmdFlags) {
 	// Determining the filepath of the directory where the user
 	// started the `cx` command.
 	_, err := os.Executable()
 	if err != nil {
 		panic(err)
 	}
-	// cxcore.COREPATH = filepath.Dir(ex) // TODO @evanlinjin: Not used.
 
 	CXPATH := ""
 	if os.Getenv("CXPATH") != "" {
@@ -358,22 +347,28 @@ func checkCXPathSet(options cxCmdFlags) {
 
 		CXPATH = usr.HomeDir + "/cx/"
 	}
-
 	cxcore.BINPATH = filepath.Join(CXPATH, "bin/")
 	cxcore.PKGPATH = filepath.Join(CXPATH, "pkg/")
 	cxcore.SRCPATH = filepath.Join(CXPATH, "src/")
-
-	// Creating directories in case they do not exist.
-	if _, err := cxcore.CXStatFile(CXPATH); os.IsNotExist(err) {
-		cxcore.CXMkdirAll(CXPATH, 0755)
-	}
-	if _, err := cxcore.CXStatFile(cxcore.BINPATH); os.IsNotExist(err) {
-		cxcore.CXMkdirAll(cxcore.BINPATH, 0755)
-	}
-	if _, err := cxcore.CXStatFile(cxcore.PKGPATH); os.IsNotExist(err) {
-		cxcore.CXMkdirAll(cxcore.PKGPATH, 0755)
-	}
-	if _, err := cxcore.CXStatFile(cxcore.SRCPATH); os.IsNotExist(err) {
-		cxcore.CXMkdirAll(cxcore.SRCPATH, 0755)
-	}
+	//why would we create directories on executing every CX program?
+	//directory creation should be on installation
+	//CreateCxDirectories(CXPATH)
 }
+
+/*
+func CreateCxDirectories(CXPATH string) {
+		// Creating directories in case they do not exist.
+		if _, err := cxcore.CXStatFile(CXPATH); os.IsNotExist(err) {
+			cxcore.CXMkdirAll(CXPATH, 0755)
+		}
+		if _, err := cxcore.CXStatFile(cxcore.BINPATH); os.IsNotExist(err) {
+			cxcore.CXMkdirAll(cxcore.BINPATH, 0755)
+		}
+		if _, err := cxcore.CXStatFile(cxcore.PKGPATH); os.IsNotExist(err) {
+			cxcore.CXMkdirAll(cxcore.PKGPATH, 0755)
+		}
+		if _, err := cxcore.CXStatFile(cxcore.SRCPATH); os.IsNotExist(err) {
+			cxcore.CXMkdirAll(cxcore.SRCPATH, 0755)
+		}
+	}
+ */

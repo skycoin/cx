@@ -9,7 +9,7 @@ func parseCmdFlags(options cxCmdFlags, args []string) {
 
 	// Checking if CXPATH is set, either by setting an environment variable
 	// or by setting the `--cxpath` flag.
-	checkCXPathSet(options)
+	GetCXPath(options)
 
 	//checkHelp check command line argumenets
 	//$ cx help

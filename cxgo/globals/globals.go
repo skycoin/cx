@@ -1,65 +1,22 @@
 package globals
 
+import (
+	"os"
+	"path/filepath"
+	"strings"
+)
+
 var CxProgramPath string = ""
 
-//only used one place
-/*
-var KeywordMap map[string]int = map[string]int{
-	"func":      cxgo0.FUNC,
-	"var":       cxgo0.VAR,
-	"package":   cxgo0.PACKAGE,
-	"if":        cxgo0.IF,
-	"else":      cxgo0.ELSE,
-	"for":       cxgo0.FOR,
-	"struct":    cxgo0.STRUCT,
-	"import":    cxgo0.IMPORT,
-	"return":    cxgo0.RETURN,
-	"goto":      cxgo0.GOTO,
-	"new":       cxgo0.NEW,
-	"bool":      cxgo0.BOOL,
-	"i8":        cxgo0.I8,
-	"ui8":       cxgo0.UI8,
-	"i16":       cxgo0.I16,
-	"ui16":      cxgo0.UI16,
-	"i32":       cxgo0.I32,
-	"ui32":      cxgo0.UI32,
-	"f32":       cxgo0.F32,
-	"i64":       cxgo0.I64,
-	"ui64":      cxgo0.UI64,
-	"f64":       cxgo0.F64,
-	"str":       cxgo0.STR,
-	"aff":       cxgo0.AFF,
-	"union":     cxgo0.UNION,
-	"enum":      cxgo0.ENUM,
-	"const":     cxgo0.CONST,
-	"case":      cxgo0.CASE,
-	"default":   cxgo0.DEFAULT,
-	"switch":    cxgo0.SWITCH,
-	"break":     cxgo0.BREAK,
-	"continue":  cxgo0.CONTINUE,
-	"type":      cxgo0.TYPE,
-	":dl":       cxgo0.DSTATE,
-	":dLocals":  cxgo0.DSTATE,
-	":ds":       cxgo0.DSTACK,
-	":dStack":   cxgo0.DSTACK,
-	":dp":       cxgo0.DPROGRAM,
-	":dProgram": cxgo0.DPROGRAM,
-	":package":  cxgo0.SPACKAGE,
-	":struct":   cxgo0.SSTRUCT,
-	":func":     cxgo0.SFUNC,
-	":rem":      cxgo0.REM,
-	//":step":     STEP,
-	//":tStep":    TSTEP,
-	//":tstep":    TSTEP,
-	//":pStep":    PSTEP,
-	//":pstep":    PSTEP,
-	":aff":    cxgo0.CAFF,
-	"def":     cxgo0.DEF,
-	"clauses": cxgo0.CLAUSES,
-	"field":   cxgo0.FIELD,
-	"true":    cxgo0.BOOLEAN_LITERAL,
-	"false":   cxgo0.BOOLEAN_LITERAL,
+func SetWorkingDir(filename string)  {
+		filename = filepath.FromSlash(filename)
+		i := strings.LastIndexByte(filename, os.PathSeparator)
+		if i == -1 {
+		i = 0
+	}
+		CxProgramPath = filename[:i]
 }
-*/
 
-
+func GetWorkDir(filename string) string {
+	return CxProgramPath
+}
