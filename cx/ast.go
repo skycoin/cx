@@ -847,7 +847,6 @@ func (strct *CXStruct) AddField(fld *CXArgument) *CXStruct {
 		strct.Fields = append(strct.Fields, fld)
 		if numFlds != 0 {
 			// Pre-compiling the offset of the field.
-			// TODO: I think this would cause conflicts with affordances. For instance, affordances could remove a field and we'd need to re-calculate the offsets. We need to check this.
 			lastFld := strct.Fields[numFlds-1]
 			fld.Offset = lastFld.Offset + lastFld.TotalSize
 		}
@@ -876,7 +875,6 @@ func (strct *CXStruct) RemoveField(fldName string) {
 }
 
 // MakeFunction creates an empty function.
-//
 // Later, parameters and contents can be added.
 //
 func MakeFunction(name string, fileName string, fileLine int) *CXFunction {
