@@ -433,18 +433,22 @@ func (cxprogram *CXProgram) GetStruct(strctName string, modName string) (*CXStru
 }
 
 // GetFunction ...
-func (cxprogram *CXProgram) GetFunction(fnName string, pkgName string) (*CXFunction, error) {
+func (cxprogram *CXProgram) GetFunction(functionNameToFind string, pkgName string) (*CXFunction, error) {
 	// I need to first look for the function in the current package
+
+
+	//TODO: WHEN WOULD CurrentPackage not be in cxprogram.Packages?
+	//TODO: Add assert to crash if CurrentPackage is not in cxprogram.Packages
 	if pkg, err := cxprogram.GetCurrentPackage(); err == nil {
 		for _, fn := range pkg.Functions {
-			if fn.Name == fnName {
+			if fn.Name == functionNameToFind {
 				return fn, nil
 			}
 		}
 	}
 
 	//iterate packages until the package is found
-	//Same as GetPackage?
+	//Same as GetPackage? Use GetPackage
 	var foundPkg *CXPackage
 	for _, pkg := range cxprogram.Packages {
 		if pkgName == pkg.Name {
@@ -452,28 +456,18 @@ func (cxprogram *CXProgram) GetFunction(fnName string, pkgName string) (*CXFunct
 			break
 		}
 	}
-
-
-
 	if foundPkg == nil {
 		return nil, fmt.Errorf("package '%s' not found", pkgName)
 	}
 
 	//iterates package to find function
 	//same as GetFunction?
-	var foundFn *CXFunction
 	for _, fn := range foundPkg.Functions {
-		if fn.Name == fnName {
-			foundFn = fn
-			break
+		if fn.Name == functionNameToFind {
+			return fn, nil //can return when found
 		}
 	}
-
-	if foundFn != nil {
-		return foundFn, nil
-	}
-	return nil, fmt.Errorf("function '%s' not found in package '%s'", fnName, pkgName)
-
+	return nil, fmt.Errorf("function '%s' not found in package '%s'", functionNameToFind, pkgName)
 }
 
 // GetExpr returns the current CXExpression
