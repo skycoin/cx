@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-type Config struct {
+type TesterConfig struct {
 	cxPath         string
 	workingDir     string
 	testsMask      Bits
@@ -17,41 +17,72 @@ type Config struct {
 }
 
 type tester struct {
-	cfg         *Config
+	cfg         *TesterConfig
 	testCount   int
 	testSuccess int
 	testSkipped int
 }
 
-func NewTester(cfg *Config) *tester {
+func NewTester(cfg *TesterConfig) *tester {
 	return &tester{
 		cfg: cfg,
 	}
 }
 
+type RunConfig struct {
+	Args     string
+	ExitCode int
+	Desc     string
+	Output   string
+	Filter   Bits
+	Timeout  time.Duration
+}
+
 func (t *tester) Run(args string, exitCode int, desc string) {
-	t.RunEx(args, exitCode, desc, TestStable, t.cfg.defaultTimeout)
+	t.RunWithConfig(&RunConfig{
+		Args:     args,
+		ExitCode: exitCode,
+		Desc:     desc,
+		Output:   "",
+		Filter:   TestStable,
+		Timeout:  t.cfg.defaultTimeout,
+	})
 }
 
 func (t *tester) RunEx(args string, exitCode int, desc string, filter Bits, timeout time.Duration) {
-	if timeout == 0 {
-		timeout = t.cfg.defaultTimeout
+	t.RunWithConfig(&RunConfig{
+		Args:     args,
+		ExitCode: exitCode,
+		Desc:     desc,
+		Output:   "",
+		Filter:   filter,
+		Timeout:  timeout,
+	})
+}
+
+func (t *tester) RunWithConfig(cfg *RunConfig) {
+	if cfg.Timeout == 0 {
+		cfg.Timeout = t.cfg.defaultTimeout
 	}
 
-	if !Has(t.cfg.testsMask, filter) {
+	if cfg.Filter == TestNone {
+		cfg.Filter = TestStable
+	}
+
+	if !Has(t.cfg.testsMask, cfg.Filter) {
 		if Has(t.cfg.logMask, LogSkip) {
-			fmt.Printf("#--- | SKIPPED | na | '%s' | na | na | %s\\n", args, desc)
+			fmt.Printf("#--- | SKIPPED | na | '%s' | na | na | %s\\n", cfg.Args, cfg.Desc)
 		}
 
 		t.testSkipped = t.testSkipped + 1
 		return
 	}
 
-	cmd := exec.Command(t.cfg.cxPath, strings.Split(args, " ")...)
+	cmd := exec.Command(t.cfg.cxPath, strings.Split(cfg.Args, " ")...)
 	cmd.Dir = t.cfg.workingDir
 
 	start := time.Now().Unix()
-	out, err := runCmd(cmd, timeout)
+	out, err := runCmd(cmd, cfg.Timeout)
 	end := time.Now().Unix()
 
 	timing := "na"
@@ -66,7 +97,7 @@ func (t *tester) RunEx(args string, exitCode int, desc string, filter Bits, time
 	if err != nil {
 		if err == context.DeadlineExceeded {
 			fmt.Printf("#%s%d | FAILED  | %s | '%s' | exec.Command timeout\n",
-				padding(t), t.testCount, timing, args)
+				padding(t), t.testCount, timing, cfg.Args)
 			return
 		}
 
@@ -75,10 +106,10 @@ func (t *tester) RunEx(args string, exitCode int, desc string, filter Bits, time
 			stderr = exitError.Stderr
 		}
 
-		if ec != exitCode {
+		if ec != cfg.ExitCode {
 			if Has(t.cfg.logMask, LogFail) {
 				fmt.Printf("#%s%d | FAILED  | %s | '%s' | exec.Command exited with code %d, expected %d\n",
-					padding(t), t.testCount, timing, args, ec, exitCode)
+					padding(t), t.testCount, timing, cfg.Args, ec, cfg.ExitCode)
 			}
 
 			if Has(t.cfg.logMask, LogStderr) {
@@ -89,9 +120,15 @@ func (t *tester) RunEx(args string, exitCode int, desc string, filter Bits, time
 		}
 	}
 
+	if cfg.Output != "" && cfg.Output != string(out) {
+		fmt.Printf("#%s%d | FAILED  | %s | '%s' | Got output '%s', expected '%s'\n",
+			padding(t), t.testCount, timing, cfg.Args, string(out), cfg.Output)
+		return
+	}
+
 	if Has(t.cfg.logMask, LogSuccess) {
 		fmt.Printf("#%s%d | SUCCESS | %s | '%s' | expected %d | got %d \n",
-			padding(t), t.testCount, timing, args, exitCode, ec)
+			padding(t), t.testCount, timing, cfg.Args, cfg.ExitCode, ec)
 	}
 	t.testSuccess += 1
 }
