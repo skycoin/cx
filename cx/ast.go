@@ -521,7 +521,6 @@ func (cxprogram *CXProgram) AddPackage(mod *CXPackage)  {
 		cxprogram.Packages = append(cxprogram.Packages, mod)
 		cxprogram.CurrentPackage = mod
 	}
-	return cxprogram
 }
 
 // RemovePackage ...
