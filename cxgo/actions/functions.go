@@ -5,9 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/skycoin/cx/cx"
-
 	"github.com/jinzhu/copier"
+	"github.com/skycoin/cx/cx"
 )
 
 // FunctionHeader takes a function name ('ident') and either creates the
@@ -114,6 +113,9 @@ func FunctionProcessParameters(symbols *[]map[string]*cxcore.CXArgument, symbols
 }
 
 func FunctionDeclaration(fn *cxcore.CXFunction, inputs, outputs []*cxcore.CXArgument, exprs []*cxcore.CXExpression) {
+
+	//var exprs []*cxcore.CXExpression = globals.SysInitExprs
+
 	if cxcore.FoundCompileErrors {
 		return
 	}

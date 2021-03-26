@@ -108,12 +108,10 @@
                         
                         /* Types */
                         BASICTYPE
-                        /* Selectors */
-                        SPACKAGE SSTRUCT SFUNC //Selectors are deprecated
+
                         /* Removers */
                         REM DEF EXPR FIELD CLAUSES OBJECT OBJECTS
-                        /* Stepping */
-                        //STEP PSTEP TSTEP
+
                         /* Debugging */
                         DSTACK DPROGRAM DSTATE
                         /* Affordances */

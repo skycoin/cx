@@ -1,5 +1,7 @@
 package globals
 
+import "github.com/skycoin/cx/cx"
+
 /*
 var CxProgramPath string = ""
 
@@ -16,3 +18,7 @@ func GetWorkDir(filename string) string {
 	return CxProgramPath
 }
  */
+
+//What does this do?
+var SysInitExprs []*cxcore.CXExpression
+

@@ -3,6 +3,7 @@ package cxparser
 import (
 	"bufio"
 	"bytes"
+	"github.com/skycoin/cx/cxgo/globals"
 	"io"
 	"os"
 	"path/filepath"
@@ -363,7 +364,9 @@ func AddInitFunction(prgrm *cxcore.CXProgram) error {
 	initFn := cxcore.MakeFunction(cxcore.SYS_INIT_FUNC, actions.CurrentFile, actions.LineNo)
 	mainPkg.AddFunction(initFn)
 
-	actions.FunctionDeclaration(initFn, nil, nil, actions.SysInitExprs)
+	//Init Expressions
+	actions.FunctionDeclaration(initFn, nil, nil, globals.SysInitExprs)
+
 	if _, err := mainPkg.SelectFunction(cxcore.MAIN_FUNC); err != nil {
 		return err
 	}
