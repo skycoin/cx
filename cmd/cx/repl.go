@@ -15,12 +15,12 @@ import (
 	"github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cxgo/actions"
 	"github.com/skycoin/cx/cxgo/cxparser"
-	"github.com/skycoin/cx/cxgo/cxgo0"
-	"github.com/skycoin/cx/cxgo/parser"
+	"github.com/skycoin/cx/cxgo/stage1"
+	"github.com/skycoin/cx/cxgo/stage2"
 )
 
 func unsafeEval(code string) (out string) {
-	var lexer *parser.Lexer
+	var lexer *stage2.Lexer
 	defer func() {
 		if r := recover(); r != nil {
 			out = fmt.Sprintf("%v", r)
@@ -37,14 +37,14 @@ func unsafeEval(code string) (out string) {
 	actions.LineNo = 0
 
 	actions.PRGRM = cxcore.MakeProgram()
-	cxgo0.PRGRM0 = actions.PRGRM
+	stage1.PRGRM0 = actions.PRGRM
 
-	cxgo0.Parse(code)
+	stage1.Parse(code)
 
-	actions.PRGRM = cxgo0.PRGRM0
+	actions.PRGRM = stage1.PRGRM0
 
-	lexer = parser.NewLexer(bytes.NewBufferString(code))
-	parser.Parse(lexer)
+	lexer = stage2.NewLexer(bytes.NewBufferString(code))
+	stage2.Parse(lexer)
 	//yyParse(lexer)
 	err := cxparser.AddInitFunction(actions.PRGRM)
 	if err != nil {
@@ -122,7 +122,7 @@ func Repl() {
 
 			b := bytes.NewBufferString(inp)
 
-			parser.Parse(parser.NewLexer(b))
+			stage2.Parse(stage2.NewLexer(b))
 			//yyParse(NewLexer(b))
 		} else {
 			if actions.ReplTargetFn != "" {

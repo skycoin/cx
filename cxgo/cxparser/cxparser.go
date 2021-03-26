@@ -11,8 +11,8 @@ import (
 
 	cxcore "github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cxgo/actions"
-	"github.com/skycoin/cx/cxgo/cxgo0"
-	"github.com/skycoin/cx/cxgo/parser"
+	"github.com/skycoin/cx/cxgo/stage1"
+	"github.com/skycoin/cx/cxgo/stage2"
 	"github.com/skycoin/cx/cxgo/util/profiling"
 )
 
@@ -21,7 +21,7 @@ import (
 func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 
 	//local
-	cxgo0.PRGRM0 = actions.PRGRM
+	stage1.PRGRM0 = actions.PRGRM
 
 	// Copy the contents of the file pointers containing the CX source
 	// code into sourceCodeCopy
@@ -35,7 +35,7 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 	// We need to traverse the elements by hierarchy first add all the
 	// packages and structs at the same time then add globals, as these
 	// can be of a custom type (and it could be imported) the signatures
-	// of functions and methods are added in the cxgo0.y pass
+	// of functions and methods are added in the stage1.y pass
 	parseErrors := 0
 	if len(sourceCode) > 0 {
 		parseErrors = lexerStep0(sourceCodeCopy, fileNames)
@@ -44,7 +44,7 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 	//package level program
 	actions.PRGRM.SelectProgram()
 
-	actions.PRGRM = cxgo0.PRGRM0
+	actions.PRGRM = stage1.PRGRM0
 
 	if cxcore.FoundCompileErrors || parseErrors > 0 {
 		profiling.CleanupAndExit(cxcore.CX_COMPILATION_ERROR)
@@ -78,7 +78,7 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 			actions.CurrentFile = fileNames[i]
 		}
 		profiling.StartProfile(actions.CurrentFile)
-		parseErrors += parser.Parse(parser.NewLexer(b))
+		parseErrors += stage2.Parse(stage2.NewLexer(b))
 		profiling.StopProfile(actions.CurrentFile)
 	}
 	profiling.StopProfile("4. parse")
@@ -88,8 +88,8 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 	}
 }
 
-// lexerStep0 performs a first pass for the CX parser. Globals, packages and
-// custom types are added to `cxgo0.PRGRM0`.
+// lexerStep0 performs a first pass for the CX stage2. Globals, packages and
+// custom types are added to `stage1.PRGRM0`.
 func lexerStep0(srcStrs, srcNames []string) int {
 	var prePkg *cxcore.CXPackage
 	parseErrors := 0
@@ -153,10 +153,10 @@ func lexerStep0(srcStrs, srcNames []string) int {
 				}
 
 				if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
-					if pkg, err := cxgo0.PRGRM0.GetPackage(match[len(match)-1]); err != nil {
+					if pkg, err := stage1.PRGRM0.GetPackage(match[len(match)-1]); err != nil {
 						// then it hasn't been added
 						newPkg := cxcore.MakePackage(match[len(match)-1])
-						cxgo0.PRGRM0.AddPackage(newPkg)
+						stage1.PRGRM0.AddPackage(newPkg)
 						prePkg = newPkg
 					} else {
 						prePkg = pkg
@@ -177,7 +177,7 @@ func lexerStep0(srcStrs, srcNames []string) int {
 					if prePkg == nil {
 						println(cxcore.CompilationError(srcName, lineno),
 							"No package defined")
-					} else if _, err := cxgo0.PRGRM0.GetStruct(match[len(match)-1], prePkg.Name); err != nil {
+					} else if _, err := stage1.PRGRM0.GetStruct(match[len(match)-1], prePkg.Name); err != nil {
 						// then it hasn't been added
 						strct := cxcore.MakeStruct(match[len(match)-1])
 						prePkg.AddStruct(strct)
@@ -235,7 +235,7 @@ func lexerStep0(srcStrs, srcNames []string) int {
 				if match := reImpName.FindStringSubmatch(string(line)); match != nil {
 					pkgName := match[len(match)-1]
 					// Checking if `pkgName` already exists and if it's not a standard library package.
-					if _, err := cxgo0.PRGRM0.GetPackage(pkgName); err != nil && !cxcore.IsCorePackage(pkgName) {
+					if _, err := stage1.PRGRM0.GetPackage(pkgName); err != nil && !cxcore.IsCorePackage(pkgName) {
 						// _, sourceCode, srcNames := ParseArgsForCX([]string{fmt.Sprintf("%s%s", SRCPATH, pkgName)}, false)
 						_, sourceCode, fileNames := cxcore.ParseArgsForCX([]string{filepath.Join(cxcore.SRCPATH, pkgName)}, false)
 						ParseSourceCode(sourceCode, fileNames)
@@ -253,10 +253,10 @@ func lexerStep0(srcStrs, srcNames []string) int {
 				}
 
 				if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
-					if pkg, err := cxgo0.PRGRM0.GetPackage(match[len(match)-1]); err != nil {
+					if pkg, err := stage1.PRGRM0.GetPackage(match[len(match)-1]); err != nil {
 						// then it hasn't been added
 						prePkg = cxcore.MakePackage(match[len(match)-1])
-						cxgo0.PRGRM0.AddPackage(prePkg)
+						stage1.PRGRM0.AddPackage(prePkg)
 					} else {
 						prePkg = pkg
 					}
@@ -304,7 +304,7 @@ func lexerStep0(srcStrs, srcNames []string) int {
 				}
 
 				if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
-					if pkg, err := cxgo0.PRGRM0.GetPackage(match[len(match)-1]); err != nil {
+					if pkg, err := stage1.PRGRM0.GetPackage(match[len(match)-1]); err != nil {
 						// it should be already present
 						panic(err)
 					} else {
@@ -338,19 +338,19 @@ func lexerStep0(srcStrs, srcNames []string) int {
 	}
 	profiling.StopProfile("2. globals")
 
-	profiling.StartProfile("3. cxgo0")
-	// cxgo0.Parse(allSC)
+	profiling.StartProfile("3. stage1")
+	// stage1.Parse(allSC)
 	for i, source := range srcStrs {
 		profiling.StartProfile(srcNames[i])
 		source = source + "\n"
 		if len(srcNames) > 0 {
-			cxgo0.CurrentFileName = srcNames[i]
+			stage1.CurrentFileName = srcNames[i]
 		}
 		//Parse calls yyParse
-		parseErrors += cxgo0.Parse(source)
+		parseErrors += stage1.Parse(source)
 		profiling.StopProfile(srcNames[i])
 	}
-	profiling.StopProfile("3. cxgo0")
+	profiling.StopProfile("3. stage1")
 	return parseErrors
 }
 

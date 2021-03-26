@@ -1,4 +1,4 @@
-package parser
+package stage2
 
 var KeywordMap map[string]int = map[string]int{
 	"func":      FUNC,

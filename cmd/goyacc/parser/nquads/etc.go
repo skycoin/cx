@@ -1,8 +1,8 @@
-// Copyright (c) 2014 The parser Authors. All rights reserved.
+// Copyright (c) 2014 The stage2 Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// Package parser implements a parser for N-Quads[0] source text.
+// Package stage2 implements a stage2 for N-Quads[0] source text.
 //
 // Links
 //
@@ -18,7 +18,7 @@
 //  [7]: http://www.w3.org/TR/n-quads/#grammar-production-predicate
 //  [8]: http://www.w3.org/TR/n-quads/#grammar-production-object
 //  [9]: http://www.w3.org/TR/n-quads/#grammar-production-graphLabel
-package parser // import "github.com/skycoin/cx/cmd/goyacc/parser/nquads"
+package parser // import "github.com/skycoin/cx/cmd/goyacc/stage2/nquads"
 
 import (
 	"fmt"
@@ -147,7 +147,7 @@ type Subject struct {
 // String implements fmt.Stringer()
 func (s *Subject) String() string { return fmt.Sprintf("subj@%v{%v=%q}", s.Pos, s.Tag, s.Value) }
 
-// Predicate describes a parser predicate[7].
+// Predicate describes a stage2 predicate[7].
 type Predicate struct {
 	Pos
 	Value string

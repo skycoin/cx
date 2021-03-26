@@ -43,7 +43,7 @@ type CXProgram struct {
 	Terminated   bool          // Utility field for the runtime. Indicates if a CX program has already finished or not.
 	Version      string        // CX version used to build this CX program.
 
-	// Used by the REPL and parser
+	// Used by the REPL and stage2
 	CurrentPackage *CXPackage // Represents the currently active package in the REPL or when parsing a CX file.
 	Error          error
 }
@@ -60,7 +60,7 @@ type CXPackage struct {
 	Structs   []*CXStruct   // declared structs in this package
 	Globals   []*CXArgument // declared global variables in this package
 
-	// Used by the REPL and parser
+	// Used by the REPL and stage2
 	CurrentFunction *CXFunction
 	CurrentStruct   *CXStruct
 }
@@ -100,7 +100,7 @@ type CXFunction struct {
 	// Used by the GC
 	ListOfPointers []*CXArgument // Root pointers for the GC algorithm
 
-	// Used by the REPL and parser
+	// Used by the REPL and stage2
 	CurrentExpression *CXExpression
 	Version int
 }
@@ -142,10 +142,10 @@ type CXExpression struct {
 /*
 grep -rn "IsShortDeclaration" .
 IsShortDeclaration - is this CXArgument the result of a `CASSIGN` operation (`:=`)?
-./cxparser/parser/cxparser.y:1158:							from.Outputs[0].IsShortDeclaration = true
-./cxparser/parser/cxparser.y:1169:							from.Outputs[0].IsShortDeclaration = true
-./cxparser/parser/cxparser.go:2366:							from.Outputs[0].IsShortDeclaration = true
-./cxparser/parser/cxparser.go:2377:							from.Outputs[0].IsShortDeclaration = true
+./cxparser/stage2/cxparser.y:1158:							from.Outputs[0].IsShortDeclaration = true
+./cxparser/stage2/cxparser.y:1169:							from.Outputs[0].IsShortDeclaration = true
+./cxparser/stage2/cxparser.go:2366:							from.Outputs[0].IsShortDeclaration = true
+./cxparser/stage2/cxparser.go:2377:							from.Outputs[0].IsShortDeclaration = true
 ./cxparser/actions/functions.go:147:		if len(expr.Outputs) > 0 && len(expr.Inputs) > 0 && expr.Outputs[0].IsShortDeclaration && !expr.IsStructLiteral && !isParseOp(expr) {
 ./cxparser/actions/assignment.go:161:		sym.IsShortDeclaration = true
 ./cxparser/actions/assignment.go:167:			toExpr.Outputs[0].IsShortDeclaration = true

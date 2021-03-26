@@ -1,4 +1,4 @@
-package parser
+package stage2
 
 import (
 	"fmt"

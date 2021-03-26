@@ -41,7 +41,7 @@ type JSONFile struct {
 var jsons []JSONFile
 var freeJsons []int32
 
-// Open the named json file for reading, returns an i32 identifying the json parser.
+// Open the named json file for reading, returns an i32 identifying the json stage2.
 func opJsonOpen(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	handle := int32(-1)
 
@@ -73,7 +73,7 @@ func opJsonOpen(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputs[0].Set_i32(int32(handle))
 }
 
-// Close json parser (and all underlying resources) idendified by it's i32 handle.
+// Close json stage2 (and all underlying resources) idendified by it's i32 handle.
 func opJsonClose(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	success := false
     handle := inputs[0].Get_i32()

@@ -62,7 +62,7 @@
 //	%%
 //	The optional user code section. Possibly the place where a lexem recognition fail will
 //	be handled (renderer specific).
-// Missing/differing functionality of the .l parser/FSM generator (compared to flex):
+// Missing/differing functionality of the .l stage2/FSM generator (compared to flex):
 //	- Trailing context (re1/re2).
 //	- No requirement of an action to start on the same line as the pattern.
 //	- Processing of actions enclosed in braces. This package mostly treats

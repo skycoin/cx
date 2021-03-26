@@ -1,12 +1,12 @@
 // CAUTION: Generated file - DO NOT EDIT.
 
-// Copyright 2015 The parser Authors. All rights reserved.
+// Copyright 2015 The stage2 Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
 // CAUTION: Generated file (unless this is go.l) - DO NOT EDIT!
 
-package parser // import "github.com/skycoin/cx/cmd/goyacc/parser/yacc"
+package parser // import "github.com/skycoin/cx/cmd/goyacc/stage2/yacc"
 
 import (
 	"fmt"

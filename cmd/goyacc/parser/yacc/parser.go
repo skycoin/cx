@@ -1,6 +1,6 @@
 // CAUTION: Generated file - DO NOT EDIT.
 
-// Copyright 2015 The parser Authors. All rights reserved.  Use
+// Copyright 2015 The stage2 Authors. All rights reserved.  Use
 // of this source code is governed by a BSD-style license that can be found in
 // the LICENSE file.
 //
@@ -14,7 +14,7 @@
 //
 // Grammar for the input to yacc.
 
-package parser // import "github.com/skycoin/cx/cmd/goyacc/parser/yacc"
+package parser // import "github.com/skycoin/cx/cmd/goyacc/stage2/yacc"
 
 import __yyfmt__ "fmt"
 

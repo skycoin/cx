@@ -508,7 +508,7 @@ func checkMatchParamTypes(expr *cxcore.CXExpression, expected, received []*cxcor
 		}
 
 		// In the case of assignment we need to check that the input's type matches the output's type.
-		// FIXME: There are some expressions added by the parser where temporary variables are used.
+		// FIXME: There are some expressions added by the stage2 where temporary variables are used.
 		// These temporary variables' types are not properly being set. That's why we use !cxcore.IsTempVar to
 		// exclude these cases for now.
 		if expr.Operator.OpCode == cxcore.OP_IDENTITY && !cxcore.IsTempVar(expr.Outputs[0].Name) {
@@ -977,7 +977,7 @@ func CopyArgFields(sym *cxcore.CXArgument, arg *cxcore.CXArgument) {
 	sym.CustomType = arg.CustomType
 
 	// FIXME: In other processes like ProcessSymbolFields the symbol is assigned with lengths.
-	// If we already have some lengths, we skip this. This needs to be fixed in the redesign of the parser.
+	// If we already have some lengths, we skip this. This needs to be fixed in the redesign of the stage2.
 	if len(sym.Lengths) == 0 {
 		sym.Lengths = arg.Lengths
 	}
@@ -998,7 +998,7 @@ func CopyArgFields(sym *cxcore.CXArgument, arg *cxcore.CXArgument) {
 	if !arg.IsSlice && arg.CustomType != nil && elt.IsSlice {
 		// elt.DereferenceOperations = []int{4, 4}
 		for i, deref := range elt.DereferenceOperations {
-			// The parser when reading `foo[5]` in postfix.go does not know if `foo`
+			// The stage2 when reading `foo[5]` in postfix.go does not know if `foo`
 			// is a slice or an array. At this point we now know it's a slice and we need
 			// to change those dereferences to cxcore.DEREF_SLICE.
 			if deref == cxcore.DEREF_ARRAY {
@@ -1016,7 +1016,7 @@ func CopyArgFields(sym *cxcore.CXArgument, arg *cxcore.CXArgument) {
 			sym.DereferenceOperations = append([]int{cxcore.DEREF_POINTER}, sym.DereferenceOperations...)
 		} else {
 			for i, deref := range sym.DereferenceOperations {
-				// The parser when reading `foo[5]` in postfix.go does not know if `foo`
+				// The stage2 when reading `foo[5]` in postfix.go does not know if `foo`
 				// is a slice or an array. At this point we now know it's a slice and we need
 				// to change those dereferences to cxcore.DEREF_SLICE.
 				if deref == cxcore.DEREF_ARRAY {

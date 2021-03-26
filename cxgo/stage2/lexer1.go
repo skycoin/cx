@@ -1,8 +1,8 @@
-package parser
+package stage2
 
 import (
 	"fmt"
-	//"github.com/skycoin/cx/cxgo/cxgo0"
+	//"github.com/skycoin/cx/cxgo/stage1"
 	//"github.com/skycoin/cx/cxgo/globals"
 	"io"
 	"os"
@@ -29,7 +29,7 @@ type Lexer struct {
 	crash     bool //used for crash behaviour
 	colbefore bool //used for colon keywords
 
-	tok *yySymType //symbol read. soon to be depracated for fully new parser
+	tok *yySymType //symbol read. soon to be depracated for fully new stage2
 }
 
 const sentinel = utf8.RuneSelf

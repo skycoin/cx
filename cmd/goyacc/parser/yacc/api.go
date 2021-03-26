@@ -1,4 +1,4 @@
-// Copyright 2015 The parser Authors. All rights reserved.
+// Copyright 2015 The stage2 Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -7,7 +7,7 @@
 //go:generate golex -o scanner.go y.l
 //go:generate go run generate.go -2
 
-// Package parser implements a parser for yacc source files.
+// Package stage2 implements a stage2 for yacc source files.
 //
 // Note: Rule.Body element's type
 //
@@ -16,7 +16,7 @@
 //	string		Eg. "Start" represents rule component Start
 //
 //	*Action		Mid rule action or rule semantic action
-package parser // import "github.com/skycoin/cx/cmd/goyacc/parser/yacc"
+package parser // import "github.com/skycoin/cx/cmd/goyacc/stage2/yacc"
 
 import (
 	"bytes"

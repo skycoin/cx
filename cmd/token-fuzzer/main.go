@@ -10,7 +10,7 @@ import (
 	"os"
 	"strconv"
 
-	. "github.com/skycoin/cx/cxgo/parser"
+	. "github.com/skycoin/cx/cxgo/stage2"
 )
 
 var tbits int = 4
