@@ -185,7 +185,6 @@ build-parser: ## Generate lexer and parser for CX grammar
 
 %type   <function>      function_header
 
-//                      %type   <stringA>       infer_action, infer_actions
 %type   <string>        infer_action_arg
 %type   <stringA>       infer_action, infer_actions
 %type   <expressions>   infer_clauses
@@ -195,8 +194,6 @@ build-parser: ## Generate lexer and parser for CX grammar
                         
 			// for struct literals
 %right                   IDENTIFIER LBRACE
-// %left REF_OP
-// %right                  IDENTIFIER
                         
 /* %start                  translation_unit */
 %%
@@ -227,7 +224,7 @@ debugging:
 
 //delete selector, but cannot because goyacc segfaults
 selector:
-                IMPORT STRING_LITERAL IDENTIFIER SEMICOLON //junk bs
+                IMPORT STRING_LITERAL IDENTIFIER SEMICOLON
                 {
                 //
                 }
@@ -1098,12 +1095,6 @@ block_item_list:
 
 block_item:     declaration
         |       statement
-        //|       stepping
-                { $$ = nil }
-        /* |       debugging */
-        /*         { $$ = nil } */
-        /* |       selector */
-        /*         { $$ = nil} */
                 ;
 
 expression_statement:
