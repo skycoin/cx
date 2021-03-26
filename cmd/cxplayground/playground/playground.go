@@ -14,7 +14,7 @@ import (
 
 	"github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cxgo/actions"
-	"github.com/skycoin/cx/cxgo/cxgo"
+	"github.com/skycoin/cx/cxgo/cxparser"
 	"github.com/skycoin/cx/cxgo/cxgo0"
 	"github.com/skycoin/cx/cxgo/parser"
 )
@@ -158,7 +158,7 @@ func unsafeeval(code string) (out string) {
 	parser.Parse(lexer)
 	//yyParse(lexer)
 
-	err = cxgo.AddInitFunction(actions.PRGRM)
+	err = cxparser.AddInitFunction(actions.PRGRM)
 	if err != nil {
 		return fmt.Sprintf("%s", err)
 	}

@@ -8,11 +8,11 @@ import (
 )
 
 /*
-./cxgo/parser/cxgo.y:234:			actions.Stepping(int($2), int($3), true)
-./cxgo/parser/cxgo.y:238:			actions.Stepping(int($2), 0, false)
-./cxgo/parser/cxgo.go:1693:			actions.Stepping(int(yyS[yypt-1].i32), int(yyS[yypt-0].i32), true)
-./cxgo/parser/cxgo.go:1697:			actions.Stepping(int(yyS[yypt-0].i32), 0, false)
-./cxgo/actions/interactive.go:10:func Stepping(steps int, delay int, withDelay bool) {
+./cxparser/parser/cxparser.y:234:			actions.Stepping(int($2), int($3), true)
+./cxparser/parser/cxparser.y:238:			actions.Stepping(int($2), 0, false)
+./cxparser/parser/cxparser.go:1693:			actions.Stepping(int(yyS[yypt-1].i32), int(yyS[yypt-0].i32), true)
+./cxparser/parser/cxparser.go:1697:			actions.Stepping(int(yyS[yypt-0].i32), 0, false)
+./cxparser/actions/interactive.go:10:func Stepping(steps int, delay int, withDelay bool) {
 */
 
 //DELETE THIS, only calls RunCompiled
@@ -44,7 +44,7 @@ func SteppingWithDelay(steps int, delay int, withDelay bool) {
 }
 
 //delete this function, its retarded
-//Used Twice; in cxgo/parser/cxgo.go
+//Used Twice; in cxparser/parser/cxparser.go
 func Stepping(steps int, delay int, withDelay bool) {
 	if !withDelay {
 		SteppingNoDelay(steps)

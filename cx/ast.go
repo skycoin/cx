@@ -142,13 +142,13 @@ type CXExpression struct {
 /*
 grep -rn "IsShortDeclaration" .
 IsShortDeclaration - is this CXArgument the result of a `CASSIGN` operation (`:=`)?
-./cxgo/parser/cxgo.y:1158:							from.Outputs[0].IsShortDeclaration = true
-./cxgo/parser/cxgo.y:1169:							from.Outputs[0].IsShortDeclaration = true
-./cxgo/parser/cxgo.go:2366:							from.Outputs[0].IsShortDeclaration = true
-./cxgo/parser/cxgo.go:2377:							from.Outputs[0].IsShortDeclaration = true
-./cxgo/actions/functions.go:147:		if len(expr.Outputs) > 0 && len(expr.Inputs) > 0 && expr.Outputs[0].IsShortDeclaration && !expr.IsStructLiteral && !isParseOp(expr) {
-./cxgo/actions/assignment.go:161:		sym.IsShortDeclaration = true
-./cxgo/actions/assignment.go:167:			toExpr.Outputs[0].IsShortDeclaration = true
+./cxparser/parser/cxparser.y:1158:							from.Outputs[0].IsShortDeclaration = true
+./cxparser/parser/cxparser.y:1169:							from.Outputs[0].IsShortDeclaration = true
+./cxparser/parser/cxparser.go:2366:							from.Outputs[0].IsShortDeclaration = true
+./cxparser/parser/cxparser.go:2377:							from.Outputs[0].IsShortDeclaration = true
+./cxparser/actions/functions.go:147:		if len(expr.Outputs) > 0 && len(expr.Inputs) > 0 && expr.Outputs[0].IsShortDeclaration && !expr.IsStructLiteral && !isParseOp(expr) {
+./cxparser/actions/assignment.go:161:		sym.IsShortDeclaration = true
+./cxparser/actions/assignment.go:167:			toExpr.Outputs[0].IsShortDeclaration = true
 Binary file ./bin/cx matches
 ./docs/CompilerDevelopment.md:81:* IsShortDeclaration - is this CXArgument the result of a `CASSIGN` operation (`:=`)?
 ./cx/serialize.go:168:	IsShortDeclaration int32
@@ -160,11 +160,11 @@ Binary file ./bin/cx matches
 
 /*
 grep -rn "IsRest" .
-./cxgo/actions/postfix.go:226:		out.IsRest = true
-./cxgo/actions/postfix.go:238:		inp.IsRest = true
-./cxgo/actions/postfix.go:254:	if left.IsRest {
-./cxgo/actions/postfix.go:255:		// right.IsRest = true
-./cxgo/actions/postfix.go:264:	left.IsRest = true
+./cxparser/actions/postfix.go:226:		out.IsRest = true
+./cxparser/actions/postfix.go:238:		inp.IsRest = true
+./cxparser/actions/postfix.go:254:	if left.IsRest {
+./cxparser/actions/postfix.go:255:		// right.IsRest = true
+./cxparser/actions/postfix.go:264:	left.IsRest = true
 Binary file ./bin/cx matches
 ./docs/CompilerDevelopment.md:79:* IsRest - if this is a package global, is this CXArgument representing the actual global variable from that package?
 ./cx/serialize.go:166:	IsRest             int32
@@ -1469,13 +1469,13 @@ Note: Dereference Levels, is possible unused
 
 grep -rn "DereferenceLevels" .
 
-./cxgo/actions/functions.go:328:			if fld.IsPointer && fld.DereferenceLevels == 0 {
-./cxgo/actions/functions.go:329:				fld.DereferenceLevels++
-./cxgo/actions/functions.go:333:		if arg.IsStruct && arg.IsPointer && len(arg.Fields) > 0 && arg.DereferenceLevels == 0 {
-./cxgo/actions/functions.go:334:			arg.DereferenceLevels++
-./cxgo/actions/functions.go:1132:					nameFld.DereferenceLevels = sym.DereferenceLevels
-./cxgo/actions/functions.go:1150:						nameFld.DereferenceLevels++
-./cxgo/actions/expressions.go:328:		exprOut.DereferenceLevels++
+./cxparser/actions/functions.go:328:			if fld.IsPointer && fld.DereferenceLevels == 0 {
+./cxparser/actions/functions.go:329:				fld.DereferenceLevels++
+./cxparser/actions/functions.go:333:		if arg.IsStruct && arg.IsPointer && len(arg.Fields) > 0 && arg.DereferenceLevels == 0 {
+./cxparser/actions/functions.go:334:			arg.DereferenceLevels++
+./cxparser/actions/functions.go:1132:					nameFld.DereferenceLevels = sym.DereferenceLevels
+./cxparser/actions/functions.go:1150:						nameFld.DereferenceLevels++
+./cxparser/actions/expressions.go:328:		exprOut.DereferenceLevels++
 ./CompilerDevelopment.md:70:* DereferenceLevels - How many dereference operations are performed to get this CXArgument?
 ./cx/serialize.go:149:	DereferenceLevels           int32
 ./cx/serialize.go:300:	s.Arguments[argOff].DereferenceLevels = int32(arg.DereferenceLevels)
@@ -1489,11 +1489,11 @@ grep -rn "DereferenceLevels" .
 Note: IndirectionLevels does not appear to be used at all
 
  grep -rn "IndirectionLevels" .
-./cxgo/actions/functions.go:951:	sym.IndirectionLevels = arg.IndirectionLevels
-./cxgo/actions/declarations.go:379:			declSpec.IndirectionLevels++
-./cxgo/actions/declarations.go:383:			for c := declSpec.IndirectionLevels - 1; c > 0; c-- {
-./cxgo/actions/declarations.go:384:				pointer.IndirectionLevels = c
-./cxgo/actions/declarations.go:388:			declSpec.IndirectionLevels++
+./cxparser/actions/functions.go:951:	sym.IndirectionLevels = arg.IndirectionLevels
+./cxparser/actions/declarations.go:379:			declSpec.IndirectionLevels++
+./cxparser/actions/declarations.go:383:			for c := declSpec.IndirectionLevels - 1; c > 0; c-- {
+./cxparser/actions/declarations.go:384:				pointer.IndirectionLevels = c
+./cxparser/actions/declarations.go:388:			declSpec.IndirectionLevels++
 ./CompilerDevelopment.md:69:* IndirectionLevels - how many discrete levels of indirection to this specific CXArgument?
 Binary file ./bin/cx matches
 ./cx/serialize.go:148:	IndirectionLevels           int32
@@ -1507,8 +1507,8 @@ IsDereferenceFirst - is this both an array and a pointer, and if so,
 is the pointer first? Mutually exclusive with IsArrayFirst.
 
 grep -rn "IsDereferenceFirst" .
-./cxgo/actions/postfix.go:60:	if !elt.IsDereferenceFirst {
-./cxgo/actions/expressions.go:331:			exprOut.IsDereferenceFirst = true
+./cxparser/actions/postfix.go:60:	if !elt.IsDereferenceFirst {
+./cxparser/actions/expressions.go:331:			exprOut.IsDereferenceFirst = true
 ./CompilerDevelopment.md:76:* IsArrayFirst - is this both a pointer and an array, and if so, is the array first? Mutually exclusive with IsDereferenceFirst
 ./CompilerDevelopment.md:78:* IsDereferenceFirst - is this both an array and a pointer, and if so, is the pointer first? Mutually exclusive with IsArrayFirst.
 Binary file ./bin/cx matches
@@ -1547,26 +1547,26 @@ Note: Low priority for deprecation
 - isnt this same as "pointer"
 
 grep -rn "PassBy" .
-./cxgo/actions/misc.go:425:			arg.PassBy = PASSBY_REFERENCE
-./cxgo/actions/functions.go:666:					out.PassBy = PASSBY_VALUE
-./cxgo/actions/functions.go:678:		if elt.PassBy == PASSBY_REFERENCE &&
-./cxgo/actions/functions.go:712:			out.PassBy = PASSBY_VALUE
-./cxgo/actions/functions.go:723:				assignElt.PassBy = PASSBY_VALUE
-./cxgo/actions/functions.go:915:			expr.Inputs[0].PassBy = PASSBY_REFERENCE
-./cxgo/actions/functions.go:1153:					nameFld.PassBy = fld.PassBy
-./cxgo/actions/functions.go:1157:						nameFld.PassBy = PASSBY_REFERENCE
-./cxgo/actions/literals.go:219:				sym.PassBy = PASSBY_REFERENCE
-./cxgo/actions/expressions.go:336:		baseOut.PassBy = PASSBY_REFERENCE
-./cxgo/actions/assignment.go:57:		out.PassBy = PASSBY_REFERENCE
-./cxgo/actions/assignment.go:208:		to[0].Outputs[0].PassBy = from[idx].Outputs[0].PassBy
-./cxgo/actions/assignment.go:234:			to[0].Outputs[0].PassBy = from[idx].Operator.Outputs[0].PassBy
-./cxgo/actions/assignment.go:244:			to[0].Outputs[0].PassBy = from[idx].Operator.Outputs[0].PassBy
-./cxgo/actions/declarations.go:55:			glbl.PassBy = offExpr[0].Outputs[0].PassBy
-./cxgo/actions/declarations.go:69:				declaration_specifiers.PassBy = glbl.PassBy
-./cxgo/actions/declarations.go:85:				declaration_specifiers.PassBy = glbl.PassBy
-./cxgo/actions/declarations.go:103:			declaration_specifiers.PassBy = glbl.PassBy
-./cxgo/actions/declarations.go:324:			declarationSpecifiers.PassBy = initOut.PassBy
-./cxgo/actions/declarations.go:417:		arg.PassBy = PASSBY_REFERENCE
+./cxparser/actions/misc.go:425:			arg.PassBy = PASSBY_REFERENCE
+./cxparser/actions/functions.go:666:					out.PassBy = PASSBY_VALUE
+./cxparser/actions/functions.go:678:		if elt.PassBy == PASSBY_REFERENCE &&
+./cxparser/actions/functions.go:712:			out.PassBy = PASSBY_VALUE
+./cxparser/actions/functions.go:723:				assignElt.PassBy = PASSBY_VALUE
+./cxparser/actions/functions.go:915:			expr.Inputs[0].PassBy = PASSBY_REFERENCE
+./cxparser/actions/functions.go:1153:					nameFld.PassBy = fld.PassBy
+./cxparser/actions/functions.go:1157:						nameFld.PassBy = PASSBY_REFERENCE
+./cxparser/actions/literals.go:219:				sym.PassBy = PASSBY_REFERENCE
+./cxparser/actions/expressions.go:336:		baseOut.PassBy = PASSBY_REFERENCE
+./cxparser/actions/assignment.go:57:		out.PassBy = PASSBY_REFERENCE
+./cxparser/actions/assignment.go:208:		to[0].Outputs[0].PassBy = from[idx].Outputs[0].PassBy
+./cxparser/actions/assignment.go:234:			to[0].Outputs[0].PassBy = from[idx].Operator.Outputs[0].PassBy
+./cxparser/actions/assignment.go:244:			to[0].Outputs[0].PassBy = from[idx].Operator.Outputs[0].PassBy
+./cxparser/actions/declarations.go:55:			glbl.PassBy = offExpr[0].Outputs[0].PassBy
+./cxparser/actions/declarations.go:69:				declaration_specifiers.PassBy = glbl.PassBy
+./cxparser/actions/declarations.go:85:				declaration_specifiers.PassBy = glbl.PassBy
+./cxparser/actions/declarations.go:103:			declaration_specifiers.PassBy = glbl.PassBy
+./cxparser/actions/declarations.go:324:			declarationSpecifiers.PassBy = initOut.PassBy
+./cxparser/actions/declarations.go:417:		arg.PassBy = PASSBY_REFERENCE
 ./CompilerDevelopment.md:71:* PassBy - an int constant representing how the variable is passed - pass by value, or pass by reference.
 
 ./cx/op_http.go:50:	headerFld.PassBy = PASSBY_REFERENCE

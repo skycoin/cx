@@ -5,7 +5,7 @@ import(
 )
 
 //Not used
-//Needs cxgo.go for symbol table?
+//Needs cxparser.go for symbol table?
 
 /*
 var tokenNames = map[int]string{

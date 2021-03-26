@@ -15,7 +15,7 @@ import (
 /*
    This is a computer generated file
    - cxgo0.go is generated from cxgo0.go via
-   - ./bin/goyacc -o cxgo/cxgo0/cxgo0.go cxgo/cxgo0/cxgo0.y
+   - ./bin/goyacc -o cxparser/cxgo0/cxgo0.go cxparser/cxgo0/cxgo0.y
 */
 
 var PRGRM0 *CXProgram

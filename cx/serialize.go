@@ -1249,7 +1249,7 @@ func CopyProgramState(sPrgrm1, sPrgrm2 *[]byte) {
 
 // DeserializeMemoryOffset returns the offset at which the memory of a serialized CX program starts.
 // Only used in one place? Delete if possible
-// ./cxgo/cxlexer/state.go:30:	memOffset := cxcore.DeserializeMemoryOffset(progS)
+// ./cxparser/cxlexer/state.go:30:	memOffset := cxcore.DeserializeMemoryOffset(progS)
 func DeserializeMemoryOffset(sPrgrm []byte) int {
 	idxSize := encoder.Size(serializedCXProgramIndex{})
 	var index serializedCXProgramIndex

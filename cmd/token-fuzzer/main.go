@@ -1,7 +1,7 @@
 package main
 
 import (
-	//. "github.com/skycoin/cx/cxgo"
+	//. "github.com/skycoin/cx/cxparser"
 
 	"flag"
 	"fmt"

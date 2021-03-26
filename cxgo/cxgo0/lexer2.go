@@ -63,7 +63,7 @@ func (lval *yySymType) scancopy(tok *yySymType) {
 }
 
 //Unused
-//looks like a copy of cxgo/parser/lexer.go?
+//looks like a copy of cxparser/parser/lexer.go?
 //should definatel be in constants or something
 /*
 var tokenNames = map[int]string{

@@ -147,38 +147,38 @@ const (
 
 /*
 grep -rn "PASSBY_VALUE" .
-./cxgo/actions/functions.go:666:					out.PassBy = cxcore.PASSBY_VALUE
-./cxgo/actions/functions.go:712:			out.PassBy = cxcore.PASSBY_VALUE
-./cxgo/actions/functions.go:723:				assignElt.PassBy = cxcore.PASSBY_VALUE
+./cxparser/actions/functions.go:666:					out.PassBy = cxcore.PASSBY_VALUE
+./cxparser/actions/functions.go:712:			out.PassBy = cxcore.PASSBY_VALUE
+./cxparser/actions/functions.go:723:				assignElt.PassBy = cxcore.PASSBY_VALUE
 ./cx/config.go:172:	PASSBY_VALUE = iota
 ./cx/config.go:180:	PASSBY_VALUE //= iota
-./cx/ast.go:1507:./cxgo/actions/functions.go:666:				out.PassBy = PASSBY_VALUE
-./cx/ast.go:1509:./cxgo/actions/functions.go:712:			out.PassBy = PASSBY_VALUE
-./cx/ast.go:1510:./cxgo/actions/functions.go:723:				assignElt.PassBy = PASSBY_VALUE
+./cx/ast.go:1507:./cxparser/actions/functions.go:666:				out.PassBy = PASSBY_VALUE
+./cx/ast.go:1509:./cxparser/actions/functions.go:712:			out.PassBy = PASSBY_VALUE
+./cx/ast.go:1510:./cxparser/actions/functions.go:723:				assignElt.PassBy = PASSBY_VALUE
 ./cx/op_misc.go:37:		case PASSBY_VALUE:
 
 grep -rn "PASSBY_REFERENCE" .
-./cxgo/actions/misc.go:425:			arg.PassBy = cxcore.PASSBY_REFERENCE
-./cxgo/actions/functions.go:678:		if elt.PassBy == cxcore.PASSBY_REFERENCE &&
-./cxgo/actions/functions.go:915:			expr.Inputs[0].PassBy = cxcore.PASSBY_REFERENCE
-./cxgo/actions/functions.go:1157:						nameFld.PassBy = cxcore.PASSBY_REFERENCE
-./cxgo/actions/literals.go:219:				sym.PassBy = cxcore.PASSBY_REFERENCE
-./cxgo/actions/expressions.go:336:		baseOut.PassBy = cxcore.PASSBY_REFERENCE
-./cxgo/actions/assignment.go:57:		out.PassBy = cxcore.PASSBY_REFERENCE
-./cxgo/actions/declarations.go:417:		arg.PassBy = cxcore.PASSBY_REFERENCE
+./cxparser/actions/misc.go:425:			arg.PassBy = cxcore.PASSBY_REFERENCE
+./cxparser/actions/functions.go:678:		if elt.PassBy == cxcore.PASSBY_REFERENCE &&
+./cxparser/actions/functions.go:915:			expr.Inputs[0].PassBy = cxcore.PASSBY_REFERENCE
+./cxparser/actions/functions.go:1157:						nameFld.PassBy = cxcore.PASSBY_REFERENCE
+./cxparser/actions/literals.go:219:				sym.PassBy = cxcore.PASSBY_REFERENCE
+./cxparser/actions/expressions.go:336:		baseOut.PassBy = cxcore.PASSBY_REFERENCE
+./cxparser/actions/assignment.go:57:		out.PassBy = cxcore.PASSBY_REFERENCE
+./cxparser/actions/declarations.go:417:		arg.PassBy = cxcore.PASSBY_REFERENCE
 ./cx/config.go:173:	PASSBY_REFERENCE
 ./cx/config.go:181:	PASSBY_REFERENCE
 ./cx/op_http.go:50:	headerFld.PassBy = PASSBY_REFERENCE
 ./cx/op_http.go:75:	transferEncodingFld.PassBy = PASSBY_REFERENCE
 ./cx/execute.go:442:						if inp.PassBy == PASSBY_REFERENCE {
-./cx/ast.go:1506:./cxgo/actions/misc.go:425:			arg.PassBy = PASSBY_REFERENCE
-./cx/ast.go:1508:./cxgo/actions/functions.go:678:		if elt.PassBy == PASSBY_REFERENCE &&
-./cx/ast.go:1511:./cxgo/actions/functions.go:915:			expr.Inputs[0].PassBy = PASSBY_REFERENCE
-./cx/ast.go:1513:./cxgo/actions/functions.go:1157:						nameFld.PassBy = PASSBY_REFERENCE
-./cx/ast.go:1514:./cxgo/actions/literals.go:219:				sym.PassBy = PASSBY_REFERENCE
-./cx/ast.go:1515:./cxgo/actions/expressions.go:336:		baseOut.PassBy = PASSBY_REFERENCE
-./cx/ast.go:1516:./cxgo/actions/assignment.go:57:		out.PassBy = PASSBY_REFERENCE
-./cx/ast.go:1525:./cxgo/actions/declarations.go:417:		arg.PassBy = PASSBY_REFERENCE
+./cx/ast.go:1506:./cxparser/actions/misc.go:425:			arg.PassBy = PASSBY_REFERENCE
+./cx/ast.go:1508:./cxparser/actions/functions.go:678:		if elt.PassBy == PASSBY_REFERENCE &&
+./cx/ast.go:1511:./cxparser/actions/functions.go:915:			expr.Inputs[0].PassBy = PASSBY_REFERENCE
+./cx/ast.go:1513:./cxparser/actions/functions.go:1157:						nameFld.PassBy = PASSBY_REFERENCE
+./cx/ast.go:1514:./cxparser/actions/literals.go:219:				sym.PassBy = PASSBY_REFERENCE
+./cx/ast.go:1515:./cxparser/actions/expressions.go:336:		baseOut.PassBy = PASSBY_REFERENCE
+./cx/ast.go:1516:./cxparser/actions/assignment.go:57:		out.PassBy = PASSBY_REFERENCE
+./cx/ast.go:1525:./cxparser/actions/declarations.go:417:		arg.PassBy = PASSBY_REFERENCE
 ./cx/ast.go:1528:./cx/op_http.go:50:	headerFld.PassBy = PASSBY_REFERENCE
 ./cx/ast.go:1529:./cx/op_http.go:75:	transferEncodingFld.PassBy = PASSBY_REFERENCE
 ./cx/ast.go:1533:./cx/execute.go:366:				if inp.PassBy == PASSBY_REFERENCE {

@@ -1,11 +1,9 @@
 package globals
 
-import (
-	"github.com/skycoin/cx/cxgo/cxgo0"
-)
-
 var CxProgramPath string = ""
 
+//only used one place
+/*
 var KeywordMap map[string]int = map[string]int{
 	"func":      cxgo0.FUNC,
 	"var":       cxgo0.VAR,
@@ -62,4 +60,6 @@ var KeywordMap map[string]int = map[string]int{
 	"true":    cxgo0.BOOLEAN_LITERAL,
 	"false":   cxgo0.BOOLEAN_LITERAL,
 }
+*/
+
 

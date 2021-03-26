@@ -1,4 +1,4 @@
-package cxgo
+package cxparser
 
 import (
 	"bufio"
