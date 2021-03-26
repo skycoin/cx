@@ -17,14 +17,6 @@ var SysInitExprs []*cxcore.CXExpression
 var InFn bool = false
 
 const (
-	// type of selector
-	SELECT_TYP_RESERVED = iota
-	SELECT_TYP_PKG
-	SELECT_TYP_FUNC
-	SELECT_TYP_STRCT
-)
-
-const (
 	SEL_RESERVED = iota
 	SEL_ELSEIF
 	SEL_ELSEIFELSE
