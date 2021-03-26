@@ -23,38 +23,45 @@ func (cxprogram *CXProgram) SelectPackage(name string) (*CXPackage, error) {
 	return found, nil
 }
 
+// GetFunction ...
+func (pkg *CXPackage) GetFunction(fnName string) (*CXFunction, error) {
+	var found bool
+	for _, fn := range pkg.Functions {
+		if fn.Name == fnName {
+			return fn, nil
+		}
+	}
+
+	// now checking in imported packages
+	if !found {
+		for _, imp := range pkg.Imports {
+			for _, fn := range imp.Functions {
+				if fn.Name == fnName {
+					return fn, nil
+				}
+			}
+		}
+	}
+
+	return nil, fmt.Errorf("function '%s' not found in package '%s' or its imports", fnName, pkg.Name)
+}
+
 // Getfunction2 ...
 func (cxprogram *CXProgram) Getfunction2(name string) (*CXFunction, error) {
-	// prgrmStep := &CXProgramStep{
-	// 	Action: func(cxprogram *CXProgram) {
-	// 		cxprogram.Getfunction2(name)
-	// 	},
-	// }
-	// saveProgramStep(prgrmStep, cxprogram)
-
 	mod, err := cxprogram.GetCurrentPackage()
 	if err == nil {
 		return mod.SelectFunction(name)
 	}
 	return nil, err
-
 }
 
 // SelectStruct ...
 func (cxprogram *CXProgram) SelectStruct(name string) (*CXStruct, error) {
-	// prgrmStep := &CXProgramStep{
-	// 	Action: func(cxprogram *CXProgram) {
-	// 		cxprogram.SelectStruct(name)
-	// 	},
-	// }
-	// saveProgramStep(prgrmStep, cxprogram)
-
 	mod, err := cxprogram.GetCurrentPackage()
 	if err == nil {
 		return mod.SelectStruct(name)
 	}
 	return nil, err
-
 }
 
 // SelectExpression ...
@@ -92,29 +99,6 @@ func (pkg *CXPackage) GetFunctions() ([]*CXFunction, error) {
 	}
 	return nil, fmt.Errorf("package '%s' has no functions", pkg.Name)
 
-}
-
-// GetFunction ...
-func (pkg *CXPackage) GetFunction(fnName string) (*CXFunction, error) {
-	var found bool
-	for _, fn := range pkg.Functions {
-		if fn.Name == fnName {
-			return fn, nil
-		}
-	}
-
-	// now checking in imported packages
-	if !found {
-		for _, imp := range pkg.Imports {
-			for _, fn := range imp.Functions {
-				if fn.Name == fnName {
-					return fn, nil
-				}
-			}
-		}
-	}
-
-	return nil, fmt.Errorf("function '%s' not found in package '%s' or its imports", fnName, pkg.Name)
 }
 
 // GetMethod ...
