@@ -161,7 +161,7 @@ build-parser: ## Generate lexer and parser for CX grammar
 
 %type	<ReturnExpressions>	return_expression
 
-%type   <expressions>   selector
+%type   <expressions>   selector //remove selectors
 
 %type   <expressions>   struct_literal_fields
 %type   <SelectStatement>   elseif
@@ -218,7 +218,7 @@ external_declaration:
         |       struct_declaration
                 
         //|       stepping
-        |       selector
+        //|       selector
         |       debugging
         ;
 
@@ -241,12 +241,20 @@ stepping:       TSTEP int_value int_value
         ;
 */
 
-
+//delete selector, but cannot because goyacc segfaults
 selector:
+                IMPORT STRING_LITERAL IDENTIFIER SEMICOLON //junk bs
+                {
+                //
+                }
+                ;
+
+/*
                 SPACKAGE IDENTIFIER SEMICOLON
                 {
 			        //$<string>$ = actions.Selector($2, actions.SELECT_TYP_PKG)
                 }
+
         |       SFUNC IDENTIFIER
                 {
 			        //$<string>$ = actions.Selector($2, actions.SELECT_TYP_FUNC)
@@ -268,10 +276,12 @@ selector:
 				            }
 			        }
                 }
+
         |       SSTRUCT IDENTIFIER SEMICOLON
                 {
 			//$<string>$ = actions.Selector($2, actions.SELECT_TYP_STRCT)
                 }
+
         |       SSTRUCT IDENTIFIER
                 {
 			//$<string>$ = actions.Selector($2, actions.SELECT_TYP_STRCT)
@@ -293,7 +303,7 @@ selector:
 			}
                 }
         ;
-
+*/
 
 global_declaration:
                 VAR declarator declaration_specifiers SEMICOLON
