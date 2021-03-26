@@ -14,7 +14,6 @@ var LineNo int
 
 var SysInitExprs []*cxcore.CXExpression
 
-// var dStack bool = false
 var InFn bool = false
 
 const (
@@ -26,6 +25,7 @@ const (
 )
 
 const (
-	SEL_ELSEIF = iota
+	SEL_RESERVED = iota
+	SEL_ELSEIF
 	SEL_ELSEIFELSE
 )
