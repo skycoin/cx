@@ -2,10 +2,14 @@ package main
 
 import (
 	"fmt"
+
+	repl "github.com/skycoin/cx/cmd/cxrepl"
 	cxcore "github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cxgo/actions"
 	"github.com/skycoin/cx/cxgo/cxgo"
 	"github.com/skycoin/cx/cxgo/cxparser"
+	"github.com/skycoin/cx/cxgo/util/profiling"
+
 	//"github.com/skycoin/cx/cxparser/cxgo0"
 	"os"
 	"os/user"
@@ -103,8 +107,8 @@ func Run(args []string) {
 
 	// Propagate some options out to other packages.
 	cxgo.DebugLexer = options.debugLexer // in package cxgo
-	DebugProfileRate = options.debugProfile
-	DebugProfile = DebugProfileRate > 0
+	profiling.DebugProfileRate = options.debugProfile
+	profiling.DebugProfile = profiling.DebugProfileRate > 0
 
 	if run := parseProgram(options, fileNames, sourceCode); run {
 
@@ -171,15 +175,15 @@ func printTokenize(options cxCmdFlags, fileNames []string) {
 	cxgo.Tokenize(r, w)
 }
 
-func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File) (bool) {
+func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File) bool {
 
-	profile := StartCPUProfile("parse")
-	defer StopCPUProfile(profile)
+	profile := profiling.StartCPUProfile("parse")
+	defer profiling.StopCPUProfile(profile)
 
-	defer DumpMEMProfile("parse")
+	defer profiling.DumpMEMProfile("parse")
 
-	StartProfile("parse")
-	defer StopProfile("parse")
+	profiling.StartProfile("parse")
+	defer profiling.StopProfile("parse")
 
 	actions.PRGRM = cxcore.MakeProgram()
 	corePkgsPrgrm, err := cxcore.GetCurrentCxProgram()
@@ -200,21 +204,20 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 	//remove path variable, not used
 	// setting project's working directory
 	//if !options.replMode && len(sourceCode) > 0 {
-		//cxgo0.PRGRM0.Path = determineWorkDir(sourceCode[0].Name())
+	//cxgo0.PRGRM0.Path = determineWorkDir(sourceCode[0].Name())
 	//}
 
 	//globals.CxProgramPath = determineWorkDir(sourceCode[0].Name())
 	//globals2.SetWorkingDir(sourceCode[0].Name())
 
 	// Checking if a main package exists. If not, create and add it to `PRGRM`.
-	if _, err := actions.PRGRM.GetFunction(cxcore.MAIN_FUNC, cxcore.MAIN_PKG)
-	err != nil {
+	if _, err := actions.PRGRM.GetFunction(cxcore.MAIN_FUNC, cxcore.MAIN_PKG); err != nil {
 		panic("error")
 	}
 	initMainPkg(actions.PRGRM)
 
 	// Setting what function to start in if using the REPL.
-	ReplTargetFn = cxcore.MAIN_FUNC
+	repl.ReplTargetFn = cxcore.MAIN_FUNC
 
 	// Adding *init function that initializes all the global variables.
 	err = cxparser.AddInitFunction(actions.PRGRM)
@@ -226,7 +229,7 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 
 	if cxcore.FoundCompileErrors {
 		//cleanupAndExit(cxcore.CX_COMPILATION_ERROR)
-		StopCPUProfile(profile)
+		profiling.StopCPUProfile(profile)
 		exitCode := cxcore.CX_COMPILATION_ERROR
 		os.Exit(exitCode)
 
@@ -236,12 +239,12 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 }
 
 func runProgram(options cxCmdFlags, cxArgs []string, sourceCode []*os.File) {
-	StartProfile("run")
-	defer StopProfile("run")
+	profiling.StartProfile("run")
+	defer profiling.StopProfile("run")
 
 	if options.replMode || len(sourceCode) == 0 {
 		actions.PRGRM.SetCurrentCxProgram()
-		Repl()
+		repl.Repl()
 		return
 	}
 
@@ -257,12 +260,12 @@ func runProgram(options cxCmdFlags, cxArgs []string, sourceCode []*os.File) {
 }
 
 func printProgramAST(options cxCmdFlags, cxArgs []string, sourceCode []*os.File) {
-	StartProfile("run")
-	defer StopProfile("run")
+	profiling.StartProfile("run")
+	defer profiling.StopProfile("run")
 
 	if options.replMode || len(sourceCode) == 0 {
 		actions.PRGRM.SetCurrentCxProgram()
-		Repl()
+		repl.Repl()
 		return
 	}
 
@@ -372,4 +375,4 @@ func CreateCxDirectories(CXPATH string) {
 			cxcore.CXMkdirAll(cxcore.SRCPATH, 0755)
 		}
 	}
- */
+*/
