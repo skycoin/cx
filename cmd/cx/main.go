@@ -237,7 +237,7 @@ func runProgram(options cxCmdFlags, cxArgs []string, sourceCode []*os.File) {
 	defer StopProfile("run")
 
 	if options.replMode || len(sourceCode) == 0 {
-		actions.PRGRM.SelectProgram()
+		actions.PRGRM.SetCurrentCxProgram()
 		Repl()
 		return
 	}
@@ -258,7 +258,7 @@ func printProgramAST(options cxCmdFlags, cxArgs []string, sourceCode []*os.File)
 	defer StopProfile("run")
 
 	if options.replMode || len(sourceCode) == 0 {
-		actions.PRGRM.SelectProgram()
+		actions.PRGRM.SetCurrentCxProgram()
 		Repl()
 		return
 	}

@@ -45,15 +45,15 @@ func stackValueHeader(fileName string, fileLine int) string {
 }
 
 // PrintStack ...
-func (prgrm *CXProgram) PrintStack() {
+func (cxprogram *CXProgram) PrintStack() {
 	fmt.Println()
 	fmt.Println("===Callstack===")
 
 	// we're going backwards in the stack
-	fp := prgrm.StackPointer
+	fp := cxprogram.StackPointer
 
-	for c := prgrm.CallCounter; c >= 0; c-- {
-		op := prgrm.CallStack[c].Operator
+	for c := cxprogram.CallCounter; c >= 0; c-- {
+		op := cxprogram.CallStack[c].Operator
 		fp -= op.Size
 
 		var dupNames []string
@@ -466,13 +466,13 @@ func buildStrPackages(prgrm *CXProgram, ast *string) {
 
 // PrintProgram prints the abstract syntax tree of a CX program in a
 // human-readable format.
-func (prgrm *CXProgram) PrintProgram() {
-	fmt.Println(prgrm.ToString())
+func (cxprogram *CXProgram) PrintProgram() {
+	fmt.Println(cxprogram.ToString())
 }
 
 // ToString returns the abstract syntax tree of a CX program in a
 // string format.
-func (prgrm *CXProgram) ToString() string {
+func (cxprogram *CXProgram) ToString() string {
 	var ast string
 	ast += "Program\n"
 
@@ -483,32 +483,32 @@ func (prgrm *CXProgram) ToString() string {
 	// If we don't do this, calling `:dp` in a REPL will always switch the
 	// user to the last function in the last package in the `CXProgram`
 	// structure.
-	if pkg, err := prgrm.GetCurrentPackage(); err == nil {
+	if pkg, err := cxprogram.GetCurrentPackage(); err == nil {
 		currentPackage = pkg
 	}
 
-	if fn, err := prgrm.GetCurrentFunction(); err == nil {
+	if fn, err := cxprogram.GetCurrentFunction(); err == nil {
 		currentFunction = fn
 	}
 
-	buildStrPackages(prgrm, &ast)
+	buildStrPackages(cxprogram, &ast)
 
 	// Restoring a program's state (what package and function were
 	// selected.)
 	if currentPackage != nil {
-		_, err := prgrm.SelectPackage(currentPackage.Name)
+		_, err := cxprogram.SelectPackage(currentPackage.Name)
 		if err != nil {
 			panic(err)
 		}
 	}
 	if currentFunction != nil {
-		_, err := prgrm.SelectFunction(currentFunction.Name)
+		_, err := cxprogram.SelectFunction(currentFunction.Name)
 		if err != nil {
 			panic(err)
 		}
 	}
 
-	prgrm.CurrentPackage = currentPackage
+	cxprogram.CurrentPackage = currentPackage
 	if currentPackage != nil {
 		currentPackage.CurrentFunction = currentFunction
 	}

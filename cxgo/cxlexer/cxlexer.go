@@ -355,7 +355,7 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) int {
 		parseErrors = Step0(sourceCodeCopy, fileNames)
 	}
 
-	actions.PRGRM.SelectProgram()
+	actions.PRGRM.SetCurrentCxProgram()
 
 	actions.PRGRM = cxgo0.PRGRM0
 	if cxcore.FoundCompileErrors || parseErrors > 0 {

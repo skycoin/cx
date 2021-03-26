@@ -42,7 +42,7 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 	}
 
 	//package level program
-	actions.PRGRM.SelectProgram()
+	actions.PRGRM.SetCurrentCxProgram()
 
 	actions.PRGRM = cxgo0.PRGRM0
 
