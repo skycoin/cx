@@ -469,7 +469,7 @@ func (cxprogram *CXProgram) GetFunction(fnName string, pkgName string) (*CXFunct
 		}
 	}
 
-	if foundPkg != nil && foundFn != nil {
+	if foundFn != nil {
 		return foundFn, nil
 	}
 	return nil, fmt.Errorf("function '%s' not found in package '%s'", fnName, pkgName)
