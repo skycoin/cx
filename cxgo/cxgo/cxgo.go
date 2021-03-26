@@ -72,12 +72,12 @@ type yyXError struct {
 }
 
 const (
-	yyDefault              = 57490
+	yyDefault              = 57487
 	yyEofCode              = 57344
-	ADDR                   = 57489
+	ADDR                   = 57486
 	ADD_ASSIGN             = 57439
 	ADD_OP                 = 57399
-	AFF                    = 57484
+	AFF                    = 57481
 	AFFVAR                 = 57406
 	AND                    = 57397
 	AND_ASSIGN             = 57440
@@ -94,25 +94,25 @@ const (
 	BOOLEAN_LITERAL        = 57346
 	BREAK                  = 57467
 	BYTE_LITERAL           = 57347
-	CAFF                   = 57485
+	CAFF                   = 57482
 	CASE                   = 57464
 	CASSIGN                = 57380
-	CLAUSES                = 57478
+	CLAUSES                = 57475
 	COLON                  = 57389
 	COMMA                  = 57367
 	COMMENT                = 57369
 	CONST                  = 57463
 	CONTINUE               = 57468
 	DEC_OP                 = 57428
-	DEF                    = 57475
+	DEF                    = 57472
 	DEFAULT                = 57465
 	DIVEQ                  = 57420
 	DIV_ASSIGN             = 57444
 	DIV_OP                 = 57402
 	DOUBLE_LITERAL         = 57356
-	DPROGRAM               = 57482
-	DSTACK                 = 57481
-	DSTATE                 = 57483
+	DPROGRAM               = 57479
+	DSTACK                 = 57478
+	DSTATE                 = 57480
 	ELSE                   = 57373
 	ENUM                   = 57462
 	EQUAL                  = 57388
@@ -120,10 +120,10 @@ const (
 	EQ_OP                  = 57435
 	EXP                    = 57412
 	EXPEQ                  = 57422
-	EXPR                   = 57476
+	EXPR                   = 57473
 	F32                    = 57450
 	F64                    = 57451
-	FIELD                  = 57477
+	FIELD                  = 57474
 	FLOAT_LITERAL          = 57355
 	FOR                    = 57374
 	FUNC                   = 57357
@@ -141,7 +141,7 @@ const (
 	IF                     = 57372
 	IMPORT                 = 57381
 	INC_OP                 = 57429
-	INFER                  = 57487
+	INFER                  = 57484
 	INT_LITERAL            = 57349
 	LBRACE                 = 57361
 	LBRACK                 = 57363
@@ -168,8 +168,8 @@ const (
 	NEWLINE                = 57378
 	NE_OP                  = 57436
 	NOT                    = 57413
-	OBJECT                 = 57479
-	OBJECTS                = 57480
+	OBJECT                 = 57476
+	OBJECTS                = 57477
 	OP                     = 57358
 	OR                     = 57398
 	OR_ASSIGN              = 57445
@@ -182,7 +182,7 @@ const (
 	RBRACE                 = 57362
 	RBRACK                 = 57364
 	REF_OP                 = 57404
-	REM                    = 57474
+	REM                    = 57471
 	REMAINDER              = 57409
 	REMAINDEREQ            = 57421
 	RETURN                 = 57382
@@ -192,17 +192,14 @@ const (
 	RIGHT_OP               = 57432
 	RPAREN                 = 57360
 	SEMICOLON              = 57377
-	SFUNC                  = 57473
 	SHORT_LITERAL          = 57348
-	SPACKAGE               = 57471
-	SSTRUCT                = 57472
 	STR                    = 57456
 	STRING_LITERAL         = 57370
 	STRUCT                 = 57376
 	SUB_ASSIGN             = 57447
 	SUB_OP                 = 57400
 	SWITCH                 = 57466
-	TAG                    = 57486
+	TAG                    = 57483
 	TYPE                   = 57469
 	TYPSTRUCT              = 57375
 	UI16                   = 57458
@@ -215,7 +212,7 @@ const (
 	UNSIGNED_INT_LITERAL   = 57353
 	UNSIGNED_LONG_LITERAL  = 57354
 	UNSIGNED_SHORT_LITERAL = 57352
-	VALUE                  = 57488
+	VALUE                  = 57485
 	VAR                    = 57366
 	XOR_ASSIGN             = 57448
 	yyErrCode              = 57345
@@ -246,7 +243,7 @@ var (
 		57367: 12,  // COMMA (159x)
 		57357: 13,  // FUNC (145x)
 		57360: 14,  // RPAREN (145x)
-		57484: 15,  // AFF (135x)
+		57481: 15,  // AFF (135x)
 		57449: 16,  // BOOL (135x)
 		57450: 17,  // F32 (135x)
 		57451: 18,  // F64 (135x)
@@ -265,7 +262,7 @@ var (
 		57347: 31,  // BYTE_LITERAL (118x)
 		57356: 32,  // DOUBLE_LITERAL (118x)
 		57355: 33,  // FLOAT_LITERAL (118x)
-		57487: 34,  // INFER (118x)
+		57484: 34,  // INFER (118x)
 		57350: 35,  // LONG_LITERAL (118x)
 		57405: 36,  // NEG_OP (118x)
 		57348: 37,  // SHORT_LITERAL (118x)
@@ -289,20 +286,20 @@ var (
 		57416: 55,  // BITCLEAR_OP (78x)
 		57431: 56,  // LEFT_OP (78x)
 		57432: 57,  // RIGHT_OP (78x)
-		57557: 58,  // type_specifier (74x)
+		57554: 58,  // type_specifier (74x)
 		57379: 59,  // ASSIGN (73x)
-		57482: 60,  // DPROGRAM (70x)
+		57479: 60,  // DPROGRAM (70x)
 		57381: 61,  // IMPORT (70x)
 		57402: 62,  // DIV_OP (67x)
-		57524: 63,  // indexing_literal (67x)
+		57521: 63,  // indexing_literal (67x)
 		57403: 64,  // MOD_OP (67x)
 		57366: 65,  // VAR (67x)
-		57549: 66,  // slice_literal_expression (63x)
-		57495: 67,  // array_literal_expression (62x)
-		57542: 68,  // postfix_expression (62x)
-		57543: 69,  // primary_expression (62x)
-		57559: 70,  // unary_expression (62x)
-		57560: 71,  // unary_operator (62x)
+		57546: 66,  // slice_literal_expression (63x)
+		57492: 67,  // array_literal_expression (62x)
+		57539: 68,  // postfix_expression (62x)
+		57540: 69,  // primary_expression (62x)
+		57556: 70,  // unary_expression (62x)
+		57557: 71,  // unary_operator (62x)
 		57439: 72,  // ADD_ASSIGN (60x)
 		57440: 73,  // AND_ASSIGN (60x)
 		57380: 74,  // CASSIGN (60x)
@@ -315,8 +312,8 @@ var (
 		57446: 81,  // RIGHT_ASSIGN (60x)
 		57447: 82,  // SUB_ASSIGN (60x)
 		57448: 83,  // XOR_ASSIGN (60x)
-		57537: 84,  // multiplicative_expression (55x)
-		57491: 85,  // additive_expression (53x)
+		57534: 84,  // multiplicative_expression (55x)
+		57488: 85,  // additive_expression (53x)
 		57372: 86,  // IF (52x)
 		57467: 87,  // BREAK (51x)
 		57464: 88,  // CASE (51x)
@@ -326,98 +323,98 @@ var (
 		57383: 92,  // GOTO (51x)
 		57382: 93,  // RETURN (51x)
 		57466: 94,  // SWITCH (51x)
-		57548: 95,  // shift_expression (50x)
-		57544: 96,  // relational_expression (44x)
-		57493: 97,  // and_expression (43x)
-		57512: 98,  // exclusive_or_expression (42x)
-		57523: 99,  // inclusive_or_expression (41x)
-		57535: 100, // logical_and_expression (40x)
-		57502: 101, // conditional_expression (39x)
-		57536: 102, // logical_or_expression (39x)
-		57554: 103, // struct_literal_expression (33x)
-		57497: 104, // assignment_expression (31x)
+		57545: 95,  // shift_expression (50x)
+		57541: 96,  // relational_expression (44x)
+		57490: 97,  // and_expression (43x)
+		57509: 98,  // exclusive_or_expression (42x)
+		57520: 99,  // inclusive_or_expression (41x)
+		57532: 100, // logical_and_expression (40x)
+		57499: 101, // conditional_expression (39x)
+		57533: 102, // logical_or_expression (39x)
+		57551: 103, // struct_literal_expression (33x)
+		57494: 104, // assignment_expression (31x)
 		57371: 105, // PACKAGE (22x)
 		57469: 106, // TYPE (22x)
 		57344: 107, // $end (21x)
-		57513: 108, // expression (19x)
-		57501: 109, // compound_statement (18x)
-		57504: 110, // debugging (14x)
-		57514: 111, // expression_statement (14x)
-		57532: 112, // iteration_statement (12x)
-		57533: 113, // jump_statement (12x)
-		57534: 114, // labeled_statement (12x)
-		57546: 115, // selection_statement (12x)
-		57547: 116, // selector (12x)
-		57551: 117, // statement (12x)
-		57499: 118, // block_item (9x)
-		57505: 119, // declaration (9x)
-		57507: 120, // declarator (8x)
-		57508: 121, // direct_declarator (8x)
+		57510: 108, // expression (19x)
+		57498: 109, // compound_statement (18x)
+		57501: 110, // debugging (14x)
+		57511: 111, // expression_statement (14x)
+		57529: 112, // iteration_statement (12x)
+		57530: 113, // jump_statement (12x)
+		57531: 114, // labeled_statement (12x)
+		57543: 115, // selection_statement (12x)
+		57544: 116, // selector (12x)
+		57548: 117, // statement (12x)
+		57496: 118, // block_item (9x)
+		57502: 119, // declaration (9x)
+		57504: 120, // declarator (8x)
+		57505: 121, // direct_declarator (8x)
 		57373: 122, // ELSE (8x)
-		57506: 123, // declaration_specifiers (5x)
-		57539: 124, // parameter_declaration (5x)
-		57500: 125, // block_item_list (4x)
-		57509: 126, // else_statement (4x)
-		57510: 127, // elseif (4x)
-		57526: 128, // infer_action (4x)
-		57503: 129, // constant_expression (3x)
-		57555: 130, // struct_literal_fields (3x)
-		57496: 131, // array_literal_expression_list (2x)
-		57511: 132, // elseif_list (2x)
-		57515: 133, // external_declaration (2x)
-		57517: 134, // function_declaration (2x)
-		57518: 135, // function_header (2x)
-		57519: 136, // function_parameters (2x)
-		57520: 137, // global_declaration (2x)
-		57522: 138, // import_declaration (2x)
-		57530: 139, // initializer (2x)
-		57538: 140, // package_declaration (2x)
-		57540: 141, // parameter_list (2x)
-		57541: 142, // parameter_type_list (2x)
-		57550: 143, // slice_literal_expression_list (2x)
-		57552: 144, // struct_declaration (2x)
-		57558: 145, // types_list (2x)
-		57492: 146, // after_period (1x)
-		57494: 147, // argument_expression_list (1x)
-		57498: 148, // assignment_operator (1x)
-		57516: 149, // fields (1x)
-		57521: 150, // id_list (1x)
-		57527: 151, // infer_action_arg (1x)
-		57528: 152, // infer_actions (1x)
-		57529: 153, // infer_clauses (1x)
-		57531: 154, // int_value (1x)
-		57545: 155, // return_expression (1x)
+		57503: 123, // declaration_specifiers (5x)
+		57536: 124, // parameter_declaration (5x)
+		57497: 125, // block_item_list (4x)
+		57506: 126, // else_statement (4x)
+		57507: 127, // elseif (4x)
+		57523: 128, // infer_action (4x)
+		57500: 129, // constant_expression (3x)
+		57552: 130, // struct_literal_fields (3x)
+		57493: 131, // array_literal_expression_list (2x)
+		57508: 132, // elseif_list (2x)
+		57512: 133, // external_declaration (2x)
+		57514: 134, // function_declaration (2x)
+		57515: 135, // function_header (2x)
+		57516: 136, // function_parameters (2x)
+		57517: 137, // global_declaration (2x)
+		57519: 138, // import_declaration (2x)
+		57527: 139, // initializer (2x)
+		57535: 140, // package_declaration (2x)
+		57537: 141, // parameter_list (2x)
+		57538: 142, // parameter_type_list (2x)
+		57547: 143, // slice_literal_expression_list (2x)
+		57549: 144, // struct_declaration (2x)
+		57555: 145, // types_list (2x)
+		57489: 146, // after_period (1x)
+		57491: 147, // argument_expression_list (1x)
+		57495: 148, // assignment_operator (1x)
+		57513: 149, // fields (1x)
+		57518: 150, // id_list (1x)
+		57524: 151, // infer_action_arg (1x)
+		57525: 152, // infer_actions (1x)
+		57526: 153, // infer_clauses (1x)
+		57528: 154, // int_value (1x)
+		57542: 155, // return_expression (1x)
 		57376: 156, // STRUCT (1x)
-		57553: 157, // struct_fields (1x)
-		57556: 158, // translation_unit (1x)
-		57490: 159, // $default (0x)
-		57489: 160, // ADDR (0x)
+		57550: 157, // struct_fields (1x)
+		57553: 158, // translation_unit (1x)
+		57487: 159, // $default (0x)
+		57486: 160, // ADDR (0x)
 		57406: 161, // AFFVAR (0x)
 		57397: 162, // AND (0x)
 		57470: 163, // BASICTYPE (0x)
 		57425: 164, // BITANDEQ (0x)
 		57427: 165, // BITOREQ (0x)
 		57426: 166, // BITXOREQ (0x)
-		57485: 167, // CAFF (0x)
-		57478: 168, // CLAUSES (0x)
+		57482: 167, // CAFF (0x)
+		57475: 168, // CLAUSES (0x)
 		57369: 169, // COMMENT (0x)
 		57463: 170, // CONST (0x)
-		57475: 171, // DEF (0x)
+		57472: 171, // DEF (0x)
 		57420: 172, // DIVEQ (0x)
-		57481: 173, // DSTACK (0x)
-		57483: 174, // DSTATE (0x)
+		57478: 173, // DSTACK (0x)
+		57480: 174, // DSTATE (0x)
 		57462: 175, // ENUM (0x)
 		57388: 176, // EQUAL (0x)
 		57391: 177, // EQUALWORD (0x)
 		57345: 178, // error (0x)
 		57412: 179, // EXP (0x)
 		57422: 180, // EXPEQ (0x)
-		57476: 181, // EXPR (0x)
-		57477: 182, // FIELD (0x)
+		57473: 181, // EXPR (0x)
+		57474: 182, // FIELD (0x)
 		57433: 183, // GE_OP (0x)
 		57394: 184, // GTHANEQ (0x)
 		57392: 185, // GTHANWORD (0x)
-		57525: 186, // indexing_slice_literal (0x)
+		57522: 186, // indexing_slice_literal (0x)
 		57434: 187, // LE_OP (0x)
 		57410: 188, // LEFTSHIFT (0x)
 		57423: 189, // LEFTSHIFTEQ (0x)
@@ -429,26 +426,23 @@ var (
 		57390: 195, // NEW (0x)
 		57378: 196, // NEWLINE (0x)
 		57413: 197, // NOT (0x)
-		57479: 198, // OBJECT (0x)
-		57480: 199, // OBJECTS (0x)
+		57476: 198, // OBJECT (0x)
+		57477: 199, // OBJECTS (0x)
 		57358: 200, // OP (0x)
 		57398: 201, // OR (0x)
 		57417: 202, // PLUSEQ (0x)
 		57407: 203, // PLUSPLUS (0x)
 		57430: 204, // PTR_OP (0x)
-		57474: 205, // REM (0x)
+		57471: 205, // REM (0x)
 		57409: 206, // REMAINDER (0x)
 		57421: 207, // REMAINDEREQ (0x)
 		57411: 208, // RIGHTSHIFT (0x)
 		57424: 209, // RIGHTSHIFTEQ (0x)
-		57473: 210, // SFUNC (0x)
-		57471: 211, // SPACKAGE (0x)
-		57472: 212, // SSTRUCT (0x)
-		57486: 213, // TAG (0x)
-		57375: 214, // TYPSTRUCT (0x)
-		57396: 215, // UNEQUAL (0x)
-		57461: 216, // UNION (0x)
-		57488: 217, // VALUE (0x)
+		57483: 210, // TAG (0x)
+		57375: 211, // TYPSTRUCT (0x)
+		57396: 212, // UNEQUAL (0x)
+		57461: 213, // UNION (0x)
+		57485: 214, // VALUE (0x)
 	}
 
 	yySymNames = []string{
@@ -662,9 +656,6 @@ var (
 		"REMAINDEREQ",
 		"RIGHTSHIFT",
 		"RIGHTSHIFTEQ",
-		"SFUNC",
-		"SPACKAGE",
-		"SSTRUCT",
 		"TAG",
 		"TYPSTRUCT",
 		"UNEQUAL",

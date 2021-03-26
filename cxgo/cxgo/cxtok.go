@@ -295,14 +295,14 @@ func TokenName(token int) string {
 		return "RPAREN"
 	case SEMICOLON:
 		return "SCOLON"
-	case SFUNC:
-		return " SFUNC"
 	case SHORT_LITERAL:
 		return "SHRTLT"
-	case SPACKAGE:
-		return "SPACKG"
-	case SSTRUCT:
-		return "SSTRCT"
+	//case SPACKAGE:
+	//	return "SPACKG"
+	//case SSTRUCT:
+	//	return "SSTRCT"
+	//case SFUNC:
+	//	return " SFUNC"
 	case STR:
 		return "   STR"
 	case STRING_LITERAL:

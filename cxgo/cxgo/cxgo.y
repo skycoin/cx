@@ -101,8 +101,7 @@ build-parser: ## Generate lexer and parser for CX grammar
                         
                         /* Types */
                         BASICTYPE
-                        /* Selectors */
-                        SPACKAGE SSTRUCT SFUNC
+
                         /* Removers */
                         REM DEF EXPR FIELD CLAUSES OBJECT OBJECTS
                         /* Stepping */
@@ -248,62 +247,6 @@ selector:
                 //
                 }
                 ;
-
-/*
-                SPACKAGE IDENTIFIER SEMICOLON
-                {
-			        //$<string>$ = actions.Selector($2, actions.SELECT_TYP_PKG)
-                }
-
-        |       SFUNC IDENTIFIER
-                {
-			        //$<string>$ = actions.Selector($2, actions.SELECT_TYP_FUNC)
-                }
-                compound_statement
-                {
-			        if len($4) > 0 {
-				        if pkg, err := actions.PRGRM.GetCurrentPackage(); err == nil {
-					        if fn, err := actions.PRGRM.GetFunction($<string>3, pkg.Name); err == nil {
-						        for _, expr := range $4 {
-							        fn.AddExpression(expr)
-						        }
-						        actions.FunctionDeclaration(fn, nil, nil, nil)
-					        } else {
-						    panic(err)
-					        }
-				            } else {
-					        panic(err)
-				            }
-			        }
-                }
-
-        |       SSTRUCT IDENTIFIER SEMICOLON
-                {
-			//$<string>$ = actions.Selector($2, actions.SELECT_TYP_STRCT)
-                }
-
-        |       SSTRUCT IDENTIFIER
-                {
-			//$<string>$ = actions.Selector($2, actions.SELECT_TYP_STRCT)
-                }
-                struct_fields
-                {
-			if len($4) > 0 {
-				if pkg, err := actions.PRGRM.GetCurrentPackage(); err == nil {
-					if strct, err := actions.PRGRM.GetStruct($<string>3, pkg.Name); err == nil {
-						for _, fld := range $4 {
-							strct.AddField(fld)
-						}
-					} else {
-						panic(err)
-					}
-				} else {
-					panic(err)
-				}
-			}
-                }
-        ;
-*/
 
 global_declaration:
                 VAR declarator declaration_specifiers SEMICOLON
