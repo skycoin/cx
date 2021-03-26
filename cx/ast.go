@@ -508,7 +508,7 @@ func (cxprogram *CXProgram) GetFramePointer() int {
 //                         `CXProgram` Package handling
 
 // AddPackage ...
-func (cxprogram *CXProgram) AddPackage(mod *CXPackage) *CXProgram {
+func (cxprogram *CXProgram) AddPackage(mod *CXPackage)  {
 	found := false
 	for _, md := range cxprogram.Packages {
 		if md.Name == mod.Name {
