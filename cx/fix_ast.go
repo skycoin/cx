@@ -172,3 +172,64 @@ func (pkg *CXPackage) GetCurrentFunction() (*CXFunction, error) {
 
 	return nil, errors.New("current function is nil")
 }
+
+// ----------------------------------------------------------------
+//                             `CXPackage` Selectors
+
+// SelectFunction ...
+func (pkg *CXPackage) SelectFunction(name string) (*CXFunction, error) {
+	var found *CXFunction
+	for _, fn := range pkg.Functions {
+		if fn.Name == name {
+			pkg.CurrentFunction = fn
+			found = fn
+		}
+	}
+	if found == nil {
+		return nil, fmt.Errorf("function '%s' does not exist", name)
+	}
+	return found, nil
+}
+
+// SelectStruct ...
+func (pkg *CXPackage) SelectStruct(name string) (*CXStruct, error) {
+	// prgrmStep := &CXProgramStep{
+	// 	Action: func(cxt *CXProgram) {
+	// 		if pkg, err := cxt.GetCurrentPackage(); err == nil {
+	// 			pkg.SelectStruct(name)
+	// 		}
+	// 	},
+	// }
+	// saveProgramStep(prgrmStep, pkg.Context)
+
+	var found *CXStruct
+	for _, strct := range pkg.Structs {
+		if strct.Name == name {
+			pkg.CurrentStruct = strct
+			found = strct
+		}
+	}
+
+	if found == nil {
+		return nil, errors.New("Desired structure does not exist")
+	}
+
+	return found, nil
+}
+
+// SelectExpression ...
+func (pkg *CXPackage) SelectExpression(line int) (*CXExpression, error) {
+	// prgrmStep := &CXProgramStep{
+	// 	Action: func(cxt *CXProgram) {
+	// 		if pkg, err := cxt.GetCurrentPackage(); err == nil {
+	// 			pkg.SelectExpression(line)
+	// 		}
+	// 	},
+	// }
+	// saveProgramStep(prgrmStep, pkg.Context)
+	fn, err := pkg.GetCurrentFunction()
+	if err == nil {
+		return fn.SelectExpression(line)
+	}
+	return nil, err
+}
