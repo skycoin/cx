@@ -98,6 +98,21 @@ func CheckUndValidTypes(expr *cxcore.CXExpression) {
 	}
 }
 
+func FunctionProcessParameters(symbols *[]map[string]*cxcore.CXArgument, symbolsScope *map[string]bool, offset *int, fn *cxcore.CXFunction, params []*cxcore.CXArgument) {
+	for _, param := range params {
+		ProcessLocalDeclaration(symbols, symbolsScope, param)
+
+		UpdateSymbolsTable(symbols, param, offset, false)
+		GiveOffset(symbols, param, offset, false)
+		SetFinalSize(symbols, param)
+
+		AddPointer(fn, param)
+
+		// as these are declarations, they should not have any dereference operations
+		param.DereferenceOperations = nil
+	}
+}
+
 func FunctionDeclaration(fn *cxcore.CXFunction, inputs, outputs []*cxcore.CXArgument, exprs []*cxcore.CXExpression) {
 	if cxcore.FoundCompileErrors {
 		return
@@ -445,20 +460,7 @@ func ProcessLocalDeclaration(symbols *[]map[string]*cxcore.CXArgument, symbolsSc
 	arg.IsLocalDeclaration = (*symbolsScope)[arg.Package.Name+"."+arg.Name]
 }
 
-func FunctionProcessParameters(symbols *[]map[string]*cxcore.CXArgument, symbolsScope *map[string]bool, offset *int, fn *cxcore.CXFunction, params []*cxcore.CXArgument) {
-	for _, param := range params {
-		ProcessLocalDeclaration(symbols, symbolsScope, param)
 
-		UpdateSymbolsTable(symbols, param, offset, false)
-		GiveOffset(symbols, param, offset, false)
-		SetFinalSize(symbols, param)
-
-		AddPointer(fn, param)
-
-		// as these are declarations, they should not have any dereference operations
-		param.DereferenceOperations = nil
-	}
-}
 
 func ProcessGoTos(fn *cxcore.CXFunction, exprs []*cxcore.CXExpression) {
 	for i, expr := range exprs {
