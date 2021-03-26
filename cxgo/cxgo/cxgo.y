@@ -284,12 +284,10 @@ function_header:
                 {
 			yylval.line = 0
 			$$ = actions.FunctionHeader($2, nil, false)
-			actions.InFn = true
                 }
         |       FUNC LPAREN parameter_type_list RPAREN IDENTIFIER
                 {
 			$$ = actions.FunctionHeader($5, $3, true)
-			actions.InFn = true
                 }
         ;
 
@@ -304,12 +302,10 @@ function_declaration:
                 function_header function_parameters compound_statement
                 {
 			actions.FunctionDeclaration($1, $2, nil, $3)
-			actions.InFn = false
                 }
         |       function_header function_parameters function_parameters compound_statement
                 {
 			actions.FunctionDeclaration($1, $2, $3, $4)
-			actions.InFn = false
                 }
         ;
 

@@ -1679,12 +1679,10 @@ yynewstate:
 		{
 			yylval.line = 0
 			yyVAL.function = actions.FunctionHeader(yyS[yypt-0].tok, nil, false)
-			actions.InFn = true
 		}
 	case 21:
 		{
 			yyVAL.function = actions.FunctionHeader(yyS[yypt-0].tok, yyS[yypt-2].arguments, true)
-			actions.InFn = true
 		}
 	case 22:
 		{
@@ -1697,12 +1695,10 @@ yynewstate:
 	case 24:
 		{
 			actions.FunctionDeclaration(yyS[yypt-2].function, yyS[yypt-1].arguments, nil, yyS[yypt-0].expressions)
-			actions.InFn = false
 		}
 	case 25:
 		{
 			actions.FunctionDeclaration(yyS[yypt-3].function, yyS[yypt-2].arguments, yyS[yypt-1].arguments, yyS[yypt-0].expressions)
-			actions.InFn = false
 		}
 	case 27:
 		{
