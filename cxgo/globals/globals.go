@@ -20,5 +20,9 @@ func GetWorkDir(filename string) string {
  */
 
 //What does this do?
+//This is where intializers get pushed, but only used 4 times
+//is a global program attribute, so shouldnt be here or in actions
 var SysInitExprs []*cxcore.CXExpression
 
+//cxgo/actions/declarations
+//globals.SysInitExprs = append(globals.SysInitExprs, initializer...)
