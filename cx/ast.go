@@ -381,8 +381,7 @@ func (cxprogram *CXProgram) GetPackage(packageNameToFind string) (*CXPackage, er
 	//iterate packages looking for package; same as GetPackage?
 	for _, cxpackage := range cxprogram.Packages {
 		if cxpackage.Name == packageNameToFind {
-			//can return once found
-			return cxpackage, nil
+			return cxpackage, nil //can return once found
 		}
 	}
 	//not found
