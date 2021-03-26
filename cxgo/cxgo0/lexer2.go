@@ -1,4 +1,4 @@
-package stage1
+package cxgo0
 
 import (
 	"fmt"
@@ -63,7 +63,7 @@ func (lval *yySymType) scancopy(tok *yySymType) {
 }
 
 //Unused
-//looks like a copy of cxparser/stage2/lexer.go?
+//looks like a copy of cxparser/cxgo/lexer.go?
 //should definatel be in constants or something
 /*
 var tokenNames = map[int]string{

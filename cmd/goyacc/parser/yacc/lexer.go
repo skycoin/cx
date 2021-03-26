@@ -1,8 +1,8 @@
-// Copyright 2015 The stage2 Authors. All rights reserved.
+// Copyright 2015 The cxgo Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package parser // import "github.com/skycoin/cx/cmd/goyacc/stage2/yacc"
+package parser // import "github.com/skycoin/cx/cmd/goyacc/cxgo/yacc"
 
 import (
 	"bytes"

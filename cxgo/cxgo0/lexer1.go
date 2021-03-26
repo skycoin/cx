@@ -1,4 +1,4 @@
-package stage1
+package cxgo0
 
 import (
 	"fmt"
@@ -27,7 +27,7 @@ type Lexer struct {
 	crash     bool //used for crash behaviour
 	colbefore bool //used for colon keywords
 
-	tok *yySymType //symbol read. soon to be depracated for fully new stage2
+	tok *yySymType //symbol read. soon to be depracated for fully new cxgo
 }
 
 const sentinel = utf8.RuneSelf

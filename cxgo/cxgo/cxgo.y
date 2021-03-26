@@ -1,5 +1,5 @@
 %{
-	package parser
+	package cxgo
 	import (
 		// "fmt"
 		"strconv"
@@ -241,45 +241,40 @@ stepping:       TSTEP int_value int_value
         ;
 */
 
+
 selector:
                 SPACKAGE IDENTIFIER SEMICOLON
                 {
-			$<string>$ = actions.Selector($2, actions.SELECT_TYP_PKG)
+			        //$<string>$ = actions.Selector($2, actions.SELECT_TYP_PKG)
                 }
         |       SFUNC IDENTIFIER
                 {
-			$<string>$ = actions.Selector($2, actions.SELECT_TYP_FUNC)
+			        //$<string>$ = actions.Selector($2, actions.SELECT_TYP_FUNC)
                 }
                 compound_statement
                 {
-			if len($4) > 0 {
-				if pkg, err := actions.PRGRM.GetCurrentPackage(); err == nil {
-					if fn, err := actions.PRGRM.GetFunction($<string>3, pkg.Name); err == nil {
-						for _, expr := range $4 {
-							fn.AddExpression(expr)
-						}
-						actions.FunctionDeclaration(fn, nil, nil, nil)
-					} else {
-						panic(err)
-					}
-				} else {
-					panic(err)
-				}
-			}
-			
-			// if $<bool>4 {
-				
-			// 	if _, err := actions.PRGRM.SelectFunction($<string>3); err == nil {
-			// 	}
-			// }
+			        if len($4) > 0 {
+				        if pkg, err := actions.PRGRM.GetCurrentPackage(); err == nil {
+					        if fn, err := actions.PRGRM.GetFunction($<string>3, pkg.Name); err == nil {
+						        for _, expr := range $4 {
+							        fn.AddExpression(expr)
+						        }
+						        actions.FunctionDeclaration(fn, nil, nil, nil)
+					        } else {
+						    panic(err)
+					        }
+				            } else {
+					        panic(err)
+				            }
+			        }
                 }
         |       SSTRUCT IDENTIFIER SEMICOLON
                 {
-			$<string>$ = actions.Selector($2, actions.SELECT_TYP_STRCT)
+			//$<string>$ = actions.Selector($2, actions.SELECT_TYP_STRCT)
                 }
         |       SSTRUCT IDENTIFIER
                 {
-			$<string>$ = actions.Selector($2, actions.SELECT_TYP_STRCT)
+			//$<string>$ = actions.Selector($2, actions.SELECT_TYP_STRCT)
                 }
                 struct_fields
                 {
@@ -289,7 +284,6 @@ selector:
 						for _, fld := range $4 {
 							strct.AddField(fld)
 						}
-						// actions.FunctionDeclaration(fn, nil, nil, nil)
 					} else {
 						panic(err)
 					}
@@ -297,13 +291,9 @@ selector:
 					panic(err)
 				}
 			}
-			/* if $<bool>4 { */
-			/* 	if _, err := actions.PRGRM.SelectStruct($<string>3); err == nil { */
-			/* 		//fmt.Println(fmt.Sprintf("== Changed to struct '%s' ==", strct.Name)) */
-			/* 	} */
-			/* } */
                 }
         ;
+
 
 global_declaration:
                 VAR declarator declaration_specifiers SEMICOLON

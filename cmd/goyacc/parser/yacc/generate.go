@@ -1,4 +1,4 @@
-// Copyright 2015 The stage2 Authors. All rights reserved.
+// Copyright 2015 The cxgo Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -17,7 +17,7 @@ import (
 )
 
 func yy() (nm string, err error) {
-	y, err := os.Create("stage2.y")
+	y, err := os.Create("cxgo.y")
 	if err != nil {
 		return "", err
 	}
@@ -28,7 +28,7 @@ func yy() (nm string, err error) {
 		"-astImport", "\"go/token\"",
 		"-kind", "Case",
 		"-o", nm,
-		"stage2.yy",
+		"cxgo.yy",
 	)
 	if out, err := cmd.CombinedOutput(); err != nil {
 		os.Remove(nm)
@@ -70,7 +70,7 @@ func goyacc(y string) (err error) {
 		return err
 	}
 
-	cmd = exec.Command("goyacc", "-cr", "-xe", t.Name(), "-o", "stage2.go", "-dlvalf", "%v", "-dlval", "prettyString(lval.Token)", y)
+	cmd = exec.Command("goyacc", "-cr", "-xe", t.Name(), "-o", "cxgo.go", "-dlvalf", "%v", "-dlval", "prettyString(lval.Token)", y)
 	if out, err := cmd.CombinedOutput(); err != nil {
 		log.Printf("%s", out)
 		return err

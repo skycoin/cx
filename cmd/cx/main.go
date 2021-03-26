@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	//"github.com/skycoin/cx/cxparser/stage1"
+	//"github.com/skycoin/cx/cxparser/cxgo0"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -13,7 +13,7 @@ import (
 	cxcore "github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cxgo/actions"
 	"github.com/skycoin/cx/cxgo/cxparser"
-	"github.com/skycoin/cx/cxgo/stage2"
+	"github.com/skycoin/cx/cxgo/cxgo"
 
 	"github.com/skycoin/cx/cx/globals"
 )
@@ -106,7 +106,7 @@ func Run(args []string) {
 	cxArgs, sourceCode, fileNames := cxcore.ParseArgsForCX(commandLine.Args(), true)
 
 	// Propagate some options out to other packages.
-	stage2.DebugLexer = options.debugLexer // in package stage2
+	cxgo.DebugLexer = options.debugLexer // in package cxgo
 	DebugProfileRate = options.debugProfile
 	DebugProfile = DebugProfileRate > 0
 
@@ -172,7 +172,7 @@ func printTokenize(options cxCmdFlags, fileNames []string) {
 		defer w.Close()
 	}
 
-	stage2.Tokenize(r, w)
+	cxgo.Tokenize(r, w)
 }
 
 func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File) (bool, []byte, []byte) {
@@ -204,7 +204,7 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 	//remove path variable, not used
 	// setting project's working directory
 	//if !options.replMode && len(sourceCode) > 0 {
-		//stage1.PRGRM0.Path = determineWorkDir(sourceCode[0].Name())
+		//cxgo0.PRGRM0.Path = determineWorkDir(sourceCode[0].Name())
 	//}
 	globals.CxProgramPath = determineWorkDir(sourceCode[0].Name())
 

@@ -15,8 +15,8 @@ import (
 	"github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cxgo/actions"
 	"github.com/skycoin/cx/cxgo/cxparser"
-	"github.com/skycoin/cx/cxgo/stage1"
-	"github.com/skycoin/cx/cxgo/stage2"
+	"github.com/skycoin/cx/cxgo/cxgo0"
+	"github.com/skycoin/cx/cxgo/cxgo"
 )
 
 var (
@@ -128,8 +128,8 @@ func RunProgram(w http.ResponseWriter, r *http.Request) {
 }
 
 func unsafeeval(code string) (out string) {
-	var lexer *stage2.Lexer
-	defer func(lexer *stage2.Lexer) {
+	var lexer *cxgo.Lexer
+	defer func(lexer *cxgo.Lexer) {
 		if r := recover(); r != nil {
 			out = fmt.Sprintf("%v", r)
 			// lexer.Stop()
@@ -148,14 +148,14 @@ func unsafeeval(code string) (out string) {
 	actions.LineNo = 0
 
 	actions.PRGRM = cxcore.MakeProgram()
-	stage1.PRGRM0 = actions.PRGRM
+	cxgo0.PRGRM0 = actions.PRGRM
 
-	stage1.Parse(code)
+	cxgo0.Parse(code)
 
-	actions.PRGRM = stage1.PRGRM0
+	actions.PRGRM = cxgo0.PRGRM0
 
-	lexer = stage2.NewLexer(bytes.NewBufferString(code))
-	stage2.Parse(lexer)
+	lexer = cxgo.NewLexer(bytes.NewBufferString(code))
+	cxgo.Parse(lexer)
 	//yyParse(lexer)
 
 	err = cxparser.AddInitFunction(actions.PRGRM)

@@ -1,4 +1,4 @@
-package stage1
+package cxgo0
 
 var KeywordMap map[string]int = map[string]int{
 	"func":      FUNC,

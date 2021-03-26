@@ -2070,7 +2070,7 @@ examples:
 
 				stack, la, ok := parse(example)
 				if !ok {
-					y.err(pos, "stage2 unexpectedly accepts xerror example: %v %s", example, lit)
+					y.err(pos, "cxgo unexpectedly accepts xerror example: %v %s", example, lit)
 					continue
 				}
 

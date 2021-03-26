@@ -1,4 +1,4 @@
-package stage2
+package cxgo
 
 import (
 	"fmt"
@@ -70,6 +70,6 @@ func (lval *yySymType) scancopy(tok *yySymType) {
 }
 
 //Warning Unused
-//is duplicated in cxparser/stage1/lexer.go, also unused
+//is duplicated in cxparser/cxgo0/lexer.go, also unused
 
 

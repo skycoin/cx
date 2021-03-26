@@ -8,10 +8,10 @@ import (
 )
 
 /*
-./cxparser/stage2/cxparser.y:234:			actions.Stepping(int($2), int($3), true)
-./cxparser/stage2/cxparser.y:238:			actions.Stepping(int($2), 0, false)
-./cxparser/stage2/cxparser.go:1693:			actions.Stepping(int(yyS[yypt-1].i32), int(yyS[yypt-0].i32), true)
-./cxparser/stage2/cxparser.go:1697:			actions.Stepping(int(yyS[yypt-0].i32), 0, false)
+./cxparser/cxgo/cxparser.y:234:			actions.Stepping(int($2), int($3), true)
+./cxparser/cxgo/cxparser.y:238:			actions.Stepping(int($2), 0, false)
+./cxparser/cxgo/cxparser.go:1693:			actions.Stepping(int(yyS[yypt-1].i32), int(yyS[yypt-0].i32), true)
+./cxparser/cxgo/cxparser.go:1697:			actions.Stepping(int(yyS[yypt-0].i32), 0, false)
 ./cxparser/actions/interactive.go:10:func Stepping(steps int, delay int, withDelay bool) {
 */
 
@@ -44,7 +44,7 @@ func SteppingWithDelay(steps int, delay int, withDelay bool) {
 }
 
 //delete this function, its retarded
-//Used Twice; in cxparser/stage2/cxparser.go
+//Used Twice; in cxparser/cxgo/cxparser.go
 func Stepping(steps int, delay int, withDelay bool) {
 	if !withDelay {
 		SteppingNoDelay(steps)
@@ -53,6 +53,7 @@ func Stepping(steps int, delay int, withDelay bool) {
 	}
 }
 
+//deprecate
 func Selector(ident string, selTyp int) string {
 	switch selTyp {
 	case SELECT_TYP_PKG:
