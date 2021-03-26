@@ -14,12 +14,14 @@ import (
 
 	"github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cxgo/actions"
-	"github.com/skycoin/cx/cxgo/cxparser"
-	"github.com/skycoin/cx/cxgo/cxgo0"
 	"github.com/skycoin/cx/cxgo/cxgo"
+	"github.com/skycoin/cx/cxgo/cxgo0"
+	"github.com/skycoin/cx/cxgo/cxparser"
 )
 
 var ReplTargetFn string = ""
+var ReplTargetStrct string = ""
+var ReplTargetMod string = ""
 
 func unsafeEval(code string) (out string) {
 	var lexer *cxgo.Lexer
@@ -115,11 +117,11 @@ func Repl() {
 			if ReplTargetFn != "" {
 				inp = fmt.Sprintf(":func %s {\n%s\n}\n", ReplTargetFn, inp)
 			}
-			if actions.ReplTargetMod != "" {
+			if ReplTargetMod != "" {
 				inp = fmt.Sprintf("%s", inp)
 			}
-			if actions.ReplTargetStrct != "" {
-				inp = fmt.Sprintf(":struct %s {\n%s\n}\n", actions.ReplTargetStrct, inp)
+			if ReplTargetStrct != "" {
+				inp = fmt.Sprintf(":struct %s {\n%s\n}\n", ReplTargetStrct, inp)
 			}
 
 			b := bytes.NewBufferString(inp)
@@ -132,13 +134,13 @@ func Repl() {
 				continue
 			}
 
-			if actions.ReplTargetStrct != "" {
-				actions.ReplTargetStrct = ""
+			if ReplTargetStrct != "" {
+				ReplTargetStrct = ""
 				continue
 			}
 
-			if actions.ReplTargetMod != "" {
-				actions.ReplTargetMod = ""
+			if ReplTargetMod != "" {
+				ReplTargetMod = ""
 				continue
 			}
 
@@ -149,14 +151,14 @@ func Repl() {
 }
 
 func printPrompt() {
-	if actions.ReplTargetMod != "" {
-		fmt.Println(fmt.Sprintf(":package %s ...", actions.ReplTargetMod))
+	if ReplTargetMod != "" {
+		fmt.Println(fmt.Sprintf(":package %s ...", ReplTargetMod))
 		fmt.Printf("* ")
 	} else if ReplTargetFn != "" {
 		fmt.Println(fmt.Sprintf(":func %s {...", ReplTargetFn))
 		fmt.Printf("\t* ")
-	} else if actions.ReplTargetStrct != "" {
-		fmt.Println(fmt.Sprintf(":struct %s {...", actions.ReplTargetStrct))
+	} else if ReplTargetStrct != "" {
+		fmt.Println(fmt.Sprintf(":struct %s {...", ReplTargetStrct))
 		fmt.Printf("\t* ")
 	} else {
 		fmt.Printf("* ")
