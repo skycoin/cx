@@ -429,7 +429,7 @@ redonext:
 	//fmt.Printf("%s\n", tokenName(s.tok.yys))
 }
 
-var keywordMap map[string]int = map[string]int{
+var KeywordMap map[string]int = map[string]int{
 	"func":      FUNC,
 	"var":       VAR,
 	"package":   PACKAGE,
@@ -503,7 +503,7 @@ func (s *Lexer) ident() {
 	lit := s.segment()
 	s.tok = &yySymType{}
 	if len(lit) >= 2 {
-		if tok := keywordMap[string(lit)]; tok != 0 {
+		if tok := KeywordMap[string(lit)]; tok != 0 {
 			switch tok {
 			case IDENTIFIER,
 				BOOL, STR,
