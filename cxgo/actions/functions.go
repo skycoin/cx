@@ -122,7 +122,7 @@ func FunctionDeclaration(fn *cxcore.CXFunction, inputs, outputs []*cxcore.CXArgu
 
 	// getting offset to use by statements (excluding inputs, outputs and receiver)
 	var offset int
-	PRGRM.HeapStartsAt = DataOffset
+	PRGRM.HeapStartsAt = DataOffset //Why would declaring a function set heap?
 
 	ProcessGoTos(fn, exprs)
 
