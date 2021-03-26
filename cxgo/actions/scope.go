@@ -16,7 +16,6 @@ import cxcore "github.com/skycoin/cx/cx"
 ./cxgo/actions/functions.go:162:		if expr.ScopeOperation == SCOPE_REM {
 */
 
- */
 // create a new scope or return to the previous scope
 const (
 	SCOPE_UNUSED = iota //if this value appears; program should crash

@@ -217,8 +217,7 @@ func AffordanceStructs(pkg *cxcore.CXPackage, currentFile string, lineNo int) {
 
 	prgrmStrct.AddField(prgrmFldCallCounter)
 	prgrmStrct.AddField(prgrmFldFreeHeap)
-	prgrmStrct.AddField(prgrmFldCa//func DefineNewScope(exprs []*cxcore.CXExpression) {}
-ller)
+	prgrmStrct.AddField(prgrmFldCaller)
 
 	pkg.AddStruct(prgrmStrct)
 }
