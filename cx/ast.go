@@ -1392,3 +1392,48 @@ func (arg *CXArgument) AddOutput(out *CXArgument) *CXArgument {
 	}
 	return arg
 }
+
+---
+
+// PrintProgram prints the abstract syntax tree of a CX program in a
+// human-readable format.
+func (cxprogram *CXProgram) PrintProgram() {
+	fmt.Println(cxprogram.ToString())
+}
+
+// ToString returns the abstract syntax tree of a CX program in a
+// string format.
+func (cxprogram *CXProgram) ToString() string {
+	var ast string
+	ast += "Program\n"
+
+	var currentFunction *CXFunction
+	var currentPackage *CXPackage
+
+	// Saving current program state because ToString uses SelectXXX.
+	// If we don't do this, calling `:dp` in a REPL will always switch the
+	// user to the last function in the last package in the `CXProgram`
+	// structure.
+	if pkg, err := cxprogram.GetCurrentPackage(); err == nil {
+		currentPackage = pkg
+	}
+
+	if fn, err := cxprogram.GetCurrentFunction(); err == nil {
+		currentFunction = fn
+	}
+
+	buildStrPackages(cxprogram, &ast)
+
+	if currentPackage == nil {
+		panic("error")
+	}
+	if currentFunction == nil {
+		panic("error")
+	}
+	cxprogram.CurrentPackage = currentPackage
+	if currentPackage != nil {
+		currentPackage.CurrentFunction = currentFunction
+	}
+
+	return ast
+}

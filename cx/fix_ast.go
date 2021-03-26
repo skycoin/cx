@@ -51,27 +51,6 @@ func (pkg *CXPackage) GetFunction(fnName string) (*CXFunction, error) {
 	return nil, fmt.Errorf("function '%s' not found in package '%s' or its imports", fnName, pkg.Name)
 }
 
-/*
-//Only One Call in utilities.go ToString
-func (cxprogram *CXProgram) Getfunction2(name string) (*CXFunction, error) {
-	mod, err := cxprogram.GetCurrentPackage()
-	if err == nil {
-		return mod.SelectFunction(name)
-	}
-	return nil, err
-}
-*/
-
-/*
-func (cxprogram *CXProgram) SelectStruct(name string) (*CXStruct, error) {
-	mod, err := cxprogram.GetCurrentPackage()
-	if err == nil {
-		return mod.SelectStruct(name)
-	}
-	return nil, err
-}
-*/
-
 // SelectExpression ...
 func (cxprogram *CXProgram) SelectExpression(line int) (*CXExpression, error) {
 	// prgrmStep := &CXProgramStep{
