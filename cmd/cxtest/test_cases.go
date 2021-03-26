@@ -8,6 +8,12 @@ func runTestCases(t *tester) {
 		Output: "Hello World!\n",
 	})
 
+	t.RunWithConfig(&RunConfig{
+		Args:   "print-sum.cx",
+		Desc:   "print sum of i32",
+		Output: "7\n",
+	})
+
 	t.Run("test-i8.cx", CxSuccess, "i32")
 	t.Run("test-i16.cx", CxSuccess, "i32")
 	t.Run("test-i32.cx", CxSuccess, "i32")
