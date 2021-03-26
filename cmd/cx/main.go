@@ -106,10 +106,10 @@ func Run(args []string) {
 	DebugProfileRate = options.debugProfile
 	DebugProfile = DebugProfileRate > 0
 
-	if run, bcHeap, sPrgrm := parseProgram(options, fileNames, sourceCode); run {
+	if run := parseProgram(options, fileNames, sourceCode); run {
 
 		if checkAST(args) {
-			printProgramAST(options, cxArgs, sourceCode, bcHeap, sPrgrm)
+			printProgramAST(options, cxArgs, sourceCode)
 			return
 		}
 
@@ -123,7 +123,7 @@ func Run(args []string) {
 			return
 		}
 
-		runProgram(options, cxArgs, sourceCode, bcHeap, sPrgrm)
+		runProgram(options, cxArgs, sourceCode)
 	}
 }
 
@@ -171,7 +171,7 @@ func printTokenize(options cxCmdFlags, fileNames []string) {
 	cxgo.Tokenize(r, w)
 }
 
-func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File) (bool, []byte, []byte) {
+func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File) (bool) {
 
 	profile := StartCPUProfile("parse")
 	defer StopCPUProfile(profile)
@@ -189,10 +189,10 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 	actions.PRGRM.Packages = corePkgsPrgrm.Packages
 
 	// var bcPrgrm *CXProgram
-	var sPrgrm []byte
+	//var sPrgrm []byte
 	// In case of a CX chain, we need to temporarily store the blockchain code heap elsewhere,
 	// so we can then add it after the transaction code's data segment.
-	var bcHeap []byte
+	//var bcHeap []byte
 
 	// Parsing all the source code files sent as CLI arguments to CX.
 	cxparser.ParseSourceCode(sourceCode, fileNames)
@@ -216,7 +216,7 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 	// Adding *init function that initializes all the global variables.
 	err = cxparser.AddInitFunction(actions.PRGRM)
 	if err != nil {
-		return false, nil, nil
+		return false
 	}
 
 	actions.LineNo = 0
@@ -229,10 +229,10 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 
 	}
 
-	return true, bcHeap, sPrgrm
+	return true
 }
 
-func runProgram(options cxCmdFlags, cxArgs []string, sourceCode []*os.File, bcHeap []byte, sPrgrm []byte) {
+func runProgram(options cxCmdFlags, cxArgs []string, sourceCode []*os.File) {
 	StartProfile("run")
 	defer StopProfile("run")
 
@@ -253,7 +253,7 @@ func runProgram(options cxCmdFlags, cxArgs []string, sourceCode []*os.File, bcHe
 	}
 }
 
-func printProgramAST(options cxCmdFlags, cxArgs []string, sourceCode []*os.File, bcHeap []byte, sPrgrm []byte) {
+func printProgramAST(options cxCmdFlags, cxArgs []string, sourceCode []*os.File) {
 	StartProfile("run")
 	defer StopProfile("run")
 

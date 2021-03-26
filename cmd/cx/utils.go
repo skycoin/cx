@@ -53,10 +53,10 @@ func parseCmdFlags(options cxCmdFlags, args []string) {
 	}
 }
 
-func printlexerandast(args []string, options cxCmdFlags, cxArgs []string, sourceCode []*os.File, bcHeap []byte, sPrgrm []byte, fileNames []string) {
+func printlexerandast(args []string, options cxCmdFlags, cxArgs []string, sourceCode []*os.File, fileNames []string) {
 
 	if checkAST(args) {
-		printProgramAST(options, cxArgs, sourceCode, bcHeap, sPrgrm)
+		printProgramAST(options, cxArgs, sourceCode)
 		return
 	}
 

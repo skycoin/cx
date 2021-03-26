@@ -1,11 +1,6 @@
 package globals
 
-import (
-	"os"
-	"path/filepath"
-	"strings"
-)
-
+/*
 var CxProgramPath string = ""
 
 func SetWorkingDir(filename string)  {
@@ -20,3 +15,4 @@ func SetWorkingDir(filename string)  {
 func GetWorkDir(filename string) string {
 	return CxProgramPath
 }
+ */
