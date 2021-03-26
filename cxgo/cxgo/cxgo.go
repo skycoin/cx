@@ -2315,10 +2315,6 @@ yynewstate:
 		{
 			yyVAL.expressions = append(yyS[yypt-1].expressions, yyS[yypt-0].expressions...)
 		}
-	case 203:
-		{
-			yyVAL.expressions = nil
-		}
 	case 204:
 		{
 			yyVAL.expressions = nil
