@@ -4,16 +4,16 @@ import (
 	"github.com/skycoin/cx/cx"
 )
 
-/* [2020 Jun 07 (ReewassSquared)] we should add verbose compilation options */
+//Move out actions/interactive to own module?
 
 var PRGRM *cxcore.CXProgram
 var DataOffset int = cxcore.STACK_SIZE
 
 var CurrentFile string
 var LineNo int
-var ReplTargetFn string = ""
-var ReplTargetStrct string = ""
-var ReplTargetMod string = ""
+var ReplTargetFn string = "" //only used by cx/cmd/repl.go and cxgo/actions/iteractive
+var ReplTargetStrct string = "" //only used in actions/interactive, and repl.go
+var ReplTargetMod string = "" //only used in actions/interactive, and repl.go
 
 var SysInitExprs []*cxcore.CXExpression
 

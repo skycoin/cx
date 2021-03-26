@@ -106,7 +106,7 @@ build-parser: ## Generate lexer and parser for CX grammar
                         /* Removers */
                         REM DEF EXPR FIELD CLAUSES OBJECT OBJECTS
                         /* Stepping */
-                        STEP PSTEP TSTEP
+                        //STEP PSTEP TSTEP
                         /* Debugging */
                         DSTACK DPROGRAM DSTATE
                         /* Affordances */
@@ -217,7 +217,7 @@ external_declaration:
         |       import_declaration
         |       struct_declaration
                 
-        |       stepping
+        //|       stepping
         |       selector
         |       debugging
         ;
@@ -229,6 +229,7 @@ debugging:
                 }
         ;
 
+/*
 stepping:       TSTEP int_value int_value
                 {
 			actions.Stepping(int($2), int($3), true)
@@ -238,6 +239,7 @@ stepping:       TSTEP int_value int_value
 			actions.Stepping(int($2), 0, false)
                 }
         ;
+*/
 
 selector:
                 SPACKAGE IDENTIFIER SEMICOLON
@@ -1269,7 +1271,7 @@ block_item_list:
 
 block_item:     declaration
         |       statement
-        |       stepping
+        //|       stepping
                 { $$ = nil }
         /* |       debugging */
         /*         { $$ = nil } */

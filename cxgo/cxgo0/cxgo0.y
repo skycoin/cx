@@ -113,7 +113,7 @@
                         /* Removers */
                         REM DEF EXPR FIELD CLAUSES OBJECT OBJECTS
                         /* Stepping */
-                        STEP PSTEP TSTEP
+                        //STEP PSTEP TSTEP
                         /* Debugging */
                         DSTACK DPROGRAM DSTATE
                         /* Affordances */
@@ -161,12 +161,14 @@ external_declaration:
         |       import_declaration
         |       struct_declaration
 
-        |       stepping
+       // |       stepping
         ;
 
+/*
 stepping:       TSTEP int_value int_value
         |       STEP int_value
         ;
+*/
 
 global_declaration:
                 VAR declarator declaration_specifiers SEMICOLON

@@ -261,8 +261,8 @@ func TokenName(token int) string {
 		return "PLUSEQ"
 	case PLUSPLUS:
 		return " PLUS2"
-	case PSTEP:
-		return " PSTEP"
+	//case PSTEP:
+	//	return " PSTEP"
 	case PTR_OP:
 		return " PTROP"
 	case RBRACE:
@@ -299,8 +299,8 @@ func TokenName(token int) string {
 		return "SPACKG"
 	case SSTRUCT:
 		return "SSTRCT"
-	case STEP:
-		return "  STEP"
+	//case STEP:
+	//	return "  STEP"
 	case STR:
 		return "   STR"
 	case STRING_LITERAL:
@@ -315,8 +315,8 @@ func TokenName(token int) string {
 		return "SWITCH"
 	case TAG:
 		return "   TAG"
-	case TSTEP:
-		return " TSTEP"
+	//case TSTEP:
+	//	return " TSTEP"
 	case TYPE:
 		return "  TYPE"
 	case TYPSTRUCT:

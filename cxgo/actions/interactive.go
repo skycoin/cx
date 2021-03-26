@@ -44,6 +44,7 @@ func SteppingWithDelay(steps int, delay int, withDelay bool) {
 }
 
 //delete this function, its retarded
+//Used Twice; in cxgo/parser/cxgo.go
 func Stepping(steps int, delay int, withDelay bool) {
 	if !withDelay {
 		SteppingNoDelay(steps)
