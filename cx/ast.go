@@ -810,15 +810,6 @@ func (pkg *CXPackage) RemoveGlobal(defName string) {
 // ----------------------------------------------------------------
 //                             `CXStruct` Getters
 
-// GetFields ...
-func (strct *CXStruct) GetFields() ([]*CXArgument, error) {
-	if strct.Fields != nil {
-		return strct.Fields, nil
-	}
-	return nil, fmt.Errorf("structure '%s' has no fields", strct.Name)
-
-}
-
 // GetField ...
 func (strct *CXStruct) GetField(name string) (*CXArgument, error) {
 	for _, fld := range strct.Fields {
