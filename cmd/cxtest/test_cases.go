@@ -2,6 +2,12 @@ package main
 
 func runTestCases(t *tester) {
 	// tests
+	t.RunWithConfig(&RunConfig{
+		Args:   "hello-world.cx",
+		Desc:   "hello world with output",
+		Output: "Hello World!\n",
+	})
+
 	t.Run("test-i8.cx", CxSuccess, "i32")
 	t.Run("test-i16.cx", CxSuccess, "i32")
 	t.Run("test-i32.cx", CxSuccess, "i32")
