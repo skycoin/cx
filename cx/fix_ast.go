@@ -178,17 +178,8 @@ func (pkg *CXPackage) SelectFunction(name string) (*CXFunction, error) {
 	return found, nil
 }
 
-// SelectStruct ...
+/*
 func (pkg *CXPackage) SelectStruct(name string) (*CXStruct, error) {
-	// prgrmStep := &CXProgramStep{
-	// 	Action: func(cxt *CXProgram) {
-	// 		if pkg, err := cxt.GetCurrentPackage(); err == nil {
-	// 			pkg.SelectStruct(name)
-	// 		}
-	// 	},
-	// }
-	// saveProgramStep(prgrmStep, pkg.Context)
-
 	var found *CXStruct
 	for _, strct := range pkg.Structs {
 		if strct.Name == name {
@@ -196,13 +187,12 @@ func (pkg *CXPackage) SelectStruct(name string) (*CXStruct, error) {
 			found = strct
 		}
 	}
-
 	if found == nil {
-		return nil, errors.New("Desired structure does not exist")
+		return nil, errors.New("CXPackage.SelectStruct: Struct does not exist")
 	}
-
 	return found, nil
 }
+*/
 
 // SelectExpression ...
 func (pkg *CXPackage) SelectExpression(line int) (*CXExpression, error) {
