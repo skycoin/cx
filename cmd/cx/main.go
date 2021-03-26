@@ -182,7 +182,7 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 	defer StopProfile("parse")
 
 	actions.PRGRM = cxcore.MakeProgram()
-	corePkgsPrgrm, err := cxcore.GetProgram()
+	corePkgsPrgrm, err := cxcore.GetCurrentCxProgram()
 	if err != nil {
 		panic(err)
 	}
