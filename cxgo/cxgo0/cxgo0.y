@@ -109,7 +109,7 @@
                         /* Types */
                         BASICTYPE
                         /* Selectors */
-                        SPACKAGE SSTRUCT SFUNC
+                        SPACKAGE SSTRUCT SFUNC //Selectors are deprecated
                         /* Removers */
                         REM DEF EXPR FIELD CLAUSES OBJECT OBJECTS
                         /* Stepping */
