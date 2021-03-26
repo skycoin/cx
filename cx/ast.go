@@ -810,16 +810,6 @@ func (pkg *CXPackage) RemoveGlobal(defName string) {
 
 // SelectFunction ...
 func (pkg *CXPackage) SelectFunction(name string) (*CXFunction, error) {
-	// prgrmStep := &CXProgramStep{
-	// 	Action: func(cxt *CXProgram) {
-
-	// 		if pkg, err := cxt.GetCurrentPackage(); err == nil {
-	// 			pkg.Getfunction2(name)
-	// 		}
-	// 	},
-	// }
-	// saveProgramStep(prgrmStep, pkg.Context)
-
 	var found *CXFunction
 	for _, fn := range pkg.Functions {
 		if fn.Name == name {
@@ -827,11 +817,9 @@ func (pkg *CXPackage) SelectFunction(name string) (*CXFunction, error) {
 			found = fn
 		}
 	}
-
 	if found == nil {
 		return nil, fmt.Errorf("function '%s' does not exist", name)
 	}
-
 	return found, nil
 }
 
