@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/skycoin/cx/cxgo/cxgo0"
+	//"github.com/skycoin/cx/cxgo/cxgo0"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -207,7 +207,7 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 		//cxgo0.PRGRM0.Path = determineWorkDir(sourceCode[0].Name())
 	//}
 	globals.CxProgramPath = determineWorkDir(sourceCode[0].Name())
-	
+
 	// Checking if a main package exists. If not, create and add it to `PRGRM`.
 	if _, err := actions.PRGRM.GetFunction(cxcore.MAIN_FUNC, cxcore.MAIN_PKG); err != nil {
 		initMainPkg(actions.PRGRM)
