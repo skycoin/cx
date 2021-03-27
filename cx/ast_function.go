@@ -2,7 +2,6 @@ package cxcore
 
 import (
 	"errors"
-	"fmt"
 )
 
 // MakeFunction creates an empty function.
@@ -87,15 +86,15 @@ func (fn *CXFunction) GetExpressionByLabel(lbl string) *CXExpression {
 }
 
 // GetExpressionByLine ...
-func (fn *CXFunction) GetExpressionByLine(line int) (*CXExpression, error) {
+func (fn *CXFunction) GetExpressionByLine(line int) *CXExpression {
 	if fn.Expressions != nil {
 		if line <= len(fn.Expressions) {
-			return fn.Expressions[line], nil
+			return fn.Expressions[line]
 		}
-		return nil, fmt.Errorf("expression line number '%d' exceeds number of expressions in function '%s'", line, fn.Name)
+		return nil
 
 	}
-	return nil, fmt.Errorf("function '%s' has no expressions", fn.Name)
+	return nil
 
 }
 
