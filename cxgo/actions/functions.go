@@ -477,7 +477,7 @@ func ProcessLocalDeclaration(symbols *[]map[string]*ast.CXArgument, symbolsScope
 
 func ProcessGoTos(fn *ast.CXFunction, exprs []*ast.CXExpression) {
 	for i, expr := range exprs {
-		if expr.Label != "" && expr.Operator == cxcore.Natives[constants.OP_JMP] {
+		if expr.Label != "" && expr.Operator == globals.Natives[constants.OP_JMP] {
 			// then it's a goto
 			for j, e := range exprs {
 				if e.Label == expr.Label && i != j {
@@ -625,7 +625,7 @@ func CheckTypes(expr *ast.CXExpression) {
 }
 
 func ProcessStringAssignment(expr *ast.CXExpression) {
-	if expr.Operator == cxcore.Natives[constants.OP_IDENTITY] {
+	if expr.Operator == globals.Natives[constants.OP_IDENTITY] {
 		for i, out := range expr.Outputs {
 			if len(expr.Inputs) > i {
 				out = ast.GetAssignmentElement(out)
@@ -675,7 +675,7 @@ func ProcessSlice(inp *ast.CXArgument) {
 }
 
 func ProcessSliceAssignment(expr *ast.CXExpression) {
-	if expr.Operator == cxcore.Natives[constants.OP_IDENTITY] {
+	if expr.Operator == globals.Natives[constants.OP_IDENTITY] {
 		var inp *ast.CXArgument
 		var out *ast.CXArgument
 
@@ -906,7 +906,7 @@ func GiveOffset(symbols *[]map[string]*ast.CXArgument, sym *ast.CXArgument, offs
 }
 
 func ProcessTempVariable(expr *ast.CXExpression) {
-	if expr.Operator != nil && (expr.Operator == cxcore.Natives[constants.OP_IDENTITY] || cxcore.IsArithmeticOperator(expr.Operator.OpCode)) && len(expr.Outputs) > 0 && len(expr.Inputs) > 0 {
+	if expr.Operator != nil && (expr.Operator == globals.Natives[constants.OP_IDENTITY] || cxcore.IsArithmeticOperator(expr.Operator.OpCode)) && len(expr.Outputs) > 0 && len(expr.Inputs) > 0 {
 		name := expr.Outputs[0].Name
 		arg := expr.Outputs[0]
 		if cxcore.IsTempVar(name) {

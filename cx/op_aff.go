@@ -902,7 +902,7 @@ func opAffRequest(expr *ast.CXExpression, fp int) {
 			panic(err)
 		}
 	case "fn":
-		fn := Natives[globals.OpCodes[elt]]
+		fn := globals.Natives[globals.OpCodes[elt]]
 		if fn == nil {
 			var err error
 			fn, err = tgtPkg.GetFunction(elt)

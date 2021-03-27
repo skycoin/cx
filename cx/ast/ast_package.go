@@ -3,7 +3,6 @@ package ast
 import (
 	"errors"
 	"fmt"
-	"github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cx/globals"
 )
 
@@ -61,7 +60,7 @@ func (pkg *CXPackage) GetMethod(fnName string, receiverType string) (*CXFunction
 	// Trying to find it in `Natives`.
 	// Most likely a method from a core package.
 	if opCode, found := globals.OpCodes[pkg.Name+"."+fnName]; found {
-		return cxcore.Natives[opCode], nil
+		return globals.Natives[opCode], nil
 	}
 
 	return nil, fmt.Errorf("method '%s' not found in package '%s'", fnName, pkg.Name)

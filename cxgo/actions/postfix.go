@@ -118,7 +118,7 @@ func PostfixExpressionNative(typCode int, opStrCode string) []*ast.CXExpression 
 		// panic(ok)
 	}
 
-	expr := ast.MakeExpression(cxcore.Natives[opCode], CurrentFile, LineNo)
+	expr := ast.MakeExpression(globals.Natives[opCode], CurrentFile, LineNo)
 	pkg, err := AST.GetCurrentPackage()
 	if err != nil {
 		panic(err)
@@ -147,7 +147,7 @@ func PostfixExpressionEmptyFunCall(prevExprs []*ast.CXExpression) []*ast.CXExpre
 				prevExprs[0].Package = pkg
 			}
 			prevExprs[0].Outputs = nil
-			prevExprs[0].Operator = cxcore.Natives[opCode]
+			prevExprs[0].Operator = globals.Natives[opCode]
 		}
 
 		prevExprs[0].Inputs = nil
@@ -167,7 +167,7 @@ func PostfixExpressionFunCall(prevExprs []*ast.CXExpression, args []*ast.CXExpre
 				prevExprs[0].Package = pkg
 			}
 			prevExprs[0].Outputs = nil
-			prevExprs[0].Operator = cxcore.Natives[opCode]
+			prevExprs[0].Operator = globals.Natives[opCode]
 		}
 
 		prevExprs[0].Inputs = nil
@@ -184,9 +184,9 @@ func PostfixExpressionIncDec(prevExprs []*ast.CXExpression, isInc bool) []*ast.C
 
 	var expr *ast.CXExpression
 	if isInc {
-		expr = ast.MakeExpression(cxcore.Natives[constants.OP_I32_ADD], CurrentFile, LineNo)
+		expr = ast.MakeExpression(globals.Natives[constants.OP_I32_ADD], CurrentFile, LineNo)
 	} else {
-		expr = ast.MakeExpression(cxcore.Natives[constants.OP_I32_SUB], CurrentFile, LineNo)
+		expr = ast.MakeExpression(globals.Natives[constants.OP_I32_SUB], CurrentFile, LineNo)
 	}
 
 	var valB [4]byte

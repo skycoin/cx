@@ -7,23 +7,6 @@ import (
 	"github.com/skycoin/cx/cx/globals"
 )
 
-const (
-    OPERATOR_COUNT = constants.END_OF_OPERATORS - constants.START_OF_OPERATORS + 1
-    OPERATOR_HANDLER_COUNT = constants.TYPE_COUNT * OPERATOR_COUNT
-)
-
-// OpcodeHandler ...
-type OpcodeHandler func(expr *ast.CXExpression, fp int)
-type OpcodeHandler_V2 func(inputs []CXValue, outputs []CXValue)
-
-var (
-
-	// Natives ...
-	Natives        = map[int]*ast.CXFunction{}
-
-    Operators []*ast.CXFunction
-)
-
 // RegisterPackage registers a package on the CX standard library. This does not create a `CXPackage` structure,
 // it only tells the CX runtime that `pkgName` will exist by the time a CX program is run.
 func RegisterPackage(pkgName string) {
@@ -48,24 +31,24 @@ func IsComparisonOperator(opCode int) bool {
 }
 
 func GetTypedOperatorOffset(typeCode int, opCode int) int {
-    return typeCode * OPERATOR_COUNT + opCode - constants.START_OF_OPERATORS - 1
+    return typeCode *globals.OPERATOR_COUNT + opCode - constants.START_OF_OPERATORS - 1
 }
 
 func GetTypedOperator(typeCode int, opCode int) *ast.CXFunction {
-    return Operators[GetTypedOperatorOffset(typeCode, opCode)]
+    return globals.Operators[GetTypedOperatorOffset(typeCode, opCode)]
 }
 
 // Operator ...
-func Operator(code int, name string, handler OpcodeHandler_V2, inputs []*ast.CXArgument, outputs []*ast.CXArgument, atomicType int, operator int) {
+func Operator(code int, name string, handler globals.OpcodeHandler_V2, inputs []*ast.CXArgument, outputs []*ast.CXArgument, atomicType int, operator int) {
     Op_V2(code, name, handler, inputs, outputs)
-    native := Natives[code]
-    Operators[GetTypedOperatorOffset(atomicType, operator)] = native
+    native := globals.Natives[code]
+    globals.Operators[GetTypedOperatorOffset(atomicType, operator)] = native
 }
 
 // Op ...
-func Op_V2(code int, name string, handler OpcodeHandler_V2, inputs []*ast.CXArgument, outputs []*ast.CXArgument) {
+func Op_V2(code int, name string, handler globals.OpcodeHandler_V2, inputs []*ast.CXArgument, outputs []*ast.CXArgument) {
 	if code >= len(globals.OpcodeHandlers_V2) {
-		globals.OpcodeHandlers_V2 = append(globals.OpcodeHandlers_V2, make([]OpcodeHandler_V2, code+1)...)
+		globals.OpcodeHandlers_V2 = append(globals.OpcodeHandlers_V2, make([]globals.OpcodeHandler_V2, code+1)...)
 	}
 	if globals.OpcodeHandlers_V2[code] != nil {
 		panic(fmt.Sprintf("duplicate opcode %d : '%s' width '%s'.\n", code, name, globals.OpNames[code]))
@@ -82,14 +65,14 @@ func Op_V2(code int, name string, handler OpcodeHandler_V2, inputs []*ast.CXArgu
 	if outputs == nil {
 		outputs = []*ast.CXArgument{}
 	}
-	Natives[code] = ast.MakeNativeFunctionV2(code, inputs, outputs)
+	globals.Natives[code] = ast.MakeNativeFunctionV2(code, inputs, outputs)
 }
 
 
 // Op ...
-func Op(code int, name string, handler OpcodeHandler, inputs []*ast.CXArgument, outputs []*ast.CXArgument) {
+func Op(code int, name string, handler globals.OpcodeHandler, inputs []*ast.CXArgument, outputs []*ast.CXArgument) {
 	if code >= len(globals.OpcodeHandlers) {
-		globals.OpcodeHandlers = append(globals.OpcodeHandlers, make([]OpcodeHandler, code+1)...)
+		globals.OpcodeHandlers = append(globals.OpcodeHandlers, make([]globals.OpcodeHandler, code+1)...)
 	}
 	if globals.OpcodeHandlers[code] != nil {
 		panic(fmt.Sprintf("duplicate opcode %d : '%s' width '%s'.\n", code, name, globals.OpNames[code]))
@@ -105,7 +88,7 @@ func Op(code int, name string, handler OpcodeHandler, inputs []*ast.CXArgument, 
 	if outputs == nil {
 		outputs = []*ast.CXArgument{}
 	}
-	Natives[code] = ast.MakeNativeFunction(code, inputs, outputs)
+	globals.Natives[code] = ast.MakeNativeFunction(code, inputs, outputs)
 }
 
 /*
@@ -262,7 +245,7 @@ func init() {
 		panic(err)
 	}
 
-    Operators = make([]*ast.CXFunction, OPERATOR_HANDLER_COUNT)
+    globals.Operators = make([]*ast.CXFunction, globals.OPERATOR_HANDLER_COUNT)
 
     Op(constants.OP_IDENTITY, "identity", opIdentity, In(AUND), Out(AUND))
 	Op(constants.OP_JMP, "jmp", opJmp, In(ABOOL), nil) // AUND to allow 0 inputs (goto)
