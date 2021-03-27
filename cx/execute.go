@@ -96,7 +96,7 @@ func RunCxAst(cxprogram *CXProgram, untilEnd bool, nCalls *int, untilCall int) e
 }
 
 // RunCompiled ...
-func RunCompiled1(cxprogram *CXProgram, nCalls int, args []string) error {
+func RunCompiled(cxprogram *CXProgram, nCalls int, args []string) error {
 	_, err := cxprogram.SetCurrentCxProgram()
 	if err != nil {
 		panic(err)
@@ -180,7 +180,7 @@ func RunCompiled1(cxprogram *CXProgram, nCalls int, args []string) error {
 				cxprogram.Terminated = false
 			}
 
-			if err = cxprogram.Run(untilEnd, &nCalls, -1); err != nil {
+			if err = RunCxAst(cxprogram, untilEnd, &nCalls, -1); err != nil {
 				return err
 			}
 

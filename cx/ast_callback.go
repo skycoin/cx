@@ -36,7 +36,7 @@ func (cxprogram *CXProgram) Callback(fn *CXFunction, inputs [][]byte) (outputs [
 	if err != nil {
 		os.Exit(constants.CX_INTERNAL_ERROR)
 	}
-	//TODO; handle nil
+
 
 	cxprogram.CallCounter = previousCall
 	cxprogram.CallStack[cxprogram.CallCounter].Line = line

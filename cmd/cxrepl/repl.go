@@ -58,7 +58,7 @@ func unsafeEval(code string) (out string) {
 	}
 
 	//err = actions.AST.RunCompiled(0, nil);
-	err = cxcore.RunCompiled1(actions.AST, 0, nil)
+	err = cxcore.RunCompiled(actions.AST, 0, nil)
 	if err != nil {
 		actions.AST = cxcore.MakeProgram()
 		return fmt.Sprintf("%s", err)
