@@ -488,15 +488,15 @@ func (cxprogram *CXProgram) GetGlobal(name string) *CXArgument {
 }
 
 // Refactor to return nil on error
-func (cxprogram *CXProgram) GetPackage(packageNameToFind string) (*CXPackage, error) {
+func (cxprogram *CXProgram) GetPackage(packageNameToFind string) *CXPackage {
 	//iterate packages looking for package; same as GetPackage?
 	for _, cxpackage := range cxprogram.Packages {
 		if cxpackage.Name == packageNameToFind {
-			return cxpackage, nil //can return once found
+			return cxpackage //can return once found
 		}
 	}
 	//not found
-	return nil, fmt.Errorf("package '%s' not found", packageNameToFind)
+	return nil
 }
 
 // GetStruct ...
@@ -524,7 +524,7 @@ func (cxprogram *CXProgram) GetStruct(strctName string, modName string) (*CXStru
 		//looking in imports
 		typParts := strings.Split(strctName, ".")
 
-		if mod, err := cxprogram.GetPackage(modName); err == nil {
+		if mod := cxprogram.GetPackage(modName); mod != nil {
 			for _, imp := range mod.Imports {
 				for _, strct := range imp.Structs {
 					if strct.Name == typParts[0] {
