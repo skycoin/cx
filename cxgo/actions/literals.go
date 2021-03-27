@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 
 	"github.com/skycoin/cx/cx"
@@ -15,16 +16,16 @@ func SliceLiteralExpression(typSpec int, exprs []*cxcore.CXExpression) []*cxcore
 		panic(err)
 	}
 
-	symName := cxcore.MakeGenSym(cxcore.LOCAL_PREFIX)
+	symName := cxcore.MakeGenSym(constants.LOCAL_PREFIX)
 
 	// adding the declaration
 	slcVarExpr := cxcore.MakeExpression(nil, CurrentFile, LineNo)
 	slcVarExpr.Package = pkg
 	slcVar := cxcore.MakeArgument(symName, CurrentFile, LineNo)
-	slcVar.AddType(cxcore.TypeNames[typSpec])
-	slcVar = DeclarationSpecifiers(slcVar, []int{0}, cxcore.DECL_SLICE)
+	slcVar.AddType(constants.TypeNames[typSpec])
+	slcVar = DeclarationSpecifiers(slcVar, []int{0}, constants.DECL_SLICE)
 
-	slcVar.TotalSize = cxcore.TYPE_POINTER_SIZE
+	slcVar.TotalSize = constants.TYPE_POINTER_SIZE
 
 	slcVarExpr.Outputs = append(slcVarExpr.Outputs, slcVar)
 	slcVar.Package = pkg
@@ -35,9 +36,9 @@ func SliceLiteralExpression(typSpec int, exprs []*cxcore.CXExpression) []*cxcore
 	var endPointsCounter int
 	for _, expr := range exprs {
 		if expr.IsArrayLiteral {
-			symInp := cxcore.MakeArgument(symName, CurrentFile, LineNo).AddType(cxcore.TypeNames[typSpec])
+			symInp := cxcore.MakeArgument(symName, CurrentFile, LineNo).AddType(constants.TypeNames[typSpec])
 			symInp.Package = pkg
-			symOut := cxcore.MakeArgument(symName, CurrentFile, LineNo).AddType(cxcore.TypeNames[typSpec])
+			symOut := cxcore.MakeArgument(symName, CurrentFile, LineNo).AddType(constants.TypeNames[typSpec])
 			symOut.Package = pkg
 
 			endPointsCounter++
@@ -56,9 +57,9 @@ func SliceLiteralExpression(typSpec int, exprs []*cxcore.CXExpression) []*cxcore
 			} else {
 				// We need to create a temporary variable to hold the result of the
 				// nested expressions. Then use that variable as part of the slice literal.
-				out := cxcore.MakeArgument(cxcore.MakeGenSym(cxcore.LOCAL_PREFIX), expr.FileName, expr.FileLine)
+				out := cxcore.MakeArgument(cxcore.MakeGenSym(constants.LOCAL_PREFIX), expr.FileName, expr.FileLine)
 				outArg := getOutputType(expr)
-				out.AddType(cxcore.TypeNames[outArg.Type])
+				out.AddType(constants.TypeNames[outArg.Type])
 				out.CustomType = outArg.CustomType
 				out.Size = outArg.Size
 				out.TotalSize = cxcore.GetSize(outArg)
@@ -77,27 +78,27 @@ func SliceLiteralExpression(typSpec int, exprs []*cxcore.CXExpression) []*cxcore
 
 			result = append(result, symExpr)
 
-			symInp.TotalSize = cxcore.TYPE_POINTER_SIZE
-			symOut.TotalSize = cxcore.TYPE_POINTER_SIZE
+			symInp.TotalSize = constants.TYPE_POINTER_SIZE
+			symOut.TotalSize = constants.TYPE_POINTER_SIZE
 		} else {
 			result = append(result, expr)
 		}
 		expr.IsArrayLiteral = false
 	}
 
-	symNameOutput := cxcore.MakeGenSym(cxcore.LOCAL_PREFIX)
+	symNameOutput := cxcore.MakeGenSym(constants.LOCAL_PREFIX)
 
-	symOutput := cxcore.MakeArgument(symNameOutput, CurrentFile, LineNo).AddType(cxcore.TypeNames[typSpec])
+	symOutput := cxcore.MakeArgument(symNameOutput, CurrentFile, LineNo).AddType(constants.TypeNames[typSpec])
 	symOutput.IsSlice = true
 	symOutput.Package = pkg
 	symOutput.PreviouslyDeclared = true
 
-	symInput := cxcore.MakeArgument(symName, CurrentFile, LineNo).AddType(cxcore.TypeNames[typSpec])
+	symInput := cxcore.MakeArgument(symName, CurrentFile, LineNo).AddType(constants.TypeNames[typSpec])
 	symInput.IsSlice = true
 	symInput.Package = pkg
 
-	symInput.TotalSize = cxcore.TYPE_POINTER_SIZE
-	symOutput.TotalSize = cxcore.TYPE_POINTER_SIZE
+	symInput.TotalSize = constants.TYPE_POINTER_SIZE
+	symOutput.TotalSize = constants.TYPE_POINTER_SIZE
 
 	symExpr := cxcore.MakeExpression(cxcore.Natives[cxcore.OP_IDENTITY], CurrentFile, LineNo)
 	symExpr.Package = pkg
@@ -155,7 +156,7 @@ func PrimaryStructLiteralExternal(impName string, ident string, strctFlds []*cxc
 			if strct, err := PRGRM.GetStruct(ident, impName); err == nil {
 				for _, expr := range strctFlds {
 					fld := cxcore.MakeArgument("", CurrentFile, LineNo)
-					fld.AddType(cxcore.TypeNames[cxcore.TYPE_IDENTIFIER])
+					fld.AddType(constants.TypeNames[constants.TYPE_IDENTIFIER])
 					fld.Name = expr.Outputs[0].Name
 
 					expr.IsStructLiteral = true
@@ -191,13 +192,13 @@ func ArrayLiteralExpression(arrSizes []int, typSpec int, exprs []*cxcore.CXExpre
 		panic(err)
 	}
 
-	symName := cxcore.MakeGenSym(cxcore.LOCAL_PREFIX)
+	symName := cxcore.MakeGenSym(constants.LOCAL_PREFIX)
 
 	arrVarExpr := cxcore.MakeExpression(nil, CurrentFile, LineNo)
 	arrVarExpr.Package = pkg
 	arrVar := cxcore.MakeArgument(symName, CurrentFile, LineNo)
-	arrVar = DeclarationSpecifiers(arrVar, arrSizes, cxcore.DECL_ARRAY)
-	arrVar.AddType(cxcore.TypeNames[typSpec])
+	arrVar = DeclarationSpecifiers(arrVar, arrSizes, constants.DECL_ARRAY)
+	arrVar.AddType(constants.TypeNames[typSpec])
 	arrVar.TotalSize = arrVar.Size * TotalLength(arrVar.Lengths)
 
 	arrVarExpr.Outputs = append(arrVarExpr.Outputs, arrVar)
@@ -211,19 +212,19 @@ func ArrayLiteralExpression(arrSizes []int, typSpec int, exprs []*cxcore.CXExpre
 		if expr.IsArrayLiteral {
 			expr.IsArrayLiteral = false
 
-			sym := cxcore.MakeArgument(symName, CurrentFile, LineNo).AddType(cxcore.TypeNames[typSpec])
+			sym := cxcore.MakeArgument(symName, CurrentFile, LineNo).AddType(constants.TypeNames[typSpec])
 			sym.Package = pkg
 			sym.PreviouslyDeclared = true
 
-			if sym.Type == cxcore.TYPE_STR || sym.Type == cxcore.TYPE_AFF {
-				sym.PassBy = cxcore.PASSBY_REFERENCE
+			if sym.Type == constants.TYPE_STR || sym.Type == constants.TYPE_AFF {
+				sym.PassBy = constants.PASSBY_REFERENCE
 			}
 
-			idxExpr := WritePrimary(cxcore.TYPE_I32, encoder.Serialize(int32(endPointsCounter)), false)
+			idxExpr := WritePrimary(constants.TYPE_I32, encoder.Serialize(int32(endPointsCounter)), false)
 			endPointsCounter++
 
 			sym.Indexes = append(sym.Indexes, idxExpr[0].Outputs[0])
-			sym.DereferenceOperations = append(sym.DereferenceOperations, cxcore.DEREF_ARRAY)
+			sym.DereferenceOperations = append(sym.DereferenceOperations, constants.DEREF_ARRAY)
 
 			symExpr := cxcore.MakeExpression(nil, CurrentFile, LineNo)
 			symExpr.Outputs = append(symExpr.Outputs, sym)
@@ -250,16 +251,16 @@ func ArrayLiteralExpression(arrSizes []int, typSpec int, exprs []*cxcore.CXExpre
 		}
 	}
 
-	symNameOutput := cxcore.MakeGenSym(cxcore.LOCAL_PREFIX)
+	symNameOutput := cxcore.MakeGenSym(constants.LOCAL_PREFIX)
 
-	symOutput := cxcore.MakeArgument(symNameOutput, CurrentFile, LineNo).AddType(cxcore.TypeNames[typSpec])
+	symOutput := cxcore.MakeArgument(symNameOutput, CurrentFile, LineNo).AddType(constants.TypeNames[typSpec])
 	// symOutput.Lengths = append(symOutput.Lengths, arrSizes[len(arrSizes)-1])
 	symOutput.Lengths = arrSizes
 	symOutput.Package = pkg
 	symOutput.PreviouslyDeclared = true
 	symOutput.TotalSize = symOutput.Size * TotalLength(symOutput.Lengths)
 
-	symInput := cxcore.MakeArgument(symName, CurrentFile, LineNo).AddType(cxcore.TypeNames[typSpec])
+	symInput := cxcore.MakeArgument(symName, CurrentFile, LineNo).AddType(constants.TypeNames[typSpec])
 	// symInput.Lengths = append(symInput.Lengths, arrSizes[len(arrSizes)-1])
 	symInput.Lengths = arrSizes
 	symInput.Package = pkg

@@ -3,6 +3,7 @@
 package cxos
 
 import (
+	"github.com/skycoin/cx/cx/constants"
 	"regexp"
 
 	"github.com/jinzhu/copier"
@@ -16,7 +17,7 @@ func init() {
 	regexpPkg := cxcore.MakePackage("regexp")
 	regexpStrct := cxcore.MakeStruct("Regexp")
 
-	regexpStrct.AddField(cxcore.MakeArgument("exp", "", 0).AddType(cxcore.TypeNames[cxcore.TYPE_STR]).AddPackage(regexpPkg))
+	regexpStrct.AddField(cxcore.MakeArgument("exp", "", 0).AddType(constants.TypeNames[constants.TYPE_STR]).AddPackage(regexpPkg))
 
 	regexpPkg.AddStruct(regexpStrct)
 
@@ -79,7 +80,7 @@ func opRegexpMustCompile(expr *cxcore.CXExpression, fp int) {
 
 	if err != nil {
 		println(err.Error())
-		panic(cxcore.CX_RUNTIME_ERROR)
+		panic(constants.CX_RUNTIME_ERROR)
 	}
 
 }

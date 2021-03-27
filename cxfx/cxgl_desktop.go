@@ -3,9 +3,10 @@
 package cxfx
 
 import (
-	"strings"
 	"github.com/go-gl/gl/v3.2-compatibility/gl"
 	"github.com/skycoin/cx/cx"
+	"github.com/skycoin/cx/cx/constants"
+	"strings"
 )
 
 const (
@@ -172,14 +173,14 @@ func cxglBindTexture(target uint32, texture uint32) {
 
 func cxglDeleteTextures(n int32, textures *uint32) {
 	if n > 1 {
-		panic(cxcore.CX_RUNTIME_NOT_IMPLEMENTED)
+		panic(constants.CX_RUNTIME_NOT_IMPLEMENTED)
 	}
 	gl.DeleteTextures(n, textures)
 }
 
 func cxglGenTextures(n int32, textures *uint32) {
 	if n > 1 {
-		panic(cxcore.CX_RUNTIME_NOT_IMPLEMENTED)
+		panic(constants.CX_RUNTIME_NOT_IMPLEMENTED)
 	}
 	gl.GenTextures(n, textures)
 }
@@ -201,14 +202,14 @@ func cxglBindBuffer(target uint32, buffer uint32) {
 
 func cxglDeleteBuffers(n int32, buffers *uint32) {
 	if n > 1 {
-		panic(cxcore.CX_RUNTIME_NOT_IMPLEMENTED)
+		panic(constants.CX_RUNTIME_NOT_IMPLEMENTED)
 	}
 	gl.DeleteBuffers(n, buffers)
 }
 
 func cxglGenBuffers(n int32, buffers *uint32) {
 	if n > 1 {
-		panic(cxcore.CX_RUNTIME_NOT_IMPLEMENTED)
+		panic(constants.CX_RUNTIME_NOT_IMPLEMENTED)
 	}
 	gl.GenBuffers(n, buffers)
 }
@@ -312,7 +313,7 @@ func cxglLinkProgram(program uint32) {
 
 func cxglShaderSource(shader uint32, count int32, glstring string) {
 	if count > 1 {
-		panic(cxcore.CX_RUNTIME_NOT_IMPLEMENTED)
+		panic(constants.CX_RUNTIME_NOT_IMPLEMENTED)
 	}
 	gl.ShaderSource(shader, count, getCString(glstring, glstring), nil)
 }
@@ -420,14 +421,14 @@ func cxglBindRenderbuffer(buffer uint32, renderbuffer uint32) {
 
 func cxglDeleteRenderbuffers(n int32, renderbuffers *uint32) {
 	if n > 1 {
-		panic(cxcore.CX_RUNTIME_NOT_IMPLEMENTED)
+		panic(constants.CX_RUNTIME_NOT_IMPLEMENTED)
 	}
 	gl.DeleteRenderbuffers(n, renderbuffers)
 }
 
 func cxglGenRenderbuffers(n int32, renderbuffers *uint32) {
 	if n > 1 {
-		panic(cxcore.CX_RUNTIME_NOT_IMPLEMENTED)
+		panic(constants.CX_RUNTIME_NOT_IMPLEMENTED)
 	}
 	gl.GenRenderbuffers(n, renderbuffers)
 }
@@ -442,14 +443,14 @@ func cxglBindFramebuffer(target uint32, framebuffer uint32) {
 
 func cxglDeleteFramebuffers(n int32, framebuffers *uint32) {
 	if n > 1 {
-		panic(cxcore.CX_RUNTIME_NOT_IMPLEMENTED)
+		panic(constants.CX_RUNTIME_NOT_IMPLEMENTED)
 	}
 	gl.DeleteFramebuffers(n, framebuffers)
 }
 
 func cxglGenFramebuffers(n int32, framebuffers *uint32) {
 	if n > 1 {
-		panic(cxcore.CX_RUNTIME_NOT_IMPLEMENTED)
+		panic(constants.CX_RUNTIME_NOT_IMPLEMENTED)
 	}
 	gl.GenFramebuffers(n, framebuffers)
 }
@@ -480,28 +481,28 @@ func cxglBindVertexArray(array uint32) {
 
 func cxglDeleteVertexArraysAPPLE(n int32, arrays *uint32) {
 	if n > 1 {
-		panic(cxcore.CX_RUNTIME_NOT_IMPLEMENTED)
+		panic(constants.CX_RUNTIME_NOT_IMPLEMENTED)
 	}
 	gl.DeleteVertexArraysAPPLE(n, arrays)
 }
 
 func cxglDeleteVertexArrays(n int32, arrays *uint32) {
 	if n > 1 {
-		panic(cxcore.CX_RUNTIME_NOT_IMPLEMENTED)
+		panic(constants.CX_RUNTIME_NOT_IMPLEMENTED)
 	}
 	gl.DeleteVertexArrays(n, arrays)
 }
 
 func cxglGenVertexArraysAPPLE(n int32, arrays *uint32) {
 	if n > 1 {
-		panic(cxcore.CX_RUNTIME_NOT_IMPLEMENTED)
+		panic(constants.CX_RUNTIME_NOT_IMPLEMENTED)
 	}
 	gl.GenVertexArraysAPPLE(n, arrays)
 }
 
 func cxglGenVertexArrays(n int32, arrays *uint32) {
 	if n > 1 {
-		panic(cxcore.CX_RUNTIME_NOT_IMPLEMENTED)
+		panic(constants.CX_RUNTIME_NOT_IMPLEMENTED)
 	}
 	gl.GenVertexArrays(n, arrays)
 }

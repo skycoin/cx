@@ -2,7 +2,10 @@
 
 package cxgo0
 
-import __yyfmt__ "fmt"
+import (
+	__yyfmt__ "fmt"
+	"github.com/skycoin/cx/cx/constants"
+)
 
 import (
 	// "fmt"
@@ -1713,7 +1716,7 @@ yynewstate:
 		{
 			if pkg, err := PRGRM0.GetCurrentPackage(); err == nil {
 				arg := MakeArgument("", CurrentFile, LineNo)
-				arg.AddType(TypeNames[TYPE_UNDEFINED])
+				arg.AddType(constants.TypeNames[constants.TYPE_UNDEFINED])
 				arg.Name = yyS[yypt-0].tok
 				arg.Package = pkg
 				yyVAL.argument = arg
@@ -1758,15 +1761,15 @@ yynewstate:
 			arg := MakeArgument("", CurrentFile, LineNo).AddType("func")
 			arg.Inputs = yyS[yypt-1].arguments
 			arg.Outputs = yyS[yypt-0].arguments
-			yyVAL.argument = DeclarationSpecifiers(arg, []int{0}, DECL_FUNC)
+			yyVAL.argument = DeclarationSpecifiers(arg, []int{0}, constants.DECL_FUNC)
 		}
 	case 39:
 		{
-			yyVAL.argument = DeclarationSpecifiers(yyS[yypt-0].argument, []int{0}, DECL_POINTER)
+			yyVAL.argument = DeclarationSpecifiers(yyS[yypt-0].argument, []int{0}, constants.DECL_POINTER)
 		}
 	case 40:
 		{
-			yyVAL.argument = DeclarationSpecifiers(yyS[yypt-0].argument, []int{0}, DECL_SLICE)
+			yyVAL.argument = DeclarationSpecifiers(yyS[yypt-0].argument, []int{0}, constants.DECL_SLICE)
 		}
 	case 41:
 		{
@@ -1779,12 +1782,12 @@ yynewstate:
 	case 43:
 		{
 			basic := DeclarationSpecifiersBasic(yyS[yypt-0].i)
-			yyVAL.argument = DeclarationSpecifiers(basic, yyS[yypt-1].ints, DECL_ARRAY)
+			yyVAL.argument = DeclarationSpecifiers(basic, yyS[yypt-1].ints, constants.DECL_ARRAY)
 		}
 	case 44:
 		{
 			strct := DeclarationSpecifiersStruct(yyS[yypt-0].tok, "", false, CurrentFile, LineNo)
-			yyVAL.argument = DeclarationSpecifiers(strct, yyS[yypt-1].ints, DECL_ARRAY)
+			yyVAL.argument = DeclarationSpecifiers(strct, yyS[yypt-1].ints, constants.DECL_ARRAY)
 		}
 	case 45:
 		{
@@ -1792,59 +1795,59 @@ yynewstate:
 		}
 	case 46:
 		{
-			yyVAL.argument = DeclarationSpecifiersStruct(yyS[yypt-0].tok, TypeNames[yyS[yypt-2].i], true, CurrentFileName, lineNo)
+			yyVAL.argument = DeclarationSpecifiersStruct(yyS[yypt-0].tok, constants.TypeNames[yyS[yypt-2].i], true, CurrentFileName, lineNo)
 		}
 	case 47:
 		{
-			yyVAL.i = TYPE_AFF
+			yyVAL.i = constants.TYPE_AFF
 		}
 	case 48:
 		{
-			yyVAL.i = TYPE_BOOL
+			yyVAL.i = constants.TYPE_BOOL
 		}
 	case 49:
 		{
-			yyVAL.i = TYPE_STR
+			yyVAL.i = constants.TYPE_STR
 		}
 	case 50:
 		{
-			yyVAL.i = TYPE_F32
+			yyVAL.i = constants.TYPE_F32
 		}
 	case 51:
 		{
-			yyVAL.i = TYPE_F64
+			yyVAL.i = constants.TYPE_F64
 		}
 	case 52:
 		{
-			yyVAL.i = TYPE_I8
+			yyVAL.i = constants.TYPE_I8
 		}
 	case 53:
 		{
-			yyVAL.i = TYPE_I16
+			yyVAL.i = constants.TYPE_I16
 		}
 	case 54:
 		{
-			yyVAL.i = TYPE_I32
+			yyVAL.i = constants.TYPE_I32
 		}
 	case 55:
 		{
-			yyVAL.i = TYPE_I64
+			yyVAL.i = constants.TYPE_I64
 		}
 	case 56:
 		{
-			yyVAL.i = TYPE_UI8
+			yyVAL.i = constants.TYPE_UI8
 		}
 	case 57:
 		{
-			yyVAL.i = TYPE_UI16
+			yyVAL.i = constants.TYPE_UI16
 		}
 	case 58:
 		{
-			yyVAL.i = TYPE_UI32
+			yyVAL.i = constants.TYPE_UI32
 		}
 	case 59:
 		{
-			yyVAL.i = TYPE_UI64
+			yyVAL.i = constants.TYPE_UI64
 		}
 	case 66:
 		{

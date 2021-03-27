@@ -1,6 +1,8 @@
 package cxcore
 
-import ()
+import (
+	"github.com/skycoin/cx/cx/constants"
+)
 
 
 //Only non-problem functions here
@@ -12,7 +14,7 @@ func GetStrOffset(fp int, arg *CXArgument) int {
 	strOffset := GetFinalOffset(fp, arg)
 	if arg.Name != "" {
 		// then it's not a literal
-		offset := Deserialize_i32(PROGRAM.Memory[strOffset : strOffset+TYPE_POINTER_SIZE])
+		offset := Deserialize_i32(PROGRAM.Memory[strOffset : strOffset+constants.TYPE_POINTER_SIZE])
 		strOffset = int(offset)
 	}
 	return strOffset
@@ -21,8 +23,8 @@ func GetStrOffset(fp int, arg *CXArgument) int {
 // ResizeMemory ...
 func ResizeMemory(prgrm *CXProgram, newMemSize int, isExpand bool) {
 	// We can't expand memory to a value greater than `memLimit`.
-	if newMemSize > MAX_HEAP_SIZE {
-		newMemSize = MAX_HEAP_SIZE
+	if newMemSize > constants.MAX_HEAP_SIZE {
+		newMemSize = constants.MAX_HEAP_SIZE
 	}
 
 	if newMemSize == prgrm.HeapSize {
@@ -58,8 +60,8 @@ func AllocateSeq(size int) (offset int) {
 		newFree = addr + size
 
 		// If the new heap pointer exceeds `MAX_HEAP_SIZE`, there's nothing left to do.
-		if newFree > MAX_HEAP_SIZE {
-			panic(HEAP_EXHAUSTED_ERROR)
+		if newFree > constants.MAX_HEAP_SIZE {
+			panic(constants.HEAP_EXHAUSTED_ERROR)
 		}
 
 		// According to MIN_HEAP_FREE_RATIO and MAX_HEAP_FREE_RATION we can either shrink
@@ -73,20 +75,20 @@ func AllocateSeq(size int) (offset int) {
 		freeMemPerc := 1.0 - usedPerc
 
 		// Then we have less than MIN_HEAP_FREE_RATIO memory left. Expand!
-		if freeMemPerc < MIN_HEAP_FREE_RATIO {
+		if freeMemPerc < constants.MIN_HEAP_FREE_RATIO {
 			// Calculating new heap size in order to reach MIN_HEAP_FREE_RATIO.
-			newMemSize := int(float32(newFree) / (1.0 - MIN_HEAP_FREE_RATIO))
+			newMemSize := int(float32(newFree) / (1.0 - constants.MIN_HEAP_FREE_RATIO))
 			ResizeMemory(PROGRAM, newMemSize, true)
 		}
 
 		// Then we have more than MAX_HEAP_FREE_RATIO memory left. Shrink!
-		if freeMemPerc > MAX_HEAP_FREE_RATIO {
+		if freeMemPerc > constants.MAX_HEAP_FREE_RATIO {
 			// Calculating new heap size in order to reach MAX_HEAP_FREE_RATIO.
-			newMemSize := int(float32(newFree) / (1.0 - MAX_HEAP_FREE_RATIO))
+			newMemSize := int(float32(newFree) / (1.0 - constants.MAX_HEAP_FREE_RATIO))
 
 			// This check guarantees that the CX program has always at least INIT_HEAP_SIZE bytes to work with.
 			// A flag could be added later to remove this, as in some cases this mechanism could not be desired.
-			if newMemSize > INIT_HEAP_SIZE {
+			if newMemSize > constants.INIT_HEAP_SIZE {
 				ResizeMemory(PROGRAM, newMemSize, false)
 			}
 		}

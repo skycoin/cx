@@ -2,6 +2,7 @@ package cxcore
 
 import (
 	"fmt"
+	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 
 )
@@ -478,7 +479,7 @@ const (
 
 const (
     OPERATOR_COUNT = END_OF_OPERATORS - START_OF_OPERATORS + 1
-    OPERATOR_HANDLER_COUNT = TYPE_COUNT * OPERATOR_COUNT
+    OPERATOR_HANDLER_COUNT = constants.TYPE_COUNT * OPERATOR_COUNT
 )
 
 type CXValue struct {
@@ -594,7 +595,7 @@ func (value *CXValue) Get_bytes() ([]byte) {
 }
 
 func (value *CXValue) Set_bytes(data []byte)() {
-    value.Used = TYPE_CUSTOM
+    value.Used = constants.TYPE_CUSTOM
     WriteMemory(value.Offset, data)
 }
 
@@ -604,122 +605,122 @@ func (value *CXValue) GetSlice_bytes() ([]byte) {
 }
 
 func (value *CXValue) Get_i8()(int8) {
-	value.Used = TYPE_I8
+	value.Used = constants.TYPE_I8
 	return Deserialize_i8(value.memory)
 }
 
 func (value *CXValue) Set_i8(data int8) {
-	value.Used = TYPE_I8
+	value.Used = constants.TYPE_I8
     WriteI8(value.Offset, data)
 }
 
 func (value *CXValue) Get_i16()(int16) {
-	value.Used = TYPE_I16
+	value.Used = constants.TYPE_I16
     return Deserialize_i16(value.memory)
 }
 
 func (value *CXValue) Set_i16(data int16) {
-	value.Used = TYPE_I16
+	value.Used = constants.TYPE_I16
     WriteI16(value.Offset, data)
 }
 
 func (value *CXValue) Get_i32()(int32) {
-	value.Used = TYPE_I32
+	value.Used = constants.TYPE_I32
     return Deserialize_i32(value.memory)
 }
 
 func (value *CXValue) Set_i32(data int32) {
-	value.Used = TYPE_I32
+	value.Used = constants.TYPE_I32
     WriteI32(value.Offset, data)
 }
 
 func (value *CXValue) Get_i64()(int64) {
-	value.Used = TYPE_I64
+	value.Used = constants.TYPE_I64
     return Deserialize_i64(value.memory)
 }
 
 func (value *CXValue) Set_i64(data int64) {
-	value.Used = TYPE_I64
+	value.Used = constants.TYPE_I64
     WriteI64(value.Offset, data)
 }
 
 func (value *CXValue) Get_ui8()(uint8) {
-	value.Used = TYPE_UI8
+	value.Used = constants.TYPE_UI8
     return Deserialize_ui8(value.memory)
 }
 
 func (value *CXValue) Set_ui8(data uint8) {
-	value.Used = TYPE_UI8
+	value.Used = constants.TYPE_UI8
     WriteUI8(value.Offset, data)
 }
 
 func (value *CXValue) Get_ui16()(uint16) {
-	value.Used = TYPE_UI16
+	value.Used = constants.TYPE_UI16
     return Deserialize_ui16(value.memory)
 }
 
 func (value *CXValue) Set_ui16(data uint16) {
-	value.Used = TYPE_UI16
+	value.Used = constants.TYPE_UI16
     WriteUI16(value.Offset, data)
 }
 
 func (value *CXValue) Get_ui32()(uint32) {
-	value.Used = TYPE_UI32
+	value.Used = constants.TYPE_UI32
     return Deserialize_ui32(value.memory)
 }
 
 func (value *CXValue) Set_ui32(data uint32) {
-	value.Used = TYPE_UI32
+	value.Used = constants.TYPE_UI32
     WriteUI32(value.Offset, data)
 }
 
 func (value *CXValue) Get_ui64()(uint64) {
-	value.Used = TYPE_UI64
+	value.Used = constants.TYPE_UI64
     return Deserialize_ui64(value.memory)
 }
 
 func (value *CXValue) Set_ui64(data uint64) {
-	value.Used = TYPE_UI64
+	value.Used = constants.TYPE_UI64
     WriteUI64(value.Offset, data)
 }
 
 func (value *CXValue) Get_f32()(float32) {
-	value.Used = TYPE_F32
+	value.Used = constants.TYPE_F32
     return Deserialize_f32(value.memory)
 }
 
 func (value *CXValue) Set_f32(data float32) {
-	value.Used = TYPE_F32
+	value.Used = constants.TYPE_F32
     WriteF32(value.Offset, data)
 }
 
 func (value *CXValue) Get_f64()(float64) {
-	value.Used = TYPE_F64
+	value.Used = constants.TYPE_F64
     return Deserialize_f64(value.memory)
 }
 
 func (value *CXValue) Set_f64(data float64) {
-	value.Used = TYPE_F64
+	value.Used = constants.TYPE_F64
     WriteF64(value.Offset, data)
 }
 
 func (value *CXValue) Get_bool()(bool) {
-	value.Used = TYPE_BOOL
+	value.Used = constants.TYPE_BOOL
     return Deserialize_bool(value.memory)
 }
 
 func (value *CXValue) Set_bool(data bool) {
-	value.Used = TYPE_BOOL
+	value.Used = constants.TYPE_BOOL
     WriteBool(value.Offset, data)
 }
 
 func (value *CXValue) Get_str()(string) {
-	value.Used = TYPE_STR
+	value.Used = constants.TYPE_STR
     return ReadStrFromOffset(value.Offset, value.Arg)
 }
 
 func (value *CXValue) Set_str(data string) {
-	value.Used = TYPE_STR
+	value.Used = constants.TYPE_STR
     WriteObject(value.Offset, encoder.Serialize(data))
 }
 
@@ -849,10 +850,10 @@ func dumpOpCodes(opCode int) {
 
 // Pointer takes an already defined `CXArgument` and turns it into a pointer.
 func Pointer(arg *CXArgument) *CXArgument {
-	arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, DECL_POINTER)
+	arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_POINTER)
 	arg.IsPointer = true
-	arg.Size = TYPE_POINTER_SIZE
-	arg.TotalSize = TYPE_POINTER_SIZE
+	arg.Size = constants.TYPE_POINTER_SIZE
+	arg.TotalSize = constants.TYPE_POINTER_SIZE
 
 	return arg
 }
@@ -871,8 +872,8 @@ func Struct(pkgName, strctName, argName string) *CXArgument {
 		panic(err)
 	}
 
-	arg := MakeArgument(argName, "", -1).AddType(TypeNames[TYPE_CUSTOM])
-	arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, DECL_STRUCT)
+	arg := MakeArgument(argName, "", -1).AddType(constants.TypeNames[constants.TYPE_CUSTOM])
+	arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_STRUCT)
 	arg.Size = strct.Size
 	arg.TotalSize = strct.Size
 	arg.CustomType = strct
@@ -885,13 +886,13 @@ func Struct(pkgName, strctName, argName string) *CXArgument {
 func Slice(typCode int) *CXArgument {
 	arg := Param(typCode)
 	arg.IsSlice = true
-	arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, DECL_SLICE)
+	arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_SLICE)
 	return arg
 }
 
 // Param ...
 func Param(typCode int) *CXArgument {
-	arg := MakeArgument("", "", -1).AddType(TypeNames[typCode])
+	arg := MakeArgument("", "", -1).AddType(constants.TypeNames[typCode])
 	arg.IsLocalDeclaration = true
 	return arg
 }
@@ -911,11 +912,11 @@ type ParamData struct {
 func ParamEx(paramData ParamData) *CXArgument {
 	var arg *CXArgument
 	switch paramData.paramType {
-	case PARAM_DEFAULT:
+	case constants.PARAM_DEFAULT:
 		arg = Param(paramData.typCode)
-	case PARAM_SLICE:
+	case constants.PARAM_SLICE:
 		arg = Slice(paramData.typCode)
-	case PARAM_STRUCT:
+	case constants.PARAM_STRUCT:
 		arg = Struct(paramData.pkg.Name, paramData.strctName, "")
 	}
 	arg.Inputs = paramData.inputs
@@ -925,46 +926,46 @@ func ParamEx(paramData ParamData) *CXArgument {
 }
 
 // AI8 Default i8 parameter
-var AI8 = Param(TYPE_I8)
+var AI8 = Param(constants.TYPE_I8)
 
 // AI16 Default i16 parameter
-var AI16 = Param(TYPE_I16)
+var AI16 = Param(constants.TYPE_I16)
 
 // AI32 Default i32 parameter
-var AI32 = Param(TYPE_I32)
+var AI32 = Param(constants.TYPE_I32)
 
 // AI64 Default i64 parameter
-var AI64 = Param(TYPE_I64)
+var AI64 = Param(constants.TYPE_I64)
 
 // AUI8 Default ui8 parameter
-var AUI8 = Param(TYPE_UI8)
+var AUI8 = Param(constants.TYPE_UI8)
 
 // AUI16 Default ui16 parameter
-var AUI16 = Param(TYPE_UI16)
+var AUI16 = Param(constants.TYPE_UI16)
 
 // AUI32 Default ui32 parameter
-var AUI32 = Param(TYPE_UI32)
+var AUI32 = Param(constants.TYPE_UI32)
 
 // AUI64 Default ui64 parameter
-var AUI64 = Param(TYPE_UI64)
+var AUI64 = Param(constants.TYPE_UI64)
 
 // AF32 Default f32 parameter
-var AF32 = Param(TYPE_F32)
+var AF32 = Param(constants.TYPE_F32)
 
 // AF64 Default f64 parameter
-var AF64 = Param(TYPE_F64)
+var AF64 = Param(constants.TYPE_F64)
 
 // ASTR Default str parameter
-var ASTR = Param(TYPE_STR)
+var ASTR = Param(constants.TYPE_STR)
 
 // ABOOL Default bool parameter
-var ABOOL = Param(TYPE_BOOL)
+var ABOOL = Param(constants.TYPE_BOOL)
 
 // AUND Default und parameter
-var AUND = Param(TYPE_UNDEFINED)
+var AUND = Param(constants.TYPE_UNDEFINED)
 
 // AAFF Default aff parameter
-var AAFF = Param(TYPE_AFF)
+var AAFF = Param(constants.TYPE_AFF)
 
 // In Returns a slice of arguments from an argument list
 func In(params ...*CXArgument) []*CXArgument {
@@ -1019,30 +1020,30 @@ func init() {
 	Op_V2(OP_UND_READ, "read", opRead, nil, Out(ASTR))
 
 	Op_V2(OP_BOOL_PRINT, "bool.print", opBoolPrint, In(ABOOL), nil)
-	Operator(OP_BOOL_EQUAL, "bool.eq", opBoolEqual, In(ABOOL, ABOOL), Out(ABOOL), TYPE_BOOL, OP_EQUAL)
-	Operator(OP_BOOL_UNEQUAL, "bool.uneq", opBoolUnequal, In(ABOOL, ABOOL), Out(ABOOL), TYPE_BOOL, OP_UNEQUAL)
+	Operator(OP_BOOL_EQUAL, "bool.eq", opBoolEqual, In(ABOOL, ABOOL), Out(ABOOL), constants.TYPE_BOOL, OP_EQUAL)
+	Operator(OP_BOOL_UNEQUAL, "bool.uneq", opBoolUnequal, In(ABOOL, ABOOL), Out(ABOOL), constants.TYPE_BOOL, OP_UNEQUAL)
 	Op_V2(OP_BOOL_NOT, "bool.not", opBoolNot, In(ABOOL), Out(ABOOL))
 	Op_V2(OP_BOOL_OR, "bool.or", opBoolOr, In(ABOOL, ABOOL), Out(ABOOL))
 	Op_V2(OP_BOOL_AND, "bool.and", opBoolAnd, In(ABOOL, ABOOL), Out(ABOOL))
 
-    Operator(OP_I8_EQ, "i8.eq", opI8Eq, In(AI8, AI8), Out(ABOOL), TYPE_I8, OP_EQUAL)
-	Operator(OP_I8_UNEQ, "i8.uneq", opI8Uneq, In(AI8, AI8), Out(ABOOL), TYPE_I8, OP_UNEQUAL)
-    Operator(OP_I8_BITAND, "i8.bitand", opI8Bitand, In(AI8, AI8), Out(AI8), TYPE_I8, OP_BITAND)
-	Operator(OP_I8_BITOR, "i8.bitor", opI8Bitor, In(AI8, AI8), Out(AI8), TYPE_I8, OP_BITOR)
-	Operator(OP_I8_BITXOR, "i8.bitxor", opI8Bitxor, In(AI8, AI8), Out(AI8), TYPE_I8, OP_BITXOR)
-	Operator(OP_I8_BITCLEAR, "i8.bitclear", opI8Bitclear, In(AI8, AI8), Out(AI8), TYPE_I8, OP_BITCLEAR)
-	Operator(OP_I8_BITSHL, "i8.bitshl", opI8Bitshl, In(AI8, AI8), Out(AI8), TYPE_I8, OP_BITSHL)
-    Operator(OP_I8_BITSHR, "i8.bitshr", opI8Bitshr, In(AI8, AI8), Out(AI8), TYPE_I8, OP_BITSHR)
-    Operator(OP_I8_ADD, "i8.add", opI8Add, In(AI8, AI8), Out(AI8), TYPE_I8, OP_ADD)
-	Operator(OP_I8_SUB, "i8.sub", opI8Sub, In(AI8, AI8), Out(AI8), TYPE_I8, OP_SUB)
-	Operator(OP_I8_NEG, "i8.neg", opI8Neg, In(AI8), Out(AI8), TYPE_I8, OP_NEG)
-	Operator(OP_I8_MUL, "i8.mul", opI8Mul, In(AI8, AI8), Out(AI8), TYPE_I8, OP_MUL)
-	Operator(OP_I8_DIV, "i8.div", opI8Div, In(AI8, AI8), Out(AI8), TYPE_I8, OP_DIV)
-	Operator(OP_I8_MOD, "i8.mod", opI8Mod, In(AI8, AI8), Out(AI8), TYPE_I8, OP_MOD)
-	Operator(OP_I8_GT, "i8.gt", opI8Gt, In(AI8, AI8), Out(ABOOL), TYPE_I8, OP_GT)
-	Operator(OP_I8_GTEQ, "i8.gteq", opI8Gteq, In(AI8, AI8), Out(ABOOL), TYPE_I8, OP_GTEQ)
-	Operator(OP_I8_LT, "i8.lt", opI8Lt, In(AI8, AI8), Out(ABOOL), TYPE_I8, OP_LT)
-	Operator(OP_I8_LTEQ, "i8.lteq", opI8Lteq, In(AI8, AI8), Out(ABOOL), TYPE_I8, OP_LTEQ)
+    Operator(OP_I8_EQ, "i8.eq", opI8Eq, In(AI8, AI8), Out(ABOOL), constants.TYPE_I8, OP_EQUAL)
+	Operator(OP_I8_UNEQ, "i8.uneq", opI8Uneq, In(AI8, AI8), Out(ABOOL), constants.TYPE_I8, OP_UNEQUAL)
+    Operator(OP_I8_BITAND, "i8.bitand", opI8Bitand, In(AI8, AI8), Out(AI8), constants.TYPE_I8, OP_BITAND)
+	Operator(OP_I8_BITOR, "i8.bitor", opI8Bitor, In(AI8, AI8), Out(AI8), constants.TYPE_I8, OP_BITOR)
+	Operator(OP_I8_BITXOR, "i8.bitxor", opI8Bitxor, In(AI8, AI8), Out(AI8), constants.TYPE_I8, OP_BITXOR)
+	Operator(OP_I8_BITCLEAR, "i8.bitclear", opI8Bitclear, In(AI8, AI8), Out(AI8), constants.TYPE_I8, OP_BITCLEAR)
+	Operator(OP_I8_BITSHL, "i8.bitshl", opI8Bitshl, In(AI8, AI8), Out(AI8), constants.TYPE_I8, OP_BITSHL)
+    Operator(OP_I8_BITSHR, "i8.bitshr", opI8Bitshr, In(AI8, AI8), Out(AI8), constants.TYPE_I8, OP_BITSHR)
+    Operator(OP_I8_ADD, "i8.add", opI8Add, In(AI8, AI8), Out(AI8), constants.TYPE_I8, OP_ADD)
+	Operator(OP_I8_SUB, "i8.sub", opI8Sub, In(AI8, AI8), Out(AI8), constants.TYPE_I8, OP_SUB)
+	Operator(OP_I8_NEG, "i8.neg", opI8Neg, In(AI8), Out(AI8), constants.TYPE_I8, OP_NEG)
+	Operator(OP_I8_MUL, "i8.mul", opI8Mul, In(AI8, AI8), Out(AI8), constants.TYPE_I8, OP_MUL)
+	Operator(OP_I8_DIV, "i8.div", opI8Div, In(AI8, AI8), Out(AI8), constants.TYPE_I8, OP_DIV)
+	Operator(OP_I8_MOD, "i8.mod", opI8Mod, In(AI8, AI8), Out(AI8), constants.TYPE_I8, OP_MOD)
+	Operator(OP_I8_GT, "i8.gt", opI8Gt, In(AI8, AI8), Out(ABOOL), constants.TYPE_I8, OP_GT)
+	Operator(OP_I8_GTEQ, "i8.gteq", opI8Gteq, In(AI8, AI8), Out(ABOOL), constants.TYPE_I8, OP_GTEQ)
+	Operator(OP_I8_LT, "i8.lt", opI8Lt, In(AI8, AI8), Out(ABOOL), constants.TYPE_I8, OP_LT)
+	Operator(OP_I8_LTEQ, "i8.lteq", opI8Lteq, In(AI8, AI8), Out(ABOOL), constants.TYPE_I8, OP_LTEQ)
 	Op_V2(OP_I8_STR, "i8.str", opI8ToStr, In(AI8), Out(ASTR))
 	Op_V2(OP_I8_I16, "i8.i16", opI8ToI16, In(AI8), Out(AI16))
 	Op_V2(OP_I8_I32, "i8.i32", opI8ToI32, In(AI8), Out(AI32))
@@ -1059,24 +1060,24 @@ func init() {
 	Op_V2(OP_I8_MIN, "i8.min", opI8Min, In(AI8, AI8), Out(AI8))
 	Op_V2(OP_I8_RAND, "i8.rand", opI8Rand, In(AI8, AI8), Out(AI8))
 
-	Operator(OP_I16_EQ, "i16.eq", opI16Eq, In(AI16, AI16), Out(ABOOL), TYPE_I16, OP_EQUAL)
-	Operator(OP_I16_UNEQ, "i16.uneq", opI16Uneq, In(AI16, AI16), Out(ABOOL), TYPE_I16, OP_UNEQUAL)
-	Operator(OP_I16_BITAND, "i16.bitand", opI16Bitand, In(AI16, AI16), Out(AI16), TYPE_I16, OP_BITAND)
-	Operator(OP_I16_BITOR, "i16.bitor", opI16Bitor, In(AI16, AI16), Out(AI16), TYPE_I16, OP_BITOR)
-	Operator(OP_I16_BITXOR, "i16.bitxor", opI16Bitxor, In(AI16, AI16), Out(AI16), TYPE_I16, OP_BITXOR)
-	Operator(OP_I16_BITCLEAR, "i16.bitclear", opI16Bitclear, In(AI16, AI16), Out(AI16), TYPE_I16, OP_BITCLEAR)
-	Operator(OP_I16_BITSHL, "i16.bitshl", opI16Bitshl, In(AI16, AI16), Out(AI16), TYPE_I16, OP_BITSHL)
-	Operator(OP_I16_BITSHR, "i16.bitshr", opI16Bitshr, In(AI16, AI16), Out(AI16), TYPE_I16, OP_BITSHR)
-	Operator(OP_I16_ADD, "i16.add", opI16Add, In(AI16, AI16), Out(AI16), TYPE_I16, OP_ADD)
-	Operator(OP_I16_SUB, "i16.sub", opI16Sub, In(AI16, AI16), Out(AI16), TYPE_I16, OP_SUB)
-	Operator(OP_I16_NEG, "i16.neg", opI16Neg, In(AI16), Out(AI16), TYPE_I16, OP_NEG)
-	Operator(OP_I16_MUL, "i16.mul", opI16Mul, In(AI16, AI16), Out(AI16), TYPE_I16, OP_MUL)
-	Operator(OP_I16_DIV, "i16.div", opI16Div, In(AI16, AI16), Out(AI16), TYPE_I16, OP_DIV)
-	Operator(OP_I16_MOD, "i16.mod", opI16Mod, In(AI16, AI16), Out(AI16), TYPE_I16, OP_MOD)
-	Operator(OP_I16_GT, "i16.gt", opI16Gt, In(AI16, AI16), Out(ABOOL), TYPE_I16, OP_GT)
-	Operator(OP_I16_GTEQ, "i16.gteq", opI16Gteq, In(AI16, AI16), Out(ABOOL), TYPE_I16, OP_GTEQ)
-	Operator(OP_I16_LT, "i16.lt", opI16Lt, In(AI16, AI16), Out(ABOOL), TYPE_I16, OP_LT)
-	Operator(OP_I16_LTEQ, "i16.lteq", opI16Lteq, In(AI16, AI16), Out(ABOOL), TYPE_I16, OP_LTEQ)
+	Operator(OP_I16_EQ, "i16.eq", opI16Eq, In(AI16, AI16), Out(ABOOL), constants.TYPE_I16, OP_EQUAL)
+	Operator(OP_I16_UNEQ, "i16.uneq", opI16Uneq, In(AI16, AI16), Out(ABOOL), constants.TYPE_I16, OP_UNEQUAL)
+	Operator(OP_I16_BITAND, "i16.bitand", opI16Bitand, In(AI16, AI16), Out(AI16), constants.TYPE_I16, OP_BITAND)
+	Operator(OP_I16_BITOR, "i16.bitor", opI16Bitor, In(AI16, AI16), Out(AI16), constants.TYPE_I16, OP_BITOR)
+	Operator(OP_I16_BITXOR, "i16.bitxor", opI16Bitxor, In(AI16, AI16), Out(AI16), constants.TYPE_I16, OP_BITXOR)
+	Operator(OP_I16_BITCLEAR, "i16.bitclear", opI16Bitclear, In(AI16, AI16), Out(AI16), constants.TYPE_I16, OP_BITCLEAR)
+	Operator(OP_I16_BITSHL, "i16.bitshl", opI16Bitshl, In(AI16, AI16), Out(AI16), constants.TYPE_I16, OP_BITSHL)
+	Operator(OP_I16_BITSHR, "i16.bitshr", opI16Bitshr, In(AI16, AI16), Out(AI16), constants.TYPE_I16, OP_BITSHR)
+	Operator(OP_I16_ADD, "i16.add", opI16Add, In(AI16, AI16), Out(AI16), constants.TYPE_I16, OP_ADD)
+	Operator(OP_I16_SUB, "i16.sub", opI16Sub, In(AI16, AI16), Out(AI16), constants.TYPE_I16, OP_SUB)
+	Operator(OP_I16_NEG, "i16.neg", opI16Neg, In(AI16), Out(AI16), constants.TYPE_I16, OP_NEG)
+	Operator(OP_I16_MUL, "i16.mul", opI16Mul, In(AI16, AI16), Out(AI16), constants.TYPE_I16, OP_MUL)
+	Operator(OP_I16_DIV, "i16.div", opI16Div, In(AI16, AI16), Out(AI16), constants.TYPE_I16, OP_DIV)
+	Operator(OP_I16_MOD, "i16.mod", opI16Mod, In(AI16, AI16), Out(AI16), constants.TYPE_I16, OP_MOD)
+	Operator(OP_I16_GT, "i16.gt", opI16Gt, In(AI16, AI16), Out(ABOOL), constants.TYPE_I16, OP_GT)
+	Operator(OP_I16_GTEQ, "i16.gteq", opI16Gteq, In(AI16, AI16), Out(ABOOL), constants.TYPE_I16, OP_GTEQ)
+	Operator(OP_I16_LT, "i16.lt", opI16Lt, In(AI16, AI16), Out(ABOOL), constants.TYPE_I16, OP_LT)
+	Operator(OP_I16_LTEQ, "i16.lteq", opI16Lteq, In(AI16, AI16), Out(ABOOL), constants.TYPE_I16, OP_LTEQ)
     Op_V2(OP_I16_STR, "i16.str", opI16ToStr, In(AI16), Out(ASTR))
 	Op_V2(OP_I16_I8, "i16.i8", opI16ToI8, In(AI16), Out(AI8))
 	Op_V2(OP_I16_I32, "i16.i32", opI16ToI32, In(AI16), Out(AI32))
@@ -1093,24 +1094,24 @@ func init() {
 	Op_V2(OP_I16_MIN, "i16.min", opI16Min, In(AI16, AI16), Out(AI16))
 	Op_V2(OP_I16_RAND, "i16.rand", opI16Rand, In(AI16, AI16), Out(AI16))
 
-	Operator(OP_I32_EQ, "i32.eq", opI32Eq, In(AI32, AI32), Out(ABOOL), TYPE_I32, OP_EQUAL)
-	Operator(OP_I32_UNEQ, "i32.uneq", opI32Uneq, In(AI32, AI32), Out(ABOOL), TYPE_I32, OP_UNEQUAL)
-	Operator(OP_I32_BITAND, "i32.bitand", opI32Bitand, In(AI32, AI32), Out(AI32), TYPE_I32, OP_BITAND)
-	Operator(OP_I32_BITOR, "i32.bitor", opI32Bitor, In(AI32, AI32), Out(AI32), TYPE_I32, OP_BITOR)
-	Operator(OP_I32_BITXOR, "i32.bitxor", opI32Bitxor, In(AI32, AI32), Out(AI32), TYPE_I32, OP_BITXOR)
-	Operator(OP_I32_BITCLEAR, "i32.bitclear", opI32Bitclear, In(AI32, AI32), Out(AI32), TYPE_I32, OP_BITCLEAR)
-	Operator(OP_I32_BITSHL, "i32.bitshl", opI32Bitshl, In(AI32, AI32), Out(AI32), TYPE_I32, OP_BITSHL)
-	Operator(OP_I32_BITSHR, "i32.bitshr", opI32Bitshr, In(AI32, AI32), Out(AI32), TYPE_I32, OP_BITSHR)
-    Operator(OP_I32_ADD, "i32.add", opI32Add, In(AI32, AI32), Out(AI32), TYPE_I32, OP_ADD)
-	Operator(OP_I32_SUB, "i32.sub", opI32Sub, In(AI32, AI32), Out(AI32), TYPE_I32, OP_SUB)
-	Operator(OP_I32_NEG, "i32.neg", opI32Neg, In(AI32), Out(AI32), TYPE_I32, OP_NEG)
-	Operator(OP_I32_MUL, "i32.mul", opI32Mul, In(AI32, AI32), Out(AI32), TYPE_I32, OP_MUL)
-	Operator(OP_I32_DIV, "i32.div", opI32Div, In(AI32, AI32), Out(AI32), TYPE_I32, OP_DIV)
-	Operator(OP_I32_MOD, "i32.mod", opI32Mod, In(AI32, AI32), Out(AI32), TYPE_I32, OP_MOD)
-	Operator(OP_I32_GT, "i32.gt", opI32Gt, In(AI32, AI32), Out(ABOOL), TYPE_I32, OP_GT)
-	Operator(OP_I32_GTEQ, "i32.gteq", opI32Gteq, In(AI32, AI32), Out(ABOOL), TYPE_I32, OP_GTEQ)
-	Operator(OP_I32_LT, "i32.lt", opI32Lt, In(AI32, AI32), Out(ABOOL), TYPE_I32, OP_LT)
-	Operator(OP_I32_LTEQ, "i32.lteq", opI32Lteq, In(AI32, AI32), Out(ABOOL), TYPE_I32, OP_LTEQ)
+	Operator(OP_I32_EQ, "i32.eq", opI32Eq, In(AI32, AI32), Out(ABOOL), constants.TYPE_I32, OP_EQUAL)
+	Operator(OP_I32_UNEQ, "i32.uneq", opI32Uneq, In(AI32, AI32), Out(ABOOL), constants.TYPE_I32, OP_UNEQUAL)
+	Operator(OP_I32_BITAND, "i32.bitand", opI32Bitand, In(AI32, AI32), Out(AI32), constants.TYPE_I32, OP_BITAND)
+	Operator(OP_I32_BITOR, "i32.bitor", opI32Bitor, In(AI32, AI32), Out(AI32), constants.TYPE_I32, OP_BITOR)
+	Operator(OP_I32_BITXOR, "i32.bitxor", opI32Bitxor, In(AI32, AI32), Out(AI32), constants.TYPE_I32, OP_BITXOR)
+	Operator(OP_I32_BITCLEAR, "i32.bitclear", opI32Bitclear, In(AI32, AI32), Out(AI32), constants.TYPE_I32, OP_BITCLEAR)
+	Operator(OP_I32_BITSHL, "i32.bitshl", opI32Bitshl, In(AI32, AI32), Out(AI32), constants.TYPE_I32, OP_BITSHL)
+	Operator(OP_I32_BITSHR, "i32.bitshr", opI32Bitshr, In(AI32, AI32), Out(AI32), constants.TYPE_I32, OP_BITSHR)
+    Operator(OP_I32_ADD, "i32.add", opI32Add, In(AI32, AI32), Out(AI32), constants.TYPE_I32, OP_ADD)
+	Operator(OP_I32_SUB, "i32.sub", opI32Sub, In(AI32, AI32), Out(AI32), constants.TYPE_I32, OP_SUB)
+	Operator(OP_I32_NEG, "i32.neg", opI32Neg, In(AI32), Out(AI32), constants.TYPE_I32, OP_NEG)
+	Operator(OP_I32_MUL, "i32.mul", opI32Mul, In(AI32, AI32), Out(AI32), constants.TYPE_I32, OP_MUL)
+	Operator(OP_I32_DIV, "i32.div", opI32Div, In(AI32, AI32), Out(AI32), constants.TYPE_I32, OP_DIV)
+	Operator(OP_I32_MOD, "i32.mod", opI32Mod, In(AI32, AI32), Out(AI32), constants.TYPE_I32, OP_MOD)
+	Operator(OP_I32_GT, "i32.gt", opI32Gt, In(AI32, AI32), Out(ABOOL), constants.TYPE_I32, OP_GT)
+	Operator(OP_I32_GTEQ, "i32.gteq", opI32Gteq, In(AI32, AI32), Out(ABOOL), constants.TYPE_I32, OP_GTEQ)
+	Operator(OP_I32_LT, "i32.lt", opI32Lt, In(AI32, AI32), Out(ABOOL), constants.TYPE_I32, OP_LT)
+	Operator(OP_I32_LTEQ, "i32.lteq", opI32Lteq, In(AI32, AI32), Out(ABOOL), constants.TYPE_I32, OP_LTEQ)
     Op_V2(OP_I32_STR, "i32.str", opI32ToStr, In(AI32), Out(ASTR))
 	Op_V2(OP_I32_I8, "i32.i8", opI32ToI8, In(AI32), Out(AI8))
 	Op_V2(OP_I32_I16, "i32.i16", opI32ToI16, In(AI32), Out(AI16))
@@ -1127,24 +1128,24 @@ func init() {
 	Op_V2(OP_I32_MIN, "i32.min", opI32Min, In(AI32, AI32), Out(AI32))
 	Op_V2(OP_I32_RAND, "i32.rand", opI32Rand, In(AI32, AI32), Out(AI32))
 
-    Operator(OP_I64_EQ, "i64.eq", opI64Eq, In(AI64, AI64), Out(ABOOL), TYPE_I64, OP_EQUAL)
-	Operator(OP_I64_UNEQ, "i64.uneq", opI64Uneq, In(AI64, AI64), Out(ABOOL), TYPE_I64, OP_UNEQUAL)
-	Operator(OP_I64_BITAND, "i64.bitand", opI64Bitand, In(AI64, AI64), Out(AI64), TYPE_I64, OP_BITAND)
-	Operator(OP_I64_BITOR, "i64.bitor", opI64Bitor, In(AI64, AI64), Out(AI64), TYPE_I64, OP_BITOR)
-	Operator(OP_I64_BITXOR, "i64.bitxor", opI64Bitxor, In(AI64, AI64), Out(AI64), TYPE_I64, OP_BITXOR)
-	Operator(OP_I64_BITCLEAR, "i64.bitclear", opI64Bitclear, In(AI64, AI64), Out(AI64), TYPE_I64, OP_BITCLEAR)
-    Operator(OP_I64_BITSHL, "i64.bitshl", opI64Bitshl, In(AI64, AI64), Out(AI64), TYPE_I64, OP_BITSHL)
-	Operator(OP_I64_BITSHR, "i64.bitshr", opI64Bitshr, In(AI64, AI64), Out(AI64), TYPE_I64, OP_BITSHR)
-    Operator(OP_I64_ADD, "i64.add", opI64Add, In(AI64, AI64), Out(AI64), TYPE_I64, OP_ADD)
-	Operator(OP_I64_SUB, "i64.sub", opI64Sub, In(AI64, AI64), Out(AI64), TYPE_I64, OP_SUB)
-	Operator(OP_I64_NEG, "i64.neg", opI64Neg, In(AI64), Out(AI64), TYPE_I64, OP_NEG)
-	Operator(OP_I64_MUL, "i64.mul", opI64Mul, In(AI64, AI64), Out(AI64), TYPE_I64, OP_MUL)
-	Operator(OP_I64_DIV, "i64.div", opI64Div, In(AI64, AI64), Out(AI64), TYPE_I64, OP_DIV)
-	Operator(OP_I64_MOD, "i64.mod", opI64Mod, In(AI64, AI64), Out(AI64), TYPE_I64, OP_MOD)
-	Operator(OP_I64_GT, "i64.gt", opI64Gt, In(AI64, AI64), Out(ABOOL), TYPE_I64, OP_GT)
-	Operator(OP_I64_GTEQ, "i64.gteq", opI64Gteq, In(AI64, AI64), Out(ABOOL), TYPE_I64, OP_GTEQ)
-	Operator(OP_I64_LT, "i64.lt", opI64Lt, In(AI64, AI64), Out(ABOOL), TYPE_I64, OP_LT)
-	Operator(OP_I64_LTEQ, "i64.lteq", opI64Lteq, In(AI64, AI64), Out(ABOOL), TYPE_I64, OP_LTEQ)
+    Operator(OP_I64_EQ, "i64.eq", opI64Eq, In(AI64, AI64), Out(ABOOL), constants.TYPE_I64, OP_EQUAL)
+	Operator(OP_I64_UNEQ, "i64.uneq", opI64Uneq, In(AI64, AI64), Out(ABOOL), constants.TYPE_I64, OP_UNEQUAL)
+	Operator(OP_I64_BITAND, "i64.bitand", opI64Bitand, In(AI64, AI64), Out(AI64), constants.TYPE_I64, OP_BITAND)
+	Operator(OP_I64_BITOR, "i64.bitor", opI64Bitor, In(AI64, AI64), Out(AI64), constants.TYPE_I64, OP_BITOR)
+	Operator(OP_I64_BITXOR, "i64.bitxor", opI64Bitxor, In(AI64, AI64), Out(AI64), constants.TYPE_I64, OP_BITXOR)
+	Operator(OP_I64_BITCLEAR, "i64.bitclear", opI64Bitclear, In(AI64, AI64), Out(AI64), constants.TYPE_I64, OP_BITCLEAR)
+    Operator(OP_I64_BITSHL, "i64.bitshl", opI64Bitshl, In(AI64, AI64), Out(AI64), constants.TYPE_I64, OP_BITSHL)
+	Operator(OP_I64_BITSHR, "i64.bitshr", opI64Bitshr, In(AI64, AI64), Out(AI64), constants.TYPE_I64, OP_BITSHR)
+    Operator(OP_I64_ADD, "i64.add", opI64Add, In(AI64, AI64), Out(AI64), constants.TYPE_I64, OP_ADD)
+	Operator(OP_I64_SUB, "i64.sub", opI64Sub, In(AI64, AI64), Out(AI64), constants.TYPE_I64, OP_SUB)
+	Operator(OP_I64_NEG, "i64.neg", opI64Neg, In(AI64), Out(AI64), constants.TYPE_I64, OP_NEG)
+	Operator(OP_I64_MUL, "i64.mul", opI64Mul, In(AI64, AI64), Out(AI64), constants.TYPE_I64, OP_MUL)
+	Operator(OP_I64_DIV, "i64.div", opI64Div, In(AI64, AI64), Out(AI64), constants.TYPE_I64, OP_DIV)
+	Operator(OP_I64_MOD, "i64.mod", opI64Mod, In(AI64, AI64), Out(AI64), constants.TYPE_I64, OP_MOD)
+	Operator(OP_I64_GT, "i64.gt", opI64Gt, In(AI64, AI64), Out(ABOOL), constants.TYPE_I64, OP_GT)
+	Operator(OP_I64_GTEQ, "i64.gteq", opI64Gteq, In(AI64, AI64), Out(ABOOL), constants.TYPE_I64, OP_GTEQ)
+	Operator(OP_I64_LT, "i64.lt", opI64Lt, In(AI64, AI64), Out(ABOOL), constants.TYPE_I64, OP_LT)
+	Operator(OP_I64_LTEQ, "i64.lteq", opI64Lteq, In(AI64, AI64), Out(ABOOL), constants.TYPE_I64, OP_LTEQ)
 	Op_V2(OP_I64_STR, "i64.str", opI64ToStr, In(AI64), Out(ASTR))
 	Op_V2(OP_I64_I8, "i64.i8", opI64ToI8, In(AI64), Out(AI8))
 	Op_V2(OP_I64_I16, "i64.i16", opI64ToI16, In(AI64), Out(AI16))
@@ -1161,23 +1162,23 @@ func init() {
 	Op_V2(OP_I64_MIN, "i64.min", opI64Min, In(AI64, AI64), Out(AI64))
 	Op_V2(OP_I64_RAND, "i64.rand", opI64Rand, In(AI64, AI64), Out(AI64))
 
-	Operator(OP_UI8_EQ, "ui8.eq", opUI8Eq, In(AUI8, AUI8), Out(ABOOL), TYPE_UI8, OP_EQUAL)
-	Operator(OP_UI8_UNEQ, "ui8.uneq", opUI8Uneq, In(AUI8, AUI8), Out(ABOOL), TYPE_UI8, OP_UNEQUAL)
-	Operator(OP_UI8_BITAND, "ui8.bitand", opUI8Bitand, In(AUI8, AUI8), Out(AUI8), TYPE_UI8, OP_BITAND)
-	Operator(OP_UI8_BITOR, "ui8.bitor", opUI8Bitor, In(AUI8, AUI8), Out(AUI8), TYPE_UI8, OP_BITOR)
-    Operator(OP_UI8_BITXOR, "ui8.bitxor", opUI8Bitxor, In(AUI8, AUI8), Out(AUI8), TYPE_UI8, OP_BITXOR)
-	Operator(OP_UI8_BITCLEAR, "ui8.bitclear", opUI8Bitclear, In(AUI8, AUI8), Out(AUI8), TYPE_UI8, OP_BITCLEAR)
-	Operator(OP_UI8_BITSHL, "ui8.bitshl", opUI8Bitshl, In(AUI8, AUI8), Out(AUI8), TYPE_UI8, OP_BITSHL)
-	Operator(OP_UI8_BITSHR, "ui8.bitshr", opUI8Bitshr, In(AUI8, AUI8), Out(AUI8), TYPE_UI8, OP_BITSHR)
-	Operator(OP_UI8_ADD, "ui8.add", opUI8Add, In(AUI8, AUI8), Out(AUI8), TYPE_UI8, OP_ADD)
-	Operator(OP_UI8_SUB, "ui8.sub", opUI8Sub, In(AUI8, AUI8), Out(AUI8), TYPE_UI8, OP_SUB)
-	Operator(OP_UI8_MUL, "ui8.mul", opUI8Mul, In(AUI8, AUI8), Out(AUI8), TYPE_UI8, OP_MUL)
-	Operator(OP_UI8_DIV, "ui8.div", opUI8Div, In(AUI8, AUI8), Out(AUI8), TYPE_UI8, OP_DIV)
-	Operator(OP_UI8_MOD, "ui8.mod", opUI8Mod, In(AUI8, AUI8), Out(AUI8), TYPE_UI8, OP_MOD)
-	Operator(OP_UI8_GT, "ui8.gt", opUI8Gt, In(AUI8, AUI8), Out(ABOOL), TYPE_UI8, OP_GT)
-	Operator(OP_UI8_GTEQ, "ui8.gteq", opUI8Gteq, In(AUI8, AUI8), Out(ABOOL), TYPE_UI8, OP_GTEQ)
-	Operator(OP_UI8_LT, "ui8.lt", opUI8Lt, In(AUI8, AUI8), Out(ABOOL), TYPE_UI8, OP_LT)
-	Operator(OP_UI8_LTEQ, "ui8.lteq", opUI8Lteq, In(AUI8, AUI8), Out(ABOOL), TYPE_UI8, OP_LTEQ)
+	Operator(OP_UI8_EQ, "ui8.eq", opUI8Eq, In(AUI8, AUI8), Out(ABOOL), constants.TYPE_UI8, OP_EQUAL)
+	Operator(OP_UI8_UNEQ, "ui8.uneq", opUI8Uneq, In(AUI8, AUI8), Out(ABOOL), constants.TYPE_UI8, OP_UNEQUAL)
+	Operator(OP_UI8_BITAND, "ui8.bitand", opUI8Bitand, In(AUI8, AUI8), Out(AUI8), constants.TYPE_UI8, OP_BITAND)
+	Operator(OP_UI8_BITOR, "ui8.bitor", opUI8Bitor, In(AUI8, AUI8), Out(AUI8), constants.TYPE_UI8, OP_BITOR)
+    Operator(OP_UI8_BITXOR, "ui8.bitxor", opUI8Bitxor, In(AUI8, AUI8), Out(AUI8), constants.TYPE_UI8, OP_BITXOR)
+	Operator(OP_UI8_BITCLEAR, "ui8.bitclear", opUI8Bitclear, In(AUI8, AUI8), Out(AUI8), constants.TYPE_UI8, OP_BITCLEAR)
+	Operator(OP_UI8_BITSHL, "ui8.bitshl", opUI8Bitshl, In(AUI8, AUI8), Out(AUI8), constants.TYPE_UI8, OP_BITSHL)
+	Operator(OP_UI8_BITSHR, "ui8.bitshr", opUI8Bitshr, In(AUI8, AUI8), Out(AUI8), constants.TYPE_UI8, OP_BITSHR)
+	Operator(OP_UI8_ADD, "ui8.add", opUI8Add, In(AUI8, AUI8), Out(AUI8), constants.TYPE_UI8, OP_ADD)
+	Operator(OP_UI8_SUB, "ui8.sub", opUI8Sub, In(AUI8, AUI8), Out(AUI8), constants.TYPE_UI8, OP_SUB)
+	Operator(OP_UI8_MUL, "ui8.mul", opUI8Mul, In(AUI8, AUI8), Out(AUI8), constants.TYPE_UI8, OP_MUL)
+	Operator(OP_UI8_DIV, "ui8.div", opUI8Div, In(AUI8, AUI8), Out(AUI8), constants.TYPE_UI8, OP_DIV)
+	Operator(OP_UI8_MOD, "ui8.mod", opUI8Mod, In(AUI8, AUI8), Out(AUI8), constants.TYPE_UI8, OP_MOD)
+	Operator(OP_UI8_GT, "ui8.gt", opUI8Gt, In(AUI8, AUI8), Out(ABOOL), constants.TYPE_UI8, OP_GT)
+	Operator(OP_UI8_GTEQ, "ui8.gteq", opUI8Gteq, In(AUI8, AUI8), Out(ABOOL), constants.TYPE_UI8, OP_GTEQ)
+	Operator(OP_UI8_LT, "ui8.lt", opUI8Lt, In(AUI8, AUI8), Out(ABOOL), constants.TYPE_UI8, OP_LT)
+	Operator(OP_UI8_LTEQ, "ui8.lteq", opUI8Lteq, In(AUI8, AUI8), Out(ABOOL), constants.TYPE_UI8, OP_LTEQ)
     Op_V2(OP_UI8_STR, "ui8.str", opUI8ToStr, In(AUI8), Out(ASTR))
 	Op_V2(OP_UI8_I8, "ui8.i8", opUI8ToI8, In(AUI8), Out(AI8))
 	Op_V2(OP_UI8_I16, "ui8.i16", opUI8ToI16, In(AUI8), Out(AI16))
@@ -1193,23 +1194,23 @@ func init() {
 	Op_V2(OP_UI8_MIN, "ui8.min", opUI8Min, In(AUI8, AUI8), Out(AUI8))
 	Op_V2(OP_UI8_RAND, "ui8.rand", opUI8Rand, nil, Out(AUI8))
 
-    Operator(OP_UI16_EQ, "ui16.eq", opUI16Eq, In(AUI16, AUI16), Out(ABOOL), TYPE_UI16, OP_EQUAL)
-    Operator(OP_UI16_UNEQ, "ui16.uneq", opUI16Uneq, In(AUI16, AUI16), Out(ABOOL), TYPE_UI16, OP_UNEQUAL)
-	Operator(OP_UI16_BITAND, "ui16.bitand", opUI16Bitand, In(AUI16, AUI16), Out(AUI16), TYPE_UI16, OP_BITAND)
-	Operator(OP_UI16_BITOR, "ui16.bitor", opUI16Bitor, In(AUI16, AUI16), Out(AUI16), TYPE_UI16, OP_BITOR)
-	Operator(OP_UI16_BITXOR, "ui16.bitxor", opUI16Bitxor, In(AUI16, AUI16), Out(AUI16), TYPE_UI16, OP_BITXOR)
-	Operator(OP_UI16_BITCLEAR, "ui16.bitclear", opUI16Bitclear, In(AUI16, AUI16), Out(AUI16), TYPE_UI16, OP_BITCLEAR)
-	Operator(OP_UI16_BITSHL, "ui16.bitshl", opUI16Bitshl, In(AUI16, AUI16), Out(AUI16), TYPE_UI16, OP_BITSHL)
-	Operator(OP_UI16_BITSHR, "ui16.bitshr", opUI16Bitshr, In(AUI16, AUI16), Out(AUI16), TYPE_UI16, OP_BITSHR)
-	Operator(OP_UI16_ADD, "ui16.add", opUI16Add, In(AUI16, AUI16), Out(AUI16), TYPE_UI16, OP_ADD)
-	Operator(OP_UI16_SUB, "ui16.sub", opUI16Sub, In(AUI16, AUI16), Out(AUI16), TYPE_UI16, OP_SUB)
-	Operator(OP_UI16_MUL, "ui16.mul", opUI16Mul, In(AUI16, AUI16), Out(AUI16), TYPE_UI16, OP_MUL)
-	Operator(OP_UI16_DIV, "ui16.div", opUI16Div, In(AUI16, AUI16), Out(AUI16), TYPE_UI16, OP_DIV)
-	Operator(OP_UI16_MOD, "ui16.mod", opUI16Mod, In(AUI16, AUI16), Out(AUI16), TYPE_UI16, OP_MOD)
-	Operator(OP_UI16_GT, "ui16.gt", opUI16Gt, In(AUI16, AUI16), In(ABOOL), TYPE_UI16, OP_GT)
-	Operator(OP_UI16_GTEQ, "ui16.gteq", opUI16Gteq, In(AUI16, AUI16), Out(ABOOL), TYPE_UI16, OP_GTEQ)
-	Operator(OP_UI16_LT, "ui16.lt", opUI16Lt, In(AUI16, AUI16), Out(ABOOL), TYPE_UI16, OP_LT)
-	Operator(OP_UI16_LTEQ, "ui16.lteq", opUI16Lteq, In(AUI16, AUI16), Out(ABOOL), TYPE_UI16, OP_LTEQ)
+    Operator(OP_UI16_EQ, "ui16.eq", opUI16Eq, In(AUI16, AUI16), Out(ABOOL), constants.TYPE_UI16, OP_EQUAL)
+    Operator(OP_UI16_UNEQ, "ui16.uneq", opUI16Uneq, In(AUI16, AUI16), Out(ABOOL), constants.TYPE_UI16, OP_UNEQUAL)
+	Operator(OP_UI16_BITAND, "ui16.bitand", opUI16Bitand, In(AUI16, AUI16), Out(AUI16), constants.TYPE_UI16, OP_BITAND)
+	Operator(OP_UI16_BITOR, "ui16.bitor", opUI16Bitor, In(AUI16, AUI16), Out(AUI16), constants.TYPE_UI16, OP_BITOR)
+	Operator(OP_UI16_BITXOR, "ui16.bitxor", opUI16Bitxor, In(AUI16, AUI16), Out(AUI16), constants.TYPE_UI16, OP_BITXOR)
+	Operator(OP_UI16_BITCLEAR, "ui16.bitclear", opUI16Bitclear, In(AUI16, AUI16), Out(AUI16), constants.TYPE_UI16, OP_BITCLEAR)
+	Operator(OP_UI16_BITSHL, "ui16.bitshl", opUI16Bitshl, In(AUI16, AUI16), Out(AUI16), constants.TYPE_UI16, OP_BITSHL)
+	Operator(OP_UI16_BITSHR, "ui16.bitshr", opUI16Bitshr, In(AUI16, AUI16), Out(AUI16), constants.TYPE_UI16, OP_BITSHR)
+	Operator(OP_UI16_ADD, "ui16.add", opUI16Add, In(AUI16, AUI16), Out(AUI16), constants.TYPE_UI16, OP_ADD)
+	Operator(OP_UI16_SUB, "ui16.sub", opUI16Sub, In(AUI16, AUI16), Out(AUI16), constants.TYPE_UI16, OP_SUB)
+	Operator(OP_UI16_MUL, "ui16.mul", opUI16Mul, In(AUI16, AUI16), Out(AUI16), constants.TYPE_UI16, OP_MUL)
+	Operator(OP_UI16_DIV, "ui16.div", opUI16Div, In(AUI16, AUI16), Out(AUI16), constants.TYPE_UI16, OP_DIV)
+	Operator(OP_UI16_MOD, "ui16.mod", opUI16Mod, In(AUI16, AUI16), Out(AUI16), constants.TYPE_UI16, OP_MOD)
+	Operator(OP_UI16_GT, "ui16.gt", opUI16Gt, In(AUI16, AUI16), In(ABOOL), constants.TYPE_UI16, OP_GT)
+	Operator(OP_UI16_GTEQ, "ui16.gteq", opUI16Gteq, In(AUI16, AUI16), Out(ABOOL), constants.TYPE_UI16, OP_GTEQ)
+	Operator(OP_UI16_LT, "ui16.lt", opUI16Lt, In(AUI16, AUI16), Out(ABOOL), constants.TYPE_UI16, OP_LT)
+	Operator(OP_UI16_LTEQ, "ui16.lteq", opUI16Lteq, In(AUI16, AUI16), Out(ABOOL), constants.TYPE_UI16, OP_LTEQ)
 	Op_V2(OP_UI16_STR, "ui16.str", opUI16ToStr, In(AUI16), Out(ASTR))
 	Op_V2(OP_UI16_I8, "ui16.i8", opUI16ToI8, In(AUI16), Out(AI8))
 	Op_V2(OP_UI16_I16, "ui16.i16", opUI16ToI16, In(AUI16), Out(AI16))
@@ -1225,23 +1226,23 @@ func init() {
 	Op_V2(OP_UI16_MIN, "ui16.min", opUI16Min, In(AUI16, AUI16), Out(AUI16))
 	Op_V2(OP_UI16_RAND, "ui16.rand", opUI16Rand, nil, Out(AUI16))
 
-	Operator(OP_UI32_EQ, "ui32.eq", opUI32Eq, In(AUI32, AUI32), Out(ABOOL), TYPE_UI32, OP_EQUAL)
-	Operator(OP_UI32_UNEQ, "ui32.uneq", opUI32Uneq, In(AUI32, AUI32), Out(ABOOL), TYPE_UI32, OP_UNEQUAL)
-	Operator(OP_UI32_BITAND, "ui32.bitand", opUI32Bitand, In(AUI32, AUI32), Out(AUI32), TYPE_UI32, OP_BITAND)
-	Operator(OP_UI32_BITOR, "ui32.bitor", opUI32Bitor, In(AUI32, AUI32), Out(AUI32), TYPE_UI32, OP_BITOR)
-	Operator(OP_UI32_BITXOR, "ui32.bitxor", opUI32Bitxor, In(AUI32, AUI32), Out(AUI32), TYPE_UI32, OP_BITXOR)
-	Operator(OP_UI32_BITCLEAR, "ui32.bitclear", opUI32Bitclear, In(AUI32, AUI32), Out(AUI32), TYPE_UI32, OP_BITCLEAR)
-	Operator(OP_UI32_BITSHL, "ui32.bitshl", opUI32Bitshl, In(AUI32, AUI32), Out(AUI32), TYPE_UI32, OP_BITSHL)
-	Operator(OP_UI32_BITSHR, "ui32.bitshr", opUI32Bitshr, In(AUI32, AUI32), Out(AUI32), TYPE_UI32, OP_BITSHR)
-	Operator(OP_UI32_ADD, "ui32.add", opUI32Add, In(AUI32, AUI32), Out(AUI32), TYPE_UI32, OP_ADD)
-	Operator(OP_UI32_SUB, "ui32.sub", opUI32Sub, In(AUI32, AUI32), Out(AUI32), TYPE_UI32, OP_SUB)
-	Operator(OP_UI32_MUL, "ui32.mul", opUI32Mul, In(AUI32, AUI32), Out(AUI32), TYPE_UI32, OP_MUL)
-	Operator(OP_UI32_DIV, "ui32.div", opUI32Div, In(AUI32, AUI32), Out(AUI32), TYPE_UI32, OP_DIV)
-	Operator(OP_UI32_MOD, "ui32.mod", opUI32Mod, In(AUI32, AUI32), Out(AUI32), TYPE_UI32, OP_MOD)
-	Operator(OP_UI32_GT, "ui32.gt", opUI32Gt, In(AUI32, AUI32), Out(ABOOL), TYPE_UI32, OP_GT)
-	Operator(OP_UI32_GTEQ, "ui32.gteq", opUI32Gteq, In(AUI32, AUI32), Out(ABOOL), TYPE_UI32, OP_GTEQ)
-	Operator(OP_UI32_LT, "ui32.lt", opUI32Lt, In(AUI32, AUI32), Out(ABOOL), TYPE_UI32, OP_LT)
-	Operator(OP_UI32_LTEQ, "ui32.lteq", opUI32Lteq, In(AUI32, AUI32), Out(ABOOL), TYPE_UI32, OP_LTEQ)
+	Operator(OP_UI32_EQ, "ui32.eq", opUI32Eq, In(AUI32, AUI32), Out(ABOOL), constants.TYPE_UI32, OP_EQUAL)
+	Operator(OP_UI32_UNEQ, "ui32.uneq", opUI32Uneq, In(AUI32, AUI32), Out(ABOOL), constants.TYPE_UI32, OP_UNEQUAL)
+	Operator(OP_UI32_BITAND, "ui32.bitand", opUI32Bitand, In(AUI32, AUI32), Out(AUI32), constants.TYPE_UI32, OP_BITAND)
+	Operator(OP_UI32_BITOR, "ui32.bitor", opUI32Bitor, In(AUI32, AUI32), Out(AUI32), constants.TYPE_UI32, OP_BITOR)
+	Operator(OP_UI32_BITXOR, "ui32.bitxor", opUI32Bitxor, In(AUI32, AUI32), Out(AUI32), constants.TYPE_UI32, OP_BITXOR)
+	Operator(OP_UI32_BITCLEAR, "ui32.bitclear", opUI32Bitclear, In(AUI32, AUI32), Out(AUI32), constants.TYPE_UI32, OP_BITCLEAR)
+	Operator(OP_UI32_BITSHL, "ui32.bitshl", opUI32Bitshl, In(AUI32, AUI32), Out(AUI32), constants.TYPE_UI32, OP_BITSHL)
+	Operator(OP_UI32_BITSHR, "ui32.bitshr", opUI32Bitshr, In(AUI32, AUI32), Out(AUI32), constants.TYPE_UI32, OP_BITSHR)
+	Operator(OP_UI32_ADD, "ui32.add", opUI32Add, In(AUI32, AUI32), Out(AUI32), constants.TYPE_UI32, OP_ADD)
+	Operator(OP_UI32_SUB, "ui32.sub", opUI32Sub, In(AUI32, AUI32), Out(AUI32), constants.TYPE_UI32, OP_SUB)
+	Operator(OP_UI32_MUL, "ui32.mul", opUI32Mul, In(AUI32, AUI32), Out(AUI32), constants.TYPE_UI32, OP_MUL)
+	Operator(OP_UI32_DIV, "ui32.div", opUI32Div, In(AUI32, AUI32), Out(AUI32), constants.TYPE_UI32, OP_DIV)
+	Operator(OP_UI32_MOD, "ui32.mod", opUI32Mod, In(AUI32, AUI32), Out(AUI32), constants.TYPE_UI32, OP_MOD)
+	Operator(OP_UI32_GT, "ui32.gt", opUI32Gt, In(AUI32, AUI32), Out(ABOOL), constants.TYPE_UI32, OP_GT)
+	Operator(OP_UI32_GTEQ, "ui32.gteq", opUI32Gteq, In(AUI32, AUI32), Out(ABOOL), constants.TYPE_UI32, OP_GTEQ)
+	Operator(OP_UI32_LT, "ui32.lt", opUI32Lt, In(AUI32, AUI32), Out(ABOOL), constants.TYPE_UI32, OP_LT)
+	Operator(OP_UI32_LTEQ, "ui32.lteq", opUI32Lteq, In(AUI32, AUI32), Out(ABOOL), constants.TYPE_UI32, OP_LTEQ)
 	Op_V2(OP_UI32_STR, "ui32.str", opUI32ToStr, In(AUI32), Out(ASTR))
 	Op_V2(OP_UI32_I8, "ui32.i8", opUI32ToI8, In(AUI32), Out(AI8))
 	Op_V2(OP_UI32_I16, "ui32.i16", opUI32ToI16, In(AUI32), Out(AI16))
@@ -1257,23 +1258,23 @@ func init() {
 	Op_V2(OP_UI32_MIN, "ui32.min", opUI32Min, In(AUI32, AUI32), Out(AUI32))
 	Op_V2(OP_UI32_RAND, "ui32.rand", opUI32Rand, nil, Out(AUI32))
 
-	Operator(OP_UI64_EQ, "ui64.eq", opUI64Eq, In(AUI64, AUI64), Out(ABOOL), TYPE_UI64, OP_EQUAL)
-	Operator(OP_UI64_UNEQ, "ui64.uneq", opUI64Uneq, In(AUI64, AUI64), Out(ABOOL), TYPE_UI64, OP_UNEQUAL)
-	Operator(OP_UI64_BITAND, "ui64.bitand", opUI64Bitand, In(AUI64, AUI64), Out(AUI64), TYPE_UI64, OP_BITAND)
-	Operator(OP_UI64_BITOR, "ui64.bitor", opUI64Bitor, In(AUI64, AUI64), Out(AUI64), TYPE_UI64, OP_BITOR)
-	Operator(OP_UI64_BITXOR, "ui64.bitxor", opUI64Bitxor, In(AUI64, AUI64), Out(AUI64), TYPE_UI64, OP_BITXOR)
-	Operator(OP_UI64_BITCLEAR, "ui64.bitclear", opUI64Bitclear, In(AUI64, AUI64), Out(AUI64), TYPE_UI64, OP_BITCLEAR)
-	Operator(OP_UI64_BITSHL, "ui64.bitshl", opUI64Bitshl, In(AUI64, AUI64), Out(AUI64), TYPE_UI64, OP_BITSHL)
-	Operator(OP_UI64_BITSHR, "ui64.bitshr", opUI64Bitshr, In(AUI64, AUI64), Out(AUI64), TYPE_UI64, OP_BITSHR)
-	Operator(OP_UI64_ADD, "ui64.add", opUI64Add, In(AUI64, AUI64), Out(AUI64), TYPE_UI64, OP_ADD)
-	Operator(OP_UI64_SUB, "ui64.sub", opUI64Sub, In(AUI64, AUI64), Out(AUI64), TYPE_UI64, OP_SUB)
-	Operator(OP_UI64_MUL, "ui64.mul", opUI64Mul, In(AUI64, AUI64), Out(AUI64), TYPE_UI64, OP_MUL)
-	Operator(OP_UI64_DIV, "ui64.div", opUI64Div, In(AUI64, AUI64), Out(AUI64), TYPE_UI64, OP_DIV)
-	Operator(OP_UI64_MOD, "ui64.mod", opUI64Mod, In(AUI64, AUI64), Out(AUI64), TYPE_UI64, OP_MOD)
-	Operator(OP_UI64_GT, "ui64.gt", opUI64Gt, In(AUI64, AUI64), Out(ABOOL), TYPE_UI64, OP_GT)
-	Operator(OP_UI64_GTEQ, "ui64.gteq", opUI64Gteq, In(AUI64, AUI64), Out(ABOOL), TYPE_UI64, OP_GTEQ)
-	Operator(OP_UI64_LT, "ui64.lt", opUI64Lt, In(AUI64, AUI64), Out(ABOOL), TYPE_UI64, OP_LT)
-	Operator(OP_UI64_LTEQ, "ui64.lteq", opUI64Lteq, In(AUI64, AUI64), Out(ABOOL), TYPE_UI64, OP_LTEQ)
+	Operator(OP_UI64_EQ, "ui64.eq", opUI64Eq, In(AUI64, AUI64), Out(ABOOL), constants.TYPE_UI64, OP_EQUAL)
+	Operator(OP_UI64_UNEQ, "ui64.uneq", opUI64Uneq, In(AUI64, AUI64), Out(ABOOL), constants.TYPE_UI64, OP_UNEQUAL)
+	Operator(OP_UI64_BITAND, "ui64.bitand", opUI64Bitand, In(AUI64, AUI64), Out(AUI64), constants.TYPE_UI64, OP_BITAND)
+	Operator(OP_UI64_BITOR, "ui64.bitor", opUI64Bitor, In(AUI64, AUI64), Out(AUI64), constants.TYPE_UI64, OP_BITOR)
+	Operator(OP_UI64_BITXOR, "ui64.bitxor", opUI64Bitxor, In(AUI64, AUI64), Out(AUI64), constants.TYPE_UI64, OP_BITXOR)
+	Operator(OP_UI64_BITCLEAR, "ui64.bitclear", opUI64Bitclear, In(AUI64, AUI64), Out(AUI64), constants.TYPE_UI64, OP_BITCLEAR)
+	Operator(OP_UI64_BITSHL, "ui64.bitshl", opUI64Bitshl, In(AUI64, AUI64), Out(AUI64), constants.TYPE_UI64, OP_BITSHL)
+	Operator(OP_UI64_BITSHR, "ui64.bitshr", opUI64Bitshr, In(AUI64, AUI64), Out(AUI64), constants.TYPE_UI64, OP_BITSHR)
+	Operator(OP_UI64_ADD, "ui64.add", opUI64Add, In(AUI64, AUI64), Out(AUI64), constants.TYPE_UI64, OP_ADD)
+	Operator(OP_UI64_SUB, "ui64.sub", opUI64Sub, In(AUI64, AUI64), Out(AUI64), constants.TYPE_UI64, OP_SUB)
+	Operator(OP_UI64_MUL, "ui64.mul", opUI64Mul, In(AUI64, AUI64), Out(AUI64), constants.TYPE_UI64, OP_MUL)
+	Operator(OP_UI64_DIV, "ui64.div", opUI64Div, In(AUI64, AUI64), Out(AUI64), constants.TYPE_UI64, OP_DIV)
+	Operator(OP_UI64_MOD, "ui64.mod", opUI64Mod, In(AUI64, AUI64), Out(AUI64), constants.TYPE_UI64, OP_MOD)
+	Operator(OP_UI64_GT, "ui64.gt", opUI64Gt, In(AUI64, AUI64), Out(ABOOL), constants.TYPE_UI64, OP_GT)
+	Operator(OP_UI64_GTEQ, "ui64.gteq", opUI64Gteq, In(AUI64, AUI64), Out(ABOOL), constants.TYPE_UI64, OP_GTEQ)
+	Operator(OP_UI64_LT, "ui64.lt", opUI64Lt, In(AUI64, AUI64), Out(ABOOL), constants.TYPE_UI64, OP_LT)
+	Operator(OP_UI64_LTEQ, "ui64.lteq", opUI64Lteq, In(AUI64, AUI64), Out(ABOOL), constants.TYPE_UI64, OP_LTEQ)
 	Op_V2(OP_UI64_STR, "ui64.str", opUI64ToStr, In(AUI64), Out(ASTR))
 	Op_V2(OP_UI64_I8, "ui64.i8", opUI64ToI8, In(AUI64), Out(AI8))
 	Op_V2(OP_UI64_I16, "ui64.i16", opUI64ToI16, In(AUI64), Out(AI16))
@@ -1289,18 +1290,18 @@ func init() {
 	Op_V2(OP_UI64_MIN, "ui64.min", opUI64Min, In(AUI64, AUI64), Out(AUI64))
 	Op_V2(OP_UI64_RAND, "ui64.rand", opUI64Rand, nil, Out(AUI64))
 
-	Operator(OP_F32_EQ, "f32.eq", opF32Eq, In(AF32, AF32), Out(ABOOL), TYPE_F32, OP_EQUAL)
-	Operator(OP_F32_UNEQ, "f32.uneq", opF32Uneq, In(AF32, AF32), Out(ABOOL), TYPE_F32, OP_UNEQUAL)
-	Operator(OP_F32_ADD, "f32.add", opF32Add, In(AF32, AF32), Out(AF32), TYPE_F32, OP_ADD)
-	Operator(OP_F32_SUB, "f32.sub", opF32Sub, In(AF32, AF32), Out(AF32), TYPE_F32, OP_SUB)
-	Operator(OP_F32_NEG, "f32.neg", opF32Neg, In(AF32), Out(AF32), TYPE_F32, OP_NEG)
-	Operator(OP_F32_MUL, "f32.mul", opF32Mul, In(AF32, AF32), Out(AF32), TYPE_F32, OP_MUL)
-	Operator(OP_F32_DIV, "f32.div", opF32Div, In(AF32, AF32), Out(AF32), TYPE_F32, OP_DIV)
-	Operator(OP_F32_MOD, "f32.mod", opF32Mod, In(AF32, AF32), Out(AF32), TYPE_F32, OP_MOD)
-    Operator(OP_F32_GT, "f32.gt", opF32Gt, In(AF32, AF32), Out(ABOOL), TYPE_F32, OP_GT)
-	Operator(OP_F32_GTEQ, "f32.gteq", opF32Gteq, In(AF32, AF32), Out(ABOOL), TYPE_F32, OP_GTEQ)
-	Operator(OP_F32_LT, "f32.lt", opF32Lt, In(AF32, AF32), Out(ABOOL), TYPE_F32, OP_LT)
-	Operator(OP_F32_LTEQ, "f32.lteq", opF32Lteq, In(AF32, AF32), Out(ABOOL), TYPE_F32, OP_LTEQ)
+	Operator(OP_F32_EQ, "f32.eq", opF32Eq, In(AF32, AF32), Out(ABOOL), constants.TYPE_F32, OP_EQUAL)
+	Operator(OP_F32_UNEQ, "f32.uneq", opF32Uneq, In(AF32, AF32), Out(ABOOL), constants.TYPE_F32, OP_UNEQUAL)
+	Operator(OP_F32_ADD, "f32.add", opF32Add, In(AF32, AF32), Out(AF32), constants.TYPE_F32, OP_ADD)
+	Operator(OP_F32_SUB, "f32.sub", opF32Sub, In(AF32, AF32), Out(AF32), constants.TYPE_F32, OP_SUB)
+	Operator(OP_F32_NEG, "f32.neg", opF32Neg, In(AF32), Out(AF32), constants.TYPE_F32, OP_NEG)
+	Operator(OP_F32_MUL, "f32.mul", opF32Mul, In(AF32, AF32), Out(AF32), constants.TYPE_F32, OP_MUL)
+	Operator(OP_F32_DIV, "f32.div", opF32Div, In(AF32, AF32), Out(AF32), constants.TYPE_F32, OP_DIV)
+	Operator(OP_F32_MOD, "f32.mod", opF32Mod, In(AF32, AF32), Out(AF32), constants.TYPE_F32, OP_MOD)
+    Operator(OP_F32_GT, "f32.gt", opF32Gt, In(AF32, AF32), Out(ABOOL), constants.TYPE_F32, OP_GT)
+	Operator(OP_F32_GTEQ, "f32.gteq", opF32Gteq, In(AF32, AF32), Out(ABOOL), constants.TYPE_F32, OP_GTEQ)
+	Operator(OP_F32_LT, "f32.lt", opF32Lt, In(AF32, AF32), Out(ABOOL), constants.TYPE_F32, OP_LT)
+	Operator(OP_F32_LTEQ, "f32.lteq", opF32Lteq, In(AF32, AF32), Out(ABOOL), constants.TYPE_F32, OP_LTEQ)
 	Op_V2(OP_F32_IS_NAN, "f32.isnan", opF32Isnan, In(AF32), Out(ABOOL))
 	Op_V2(OP_F32_STR, "f32.str", opF32ToStr, In(AF32), Out(ASTR))
 	Op_V2(OP_F32_I8, "f32.i8", opF32ToI8, In(AF32), Out(AI8))
@@ -1327,18 +1328,18 @@ func init() {
 	Op_V2(OP_F32_MIN, "f32.min", opF32Min, In(AF32, AF32), Out(AF32))
 	Op_V2(OP_F32_RAND, "f32.rand", opF32Rand, nil, Out(AF32))
 
-	Operator(OP_F64_EQ, "f64.eq", opF64Eq, In(AF64, AF64), Out(ABOOL), TYPE_F64, OP_EQUAL)
-	Operator(OP_F64_UNEQ, "f64.uneq", opF64Uneq, In(AF64, AF64), Out(ABOOL), TYPE_F64, OP_UNEQUAL)
-    Operator(OP_F64_ADD, "f64.add", opF64Add, In(AF64, AF64), Out(AF64), TYPE_F64, OP_ADD)
-	Operator(OP_F64_SUB, "f64.sub", opF64Sub, In(AF64, AF64), Out(AF64), TYPE_F64, OP_SUB)
-	Operator(OP_F64_NEG, "f64.neg", opF64Neg, In(AF64), Out(AF64), TYPE_F64, OP_NEG)
-	Operator(OP_F64_MUL, "f64.mul", opF64Mul, In(AF64, AF64), Out(AF64), TYPE_F64, OP_MUL)
-	Operator(OP_F64_DIV, "f64.div", opF64Div, In(AF64, AF64), Out(AF64), TYPE_F64, OP_DIV)
-	Operator(OP_F64_MOD, "f32.mod", opF64Mod, In(AF64, AF64), Out(AF64), TYPE_F64, OP_MOD)
-	Operator(OP_F64_GT, "f64.gt", opF64Gt, In(AF64, AF64), Out(ABOOL), TYPE_F64, OP_GT)
-	Operator(OP_F64_GTEQ, "f64.gteq", opF64Gteq, In(AF64, AF64), Out(ABOOL), TYPE_F64, OP_GTEQ)
-	Operator(OP_F64_LT, "f64.lt", opF64Lt, In(AF64, AF64), Out(ABOOL), TYPE_F64, OP_LT)
-	Operator(OP_F64_LTEQ, "f64.lteq", opF64Lteq, In(AF64, AF64), Out(ABOOL), TYPE_F64, OP_LTEQ)
+	Operator(OP_F64_EQ, "f64.eq", opF64Eq, In(AF64, AF64), Out(ABOOL), constants.TYPE_F64, OP_EQUAL)
+	Operator(OP_F64_UNEQ, "f64.uneq", opF64Uneq, In(AF64, AF64), Out(ABOOL), constants.TYPE_F64, OP_UNEQUAL)
+    Operator(OP_F64_ADD, "f64.add", opF64Add, In(AF64, AF64), Out(AF64), constants.TYPE_F64, OP_ADD)
+	Operator(OP_F64_SUB, "f64.sub", opF64Sub, In(AF64, AF64), Out(AF64), constants.TYPE_F64, OP_SUB)
+	Operator(OP_F64_NEG, "f64.neg", opF64Neg, In(AF64), Out(AF64), constants.TYPE_F64, OP_NEG)
+	Operator(OP_F64_MUL, "f64.mul", opF64Mul, In(AF64, AF64), Out(AF64), constants.TYPE_F64, OP_MUL)
+	Operator(OP_F64_DIV, "f64.div", opF64Div, In(AF64, AF64), Out(AF64), constants.TYPE_F64, OP_DIV)
+	Operator(OP_F64_MOD, "f32.mod", opF64Mod, In(AF64, AF64), Out(AF64), constants.TYPE_F64, OP_MOD)
+	Operator(OP_F64_GT, "f64.gt", opF64Gt, In(AF64, AF64), Out(ABOOL), constants.TYPE_F64, OP_GT)
+	Operator(OP_F64_GTEQ, "f64.gteq", opF64Gteq, In(AF64, AF64), Out(ABOOL), constants.TYPE_F64, OP_GTEQ)
+	Operator(OP_F64_LT, "f64.lt", opF64Lt, In(AF64, AF64), Out(ABOOL), constants.TYPE_F64, OP_LT)
+	Operator(OP_F64_LTEQ, "f64.lteq", opF64Lteq, In(AF64, AF64), Out(ABOOL), constants.TYPE_F64, OP_LTEQ)
 	Op_V2(OP_F64_IS_NAN, "f64.isnan", opF64Isnan, In(AF64), Out(ABOOL))
 	Op_V2(OP_F64_STR, "f64.str", opF64ToStr, In(AF64), Out(ASTR))
 	Op_V2(OP_F64_I8, "f64.i8", opF64ToI8, In(AF64), Out(AI8))
@@ -1365,9 +1366,9 @@ func init() {
 	Op_V2(OP_F64_MIN, "f64.min", opF64Min, In(AF64, AF64), Out(AF64))
 	Op_V2(OP_F64_RAND, "f64.rand", opF64Rand, nil, Out(AF64))
 
-	Operator(OP_STR_EQ, "str.eq", opStrEq, In(ASTR, ASTR), Out(ABOOL), TYPE_STR, OP_EQUAL)
-	Operator(OP_STR_UNEQ, "str.uneq", opStrUneq, In(ASTR, ASTR), Out(ABOOL), TYPE_STR, OP_UNEQUAL)
-    Operator(OP_STR_CONCAT, "str.concat", opStrConcat, In(ASTR, ASTR), Out(ASTR), TYPE_STR, OP_ADD)
+	Operator(OP_STR_EQ, "str.eq", opStrEq, In(ASTR, ASTR), Out(ABOOL), constants.TYPE_STR, OP_EQUAL)
+	Operator(OP_STR_UNEQ, "str.uneq", opStrUneq, In(ASTR, ASTR), Out(ABOOL), constants.TYPE_STR, OP_UNEQUAL)
+    Operator(OP_STR_CONCAT, "str.concat", opStrConcat, In(ASTR, ASTR), Out(ASTR), constants.TYPE_STR, OP_ADD)
 	Op_V2(OP_STR_I8, "str.i8", opStrToI8, In(ASTR), Out(AI8))
 	Op_V2(OP_STR_I16, "str.i16", opStrToI16, In(ASTR), Out(AI16))
 	Op_V2(OP_STR_I32, "str.i32", opStrToI32, In(ASTR), Out(AI32))
@@ -1384,11 +1385,11 @@ func init() {
 	Op_V2(OP_STR_LAST_INDEX, "str.lastindex", opStrLastIndex, In(ASTR, ASTR), Out(AI32))
 	Op_V2(OP_STR_TRIM_SPACE, "str.trimspace", opStrTrimSpace, In(ASTR), Out(ASTR))
 
-	Op(OP_APPEND, "append", opAppend, In(Slice(TYPE_UNDEFINED), Slice(TYPE_UNDEFINED)), Out(Slice(TYPE_UNDEFINED)))
-	Op(OP_RESIZE, "resize", opResize, In(Slice(TYPE_UNDEFINED), AI32), Out(Slice(TYPE_UNDEFINED)))
-	Op(OP_INSERT, "insert", opInsert, In(Slice(TYPE_UNDEFINED), Slice(TYPE_UNDEFINED)), Out(Slice(TYPE_UNDEFINED)))
-	Op(OP_REMOVE, "remove", opRemove, In(Slice(TYPE_UNDEFINED), AI32), Out(Slice(TYPE_UNDEFINED)))
-	Op(OP_COPY, "copy", opCopy, In(Slice(TYPE_UNDEFINED), Slice(TYPE_UNDEFINED)), Out(AI32))
+	Op(OP_APPEND, "append", opAppend, In(Slice(constants.TYPE_UNDEFINED), Slice(constants.TYPE_UNDEFINED)), Out(Slice(constants.TYPE_UNDEFINED)))
+	Op(OP_RESIZE, "resize", opResize, In(Slice(constants.TYPE_UNDEFINED), AI32), Out(Slice(constants.TYPE_UNDEFINED)))
+	Op(OP_INSERT, "insert", opInsert, In(Slice(constants.TYPE_UNDEFINED), Slice(constants.TYPE_UNDEFINED)), Out(Slice(constants.TYPE_UNDEFINED)))
+	Op(OP_REMOVE, "remove", opRemove, In(Slice(constants.TYPE_UNDEFINED), AI32), Out(Slice(constants.TYPE_UNDEFINED)))
+	Op(OP_COPY, "copy", opCopy, In(Slice(constants.TYPE_UNDEFINED), Slice(constants.TYPE_UNDEFINED)), Out(AI32))
 
 	Op(OP_ASSERT, "assert", opAssertValue, In(AUND, AUND, ASTR), Out(ABOOL))
 	Op(OP_TEST, "test", opTest, In(AUND, AUND, ASTR), nil)
@@ -1397,12 +1398,12 @@ func init() {
 	Op(OP_PANIC_IF_NOT, "panicIfNot", opPanicIfNot, In(ABOOL, ASTR), nil)
 	Op(OP_STRERROR, "strerror", opStrError, In(AI32), Out(ASTR))
 
-	Op(OP_AFF_PRINT, "aff.print", opAffPrint, In(Slice(TYPE_AFF)), nil)
-	Op(OP_AFF_QUERY, "aff.query", opAffQuery, In(Slice(TYPE_AFF)), Out(Slice(TYPE_AFF)))
-	Op(OP_AFF_ON, "aff.on", opAffOn, In(Slice(TYPE_AFF), Slice(TYPE_AFF)), nil)
-	Op(OP_AFF_OF, "aff.of", opAffOf, In(Slice(TYPE_AFF), Slice(TYPE_AFF)), nil)
-	Op(OP_AFF_INFORM, "aff.inform", opAffInform, In(Slice(TYPE_AFF), AI32, Slice(TYPE_AFF)), nil)
-	Op(OP_AFF_REQUEST, "aff.request", opAffRequest, In(Slice(TYPE_AFF), AI32, Slice(TYPE_AFF)), nil)
+	Op(OP_AFF_PRINT, "aff.print", opAffPrint, In(Slice(constants.TYPE_AFF)), nil)
+	Op(OP_AFF_QUERY, "aff.query", opAffQuery, In(Slice(constants.TYPE_AFF)), Out(Slice(constants.TYPE_AFF)))
+	Op(OP_AFF_ON, "aff.on", opAffOn, In(Slice(constants.TYPE_AFF), Slice(constants.TYPE_AFF)), nil)
+	Op(OP_AFF_OF, "aff.of", opAffOf, In(Slice(constants.TYPE_AFF), Slice(constants.TYPE_AFF)), nil)
+	Op(OP_AFF_INFORM, "aff.inform", opAffInform, In(Slice(constants.TYPE_AFF), AI32, Slice(constants.TYPE_AFF)), nil)
+	Op(OP_AFF_REQUEST, "aff.request", opAffRequest, In(Slice(constants.TYPE_AFF), AI32, Slice(constants.TYPE_AFF)), nil)
 
 	Op(OP_HTTP_SERVE, "http.Serve", opHTTPServe, In(ASTR), Out(ASTR))
 	Op(OP_HTTP_LISTEN_AND_SERVE, "http.ListenAndServe", opHTTPListenAndServe, In(ASTR), Out(ASTR))
@@ -1424,7 +1425,7 @@ func init() {
 	Op(OP_HTTP_HANDLE, "http.Handle", opHTTPHandle,
 		In(
 			ASTR,
-			ParamEx(ParamData{typCode: TYPE_FUNC, pkg: httpPkg, inputs: In(MakeArgument("ResponseWriter", "", -1).AddType(TypeNames[TYPE_STR]), Pointer(Struct("http", "Request", "r")))})),
+			ParamEx(ParamData{typCode: constants.TYPE_FUNC, pkg: httpPkg, inputs: In(MakeArgument("ResponseWriter", "", -1).AddType(constants.TypeNames[constants.TYPE_STR]), Pointer(Struct("http", "Request", "r")))})),
 		Out())
 
 	Op(OP_HTTP_CLOSE, "http.Close", opHTTPClose, nil, nil)

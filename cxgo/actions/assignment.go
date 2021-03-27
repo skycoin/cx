@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"github.com/skycoin/cx/cx/constants"
 	"os"
 
 	"github.com/skycoin/cx/cx"
@@ -15,10 +16,10 @@ func assignStructLiteralFields(to []*cxcore.CXExpression, from []*cxcore.CXExpre
 		if len(to[0].Outputs[0].Indexes) > 0 {
 			f.Outputs[0].Lengths = to[0].Outputs[0].Lengths
 			f.Outputs[0].Indexes = to[0].Outputs[0].Indexes
-			f.Outputs[0].DereferenceOperations = append(f.Outputs[0].DereferenceOperations, cxcore.DEREF_ARRAY)
+			f.Outputs[0].DereferenceOperations = append(f.Outputs[0].DereferenceOperations, constants.DEREF_ARRAY)
 		}
 
-		f.Outputs[0].DereferenceOperations = append(f.Outputs[0].DereferenceOperations, cxcore.DEREF_FIELD)
+		f.Outputs[0].DereferenceOperations = append(f.Outputs[0].DereferenceOperations, constants.DEREF_FIELD)
 	}
 
 	return from
@@ -30,15 +31,15 @@ func StructLiteralAssignment(to []*cxcore.CXExpression, from []*cxcore.CXExpress
 	lastFrom := from[len(from)-1]
 	// If the last expression in `from` is declared as pointer
 	// then it means the whole struct literal needs to be passed by reference.
-	if !hasDeclSpec(cxcore.GetAssignmentElement(lastFrom.Outputs[0]), cxcore.DECL_POINTER) {
+	if !hasDeclSpec(cxcore.GetAssignmentElement(lastFrom.Outputs[0]), constants.DECL_POINTER) {
 		return assignStructLiteralFields(to, from, to[0].Outputs[0].Name)
 	} else {
 		// And we also need an auxiliary variable to point to,
 		// otherwise we'd be trying to assign the fields to a nil value.
 		fOut := lastFrom.Outputs[0]
-		auxName := cxcore.MakeGenSym(cxcore.LOCAL_PREFIX)
-		aux := cxcore.MakeArgument(auxName, lastFrom.FileName, lastFrom.FileLine).AddType(cxcore.TypeNames[fOut.Type])
-		aux.DeclarationSpecifiers = append(aux.DeclarationSpecifiers, cxcore.DECL_POINTER)
+		auxName := cxcore.MakeGenSym(constants.LOCAL_PREFIX)
+		aux := cxcore.MakeArgument(auxName, lastFrom.FileName, lastFrom.FileLine).AddType(constants.TypeNames[fOut.Type])
+		aux.DeclarationSpecifiers = append(aux.DeclarationSpecifiers, constants.DECL_POINTER)
 		aux.CustomType = fOut.CustomType
 		aux.Size = fOut.Size
 		aux.TotalSize = fOut.TotalSize
@@ -54,7 +55,7 @@ func StructLiteralAssignment(to []*cxcore.CXExpression, from []*cxcore.CXExpress
 		assignExpr := cxcore.MakeExpression(cxcore.Natives[cxcore.OP_IDENTITY], lastFrom.FileName, lastFrom.FileLine)
 		assignExpr.Package = lastFrom.Package
 		out := cxcore.MakeArgument(to[0].Outputs[0].Name, lastFrom.FileName, lastFrom.FileLine)
-		out.PassBy = cxcore.PASSBY_REFERENCE
+		out.PassBy = constants.PASSBY_REFERENCE
 		out.Package = lastFrom.Package
 		assignExpr.AddOutput(out)
 		assignExpr.AddInput(aux)
@@ -67,7 +68,7 @@ func StructLiteralAssignment(to []*cxcore.CXExpression, from []*cxcore.CXExpress
 func ArrayLiteralAssignment(to []*cxcore.CXExpression, from []*cxcore.CXExpression) []*cxcore.CXExpression {
 	for _, f := range from {
 		f.Outputs[0].Name = to[0].Outputs[0].Name
-		f.Outputs[0].DereferenceOperations = append(f.Outputs[0].DereferenceOperations, cxcore.DEREF_ARRAY)
+		f.Outputs[0].DereferenceOperations = append(f.Outputs[0].DereferenceOperations, constants.DEREF_ARRAY)
 	}
 
 	return from
@@ -81,7 +82,7 @@ func ShortAssignment(expr *cxcore.CXExpression, to []*cxcore.CXExpression, from 
 	if from[idx].Operator == nil {
 		expr.AddInput(from[idx].Outputs[0])
 	} else {
-		sym := cxcore.MakeArgument(cxcore.MakeGenSym(cxcore.LOCAL_PREFIX), CurrentFile, LineNo).AddType(cxcore.TypeNames[from[idx].Inputs[0].Type])
+		sym := cxcore.MakeArgument(cxcore.MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(constants.TypeNames[from[idx].Inputs[0].Type])
 		sym.Package = pkg
 		sym.PreviouslyDeclared = true
 		from[idx].AddOutput(sym)
@@ -102,7 +103,7 @@ func ShortAssignment(expr *cxcore.CXExpression, to []*cxcore.CXExpression, from 
 // arguments. In these cases, the output type depends on its input arguments' type. In the rest of
 // the cases, we can simply use the function's return type.
 func getOutputType(expr *cxcore.CXExpression) *cxcore.CXArgument {
-	if expr.Operator.Outputs[0].Type != cxcore.TYPE_UNDEFINED {
+	if expr.Operator.Outputs[0].Type != constants.TYPE_UNDEFINED {
 		return expr.Operator.Outputs[0]
 	}
 
@@ -117,7 +118,7 @@ func Assignment(to []*cxcore.CXExpression, assignOp string, from []*cxcore.CXExp
 	// And if that function call actually returns something. If not, throw an error.
 	if from[idx].Operator != nil && len(from[idx].Operator.Outputs) == 0 {
 		println(cxcore.CompilationError(to[0].Outputs[0].FileName, to[0].Outputs[0].FileLine), "trying to use an outputless operator in an assignment")
-		os.Exit(cxcore.CX_COMPILATION_ERROR)
+		os.Exit(constants.CX_COMPILATION_ERROR)
 	}
 
 	pkg, err := PRGRM.GetCurrentPackage()
@@ -136,11 +137,11 @@ func Assignment(to []*cxcore.CXExpression, assignOp string, from []*cxcore.CXExp
 
 		if from[idx].Operator == nil {
 			// then it's a literal
-			sym = cxcore.MakeArgument(to[0].Outputs[0].Name, CurrentFile, LineNo).AddType(cxcore.TypeNames[from[idx].Outputs[0].Type])
+			sym = cxcore.MakeArgument(to[0].Outputs[0].Name, CurrentFile, LineNo).AddType(constants.TypeNames[from[idx].Outputs[0].Type])
 		} else {
 			outTypeArg := getOutputType(from[idx])
 
-			sym = cxcore.MakeArgument(to[0].Outputs[0].Name, CurrentFile, LineNo).AddType(cxcore.TypeNames[outTypeArg.Type])
+			sym = cxcore.MakeArgument(to[0].Outputs[0].Name, CurrentFile, LineNo).AddType(constants.TypeNames[outTypeArg.Type])
 
 			if from[idx].IsArrayLiteral {
 				sym.Size = from[idx].Inputs[0].Size
@@ -150,7 +151,7 @@ func Assignment(to []*cxcore.CXExpression, assignOp string, from []*cxcore.CXExp
 			if outTypeArg.IsSlice {
 				// if from[idx].Operator.ProgramOutput[0].IsSlice {
 				sym.Lengths = append([]int{0}, sym.Lengths...)
-				sym.DeclarationSpecifiers = append(sym.DeclarationSpecifiers, cxcore.DECL_SLICE)
+				sym.DeclarationSpecifiers = append(sym.DeclarationSpecifiers, constants.DECL_SLICE)
 			}
 
 			sym.IsSlice = outTypeArg.IsSlice

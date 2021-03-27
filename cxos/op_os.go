@@ -5,6 +5,7 @@ package cxos
 import (
 	"bytes"
 	"encoding/binary"
+	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/globals"
 
 	"math"
@@ -414,7 +415,7 @@ func getSlice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) (outputSlicePoi
 	inp1, out0 := inputs[1].Arg, outputs[0].Arg
     
 	if inp1.Type != out0.Type || !cxcore.GetAssignmentElement(inp1).IsSlice || !cxcore.GetAssignmentElement(out0).IsSlice {
-		panic(cxcore.CX_RUNTIME_INVALID_ARGUMENT)
+		panic(constants.CX_RUNTIME_INVALID_ARGUMENT)
 	}
     inputs[1].Used = int8(inp1.Type)
 	count = inputs[2].Get_ui64()

@@ -3,6 +3,7 @@ package actions
 import (
 	"errors"
 	"fmt"
+	"github.com/skycoin/cx/cx/constants"
 	"os"
 
 	"github.com/jinzhu/copier"
@@ -75,7 +76,7 @@ func FunctionAddParameters(fn *cxcore.CXFunction, inputs, outputs []*cxcore.CXAr
 	}
 
 	for _, out := range fn.Outputs {
-		if out.IsPointer && out.Type != cxcore.TYPE_STR && out.Type != cxcore.TYPE_AFF {
+		if out.IsPointer && out.Type != constants.TYPE_STR && out.Type != constants.TYPE_AFF {
 			out.DoesEscape = true
 		}
 	}
@@ -219,9 +220,9 @@ func FunctionCall(exprs []*cxcore.CXExpression, args []*cxcore.CXExpression) []*
 			if len(inpExpr.Outputs) < 1 {
 				var out *cxcore.CXArgument
 
-				if inpExpr.Operator.Outputs[0].Type == cxcore.TYPE_UNDEFINED {
+				if inpExpr.Operator.Outputs[0].Type == constants.TYPE_UNDEFINED {
 					// if undefined type, then adopt argument's type
-					out = cxcore.MakeArgument(cxcore.MakeGenSym(cxcore.LOCAL_PREFIX), CurrentFile, inpExpr.FileLine).AddType(cxcore.TypeNames[inpExpr.Inputs[0].Type])
+					out = cxcore.MakeArgument(cxcore.MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, inpExpr.FileLine).AddType(constants.TypeNames[inpExpr.Inputs[0].Type])
 					out.CustomType = inpExpr.Inputs[0].CustomType
 
 					out.Size = inpExpr.Inputs[0].Size
@@ -230,7 +231,7 @@ func FunctionCall(exprs []*cxcore.CXExpression, args []*cxcore.CXExpression) []*
 					out.Type = inpExpr.Inputs[0].Type
 					out.PreviouslyDeclared = true
 				} else {
-					out = cxcore.MakeArgument(cxcore.MakeGenSym(cxcore.LOCAL_PREFIX), CurrentFile, inpExpr.FileLine).AddType(cxcore.TypeNames[inpExpr.Operator.Outputs[0].Type])
+					out = cxcore.MakeArgument(cxcore.MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, inpExpr.FileLine).AddType(constants.TypeNames[inpExpr.Operator.Outputs[0].Type])
 					out.DeclarationSpecifiers = inpExpr.Operator.Outputs[0].DeclarationSpecifiers
 
 					out.CustomType = inpExpr.Operator.Outputs[0].CustomType
@@ -302,12 +303,12 @@ func ProcessPointerStructs(expr *cxcore.CXExpression) {
 		for _, fld := range arg.Fields {
 			if fld.IsPointer && fld.DereferenceLevels == 0 {
 				fld.DereferenceLevels++
-				fld.DereferenceOperations = append(fld.DereferenceOperations, cxcore.DEREF_POINTER)
+				fld.DereferenceOperations = append(fld.DereferenceOperations, constants.DEREF_POINTER)
 			}
 		}
 		if arg.IsStruct && arg.IsPointer && len(arg.Fields) > 0 && arg.DereferenceLevels == 0 {
 			arg.DereferenceLevels++
-			arg.DereferenceOperations = append(arg.DereferenceOperations, cxcore.DEREF_POINTER)
+			arg.DereferenceOperations = append(arg.DereferenceOperations, constants.DEREF_POINTER)
 		}
 	}
 }
@@ -498,7 +499,7 @@ func checkMatchParamTypes(expr *cxcore.CXExpression, expected, received []*cxcor
 			}
 		}
 
-		if expectedType != receivedType && inp.Type != cxcore.TYPE_UNDEFINED {
+		if expectedType != receivedType && inp.Type != constants.TYPE_UNDEFINED {
 			var opName string
 			if expr.Operator.IsNative {
 				opName = cxcore.OpNames[expr.Operator.OpCode]
@@ -537,7 +538,7 @@ func CheckTypes(expr *cxcore.CXExpression) {
 
 		// checking if number of inputs is less than the required number of inputs
 		if len(expr.Inputs) != len(expr.Operator.Inputs) {
-			if !(len(expr.Operator.Inputs) > 0 && expr.Operator.Inputs[len(expr.Operator.Inputs)-1].Type != cxcore.TYPE_UNDEFINED) {
+			if !(len(expr.Operator.Inputs) > 0 && expr.Operator.Inputs[len(expr.Operator.Inputs)-1].Type != constants.TYPE_UNDEFINED) {
 				// if the last input is of type cxcore.TYPE_UNDEFINED then it might be a variadic function, such as printf
 			} else {
 				// then we need to be strict in the number of inputs
@@ -571,7 +572,7 @@ func CheckTypes(expr *cxcore.CXExpression) {
 			}
 
 			println(cxcore.CompilationError(expr.FileName, expr.FileLine), fmt.Sprintf("operator '%s' expects to return %d output%s, but %d receiving argument%s %s provided", opName, len(expr.Operator.Outputs), plural1, len(expr.Outputs), plural2, plural3))
-			os.Exit(cxcore.CX_COMPILATION_ERROR)
+			os.Exit(constants.CX_COMPILATION_ERROR)
 		}
 	}
 
@@ -584,7 +585,7 @@ func CheckTypes(expr *cxcore.CXExpression) {
 				expectedType = cxcore.GetAssignmentElement(expr.Outputs[i]).CustomType.Name
 			} else {
 				// then it's native type
-				expectedType = cxcore.TypeNames[cxcore.GetAssignmentElement(expr.Outputs[i]).Type]
+				expectedType = constants.TypeNames[cxcore.GetAssignmentElement(expr.Outputs[i]).Type]
 			}
 
 			if cxcore.GetAssignmentElement(expr.Inputs[i]).CustomType != nil {
@@ -592,7 +593,7 @@ func CheckTypes(expr *cxcore.CXExpression) {
 				receivedType = cxcore.GetAssignmentElement(expr.Inputs[i]).CustomType.Name
 			} else {
 				// then it's native type
-				receivedType = cxcore.TypeNames[cxcore.GetAssignmentElement(expr.Inputs[i]).Type]
+				receivedType = constants.TypeNames[cxcore.GetAssignmentElement(expr.Inputs[i]).Type]
 			}
 
 			// if cxcore.GetAssignmentElement(expr.ProgramOutput[i]).Type != cxcore.GetAssignmentElement(inp).Type {
@@ -623,9 +624,9 @@ func ProcessStringAssignment(expr *cxcore.CXExpression) {
 				out = cxcore.GetAssignmentElement(out)
 				inp := cxcore.GetAssignmentElement(expr.Inputs[i])
 
-				if (out.Type == cxcore.TYPE_STR || out.Type == cxcore.TYPE_AFF) && out.Name != "" &&
-					(inp.Type == cxcore.TYPE_STR || inp.Type == cxcore.TYPE_AFF) && inp.Name != "" {
-					out.PassBy = cxcore.PASSBY_VALUE
+				if (out.Type == constants.TYPE_STR || out.Type == constants.TYPE_AFF) && out.Name != "" &&
+					(inp.Type == constants.TYPE_STR || inp.Type == constants.TYPE_AFF) && inp.Name != "" {
+					out.PassBy = constants.PASSBY_VALUE
 				}
 			}
 		}
@@ -637,9 +638,9 @@ func ProcessStringAssignment(expr *cxcore.CXExpression) {
 func ProcessReferenceAssignment(expr *cxcore.CXExpression) {
 	for _, out := range expr.Outputs {
 		elt := cxcore.GetAssignmentElement(out)
-		if elt.PassBy == cxcore.PASSBY_REFERENCE &&
-			!hasDeclSpec(elt, cxcore.DECL_POINTER) &&
-			elt.Type != cxcore.TYPE_STR && !elt.IsSlice {
+		if elt.PassBy == constants.PASSBY_REFERENCE &&
+			!hasDeclSpec(elt, constants.DECL_POINTER) &&
+			elt.Type != constants.TYPE_STR && !elt.IsSlice {
 			println(cxcore.CompilationError(CurrentFile, LineNo), "invalid reference assignment", elt.Name)
 		}
 	}
@@ -655,7 +656,7 @@ func ProcessSlice(inp *cxcore.CXArgument) {
 		elt = inp
 	}
 
-	if elt.IsSlice && len(elt.DereferenceOperations) > 0 && elt.DereferenceOperations[len(elt.DereferenceOperations)-1] == cxcore.DEREF_POINTER {
+	if elt.IsSlice && len(elt.DereferenceOperations) > 0 && elt.DereferenceOperations[len(elt.DereferenceOperations)-1] == constants.DEREF_POINTER {
 		elt.DereferenceOperations = elt.DereferenceOperations[:len(elt.DereferenceOperations)-1]
 		return
 	}
@@ -675,7 +676,7 @@ func ProcessSliceAssignment(expr *cxcore.CXExpression) {
 		out = cxcore.GetAssignmentElement(expr.Outputs[0])
 
 		if inp.IsSlice && out.IsSlice && len(inp.Indexes) == 0 && len(out.Indexes) == 0 {
-			out.PassBy = cxcore.PASSBY_VALUE
+			out.PassBy = constants.PASSBY_VALUE
 		}
 	}
 	if expr.Operator != nil && !expr.Operator.IsNative {
@@ -685,8 +686,8 @@ func ProcessSliceAssignment(expr *cxcore.CXExpression) {
 
 			// we want to pass by value if we're sending the slice as a whole (no indexing)
 			// unless it's a pointer to the slice
-			if assignElt.IsSlice && len(assignElt.Indexes) == 0 && !hasDeclSpec(assignElt, cxcore.DECL_POINTER) {
-				assignElt.PassBy = cxcore.PASSBY_VALUE
+			if assignElt.IsSlice && len(assignElt.Indexes) == 0 && !hasDeclSpec(assignElt, constants.DECL_POINTER) {
+				assignElt.PassBy = constants.PASSBY_VALUE
 			}
 		}
 	}
@@ -716,7 +717,7 @@ func lookupSymbol(pkgName, ident string, symbols *[]map[string]*cxcore.CXArgumen
 	}
 	// Then we found a function by that name. Let's create a `cxcore.CXArgument` of
 	// type `func` with that name.
-	fnArg := cxcore.MakeArgument(ident, fn.FileName, fn.FileLine).AddType(cxcore.TypeNames[cxcore.TYPE_FUNC])
+	fnArg := cxcore.MakeArgument(ident, fn.FileName, fn.FileLine).AddType(constants.TypeNames[constants.TYPE_FUNC])
 	fnArg.Package = pkg
 
 	return fnArg, nil
@@ -777,7 +778,7 @@ func ProcessMethodCall(expr *cxcore.CXExpression, symbols *[]map[string]*cxcore.
 				argOut, err := lookupSymbol(out.Package.Name, out.Name, symbols)
 				if err != nil {
 					println(cxcore.CompilationError(out.FileName, out.FileLine), fmt.Sprintf("identifier '%s' does not exist", out.Name))
-					os.Exit(cxcore.CX_COMPILATION_ERROR)
+					os.Exit(constants.CX_COMPILATION_ERROR)
 				}
 				// then we found an output
 				if len(out.Fields) > 0 {
@@ -824,8 +825,8 @@ func ProcessMethodCall(expr *cxcore.CXExpression, symbols *[]map[string]*cxcore.
 					strct := argOut.CustomType
 
 					if strct == nil {
-						println(cxcore.CompilationError(argOut.FileName, argOut.FileLine), fmt.Sprintf("illegal method call or field access on identifier '%s' of primitive type '%s'", argOut.Name, cxcore.TypeNames[argOut.Type]))
-						os.Exit(cxcore.CX_COMPILATION_ERROR)
+						println(cxcore.CompilationError(argOut.FileName, argOut.FileLine), fmt.Sprintf("illegal method call or field access on identifier '%s' of primitive type '%s'", argOut.Name, constants.TypeNames[argOut.Type]))
+						os.Exit(constants.CX_COMPILATION_ERROR)
 					}
 
 					expr.Inputs = append(expr.Outputs[:1], expr.Inputs...)
@@ -849,7 +850,7 @@ func ProcessMethodCall(expr *cxcore.CXExpression, symbols *[]map[string]*cxcore.
 			argOut, err := lookupSymbol(out.Package.Name, out.Name, symbols)
 			if err != nil {
 				println(cxcore.CompilationError(out.FileName, out.FileLine), fmt.Sprintf("identifier '%s' does not exist", out.Name))
-				os.Exit(cxcore.CX_COMPILATION_ERROR)
+				os.Exit(constants.CX_COMPILATION_ERROR)
 			}
 
 			// then we found an output
@@ -857,8 +858,8 @@ func ProcessMethodCall(expr *cxcore.CXExpression, symbols *[]map[string]*cxcore.
 				strct := argOut.CustomType
 
 				if strct == nil {
-					println(cxcore.CompilationError(argOut.FileName, argOut.FileLine), fmt.Sprintf("illegal method call or field access on identifier '%s' of primitive type '%s'", argOut.Name, cxcore.TypeNames[argOut.Type]))
-					os.Exit(cxcore.CX_COMPILATION_ERROR)
+					println(cxcore.CompilationError(argOut.FileName, argOut.FileLine), fmt.Sprintf("illegal method call or field access on identifier '%s' of primitive type '%s'", argOut.Name, constants.TypeNames[argOut.Type]))
+					os.Exit(constants.CX_COMPILATION_ERROR)
 				}
 
 				if fn, err := strct.Package.GetMethod(strct.Name+"."+out.Fields[len(out.Fields)-1].Name, strct.Name); err == nil {
@@ -878,7 +879,7 @@ func ProcessMethodCall(expr *cxcore.CXExpression, symbols *[]map[string]*cxcore.
 
 		// checking if receiver is sent as pointer or not
 		if expr.Operator.Inputs[0].IsPointer {
-			expr.Inputs[0].PassBy = cxcore.PASSBY_REFERENCE
+			expr.Inputs[0].PassBy = constants.PASSBY_REFERENCE
 		}
 	}
 }
@@ -924,14 +925,14 @@ func CopyArgFields(sym *cxcore.CXArgument, arg *cxcore.CXArgument) {
 			declSpec := []int{}
 			for c := 0; c < len(elt.DeclarationSpecifiers); c++ {
 				switch elt.DeclarationSpecifiers[c] {
-				case cxcore.DECL_INDEXING:
-					if declSpec[len(declSpec)-1] == cxcore.DECL_ARRAY || declSpec[len(declSpec)-1] == cxcore.DECL_SLICE {
+				case constants.DECL_INDEXING:
+					if declSpec[len(declSpec)-1] == constants.DECL_ARRAY || declSpec[len(declSpec)-1] == constants.DECL_SLICE {
 						declSpec = declSpec[:len(declSpec)-1]
 					} else {
 						println(cxcore.CompilationError(sym.FileName, sym.FileLine), "invalid indexing")
 					}
-				case cxcore.DECL_DEREF:
-					if declSpec[len(declSpec)-1] == cxcore.DECL_POINTER {
+				case constants.DECL_DEREF:
+					if declSpec[len(declSpec)-1] == constants.DECL_POINTER {
 						declSpec = declSpec[:len(declSpec)-1]
 					} else {
 						println(cxcore.CompilationError(sym.FileName, sym.FileLine), "invalid indirection")
@@ -953,23 +954,23 @@ func CopyArgFields(sym *cxcore.CXArgument, arg *cxcore.CXArgument) {
 				// checking if we need to remove or add cxcore.DECL_POINTERs
 				// also we could be removing
 				switch spec {
-				case cxcore.DECL_INDEXING:
-					if declSpec[len(declSpec)-1] == cxcore.DECL_ARRAY || declSpec[len(declSpec)-1] == cxcore.DECL_SLICE {
+				case constants.DECL_INDEXING:
+					if declSpec[len(declSpec)-1] == constants.DECL_ARRAY || declSpec[len(declSpec)-1] == constants.DECL_SLICE {
 						declSpec = declSpec[:len(declSpec)-1]
 					} else {
 						println(cxcore.CompilationError(sym.FileName, sym.FileLine), "invalid indexing")
 					}
-				case cxcore.DECL_DEREF:
-					if declSpec[len(declSpec)-1] == cxcore.DECL_POINTER {
+				case constants.DECL_DEREF:
+					if declSpec[len(declSpec)-1] == constants.DECL_POINTER {
 						declSpec = declSpec[:len(declSpec)-1]
 					} else {
 						println(cxcore.CompilationError(sym.FileName, sym.FileLine), "invalid indirection")
 					}
-				case cxcore.DECL_POINTER:
+				case constants.DECL_POINTER:
 					if sym.FileLine != arg.FileLine {
 						// This function is also called so it assigns offset and other fields to signature parameters
 						//
-						declSpec = append(declSpec, cxcore.DECL_POINTER)
+						declSpec = append(declSpec, constants.DECL_POINTER)
 					}
 				}
 			}
@@ -994,7 +995,7 @@ func CopyArgFields(sym *cxcore.CXArgument, arg *cxcore.CXArgument) {
 	sym.DoesEscape = arg.DoesEscape
 	sym.Size = arg.Size
 
-	if arg.Type == cxcore.TYPE_STR {
+	if arg.Type == constants.TYPE_STR {
 		sym.IsPointer = true
 	}
 
@@ -1008,26 +1009,26 @@ func CopyArgFields(sym *cxcore.CXArgument, arg *cxcore.CXArgument) {
 			// The cxgo when reading `foo[5]` in postfix.go does not know if `foo`
 			// is a slice or an array. At this point we now know it's a slice and we need
 			// to change those dereferences to cxcore.DEREF_SLICE.
-			if deref == cxcore.DEREF_ARRAY {
-				elt.DereferenceOperations[i] = cxcore.DEREF_SLICE
+			if deref == constants.DEREF_ARRAY {
+				elt.DereferenceOperations[i] = constants.DEREF_SLICE
 			}
 		}
-		if elt.DereferenceOperations[0] == cxcore.DEREF_POINTER {
+		if elt.DereferenceOperations[0] == constants.DEREF_POINTER {
 			elt.DereferenceOperations = elt.DereferenceOperations[1:]
 		}
 	}
 
 	if arg.IsSlice {
-		if !hasDerefOp(sym, cxcore.DEREF_ARRAY) {
+		if !hasDerefOp(sym, constants.DEREF_ARRAY) {
 			// Then we're handling the slice itself, and we need to dereference it.
-			sym.DereferenceOperations = append([]int{cxcore.DEREF_POINTER}, sym.DereferenceOperations...)
+			sym.DereferenceOperations = append([]int{constants.DEREF_POINTER}, sym.DereferenceOperations...)
 		} else {
 			for i, deref := range sym.DereferenceOperations {
 				// The cxgo when reading `foo[5]` in postfix.go does not know if `foo`
 				// is a slice or an array. At this point we now know it's a slice and we need
 				// to change those dereferences to cxcore.DEREF_SLICE.
-				if deref == cxcore.DEREF_ARRAY {
-					sym.DereferenceOperations[i] = cxcore.DEREF_SLICE
+				if deref == constants.DEREF_ARRAY {
+					sym.DereferenceOperations[i] = constants.DEREF_SLICE
 				}
 			}
 		}
@@ -1112,15 +1113,15 @@ func ProcessSymbolFields(sym *cxcore.CXArgument, arg *cxcore.CXArgument) {
 					// sym.DereferenceOperations = append(sym.DereferenceOperations, DEREF_FIELD)
 
 					if fld.IsSlice {
-						nameFld.DereferenceOperations = append([]int{cxcore.DEREF_POINTER}, nameFld.DereferenceOperations...)
+						nameFld.DereferenceOperations = append([]int{constants.DEREF_POINTER}, nameFld.DereferenceOperations...)
 						nameFld.DereferenceLevels++
 					}
 
 					nameFld.PassBy = fld.PassBy
 					nameFld.IsSlice = fld.IsSlice
 
-					if fld.Type == cxcore.TYPE_STR || fld.Type == cxcore.TYPE_AFF {
-						nameFld.PassBy = cxcore.PASSBY_REFERENCE
+					if fld.Type == constants.TYPE_STR || fld.Type == constants.TYPE_AFF {
+						nameFld.PassBy = constants.PASSBY_REFERENCE
 						// nameFld.Size = cxcore.TYPE_POINTER_SIZE
 						// nameFld.TotalSize = cxcore.TYPE_POINTER_SIZE
 					}
@@ -1171,24 +1172,24 @@ func PreFinalSize(finalSize *int, sym *cxcore.CXArgument, arg *cxcore.CXArgument
 			continue
 		}
 		switch op {
-		case cxcore.DEREF_ARRAY:
+		case constants.DEREF_ARRAY:
 			*finalSize /= elt.Lengths[idxCounter]
 			idxCounter++
-		case cxcore.DEREF_POINTER:
+		case constants.DEREF_POINTER:
 			if len(arg.DeclarationSpecifiers) > 0 {
 				var subSize int
 				subSize = 1
 				for _, decl := range arg.DeclarationSpecifiers {
 					switch decl {
-					case cxcore.DECL_ARRAY:
+					case constants.DECL_ARRAY:
 						for _, len := range arg.Lengths {
 							subSize *= len
 						}
 					// case cxcore.DECL_SLICE:
 					// 	subSize = TYPE_POINTER_SIZE
-					case cxcore.DECL_BASIC:
+					case constants.DECL_BASIC:
 						subSize = cxcore.GetArgSize(sym.Type)
-					case cxcore.DECL_STRUCT:
+					case constants.DECL_STRUCT:
 						subSize = arg.CustomType.Size
 					}
 				}

@@ -3,6 +3,7 @@ package cxcore
 import (
 	"bytes"
 	"fmt"
+	"github.com/skycoin/cx/cx/constants"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -18,65 +19,65 @@ func init() {
 	httpPkg := MakePackage("http")
 	urlStrct := MakeStruct("URL")
 
-	urlStrct.AddField(MakeArgument("Scheme", "", 0).AddType(TypeNames[TYPE_STR]).AddPackage(httpPkg))
-	urlStrct.AddField(MakeArgument("Opaque", "", 0).AddType(TypeNames[TYPE_STR]).AddPackage(httpPkg))
-	urlStrct.AddField(MakeArgument("Host", "", 0).AddType(TypeNames[TYPE_STR]).AddPackage(httpPkg))
-	urlStrct.AddField(MakeArgument("Path", "", 0).AddType(TypeNames[TYPE_STR]).AddPackage(httpPkg))
-	urlStrct.AddField(MakeArgument("RawPath", "", 0).AddType(TypeNames[TYPE_STR]).AddPackage(httpPkg))
-	urlStrct.AddField(MakeArgument("ForceQuery", "", 0).AddType(TypeNames[TYPE_BOOL]).AddPackage(httpPkg))
-	urlStrct.AddField(MakeArgument("RawQuery", "", 0).AddType(TypeNames[TYPE_STR]).AddPackage(httpPkg))
-	urlStrct.AddField(MakeArgument("Fragment", "", 0).AddType(TypeNames[TYPE_STR]).AddPackage(httpPkg))
+	urlStrct.AddField(MakeArgument("Scheme", "", 0).AddType(constants.TypeNames[constants.TYPE_STR]).AddPackage(httpPkg))
+	urlStrct.AddField(MakeArgument("Opaque", "", 0).AddType(constants.TypeNames[constants.TYPE_STR]).AddPackage(httpPkg))
+	urlStrct.AddField(MakeArgument("Host", "", 0).AddType(constants.TypeNames[constants.TYPE_STR]).AddPackage(httpPkg))
+	urlStrct.AddField(MakeArgument("Path", "", 0).AddType(constants.TypeNames[constants.TYPE_STR]).AddPackage(httpPkg))
+	urlStrct.AddField(MakeArgument("RawPath", "", 0).AddType(constants.TypeNames[constants.TYPE_STR]).AddPackage(httpPkg))
+	urlStrct.AddField(MakeArgument("ForceQuery", "", 0).AddType(constants.TypeNames[constants.TYPE_BOOL]).AddPackage(httpPkg))
+	urlStrct.AddField(MakeArgument("RawQuery", "", 0).AddType(constants.TypeNames[constants.TYPE_STR]).AddPackage(httpPkg))
+	urlStrct.AddField(MakeArgument("Fragment", "", 0).AddType(constants.TypeNames[constants.TYPE_STR]).AddPackage(httpPkg))
 
 	httpPkg.AddStruct(urlStrct)
 
 	requestStrct := MakeStruct("Request")
 
-	requestStrct.AddField(MakeArgument("Method", "", 0).AddType(TypeNames[TYPE_STR]).AddPackage(httpPkg))
-	urlFld := MakeArgument("URL", "", 0).AddType(TypeNames[TYPE_CUSTOM]).AddPackage(httpPkg)
-	urlFld.DeclarationSpecifiers = append(urlFld.DeclarationSpecifiers, DECL_STRUCT)
-	urlFld.DeclarationSpecifiers = append(urlFld.DeclarationSpecifiers, DECL_POINTER)
+	requestStrct.AddField(MakeArgument("Method", "", 0).AddType(constants.TypeNames[constants.TYPE_STR]).AddPackage(httpPkg))
+	urlFld := MakeArgument("URL", "", 0).AddType(constants.TypeNames[constants.TYPE_CUSTOM]).AddPackage(httpPkg)
+	urlFld.DeclarationSpecifiers = append(urlFld.DeclarationSpecifiers, constants.DECL_STRUCT)
+	urlFld.DeclarationSpecifiers = append(urlFld.DeclarationSpecifiers, constants.DECL_POINTER)
 	urlFld.IsPointer = true
-	urlFld.Size = TYPE_POINTER_SIZE
-	urlFld.TotalSize = TYPE_POINTER_SIZE
+	urlFld.Size = constants.TYPE_POINTER_SIZE
+	urlFld.TotalSize = constants.TYPE_POINTER_SIZE
 	urlFld.CustomType = urlStrct
 	requestStrct.AddField(urlFld)
 
-	headerFld := MakeArgument("Header", "", 0).AddType(TypeNames[TYPE_STR]).AddPackage(httpPkg) // will be a slice of strings
-	headerFld.DeclarationSpecifiers = append(headerFld.DeclarationSpecifiers, DECL_SLICE)
-	headerFld.DeclarationSpecifiers = append(headerFld.DeclarationSpecifiers, DECL_SLICE)
+	headerFld := MakeArgument("Header", "", 0).AddType(constants.TypeNames[constants.TYPE_STR]).AddPackage(httpPkg) // will be a slice of strings
+	headerFld.DeclarationSpecifiers = append(headerFld.DeclarationSpecifiers, constants.DECL_SLICE)
+	headerFld.DeclarationSpecifiers = append(headerFld.DeclarationSpecifiers, constants.DECL_SLICE)
 	headerFld.IsSlice = true
 	headerFld.IsReference = true
 	headerFld.IsArray = true
-	headerFld.PassBy = PASSBY_REFERENCE
+	headerFld.PassBy = constants.PASSBY_REFERENCE
 	headerFld.Lengths = []int{0, 0}
 
 	requestStrct.AddField(headerFld)
 
-	requestStrct.AddField(MakeArgument("Body", "", 0).AddType(TypeNames[TYPE_STR]).AddPackage(httpPkg))
+	requestStrct.AddField(MakeArgument("Body", "", 0).AddType(constants.TypeNames[constants.TYPE_STR]).AddPackage(httpPkg))
 
 	httpPkg.AddStruct(requestStrct)
 
 	// Mapping http.Response struct
 	responseStruct := MakeStruct("Response")
-	responseStruct.AddField(MakeArgument("Status", "", 0).AddType(TypeNames[TYPE_STR]).AddPackage(httpPkg))
-	responseStruct.AddField(MakeArgument("StatusCode", "", 0).AddType(TypeNames[TYPE_I32]).AddPackage(httpPkg))
-	responseStruct.AddField(MakeArgument("Proto", "", 0).AddType(TypeNames[TYPE_STR]).AddPackage(httpPkg))
-	responseStruct.AddField(MakeArgument("ProtoMajor", "", 0).AddType(TypeNames[TYPE_I32]).AddPackage(httpPkg))
-	responseStruct.AddField(MakeArgument("ProtoMinor", "", 0).AddType(TypeNames[TYPE_I32]).AddPackage(httpPkg))
-	responseStruct.AddField(MakeArgument("Body", "", 0).AddType(TypeNames[TYPE_STR]).AddPackage(httpPkg))
+	responseStruct.AddField(MakeArgument("Status", "", 0).AddType(constants.TypeNames[constants.TYPE_STR]).AddPackage(httpPkg))
+	responseStruct.AddField(MakeArgument("StatusCode", "", 0).AddType(constants.TypeNames[constants.TYPE_I32]).AddPackage(httpPkg))
+	responseStruct.AddField(MakeArgument("Proto", "", 0).AddType(constants.TypeNames[constants.TYPE_STR]).AddPackage(httpPkg))
+	responseStruct.AddField(MakeArgument("ProtoMajor", "", 0).AddType(constants.TypeNames[constants.TYPE_I32]).AddPackage(httpPkg))
+	responseStruct.AddField(MakeArgument("ProtoMinor", "", 0).AddType(constants.TypeNames[constants.TYPE_I32]).AddPackage(httpPkg))
+	responseStruct.AddField(MakeArgument("Body", "", 0).AddType(constants.TypeNames[constants.TYPE_STR]).AddPackage(httpPkg))
 	//TODO Header Header - not sure if headerFld used for http.Request can be used here
 	//TODO Body io.ReadCloser
-	responseStruct.AddField(MakeArgument("ContentLength", "", 0).AddType(TypeNames[TYPE_I64]).AddPackage(httpPkg))
-	transferEncodingFld := MakeArgument("TransferEncoding", "", 0).AddType(TypeNames[TYPE_STR]).AddPackage(httpPkg)
-	transferEncodingFld.DeclarationSpecifiers = append(transferEncodingFld.DeclarationSpecifiers, DECL_SLICE)
+	responseStruct.AddField(MakeArgument("ContentLength", "", 0).AddType(constants.TypeNames[constants.TYPE_I64]).AddPackage(httpPkg))
+	transferEncodingFld := MakeArgument("TransferEncoding", "", 0).AddType(constants.TypeNames[constants.TYPE_STR]).AddPackage(httpPkg)
+	transferEncodingFld.DeclarationSpecifiers = append(transferEncodingFld.DeclarationSpecifiers, constants.DECL_SLICE)
 	transferEncodingFld.IsSlice = true
 	transferEncodingFld.IsReference = true
 	transferEncodingFld.IsArray = true
-	transferEncodingFld.PassBy = PASSBY_REFERENCE
+	transferEncodingFld.PassBy = constants.PASSBY_REFERENCE
 	transferEncodingFld.Lengths = []int{0}
 	responseStruct.AddField(transferEncodingFld)
-	urlStrct.AddField(MakeArgument("Close", "", 0).AddType(TypeNames[TYPE_BOOL]).AddPackage(httpPkg))
-	urlStrct.AddField(MakeArgument("Uncompressed", "", 0).AddType(TypeNames[TYPE_BOOL]).AddPackage(httpPkg))
+	urlStrct.AddField(MakeArgument("Close", "", 0).AddType(constants.TypeNames[constants.TYPE_BOOL]).AddPackage(httpPkg))
+	urlStrct.AddField(MakeArgument("Uncompressed", "", 0).AddType(constants.TypeNames[constants.TYPE_BOOL]).AddPackage(httpPkg))
 	//TODO Trailer Header
 	//TODO Request *Request
 	//TODO TLS *tls.ConnectionState
@@ -250,7 +251,7 @@ func writeHTTPRequest(fp int, param *CXArgument, request *http.Request) {
 		panic(err)
 	}
 
-	derefURLFld.DereferenceOperations = append(derefURLFld.DereferenceOperations, DEREF_POINTER)
+	derefURLFld.DereferenceOperations = append(derefURLFld.DereferenceOperations, constants.DEREF_POINTER)
 
 	schemeFld, err := urlType.GetField("Scheme")
 	if err != nil {
@@ -287,7 +288,7 @@ func writeHTTPRequest(fp int, param *CXArgument, request *http.Request) {
 	reqOffByts := encoder.SerializeAtomic(int32(reqOff))
 	WriteMemory(GetFinalOffset(fp, &req), reqOffByts)
 
-	req.DereferenceOperations = append(req.DereferenceOperations, DEREF_POINTER)
+	req.DereferenceOperations = append(req.DereferenceOperations, constants.DEREF_POINTER)
 
 	// Creating empty `http.URL` object on heap.
 	req.Fields = accessURL
@@ -357,7 +358,7 @@ func opHTTPDo(expr *CXExpression, fp int) {
 		panic(err)
 	}
 
-	derefURLFld.DereferenceOperations = append(derefURLFld.DereferenceOperations, DEREF_POINTER)
+	derefURLFld.DereferenceOperations = append(derefURLFld.DereferenceOperations, constants.DEREF_POINTER)
 
 	schemeFld, err := urlType.GetField("Scheme")
 	if err != nil {

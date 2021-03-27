@@ -1,6 +1,7 @@
 package cxcore
 
 import (
+	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
@@ -1184,7 +1185,7 @@ func deserializeIntegers(off int64, size int64, s *serializedCXProgram) []int {
 func initDeserialization(prgrm *CXProgram, s *serializedCXProgram) {
 	prgrm.Memory = s.Memory
 	prgrm.Packages = make([]*CXPackage, len(s.Packages))
-	prgrm.CallStack = make([]CXCall, CALLSTACK_SIZE)
+	prgrm.CallStack = make([]CXCall, constants.CALLSTACK_SIZE)
 	prgrm.HeapStartsAt = int(s.Program.HeapStartsAt)
 	prgrm.HeapPointer = int(s.Program.HeapPointer)
 	prgrm.StackSize = int(s.Program.StackSize)

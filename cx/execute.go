@@ -2,6 +2,7 @@ package cxcore
 
 import (
 	"fmt"
+	"github.com/skycoin/cx/cx/constants"
 	"math/rand"
 	"os"
 	"time"
@@ -74,8 +75,8 @@ func (cxprogram *CXProgram) Run(untilEnd bool, nCalls *int, untilCall int) error
 		call := &cxprogram.CallStack[cxprogram.CallCounter]
 
 		// checking if enough memory in stack
-		if cxprogram.StackPointer > STACK_SIZE {
-			panic(STACK_OVERFLOW_ERROR)
+		if cxprogram.StackPointer > constants.STACK_SIZE {
+			panic(constants.STACK_OVERFLOW_ERROR)
 		}
 
 		if !untilEnd {
@@ -134,15 +135,15 @@ func (cxprogram *CXProgram) Run(untilEnd bool, nCalls *int, untilCall int) error
 // minHeapSize determines what's the minimum heap size that a CX program
 // needs to have based on INIT_HEAP_SIZE, MAX_HEAP_SIZE and NULL_HEAP_ADDRESS_OFFSET.
 func minHeapSize() int {
-	minHeapSize := INIT_HEAP_SIZE
-	if MAX_HEAP_SIZE < INIT_HEAP_SIZE {
+	minHeapSize := constants.INIT_HEAP_SIZE
+	if constants.MAX_HEAP_SIZE < constants.INIT_HEAP_SIZE {
 		// Then MAX_HEAP_SIZE overrides INIT_HEAP_SIZE's value.
-		minHeapSize = MAX_HEAP_SIZE
+		minHeapSize = constants.MAX_HEAP_SIZE
 	}
-	if minHeapSize < NULL_HEAP_ADDRESS_OFFSET {
+	if minHeapSize < constants.NULL_HEAP_ADDRESS_OFFSET {
 		// Then the user is trying to allocate too little heap memory.
 		// We need at least NULL_HEAP_ADDRESS_OFFSET bytes for `nil`.
-		minHeapSize = NULL_HEAP_ADDRESS_OFFSET
+		minHeapSize = constants.NULL_HEAP_ADDRESS_OFFSET
 	}
 
 	return minHeapSize
@@ -171,7 +172,7 @@ func (cxprogram *CXProgram) RunCompiled(nCalls int, args []string) error {
 	if nCalls == 0 {
 		untilEnd = true
 	}
-	mod, err := cxprogram.SelectPackage(MAIN_PKG)
+	mod, err := cxprogram.SelectPackage(constants.MAIN_PKG)
 	if err == nil {
 		// initializing program resources
 		// cxprogram.Stacks = append(cxprogram.Stacks, MakeStack(1024))
@@ -180,7 +181,7 @@ func (cxprogram *CXProgram) RunCompiled(nCalls int, args []string) error {
         var outputs []CXValue
 		if cxprogram.CallStack[0].Operator == nil {
 			// then the program is just starting and we need to run the SYS_INIT_FUNC
-			if fn, err := mod.SelectFunction(SYS_INIT_FUNC); err == nil {
+			if fn, err := mod.SelectFunction(constants.SYS_INIT_FUNC); err == nil {
 				// *init function
 				mainCall := MakeCall(fn)
 				cxprogram.CallStack[0] = mainCall
@@ -204,7 +205,7 @@ func (cxprogram *CXProgram) RunCompiled(nCalls int, args []string) error {
 			}
 		}
 
-		if fn, err := mod.SelectFunction(MAIN_FUNC); err == nil {
+		if fn, err := mod.SelectFunction(constants.MAIN_FUNC); err == nil {
 			if len(fn.Expressions) < 1 {
 				return nil
 			}
@@ -220,15 +221,15 @@ func (cxprogram *CXProgram) RunCompiled(nCalls int, args []string) error {
 				cxprogram.StackPointer += fn.Size
 
 				// feeding os.Args
-				if osPkg, err := PROGRAM.SelectPackage(OS_PKG); err == nil {
+				if osPkg, err := PROGRAM.SelectPackage(constants.OS_PKG); err == nil {
 					argsOffset := 0
-					if osGbl, err := osPkg.GetGlobal(OS_ARGS); err == nil {
+					if osGbl, err := osPkg.GetGlobal(constants.OS_ARGS); err == nil {
 						for _, arg := range args {
 							argBytes := encoder.Serialize(arg)
-							argOffset := AllocateSeq(len(argBytes) + OBJECT_HEADER_SIZE)
+							argOffset := AllocateSeq(len(argBytes) + constants.OBJECT_HEADER_SIZE)
 
-							var header = make([]byte, OBJECT_HEADER_SIZE)
-							WriteMemI32(header, 5, int32(encoder.Size(arg)+OBJECT_HEADER_SIZE))
+							var header = make([]byte, constants.OBJECT_HEADER_SIZE)
+							WriteMemI32(header, 5, int32(encoder.Size(arg)+constants.OBJECT_HEADER_SIZE))
 							obj := append(header, argBytes...)
 
 							WriteMemory(argOffset, obj)
@@ -292,7 +293,7 @@ func (cxprogram *CXProgram) Callback(fn *CXFunction, inputs [][]byte) (outputs [
 
 	var nCalls = 0
 	if err := cxprogram.Run(true, &nCalls, previousCall); err != nil {
-		os.Exit(CX_INTERNAL_ERROR)
+		os.Exit(constants.CX_INTERNAL_ERROR)
 	}
 
 	cxprogram.CallCounter = previousCall
@@ -435,8 +436,8 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 							panic(fmt.Sprintf("Input value not used for opcode: '%s', param #%d. Expected type %d, '%s', used type %d, '%s'.",
 							 	OpNames[expr.Operator.OpCode],
                                 inputIndex + 1,
-							 	inputs[inputIndex].Type, TypeNames[inputs[inputIndex].Type],
-								inputValues[inputIndex].Used, TypeNames[int(inputValues[inputIndex].Used)]))
+							 	inputs[inputIndex].Type, constants.TypeNames[inputs[inputIndex].Type],
+								inputValues[inputIndex].Used, constants.TypeNames[int(inputValues[inputIndex].Used)]))
 						}
 					}
 
@@ -445,8 +446,8 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 							panic(fmt.Sprintf("Output value not used for opcode: '%s', param #%d. Expected type %d, '%s', used type %d '%s'.",
 							 	OpNames[expr.Operator.OpCode],
                                 outputIndex + 1,
-							 	outputs[outputIndex].Type, TypeNames[outputs[outputIndex].Type],
-								outputValues[outputIndex].Used, TypeNames[int(outputValues[outputIndex].Used)]))
+							 	outputs[outputIndex].Type, constants.TypeNames[outputs[outputIndex].Type],
+								outputValues[outputIndex].Used, constants.TypeNames[int(outputValues[outputIndex].Used)]))
 						}
 					}
 
@@ -458,8 +459,8 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 					*/
 					// we're going to use the next call in the callstack
 					prgrm.CallCounter++
-					if prgrm.CallCounter >= CALLSTACK_SIZE {
-						panic(STACK_OVERFLOW_ERROR)
+					if prgrm.CallCounter >= constants.CALLSTACK_SIZE {
+						panic(constants.STACK_OVERFLOW_ERROR)
 					}
 					newCall := &prgrm.CallStack[prgrm.CallCounter]
 					// setting the new call
@@ -471,8 +472,8 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 					prgrm.StackPointer += newCall.Operator.Size
 
 					// checking if enough memory in stack
-					if prgrm.StackPointer > STACK_SIZE {
-						panic(STACK_OVERFLOW_ERROR)
+					if prgrm.StackPointer > constants.STACK_SIZE {
+						panic(constants.STACK_OVERFLOW_ERROR)
 					}
 
 					fp := call.FramePointer
@@ -492,12 +493,12 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 						// if inp.Indexes != nil {
 						// 	finalOffset = GetFinalOffset(&prgrm.Stacks[0], fp, inp)
 						// }
-						if inp.PassBy == PASSBY_REFERENCE {
+						if inp.PassBy == constants.PASSBY_REFERENCE {
 							// If we're referencing an inner element, like an element of a slice (&slc[0])
 							// or a field of a struct (&struct.fld) we no longer need to add
 							// the OBJECT_HEADER_SIZE to the offset
 							if inp.IsInnerReference {
-								finalOffset -= OBJECT_HEADER_SIZE
+								finalOffset -= constants.OBJECT_HEADER_SIZE
 							}
 							var finalOffsetB [4]byte
 							WriteMemI32(finalOffsetB[:], 0, int32(finalOffset))

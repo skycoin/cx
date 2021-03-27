@@ -2,6 +2,7 @@ package actions
 
 import (
 	"fmt"
+	"github.com/skycoin/cx/cx/constants"
 	"os"
 
 	"github.com/skycoin/cx/cx"
@@ -14,9 +15,9 @@ func PostfixExpressionArray(prevExprs []*cxcore.CXExpression, postExprs []*cxcor
 	prevExpr := prevExprs[len(prevExprs)-1]
 
 	if prevExpr.Operator != nil && len(prevExpr.Outputs) == 0 {
-		genName := cxcore.MakeGenSym(cxcore.LOCAL_PREFIX)
+		genName := cxcore.MakeGenSym(constants.LOCAL_PREFIX)
 
-		out := cxcore.MakeArgument(genName, prevExpr.FileName, prevExpr.FileLine-1).AddType(cxcore.TypeNames[prevExpr.Operator.Outputs[0].Type])
+		out := cxcore.MakeArgument(genName, prevExpr.FileName, prevExpr.FileLine-1).AddType(constants.TypeNames[prevExpr.Operator.Outputs[0].Type])
 
 		out.DeclarationSpecifiers = prevExpr.Operator.Outputs[0].DeclarationSpecifiers
 		out.CustomType = prevExpr.Operator.Outputs[0].CustomType
@@ -28,7 +29,7 @@ func PostfixExpressionArray(prevExprs []*cxcore.CXExpression, postExprs []*cxcor
 
 		prevExpr.AddOutput(out)
 
-		inp := cxcore.MakeArgument(genName, prevExpr.FileName, prevExpr.FileLine).AddType(cxcore.TypeNames[prevExpr.Operator.Outputs[0].Type])
+		inp := cxcore.MakeArgument(genName, prevExpr.FileName, prevExpr.FileLine).AddType(constants.TypeNames[prevExpr.Operator.Outputs[0].Type])
 
 		inp.DeclarationSpecifiers = prevExpr.Operator.Outputs[0].DeclarationSpecifiers
 		inp.CustomType = prevExpr.Operator.Outputs[0].CustomType
@@ -54,8 +55,8 @@ func PostfixExpressionArray(prevExprs []*cxcore.CXExpression, postExprs []*cxcor
 	}
 
 	elt.IsArray = false
-	elt.DereferenceOperations = append(elt.DereferenceOperations, cxcore.DEREF_ARRAY)
-	elt.DeclarationSpecifiers = append(elt.DeclarationSpecifiers, cxcore.DECL_INDEXING)
+	elt.DereferenceOperations = append(elt.DereferenceOperations, constants.DEREF_ARRAY)
+	elt.DeclarationSpecifiers = append(elt.DeclarationSpecifiers, constants.DECL_INDEXING)
 
 	if !elt.IsDereferenceFirst {
 		elt.IsArrayFirst = true
@@ -68,7 +69,7 @@ func PostfixExpressionArray(prevExprs []*cxcore.CXExpression, postExprs []*cxcor
 			// expr.AddInput(postExprs[len(postExprs)-1].ProgramOutput[0])
 			fld.Indexes = append(fld.Indexes, postExprs[len(postExprs)-1].Outputs[0])
 		} else {
-			sym := cxcore.MakeArgument(cxcore.MakeGenSym(cxcore.LOCAL_PREFIX), CurrentFile, LineNo).AddType(cxcore.TypeNames[postExprs[len(postExprs)-1].Operator.Outputs[0].Type])
+			sym := cxcore.MakeArgument(cxcore.MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(constants.TypeNames[postExprs[len(postExprs)-1].Operator.Outputs[0].Type])
 			sym.Package = postExprs[len(postExprs)-1].Package
 			sym.PreviouslyDeclared = true
 			postExprs[len(postExprs)-1].AddOutput(sym)
@@ -82,7 +83,7 @@ func PostfixExpressionArray(prevExprs []*cxcore.CXExpression, postExprs []*cxcor
 		if len(postExprs[len(postExprs)-1].Outputs) < 1 {
 			// then it's an expression (e.g. i32.add(0, 0))
 			// we create a gensym for it
-			idxSym := cxcore.MakeArgument(cxcore.MakeGenSym(cxcore.LOCAL_PREFIX), CurrentFile, LineNo).AddType(cxcore.TypeNames[postExprs[len(postExprs)-1].Operator.Outputs[0].Type])
+			idxSym := cxcore.MakeArgument(cxcore.MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(constants.TypeNames[postExprs[len(postExprs)-1].Operator.Outputs[0].Type])
 			idxSym.Size = postExprs[len(postExprs)-1].Operator.Outputs[0].Size
 			idxSym.TotalSize = cxcore.GetSize(postExprs[len(postExprs)-1].Operator.Outputs[0])
 
@@ -106,10 +107,10 @@ func PostfixExpressionArray(prevExprs []*cxcore.CXExpression, postExprs []*cxcor
 
 func PostfixExpressionNative(typCode int, opStrCode string) []*cxcore.CXExpression {
 	// these will always be native functions
-	opCode, ok := cxcore.OpCodes[cxcore.TypeNames[typCode]+"."+opStrCode]
+	opCode, ok := cxcore.OpCodes[constants.TypeNames[typCode]+"."+opStrCode]
 	if !ok {
 		println(cxcore.CompilationError(CurrentFile, LineNo) + " function '" +
-			cxcore.TypeNames[typCode] + "." + opStrCode + "' does not exist")
+			constants.TypeNames[typCode] + "." + opStrCode + "' does not exist")
 		return nil
 		// panic(ok)
 	}
@@ -187,7 +188,7 @@ func PostfixExpressionIncDec(prevExprs []*cxcore.CXExpression, isInc bool) []*cx
 
 	var valB [4]byte
 	cxcore.WriteMemI32(valB[:], 0, int32(1))
-	val := WritePrimary(cxcore.TYPE_I32, valB[:], false)
+	val := WritePrimary(constants.TYPE_I32, valB[:], false)
 
 	expr.Package = pkg
 
@@ -210,10 +211,10 @@ func PostfixExpressionField(prevExprs []*cxcore.CXExpression, ident string) []*c
 	// the function call
 	if lastExpr.Operator != nil {
 		opOut := lastExpr.Operator.Outputs[0]
-		symName := cxcore.MakeGenSym(cxcore.LOCAL_PREFIX)
+		symName := cxcore.MakeGenSym(constants.LOCAL_PREFIX)
 
 		// we associate the result of the function call to the aux variable
-		out := cxcore.MakeArgument(symName, lastExpr.FileName, lastExpr.FileLine).AddType(cxcore.TypeNames[opOut.Type])
+		out := cxcore.MakeArgument(symName, lastExpr.FileName, lastExpr.FileLine).AddType(constants.TypeNames[opOut.Type])
 		out.DeclarationSpecifiers = opOut.DeclarationSpecifiers
 		out.CustomType = opOut.CustomType
 		out.Size = opOut.Size
@@ -229,7 +230,7 @@ func PostfixExpressionField(prevExprs []*cxcore.CXExpression, ident string) []*c
 
 		// we need to create an expression to hold all the modifications
 		// that will take place after this if statement
-		inp := cxcore.MakeArgument(symName, lastExpr.FileName, lastExpr.FileLine).AddType(cxcore.TypeNames[opOut.Type])
+		inp := cxcore.MakeArgument(symName, lastExpr.FileName, lastExpr.FileLine).AddType(constants.TypeNames[opOut.Type])
 		inp.DeclarationSpecifiers = opOut.DeclarationSpecifiers
 		inp.CustomType = opOut.CustomType
 		inp.Size = opOut.Size
@@ -256,7 +257,7 @@ func PostfixExpressionField(prevExprs []*cxcore.CXExpression, ident string) []*c
 		// left.DereferenceOperations = append(left.DereferenceOperations, cxcore.DEREF_FIELD)
 		left.IsStruct = true
 		fld := cxcore.MakeArgument(ident, CurrentFile, LineNo)
-		fld.AddType(cxcore.TypeNames[cxcore.TYPE_IDENTIFIER]).AddPackage(left.Package)
+		fld.AddType(constants.TypeNames[constants.TYPE_IDENTIFIER]).AddPackage(left.Package)
 		left.Fields = append(left.Fields, fld)
 		return prevExprs
 	}
@@ -320,13 +321,13 @@ func PostfixExpressionField(prevExprs []*cxcore.CXExpression, ident string) []*c
 			println(cxcore.CompilationError(left.FileName, left.FileLine),
 				fmt.Sprintf("identifier '%s' does not exist",
 					left.Name))
-			os.Exit(cxcore.CX_COMPILATION_ERROR)
+			os.Exit(constants.CX_COMPILATION_ERROR)
 		}
 		// then it's a struct
 		left.IsStruct = true
 
 		fld := cxcore.MakeArgument(ident, CurrentFile, LineNo)
-		fld.AddType(cxcore.TypeNames[cxcore.TYPE_IDENTIFIER]).AddPackage(left.Package)
+		fld.AddType(constants.TypeNames[constants.TYPE_IDENTIFIER]).AddPackage(left.Package)
 
 		left.Fields = append(left.Fields, fld)
 	}

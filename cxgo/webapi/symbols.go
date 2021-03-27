@@ -1,6 +1,7 @@
 package api
 
 import (
+	"github.com/skycoin/cx/cx/constants"
 	"unicode"
 
 	"github.com/skycoin/cx/cx"
@@ -70,8 +71,8 @@ func displayCXFunction(pkg *cxcore.CXPackage, f *cxcore.CXFunction) ExportedSymb
 	return ExportedSymbol{
 		Name:      f.Name,
 		Signature: cxcore.SignatureStringOfFunction(pkg, f),
-		Type:      cxcore.TYPE_FUNC,
-		TypeName:  cxcore.TypeNames[cxcore.TYPE_FUNC],
+		Type:      constants.TYPE_FUNC,
+		TypeName:  constants.TypeNames[constants.TYPE_FUNC],
 	}
 }
 
@@ -79,7 +80,7 @@ func displayCXStruct(s *cxcore.CXStruct) ExportedSymbol {
 	return ExportedSymbol{
 		Name:      s.Name,
 		Signature: cxcore.SignatureStringOfStruct(s),
-		Type:      cxcore.TYPE_CUSTOM,
+		Type:      constants.TYPE_CUSTOM,
 		TypeName:  "struct",
 	}
 }
@@ -89,7 +90,7 @@ func displayCXGlobal(a *cxcore.CXArgument) ExportedSymbol {
 		Name:      a.Name,
 		Signature: nil,
 		Type:      a.Type,
-		TypeName:  cxcore.TypeNames[a.Type],
+		TypeName:  constants.TypeNames[a.Type],
 	}
 }
 

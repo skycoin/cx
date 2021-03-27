@@ -5,6 +5,7 @@ import (
 	//"math"
 
 	//"github.com/skycoin/skycoin/src/cipher/encoder"
+	"github.com/skycoin/cx/cx/constants"
 )
 
 // GetSize ...
@@ -16,13 +17,13 @@ func GetSize(arg *CXArgument) int {
 	derefCount := len(arg.DereferenceOperations)
 	if derefCount > 0 {
 		deref := arg.DereferenceOperations[derefCount-1]
-		if deref == DEREF_SLICE || deref == DEREF_ARRAY {
+		if deref == constants.DEREF_SLICE || deref == constants.DEREF_ARRAY {
 			return arg.Size
 		}
 	}
 
 	for decl := range arg.DeclarationSpecifiers {
-		if decl == DECL_POINTER {
+		if decl == constants.DECL_POINTER {
 			return arg.TotalSize
 		}
 	}

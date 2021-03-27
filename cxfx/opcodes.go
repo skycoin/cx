@@ -6,6 +6,7 @@ package cxfx
 
 import (
 	. "github.com/skycoin/cx/cx"
+	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cxos"
 )
 
@@ -255,9 +256,9 @@ func init() {
 	Op_V2(OP_CX_RELEASE_TEXTURE, "gl.CxReleaseTexture", opCxReleaseTexture, In(ASTR), nil)
 	Op_V2(OP_CX_TEXTURE_GET_PIXEL, "gl.CxTextureGetPixel", opCxTextureGetPixel, In(ASTR, AI32, AI32), Out(AF32, AF32, AF32, AF32))
 
-	Op_V2(OP_GL_APPEND_F32, "gl.AppendF32", opGlAppend, In(Slice(TYPE_UI8), AF32), Out(Slice(TYPE_UI8)))
-	Op_V2(OP_GL_APPEND_UI16, "gl.AppendUI16", opGlAppend, In(Slice(TYPE_UI8), AUI16), Out(Slice(TYPE_UI8)))
-	Op_V2(OP_GL_APPEND_UI32, "gl.AppendUI32", opGlAppend, In(Slice(TYPE_UI8), AUI32), Out(Slice(TYPE_UI8)))
+	Op_V2(OP_GL_APPEND_F32, "gl.AppendF32", opGlAppend, In(Slice(constants.TYPE_UI8), AF32), Out(Slice(constants.TYPE_UI8)))
+	Op_V2(OP_GL_APPEND_UI16, "gl.AppendUI16", opGlAppend, In(Slice(constants.TYPE_UI8), AUI16), Out(Slice(constants.TYPE_UI8)))
+	Op_V2(OP_GL_APPEND_UI32, "gl.AppendUI32", opGlAppend, In(Slice(constants.TYPE_UI8), AUI32), Out(Slice(constants.TYPE_UI8)))
 
 	// gl_0.0
 	Op_V2(OP_GL_MATRIX_MODE, "gl.MatrixMode", opGlMatrixMode, In(AI32), nil)
@@ -288,7 +289,7 @@ func init() {
 	Op_V2(OP_GL_HINT, "gl.Hint", opGlHint, In(AI32, AI32), nil)
 	Op_V2(OP_GL_SCISSOR, "gl.Scissor", opGlScissor, In(AI32, AI32, AI32, AI32), nil)
 	Op_V2(OP_GL_TEX_PARAMETERI, "gl.TexParameteri", opGlTexParameteri, In(AI32, AI32, AI32), nil)
-	Op_V2(OP_GL_TEX_IMAGE_2D, "gl.TexImage2D", opGlTexImage2D, In(AI32, AI32, AI32, AI32, AI32, AI32, AI32, AI32, Slice(TYPE_UI32)), nil)
+	Op_V2(OP_GL_TEX_IMAGE_2D, "gl.TexImage2D", opGlTexImage2D, In(AI32, AI32, AI32, AI32, AI32, AI32, AI32, AI32, Slice(constants.TYPE_UI32)), nil)
 	Op_V2(OP_GL_CLEAR, "gl.Clear", opGlClear, In(AI32), nil)
 	Op_V2(OP_GL_CLEAR_COLOR, "gl.ClearColor", opGlClearColor, In(AF32, AF32, AF32, AF32), nil)
 	Op_V2(OP_GL_CLEAR_STENCIL, "gl.ClearStencil", opGlClearStencil, In(AI32), nil)
@@ -324,11 +325,11 @@ func init() {
 	Op_V2(OP_GL_BIND_BUFFER, "gl.BindBuffer", opGlBindBuffer, In(AI32, AI32), nil)
 	Op_V2(OP_GL_DELETE_BUFFERS, "gl.DeleteBuffers", opGlDeleteBuffers, In(AI32, AI32), nil)
 	Op_V2(OP_GL_GEN_BUFFERS, "gl.GenBuffers", opGlGenBuffers, In(AI32, AI32), Out(AI32))
-	Op_V2(OP_GL_BUFFER_DATA, "gl.BufferData", opGlBufferData, In(AI32, AI32, Slice(TYPE_UI8), AI32), nil)
-	Op_V2(OP_GL_BUFFER_SUB_DATA, "gl.BufferSubData", opGlBufferSubData, In(AI32, AI32, AI32, Slice(TYPE_UI8)), nil)
+	Op_V2(OP_GL_BUFFER_DATA, "gl.BufferData", opGlBufferData, In(AI32, AI32, Slice(constants.TYPE_UI8), AI32), nil)
+	Op_V2(OP_GL_BUFFER_SUB_DATA, "gl.BufferSubData", opGlBufferSubData, In(AI32, AI32, AI32, Slice(constants.TYPE_UI8)), nil)
 
 	//gl_2_0
-	Op_V2(OP_GL_DRAW_BUFFERS, "gl.DrawBuffers", opGlDrawBuffers, In(AI32, Slice(TYPE_UI32)), nil)
+	Op_V2(OP_GL_DRAW_BUFFERS, "gl.DrawBuffers", opGlDrawBuffers, In(AI32, Slice(constants.TYPE_UI32)), nil)
 	Op_V2(OP_GL_STENCIL_OP_SEPARATE, "gl.StencilOpSeparate", opGlStencilOpSeparate, In(AI32, AI32, AI32, AI32), nil)
 	Op_V2(OP_GL_STENCIL_FUNC_SEPARATE, "gl.StencilFuncSeparate", opGlStencilFuncSeparate, In(AI32, AI32, AI32, AI32), nil)
 	Op_V2(OP_GL_STENCIL_MASK_SEPARATE, "gl.StencilMaskSeparate", opGlStencilMaskSeparate, In(AI32, AI32), nil)
@@ -358,20 +359,20 @@ func init() {
 	Op_V2(OP_GL_UNIFORM_2I, "gl.Uniform2i", opGlUniform2i, In(AI32, AI32, AI32), nil)
 	Op_V2(OP_GL_UNIFORM_3I, "gl.Uniform3i", opGlUniform3i, In(AI32, AI32, AI32, AI32), nil)
 	Op_V2(OP_GL_UNIFORM_4I, "gl.Uniform4i", opGlUniform4i, In(AI32, AI32, AI32, AI32, AI32), nil)
-	Op_V2(OP_GL_UNIFORM_1FV, "gl.Uniform1fv", opGlUniform1fv, In(AI32, AF32, Slice(TYPE_F32)), nil)
-	Op_V2(OP_GL_UNIFORM_2FV, "gl.Uniform2fv", opGlUniform2fv, In(AI32, AF32, Slice(TYPE_F32)), nil)
-	Op_V2(OP_GL_UNIFORM_3FV, "gl.Uniform3fv", opGlUniform3fv, In(AI32, AI32, Slice(TYPE_F32)), nil)
-	Op_V2(OP_GL_UNIFORM_4FV, "gl.Uniform4fv", opGlUniform4fv, In(AI32, AI32, Slice(TYPE_F32)), nil)
-	Op_V2(OP_GL_UNIFORM_1IV, "gl.Uniform1iv", opGlUniform1iv, In(AI32, AI32, Slice(TYPE_I32)), nil)
-	Op_V2(OP_GL_UNIFORM_2IV, "gl.Uniform2iv", opGlUniform2iv, In(AI32, AI32, Slice(TYPE_I32)), nil)
-	Op_V2(OP_GL_UNIFORM_3IV, "gl.Uniform3iv", opGlUniform3iv, In(AI32, AI32, Slice(TYPE_I32)), nil)
-	Op_V2(OP_GL_UNIFORM_4IV, "gl.Uniform4iv", opGlUniform4iv, In(AI32, AI32, Slice(TYPE_I32)), nil)
-	Op_V2(OP_GL_UNIFORM_MATRIX_2FV, "gl.UniformMatrix2fv", opGlUniformMatrix2fv, In(AI32, AI32, ABOOL, Slice(TYPE_F32)), nil)
-	Op_V2(OP_GL_UNIFORM_MATRIX_3FV, "gl.UniformMatrix3fv", opGlUniformMatrix3fv, In(AI32, AI32, ABOOL, Slice(TYPE_F32)), nil)
-	Op_V2(OP_GL_UNIFORM_MATRIX_4FV, "gl.UniformMatrix4fv", opGlUniformMatrix4fv, In(AI32, AI32, ABOOL, Slice(TYPE_F32)), nil)
+	Op_V2(OP_GL_UNIFORM_1FV, "gl.Uniform1fv", opGlUniform1fv, In(AI32, AF32, Slice(constants.TYPE_F32)), nil)
+	Op_V2(OP_GL_UNIFORM_2FV, "gl.Uniform2fv", opGlUniform2fv, In(AI32, AF32, Slice(constants.TYPE_F32)), nil)
+	Op_V2(OP_GL_UNIFORM_3FV, "gl.Uniform3fv", opGlUniform3fv, In(AI32, AI32, Slice(constants.TYPE_F32)), nil)
+	Op_V2(OP_GL_UNIFORM_4FV, "gl.Uniform4fv", opGlUniform4fv, In(AI32, AI32, Slice(constants.TYPE_F32)), nil)
+	Op_V2(OP_GL_UNIFORM_1IV, "gl.Uniform1iv", opGlUniform1iv, In(AI32, AI32, Slice(constants.TYPE_I32)), nil)
+	Op_V2(OP_GL_UNIFORM_2IV, "gl.Uniform2iv", opGlUniform2iv, In(AI32, AI32, Slice(constants.TYPE_I32)), nil)
+	Op_V2(OP_GL_UNIFORM_3IV, "gl.Uniform3iv", opGlUniform3iv, In(AI32, AI32, Slice(constants.TYPE_I32)), nil)
+	Op_V2(OP_GL_UNIFORM_4IV, "gl.Uniform4iv", opGlUniform4iv, In(AI32, AI32, Slice(constants.TYPE_I32)), nil)
+	Op_V2(OP_GL_UNIFORM_MATRIX_2FV, "gl.UniformMatrix2fv", opGlUniformMatrix2fv, In(AI32, AI32, ABOOL, Slice(constants.TYPE_F32)), nil)
+	Op_V2(OP_GL_UNIFORM_MATRIX_3FV, "gl.UniformMatrix3fv", opGlUniformMatrix3fv, In(AI32, AI32, ABOOL, Slice(constants.TYPE_F32)), nil)
+	Op_V2(OP_GL_UNIFORM_MATRIX_4FV, "gl.UniformMatrix4fv", opGlUniformMatrix4fv, In(AI32, AI32, ABOOL, Slice(constants.TYPE_F32)), nil)
 	Op_V2(OP_GL_UNIFORM_V4F, "gl.UniformV4F", opGlUniformV4F, In(AI32, AUND), nil)
 	Op_V2(OP_GL_UNIFORM_M44F, "gl.UniformM44F", opGlUniformM44F, In(AI32, ABOOL, AUND), nil)
-	Op_V2(OP_GL_UNIFORM_M44FV, "gl.UniformM44FV", opGlUniformM44FV, In(AI32, AI32, ABOOL, Slice(TYPE_UNDEFINED)), nil)
+	Op_V2(OP_GL_UNIFORM_M44FV, "gl.UniformM44FV", opGlUniformM44FV, In(AI32, AI32, ABOOL, Slice(constants.TYPE_UNDEFINED)), nil)
 	Op_V2(OP_GL_VERTEX_ATTRIB_POINTER, "gl.VertexAttribPointer", opGlVertexAttribPointer, In(AI32, AI32, AI32, ABOOL, AI32), nil)
 	Op_V2(OP_GL_VERTEX_ATTRIB_POINTER_I32, "gl.VertexAttribPointerI32", opGlVertexAttribPointerI32, In(AI32, AI32, AI32, ABOOL, AI32, AI32), nil)
 
@@ -445,29 +446,29 @@ func init() {
 	Op_V2(OP_GLTEXT_GLYPH_INFO, "gltext.GlyphInfo", opGltextGlyphInfo, In(ASTR, AI32), Out(AI32, AI32, AI32, AI32, AI32))
 
 	// goal
-	Op_V2(OP_AL_LOAD_WAV, "al.LoadWav", opAlLoadWav, In(ASTR), Out(AI32, AI32, AI32, AI32, AI32, AI32, AI32, AI64, Slice(TYPE_UI8)))
+	Op_V2(OP_AL_LOAD_WAV, "al.LoadWav", opAlLoadWav, In(ASTR), Out(AI32, AI32, AI32, AI32, AI32, AI32, AI32, AI64, Slice(constants.TYPE_UI8)))
 
 	// openal
 	Op_V2(OP_AL_CLOSE_DEVICE, "al.CloseDevice", opAlCloseDevice, nil, nil)
 	Op_V2(OP_AL_DELETE_BUFFERS, "al.DeleteBuffers", opAlDeleteBuffers, In(AI32), nil)
-	Op_V2(OP_AL_DELETE_SOURCES, "al.DeleteSources", opAlDeleteSources, In(Slice(TYPE_I32)), nil)
+	Op_V2(OP_AL_DELETE_SOURCES, "al.DeleteSources", opAlDeleteSources, In(Slice(constants.TYPE_I32)), nil)
 	Op_V2(OP_AL_DEVICE_ERROR, "al.DeviceError", opAlDeviceError, nil, Out(AI32))
 	Op_V2(OP_AL_ERROR, "al.ProgramError", opAlError, nil, Out(AI32))
 	Op_V2(OP_AL_EXTENSIONS, "al.Extensions", opAlExtensions, nil, Out(ASTR))
 	Op_V2(OP_AL_OPEN_DEVICE, "al.OpenDevice", opAlOpenDevice, nil, nil)
-	Op_V2(OP_AL_PAUSE_SOURCES, "al.PauseSources", opAlPauseSources, In(Slice(TYPE_I32)), nil)
-	Op_V2(OP_AL_PLAY_SOURCES, "al.PlaySources", opAlPlaySources, In(Slice(TYPE_I32)), nil)
+	Op_V2(OP_AL_PAUSE_SOURCES, "al.PauseSources", opAlPauseSources, In(Slice(constants.TYPE_I32)), nil)
+	Op_V2(OP_AL_PLAY_SOURCES, "al.PlaySources", opAlPlaySources, In(Slice(constants.TYPE_I32)), nil)
 	Op_V2(OP_AL_RENDERER, "al.Renderer", opAlRenderer, nil, Out(ASTR))
-	Op_V2(OP_AL_REWIND_SOURCES, "al.RewindSources", opAlRewindSources, In(Slice(TYPE_I32)), nil)
-	Op_V2(OP_AL_STOP_SOURCES, "al.StopSources", opAlStopSources, In(Slice(TYPE_I32)), nil)
+	Op_V2(OP_AL_REWIND_SOURCES, "al.RewindSources", opAlRewindSources, In(Slice(constants.TYPE_I32)), nil)
+	Op_V2(OP_AL_STOP_SOURCES, "al.StopSources", opAlStopSources, In(Slice(constants.TYPE_I32)), nil)
 	Op_V2(OP_AL_VENDOR, "al.Vendor", opAlVendor, nil, Out(ASTR))
 	Op_V2(OP_AL_VERSION, "al.Version", opAlVersion, nil, Out(ASTR))
-	Op_V2(OP_AL_GEN_BUFFERS, "al.GenBuffers", opAlGenBuffers, In(AI32), Out(Slice(TYPE_I32)))
+	Op_V2(OP_AL_GEN_BUFFERS, "al.GenBuffers", opAlGenBuffers, In(AI32), Out(Slice(constants.TYPE_I32)))
 	Op_V2(OP_AL_BUFFER_DATA, "al.BufferData", opAlBufferData, In(AI32, AI32, AUND, AI32), nil)
-	Op_V2(OP_AL_GEN_SOURCES, "al.GenSources", opAlGenSources, In(AI32), Out(Slice(TYPE_I32)))
+	Op_V2(OP_AL_GEN_SOURCES, "al.GenSources", opAlGenSources, In(AI32), Out(Slice(constants.TYPE_I32)))
 	Op_V2(OP_AL_SOURCE_BUFFERS_PROCESSED, "al.SourceBuffersProcessed", opAlSourceBuffersProcessed, In(AI32), Out(AI32))
 	Op_V2(OP_AL_SOURCE_BUFFERS_QUEUED, "al.SourceBuffersQueued", opAlSourceBuffersQueued, In(AI32), Out(AI32))
-	Op_V2(OP_AL_SOURCE_QUEUE_BUFFERS, "al.SourceQueueBuffers", opAlSourceQueueBuffers, In(AI32, Slice(TYPE_I32)), nil)
+	Op_V2(OP_AL_SOURCE_QUEUE_BUFFERS, "al.SourceQueueBuffers", opAlSourceQueueBuffers, In(AI32, Slice(constants.TYPE_I32)), nil)
 	Op_V2(OP_AL_SOURCE_STATE, "al.SourceState", opAlSourceState, In(AI32), Out(AI32))
-	Op_V2(OP_AL_SOURCE_UNQUEUE_BUFFERS, "al.SourceUnqueueBuffers", opAlSourceUnqueueBuffers, In(AI32, Slice(TYPE_I32)), nil)
+	Op_V2(OP_AL_SOURCE_UNQUEUE_BUFFERS, "al.SourceUnqueueBuffers", opAlSourceUnqueueBuffers, In(AI32, Slice(constants.TYPE_I32)), nil)
 }

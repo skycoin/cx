@@ -2,6 +2,7 @@ package cxcore
 
 import (
 	"fmt"
+	"github.com/skycoin/cx/cx/constants"
 	"strconv"
 	"strings"
 )
@@ -9,7 +10,7 @@ import (
 func opStrToI8(inputs []CXValue, outputs []CXValue) {
 	outV0, err := strconv.ParseInt(inputs[0].Get_str(), 10, 8)
 	if err != nil {
-		panic(CX_RUNTIME_ERROR)
+		panic(constants.CX_RUNTIME_ERROR)
 	}
     outputs[0].Set_i8(int8(outV0))
 }
@@ -17,7 +18,7 @@ func opStrToI8(inputs []CXValue, outputs []CXValue) {
 func opStrToI16(inputs []CXValue, outputs []CXValue) {
 	outV0, err := strconv.ParseInt(inputs[0].Get_str(), 10, 16)
 	if err != nil {
-		panic(CX_RUNTIME_ERROR)
+		panic(constants.CX_RUNTIME_ERROR)
 	}
     outputs[0].Set_i16(int16(outV0))
 }
@@ -25,7 +26,7 @@ func opStrToI16(inputs []CXValue, outputs []CXValue) {
 func opStrToI32(inputs []CXValue, outputs []CXValue) {
 	outV0, err := strconv.ParseInt(inputs[0].Get_str(), 10, 32)
 	if err != nil {
-		panic(CX_RUNTIME_ERROR)
+		panic(constants.CX_RUNTIME_ERROR)
 	}
     outputs[0].Set_i32(int32(outV0))
 }
@@ -33,7 +34,7 @@ func opStrToI32(inputs []CXValue, outputs []CXValue) {
 func opStrToI64(inputs []CXValue, outputs []CXValue) {
 	outV0, err := strconv.ParseInt(inputs[0].Get_str(), 10, 64)
 	if err != nil {
-		panic(CX_RUNTIME_ERROR)
+		panic(constants.CX_RUNTIME_ERROR)
 	}
     outputs[0].Set_i64(int64(outV0))
 }
@@ -41,7 +42,7 @@ func opStrToI64(inputs []CXValue, outputs []CXValue) {
 func opStrToUI8(inputs []CXValue, outputs []CXValue) {
 	outV0, err := strconv.ParseUint(inputs[0].Get_str(), 10, 8)
 	if err != nil {
-		panic(CX_RUNTIME_ERROR)
+		panic(constants.CX_RUNTIME_ERROR)
 	}
     outputs[0].Set_ui8(uint8(outV0))
 }
@@ -49,7 +50,7 @@ func opStrToUI8(inputs []CXValue, outputs []CXValue) {
 func opStrToUI16(inputs []CXValue, outputs []CXValue) {
 	outV0, err := strconv.ParseUint(inputs[0].Get_str(), 10, 16)
 	if err != nil {
-		panic(CX_RUNTIME_ERROR)
+		panic(constants.CX_RUNTIME_ERROR)
 	}
     outputs[0].Set_ui16(uint16(outV0))
 }
@@ -57,7 +58,7 @@ func opStrToUI16(inputs []CXValue, outputs []CXValue) {
 func opStrToUI32(inputs []CXValue, outputs []CXValue) {
 	outV0, err := strconv.ParseUint(inputs[0].Get_str(), 10, 32)
 	if err != nil {
-		panic(CX_RUNTIME_ERROR)
+		panic(constants.CX_RUNTIME_ERROR)
 	}
     outputs[0].Set_ui32(uint32(outV0))
 }
@@ -65,7 +66,7 @@ func opStrToUI32(inputs []CXValue, outputs []CXValue) {
 func opStrToUI64(inputs []CXValue, outputs []CXValue) {
 	outV0, err := strconv.ParseUint(inputs[0].Get_str(), 10, 64)
 	if err != nil {
-		panic(CX_RUNTIME_ERROR)
+		panic(constants.CX_RUNTIME_ERROR)
 	}
     outputs[0].Set_ui64(uint64(outV0))
 }
@@ -73,7 +74,7 @@ func opStrToUI64(inputs []CXValue, outputs []CXValue) {
 func opStrToF32(inputs []CXValue, outputs []CXValue) {
 	outV0, err := strconv.ParseFloat(inputs[0].Get_str(), 32)
 	if err != nil {
-		panic(CX_RUNTIME_ERROR)
+		panic(constants.CX_RUNTIME_ERROR)
 	}
     outputs[0].Set_f32(float32(outV0))
 }
@@ -81,7 +82,7 @@ func opStrToF32(inputs []CXValue, outputs []CXValue) {
 func opStrToF64(inputs []CXValue, outputs []CXValue) {
 	outV0, err := strconv.ParseFloat(inputs[0].Get_str(), 64)
 	if err != nil {
-		panic(CX_RUNTIME_ERROR)
+		panic(constants.CX_RUNTIME_ERROR)
 	}
     outputs[0].Set_f64(float64(outV0))
 }

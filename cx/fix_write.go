@@ -1,8 +1,9 @@
 package cxcore
 
-import(
-	"math"
+import (
+	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
+	"math"
 )
 
 // WriteMemory ...
@@ -18,10 +19,10 @@ func WriteMemory(offset int, byts []byte) {
 // WARNING, is using heap variables?
 //Is this "Write object ot heap?"
 func WriteObjectData(obj []byte) int {
-	size := len(obj) + OBJECT_HEADER_SIZE
+	size := len(obj) + constants.OBJECT_HEADER_SIZE
 	heapOffset := AllocateSeq(size)
 	WriteI32(heapOffset, int32(size))
-	WriteMemory(heapOffset + OBJECT_HEADER_SIZE, obj)
+	WriteMemory(heapOffset +constants.OBJECT_HEADER_SIZE, obj)
 	return heapOffset
 }
 

@@ -3,6 +3,7 @@ package cxcore
 import (
 	"errors"
 	"fmt"
+	"github.com/skycoin/cx/cx/constants"
 	"strings"
 )
 
@@ -413,11 +414,11 @@ func MakeProgram() *CXProgram {
 	minHeapSize := minHeapSize()
 	newPrgrm := &CXProgram{
 		Packages:    make([]*CXPackage, 0),
-		CallStack:   make([]CXCall, CALLSTACK_SIZE),
-		Memory:      make([]byte, STACK_SIZE+minHeapSize),
-		StackSize:   STACK_SIZE,
+		CallStack:   make([]CXCall, constants.CALLSTACK_SIZE),
+		Memory:      make([]byte, constants.STACK_SIZE+minHeapSize),
+		StackSize:   constants.STACK_SIZE,
 		HeapSize:    minHeapSize,
-		HeapPointer: NULL_HEAP_ADDRESS_OFFSET, // We can start adding objects to the heap after the NULL (nil) bytes.
+		HeapPointer: constants.NULL_HEAP_ADDRESS_OFFSET, // We can start adding objects to the heap after the NULL (nil) bytes.
 	}
 	return newPrgrm
 }
@@ -706,7 +707,7 @@ func (cxprogram *CXProgram) PrintAllObjects() {
 		op := cxprogram.CallStack[c].Operator
 
 		for _, ptr := range op.ListOfPointers {
-			heapOffset := Deserialize_i32(cxprogram.Memory[fp+ptr.Offset : fp+ptr.Offset+TYPE_POINTER_SIZE])
+			heapOffset := Deserialize_i32(cxprogram.Memory[fp+ptr.Offset : fp+ptr.Offset+constants.TYPE_POINTER_SIZE])
 
 			var byts []byte
 
@@ -717,7 +718,7 @@ func (cxprogram *CXProgram) PrintAllObjects() {
 
 				// }
 
-				byts = cxprogram.Memory[int(heapOffset)+OBJECT_HEADER_SIZE : int(heapOffset)+OBJECT_HEADER_SIZE+ptr.CustomType.Size]
+				byts = cxprogram.Memory[int(heapOffset)+constants.OBJECT_HEADER_SIZE : int(heapOffset)+constants.OBJECT_HEADER_SIZE+ptr.CustomType.Size]
 			}
 
 			// var currLengths []int
@@ -1277,14 +1278,14 @@ func (arg *CXArgument) AddPackage(pkg *CXPackage) *CXArgument {
 
 // AddType ...
 func (arg *CXArgument) AddType(typ string) *CXArgument {
-	if typCode, found := TypeCodes[typ]; found {
+	if typCode, found := constants.TypeCodes[typ]; found {
 		arg.Type = typCode
 		size := GetArgSize(typCode)
 		arg.Size = size
 		arg.TotalSize = size
-		arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, DECL_BASIC)
+		arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_BASIC)
 	} else {
-		arg.Type = TYPE_UNDEFINED
+		arg.Type = constants.TYPE_UNDEFINED
 	}
 
 	return arg

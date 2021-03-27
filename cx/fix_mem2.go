@@ -1,5 +1,7 @@
 package cxcore
 
+import "github.com/skycoin/cx/cx/constants"
+
 //NOTE: Temp file for resolving CalculateDereferences issue
 //TODO: What should this function be called?
 
@@ -35,7 +37,7 @@ func CalculateDereferences(arg *CXArgument, finalOffset *int, fp int) {
 	idxCounter := 0
 	for _, op := range arg.DereferenceOperations {
 		switch op {
-		case DEREF_SLICE:
+		case constants.DEREF_SLICE:
 			if len(arg.Indexes) == 0 {
 				continue
 			}
@@ -44,7 +46,7 @@ func CalculateDereferences(arg *CXArgument, finalOffset *int, fp int) {
 			var offset int32
 			var byts []byte
 
-			byts = PROGRAM.Memory[*finalOffset : *finalOffset+TYPE_POINTER_SIZE]
+			byts = PROGRAM.Memory[*finalOffset : *finalOffset+constants.TYPE_POINTER_SIZE]
 
 			offset = Deserialize_i32(byts)
 
@@ -52,17 +54,17 @@ func CalculateDereferences(arg *CXArgument, finalOffset *int, fp int) {
 
 			baseOffset = *finalOffset
 
-			*finalOffset += OBJECT_HEADER_SIZE
-			*finalOffset += SLICE_HEADER_SIZE
+			*finalOffset += constants.OBJECT_HEADER_SIZE
+			*finalOffset += constants.SLICE_HEADER_SIZE
 
 			sizeToUse := GetDerefSize(arg) //GetDerefSize
 			*finalOffset += int(ReadI32(fp, arg.Indexes[idxCounter])) * sizeToUse
 			if !IsValidSliceIndex(baseOffset, *finalOffset, sizeToUse) {
-				panic(CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)
+				panic(constants.CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)
 			}
 
 			idxCounter++
-		case DEREF_ARRAY:
+		case constants.DEREF_ARRAY:
 			if len(arg.Indexes) == 0 {
 				continue
 			}
@@ -77,12 +79,12 @@ func CalculateDereferences(arg *CXArgument, finalOffset *int, fp int) {
 			sizeofElement = subSize * sizeToUse
 			*finalOffset += int(ReadI32(fp, arg.Indexes[idxCounter])) * sizeofElement
 			idxCounter++
-		case DEREF_POINTER:
+		case constants.DEREF_POINTER:
 			isPointer = true
 			var offset int32
 			var byts []byte
 
-			byts = PROGRAM.Memory[*finalOffset : *finalOffset+TYPE_POINTER_SIZE]
+			byts = PROGRAM.Memory[*finalOffset : *finalOffset+constants.TYPE_POINTER_SIZE]
 
 			offset = Deserialize_i32(byts)
 			*finalOffset = int(offset)
@@ -93,11 +95,11 @@ func CalculateDereferences(arg *CXArgument, finalOffset *int, fp int) {
 	// if *finalOffset >= PROGRAM.HeapStartsAt {
 	if *finalOffset >= PROGRAM.HeapStartsAt && isPointer {
 		// then it's an object
-		*finalOffset += OBJECT_HEADER_SIZE
+		*finalOffset += constants.OBJECT_HEADER_SIZE
 		if arg.IsSlice {
-			*finalOffset += SLICE_HEADER_SIZE
+			*finalOffset += constants.SLICE_HEADER_SIZE
 			if !IsValidSliceIndex(baseOffset, *finalOffset, sizeofElement) {
-				panic(CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)
+				panic(constants.CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)
 			}
 		}
 	}

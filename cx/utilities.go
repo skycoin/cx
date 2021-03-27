@@ -3,6 +3,7 @@ package cxcore
 import (
 	"bytes"
 	"fmt"
+	"github.com/skycoin/cx/cx/constants"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -143,7 +144,7 @@ func getFormattedDerefs(arg *CXArgument, includePkg bool) string {
 
 	// If it's a literal, just override the name with LITERAL_PLACEHOLDER.
 	if arg.Name == "" {
-		name = LITERAL_PLACEHOLDER
+		name = constants.LITERAL_PLACEHOLDER
 	}
 
 	// Checking if we got dereferences, e.g. **foo
@@ -162,7 +163,7 @@ func getFormattedDerefs(arg *CXArgument, includePkg bool) string {
 		idxValue := ""
 		if idx.Offset > PROGRAM.StackSize {
 			// Then it's a literal.
-			idxI32 := Deserialize_i32(PROGRAM.Memory[idx.Offset : idx.Offset+TYPE_POINTER_SIZE])
+			idxI32 := Deserialize_i32(PROGRAM.Memory[idx.Offset : idx.Offset+constants.TYPE_POINTER_SIZE])
 			idxValue = fmt.Sprintf("%d", idxI32)
 		} else {
 			// Then let's just print the variable name.
@@ -189,7 +190,7 @@ func GetFormattedName(arg *CXArgument, includePkg bool) string {
 	}
 
 	// Checking if we're referencing `arg`.
-	if arg.PassBy == PASSBY_REFERENCE {
+	if arg.PassBy == constants.PASSBY_REFERENCE {
 		name = "&" + name
 	}
 
@@ -223,16 +224,16 @@ func GetFormattedType(arg *CXArgument) string {
 	// looping declaration specifiers
 	for _, spec := range elt.DeclarationSpecifiers {
 		switch spec {
-		case DECL_POINTER:
+		case constants.DECL_POINTER:
 			typ = "*" + typ
-		case DECL_DEREF:
+		case constants.DECL_DEREF:
 			typ = typ[1:]
-		case DECL_ARRAY:
+		case constants.DECL_ARRAY:
 			typ = fmt.Sprintf("[%d]%s", arg.Lengths[arrDeclCount], typ)
 			arrDeclCount--
-		case DECL_SLICE:
+		case constants.DECL_SLICE:
 			typ = "[]" + typ
-		case DECL_INDEXING:
+		case constants.DECL_INDEXING:
 		default:
 			// base type
 			if elt.CustomType != nil {
@@ -240,10 +241,10 @@ func GetFormattedType(arg *CXArgument) string {
 				typ += elt.CustomType.Name
 			} else {
 				// then it's basic type
-				typ += TypeNames[elt.Type]
+				typ += constants.TypeNames[elt.Type]
 
 				// If it's a function, let's add the inputs and outputs.
-				if elt.Type == TYPE_FUNC {
+				if elt.Type == constants.TYPE_FUNC {
 					if elt.IsLocalDeclaration {
 						// Then it's a local variable, which can be assigned to a
 						// lambda function, for example.
@@ -254,7 +255,7 @@ func GetFormattedType(arg *CXArgument) string {
 						pkg, err := PROGRAM.GetPackage(arg.Package.Name)
 						if err != nil {
 							println(CompilationError(elt.FileName, elt.FileLine), err.Error())
-							os.Exit(CX_COMPILATION_ERROR)
+							os.Exit(constants.CX_COMPILATION_ERROR)
 						}
 
 						fn, err := pkg.GetFunction(elt.Name)
@@ -369,7 +370,7 @@ func buildStrFunctions(pkg *CXPackage, ast *string) {
 	// ignore the increment from the `*init` function.
 	var j int
 	for _, fn := range pkg.Functions {
-		if fn.Name == SYS_INIT_FUNC {
+		if fn.Name == constants.SYS_INIT_FUNC {
 			continue
 		}
 		_, err := pkg.SelectFunction(fn.Name)
@@ -476,7 +477,7 @@ func IsCorePackage(ident string) bool {
 
 // IsTempVar ...
 func IsTempVar(name string) bool {
-	if len(name) >= len(LOCAL_PREFIX) && name[:len(LOCAL_PREFIX)] == LOCAL_PREFIX {
+	if len(name) >= len(constants.LOCAL_PREFIX) && name[:len(constants.LOCAL_PREFIX)] == constants.LOCAL_PREFIX {
 		return true
 	}
 	return false
@@ -503,13 +504,13 @@ func GetArgSizeFromTypeName(typeName string) int {
 // GetArgSize ...
 func GetArgSize(typ int) int {
 	switch typ {
-	case TYPE_BOOL, TYPE_I8, TYPE_UI8:
+	case constants.TYPE_BOOL, constants.TYPE_I8, constants.TYPE_UI8:
 		return 1
-	case TYPE_I16, TYPE_UI16:
+	case constants.TYPE_I16, constants.TYPE_UI16:
 		return 2
-	case TYPE_STR, TYPE_I32, TYPE_UI32, TYPE_F32, TYPE_AFF:
+	case constants.TYPE_STR, constants.TYPE_I32, constants.TYPE_UI32, constants.TYPE_F32, constants.TYPE_AFF:
 		return 4
-	case TYPE_I64, TYPE_UI64, TYPE_F64:
+	case constants.TYPE_I64, constants.TYPE_UI64, constants.TYPE_F64:
 		return 8
 	default:
 		return 4
@@ -563,7 +564,7 @@ func GetAssignmentElement(arg *CXArgument) *CXArgument {
 func IsValidSliceIndex(offset int, index int, sizeofElement int) bool {
 	sliceLen := GetSliceLen(int32(offset))
 	bytesLen := sliceLen * int32(sizeofElement)
-	index -= OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + offset
+	index -= constants.OBJECT_HEADER_SIZE + constants.SLICE_HEADER_SIZE + offset
 
 	if index >= 0 && index < int(bytesLen) && (index%sizeofElement) == 0 {
 		return true
@@ -573,7 +574,7 @@ func IsValidSliceIndex(offset int, index int, sizeofElement int) bool {
 
 // GetPointerOffset ...
 func GetPointerOffset(pointer int32) int32 {
-	return Deserialize_i32(PROGRAM.Memory[pointer : pointer+TYPE_POINTER_SIZE])
+	return Deserialize_i32(PROGRAM.Memory[pointer : pointer+constants.TYPE_POINTER_SIZE])
 }
 
 // GetSliceOffset ...
@@ -588,12 +589,12 @@ func GetSliceOffset(fp int, arg *CXArgument) int32 {
 
 // GetObjectHeader ...
 func GetObjectHeader(offset int32) []byte {
-	return PROGRAM.Memory[offset : offset+OBJECT_HEADER_SIZE]
+	return PROGRAM.Memory[offset : offset+constants.OBJECT_HEADER_SIZE]
 }
 
 // GetSliceHeader ...
 func GetSliceHeader(offset int32) []byte {
-	return PROGRAM.Memory[offset+OBJECT_HEADER_SIZE : offset+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE]
+	return PROGRAM.Memory[offset+constants.OBJECT_HEADER_SIZE : offset+constants.OBJECT_HEADER_SIZE+constants.SLICE_HEADER_SIZE]
 }
 
 // GetSliceLen ...
@@ -607,7 +608,7 @@ func GetSlice(offset int32, sizeofElement int) []byte {
 	if offset > 0 {
 		sliceLen := GetSliceLen(offset)
 		if sliceLen > 0 {
-			dataOffset := offset + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE - 4
+			dataOffset := offset + constants.OBJECT_HEADER_SIZE + constants.SLICE_HEADER_SIZE - 4
 			dataLen := 4 + sliceLen*int32(sizeofElement)
 			return PROGRAM.Memory[dataOffset : dataOffset+dataLen]
 		}
@@ -626,7 +627,7 @@ func GetSliceData(offset int32, sizeofElement int) []byte {
 // SliceResizeEx does the logic required by `SliceResize`. It is separated because some other functions might have access to the offsets of the slices, but not the `CXArgument`s.
 func SliceResizeEx(outputSliceOffset int32, count int32, sizeofElement int) int {
 	if count < 0 {
-		panic(CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE) // TODO : should use uint32
+		panic(constants.CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE) // TODO : should use uint32
 	}
 
 	var outputSliceHeader []byte
@@ -645,7 +646,7 @@ func SliceResizeEx(outputSliceOffset int32, count int32, sizeofElement int) int 
 		} else {
 			newCap *= 2
 		}
-		var outputObjectSize = OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + newCap*int32(sizeofElement)
+		var outputObjectSize = constants.OBJECT_HEADER_SIZE + constants.SLICE_HEADER_SIZE + newCap*int32(sizeofElement)
 		outputSliceOffset = int32(AllocateSeq(int(outputObjectSize)))
 		WriteMemI32(GetObjectHeader(outputSliceOffset)[5:9], 0, outputObjectSize)
 
@@ -671,7 +672,7 @@ func SliceResize(fp int, out *CXArgument, inp *CXArgument, count int32, sizeofEl
 // SliceCopyEx does the logic required by `SliceCopy`. It is separated because some other functions might have access to the offsets of the slices, but not the `CXArgument`s.
 func SliceCopyEx(outputSliceOffset int32, inputSliceOffset int32, count int32, sizeofElement int) {
 	if count < 0 {
-		panic(CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE) // TODO : should use uint32
+		panic(constants.CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE) // TODO : should use uint32
 	}
 
 	var inputSliceLen int32
@@ -732,7 +733,7 @@ func SliceInsert(fp int, out *CXArgument, inp *CXArgument, index int32, object [
 	}
 
 	if index < 0 || index > inputSliceLen {
-		panic(CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)
+		panic(constants.CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)
 	}
 
 	var newLen = inputSliceLen + 1
@@ -755,7 +756,7 @@ func SliceRemove(fp int, out *CXArgument, inp *CXArgument, index int32, sizeofEl
 	}
 
 	if index < 0 || index >= inputSliceLen {
-		panic(CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)
+		panic(constants.CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)
 	}
 
 	outputSliceData := GetSliceData(outputSliceOffset, int(sizeofElement))
@@ -802,10 +803,10 @@ func CompilationError(currentFile string, lineNo int) string {
 
 // ErrorString ...
 func ErrorString(code int) string {
-	if str, found := ErrorStrings[code]; found {
+	if str, found := constants.ErrorStrings[code]; found {
 		return str
 	}
-	return ErrorStrings[CX_RUNTIME_ERROR]
+	return constants.ErrorStrings[constants.CX_RUNTIME_ERROR]
 }
 
 func errorCode(r interface{}) int {
@@ -813,7 +814,7 @@ func errorCode(r interface{}) int {
 	case int:
 		return int(v)
 	default:
-		return CX_RUNTIME_ERROR
+		return constants.CX_RUNTIME_ERROR
 	}
 }
 
@@ -821,7 +822,7 @@ func runtimeErrorInfo(r interface{}, printStack bool, defaultError int) {
 	call := PROGRAM.CallStack[PROGRAM.CallCounter]
 	expr := call.Operator.Expressions[call.Line]
 	code := errorCode(r)
-	if code == CX_RUNTIME_ERROR {
+	if code == constants.CX_RUNTIME_ERROR {
 		code = defaultError
 	}
 
@@ -842,20 +843,20 @@ func runtimeErrorInfo(r interface{}, printStack bool, defaultError int) {
 func RuntimeError() {
 	if r := recover(); r != nil {
 		switch r {
-		case STACK_OVERFLOW_ERROR:
+		case constants.STACK_OVERFLOW_ERROR:
 			call := PROGRAM.CallStack[PROGRAM.CallCounter]
 			if PROGRAM.CallCounter > 0 {
 				PROGRAM.CallCounter--
 				PROGRAM.StackPointer = call.FramePointer
-				runtimeErrorInfo(r, true, CX_RUNTIME_STACK_OVERFLOW_ERROR)
+				runtimeErrorInfo(r, true, constants.CX_RUNTIME_STACK_OVERFLOW_ERROR)
 			} else {
 				// error at entry point
-				runtimeErrorInfo(r, false, CX_RUNTIME_STACK_OVERFLOW_ERROR)
+				runtimeErrorInfo(r, false, constants.CX_RUNTIME_STACK_OVERFLOW_ERROR)
 			}
-		case HEAP_EXHAUSTED_ERROR:
-			runtimeErrorInfo(r, true, CX_RUNTIME_HEAP_EXHAUSTED_ERROR)
+		case constants.HEAP_EXHAUSTED_ERROR:
+			runtimeErrorInfo(r, true, constants.CX_RUNTIME_HEAP_EXHAUSTED_ERROR)
 		default:
-			runtimeErrorInfo(r, true, CX_RUNTIME_ERROR)
+			runtimeErrorInfo(r, true, constants.CX_RUNTIME_ERROR)
 		}
 	}
 }
@@ -916,7 +917,7 @@ func GetPrintableValue(fp int, arg *CXArgument) string {
 		typ = elt.CustomType.Name
 	} else {
 		// then it's native type
-		typ = TypeNames[elt.Type]
+		typ = constants.TypeNames[elt.Type]
 	}
 
 	if len(elt.Lengths) > 0 {
@@ -999,7 +1000,7 @@ func DebugHeap() {
 	for _, pkg := range PROGRAM.Packages {
 		for _, glbl := range pkg.Globals {
 			if glbl.IsPointer || glbl.IsSlice {
-				heapOffset := Deserialize_i32(PROGRAM.Memory[glbl.Offset : glbl.Offset+TYPE_POINTER_SIZE])
+				heapOffset := Deserialize_i32(PROGRAM.Memory[glbl.Offset : glbl.Offset+constants.TYPE_POINTER_SIZE])
 
 				symsToAddrs[heapOffset] = append(symsToAddrs[heapOffset], glbl.Name)
 			}
@@ -1035,7 +1036,7 @@ func DebugHeap() {
 				offset += fp
 			}
 
-			heapOffset := Deserialize_i32(PROGRAM.Memory[offset : offset+TYPE_POINTER_SIZE])
+			heapOffset := Deserialize_i32(PROGRAM.Memory[offset : offset+constants.TYPE_POINTER_SIZE])
 
 			symsToAddrs[heapOffset] = append(symsToAddrs[heapOffset], symName)
 		}
@@ -1058,8 +1059,8 @@ func DebugHeap() {
 
 	w = tabwriter.NewWriter(os.Stdout, 0, 0, 2, '.', 0)
 
-	for c := PROGRAM.HeapStartsAt + NULL_HEAP_ADDRESS_OFFSET; c < PROGRAM.HeapStartsAt+PROGRAM.HeapPointer; {
-		objSize := Deserialize_i32(PROGRAM.Memory[c+MARK_SIZE+FORWARDING_ADDRESS_SIZE : c+MARK_SIZE+FORWARDING_ADDRESS_SIZE+OBJECT_SIZE])
+	for c := PROGRAM.HeapStartsAt + constants.NULL_HEAP_ADDRESS_OFFSET; c < PROGRAM.HeapStartsAt+PROGRAM.HeapPointer; {
+		objSize := Deserialize_i32(PROGRAM.Memory[c+constants.MARK_SIZE+constants.FORWARDING_ADDRESS_SIZE : c+constants.MARK_SIZE+constants.FORWARDING_ADDRESS_SIZE+constants.OBJECT_SIZE])
 
 		// Setting a limit size for the object to be printed if the object is too large.
 		// We don't want to print obscenely large objects to standard output.
@@ -1071,7 +1072,7 @@ func DebugHeap() {
 		var addrB [4]byte
 		WriteMemI32(addrB[:], 0, int32(c))
 
-		fmt.Fprintln(w, "Addr:\t", addrB, "\tMark:\t", PROGRAM.Memory[c:c+MARK_SIZE], "\tFwd:\t", PROGRAM.Memory[c+MARK_SIZE:c+MARK_SIZE+FORWARDING_ADDRESS_SIZE], "\tSize:\t", objSize, "\tObj:\t", PROGRAM.Memory[c+OBJECT_HEADER_SIZE:c+int(printObjSize)], "\tPtrs:", symsToAddrs[int32(c)])
+		fmt.Fprintln(w, "Addr:\t", addrB, "\tMark:\t", PROGRAM.Memory[c:c+constants.MARK_SIZE], "\tFwd:\t", PROGRAM.Memory[c+constants.MARK_SIZE:c+constants.MARK_SIZE+constants.FORWARDING_ADDRESS_SIZE], "\tSize:\t", objSize, "\tObj:\t", PROGRAM.Memory[c+constants.OBJECT_HEADER_SIZE:c+int(printObjSize)], "\tPtrs:", symsToAddrs[int32(c)])
 
 		c += int(objSize)
 	}
@@ -1144,7 +1145,7 @@ func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCod
 		fi, err := CXStatFile(arg)
 		if err != nil {
 			println(fmt.Sprintf("%s: source file or library not found", arg))
-			os.Exit(CX_COMPILATION_ERROR)
+			os.Exit(constants.CX_COMPILATION_ERROR)
 		}
 
 		switch mode := fi.Mode(); {
@@ -1169,7 +1170,7 @@ func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCod
 
 				if err != nil {
 					println(fmt.Sprintf("%s: source file or library not found", arg))
-					os.Exit(CX_COMPILATION_ERROR)
+					os.Exit(constants.CX_COMPILATION_ERROR)
 				}
 
 				fiName := file.Name()
@@ -1212,7 +1213,7 @@ func IsPointer(sym *CXArgument) bool {
 	if (sym.IsPointer || sym.IsSlice) && sym.Name != "" && len(sym.Fields) == 0 {
 		return true
 	}
-	if sym.Type == TYPE_STR && sym.Name != "" && len(sym.Fields) == 0 {
+	if sym.Type == constants.TYPE_STR && sym.Name != "" && len(sym.Fields) == 0 {
 		return true
 	}
 	// if (sym.Type == TYPE_STR && sym.Name != "") {

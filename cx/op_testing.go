@@ -2,6 +2,7 @@ package cxcore
 
 import (
 	"fmt"
+	"github.com/skycoin/cx/cx/constants"
 )
 
 var assertSuccess = true
@@ -15,7 +16,7 @@ func assert(expr *CXExpression, fp int) (same bool) {
 	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
 	var byts1, byts2 []byte
 
-	if inp1.Type == TYPE_STR {
+	if inp1.Type == constants.TYPE_STR {
 		byts1 = []byte(ReadStr(fp, inp1))
 		byts2 = []byte(ReadStr(fp, inp2))
 	} else {
@@ -67,7 +68,7 @@ func opTest(expr *CXExpression, fp int) {
 
 func opPanic(expr *CXExpression, fp int) {
 	if !assert(expr, fp) {
-		panic(CX_ASSERT)
+		panic(constants.CX_ASSERT)
 	}
 }
 
@@ -75,7 +76,7 @@ func opPanic(expr *CXExpression, fp int) {
 func panicIf(expr *CXExpression, fp int, condition bool) {
 	if ReadBool(fp, expr.Inputs[0]) == condition {
 		fmt.Printf("%s : %d, %s\n", expr.FileName, expr.FileLine, ReadStr(fp, expr.Inputs[1]))
-		panic(CX_ASSERT)
+		panic(constants.CX_ASSERT)
 	}
 }
 

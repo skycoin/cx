@@ -3,6 +3,7 @@ package cxparser
 import (
 	"bufio"
 	"bytes"
+	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cxgo/globals"
 	"io"
 	"os"
@@ -12,8 +13,8 @@ import (
 
 	cxcore "github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cxgo/actions"
-	"github.com/skycoin/cx/cxgo/cxgo0"
 	"github.com/skycoin/cx/cxgo/cxgo"
+	"github.com/skycoin/cx/cxgo/cxgo0"
 	"github.com/skycoin/cx/cxgo/util/profiling"
 )
 
@@ -48,19 +49,19 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 	actions.PRGRM = cxgo0.PRGRM0
 
 	if cxcore.FoundCompileErrors || parseErrors > 0 {
-		profiling.CleanupAndExit(cxcore.CX_COMPILATION_ERROR)
+		profiling.CleanupAndExit(constants.CX_COMPILATION_ERROR)
 	}
 
 	// Adding global variables `OS_ARGS` to the `os` (operating system)
 	// package.
-	if osPkg, err := actions.PRGRM.GetPackage(cxcore.OS_PKG); err == nil {
-		if _, err := osPkg.GetGlobal(cxcore.OS_ARGS); err != nil {
-			arg0 := cxcore.MakeArgument(cxcore.OS_ARGS, "", -1).AddType(cxcore.TypeNames[cxcore.TYPE_UNDEFINED])
+	if osPkg, err := actions.PRGRM.GetPackage(constants.OS_PKG); err == nil {
+		if _, err := osPkg.GetGlobal(constants.OS_ARGS); err != nil {
+			arg0 := cxcore.MakeArgument(constants.OS_ARGS, "", -1).AddType(constants.TypeNames[constants.TYPE_UNDEFINED])
 			arg0.Package = osPkg
 
-			arg1 := cxcore.MakeArgument(cxcore.OS_ARGS, "", -1).AddType(cxcore.TypeNames[cxcore.TYPE_STR])
-			arg1 = actions.DeclarationSpecifiers(arg1, []int{0}, cxcore.DECL_BASIC)
-			arg1 = actions.DeclarationSpecifiers(arg1, []int{0}, cxcore.DECL_SLICE)
+			arg1 := cxcore.MakeArgument(constants.OS_ARGS, "", -1).AddType(constants.TypeNames[constants.TYPE_STR])
+			arg1 = actions.DeclarationSpecifiers(arg1, []int{0}, constants.DECL_BASIC)
+			arg1 = actions.DeclarationSpecifiers(arg1, []int{0}, constants.DECL_SLICE)
 
 			actions.DeclareGlobalInPackage(osPkg, arg0, arg1, nil, false)
 		}
@@ -85,7 +86,7 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 	profiling.StopProfile("4. parse")
 
 	if cxcore.FoundCompileErrors || parseErrors > 0 {
-		profiling.CleanupAndExit(cxcore.CX_COMPILATION_ERROR)
+		profiling.CleanupAndExit(constants.CX_COMPILATION_ERROR)
 	}
 }
 
@@ -356,18 +357,18 @@ func lexerStep0(srcStrs, srcNames []string) int {
 }
 
 func AddInitFunction(prgrm *cxcore.CXProgram) error {
-	mainPkg, err := prgrm.GetPackage(cxcore.MAIN_PKG)
+	mainPkg, err := prgrm.GetPackage(constants.MAIN_PKG)
 	if err != nil {
 		return err
 	}
 
-	initFn := cxcore.MakeFunction(cxcore.SYS_INIT_FUNC, actions.CurrentFile, actions.LineNo)
+	initFn := cxcore.MakeFunction(constants.SYS_INIT_FUNC, actions.CurrentFile, actions.LineNo)
 	mainPkg.AddFunction(initFn)
 
 	//Init Expressions
 	actions.FunctionDeclaration(initFn, nil, nil, globals.SysInitExprs)
 
-	if _, err := mainPkg.SelectFunction(cxcore.MAIN_FUNC); err != nil {
+	if _, err := mainPkg.SelectFunction(constants.MAIN_FUNC); err != nil {
 		return err
 	}
 	return nil

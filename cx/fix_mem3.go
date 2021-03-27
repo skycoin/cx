@@ -1,6 +1,7 @@
 package cxcore
 
 import (
+	"github.com/skycoin/cx/cx/constants"
 	"log"
 )
 
@@ -33,9 +34,9 @@ func GetFinalOffset(fp int, arg *CXArgument) int {
 	}
 
 	if ENHANCED_DEBUGING4 {
-		if arg.Type == TYPE_F32 || arg.Type == TYPE_F64  ||
-			arg.Type == TYPE_UI8 || arg.Type == TYPE_UI16 || arg.Type == TYPE_UI32 || arg.Type == TYPE_UI64 ||
-			arg.Type == TYPE_I8 || arg.Type == TYPE_I16 || arg.Type == TYPE_I32 || arg.Type == TYPE_I64{
+		if arg.Type == constants.TYPE_F32 || arg.Type == constants.TYPE_F64 ||
+			arg.Type == constants.TYPE_UI8 || arg.Type == constants.TYPE_UI16 || arg.Type == constants.TYPE_UI32 || arg.Type == constants.TYPE_UI64 ||
+			arg.Type == constants.TYPE_I8 || arg.Type == constants.TYPE_I16 || arg.Type == constants.TYPE_I32 || arg.Type == constants.TYPE_I64 {
 			panic("arg is in invalid format")
 		}
 	}
@@ -78,9 +79,9 @@ func GetOffsetAtomicSimple(fp int, arg *CXArgument) int {
 	}
 
 	if ENHANCED_DEBUGING2 {
-			if arg.Type == TYPE_F32 || arg.Type == TYPE_F64  ||
-				arg.Type == TYPE_UI8 || arg.Type == TYPE_UI16 || arg.Type == TYPE_UI32 || arg.Type == TYPE_UI64 ||
-				arg.Type == TYPE_I8 || arg.Type == TYPE_I16 || arg.Type == TYPE_I32 || arg.Type == TYPE_I64{
+			if arg.Type == constants.TYPE_F32 || arg.Type == constants.TYPE_F64 ||
+				arg.Type == constants.TYPE_UI8 || arg.Type == constants.TYPE_UI16 || arg.Type == constants.TYPE_UI32 || arg.Type == constants.TYPE_UI64 ||
+				arg.Type == constants.TYPE_I8 || arg.Type == constants.TYPE_I16 || arg.Type == constants.TYPE_I32 || arg.Type == constants.TYPE_I64 {
 			panic("arg is in invalid format")
 		}
 	}

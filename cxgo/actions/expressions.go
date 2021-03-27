@@ -2,6 +2,7 @@ package actions
 
 import (
 	"fmt"
+	"github.com/skycoin/cx/cx/constants"
 	"os"
 
 	"github.com/skycoin/skycoin/src/cipher/encoder"
@@ -27,7 +28,7 @@ func IterationExpressions(init []*cxcore.CXExpression, cond []*cxcore.CXExpressi
 	upExpr := cxcore.MakeExpression(jmpFn, CurrentFile, LineNo)
 	upExpr.Package = pkg
 
-	trueArg := WritePrimary(cxcore.TYPE_BOOL, encoder.Serialize(true), false)
+	trueArg := WritePrimary(constants.TYPE_BOOL, encoder.Serialize(true), false)
 
 	upLines := (len(statements) + len(incr) + len(cond) + 2) * -1
 	downLines := 0
@@ -40,7 +41,7 @@ func IterationExpressions(init []*cxcore.CXExpression, cond []*cxcore.CXExpressi
 	downExpr.Package = pkg
 
 	if len(cond[len(cond)-1].Outputs) < 1 {
-		predicate := cxcore.MakeArgument(cxcore.MakeGenSym(cxcore.LOCAL_PREFIX), CurrentFile, LineNo).AddType(cxcore.TypeNames[cond[len(cond)-1].Operator.Outputs[0].Type])
+		predicate := cxcore.MakeArgument(cxcore.MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(constants.TypeNames[cond[len(cond)-1].Operator.Outputs[0].Type])
 		predicate.Package = pkg
 		predicate.PreviouslyDeclared = true
 		cond[len(cond)-1].AddOutput(predicate)
@@ -92,7 +93,7 @@ func trueJmpExpressions() []*cxcore.CXExpression {
 
 	expr := cxcore.MakeExpression(cxcore.Natives[cxcore.OP_JMP], CurrentFile, LineNo)
 
-	trueArg := WritePrimary(cxcore.TYPE_BOOL, encoder.Serialize(true), false)
+	trueArg := WritePrimary(constants.TYPE_BOOL, encoder.Serialize(true), false)
 	expr.AddInput(trueArg[0].Outputs[0])
 
 	expr.Package = pkg
@@ -130,15 +131,15 @@ func SelectionExpressions(condExprs []*cxcore.CXExpression, thenExprs []*cxcore.
 		predicate = condExprs[len(condExprs)-1].Outputs[0]
 	} else {
 		// then it's an expression
-		predicate = cxcore.MakeArgument(cxcore.MakeGenSym(cxcore.LOCAL_PREFIX), CurrentFile, LineNo)
+		predicate = cxcore.MakeArgument(cxcore.MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo)
 		if condExprs[len(condExprs)-1].IsMethodCall {
 			// we'll change this once we have access to method's types in
 			// ProcessMethodCall
-			predicate.AddType(cxcore.TypeNames[cxcore.TYPE_BOOL])
+			predicate.AddType(constants.TypeNames[constants.TYPE_BOOL])
 			condExprs[len(condExprs)-1].Inputs = append(condExprs[len(condExprs)-1].Outputs, condExprs[len(condExprs)-1].Inputs...)
 			condExprs[len(condExprs)-1].Outputs = nil
 		} else {
-			predicate.AddType(cxcore.TypeNames[condExprs[len(condExprs)-1].Operator.Outputs[0].Type])
+			predicate.AddType(constants.TypeNames[condExprs[len(condExprs)-1].Operator.Outputs[0].Type])
 		}
 		predicate.PreviouslyDeclared = true
 		condExprs[len(condExprs)-1].Outputs = append(condExprs[len(condExprs)-1].Outputs, predicate)
@@ -156,7 +157,7 @@ func SelectionExpressions(condExprs []*cxcore.CXExpression, thenExprs []*cxcore.
 	skipExpr := cxcore.MakeExpression(jmpFn, CurrentFile, LineNo)
 	skipExpr.Package = pkg
 
-	trueArg := WritePrimary(cxcore.TYPE_BOOL, encoder.Serialize(true), false)
+	trueArg := WritePrimary(constants.TYPE_BOOL, encoder.Serialize(true), false)
 	skipLines := len(elseExprs)
 
 	skipExpr.AddInput(trueArg[0].Outputs[0])
@@ -205,7 +206,7 @@ func UndefinedTypeOperation(leftExprs []*cxcore.CXExpression, rightExprs []*cxco
 	}
 
 	if len(leftExprs[len(leftExprs)-1].Outputs) < 1 {
-		name := cxcore.MakeArgument(cxcore.MakeGenSym(cxcore.LOCAL_PREFIX), CurrentFile, LineNo).AddType(cxcore.TypeNames[resolveTypeForUnd(leftExprs[len(leftExprs)-1])])
+		name := cxcore.MakeArgument(cxcore.MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(constants.TypeNames[resolveTypeForUnd(leftExprs[len(leftExprs)-1])])
 		name.Size = leftExprs[len(leftExprs)-1].Operator.Outputs[0].Size
 		name.TotalSize = cxcore.GetSize(leftExprs[len(leftExprs)-1].Operator.Outputs[0])
 		name.Type = leftExprs[len(leftExprs)-1].Operator.Outputs[0].Type
@@ -216,7 +217,7 @@ func UndefinedTypeOperation(leftExprs []*cxcore.CXExpression, rightExprs []*cxco
 	}
 
 	if len(rightExprs[len(rightExprs)-1].Outputs) < 1 {
-		name := cxcore.MakeArgument(cxcore.MakeGenSym(cxcore.LOCAL_PREFIX), CurrentFile, LineNo).AddType(cxcore.TypeNames[resolveTypeForUnd(rightExprs[len(rightExprs)-1])])
+		name := cxcore.MakeArgument(cxcore.MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(constants.TypeNames[resolveTypeForUnd(rightExprs[len(rightExprs)-1])])
 
 		name.Size = rightExprs[len(rightExprs)-1].Operator.Outputs[0].Size
 		name.TotalSize = cxcore.GetSize(rightExprs[len(rightExprs)-1].Operator.Outputs[0])
@@ -271,7 +272,7 @@ func UnaryExpression(op string, prevExprs []*cxcore.CXExpression) []*cxcore.CXEx
 	if len(prevExprs[len(prevExprs)-1].Outputs) == 0 {
 		println(cxcore.CompilationError(CurrentFile, LineNo), "invalid indirection")
 		// needs to be stopped immediately
-		os.Exit(cxcore.CX_COMPILATION_ERROR)
+		os.Exit(constants.CX_COMPILATION_ERROR)
 	}
 
 	// Some properties need to be read from the base argument
@@ -281,16 +282,16 @@ func UnaryExpression(op string, prevExprs []*cxcore.CXExpression) []*cxcore.CXEx
 	switch op {
 	case "*":
 		exprOut.DereferenceLevels++
-		exprOut.DereferenceOperations = append(exprOut.DereferenceOperations, cxcore.DEREF_POINTER)
+		exprOut.DereferenceOperations = append(exprOut.DereferenceOperations, constants.DEREF_POINTER)
 		if !exprOut.IsArrayFirst {
 			exprOut.IsDereferenceFirst = true
 		}
-		exprOut.DeclarationSpecifiers = append(exprOut.DeclarationSpecifiers, cxcore.DECL_DEREF)
+		exprOut.DeclarationSpecifiers = append(exprOut.DeclarationSpecifiers, constants.DECL_DEREF)
 		exprOut.IsReference = false
 	case "&":
-		baseOut.PassBy = cxcore.PASSBY_REFERENCE
-		exprOut.DeclarationSpecifiers = append(exprOut.DeclarationSpecifiers, cxcore.DECL_POINTER)
-		if len(baseOut.Fields) == 0 && hasDeclSpec(baseOut, cxcore.DECL_INDEXING) {
+		baseOut.PassBy = constants.PASSBY_REFERENCE
+		exprOut.DeclarationSpecifiers = append(exprOut.DeclarationSpecifiers, constants.DECL_POINTER)
+		if len(baseOut.Fields) == 0 && hasDeclSpec(baseOut, constants.DECL_INDEXING) {
 			// If we're referencing an inner element, like an element of a slice (&slc[0])
 			// or a field of a struct (&struct.fld) we no longer need to add
 			// the OBJECT_HEADER_SIZE to the offset. The runtime uses this field to determine this.
@@ -342,7 +343,7 @@ func AssociateReturnExpressions(idx int, retExprs []*cxcore.CXExpression) []*cxc
 	outParam := fn.Outputs[idx]
 
 	out := cxcore.MakeArgument(outParam.Name, CurrentFile, LineNo)
-	out.AddType(cxcore.TypeNames[outParam.Type])
+	out.AddType(constants.TypeNames[outParam.Type])
 	out.CustomType = outParam.CustomType
 	out.PreviouslyDeclared = true
 
@@ -406,8 +407,8 @@ func AddJmpToReturnExpressions(exprs ReturnExpressions) []*cxcore.CXExpression {
 	expr := cxcore.MakeExpression(cxcore.Natives[cxcore.OP_JMP], CurrentFile, LineNo)
 
 	// simulating a label so it gets executed without evaluating a predicate
-	expr.Label = cxcore.MakeGenSym(cxcore.LABEL_PREFIX)
-	expr.ThenLines = cxcore.MAX_INT32
+	expr.Label = cxcore.MakeGenSym(constants.LABEL_PREFIX)
+	expr.ThenLines = constants.MAX_INT32
 	expr.Package = pkg
 
 	arg := cxcore.MakeArgument("", CurrentFile, LineNo).AddType("bool")

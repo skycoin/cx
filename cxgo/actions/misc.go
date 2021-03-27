@@ -2,6 +2,7 @@ package actions
 
 import (
 	"github.com/skycoin/cx/cx"
+	"github.com/skycoin/cx/cx/constants"
 )
 
 func SelectProgram(prgrm *cxcore.CXProgram) {
@@ -46,7 +47,7 @@ func hasDerefOp(arg *cxcore.CXArgument, spec int) bool {
 func WritePrimary(typ int, byts []byte, isGlobal bool) []*cxcore.CXExpression {
 	if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
 		arg := cxcore.MakeArgument("", CurrentFile, LineNo)
-		arg.AddType(cxcore.TypeNames[typ])
+		arg.AddType(constants.TypeNames[typ])
 		arg.Package = pkg
 
 		var size = len(byts)
@@ -55,10 +56,10 @@ func WritePrimary(typ int, byts []byte, isGlobal bool) []*cxcore.CXExpression {
 		arg.TotalSize = size
 		arg.Offset = DataOffset
 
-		if arg.Type == cxcore.TYPE_STR || arg.Type == cxcore.TYPE_AFF {
-			arg.PassBy = cxcore.PASSBY_REFERENCE
-			arg.Size = cxcore.TYPE_POINTER_SIZE
-			arg.TotalSize = cxcore.TYPE_POINTER_SIZE
+		if arg.Type == constants.TYPE_STR || arg.Type == constants.TYPE_AFF {
+			arg.PassBy = constants.PASSBY_REFERENCE
+			arg.Size = constants.TYPE_POINTER_SIZE
+			arg.TotalSize = constants.TYPE_POINTER_SIZE
 		}
 
 		// A CX program allocates min(INIT_HEAP_SIZE, MAX_HEAP_SIZE) bytes
@@ -103,7 +104,7 @@ func TotalLength(lengths []int) int {
 func StructLiteralFields(ident string) *cxcore.CXExpression {
 	if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
 		arg := cxcore.MakeArgument("", CurrentFile, LineNo)
-		arg.AddType(cxcore.TypeNames[cxcore.TYPE_IDENTIFIER])
+		arg.AddType(constants.TypeNames[constants.TYPE_IDENTIFIER])
 		arg.Name = ident
 		arg.Package = pkg
 
@@ -122,12 +123,12 @@ func AffordanceStructs(pkg *cxcore.CXPackage, currentFile string, lineNo int) {
 	argStrct := cxcore.MakeStruct("Argument")
 	// argStrct.Size = cxcore.GetArgSize(cxcore.TYPE_STR) + cxcore.GetArgSize(cxcore.TYPE_STR)
 
-	argFldName := cxcore.MakeField("Name", cxcore.TYPE_STR, "", 0)
-	argFldName.TotalSize = cxcore.GetArgSize(cxcore.TYPE_STR)
-	argFldIndex := cxcore.MakeField("Index", cxcore.TYPE_I32, "", 0)
-	argFldIndex.TotalSize = cxcore.GetArgSize(cxcore.TYPE_I32)
-	argFldType := cxcore.MakeField("Type", cxcore.TYPE_STR, "", 0)
-	argFldType.TotalSize = cxcore.GetArgSize(cxcore.TYPE_STR)
+	argFldName := cxcore.MakeField("Name", constants.TYPE_STR, "", 0)
+	argFldName.TotalSize = cxcore.GetArgSize(constants.TYPE_STR)
+	argFldIndex := cxcore.MakeField("Index", constants.TYPE_I32, "", 0)
+	argFldIndex.TotalSize = cxcore.GetArgSize(constants.TYPE_I32)
+	argFldType := cxcore.MakeField("Type", constants.TYPE_STR, "", 0)
+	argFldType.TotalSize = cxcore.GetArgSize(constants.TYPE_STR)
 
 	argStrct.AddField(argFldName)
 	argStrct.AddField(argFldIndex)
@@ -139,7 +140,7 @@ func AffordanceStructs(pkg *cxcore.CXPackage, currentFile string, lineNo int) {
 	exprStrct := cxcore.MakeStruct("Expression")
 	// exprStrct.Size = cxcore.GetArgSize(cxcore.TYPE_STR)
 
-	exprFldOperator := cxcore.MakeField("Operator", cxcore.TYPE_STR, "", 0)
+	exprFldOperator := cxcore.MakeField("Operator", constants.TYPE_STR, "", 0)
 
 	exprStrct.AddField(exprFldOperator)
 
@@ -149,16 +150,16 @@ func AffordanceStructs(pkg *cxcore.CXPackage, currentFile string, lineNo int) {
 	fnStrct := cxcore.MakeStruct("Function")
 	// fnStrct.Size = cxcore.GetArgSize(cxcore.TYPE_STR) + cxcore.GetArgSize(cxcore.TYPE_STR) + cxcore.GetArgSize(cxcore.TYPE_STR)
 
-	fnFldName := cxcore.MakeField("Name", cxcore.TYPE_STR, "", 0)
-	fnFldName.TotalSize = cxcore.GetArgSize(cxcore.TYPE_STR)
+	fnFldName := cxcore.MakeField("Name", constants.TYPE_STR, "", 0)
+	fnFldName.TotalSize = cxcore.GetArgSize(constants.TYPE_STR)
 
-	fnFldInpSig := cxcore.MakeField("InputSignature", cxcore.TYPE_STR, "", 0)
-	fnFldInpSig.Size = cxcore.GetArgSize(cxcore.TYPE_STR)
-	fnFldInpSig = DeclarationSpecifiers(fnFldInpSig, []int{0}, cxcore.DECL_SLICE)
+	fnFldInpSig := cxcore.MakeField("InputSignature", constants.TYPE_STR, "", 0)
+	fnFldInpSig.Size = cxcore.GetArgSize(constants.TYPE_STR)
+	fnFldInpSig = DeclarationSpecifiers(fnFldInpSig, []int{0}, constants.DECL_SLICE)
 
-	fnFldOutSig := cxcore.MakeField("OutputSignature", cxcore.TYPE_STR, "", 0)
-	fnFldOutSig.Size = cxcore.GetArgSize(cxcore.TYPE_STR)
-	fnFldOutSig = DeclarationSpecifiers(fnFldOutSig, []int{0}, cxcore.DECL_SLICE)
+	fnFldOutSig := cxcore.MakeField("OutputSignature", constants.TYPE_STR, "", 0)
+	fnFldOutSig.Size = cxcore.GetArgSize(constants.TYPE_STR)
+	fnFldOutSig = DeclarationSpecifiers(fnFldOutSig, []int{0}, constants.DECL_SLICE)
 
 	fnStrct.AddField(fnFldName)
 	fnStrct.AddField(fnFldInpSig)
@@ -171,8 +172,8 @@ func AffordanceStructs(pkg *cxcore.CXPackage, currentFile string, lineNo int) {
 	strctStrct := cxcore.MakeStruct("Structure")
 	// strctStrct.Size = cxcore.GetArgSize(cxcore.TYPE_STR)
 
-	strctFldName := cxcore.MakeField("Name", cxcore.TYPE_STR, "", 0)
-	strctFldName.TotalSize = cxcore.GetArgSize(cxcore.TYPE_STR)
+	strctFldName := cxcore.MakeField("Name", constants.TYPE_STR, "", 0)
+	strctFldName.TotalSize = cxcore.GetArgSize(constants.TYPE_STR)
 
 	strctStrct.AddField(strctFldName)
 
@@ -182,7 +183,7 @@ func AffordanceStructs(pkg *cxcore.CXPackage, currentFile string, lineNo int) {
 	pkgStrct := cxcore.MakeStruct("Structure")
 	// pkgStrct.Size = cxcore.GetArgSize(cxcore.TYPE_STR)
 
-	pkgFldName := cxcore.MakeField("Name", cxcore.TYPE_STR, "", 0)
+	pkgFldName := cxcore.MakeField("Name", constants.TYPE_STR, "", 0)
 
 	pkgStrct.AddField(pkgFldName)
 
@@ -192,10 +193,10 @@ func AffordanceStructs(pkg *cxcore.CXPackage, currentFile string, lineNo int) {
 	callStrct := cxcore.MakeStruct("Caller")
 	// callStrct.Size = cxcore.GetArgSize(cxcore.TYPE_STR) + cxcore.GetArgSize(cxcore.TYPE_I32)
 
-	callFldFnName := cxcore.MakeField("FnName", cxcore.TYPE_STR, "", 0)
-	callFldFnName.TotalSize = cxcore.GetArgSize(cxcore.TYPE_STR)
-	callFldFnSize := cxcore.MakeField("FnSize", cxcore.TYPE_I32, "", 0)
-	callFldFnSize.TotalSize = cxcore.GetArgSize(cxcore.TYPE_I32)
+	callFldFnName := cxcore.MakeField("FnName", constants.TYPE_STR, "", 0)
+	callFldFnName.TotalSize = cxcore.GetArgSize(constants.TYPE_STR)
+	callFldFnSize := cxcore.MakeField("FnSize", constants.TYPE_I32, "", 0)
+	callFldFnSize.TotalSize = cxcore.GetArgSize(constants.TYPE_I32)
 
 	callStrct.AddField(callFldFnName)
 	callStrct.AddField(callFldFnSize)
@@ -206,10 +207,10 @@ func AffordanceStructs(pkg *cxcore.CXPackage, currentFile string, lineNo int) {
 	prgrmStrct := cxcore.MakeStruct("Program")
 	// prgrmStrct.Size = cxcore.GetArgSize(cxcore.TYPE_I32) + cxcore.GetArgSize(cxcore.TYPE_I64)
 
-	prgrmFldCallCounter := cxcore.MakeField("CallCounter", cxcore.TYPE_I32, "", 0)
-	prgrmFldCallCounter.TotalSize = cxcore.GetArgSize(cxcore.TYPE_I32)
-	prgrmFldFreeHeap := cxcore.MakeField("HeapUsed", cxcore.TYPE_I64, "", 0)
-	prgrmFldFreeHeap.TotalSize = cxcore.GetArgSize(cxcore.TYPE_I64)
+	prgrmFldCallCounter := cxcore.MakeField("CallCounter", constants.TYPE_I32, "", 0)
+	prgrmFldCallCounter.TotalSize = cxcore.GetArgSize(constants.TYPE_I32)
+	prgrmFldFreeHeap := cxcore.MakeField("HeapUsed", constants.TYPE_I64, "", 0)
+	prgrmFldFreeHeap.TotalSize = cxcore.GetArgSize(constants.TYPE_I64)
 
 	// prgrmFldCaller := cxcore.MakeField("Caller", cxcore.TYPE_CUSTOM, "", 0)
 	prgrmFldCaller := DeclarationSpecifiersStruct(callStrct.Name, callStrct.Package.Name, false, currentFile, lineNo)
@@ -225,7 +226,7 @@ func AffordanceStructs(pkg *cxcore.CXPackage, currentFile string, lineNo int) {
 func PrimaryIdentifier(ident string) []*cxcore.CXExpression {
 	if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
 		arg := cxcore.MakeArgument(ident, CurrentFile, LineNo) // fix: line numbers in errors sometimes report +1 or -1. Issue #195
-		arg.AddType(cxcore.TypeNames[cxcore.TYPE_IDENTIFIER])
+		arg.AddType(constants.TypeNames[constants.TYPE_IDENTIFIER])
 		// arg.Typ = "ident"
 		arg.Name = ident
 		arg.Package = pkg
@@ -244,18 +245,18 @@ func PrimaryIdentifier(ident string) []*cxcore.CXExpression {
 // IsArgBasicType returns true if `arg`'s type is a basic type, false otherwise.
 func IsArgBasicType(arg *cxcore.CXArgument) bool {
 	switch arg.Type {
-	case cxcore.TYPE_BOOL,
-		cxcore.TYPE_STR, //A STRING IS NOT AN ATOMIC TYPE
-		cxcore.TYPE_F32,
-		cxcore.TYPE_F64,
-		cxcore.TYPE_I8,
-		cxcore.TYPE_I16,
-		cxcore.TYPE_I32,
-		cxcore.TYPE_I64,
-		cxcore.TYPE_UI8,
-		cxcore.TYPE_UI16,
-		cxcore.TYPE_UI32,
-		cxcore.TYPE_UI64:
+	case constants.TYPE_BOOL,
+		constants.TYPE_STR, //A STRING IS NOT AN ATOMIC TYPE
+		constants.TYPE_F32,
+		constants.TYPE_F64,
+		constants.TYPE_I8,
+		constants.TYPE_I16,
+		constants.TYPE_I32,
+		constants.TYPE_I64,
+		constants.TYPE_UI8,
+		constants.TYPE_UI16,
+		constants.TYPE_UI32,
+		constants.TYPE_UI64:
 		return true
 	}
 	return false

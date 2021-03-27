@@ -2,12 +2,13 @@ package actions
 
 import (
 	"github.com/skycoin/cx/cx"
+	"github.com/skycoin/cx/cx/constants"
 )
 
 //Move out actions/interactive to own module?
 
 var PRGRM *cxcore.CXProgram
-var DataOffset int = cxcore.STACK_SIZE //Heap Offset is Stack Size
+var DataOffset int = constants.STACK_SIZE //Heap Offset is Stack Size
 
 //!!!
 //Why cxcore.STACK_SIZE and not PRGRM.STACK_SIZE

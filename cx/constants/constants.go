@@ -1,4 +1,4 @@
-package cxcore
+package constants
 
 // var COREPATH = ""
 
@@ -247,26 +247,26 @@ const (
 var TypeCounter int
 var TypeCodes map[string]int = map[string]int{
 	"unused": TPYE_UNUSED, //if this appears, should be error; program should crash
-	"ident": TYPE_IDENTIFIER,
-	"aff":   TYPE_AFF,
-	"bool":  TYPE_BOOL,
-	"str":   TYPE_STR,
-	"f32":   TYPE_F32,
-	"f64":   TYPE_F64,
-	"i8":    TYPE_I8,
-	"i16":   TYPE_I16,
-	"i32":   TYPE_I32,
-	"i64":   TYPE_I64,
-	"ui8":   TYPE_UI8,
-	"ui16":  TYPE_UI16,
-	"ui32":  TYPE_UI32,
-	"ui64":  TYPE_UI64,
-	"und":   TYPE_UNDEFINED,
-	"func":  TYPE_FUNC,
+	"ident":  TYPE_IDENTIFIER,
+	"aff":    TYPE_AFF,
+	"bool":   TYPE_BOOL,
+	"str":    TYPE_STR,
+	"f32":    TYPE_F32,
+	"f64":    TYPE_F64,
+	"i8":     TYPE_I8,
+	"i16":    TYPE_I16,
+	"i32":    TYPE_I32,
+	"i64":    TYPE_I64,
+	"ui8":    TYPE_UI8,
+	"ui16":   TYPE_UI16,
+	"ui32":   TYPE_UI32,
+	"ui64":   TYPE_UI64,
+	"und":    TYPE_UNDEFINED,
+	"func":   TYPE_FUNC,
 }
 
 var TypeNames map[int]string = map[int]string{
-	TPYE_UNUSED: "UNUSED", //if this appears, should trigger asset; is error
+	TPYE_UNUSED:     "UNUSED", //if this appears, should trigger asset; is error
 	TYPE_IDENTIFIER: "ident",
 	TYPE_AFF:        "aff",
 	TYPE_BOOL:       "bool",

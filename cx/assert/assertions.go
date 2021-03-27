@@ -3,24 +3,25 @@ package assert
 import (
 	"fmt"
 	cxcore "github.com/skycoin/cx/cx"
+	"github.com/skycoin/cx/cx/constants"
 )
 
 func ArgOfType(arg *cxcore.CXArgument, t int) {
 	if arg.Type != t {
 		panic(fmt.Sprintf("Argument %s, expected type %s, got %s",
-			arg.Name, cxcore.TypeNames[t], cxcore.TypeNames[arg.Type]))
+			arg.Name, constants.TypeNames[t], constants.TypeNames[arg.Type]))
 	}
 }
 
 func ArgAtomic(arg *cxcore.CXArgument) {
 	if arg.IsStruct || arg.IsPointer || arg.IsArray || arg.IsSlice {
-		panic(fmt.Sprintf("Argument %s of type %s is not atomic", arg.Name, cxcore.TypeNames[arg.Type]))
+		panic(fmt.Sprintf("Argument %s of type %s is not atomic", arg.Name, constants.TypeNames[arg.Type]))
 	}
 }
 
 func ArgNotAtomic(arg *cxcore.CXArgument) {
 	if !arg.IsStruct && !arg.IsPointer && !arg.IsArray && !arg.IsSlice {
-		panic(fmt.Sprintf("Argument %s of type %s is atomic", arg.Name, cxcore.TypeNames[arg.Type]))
+		panic(fmt.Sprintf("Argument %s of type %s is atomic", arg.Name, constants.TypeNames[arg.Type]))
 	}
 }
 

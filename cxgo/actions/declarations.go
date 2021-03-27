@@ -2,6 +2,7 @@ package actions
 
 import (
 	"fmt"
+	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cxgo/globals"
 	"os"
 
@@ -272,7 +273,7 @@ func DeclareImport(name string, currentFile string, lineNo int) {
 	} else {
 		// This should never happen.
 		println(cxcore.CompilationError(currentFile, lineNo), fmt.Sprintf("unkown error when trying to read package '%s'", ident))
-		os.Exit(cxcore.CX_COMPILATION_ERROR)
+		os.Exit(constants.CX_COMPILATION_ERROR)
 	}
 }
 
@@ -373,12 +374,12 @@ func DeclareLocal(declarator *cxcore.CXArgument, declarationSpecifiers *cxcore.C
 //
 func DeclarationSpecifiers(declSpec *cxcore.CXArgument, arrayLengths []int, opTyp int) *cxcore.CXArgument {
 	switch opTyp {
-	case cxcore.DECL_POINTER:
-		declSpec.DeclarationSpecifiers = append(declSpec.DeclarationSpecifiers, cxcore.DECL_POINTER)
+	case constants.DECL_POINTER:
+		declSpec.DeclarationSpecifiers = append(declSpec.DeclarationSpecifiers, constants.DECL_POINTER)
 		if !declSpec.IsPointer {
 			declSpec.IsPointer = true
-			declSpec.Size = cxcore.TYPE_POINTER_SIZE
-			declSpec.TotalSize = cxcore.TYPE_POINTER_SIZE
+			declSpec.Size = constants.TYPE_POINTER_SIZE
+			declSpec.TotalSize = constants.TYPE_POINTER_SIZE
 			declSpec.IndirectionLevels++
 		} else {
 			pointer := declSpec
@@ -390,14 +391,14 @@ func DeclarationSpecifiers(declSpec *cxcore.CXArgument, arrayLengths []int, opTy
 
 			declSpec.IndirectionLevels++
 
-			pointer.Size = cxcore.TYPE_POINTER_SIZE
-			pointer.TotalSize = cxcore.TYPE_POINTER_SIZE
+			pointer.Size = constants.TYPE_POINTER_SIZE
+			pointer.TotalSize = constants.TYPE_POINTER_SIZE
 		}
 
 		return declSpec
-	case cxcore.DECL_ARRAY:
+	case constants.DECL_ARRAY:
 		for range arrayLengths {
-			declSpec.DeclarationSpecifiers = append(declSpec.DeclarationSpecifiers, cxcore.DECL_ARRAY)
+			declSpec.DeclarationSpecifiers = append(declSpec.DeclarationSpecifiers, constants.DECL_ARRAY)
 		}
 		arg := declSpec
 		arg.IsArray = true
@@ -405,33 +406,33 @@ func DeclarationSpecifiers(declSpec *cxcore.CXArgument, arrayLengths []int, opTy
 		arg.TotalSize = arg.Size * TotalLength(arg.Lengths)
 
 		return arg
-	case cxcore.DECL_SLICE:
+	case constants.DECL_SLICE:
 		// for range arrayLengths {
 		// 	declSpec.DeclarationSpecifiers = append(declSpec.DeclarationSpecifiers, cxcore.DECL_SLICE)
 		// }
 
 		arg := declSpec
 
-		arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, cxcore.DECL_SLICE)
+		arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_SLICE)
 
 		arg.IsSlice = true
 		arg.IsReference = true
 		arg.IsArray = true
-		arg.PassBy = cxcore.PASSBY_REFERENCE
+		arg.PassBy = constants.PASSBY_REFERENCE
 
 		arg.Lengths = append([]int{0}, arg.Lengths...)
 		// arg.Lengths = arrayLengths
 		// arg.TotalSize = arg.Size
 		// arg.Size = cxcore.TYPE_POINTER_SIZE
-		arg.TotalSize = cxcore.TYPE_POINTER_SIZE
+		arg.TotalSize = constants.TYPE_POINTER_SIZE
 
 		return arg
-	case cxcore.DECL_BASIC:
+	case constants.DECL_BASIC:
 		arg := declSpec
 		// arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, cxcore.DECL_BASIC)
 		arg.TotalSize = arg.Size
 		return arg
-	case cxcore.DECL_FUNC:
+	case constants.DECL_FUNC:
 		// Creating this case if additional operations are needed in the
 		// future.
 		return declSpec
@@ -444,17 +445,17 @@ func DeclarationSpecifiers(declSpec *cxcore.CXArgument, arrayLengths []int, opTy
 //
 func DeclarationSpecifiersBasic(typ int) *cxcore.CXArgument {
 	arg := cxcore.MakeArgument("", CurrentFile, LineNo)
-	arg.AddType(cxcore.TypeNames[typ])
+	arg.AddType(constants.TypeNames[typ])
 	arg.Type = typ
 
 	arg.Size = cxcore.GetArgSize(typ)
 
-	if typ == cxcore.TYPE_AFF {
+	if typ == constants.TYPE_AFF {
 		// equivalent to slice of strings
-		return DeclarationSpecifiers(arg, []int{0}, cxcore.DECL_SLICE)
+		return DeclarationSpecifiers(arg, []int{0}, constants.DECL_SLICE)
 	}
 
-	return DeclarationSpecifiers(arg, []int{0}, cxcore.DECL_BASIC)
+	return DeclarationSpecifiers(arg, []int{0}, constants.DECL_BASIC)
 }
 
 // DeclarationSpecifiersStruct() declares a struct
@@ -479,13 +480,13 @@ func DeclarationSpecifiersStruct(ident string, pkgName string,
 		}
 
 		arg := cxcore.MakeArgument("", currentFile, lineNo)
-		arg.Type = cxcore.TYPE_CUSTOM
+		arg.Type = constants.TYPE_CUSTOM
 		arg.CustomType = strct
 		arg.Size = strct.Size
 		arg.TotalSize = strct.Size
 
 		arg.Package = pkg
-		arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, cxcore.DECL_STRUCT)
+		arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_STRUCT)
 
 		return arg
 	} else {
@@ -497,8 +498,8 @@ func DeclarationSpecifiersStruct(ident string, pkgName string,
 		}
 
 		arg := cxcore.MakeArgument("", currentFile, lineNo)
-		arg.Type = cxcore.TYPE_CUSTOM
-		arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, cxcore.DECL_STRUCT)
+		arg.Type = constants.TYPE_CUSTOM
+		arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_STRUCT)
 		arg.CustomType = strct
 		arg.Size = strct.Size
 		arg.TotalSize = strct.Size

@@ -3,6 +3,7 @@ package cxcore
 import (
 	"bufio"
 	"fmt"
+	"github.com/skycoin/cx/cx/constants"
 	"os"
 	"strconv"
 	"strings"
@@ -12,7 +13,7 @@ func opLen(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	elt := GetAssignmentElement(inp1)
 
-	if elt.IsSlice || elt.Type == TYPE_AFF {
+	if elt.IsSlice || elt.Type == constants.TYPE_AFF {
 		var sliceOffset = GetSliceOffset(fp, inp1)
 		if sliceOffset > 0 {
 			sliceLen := GetSliceHeader(sliceOffset)[4:8]
@@ -20,20 +21,20 @@ func opLen(expr *CXExpression, fp int) {
 		} else if sliceOffset == 0 {
 			WriteI32(GetFinalOffset(fp, out1), 0)
 		} else {
-			panic(CX_RUNTIME_ERROR)
+			panic(constants.CX_RUNTIME_ERROR)
 		}
 
 		// TODO: Had to add elt.Lengths to avoid doing this for arrays, but not entirely sure why
-	} else if elt.Type == TYPE_STR && elt.Lengths == nil {
+	} else if elt.Type == constants.TYPE_STR && elt.Lengths == nil {
 		var strOffset = GetStrOffset(fp, inp1)
 		// Checking if the string lives on the heap.
 		if strOffset > PROGRAM.HeapStartsAt {
 			// Then it's on the heap and we need to consider
 			// the object's header.
-			strOffset += OBJECT_HEADER_SIZE
+			strOffset += constants.OBJECT_HEADER_SIZE
 		}
 
-		WriteMemory(GetFinalOffset(fp, out1), PROGRAM.Memory[strOffset:strOffset+STR_HEADER_SIZE])
+		WriteMemory(GetFinalOffset(fp, out1), PROGRAM.Memory[strOffset:strOffset+constants.STR_HEADER_SIZE])
 	} else {
 		outV0 := int32(elt.Lengths[len(elt.Indexes)])
 		WriteI32(GetFinalOffset(fp, out1), outV0)
@@ -46,7 +47,7 @@ func opAppend(expr *CXExpression, fp int) {
 	eltInp1 := GetAssignmentElement(inp1)
 	eltOut1 := GetAssignmentElement(out1)
 	if inp1.Type != inp2.Type || inp1.Type != out1.Type || !eltInp1.IsSlice || !eltOut1.IsSlice {
-		panic(CX_RUNTIME_INVALID_ARGUMENT)
+		panic(constants.CX_RUNTIME_INVALID_ARGUMENT)
 	}
 
 	var inputSliceLen int32
@@ -62,7 +63,7 @@ func opAppend(expr *CXExpression, fp int) {
 	// could be on the heap and they could have been moved by the GC.
 	outputSlicePointer := GetFinalOffset(fp, out1)
 
-	if inp2.Type == TYPE_STR || inp2.Type == TYPE_AFF {
+	if inp2.Type == constants.TYPE_STR || inp2.Type == constants.TYPE_AFF {
 		var obj [4]byte
 		WriteMemI32(obj[:], 0, int32(GetStrOffset(fp, inp2)))
 		SliceAppendWrite(outputSliceOffset, obj[:], inputSliceLen)
@@ -78,7 +79,7 @@ func opResize(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 
 	if inp1.Type != out1.Type || !GetAssignmentElement(inp1).IsSlice || !GetAssignmentElement(out1).IsSlice {
-		panic(CX_RUNTIME_INVALID_ARGUMENT)
+		panic(constants.CX_RUNTIME_INVALID_ARGUMENT)
 	}
 
 	outputSliceOffset := int32(SliceResize(fp, out1, inp1, ReadI32(fp, inp2), GetAssignmentElement(inp1).TotalSize))
@@ -90,12 +91,12 @@ func opInsert(expr *CXExpression, fp int) {
 	inp1, inp2, inp3, out1 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Outputs[0]
 
 	if inp1.Type != inp3.Type || inp1.Type != out1.Type || !GetAssignmentElement(inp1).IsSlice || !GetAssignmentElement(out1).IsSlice {
-		panic(CX_RUNTIME_INVALID_ARGUMENT)
+		panic(constants.CX_RUNTIME_INVALID_ARGUMENT)
 	}
 
 	outputSlicePointer := GetFinalOffset(fp, out1)
 
-	if inp3.Type == TYPE_STR || inp3.Type == TYPE_AFF {
+	if inp3.Type == constants.TYPE_STR || inp3.Type == constants.TYPE_AFF {
 		var obj [4]byte
 		WriteMemI32(obj[:], 0, int32(GetStrOffset(fp, inp3)))
 		outputSliceOffset := int32(SliceInsert(fp, out1, inp1, ReadI32(fp, inp2), obj[:]))
@@ -111,7 +112,7 @@ func opRemove(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 
 	if inp1.Type != out1.Type || !GetAssignmentElement(inp1).IsSlice || !GetAssignmentElement(out1).IsSlice {
-		panic(CX_RUNTIME_INVALID_ARGUMENT)
+		panic(constants.CX_RUNTIME_INVALID_ARGUMENT)
 	}
 
 	outputSlicePointer := GetFinalOffset(fp, out1)
@@ -129,17 +130,17 @@ func opCopy(expr *CXExpression, fp int) {
 	srcElem := GetAssignmentElement(srcInput)
 
 	if dstInput.Type != srcInput.Type || !dstElem.IsSlice || !srcElem.IsSlice || dstElem.TotalSize != srcElem.TotalSize {
-		panic(CX_RUNTIME_INVALID_ARGUMENT)
+		panic(constants.CX_RUNTIME_INVALID_ARGUMENT)
 	}
 
 	var count int
 	if dstInput.Type == srcInput.Type && dstOffset >= 0 && srcOffset >= 0 {
 		count = copy(GetSliceData(dstOffset, dstElem.TotalSize), GetSliceData(srcOffset, srcElem.TotalSize))
 		if count%dstElem.TotalSize != 0 {
-			panic(CX_RUNTIME_ERROR)
+			panic(constants.CX_RUNTIME_ERROR)
 		}
 	} else {
-		panic(CX_RUNTIME_INVALID_ARGUMENT)
+		panic(constants.CX_RUNTIME_INVALID_ARGUMENT)
 	}
 	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), int32(count/dstElem.TotalSize))
 }
@@ -187,28 +188,28 @@ func buildString(expr *CXExpression, fp int) []byte {
 				res = append(res, []byte(checkForEscapedChars(ReadStr(fp, inp)))...)
 			case 'd':
 				switch inp.Type {
-				case TYPE_I8:
+				case constants.TYPE_I8:
 					res = append(res, []byte(strconv.FormatInt(int64(ReadI8(fp, inp)), 10))...)
-				case TYPE_I16:
+				case constants.TYPE_I16:
 					res = append(res, []byte(strconv.FormatInt(int64(ReadI16(fp, inp)), 10))...)
-				case TYPE_I32:
+				case constants.TYPE_I32:
 					res = append(res, []byte(strconv.FormatInt(int64(ReadI32(fp, inp)), 10))...)
-				case TYPE_I64:
+				case constants.TYPE_I64:
 					res = append(res, []byte(strconv.FormatInt(ReadI64(fp, inp), 10))...)
-				case TYPE_UI8:
+				case constants.TYPE_UI8:
 					res = append(res, []byte(strconv.FormatUint(uint64(ReadUI8(fp, inp)), 10))...)
-				case TYPE_UI16:
+				case constants.TYPE_UI16:
 					res = append(res, []byte(strconv.FormatUint(uint64(ReadUI16(fp, inp)), 10))...)
-				case TYPE_UI32:
+				case constants.TYPE_UI32:
 					res = append(res, []byte(strconv.FormatUint(uint64(ReadUI32(fp, inp)), 10))...)
-				case TYPE_UI64:
+				case constants.TYPE_UI64:
 					res = append(res, []byte(strconv.FormatUint(ReadUI64(fp, inp), 10))...)
 				}
 			case 'f':
 				switch inp.Type {
-				case TYPE_F32:
+				case constants.TYPE_F32:
 					res = append(res, []byte(strconv.FormatFloat(float64(ReadF32(fp, inp)), 'f', 7, 32))...)
-				case TYPE_F64:
+				case constants.TYPE_F64:
 					res = append(res, []byte(strconv.FormatFloat(ReadF64(fp, inp), 'f', 16, 64))...)
 				}
 			case 'v':
@@ -235,7 +236,7 @@ func buildString(expr *CXExpression, fp int) []byte {
 				typ = elt.CustomType.Name
 			} else {
 				// then it's native type
-				typ = TypeNames[elt.Type]
+				typ = constants.TypeNames[elt.Type]
 			}
 
 			if c == lInps-1 {
@@ -267,7 +268,7 @@ func opRead(inputs []CXValue, outputs []CXValue) {
 	reader := bufio.NewReader(os.Stdin)
 	text, err := reader.ReadString('\n')
     if err != nil {
-		panic(CX_INTERNAL_ERROR)
+		panic(constants.CX_INTERNAL_ERROR)
 	}
 
 	// text = strings.Trim(text, " \n")

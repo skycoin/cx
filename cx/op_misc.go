@@ -1,15 +1,17 @@
 package cxcore
 
+import "github.com/skycoin/cx/cx/constants"
+
 // "fmt"
 
 // EscapeAnalysis ...
 func EscapeAnalysis(fp int, inpOffset, outOffset int, arg *CXArgument) {
-	heapOffset := AllocateSeq(arg.TotalSize + OBJECT_HEADER_SIZE)
+	heapOffset := AllocateSeq(arg.TotalSize + constants.OBJECT_HEADER_SIZE)
 
 	byts := ReadMemory(inpOffset, arg)
 
 	// creating a header for this object
-	var header = make([]byte, OBJECT_HEADER_SIZE)
+	var header = make([]byte, constants.OBJECT_HEADER_SIZE)
 	WriteMemI32(header, 5, int32(len(byts)))
 
 	obj := append(header, byts...)
@@ -34,9 +36,9 @@ func opIdentity(expr *CXExpression, fp int) {
 		EscapeAnalysis(fp, inp1Offset, out1Offset, inp1)
 	} else {
 		switch elt.PassBy {
-		case PASSBY_VALUE:
+		case constants.PASSBY_VALUE:
 			WriteMemory(out1Offset, ReadMemory(inp1Offset, inp1))
-		case PASSBY_REFERENCE:
+		case constants.PASSBY_REFERENCE:
 			WriteI32(out1Offset, int32(inp1Offset))
 		}
 	}

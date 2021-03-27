@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/skycoin/cx/cx/constants"
 
 	repl "github.com/skycoin/cx/cmd/cxrepl"
 	cxcore "github.com/skycoin/cx/cx"
@@ -82,24 +83,24 @@ func Run(args []string) {
 	}
 
 	if options.initialHeap != "" {
-		cxcore.INIT_HEAP_SIZE = parseMemoryString(options.initialHeap)
+		constants.INIT_HEAP_SIZE = parseMemoryString(options.initialHeap)
 	}
 	if options.maxHeap != "" {
-		cxcore.MAX_HEAP_SIZE = parseMemoryString(options.maxHeap)
-		if cxcore.MAX_HEAP_SIZE < cxcore.INIT_HEAP_SIZE {
+		constants.MAX_HEAP_SIZE = parseMemoryString(options.maxHeap)
+		if constants.MAX_HEAP_SIZE < constants.INIT_HEAP_SIZE {
 			// Then MAX_HEAP_SIZE overrides INIT_HEAP_SIZE's value.
-			cxcore.INIT_HEAP_SIZE = cxcore.MAX_HEAP_SIZE
+			constants.INIT_HEAP_SIZE = constants.MAX_HEAP_SIZE
 		}
 	}
 	if options.stackSize != "" {
-		cxcore.STACK_SIZE = parseMemoryString(options.stackSize)
-		actions.DataOffset = cxcore.STACK_SIZE
+		constants.STACK_SIZE = parseMemoryString(options.stackSize)
+		actions.DataOffset = constants.STACK_SIZE
 	}
 	if options.minHeapFreeRatio != float64(0) {
-		cxcore.MIN_HEAP_FREE_RATIO = float32(options.minHeapFreeRatio)
+		constants.MIN_HEAP_FREE_RATIO = float32(options.minHeapFreeRatio)
 	}
 	if options.maxHeapFreeRatio != float64(0) {
-		cxcore.MAX_HEAP_FREE_RATIO = float32(options.maxHeapFreeRatio)
+		constants.MAX_HEAP_FREE_RATIO = float32(options.maxHeapFreeRatio)
 	}
 
 	// options, file pointers, filenames
@@ -133,9 +134,9 @@ func Run(args []string) {
 
 // initMainPkg adds a `main` package with an empty `main` function to `prgrm`.
 func initMainPkg(prgrm *cxcore.CXProgram) {
-	mod := cxcore.MakePackage(cxcore.MAIN_PKG)
+	mod := cxcore.MakePackage(constants.MAIN_PKG)
 	prgrm.AddPackage(mod)
-	fn := cxcore.MakeFunction(cxcore.MAIN_FUNC, actions.CurrentFile, actions.LineNo)
+	fn := cxcore.MakeFunction(constants.MAIN_FUNC, actions.CurrentFile, actions.LineNo)
 	mod.AddFunction(fn)
 }
 
@@ -214,13 +215,13 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 	//globals2.SetWorkingDir(sourceCode[0].Name())
 
 	// Checking if a main package exists. If not, create and add it to `PRGRM`.
-	if _, err := actions.PRGRM.GetFunction(cxcore.MAIN_FUNC, cxcore.MAIN_PKG); err != nil {
+	if _, err := actions.PRGRM.GetFunction(constants.MAIN_FUNC, constants.MAIN_PKG); err != nil {
 		panic("error")
 	}
 	initMainPkg(actions.PRGRM)
 
 	// Setting what function to start in if using the REPL.
-	repl.ReplTargetFn = cxcore.MAIN_FUNC
+	repl.ReplTargetFn = constants.MAIN_FUNC
 
 	// Adding *init function that initializes all the global variables.
 	err := cxparser.AddInitFunction(actions.PRGRM)
@@ -233,7 +234,7 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 	if cxcore.FoundCompileErrors {
 		//cleanupAndExit(cxcore.CX_COMPILATION_ERROR)
 		profiling.StopCPUProfile(profile)
-		exitCode := cxcore.CX_COMPILATION_ERROR
+		exitCode := constants.CX_COMPILATION_ERROR
 		os.Exit(exitCode)
 
 	}
@@ -258,7 +259,7 @@ func runProgram(options cxCmdFlags, cxArgs []string, sourceCode []*os.File) {
 	}
 
 	if cxcore.AssertFailed() {
-		os.Exit(cxcore.CX_ASSERT)
+		os.Exit(constants.CX_ASSERT)
 	}
 }
 
@@ -276,7 +277,7 @@ func printProgramAST(options cxCmdFlags, cxArgs []string, sourceCode []*os.File)
 	actions.PRGRM.PrintProgram()
 
 	if cxcore.AssertFailed() {
-		os.Exit(cxcore.CX_ASSERT)
+		os.Exit(constants.CX_ASSERT)
 	}
 }
 
