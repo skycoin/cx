@@ -71,7 +71,7 @@ func opAppend(expr *ast.CXExpression, fp int) {
 		mem.WriteMemI32(obj[:], 0, int32(GetStrOffset(fp, inp2)))
 		SliceAppendWrite(outputSliceOffset, obj[:], inputSliceLen)
 	} else {
-		obj := ReadMemory(GetFinalOffset(fp, inp2), inp2)
+		obj := ast.ReadMemory(GetFinalOffset(fp, inp2), inp2)
 		SliceAppendWrite(outputSliceOffset, obj, inputSliceLen)
 	}
 
@@ -105,7 +105,7 @@ func opInsert(expr *ast.CXExpression, fp int) {
 		outputSliceOffset := int32(SliceInsert(fp, out1, inp1, ReadI32(fp, inp2), obj[:]))
 		mem.WriteI32(outputSlicePointer, outputSliceOffset)
 	} else {
-		obj := ReadMemory(GetFinalOffset(fp, inp3), inp3)
+		obj := ast.ReadMemory(GetFinalOffset(fp, inp3), inp3)
 		outputSliceOffset := int32(SliceInsert(fp, out1, inp1, ReadI32(fp, inp2), obj))
 		mem.WriteI32(outputSlicePointer, outputSliceOffset)
 	}
@@ -151,7 +151,7 @@ func opCopy(expr *ast.CXExpression, fp int) {
 func buildString(expr *ast.CXExpression, fp int) []byte {
 	inp1 := expr.Inputs[0]
 
-	fmtStr := ReadStr(fp, inp1)
+	fmtStr := ast.ReadStr(fp, inp1)
 
 	var res []byte
 	var specifiersCounter int
@@ -188,7 +188,7 @@ func buildString(expr *ast.CXExpression, fp int) []byte {
 			inp := expr.Inputs[specifiersCounter+1]
 			switch nextCh {
 			case 's':
-				res = append(res, []byte(checkForEscapedChars(ReadStr(fp, inp)))...)
+				res = append(res, []byte(checkForEscapedChars(ast.ReadStr(fp, inp)))...)
 			case 'd':
 				switch inp.Type {
 				case constants.TYPE_I8:

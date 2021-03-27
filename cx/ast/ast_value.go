@@ -117,7 +117,7 @@ func (value *CXValue) SetSlice(data int32) {
 func (value *CXValue) Get_bytes() []byte {
 	//value.Used = TYPE_SLICE
 	value.Used = int8(value.Type) // TODO: type checking for slice is not working
-	return cxcore.ReadMemory(value.Offset, value.Arg)
+	return ReadMemory(value.Offset, value.Arg)
 }
 
 func (value *CXValue) Set_bytes(data []byte) () {
@@ -242,7 +242,7 @@ func (value *CXValue) Set_bool(data bool) {
 
 func (value *CXValue) Get_str() string {
 	value.Used = constants.TYPE_STR
-	return cxcore.ReadStrFromOffset(value.Offset, value.Arg)
+	return ReadStrFromOffset(value.Offset, value.Arg)
 }
 
 func (value *CXValue) Set_str(data string) {

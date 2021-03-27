@@ -223,7 +223,7 @@ func getNonCollectionValue(fp int, arg, elt *ast.CXArgument, typ string) string 
 	case "bool":
 		return fmt.Sprintf("%v", cxcore.ReadBool(fp, elt))
 	case "str":
-		return fmt.Sprintf("%v", cxcore.ReadStr(fp, elt))
+		return fmt.Sprintf("%v", ast.ReadStr(fp, elt))
 	case "i8":
 		return fmt.Sprintf("%v", cxcore.ReadI8(fp, elt))
 	case "i16":

@@ -47,7 +47,7 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 				}
 				mem.WriteMemory(
 					cxcore.GetFinalOffset(returnFP, expr.Outputs[i]),
-					cxcore.ReadMemory(
+					ReadMemory(
 						cxcore.GetFinalOffset(fp, out),
 						out))
 			}

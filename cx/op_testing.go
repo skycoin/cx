@@ -19,11 +19,11 @@ func assert(expr *ast.CXExpression, fp int) (same bool) {
 	var byts1, byts2 []byte
 
 	if inp1.Type == constants.TYPE_STR {
-		byts1 = []byte(ReadStr(fp, inp1))
-		byts2 = []byte(ReadStr(fp, inp2))
+		byts1 = []byte(ast.ReadStr(fp, inp1))
+		byts2 = []byte(ast.ReadStr(fp, inp2))
 	} else {
-		byts1 = ReadMemory(GetFinalOffset(fp, inp1), inp1)
-		byts2 = ReadMemory(GetFinalOffset(fp, inp2), inp2)
+		byts1 = ast.ReadMemory(GetFinalOffset(fp, inp1), inp1)
+		byts2 = ast.ReadMemory(GetFinalOffset(fp, inp2), inp2)
 	}
 
 	same = true
@@ -45,7 +45,7 @@ func assert(expr *ast.CXExpression, fp int) (same bool) {
 		}
 	}
 
-	message := ReadStr(fp, inp3)
+	message := ast.ReadStr(fp, inp3)
 
 	if !same {
 		if message != "" {
@@ -77,7 +77,7 @@ func opPanic(expr *ast.CXExpression, fp int) {
 // panicIf/panicIfNot implementation
 func panicIf(expr *ast.CXExpression, fp int, condition bool) {
 	if ReadBool(fp, expr.Inputs[0]) == condition {
-		fmt.Printf("%s : %d, %s\n", expr.FileName, expr.FileLine, ReadStr(fp, expr.Inputs[1]))
+		fmt.Printf("%s : %d, %s\n", expr.FileName, expr.FileLine, ast.ReadStr(fp, expr.Inputs[1]))
 		panic(constants.CX_ASSERT)
 	}
 }

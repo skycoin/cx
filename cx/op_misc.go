@@ -13,7 +13,7 @@ import (
 func EscapeAnalysis(fp int, inpOffset, outOffset int, arg *ast.CXArgument) {
 	heapOffset := AllocateSeq(arg.TotalSize + constants.OBJECT_HEADER_SIZE)
 
-	byts := ReadMemory(inpOffset, arg)
+	byts := ast.ReadMemory(inpOffset, arg)
 
 	// creating a header for this object
 	var header = make([]byte, constants.OBJECT_HEADER_SIZE)
@@ -42,7 +42,7 @@ func opIdentity(expr *ast.CXExpression, fp int) {
 	} else {
 		switch elt.PassBy {
 		case constants.PASSBY_VALUE:
-			mem.WriteMemory(out1Offset, ReadMemory(inp1Offset, inp1))
+			mem.WriteMemory(out1Offset, ast.ReadMemory(inp1Offset, inp1))
 		case constants.PASSBY_REFERENCE:
 			mem.WriteI32(out1Offset, int32(inp1Offset))
 		}

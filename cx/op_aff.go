@@ -50,7 +50,7 @@ func GetInferActions(inp *ast.CXArgument, fp int) []string {
 		// }
 
 		// result[int(l) - c] = res
-		result[c] = ReadStringFromObject(elOff)
+		result[c] = ast.ReadStringFromObject(elOff)
 	}
 
 	return result
@@ -103,7 +103,7 @@ func CallAffPredicate(fn *ast.CXFunction, predValue []byte) byte {
 
 	prevCall.Line--
 
-	return ReadMemory(GetFinalOffset(
+	return ast.ReadMemory(GetFinalOffset(
 		newCall.FramePointer,
 		newCall.Operator.Outputs[0]),
 		newCall.Operator.Outputs[0])[0]

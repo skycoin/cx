@@ -107,7 +107,7 @@ func opHTTPHandle(expr *ast.CXExpression, fp int) {
 		panic(err)
 	}
 
-	http.HandleFunc(ReadStr(fp, urlstring), func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc(ast.ReadStr(fp, urlstring), func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html")
 
 		callFP := fp + ast.PROGRAM.CallStack[ast.PROGRAM.CallCounter].Operator.Size
@@ -134,7 +134,7 @@ func opHTTPHandle(expr *ast.CXExpression, fp int) {
 
 		//PROGRAM.Callback(handlerFn, [][]byte{i1, i2})
 		execute.Callback(ast.PROGRAM, handlerFn, [][]byte{i1, i2})
-		fmt.Fprint(w, ReadStr(callFP, handlerFn.Inputs[0]))
+		fmt.Fprint(w, ast.ReadStr(callFP, handlerFn.Inputs[0]))
 	})
 }
 
@@ -149,7 +149,7 @@ func opHTTPListenAndServe(expr *ast.CXExpression, fp int) {
 	//step 3  : specify the input and outout parameters of HTTPServe function.
 	urlstring, errstring := expr.Inputs[0], expr.Outputs[0]
 
-	url := ReadStr(fp, urlstring)
+	url := ast.ReadStr(fp, urlstring)
 
 	server = &http.Server{Addr: url}
 
@@ -162,7 +162,7 @@ func opHTTPServe(expr *ast.CXExpression, fp int) {
 	//step 3  : specify the imput and out of HTTPServe function.
 	urlstring, errstring := expr.Inputs[0], expr.Outputs[0]
 
-	url := ReadStr(fp, urlstring)
+	url := ast.ReadStr(fp, urlstring)
 
 	l, err := net.Listen("tcp", url)
 	if err != nil {
@@ -181,9 +181,9 @@ func opHTTPNewRequest(expr *ast.CXExpression, fp int) {
 	stringmethod, stringurl, stringbody, errorstring := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Outputs[0]
 
 	//this is an alternative for following 3 lines of code that fail due to URL
-	method := ReadStr(fp, stringmethod)
-	urlString := ReadStr(fp, stringurl)
-	body := ReadStr(fp, stringbody)
+	method := ast.ReadStr(fp, stringmethod)
+	urlString := ast.ReadStr(fp, stringurl)
+	body := ast.ReadStr(fp, stringbody)
 
 	//above is an alternative for following 3 lines of code that fail due to URL
 	req, err := http.NewRequest(method, urlString, bytes.NewBuffer([]byte(body)))
@@ -398,15 +398,15 @@ func opHTTPDo(expr *ast.CXExpression, fp int) {
 	request.URL = &url
 
 	req.Fields = accessMethod
-	request.Method = ReadStr(fp, &req)
+	request.Method = ast.ReadStr(fp, &req)
 	req.Fields = accessURLScheme
-	url.Scheme = ReadStr(fp, &req)
+	url.Scheme = ast.ReadStr(fp, &req)
 	req.Fields = accessURLHost
-	url.Host = ReadStr(fp, &req)
+	url.Host = ast.ReadStr(fp, &req)
 	req.Fields = accessURLPath
-	url.Path = ReadStr(fp, &req)
+	url.Path = ast.ReadStr(fp, &req)
 	req.Fields = accessURLRawPath
-	url.RawPath = ReadStr(fp, &req)
+	url.RawPath = ast.ReadStr(fp, &req)
 	req.Fields = accessURLForceQuery
 	url.ForceQuery = ReadBool(fp, &req)
 
@@ -490,7 +490,7 @@ func opHTTPDo(expr *ast.CXExpression, fp int) {
 func opDMSGDo(expr *ast.CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	var req http.Request
-	byts1 := ReadMemory(GetFinalOffset(fp, inp1), inp1)
+	byts1 := ast.ReadMemory(GetFinalOffset(fp, inp1), inp1)
 	err := encoder.DeserializeRawExact(byts1, &req)
 	if err != nil {
 		mem.WriteString(fp, err.Error(), out1)

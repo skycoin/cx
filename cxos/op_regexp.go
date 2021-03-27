@@ -9,8 +9,6 @@ import (
 	"regexp"
 
 	"github.com/jinzhu/copier"
-
-	"github.com/skycoin/cx/cx"
 )
 
 var regexps map[string]*regexp.Regexp = make(map[string]*regexp.Regexp, 0)
@@ -33,7 +31,7 @@ func regexpCompile(expr *ast.CXExpression, fp int) error {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 
 	// Extracting regular expression to work with, contained in `inp1`.
-	exp := cxcore.ReadStr(fp, inp1)
+	exp := ast.ReadStr(fp, inp1)
 
 	// Output structure `Regexp`.
 	reg := ast.CXArgument{}
@@ -133,8 +131,8 @@ func opRegexpFind(expr *ast.CXExpression, fp int) {
 	// Getting corresponding `Regexp` instance.
 	accessExp := []*ast.CXArgument{expFld}
 	reg.Fields = accessExp
-	exp := cxcore.ReadStr(fp, &reg)
+	exp := ast.ReadStr(fp, &reg)
 	r := regexps[exp]
 
-	mem.WriteString(fp, string(r.Find([]byte(cxcore.ReadStr(fp, inp2)))), out1)
+	mem.WriteString(fp, string(r.Find([]byte(ast.ReadStr(fp, inp2)))), out1)
 }
