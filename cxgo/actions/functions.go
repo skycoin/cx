@@ -700,9 +700,9 @@ func lookupSymbol(pkgName, ident string, symbols *[]map[string]*cxcore.CXArgumen
 	}
 
 	// Checking if `ident` refers to a function.
-	pkg, err := PRGRM.GetPackage(pkgName)
-	if err != nil {
-		return nil, err
+	pkg := PRGRM.GetPackage(pkgName)
+	if pkg == nil {
+		return nil, errors.New("PRGRM.GETPACKAGE is nil")
 	}
 
 	notFound := errors.New("identifier '" + ident + "' does not exist")

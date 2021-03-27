@@ -92,10 +92,10 @@ func opHTTPHandle(expr *CXExpression, fp int) {
 	urlstring, functionnamestring := expr.Inputs[0], expr.Inputs[1]
 
 	// Getting handler function.
-	handlerPkg, err := PROGRAM.GetPackage(functionnamestring.Package.Name)
+	handlerPkg := PROGRAM.GetPackage(functionnamestring.Package.Name)
 
-	if err != nil {
-		panic(err)
+	if handlerPkg == nil {
+		panic("opHTTPHandle(): error, PROGRAM.GETPACKAGE is nil")
 	}
 	handlerFn, err := handlerPkg.GetFunction(functionnamestring.Name)
 	if err != nil {
@@ -215,9 +215,9 @@ func writeHTTPRequest(fp int, param *CXArgument, request *http.Request) {
 		panic(err)
 	}
 
-	httpPkg, err := PROGRAM.GetPackage("http")
-	if err != nil {
-		panic(err)
+	httpPkg := PROGRAM.GetPackage("http")
+	if httpPkg == nil {
+		panic("writeHTTPRequest(): error, PROGRAM.GETPACKAGE is nil")
 	}
 
 	urlType, err := httpPkg.GetStruct("URL")
@@ -328,9 +328,9 @@ func opHTTPDo(expr *CXExpression, fp int) {
 		panic(err)
 	}
 
-	httpPkg, err := PROGRAM.GetPackage("http")
-	if err != nil {
-		panic(err)
+	httpPkg := PROGRAM.GetPackage("http")
+	if httpPkg == nil {
+		panic("opHTTPDo(): error, PROGRAM.GETPACKAGE is nil")
 	}
 	urlType, err := httpPkg.GetStruct("URL")
 	if err != nil {

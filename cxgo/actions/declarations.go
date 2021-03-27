@@ -208,7 +208,7 @@ func DeclareStruct(ident string, strctFlds []*cxcore.CXArgument) {
 //
 func DeclarePackage(ident string) {
 	// Add a new package to the program if it's not previously defined.
-	if _, err := PRGRM.GetPackage(ident); err != nil {
+	if checkPackage := PRGRM.GetPackage(ident); checkPackage == nil {
 		pkg := cxcore.MakePackage(ident)
 		PRGRM.AddPackage(pkg)
 	}
@@ -253,7 +253,7 @@ func DeclareImport(name string, currentFile string, lineNo int) {
 
 	// If the package is already defined in the program, just add it to
 	// the importing package.
-	if imp, err := PRGRM.GetPackage(ident); err == nil {
+	if imp := PRGRM.GetPackage(ident); imp != nil {
 		pkg.AddImport(imp)
 		return
 	}

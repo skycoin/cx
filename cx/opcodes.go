@@ -2,8 +2,8 @@ package cxcore
 
 import (
 	"fmt"
-	"github.com/skycoin/skycoin/src/cipher/encoder"
 
+	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 // CorePackages ...
@@ -22,16 +22,16 @@ const (
 	OP_SERIALIZE
 	OP_DESERIALIZE
 
-    START_OF_OPERATORS
-    START_OF_COMPARISON_OPERATORS = iota + START_OF_OPERATORS
+	START_OF_OPERATORS
+	START_OF_COMPARISON_OPERATORS = iota + START_OF_OPERATORS
 	OP_EQUAL
 	OP_UNEQUAL
 	OP_LT
 	OP_GT
 	OP_LTEQ
 	OP_GTEQ
-    END_OF_COMPARISON_OPERATORS
-    START_OF_ARITHMETIC_OPERATORS = iota + END_OF_COMPARISON_OPERATORS
+	END_OF_COMPARISON_OPERATORS
+	START_OF_ARITHMETIC_OPERATORS = iota + END_OF_COMPARISON_OPERATORS
 	OP_BITAND
 	OP_BITOR
 	OP_BITXOR
@@ -44,10 +44,10 @@ const (
 	OP_ADD
 	OP_SUB
 	OP_NEG
-    END_OF_ARITHMETIC_OPERATORS
-    END_OF_OPERATORS = iota + END_OF_ARITHMETIC_OPERATORS
+	END_OF_ARITHMETIC_OPERATORS
+	END_OF_OPERATORS = iota + END_OF_ARITHMETIC_OPERATORS
 
-    OP_UND_LEN
+	OP_UND_LEN
 	OP_UND_PRINTF
 	OP_UND_SPRINTF
 	OP_UND_READ
@@ -431,7 +431,7 @@ const (
 	OP_STR_LAST_INDEX
 	OP_STR_TRIM_SPACE
 	OP_STR_EQ
-    OP_STR_UNEQ
+	OP_STR_UNEQ
 
 	OP_APPEND
 	OP_RESIZE
@@ -475,252 +475,251 @@ const (
 	END_OF_CORE_OPS
 )
 
-
 const (
-    OPERATOR_COUNT = END_OF_OPERATORS - START_OF_OPERATORS + 1
-    OPERATOR_HANDLER_COUNT = TYPE_COUNT * OPERATOR_COUNT
+	OPERATOR_COUNT         = END_OF_OPERATORS - START_OF_OPERATORS + 1
+	OPERATOR_HANDLER_COUNT = TYPE_COUNT * OPERATOR_COUNT
 )
 
 type CXValue struct {
-    Arg *CXArgument
-    Expr *CXExpression
-    Type int
-    memory []byte
-    Offset int
-    //size int. //unused field
-    FramePointer int
-	Used int8
+	Arg    *CXArgument
+	Expr   *CXExpression
+	Type   int
+	memory []byte
+	Offset int
+	//size int. //unused field
+	FramePointer int
+	Used         int8
 }
 
 func (value *CXValue) GetSlice_i8() []int8 {
-    //value.Used = TYPE_SLICE
-    value.Used = int8(value.Type) // TODO: type checking for slice is not working
-    if mem := GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
-        return readDataI8(mem)
-    }
-    return nil
+	//value.Used = TYPE_SLICE
+	value.Used = int8(value.Type) // TODO: type checking for slice is not working
+	if mem := GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
+		return readDataI8(mem)
+	}
+	return nil
 }
 
 func (value *CXValue) GetSlice_i16() []int16 {
-    //value.Used = TYPE_SLICE
-    value.Used = int8(value.Type) // TODO: type checking for slice is not working
-    if mem := GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
-        return readDataI16(mem)
-    }
-    return nil
+	//value.Used = TYPE_SLICE
+	value.Used = int8(value.Type) // TODO: type checking for slice is not working
+	if mem := GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
+		return readDataI16(mem)
+	}
+	return nil
 }
 
 func (value *CXValue) GetSlice_i32() []int32 {
-    //value.Used = TYPE_SLICE
-    value.Used = int8(value.Type) // TODO: type checking for slice is not working
-    if mem := GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
-        return readDataI32(mem)
-    }
-    return nil
+	//value.Used = TYPE_SLICE
+	value.Used = int8(value.Type) // TODO: type checking for slice is not working
+	if mem := GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
+		return readDataI32(mem)
+	}
+	return nil
 }
 
 func (value *CXValue) GetSlice_i64() []int64 {
-    //value.Used = TYPE_SLICE
-    value.Used = int8(value.Type) // TODO: type checking for slice is not working
-    if mem := GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
-        return readDataI64(mem)
-    }
-    return nil
+	//value.Used = TYPE_SLICE
+	value.Used = int8(value.Type) // TODO: type checking for slice is not working
+	if mem := GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
+		return readDataI64(mem)
+	}
+	return nil
 }
 
 func (value *CXValue) GetSlice_ui8() []uint8 {
-    //value.Used = TYPE_SLICE
-    value.Used = int8(value.Type) // TODO: type checking for slice is not working
-    if mem := GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
-        return readDataUI8(mem)
-    }
-    return nil
+	//value.Used = TYPE_SLICE
+	value.Used = int8(value.Type) // TODO: type checking for slice is not working
+	if mem := GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
+		return readDataUI8(mem)
+	}
+	return nil
 }
 
 func (value *CXValue) GetSlice_ui16() []uint16 {
-    //value.Used = TYPE_SLICE
-    value.Used = int8(value.Type) // TODO: type checking for slice is not working
-    if mem := GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
-        return readDataUI16(mem)
-    }
-    return nil
+	//value.Used = TYPE_SLICE
+	value.Used = int8(value.Type) // TODO: type checking for slice is not working
+	if mem := GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
+		return readDataUI16(mem)
+	}
+	return nil
 }
 
 func (value *CXValue) GetSlice_ui32() []uint32 {
-    //value.Used = TYPE_SLICE
-    value.Used = int8(value.Type) // TODO: type checking for slice is not working
-    if mem := GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
-        return readDataUI32(mem)
-    }
-    return nil
+	//value.Used = TYPE_SLICE
+	value.Used = int8(value.Type) // TODO: type checking for slice is not working
+	if mem := GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
+		return readDataUI32(mem)
+	}
+	return nil
 }
 
 func (value *CXValue) GetSlice_ui64() []uint64 {
-    //value.Used = TYPE_SLICE
-    value.Used = int8(value.Type) // TODO: type checking for slice is not working
-    if mem := GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
-        return readDataUI64(mem)
-    }
-    return nil
+	//value.Used = TYPE_SLICE
+	value.Used = int8(value.Type) // TODO: type checking for slice is not working
+	if mem := GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
+		return readDataUI64(mem)
+	}
+	return nil
 }
 
 func (value *CXValue) GetSlice_f32() []float32 {
-    //value.Used = TYPE_SLICE
-    value.Used = int8(value.Type) // TODO: type checking for slice is not working
-    if mem := GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
-        return readDataF32(mem)
-    }
-    return nil
+	//value.Used = TYPE_SLICE
+	value.Used = int8(value.Type) // TODO: type checking for slice is not working
+	if mem := GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
+		return readDataF32(mem)
+	}
+	return nil
 }
 
 func (value *CXValue) GetSlice_f64() []float64 {
-    //value.Used = TYPE_SLICE
-    value.Used = int8(value.Type) // TODO: type checking for slice is not working
-    if mem := GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
-        return readDataF64(mem)
-    }
-    return nil
+	//value.Used = TYPE_SLICE
+	value.Used = int8(value.Type) // TODO: type checking for slice is not working
+	if mem := GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
+		return readDataF64(mem)
+	}
+	return nil
 }
 
 func (value *CXValue) SetSlice(data int32) {
-    value.Used = int8(value.Type) // TODO: type checking for slice is not working
-    WriteI32(value.Offset, data)
+	value.Used = int8(value.Type) // TODO: type checking for slice is not working
+	WriteI32(value.Offset, data)
 }
 
-func (value *CXValue) Get_bytes() ([]byte) {
-    //value.Used = TYPE_SLICE
-    value.Used = int8(value.Type) // TODO: type checking for slice is not working
+func (value *CXValue) Get_bytes() []byte {
+	//value.Used = TYPE_SLICE
+	value.Used = int8(value.Type) // TODO: type checking for slice is not working
 	return ReadMemory(value.Offset, value.Arg)
 }
 
-func (value *CXValue) Set_bytes(data []byte)() {
-    value.Used = TYPE_CUSTOM
-    WriteMemory(value.Offset, data)
+func (value *CXValue) Set_bytes(data []byte) {
+	value.Used = TYPE_CUSTOM
+	WriteMemory(value.Offset, data)
 }
 
-func (value *CXValue) GetSlice_bytes() ([]byte) {
-    value.Used = int8(value.Type) // TODO: type checking for slice is not working
-    return GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size)
+func (value *CXValue) GetSlice_bytes() []byte {
+	value.Used = int8(value.Type) // TODO: type checking for slice is not working
+	return GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size)
 }
 
-func (value *CXValue) Get_i8()(int8) {
+func (value *CXValue) Get_i8() int8 {
 	value.Used = TYPE_I8
 	return Deserialize_i8(value.memory)
 }
 
 func (value *CXValue) Set_i8(data int8) {
 	value.Used = TYPE_I8
-    WriteI8(value.Offset, data)
+	WriteI8(value.Offset, data)
 }
 
-func (value *CXValue) Get_i16()(int16) {
+func (value *CXValue) Get_i16() int16 {
 	value.Used = TYPE_I16
-    return Deserialize_i16(value.memory)
+	return Deserialize_i16(value.memory)
 }
 
 func (value *CXValue) Set_i16(data int16) {
 	value.Used = TYPE_I16
-    WriteI16(value.Offset, data)
+	WriteI16(value.Offset, data)
 }
 
-func (value *CXValue) Get_i32()(int32) {
+func (value *CXValue) Get_i32() int32 {
 	value.Used = TYPE_I32
-    return Deserialize_i32(value.memory)
+	return Deserialize_i32(value.memory)
 }
 
 func (value *CXValue) Set_i32(data int32) {
 	value.Used = TYPE_I32
-    WriteI32(value.Offset, data)
+	WriteI32(value.Offset, data)
 }
 
-func (value *CXValue) Get_i64()(int64) {
+func (value *CXValue) Get_i64() int64 {
 	value.Used = TYPE_I64
-    return Deserialize_i64(value.memory)
+	return Deserialize_i64(value.memory)
 }
 
 func (value *CXValue) Set_i64(data int64) {
 	value.Used = TYPE_I64
-    WriteI64(value.Offset, data)
+	WriteI64(value.Offset, data)
 }
 
-func (value *CXValue) Get_ui8()(uint8) {
+func (value *CXValue) Get_ui8() uint8 {
 	value.Used = TYPE_UI8
-    return Deserialize_ui8(value.memory)
+	return Deserialize_ui8(value.memory)
 }
 
 func (value *CXValue) Set_ui8(data uint8) {
 	value.Used = TYPE_UI8
-    WriteUI8(value.Offset, data)
+	WriteUI8(value.Offset, data)
 }
 
-func (value *CXValue) Get_ui16()(uint16) {
+func (value *CXValue) Get_ui16() uint16 {
 	value.Used = TYPE_UI16
-    return Deserialize_ui16(value.memory)
+	return Deserialize_ui16(value.memory)
 }
 
 func (value *CXValue) Set_ui16(data uint16) {
 	value.Used = TYPE_UI16
-    WriteUI16(value.Offset, data)
+	WriteUI16(value.Offset, data)
 }
 
-func (value *CXValue) Get_ui32()(uint32) {
+func (value *CXValue) Get_ui32() uint32 {
 	value.Used = TYPE_UI32
-    return Deserialize_ui32(value.memory)
+	return Deserialize_ui32(value.memory)
 }
 
 func (value *CXValue) Set_ui32(data uint32) {
 	value.Used = TYPE_UI32
-    WriteUI32(value.Offset, data)
+	WriteUI32(value.Offset, data)
 }
 
-func (value *CXValue) Get_ui64()(uint64) {
+func (value *CXValue) Get_ui64() uint64 {
 	value.Used = TYPE_UI64
-    return Deserialize_ui64(value.memory)
+	return Deserialize_ui64(value.memory)
 }
 
 func (value *CXValue) Set_ui64(data uint64) {
 	value.Used = TYPE_UI64
-    WriteUI64(value.Offset, data)
+	WriteUI64(value.Offset, data)
 }
 
-func (value *CXValue) Get_f32()(float32) {
+func (value *CXValue) Get_f32() float32 {
 	value.Used = TYPE_F32
-    return Deserialize_f32(value.memory)
+	return Deserialize_f32(value.memory)
 }
 
 func (value *CXValue) Set_f32(data float32) {
 	value.Used = TYPE_F32
-    WriteF32(value.Offset, data)
+	WriteF32(value.Offset, data)
 }
 
-func (value *CXValue) Get_f64()(float64) {
+func (value *CXValue) Get_f64() float64 {
 	value.Used = TYPE_F64
-    return Deserialize_f64(value.memory)
+	return Deserialize_f64(value.memory)
 }
 
 func (value *CXValue) Set_f64(data float64) {
 	value.Used = TYPE_F64
-    WriteF64(value.Offset, data)
+	WriteF64(value.Offset, data)
 }
 
-func (value *CXValue) Get_bool()(bool) {
+func (value *CXValue) Get_bool() bool {
 	value.Used = TYPE_BOOL
-    return Deserialize_bool(value.memory)
+	return Deserialize_bool(value.memory)
 }
 
 func (value *CXValue) Set_bool(data bool) {
 	value.Used = TYPE_BOOL
-    WriteBool(value.Offset, data)
+	WriteBool(value.Offset, data)
 }
 
-func (value *CXValue) Get_str()(string) {
+func (value *CXValue) Get_str() string {
 	value.Used = TYPE_STR
-    return ReadStrFromOffset(value.Offset, value.Arg)
+	return ReadStrFromOffset(value.Offset, value.Arg)
 }
 
 func (value *CXValue) Set_str(data string) {
 	value.Used = TYPE_STR
-    WriteObject(value.Offset, encoder.Serialize(data))
+	WriteObject(value.Offset, encoder.Serialize(data))
 }
 
 // OpcodeHandler ...
@@ -738,11 +737,11 @@ var (
 	OpVersions = map[int]int{}
 
 	// Natives ...
-	Natives        = map[int]*CXFunction{}
+	Natives = map[int]*CXFunction{}
 
-    Operators []*CXFunction
+	Operators []*CXFunction
 
-    opcodeHandlers []OpcodeHandler
+	opcodeHandlers []OpcodeHandler
 
 	opcodeHandlers_V2 []OpcodeHandler_V2
 )
@@ -759,31 +758,31 @@ func GetOpCodeCount() int {
 }
 
 func IsOperator(opCode int) bool {
-    return opCode > START_OF_OPERATORS && opCode < END_OF_OPERATORS
+	return opCode > START_OF_OPERATORS && opCode < END_OF_OPERATORS
 }
 
 func IsArithmeticOperator(opCode int) bool {
-    return opCode > START_OF_ARITHMETIC_OPERATORS && opCode < END_OF_ARITHMETIC_OPERATORS
+	return opCode > START_OF_ARITHMETIC_OPERATORS && opCode < END_OF_ARITHMETIC_OPERATORS
 }
 
 func IsComparisonOperator(opCode int) bool {
-    return opCode > START_OF_COMPARISON_OPERATORS && opCode < END_OF_COMPARISON_OPERATORS
+	return opCode > START_OF_COMPARISON_OPERATORS && opCode < END_OF_COMPARISON_OPERATORS
 }
 
 func GetTypedOperatorOffset(typeCode int, opCode int) int {
-    return typeCode * OPERATOR_COUNT + opCode - START_OF_OPERATORS - 1
+	return typeCode*OPERATOR_COUNT + opCode - START_OF_OPERATORS - 1
 }
 
 func GetTypedOperator(typeCode int, opCode int) *CXFunction {
-    return Operators[GetTypedOperatorOffset(typeCode, opCode)]
+	return Operators[GetTypedOperatorOffset(typeCode, opCode)]
 }
 
 // Operator ...
 func Operator(code int, name string, handler OpcodeHandler_V2, inputs []*CXArgument, outputs []*CXArgument, atomicType int, operator int) {
-    Op_V2(code, name, handler, inputs, outputs)
-    native := Natives[code]
-    Operators[GetTypedOperatorOffset(atomicType, operator)] = native
-    native.IntCode = operator
+	Op_V2(code, name, handler, inputs, outputs)
+	native := Natives[code]
+	Operators[GetTypedOperatorOffset(atomicType, operator)] = native
+	native.IntCode = operator
 }
 
 // Op ...
@@ -808,7 +807,6 @@ func Op_V2(code int, name string, handler OpcodeHandler_V2, inputs []*CXArgument
 	}
 	Natives[code] = MakeNativeFunctionV2(code, inputs, outputs)
 }
-
 
 // Op ...
 func Op(code int, name string, handler OpcodeHandler, inputs []*CXArgument, outputs []*CXArgument) {
@@ -861,9 +859,9 @@ func Pointer(arg *CXArgument) *CXArgument {
 // `CXArgument` named `argName`, that represents a structure instane of
 // `strctName`, from package `pkgName`.
 func Struct(pkgName, strctName, argName string) *CXArgument {
-	pkg, err := PROGRAM.GetPackage(pkgName)
-	if err != nil {
-		panic(err)
+	pkg := PROGRAM.GetPackage(pkgName)
+	if pkg == nil {
+		panic("writeHTTPRequest(): error, PROGRAM.GETPACKAGE is nil")
 	}
 
 	strct, err := pkg.GetStruct(strctName)
@@ -981,20 +979,20 @@ func opDebug(*CXExpression, int) {
 }
 
 func init() {
-	httpPkg, err := PROGRAM.GetPackage("http")
-	if err != nil {
-		panic(err)
+	httpPkg := PROGRAM.GetPackage("http")
+	if httpPkg == nil {
+		panic("init(): error, PROGRAM.GETPACKAGE is nil")
 	}
 
-    Operators = make([]*CXFunction, OPERATOR_HANDLER_COUNT)
+	Operators = make([]*CXFunction, OPERATOR_HANDLER_COUNT)
 
-    Op(OP_IDENTITY, "identity", opIdentity, In(AUND), Out(AUND))
+	Op(OP_IDENTITY, "identity", opIdentity, In(AUND), Out(AUND))
 	Op(OP_JMP, "jmp", opJmp, In(ABOOL), nil) // AUND to allow 0 inputs (goto)
 	Op(OP_DEBUG, "debug", opDebug, nil, nil)
 	Op(OP_SERIALIZE, "serialize", opSerialize, In(AAFF), Out(AUI8))
 	Op(OP_DESERIALIZE, "deserialize", opDeserialize, In(AUI8), nil)
 
-    Op_V2(OP_EQUAL, "eq", nil, In(AUND, AUND), Out(ABOOL))
+	Op_V2(OP_EQUAL, "eq", nil, In(AUND, AUND), Out(ABOOL))
 	Op_V2(OP_UNEQUAL, "uneq", nil, In(AUND, AUND), Out(ABOOL))
 	Op_V2(OP_BITAND, "bitand", nil, In(AUND, AUND), Out(AUND))
 	Op_V2(OP_BITOR, "bitor", nil, In(AUND, AUND), Out(AUND))
@@ -1013,7 +1011,7 @@ func init() {
 	Op_V2(OP_LTEQ, "lteq", nil, In(AUND, AUND), Out(ABOOL))
 	Op_V2(OP_GTEQ, "gteq", nil, In(AUND, AUND), Out(ABOOL))
 
-    Op(OP_UND_LEN, "len", opLen, In(AUND), Out(AI32))
+	Op(OP_UND_LEN, "len", opLen, In(AUND), Out(AI32))
 	Op(OP_UND_PRINTF, "printf", opPrintf, In(AUND), nil)
 	Op(OP_UND_SPRINTF, "sprintf", opSprintf, In(AUND), Out(ASTR))
 	Op_V2(OP_UND_READ, "read", opRead, nil, Out(ASTR))
@@ -1025,15 +1023,15 @@ func init() {
 	Op_V2(OP_BOOL_OR, "bool.or", opBoolOr, In(ABOOL, ABOOL), Out(ABOOL))
 	Op_V2(OP_BOOL_AND, "bool.and", opBoolAnd, In(ABOOL, ABOOL), Out(ABOOL))
 
-    Operator(OP_I8_EQ, "i8.eq", opI8Eq, In(AI8, AI8), Out(ABOOL), TYPE_I8, OP_EQUAL)
+	Operator(OP_I8_EQ, "i8.eq", opI8Eq, In(AI8, AI8), Out(ABOOL), TYPE_I8, OP_EQUAL)
 	Operator(OP_I8_UNEQ, "i8.uneq", opI8Uneq, In(AI8, AI8), Out(ABOOL), TYPE_I8, OP_UNEQUAL)
-    Operator(OP_I8_BITAND, "i8.bitand", opI8Bitand, In(AI8, AI8), Out(AI8), TYPE_I8, OP_BITAND)
+	Operator(OP_I8_BITAND, "i8.bitand", opI8Bitand, In(AI8, AI8), Out(AI8), TYPE_I8, OP_BITAND)
 	Operator(OP_I8_BITOR, "i8.bitor", opI8Bitor, In(AI8, AI8), Out(AI8), TYPE_I8, OP_BITOR)
 	Operator(OP_I8_BITXOR, "i8.bitxor", opI8Bitxor, In(AI8, AI8), Out(AI8), TYPE_I8, OP_BITXOR)
 	Operator(OP_I8_BITCLEAR, "i8.bitclear", opI8Bitclear, In(AI8, AI8), Out(AI8), TYPE_I8, OP_BITCLEAR)
 	Operator(OP_I8_BITSHL, "i8.bitshl", opI8Bitshl, In(AI8, AI8), Out(AI8), TYPE_I8, OP_BITSHL)
-    Operator(OP_I8_BITSHR, "i8.bitshr", opI8Bitshr, In(AI8, AI8), Out(AI8), TYPE_I8, OP_BITSHR)
-    Operator(OP_I8_ADD, "i8.add", opI8Add, In(AI8, AI8), Out(AI8), TYPE_I8, OP_ADD)
+	Operator(OP_I8_BITSHR, "i8.bitshr", opI8Bitshr, In(AI8, AI8), Out(AI8), TYPE_I8, OP_BITSHR)
+	Operator(OP_I8_ADD, "i8.add", opI8Add, In(AI8, AI8), Out(AI8), TYPE_I8, OP_ADD)
 	Operator(OP_I8_SUB, "i8.sub", opI8Sub, In(AI8, AI8), Out(AI8), TYPE_I8, OP_SUB)
 	Operator(OP_I8_NEG, "i8.neg", opI8Neg, In(AI8), Out(AI8), TYPE_I8, OP_NEG)
 	Operator(OP_I8_MUL, "i8.mul", opI8Mul, In(AI8, AI8), Out(AI8), TYPE_I8, OP_MUL)
@@ -1055,7 +1053,7 @@ func init() {
 	Op_V2(OP_I8_F64, "i8.f64", opI8ToF64, In(AI8), Out(AF64))
 	Op_V2(OP_I8_PRINT, "i8.print", opI8Print, In(AI8), nil)
 	Op_V2(OP_I8_ABS, "i8.abs", opI8Abs, In(AI8), Out(AI8))
-    Op_V2(OP_I8_MAX, "i8.max", opI8Max, In(AI8, AI8), Out(AI8))
+	Op_V2(OP_I8_MAX, "i8.max", opI8Max, In(AI8, AI8), Out(AI8))
 	Op_V2(OP_I8_MIN, "i8.min", opI8Min, In(AI8, AI8), Out(AI8))
 	Op_V2(OP_I8_RAND, "i8.rand", opI8Rand, In(AI8, AI8), Out(AI8))
 
@@ -1077,7 +1075,7 @@ func init() {
 	Operator(OP_I16_GTEQ, "i16.gteq", opI16Gteq, In(AI16, AI16), Out(ABOOL), TYPE_I16, OP_GTEQ)
 	Operator(OP_I16_LT, "i16.lt", opI16Lt, In(AI16, AI16), Out(ABOOL), TYPE_I16, OP_LT)
 	Operator(OP_I16_LTEQ, "i16.lteq", opI16Lteq, In(AI16, AI16), Out(ABOOL), TYPE_I16, OP_LTEQ)
-    Op_V2(OP_I16_STR, "i16.str", opI16ToStr, In(AI16), Out(ASTR))
+	Op_V2(OP_I16_STR, "i16.str", opI16ToStr, In(AI16), Out(ASTR))
 	Op_V2(OP_I16_I8, "i16.i8", opI16ToI8, In(AI16), Out(AI8))
 	Op_V2(OP_I16_I32, "i16.i32", opI16ToI32, In(AI16), Out(AI32))
 	Op_V2(OP_I16_I64, "i16.i64", opI16ToI64, In(AI16), Out(AI64))
@@ -1101,7 +1099,7 @@ func init() {
 	Operator(OP_I32_BITCLEAR, "i32.bitclear", opI32Bitclear, In(AI32, AI32), Out(AI32), TYPE_I32, OP_BITCLEAR)
 	Operator(OP_I32_BITSHL, "i32.bitshl", opI32Bitshl, In(AI32, AI32), Out(AI32), TYPE_I32, OP_BITSHL)
 	Operator(OP_I32_BITSHR, "i32.bitshr", opI32Bitshr, In(AI32, AI32), Out(AI32), TYPE_I32, OP_BITSHR)
-    Operator(OP_I32_ADD, "i32.add", opI32Add, In(AI32, AI32), Out(AI32), TYPE_I32, OP_ADD)
+	Operator(OP_I32_ADD, "i32.add", opI32Add, In(AI32, AI32), Out(AI32), TYPE_I32, OP_ADD)
 	Operator(OP_I32_SUB, "i32.sub", opI32Sub, In(AI32, AI32), Out(AI32), TYPE_I32, OP_SUB)
 	Operator(OP_I32_NEG, "i32.neg", opI32Neg, In(AI32), Out(AI32), TYPE_I32, OP_NEG)
 	Operator(OP_I32_MUL, "i32.mul", opI32Mul, In(AI32, AI32), Out(AI32), TYPE_I32, OP_MUL)
@@ -1111,7 +1109,7 @@ func init() {
 	Operator(OP_I32_GTEQ, "i32.gteq", opI32Gteq, In(AI32, AI32), Out(ABOOL), TYPE_I32, OP_GTEQ)
 	Operator(OP_I32_LT, "i32.lt", opI32Lt, In(AI32, AI32), Out(ABOOL), TYPE_I32, OP_LT)
 	Operator(OP_I32_LTEQ, "i32.lteq", opI32Lteq, In(AI32, AI32), Out(ABOOL), TYPE_I32, OP_LTEQ)
-    Op_V2(OP_I32_STR, "i32.str", opI32ToStr, In(AI32), Out(ASTR))
+	Op_V2(OP_I32_STR, "i32.str", opI32ToStr, In(AI32), Out(ASTR))
 	Op_V2(OP_I32_I8, "i32.i8", opI32ToI8, In(AI32), Out(AI8))
 	Op_V2(OP_I32_I16, "i32.i16", opI32ToI16, In(AI32), Out(AI16))
 	Op_V2(OP_I32_I64, "i32.i64", opI32ToI64, In(AI32), Out(AI64))
@@ -1127,15 +1125,15 @@ func init() {
 	Op_V2(OP_I32_MIN, "i32.min", opI32Min, In(AI32, AI32), Out(AI32))
 	Op_V2(OP_I32_RAND, "i32.rand", opI32Rand, In(AI32, AI32), Out(AI32))
 
-    Operator(OP_I64_EQ, "i64.eq", opI64Eq, In(AI64, AI64), Out(ABOOL), TYPE_I64, OP_EQUAL)
+	Operator(OP_I64_EQ, "i64.eq", opI64Eq, In(AI64, AI64), Out(ABOOL), TYPE_I64, OP_EQUAL)
 	Operator(OP_I64_UNEQ, "i64.uneq", opI64Uneq, In(AI64, AI64), Out(ABOOL), TYPE_I64, OP_UNEQUAL)
 	Operator(OP_I64_BITAND, "i64.bitand", opI64Bitand, In(AI64, AI64), Out(AI64), TYPE_I64, OP_BITAND)
 	Operator(OP_I64_BITOR, "i64.bitor", opI64Bitor, In(AI64, AI64), Out(AI64), TYPE_I64, OP_BITOR)
 	Operator(OP_I64_BITXOR, "i64.bitxor", opI64Bitxor, In(AI64, AI64), Out(AI64), TYPE_I64, OP_BITXOR)
 	Operator(OP_I64_BITCLEAR, "i64.bitclear", opI64Bitclear, In(AI64, AI64), Out(AI64), TYPE_I64, OP_BITCLEAR)
-    Operator(OP_I64_BITSHL, "i64.bitshl", opI64Bitshl, In(AI64, AI64), Out(AI64), TYPE_I64, OP_BITSHL)
+	Operator(OP_I64_BITSHL, "i64.bitshl", opI64Bitshl, In(AI64, AI64), Out(AI64), TYPE_I64, OP_BITSHL)
 	Operator(OP_I64_BITSHR, "i64.bitshr", opI64Bitshr, In(AI64, AI64), Out(AI64), TYPE_I64, OP_BITSHR)
-    Operator(OP_I64_ADD, "i64.add", opI64Add, In(AI64, AI64), Out(AI64), TYPE_I64, OP_ADD)
+	Operator(OP_I64_ADD, "i64.add", opI64Add, In(AI64, AI64), Out(AI64), TYPE_I64, OP_ADD)
 	Operator(OP_I64_SUB, "i64.sub", opI64Sub, In(AI64, AI64), Out(AI64), TYPE_I64, OP_SUB)
 	Operator(OP_I64_NEG, "i64.neg", opI64Neg, In(AI64), Out(AI64), TYPE_I64, OP_NEG)
 	Operator(OP_I64_MUL, "i64.mul", opI64Mul, In(AI64, AI64), Out(AI64), TYPE_I64, OP_MUL)
@@ -1157,7 +1155,7 @@ func init() {
 	Op_V2(OP_I64_F64, "i64.f64", opI64ToF64, In(AI64), Out(AF64))
 	Op_V2(OP_I64_PRINT, "i64.print", opI64Print, In(AI64), nil)
 	Op_V2(OP_I64_ABS, "i64.abs", opI64Abs, In(AI64), Out(AI64))
-    Op_V2(OP_I64_MAX, "i64.max", opI64Max, In(AI64, AI64), Out(AI64))
+	Op_V2(OP_I64_MAX, "i64.max", opI64Max, In(AI64, AI64), Out(AI64))
 	Op_V2(OP_I64_MIN, "i64.min", opI64Min, In(AI64, AI64), Out(AI64))
 	Op_V2(OP_I64_RAND, "i64.rand", opI64Rand, In(AI64, AI64), Out(AI64))
 
@@ -1165,7 +1163,7 @@ func init() {
 	Operator(OP_UI8_UNEQ, "ui8.uneq", opUI8Uneq, In(AUI8, AUI8), Out(ABOOL), TYPE_UI8, OP_UNEQUAL)
 	Operator(OP_UI8_BITAND, "ui8.bitand", opUI8Bitand, In(AUI8, AUI8), Out(AUI8), TYPE_UI8, OP_BITAND)
 	Operator(OP_UI8_BITOR, "ui8.bitor", opUI8Bitor, In(AUI8, AUI8), Out(AUI8), TYPE_UI8, OP_BITOR)
-    Operator(OP_UI8_BITXOR, "ui8.bitxor", opUI8Bitxor, In(AUI8, AUI8), Out(AUI8), TYPE_UI8, OP_BITXOR)
+	Operator(OP_UI8_BITXOR, "ui8.bitxor", opUI8Bitxor, In(AUI8, AUI8), Out(AUI8), TYPE_UI8, OP_BITXOR)
 	Operator(OP_UI8_BITCLEAR, "ui8.bitclear", opUI8Bitclear, In(AUI8, AUI8), Out(AUI8), TYPE_UI8, OP_BITCLEAR)
 	Operator(OP_UI8_BITSHL, "ui8.bitshl", opUI8Bitshl, In(AUI8, AUI8), Out(AUI8), TYPE_UI8, OP_BITSHL)
 	Operator(OP_UI8_BITSHR, "ui8.bitshr", opUI8Bitshr, In(AUI8, AUI8), Out(AUI8), TYPE_UI8, OP_BITSHR)
@@ -1178,7 +1176,7 @@ func init() {
 	Operator(OP_UI8_GTEQ, "ui8.gteq", opUI8Gteq, In(AUI8, AUI8), Out(ABOOL), TYPE_UI8, OP_GTEQ)
 	Operator(OP_UI8_LT, "ui8.lt", opUI8Lt, In(AUI8, AUI8), Out(ABOOL), TYPE_UI8, OP_LT)
 	Operator(OP_UI8_LTEQ, "ui8.lteq", opUI8Lteq, In(AUI8, AUI8), Out(ABOOL), TYPE_UI8, OP_LTEQ)
-    Op_V2(OP_UI8_STR, "ui8.str", opUI8ToStr, In(AUI8), Out(ASTR))
+	Op_V2(OP_UI8_STR, "ui8.str", opUI8ToStr, In(AUI8), Out(ASTR))
 	Op_V2(OP_UI8_I8, "ui8.i8", opUI8ToI8, In(AUI8), Out(AI8))
 	Op_V2(OP_UI8_I16, "ui8.i16", opUI8ToI16, In(AUI8), Out(AI16))
 	Op_V2(OP_UI8_I32, "ui8.i32", opUI8ToI32, In(AUI8), Out(AI32))
@@ -1189,12 +1187,12 @@ func init() {
 	Op_V2(OP_UI8_F32, "ui8.f32", opUI8ToF32, In(AUI8), Out(AF32))
 	Op_V2(OP_UI8_F64, "ui8.f64", opUI8ToF64, In(AUI8), Out(AF64))
 	Op_V2(OP_UI8_PRINT, "ui8.print", opUI8Print, In(AUI8), nil)
-    Op_V2(OP_UI8_MAX, "ui8.max", opUI8Max, In(AUI8, AUI8), Out(AUI8))
+	Op_V2(OP_UI8_MAX, "ui8.max", opUI8Max, In(AUI8, AUI8), Out(AUI8))
 	Op_V2(OP_UI8_MIN, "ui8.min", opUI8Min, In(AUI8, AUI8), Out(AUI8))
 	Op_V2(OP_UI8_RAND, "ui8.rand", opUI8Rand, nil, Out(AUI8))
 
-    Operator(OP_UI16_EQ, "ui16.eq", opUI16Eq, In(AUI16, AUI16), Out(ABOOL), TYPE_UI16, OP_EQUAL)
-    Operator(OP_UI16_UNEQ, "ui16.uneq", opUI16Uneq, In(AUI16, AUI16), Out(ABOOL), TYPE_UI16, OP_UNEQUAL)
+	Operator(OP_UI16_EQ, "ui16.eq", opUI16Eq, In(AUI16, AUI16), Out(ABOOL), TYPE_UI16, OP_EQUAL)
+	Operator(OP_UI16_UNEQ, "ui16.uneq", opUI16Uneq, In(AUI16, AUI16), Out(ABOOL), TYPE_UI16, OP_UNEQUAL)
 	Operator(OP_UI16_BITAND, "ui16.bitand", opUI16Bitand, In(AUI16, AUI16), Out(AUI16), TYPE_UI16, OP_BITAND)
 	Operator(OP_UI16_BITOR, "ui16.bitor", opUI16Bitor, In(AUI16, AUI16), Out(AUI16), TYPE_UI16, OP_BITOR)
 	Operator(OP_UI16_BITXOR, "ui16.bitxor", opUI16Bitxor, In(AUI16, AUI16), Out(AUI16), TYPE_UI16, OP_BITXOR)
@@ -1253,7 +1251,7 @@ func init() {
 	Op_V2(OP_UI32_F32, "ui32.f32", opUI32ToF32, In(AUI32), Out(AF32))
 	Op_V2(OP_UI32_F64, "ui32.f64", opUI32ToF64, In(AUI32), Out(AF64))
 	Op_V2(OP_UI32_PRINT, "ui32.print", opUI32Print, In(AUI32), nil)
-    Op_V2(OP_UI32_MAX, "ui32.max", opUI32Max, In(AUI32, AUI32), Out(AUI32))
+	Op_V2(OP_UI32_MAX, "ui32.max", opUI32Max, In(AUI32, AUI32), Out(AUI32))
 	Op_V2(OP_UI32_MIN, "ui32.min", opUI32Min, In(AUI32, AUI32), Out(AUI32))
 	Op_V2(OP_UI32_RAND, "ui32.rand", opUI32Rand, nil, Out(AUI32))
 
@@ -1285,7 +1283,7 @@ func init() {
 	Op_V2(OP_UI64_F32, "ui64.f32", opUI64ToF32, In(AUI64), Out(AF32))
 	Op_V2(OP_UI64_F64, "ui64.f64", opUI64ToF64, In(AUI64), Out(AF64))
 	Op_V2(OP_UI64_PRINT, "ui64.print", opUI64Print, In(AUI64), nil)
-    Op_V2(OP_UI64_MAX, "ui64.max", opUI64Max, In(AUI64, AUI64), Out(AUI64))
+	Op_V2(OP_UI64_MAX, "ui64.max", opUI64Max, In(AUI64, AUI64), Out(AUI64))
 	Op_V2(OP_UI64_MIN, "ui64.min", opUI64Min, In(AUI64, AUI64), Out(AUI64))
 	Op_V2(OP_UI64_RAND, "ui64.rand", opUI64Rand, nil, Out(AUI64))
 
@@ -1297,7 +1295,7 @@ func init() {
 	Operator(OP_F32_MUL, "f32.mul", opF32Mul, In(AF32, AF32), Out(AF32), TYPE_F32, OP_MUL)
 	Operator(OP_F32_DIV, "f32.div", opF32Div, In(AF32, AF32), Out(AF32), TYPE_F32, OP_DIV)
 	Operator(OP_F32_MOD, "f32.mod", opF32Mod, In(AF32, AF32), Out(AF32), TYPE_F32, OP_MOD)
-    Operator(OP_F32_GT, "f32.gt", opF32Gt, In(AF32, AF32), Out(ABOOL), TYPE_F32, OP_GT)
+	Operator(OP_F32_GT, "f32.gt", opF32Gt, In(AF32, AF32), Out(ABOOL), TYPE_F32, OP_GT)
 	Operator(OP_F32_GTEQ, "f32.gteq", opF32Gteq, In(AF32, AF32), Out(ABOOL), TYPE_F32, OP_GTEQ)
 	Operator(OP_F32_LT, "f32.lt", opF32Lt, In(AF32, AF32), Out(ABOOL), TYPE_F32, OP_LT)
 	Operator(OP_F32_LTEQ, "f32.lteq", opF32Lteq, In(AF32, AF32), Out(ABOOL), TYPE_F32, OP_LTEQ)
@@ -1329,7 +1327,7 @@ func init() {
 
 	Operator(OP_F64_EQ, "f64.eq", opF64Eq, In(AF64, AF64), Out(ABOOL), TYPE_F64, OP_EQUAL)
 	Operator(OP_F64_UNEQ, "f64.uneq", opF64Uneq, In(AF64, AF64), Out(ABOOL), TYPE_F64, OP_UNEQUAL)
-    Operator(OP_F64_ADD, "f64.add", opF64Add, In(AF64, AF64), Out(AF64), TYPE_F64, OP_ADD)
+	Operator(OP_F64_ADD, "f64.add", opF64Add, In(AF64, AF64), Out(AF64), TYPE_F64, OP_ADD)
 	Operator(OP_F64_SUB, "f64.sub", opF64Sub, In(AF64, AF64), Out(AF64), TYPE_F64, OP_SUB)
 	Operator(OP_F64_NEG, "f64.neg", opF64Neg, In(AF64), Out(AF64), TYPE_F64, OP_NEG)
 	Operator(OP_F64_MUL, "f64.mul", opF64Mul, In(AF64, AF64), Out(AF64), TYPE_F64, OP_MUL)
@@ -1367,7 +1365,7 @@ func init() {
 
 	Operator(OP_STR_EQ, "str.eq", opStrEq, In(ASTR, ASTR), Out(ABOOL), TYPE_STR, OP_EQUAL)
 	Operator(OP_STR_UNEQ, "str.uneq", opStrUneq, In(ASTR, ASTR), Out(ABOOL), TYPE_STR, OP_UNEQUAL)
-    Operator(OP_STR_CONCAT, "str.concat", opStrConcat, In(ASTR, ASTR), Out(ASTR), TYPE_STR, OP_ADD)
+	Operator(OP_STR_CONCAT, "str.concat", opStrConcat, In(ASTR, ASTR), Out(ASTR), TYPE_STR, OP_ADD)
 	Op_V2(OP_STR_I8, "str.i8", opStrToI8, In(ASTR), Out(AI8))
 	Op_V2(OP_STR_I16, "str.i16", opStrToI16, In(ASTR), Out(AI16))
 	Op_V2(OP_STR_I32, "str.i32", opStrToI32, In(ASTR), Out(AI32))

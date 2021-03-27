@@ -7,7 +7,7 @@ import (
 
 	"github.com/jinzhu/copier"
 
-	"github.com/skycoin/cx/cx"
+	cxcore "github.com/skycoin/cx/cx"
 )
 
 var regexps map[string]*regexp.Regexp = make(map[string]*regexp.Regexp, 0)
@@ -40,9 +40,9 @@ func regexpCompile(expr *cxcore.CXExpression, fp int) error {
 	}
 
 	// Extracting CX `regexp` package.
-	regexpPkg, err := cxcore.PROGRAM.GetPackage("regexp")
-	if err != nil {
-		panic(err)
+	regexpPkg := cxcore.PROGRAM.GetPackage("regexp")
+	if regexpPkg == nil {
+		panic("regexpCompile(): error, PROGRAM.GETPACKAGE is nil")
 	}
 
 	// Extracting `regexp`'s Regexp structure.
@@ -110,9 +110,9 @@ func opRegexpFind(expr *cxcore.CXExpression, fp int) {
 	}
 
 	// Extracting CX `regexp` package.
-	regexpPkg, err := cxcore.PROGRAM.GetPackage("regexp")
-	if err != nil {
-		panic(err)
+	regexpPkg := cxcore.PROGRAM.GetPackage("regexp")
+	if regexpPkg == nil {
+		panic("opRegexpFind(): error, PROGRAM.GETPACKAGE is nil")
 	}
 
 	// Extracting `regexp`'s Regexp structure.

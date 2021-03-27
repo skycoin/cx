@@ -19,12 +19,12 @@ func Debug(args ...interface{}) {
 
 // GetType ...
 func GetType(arg *CXArgument) int {
-    fieldCount := len(arg.Fields)
-    if fieldCount > 0 {
-        return GetType(arg.Fields[fieldCount - 1])
-    }
+	fieldCount := len(arg.Fields)
+	if fieldCount > 0 {
+		return GetType(arg.Fields[fieldCount-1])
+	}
 
-    return arg.Type
+	return arg.Type
 }
 
 // ExprOpName ...
@@ -251,9 +251,9 @@ func GetFormattedType(arg *CXArgument) string {
 						typ += formatParameters(elt.Outputs)
 					} else {
 						// Then it refers to a named function defined in a package.
-						pkg, err := PROGRAM.GetPackage(arg.Package.Name)
-						if err != nil {
-							println(CompilationError(elt.FileName, elt.FileLine), err.Error())
+						pkg := PROGRAM.GetPackage(arg.Package.Name)
+						if pkg == nil {
+							println(CompilationError(elt.FileName, elt.FileLine), "PROGRAM.GetPackage returns nil")
 							os.Exit(CX_COMPILATION_ERROR)
 						}
 
