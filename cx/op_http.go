@@ -6,6 +6,7 @@ import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/execute"
+	"github.com/skycoin/cx/cx/helper"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -317,7 +318,7 @@ func writeHTTPRequest(fp int, param *ast.CXArgument, request *http.Request) {
 	req.Fields = accessURLRawPath
 	WriteString(fp, request.URL.RawPath, &req)
 	req.Fields = accessURLForceQuery
-	WriteMemory(GetFinalOffset(fp, &req), FromBool(request.URL.ForceQuery))
+	WriteMemory(GetFinalOffset(fp, &req), helper.FromBool(request.URL.ForceQuery))
 }
 
 func opHTTPDo(expr *ast.CXExpression, fp int) {
@@ -468,15 +469,15 @@ func opHTTPDo(expr *ast.CXExpression, fp int) {
 	resp.Fields = accessStatus
 	WriteString(fp, response.Status, &resp)
 	resp.Fields = accessStatusCode
-	WriteMemory(GetFinalOffset(fp, &resp), FromI32(int32(response.StatusCode)))
+	WriteMemory(GetFinalOffset(fp, &resp), helper.FromI32(int32(response.StatusCode)))
 	resp.Fields = accessProto
 	WriteString(fp, response.Proto, &resp)
 	resp.Fields = accessProtoMajor
-	WriteMemory(GetFinalOffset(fp, &resp), FromI32(int32(response.ProtoMajor)))
+	WriteMemory(GetFinalOffset(fp, &resp), helper.FromI32(int32(response.ProtoMajor)))
 	resp.Fields = accessProtoMinor
-	WriteMemory(GetFinalOffset(fp, &resp), FromI32(int32(response.ProtoMinor)))
+	WriteMemory(GetFinalOffset(fp, &resp), helper.FromI32(int32(response.ProtoMinor)))
 	resp.Fields = accessContentLength
-	WriteMemory(GetFinalOffset(fp, &resp), FromI64(int64(response.ContentLength)))
+	WriteMemory(GetFinalOffset(fp, &resp), helper.FromI64(int64(response.ContentLength)))
 	resp.Fields = accessBody
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {

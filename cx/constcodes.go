@@ -1,6 +1,9 @@
 package cxcore
 
-import "github.com/skycoin/cx/cx/constants"
+import (
+	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/helper"
+)
 
 // constant codes
 // nolint golint
@@ -35,7 +38,7 @@ func AddConstCode(code int, name string, typ int, value []byte) {
 
 // ConstI32 ...
 func ConstI32(code int, name string, value int32) {
-	AddConstCode(code, name, constants.TYPE_I32, FromI32(value))
+	AddConstCode(code, name, constants.TYPE_I32, helper.FromI32(value))
 }
 
 // nolint typecheck

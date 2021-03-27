@@ -4,6 +4,7 @@ package cxfx
 
 import (
 	"github.com/skycoin/cx/cx"
+	"github.com/skycoin/cx/cx/helper"
 	"golang.org/x/mobile/exp/audio/al"
 )
 
@@ -100,7 +101,7 @@ func opAlGenBuffers(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputSlicePointer := outputs[0].Offset
 	outputSliceOffset := cxcore.GetPointerOffset(int32(outputSlicePointer))
 	for _, b := range buffers { // REFACTOR append with copy ?
-		obj := cxcore.FromI32(int32(b))
+		obj := helper.FromI32(int32(b))
 		outputSliceOffset = int32(cxcore.WriteToSlice(int(outputSliceOffset), obj))
 	}
     outputs[0].SetSlice(outputSliceOffset)
@@ -119,7 +120,7 @@ func opAlGenSources(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputSlicePointer := outputs[0].Offset
 	outputSliceOffset := cxcore.GetPointerOffset(int32(outputSlicePointer))
 	for _, s := range sources { // REFACTOR append with copy ?
-		obj := cxcore.FromI32(int32(s))
+		obj := helper.FromI32(int32(s))
 		outputSliceOffset = int32(cxcore.WriteToSlice(int(outputSliceOffset), obj))
 	}
     outputs[0].SetSlice(outputSliceOffset)
