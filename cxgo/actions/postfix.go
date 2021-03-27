@@ -182,9 +182,9 @@ func PostfixExpressionIncDec(prevExprs []*ast.CXExpression, isInc bool) []*ast.C
 
 	var expr *ast.CXExpression
 	if isInc {
-		expr = ast.MakeExpression(cxcore.Natives[cxcore.OP_I32_ADD], CurrentFile, LineNo)
+		expr = ast.MakeExpression(cxcore.Natives[constants.OP_I32_ADD], CurrentFile, LineNo)
 	} else {
-		expr = ast.MakeExpression(cxcore.Natives[cxcore.OP_I32_SUB], CurrentFile, LineNo)
+		expr = ast.MakeExpression(cxcore.Natives[constants.OP_I32_SUB], CurrentFile, LineNo)
 	}
 
 	var valB [4]byte

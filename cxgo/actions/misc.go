@@ -1,7 +1,6 @@
 package actions
 
 import (
-	"github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 )
@@ -16,7 +15,7 @@ func SetCorrectArithmeticOp(expr *ast.CXExpression) {
 	}
 
     code := expr.Operator.OpCode
-    if code > cxcore.START_OF_OPERATORS && code < cxcore.END_OF_OPERATORS {
+    if code > constants.START_OF_OPERATORS && code < constants.END_OF_OPERATORS {
 	    // TODO: argument type are not fully resolved here, should be move elsewhere.
         //expr.Operator = cxcore.GetTypedOperator(cxcore.GetType(expr.ProgramInput[0]), code)
     }

@@ -10,7 +10,7 @@ import (
 // op codes
 const (
 	// time
-	OP_TIME_SLEEP = iota + END_OF_CORE_OPS
+	OP_TIME_SLEEP = iota + constants.END_OF_CORE_OPS
 	OP_TIME_UNIX_MILLI
 	OP_TIME_UNIX_NANO
 

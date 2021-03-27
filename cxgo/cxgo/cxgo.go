@@ -2147,79 +2147,79 @@ yynewstate:
 		}
 	case 134:
 		{
-			yyVAL.expressions = actions.ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, cxcore.OP_MUL)
+			yyVAL.expressions = actions.ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, constants.OP_MUL)
 		}
 	case 135:
 		{
-			yyVAL.expressions = actions.ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, cxcore.OP_DIV)
+			yyVAL.expressions = actions.ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, constants.OP_DIV)
 		}
 	case 136:
 		{
-			yyVAL.expressions = actions.ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, cxcore.OP_MOD)
+			yyVAL.expressions = actions.ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, constants.OP_MOD)
 		}
 	case 138:
 		{
-			yyVAL.expressions = actions.ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, cxcore.OP_ADD)
+			yyVAL.expressions = actions.ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, constants.OP_ADD)
 		}
 	case 139:
 		{
-			yyVAL.expressions = actions.ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, cxcore.OP_SUB)
+			yyVAL.expressions = actions.ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, constants.OP_SUB)
 		}
 	case 141:
 		{
-			yyVAL.expressions = actions.ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, cxcore.OP_BITSHL)
+			yyVAL.expressions = actions.ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, constants.OP_BITSHL)
 		}
 	case 142:
 		{
-			yyVAL.expressions = actions.ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, cxcore.OP_BITSHR)
+			yyVAL.expressions = actions.ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, constants.OP_BITSHR)
 		}
 	case 143:
 		{
-			yyVAL.expressions = actions.ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, cxcore.OP_BITCLEAR)
+			yyVAL.expressions = actions.ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, constants.OP_BITCLEAR)
 		}
 	case 145:
 		{
-			yyVAL.expressions = actions.ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, cxcore.OP_EQUAL)
+			yyVAL.expressions = actions.ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, constants.OP_EQUAL)
 		}
 	case 146:
 		{
-			yyVAL.expressions = actions.ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, cxcore.OP_UNEQUAL)
+			yyVAL.expressions = actions.ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, constants.OP_UNEQUAL)
 		}
 	case 147:
 		{
-			yyVAL.expressions = actions.ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, cxcore.OP_LT)
+			yyVAL.expressions = actions.ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, constants.OP_LT)
 		}
 	case 148:
 		{
-			yyVAL.expressions = actions.ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, cxcore.OP_GT)
+			yyVAL.expressions = actions.ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, constants.OP_GT)
 		}
 	case 149:
 		{
-			yyVAL.expressions = actions.ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, cxcore.OP_LTEQ)
+			yyVAL.expressions = actions.ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, constants.OP_LTEQ)
 		}
 	case 150:
 		{
-			yyVAL.expressions = actions.ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, cxcore.OP_GTEQ)
+			yyVAL.expressions = actions.ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, constants.OP_GTEQ)
 		}
 	case 152:
 		{
-			yyVAL.expressions = actions.ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, cxcore.OP_BITAND)
+			yyVAL.expressions = actions.ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, constants.OP_BITAND)
 		}
 	case 154:
 		{
-			yyVAL.expressions = actions.ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, cxcore.OP_BITXOR)
+			yyVAL.expressions = actions.ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, constants.OP_BITXOR)
 		}
 	case 156:
 		{
-			yyVAL.expressions = actions.ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, cxcore.OP_BITOR)
+			yyVAL.expressions = actions.ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, constants.OP_BITOR)
 		}
 	case 158:
 		{
-			yyVAL.expressions = actions.UndefinedTypeOperation(yyS[yypt-2].expressions, yyS[yypt-0].expressions, cxcore.Natives[cxcore.OP_BOOL_AND])
+			yyVAL.expressions = actions.UndefinedTypeOperation(yyS[yypt-2].expressions, yyS[yypt-0].expressions, cxcore.Natives[constants.OP_BOOL_AND])
 		}
 	case 160:
 		{
-			yyVAL.expressions = actions.UndefinedTypeOperation(yyS[yypt-2].expressions, yyS[yypt-0].expressions, cxcore.Natives[cxcore.OP_BOOL_OR])
+			yyVAL.expressions = actions.UndefinedTypeOperation(yyS[yypt-2].expressions, yyS[yypt-0].expressions, cxcore.Natives[constants.OP_BOOL_OR])
 		}
 	case 164:
 		{
@@ -2425,7 +2425,7 @@ yynewstate:
 	case 225:
 		{
 			if pkg, err := actions.AST.GetCurrentPackage(); err == nil {
-				expr := ast.MakeExpression(cxcore.Natives[cxcore.OP_JMP], actions.CurrentFile, actions.LineNo)
+				expr := ast.MakeExpression(cxcore.Natives[constants.OP_JMP], actions.CurrentFile, actions.LineNo)
 				expr.Package = pkg
 				expr.Label = yyS[yypt-1].tok
 

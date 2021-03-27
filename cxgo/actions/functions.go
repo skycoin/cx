@@ -85,7 +85,7 @@ func FunctionAddParameters(fn *ast.CXFunction, inputs, outputs []*ast.CXArgument
 }
 
 func isParseOp(expr *ast.CXExpression) bool {
-	if expr.Operator != nil && expr.Operator.OpCode > cxcore.START_PARSE_OPS && expr.Operator.OpCode < cxcore.END_PARSE_OPS {
+	if expr.Operator != nil && expr.Operator.OpCode > constants.START_PARSE_OPS && expr.Operator.OpCode < constants.END_PARSE_OPS {
 		return true
 	}
 	return false
@@ -325,7 +325,7 @@ func ProcessPointerStructs(expr *ast.CXExpression) {
 func processTestExpression(expr *ast.CXExpression) {
 	if expr.Operator != nil {
 		opCode := expr.Operator.OpCode
-		if opCode == cxcore.OP_ASSERT || opCode == cxcore.OP_TEST || opCode == cxcore.OP_PANIC {
+		if opCode == constants.OP_ASSERT || opCode == constants.OP_TEST || opCode == constants.OP_PANIC {
 			inp1Type := cxcore.GetFormattedType(expr.Inputs[0])
 			inp2Type := cxcore.GetFormattedType(expr.Inputs[1])
 			if inp1Type != inp2Type {
@@ -476,7 +476,7 @@ func ProcessLocalDeclaration(symbols *[]map[string]*ast.CXArgument, symbolsScope
 
 func ProcessGoTos(fn *ast.CXFunction, exprs []*ast.CXExpression) {
 	for i, expr := range exprs {
-		if expr.Label != "" && expr.Operator == cxcore.Natives[cxcore.OP_JMP] {
+		if expr.Label != "" && expr.Operator == cxcore.Natives[constants.OP_JMP] {
 			// then it's a goto
 			for j, e := range exprs {
 				if e.Label == expr.Label && i != j {
@@ -525,7 +525,7 @@ func checkMatchParamTypes(expr *ast.CXExpression, expected, received []*ast.CXAr
 		// FIXME: There are some expressions added by the cxgo where temporary variables are used.
 		// These temporary variables' types are not properly being set. That's why we use !cxcore.IsTempVar to
 		// exclude these cases for now.
-		if expr.Operator.OpCode == cxcore.OP_IDENTITY && !cxcore.IsTempVar(expr.Outputs[0].Name) {
+		if expr.Operator.OpCode == constants.OP_IDENTITY && !cxcore.IsTempVar(expr.Outputs[0].Name) {
 			inpType := cxcore.GetFormattedType(expr.Inputs[0])
 			outType := cxcore.GetFormattedType(expr.Outputs[0])
 
@@ -582,7 +582,7 @@ func CheckTypes(expr *ast.CXExpression) {
 		}
 	}
 
-	if expr.Operator != nil && expr.Operator.IsAtomic && expr.Operator.OpCode == cxcore.OP_IDENTITY {
+	if expr.Operator != nil && expr.Operator.IsAtomic && expr.Operator.OpCode == constants.OP_IDENTITY {
 		for i := range expr.Inputs {
 			var expectedType string
 			var receivedType string
@@ -624,7 +624,7 @@ func CheckTypes(expr *ast.CXExpression) {
 }
 
 func ProcessStringAssignment(expr *ast.CXExpression) {
-	if expr.Operator == cxcore.Natives[cxcore.OP_IDENTITY] {
+	if expr.Operator == cxcore.Natives[constants.OP_IDENTITY] {
 		for i, out := range expr.Outputs {
 			if len(expr.Inputs) > i {
 				out = cxcore.GetAssignmentElement(out)
@@ -674,7 +674,7 @@ func ProcessSlice(inp *ast.CXArgument) {
 }
 
 func ProcessSliceAssignment(expr *ast.CXExpression) {
-	if expr.Operator == cxcore.Natives[cxcore.OP_IDENTITY] {
+	if expr.Operator == cxcore.Natives[constants.OP_IDENTITY] {
 		var inp *ast.CXArgument
 		var out *ast.CXArgument
 
@@ -905,7 +905,7 @@ func GiveOffset(symbols *[]map[string]*ast.CXArgument, sym *ast.CXArgument, offs
 }
 
 func ProcessTempVariable(expr *ast.CXExpression) {
-	if expr.Operator != nil && (expr.Operator == cxcore.Natives[cxcore.OP_IDENTITY] || cxcore.IsArithmeticOperator(expr.Operator.OpCode)) && len(expr.Outputs) > 0 && len(expr.Inputs) > 0 {
+	if expr.Operator != nil && (expr.Operator == cxcore.Natives[constants.OP_IDENTITY] || cxcore.IsArithmeticOperator(expr.Operator.OpCode)) && len(expr.Outputs) > 0 && len(expr.Inputs) > 0 {
 		name := expr.Outputs[0].Name
 		arg := expr.Outputs[0]
 		if cxcore.IsTempVar(name) {

@@ -50,7 +50,7 @@ func SliceLiteralExpression(typSpec int, exprs []*ast.CXExpression) []*ast.CXExp
 
 			if expr.Operator == nil {
 				// then it's a literal
-				symExpr.Operator = cxcore.Natives[cxcore.OP_APPEND]
+				symExpr.Operator = cxcore.Natives[constants.OP_APPEND]
 
 				symExpr.Inputs = nil
 				symExpr.Inputs = append(symExpr.Inputs, symInp)
@@ -70,7 +70,7 @@ func SliceLiteralExpression(typSpec int, exprs []*ast.CXExpression) []*ast.CXExp
 				expr.AddOutput(out)
 				result = append(result, expr)
 
-				symExpr.Operator = cxcore.Natives[cxcore.OP_APPEND]
+				symExpr.Operator = cxcore.Natives[constants.OP_APPEND]
 
 				symExpr.Inputs = nil
 				symExpr.Inputs = append(symExpr.Inputs, symInp)
@@ -101,7 +101,7 @@ func SliceLiteralExpression(typSpec int, exprs []*ast.CXExpression) []*ast.CXExp
 	symInput.TotalSize = constants.TYPE_POINTER_SIZE
 	symOutput.TotalSize = constants.TYPE_POINTER_SIZE
 
-	symExpr := ast.MakeExpression(cxcore.Natives[cxcore.OP_IDENTITY], CurrentFile, LineNo)
+	symExpr := ast.MakeExpression(cxcore.Natives[constants.OP_IDENTITY], CurrentFile, LineNo)
 	symExpr.Package = pkg
 	symExpr.Outputs = append(symExpr.Outputs, symOutput)
 	symExpr.Inputs = append(symExpr.Inputs, symInput)
@@ -232,7 +232,7 @@ func ArrayLiteralExpression(arrSizes []int, typSpec int, exprs []*ast.CXExpressi
 
 			if expr.Operator == nil {
 				// then it's a literal
-				symExpr.Operator = cxcore.Natives[cxcore.OP_IDENTITY]
+				symExpr.Operator = cxcore.Natives[constants.OP_IDENTITY]
 				symExpr.Inputs = expr.Outputs
 			} else {
 				symExpr.Operator = expr.Operator
@@ -268,7 +268,7 @@ func ArrayLiteralExpression(arrSizes []int, typSpec int, exprs []*ast.CXExpressi
 	symInput.PreviouslyDeclared = true
 	symInput.TotalSize = symInput.Size * TotalLength(symInput.Lengths)
 
-	symExpr := ast.MakeExpression(cxcore.Natives[cxcore.OP_IDENTITY], CurrentFile, LineNo)
+	symExpr := ast.MakeExpression(cxcore.Natives[constants.OP_IDENTITY], CurrentFile, LineNo)
 	symExpr.Package = pkg
 	symExpr.Outputs = append(symExpr.Outputs, symOutput)
 	symExpr.Inputs = append(symExpr.Inputs, symInput)

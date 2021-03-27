@@ -53,7 +53,7 @@ func StructLiteralAssignment(to []*ast.CXExpression, from []*ast.CXExpression) [
 
 		from = assignStructLiteralFields(to, from, auxName)
 
-		assignExpr := ast.MakeExpression(cxcore.Natives[cxcore.OP_IDENTITY], lastFrom.FileName, lastFrom.FileLine)
+		assignExpr := ast.MakeExpression(cxcore.Natives[constants.OP_IDENTITY], lastFrom.FileName, lastFrom.FileLine)
 		assignExpr.Package = lastFrom.Package
 		out := ast.MakeArgument(to[0].Outputs[0].Name, lastFrom.FileName, lastFrom.FileLine)
 		out.PassBy = constants.PASSBY_REFERENCE
@@ -171,39 +171,39 @@ func Assignment(to []*ast.CXExpression, assignOp string, from []*ast.CXExpressio
 
 		to = append([]*ast.CXExpression{expr}, to...)
 	case ">>=":
-		expr = ast.MakeExpression(cxcore.Natives[cxcore.OP_BITSHR], CurrentFile, LineNo)
+		expr = ast.MakeExpression(cxcore.Natives[constants.OP_BITSHR], CurrentFile, LineNo)
 		return ShortAssignment(expr, to, from, pkg, idx)
 	case "<<=":
-		expr = ast.MakeExpression(cxcore.Natives[cxcore.OP_BITSHL], CurrentFile, LineNo)
+		expr = ast.MakeExpression(cxcore.Natives[constants.OP_BITSHL], CurrentFile, LineNo)
 		return ShortAssignment(expr, to, from, pkg, idx)
 	case "+=":
-		expr = ast.MakeExpression(cxcore.Natives[cxcore.OP_ADD], CurrentFile, LineNo)
+		expr = ast.MakeExpression(cxcore.Natives[constants.OP_ADD], CurrentFile, LineNo)
 		return ShortAssignment(expr, to, from, pkg, idx)
 	case "-=":
-		expr = ast.MakeExpression(cxcore.Natives[cxcore.OP_SUB], CurrentFile, LineNo)
+		expr = ast.MakeExpression(cxcore.Natives[constants.OP_SUB], CurrentFile, LineNo)
 		return ShortAssignment(expr, to, from, pkg, idx)
 	case "*=":
-		expr = ast.MakeExpression(cxcore.Natives[cxcore.OP_MUL], CurrentFile, LineNo)
+		expr = ast.MakeExpression(cxcore.Natives[constants.OP_MUL], CurrentFile, LineNo)
 		return ShortAssignment(expr, to, from, pkg, idx)
 	case "/=":
-		expr = ast.MakeExpression(cxcore.Natives[cxcore.OP_DIV], CurrentFile, LineNo)
+		expr = ast.MakeExpression(cxcore.Natives[constants.OP_DIV], CurrentFile, LineNo)
 		return ShortAssignment(expr, to, from, pkg, idx)
 	case "%=":
-		expr = ast.MakeExpression(cxcore.Natives[cxcore.OP_MOD], CurrentFile, LineNo)
+		expr = ast.MakeExpression(cxcore.Natives[constants.OP_MOD], CurrentFile, LineNo)
 		return ShortAssignment(expr, to, from, pkg, idx)
 	case "&=":
-		expr = ast.MakeExpression(cxcore.Natives[cxcore.OP_BITAND], CurrentFile, LineNo)
+		expr = ast.MakeExpression(cxcore.Natives[constants.OP_BITAND], CurrentFile, LineNo)
 		return ShortAssignment(expr, to, from, pkg, idx)
 	case "^=":
-		expr = ast.MakeExpression(cxcore.Natives[cxcore.OP_BITXOR], CurrentFile, LineNo)
+		expr = ast.MakeExpression(cxcore.Natives[constants.OP_BITXOR], CurrentFile, LineNo)
 		return ShortAssignment(expr, to, from, pkg, idx)
 	case "|=":
-		expr = ast.MakeExpression(cxcore.Natives[cxcore.OP_BITOR], CurrentFile, LineNo)
+		expr = ast.MakeExpression(cxcore.Natives[constants.OP_BITOR], CurrentFile, LineNo)
 		return ShortAssignment(expr, to, from, pkg, idx)
 	}
 
 	if from[idx].Operator == nil {
-		from[idx].Operator = cxcore.Natives[cxcore.OP_IDENTITY]
+		from[idx].Operator = cxcore.Natives[constants.OP_IDENTITY]
 		to[0].Outputs[0].Size = from[idx].Outputs[0].Size
 		to[0].Outputs[0].Type = from[idx].Outputs[0].Type
 		to[0].Outputs[0].Lengths = from[idx].Outputs[0].Lengths
@@ -225,7 +225,7 @@ func Assignment(to []*ast.CXExpression, assignOp string, from []*ast.CXExpressio
 		if from[idx].Operator.IsAtomic {
 			// only assigning as if the operator had only one output defined
 
-			if from[idx].Operator.OpCode != cxcore.OP_IDENTITY {
+			if from[idx].Operator.OpCode != constants.OP_IDENTITY {
 				// it's a short variable declaration
 				to[0].Outputs[0].Size = cxcore.Natives[from[idx].Operator.OpCode].Outputs[0].Size
 				to[0].Outputs[0].Type = from[idx].Operator.Outputs[0].Type
