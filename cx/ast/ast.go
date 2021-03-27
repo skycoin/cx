@@ -772,7 +772,7 @@ func (strct *CXStruct) AddField(fld *CXArgument) *CXStruct {
 			lastFld := strct.Fields[numFlds-1]
 			fld.Offset = lastFld.Offset + lastFld.TotalSize
 		}
-		strct.Size += cxcore.GetSize(fld)
+		strct.Size += GetSize(fld)
 	} else {
 		panic("duplicate field")
 	}

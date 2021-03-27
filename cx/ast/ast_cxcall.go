@@ -72,7 +72,7 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]cxcore.CXValue, glob
 			// wiping this declaration's memory (removing garbage)
 			newCall := &prgrm.CallStack[prgrm.CallCounter]
 			newFP := newCall.FramePointer
-			size := cxcore.GetSize(expr.Outputs[0])
+			size := GetSize(expr.Outputs[0])
 			for c := 0; c < size; c++ {
 				prgrm.Memory[newFP+expr.Outputs[0].Offset+c] = 0
 			}
@@ -116,7 +116,7 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]cxcore.CXValue, glob
 					value.Type = input.Type
 					value.FramePointer = fp
 					value.Expr = expr
-					value.memory = globals.PROGRAM.Memory[offset : offset+cxcore.GetSize(input)]
+					value.memory = globals.PROGRAM.Memory[offset : offset+GetSize(input)]
 					argIndex++
 				}
 
@@ -208,7 +208,7 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]cxcore.CXValue, glob
 						cxcore.WriteMemI32(finalOffsetB[:], 0, int32(finalOffset))
 						byts = finalOffsetB[:]
 					} else {
-						size := cxcore.GetSize(inp)
+						size := GetSize(inp)
 						byts = prgrm.Memory[finalOffset : finalOffset+size]
 					}
 

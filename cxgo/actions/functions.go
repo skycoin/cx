@@ -231,7 +231,7 @@ func FunctionCall(exprs []*ast.CXExpression, args []*ast.CXExpression) []*ast.CX
 					out.CustomType = inpExpr.Inputs[0].CustomType
 
 					out.Size = inpExpr.Inputs[0].Size
-					out.TotalSize = cxcore.GetSize(inpExpr.Inputs[0])
+					out.TotalSize = ast.GetSize(inpExpr.Inputs[0])
 
 					out.Type = inpExpr.Inputs[0].Type
 					out.PreviouslyDeclared = true
@@ -248,7 +248,7 @@ func FunctionCall(exprs []*ast.CXExpression, args []*ast.CXExpression) []*ast.CX
 						}
 					} else {
 						out.Size = inpExpr.Operator.Outputs[0].Size
-						out.TotalSize = cxcore.GetSize(inpExpr.Operator.Outputs[0])
+						out.TotalSize = ast.GetSize(inpExpr.Operator.Outputs[0])
 					}
 
 					out.Type = inpExpr.Operator.Outputs[0].Type
@@ -295,7 +295,7 @@ func ProcessUndExpression(expr *ast.CXExpression) {
 		for _, out := range expr.Outputs {
             size := 1
             if !cxcore.IsComparisonOperator(expr.Operator.OpCode) {
-		        size = cxcore.GetSize(cxcore.GetAssignmentElement(expr.Inputs[0]))
+		        size = ast.GetSize(cxcore.GetAssignmentElement(expr.Inputs[0]))
             }
             out.Size = size
 			out.TotalSize = size
@@ -757,7 +757,7 @@ func UpdateSymbolsTable(symbols *[]map[string]*ast.CXArgument, sym *ast.CXArgume
 			// then it was declared in an outer scope
 			sym.Offset = *offset
 			(*symbols)[lastIdx][fullName] = sym
-			*offset += cxcore.GetSize(sym)
+			*offset += ast.GetSize(sym)
 		}
 	}
 }
@@ -1137,7 +1137,7 @@ func ProcessSymbolFields(sym *ast.CXArgument, arg *ast.CXArgument) {
 					break
 				}
 
-				nameFld.Offset += cxcore.GetSize(fld)
+				nameFld.Offset += ast.GetSize(fld)
 			}
 		}
 	}

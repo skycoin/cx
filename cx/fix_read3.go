@@ -45,7 +45,7 @@ import (
 //TODO: Avoid all read memory commands for fixed width types (i32,f32,etc)
 //TODO: Make "ReadMemoryI32", "ReadMemoryI16", etc
 func ReadMemory(offset int, arg *ast.CXArgument) []byte {
-	size := GetSize(arg)
+	size := ast.GetSize(arg)
 	return globals.PROGRAM.Memory[offset : offset+size]
 }
 // ReadStr ...
