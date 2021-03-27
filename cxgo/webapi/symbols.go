@@ -71,7 +71,7 @@ func extractExportedSymbols(pkg *ast.CXPackage) ExportedSymbolsResp {
 func displayCXFunction(pkg *ast.CXPackage, f *ast.CXFunction) ExportedSymbol {
 	return ExportedSymbol{
 		Name:      f.Name,
-		Signature: cxcore.SignatureStringOfFunction(pkg, f),
+		Signature: ast.SignatureStringOfFunction(pkg, f),
 		Type:      constants.TYPE_FUNC,
 		TypeName:  constants.TypeNames[constants.TYPE_FUNC],
 	}
