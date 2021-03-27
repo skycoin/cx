@@ -118,7 +118,7 @@ func Assignment(to []*ast.CXExpression, assignOp string, from []*ast.CXExpressio
 	// Checking if we're trying to assign stuff from a function call
 	// And if that function call actually returns something. If not, throw an error.
 	if from[idx].Operator != nil && len(from[idx].Operator.Outputs) == 0 {
-		println(cxcore.CompilationError(to[0].Outputs[0].FileName, to[0].Outputs[0].FileLine), "trying to use an outputless operator in an assignment")
+		println(ast.CompilationError(to[0].Outputs[0].FileName, to[0].Outputs[0].FileLine), "trying to use an outputless operator in an assignment")
 		os.Exit(constants.CX_COMPILATION_ERROR)
 	}
 

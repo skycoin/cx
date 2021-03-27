@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
+	globals2 "github.com/skycoin/cx/cx/globals"
 	"github.com/skycoin/cx/cxgo/globals"
 	"os"
 
@@ -198,7 +199,7 @@ func DeclareStruct(ident string, strctFlds []*ast.CXArgument) {
 	strct.Size = 0
 	for _, fld := range strctFlds {
 		if _, err := strct.GetField(fld.Name); err == nil {
-			println(cxcore.CompilationError(fld.FileName, fld.FileLine), "Multiply defined struct field:", fld.Name)
+			println(ast.CompilationError(fld.FileName, fld.FileLine), "Multiply defined struct field:", fld.Name)
 		} else {
 			strct.AddField(fld)
 		}
@@ -273,7 +274,7 @@ func DeclareImport(name string, currentFile string, lineNo int) {
 		}
 	} else {
 		// This should never happen.
-		println(cxcore.CompilationError(currentFile, lineNo), fmt.Sprintf("unkown error when trying to read package '%s'", ident))
+		println(ast.CompilationError(currentFile, lineNo), fmt.Sprintf("unkown error when trying to read package '%s'", ident))
 		os.Exit(constants.CX_COMPILATION_ERROR)
 	}
 }
@@ -286,7 +287,7 @@ func DeclareImport(name string, currentFile string, lineNo int) {
 //
 func DeclareLocal(declarator *ast.CXArgument, declarationSpecifiers *ast.CXArgument,
 	initializer []*ast.CXExpression, doesInitialize bool) []*ast.CXExpression {
-	if cxcore.FoundCompileErrors {
+	if globals2.FoundCompileErrors {
 		return nil
 	}
 
@@ -476,7 +477,7 @@ func DeclarationSpecifiersStruct(ident string, pkgName string,
 
 		strct, err := AST.GetStruct(ident, imp.Name)
 		if err != nil {
-			println(cxcore.CompilationError(currentFile, lineNo), err.Error())
+			println(ast.CompilationError(currentFile, lineNo), err.Error())
 			return nil
 		}
 
@@ -494,7 +495,7 @@ func DeclarationSpecifiersStruct(ident string, pkgName string,
 		// custom type in the current package
 		strct, err := AST.GetStruct(ident, pkg.Name)
 		if err != nil {
-			println(cxcore.CompilationError(currentFile, lineNo), err.Error())
+			println(ast.CompilationError(currentFile, lineNo), err.Error())
 			return nil
 		}
 

@@ -3,14 +3,12 @@ package cxcore
 import (
 	"bytes"
 	"fmt"
-	ast2 "github.com/skycoin/cx/ast"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/helper"
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"runtime/debug"
 	"strings"
 	"text/tabwriter"
 )
@@ -256,7 +254,7 @@ func GetFormattedType(arg *ast.CXArgument) string {
 						// Then it refers to a named function defined in a package.
 						pkg, err := ast.PROGRAM.GetPackage(arg.Package.Name)
 						if err != nil {
-							println(CompilationError(elt.FileName, elt.FileLine), err.Error())
+							println(ast.CompilationError(elt.FileName, elt.FileLine), err.Error())
 							os.Exit(constants.CX_COMPILATION_ERROR)
 						}
 
@@ -772,72 +770,6 @@ func WriteToSlice(off int, inp []byte) int {
 	SliceAppendWrite(int32(newOff), inp, inputSliceLen)
 	return newOff
 
-}
-
-// CompilationError is a helper function that concatenates the `currentFile` and `lineNo` data to a error header and returns the full error string.
-func CompilationError(currentFile string, lineNo int) string {
-	FoundCompileErrors = true
-	return ast2.ErrorHeader(currentFile, lineNo)
-}
-
-// ErrorString ...
-func ErrorString(code int) string {
-	if str, found := constants.ErrorStrings[code]; found {
-		return str
-	}
-	return constants.ErrorStrings[constants.CX_RUNTIME_ERROR]
-}
-
-func errorCode(r interface{}) int {
-	switch v := r.(type) {
-	case int:
-		return int(v)
-	default:
-		return constants.CX_RUNTIME_ERROR
-	}
-}
-
-func RuntimeErrorInfo(r interface{}, printStack bool, defaultError int) {
-	call := ast.PROGRAM.CallStack[ast.PROGRAM.CallCounter]
-	expr := call.Operator.Expressions[call.Line]
-	code := errorCode(r)
-	if code == constants.CX_RUNTIME_ERROR {
-		code = defaultError
-	}
-
-	fmt.Printf("%s, %s, %v", ast2.ErrorHeader(expr.FileName, expr.FileLine), ErrorString(code), r)
-
-	if printStack {
-		ast.PROGRAM.PrintStack()
-	}
-
-	if DBG_GOLANG_STACK_TRACE {
-		debug.PrintStack()
-	}
-
-	os.Exit(code)
-}
-
-// RuntimeError ...
-func RuntimeError() {
-	if r := recover(); r != nil {
-		switch r {
-		case constants.STACK_OVERFLOW_ERROR:
-			call := ast.PROGRAM.CallStack[ast.PROGRAM.CallCounter]
-			if ast.PROGRAM.CallCounter > 0 {
-				ast.PROGRAM.CallCounter--
-				ast.PROGRAM.StackPointer = call.FramePointer
-				RuntimeErrorInfo(r, true, constants.CX_RUNTIME_STACK_OVERFLOW_ERROR)
-			} else {
-				// error at entry point
-				RuntimeErrorInfo(r, false, constants.CX_RUNTIME_STACK_OVERFLOW_ERROR)
-			}
-		case constants.HEAP_EXHAUSTED_ERROR:
-			RuntimeErrorInfo(r, true, constants.CX_RUNTIME_HEAP_EXHAUSTED_ERROR)
-		default:
-			RuntimeErrorInfo(r, true, constants.CX_RUNTIME_ERROR)
-		}
-	}
 }
 
 func getNonCollectionValue(fp int, arg, elt *ast.CXArgument, typ string) string {

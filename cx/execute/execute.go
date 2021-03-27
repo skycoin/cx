@@ -27,7 +27,7 @@ func ToCall(cxprogram *ast.CXProgram) *ast.CXExpression {
 }
 
 func RunCxAst(cxprogram *ast.CXProgram, untilEnd bool, nCalls *int, untilCall int) error {
-	defer cxcore.RuntimeError()
+	defer ast.RuntimeError()
 	var err error
 
 	var inputs []cxcore.CXValue

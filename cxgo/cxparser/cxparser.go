@@ -50,7 +50,7 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 
 	actions.AST = cxgo0.PRGRM0
 
-	if cxcore.FoundCompileErrors || parseErrors > 0 {
+	if globals2.FoundCompileErrors || parseErrors > 0 {
 		profiling.CleanupAndExit(constants.CX_COMPILATION_ERROR)
 	}
 
@@ -87,7 +87,7 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 	}
 	profiling.StopProfile("4. parse")
 
-	if cxcore.FoundCompileErrors || parseErrors > 0 {
+	if globals2.FoundCompileErrors || parseErrors > 0 {
 		profiling.CleanupAndExit(constants.CX_COMPILATION_ERROR)
 	}
 }
@@ -179,7 +179,7 @@ func lexerStep0(srcStrs, srcNames []string) int {
 
 				if match := reStrctName.FindStringSubmatch(string(line)); match != nil {
 					if prePkg == nil {
-						println(cxcore.CompilationError(srcName, lineno),
+						println(ast.CompilationError(srcName, lineno),
 							"No package defined")
 					} else if _, err := cxgo0.PRGRM0.GetStruct(match[len(match)-1], prePkg.Name); err != nil {
 						// then it hasn't been added

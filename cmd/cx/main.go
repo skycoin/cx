@@ -234,7 +234,7 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 
 	actions.LineNo = 0
 
-	if cxcore.FoundCompileErrors {
+	if globals.FoundCompileErrors {
 		//cleanupAndExit(cxcore.CX_COMPILATION_ERROR)
 		profiling.StopCPUProfile(profile)
 		exitCode := constants.CX_COMPILATION_ERROR

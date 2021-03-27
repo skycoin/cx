@@ -2324,9 +2324,9 @@ yynewstate:
 			if len(yyS[yypt-1].expressions) > 0 && yyS[yypt-1].expressions[len(yyS[yypt-1].expressions)-1].Operator == nil && !yyS[yypt-1].expressions[len(yyS[yypt-1].expressions)-1].IsMethodCall {
 				outs := yyS[yypt-1].expressions[len(yyS[yypt-1].expressions)-1].Outputs
 				if len(outs) > 0 {
-					println(cxcore.CompilationError(outs[0].FileName, outs[0].FileLine), "invalid expression")
+					println(ast.CompilationError(outs[0].FileName, outs[0].FileLine), "invalid expression")
 				} else {
-					println(cxcore.CompilationError(actions.CurrentFile, actions.LineNo), "invalid expression")
+					println(ast.CompilationError(actions.CurrentFile, actions.LineNo), "invalid expression")
 				}
 				yyVAL.expressions = nil
 			} else {

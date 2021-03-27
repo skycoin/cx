@@ -274,7 +274,7 @@ func ShorthandExpression(leftExprs []*ast.CXExpression, rightExprs []*ast.CXExpr
 
 func UnaryExpression(op string, prevExprs []*ast.CXExpression) []*ast.CXExpression {
 	if len(prevExprs[len(prevExprs)-1].Outputs) == 0 {
-		println(cxcore.CompilationError(CurrentFile, LineNo), "invalid indirection")
+		println(ast.CompilationError(CurrentFile, LineNo), "invalid indirection")
 		// needs to be stopped immediately
 		os.Exit(constants.CX_COMPILATION_ERROR)
 	}
@@ -404,7 +404,7 @@ func AddJmpToReturnExpressions(exprs ReturnExpressions) []*ast.CXExpression {
 			plural3 = "was"
 		}
 
-		println(cxcore.CompilationError(lastExpr.FileName, lastExpr.FileLine), fmt.Sprintf("function '%s' expects to return %d argument%s, but %d output argument%s %s provided", fn.Name, len(fn.Outputs), plural1, exprs.Size, plural2, plural3))
+		println(ast.CompilationError(lastExpr.FileName, lastExpr.FileLine), fmt.Sprintf("function '%s' expects to return %d argument%s, but %d output argument%s %s provided", fn.Name, len(fn.Outputs), plural1, exprs.Size, plural2, plural3))
 	}
 
 	// expression to jump to the end of the embedding function

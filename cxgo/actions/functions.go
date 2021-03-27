@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/globals"
 	"os"
 
 	"github.com/jinzhu/copier"
@@ -95,7 +96,7 @@ func isParseOp(expr *ast.CXExpression) bool {
 // the expression `sa + sb` is not valid if they are struct instances.
 func CheckUndValidTypes(expr *ast.CXExpression) {
 	if expr.Operator != nil && cxcore.IsOperator(expr.Operator.OpCode) && !IsAllArgsBasicTypes(expr) {
-		println(cxcore.CompilationError(CurrentFile, LineNo), fmt.Sprintf("invalid argument types for '%s' operator", cxcore.OpNames[expr.Operator.OpCode]))
+		println(ast.CompilationError(CurrentFile, LineNo), fmt.Sprintf("invalid argument types for '%s' operator", cxcore.OpNames[expr.Operator.OpCode]))
 	}
 }
 
@@ -118,7 +119,7 @@ func FunctionDeclaration(fn *ast.CXFunction, inputs, outputs []*ast.CXArgument, 
 
 	//var exprs []*cxcore.CXExpression = globals.SysInitExprs
 
-	if cxcore.FoundCompileErrors {
+	if globals.FoundCompileErrors {
 		return
 	}
 
@@ -204,7 +205,7 @@ func FunctionCall(exprs []*ast.CXExpression, args []*ast.CXExpression) []*ast.CX
 			expr.Operator = op
 		} else if expr.Outputs[0].Fields == nil {
 			// then it's not a possible method call
-			println(cxcore.CompilationError(CurrentFile, LineNo), err.Error())
+			println(ast.CompilationError(CurrentFile, LineNo), err.Error())
 			return nil
 		} else {
 			expr.IsMethodCall = true
@@ -288,7 +289,7 @@ func checkSameNativeType(expr *ast.CXExpression) error {
 func ProcessUndExpression(expr *ast.CXExpression) {
 	if expr.Operator != nil && cxcore.IsOperator(expr.Operator.OpCode) {
 		if err := checkSameNativeType(expr); err != nil {
-			println(cxcore.CompilationError(CurrentFile, LineNo), err.Error())
+			println(ast.CompilationError(CurrentFile, LineNo), err.Error())
 		}
 	}
 	if expr.IsUndType {
@@ -328,7 +329,7 @@ func processTestExpression(expr *ast.CXExpression) {
 			inp1Type := cxcore.GetFormattedType(expr.Inputs[0])
 			inp2Type := cxcore.GetFormattedType(expr.Inputs[1])
 			if inp1Type != inp2Type {
-				println(cxcore.CompilationError(CurrentFile, LineNo), fmt.Sprintf("first and second input arguments' types are not equal in '%s' call ('%s' != '%s')", cxcore.OpNames[expr.Operator.OpCode], inp1Type, inp2Type))
+				println(ast.CompilationError(CurrentFile, LineNo), fmt.Sprintf("first and second input arguments' types are not equal in '%s' call ('%s' != '%s')", cxcore.OpNames[expr.Operator.OpCode], inp1Type, inp2Type))
 			}
 		}
 	}
@@ -338,7 +339,7 @@ func processTestExpression(expr *ast.CXExpression) {
 func checkIndexType(idx *ast.CXArgument) {
 	typ := cxcore.GetFormattedType(idx)
 	if typ != "i32" && typ != "i64" {
-		println(cxcore.CompilationError(idx.FileName, idx.FileLine), fmt.Sprintf("wrong index type; expected either 'i32' or 'i64', got '%s'", typ))
+		println(ast.CompilationError(idx.FileName, idx.FileLine), fmt.Sprintf("wrong index type; expected either 'i32' or 'i64', got '%s'", typ))
 	}
 }
 
@@ -459,7 +460,7 @@ func CheckRedeclared(symbols *[]map[string]*ast.CXArgument, expr *ast.CXExpressi
 
 		_, found := (*symbols)[lastIdx][sym.Package.Name+"."+sym.Name]
 		if found {
-			println(cxcore.CompilationError(sym.FileName, sym.FileLine), fmt.Sprintf("'%s' redeclared", sym.Name))
+			println(ast.CompilationError(sym.FileName, sym.FileLine), fmt.Sprintf("'%s' redeclared", sym.Name))
 		}
 	}
 }
@@ -513,9 +514,9 @@ func checkMatchParamTypes(expr *ast.CXExpression, expected, received []*ast.CXAr
 			}
 
 			if isInputs {
-				println(cxcore.CompilationError(received[i].FileName, received[i].FileLine), fmt.Sprintf("function '%s' expected input argument of type '%s'; '%s' was provided", opName, expectedType, receivedType))
+				println(ast.CompilationError(received[i].FileName, received[i].FileLine), fmt.Sprintf("function '%s' expected input argument of type '%s'; '%s' was provided", opName, expectedType, receivedType))
 			} else {
-				println(cxcore.CompilationError(expr.Outputs[i].FileName, expr.Outputs[i].FileLine), fmt.Sprintf("function '%s' expected receiving variable of type '%s'; '%s' was provided", opName, expectedType, receivedType))
+				println(ast.CompilationError(expr.Outputs[i].FileName, expr.Outputs[i].FileLine), fmt.Sprintf("function '%s' expected receiving variable of type '%s'; '%s' was provided", opName, expectedType, receivedType))
 			}
 
 		}
@@ -531,7 +532,7 @@ func checkMatchParamTypes(expr *ast.CXExpression, expected, received []*ast.CXAr
 			// We use `isInputs` to only print the error once.
 			// Otherwise we'd print the error twice: once for the input and again for the output
 			if inpType != outType && isInputs {
-				println(cxcore.CompilationError(received[i].FileName, received[i].FileLine), fmt.Sprintf("cannot assign value of type '%s' to identifier '%s' of type '%s'", inpType, cxcore.GetAssignmentElement(expr.Outputs[0]).Name, outType))
+				println(ast.CompilationError(received[i].FileName, received[i].FileLine), fmt.Sprintf("cannot assign value of type '%s' to identifier '%s' of type '%s'", inpType, cxcore.GetAssignmentElement(expr.Outputs[0]).Name, outType))
 			}
 		}
 	}
@@ -558,7 +559,7 @@ func CheckTypes(expr *ast.CXExpression) {
 					plural3 = "was"
 				}
 
-				println(cxcore.CompilationError(expr.FileName, expr.FileLine), fmt.Sprintf("operator '%s' expects %d input%s, but %d input argument%s %s provided", opName, len(expr.Operator.Inputs), plural1, len(expr.Inputs), plural2, plural3))
+				println(ast.CompilationError(expr.FileName, expr.FileLine), fmt.Sprintf("operator '%s' expects %d input%s, but %d input argument%s %s provided", opName, len(expr.Operator.Inputs), plural1, len(expr.Inputs), plural2, plural3))
 				return
 			}
 		}
@@ -576,7 +577,7 @@ func CheckTypes(expr *ast.CXExpression) {
 				plural3 = "was"
 			}
 
-			println(cxcore.CompilationError(expr.FileName, expr.FileLine), fmt.Sprintf("operator '%s' expects to return %d output%s, but %d receiving argument%s %s provided", opName, len(expr.Operator.Outputs), plural1, len(expr.Outputs), plural2, plural3))
+			println(ast.CompilationError(expr.FileName, expr.FileLine), fmt.Sprintf("operator '%s' expects to return %d output%s, but %d receiving argument%s %s provided", opName, len(expr.Operator.Outputs), plural1, len(expr.Outputs), plural2, plural3))
 			os.Exit(constants.CX_COMPILATION_ERROR)
 		}
 	}
@@ -604,9 +605,9 @@ func CheckTypes(expr *ast.CXExpression) {
 			// if cxcore.GetAssignmentElement(expr.ProgramOutput[i]).Type != cxcore.GetAssignmentElement(inp).Type {
 			if receivedType != expectedType {
 				if expr.IsStructLiteral {
-					println(cxcore.CompilationError(expr.Outputs[i].FileName, expr.Outputs[i].FileLine), fmt.Sprintf("field '%s' in struct literal of type '%s' expected argument of type '%s'; '%s' was provided", expr.Outputs[i].Fields[0].Name, expr.Outputs[i].CustomType.Name, expectedType, receivedType))
+					println(ast.CompilationError(expr.Outputs[i].FileName, expr.Outputs[i].FileLine), fmt.Sprintf("field '%s' in struct literal of type '%s' expected argument of type '%s'; '%s' was provided", expr.Outputs[i].Fields[0].Name, expr.Outputs[i].CustomType.Name, expectedType, receivedType))
 				} else {
-					println(cxcore.CompilationError(expr.Outputs[i].FileName, expr.Outputs[i].FileLine), fmt.Sprintf("trying to assign argument of type '%s' to symbol '%s' of type '%s'", receivedType, cxcore.GetAssignmentElement(expr.Outputs[i]).Name, expectedType))
+					println(ast.CompilationError(expr.Outputs[i].FileName, expr.Outputs[i].FileLine), fmt.Sprintf("trying to assign argument of type '%s' to symbol '%s' of type '%s'", receivedType, cxcore.GetAssignmentElement(expr.Outputs[i]).Name, expectedType))
 				}
 			}
 		}
@@ -646,7 +647,7 @@ func ProcessReferenceAssignment(expr *ast.CXExpression) {
 		if elt.PassBy == constants.PASSBY_REFERENCE &&
 			!hasDeclSpec(elt, constants.DECL_POINTER) &&
 			elt.Type != constants.TYPE_STR && !elt.IsSlice {
-			println(cxcore.CompilationError(CurrentFile, LineNo), "invalid reference assignment", elt.Name)
+			println(ast.CompilationError(CurrentFile, LineNo), "invalid reference assignment", elt.Name)
 		}
 	}
 
@@ -744,7 +745,7 @@ func UpdateSymbolsTable(symbols *[]map[string]*ast.CXArgument, sym *ast.CXArgume
 
 		// then it wasn't found in any scope
 		if err != nil && shouldExist {
-			println(cxcore.CompilationError(sym.FileName, sym.FileLine), "identifier '"+sym.Name+"' does not exist")
+			println(ast.CompilationError(sym.FileName, sym.FileLine), "identifier '"+sym.Name+"' does not exist")
 		}
 
 		// then it was already added in the innermost scope
@@ -782,7 +783,7 @@ func ProcessMethodCall(expr *ast.CXExpression, symbols *[]map[string]*ast.CXArgu
 				}
 				argOut, err := lookupSymbol(out.Package.Name, out.Name, symbols)
 				if err != nil {
-					println(cxcore.CompilationError(out.FileName, out.FileLine), fmt.Sprintf("identifier '%s' does not exist", out.Name))
+					println(ast.CompilationError(out.FileName, out.FileLine), fmt.Sprintf("identifier '%s' does not exist", out.Name))
 					os.Exit(constants.CX_COMPILATION_ERROR)
 				}
 				// then we found an output
@@ -830,7 +831,7 @@ func ProcessMethodCall(expr *ast.CXExpression, symbols *[]map[string]*ast.CXArgu
 					strct := argOut.CustomType
 
 					if strct == nil {
-						println(cxcore.CompilationError(argOut.FileName, argOut.FileLine), fmt.Sprintf("illegal method call or field access on identifier '%s' of primitive type '%s'", argOut.Name, constants.TypeNames[argOut.Type]))
+						println(ast.CompilationError(argOut.FileName, argOut.FileLine), fmt.Sprintf("illegal method call or field access on identifier '%s' of primitive type '%s'", argOut.Name, constants.TypeNames[argOut.Type]))
 						os.Exit(constants.CX_COMPILATION_ERROR)
 					}
 
@@ -854,7 +855,7 @@ func ProcessMethodCall(expr *ast.CXExpression, symbols *[]map[string]*ast.CXArgu
 
 			argOut, err := lookupSymbol(out.Package.Name, out.Name, symbols)
 			if err != nil {
-				println(cxcore.CompilationError(out.FileName, out.FileLine), fmt.Sprintf("identifier '%s' does not exist", out.Name))
+				println(ast.CompilationError(out.FileName, out.FileLine), fmt.Sprintf("identifier '%s' does not exist", out.Name))
 				os.Exit(constants.CX_COMPILATION_ERROR)
 			}
 
@@ -863,7 +864,7 @@ func ProcessMethodCall(expr *ast.CXExpression, symbols *[]map[string]*ast.CXArgu
 				strct := argOut.CustomType
 
 				if strct == nil {
-					println(cxcore.CompilationError(argOut.FileName, argOut.FileLine), fmt.Sprintf("illegal method call or field access on identifier '%s' of primitive type '%s'", argOut.Name, constants.TypeNames[argOut.Type]))
+					println(ast.CompilationError(argOut.FileName, argOut.FileLine), fmt.Sprintf("illegal method call or field access on identifier '%s' of primitive type '%s'", argOut.Name, constants.TypeNames[argOut.Type]))
 					os.Exit(constants.CX_COMPILATION_ERROR)
 				}
 
@@ -934,13 +935,13 @@ func CopyArgFields(sym *ast.CXArgument, arg *ast.CXArgument) {
 					if declSpec[len(declSpec)-1] == constants.DECL_ARRAY || declSpec[len(declSpec)-1] == constants.DECL_SLICE {
 						declSpec = declSpec[:len(declSpec)-1]
 					} else {
-						println(cxcore.CompilationError(sym.FileName, sym.FileLine), "invalid indexing")
+						println(ast.CompilationError(sym.FileName, sym.FileLine), "invalid indexing")
 					}
 				case constants.DECL_DEREF:
 					if declSpec[len(declSpec)-1] == constants.DECL_POINTER {
 						declSpec = declSpec[:len(declSpec)-1]
 					} else {
-						println(cxcore.CompilationError(sym.FileName, sym.FileLine), "invalid indirection")
+						println(ast.CompilationError(sym.FileName, sym.FileLine), "invalid indirection")
 					}
 				default:
 					declSpec = append(declSpec, elt.DeclarationSpecifiers[c])
@@ -963,13 +964,13 @@ func CopyArgFields(sym *ast.CXArgument, arg *ast.CXArgument) {
 					if declSpec[len(declSpec)-1] == constants.DECL_ARRAY || declSpec[len(declSpec)-1] == constants.DECL_SLICE {
 						declSpec = declSpec[:len(declSpec)-1]
 					} else {
-						println(cxcore.CompilationError(sym.FileName, sym.FileLine), "invalid indexing")
+						println(ast.CompilationError(sym.FileName, sym.FileLine), "invalid indexing")
 					}
 				case constants.DECL_DEREF:
 					if declSpec[len(declSpec)-1] == constants.DECL_POINTER {
 						declSpec = declSpec[:len(declSpec)-1]
 					} else {
-						println(cxcore.CompilationError(sym.FileName, sym.FileLine), "invalid indirection")
+						println(ast.CompilationError(sym.FileName, sym.FileLine), "invalid indirection")
 					}
 				case constants.DECL_POINTER:
 					if sym.FileLine != arg.FileLine {
@@ -1060,7 +1061,7 @@ func CopyArgFields(sym *ast.CXArgument, arg *ast.CXArgument) {
 func ProcessSymbolFields(sym *ast.CXArgument, arg *ast.CXArgument) {
 	if len(sym.Fields) > 0 {
 		if arg.CustomType == nil || len(arg.CustomType.Fields) == 0 {
-			println(cxcore.CompilationError(sym.FileName, sym.FileLine), fmt.Sprintf("'%s' has no fields", sym.Name))
+			println(ast.CompilationError(sym.FileName, sym.FileLine), fmt.Sprintf("'%s' has no fields", sym.Name))
 			return
 		}
 
@@ -1081,7 +1082,7 @@ func ProcessSymbolFields(sym *ast.CXArgument, arg *ast.CXArgument) {
 				if method, methodErr := strct.Package.GetMethod(receiverType+"."+methodName, receiverType); methodErr == nil {
 					fld.Type = method.Outputs[0].Type
 				} else {
-					println(cxcore.CompilationError(fld.FileName, fld.FileLine), err.Error())
+					println(ast.CompilationError(fld.FileName, fld.FileLine), err.Error())
 				}
 
 			}

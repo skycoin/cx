@@ -110,7 +110,7 @@ func PostfixExpressionNative(typCode int, opStrCode string) []*ast.CXExpression 
 	// these will always be native functions
 	opCode, ok := cxcore.OpCodes[constants.TypeNames[typCode]+"."+opStrCode]
 	if !ok {
-		println(cxcore.CompilationError(CurrentFile, LineNo) + " function '" +
+		println(ast.CompilationError(CurrentFile, LineNo) + " function '" +
 			constants.TypeNames[typCode] + "." + opStrCode + "' does not exist")
 		return nil
 		// panic(ok)
@@ -319,7 +319,7 @@ func PostfixExpressionField(prevExprs []*ast.CXExpression, ident string) []*ast.
 	} else {
 		// then left is not a package name
 		if cxcore.IsCorePackage(left.Name) {
-			println(cxcore.CompilationError(left.FileName, left.FileLine),
+			println(ast.CompilationError(left.FileName, left.FileLine),
 				fmt.Sprintf("identifier '%s' does not exist",
 					left.Name))
 			os.Exit(constants.CX_COMPILATION_ERROR)

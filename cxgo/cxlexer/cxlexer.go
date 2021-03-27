@@ -185,7 +185,7 @@ func idPkgAndStructs(filename string, r io.Reader, prePkg **ast.CXPackage) {
 
 			if match := re.strName.FindStringSubmatch(string(line)); match != nil {
 				if prePkg == nil {
-					println(cxcore.CompilationError(filename, lineN), "No package defined")
+					println(ast.CompilationError(filename, lineN), "No package defined")
 				} else if _, err := cxgo0.PRGRM0.GetStruct(match[len(match)-1], (*prePkg).Name); err != nil {
 					// then it hasn't been added
 					strct := ast.MakeStruct(match[len(match)-1])
@@ -361,7 +361,7 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) int {
 	actions.AST.SetCurrentCxProgram()
 
 	actions.AST = cxgo0.PRGRM0
-	if cxcore.FoundCompileErrors || parseErrors > 0 {
+	if globals.FoundCompileErrors || parseErrors > 0 {
 		return constants.CX_COMPILATION_ERROR
 	}
 
@@ -406,7 +406,7 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) int {
 		}()
 	}
 
-	if cxcore.FoundCompileErrors || parseErrors > 0 {
+	if globals.FoundCompileErrors || parseErrors > 0 {
 		return constants.CX_COMPILATION_ERROR
 	}
 

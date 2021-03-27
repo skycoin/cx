@@ -635,7 +635,7 @@ func (pkg *CXPackage) AddFunction(fn *CXFunction) *CXPackage {
 		}
 	}
 	if found && !InREPL {
-		println(cxcore.CompilationError(fn.FileName, fn.FileLine), "function redeclaration")
+		println(CompilationError(fn.FileName, fn.FileLine), "function redeclaration")
 	}
 	if !found {
 		pkg.Functions = append(pkg.Functions, fn)
