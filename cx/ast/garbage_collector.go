@@ -3,7 +3,6 @@ package ast
 import (
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/helper"
-	"github.com/skycoin/cx/cx/tostring"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
@@ -72,7 +71,7 @@ func MarkAndCompact(prgrm *CXProgram) {
 			offset := ptr.Offset
 			offset += fp
 
-			ptrIsPointer := tostring.IsPointer(ptr)
+			ptrIsPointer := IsPointer(ptr)
 
 			// Checking if we need to mark `ptr`.
 			if ptrIsPointer {
@@ -97,7 +96,7 @@ func MarkAndCompact(prgrm *CXProgram) {
 
 			// Checking if the field being accessed needs to be marked.
 			// If the root (`ptr`) is a pointer, this step is unnecessary.
-			if len(ptr.Fields) > 0 && !ptrIsPointer && tostring.IsPointer(ptr.Fields[len(ptr.Fields)-1]) {
+			if len(ptr.Fields) > 0 && !ptrIsPointer && IsPointer(ptr.Fields[len(ptr.Fields)-1]) {
 				fld := ptr.Fields[len(ptr.Fields)-1]
 				MarkObjectsTree(prgrm, offset+fld.Offset, fld.Type, fld.DeclarationSpecifiers[1:])
 			}
@@ -381,7 +380,7 @@ func updatePointers(prgrm *CXProgram, oldAddr, newAddr int32) {
 			// If `ptr` has fields, we need to navigate the heap and mark its fields too.
 			if glbl.CustomType != nil {
 				for _, fld := range glbl.CustomType.Fields {
-					if !tostring.IsPointer(fld) {
+					if !IsPointer(fld) {
 						continue
 					}
 					offset := glbl.Offset + fld.Offset
@@ -423,7 +422,7 @@ func updatePointers(prgrm *CXProgram, oldAddr, newAddr int32) {
 			offset := ptr.Offset
 			offset += fp
 
-			ptrIsPointer := tostring.IsPointer(ptr)
+			ptrIsPointer := IsPointer(ptr)
 
 			// Checking if we need to mark `ptr`.
 			if ptrIsPointer {
@@ -450,7 +449,7 @@ func updatePointers(prgrm *CXProgram, oldAddr, newAddr int32) {
 
 			// Checking if the field being accessed needs to be marked.
 			// If the root (`ptr`) is a pointer, this step is unnecessary.
-			if len(ptr.Fields) > 0 && !ptrIsPointer && tostring.IsPointer(ptr.Fields[len(ptr.Fields)-1]) {
+			if len(ptr.Fields) > 0 && !ptrIsPointer && IsPointer(ptr.Fields[len(ptr.Fields)-1]) {
 				fld := ptr.Fields[len(ptr.Fields)-1]
 
 				// Getting the offset to the object in the heap

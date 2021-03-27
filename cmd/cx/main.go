@@ -6,7 +6,6 @@ import (
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/execute"
 	"github.com/skycoin/cx/cx/globals"
-	"github.com/skycoin/cx/cx/tostring"
 	"github.com/skycoin/cx/cx/util/file"
 
 	repl "github.com/skycoin/cx/cmd/cxrepl"
@@ -109,7 +108,7 @@ func Run(args []string) {
 	}
 
 	// options, file pointers, filenames
-	cxArgs, sourceCode, fileNames := tostring.ParseArgsForCX(commandLine.Args(), true)
+	cxArgs, sourceCode, fileNames := ast.ParseArgsForCX(commandLine.Args(), true)
 
 	// Propagate some options out to other packages.
 	cxgo.DebugLexer = options.debugLexer // in package cxgo

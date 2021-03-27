@@ -1109,6 +1109,6 @@ func (arg *CXArgument) AddOutput(out *CXArgument) *CXArgument {
 // PrintProgram prints the abstract syntax tree of a CX program in a
 // human-readable format.
 func (cxprogram *CXProgram) PrintProgram() {
-	fmt.Println(cxprogram.ToString())
+	fmt.Println(ToString(cxprogram))
 }
 
