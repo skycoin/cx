@@ -22,8 +22,8 @@ func assert(expr *ast.CXExpression, fp int) (same bool) {
 		byts1 = []byte(ast.ReadStr(fp, inp1))
 		byts2 = []byte(ast.ReadStr(fp, inp2))
 	} else {
-		byts1 = ast.ReadMemory(GetFinalOffset(fp, inp1), inp1)
-		byts2 = ast.ReadMemory(GetFinalOffset(fp, inp2), inp2)
+		byts1 = ast.ReadMemory(ast.GetFinalOffset(fp, inp1), inp1)
+		byts2 = ast.ReadMemory(ast.GetFinalOffset(fp, inp2), inp2)
 	}
 
 	same = true
@@ -61,7 +61,7 @@ func assert(expr *ast.CXExpression, fp int) (same bool) {
 
 func opAssertValue(expr *ast.CXExpression, fp int) {
 	same := assert(expr, fp)
-	mem.WriteBool(GetFinalOffset(fp, expr.Outputs[0]), same)
+	mem.WriteBool(ast.GetFinalOffset(fp, expr.Outputs[0]), same)
 }
 
 func opTest(expr *ast.CXExpression, fp int) {

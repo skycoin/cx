@@ -1,7 +1,6 @@
 package mem
 
 import (
-	"github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
@@ -22,7 +21,7 @@ func WriteMemory(offset int, byts []byte) {
 //Is this "Write object ot heap?"
 func WriteObjectData(obj []byte) int {
 	size := len(obj) + constants.OBJECT_HEADER_SIZE
-	heapOffset := cxcore.AllocateSeq(size)
+	heapOffset := ast.AllocateSeq(size)
 	WriteI32(heapOffset, int32(size))
 	WriteMemory(heapOffset +constants.OBJECT_HEADER_SIZE, obj)
 	return heapOffset
@@ -41,7 +40,7 @@ func WriteStringData(str string) int {
 
 // WriteString writes the string `str` on memory, starting at byte number `fp`.
 func WriteString(fp int, str string, out *ast.CXArgument) {
-	WriteObject(cxcore.GetOffset_str(fp, out), encoder.Serialize(str))
+	WriteObject(ast.GetOffset_str(fp, out), encoder.Serialize(str))
 }
 
 

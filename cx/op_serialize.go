@@ -9,7 +9,7 @@ import (
 
 func opSerialize(expr *ast.CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
-	out1Offset := GetFinalOffset(fp, out1)
+	out1Offset := ast.GetFinalOffset(fp, out1)
 
 	_ = inp1
 
@@ -25,7 +25,7 @@ func opSerialize(expr *ast.CXExpression, fp int) {
 func opDeserialize(expr *ast.CXExpression, fp int) {
 	inp := expr.Inputs[0]
 
-	inpOffset := GetFinalOffset(fp, inp)
+	inpOffset := ast.GetFinalOffset(fp, inp)
 
 	off := helper.Deserialize_i32(ast.PROGRAM.Memory[inpOffset : inpOffset+constants.TYPE_POINTER_SIZE])
 

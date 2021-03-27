@@ -2,7 +2,6 @@ package ast
 
 import (
 	"fmt"
-	"github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/globals"
 	"github.com/skycoin/cx/cx/mem"
@@ -46,9 +45,9 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 					continue
 				}
 				mem.WriteMemory(
-					cxcore.GetFinalOffset(returnFP, expr.Outputs[i]),
+					GetFinalOffset(returnFP, expr.Outputs[i]),
 					ReadMemory(
-						cxcore.GetFinalOffset(fp, out),
+						GetFinalOffset(fp, out),
 						out))
 			}
 
@@ -109,7 +108,7 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 				argIndex := 0;
 				for inputIndex := 0; inputIndex < inputCount; inputIndex++ {
 					input := inputs[inputIndex]
-					offset := cxcore.GetFinalOffset(fp, input)
+					offset := GetFinalOffset(fp, input)
 					value := &inputValues[inputIndex]
 					value.Arg = input
 					value.Used = -1
@@ -123,7 +122,7 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 
 				for outputIndex := 0; outputIndex < outputCount; outputIndex++ {
 					output := outputs[outputIndex]
-					offset := cxcore.GetFinalOffset(fp, output)
+					offset := GetFinalOffset(fp, output)
 					value := &outputValues[outputIndex]
 					value.Arg = output
 					value.Used = -1
@@ -192,7 +191,7 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 				for i, inp := range expr.Inputs {
 					var byts []byte
 					// finalOffset := inp.Offset
-					finalOffset := cxcore.GetFinalOffset(fp, inp)
+					finalOffset := GetFinalOffset(fp, inp)
 					// finalOffset := fp + inp.Offset
 
 					// if inp.Indexes != nil {
@@ -215,7 +214,7 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 
 					// writing inputs to new stack frame
 					mem.WriteMemory(
-						cxcore.GetFinalOffset(newFP, newCall.Operator.Inputs[i]),
+						GetFinalOffset(newFP, newCall.Operator.Inputs[i]),
 						// newFP + newCall.Operator.ProgramInput[i].Offset,
 						// GetFinalOffset(prgrm.Memory, newFP, newCall.Operator.ProgramInput[i], MEM_WRITE),
 						byts)

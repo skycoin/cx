@@ -162,7 +162,7 @@ func RunCompiled(cxprogram *ast.CXProgram, nCalls int, args []string) error {
 					if osGbl, err := osPkg.GetGlobal(constants.OS_ARGS); err == nil {
 						for _, arg := range args {
 							argBytes := encoder.Serialize(arg)
-							argOffset := cxcore.AllocateSeq(len(argBytes) + constants.OBJECT_HEADER_SIZE)
+							argOffset := ast.AllocateSeq(len(argBytes) + constants.OBJECT_HEADER_SIZE)
 
 							var header = make([]byte, constants.OBJECT_HEADER_SIZE)
 							mem.WriteMemI32(header, 5, int32(encoder.Size(arg)+constants.OBJECT_HEADER_SIZE))
@@ -174,7 +174,7 @@ func RunCompiled(cxprogram *ast.CXProgram, nCalls int, args []string) error {
 							mem.WriteMemI32(argOffsetBytes[:], 0, int32(argOffset))
 							argsOffset = cxcore.WriteToSlice(argsOffset, argOffsetBytes[:])
 						}
-						mem.WriteI32(cxcore.GetFinalOffset(0, osGbl), int32(argsOffset))
+						mem.WriteI32(ast.GetFinalOffset(0, osGbl), int32(argsOffset))
 					}
 				}
 				cxprogram.Terminated = false

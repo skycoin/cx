@@ -30,7 +30,7 @@ var ofMessages = map[string]string{
 
 // GetInferActions ...
 func GetInferActions(inp *ast.CXArgument, fp int) []string {
-	inpOffset := GetFinalOffset(fp, inp)
+	inpOffset := ast.GetFinalOffset(fp, inp)
 
 	off := helper.Deserialize_i32(ast.PROGRAM.Memory[inpOffset : inpOffset+constants.TYPE_POINTER_SIZE])
 
@@ -84,7 +84,7 @@ func CallAffPredicate(fn *ast.CXFunction, predValue []byte) byte {
 
 	// sending value to predicate function
 	mem.WriteMemory(
-		GetFinalOffset(newFP, newCall.Operator.Inputs[0]),
+		ast.GetFinalOffset(newFP, newCall.Operator.Inputs[0]),
 		predValue)
 
     var inputs []ast.CXValue
@@ -103,7 +103,7 @@ func CallAffPredicate(fn *ast.CXFunction, predValue []byte) byte {
 
 	prevCall.Line--
 
-	return ast.ReadMemory(GetFinalOffset(
+	return ast.ReadMemory(ast.GetFinalOffset(
 		newCall.FramePointer,
 		newCall.Operator.Outputs[0]),
 		newCall.Operator.Outputs[0])[0]
@@ -162,7 +162,7 @@ func queryParam(fn *ast.CXFunction, args []*ast.CXArgument, exprLbl string, argO
 		// argNameOffset := int32(WriteObjectRetOff(argNameB))
 		argNameOffset := mem.WriteStringData(arg.Name)
 
-		argOffset := AllocateSeq(constants.OBJECT_HEADER_SIZE + constants.STR_SIZE + constants.I32_SIZE + constants.STR_SIZE)
+		argOffset := ast.AllocateSeq(constants.OBJECT_HEADER_SIZE + constants.STR_SIZE + constants.I32_SIZE + constants.STR_SIZE)
 		mem.WriteI32(argOffset+constants.OBJECT_HEADER_SIZE, int32(argNameOffset))
 
 		// Index
@@ -273,7 +273,7 @@ func queryStructsInPackage(fn *ast.CXFunction, strctOffsetB []byte, affOffset *i
 		var strctNameOffsetB [4]byte
 		mem.WriteMemI32(strctNameOffsetB[:], 0, int32(strctNameOffset))
 
-		strctOffset := AllocateSeq(constants.OBJECT_HEADER_SIZE + constants.STR_SIZE)
+		strctOffset := ast.AllocateSeq(constants.OBJECT_HEADER_SIZE + constants.STR_SIZE)
 		// Name
 		mem.WriteMemory(strctOffset+constants.OBJECT_HEADER_SIZE, strctNameOffsetB[:])
 
@@ -319,7 +319,7 @@ func QueryFunction(fn *ast.CXFunction, expr *ast.CXExpression, fnOffsetB []byte,
 		inpSigOffset := getSignatureSlice(f.Inputs)
 		outSigOffset := getSignatureSlice(f.Outputs)
 
-		fnOffset := AllocateSeq(constants.OBJECT_HEADER_SIZE + constants.STR_SIZE + constants.TYPE_POINTER_SIZE + constants.TYPE_POINTER_SIZE)
+		fnOffset := ast.AllocateSeq(constants.OBJECT_HEADER_SIZE + constants.STR_SIZE + constants.TYPE_POINTER_SIZE + constants.TYPE_POINTER_SIZE)
 		// Name
 		mem.WriteMemory(fnOffset+constants.OBJECT_HEADER_SIZE, opNameOffsetB[:])
 		// InputSignature
@@ -356,7 +356,7 @@ func QueryCaller(fn *ast.CXFunction, expr *ast.CXExpression, callerOffsetB []byt
 		opNameOffset = mem.WriteStringData(call.Operator.Package.Name + "." + call.Operator.Name)
 	}
 
-	callOffset := AllocateSeq(constants.OBJECT_HEADER_SIZE + constants.STR_SIZE + constants.I32_SIZE)
+	callOffset := ast.AllocateSeq(constants.OBJECT_HEADER_SIZE + constants.STR_SIZE + constants.I32_SIZE)
 
 	// FnName
 	var opNameOffsetB [4]byte
@@ -376,7 +376,7 @@ func QueryCaller(fn *ast.CXFunction, expr *ast.CXExpression, callerOffsetB []byt
 
 // QueryProgram ...
 func QueryProgram(fn *ast.CXFunction, expr *ast.CXExpression, prgrmOffsetB []byte, affOffset *int) {
-	prgrmOffset := AllocateSeq(constants.OBJECT_HEADER_SIZE + constants.I32_SIZE + constants.I64_SIZE + constants.STR_SIZE + constants.I32_SIZE)
+	prgrmOffset := ast.AllocateSeq(constants.OBJECT_HEADER_SIZE + constants.I32_SIZE + constants.I64_SIZE + constants.STR_SIZE + constants.I32_SIZE)
 	// Callcounter
 	mem.WriteI32(prgrmOffset+constants.OBJECT_HEADER_SIZE, int32(ast.PROGRAM.CallCounter))
 	// HeapUsed
@@ -968,7 +968,7 @@ func opAffRequest(expr *ast.CXExpression, fp int) {
 func opAffQuery(expr *ast.CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 
-	out1Offset := GetFinalOffset(fp, out1)
+	out1Offset := ast.GetFinalOffset(fp, out1)
 
 	var affOffset int
 

@@ -1,7 +1,6 @@
 package execute
 
 import (
-	"github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/mem"
@@ -29,7 +28,7 @@ func Callback(cxprogram *ast.CXProgram, fn *ast.CXFunction, inputs [][]byte) (ou
 	}
 
 	for i, inp := range inputs {
-		mem.WriteMemory(cxcore.GetFinalOffset(newFP, newCall.Operator.Inputs[i]), inp)
+		mem.WriteMemory(ast.GetFinalOffset(newFP, newCall.Operator.Inputs[i]), inp)
 	}
 
 	var nCalls = 0
@@ -46,7 +45,7 @@ func Callback(cxprogram *ast.CXProgram, fn *ast.CXFunction, inputs [][]byte) (ou
 	for _, out := range fn.Outputs {
 		// Making a copy of the bytes, so if we modify the bytes being held by `outputs`
 		// we don't modify the program memory.
-		mem := ast.ReadMemory(cxcore.GetFinalOffset(newFP, out), out)
+		mem := ast.ReadMemory(ast.GetFinalOffset(newFP, out), out)
 		cop := make([]byte, len(mem))
 		copy(cop, mem)
 		outputs = append(outputs, cop)

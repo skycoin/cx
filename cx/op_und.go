@@ -20,16 +20,16 @@ func opLen(expr *ast.CXExpression, fp int) {
 		var sliceOffset = GetSliceOffset(fp, inp1)
 		if sliceOffset > 0 {
 			sliceLen := GetSliceHeader(sliceOffset)[4:8]
-			mem.WriteMemory(GetFinalOffset(fp, out1), sliceLen)
+			mem.WriteMemory(ast.GetFinalOffset(fp, out1), sliceLen)
 		} else if sliceOffset == 0 {
-			mem.WriteI32(GetFinalOffset(fp, out1), 0)
+			mem.WriteI32(ast.GetFinalOffset(fp, out1), 0)
 		} else {
 			panic(constants.CX_RUNTIME_ERROR)
 		}
 
 		// TODO: Had to add elt.Lengths to avoid doing this for arrays, but not entirely sure why
 	} else if elt.Type == constants.TYPE_STR && elt.Lengths == nil {
-		var strOffset = GetStrOffset(fp, inp1)
+		var strOffset = ast.GetStrOffset(fp, inp1)
 		// Checking if the string lives on the heap.
 		if strOffset > ast.PROGRAM.HeapStartsAt {
 			// Then it's on the heap and we need to consider
@@ -37,10 +37,10 @@ func opLen(expr *ast.CXExpression, fp int) {
 			strOffset += constants.OBJECT_HEADER_SIZE
 		}
 
-		mem.WriteMemory(GetFinalOffset(fp, out1), ast.PROGRAM.Memory[strOffset:strOffset+constants.STR_HEADER_SIZE])
+		mem.WriteMemory(ast.GetFinalOffset(fp, out1), ast.PROGRAM.Memory[strOffset:strOffset+constants.STR_HEADER_SIZE])
 	} else {
 		outV0 := int32(elt.Lengths[len(elt.Indexes)])
-		mem.WriteI32(GetFinalOffset(fp, out1), outV0)
+		mem.WriteI32(ast.GetFinalOffset(fp, out1), outV0)
 	}
 }
 
@@ -64,14 +64,14 @@ func opAppend(expr *ast.CXExpression, fp int) {
 
 	// We need to update the address of the output and input, as the final offsets
 	// could be on the heap and they could have been moved by the GC.
-	outputSlicePointer := GetFinalOffset(fp, out1)
+	outputSlicePointer := ast.GetFinalOffset(fp, out1)
 
 	if inp2.Type == constants.TYPE_STR || inp2.Type == constants.TYPE_AFF {
 		var obj [4]byte
-		mem.WriteMemI32(obj[:], 0, int32(GetStrOffset(fp, inp2)))
+		mem.WriteMemI32(obj[:], 0, int32(ast.GetStrOffset(fp, inp2)))
 		SliceAppendWrite(outputSliceOffset, obj[:], inputSliceLen)
 	} else {
-		obj := ast.ReadMemory(GetFinalOffset(fp, inp2), inp2)
+		obj := ast.ReadMemory(ast.GetFinalOffset(fp, inp2), inp2)
 		SliceAppendWrite(outputSliceOffset, obj, inputSliceLen)
 	}
 
@@ -86,7 +86,7 @@ func opResize(expr *ast.CXExpression, fp int) {
 	}
 
 	outputSliceOffset := int32(SliceResize(fp, out1, inp1, ReadI32(fp, inp2), ast.GetAssignmentElement(inp1).TotalSize))
-	outputSlicePointer := GetFinalOffset(fp, out1)
+	outputSlicePointer := ast.GetFinalOffset(fp, out1)
 	mem.WriteI32(outputSlicePointer, outputSliceOffset)
 }
 
@@ -97,15 +97,15 @@ func opInsert(expr *ast.CXExpression, fp int) {
 		panic(constants.CX_RUNTIME_INVALID_ARGUMENT)
 	}
 
-	outputSlicePointer := GetFinalOffset(fp, out1)
+	outputSlicePointer := ast.GetFinalOffset(fp, out1)
 
 	if inp3.Type == constants.TYPE_STR || inp3.Type == constants.TYPE_AFF {
 		var obj [4]byte
-		mem.WriteMemI32(obj[:], 0, int32(GetStrOffset(fp, inp3)))
+		mem.WriteMemI32(obj[:], 0, int32(ast.GetStrOffset(fp, inp3)))
 		outputSliceOffset := int32(SliceInsert(fp, out1, inp1, ReadI32(fp, inp2), obj[:]))
 		mem.WriteI32(outputSlicePointer, outputSliceOffset)
 	} else {
-		obj := ast.ReadMemory(GetFinalOffset(fp, inp3), inp3)
+		obj := ast.ReadMemory(ast.GetFinalOffset(fp, inp3), inp3)
 		outputSliceOffset := int32(SliceInsert(fp, out1, inp1, ReadI32(fp, inp2), obj))
 		mem.WriteI32(outputSlicePointer, outputSliceOffset)
 	}
@@ -118,7 +118,7 @@ func opRemove(expr *ast.CXExpression, fp int) {
 		panic(constants.CX_RUNTIME_INVALID_ARGUMENT)
 	}
 
-	outputSlicePointer := GetFinalOffset(fp, out1)
+	outputSlicePointer := ast.GetFinalOffset(fp, out1)
 	outputSliceOffset := int32(SliceRemove(fp, out1, inp1, ReadI32(fp, inp2), int32(ast.GetAssignmentElement(inp1).TotalSize)))
 	mem.WriteI32(outputSlicePointer, outputSliceOffset)
 }
@@ -145,7 +145,7 @@ func opCopy(expr *ast.CXExpression, fp int) {
 	} else {
 		panic(constants.CX_RUNTIME_INVALID_ARGUMENT)
 	}
-	mem.WriteI32(GetFinalOffset(fp, expr.Outputs[0]), int32(count/dstElem.TotalSize))
+	mem.WriteI32(ast.GetFinalOffset(fp, expr.Outputs[0]), int32(count/dstElem.TotalSize))
 }
 
 func buildString(expr *ast.CXExpression, fp int) []byte {

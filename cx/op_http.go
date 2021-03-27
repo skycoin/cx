@@ -206,7 +206,7 @@ func opHTTPNewRequest(expr *ast.CXExpression, fp int) {
 	// 2019/10/27 23:10:14 invalid type int
 	// error: examples/http-serve-and-request-mine.cx:8, CX_RUNTIME_ERROR, invalid type int
 
-	out1Offset := GetFinalOffset(fp, errorstring)
+	out1Offset := ast.GetFinalOffset(fp, errorstring)
 
 	// TODO: Used `Response.Status` for now, to avoid getting an error.
 	// This will be rewritten as the whole operator is unfinished.
@@ -291,7 +291,7 @@ func writeHTTPRequest(fp int, param *ast.CXArgument, request *http.Request) {
 	// Creating empty `http.Request` object on heap.
 	reqOff := mem.WriteObjectData(make([]byte, requestType.Size))
 	reqOffByts := encoder.SerializeAtomic(int32(reqOff))
-	mem.WriteMemory(GetFinalOffset(fp, &req), reqOffByts)
+	mem.WriteMemory(ast.GetFinalOffset(fp, &req), reqOffByts)
 
 	req.DereferenceOperations = append(req.DereferenceOperations, constants.DEREF_POINTER)
 
@@ -299,7 +299,7 @@ func writeHTTPRequest(fp int, param *ast.CXArgument, request *http.Request) {
 	req.Fields = accessURL
 	urlOff := mem.WriteObjectData(make([]byte, urlType.Size))
 	urlOffByts := encoder.SerializeAtomic(int32(urlOff))
-	mem.WriteMemory(GetFinalOffset(fp, &req), urlOffByts)
+	mem.WriteMemory(ast.GetFinalOffset(fp, &req), urlOffByts)
 
 	req.Fields = accessMethod
 	mem.WriteString(fp, request.Method, &req)
@@ -319,7 +319,7 @@ func writeHTTPRequest(fp int, param *ast.CXArgument, request *http.Request) {
 	req.Fields = accessURLRawPath
 	mem.WriteString(fp, request.URL.RawPath, &req)
 	req.Fields = accessURLForceQuery
-	mem.WriteMemory(GetFinalOffset(fp, &req), helper.FromBool(request.URL.ForceQuery))
+	mem.WriteMemory(ast.GetFinalOffset(fp, &req), helper.FromBool(request.URL.ForceQuery))
 }
 
 func opHTTPDo(expr *ast.CXExpression, fp int) {
@@ -470,15 +470,15 @@ func opHTTPDo(expr *ast.CXExpression, fp int) {
 	resp.Fields = accessStatus
 	mem.WriteString(fp, response.Status, &resp)
 	resp.Fields = accessStatusCode
-	mem.WriteMemory(GetFinalOffset(fp, &resp), helper.FromI32(int32(response.StatusCode)))
+	mem.WriteMemory(ast.GetFinalOffset(fp, &resp), helper.FromI32(int32(response.StatusCode)))
 	resp.Fields = accessProto
 	mem.WriteString(fp, response.Proto, &resp)
 	resp.Fields = accessProtoMajor
-	mem.WriteMemory(GetFinalOffset(fp, &resp), helper.FromI32(int32(response.ProtoMajor)))
+	mem.WriteMemory(ast.GetFinalOffset(fp, &resp), helper.FromI32(int32(response.ProtoMajor)))
 	resp.Fields = accessProtoMinor
-	mem.WriteMemory(GetFinalOffset(fp, &resp), helper.FromI32(int32(response.ProtoMinor)))
+	mem.WriteMemory(ast.GetFinalOffset(fp, &resp), helper.FromI32(int32(response.ProtoMinor)))
 	resp.Fields = accessContentLength
-	mem.WriteMemory(GetFinalOffset(fp, &resp), helper.FromI64(int64(response.ContentLength)))
+	mem.WriteMemory(ast.GetFinalOffset(fp, &resp), helper.FromI64(int64(response.ContentLength)))
 	resp.Fields = accessBody
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
@@ -490,7 +490,7 @@ func opHTTPDo(expr *ast.CXExpression, fp int) {
 func opDMSGDo(expr *ast.CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	var req http.Request
-	byts1 := ast.ReadMemory(GetFinalOffset(fp, inp1), inp1)
+	byts1 := ast.ReadMemory(ast.GetFinalOffset(fp, inp1), inp1)
 	err := encoder.DeserializeRawExact(byts1, &req)
 	if err != nil {
 		mem.WriteString(fp, err.Error(), out1)

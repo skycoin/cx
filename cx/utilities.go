@@ -180,7 +180,7 @@ func GetPointerOffset(pointer int32) int32 {
 func GetSliceOffset(fp int, arg *ast.CXArgument) int32 {
 	element := ast.GetAssignmentElement(arg)
 	if element.IsSlice {
-		return GetPointerOffset(int32(GetFinalOffset(fp, arg)))
+		return GetPointerOffset(int32(ast.GetFinalOffset(fp, arg)))
 	}
 
 	return -1
@@ -246,7 +246,7 @@ func SliceResizeEx(outputSliceOffset int32, count int32, sizeofElement int) int 
 			newCap *= 2
 		}
 		var outputObjectSize = constants.OBJECT_HEADER_SIZE + constants.SLICE_HEADER_SIZE + newCap*int32(sizeofElement)
-		outputSliceOffset = int32(AllocateSeq(int(outputObjectSize)))
+		outputSliceOffset = int32(ast.AllocateSeq(int(outputObjectSize)))
 		mem.WriteMemI32(GetObjectHeader(outputSliceOffset)[5:9], 0, outputObjectSize)
 
 		outputSliceHeader = GetSliceHeader(outputSliceOffset)

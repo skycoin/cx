@@ -11,7 +11,7 @@ import (
 
 // EscapeAnalysis ...
 func EscapeAnalysis(fp int, inpOffset, outOffset int, arg *ast.CXArgument) {
-	heapOffset := AllocateSeq(arg.TotalSize + constants.OBJECT_HEADER_SIZE)
+	heapOffset := ast.AllocateSeq(arg.TotalSize + constants.OBJECT_HEADER_SIZE)
 
 	byts := ast.ReadMemory(inpOffset, arg)
 
@@ -27,8 +27,8 @@ func EscapeAnalysis(fp int, inpOffset, outOffset int, arg *ast.CXArgument) {
 
 func opIdentity(expr *ast.CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
-	inp1Offset := GetFinalOffset(fp, inp1)
-	out1Offset := GetFinalOffset(fp, out1)
+	inp1Offset := ast.GetFinalOffset(fp, inp1)
+	out1Offset := ast.GetFinalOffset(fp, out1)
 
 	var elt *ast.CXArgument
 	if len(out1.Fields) > 0 {
@@ -58,7 +58,7 @@ func opJmp(expr *ast.CXExpression, fp int) {
 		// then it's a goto
 		call.Line = call.Line + expr.ThenLines
 	} else {
-		inp1Offset := GetFinalOffset(fp, inp1)
+		inp1Offset := ast.GetFinalOffset(fp, inp1)
 
 		predicateB := ast.PROGRAM.Memory[inp1Offset : inp1Offset+ast.GetSize(inp1)]
 		predicate = helper.DeserializeBool(predicateB)

@@ -1,7 +1,6 @@
 package ast
 
 import (
-	"github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/helper"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
@@ -51,7 +50,7 @@ func ReadMemory(offset int, arg *CXArgument) []byte {
 
 // ReadStr ...
 func ReadStr(fp int, inp *CXArgument) (out string) {
-	off := cxcore.GetFinalOffset(fp, inp)
+	off := GetFinalOffset(fp, inp)
 	return ReadStrFromOffset(off, inp)
 }
 
