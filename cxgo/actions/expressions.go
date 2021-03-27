@@ -4,12 +4,11 @@ import (
 	"fmt"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/globals"
 	"github.com/skycoin/cx/cx/util2"
 	"os"
 
 	"github.com/skycoin/skycoin/src/cipher/encoder"
-
-	"github.com/skycoin/cx/cx"
 )
 
 // ReturnExpressions stores the `Size` of the return arguments represented by `Expressions`.
@@ -43,7 +42,7 @@ func IterationExpressions(init []*ast.CXExpression, cond []*ast.CXExpression, in
 	downExpr.Package = pkg
 
 	if len(cond[len(cond)-1].Outputs) < 1 {
-		predicate := ast.MakeArgument(cxcore.MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(constants.TypeNames[cond[len(cond)-1].Operator.Outputs[0].Type])
+		predicate := ast.MakeArgument(globals.MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(constants.TypeNames[cond[len(cond)-1].Operator.Outputs[0].Type])
 		predicate.Package = pkg
 		predicate.PreviouslyDeclared = true
 		cond[len(cond)-1].AddOutput(predicate)
@@ -133,7 +132,7 @@ func SelectionExpressions(condExprs []*ast.CXExpression, thenExprs []*ast.CXExpr
 		predicate = condExprs[len(condExprs)-1].Outputs[0]
 	} else {
 		// then it's an expression
-		predicate = ast.MakeArgument(cxcore.MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo)
+		predicate = ast.MakeArgument(globals.MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo)
 		if condExprs[len(condExprs)-1].IsMethodCall {
 			// we'll change this once we have access to method's types in
 			// ProcessMethodCall
@@ -209,7 +208,7 @@ func UndefinedTypeOperation(leftExprs []*ast.CXExpression, rightExprs []*ast.CXE
 	}
 
 	if len(leftExprs[len(leftExprs)-1].Outputs) < 1 {
-		name := ast.MakeArgument(cxcore.MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(constants.TypeNames[resolveTypeForUnd(leftExprs[len(leftExprs)-1])])
+		name := ast.MakeArgument(globals.MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(constants.TypeNames[resolveTypeForUnd(leftExprs[len(leftExprs)-1])])
 		name.Size = leftExprs[len(leftExprs)-1].Operator.Outputs[0].Size
 		name.TotalSize = ast.GetSize(leftExprs[len(leftExprs)-1].Operator.Outputs[0])
 		name.Type = leftExprs[len(leftExprs)-1].Operator.Outputs[0].Type
@@ -220,7 +219,7 @@ func UndefinedTypeOperation(leftExprs []*ast.CXExpression, rightExprs []*ast.CXE
 	}
 
 	if len(rightExprs[len(rightExprs)-1].Outputs) < 1 {
-		name := ast.MakeArgument(cxcore.MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(constants.TypeNames[resolveTypeForUnd(rightExprs[len(rightExprs)-1])])
+		name := ast.MakeArgument(globals.MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(constants.TypeNames[resolveTypeForUnd(rightExprs[len(rightExprs)-1])])
 
 		name.Size = rightExprs[len(rightExprs)-1].Operator.Outputs[0].Size
 		name.TotalSize = ast.GetSize(rightExprs[len(rightExprs)-1].Operator.Outputs[0])
@@ -412,7 +411,7 @@ func AddJmpToReturnExpressions(exprs ReturnExpressions) []*ast.CXExpression {
 	expr := ast.MakeExpression(ast.Natives[constants.OP_JMP], CurrentFile, LineNo)
 
 	// simulating a label so it gets executed without evaluating a predicate
-	expr.Label = cxcore.MakeGenSym(constants.LABEL_PREFIX)
+	expr.Label = globals.MakeGenSym(constants.LABEL_PREFIX)
 	expr.ThenLines = constants.MAX_INT32
 	expr.Package = pkg
 

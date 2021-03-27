@@ -1,42 +1,8 @@
 package cxcore
 
-import (
-	"fmt"
-	"github.com/skycoin/cx/cx/ast"
-	"github.com/skycoin/cx/cx/globals"
-
-	//uuid "github.com/satori/go.uuid"
-	//"github.com/skycoin/skycoin/src/cipher/encoder"
-)
-
-// MakeElementID ...
-/*
-func MakeElementID() uuid.UUID {
-	return uuid.NewV4()
-}
-*/
-
-// MakeGenSym ...
-func MakeGenSym(name string) string {
-	gensym := fmt.Sprintf("%s_%d", name, globals.GenSymCounter)
-	globals.GenSymCounter++
-
-	return gensym
-}
-
 // MakeCall ...
 //./cx/execute.go:181:				mainCall := MakeCall(fn)
 //./cx/execute.go:210:				mainCall := MakeCall(fn)
-
-func MakeCall(op *ast.CXFunction) ast.CXCall {
-	return ast.CXCall{
-		Operator:     op,
-		Line:         0,
-		FramePointer: 0,
-		// Package:       pkg,
-		// Program:       prgrm,
-	}
-}
 
 /*
 // MakeDefaultValue Used only for native types

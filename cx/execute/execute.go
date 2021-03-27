@@ -118,7 +118,7 @@ func RunCompiled(cxprogram *ast.CXProgram, nCalls int, args []string) error {
 			// then the program is just starting and we need to run the SYS_INIT_FUNC
 			if fn, err := mod.SelectFunction(constants.SYS_INIT_FUNC); err == nil {
 				// *init function
-				mainCall := cxcore.MakeCall(fn)
+				mainCall := MakeCall(fn)
 				cxprogram.CallStack[0] = mainCall
 				cxprogram.StackPointer = fn.Size
 
@@ -147,7 +147,7 @@ func RunCompiled(cxprogram *ast.CXProgram, nCalls int, args []string) error {
 
 			if cxprogram.CallStack[0].Operator == nil {
 				// main function
-				mainCall := cxcore.MakeCall(fn)
+				mainCall := MakeCall(fn)
 				mainCall.FramePointer = cxprogram.StackPointer
 				// initializing program resources
 				cxprogram.CallStack[0] = mainCall
@@ -202,3 +202,14 @@ func RunCompiled(cxprogram *ast.CXProgram, nCalls int, args []string) error {
 	return err
 
 }
+
+func MakeCall(op *ast.CXFunction) ast.CXCall {
+	return ast.CXCall{
+		Operator:     op,
+		Line:         0,
+		FramePointer: 0,
+		// Package:       pkg,
+		// Program:       prgrm,
+	}
+}
+

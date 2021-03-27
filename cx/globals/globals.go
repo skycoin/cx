@@ -1,13 +1,13 @@
 package globals
 
 import (
+	"fmt"
 	"os"
 )
 
 // Var
 var (
 	HeapOffset    int
-	GenSymCounter int
 )
 
 //Path is only used by os module and only to get working directory
@@ -19,3 +19,16 @@ var CXPATH = os.Getenv("CXPATH") + "/"
 var BINPATH = CXPATH + "bin/" // TODO @evanlinjin: Not used.
 var PKGPATH = CXPATH + "pkg/" // TODO @evanlinjin: Not used.
 var SRCPATH = CXPATH + "src/"
+
+var (
+	GenSymCounter int
+)
+
+// MakeGenSym ...
+func MakeGenSym(name string) string {
+	gensym := fmt.Sprintf("%s_%d", name, GenSymCounter)
+	GenSymCounter++
+
+	return gensym
+}
+
