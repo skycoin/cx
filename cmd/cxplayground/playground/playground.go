@@ -162,10 +162,13 @@ func unsafeeval(code string) (out string) {
 	if err != nil {
 		return fmt.Sprintf("%s", err)
 	}
-	if err := actions.AST.RunCompiled(0, nil); err != nil {
+	//if err := actions.AST.RunCompiled(0, nil); err != nil {
+	err = cxcore.RunCompiled1(actions.AST, 0, nil)
+	if err != nil {
 		actions.AST = cxcore.MakeProgram()
 		return fmt.Sprintf("%s", err)
 	}
+	//TODO: If error equals nill?
 
 	outC := make(chan string)
 	go func() {

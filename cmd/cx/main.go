@@ -253,7 +253,8 @@ func runProgram(options cxCmdFlags, cxArgs []string, sourceCode []*os.File) {
 	}
 
 	// Normal run of a CX program.
-	err := actions.AST.RunCompiled(0, cxArgs)
+	//err := actions.AST.RunCompiled(0, cxArgs)
+	err := cxcore.RunCompiled1(actions.AST, 0, cxArgs)
 	if err != nil {
 		panic(err)
 	}
