@@ -3,6 +3,7 @@ package cxcore
 import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/globals"
 )
 
 // "fmt"
@@ -48,7 +49,7 @@ func opIdentity(expr *ast.CXExpression, fp int) {
 }
 
 func opJmp(expr *ast.CXExpression, fp int) {
-	call := PROGRAM.GetCurrentCall()
+	call := globals.PROGRAM.GetCurrentCall()
 	inp1 := expr.Inputs[0]
 	var predicate bool
 
@@ -58,7 +59,7 @@ func opJmp(expr *ast.CXExpression, fp int) {
 	} else {
 		inp1Offset := GetFinalOffset(fp, inp1)
 
-		predicateB := PROGRAM.Memory[inp1Offset : inp1Offset+GetSize(inp1)]
+		predicateB := globals.PROGRAM.Memory[inp1Offset : inp1Offset+GetSize(inp1)]
 		predicate = DeserializeBool(predicateB)
 
 		if predicate {

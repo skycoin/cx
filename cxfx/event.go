@@ -3,6 +3,7 @@
 package cxfx
 
 import (
+	"github.com/skycoin/cx/cx/globals"
 	//"fmt"
 	"sync"
 	"time"
@@ -69,8 +70,8 @@ func (cb *CXCallback) InitEx(inputs []cxcore.CXValue, outputs []cxcore.CXValue) 
 }
 
 func (cb *CXCallback) Call(inputs [][]byte) {
-	if fn, err := cxcore.PROGRAM.GetFunction(cb.functionName, cb.packageName); err == nil {
-		cxcore.PROGRAM.Callback(fn, inputs)
+	if fn, err := globals.PROGRAM.GetFunction(cb.functionName, cb.packageName); err == nil {
+		globals.PROGRAM.Callback(fn, inputs)
 	}
 }
 

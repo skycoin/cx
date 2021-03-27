@@ -5,6 +5,7 @@ package cxos
 import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/globals"
 	"github.com/skycoin/skycoin/src/cipher"
 
 	"github.com/skycoin/cx/cx"
@@ -35,7 +36,7 @@ func init() {
 	cipherPkg.AddStruct(pubkeyStrct)
 	cipherPkg.AddStruct(seckeyStrct)
 
-	cxcore.PROGRAM.AddPackage(cipherPkg)
+	globals.PROGRAM.AddPackage(cipherPkg)
 }
 
 // opCipherGenerateKeyPair generates a PubKey and a SecKey.

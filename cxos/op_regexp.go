@@ -5,6 +5,7 @@ package cxos
 import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/globals"
 	"regexp"
 
 	"github.com/jinzhu/copier"
@@ -22,7 +23,7 @@ func init() {
 
 	regexpPkg.AddStruct(regexpStrct)
 
-	cxcore.PROGRAM.AddPackage(regexpPkg)
+	globals.PROGRAM.AddPackage(regexpPkg)
 }
 
 // regexpCompile is a helper function for `opRegexpMustCompile` and
@@ -42,7 +43,7 @@ func regexpCompile(expr *ast.CXExpression, fp int) error {
 	}
 
 	// Extracting CX `regexp` package.
-	regexpPkg, err := cxcore.PROGRAM.GetPackage("regexp")
+	regexpPkg, err := globals.PROGRAM.GetPackage("regexp")
 	if err != nil {
 		panic(err)
 	}
@@ -112,7 +113,7 @@ func opRegexpFind(expr *ast.CXExpression, fp int) {
 	}
 
 	// Extracting CX `regexp` package.
-	regexpPkg, err := cxcore.PROGRAM.GetPackage("regexp")
+	regexpPkg, err := globals.PROGRAM.GetPackage("regexp")
 	if err != nil {
 		panic(err)
 	}

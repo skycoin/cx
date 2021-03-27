@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/globals"
 	"strconv"
 	// "github.com/skycoin/skycoin/src/cipher/encoder"
 )
@@ -28,7 +29,7 @@ var ofMessages = map[string]string{
 func GetInferActions(inp *ast.CXArgument, fp int) []string {
 	inpOffset := GetFinalOffset(fp, inp)
 
-	off := Deserialize_i32(PROGRAM.Memory[inpOffset : inpOffset+constants.TYPE_POINTER_SIZE])
+	off := Deserialize_i32(globals.PROGRAM.Memory[inpOffset : inpOffset+constants.TYPE_POINTER_SIZE])
 
 	l := Deserialize_i32(GetSliceHeader(GetSliceOffset(fp, inp))[4:8])
 
@@ -37,7 +38,7 @@ func GetInferActions(inp *ast.CXArgument, fp int) []string {
 	// for c := int(l); c > 0; c-- {
 	for c := 0; c < int(l); c++ {
 		// elof := Deserialize_i32(PROGRAM.Memory[int(off) + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + (c - 1) * TYPE_POINTER_SIZE : int(off) + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + c * STR_HEADER_SIZE])
-		elOff := Deserialize_i32(PROGRAM.Memory[int(off)+constants.OBJECT_HEADER_SIZE+constants.SLICE_HEADER_SIZE+c*constants.TYPE_POINTER_SIZE : int(off)+constants.OBJECT_HEADER_SIZE+constants.SLICE_HEADER_SIZE+(c+1)*constants.STR_HEADER_SIZE])
+		elOff := Deserialize_i32(globals.PROGRAM.Memory[int(off)+constants.OBJECT_HEADER_SIZE+constants.SLICE_HEADER_SIZE+c*constants.TYPE_POINTER_SIZE : int(off)+constants.OBJECT_HEADER_SIZE+constants.SLICE_HEADER_SIZE+(c+1)*constants.STR_HEADER_SIZE])
 		// size := Deserialize_i32(PROGRAM.Memory[elOff : elOff+STR_HEADER_SIZE])
 		// var res string
 		// _, err := encoder.DeserializeRaw(PROGRAM.Memory[elOff:elOff+STR_HEADER_SIZE+size], &res)
@@ -62,20 +63,20 @@ func opAffPrint(expr *ast.CXExpression, fp int) {
 
 // CallAffPredicate ...
 func CallAffPredicate(fn *ast.CXFunction, predValue []byte) byte {
-	prevCall := &PROGRAM.CallStack[PROGRAM.CallCounter]
+	prevCall := &globals.PROGRAM.CallStack[globals.PROGRAM.CallCounter]
 
-	PROGRAM.CallCounter++
-	newCall := &PROGRAM.CallStack[PROGRAM.CallCounter]
+	globals.PROGRAM.CallCounter++
+	newCall := &globals.PROGRAM.CallStack[globals.PROGRAM.CallCounter]
 	newCall.Operator = fn
 	newCall.Line = 0
-	newCall.FramePointer = PROGRAM.StackPointer
-	PROGRAM.StackPointer += newCall.Operator.Size
+	newCall.FramePointer = globals.PROGRAM.StackPointer
+	globals.PROGRAM.StackPointer += newCall.Operator.Size
 
 	newFP := newCall.FramePointer
 
 	// wiping next mem frame (removing garbage)
 	for c := 0; c < fn.Size; c++ {
-		PROGRAM.Memory[newFP+c] = 0
+		globals.PROGRAM.Memory[newFP+c] = 0
 	}
 
 	// sending value to predicate function
@@ -85,14 +86,14 @@ func CallAffPredicate(fn *ast.CXFunction, predValue []byte) byte {
 
     var inputs []CXValue
     var outputs []CXValue
-	prevCC := PROGRAM.CallCounter
+	prevCC := globals.PROGRAM.CallCounter
 	for {
-		call := &PROGRAM.CallStack[PROGRAM.CallCounter]
-		err := call.Ccall(PROGRAM, &inputs, &outputs)
+		call := &globals.PROGRAM.CallStack[globals.PROGRAM.CallCounter]
+		err := call.Ccall(globals.PROGRAM, &inputs, &outputs)
 		if err != nil {
 			panic(err)
 		}
-		if PROGRAM.CallCounter < prevCC {
+		if globals.PROGRAM.CallCounter < prevCC {
 			break
 		}
 	}
@@ -167,7 +168,7 @@ func queryParam(fn *ast.CXFunction, args []*ast.CXArgument, exprLbl string, argO
 		// Type
 		WriteI32(argOffset+constants.OBJECT_HEADER_SIZE+constants.STR_SIZE+constants.I32_SIZE, int32(typOffset))
 
-		res := CallAffPredicate(fn, PROGRAM.Memory[argOffset+constants.OBJECT_HEADER_SIZE:argOffset+constants.OBJECT_HEADER_SIZE+constants.STR_SIZE+constants.I32_SIZE+constants.STR_SIZE])
+		res := CallAffPredicate(fn, globals.PROGRAM.Memory[argOffset+constants.OBJECT_HEADER_SIZE:argOffset+constants.OBJECT_HEADER_SIZE+constants.STR_SIZE+constants.I32_SIZE+constants.STR_SIZE])
 
 		if res == 1 {
 			*affOffset = WriteToSlice(*affOffset, argOffsetB)
@@ -273,7 +274,7 @@ func queryStructsInPackage(fn *ast.CXFunction, strctOffsetB []byte, affOffset *i
 		// Name
 		WriteMemory(strctOffset+constants.OBJECT_HEADER_SIZE, strctNameOffsetB[:])
 
-		val := PROGRAM.Memory[strctOffset+constants.OBJECT_HEADER_SIZE : strctOffset+constants.OBJECT_HEADER_SIZE+constants.STR_SIZE]
+		val := globals.PROGRAM.Memory[strctOffset+constants.OBJECT_HEADER_SIZE : strctOffset+constants.OBJECT_HEADER_SIZE+constants.STR_SIZE]
 		res := CallAffPredicate(fn, val)
 
 		if res == 1 {
@@ -323,7 +324,7 @@ func QueryFunction(fn *ast.CXFunction, expr *ast.CXExpression, fnOffsetB []byte,
 		// OutputSignature
 		WriteI32(fnOffset+constants.OBJECT_HEADER_SIZE+constants.TYPE_POINTER_SIZE+constants.TYPE_POINTER_SIZE, int32(outSigOffset))
 
-		val := PROGRAM.Memory[fnOffset+constants.OBJECT_HEADER_SIZE : fnOffset+constants.OBJECT_HEADER_SIZE+constants.STR_SIZE+constants.TYPE_POINTER_SIZE+constants.TYPE_POINTER_SIZE]
+		val := globals.PROGRAM.Memory[fnOffset+constants.OBJECT_HEADER_SIZE : fnOffset+constants.OBJECT_HEADER_SIZE+constants.STR_SIZE+constants.TYPE_POINTER_SIZE+constants.TYPE_POINTER_SIZE]
 		res := CallAffPredicate(fn, val)
 
 		if res == 1 {
@@ -335,12 +336,12 @@ func QueryFunction(fn *ast.CXFunction, expr *ast.CXExpression, fnOffsetB []byte,
 
 // QueryCaller ...
 func QueryCaller(fn *ast.CXFunction, expr *ast.CXExpression, callerOffsetB []byte, affOffset *int) {
-	if PROGRAM.CallCounter == 0 {
+	if globals.PROGRAM.CallCounter == 0 {
 		// then it's entry point
 		return
 	}
 
-	call := PROGRAM.CallStack[PROGRAM.CallCounter-1]
+	call := globals.PROGRAM.CallStack[globals.PROGRAM.CallCounter-1]
 
 	// var opNameB []byte
 	opNameOffset := 0
@@ -363,7 +364,7 @@ func QueryCaller(fn *ast.CXFunction, expr *ast.CXExpression, callerOffsetB []byt
 	// FnSize
 	WriteI32(callOffset+constants.OBJECT_HEADER_SIZE+constants.STR_SIZE, int32(call.Operator.Size))
 
-	res := CallAffPredicate(fn, PROGRAM.Memory[callOffset+constants.OBJECT_HEADER_SIZE:callOffset+constants.OBJECT_HEADER_SIZE+constants.STR_SIZE+constants.I32_SIZE])
+	res := CallAffPredicate(fn, globals.PROGRAM.Memory[callOffset+constants.OBJECT_HEADER_SIZE:callOffset+constants.OBJECT_HEADER_SIZE+constants.STR_SIZE+constants.I32_SIZE])
 
 	if res == 1 {
 		*affOffset = WriteToSlice(*affOffset, callerOffsetB)
@@ -374,14 +375,14 @@ func QueryCaller(fn *ast.CXFunction, expr *ast.CXExpression, callerOffsetB []byt
 func QueryProgram(fn *ast.CXFunction, expr *ast.CXExpression, prgrmOffsetB []byte, affOffset *int) {
 	prgrmOffset := AllocateSeq(constants.OBJECT_HEADER_SIZE + constants.I32_SIZE + constants.I64_SIZE + constants.STR_SIZE + constants.I32_SIZE)
 	// Callcounter
-	WriteI32(prgrmOffset+constants.OBJECT_HEADER_SIZE, int32(PROGRAM.CallCounter))
+	WriteI32(prgrmOffset+constants.OBJECT_HEADER_SIZE, int32(globals.PROGRAM.CallCounter))
 	// HeapUsed
-	WriteI64(prgrmOffset+constants.OBJECT_HEADER_SIZE+constants.I32_SIZE, int64(PROGRAM.HeapPointer))
+	WriteI64(prgrmOffset+constants.OBJECT_HEADER_SIZE+constants.I32_SIZE, int64(globals.PROGRAM.HeapPointer))
 
 	// Caller
-	if PROGRAM.CallCounter != 0 {
+	if globals.PROGRAM.CallCounter != 0 {
 		// then it's not just entry point
-		call := PROGRAM.CallStack[PROGRAM.CallCounter-1]
+		call := globals.PROGRAM.CallStack[globals.PROGRAM.CallCounter-1]
 
 		// var opNameB []byte
 		opNameOffset := 0
@@ -409,7 +410,7 @@ func QueryProgram(fn *ast.CXFunction, expr *ast.CXExpression, prgrmOffsetB []byt
 		// }
 	}
 
-	res := CallAffPredicate(fn, PROGRAM.Memory[prgrmOffset+constants.OBJECT_HEADER_SIZE:prgrmOffset+constants.OBJECT_HEADER_SIZE+constants.I32_SIZE+constants.I64_SIZE+constants.STR_SIZE+constants.I32_SIZE])
+	res := CallAffPredicate(fn, globals.PROGRAM.Memory[prgrmOffset+constants.OBJECT_HEADER_SIZE:prgrmOffset+constants.OBJECT_HEADER_SIZE+constants.I32_SIZE+constants.I64_SIZE+constants.STR_SIZE+constants.I32_SIZE])
 
 	if res == 1 {
 		*affOffset = WriteToSlice(*affOffset, prgrmOffsetB)
@@ -440,7 +441,7 @@ func getTarget(inp2 *ast.CXArgument, fp int, tgtElt *string, tgtArgType *string,
 		default:
 			switch *tgtElt {
 			case "pkg":
-				if pkg, err := PROGRAM.GetPackage(aff); err == nil {
+				if pkg, err := globals.PROGRAM.GetPackage(aff); err == nil {
 					*tgtPkg = *pkg
 				} else {
 					panic(err)
@@ -590,7 +591,7 @@ func getAffordances(inp1 *ast.CXArgument, fp int,
 					*affs = append(*affs, "Move FS to TP")
 				}
 			case "pkg":
-				if pkg, err := PROGRAM.GetPackage(elt); err == nil {
+				if pkg, err := globals.PROGRAM.GetPackage(elt); err == nil {
 					_ = pkg
 					switch tgtElt {
 					case "pkg":
@@ -612,7 +613,7 @@ func getAffordances(inp1 *ast.CXArgument, fp int,
 func opAffOn(expr *ast.CXExpression, fp int) {
 	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
 
-	prevPkg := PROGRAM.CurrentPackage
+	prevPkg := globals.PROGRAM.CurrentPackage
 	prevFn := prevPkg.CurrentFunction
 	prevExpr := prevFn.CurrentExpression
 
@@ -636,9 +637,9 @@ func opAffOn(expr *ast.CXExpression, fp int) {
 	getAffordances(inp1, fp, tgtElt, tgtArgType, tgtArgIndex, &tgtPkg, &tgtFn, &tgtExpr, onMessages, &affs)
 
 	// returning to previous state
-	PROGRAM.CurrentPackage = prevPkg
-	PROGRAM.CurrentPackage.CurrentFunction = prevFn
-	PROGRAM.CurrentPackage.CurrentFunction.CurrentExpression = prevExpr
+	globals.PROGRAM.CurrentPackage = prevPkg
+	globals.PROGRAM.CurrentPackage.CurrentFunction = prevFn
+	globals.PROGRAM.CurrentPackage.CurrentFunction.CurrentExpression = prevExpr
 
 	for i, aff := range affs {
 		fmt.Printf("%d - %s\n", i, aff)
@@ -648,7 +649,7 @@ func opAffOn(expr *ast.CXExpression, fp int) {
 func opAffOf(expr *ast.CXExpression, fp int) {
 	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
 
-	prevPkg := PROGRAM.CurrentPackage
+	prevPkg := globals.PROGRAM.CurrentPackage
 	prevFn := prevPkg.CurrentFunction
 	prevExpr := prevFn.CurrentExpression
 
@@ -668,9 +669,9 @@ func opAffOf(expr *ast.CXExpression, fp int) {
 	getAffordances(inp1, fp, tgtElt, tgtArgType, tgtArgIndex, &tgtPkg, &tgtFn, &tgtExpr, ofMessages, &affs)
 
 	// returning to previous state
-	PROGRAM.CurrentPackage = prevPkg
-	PROGRAM.CurrentPackage.CurrentFunction = prevFn
-	PROGRAM.CurrentPackage.CurrentFunction.CurrentExpression = prevExpr
+	globals.PROGRAM.CurrentPackage = prevPkg
+	globals.PROGRAM.CurrentPackage.CurrentFunction = prevFn
+	globals.PROGRAM.CurrentPackage.CurrentFunction.CurrentExpression = prevExpr
 
 	for i, aff := range affs {
 		fmt.Printf("%d - %s\n", i, aff)
@@ -746,7 +747,7 @@ func readArgAff(aff string, tgtFn *ast.CXFunction) *ast.CXArgument {
 func opAffInform(expr *ast.CXExpression, fp int) {
 	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
 
-	prevPkg := PROGRAM.CurrentPackage
+	prevPkg := globals.PROGRAM.CurrentPackage
 	prevFn := prevPkg.CurrentFunction
 	prevExpr := prevFn.CurrentExpression
 
@@ -820,7 +821,7 @@ func opAffInform(expr *ast.CXExpression, fp int) {
 
 		}
 	case "pkg":
-		if pkg, err := PROGRAM.GetPackage(elt); err == nil {
+		if pkg, err := globals.PROGRAM.GetPackage(elt); err == nil {
 			_ = pkg
 			switch tgtElt {
 			case "pkg":
@@ -837,15 +838,15 @@ func opAffInform(expr *ast.CXExpression, fp int) {
 	}
 
 	// returning to previous state
-	PROGRAM.CurrentPackage = prevPkg
-	PROGRAM.CurrentPackage.CurrentFunction = prevFn
-	PROGRAM.CurrentPackage.CurrentFunction.CurrentExpression = prevExpr
+	globals.PROGRAM.CurrentPackage = prevPkg
+	globals.PROGRAM.CurrentPackage.CurrentFunction = prevFn
+	globals.PROGRAM.CurrentPackage.CurrentFunction.CurrentExpression = prevExpr
 }
 
 func opAffRequest(expr *ast.CXExpression, fp int) {
 	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
 
-	prevPkg := PROGRAM.CurrentPackage
+	prevPkg := globals.PROGRAM.CurrentPackage
 	prevFn := prevPkg.CurrentFunction
 	prevExpr := prevFn.CurrentExpression
 
@@ -933,7 +934,7 @@ func opAffRequest(expr *ast.CXExpression, fp int) {
 
 		}
 	case "pkg":
-		if pkg, err := PROGRAM.GetPackage(elt); err == nil {
+		if pkg, err := globals.PROGRAM.GetPackage(elt); err == nil {
 			_ = pkg
 			switch tgtElt {
 			case "pkg":
@@ -956,9 +957,9 @@ func opAffRequest(expr *ast.CXExpression, fp int) {
 	}
 
 	// returning to previous state
-	PROGRAM.CurrentPackage = prevPkg
-	PROGRAM.CurrentPackage.CurrentFunction = prevFn
-	PROGRAM.CurrentPackage.CurrentFunction.CurrentExpression = prevExpr
+	globals.PROGRAM.CurrentPackage = prevPkg
+	globals.PROGRAM.CurrentPackage.CurrentFunction = prevFn
+	globals.PROGRAM.CurrentPackage.CurrentFunction.CurrentExpression = prevExpr
 }
 
 func opAffQuery(expr *ast.CXExpression, fp int) {

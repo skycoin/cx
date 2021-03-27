@@ -4,6 +4,7 @@ package cxfx
 
 import (
 	"github.com/skycoin/cx/cx"
+	"github.com/skycoin/cx/cx/globals"
 )
 
 type Func_i32_i32 func(a int32, b int32)
@@ -19,8 +20,8 @@ func opGlfwFuncI32I32(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 		var inps [][]byte = make([][]byte, 2)
 		inps[0] = cxcore.FromI32(a)
 		inps[1] = cxcore.FromI32(b)
-		if fn, err := cxcore.PROGRAM.GetFunction(functionName, packageName); err == nil {
-			cxcore.PROGRAM.Callback(fn, inps)
+		if fn, err := globals.PROGRAM.GetFunction(functionName, packageName); err == nil {
+			globals.PROGRAM.Callback(fn, inps)
 		}
 	}
 

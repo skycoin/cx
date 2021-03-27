@@ -5,6 +5,7 @@ import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/execute"
+	"github.com/skycoin/cx/cx/globals"
 
 	repl "github.com/skycoin/cx/cmd/cxrepl"
 	cxcore "github.com/skycoin/cx/cx"
@@ -191,7 +192,7 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 	actions.AST = ast.MakeProgram()
 
 	//corePkgsPrgrm, err := cxcore.GetCurrentCxProgram()
-	var corePkgsPrgrm *ast.CXProgram = cxcore.PROGRAM
+	var corePkgsPrgrm *ast.CXProgram = globals.PROGRAM
 
 	if corePkgsPrgrm == nil {
 		panic("CxProgram is nil")
@@ -358,9 +359,9 @@ func GetCXPath(options cxCmdFlags) {
 
 		CXPATH = usr.HomeDir + "/cx/"
 	}
-	cxcore.BINPATH = filepath.Join(CXPATH, "bin/")
-	cxcore.PKGPATH = filepath.Join(CXPATH, "pkg/")
-	cxcore.SRCPATH = filepath.Join(CXPATH, "src/")
+	globals.BINPATH = filepath.Join(CXPATH, "bin/")
+	globals.PKGPATH = filepath.Join(CXPATH, "pkg/")
+	globals.SRCPATH = filepath.Join(CXPATH, "src/")
 	//why would we create directories on executing every CX program?
 	//directory creation should be on installation
 	//CreateCxDirectories(CXPATH)

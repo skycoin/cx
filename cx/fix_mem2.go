@@ -3,6 +3,7 @@ package cxcore
 import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/globals"
 )
 
 //NOTE: Temp file for resolving CalculateDereferences issue
@@ -49,7 +50,7 @@ func CalculateDereferences(arg *ast.CXArgument, finalOffset *int, fp int) {
 			var offset int32
 			var byts []byte
 
-			byts = PROGRAM.Memory[*finalOffset : *finalOffset+constants.TYPE_POINTER_SIZE]
+			byts = globals.PROGRAM.Memory[*finalOffset : *finalOffset+constants.TYPE_POINTER_SIZE]
 
 			offset = Deserialize_i32(byts)
 
@@ -87,7 +88,7 @@ func CalculateDereferences(arg *ast.CXArgument, finalOffset *int, fp int) {
 			var offset int32
 			var byts []byte
 
-			byts = PROGRAM.Memory[*finalOffset : *finalOffset+constants.TYPE_POINTER_SIZE]
+			byts = globals.PROGRAM.Memory[*finalOffset : *finalOffset+constants.TYPE_POINTER_SIZE]
 
 			offset = Deserialize_i32(byts)
 			*finalOffset = int(offset)
@@ -96,7 +97,7 @@ func CalculateDereferences(arg *ast.CXArgument, finalOffset *int, fp int) {
 	}
 
 	// if *finalOffset >= PROGRAM.HeapStartsAt {
-	if *finalOffset >= PROGRAM.HeapStartsAt && isPointer {
+	if *finalOffset >= globals.PROGRAM.HeapStartsAt && isPointer {
 		// then it's an object
 		*finalOffset += constants.OBJECT_HEADER_SIZE
 		if arg.IsSlice {

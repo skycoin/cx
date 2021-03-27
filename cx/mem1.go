@@ -3,6 +3,7 @@ package cxcore
 import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/globals"
 )
 
 
@@ -15,7 +16,7 @@ func GetStrOffset(fp int, arg *ast.CXArgument) int {
 	strOffset := GetFinalOffset(fp, arg)
 	if arg.Name != "" {
 		// then it's not a literal
-		offset := Deserialize_i32(PROGRAM.Memory[strOffset : strOffset+constants.TYPE_POINTER_SIZE])
+		offset := Deserialize_i32(globals.PROGRAM.Memory[strOffset : strOffset+constants.TYPE_POINTER_SIZE])
 		strOffset = int(offset)
 	}
 	return strOffset
@@ -48,16 +49,16 @@ func ResizeMemory(prgrm *ast.CXProgram, newMemSize int, isExpand bool) {
 // AllocateSeq allocates memory in the heap
 func AllocateSeq(size int) (offset int) {
 	// Current object trying to be allocated would use this address.
-	addr := PROGRAM.HeapPointer
+	addr := globals.PROGRAM.HeapPointer
 	// Next object to be allocated will use this address.
 	newFree := addr + size
 
 	// Checking if we can allocate the entirety of the object in the current heap.
-	if newFree > PROGRAM.HeapSize {
+	if newFree > globals.PROGRAM.HeapSize {
 		// It does not fit, so calling garbage collector.
-		MarkAndCompact(PROGRAM)
+		MarkAndCompact(globals.PROGRAM)
 		// Heap pointer got moved by GC and recalculate these variables based on the new pointer.
-		addr = PROGRAM.HeapPointer
+		addr = globals.PROGRAM.HeapPointer
 		newFree = addr + size
 
 		// If the new heap pointer exceeds `MAX_HEAP_SIZE`, there's nothing left to do.
@@ -72,14 +73,14 @@ func AllocateSeq(size int) (offset int) {
 		// too frequently.
 
 		// Calculating free heap memory percentage.
-		usedPerc := float32(newFree) / float32(PROGRAM.HeapSize)
+		usedPerc := float32(newFree) / float32(globals.PROGRAM.HeapSize)
 		freeMemPerc := 1.0 - usedPerc
 
 		// Then we have less than MIN_HEAP_FREE_RATIO memory left. Expand!
 		if freeMemPerc < constants.MIN_HEAP_FREE_RATIO {
 			// Calculating new heap size in order to reach MIN_HEAP_FREE_RATIO.
 			newMemSize := int(float32(newFree) / (1.0 - constants.MIN_HEAP_FREE_RATIO))
-			ResizeMemory(PROGRAM, newMemSize, true)
+			ResizeMemory(globals.PROGRAM, newMemSize, true)
 		}
 
 		// Then we have more than MAX_HEAP_FREE_RATIO memory left. Shrink!
@@ -90,17 +91,17 @@ func AllocateSeq(size int) (offset int) {
 			// This check guarantees that the CX program has always at least INIT_HEAP_SIZE bytes to work with.
 			// A flag could be added later to remove this, as in some cases this mechanism could not be desired.
 			if newMemSize > constants.INIT_HEAP_SIZE {
-				ResizeMemory(PROGRAM, newMemSize, false)
+				ResizeMemory(globals.PROGRAM, newMemSize, false)
 			}
 		}
 	}
 
-	PROGRAM.HeapPointer = newFree
+	globals.PROGRAM.HeapPointer = newFree
 
 	// Returning absolute memory address (not relative to where heap starts at).
 	// Above this point we were performing all operations taking into
 	// consideration only heap offsets.
-	return addr + PROGRAM.HeapStartsAt
+	return addr + globals.PROGRAM.HeapStartsAt
 }
 
 

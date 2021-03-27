@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/globals"
 	"os"
 	"strconv"
 	"strings"
@@ -29,13 +30,13 @@ func opLen(expr *ast.CXExpression, fp int) {
 	} else if elt.Type == constants.TYPE_STR && elt.Lengths == nil {
 		var strOffset = GetStrOffset(fp, inp1)
 		// Checking if the string lives on the heap.
-		if strOffset > PROGRAM.HeapStartsAt {
+		if strOffset > globals.PROGRAM.HeapStartsAt {
 			// Then it's on the heap and we need to consider
 			// the object's header.
 			strOffset += constants.OBJECT_HEADER_SIZE
 		}
 
-		WriteMemory(GetFinalOffset(fp, out1), PROGRAM.Memory[strOffset:strOffset+constants.STR_HEADER_SIZE])
+		WriteMemory(GetFinalOffset(fp, out1), globals.PROGRAM.Memory[strOffset:strOffset+constants.STR_HEADER_SIZE])
 	} else {
 		outV0 := int32(elt.Lengths[len(elt.Indexes)])
 		WriteI32(GetFinalOffset(fp, out1), outV0)

@@ -3,6 +3,7 @@ package cxcore
 import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/globals"
 	"log"
 )
 
@@ -50,7 +51,7 @@ func GetFinalOffset(fp int, arg *ast.CXArgument) int {
 	// elt = arg
 
 	//Todo: find way to eliminate this check
-	if finalOffset < PROGRAM.StackSize {
+	if finalOffset < globals.PROGRAM.StackSize {
 		// Then it's in the stack, not in data or heap and we need to consider the frame pointer.
 		finalOffset += fp
 	}
@@ -88,7 +89,7 @@ func GetOffsetAtomicSimple(fp int, arg *ast.CXArgument) int {
 	}
 
 	finalOffset := arg.Offset
-	if finalOffset < PROGRAM.StackSize {
+	if finalOffset < globals.PROGRAM.StackSize {
 		finalOffset += fp //check if on stack
 	}
 	return finalOffset
@@ -107,7 +108,7 @@ func GetOffsetAtomic(fp int, arg *ast.CXArgument) int {
 
 	finalOffset := arg.Offset
 	//Todo: find way to eliminate this check
-	if finalOffset < PROGRAM.StackSize {
+	if finalOffset < globals.PROGRAM.StackSize {
 		// Then it's in the stack, not in data or heap and we need to consider the frame pointer.
 		finalOffset += fp
 	}

@@ -477,8 +477,8 @@ func (cxprogram *CXProgram) RemovePackage(modName string) {
 //Very strange
 //Beware whenever this function is called
 func (cxprogram *CXProgram) SetCurrentCxProgram() (*CXProgram, error) {
-	cxcore.PROGRAM = cxprogram
-	return cxcore.PROGRAM, nil
+	globals.PROGRAM = cxprogram
+	return globals.PROGRAM, nil
 }
 
 // GetCurrentCxProgram returns the CX program assigned to global variable `PROGRAM`.

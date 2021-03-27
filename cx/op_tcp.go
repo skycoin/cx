@@ -3,6 +3,7 @@ package cxcore
 import (
 	"context"
 	"github.com/skycoin/cx/cx/ast"
+	"github.com/skycoin/cx/cx/globals"
 	"log"
 	"net"
 	"net/rpc"
@@ -26,7 +27,7 @@ func init() {
 
 	netPkg.AddStruct(dialerStrct)
 
-	PROGRAM.AddPackage(netPkg)
+	globals.PROGRAM.AddPackage(netPkg)
 
 }
 

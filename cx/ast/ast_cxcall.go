@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/globals"
 )
 
 // CXCall ...
@@ -115,7 +116,7 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]cxcore.CXValue, glob
 					value.Type = input.Type
 					value.FramePointer = fp
 					value.Expr = expr
-					value.memory = cxcore.PROGRAM.Memory[offset : offset+cxcore.GetSize(input)]
+					value.memory = globals.PROGRAM.Memory[offset : offset+cxcore.GetSize(input)]
 					argIndex++
 				}
 
