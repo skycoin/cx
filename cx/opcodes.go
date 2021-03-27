@@ -268,6 +268,9 @@ var (
 
 	// Versions ...
 	OpVersions = map[int]int{}
+)
+
+var (
 
 	// Natives ...
 	Natives        = map[int]*ast.CXFunction{}
