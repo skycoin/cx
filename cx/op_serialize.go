@@ -3,6 +3,7 @@ package cxcore
 import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/helper"
 )
 
 func opSerialize(expr *ast.CXExpression, fp int) {
@@ -25,10 +26,10 @@ func opDeserialize(expr *ast.CXExpression, fp int) {
 
 	inpOffset := GetFinalOffset(fp, inp)
 
-	off := Deserialize_i32(ast.PROGRAM.Memory[inpOffset : inpOffset+constants.TYPE_POINTER_SIZE])
+	off := helper.Deserialize_i32(ast.PROGRAM.Memory[inpOffset : inpOffset+constants.TYPE_POINTER_SIZE])
 
 	_l := ast.PROGRAM.Memory[off+constants.OBJECT_HEADER_SIZE : off+constants.OBJECT_HEADER_SIZE+constants.SLICE_HEADER_SIZE]
-	l := Deserialize_i32(_l[4:8])
+	l := helper.Deserialize_i32(_l[4:8])
 
 	Deserialize(ast.PROGRAM.Memory[off+constants.OBJECT_HEADER_SIZE+constants.SLICE_HEADER_SIZE : off+constants.OBJECT_HEADER_SIZE+constants.SLICE_HEADER_SIZE+l]) // BUG : should be l * elt.TotalSize ?
 }

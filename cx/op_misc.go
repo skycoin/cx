@@ -3,6 +3,7 @@ package cxcore
 import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/helper"
 )
 
 // "fmt"
@@ -59,7 +60,7 @@ func opJmp(expr *ast.CXExpression, fp int) {
 		inp1Offset := GetFinalOffset(fp, inp1)
 
 		predicateB := ast.PROGRAM.Memory[inp1Offset : inp1Offset+ast.GetSize(inp1)]
-		predicate = DeserializeBool(predicateB)
+		predicate = helper.DeserializeBool(predicateB)
 
 		if predicate {
 			call.Line = call.Line + expr.ThenLines

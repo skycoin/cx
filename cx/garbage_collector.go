@@ -3,6 +3,7 @@ package cxcore
 import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/helper"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
@@ -107,10 +108,10 @@ func MarkAndCompact(prgrm *ast.CXProgram) {
 
 	// Relocation of live objects.
 	for c := prgrm.HeapStartsAt + constants.NULL_HEAP_ADDRESS_OFFSET; c < prgrm.HeapStartsAt+prgrm.HeapPointer; {
-		objSize := Deserialize_i32(prgrm.Memory[c+constants.MARK_SIZE+constants.FORWARDING_ADDRESS_SIZE : c+constants.MARK_SIZE+constants.FORWARDING_ADDRESS_SIZE+constants.OBJECT_SIZE])
+		objSize := helper.Deserialize_i32(prgrm.Memory[c+constants.MARK_SIZE+constants.FORWARDING_ADDRESS_SIZE : c+constants.MARK_SIZE+constants.FORWARDING_ADDRESS_SIZE+constants.OBJECT_SIZE])
 
 		if prgrm.Memory[c] == 1 {
-			forwardingAddress := Deserialize_i32(prgrm.Memory[c+constants.MARK_SIZE : c+constants.MARK_SIZE+constants.FORWARDING_ADDRESS_SIZE])
+			forwardingAddress := helper.Deserialize_i32(prgrm.Memory[c+constants.MARK_SIZE : c+constants.MARK_SIZE+constants.FORWARDING_ADDRESS_SIZE])
 
 			// We update the pointers that are pointing to the just moved object.
 			updatePointers(prgrm, forwardingAddress, int32(prgrm.HeapStartsAt)+faddr)
@@ -140,7 +141,7 @@ func updateDisplaceReference(prgrm *ast.CXProgram, updated *map[int]int, atOffse
 
 	// Extracting the address being pointed by element at `atOffset`
 	sCurrAddr := prgrm.Memory[atOffset : atOffset+constants.TYPE_POINTER_SIZE]
-	dsCurrAddr := Deserialize_i32(sCurrAddr)
+	dsCurrAddr := helper.Deserialize_i32(sCurrAddr)
 
 	// Adding `plusOff` to the address and updating the address pointed by
 	// element at `atOffset`.
@@ -156,7 +157,7 @@ func doDisplaceReferences(prgrm *ast.CXProgram, updated *map[int]int, atOffset i
 	var numDeclSpecs = len(declSpecs)
 
 	// Getting the offset to the object in the heap.
-	heapOffset := Deserialize_i32(prgrm.Memory[atOffset : atOffset+constants.TYPE_POINTER_SIZE])
+	heapOffset := helper.Deserialize_i32(prgrm.Memory[atOffset : atOffset+constants.TYPE_POINTER_SIZE])
 
 	// The whole displacement process is needed because the objects on the heap were
 	// displaced by additional data segment bytes. These additional bytes need to be
@@ -187,12 +188,12 @@ func doDisplaceReferences(prgrm *ast.CXProgram, updated *map[int]int, atOffset i
 			(numDeclSpecs == 1 && baseType == constants.TYPE_STR) {
 			// Then we need to iterate each of the slice objects
 			// and check if we need to update their address.
-			sliceLen := Deserialize_i32(GetSliceHeader(heapOffset + int32(condPlusOff))[4:8])
+			sliceLen := helper.Deserialize_i32(GetSliceHeader(heapOffset + int32(condPlusOff))[4:8])
 
 			offsetToElements := constants.OBJECT_HEADER_SIZE + constants.SLICE_HEADER_SIZE
 
 			for c := int32(0); c < sliceLen; c++ {
-				cHeapOffset := Deserialize_i32(prgrm.Memory[int(heapOffset)+condPlusOff+offsetToElements+int(c*constants.TYPE_POINTER_SIZE) : int(heapOffset)+condPlusOff+offsetToElements+int(c*constants.TYPE_POINTER_SIZE)+4])
+				cHeapOffset := helper.Deserialize_i32(prgrm.Memory[int(heapOffset)+condPlusOff+offsetToElements+int(c*constants.TYPE_POINTER_SIZE) : int(heapOffset)+condPlusOff+offsetToElements+int(c*constants.TYPE_POINTER_SIZE)+4])
 
 				if int(cHeapOffset) <= prgrm.HeapStartsAt+condPlusOff {
 					// Then it's pointing to null or data segment
@@ -256,7 +257,7 @@ func MarkObjectsTree(prgrm *ast.CXProgram, offset int, baseType int, declSpecs [
 	var numDeclSpecs = len(declSpecs)
 
 	// Getting the offset to the object in the heap
-	heapOffset := Deserialize_i32(prgrm.Memory[offset : offset+constants.TYPE_POINTER_SIZE])
+	heapOffset := helper.Deserialize_i32(prgrm.Memory[offset : offset+constants.TYPE_POINTER_SIZE])
 
 	// Then it's a pointer to an object in the stack and it should not be marked.
 	if heapOffset <= int32(prgrm.HeapStartsAt) {
@@ -278,11 +279,11 @@ func MarkObjectsTree(prgrm *ast.CXProgram, offset int, baseType int, declSpecs [
 				declSpecs[1] == constants.DECL_POINTER)) ||
 			(numDeclSpecs == 1 && baseType == constants.TYPE_STR) {
 			// Then we need to iterate each of the slice objects and mark them as alive
-			sliceLen := Deserialize_i32(GetSliceHeader(heapOffset)[4:8])
+			sliceLen := helper.Deserialize_i32(GetSliceHeader(heapOffset)[4:8])
 
 			for c := int32(0); c < sliceLen; c++ {
 				offsetToElements := constants.OBJECT_HEADER_SIZE + constants.SLICE_HEADER_SIZE
-				cHeapOffset := Deserialize_i32(prgrm.Memory[int(heapOffset)+offsetToElements+int(c*constants.TYPE_POINTER_SIZE) : int(heapOffset)+offsetToElements+int(c*constants.TYPE_POINTER_SIZE)+4])
+				cHeapOffset := helper.Deserialize_i32(prgrm.Memory[int(heapOffset)+offsetToElements+int(c*constants.TYPE_POINTER_SIZE) : int(heapOffset)+offsetToElements+int(c*constants.TYPE_POINTER_SIZE)+4])
 
 				if cHeapOffset <= int32(prgrm.HeapStartsAt) {
 					// Then it's pointing to null or data segment
@@ -306,7 +307,7 @@ func updatePointerTree(prgrm *ast.CXProgram, atOffset int, oldAddr, newAddr int3
 	var numDeclSpecs = len(declSpecs)
 
 	// Getting the offset to the object in the heap
-	heapOffset := Deserialize_i32(prgrm.Memory[atOffset : atOffset+constants.TYPE_POINTER_SIZE])
+	heapOffset := helper.Deserialize_i32(prgrm.Memory[atOffset : atOffset+constants.TYPE_POINTER_SIZE])
 
 	if heapOffset == oldAddr {
 		// Updating the root pointer.
@@ -327,12 +328,12 @@ func updatePointerTree(prgrm *ast.CXProgram, atOffset int, oldAddr, newAddr int3
 			(numDeclSpecs == 1 && baseType == constants.TYPE_STR) {
 			// Then we need to iterate each of the slice objects
 			// and check if we need to update their address.
-			sliceLen := Deserialize_i32(GetSliceHeader(heapOffset)[4:8])
+			sliceLen := helper.Deserialize_i32(GetSliceHeader(heapOffset)[4:8])
 
 			offsetToElements := constants.OBJECT_HEADER_SIZE + constants.SLICE_HEADER_SIZE
 
 			for c := int32(0); c < sliceLen; c++ {
-				cHeapOffset := Deserialize_i32(prgrm.Memory[int(heapOffset)+offsetToElements+int(c*constants.TYPE_POINTER_SIZE) : int(heapOffset)+offsetToElements+int(c*constants.TYPE_POINTER_SIZE)+4])
+				cHeapOffset := helper.Deserialize_i32(prgrm.Memory[int(heapOffset)+offsetToElements+int(c*constants.TYPE_POINTER_SIZE) : int(heapOffset)+offsetToElements+int(c*constants.TYPE_POINTER_SIZE)+4])
 
 				if cHeapOffset <= int32(prgrm.HeapStartsAt) {
 					// Then it's pointing to null or data segment

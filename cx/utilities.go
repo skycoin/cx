@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/helper"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -164,7 +165,7 @@ func getFormattedDerefs(arg *ast.CXArgument, includePkg bool) string {
 		idxValue := ""
 		if idx.Offset > ast.PROGRAM.StackSize {
 			// Then it's a literal.
-			idxI32 := Deserialize_i32(ast.PROGRAM.Memory[idx.Offset : idx.Offset+constants.TYPE_POINTER_SIZE])
+			idxI32 := helper.Deserialize_i32(ast.PROGRAM.Memory[idx.Offset : idx.Offset+constants.TYPE_POINTER_SIZE])
 			idxValue = fmt.Sprintf("%d", idxI32)
 		} else {
 			// Then let's just print the variable name.
@@ -575,7 +576,7 @@ func IsValidSliceIndex(offset int, index int, sizeofElement int) bool {
 
 // GetPointerOffset ...
 func GetPointerOffset(pointer int32) int32 {
-	return Deserialize_i32(ast.PROGRAM.Memory[pointer : pointer+constants.TYPE_POINTER_SIZE])
+	return helper.Deserialize_i32(ast.PROGRAM.Memory[pointer : pointer+constants.TYPE_POINTER_SIZE])
 }
 
 // GetSliceOffset ...
@@ -601,7 +602,7 @@ func GetSliceHeader(offset int32) []byte {
 // GetSliceLen ...
 func GetSliceLen(offset int32) int32 {
 	sliceHeader := GetSliceHeader(offset)
-	return Deserialize_i32(sliceHeader[4:8])
+	return helper.Deserialize_i32(sliceHeader[4:8])
 }
 
 // GetSlice ...
@@ -636,7 +637,7 @@ func SliceResizeEx(outputSliceOffset int32, count int32, sizeofElement int) int 
 
 	if outputSliceOffset > 0 {
 		outputSliceHeader = GetSliceHeader(outputSliceOffset)
-		outputSliceCap = Deserialize_i32(outputSliceHeader[0:4])
+		outputSliceCap = helper.Deserialize_i32(outputSliceHeader[0:4])
 	}
 
 	var newLen = count
@@ -1001,7 +1002,7 @@ func DebugHeap() {
 	for _, pkg := range ast.PROGRAM.Packages {
 		for _, glbl := range pkg.Globals {
 			if glbl.IsPointer || glbl.IsSlice {
-				heapOffset := Deserialize_i32(ast.PROGRAM.Memory[glbl.Offset : glbl.Offset+constants.TYPE_POINTER_SIZE])
+				heapOffset := helper.Deserialize_i32(ast.PROGRAM.Memory[glbl.Offset : glbl.Offset+constants.TYPE_POINTER_SIZE])
 
 				symsToAddrs[heapOffset] = append(symsToAddrs[heapOffset], glbl.Name)
 			}
@@ -1037,7 +1038,7 @@ func DebugHeap() {
 				offset += fp
 			}
 
-			heapOffset := Deserialize_i32(ast.PROGRAM.Memory[offset : offset+constants.TYPE_POINTER_SIZE])
+			heapOffset := helper.Deserialize_i32(ast.PROGRAM.Memory[offset : offset+constants.TYPE_POINTER_SIZE])
 
 			symsToAddrs[heapOffset] = append(symsToAddrs[heapOffset], symName)
 		}
@@ -1061,7 +1062,7 @@ func DebugHeap() {
 	w = tabwriter.NewWriter(os.Stdout, 0, 0, 2, '.', 0)
 
 	for c := ast.PROGRAM.HeapStartsAt + constants.NULL_HEAP_ADDRESS_OFFSET; c < ast.PROGRAM.HeapStartsAt+ast.PROGRAM.HeapPointer; {
-		objSize := Deserialize_i32(ast.PROGRAM.Memory[c+constants.MARK_SIZE+constants.FORWARDING_ADDRESS_SIZE : c+constants.MARK_SIZE+constants.FORWARDING_ADDRESS_SIZE+constants.OBJECT_SIZE])
+		objSize := helper.Deserialize_i32(ast.PROGRAM.Memory[c+constants.MARK_SIZE+constants.FORWARDING_ADDRESS_SIZE : c+constants.MARK_SIZE+constants.FORWARDING_ADDRESS_SIZE+constants.OBJECT_SIZE])
 
 		// Setting a limit size for the object to be printed if the object is too large.
 		// We don't want to print obscenely large objects to standard output.

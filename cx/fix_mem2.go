@@ -3,6 +3,7 @@ package cxcore
 import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/helper"
 )
 
 //NOTE: Temp file for resolving CalculateDereferences issue
@@ -51,7 +52,7 @@ func CalculateDereferences(arg *ast.CXArgument, finalOffset *int, fp int) {
 
 			byts = ast.PROGRAM.Memory[*finalOffset : *finalOffset+constants.TYPE_POINTER_SIZE]
 
-			offset = Deserialize_i32(byts)
+			offset = helper.Deserialize_i32(byts)
 
 			*finalOffset = int(offset)
 
@@ -89,7 +90,7 @@ func CalculateDereferences(arg *ast.CXArgument, finalOffset *int, fp int) {
 
 			byts = ast.PROGRAM.Memory[*finalOffset : *finalOffset+constants.TYPE_POINTER_SIZE]
 
-			offset = Deserialize_i32(byts)
+			offset = helper.Deserialize_i32(byts)
 			*finalOffset = int(offset)
 		}
 

@@ -3,6 +3,7 @@ package cxcore
 import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/helper"
 )
 
 
@@ -15,7 +16,7 @@ func GetStrOffset(fp int, arg *ast.CXArgument) int {
 	strOffset := GetFinalOffset(fp, arg)
 	if arg.Name != "" {
 		// then it's not a literal
-		offset := Deserialize_i32(ast.PROGRAM.Memory[strOffset : strOffset+constants.TYPE_POINTER_SIZE])
+		offset := helper.Deserialize_i32(ast.PROGRAM.Memory[strOffset : strOffset+constants.TYPE_POINTER_SIZE])
 		strOffset = int(offset)
 	}
 	return strOffset

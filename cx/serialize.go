@@ -3,6 +3,7 @@ package cxcore
 import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/helper"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
@@ -847,7 +848,7 @@ func SerializeDebugInfo(prgrm *ast.CXProgram, includeMemory bool) SerializedData
 	var s serializedCXProgram
 
 	bytes := SerializeCXProgram(prgrm, includeMemory)
-	DeserializeRaw(bytes[:idxSize], &s.Index)
+	helper.DeserializeRaw(bytes[:idxSize], &s.Index)
 
 	data := &SerializedDataSize{
 		Program:     len(bytes[s.Index.ProgramOffset:s.Index.CallsOffset]),
@@ -871,7 +872,7 @@ func deserializeString(off int64, size int64, s *serializedCXProgram) string {
 	}
 
 	var name string
-	DeserializeRaw(s.Strings[off:off+size], &name)
+	helper.DeserializeRaw(s.Strings[off:off+size], &name)
 
 	return name
 }
@@ -1203,15 +1204,15 @@ func Deserialize(b []byte) (prgrm *ast.CXProgram) {
 
 	var s serializedCXProgram
 
-	DeserializeRaw(b[:idxSize], &s.Index)
-	DeserializeRaw(b[s.Index.ProgramOffset:s.Index.CallsOffset], &s.Program)
-	DeserializeRaw(b[s.Index.CallsOffset:s.Index.PackagesOffset], &s.Calls)
-	DeserializeRaw(b[s.Index.PackagesOffset:s.Index.StructsOffset], &s.Packages)
-	DeserializeRaw(b[s.Index.StructsOffset:s.Index.FunctionsOffset], &s.Structs)
-	DeserializeRaw(b[s.Index.FunctionsOffset:s.Index.ExpressionsOffset], &s.Functions)
-	DeserializeRaw(b[s.Index.ExpressionsOffset:s.Index.ArgumentsOffset], &s.Expressions)
-	DeserializeRaw(b[s.Index.ArgumentsOffset:s.Index.IntegersOffset], &s.Arguments)
-	DeserializeRaw(b[s.Index.IntegersOffset:s.Index.StringsOffset], &s.Integers)
+	helper.DeserializeRaw(b[:idxSize], &s.Index)
+	helper.DeserializeRaw(b[s.Index.ProgramOffset:s.Index.CallsOffset], &s.Program)
+	helper.DeserializeRaw(b[s.Index.CallsOffset:s.Index.PackagesOffset], &s.Calls)
+	helper.DeserializeRaw(b[s.Index.PackagesOffset:s.Index.StructsOffset], &s.Packages)
+	helper.DeserializeRaw(b[s.Index.StructsOffset:s.Index.FunctionsOffset], &s.Structs)
+	helper.DeserializeRaw(b[s.Index.FunctionsOffset:s.Index.ExpressionsOffset], &s.Functions)
+	helper.DeserializeRaw(b[s.Index.ExpressionsOffset:s.Index.ArgumentsOffset], &s.Expressions)
+	helper.DeserializeRaw(b[s.Index.ArgumentsOffset:s.Index.IntegersOffset], &s.Arguments)
+	helper.DeserializeRaw(b[s.Index.IntegersOffset:s.Index.StringsOffset], &s.Integers)
 	s.Strings = b[s.Index.StringsOffset:s.Index.MemoryOffset]
 	s.Memory = b[s.Index.MemoryOffset:]
 
@@ -1229,14 +1230,14 @@ func CopyProgramState(sPrgrm1, sPrgrm2 *[]byte) {
 	var index1 serializedCXProgramIndex
 	var index2 serializedCXProgramIndex
 
-	DeserializeRaw((*sPrgrm1)[:idxSize], &index1)
-	DeserializeRaw((*sPrgrm2)[:idxSize], &index2)
+	helper.DeserializeRaw((*sPrgrm1)[:idxSize], &index1)
+	helper.DeserializeRaw((*sPrgrm2)[:idxSize], &index2)
 
 	var prgrm1Info serializedProgram
-	DeserializeRaw((*sPrgrm1)[index1.ProgramOffset:index1.CallsOffset], &prgrm1Info)
+	helper.DeserializeRaw((*sPrgrm1)[index1.ProgramOffset:index1.CallsOffset], &prgrm1Info)
 
 	var prgrm2Info serializedProgram
-	DeserializeRaw((*sPrgrm2)[index2.ProgramOffset:index2.CallsOffset], &prgrm2Info)
+	helper.DeserializeRaw((*sPrgrm2)[index2.ProgramOffset:index2.CallsOffset], &prgrm2Info)
 
 	// the stack segment should be 0 for prgrm1, but just in case
 	var prgrmState []byte
@@ -1255,7 +1256,7 @@ func CopyProgramState(sPrgrm1, sPrgrm2 *[]byte) {
 func DeserializeMemoryOffset(sPrgrm []byte) int {
 	idxSize := encoder.Size(serializedCXProgramIndex{})
 	var index serializedCXProgramIndex
-	DeserializeRaw(sPrgrm[:idxSize], &index)
+	helper.DeserializeRaw(sPrgrm[:idxSize], &index)
 	return int(index.MemoryOffset)
 }
 
@@ -1263,10 +1264,10 @@ func DeserializeMemoryOffset(sPrgrm []byte) int {
 func GetSerializedStackSize(sPrgrm []byte) int {
 	idxSize := encoder.Size(serializedCXProgramIndex{})
 	var index serializedCXProgramIndex
-	DeserializeRaw(sPrgrm[:idxSize], &index)
+	helper.DeserializeRaw(sPrgrm[:idxSize], &index)
 
 	var prgrmInfo serializedProgram
-	DeserializeRaw(sPrgrm[index.ProgramOffset:index.CallsOffset], &prgrmInfo)
+	helper.DeserializeRaw(sPrgrm[index.ProgramOffset:index.CallsOffset], &prgrmInfo)
 
 	return int(prgrmInfo.StackSize)
 }
@@ -1275,10 +1276,10 @@ func GetSerializedStackSize(sPrgrm []byte) int {
 func GetSerializedDataSize(sPrgrm []byte) int {
 	idxSize := encoder.Size(serializedCXProgramIndex{})
 	var index serializedCXProgramIndex
-	DeserializeRaw(sPrgrm[:idxSize], &index)
+	helper.DeserializeRaw(sPrgrm[:idxSize], &index)
 
 	var prgrmInfo serializedProgram
-	DeserializeRaw(sPrgrm[index.ProgramOffset:index.CallsOffset], &prgrmInfo)
+	helper.DeserializeRaw(sPrgrm[index.ProgramOffset:index.CallsOffset], &prgrmInfo)
 
 	return int(prgrmInfo.HeapStartsAt - prgrmInfo.StackSize)
 }

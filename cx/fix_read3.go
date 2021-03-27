@@ -3,6 +3,7 @@ package cxcore
 import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/helper"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
@@ -96,7 +97,7 @@ func ReadStrFromOffset(off int, inp *ast.CXArgument) (out string) {
 		// Then it's a literal.
 		offset = int32(off)
 	} else {
-		offset = Deserialize_i32(ast.PROGRAM.Memory[off : off+constants.TYPE_POINTER_SIZE])
+		offset = helper.Deserialize_i32(ast.PROGRAM.Memory[off : off+constants.TYPE_POINTER_SIZE])
 	}
 
 	if offset == 0 {
@@ -108,11 +109,11 @@ func ReadStrFromOffset(off int, inp *ast.CXArgument) (out string) {
 	// We need to check if the string lives on the data segment or on the
 	// heap to know if we need to take into consideration the object header's size.
 	if int(offset) > ast.PROGRAM.HeapStartsAt {
-		size := Deserialize_i32(ast.PROGRAM.Memory[offset+constants.OBJECT_HEADER_SIZE : offset+constants.OBJECT_HEADER_SIZE+constants.STR_HEADER_SIZE])
-		DeserializeRaw(ast.PROGRAM.Memory[offset+constants.OBJECT_HEADER_SIZE:offset+constants.OBJECT_HEADER_SIZE+constants.STR_HEADER_SIZE+size], &out)
+		size := helper.Deserialize_i32(ast.PROGRAM.Memory[offset+constants.OBJECT_HEADER_SIZE : offset+constants.OBJECT_HEADER_SIZE+constants.STR_HEADER_SIZE])
+		helper.DeserializeRaw(ast.PROGRAM.Memory[offset+constants.OBJECT_HEADER_SIZE:offset+constants.OBJECT_HEADER_SIZE+constants.STR_HEADER_SIZE+size], &out)
 	} else {
-		size := Deserialize_i32(ast.PROGRAM.Memory[offset : offset+constants.STR_HEADER_SIZE])
-		DeserializeRaw(ast.PROGRAM.Memory[offset:offset+constants.STR_HEADER_SIZE+size], &out)
+		size := helper.Deserialize_i32(ast.PROGRAM.Memory[offset : offset+constants.STR_HEADER_SIZE])
+		helper.DeserializeRaw(ast.PROGRAM.Memory[offset:offset+constants.STR_HEADER_SIZE+size], &out)
 	}
 
 	return out	
@@ -126,7 +127,7 @@ func ReadStringFromObject(off int32) string {
 		plusOff += constants.OBJECT_HEADER_SIZE
 	}
 
-	size := Deserialize_i32(ast.PROGRAM.Memory[off+plusOff : off+plusOff+constants.STR_HEADER_SIZE])
+	size := helper.Deserialize_i32(ast.PROGRAM.Memory[off+plusOff : off+plusOff+constants.STR_HEADER_SIZE])
 
 	str := ""
 	_, err := encoder.DeserializeRaw(ast.PROGRAM.Memory[off+plusOff:off+plusOff+constants.STR_HEADER_SIZE+size], &str)

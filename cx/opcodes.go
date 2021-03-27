@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/helper"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
@@ -606,7 +607,7 @@ func (value *CXValue) GetSlice_bytes() ([]byte) {
 
 func (value *CXValue) Get_i8()(int8) {
 	value.Used = constants.TYPE_I8
-	return Deserialize_i8(value.memory)
+	return helper.Deserialize_i8(value.memory)
 }
 
 func (value *CXValue) Set_i8(data int8) {
@@ -616,7 +617,7 @@ func (value *CXValue) Set_i8(data int8) {
 
 func (value *CXValue) Get_i16()(int16) {
 	value.Used = constants.TYPE_I16
-    return Deserialize_i16(value.memory)
+    return helper.Deserialize_i16(value.memory)
 }
 
 func (value *CXValue) Set_i16(data int16) {
@@ -626,7 +627,7 @@ func (value *CXValue) Set_i16(data int16) {
 
 func (value *CXValue) Get_i32()(int32) {
 	value.Used = constants.TYPE_I32
-    return Deserialize_i32(value.memory)
+    return helper.Deserialize_i32(value.memory)
 }
 
 func (value *CXValue) Set_i32(data int32) {
@@ -636,7 +637,7 @@ func (value *CXValue) Set_i32(data int32) {
 
 func (value *CXValue) Get_i64()(int64) {
 	value.Used = constants.TYPE_I64
-    return Deserialize_i64(value.memory)
+    return helper.Deserialize_i64(value.memory)
 }
 
 func (value *CXValue) Set_i64(data int64) {
@@ -646,7 +647,7 @@ func (value *CXValue) Set_i64(data int64) {
 
 func (value *CXValue) Get_ui8()(uint8) {
 	value.Used = constants.TYPE_UI8
-    return Deserialize_ui8(value.memory)
+    return helper.Deserialize_ui8(value.memory)
 }
 
 func (value *CXValue) Set_ui8(data uint8) {
@@ -656,7 +657,7 @@ func (value *CXValue) Set_ui8(data uint8) {
 
 func (value *CXValue) Get_ui16()(uint16) {
 	value.Used = constants.TYPE_UI16
-    return Deserialize_ui16(value.memory)
+    return helper.Deserialize_ui16(value.memory)
 }
 
 func (value *CXValue) Set_ui16(data uint16) {
@@ -666,7 +667,7 @@ func (value *CXValue) Set_ui16(data uint16) {
 
 func (value *CXValue) Get_ui32()(uint32) {
 	value.Used = constants.TYPE_UI32
-    return Deserialize_ui32(value.memory)
+    return helper.Deserialize_ui32(value.memory)
 }
 
 func (value *CXValue) Set_ui32(data uint32) {
@@ -676,7 +677,7 @@ func (value *CXValue) Set_ui32(data uint32) {
 
 func (value *CXValue) Get_ui64()(uint64) {
 	value.Used = constants.TYPE_UI64
-    return Deserialize_ui64(value.memory)
+    return helper.Deserialize_ui64(value.memory)
 }
 
 func (value *CXValue) Set_ui64(data uint64) {
@@ -686,7 +687,7 @@ func (value *CXValue) Set_ui64(data uint64) {
 
 func (value *CXValue) Get_f32()(float32) {
 	value.Used = constants.TYPE_F32
-    return Deserialize_f32(value.memory)
+    return helper.Deserialize_f32(value.memory)
 }
 
 func (value *CXValue) Set_f32(data float32) {
@@ -696,7 +697,7 @@ func (value *CXValue) Set_f32(data float32) {
 
 func (value *CXValue) Get_f64()(float64) {
 	value.Used = constants.TYPE_F64
-    return Deserialize_f64(value.memory)
+    return helper.Deserialize_f64(value.memory)
 }
 
 func (value *CXValue) Set_f64(data float64) {
@@ -706,7 +707,7 @@ func (value *CXValue) Set_f64(data float64) {
 
 func (value *CXValue) Get_bool()(bool) {
 	value.Used = constants.TYPE_BOOL
-    return Deserialize_bool(value.memory)
+    return helper.Deserialize_bool(value.memory)
 }
 
 func (value *CXValue) Set_bool(data bool) {

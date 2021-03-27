@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/helper"
 	"strconv"
 	// "github.com/skycoin/skycoin/src/cipher/encoder"
 )
@@ -28,16 +29,16 @@ var ofMessages = map[string]string{
 func GetInferActions(inp *ast.CXArgument, fp int) []string {
 	inpOffset := GetFinalOffset(fp, inp)
 
-	off := Deserialize_i32(ast.PROGRAM.Memory[inpOffset : inpOffset+constants.TYPE_POINTER_SIZE])
+	off := helper.Deserialize_i32(ast.PROGRAM.Memory[inpOffset : inpOffset+constants.TYPE_POINTER_SIZE])
 
-	l := Deserialize_i32(GetSliceHeader(GetSliceOffset(fp, inp))[4:8])
+	l := helper.Deserialize_i32(GetSliceHeader(GetSliceOffset(fp, inp))[4:8])
 
 	result := make([]string, l)
 
 	// for c := int(l); c > 0; c-- {
 	for c := 0; c < int(l); c++ {
 		// elof := Deserialize_i32(PROGRAM.Memory[int(off) + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + (c - 1) * TYPE_POINTER_SIZE : int(off) + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + c * STR_HEADER_SIZE])
-		elOff := Deserialize_i32(ast.PROGRAM.Memory[int(off)+constants.OBJECT_HEADER_SIZE+constants.SLICE_HEADER_SIZE+c*constants.TYPE_POINTER_SIZE : int(off)+constants.OBJECT_HEADER_SIZE+constants.SLICE_HEADER_SIZE+(c+1)*constants.STR_HEADER_SIZE])
+		elOff := helper.Deserialize_i32(ast.PROGRAM.Memory[int(off)+constants.OBJECT_HEADER_SIZE+constants.SLICE_HEADER_SIZE+c*constants.TYPE_POINTER_SIZE : int(off)+constants.OBJECT_HEADER_SIZE+constants.SLICE_HEADER_SIZE+(c+1)*constants.STR_HEADER_SIZE])
 		// size := Deserialize_i32(PROGRAM.Memory[elOff : elOff+STR_HEADER_SIZE])
 		// var res string
 		// _, err := encoder.DeserializeRaw(PROGRAM.Memory[elOff:elOff+STR_HEADER_SIZE+size], &res)

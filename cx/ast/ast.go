@@ -6,6 +6,7 @@ import (
 	"github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/globals"
+	"github.com/skycoin/cx/cx/helper"
 )
 
 /*
@@ -504,7 +505,7 @@ func (cxprogram *CXProgram) PrintAllObjects() {
 		op := cxprogram.CallStack[c].Operator
 
 		for _, ptr := range op.ListOfPointers {
-			heapOffset := cxcore.Deserialize_i32(cxprogram.Memory[fp+ptr.Offset : fp+ptr.Offset+constants.TYPE_POINTER_SIZE])
+			heapOffset := helper.Deserialize_i32(cxprogram.Memory[fp+ptr.Offset : fp+ptr.Offset+constants.TYPE_POINTER_SIZE])
 
 			var byts []byte
 
