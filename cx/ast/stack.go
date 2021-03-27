@@ -9,7 +9,7 @@ func stackValueHeader(fileName string, fileLine int) string {
 }
 
 // PrintStack ...
-func (cxprogram *ast.CXProgram) PrintStack() {
+func (cxprogram *CXProgram) PrintStack() {
 	fmt.Println()
 	fmt.Println("===Callstack===")
 

@@ -4,6 +4,7 @@ package cxfx
 
 import (
 	"github.com/skycoin/cx/cx/ast"
+	"github.com/skycoin/cx/cx/execute"
 	"github.com/skycoin/cx/cx/helper"
 	//"fmt"
 	"sync"
@@ -70,7 +71,7 @@ func (cb *CXCallback) InitEx(inputs []ast.CXValue, outputs []ast.CXValue) {
 
 func (cb *CXCallback) Call(inputs [][]byte) {
 	if fn, err := ast.PROGRAM.GetFunction(cb.functionName, cb.packageName); err == nil {
-		ast.PROGRAM.Callback(fn, inputs)
+		execute.Callback(ast.PROGRAM, fn, inputs)
 	}
 }
 
