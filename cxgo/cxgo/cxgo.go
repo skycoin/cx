@@ -2,14 +2,15 @@
 
 package cxgo
 
-import __yyfmt__ "fmt"
-
 import (
+	__yyfmt__ "fmt"
+
 	// "fmt"
-	"github.com/skycoin/cx/cx"
+	"strconv"
+
+	cxcore "github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cxgo/actions"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
-	"strconv"
 )
 
 /*
@@ -1717,14 +1718,14 @@ yynewstate:
 		}
 	case 31:
 		{
-			if pkg, err := actions.PRGRM.GetCurrentPackage(); err == nil {
+			if pkg := actions.PRGRM.GetCurrentPackage(); pkg != nil {
 				arg := cxcore.MakeArgument("", actions.CurrentFile, actions.LineNo)
 				arg.AddType(cxcore.TypeNames[cxcore.TYPE_UNDEFINED])
 				arg.Name = yyS[yypt-0].tok
 				arg.Package = pkg
 				yyVAL.argument = arg
 			} else {
-				panic(err)
+				panic("yynewstate: error, PRGRM.GetCurrentPackage is nil")
 			}
 		}
 	case 32:
@@ -2420,7 +2421,7 @@ yynewstate:
 		}
 	case 225:
 		{
-			if pkg, err := actions.PRGRM.GetCurrentPackage(); err == nil {
+			if pkg := actions.PRGRM.GetCurrentPackage(); pkg != nil {
 				expr := cxcore.MakeExpression(cxcore.Natives[cxcore.OP_JMP], actions.CurrentFile, actions.LineNo)
 				expr.Package = pkg
 				expr.Label = yyS[yypt-1].tok
@@ -2432,7 +2433,7 @@ yynewstate:
 
 				yyVAL.expressions = []*cxcore.CXExpression{expr}
 			} else {
-				panic(err)
+				panic("yystate(): error, PRGRM.GetCurrentPackage is nil")
 			}
 		}
 	case 226:

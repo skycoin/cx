@@ -220,13 +220,13 @@ import_declaration:
 function_header:
                 FUNC IDENTIFIER
                 {
-			if pkg, err := PRGRM0.GetCurrentPackage(); err == nil {
+			if pkg := PRGRM0.GetCurrentPackage(); pkg != nil {
 				fn := MakeFunction($2, CurrentFileName, lineNo)
 				pkg.AddFunction(fn)
 
                                 $$ = fn
 			} else {
-				panic(err)
+				panic("function_header: error, PRGRM.GetCurrentPackage is nil")
 			}
                 }
         |       FUNC LPAREN parameter_type_list RPAREN IDENTIFIER
@@ -237,7 +237,7 @@ function_header:
 
 			fnName := $3[0].CustomType.Name + "." + $5
 
-			if pkg, err := PRGRM0.GetCurrentPackage(); err == nil {
+			if pkg := PRGRM0.GetCurrentPackage(); pkg != nil {
 				fn := MakeFunction(fnName, CurrentFileName, lineNo)
 				pkg.AddFunction(fn)
 
@@ -245,7 +245,7 @@ function_header:
 
                                 $$ = fn
 			} else {
-				panic(err)
+				panic("function_header: error, PRGRM.GetCurrentPackage is nil")
 			}
                 }
         ;
@@ -305,14 +305,14 @@ declarator:     direct_declarator
 direct_declarator:
                 IDENTIFIER
                 {
-			if pkg, err := PRGRM0.GetCurrentPackage(); err == nil {
+			if pkg := PRGRM0.GetCurrentPackage(); pkg != nil {
 				arg := MakeArgument("", CurrentFile, LineNo)
 				arg.AddType(TypeNames[TYPE_UNDEFINED])
 				arg.Name = $1
 				arg.Package = pkg
 				$$ = arg
 			} else {
-				panic(err)
+				panic("direct_declarator: error, PRGRM.GetCurrentPackage is nil")
 			}
                 }
 	|       LPAREN declarator RPAREN

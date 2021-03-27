@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/jinzhu/copier"
-	"github.com/skycoin/cx/cx"
+	cxcore "github.com/skycoin/cx/cx"
 )
 
 // FunctionHeader takes a function name ('ident') and either creates the
@@ -21,10 +21,10 @@ func FunctionHeader(ident string, receiver []*cxcore.CXArgument, isMethod bool) 
 		if len(receiver) > 1 {
 			panic("method has multiple receivers")
 		}
-		if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
+		if pkg := PRGRM.GetCurrentPackage(); pkg != nil {
 			fnName := receiver[0].CustomType.Name + "." + ident
 
-			if fn, err := PRGRM.GetFunction(fnName, pkg.Name); err == nil {
+			if fn := PRGRM.GetFunction(fnName, pkg.Name); fn != nil {
 				fn.AddInput(receiver[0])
 				pkg.CurrentFunction = fn
 				return fn
@@ -35,11 +35,11 @@ func FunctionHeader(ident string, receiver []*cxcore.CXArgument, isMethod bool) 
 				return fn
 			}
 		} else {
-			panic(err)
+			panic("FunctionHeaders() isMethod: error, PRGRM.GetCurrentPackage is nil")
 		}
 	} else {
-		if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
-			if fn, err := PRGRM.GetFunction(ident, pkg.Name); err == nil {
+		if pkg := PRGRM.GetCurrentPackage(); pkg != nil {
+			if fn := PRGRM.GetFunction(ident, pkg.Name); fn != nil {
 				pkg.CurrentFunction = fn
 				return fn
 			} else {
@@ -48,7 +48,7 @@ func FunctionHeader(ident string, receiver []*cxcore.CXArgument, isMethod bool) 
 				return fn
 			}
 		} else {
-			panic(err)
+			panic("FunctionHeader() isNotMethod: error, PRGRM.GetCurrentPackage is nil")
 		}
 	}
 }
@@ -194,11 +194,11 @@ func FunctionCall(exprs []*cxcore.CXExpression, args []*cxcore.CXExpression) []*
 		opName := expr.Outputs[0].Name
 		opPkg := expr.Outputs[0].Package
 
-		if op, err := PRGRM.GetFunction(opName, opPkg.Name); err == nil {
+		if op := PRGRM.GetFunction(opName, opPkg.Name); op != nil {
 			expr.Operator = op
 		} else if expr.Outputs[0].Fields == nil {
 			// then it's not a possible method call
-			println(cxcore.CompilationError(CurrentFile, LineNo), err.Error())
+			println(cxcore.CompilationError(CurrentFile, LineNo), errors.New("error, PRGRM.GetFunction is nil"))
 			return nil
 		} else {
 			expr.IsMethodCall = true
@@ -287,11 +287,11 @@ func ProcessUndExpression(expr *cxcore.CXExpression) {
 	}
 	if expr.IsUndType {
 		for _, out := range expr.Outputs {
-            size := 1
-            if !cxcore.IsComparisonOperator(expr.Operator.OpCode) {
-		        size = cxcore.GetSize(cxcore.GetAssignmentElement(expr.Inputs[0]))
-            }
-            out.Size = size
+			size := 1
+			if !cxcore.IsComparisonOperator(expr.Operator.OpCode) {
+				size = cxcore.GetSize(cxcore.GetAssignmentElement(expr.Inputs[0]))
+			}
+			out.Size = size
 			out.TotalSize = size
 		}
 	}
@@ -464,8 +464,6 @@ func ProcessLocalDeclaration(symbols *[]map[string]*cxcore.CXArgument, symbolsSc
 	}
 	arg.IsLocalDeclaration = (*symbolsScope)[arg.Package.Name+"."+arg.Name]
 }
-
-
 
 func ProcessGoTos(fn *cxcore.CXFunction, exprs []*cxcore.CXExpression) {
 	for i, expr := range exprs {
@@ -702,9 +700,9 @@ func lookupSymbol(pkgName, ident string, symbols *[]map[string]*cxcore.CXArgumen
 	}
 
 	// Checking if `ident` refers to a function.
-	pkg, err := PRGRM.GetPackage(pkgName)
-	if err != nil {
-		return nil, err
+	pkg := PRGRM.GetPackage(pkgName)
+	if pkg == nil {
+		return nil, errors.New("PRGRM.GETPACKAGE is nil")
 	}
 
 	notFound := errors.New("identifier '" + ident + "' does not exist")

@@ -2,13 +2,16 @@
 
 package cxgo0
 
-import __yyfmt__ "fmt"
-
 import (
-	// "fmt"
 	"bytes"
+	__yyfmt__ "fmt"
+
+	// "fmt"
+
 	// "os"
+
 	. "github.com/skycoin/cx/cx"
+
 	. "github.com/skycoin/cx/cxgo/actions"
 )
 
@@ -1650,13 +1653,13 @@ yynewstate:
 		}
 	case 17:
 		{
-			if pkg, err := PRGRM0.GetCurrentPackage(); err == nil {
+			if pkg := PRGRM0.GetCurrentPackage(); pkg != nil {
 				fn := MakeFunction(yyS[yypt-0].tok, CurrentFileName, lineNo)
 				pkg.AddFunction(fn)
 
 				yyVAL.function = fn
 			} else {
-				panic(err)
+				panic("yyParse case17: error, PRGRM.GetCurrentPackage is nil")
 			}
 		}
 	case 18:
@@ -1667,7 +1670,7 @@ yynewstate:
 
 			fnName := yyS[yypt-2].arguments[0].CustomType.Name + "." + yyS[yypt-0].tok
 
-			if pkg, err := PRGRM0.GetCurrentPackage(); err == nil {
+			if pkg := PRGRM0.GetCurrentPackage(); pkg != nil {
 				fn := MakeFunction(fnName, CurrentFileName, lineNo)
 				pkg.AddFunction(fn)
 
@@ -1675,7 +1678,7 @@ yynewstate:
 
 				yyVAL.function = fn
 			} else {
-				panic(err)
+				panic("yyParse case18: error, PRGRM.GetCurrentPackage is nil")
 			}
 		}
 	case 19:
@@ -1711,14 +1714,14 @@ yynewstate:
 		}
 	case 30:
 		{
-			if pkg, err := PRGRM0.GetCurrentPackage(); err == nil {
+			if pkg := PRGRM0.GetCurrentPackage(); pkg != nil {
 				arg := MakeArgument("", CurrentFile, LineNo)
 				arg.AddType(TypeNames[TYPE_UNDEFINED])
 				arg.Name = yyS[yypt-0].tok
 				arg.Package = pkg
 				yyVAL.argument = arg
 			} else {
-				panic(err)
+				panic("yyParse case30: error, PRGRM.GetCurrentPackage is nil")
 			}
 		}
 	case 31:

@@ -1,10 +1,5 @@
 package cxcore
 
-import (
-	"errors"
-	"fmt"
-)
-
 // MakeFunction creates an empty function.
 // Later, parameters and contents can be added.
 //
@@ -22,8 +17,8 @@ func MakeNativeFunction(opCode int, inputs []*CXArgument, outputs []*CXArgument)
 	fn := &CXFunction{
 		IsNative: true,
 		OpCode:   opCode,
-		IntCode: -1,
-		Version:1,
+		IntCode:  -1,
+		Version:  1,
 	}
 
 	offset := 0
@@ -46,8 +41,8 @@ func MakeNativeFunctionV2(opCode int, inputs []*CXArgument, outputs []*CXArgumen
 	fn := &CXFunction{
 		IsNative: true,
 		OpCode:   opCode,
-		IntCode: -1,
-		Version:2,
+		IntCode:  -1,
+		Version:  2,
 	}
 
 	offset := 0
@@ -69,48 +64,44 @@ func MakeNativeFunctionV2(opCode int, inputs []*CXArgument, outputs []*CXArgumen
 //                             `CXFunction` Getters
 
 // GetExpressions is not used
-func (fn *CXFunction) GetExpressions() ([]*CXExpression, error) {
-	if fn.Expressions != nil {
-		return fn.Expressions, nil
-	}
-	return nil, fmt.Errorf("function '%s' has no expressions", fn.Name)
-
+func (fn *CXFunction) GetExpressions() []*CXExpression {
+	return fn.Expressions
 }
 
 // GetExpressionByLabel
-func (fn *CXFunction) GetExpressionByLabel(lbl string) (*CXExpression, error) {
+func (fn *CXFunction) GetExpressionByLabel(lbl string) *CXExpression {
 	if fn.Expressions == nil {
-		return nil, fmt.Errorf("function '%s' has no expressions", fn.Name)
+		return nil
 	}
-		for _, expr := range fn.Expressions {
-			if expr.Label == lbl {
-				return expr, nil
-			}
+	for _, expr := range fn.Expressions {
+		if expr.Label == lbl {
+			return expr
 		}
-		return nil, fmt.Errorf("expression '%s' not found in function '%s'", lbl, fn.Name)
+	}
+	return nil
 }
 
 // GetExpressionByLine ...
-func (fn *CXFunction) GetExpressionByLine(line int) (*CXExpression, error) {
+func (fn *CXFunction) GetExpressionByLine(line int) *CXExpression {
 	if fn.Expressions != nil {
 		if line <= len(fn.Expressions) {
-			return fn.Expressions[line], nil
+			return fn.Expressions[line]
 		}
-		return nil, fmt.Errorf("expression line number '%d' exceeds number of expressions in function '%s'", line, fn.Name)
+		return nil
 
 	}
-	return nil, fmt.Errorf("function '%s' has no expressions", fn.Name)
+	return nil
 
 }
 
 // GetCurrentExpression ...
-func (fn *CXFunction) GetCurrentExpression() (*CXExpression, error) {
+func (fn *CXFunction) GetCurrentExpression() *CXExpression {
 	if fn.CurrentExpression != nil {
-		return fn.CurrentExpression, nil
+		return fn.CurrentExpression
 	} else if fn.Expressions != nil {
-		return fn.Expressions[0], nil
+		return fn.Expressions[0]
 	} else {
-		return nil, errors.New("current expression is nil")
+		return nil
 	}
 }
 
@@ -213,7 +204,6 @@ func (fn *CXFunction) RemoveExpression(line int) {
 
 // ----------------------------------------------------------------
 //                             `CXFunction` Selectors
-
 
 // MakeExpression ...
 func MakeExpression(op *CXFunction, fileName string, fileLine int) *CXExpression {

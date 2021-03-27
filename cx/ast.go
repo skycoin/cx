@@ -30,18 +30,18 @@ type CXProgram struct {
 	ProgramInput  []*CXArgument // OS input arguments
 	ProgramOutput []*CXArgument // outputs to the OS
 	Memory        []byte        // Used when running the program
-	
-	StackSize    int           // This field stores the size of a CX program's stack
-	StackPointer int           // At what byte the current stack frame is
 
-	HeapSize     int           // This field stores the size of a CX program's heap
-	HeapStartsAt int           // Offset at which the heap starts in a CX program's memory
-	HeapPointer  int           // At what offset a CX program can insert a new object to the heap
+	StackSize    int // This field stores the size of a CX program's stack
+	StackPointer int // At what byte the current stack frame is
 
-	CallStack    []CXCall      // Collection of function calls
-	CallCounter  int           // What function call is the currently being executed in the CallStack
-	Terminated   bool          // Utility field for the runtime. Indicates if a CX program has already finished or not.
-	Version      string        // CX version used to build this CX program.
+	HeapSize     int // This field stores the size of a CX program's heap
+	HeapStartsAt int // Offset at which the heap starts in a CX program's memory
+	HeapPointer  int // At what offset a CX program can insert a new object to the heap
+
+	CallStack   []CXCall // Collection of function calls
+	CallCounter int      // What function call is the currently being executed in the CallStack
+	Terminated  bool     // Utility field for the runtime. Indicates if a CX program has already finished or not.
+	Version     string   // CX version used to build this CX program.
 
 	// Used by the REPL and cxgo
 	CurrentPackage *CXPackage // Represents the currently active package in the REPL or when parsing a CX file.
@@ -85,7 +85,7 @@ type CXFunction struct {
 	Package  *CXPackage // The package it's a member of
 	IsNative bool       // True if the function is native to CX, e.g. int32.add()
 	OpCode   int        // opcode if IsNative = true
-    IntCode int // TODO: remove
+	IntCode  int        // TODO: remove
 	// Contents
 	Inputs      []*CXArgument   // Input parameters to the function
 	Outputs     []*CXArgument   // Output parameters from the function
@@ -102,7 +102,7 @@ type CXFunction struct {
 
 	// Used by the REPL and parser
 	CurrentExpression *CXExpression
-	Version int
+	Version           int
 }
 
 // CXExpression is used represent a CX expression.
@@ -137,7 +137,6 @@ type CXExpression struct {
 	IsBreak         bool
 	IsContinue      bool
 }
-
 
 /*
 grep -rn "IsShortAssignmentDeclaration" .
@@ -174,7 +173,7 @@ Binary file ./bin/cx matches
 ./cx/ast.go:1517:	IsRest                bool // pkg.var <- var is rest
 ./vendor/golang.org/x/sys/windows/security_windows.go:841:// IsRestricted reports whether the access token t is a restricted token.
 ./vendor/golang.org/x/sys/windows/security_windows.go:842:func (t Token) IsRestricted() (isRestricted bool, err error) {
-	*/
+*/
 
 // CXArgument is used to define local variables, global variables,
 // literals (strings, numbers), inputs and outputs to function
@@ -188,7 +187,7 @@ type CXArgument struct {
 	// `Lengths` only determines the number of dimensions and the
 	// sizes are all equal to 0 (these 0s are not used for any
 	// computation).
-	Lengths               []int
+	Lengths []int
 	// DereferenceOperations is a slice of integers where each
 	// integer corresponds a `DEREF_*` constant (for example
 	// `DEREF_ARRAY`, `DEREF_POINTER`.). A dereference is a
@@ -209,57 +208,57 @@ type CXArgument struct {
 	// `CXArgument` is an index or a slice. The elements of
 	// `Indexes` can be any `CXArgument` (for example, literals
 	// and variables).
-	Indexes               []*CXArgument
+	Indexes []*CXArgument
 	// Fields stores what fields are being accessed from the
 	// `CXArgument` and in what order. Whenever a `DEREF_FIELD` in
 	// `DereferenceOperations` is found, we consume a field from
 	// `Field` to determine the new offset to the desired
 	// value.
-	Fields                []*CXArgument
+	Fields []*CXArgument
 	// Inputs defines the input parameters of a first-class
 	// function. The `CXArgument` is of type `TYPE_FUNC` if
 	// `ProgramInput` is non-nil.
-	Inputs                []*CXArgument
+	Inputs []*CXArgument
 	// Outputs defines the output parameters of a first-class
 	// function. The `CXArgument` is of type `TYPE_FUNC` if
 	// `ProgramOutput` is non-nil.
-	Outputs               []*CXArgument
+	Outputs []*CXArgument
 	// Name defines the name of the `CXArgument`. Most of the
 	// time, this field will be non-nil as this defines the name
 	// of a variable or parameter in source code, but some
 	// exceptions exist, such as in the case of literals
 	// (e.g. `4`, `"Hello world!"`, `[3]i32{1, 2, 3}`.)
-	Name                  string
+	Name string
 	// Type defines what's the basic or primitev type of the
 	// `CXArgument`. `Type` can be equal to any of the `TYPE_*`
 	// constants (e.g. `TYPE_STR`, `TYPE_I32`).
-	Type                  int
+	Type int
 	// Size determines the size of the basic type. For example, if
 	// the `CXArgument` is of type `TYPE_CUSTOM` (i.e. a
 	// user-defined type or struct) and the size of the struct
 	// representing the custom type is 10 bytes, then `Size == 10`.
-	Size                  int
+	Size int
 	// TotalSize represents how many bytes are referenced by the
 	// `CXArgument` in total. For example, if the `CXArgument`
 	// defines an array of 5 struct instances of size 10 bytes,
 	// then `TotalSize == 50`.
-	TotalSize             int
+	TotalSize int
 	// Offset defines a relative memory offset (used in
 	// conjunction with the frame pointer), in the case of local
 	// variables, or it could define an absolute memory offset, in
 	// the case of global variables and literals. It is used by
 	// the CX virtual machine to find the bytes that represent the
 	// value of the `CXArgument`.
-	Offset                int
+	Offset int
 	// IndirectionLevels
-	IndirectionLevels     int
-	DereferenceLevels     int
-	PassBy                int // pass by value or reference
+	IndirectionLevels int
+	DereferenceLevels int
+	PassBy            int // pass by value or reference
 
-	FileName              string
-	FileLine              int
+	FileName string
+	FileLine int
 
-	CustomType            *CXStruct
+	CustomType                   *CXStruct
 	Package                      *CXPackage
 	IsSlice                      bool
 	IsArray                      bool
@@ -340,7 +339,6 @@ Binary file ./bin/cx matches
 
 */
 
-
 /*
 All "Is" can be removed
 - because there is a constants for type (int) for defining the types
@@ -400,7 +398,6 @@ grep -rn "PassBy" .
 ./cx/utilities.go:184:	if arg.PassBy == PASSBY_REFERENCE {
 */
 
-
 // CXCall ...
 type CXCall struct {
 	Operator     *CXFunction // What CX function will be called when running this CXCall in the runtime
@@ -426,48 +423,37 @@ func MakeProgram() *CXProgram {
 //                             `CXProgram` Getters
 
 // GetCurrentPackage ...
-func (cxprogram *CXProgram) GetCurrentPackage() (*CXPackage, error) {
-	if cxprogram.CurrentPackage != nil {
-		return cxprogram.CurrentPackage, nil
-	}
-	return nil, errors.New("current package is nil")
+func (cxprogram *CXProgram) GetCurrentPackage() *CXPackage {
+	return cxprogram.CurrentPackage
 
 }
 
 // GetCurrentStruct ...
-func (cxprogram *CXProgram) GetCurrentStruct() (*CXStruct, error) {
+func (cxprogram *CXProgram) GetCurrentStruct() *CXStruct {
 	if cxprogram.CurrentPackage != nil {
-		if cxprogram.CurrentPackage.CurrentStruct != nil {
-			return cxprogram.CurrentPackage.CurrentStruct, nil
-		}
-		return nil, errors.New("current struct is nil")
-
+		return cxprogram.CurrentPackage.CurrentStruct
 	}
-	return nil, errors.New("current package is nil")
+	return nil
 
 }
 
 // GetCurrentFunction ...
-func (cxprogram *CXProgram) GetCurrentFunction() (*CXFunction, error) {
+func (cxprogram *CXProgram) GetCurrentFunction() *CXFunction {
 	if cxprogram.CurrentPackage != nil {
-		if cxprogram.CurrentPackage.CurrentFunction != nil {
-			return cxprogram.CurrentPackage.CurrentFunction, nil
-		}
-		return nil, errors.New("current function is nil")
-
+		return cxprogram.CurrentPackage.CurrentFunction
 	}
-	return nil, errors.New("current package is nil")
+	return nil
 
 }
 
 // GetCurrentExpression ...
-func (cxprogram *CXProgram) GetCurrentExpression() (*CXExpression, error) {
+func (cxprogram *CXProgram) GetCurrentExpression() *CXExpression {
 	if cxprogram.CurrentPackage != nil &&
 		cxprogram.CurrentPackage.CurrentFunction != nil &&
 		cxprogram.CurrentPackage.CurrentFunction.CurrentExpression != nil {
-		return cxprogram.CurrentPackage.CurrentFunction.CurrentExpression, nil
+		return cxprogram.CurrentPackage.CurrentFunction.CurrentExpression
 	}
-	return nil, errors.New("current package, function or expression is nil")
+	return nil
 
 }
 
@@ -483,10 +469,10 @@ func (cxprogram *CXProgram) GetCurrentExpression2() *CXExpression {
 */
 
 // GetGlobal ...
-func (cxprogram *CXProgram) GetGlobal(name string) (*CXArgument, error) {
-	mod, err := cxprogram.GetCurrentPackage()
-	if err != nil {
-		return nil, err
+func (cxprogram *CXProgram) GetGlobal(name string) *CXArgument {
+	mod := cxprogram.GetCurrentPackage()
+	if mod == nil {
+		return nil
 	}
 
 	var foundArgument *CXArgument
@@ -507,25 +493,25 @@ func (cxprogram *CXProgram) GetGlobal(name string) (*CXArgument, error) {
 	}
 
 	if foundArgument == nil {
-		return nil, fmt.Errorf("global '%s' not found", name)
+		return nil
 	}
-	return foundArgument, nil
+	return foundArgument
 }
 
 // Refactor to return nil on error
-func (cxprogram *CXProgram) GetPackage(packageNameToFind string) (*CXPackage, error) {
+func (cxprogram *CXProgram) GetPackage(packageNameToFind string) *CXPackage {
 	//iterate packages looking for package; same as GetPackage?
 	for _, cxpackage := range cxprogram.Packages {
 		if cxpackage.Name == packageNameToFind {
-			return cxpackage, nil //can return once found
+			return cxpackage //can return once found
 		}
 	}
 	//not found
-	return nil, fmt.Errorf("package '%s' not found", packageNameToFind)
+	return nil
 }
 
 // GetStruct ...
-func (cxprogram *CXProgram) GetStruct(strctName string, modName string) (*CXStruct, error) {
+func (cxprogram *CXProgram) GetStruct(strctName string, modName string) *CXStruct {
 	var foundPkg *CXPackage
 	for _, mod := range cxprogram.Packages {
 		if modName == mod.Name {
@@ -549,7 +535,7 @@ func (cxprogram *CXProgram) GetStruct(strctName string, modName string) (*CXStru
 		//looking in imports
 		typParts := strings.Split(strctName, ".")
 
-		if mod, err := cxprogram.GetPackage(modName); err == nil {
+		if mod := cxprogram.GetPackage(modName); mod != nil {
 			for _, imp := range mod.Imports {
 				for _, strct := range imp.Structs {
 					if strct.Name == typParts[0] {
@@ -562,23 +548,22 @@ func (cxprogram *CXProgram) GetStruct(strctName string, modName string) (*CXStru
 	}
 
 	if foundPkg != nil && foundStrct != nil {
-		return foundStrct, nil
+		return foundStrct
 	}
-	return nil, fmt.Errorf("struct '%s' not found in package '%s'", strctName, modName)
+	return nil
 
 }
 
 // GetFunction ...
-func (cxprogram *CXProgram) GetFunction(functionNameToFind string, pkgName string) (*CXFunction, error) {
+func (cxprogram *CXProgram) GetFunction(functionNameToFind string, pkgName string) *CXFunction {
 	// I need to first look for the function in the current package
-
 
 	//TODO: WHEN WOULD CurrentPackage not be in cxprogram.Packages?
 	//TODO: Add assert to crash if CurrentPackage is not in cxprogram.Packages
-	if pkg, err := cxprogram.GetCurrentPackage(); err == nil {
+	if pkg := cxprogram.GetCurrentPackage(); pkg != nil {
 		for _, fn := range pkg.Functions {
 			if fn.Name == functionNameToFind {
-				return fn, nil
+				return fn
 			}
 		}
 	}
@@ -593,20 +578,18 @@ func (cxprogram *CXProgram) GetFunction(functionNameToFind string, pkgName strin
 		}
 	}
 	if foundPkg == nil {
-		return nil, fmt.Errorf("package '%s' not found", pkgName)
+		return nil
 	}
 
 	//iterates package to find function
 	//same as GetFunction?
 	for _, fn := range foundPkg.Functions {
 		if fn.Name == functionNameToFind {
-			return fn, nil //can return when found
+			return fn //can return when found
 		}
 	}
-	return nil, fmt.Errorf("function '%s' not found in package '%s'", functionNameToFind, pkgName)
+	return nil
 }
-
-
 
 // GetCurrentCall returns the current CXCall
 //TODO: What does this do?
@@ -632,7 +615,7 @@ func (cxprogram *CXProgram) GetFramePointer() int {
 //                         `CXProgram` Package handling
 
 // AddPackage ...
-func (cxprogram *CXProgram) AddPackage(mod *CXPackage)  {
+func (cxprogram *CXProgram) AddPackage(mod *CXPackage) {
 	found := false
 	for _, md := range cxprogram.Packages {
 		if md.Name == mod.Name {
@@ -770,8 +753,6 @@ func MakePackage(name string) *CXPackage {
 
 // ----------------------------------------------------------------
 //                             `CXPackage` Getters
-
-
 
 // GetCurrentStruct ...
 func (pkg *CXPackage) GetCurrentStruct() (*CXStruct, error) {
@@ -928,8 +909,6 @@ func (pkg *CXPackage) RemoveGlobal(defName string) {
 	}
 }
 
-
-
 // ----------------------------------------------------------------
 //                             `CXStruct` Getters
 
@@ -997,20 +976,11 @@ func (strct *CXStruct) RemoveField(fldName string) {
 	}
 }
 
-
-
-
-
 // ----------------------------------------------------------------
 //                             `CXFunction` Getters
 
 // ----------------------------------------------------------------
 //                     `CXFunction` Member handling
-
-
-
-
-
 
 // ----------------------------------------------------------------
 //                             `CXFunction` Selectors
@@ -1044,7 +1014,6 @@ func (fn *CXFunction) SelectExpression(line int) (*CXExpression, error) {
 
 	return expr, nil
 }
-
 
 // ----------------------------------------------------------------
 //                             `CXExpression` Getters
@@ -1106,7 +1075,7 @@ func (expr *CXExpression) AddLabel(lbl string) *CXExpression {
 	FileName              string
 - filename and line number
 - can be moved to CX AST annotations (comments to be skipped or map)
-	
+
 	FileLine
 */
 
@@ -1149,7 +1118,7 @@ Binary file ./bin/cx matches
 */
 
 /*
-IsDereferenceFirst - is this both an array and a pointer, and if so, 
+IsDereferenceFirst - is this both an array and a pointer, and if so,
 is the pointer first? Mutually exclusive with IsArrayFirst.
 
 grep -rn "IsDereferenceFirst" .
@@ -1162,10 +1131,9 @@ Binary file ./bin/cx matches
 ./cx/serialize.go:314:	s.Arguments[argOff].IsDereferenceFirst = serializeBoolean(arg.IsDereferenceFirst)
 ./cx/serialize.go:1019:	arg.IsDereferenceFirst = dsBool(sArg.IsDereferenceFirst)
 ./cx/cxargument.go:32:	IsDereferenceFirst    bool // and then array
-./cx/cxargument.go:43:IsDereferenceFirst - is this both an array and a pointer, and if so, 
+./cx/cxargument.go:43:IsDereferenceFirst - is this both an array and a pointer, and if so,
 
 */
-
 
 /*
 All "Is" can be removed
@@ -1322,13 +1290,13 @@ func (cxprogram *CXProgram) ToString() string {
 	var currentFunction *CXFunction
 	var currentPackage *CXPackage
 
-	currentPackage, err := cxprogram.GetCurrentPackage();
+	currentPackage = cxprogram.GetCurrentPackage()
 
-	if err != nil {
+	if currentPackage == nil {
 		panic("CXProgram.ToString(): error, currentPackage is nil")
 	}
 
-	currentFunction, _ = cxprogram.GetCurrentFunction();
+	currentFunction = cxprogram.GetCurrentFunction()
 	currentPackage.CurrentFunction = currentFunction
 
 	buildStrPackages(cxprogram, &ast) //what does this do?

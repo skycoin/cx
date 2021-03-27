@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/skycoin/cx/cx"
+	cxcore "github.com/skycoin/cx/cx"
 )
 
 const (
@@ -47,7 +47,7 @@ type Event struct {
 }
 
 type CXCallback struct {
-    windowNameBytes []byte
+	windowNameBytes []byte
 	windowName      string
 	packageName     string
 	functionName    string
@@ -69,7 +69,7 @@ func (cb *CXCallback) InitEx(inputs []cxcore.CXValue, outputs []cxcore.CXValue) 
 }
 
 func (cb *CXCallback) Call(inputs [][]byte) {
-	if fn, err := cxcore.PROGRAM.GetFunction(cb.functionName, cb.packageName); err == nil {
+	if fn := cxcore.PROGRAM.GetFunction(cb.functionName, cb.packageName); fn != nil {
 		cxcore.PROGRAM.Callback(fn, inputs)
 	}
 }

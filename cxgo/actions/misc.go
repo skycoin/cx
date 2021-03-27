@@ -1,7 +1,7 @@
 package actions
 
 import (
-	"github.com/skycoin/cx/cx"
+	cxcore "github.com/skycoin/cx/cx"
 )
 
 func SelectProgram(prgrm *cxcore.CXProgram) {
@@ -13,11 +13,11 @@ func SetCorrectArithmeticOp(expr *cxcore.CXExpression) {
 		return
 	}
 
-    code := expr.Operator.OpCode
-    if code > cxcore.START_OF_OPERATORS && code < cxcore.END_OF_OPERATORS {
-	    // TODO: argument type are not fully resolved here, should be move elsewhere.
-        //expr.Operator = cxcore.GetTypedOperator(cxcore.GetType(expr.ProgramInput[0]), code)
-    }
+	code := expr.Operator.OpCode
+	if code > cxcore.START_OF_OPERATORS && code < cxcore.END_OF_OPERATORS {
+		// TODO: argument type are not fully resolved here, should be move elsewhere.
+		//expr.Operator = cxcore.GetTypedOperator(cxcore.GetType(expr.ProgramInput[0]), code)
+	}
 }
 
 // hasDeclSpec determines if an argument has certain declaration specifier
@@ -44,7 +44,7 @@ func hasDerefOp(arg *cxcore.CXArgument, spec int) bool {
 
 // This function writes those bytes to PRGRM.Data
 func WritePrimary(typ int, byts []byte, isGlobal bool) []*cxcore.CXExpression {
-	if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
+	if pkg := PRGRM.GetCurrentPackage(); pkg != nil {
 		arg := cxcore.MakeArgument("", CurrentFile, LineNo)
 		arg.AddType(cxcore.TypeNames[typ])
 		arg.Package = pkg
@@ -88,7 +88,7 @@ func WritePrimary(typ int, byts []byte, isGlobal bool) []*cxcore.CXExpression {
 		expr.Outputs = append(expr.Outputs, arg)
 		return []*cxcore.CXExpression{expr}
 	} else {
-		panic(err)
+		panic("WritePrimary(): error, PRGRM.GetCurrentPackage is nil")
 	}
 }
 
@@ -101,7 +101,7 @@ func TotalLength(lengths []int) int {
 }
 
 func StructLiteralFields(ident string) *cxcore.CXExpression {
-	if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
+	if pkg := PRGRM.GetCurrentPackage(); pkg != nil {
 		arg := cxcore.MakeArgument("", CurrentFile, LineNo)
 		arg.AddType(cxcore.TypeNames[cxcore.TYPE_IDENTIFIER])
 		arg.Name = ident
@@ -113,7 +113,7 @@ func StructLiteralFields(ident string) *cxcore.CXExpression {
 
 		return expr
 	} else {
-		panic(err)
+		panic("StructLiteralFields(): error, PRGRM.GetCurrentPackage is nil")
 	}
 }
 
@@ -223,7 +223,7 @@ func AffordanceStructs(pkg *cxcore.CXPackage, currentFile string, lineNo int) {
 }
 
 func PrimaryIdentifier(ident string) []*cxcore.CXExpression {
-	if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
+	if pkg := PRGRM.GetCurrentPackage(); pkg != nil {
 		arg := cxcore.MakeArgument(ident, CurrentFile, LineNo) // fix: line numbers in errors sometimes report +1 or -1. Issue #195
 		arg.AddType(cxcore.TypeNames[cxcore.TYPE_IDENTIFIER])
 		// arg.Typ = "ident"
@@ -237,7 +237,7 @@ func PrimaryIdentifier(ident string) []*cxcore.CXExpression {
 
 		return []*cxcore.CXExpression{expr}
 	} else {
-		panic(err)
+		panic("PrimaryIdentifier(): error, PRGRM.GetCurrentPackage is nil")
 	}
 }
 

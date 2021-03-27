@@ -81,8 +81,8 @@ func CallAffPredicate(fn *CXFunction, predValue []byte) byte {
 		GetFinalOffset(newFP, newCall.Operator.Inputs[0]),
 		predValue)
 
-    var inputs []CXValue
-    var outputs []CXValue
+	var inputs []CXValue
+	var outputs []CXValue
 	prevCC := PROGRAM.CallCounter
 	for {
 		call := &PROGRAM.CallStack[PROGRAM.CallCounter]
@@ -438,10 +438,10 @@ func getTarget(inp2 *CXArgument, fp int, tgtElt *string, tgtArgType *string, tgt
 		default:
 			switch *tgtElt {
 			case "pkg":
-				if pkg, err := PROGRAM.GetPackage(aff); err == nil {
+				if pkg := PROGRAM.GetPackage(aff); pkg != nil {
 					*tgtPkg = *pkg
 				} else {
-					panic(err)
+					panic("getTarget(): error, PROGRAM.GetPackage is nil")
 				}
 			case "fn":
 				if fn, err := tgtPkg.GetFunction(aff); err == nil {
@@ -450,10 +450,10 @@ func getTarget(inp2 *CXArgument, fp int, tgtElt *string, tgtArgType *string, tgt
 					panic(err)
 				}
 			case "expr":
-				if expr, err := tgtFn.GetExpressionByLabel(aff); err == nil {
+				if expr := tgtFn.GetExpressionByLabel(aff); expr != nil {
 					*tgtExpr = *expr
 				} else {
-					panic(err)
+					panic("getTarget(): error, tgtFn.GetExpressionByLabel is nil")
 				}
 			case "inp":
 				*tgtArgType = "inp"
@@ -537,7 +537,7 @@ func getAffordances(inp1 *CXArgument, fp int,
 					*affs = append(*affs, "Print FA's value")
 				}
 			case "expr":
-				if expr, err := tgtFn.GetExpressionByLabel(elt); err == nil {
+				if expr := tgtFn.GetExpressionByLabel(elt); expr != nil {
 					_ = expr
 					switch tgtElt {
 					case "arg":
@@ -548,7 +548,7 @@ func getAffordances(inp1 *CXArgument, fp int,
 						*affs = append(*affs, "Call FE")
 					}
 				} else {
-					panic(err)
+					panic("getAffordances(): error, tgtFn.GetExpressionByLabel is nil")
 				}
 			case "fn":
 				if fn, err := tgtPkg.GetFunction(elt); err == nil {
@@ -588,14 +588,14 @@ func getAffordances(inp1 *CXArgument, fp int,
 					*affs = append(*affs, "Move FS to TP")
 				}
 			case "pkg":
-				if pkg, err := PROGRAM.GetPackage(elt); err == nil {
+				if pkg := PROGRAM.GetPackage(elt); pkg != nil {
 					_ = pkg
 					switch tgtElt {
 					case "pkg":
 						*affs = append(*affs, "Make TP import FP")
 					}
 				} else {
-					panic(err)
+					panic("getAffordances(): error, PROGRAM.GetPackage is nil")
 				}
 				// case "prgrm":
 				// 	switch tgtElt {
@@ -779,7 +779,7 @@ func opAffInform(expr *CXExpression, fp int) {
 
 		}
 	case "expr":
-		if expr, err := tgtFn.GetExpressionByLabel(elt); err == nil {
+		if expr := tgtFn.GetExpressionByLabel(elt); expr != nil {
 			_ = expr
 			switch tgtElt {
 			case "arg":
@@ -790,7 +790,7 @@ func opAffInform(expr *CXExpression, fp int) {
 
 			}
 		} else {
-			panic(err)
+			panic("opAffInform(): error, tgtFn.GetExpressionByLabel is nil")
 		}
 	case "fn":
 		if fn, err := tgtPkg.GetFunction(elt); err == nil {
@@ -818,14 +818,14 @@ func opAffInform(expr *CXExpression, fp int) {
 
 		}
 	case "pkg":
-		if pkg, err := PROGRAM.GetPackage(elt); err == nil {
+		if pkg := PROGRAM.GetPackage(elt); pkg != nil {
 			_ = pkg
 			switch tgtElt {
 			case "pkg":
 
 			}
 		} else {
-			panic(err)
+			panic("opAffInform(): error, PROGRAM.GETPACKAGE is nil")
 		}
 		// case "prgrm":
 		// 	switch tgtElt {
@@ -882,7 +882,7 @@ func opAffRequest(expr *CXExpression, fp int) {
 			fmt.Println(GetPrintableValue(fp, readArgAff(elt, &tgtFn)))
 		}
 	case "expr":
-		if expr, err := tgtFn.GetExpressionByLabel(elt); err == nil {
+		if expr := tgtFn.GetExpressionByLabel(elt); expr != nil {
 			_ = expr
 			switch tgtElt {
 			case "arg":
@@ -893,7 +893,7 @@ func opAffRequest(expr *CXExpression, fp int) {
 
 			}
 		} else {
-			panic(err)
+			panic("opAffRequest(): error, tgtFn.GetExpressionByLabel is nil")
 		}
 	case "fn":
 		fn := Natives[OpCodes[elt]]
@@ -931,14 +931,14 @@ func opAffRequest(expr *CXExpression, fp int) {
 
 		}
 	case "pkg":
-		if pkg, err := PROGRAM.GetPackage(elt); err == nil {
+		if pkg := PROGRAM.GetPackage(elt); pkg != nil {
 			_ = pkg
 			switch tgtElt {
 			case "pkg":
 
 			}
 		} else {
-			panic(err)
+			panic("opAffRequest(): error, PROGRAM.GETPACKAGE is nil")
 		}
 	case "prgrm":
 		switch tgtElt {
