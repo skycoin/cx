@@ -557,7 +557,7 @@ func CheckTypes(expr *cxcore.CXExpression) {
 			}
 		}
 
-		// checking if number of expr.Outputs matches number of Operator.Outputs
+		// checking if number of expr.ProgramOutput matches number of Operator.ProgramOutput
 		if len(expr.Outputs) != len(expr.Operator.Outputs) {
 			var plural1 string
 			var plural2 string = "s"
@@ -595,7 +595,7 @@ func CheckTypes(expr *cxcore.CXExpression) {
 				receivedType = cxcore.TypeNames[cxcore.GetAssignmentElement(expr.Inputs[i]).Type]
 			}
 
-			// if cxcore.GetAssignmentElement(expr.Outputs[i]).Type != cxcore.GetAssignmentElement(inp).Type {
+			// if cxcore.GetAssignmentElement(expr.ProgramOutput[i]).Type != cxcore.GetAssignmentElement(inp).Type {
 			if receivedType != expectedType {
 				if expr.IsStructLiteral {
 					println(cxcore.CompilationError(expr.Outputs[i].FileName, expr.Outputs[i].FileLine), fmt.Sprintf("field '%s' in struct literal of type '%s' expected argument of type '%s'; '%s' was provided", expr.Outputs[i].Fields[0].Name, expr.Outputs[i].CustomType.Name, expectedType, receivedType))
@@ -872,7 +872,7 @@ func ProcessMethodCall(expr *cxcore.CXExpression, symbols *[]map[string]*cxcore.
 				out.Fields = out.Fields[:len(out.Fields)-1]
 
 				expr.Outputs = expr.Outputs[1:]
-				// expr.Outputs = nil
+				// expr.ProgramOutput = nil
 			}
 		}
 

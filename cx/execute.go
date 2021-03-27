@@ -13,7 +13,7 @@ import (
 // func (prgrm *CXProgram) Reset() {
 // 	prgrm.CallStack = MakeCallStack(0)
 // 	prgrm.Steps = make([][]CXCall, 0)
-// 	prgrm.Outputs = make([]*CXArgument, 0)
+// 	prgrm.ProgramOutput = make([]*CXArgument, 0)
 // 	//prgrm.ProgramSteps = nil
 // }
 
@@ -463,8 +463,8 @@ func (call *CXCall) ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 						// writing inputs to new stack frame
 						WriteMemory(
 							GetFinalOffset(newFP, newCall.Operator.Inputs[i]),
-							// newFP + newCall.Operator.Inputs[i].Offset,
-							// GetFinalOffset(prgrm.Memory, newFP, newCall.Operator.Inputs[i], MEM_WRITE),
+							// newFP + newCall.Operator.ProgramInput[i].Offset,
+							// GetFinalOffset(prgrm.Memory, newFP, newCall.Operator.ProgramInput[i], MEM_WRITE),
 							byts)
 					}
 			}

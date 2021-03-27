@@ -3,6 +3,12 @@ package cxcore
 import (
 	"log"
 )
+
+var ENHANCED_DEBUGING1 bool = false
+var ENHANCED_DEBUGING2 bool = false
+var ENHANCED_DEBUGING3 bool = false
+var ENHANCED_DEBUGING4 bool = false
+
 //NOTE: Temp file for resolving GetFinalOffset issue
 //TODO: What should this function be called?
 
@@ -19,6 +25,21 @@ import (
 //GetfinalOffsetI16
 //ETC
 func GetFinalOffset(fp int, arg *CXArgument) int {
+
+	if ENHANCED_DEBUGING3 {
+		if !(arg.IsPointer || arg.IsSlice || arg.IsArray){
+			panic("arg is in invalid format")
+		}
+	}
+
+	if ENHANCED_DEBUGING4 {
+		if arg.Type == TYPE_F32 || arg.Type == TYPE_F64  ||
+			arg.Type == TYPE_UI8 || arg.Type == TYPE_UI16 || arg.Type == TYPE_UI32 || arg.Type == TYPE_UI64 ||
+			arg.Type == TYPE_I8 || arg.Type == TYPE_I16 || arg.Type == TYPE_I32 || arg.Type == TYPE_I64{
+			panic("arg is in invalid format")
+		}
+	}
+
 	// defer RuntimeError(PROGRAM)
 	// var elt *CXArgument
 	finalOffset := arg.Offset
@@ -49,6 +70,21 @@ func GetFinalOffset(fp int, arg *CXArgument) int {
 
 //this is simplest version of function that works for atomic types
 func GetOffsetAtomicSimple(fp int, arg *CXArgument) int {
+
+	if ENHANCED_DEBUGING1 {
+		if arg.IsPointer || arg.IsSlice || arg.IsArray{
+			panic("arg is in invalid format")
+		}
+	}
+
+	if ENHANCED_DEBUGING2 {
+			if arg.Type == TYPE_F32 || arg.Type == TYPE_F64  ||
+				arg.Type == TYPE_UI8 || arg.Type == TYPE_UI16 || arg.Type == TYPE_UI32 || arg.Type == TYPE_UI64 ||
+				arg.Type == TYPE_I8 || arg.Type == TYPE_I16 || arg.Type == TYPE_I32 || arg.Type == TYPE_I64{
+			panic("arg is in invalid format")
+		}
+	}
+
 	finalOffset := arg.Offset
 	if finalOffset < PROGRAM.StackSize {
 		finalOffset += fp //check if on stack

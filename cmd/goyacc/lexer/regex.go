@@ -17,7 +17,7 @@ func qs(s string) string {
 }
 
 // ParseRE compiles a regular expression re into Nfa, returns the re component starting
-// and accepting states or an Error if any.
+// and accepting states or an ProgramError if any.
 func (n *Nfa) ParseRE(name, re string) (in, out *NfaState, err error) {
 	s := NewScannerSource(name, strings.NewReader(re))
 

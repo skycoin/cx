@@ -87,7 +87,7 @@ func (y *yylexer) getc() byte {
     return y.current
 }
 
-func (y yylexer) Error(e string) {
+func (y yylexer) ProgramError(e string) {
     log.Fatal(e)
 }
 
