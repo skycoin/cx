@@ -766,7 +766,7 @@ func opAffInform(expr *ast.CXExpression, fp int) {
 	getTarget(inp3, fp, &tgtElt, &tgtArgType, &tgtArgIndex, &tgtPkg, &tgtFn, &tgtExpr)
 
 	elts := GetInferActions(inp1, fp)
-	eltIdx := ReadI32(fp, inp2)
+	eltIdx := ast.ReadI32(fp, inp2)
 	eltType := elts[eltIdx*2]
 	elt := elts[eltIdx*2+1]
 
@@ -867,7 +867,7 @@ func opAffRequest(expr *ast.CXExpression, fp int) {
 	// var affs []string
 
 	elts := GetInferActions(inp1, fp)
-	eltIdx := ReadI32(fp, inp2)
+	eltIdx := ast.ReadI32(fp, inp2)
 	eltType := elts[eltIdx*2]
 	elt := elts[eltIdx*2+1]
 

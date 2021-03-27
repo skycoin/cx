@@ -86,7 +86,7 @@ func opResize(expr *ast.CXExpression, fp int) {
 		panic(constants.CX_RUNTIME_INVALID_ARGUMENT)
 	}
 
-	outputSliceOffset := int32(ast.SliceResize(fp, out1, inp1, ReadI32(fp, inp2), ast.GetAssignmentElement(inp1).TotalSize))
+	outputSliceOffset := int32(ast.SliceResize(fp, out1, inp1, ast.ReadI32(fp, inp2), ast.GetAssignmentElement(inp1).TotalSize))
 	outputSlicePointer := ast.GetFinalOffset(fp, out1)
 	mem.WriteI32(outputSlicePointer, outputSliceOffset)
 }
@@ -103,11 +103,11 @@ func opInsert(expr *ast.CXExpression, fp int) {
 	if inp3.Type == constants.TYPE_STR || inp3.Type == constants.TYPE_AFF {
 		var obj [4]byte
 		mem.WriteMemI32(obj[:], 0, int32(ast.GetStrOffset(fp, inp3)))
-		outputSliceOffset := int32(ast.SliceInsert(fp, out1, inp1, ReadI32(fp, inp2), obj[:]))
+		outputSliceOffset := int32(ast.SliceInsert(fp, out1, inp1, ast.ReadI32(fp, inp2), obj[:]))
 		mem.WriteI32(outputSlicePointer, outputSliceOffset)
 	} else {
 		obj := ast.ReadMemory(ast.GetFinalOffset(fp, inp3), inp3)
-		outputSliceOffset := int32(ast.SliceInsert(fp, out1, inp1, ReadI32(fp, inp2), obj))
+		outputSliceOffset := int32(ast.SliceInsert(fp, out1, inp1, ast.ReadI32(fp, inp2), obj))
 		mem.WriteI32(outputSlicePointer, outputSliceOffset)
 	}
 }
@@ -120,7 +120,7 @@ func opRemove(expr *ast.CXExpression, fp int) {
 	}
 
 	outputSlicePointer := ast.GetFinalOffset(fp, out1)
-	outputSliceOffset := int32(ast.SliceRemove(fp, out1, inp1, ReadI32(fp, inp2), int32(ast.GetAssignmentElement(inp1).TotalSize)))
+	outputSliceOffset := int32(ast.SliceRemove(fp, out1, inp1, ast.ReadI32(fp, inp2), int32(ast.GetAssignmentElement(inp1).TotalSize)))
 	mem.WriteI32(outputSlicePointer, outputSliceOffset)
 }
 
@@ -193,28 +193,28 @@ func buildString(expr *ast.CXExpression, fp int) []byte {
 			case 'd':
 				switch inp.Type {
 				case constants.TYPE_I8:
-					res = append(res, []byte(strconv.FormatInt(int64(ReadI8(fp, inp)), 10))...)
+					res = append(res, []byte(strconv.FormatInt(int64(ast.ReadI8(fp, inp)), 10))...)
 				case constants.TYPE_I16:
-					res = append(res, []byte(strconv.FormatInt(int64(ReadI16(fp, inp)), 10))...)
+					res = append(res, []byte(strconv.FormatInt(int64(ast.ReadI16(fp, inp)), 10))...)
 				case constants.TYPE_I32:
-					res = append(res, []byte(strconv.FormatInt(int64(ReadI32(fp, inp)), 10))...)
+					res = append(res, []byte(strconv.FormatInt(int64(ast.ReadI32(fp, inp)), 10))...)
 				case constants.TYPE_I64:
-					res = append(res, []byte(strconv.FormatInt(ReadI64(fp, inp), 10))...)
+					res = append(res, []byte(strconv.FormatInt(ast.ReadI64(fp, inp), 10))...)
 				case constants.TYPE_UI8:
-					res = append(res, []byte(strconv.FormatUint(uint64(ReadUI8(fp, inp)), 10))...)
+					res = append(res, []byte(strconv.FormatUint(uint64(ast.ReadUI8(fp, inp)), 10))...)
 				case constants.TYPE_UI16:
-					res = append(res, []byte(strconv.FormatUint(uint64(ReadUI16(fp, inp)), 10))...)
+					res = append(res, []byte(strconv.FormatUint(uint64(ast.ReadUI16(fp, inp)), 10))...)
 				case constants.TYPE_UI32:
-					res = append(res, []byte(strconv.FormatUint(uint64(ReadUI32(fp, inp)), 10))...)
+					res = append(res, []byte(strconv.FormatUint(uint64(ast.ReadUI32(fp, inp)), 10))...)
 				case constants.TYPE_UI64:
-					res = append(res, []byte(strconv.FormatUint(ReadUI64(fp, inp), 10))...)
+					res = append(res, []byte(strconv.FormatUint(ast.ReadUI64(fp, inp), 10))...)
 				}
 			case 'f':
 				switch inp.Type {
 				case constants.TYPE_F32:
-					res = append(res, []byte(strconv.FormatFloat(float64(ReadF32(fp, inp)), 'f', 7, 32))...)
+					res = append(res, []byte(strconv.FormatFloat(float64(ast.ReadF32(fp, inp)), 'f', 7, 32))...)
 				case constants.TYPE_F64:
-					res = append(res, []byte(strconv.FormatFloat(ReadF64(fp, inp), 'f', 16, 64))...)
+					res = append(res, []byte(strconv.FormatFloat(ast.ReadF64(fp, inp), 'f', 16, 64))...)
 				}
 			case 'v':
 				res = append(res, []byte(tostring.GetPrintableValue(fp, inp))...)

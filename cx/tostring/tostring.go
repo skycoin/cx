@@ -3,7 +3,6 @@ package tostring
 import (
 	"bytes"
 	"fmt"
-	"github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/globals"
@@ -221,29 +220,29 @@ func SignatureStringOfFunction(pkg *ast.CXPackage, f *ast.CXFunction) string {
 func getNonCollectionValue(fp int, arg, elt *ast.CXArgument, typ string) string {
 	switch typ {
 	case "bool":
-		return fmt.Sprintf("%v", cxcore.ReadBool(fp, elt))
+		return fmt.Sprintf("%v", ast.ReadBool(fp, elt))
 	case "str":
 		return fmt.Sprintf("%v", ast.ReadStr(fp, elt))
 	case "i8":
-		return fmt.Sprintf("%v", cxcore.ReadI8(fp, elt))
+		return fmt.Sprintf("%v", ast.ReadI8(fp, elt))
 	case "i16":
-		return fmt.Sprintf("%v", cxcore.ReadI16(fp, elt))
+		return fmt.Sprintf("%v", ast.ReadI16(fp, elt))
 	case "i32":
-		return fmt.Sprintf("%v", cxcore.ReadI32(fp, elt))
+		return fmt.Sprintf("%v", ast.ReadI32(fp, elt))
 	case "i64":
-		return fmt.Sprintf("%v", cxcore.ReadI64(fp, elt))
+		return fmt.Sprintf("%v", ast.ReadI64(fp, elt))
 	case "ui8":
-		return fmt.Sprintf("%v", cxcore.ReadUI8(fp, elt))
+		return fmt.Sprintf("%v", ast.ReadUI8(fp, elt))
 	case "ui16":
-		return fmt.Sprintf("%v", cxcore.ReadUI16(fp, elt))
+		return fmt.Sprintf("%v", ast.ReadUI16(fp, elt))
 	case "ui32":
-		return fmt.Sprintf("%v", cxcore.ReadUI32(fp, elt))
+		return fmt.Sprintf("%v", ast.ReadUI32(fp, elt))
 	case "ui64":
-		return fmt.Sprintf("%v", cxcore.ReadUI64(fp, elt))
+		return fmt.Sprintf("%v", ast.ReadUI64(fp, elt))
 	case "f32":
-		return fmt.Sprintf("%v", cxcore.ReadF32(fp, elt))
+		return fmt.Sprintf("%v", ast.ReadF32(fp, elt))
 	case "f64":
-		return fmt.Sprintf("%v", cxcore.ReadF64(fp, elt))
+		return fmt.Sprintf("%v", ast.ReadF64(fp, elt))
 	default:
 		// then it's a struct
 		var val string

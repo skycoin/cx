@@ -1,7 +1,6 @@
 package ast
 
 import (
-	"github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/helper"
 )
@@ -70,7 +69,7 @@ func CalculateDereferences(arg *CXArgument, finalOffset *int, fp int) {
 			*finalOffset += constants.SLICE_HEADER_SIZE
 
 			sizeToUse := GetDerefSize(arg) //GetDerefSize
-			*finalOffset += int(cxcore.ReadI32(fp, arg.Indexes[idxCounter])) * sizeToUse
+			*finalOffset += int(ReadI32(fp, arg.Indexes[idxCounter])) * sizeToUse
 			if !IsValidSliceIndex(baseOffset, *finalOffset, sizeToUse) {
 				panic(constants.CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)
 			}
@@ -89,7 +88,7 @@ func CalculateDereferences(arg *CXArgument, finalOffset *int, fp int) {
 
 			baseOffset = *finalOffset
 			sizeofElement = subSize * sizeToUse
-			*finalOffset += int(cxcore.ReadI32(fp, arg.Indexes[idxCounter])) * sizeofElement
+			*finalOffset += int(ReadI32(fp, arg.Indexes[idxCounter])) * sizeofElement
 			idxCounter++
 		case constants.DEREF_POINTER:
 			isPointer = true

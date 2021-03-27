@@ -76,7 +76,7 @@ func opPanic(expr *ast.CXExpression, fp int) {
 
 // panicIf/panicIfNot implementation
 func panicIf(expr *ast.CXExpression, fp int, condition bool) {
-	if ReadBool(fp, expr.Inputs[0]) == condition {
+	if ast.ReadBool(fp, expr.Inputs[0]) == condition {
 		fmt.Printf("%s : %d, %s\n", expr.FileName, expr.FileLine, ast.ReadStr(fp, expr.Inputs[1]))
 		panic(constants.CX_ASSERT)
 	}
@@ -93,5 +93,5 @@ func opPanicIfNot(expr *ast.CXExpression, fp int) {
 }
 
 func opStrError(expr *ast.CXExpression, fp int) {
-	mem.WriteString(fp, ast.ErrorString(int(ReadI32(fp, expr.Inputs[0]))), expr.Outputs[0])
+	mem.WriteString(fp, ast.ErrorString(int(ast.ReadI32(fp, expr.Inputs[0]))), expr.Outputs[0])
 }

@@ -408,7 +408,7 @@ func opHTTPDo(expr *ast.CXExpression, fp int) {
 	req.Fields = accessURLRawPath
 	url.RawPath = ast.ReadStr(fp, &req)
 	req.Fields = accessURLForceQuery
-	url.ForceQuery = ReadBool(fp, &req)
+	url.ForceQuery = ast.ReadBool(fp, &req)
 
 	var netClient = &http.Client{
 		Timeout: time.Second * 30,
