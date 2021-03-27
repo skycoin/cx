@@ -3,7 +3,6 @@ package cxcore
 import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
-	"github.com/skycoin/cx/cx/globals"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
@@ -658,7 +657,7 @@ func serializeProgram(prgrm *ast.CXProgram, s *serializedCXProgram) {
 	sPrgrm.CallCounter = int64(prgrm.CallCounter)
 
 	sPrgrm.MemoryOffset = int64(0)
-	sPrgrm.MemorySize = int64(len(globals.PROGRAM.Memory))
+	sPrgrm.MemorySize = int64(len(ast.PROGRAM.Memory))
 
 	sPrgrm.HeapPointer = int64(prgrm.HeapPointer)
 	sPrgrm.StackPointer = int64(prgrm.StackPointer)

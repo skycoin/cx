@@ -1,21 +1,8 @@
 package globals
 
 import (
-	"github.com/skycoin/cx/cx/ast"
 	"os"
 )
-
-
-//PROGRAM GLOBALS SHOULD NOT BE IN THIS FILE
-// global reference to our program
-var PROGRAM *ast.CXProgram //Why do we have global?
-
-// Initializing `CXProgram` structure where packages, structs, functions and
-// global variables that belong to core packages are stored.
-func init() {
-	prgrm := ast.CXProgram{Packages: make([]*ast.CXPackage, 0)}
-	PROGRAM = &prgrm
-}
 
 // Var
 var (

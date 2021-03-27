@@ -3,7 +3,6 @@ package cxcore
 import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
-	"github.com/skycoin/cx/cx/globals"
 )
 
 func opSerialize(expr *ast.CXExpression, fp int) {
@@ -13,7 +12,7 @@ func opSerialize(expr *ast.CXExpression, fp int) {
 	_ = inp1
 
 	var slcOff int
-	byts := SerializeCXProgram(globals.PROGRAM, true)
+	byts := SerializeCXProgram(ast.PROGRAM, true)
 	for _, b := range byts {
 		slcOff = WriteToSlice(slcOff, []byte{b})
 	}
@@ -26,10 +25,10 @@ func opDeserialize(expr *ast.CXExpression, fp int) {
 
 	inpOffset := GetFinalOffset(fp, inp)
 
-	off := Deserialize_i32(globals.PROGRAM.Memory[inpOffset : inpOffset+constants.TYPE_POINTER_SIZE])
+	off := Deserialize_i32(ast.PROGRAM.Memory[inpOffset : inpOffset+constants.TYPE_POINTER_SIZE])
 
-	_l := globals.PROGRAM.Memory[off+constants.OBJECT_HEADER_SIZE : off+constants.OBJECT_HEADER_SIZE+constants.SLICE_HEADER_SIZE]
+	_l := ast.PROGRAM.Memory[off+constants.OBJECT_HEADER_SIZE : off+constants.OBJECT_HEADER_SIZE+constants.SLICE_HEADER_SIZE]
 	l := Deserialize_i32(_l[4:8])
 
-	Deserialize(globals.PROGRAM.Memory[off+constants.OBJECT_HEADER_SIZE+constants.SLICE_HEADER_SIZE : off+constants.OBJECT_HEADER_SIZE+constants.SLICE_HEADER_SIZE+l]) // BUG : should be l * elt.TotalSize ?
+	Deserialize(ast.PROGRAM.Memory[off+constants.OBJECT_HEADER_SIZE+constants.SLICE_HEADER_SIZE : off+constants.OBJECT_HEADER_SIZE+constants.SLICE_HEADER_SIZE+l]) // BUG : should be l * elt.TotalSize ?
 }

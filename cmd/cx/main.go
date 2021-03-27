@@ -192,7 +192,7 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 	actions.AST = ast.MakeProgram()
 
 	//corePkgsPrgrm, err := cxcore.GetCurrentCxProgram()
-	var corePkgsPrgrm *ast.CXProgram = globals.PROGRAM
+	var corePkgsPrgrm *ast.CXProgram = ast.PROGRAM
 
 	if corePkgsPrgrm == nil {
 		panic("CxProgram is nil")

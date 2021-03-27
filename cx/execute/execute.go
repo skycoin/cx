@@ -5,7 +5,6 @@ import (
 	"github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
-	"github.com/skycoin/cx/cx/globals"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 	"math/rand"
 	"time"
@@ -156,7 +155,7 @@ func RunCompiled(cxprogram *ast.CXProgram, nCalls int, args []string) error {
 				cxprogram.StackPointer += fn.Size
 
 				// feeding os.Args
-				if osPkg, err := globals.PROGRAM.SelectPackage(constants.OS_PKG); err == nil {
+				if osPkg, err := ast.PROGRAM.SelectPackage(constants.OS_PKG); err == nil {
 					argsOffset := 0
 					if osGbl, err := osPkg.GetGlobal(constants.OS_ARGS); err == nil {
 						for _, arg := range args {

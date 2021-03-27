@@ -4,9 +4,7 @@ import (
 	"fmt"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
-	"github.com/skycoin/cx/cx/globals"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
-
 )
 
 // CorePackages ...
@@ -744,9 +742,10 @@ var (
 	Natives        = map[int]*ast.CXFunction{}
 
     Operators []*ast.CXFunction
+)
 
+var (
     opcodeHandlers []OpcodeHandler
-
 	opcodeHandlers_V2 []OpcodeHandler_V2
 )
 
@@ -863,7 +862,7 @@ func Pointer(arg *ast.CXArgument) *ast.CXArgument {
 // `CXArgument` named `argName`, that represents a structure instane of
 // `strctName`, from package `pkgName`.
 func Struct(pkgName, strctName, argName string) *ast.CXArgument {
-	pkg, err := globals.PROGRAM.GetPackage(pkgName)
+	pkg, err := ast.PROGRAM.GetPackage(pkgName)
 	if err != nil {
 		panic(err)
 	}
@@ -979,11 +978,11 @@ func Out(params ...*ast.CXArgument) []*ast.CXArgument {
 }
 
 func opDebug(*ast.CXExpression, int) {
-	globals.PROGRAM.PrintStack()
+	ast.PROGRAM.PrintStack()
 }
 
 func init() {
-	httpPkg, err := globals.PROGRAM.GetPackage("http")
+	httpPkg, err := ast.PROGRAM.GetPackage("http")
 	if err != nil {
 		panic(err)
 	}

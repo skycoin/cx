@@ -3,7 +3,6 @@ package cxcore
 import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
-	"github.com/skycoin/cx/cx/globals"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
@@ -46,7 +45,7 @@ import (
 //TODO: Make "ReadMemoryI32", "ReadMemoryI16", etc
 func ReadMemory(offset int, arg *ast.CXArgument) []byte {
 	size := ast.GetSize(arg)
-	return globals.PROGRAM.Memory[offset : offset+size]
+	return ast.PROGRAM.Memory[offset : offset+size]
 }
 // ReadStr ...
 /*
@@ -97,7 +96,7 @@ func ReadStrFromOffset(off int, inp *ast.CXArgument) (out string) {
 		// Then it's a literal.
 		offset = int32(off)
 	} else {
-		offset = Deserialize_i32(globals.PROGRAM.Memory[off : off+constants.TYPE_POINTER_SIZE])
+		offset = Deserialize_i32(ast.PROGRAM.Memory[off : off+constants.TYPE_POINTER_SIZE])
 	}
 
 	if offset == 0 {
@@ -108,12 +107,12 @@ func ReadStrFromOffset(off int, inp *ast.CXArgument) (out string) {
 
 	// We need to check if the string lives on the data segment or on the
 	// heap to know if we need to take into consideration the object header's size.
-	if int(offset) > globals.PROGRAM.HeapStartsAt {
-		size := Deserialize_i32(globals.PROGRAM.Memory[offset+constants.OBJECT_HEADER_SIZE : offset+constants.OBJECT_HEADER_SIZE+constants.STR_HEADER_SIZE])
-		DeserializeRaw(globals.PROGRAM.Memory[offset+constants.OBJECT_HEADER_SIZE:offset+constants.OBJECT_HEADER_SIZE+constants.STR_HEADER_SIZE+size], &out)
+	if int(offset) > ast.PROGRAM.HeapStartsAt {
+		size := Deserialize_i32(ast.PROGRAM.Memory[offset+constants.OBJECT_HEADER_SIZE : offset+constants.OBJECT_HEADER_SIZE+constants.STR_HEADER_SIZE])
+		DeserializeRaw(ast.PROGRAM.Memory[offset+constants.OBJECT_HEADER_SIZE:offset+constants.OBJECT_HEADER_SIZE+constants.STR_HEADER_SIZE+size], &out)
 	} else {
-		size := Deserialize_i32(globals.PROGRAM.Memory[offset : offset+constants.STR_HEADER_SIZE])
-		DeserializeRaw(globals.PROGRAM.Memory[offset:offset+constants.STR_HEADER_SIZE+size], &out)
+		size := Deserialize_i32(ast.PROGRAM.Memory[offset : offset+constants.STR_HEADER_SIZE])
+		DeserializeRaw(ast.PROGRAM.Memory[offset:offset+constants.STR_HEADER_SIZE+size], &out)
 	}
 
 	return out	
@@ -122,15 +121,15 @@ func ReadStrFromOffset(off int, inp *ast.CXArgument) (out string) {
 // ReadStringFromObject reads the string located at offset `off`.
 func ReadStringFromObject(off int32) string {
 	var plusOff int32
-	if int(off) > globals.PROGRAM.HeapStartsAt {
+	if int(off) > ast.PROGRAM.HeapStartsAt {
 		// Found in heap segment.
 		plusOff += constants.OBJECT_HEADER_SIZE
 	}
 
-	size := Deserialize_i32(globals.PROGRAM.Memory[off+plusOff : off+plusOff+constants.STR_HEADER_SIZE])
+	size := Deserialize_i32(ast.PROGRAM.Memory[off+plusOff : off+plusOff+constants.STR_HEADER_SIZE])
 
 	str := ""
-	_, err := encoder.DeserializeRaw(globals.PROGRAM.Memory[off+plusOff:off+plusOff+constants.STR_HEADER_SIZE+size], &str)
+	_, err := encoder.DeserializeRaw(ast.PROGRAM.Memory[off+plusOff:off+plusOff+constants.STR_HEADER_SIZE+size], &str)
 	if err != nil {
 		panic(err)
 	}

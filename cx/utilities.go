@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
-	"github.com/skycoin/cx/cx/globals"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -163,9 +162,9 @@ func getFormattedDerefs(arg *ast.CXArgument, includePkg bool) string {
 		// Checking if the value is in data segment.
 		// If this is the case, we can safely display it.
 		idxValue := ""
-		if idx.Offset > globals.PROGRAM.StackSize {
+		if idx.Offset > ast.PROGRAM.StackSize {
 			// Then it's a literal.
-			idxI32 := Deserialize_i32(globals.PROGRAM.Memory[idx.Offset : idx.Offset+constants.TYPE_POINTER_SIZE])
+			idxI32 := Deserialize_i32(ast.PROGRAM.Memory[idx.Offset : idx.Offset+constants.TYPE_POINTER_SIZE])
 			idxValue = fmt.Sprintf("%d", idxI32)
 		} else {
 			// Then let's just print the variable name.
@@ -254,7 +253,7 @@ func GetFormattedType(arg *ast.CXArgument) string {
 						typ += formatParameters(elt.Outputs)
 					} else {
 						// Then it refers to a named function defined in a package.
-						pkg, err := globals.PROGRAM.GetPackage(arg.Package.Name)
+						pkg, err := ast.PROGRAM.GetPackage(arg.Package.Name)
 						if err != nil {
 							println(CompilationError(elt.FileName, elt.FileLine), err.Error())
 							os.Exit(constants.CX_COMPILATION_ERROR)
@@ -576,7 +575,7 @@ func IsValidSliceIndex(offset int, index int, sizeofElement int) bool {
 
 // GetPointerOffset ...
 func GetPointerOffset(pointer int32) int32 {
-	return Deserialize_i32(globals.PROGRAM.Memory[pointer : pointer+constants.TYPE_POINTER_SIZE])
+	return Deserialize_i32(ast.PROGRAM.Memory[pointer : pointer+constants.TYPE_POINTER_SIZE])
 }
 
 // GetSliceOffset ...
@@ -591,12 +590,12 @@ func GetSliceOffset(fp int, arg *ast.CXArgument) int32 {
 
 // GetObjectHeader ...
 func GetObjectHeader(offset int32) []byte {
-	return globals.PROGRAM.Memory[offset : offset+constants.OBJECT_HEADER_SIZE]
+	return ast.PROGRAM.Memory[offset : offset+constants.OBJECT_HEADER_SIZE]
 }
 
 // GetSliceHeader ...
 func GetSliceHeader(offset int32) []byte {
-	return globals.PROGRAM.Memory[offset+constants.OBJECT_HEADER_SIZE : offset+constants.OBJECT_HEADER_SIZE+constants.SLICE_HEADER_SIZE]
+	return ast.PROGRAM.Memory[offset+constants.OBJECT_HEADER_SIZE : offset+constants.OBJECT_HEADER_SIZE+constants.SLICE_HEADER_SIZE]
 }
 
 // GetSliceLen ...
@@ -612,7 +611,7 @@ func GetSlice(offset int32, sizeofElement int) []byte {
 		if sliceLen > 0 {
 			dataOffset := offset + constants.OBJECT_HEADER_SIZE + constants.SLICE_HEADER_SIZE - 4
 			dataLen := 4 + sliceLen*int32(sizeofElement)
-			return globals.PROGRAM.Memory[dataOffset : dataOffset+dataLen]
+			return ast.PROGRAM.Memory[dataOffset : dataOffset+dataLen]
 		}
 	}
 	return nil
@@ -821,7 +820,7 @@ func errorCode(r interface{}) int {
 }
 
 func runtimeErrorInfo(r interface{}, printStack bool, defaultError int) {
-	call := globals.PROGRAM.CallStack[globals.PROGRAM.CallCounter]
+	call := ast.PROGRAM.CallStack[ast.PROGRAM.CallCounter]
 	expr := call.Operator.Expressions[call.Line]
 	code := errorCode(r)
 	if code == constants.CX_RUNTIME_ERROR {
@@ -831,7 +830,7 @@ func runtimeErrorInfo(r interface{}, printStack bool, defaultError int) {
 	fmt.Printf("%s, %s, %v", ErrorHeader(expr.FileName, expr.FileLine), ErrorString(code), r)
 
 	if printStack {
-		globals.PROGRAM.PrintStack()
+		ast.PROGRAM.PrintStack()
 	}
 
 	if DBG_GOLANG_STACK_TRACE {
@@ -846,10 +845,10 @@ func RuntimeError() {
 	if r := recover(); r != nil {
 		switch r {
 		case constants.STACK_OVERFLOW_ERROR:
-			call := globals.PROGRAM.CallStack[globals.PROGRAM.CallCounter]
-			if globals.PROGRAM.CallCounter > 0 {
-				globals.PROGRAM.CallCounter--
-				globals.PROGRAM.StackPointer = call.FramePointer
+			call := ast.PROGRAM.CallStack[ast.PROGRAM.CallCounter]
+			if ast.PROGRAM.CallCounter > 0 {
+				ast.PROGRAM.CallCounter--
+				ast.PROGRAM.StackPointer = call.FramePointer
 				runtimeErrorInfo(r, true, constants.CX_RUNTIME_STACK_OVERFLOW_ERROR)
 			} else {
 				// error at entry point
@@ -999,10 +998,10 @@ func DebugHeap() {
 	symsToAddrs := make(map[int32][]string)
 
 	// Processing global variables. Adding the address they are pointing to.
-	for _, pkg := range globals.PROGRAM.Packages {
+	for _, pkg := range ast.PROGRAM.Packages {
 		for _, glbl := range pkg.Globals {
 			if glbl.IsPointer || glbl.IsSlice {
-				heapOffset := Deserialize_i32(globals.PROGRAM.Memory[glbl.Offset : glbl.Offset+constants.TYPE_POINTER_SIZE])
+				heapOffset := Deserialize_i32(ast.PROGRAM.Memory[glbl.Offset : glbl.Offset+constants.TYPE_POINTER_SIZE])
 
 				symsToAddrs[heapOffset] = append(symsToAddrs[heapOffset], glbl.Name)
 			}
@@ -1012,8 +1011,8 @@ func DebugHeap() {
 	// Processing local variables in every active function call in the `CallStack`.
 	// Adding the address they are pointing to.
 	var fp int
-	for c := 0; c <= globals.PROGRAM.CallCounter; c++ {
-		op := globals.PROGRAM.CallStack[c].Operator
+	for c := 0; c <= ast.PROGRAM.CallCounter; c++ {
+		op := ast.PROGRAM.CallStack[c].Operator
 
 		// TODO: Some standard library functions "manually" add a function
 		// call (callbacks) to `PRGRM.CallStack`. These functions do not have an
@@ -1034,11 +1033,11 @@ func DebugHeap() {
 				symName += "." + fld.Name
 			}
 
-			if ptr.Offset < globals.PROGRAM.StackSize {
+			if ptr.Offset < ast.PROGRAM.StackSize {
 				offset += fp
 			}
 
-			heapOffset := Deserialize_i32(globals.PROGRAM.Memory[offset : offset+constants.TYPE_POINTER_SIZE])
+			heapOffset := Deserialize_i32(ast.PROGRAM.Memory[offset : offset+constants.TYPE_POINTER_SIZE])
 
 			symsToAddrs[heapOffset] = append(symsToAddrs[heapOffset], symName)
 		}
@@ -1061,8 +1060,8 @@ func DebugHeap() {
 
 	w = tabwriter.NewWriter(os.Stdout, 0, 0, 2, '.', 0)
 
-	for c := globals.PROGRAM.HeapStartsAt + constants.NULL_HEAP_ADDRESS_OFFSET; c < globals.PROGRAM.HeapStartsAt+globals.PROGRAM.HeapPointer; {
-		objSize := Deserialize_i32(globals.PROGRAM.Memory[c+constants.MARK_SIZE+constants.FORWARDING_ADDRESS_SIZE : c+constants.MARK_SIZE+constants.FORWARDING_ADDRESS_SIZE+constants.OBJECT_SIZE])
+	for c := ast.PROGRAM.HeapStartsAt + constants.NULL_HEAP_ADDRESS_OFFSET; c < ast.PROGRAM.HeapStartsAt+ast.PROGRAM.HeapPointer; {
+		objSize := Deserialize_i32(ast.PROGRAM.Memory[c+constants.MARK_SIZE+constants.FORWARDING_ADDRESS_SIZE : c+constants.MARK_SIZE+constants.FORWARDING_ADDRESS_SIZE+constants.OBJECT_SIZE])
 
 		// Setting a limit size for the object to be printed if the object is too large.
 		// We don't want to print obscenely large objects to standard output.
@@ -1074,7 +1073,7 @@ func DebugHeap() {
 		var addrB [4]byte
 		WriteMemI32(addrB[:], 0, int32(c))
 
-		fmt.Fprintln(w, "Addr:\t", addrB, "\tMark:\t", globals.PROGRAM.Memory[c:c+constants.MARK_SIZE], "\tFwd:\t", globals.PROGRAM.Memory[c+constants.MARK_SIZE:c+constants.MARK_SIZE+constants.FORWARDING_ADDRESS_SIZE], "\tSize:\t", objSize, "\tObj:\t", globals.PROGRAM.Memory[c+constants.OBJECT_HEADER_SIZE:c+int(printObjSize)], "\tPtrs:", symsToAddrs[int32(c)])
+		fmt.Fprintln(w, "Addr:\t", addrB, "\tMark:\t", ast.PROGRAM.Memory[c:c+constants.MARK_SIZE], "\tFwd:\t", ast.PROGRAM.Memory[c+constants.MARK_SIZE:c+constants.MARK_SIZE+constants.FORWARDING_ADDRESS_SIZE], "\tSize:\t", objSize, "\tObj:\t", ast.PROGRAM.Memory[c+constants.OBJECT_HEADER_SIZE:c+int(printObjSize)], "\tPtrs:", symsToAddrs[int32(c)])
 
 		c += int(objSize)
 	}
@@ -1205,7 +1204,7 @@ func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCod
 func IsPointer(sym *ast.CXArgument) bool {
 	// There's no need to add global variables in `fn.ListOfPointers` as we can access them easily through `CXPackage.Globals`
 	// TODO: We could still pre-compute a list of candidates for globals.
-	if sym.Offset >= globals.PROGRAM.StackSize && sym.Name != "" {
+	if sym.Offset >= ast.PROGRAM.StackSize && sym.Name != "" {
 		return false
 	}
 	// NOTE: Strings are considered as `IsPointer`s by the runtime.

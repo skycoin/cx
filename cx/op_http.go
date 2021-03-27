@@ -6,7 +6,6 @@ import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/execute"
-	"github.com/skycoin/cx/cx/globals"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -87,7 +86,7 @@ func init() {
 
 	httpPkg.AddStruct(responseStruct)
 
-	globals.PROGRAM.AddPackage(httpPkg)
+	ast.PROGRAM.AddPackage(httpPkg)
 }
 
 func opHTTPHandle(expr *ast.CXExpression, fp int) {
@@ -96,7 +95,7 @@ func opHTTPHandle(expr *ast.CXExpression, fp int) {
 	urlstring, functionnamestring := expr.Inputs[0], expr.Inputs[1]
 
 	// Getting handler function.
-	handlerPkg, err := globals.PROGRAM.GetPackage(functionnamestring.Package.Name)
+	handlerPkg, err := ast.PROGRAM.GetPackage(functionnamestring.Package.Name)
 
 	if err != nil {
 		panic(err)
@@ -109,16 +108,16 @@ func opHTTPHandle(expr *ast.CXExpression, fp int) {
 	http.HandleFunc(ReadStr(fp, urlstring), func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html")
 
-		callFP := fp + globals.PROGRAM.CallStack[globals.PROGRAM.CallCounter].Operator.Size
+		callFP := fp + ast.PROGRAM.CallStack[ast.PROGRAM.CallCounter].Operator.Size
 
-		globals.PROGRAM.CallCounter++
+		ast.PROGRAM.CallCounter++
 		// PROGRAM.StackPointer += handlerFn.Size
-		globals.PROGRAM.CallStack[globals.PROGRAM.CallCounter].Operator = handlerFn
-		globals.PROGRAM.CallStack[globals.PROGRAM.CallCounter].Line = 0
-		globals.PROGRAM.CallStack[globals.PROGRAM.CallCounter].FramePointer = globals.PROGRAM.StackPointer
+		ast.PROGRAM.CallStack[ast.PROGRAM.CallCounter].Operator = handlerFn
+		ast.PROGRAM.CallStack[ast.PROGRAM.CallCounter].Line = 0
+		ast.PROGRAM.CallStack[ast.PROGRAM.CallCounter].FramePointer = ast.PROGRAM.StackPointer
 		writeHTTPRequest(callFP, handlerFn.Inputs[1], r)
 		// PROGRAM.StackPointer -= handlerFn.Size
-		globals.PROGRAM.CallCounter--
+		ast.PROGRAM.CallCounter--
 
 		i1Off := callFP + handlerFn.Inputs[0].Offset
 		i1Size := handlerFn.Inputs[0].TotalSize
@@ -128,11 +127,11 @@ func opHTTPHandle(expr *ast.CXExpression, fp int) {
 		i1 := make([]byte, i1Size)
 		i2 := make([]byte, i1Size)
 
-		copy(i1, globals.PROGRAM.Memory[i1Off:i1Off+i1Size])
-		copy(i2, globals.PROGRAM.Memory[i2Off:i2Off+i2Size])
+		copy(i1, ast.PROGRAM.Memory[i1Off:i1Off+i1Size])
+		copy(i2, ast.PROGRAM.Memory[i2Off:i2Off+i2Size])
 
 		//PROGRAM.Callback(handlerFn, [][]byte{i1, i2})
-		execute.Callback(globals.PROGRAM, handlerFn, [][]byte{i1, i2})
+		execute.Callback(ast.PROGRAM, handlerFn, [][]byte{i1, i2})
 		fmt.Fprint(w, ReadStr(callFP, handlerFn.Inputs[0]))
 	})
 }
@@ -220,7 +219,7 @@ func writeHTTPRequest(fp int, param *ast.CXArgument, request *http.Request) {
 		panic(err)
 	}
 
-	httpPkg, err := globals.PROGRAM.GetPackage("http")
+	httpPkg, err := ast.PROGRAM.GetPackage("http")
 	if err != nil {
 		panic(err)
 	}
@@ -333,7 +332,7 @@ func opHTTPDo(expr *ast.CXExpression, fp int) {
 		panic(err)
 	}
 
-	httpPkg, err := globals.PROGRAM.GetPackage("http")
+	httpPkg, err := ast.PROGRAM.GetPackage("http")
 	if err != nil {
 		panic(err)
 	}
