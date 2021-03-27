@@ -471,6 +471,17 @@ func (cxprogram *CXProgram) GetCurrentExpression() (*CXExpression, error) {
 
 }
 
+// GetCurrentExpression2 returns the current CXExpression
+//redundant, also get  Expression
+/*
+func (cxprogram *CXProgram) GetCurrentExpression2() *CXExpression {
+	//call := cxprogram.GetCurrentCall()
+	//return call.Operator.Expressions[call.Line]
+	call := &cxprogram.CallStack[cxprogram.CallCounter]
+	return call.Operator.Expressions[call.Line]
+}
+*/
+
 // GetGlobal ...
 func (cxprogram *CXProgram) GetGlobal(name string) (*CXArgument, error) {
 	mod, err := cxprogram.GetCurrentPackage()
@@ -595,29 +606,25 @@ func (cxprogram *CXProgram) GetFunction(functionNameToFind string, pkgName strin
 	return nil, fmt.Errorf("function '%s' not found in package '%s'", functionNameToFind, pkgName)
 }
 
-// GetExpr returns the current CXExpression
-func (cxprogram *CXProgram) GetExpr() *CXExpression {
-	//call := cxprogram.GetCall()
-	//return call.Operator.Expressions[call.Line]
-	call := &cxprogram.CallStack[cxprogram.CallCounter]
-	return call.Operator.Expressions[call.Line]
-}
 
-// GetCall returns the current CXCall
+
+// GetCurrentCall returns the current CXCall
 //TODO: What does this do?
-func (cxprogram *CXProgram) GetCall() *CXCall {
+func (cxprogram *CXProgram) GetCurrentCall() *CXCall {
 	return &cxprogram.CallStack[cxprogram.CallCounter]
 }
 
-// GetOpCode returns the current OpCode
-func (cxprogram *CXProgram) GetOpCode() int {
-	return cxprogram.GetExpr().Operator.OpCode
+/*
+// GetCurrentOpCode returns the current OpCode
+func (cxprogram *CXProgram) GetCurrentOpCode() int {
+	return cxprogram.GetCurrentExpression2().Operator.OpCode
 }
+*/
 
 /*
 //not used
 func (cxprogram *CXProgram) GetFramePointer() int {
-	return cxprogram.GetCall().FramePointer
+	return cxprogram.GetCurrentCall().FramePointer
 }
 */
 
