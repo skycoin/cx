@@ -5,12 +5,6 @@ import "os"
 //todo find out why program halt
 func parseCmdFlags(options cxCmdFlags, args []string) {
 
-	parseFlags(&options, args)
-
-	// Checking if CXPATH is set, either by setting an environment variable
-	// or by setting the `--cxpath` flag.
-	GetCXPath(options)
-
 	//checkHelp check command line argumenets
 	//$ cx help
 	if checkHelp(args) {

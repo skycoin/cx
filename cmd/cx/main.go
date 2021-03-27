@@ -18,10 +18,7 @@ import (
 	"strconv"
 )
 
-const VERSION = "0.8.0"
-
 func main() {
-	//cx.CXLogFile(true)
 	if os.Args != nil && len(os.Args) > 1 {
 		Run(os.Args[1:])
 	}
@@ -104,6 +101,9 @@ func Run(args []string) {
 
 	// options, file pointers, filenames
 	cxArgs, sourceCode, fileNames := cxcore.ParseArgsForCX(commandLine.Args(), true)
+
+	fmt.Println("fileNames :", fileNames)
+	//	fmt.Print("sourceCode :", sourceCode, "\n")
 
 	// Propagate some options out to other packages.
 	cxgo.DebugLexer = options.debugLexer // in package cxgo

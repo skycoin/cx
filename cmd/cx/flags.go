@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"go/build"
+	"log"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -149,7 +150,11 @@ func checktokenizeMode(args []string) bool {
 }
 
 func printEnv() {
-	ex, _ := os.Executable()
+	ex, err := os.Executable()
+
+	if err != nil {
+		log.Fatalln("error")
+	}
 
 	fmt.Println("GOROOT: ", runtime.GOROOT())
 	fmt.Println("GOPATH: ", build.Default.GOPATH)
@@ -158,4 +163,5 @@ func printEnv() {
 	fmt.Println("Operating system: ", runtime.GOOS)
 	fmt.Println("CX version: ", VERSION)
 	fmt.Println("CX binary location: ", filepath.Dir(ex))
+
 }
