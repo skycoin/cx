@@ -1,9 +1,10 @@
-package ast
+package tostring
 
 import (
 	"bytes"
 	"fmt"
 	"github.com/skycoin/cx/cx"
+	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/globals"
 	"github.com/skycoin/cx/cx/helper"
@@ -16,12 +17,12 @@ import (
 
 // ToString returns the abstract syntax tree of a CX program in a
 // string format.
-func (cxprogram *CXProgram) ToString() string {
+func (cxprogram *ast.CXProgram) ToString() string {
 	var ast string
 	ast += "Program\n" //why is top line "Program" ???
 
-	var currentFunction *CXFunction
-	var currentPackage *CXPackage
+	var currentFunction *ast.CXFunction
+	var currentPackage *ast.CXPackage
 
 	currentPackage, err := cxprogram.GetCurrentPackage()
 
@@ -39,7 +40,7 @@ func (cxprogram *CXProgram) ToString() string {
 
 // buildStrImports is an auxiliary function for `toString`. It builds
 // string representation all the imported packages of `pkg`.
-func buildStrImports(pkg *CXPackage, ast *string) {
+func buildStrImports(pkg *ast.CXPackage, ast *string) {
 	if len(pkg.Imports) > 0 {
 		*ast += "\tImports\n"
 	}
@@ -51,7 +52,7 @@ func buildStrImports(pkg *CXPackage, ast *string) {
 
 // buildStrGlobals is an auxiliary function for `toString`. It builds
 // string representation of all the global variables of `pkg`.
-func buildStrGlobals(pkg *CXPackage, ast *string) {
+func buildStrGlobals(pkg *ast.CXPackage, ast *string) {
 	if len(pkg.Globals) > 0 {
 		*ast += "\tGlobals\n"
 	}
@@ -63,7 +64,7 @@ func buildStrGlobals(pkg *CXPackage, ast *string) {
 
 // buildStrStructs is an auxiliary function for `toString`. It builds
 // string representation of all the structures defined in `pkg`.
-func buildStrStructs(pkg *CXPackage, ast *string) {
+func buildStrStructs(pkg *ast.CXPackage, ast *string) {
 	if len(pkg.Structs) > 0 {
 		*ast += "\tStructs\n"
 	}
@@ -80,7 +81,7 @@ func buildStrStructs(pkg *CXPackage, ast *string) {
 
 // buildStrFunctions is an auxiliary function for `toString`. It builds
 // string representation of all the functions defined in `pkg`.
-func buildStrFunctions(pkg *CXPackage, ast *string) {
+func buildStrFunctions(pkg *ast.CXPackage, ast *string) {
 	if len(pkg.Functions) > 0 {
 		*ast += "\tFunctions\n"
 	}
@@ -164,7 +165,7 @@ func buildStrFunctions(pkg *CXPackage, ast *string) {
 
 // BuildStrPackages is an auxiliary function for `ToString`. It starts the
 // process of building string format of the abstract syntax tree of a CX program.
-func BuildStrPackages(prgrm *CXProgram, ast *string) {
+func BuildStrPackages(prgrm *ast.CXProgram, ast *string) {
 	// We need to declare the counter outside so we can
 	// ignore the increments from core or stdlib packages.
 	var i int
@@ -188,9 +189,9 @@ func BuildStrPackages(prgrm *CXProgram, ast *string) {
 // name of a `CXExpression`'s input and output parameters (`CXArgument`s). Examples
 // of these formattings are "pkg.foo[0]", "&*foo.field1". The result is written to
 // `buf`.
-func getFormattedParam(params []*CXArgument, pkg *CXPackage, buf *bytes.Buffer) {
+func getFormattedParam(params []*ast.CXArgument, pkg *ast.CXPackage, buf *bytes.Buffer) {
 	for i, param := range params {
-		elt := GetAssignmentElement(param)
+		elt := ast.GetAssignmentElement(param)
 
 		// Checking if this argument comes from an imported package.
 		externalPkg := false
@@ -207,7 +208,7 @@ func getFormattedParam(params []*CXArgument, pkg *CXPackage, buf *bytes.Buffer) 
 }
 
 // SignatureStringOfFunction returns the signature string of a function.
-func SignatureStringOfFunction(pkg *CXPackage, f *CXFunction) string {
+func SignatureStringOfFunction(pkg *ast.CXPackage, f *ast.CXFunction) string {
 	var ins bytes.Buffer
 	var outs bytes.Buffer
 	getFormattedParam(f.Inputs, pkg, &ins)
@@ -217,7 +218,7 @@ func SignatureStringOfFunction(pkg *CXPackage, f *CXFunction) string {
 		f.Name, ins.String(), outs.String())
 }
 
-func getNonCollectionValue(fp int, arg, elt *CXArgument, typ string) string {
+func getNonCollectionValue(fp int, arg, elt *ast.CXArgument, typ string) string {
 	switch typ {
 	case "bool":
 		return fmt.Sprintf("%v", cxcore.ReadBool(fp, elt))
@@ -265,9 +266,9 @@ func getNonCollectionValue(fp int, arg, elt *CXArgument, typ string) string {
 }
 
 // GetPrintableValue ...
-func GetPrintableValue(fp int, arg *CXArgument) string {
+func GetPrintableValue(fp int, arg *ast.CXArgument) string {
 	var typ string
-	elt := GetAssignmentElement(arg)
+	elt := ast.GetAssignmentElement(arg)
 	if elt.CustomType != nil {
 		// then it's custom type
 		typ = elt.CustomType.Name
@@ -465,10 +466,10 @@ func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCod
 // IsPointer checks if `sym` is a candidate for the garbage collector to check.
 // For example, if `sym` is a slice, the garbage collector will need to check
 // if the slice on the heap needs to be relocated.
-func IsPointer(sym *CXArgument) bool {
+func IsPointer(sym *ast.CXArgument) bool {
 	// There's no need to add global variables in `fn.ListOfPointers` as we can access them easily through `CXPackage.Globals`
 	// TODO: We could still pre-compute a list of candidates for globals.
-	if sym.Offset >= PROGRAM.StackSize && sym.Name != "" {
+	if sym.Offset >= ast.PROGRAM.StackSize && sym.Name != "" {
 		return false
 	}
 	// NOTE: Strings are considered as `IsPointer`s by the runtime.
@@ -494,7 +495,7 @@ func IsPointer(sym *CXArgument) bool {
 
 // getFormattedDerefs is an auxiliary function for `GetFormattedName`. This
 // function formats indexing and pointer dereferences associated to `arg`.
-func getFormattedDerefs(arg *CXArgument, includePkg bool) string {
+func getFormattedDerefs(arg *ast.CXArgument, includePkg bool) string {
 	name := ""
 	// Checking if we should include `arg`'s package name.
 	if includePkg {
@@ -522,9 +523,9 @@ func getFormattedDerefs(arg *CXArgument, includePkg bool) string {
 		// Checking if the value is in data segment.
 		// If this is the case, we can safely display it.
 		idxValue := ""
-		if idx.Offset > PROGRAM.StackSize {
+		if idx.Offset > ast.PROGRAM.StackSize {
 			// Then it's a literal.
-			idxI32 := helper.Deserialize_i32(PROGRAM.Memory[idx.Offset : idx.Offset+constants.TYPE_POINTER_SIZE])
+			idxI32 := helper.Deserialize_i32(ast.PROGRAM.Memory[idx.Offset : idx.Offset+constants.TYPE_POINTER_SIZE])
 			idxValue = fmt.Sprintf("%d", idxI32)
 		} else {
 			// Then let's just print the variable name.
@@ -541,7 +542,7 @@ func getFormattedDerefs(arg *CXArgument, includePkg bool) string {
 // depicts how an argument is being accessed. Example outputs: "foo[3]",
 // "**bar", "foo.bar[0]". If `includePkg` is `true`, the argument name will
 // include the package name that contains it, such as in "pkg.foo".
-func GetFormattedName(arg *CXArgument, includePkg bool) string {
+func GetFormattedName(arg *ast.CXArgument, includePkg bool) string {
 	// Getting formatted name which does not include fields.
 	name := getFormattedDerefs(arg, includePkg)
 
@@ -561,7 +562,7 @@ func GetFormattedName(arg *CXArgument, includePkg bool) string {
 // formatParameters returns a string containing a list of the formatted types of
 // each of `params`, enclosed in parethesis. This function is used only when
 // formatting functions as first-class objects.
-func formatParameters(params []*CXArgument) string {
+func formatParameters(params []*ast.CXArgument) string {
 	types := "("
 	for i, param := range params {
 		types += GetFormattedType(param)
@@ -575,9 +576,9 @@ func formatParameters(params []*CXArgument) string {
 }
 
 // GetFormattedType builds a string with the CXGO type representation of `arg`.
-func GetFormattedType(arg *CXArgument) string {
+func GetFormattedType(arg *ast.CXArgument) string {
 	typ := ""
-	elt := GetAssignmentElement(arg)
+	elt := ast.GetAssignmentElement(arg)
 
 	// this is used to know what arg.Lengths index to use
 	// used for cases like [5]*[3]i32, where we jump to another decl spec
@@ -613,9 +614,9 @@ func GetFormattedType(arg *CXArgument) string {
 						typ += formatParameters(elt.Outputs)
 					} else {
 						// Then it refers to a named function defined in a package.
-						pkg, err := PROGRAM.GetPackage(arg.Package.Name)
+						pkg, err := ast.PROGRAM.GetPackage(arg.Package.Name)
 						if err != nil {
-							println(CompilationError(elt.FileName, elt.FileLine), err.Error())
+							println(ast.CompilationError(elt.FileName, elt.FileLine), err.Error())
 							os.Exit(constants.CX_COMPILATION_ERROR)
 						}
 
@@ -637,7 +638,7 @@ func GetFormattedType(arg *CXArgument) string {
 }
 
 // SignatureStringOfStruct returns the signature string of a struct.
-func SignatureStringOfStruct(s *CXStruct) string {
+func SignatureStringOfStruct(s *ast.CXStruct) string {
 	fields := ""
 	for _, f := range s.Fields {
 		fields += fmt.Sprintf(" %s %s;", f.Name, GetFormattedType(f))

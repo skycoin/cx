@@ -6,6 +6,7 @@ import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	globals2 "github.com/skycoin/cx/cx/globals"
+	"github.com/skycoin/cx/cx/tostring"
 	"github.com/skycoin/cx/cxgo/globals"
 	"io"
 	"os"
@@ -240,7 +241,7 @@ func lexerStep0(srcStrs, srcNames []string) int {
 					// Checking if `pkgName` already exists and if it's not a standard library package.
 					if _, err := cxgo0.PRGRM0.GetPackage(pkgName); err != nil && !constants.IsCorePackage(pkgName) {
 						// _, sourceCode, srcNames := ParseArgsForCX([]string{fmt.Sprintf("%s%s", SRCPATH, pkgName)}, false)
-						_, sourceCode, fileNames := ast.ParseArgsForCX([]string{filepath.Join(globals2.SRCPATH, pkgName)}, false)
+						_, sourceCode, fileNames := tostring.ParseArgsForCX([]string{filepath.Join(globals2.SRCPATH, pkgName)}, false)
 						ParseSourceCode(sourceCode, fileNames)
 					}
 				}

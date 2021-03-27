@@ -6,6 +6,7 @@ import (
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/globals"
 	"github.com/skycoin/cx/cx/helper"
+	"github.com/skycoin/cx/cx/tostring"
 	"strconv"
 	// "github.com/skycoin/skycoin/src/cipher/encoder"
 )
@@ -883,7 +884,7 @@ func opAffRequest(expr *ast.CXExpression, fp int) {
 		case "strct":
 
 		case "prgrm":
-			fmt.Println(ast.GetPrintableValue(fp, readArgAff(elt, &tgtFn)))
+			fmt.Println(tostring.GetPrintableValue(fp, readArgAff(elt, &tgtFn)))
 		}
 	case "expr":
 		if expr, err := tgtFn.GetExpressionByLabel(elt); err == nil {
@@ -948,9 +949,9 @@ func opAffRequest(expr *ast.CXExpression, fp int) {
 		switch tgtElt {
 		case "arg":
 			if tgtArgType == "inp" {
-				fmt.Println(ast.GetPrintableValue(fp, tgtExpr.Inputs[tgtArgIndex]))
+				fmt.Println(tostring.GetPrintableValue(fp, tgtExpr.Inputs[tgtArgIndex]))
 			} else {
-				fmt.Println(ast.GetPrintableValue(fp, tgtExpr.Outputs[tgtArgIndex]))
+				fmt.Println(tostring.GetPrintableValue(fp, tgtExpr.Outputs[tgtArgIndex]))
 			}
 		case "prgrm":
 			// affs = append(affs, "Run program")
