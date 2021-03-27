@@ -96,7 +96,9 @@ type CXFunction struct {
 	Inputs      []*CXArgument   // Input parameters to the function
 	Outputs     []*CXArgument   // Output parameters from the function
 	Expressions []*CXExpression // Expressions, including control flow statements, in the function
+	//TODO: Better Comment for this
 	Length      int             // number of expressions, pre-computed for performance
+	//TODO: Better Comment for this
 	Size        int             // automatic memory size
 
 	// Debugging
