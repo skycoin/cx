@@ -458,10 +458,10 @@ func (cxprogram *CXProgram) GetCurrentExpression() *CXExpression {
 }
 
 // GetGlobal ...
-func (cxprogram *CXProgram) GetGlobal(name string) (*CXArgument, error) {
+func (cxprogram *CXProgram) GetGlobal(name string) *CXArgument {
 	mod := cxprogram.GetCurrentPackage()
 	if mod == nil {
-		return nil, nil
+		return nil
 	}
 
 	var foundArgument *CXArgument
@@ -482,9 +482,9 @@ func (cxprogram *CXProgram) GetGlobal(name string) (*CXArgument, error) {
 	}
 
 	if foundArgument == nil {
-		return nil, fmt.Errorf("global '%s' not found", name)
+		return nil
 	}
-	return foundArgument, nil
+	return foundArgument
 }
 
 // Refactor to return nil on error
