@@ -500,7 +500,7 @@ func (cxprogram *CXProgram) GetPackage(packageNameToFind string) *CXPackage {
 }
 
 // GetStruct ...
-func (cxprogram *CXProgram) GetStruct(strctName string, modName string) (*CXStruct, error) {
+func (cxprogram *CXProgram) GetStruct(strctName string, modName string) *CXStruct {
 	var foundPkg *CXPackage
 	for _, mod := range cxprogram.Packages {
 		if modName == mod.Name {
@@ -537,9 +537,9 @@ func (cxprogram *CXProgram) GetStruct(strctName string, modName string) (*CXStru
 	}
 
 	if foundPkg != nil && foundStrct != nil {
-		return foundStrct, nil
+		return foundStrct
 	}
-	return nil, fmt.Errorf("struct '%s' not found in package '%s'", strctName, modName)
+	return nil
 
 }
 
