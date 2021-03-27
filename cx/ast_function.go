@@ -1,9 +1,5 @@
 package cxcore
 
-import (
-	"errors"
-)
-
 // MakeFunction creates an empty function.
 // Later, parameters and contents can be added.
 //
@@ -99,13 +95,13 @@ func (fn *CXFunction) GetExpressionByLine(line int) *CXExpression {
 }
 
 // GetCurrentExpression ...
-func (fn *CXFunction) GetCurrentExpression() (*CXExpression, error) {
+func (fn *CXFunction) GetCurrentExpression() *CXExpression {
 	if fn.CurrentExpression != nil {
-		return fn.CurrentExpression, nil
+		return fn.CurrentExpression
 	} else if fn.Expressions != nil {
-		return fn.Expressions[0], nil
+		return fn.Expressions[0]
 	} else {
-		return nil, errors.New("current expression is nil")
+		return nil
 	}
 }
 
