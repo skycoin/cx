@@ -98,7 +98,7 @@ type serializedFunction struct {
 	ListOfPointersSize   int64
 
 	// We're going to determine this when procesing the expressions. Check serializedExpression type
-	// IsNative                        int64
+	// IsAtomic                        int64
 	// OpCode                          int64
 
 	CurrentExpressionOffset int64
@@ -384,7 +384,7 @@ func serializeExpression(expr *CXExpression, s *serializedCXProgram) int {
 		sExpr.OperatorOffset = sNil
 		sExpr.IsNative = serializeBoolean(false)
 		sExpr.OpCode = int64(-1)
-	} else if expr.Operator.IsNative {
+	} else if expr.Operator.IsAtomic {
 		sExpr.OperatorOffset = sNil
 		sExpr.IsNative = serializeBoolean(true)
 		sExpr.OpCode = int64(expr.Operator.OpCode)

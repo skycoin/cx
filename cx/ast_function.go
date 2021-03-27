@@ -20,10 +20,9 @@ func MakeFunction(name string, fileName string, fileLine int) *CXFunction {
 // not used
 func MakeNativeFunction(opCode int, inputs []*CXArgument, outputs []*CXArgument) *CXFunction {
 	fn := &CXFunction{
-		IsNative: true,
+		IsAtomic: true,
 		OpCode:   opCode,
-		IntCode: -1,
-		Version:1,
+		Version:  1,
 	}
 
 	offset := 0
@@ -44,10 +43,9 @@ func MakeNativeFunction(opCode int, inputs []*CXArgument, outputs []*CXArgument)
 //not used
 func MakeNativeFunctionV2(opCode int, inputs []*CXArgument, outputs []*CXArgument) *CXFunction {
 	fn := &CXFunction{
-		IsNative: true,
+		IsAtomic: true,
 		OpCode:   opCode,
-		IntCode: -1,
-		Version:2,
+		Version:  2,
 	}
 
 	offset := 0

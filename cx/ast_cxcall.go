@@ -82,7 +82,7 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 				call.Line++
 			case 2: // new version
 				fp := call.FramePointer;
-				if expr.Operator.IntCode == -1 && IsOperator(expr.Operator.OpCode) {
+				if IsOperator(expr.Operator.OpCode) {
 					// TODO: resolve this at compile time
 					atomicType := GetType(expr.Inputs[0])
 					expr.Operator = GetTypedOperator(atomicType, expr.Operator.OpCode)

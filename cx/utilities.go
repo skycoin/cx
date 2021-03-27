@@ -30,7 +30,7 @@ func GetType(arg *CXArgument) int {
 
 // ExprOpName ...
 func ExprOpName(expr *CXExpression) string {
-	if expr.Operator.IsNative {
+	if expr.Operator.IsAtomic {
 		return OpNames[expr.Operator.OpCode]
 	}
 	return expr.Operator.Name
@@ -401,7 +401,7 @@ func buildStrFunctions(pkg *CXPackage, ast *string) {
 
 			// Determining operator's name.
 			if expr.Operator != nil {
-				if expr.Operator.IsNative {
+				if expr.Operator.IsAtomic {
 					opName = OpNames[expr.Operator.OpCode]
 				} else {
 					opName = expr.Operator.Name

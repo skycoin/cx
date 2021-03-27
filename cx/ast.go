@@ -84,14 +84,14 @@ type CXStruct struct {
 }
 
 // CXFunction is used to represent a CX function.
-//
+//TODO: Remove "IsAtomic" and add function "IsAtomic()" if OpCode != 0
+//TODO: Rename OpCode to "AtomicOPCode" and is Atomic if set
 type CXFunction struct {
 	// Metadata
 	Name     string     // Name of the function
 	Package  *CXPackage // The package it's a member of
-	IsNative bool       // True if the function is native to CX, e.g. int32.add()
-	OpCode   int        // opcode if IsNative = true
-    IntCode int // TODO: remove
+	IsAtomic bool       // True if the function is native to CX, e.g. int32.add()
+	OpCode   int        // opcode if IsAtomic = true
 	// Contents
 	Inputs      []*CXArgument   // Input parameters to the function
 	Outputs     []*CXArgument   // Output parameters from the function

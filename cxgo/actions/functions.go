@@ -505,7 +505,7 @@ func checkMatchParamTypes(expr *cxcore.CXExpression, expected, received []*cxcor
 
 		if expectedType != receivedType && inp.Type != constants.TYPE_UNDEFINED {
 			var opName string
-			if expr.Operator.IsNative {
+			if expr.Operator.IsAtomic {
 				opName = cxcore.OpNames[expr.Operator.OpCode]
 			} else {
 				opName = expr.Operator.Name
@@ -580,7 +580,7 @@ func CheckTypes(expr *cxcore.CXExpression) {
 		}
 	}
 
-	if expr.Operator != nil && expr.Operator.IsNative && expr.Operator.OpCode == cxcore.OP_IDENTITY {
+	if expr.Operator != nil && expr.Operator.IsAtomic && expr.Operator.OpCode == cxcore.OP_IDENTITY {
 		for i := range expr.Inputs {
 			var expectedType string
 			var receivedType string
@@ -683,7 +683,7 @@ func ProcessSliceAssignment(expr *cxcore.CXExpression) {
 			out.PassBy = constants.PASSBY_VALUE
 		}
 	}
-	if expr.Operator != nil && !expr.Operator.IsNative {
+	if expr.Operator != nil && !expr.Operator.IsAtomic {
 		// then it's a function call
 		for _, inp := range expr.Inputs {
 			assignElt := cxcore.GetAssignmentElement(inp)

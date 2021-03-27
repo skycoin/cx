@@ -784,7 +784,6 @@ func Operator(code int, name string, handler OpcodeHandler_V2, inputs []*CXArgum
     Op_V2(code, name, handler, inputs, outputs)
     native := Natives[code]
     Operators[GetTypedOperatorOffset(atomicType, operator)] = native
-    native.IntCode = operator
 }
 
 // Op ...

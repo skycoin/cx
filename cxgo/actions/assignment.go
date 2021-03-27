@@ -221,7 +221,7 @@ func Assignment(to []*cxcore.CXExpression, assignOp string, from []*cxcore.CXExp
 
 		return append(to[:len(to)-1], from...)
 	} else {
-		if from[idx].Operator.IsNative {
+		if from[idx].Operator.IsAtomic {
 			// only assigning as if the operator had only one output defined
 
 			if from[idx].Operator.OpCode != cxcore.OP_IDENTITY {

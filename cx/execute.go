@@ -66,7 +66,7 @@ func (cxprogram *CXProgram) Run(untilEnd bool, nCalls *int, untilCall int) error
 			if toCall.Operator == nil {
 				// then it's a declaration
 				toCallName = "declaration"
-			} else if toCall.Operator.IsNative {
+			} else if toCall.Operator.IsAtomic {
 				toCallName = OpNames[toCall.Operator.OpCode]
 			} else {
 				if toCall.Operator.Name != "" {

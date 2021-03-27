@@ -207,7 +207,7 @@ func QueryExpressions(fn *CXFunction, expr *CXExpression, exprOffsetB []byte, af
 
 		// var opNameB []byte
 		opNameOffset := 0
-		if ex.Operator.IsNative {
+		if ex.Operator.IsAtomic {
 			// opNameB = encoder.Serialize(OpNames[ex.Operator.OpCode])
 			opNameOffset = WriteStringData(OpNames[ex.Operator.OpCode])
 		} else {
@@ -299,7 +299,7 @@ func QueryFunction(fn *CXFunction, expr *CXExpression, fnOffsetB []byte, affOffs
 
 		// var opNameB []byte
 		opNameOffset := 0
-		if f.IsNative {
+		if f.IsAtomic {
 			// opNameB = encoder.Serialize(OpNames[f.OpCode])
 			opNameOffset = WriteStringData(OpNames[f.OpCode])
 		} else {
@@ -343,7 +343,7 @@ func QueryCaller(fn *CXFunction, expr *CXExpression, callerOffsetB []byte, affOf
 
 	// var opNameB []byte
 	opNameOffset := 0
-	if call.Operator.IsNative {
+	if call.Operator.IsAtomic {
 		// opNameB = encoder.Serialize(OpNames[call.Operator.OpCode])
 		opNameOffset = WriteStringData(OpNames[call.Operator.OpCode])
 	} else {
@@ -384,7 +384,7 @@ func QueryProgram(fn *CXFunction, expr *CXExpression, prgrmOffsetB []byte, affOf
 
 		// var opNameB []byte
 		opNameOffset := 0
-		if call.Operator.IsNative {
+		if call.Operator.IsAtomic {
 			// opNameB = encoder.Serialize(OpNames[call.Operator.OpCode])
 			opNameOffset = WriteStringData(OpNames[call.Operator.OpCode])
 		} else {
