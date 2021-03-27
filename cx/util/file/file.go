@@ -1,4 +1,4 @@
-package cxcore
+package file
 
 import (
 	"fmt"

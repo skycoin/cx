@@ -229,7 +229,7 @@ func idGlobVars(filename string, r io.Reader, prePkg **ast.CXPackage) {
 				// Checking if `pkgName` already exists and if it's not a standard library package.
 				if _, err := cxgo0.PRGRM0.GetPackage(pkgName); err != nil && !cxcore.IsCorePackage(pkgName) {
 					// _, sourceCode, srcNames := ParseArgsForCX([]string{fmt.Sprintf("%s%s", SRCPATH, pkgName)}, false)
-					_, sourceCode, fileNames := cxcore.ParseArgsForCX([]string{filepath.Join(globals.SRCPATH, pkgName)}, false)
+					_, sourceCode, fileNames := ast.ParseArgsForCX([]string{filepath.Join(globals.SRCPATH, pkgName)}, false)
 					ParseSourceCode(sourceCode, fileNames) // TODO @evanlinjin: Check return value.
 				}
 			}

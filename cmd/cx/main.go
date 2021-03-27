@@ -6,6 +6,7 @@ import (
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/execute"
 	"github.com/skycoin/cx/cx/globals"
+	"github.com/skycoin/cx/cx/util/file"
 
 	repl "github.com/skycoin/cx/cmd/cxrepl"
 	cxcore "github.com/skycoin/cx/cx"
@@ -107,7 +108,7 @@ func Run(args []string) {
 	}
 
 	// options, file pointers, filenames
-	cxArgs, sourceCode, fileNames := cxcore.ParseArgsForCX(commandLine.Args(), true)
+	cxArgs, sourceCode, fileNames := ast.ParseArgsForCX(commandLine.Args(), true)
 
 	// Propagate some options out to other packages.
 	cxgo.DebugLexer = options.debugLexer // in package cxgo
@@ -156,7 +157,7 @@ func printTokenize(options cxCmdFlags, fileNames []string) {
 		if len(fileNames) > 1 {
 			fmt.Fprintln(os.Stderr, "Multiple source files detected. Ignoring all except", sourceFilename)
 		}
-		r, err = cxcore.CXOpenFile(sourceFilename)
+		r, err = file.CXOpenFile(sourceFilename)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "ProgramError reading:", sourceFilename, err)
 			return
@@ -168,7 +169,7 @@ func printTokenize(options cxCmdFlags, fileNames []string) {
 		w = os.Stdout
 	} else {
 		tokenFilename := options.compileOutput
-		w, err = cxcore.CXCreateFile(tokenFilename)
+		w, err = file.CXCreateFile(tokenFilename)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "ProgramError writing:", tokenFilename, err)
 			return

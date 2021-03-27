@@ -4,8 +4,8 @@ package cxfx
 
 import (
 	"bufio"
-	//"bytes"
-    "unsafe"
+	file2 "github.com/skycoin/cx/cx/util/file"
+
 	"fmt"
 	"image"
 	"image/draw"
@@ -18,6 +18,8 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	//"bytes"
+	"unsafe"
 
 	"github.com/skycoin/cx/cx"
 )
@@ -254,7 +256,7 @@ func decodeHdr(file *os.File) (data []byte, iwidth int32, iheight int32) {
 }
 
 func uploadTexture(path string, target uint32, level uint32, cpuCopy bool) {
-	file, err := cxcore.CXOpenFile(path)
+	file, err := file2.CXOpenFile(path)
 	defer file.Close()
 	if err != nil {
 		panic(fmt.Sprintf("texture %q not found on disk: %v\n", path, err))
@@ -376,7 +378,7 @@ func opGlUploadImageToTexture(inputs []cxcore.CXValue, outputs []cxcore.CXValue)
 func opGlNewGIF(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	path := inputs[0].Get_str()
 
-	file, err := cxcore.CXOpenFile(path)
+	file, err := file2.CXOpenFile(path)
 	defer file.Close()
 	if err != nil {
 		panic(fmt.Sprintf("file not found %q, %v", path, err))

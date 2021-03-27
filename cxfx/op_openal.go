@@ -4,6 +4,7 @@ package cxfx
 
 import (
 	"bufio"
+	file2 "github.com/skycoin/cx/cx/util/file"
 
 	"github.com/mjibson/go-dsp/wav"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
@@ -13,7 +14,7 @@ import (
 )
 
 func opAlLoadWav(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
-	file, err := cxcore.CXOpenFile(inputs[0].Get_str())
+	file, err := file2.CXOpenFile(inputs[0].Get_str())
 	defer file.Close()
 	if err != nil {
 		panic(err)

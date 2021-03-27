@@ -882,7 +882,7 @@ func opAffRequest(expr *ast.CXExpression, fp int) {
 		case "strct":
 
 		case "prgrm":
-			fmt.Println(GetPrintableValue(fp, readArgAff(elt, &tgtFn)))
+			fmt.Println(ast.GetPrintableValue(fp, readArgAff(elt, &tgtFn)))
 		}
 	case "expr":
 		if expr, err := tgtFn.GetExpressionByLabel(elt); err == nil {
@@ -947,9 +947,9 @@ func opAffRequest(expr *ast.CXExpression, fp int) {
 		switch tgtElt {
 		case "arg":
 			if tgtArgType == "inp" {
-				fmt.Println(GetPrintableValue(fp, tgtExpr.Inputs[tgtArgIndex]))
+				fmt.Println(ast.GetPrintableValue(fp, tgtExpr.Inputs[tgtArgIndex]))
 			} else {
-				fmt.Println(GetPrintableValue(fp, tgtExpr.Outputs[tgtArgIndex]))
+				fmt.Println(ast.GetPrintableValue(fp, tgtExpr.Outputs[tgtArgIndex]))
 			}
 		case "prgrm":
 			// affs = append(affs, "Run program")

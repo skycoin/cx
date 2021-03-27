@@ -7,6 +7,7 @@ import (
 	"encoding/binary"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/globals"
+	"github.com/skycoin/cx/cx/util/file"
 
 	"math"
 	"os"
@@ -36,13 +37,13 @@ func ValidFile(handle int32) *os.File {
 }
 
 func opOsLogFile(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
-	cxcore.CXLogFile(inputs[0].Get_bool())
+	file.CXLogFile(inputs[0].Get_bool())
 }
 
 func opOsReadAllText(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	success := false
 
-	if byts, err := cxcore.CXReadFile(inputs[0].Get_str()); err == nil {
+	if byts, err := file.CXReadFile(inputs[0].Get_str()); err == nil {
         outputs[0].Set_str(string(byts))
 		success = true
 	}
@@ -72,7 +73,7 @@ func getFileHandle(file *os.File) int32 {
 
 func opOsOpen(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	handle := int32(-1)
-	if file, err := cxcore.CXOpenFile(inputs[0].Get_str()); err == nil {
+	if file, err := file.CXOpenFile(inputs[0].Get_str()); err == nil {
 		handle = getFileHandle(file)
 	}
 
@@ -81,7 +82,7 @@ func opOsOpen(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 
 func opOsCreate(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	handle := int32(-1)
-	if file, err := cxcore.CXCreateFile(inputs[0].Get_str()); err == nil {
+	if file, err := file.CXCreateFile(inputs[0].Get_str()); err == nil {
 		handle = getFileHandle(file)
 	}
 

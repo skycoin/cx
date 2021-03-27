@@ -5,6 +5,7 @@ package cxos
 import (
 	"bufio"
 	"encoding/json"
+	file2 "github.com/skycoin/cx/cx/util/file"
 	"io"
 	"os"
 
@@ -45,7 +46,7 @@ var freeJsons []int32
 func opJsonOpen(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	handle := int32(-1)
 
-	file, err := cxcore.CXOpenFile(inputs[0].Get_str())
+	file, err := file2.CXOpenFile(inputs[0].Get_str())
 	if err == nil {
 		freeCount := len(freeJsons)
 		if freeCount > 0 {
