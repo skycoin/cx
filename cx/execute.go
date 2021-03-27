@@ -122,7 +122,7 @@ func (cxprogram *CXProgram) Run(untilEnd bool, nCalls *int, untilCall int) error
 			*nCalls--
 		}
 
-		err = call.ccall(cxprogram, &inputs, &outputs)
+		err = call.Ccall(cxprogram, &inputs, &outputs)
 		if err != nil {
 			return err
 		}
@@ -190,7 +190,7 @@ func (cxprogram *CXProgram) RunCompiled(nCalls int, args []string) error {
 
 				for !cxprogram.Terminated {
 					call := &cxprogram.CallStack[cxprogram.CallCounter]
-                    err = call.ccall(cxprogram, &inputs, &outputs)
+                    err = call.Ccall(cxprogram, &inputs, &outputs)
 					if err != nil {
 						return err
 					}
@@ -267,7 +267,52 @@ func (cxprogram *CXProgram) RunCompiled(nCalls int, args []string) error {
 
 }
 
-func (call *CXCall) ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutputs *[]CXValue) error {
+// What calls Callback?
+// Callback is only called from opHttpHandle, can probably be removed
+// TODO: Delete and delete call from opHTTPHandle
+func (cxprogram *CXProgram) Callback(fn *CXFunction, inputs [][]byte) (outputs [][]byte) {
+	line := cxprogram.CallStack[cxprogram.CallCounter].Line
+	previousCall := cxprogram.CallCounter
+	cxprogram.CallCounter++
+	newCall := &cxprogram.CallStack[cxprogram.CallCounter]
+	newCall.Operator = fn
+	newCall.Line = 0
+	newCall.FramePointer = cxprogram.StackPointer
+	cxprogram.StackPointer += newCall.Operator.Size
+	newFP := newCall.FramePointer
+
+	// wiping next mem frame (removing garbage)
+	for c := 0; c < fn.Size; c++ {
+		cxprogram.Memory[newFP+c] = 0
+	}
+
+	for i, inp := range inputs {
+		WriteMemory(GetFinalOffset(newFP, newCall.Operator.Inputs[i]), inp)
+	}
+
+	var nCalls = 0
+	if err := cxprogram.Run(true, &nCalls, previousCall); err != nil {
+		os.Exit(CX_INTERNAL_ERROR)
+	}
+
+	cxprogram.CallCounter = previousCall
+	cxprogram.CallStack[cxprogram.CallCounter].Line = line
+
+	for _, out := range fn.Outputs {
+		// Making a copy of the bytes, so if we modify the bytes being held by `outputs`
+		// we don't modify the program memory.
+		mem := ReadMemory(GetFinalOffset(newFP, out), out)
+		cop := make([]byte, len(mem))
+		copy(cop, mem)
+		outputs = append(outputs, cop)
+	}
+	return outputs
+}
+
+
+//function is only called once and by affordances
+//is a function on CXCal, not PROGRAM
+func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutputs *[]CXValue) error {
 	// CX is still single-threaded, so only one stack
 	if call.Line >= call.Operator.Length {
 		/*
@@ -306,7 +351,7 @@ func (call *CXCall) ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 			// we'll now execute the next command
 			prgrm.CallStack[prgrm.CallCounter].Line++
 			// calling the actual command
-			// prgrm.CallStack[prgrm.CallCounter].ccall(prgrm)
+			// prgrm.CallStack[prgrm.CallCounter].Ccall(prgrm)
 		}
 	} else {
 		/*
@@ -473,46 +518,4 @@ func (call *CXCall) ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 		}
 	}
 	return nil
-}
-
-// What calls Callback?
-// Callback is only called from opHttpHandle, can probably be removed
-// TODO: Delete and delete call from opHTTPHandle
-func (cxprogram *CXProgram) Callback(fn *CXFunction, inputs [][]byte) (outputs [][]byte) {
-	line := cxprogram.CallStack[cxprogram.CallCounter].Line
-	previousCall := cxprogram.CallCounter
-	cxprogram.CallCounter++
-	newCall := &cxprogram.CallStack[cxprogram.CallCounter]
-	newCall.Operator = fn
-	newCall.Line = 0
-	newCall.FramePointer = cxprogram.StackPointer
-	cxprogram.StackPointer += newCall.Operator.Size
-	newFP := newCall.FramePointer
-
-	// wiping next mem frame (removing garbage)
-	for c := 0; c < fn.Size; c++ {
-		cxprogram.Memory[newFP+c] = 0
-	}
-
-	for i, inp := range inputs {
-		WriteMemory(GetFinalOffset(newFP, newCall.Operator.Inputs[i]), inp)
-	}
-
-	var nCalls = 0
-	if err := cxprogram.Run(true, &nCalls, previousCall); err != nil {
-		os.Exit(CX_INTERNAL_ERROR)
-	}
-
-	cxprogram.CallCounter = previousCall
-	cxprogram.CallStack[cxprogram.CallCounter].Line = line
-
-	for _, out := range fn.Outputs {
-		// Making a copy of the bytes, so if we modify the bytes being held by `outputs`
-		// we don't modify the program memory.
-		mem := ReadMemory(GetFinalOffset(newFP, out), out)
-		cop := make([]byte, len(mem))
-		copy(cop, mem)
-		outputs = append(outputs, cop)
-	}
-	return outputs
 }

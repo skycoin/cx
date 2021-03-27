@@ -614,10 +614,12 @@ func (cxprogram *CXProgram) GetOpCode() int {
 	return cxprogram.GetExpr().Operator.OpCode
 }
 
-// GetFramePointer returns the current frame pointer
+/*
+//not used
 func (cxprogram *CXProgram) GetFramePointer() int {
 	return cxprogram.GetCall().FramePointer
 }
+*/
 
 // ----------------------------------------------------------------
 //                         `CXProgram` Package handling
