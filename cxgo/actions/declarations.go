@@ -76,7 +76,7 @@ func DeclareGlobalInPackage(pkg *ast.CXPackage,
 				initializer[len(initializer)-1].AddInput(initializer[len(initializer)-1].Outputs[0])
 				initializer[len(initializer)-1].Outputs = nil
 				initializer[len(initializer)-1].AddOutput(glbl)
-				initializer[len(initializer)-1].Operator = globals2.Natives[constants.OP_IDENTITY]
+				initializer[len(initializer)-1].Operator = ast.Natives[constants.OP_IDENTITY]
 				initializer[len(initializer)-1].Package = glbl.Package
 
 				//add intialization statements, to array
@@ -131,7 +131,7 @@ func DeclareGlobalInPackage(pkg *ast.CXPackage,
 				declaration_specifiers.TotalSize = offExpr[0].Outputs[0].TotalSize
 				declaration_specifiers.Package = pkg
 
-				initializer[len(initializer)-1].Operator = globals2.Natives[constants.OP_IDENTITY]
+				initializer[len(initializer)-1].Operator = ast.Natives[constants.OP_IDENTITY]
 				initializer[len(initializer)-1].AddInput(initializer[len(initializer)-1].Outputs[0])
 				initializer[len(initializer)-1].Outputs = nil
 				initializer[len(initializer)-1].AddOutput(declaration_specifiers)
@@ -318,7 +318,7 @@ func DeclareLocal(declarator *ast.CXArgument, declarationSpecifiers *ast.CXArgum
 		if initializer[len(initializer)-1].Operator == nil {
 			// we need to create an expression that links the initializer expressions
 			// with the declared variable
-			expr := ast.MakeExpression(globals2.Natives[constants.OP_IDENTITY], CurrentFile, LineNo)
+			expr := ast.MakeExpression(ast.Natives[constants.OP_IDENTITY], CurrentFile, LineNo)
 			expr.Package = pkg
 
 			initOut := initializer[len(initializer)-1].Outputs[0]

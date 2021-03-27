@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
-	"github.com/skycoin/cx/cx/globals"
 	"github.com/skycoin/cx/cx/mem"
 	"os"
 
@@ -110,7 +109,7 @@ func PostfixExpressionArray(prevExprs []*ast.CXExpression, postExprs []*ast.CXEx
 
 func PostfixExpressionNative(typCode int, opStrCode string) []*ast.CXExpression {
 	// these will always be native functions
-	opCode, ok := globals.OpCodes[constants.TypeNames[typCode]+"."+opStrCode]
+	opCode, ok := ast.OpCodes[constants.TypeNames[typCode]+"."+opStrCode]
 	if !ok {
 		println(ast.CompilationError(CurrentFile, LineNo) + " function '" +
 			constants.TypeNames[typCode] + "." + opStrCode + "' does not exist")
@@ -118,7 +117,7 @@ func PostfixExpressionNative(typCode int, opStrCode string) []*ast.CXExpression 
 		// panic(ok)
 	}
 
-	expr := ast.MakeExpression(globals.Natives[opCode], CurrentFile, LineNo)
+	expr := ast.MakeExpression(ast.Natives[opCode], CurrentFile, LineNo)
 	pkg, err := AST.GetCurrentPackage()
 	if err != nil {
 		panic(err)
@@ -142,12 +141,12 @@ func PostfixExpressionEmptyFunCall(prevExprs []*ast.CXExpression) []*ast.CXExpre
 		// expr.ProgramInput = append(expr.ProgramInput, inp)
 
 	} else if prevExprs[len(prevExprs)-1].Operator == nil {
-		if opCode, ok := globals.OpCodes[prevExprs[len(prevExprs)-1].Outputs[0].Name]; ok {
+		if opCode, ok := ast.OpCodes[prevExprs[len(prevExprs)-1].Outputs[0].Name]; ok {
 			if pkg, err := AST.GetCurrentPackage(); err == nil {
 				prevExprs[0].Package = pkg
 			}
 			prevExprs[0].Outputs = nil
-			prevExprs[0].Operator = globals.Natives[opCode]
+			prevExprs[0].Operator = ast.Natives[opCode]
 		}
 
 		prevExprs[0].Inputs = nil
@@ -162,12 +161,12 @@ func PostfixExpressionFunCall(prevExprs []*ast.CXExpression, args []*ast.CXExpre
 		// prevExprs[len(prevExprs) - 1].IsMethodCall = true
 
 	} else if prevExprs[len(prevExprs)-1].Operator == nil {
-		if opCode, ok := globals.OpCodes[prevExprs[len(prevExprs)-1].Outputs[0].Name]; ok {
+		if opCode, ok := ast.OpCodes[prevExprs[len(prevExprs)-1].Outputs[0].Name]; ok {
 			if pkg, err := AST.GetCurrentPackage(); err == nil {
 				prevExprs[0].Package = pkg
 			}
 			prevExprs[0].Outputs = nil
-			prevExprs[0].Operator = globals.Natives[opCode]
+			prevExprs[0].Operator = ast.Natives[opCode]
 		}
 
 		prevExprs[0].Inputs = nil
@@ -184,9 +183,9 @@ func PostfixExpressionIncDec(prevExprs []*ast.CXExpression, isInc bool) []*ast.C
 
 	var expr *ast.CXExpression
 	if isInc {
-		expr = ast.MakeExpression(globals.Natives[constants.OP_I32_ADD], CurrentFile, LineNo)
+		expr = ast.MakeExpression(ast.Natives[constants.OP_I32_ADD], CurrentFile, LineNo)
 	} else {
-		expr = ast.MakeExpression(globals.Natives[constants.OP_I32_SUB], CurrentFile, LineNo)
+		expr = ast.MakeExpression(ast.Natives[constants.OP_I32_SUB], CurrentFile, LineNo)
 	}
 
 	var valB [4]byte
@@ -283,7 +282,7 @@ func PostfixExpressionField(prevExprs []*ast.CXExpression, ident string) []*ast.
 				val := WritePrimary(constant.Type, constant.Value, false)
 				prevExprs[len(prevExprs)-1].Outputs[0] = val[0].Outputs[0]
 				return prevExprs
-			} else if _, ok := globals.OpCodes[left.Name+"."+ident]; ok {
+			} else if _, ok := ast.OpCodes[left.Name+"."+ident]; ok {
 				// then it's a native
 				// TODO: we'd be referring to the function itself, not a function call
 				// (functions as first-class objects)

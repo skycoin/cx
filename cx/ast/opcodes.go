@@ -1,7 +1,6 @@
-package globals
+package ast
 
 import (
-	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 )
 
@@ -27,14 +26,14 @@ const (
 )
 
 // OpcodeHandler ...
-type OpcodeHandler func(expr *ast.CXExpression, fp int)
-type OpcodeHandler_V2 func(inputs []ast.CXValue, outputs []ast.CXValue)
+type OpcodeHandler func(expr *CXExpression, fp int)
+type OpcodeHandler_V2 func(inputs []CXValue, outputs []CXValue)
 
 //Todo: Rename Natives
 //Todo: What is an operator?
 var (
 	// Natives ...
-	Natives   = map[int]*ast.CXFunction{}
-	Operators []*ast.CXFunction
+	Natives   = map[int]*CXFunction{}
+	Operators []*CXFunction
 )
 

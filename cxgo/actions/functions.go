@@ -97,8 +97,8 @@ func isParseOp(expr *ast.CXExpression) bool {
 // accept `cxcore.TYPE_UNDEFINED` arguments) is receiving arguments of valid types. For example,
 // the expression `sa + sb` is not valid if they are struct instances.
 func CheckUndValidTypes(expr *ast.CXExpression) {
-	if expr.Operator != nil && globals.IsOperator(expr.Operator.OpCode) && !IsAllArgsBasicTypes(expr) {
-		println(ast.CompilationError(CurrentFile, LineNo), fmt.Sprintf("invalid argument types for '%s' operator", globals.OpNames[expr.Operator.OpCode]))
+	if expr.Operator != nil && ast.IsOperator(expr.Operator.OpCode) && !IsAllArgsBasicTypes(expr) {
+		println(ast.CompilationError(CurrentFile, LineNo), fmt.Sprintf("invalid argument types for '%s' operator", ast.OpNames[expr.Operator.OpCode]))
 	}
 }
 
@@ -289,7 +289,7 @@ func checkSameNativeType(expr *ast.CXExpression) error {
 }
 
 func ProcessUndExpression(expr *ast.CXExpression) {
-	if expr.Operator != nil && globals.IsOperator(expr.Operator.OpCode) {
+	if expr.Operator != nil && ast.IsOperator(expr.Operator.OpCode) {
 		if err := checkSameNativeType(expr); err != nil {
 			println(ast.CompilationError(CurrentFile, LineNo), err.Error())
 		}
@@ -297,7 +297,7 @@ func ProcessUndExpression(expr *ast.CXExpression) {
 	if expr.IsUndType {
 		for _, out := range expr.Outputs {
             size := 1
-            if !globals.IsComparisonOperator(expr.Operator.OpCode) {
+            if !ast.IsComparisonOperator(expr.Operator.OpCode) {
 		        size = ast.GetSize(ast.GetAssignmentElement(expr.Inputs[0]))
             }
             out.Size = size
@@ -331,7 +331,7 @@ func processTestExpression(expr *ast.CXExpression) {
 			inp1Type := tostring.GetFormattedType(expr.Inputs[0])
 			inp2Type := tostring.GetFormattedType(expr.Inputs[1])
 			if inp1Type != inp2Type {
-				println(ast.CompilationError(CurrentFile, LineNo), fmt.Sprintf("first and second input arguments' types are not equal in '%s' call ('%s' != '%s')", globals.OpNames[expr.Operator.OpCode], inp1Type, inp2Type))
+				println(ast.CompilationError(CurrentFile, LineNo), fmt.Sprintf("first and second input arguments' types are not equal in '%s' call ('%s' != '%s')", ast.OpNames[expr.Operator.OpCode], inp1Type, inp2Type))
 			}
 		}
 	}
@@ -478,7 +478,7 @@ func ProcessLocalDeclaration(symbols *[]map[string]*ast.CXArgument, symbolsScope
 
 func ProcessGoTos(fn *ast.CXFunction, exprs []*ast.CXExpression) {
 	for i, expr := range exprs {
-		if expr.Label != "" && expr.Operator == globals.Natives[constants.OP_JMP] {
+		if expr.Label != "" && expr.Operator == ast.Natives[constants.OP_JMP] {
 			// then it's a goto
 			for j, e := range exprs {
 				if e.Label == expr.Label && i != j {
@@ -510,7 +510,7 @@ func checkMatchParamTypes(expr *ast.CXExpression, expected, received []*ast.CXAr
 		if expectedType != receivedType && inp.Type != constants.TYPE_UNDEFINED {
 			var opName string
 			if expr.Operator.IsAtomic {
-				opName = globals.OpNames[expr.Operator.OpCode]
+				opName = ast.OpNames[expr.Operator.OpCode]
 			} else {
 				opName = expr.Operator.Name
 			}
@@ -626,7 +626,7 @@ func CheckTypes(expr *ast.CXExpression) {
 }
 
 func ProcessStringAssignment(expr *ast.CXExpression) {
-	if expr.Operator == globals.Natives[constants.OP_IDENTITY] {
+	if expr.Operator == ast.Natives[constants.OP_IDENTITY] {
 		for i, out := range expr.Outputs {
 			if len(expr.Inputs) > i {
 				out = ast.GetAssignmentElement(out)
@@ -676,7 +676,7 @@ func ProcessSlice(inp *ast.CXArgument) {
 }
 
 func ProcessSliceAssignment(expr *ast.CXExpression) {
-	if expr.Operator == globals.Natives[constants.OP_IDENTITY] {
+	if expr.Operator == ast.Natives[constants.OP_IDENTITY] {
 		var inp *ast.CXArgument
 		var out *ast.CXArgument
 
@@ -907,7 +907,7 @@ func GiveOffset(symbols *[]map[string]*ast.CXArgument, sym *ast.CXArgument, offs
 }
 
 func ProcessTempVariable(expr *ast.CXExpression) {
-	if expr.Operator != nil && (expr.Operator == globals.Natives[constants.OP_IDENTITY] || globals.IsArithmeticOperator(expr.Operator.OpCode)) && len(expr.Outputs) > 0 && len(expr.Inputs) > 0 {
+	if expr.Operator != nil && (expr.Operator == ast.Natives[constants.OP_IDENTITY] || ast.IsArithmeticOperator(expr.Operator.OpCode)) && len(expr.Outputs) > 0 && len(expr.Inputs) > 0 {
 		name := expr.Outputs[0].Name
 		arg := expr.Outputs[0]
 		if util2.IsTempVar(name) {

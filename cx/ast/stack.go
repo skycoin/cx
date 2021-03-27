@@ -2,7 +2,6 @@ package ast
 
 import (
 	"fmt"
-	"github.com/skycoin/cx/cx/globals"
 	"github.com/skycoin/cx/cx/tostring"
 )
 
@@ -99,7 +98,7 @@ func (cxprogram *ast.CXProgram) PrintStack() {
 // TODO: Deprecate
 func ExprOpName(expr *CXExpression) string {
 	if expr.Operator.IsAtomic {
-		return globals.OpNames[expr.Operator.OpCode]
+		return OpNames[expr.Operator.OpCode]
 	}
 	return expr.Operator.Name
 

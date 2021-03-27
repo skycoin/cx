@@ -1,8 +1,7 @@
-package globals
+package ast
 
 import (
 	"github.com/skycoin/cx/cx"
-	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 )
 
@@ -27,12 +26,12 @@ func GetTypedOperatorOffset(typeCode int, opCode int) int {
 	return typeCode*OPERATOR_COUNT + opCode - constants.START_OF_OPERATORS - 1
 }
 
-func GetTypedOperator(typeCode int, opCode int) *ast.CXFunction {
+func GetTypedOperator(typeCode int, opCode int) *CXFunction {
 	return Operators[GetTypedOperatorOffset(typeCode, opCode)]
 }
 
 // Operator ...
-func Operator(code int, name string, handler OpcodeHandler_V2, inputs []*ast.CXArgument, outputs []*ast.CXArgument, atomicType int, operator int) {
+func Operator(code int, name string, handler OpcodeHandler_V2, inputs []*CXArgument, outputs []*CXArgument, atomicType int, operator int) {
 	cxcore.Op_V2(code, name, handler, inputs, outputs)
 	native := Natives[code]
 	Operators[GetTypedOperatorOffset(atomicType, operator)] = native

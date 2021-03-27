@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
-	"github.com/skycoin/cx/cx/globals"
 	"github.com/skycoin/cx/cx/util2"
 	"os"
 
@@ -21,7 +20,7 @@ type ReturnExpressions struct {
 }
 
 func IterationExpressions(init []*ast.CXExpression, cond []*ast.CXExpression, incr []*ast.CXExpression, statements []*ast.CXExpression) []*ast.CXExpression {
-	jmpFn := globals.Natives[constants.OP_JMP]
+	jmpFn := ast.Natives[constants.OP_JMP]
 
 	pkg, err := AST.GetCurrentPackage()
 	if err != nil {
@@ -94,7 +93,7 @@ func trueJmpExpressions() []*ast.CXExpression {
 		panic(err)
 	}
 
-	expr := ast.MakeExpression(globals.Natives[constants.OP_JMP], CurrentFile, LineNo)
+	expr := ast.MakeExpression(ast.Natives[constants.OP_JMP], CurrentFile, LineNo)
 
 	trueArg := WritePrimary(constants.TYPE_BOOL, encoder.Serialize(true), false)
 	expr.AddInput(trueArg[0].Outputs[0])
@@ -120,7 +119,7 @@ func SelectionExpressions(condExprs []*ast.CXExpression, thenExprs []*ast.CXExpr
 	DefineNewScope(thenExprs)
 	DefineNewScope(elseExprs)
 
-	jmpFn := globals.Natives[constants.OP_JMP]
+	jmpFn := ast.Natives[constants.OP_JMP]
 	pkg, err := AST.GetCurrentPackage()
 	if err != nil {
 		panic(err)
@@ -271,7 +270,7 @@ func UndefinedTypeOperation(leftExprs []*ast.CXExpression, rightExprs []*ast.CXE
 // TODO: What is a shorthand expression
 // TODO: Remove
 func ShorthandExpression(leftExprs []*ast.CXExpression, rightExprs []*ast.CXExpression, op int) []*ast.CXExpression {
-	return UndefinedTypeOperation(leftExprs, rightExprs, globals.Natives[op])
+	return UndefinedTypeOperation(leftExprs, rightExprs, ast.Natives[op])
 }
 
 func UnaryExpression(op string, prevExprs []*ast.CXExpression) []*ast.CXExpression {
@@ -305,7 +304,7 @@ func UnaryExpression(op string, prevExprs []*ast.CXExpression) []*ast.CXExpressi
 		}
 	case "!":
 		if pkg, err := AST.GetCurrentPackage(); err == nil {
-			expr := ast.MakeExpression(globals.Natives[constants.OP_BOOL_NOT], CurrentFile, LineNo)
+			expr := ast.MakeExpression(ast.Natives[constants.OP_BOOL_NOT], CurrentFile, LineNo)
 			expr.Package = pkg
 
 			expr.AddInput(exprOut)
@@ -316,7 +315,7 @@ func UnaryExpression(op string, prevExprs []*ast.CXExpression) []*ast.CXExpressi
 		}
 	case "-":
 		if pkg, err := AST.GetCurrentPackage(); err == nil {
-			expr := ast.MakeExpression(globals.Natives[constants.OP_NEG], CurrentFile, LineNo)
+			expr := ast.MakeExpression(ast.Natives[constants.OP_NEG], CurrentFile, LineNo)
 			expr.Package = pkg
 			expr.AddInput(exprOut)
 			prevExprs[len(prevExprs)-1] = expr
@@ -354,7 +353,7 @@ func AssociateReturnExpressions(idx int, retExprs []*ast.CXExpression) []*ast.CX
 	out.PreviouslyDeclared = true
 
 	if lastExpr.Operator == nil {
-		lastExpr.Operator = globals.Natives[constants.OP_IDENTITY]
+		lastExpr.Operator = ast.Natives[constants.OP_IDENTITY]
 
 		lastExpr.Inputs = lastExpr.Outputs
 		lastExpr.Outputs = nil
@@ -362,7 +361,7 @@ func AssociateReturnExpressions(idx int, retExprs []*ast.CXExpression) []*ast.CX
 
 		return retExprs
 	} else if len(lastExpr.Outputs) > 0 {
-		expr := ast.MakeExpression(globals.Natives[constants.OP_IDENTITY], CurrentFile, LineNo)
+		expr := ast.MakeExpression(ast.Natives[constants.OP_IDENTITY], CurrentFile, LineNo)
 		expr.AddInput(lastExpr.Outputs[0])
 		expr.AddOutput(out)
 
@@ -410,7 +409,7 @@ func AddJmpToReturnExpressions(exprs ReturnExpressions) []*ast.CXExpression {
 	}
 
 	// expression to jump to the end of the embedding function
-	expr := ast.MakeExpression(globals.Natives[constants.OP_JMP], CurrentFile, LineNo)
+	expr := ast.MakeExpression(ast.Natives[constants.OP_JMP], CurrentFile, LineNo)
 
 	// simulating a label so it gets executed without evaluating a predicate
 	expr.Label = cxcore.MakeGenSym(constants.LABEL_PREFIX)

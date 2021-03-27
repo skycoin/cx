@@ -6,7 +6,6 @@ import (
 	__yyfmt__ "fmt"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
-	"github.com/skycoin/cx/cx/globals"
 )
 
 import (
@@ -2214,11 +2213,11 @@ yynewstate:
 		}
 	case 158:
 		{
-			yyVAL.expressions = actions.UndefinedTypeOperation(yyS[yypt-2].expressions, yyS[yypt-0].expressions, globals.Natives[constants.OP_BOOL_AND])
+			yyVAL.expressions = actions.UndefinedTypeOperation(yyS[yypt-2].expressions, yyS[yypt-0].expressions, ast.Natives[constants.OP_BOOL_AND])
 		}
 	case 160:
 		{
-			yyVAL.expressions = actions.UndefinedTypeOperation(yyS[yypt-2].expressions, yyS[yypt-0].expressions, globals.Natives[constants.OP_BOOL_OR])
+			yyVAL.expressions = actions.UndefinedTypeOperation(yyS[yypt-2].expressions, yyS[yypt-0].expressions, ast.Natives[constants.OP_BOOL_OR])
 		}
 	case 164:
 		{
@@ -2424,7 +2423,7 @@ yynewstate:
 	case 225:
 		{
 			if pkg, err := actions.AST.GetCurrentPackage(); err == nil {
-				expr := ast.MakeExpression(globals.Natives[constants.OP_JMP], actions.CurrentFile, actions.LineNo)
+				expr := ast.MakeExpression(ast.Natives[constants.OP_JMP], actions.CurrentFile, actions.LineNo)
 				expr.Package = pkg
 				expr.Label = yyS[yypt-1].tok
 

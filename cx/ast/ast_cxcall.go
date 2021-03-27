@@ -3,7 +3,6 @@ package ast
 import (
 	"fmt"
 	"github.com/skycoin/cx/cx/constants"
-	"github.com/skycoin/cx/cx/globals"
 	"github.com/skycoin/cx/cx/mem"
 )
 
@@ -80,14 +79,14 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 		} else {
 			switch expr.Operator.Version {
 			case 1: // old version
-				globals.OpcodeHandlers[expr.Operator.OpCode](expr, call.FramePointer)
+				OpcodeHandlers[expr.Operator.OpCode](expr, call.FramePointer)
 				call.Line++
 			case 2: // new version
 				fp := call.FramePointer;
-				if globals.IsOperator(expr.Operator.OpCode) {
+				if IsOperator(expr.Operator.OpCode) {
 					// TODO: resolve this at compile time
 					atomicType := GetType(expr.Inputs[0])
-					expr.Operator = globals.GetTypedOperator(atomicType, expr.Operator.OpCode)
+					expr.Operator = GetTypedOperator(atomicType, expr.Operator.OpCode)
 				}
 				inputs := expr.Inputs
 				inputCount := len(inputs)
@@ -133,12 +132,12 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 					argIndex++
 				}
 
-				globals.OpcodeHandlers_V2[expr.Operator.OpCode](inputValues, outputValues)
+				OpcodeHandlers_V2[expr.Operator.OpCode](inputValues, outputValues)
 
 				for inputIndex := 0; inputIndex < inputCount; inputIndex++ { // TODO: remove in release builds
 					if inputValues[inputIndex].Used != int8(inputs[inputIndex].Type) { // TODO: remove cast
 						panic(fmt.Sprintf("Input value not used for opcode: '%s', param #%d. Expected type %d, '%s', used type %d, '%s'.",
-							globals.OpNames[expr.Operator.OpCode],
+							OpNames[expr.Operator.OpCode],
 							inputIndex + 1,
 							inputs[inputIndex].Type, constants.TypeNames[inputs[inputIndex].Type],
 							inputValues[inputIndex].Used, constants.TypeNames[int(inputValues[inputIndex].Used)]))
@@ -148,7 +147,7 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 				for outputIndex := 0; outputIndex < outputCount; outputIndex++ { // TODO: remove in release builds
 					if outputValues[outputIndex].Used != int8(outputs[outputIndex].Type) { // TODO: remove cast
 						panic(fmt.Sprintf("Output value not used for opcode: '%s', param #%d. Expected type %d, '%s', used type %d '%s'.",
-							globals.OpNames[expr.Operator.OpCode],
+							OpNames[expr.Operator.OpCode],
 							outputIndex + 1,
 							outputs[outputIndex].Type, constants.TypeNames[outputs[outputIndex].Type],
 							outputValues[outputIndex].Used, constants.TypeNames[int(outputValues[outputIndex].Used)]))

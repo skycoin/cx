@@ -2,7 +2,6 @@ package ast
 
 import (
 	"github.com/skycoin/cx/cx/constants"
-	"github.com/skycoin/cx/cx/globals"
 	"github.com/skycoin/cx/cx/helper"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
@@ -1123,7 +1122,7 @@ func deserializeExpression(sExpr *serializedExpression, s *serializedCXProgram, 
 	var expr CXExpression
 
 	if deserializeBool(sExpr.IsNative) {
-		expr.Operator = globals.Natives[int(sExpr.OpCode)]
+		expr.Operator = Natives[int(sExpr.OpCode)]
 	} else {
 		expr.Operator = deserializeOperator(sExpr, s, prgrm)
 	}

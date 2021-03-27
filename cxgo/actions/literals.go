@@ -3,7 +3,6 @@ package actions
 import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
-	"github.com/skycoin/cx/cx/globals"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 
 	"github.com/skycoin/cx/cx"
@@ -51,7 +50,7 @@ func SliceLiteralExpression(typSpec int, exprs []*ast.CXExpression) []*ast.CXExp
 
 			if expr.Operator == nil {
 				// then it's a literal
-				symExpr.Operator = globals.Natives[constants.OP_APPEND]
+				symExpr.Operator = ast.Natives[constants.OP_APPEND]
 
 				symExpr.Inputs = nil
 				symExpr.Inputs = append(symExpr.Inputs, symInp)
@@ -71,7 +70,7 @@ func SliceLiteralExpression(typSpec int, exprs []*ast.CXExpression) []*ast.CXExp
 				expr.AddOutput(out)
 				result = append(result, expr)
 
-				symExpr.Operator = globals.Natives[constants.OP_APPEND]
+				symExpr.Operator = ast.Natives[constants.OP_APPEND]
 
 				symExpr.Inputs = nil
 				symExpr.Inputs = append(symExpr.Inputs, symInp)
@@ -102,7 +101,7 @@ func SliceLiteralExpression(typSpec int, exprs []*ast.CXExpression) []*ast.CXExp
 	symInput.TotalSize = constants.TYPE_POINTER_SIZE
 	symOutput.TotalSize = constants.TYPE_POINTER_SIZE
 
-	symExpr := ast.MakeExpression(globals.Natives[constants.OP_IDENTITY], CurrentFile, LineNo)
+	symExpr := ast.MakeExpression(ast.Natives[constants.OP_IDENTITY], CurrentFile, LineNo)
 	symExpr.Package = pkg
 	symExpr.Outputs = append(symExpr.Outputs, symOutput)
 	symExpr.Inputs = append(symExpr.Inputs, symInput)
@@ -233,7 +232,7 @@ func ArrayLiteralExpression(arrSizes []int, typSpec int, exprs []*ast.CXExpressi
 
 			if expr.Operator == nil {
 				// then it's a literal
-				symExpr.Operator = globals.Natives[constants.OP_IDENTITY]
+				symExpr.Operator = ast.Natives[constants.OP_IDENTITY]
 				symExpr.Inputs = expr.Outputs
 			} else {
 				symExpr.Operator = expr.Operator
@@ -269,7 +268,7 @@ func ArrayLiteralExpression(arrSizes []int, typSpec int, exprs []*ast.CXExpressi
 	symInput.PreviouslyDeclared = true
 	symInput.TotalSize = symInput.Size * TotalLength(symInput.Lengths)
 
-	symExpr := ast.MakeExpression(globals.Natives[constants.OP_IDENTITY], CurrentFile, LineNo)
+	symExpr := ast.MakeExpression(ast.Natives[constants.OP_IDENTITY], CurrentFile, LineNo)
 	symExpr.Package = pkg
 	symExpr.Outputs = append(symExpr.Outputs, symOutput)
 	symExpr.Inputs = append(symExpr.Inputs, symInput)
