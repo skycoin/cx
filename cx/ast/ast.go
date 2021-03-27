@@ -1045,7 +1045,7 @@ func MakeField(name string, typ int, fileName string, fileLine int) *CXArgument 
 
 // MakeGlobal ...
 func MakeGlobal(name string, typ int, fileName string, fileLine int) *CXArgument {
-	size := cxcore.GetArgSize(typ)
+	size := constants.GetArgSize(typ)
 	global := &CXArgument{
 		Name:     name,
 		Type:     typ,
@@ -1078,7 +1078,7 @@ func (arg *CXArgument) AddPackage(pkg *CXPackage) *CXArgument {
 func (arg *CXArgument) AddType(typ string) *CXArgument {
 	if typCode, found := constants.TypeCodes[typ]; found {
 		arg.Type = typCode
-		size := cxcore.GetArgSize(typCode)
+		size := constants.GetArgSize(typCode)
 		arg.Size = size
 		arg.TotalSize = size
 		arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_BASIC)

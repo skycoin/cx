@@ -449,7 +449,7 @@ func DeclarationSpecifiersBasic(typ int) *ast.CXArgument {
 	arg.AddType(constants.TypeNames[typ])
 	arg.Type = typ
 
-	arg.Size = cxcore.GetArgSize(typ)
+	arg.Size = constants.GetArgSize(typ)
 
 	if typ == constants.TYPE_AFF {
 		// equivalent to slice of strings

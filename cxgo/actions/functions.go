@@ -1193,7 +1193,7 @@ func PreFinalSize(finalSize *int, sym *ast.CXArgument, arg *ast.CXArgument) {
 					// case cxcore.DECL_SLICE:
 					// 	subSize = TYPE_POINTER_SIZE
 					case constants.DECL_BASIC:
-						subSize = cxcore.GetArgSize(sym.Type)
+						subSize = constants.GetArgSize(sym.Type)
 					case constants.DECL_STRUCT:
 						subSize = arg.CustomType.Size
 					}

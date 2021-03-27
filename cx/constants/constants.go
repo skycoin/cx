@@ -292,3 +292,22 @@ const (
 	MEM_HEAP
 	MEM_DATA
 )
+
+// GetArgSize ...
+func GetArgSize(typ int) int {
+	switch typ {
+	case TYPE_BOOL, TYPE_I8, TYPE_UI8:
+		return 1
+	case TYPE_I16, TYPE_UI16:
+		return 2
+	case TYPE_STR, TYPE_I32, TYPE_UI32, TYPE_F32, TYPE_AFF:
+		return 4
+	case TYPE_I64, TYPE_UI64, TYPE_F64:
+		return 8
+	default:
+		return 4
+		//return -1 // should be panic
+		//panic(CX_INTERNAL_ERROR)
+	}
+}
+

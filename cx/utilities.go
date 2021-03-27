@@ -503,24 +503,6 @@ func GetArgSizeFromTypeName(typeName string) int {
 	}
 }
 
-// GetArgSize ...
-func GetArgSize(typ int) int {
-	switch typ {
-	case constants.TYPE_BOOL, constants.TYPE_I8, constants.TYPE_UI8:
-		return 1
-	case constants.TYPE_I16, constants.TYPE_UI16:
-		return 2
-	case constants.TYPE_STR, constants.TYPE_I32, constants.TYPE_UI32, constants.TYPE_F32, constants.TYPE_AFF:
-		return 4
-	case constants.TYPE_I64, constants.TYPE_UI64, constants.TYPE_F64:
-		return 8
-	default:
-		return 4
-		//return -1 // should be panic
-		//panic(CX_INTERNAL_ERROR)
-	}
-}
-
 func checkForEscapedChars(str string) []byte {
 	var res []byte
 	var lenStr = int(len(str))
