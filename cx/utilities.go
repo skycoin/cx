@@ -165,15 +165,6 @@ func checkForEscapedChars(str string) []byte {
 	return res
 }
 
-// GetAssignmentElement ...
-func GetAssignmentElement(arg *ast.CXArgument) *ast.CXArgument {
-	if len(arg.Fields) > 0 {
-		return arg.Fields[len(arg.Fields)-1]
-	}
-	return arg
-
-}
-
 // IsValidSliceIndex ...
 func IsValidSliceIndex(offset int, index int, sizeofElement int) bool {
 	sliceLen := GetSliceLen(int32(offset))
@@ -193,7 +184,7 @@ func GetPointerOffset(pointer int32) int32 {
 
 // GetSliceOffset ...
 func GetSliceOffset(fp int, arg *ast.CXArgument) int32 {
-	element := GetAssignmentElement(arg)
+	element := ast.GetAssignmentElement(arg)
 	if element.IsSlice {
 		return GetPointerOffset(int32(GetFinalOffset(fp, arg)))
 	}

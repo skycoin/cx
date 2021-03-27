@@ -5,6 +5,7 @@ package cxos
 import (
 	"bytes"
 	"encoding/binary"
+	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/globals"
 	"github.com/skycoin/cx/cx/util/file"
@@ -415,13 +416,13 @@ func opOsWriteBOOL(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 func getSlice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) (outputSlicePointer int, outputSliceOffset int32, sizeofElement int, count uint64) {
 	inp1, out0 := inputs[1].Arg, outputs[0].Arg
     
-	if inp1.Type != out0.Type || !cxcore.GetAssignmentElement(inp1).IsSlice || !cxcore.GetAssignmentElement(out0).IsSlice {
+	if inp1.Type != out0.Type || !ast.GetAssignmentElement(inp1).IsSlice || !ast.GetAssignmentElement(out0).IsSlice {
 		panic(constants.CX_RUNTIME_INVALID_ARGUMENT)
 	}
     inputs[1].Used = int8(inp1.Type)
 	count = inputs[2].Get_ui64()
 	outputSlicePointer = outputs[0].Offset
-	sizeofElement = cxcore.GetAssignmentElement(inp1).Size
+	sizeofElement = ast.GetAssignmentElement(inp1).Size
 	outputSliceOffset = int32(cxcore.SliceResize(outputs[0].FramePointer, out0, inp1, int32(count), sizeofElement))
 	return
 }

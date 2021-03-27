@@ -32,7 +32,7 @@ func StructLiteralAssignment(to []*ast.CXExpression, from []*ast.CXExpression) [
 	lastFrom := from[len(from)-1]
 	// If the last expression in `from` is declared as pointer
 	// then it means the whole struct literal needs to be passed by reference.
-	if !hasDeclSpec(cxcore.GetAssignmentElement(lastFrom.Outputs[0]), constants.DECL_POINTER) {
+	if !hasDeclSpec(ast.GetAssignmentElement(lastFrom.Outputs[0]), constants.DECL_POINTER) {
 		return assignStructLiteralFields(to, from, to[0].Outputs[0].Name)
 	} else {
 		// And we also need an auxiliary variable to point to,
