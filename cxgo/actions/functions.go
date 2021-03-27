@@ -6,6 +6,7 @@ import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/globals"
+	"github.com/skycoin/cx/cx/tostring"
 	"github.com/skycoin/cx/cx/util2"
 	"os"
 
@@ -326,8 +327,8 @@ func processTestExpression(expr *ast.CXExpression) {
 	if expr.Operator != nil {
 		opCode := expr.Operator.OpCode
 		if opCode == constants.OP_ASSERT || opCode == constants.OP_TEST || opCode == constants.OP_PANIC {
-			inp1Type := ast.GetFormattedType(expr.Inputs[0])
-			inp2Type := ast.GetFormattedType(expr.Inputs[1])
+			inp1Type := tostring.GetFormattedType(expr.Inputs[0])
+			inp2Type := tostring.GetFormattedType(expr.Inputs[1])
 			if inp1Type != inp2Type {
 				println(ast.CompilationError(CurrentFile, LineNo), fmt.Sprintf("first and second input arguments' types are not equal in '%s' call ('%s' != '%s')", ast.OpNames[expr.Operator.OpCode], inp1Type, inp2Type))
 			}
@@ -337,7 +338,7 @@ func processTestExpression(expr *ast.CXExpression) {
 
 // checkIndexType throws an error if the type of `idx` is not `i32` or `i64`.
 func checkIndexType(idx *ast.CXArgument) {
-	typ := ast.GetFormattedType(idx)
+	typ := tostring.GetFormattedType(idx)
 	if typ != "i32" && typ != "i64" {
 		println(ast.CompilationError(idx.FileName, idx.FileLine), fmt.Sprintf("wrong index type; expected either 'i32' or 'i64', got '%s'", typ))
 	}
@@ -433,14 +434,14 @@ func AddPointer(fn *ast.CXFunction, sym *ast.CXArgument) {
 	// added to the list.
 	if len(sym.Fields) > 0 {
 		fld := sym.Fields[len(sym.Fields)-1]
-		if ast.IsPointer(fld) && !isPointerAdded(fn, sym) {
+		if tostring.IsPointer(fld) && !isPointerAdded(fn, sym) {
 			fn.ListOfPointers = append(fn.ListOfPointers, sym)
 		}
 	}
 	// Root symbol:
 	// Checking if it is a pointer candidate and if it was already
 	// added to the list.
-	if ast.IsPointer(sym) && !isPointerAdded(fn, sym) {
+	if tostring.IsPointer(sym) && !isPointerAdded(fn, sym) {
 		if len(sym.Fields) > 0 {
 			tmp := ast.CXArgument{}
 			copier.Copy(&tmp, sym)
@@ -493,8 +494,8 @@ func ProcessGoTos(fn *ast.CXFunction, exprs []*ast.CXExpression) {
 
 func checkMatchParamTypes(expr *ast.CXExpression, expected, received []*ast.CXArgument, isInputs bool) {
 	for i, inp := range expected {
-		expectedType := ast.GetFormattedType(expected[i])
-		receivedType := ast.GetFormattedType(received[i])
+		expectedType := tostring.GetFormattedType(expected[i])
+		receivedType := tostring.GetFormattedType(received[i])
 
 		if expr.IsMethodCall && expected[i].IsPointer && i == 0 {
 			// if method receiver is pointer, remove *
@@ -526,8 +527,8 @@ func checkMatchParamTypes(expr *ast.CXExpression, expected, received []*ast.CXAr
 		// These temporary variables' types are not properly being set. That's why we use !cxcore.IsTempVar to
 		// exclude these cases for now.
 		if expr.Operator.OpCode == constants.OP_IDENTITY && !util2.IsTempVar(expr.Outputs[0].Name) {
-			inpType := ast.GetFormattedType(expr.Inputs[0])
-			outType := ast.GetFormattedType(expr.Outputs[0])
+			inpType := tostring.GetFormattedType(expr.Inputs[0])
+			outType := tostring.GetFormattedType(expr.Outputs[0])
 
 			// We use `isInputs` to only print the error once.
 			// Otherwise we'd print the error twice: once for the input and again for the output
