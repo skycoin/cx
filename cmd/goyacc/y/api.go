@@ -100,9 +100,9 @@ type AssocDef struct {
 
 // Options amend the behavior of the various Process* functions.
 //
-// Error Examples
+// ProgramError Examples
 //
-// Error examples implement the ideas in "Generating LR Syntax Error Messages
+// ProgramError examples implement the ideas in "Generating LR Syntax ProgramError Messages
 // from Examples"[1]. They extend the capability of a LALR parser to produce
 // better error messages.
 //
@@ -961,7 +961,7 @@ func (s *Symbol) String() string {
 // XError describes the parser state for an error by example. See [1].
 type XError struct {
 	Stack     []int   // Parser states stack, potentially partial, of the error event. TOS is Stack[len(Stack)-1].
-	Lookahead *Symbol // Error lookahead symbol. Nil if LA is the reserved error symbol.
+	Lookahead *Symbol // ProgramError lookahead symbol. Nil if LA is the reserved error symbol.
 	Msg       string  // Textual representation of the error condition.
 }
 

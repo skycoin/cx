@@ -1,8 +1,8 @@
-// Copyright (c) 2014 The parser Authors. All rights reserved.
+// Copyright (c) 2014 The cxgo Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package parser // import "github.com/skycoin/cx/cmd/goyacc/parser/nquads"
+package parser // import "github.com/skycoin/cx/cmd/goyacc/cxgo/nquads"
 
 import (
 	"fmt"

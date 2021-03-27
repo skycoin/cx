@@ -45,15 +45,15 @@ func stackValueHeader(fileName string, fileLine int) string {
 }
 
 // PrintStack ...
-func (prgrm *CXProgram) PrintStack() {
+func (cxprogram *CXProgram) PrintStack() {
 	fmt.Println()
 	fmt.Println("===Callstack===")
 
 	// we're going backwards in the stack
-	fp := prgrm.StackPointer
+	fp := cxprogram.StackPointer
 
-	for c := prgrm.CallCounter; c >= 0; c-- {
-		op := prgrm.CallStack[c].Operator
+	for c := cxprogram.CallCounter; c >= 0; c-- {
+		op := cxprogram.CallStack[c].Operator
 		fp -= op.Size
 
 		var dupNames []string
@@ -61,14 +61,14 @@ func (prgrm *CXProgram) PrintStack() {
 		fmt.Printf(">>> %s()\n", op.Name)
 
 		for _, inp := range op.Inputs {
-			fmt.Println("Inputs")
+			fmt.Println("ProgramInput")
 			fmt.Printf("\t%s : %s() : %s\n", stackValueHeader(inp.FileName, inp.FileLine), op.Name, GetPrintableValue(fp, inp))
 
 			dupNames = append(dupNames, inp.Package.Name+inp.Name)
 		}
 
 		for _, out := range op.Outputs {
-			fmt.Println("Outputs")
+			fmt.Println("ProgramOutput")
 			fmt.Printf("\t%s : %s() : %s\n", stackValueHeader(out.FileName, out.FileLine), op.Name, GetPrintableValue(fp, out))
 
 			dupNames = append(dupNames, out.Package.Name+out.Name)
@@ -259,7 +259,7 @@ func GetFormattedType(arg *CXArgument) string {
 
 						fn, err := pkg.GetFunction(elt.Name)
 						if err == nil {
-							// println(CompilationError(elt.FileName, elt.FileLine), err.Error())
+							// println(CompilationError(elt.FileName, elt.FileLine), err.ProgramError())
 							// os.Exit(CX_COMPILATION_ERROR)
 							// Adding list of inputs and outputs types.
 							typ += formatParameters(fn.Inputs)
@@ -462,58 +462,6 @@ func buildStrPackages(prgrm *CXProgram, ast *string) {
 
 		i++
 	}
-}
-
-// PrintProgram prints the abstract syntax tree of a CX program in a
-// human-readable format.
-func (prgrm *CXProgram) PrintProgram() {
-	fmt.Println(prgrm.ToString())
-}
-
-// ToString returns the abstract syntax tree of a CX program in a
-// string format.
-func (prgrm *CXProgram) ToString() string {
-	var ast string
-	ast += "Program\n"
-
-	var currentFunction *CXFunction
-	var currentPackage *CXPackage
-
-	// Saving current program state because ToString uses SelectXXX.
-	// If we don't do this, calling `:dp` in a REPL will always switch the
-	// user to the last function in the last package in the `CXProgram`
-	// structure.
-	if pkg, err := prgrm.GetCurrentPackage(); err == nil {
-		currentPackage = pkg
-	}
-
-	if fn, err := prgrm.GetCurrentFunction(); err == nil {
-		currentFunction = fn
-	}
-
-	buildStrPackages(prgrm, &ast)
-
-	// Restoring a program's state (what package and function were
-	// selected.)
-	if currentPackage != nil {
-		_, err := prgrm.SelectPackage(currentPackage.Name)
-		if err != nil {
-			panic(err)
-		}
-	}
-	if currentFunction != nil {
-		_, err := prgrm.SelectFunction(currentFunction.Name)
-		if err != nil {
-			panic(err)
-		}
-	}
-
-	prgrm.CurrentPackage = currentPackage
-	if currentPackage != nil {
-		currentPackage.CurrentFunction = currentFunction
-	}
-
-	return ast
 }
 
 // IsCorePackage ...

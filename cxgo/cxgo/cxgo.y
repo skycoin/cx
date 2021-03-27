@@ -1,5 +1,5 @@
 %{
-	package parser
+	package cxgo
 	import (
 		// "fmt"
 		"strconv"
@@ -101,12 +101,10 @@ build-parser: ## Generate lexer and parser for CX grammar
                         
                         /* Types */
                         BASICTYPE
-                        /* Selectors */
-                        SPACKAGE SSTRUCT SFUNC
+
                         /* Removers */
                         REM DEF EXPR FIELD CLAUSES OBJECT OBJECTS
-                        /* Stepping */
-                        STEP PSTEP TSTEP
+
                         /* Debugging */
                         DSTACK DPROGRAM DSTATE
                         /* Affordances */
@@ -161,7 +159,7 @@ build-parser: ## Generate lexer and parser for CX grammar
 
 %type	<ReturnExpressions>	return_expression
 
-%type   <expressions>   selector
+%type   <expressions>   selector //remove selectors
 
 %type   <expressions>   struct_literal_fields
 %type   <SelectStatement>   elseif
@@ -187,7 +185,6 @@ build-parser: ## Generate lexer and parser for CX grammar
 
 %type   <function>      function_header
 
-//                      %type   <stringA>       infer_action, infer_actions
 %type   <string>        infer_action_arg
 %type   <stringA>       infer_action, infer_actions
 %type   <expressions>   infer_clauses
@@ -197,8 +194,6 @@ build-parser: ## Generate lexer and parser for CX grammar
                         
 			// for struct literals
 %right                   IDENTIFIER LBRACE
-// %left REF_OP
-// %right                  IDENTIFIER
                         
 /* %start                  translation_unit */
 %%
@@ -216,9 +211,7 @@ external_declaration:
         |       function_declaration
         |       import_declaration
         |       struct_declaration
-                
-        |       stepping
-        |       selector
+
         |       debugging
         ;
 
@@ -229,79 +222,13 @@ debugging:
                 }
         ;
 
-stepping:       TSTEP int_value int_value
-                {
-			actions.Stepping(int($2), int($3), true)
-                }
-        |       STEP int_value
-                {
-			actions.Stepping(int($2), 0, false)
-                }
-        ;
-
+//delete selector, but cannot because goyacc segfaults
 selector:
-                SPACKAGE IDENTIFIER SEMICOLON
+                IMPORT STRING_LITERAL IDENTIFIER SEMICOLON
                 {
-			$<string>$ = actions.Selector($2, actions.SELECT_TYP_PKG)
+                //
                 }
-        |       SFUNC IDENTIFIER
-                {
-			$<string>$ = actions.Selector($2, actions.SELECT_TYP_FUNC)
-                }
-                compound_statement
-                {
-			if len($4) > 0 {
-				if pkg, err := actions.PRGRM.GetCurrentPackage(); err == nil {
-					if fn, err := actions.PRGRM.GetFunction($<string>3, pkg.Name); err == nil {
-						for _, expr := range $4 {
-							fn.AddExpression(expr)
-						}
-						actions.FunctionDeclaration(fn, nil, nil, nil)
-					} else {
-						panic(err)
-					}
-				} else {
-					panic(err)
-				}
-			}
-			
-			// if $<bool>4 {
-				
-			// 	if _, err := actions.PRGRM.SelectFunction($<string>3); err == nil {
-			// 	}
-			// }
-                }
-        |       SSTRUCT IDENTIFIER SEMICOLON
-                {
-			$<string>$ = actions.Selector($2, actions.SELECT_TYP_STRCT)
-                }
-        |       SSTRUCT IDENTIFIER
-                {
-			$<string>$ = actions.Selector($2, actions.SELECT_TYP_STRCT)
-                }
-                struct_fields
-                {
-			if len($4) > 0 {
-				if pkg, err := actions.PRGRM.GetCurrentPackage(); err == nil {
-					if strct, err := actions.PRGRM.GetStruct($<string>3, pkg.Name); err == nil {
-						for _, fld := range $4 {
-							strct.AddField(fld)
-						}
-						// actions.FunctionDeclaration(fn, nil, nil, nil)
-					} else {
-						panic(err)
-					}
-				} else {
-					panic(err)
-				}
-			}
-			/* if $<bool>4 { */
-			/* 	if _, err := actions.PRGRM.SelectStruct($<string>3); err == nil { */
-			/* 		//fmt.Println(fmt.Sprintf("== Changed to struct '%s' ==", strct.Name)) */
-			/* 	} */
-			/* } */
-                }
-        ;
+                ;
 
 global_declaration:
                 VAR declarator declaration_specifiers SEMICOLON
@@ -357,12 +284,10 @@ function_header:
                 {
 			yylval.line = 0
 			$$ = actions.FunctionHeader($2, nil, false)
-			actions.InFn = true
                 }
         |       FUNC LPAREN parameter_type_list RPAREN IDENTIFIER
                 {
 			$$ = actions.FunctionHeader($5, $3, true)
-			actions.InFn = true
                 }
         ;
 
@@ -377,12 +302,10 @@ function_declaration:
                 function_header function_parameters compound_statement
                 {
 			actions.FunctionDeclaration($1, $2, nil, $3)
-			actions.InFn = false
                 }
         |       function_header function_parameters function_parameters compound_statement
                 {
 			actions.FunctionDeclaration($1, $2, $3, $4)
-			actions.InFn = false
                 }
         ;
 
@@ -429,37 +352,7 @@ direct_declarator:
                 }
 	|       LPAREN declarator RPAREN
                 { $$ = $2 }
-	// |       direct_declarator '[' ']'
-        //         {
-	// 		$1.IsArray = true
-	// 		$$ = $1
-        //         }
-        //	|direct_declarator '[' MUL_OP ']'
-        //              	|direct_declarator '[' type_qualifier_list MUL_OP ']'
-        //              	|direct_declarator '[' type_qualifier_list assignment_expression ']'
-        //              	|direct_declarator '[' type_qualifier_list ']'
-        //              	|direct_declarator '[' assignment_expression ']'
-	// |    direct_declarator LPAREN parameter_type_list RPAREN
-	// |    direct_declarator LPAREN RPAREN
-	// |    direct_declarator LPAREN identifier_list RPAREN
                 ;
-
-// check
-/* pointer:        /\* MUL_OP   type_qualifier_list pointer // check *\/ */
-/*         /\* |       MUL_OP   type_qualifier_list // check *\/ */
-/*         /\* |       MUL_OP   pointer *\/ */
-/*         /\* |        *\/MUL_OP */
-/*                 ; */
-
-/* type_qualifier_list: */
-/*                 type_qualifier */
-/* 	|       type_qualifier_list type_qualifier */
-/*                 ; */
-
-
-
-
-
 
 id_list:	IDENTIFIER
 		{
@@ -660,17 +553,6 @@ array_literal_expression:
                 {
 			$$ = nil
                 }
-        // |       indexing_literal array_literal_expression
-        //         {
-	// 		for _, expr := range $4 {
-	// 			if expr.Outputs[0].Name == $4[len($4) - 1].Inputs[0].Name {
-	// 				expr.Outputs[0].Lengths = append([]int{int($2)}, expr.Outputs[0].Lengths[:len(expr.Outputs[0].Lengths) - 1]...)
-	// 				expr.Outputs[0].TotalSize = expr.Outputs[0].Size * TotalLength(expr.Outputs[0].Lengths)
-	// 			}
-	// 		}
-
-	// 		$$ = $4
-        //         }
                 ;
 
 
@@ -724,32 +606,6 @@ slice_literal_expression:
                 }
                 ;
 
-/* package_identifier: */
-/*                 IDENTIFIER PERIOD IDENTIFIER */
-/*                 { */
-/* 			$$ = []string{$1, $2} */
-/*                 } */
-/*                 ; */
-
-
-
-
-/* infer_action_arg: */
-/*                 MUL_OP GT_OP assignment_expression */
-/*                 { */
-/* 			if $3[len($3) - 1].Outputs[0].Name != "" { */
-/* 				$$ = []string{$1, $3[len($3) - 1].Outputs[0].Name, $2} */
-/* 			} else { */
-/* 				$$ = []string{$1, strconv.Itoa($3[len($3) - 1].Outputs[0].Offset), $2} */
-/* 			} */
-			
-/*                 } */
-/*         |       MUL_OP GT_OP MUL_OP */
-/*                 { */
-/* 			$$ = []string{$1, $1, $2} */
-/*                 } */
-/*         ; */
-
 infer_action_arg:
                 IDENTIFIER
                 {
@@ -798,25 +654,7 @@ infer_actions:
 			$$ = $1
                 }
                 ;
-
-/* infer_target: */
-/*                 IDENTIFIER LPAREN IDENTIFIER RPAREN SEMICOLON */
-/*                 { */
-/* 			$$ = []string{$3, $1} */
-/*                 } */
         ;
-
-/* infer_targets: */
-/*                 infer_target */
-/*                 { */
-/* 			$$ = $1 */
-/*                 } */
-/*         |       infer_targets infer_target */
-/*                 { */
-/* 			$1 = append($1, $2...) */
-/* 			$$ = $1 */
-/*                 } */
-/*         ; */
 
 infer_clauses:
                 {
@@ -833,18 +671,6 @@ infer_clauses:
 			
 			$$ = actions.SliceLiteralExpression(cxcore.TYPE_AFF, exprs)
                 }
-        /* |       infer_targets */
-        /*         { */
-	/* 		var exprs []*cxcore.CXExpression */
-	/* 		for _, str := range $1 { */
-	/* 			expr := actions.WritePrimary(cxcore.TYPE_AFF, encoder.Serialize(str), false) */
-	/* 			expr[len(expr) - 1].IsArrayLiteral = true */
-	/* 			exprs = append(exprs, expr...) */
-	/* 		} */
-			
-	/* 		// $$ = actions.ArrayLiteralExpression(len(exprs), cxcore.TYPE_STR, exprs) */
-	/* 		$$ = actions.SliceLiteralExpression(cxcore.TYPE_AFF, exprs) */
-        /*         } */
                 ;
 
 
@@ -863,10 +689,6 @@ primary_expression:
                 {
 			$$ = actions.PrimaryIdentifier($1)
                 }
-        /* |       IDENTIFIER LBRACE struct_literal_fields RBRACE */
-        /*         { */
-	/* 		$$ = actions.PrimaryStructLiteral($1, $3) */
-        /*         } */
 	|	FUNC LPAREN RPAREN
 		{
 			$$ = nil
@@ -1269,12 +1091,6 @@ block_item_list:
 
 block_item:     declaration
         |       statement
-        |       stepping
-                { $$ = nil }
-        /* |       debugging */
-        /*         { $$ = nil } */
-        /* |       selector */
-        /*         { $$ = nil} */
                 ;
 
 expression_statement:

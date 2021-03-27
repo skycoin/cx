@@ -148,23 +148,23 @@ func Assignment(to []*cxcore.CXExpression, assignOp string, from []*cxcore.CXExp
 				sym.Lengths = from[idx].Inputs[0].Lengths
 			}
 			if outTypeArg.IsSlice {
-				// if from[idx].Operator.Outputs[0].IsSlice {
+				// if from[idx].Operator.ProgramOutput[0].IsSlice {
 				sym.Lengths = append([]int{0}, sym.Lengths...)
 				sym.DeclarationSpecifiers = append(sym.DeclarationSpecifiers, cxcore.DECL_SLICE)
 			}
 
 			sym.IsSlice = outTypeArg.IsSlice
-			// sym.IsSlice = from[idx].Operator.Outputs[0].IsSlice
+			// sym.IsSlice = from[idx].Operator.ProgramOutput[0].IsSlice
 		}
 		sym.Package = pkg
 		sym.PreviouslyDeclared = true
-		sym.IsShortDeclaration = true
+		sym.IsShortAssignmentDeclaration = true
 
 		expr.AddOutput(sym)
 
 		for _, toExpr := range to {
 			toExpr.Outputs[0].PreviouslyDeclared = true
-			toExpr.Outputs[0].IsShortDeclaration = true
+			toExpr.Outputs[0].IsShortAssignmentDeclaration = true
 		}
 
 		to = append([]*cxcore.CXExpression{expr}, to...)
@@ -207,7 +207,7 @@ func Assignment(to []*cxcore.CXExpression, assignOp string, from []*cxcore.CXExp
 		to[0].Outputs[0].Lengths = from[idx].Outputs[0].Lengths
 		to[0].Outputs[0].PassBy = from[idx].Outputs[0].PassBy
 		to[0].Outputs[0].DoesEscape = from[idx].Outputs[0].DoesEscape
-		// to[0].Outputs[0].Program = PRGRM
+		// to[0].ProgramOutput[0].Program = PRGRM
 
 		if from[idx].IsMethodCall {
 			from[idx].Inputs = append(from[idx].Outputs, from[idx].Inputs...)
@@ -232,7 +232,7 @@ func Assignment(to []*cxcore.CXExpression, assignOp string, from []*cxcore.CXExp
 
 			to[0].Outputs[0].DoesEscape = from[idx].Operator.Outputs[0].DoesEscape
 			to[0].Outputs[0].PassBy = from[idx].Operator.Outputs[0].PassBy
-			// to[0].Outputs[0].Program = PRGRM
+			// to[0].ProgramOutput[0].Program = PRGRM
 		} else {
 			// we'll delegate multiple-value returns to the 'expression' grammar rule
 			// only assigning as if the operator had only one output defined
@@ -242,7 +242,7 @@ func Assignment(to []*cxcore.CXExpression, assignOp string, from []*cxcore.CXExp
 			to[0].Outputs[0].Lengths = from[idx].Operator.Outputs[0].Lengths
 			to[0].Outputs[0].DoesEscape = from[idx].Operator.Outputs[0].DoesEscape
 			to[0].Outputs[0].PassBy = from[idx].Operator.Outputs[0].PassBy
-			// to[0].Outputs[0].Program = PRGRM
+			// to[0].ProgramOutput[0].Program = PRGRM
 		}
 
 		from[idx].Outputs = to[len(to)-1].Outputs

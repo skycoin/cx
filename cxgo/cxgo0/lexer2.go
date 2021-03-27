@@ -1,35 +1,32 @@
-package parser
+package cxgo0
 
 import (
 	"fmt"
 	"io"
-
-	"github.com/skycoin/cx/cxgo/actions"
 )
 
-var DebugLexer bool
+var CurrentFileName string
 
-func (yylex Lexer) Error(msg string) {
+func (yylex Lexer) Error(e string) {
+	if inREPL {
+		fmt.Printf("syntax error: %s\n", e)
+	} else {
+		fmt.Printf("%s:%d: syntax error: %s\n", CurrentFileName, yylex.l+1, e)
+	}
+
 	yylex.stop()
-	yylex.errorf(msg)
+}
+
+func (yylex *Lexer) Stop() {
+	yylex.stop()
 }
 
 func (yylex *Lexer) Lex(lval *yySymType) int {
 	yylex.next()
 	lval.scancopy(yylex.tok)
-	actions.LineNo = lval.line
+	lineNo = lval.line
 	return lval.yys
 }
-
-func (yylex *Lexer) Next() int {
-	yylex.next()
-	//fmt.Println(tokenName(yylex.tok.yys))
-	return yylex.tok.yys
-}
-
-// func (yylex *Lexer) Stop() {
-// 	// yylex.stop() //bug???? # https://github.com/skycoin/cx/issues/529
-// }
 
 func NewLexer(rdr io.Reader) *Lexer {
 	lx := &Lexer{}
@@ -40,12 +37,8 @@ func NewLexer(rdr io.Reader) *Lexer {
 }
 
 func (lval *yySymType) scancopy(tok *yySymType) {
-	lval.ReturnExpressions = tok.ReturnExpressions
-	lval.SelectStatement = tok.SelectStatement
-	lval.SelectStatements = tok.SelectStatements
 	lval.argument = tok.argument
 	lval.arguments = tok.arguments
-	lval.arrayArguments = tok.arrayArguments
 	lval.bool = tok.bool
 	lval.expression = tok.expression
 	lval.expressions = tok.expressions
@@ -69,8 +62,9 @@ func (lval *yySymType) scancopy(tok *yySymType) {
 	lval.yys = tok.yys
 }
 
-//Warning Unused
-//is duplicated in cxgo/cxgo0/lexer.go, also unused
+//Unused
+//looks like a copy of cxparser/cxgo/lexer.go?
+//should definatel be in constants or something
 /*
 var tokenNames = map[int]string{
 	BYTE_LITERAL:    "BYTE_LITERAL",
@@ -194,13 +188,13 @@ var tokenNames = map[int]string{
 	CONTINUE:     "CONTINUE",
 	TYPE:         "TYPE",
 
-	// Types
+	// Types 
 	BASICTYPE: "BASICTYPE",
-	// Selectors
+	// Selectors 
 	SPACKAGE: "SPACKAGE",
 	SSTRUCT:  "SSTRUCT",
 	SFUNC:    "SFUNC",
-	// Removers
+	// Removers 
 	REM:     "REM",
 	DEF:     "DEF",
 	EXPR:    "EXPR",
@@ -208,21 +202,21 @@ var tokenNames = map[int]string{
 	CLAUSES: "CLAUSES",
 	OBJECT:  "OBJECT",
 	OBJECTS: "OBJECTS",
-	// Stepping
+	// Stepping 
 	STEP:  "STEP",
 	PSTEP: "PSTEP",
 	TSTEP: "TSTEP",
-	// Debugging
+	// Debugging 
 	DSTACK:   "DSTACK",
 	DPROGRAM: "DPROGRAM",
 	DSTATE:   "DSTATE",
-	// Affordances
+	// Affordances 
 	AFF:   "AFF",
 	CAFF:  "CAFF",
 	TAG:   "TAG",
 	INFER: "INFER",
 	VALUE: "VALUE",
-	// Pointers
+	// Pointers 
 	ADDR: "ADDR",
 }
 */

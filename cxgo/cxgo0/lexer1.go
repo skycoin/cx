@@ -2,6 +2,7 @@ package cxgo0
 
 import (
 	"fmt"
+	//"github.com/skycoin/cx/cxgo/globals"
 	"io"
 	"os"
 	"strconv"
@@ -26,7 +27,7 @@ type Lexer struct {
 	crash     bool //used for crash behaviour
 	colbefore bool //used for colon keywords
 
-	tok *yySymType //symbol read. soon to be depracated for fully new parser
+	tok *yySymType //symbol read. soon to be depracated for fully new cxgo
 }
 
 const sentinel = utf8.RuneSelf
@@ -93,7 +94,7 @@ redo:
 	//EOF
 	if s.r == s.e || s.ioerr == io.EOF {
 		if s.ioerr != io.EOF {
-			s.errorf("IO Error: " + s.ioerr.Error())
+			s.errorf("IO ProgramError: " + s.ioerr.Error())
 			s.ioerr = nil
 		}
 		s.ch = -1
@@ -429,63 +430,6 @@ redonext:
 	//fmt.Printf("%s\n", tokenName(s.tok.yys))
 }
 
-var keywordMap map[string]int = map[string]int{
-	"func":      FUNC,
-	"var":       VAR,
-	"package":   PACKAGE,
-	"if":        IF,
-	"else":      ELSE,
-	"for":       FOR,
-	"struct":    STRUCT,
-	"import":    IMPORT,
-	"return":    RETURN,
-	"goto":      GOTO,
-	"new":       NEW,
-	"bool":      BOOL,
-	"i8":        I8,
-	"ui8":       UI8,
-	"i16":       I16,
-	"ui16":      UI16,
-	"i32":       I32,
-	"ui32":      UI32,
-	"f32":       F32,
-	"i64":       I64,
-	"ui64":      UI64,
-	"f64":       F64,
-	"str":       STR,
-	"aff":       AFF,
-	"union":     UNION,
-	"enum":      ENUM,
-	"const":     CONST,
-	"case":      CASE,
-	"default":   DEFAULT,
-	"switch":    SWITCH,
-	"break":     BREAK,
-	"continue":  CONTINUE,
-	"type":      TYPE,
-	":dl":       DSTATE,
-	":dLocals":  DSTATE,
-	":ds":       DSTACK,
-	":dStack":   DSTACK,
-	":dp":       DPROGRAM,
-	":dProgram": DPROGRAM,
-	":package":  SPACKAGE,
-	":struct":   SSTRUCT,
-	":func":     SFUNC,
-	":rem":      REM,
-	":step":     STEP,
-	":tStep":    TSTEP,
-	":tstep":    TSTEP,
-	":pStep":    PSTEP,
-	":pstep":    PSTEP,
-	":aff":      CAFF,
-	"def":       DEF,
-	"clauses":   CLAUSES,
-	"field":     FIELD,
-	"true":      BOOLEAN_LITERAL,
-	"false":     BOOLEAN_LITERAL,
-}
-
 func (s *Lexer) ident() {
 	// accelerate common case (7bit ASCII)
 	for isLetter(s.ch) || isDecimal(s.ch) {
@@ -503,7 +447,7 @@ func (s *Lexer) ident() {
 	lit := s.segment()
 	s.tok = &yySymType{}
 	if len(lit) >= 2 {
-		if tok := keywordMap[string(lit)]; tok != 0 {
+		if tok := KeywordMap[string(lit)]; tok != 0 {
 			switch tok {
 			case IDENTIFIER,
 				BOOL, STR,

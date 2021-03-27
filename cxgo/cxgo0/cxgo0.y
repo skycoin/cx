@@ -8,6 +8,12 @@
 		. "github.com/skycoin/cx/cxgo/actions"
 	)
 
+        /*
+        This is a computer generated file
+        - cxgo0.go is generated from cxgo0.go via 
+        - ./bin/goyacc -o cxgo/cxgo0/cxgo0.go cxgo/cxgo0/cxgo0.y
+        */
+
 	var PRGRM0 *CXProgram
 
 	var lineNo int = -1
@@ -102,12 +108,10 @@
                         
                         /* Types */
                         BASICTYPE
-                        /* Selectors */
-                        SPACKAGE SSTRUCT SFUNC
+
                         /* Removers */
                         REM DEF EXPR FIELD CLAUSES OBJECT OBJECTS
-                        /* Stepping */
-                        STEP PSTEP TSTEP
+
                         /* Debugging */
                         DSTACK DPROGRAM DSTATE
                         /* Affordances */
@@ -155,12 +159,14 @@ external_declaration:
         |       import_declaration
         |       struct_declaration
 
-        |       stepping
+       // |       stepping
         ;
 
+/*
 stepping:       TSTEP int_value int_value
         |       STEP int_value
         ;
+*/
 
 global_declaration:
                 VAR declarator declaration_specifiers SEMICOLON

@@ -1,8 +1,9 @@
-package cxgo
+package cxparser
 
 import (
 	"bufio"
 	"bytes"
+	"github.com/skycoin/cx/cxgo/globals"
 	"io"
 	"os"
 	"path/filepath"
@@ -12,7 +13,7 @@ import (
 	cxcore "github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cxgo/actions"
 	"github.com/skycoin/cx/cxgo/cxgo0"
-	"github.com/skycoin/cx/cxgo/parser"
+	"github.com/skycoin/cx/cxgo/cxgo"
 	"github.com/skycoin/cx/cxgo/util/profiling"
 )
 
@@ -42,7 +43,7 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 	}
 
 	//package level program
-	actions.PRGRM.SelectProgram()
+	actions.PRGRM.SetCurrentCxProgram()
 
 	actions.PRGRM = cxgo0.PRGRM0
 
@@ -78,7 +79,7 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 			actions.CurrentFile = fileNames[i]
 		}
 		profiling.StartProfile(actions.CurrentFile)
-		parseErrors += parser.Parse(parser.NewLexer(b))
+		parseErrors += cxgo.Parse(cxgo.NewLexer(b))
 		profiling.StopProfile(actions.CurrentFile)
 	}
 	profiling.StopProfile("4. parse")
@@ -88,7 +89,7 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 	}
 }
 
-// lexerStep0 performs a first pass for the CX parser. Globals, packages and
+// lexerStep0 performs a first pass for the CX cxgo. Globals, packages and
 // custom types are added to `cxgo0.PRGRM0`.
 func lexerStep0(srcStrs, srcNames []string) int {
 	var prePkg *cxcore.CXPackage
@@ -363,7 +364,9 @@ func AddInitFunction(prgrm *cxcore.CXProgram) error {
 	initFn := cxcore.MakeFunction(cxcore.SYS_INIT_FUNC, actions.CurrentFile, actions.LineNo)
 	mainPkg.AddFunction(initFn)
 
-	actions.FunctionDeclaration(initFn, nil, nil, actions.SysInitExprs)
+	//Init Expressions
+	actions.FunctionDeclaration(initFn, nil, nil, globals.SysInitExprs)
+
 	if _, err := mainPkg.SelectFunction(cxcore.MAIN_FUNC); err != nil {
 		return err
 	}

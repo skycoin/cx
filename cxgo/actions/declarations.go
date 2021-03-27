@@ -2,6 +2,7 @@ package actions
 
 import (
 	"fmt"
+	"github.com/skycoin/cx/cxgo/globals"
 	"os"
 
 	"github.com/skycoin/cx/cx"
@@ -53,7 +54,7 @@ func DeclareGlobalInPackage(pkg *cxcore.CXPackage,
 
 			glbl.Offset = offExpr[0].Outputs[0].Offset
 			glbl.PassBy = offExpr[0].Outputs[0].PassBy
-			// glbl.Package = offExpr[0].Outputs[0].Package
+			// glbl.Package = offExpr[0].ProgramOutput[0].Package
 		}
 
 		// Checking if something is supposed to be initialized
@@ -77,7 +78,8 @@ func DeclareGlobalInPackage(pkg *cxcore.CXPackage,
 				initializer[len(initializer)-1].Operator = cxcore.Natives[cxcore.OP_IDENTITY]
 				initializer[len(initializer)-1].Package = glbl.Package
 
-				SysInitExprs = append(SysInitExprs, initializer...)
+				//add intialization statements, to array
+				globals.SysInitExprs = append(globals.SysInitExprs, initializer...)
 			} else {
 				// then it's an expression
 				declaration_specifiers.Name = glbl.Name
@@ -93,8 +95,8 @@ func DeclareGlobalInPackage(pkg *cxcore.CXPackage,
 					initializer[len(initializer)-1].Outputs = nil
 					initializer[len(initializer)-1].AddOutput(glbl)
 				}
-
-				SysInitExprs = append(SysInitExprs, initializer...)
+				//add intialization statements, to array
+				globals.SysInitExprs = append(globals.SysInitExprs, initializer...)
 			}
 		} else {
 			// we keep the last value for now
@@ -134,8 +136,8 @@ func DeclareGlobalInPackage(pkg *cxcore.CXPackage,
 				initializer[len(initializer)-1].AddOutput(declaration_specifiers)
 
 				pkg.AddGlobal(declaration_specifiers)
-
-				SysInitExprs = append(SysInitExprs, initializer...)
+				//add intialization statements, to array
+				globals.SysInitExprs = append(globals.SysInitExprs, initializer...)
 			} else {
 				// then it's an expression
 				declaration_specifiers.Name = declarator.Name
@@ -153,11 +155,12 @@ func DeclareGlobalInPackage(pkg *cxcore.CXPackage,
 				}
 
 				pkg.AddGlobal(declaration_specifiers)
-				SysInitExprs = append(SysInitExprs, initializer...)
+				//add intialization statements, to array
+				globals.SysInitExprs = append(globals.SysInitExprs, initializer...)
 			}
 		} else {
 			// offExpr := WritePrimary(declaration_specifiers.Type, make([]byte, declaration_specifiers.Size), true)
-			// exprOut := expr[0].Outputs[0]
+			// exprOut := expr[0].ProgramOutput[0]
 
 			declaration_specifiers.Name = declarator.Name
 			declaration_specifiers.FileLine = declarator.FileLine

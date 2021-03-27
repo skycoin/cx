@@ -1,4 +1,4 @@
-// Copyright 2015 The parser Authors. All rights reserved.
+// Copyright 2015 The cxgo Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -17,7 +17,7 @@ import (
 )
 
 func yy() (nm string, err error) {
-	y, err := os.Create("parser.y")
+	y, err := os.Create("cxgo.y")
 	if err != nil {
 		return "", err
 	}
@@ -28,7 +28,7 @@ func yy() (nm string, err error) {
 		"-astImport", "\"go/token\"",
 		"-kind", "Case",
 		"-o", nm,
-		"parser.yy",
+		"cxgo.yy",
 	)
 	if out, err := cmd.CombinedOutput(); err != nil {
 		os.Remove(nm)
@@ -70,7 +70,7 @@ func goyacc(y string) (err error) {
 		return err
 	}
 
-	cmd = exec.Command("goyacc", "-cr", "-xe", t.Name(), "-o", "parser.go", "-dlvalf", "%v", "-dlval", "prettyString(lval.Token)", y)
+	cmd = exec.Command("goyacc", "-cr", "-xe", t.Name(), "-o", "cxgo.go", "-dlvalf", "%v", "-dlval", "prettyString(lval.Token)", y)
 	if out, err := cmd.CombinedOutput(); err != nil {
 		log.Printf("%s", out)
 		return err
@@ -121,7 +121,7 @@ func main2() (err error) {
 	}
 
 	cmd := exec.Command("pcregrep", append([]string{"-nM", `failed|panic|\/\/ <nil>|// false|// -1|Output:\n}`}, matches...)...)
-	if out, _ = cmd.CombinedOutput(); len(out) != 0 { // Error != nil when no matches
+	if out, _ = cmd.CombinedOutput(); len(out) != 0 { // ProgramError != nil when no matches
 		log.Printf("%s", out)
 	}
 	return nil

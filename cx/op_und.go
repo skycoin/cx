@@ -223,7 +223,7 @@ func buildString(expr *CXExpression, fp int) []byte {
 
 	if specifiersCounter != len(expr.Inputs)-1 {
 		extra := "%!(EXTRA "
-		// for _, inp := range expr.Inputs[:specifiersCounter] {
+		// for _, inp := range expr.ProgramInput[:specifiersCounter] {
 		lInps := len(expr.Inputs[specifiersCounter+1:])
 		for c := 0; c < lInps; c++ {
 			inp := expr.Inputs[specifiersCounter+1+c]
