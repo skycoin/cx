@@ -5,6 +5,7 @@ package cxfx
 import (
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/skycoin/cx/cx/helper"
+	"github.com/skycoin/cx/cx/mem"
 
 	"github.com/skycoin/cx/cx"
 )
@@ -230,7 +231,7 @@ func opGlfwSetShouldClose(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 func getWindowName(w *glfw.Window) []byte {
 	for key, win := range windows {
 		if w == win {
-			return helper.FromI32(int32(cxcore.WriteStringData(key)))
+			return helper.FromI32(int32(mem.WriteStringData(key)))
 		}
 	}
 

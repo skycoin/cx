@@ -5,6 +5,7 @@ import (
 	"github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/globals"
+	"github.com/skycoin/cx/cx/mem"
 )
 
 // CXCall ...
@@ -44,7 +45,7 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]cxcore.CXValue, glob
 				if i >= lenOuts {
 					continue
 				}
-				cxcore.WriteMemory(
+				mem.WriteMemory(
 					cxcore.GetFinalOffset(returnFP, expr.Outputs[i]),
 					cxcore.ReadMemory(
 						cxcore.GetFinalOffset(fp, out),
@@ -205,7 +206,7 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]cxcore.CXValue, glob
 							finalOffset -= constants.OBJECT_HEADER_SIZE
 						}
 						var finalOffsetB [4]byte
-						cxcore.WriteMemI32(finalOffsetB[:], 0, int32(finalOffset))
+						mem.WriteMemI32(finalOffsetB[:], 0, int32(finalOffset))
 						byts = finalOffsetB[:]
 					} else {
 						size := GetSize(inp)
@@ -213,7 +214,7 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]cxcore.CXValue, glob
 					}
 
 					// writing inputs to new stack frame
-					cxcore.WriteMemory(
+					mem.WriteMemory(
 						cxcore.GetFinalOffset(newFP, newCall.Operator.Inputs[i]),
 						// newFP + newCall.Operator.ProgramInput[i].Offset,
 						// GetFinalOffset(prgrm.Memory, newFP, newCall.Operator.ProgramInput[i], MEM_WRITE),
@@ -225,8 +226,7 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]cxcore.CXValue, glob
 	return nil
 }
 
-// MakeCallStack ...
-//./cx/execute.go:14:// 	prgrm.CallStack = MakeCallStack(0)
+//prgrm.CallStack = MakeCallStack(0)
 func MakeCallStack(size int) []CXCall {
 	return make([]CXCall, 0)
 	// return &CXCallStack{

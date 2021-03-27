@@ -5,6 +5,7 @@ package cxos
 import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/mem"
 	"regexp"
 
 	"github.com/jinzhu/copier"
@@ -67,7 +68,7 @@ func regexpCompile(expr *ast.CXExpression, fp int) error {
 	// internally.
 	accessExp := []*ast.CXArgument{expFld}
 	reg.Fields = accessExp
-	cxcore.WriteString(fp, exp, &reg)
+	mem.WriteString(fp, exp, &reg)
 
 	// Storing `Regexp` instance.
 	regexps[exp], err = regexp.Compile(exp)
@@ -96,7 +97,7 @@ func opRegexpCompile(expr *ast.CXExpression, fp int) {
 
 	// Writing error message to `out2`.
 	if err != nil {
-		cxcore.WriteString(fp, err.Error(), out2)
+		mem.WriteString(fp, err.Error(), out2)
 	}
 }
 
@@ -135,5 +136,5 @@ func opRegexpFind(expr *ast.CXExpression, fp int) {
 	exp := cxcore.ReadStr(fp, &reg)
 	r := regexps[exp]
 
-	cxcore.WriteString(fp, string(r.Find([]byte(cxcore.ReadStr(fp, inp2)))), out1)
+	mem.WriteString(fp, string(r.Find([]byte(cxcore.ReadStr(fp, inp2)))), out1)
 }

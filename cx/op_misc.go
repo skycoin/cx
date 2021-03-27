@@ -4,6 +4,7 @@ import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/helper"
+	"github.com/skycoin/cx/cx/mem"
 )
 
 // "fmt"
@@ -16,12 +17,12 @@ func EscapeAnalysis(fp int, inpOffset, outOffset int, arg *ast.CXArgument) {
 
 	// creating a header for this object
 	var header = make([]byte, constants.OBJECT_HEADER_SIZE)
-	WriteMemI32(header, 5, int32(len(byts)))
+	mem.WriteMemI32(header, 5, int32(len(byts)))
 
 	obj := append(header, byts...)
-	WriteMemory(heapOffset, obj)
+	mem.WriteMemory(heapOffset, obj)
 
-	WriteI32(outOffset, int32(heapOffset))
+	mem.WriteI32(outOffset, int32(heapOffset))
 }
 
 func opIdentity(expr *ast.CXExpression, fp int) {
@@ -41,9 +42,9 @@ func opIdentity(expr *ast.CXExpression, fp int) {
 	} else {
 		switch elt.PassBy {
 		case constants.PASSBY_VALUE:
-			WriteMemory(out1Offset, ReadMemory(inp1Offset, inp1))
+			mem.WriteMemory(out1Offset, ReadMemory(inp1Offset, inp1))
 		case constants.PASSBY_REFERENCE:
-			WriteI32(out1Offset, int32(inp1Offset))
+			mem.WriteI32(out1Offset, int32(inp1Offset))
 		}
 	}
 }

@@ -4,6 +4,7 @@ package cxfx
 
 import (
 	"bufio"
+	"github.com/skycoin/cx/cx/mem"
 	file2 "github.com/skycoin/cx/cx/util/file"
 
 	"fmt"
@@ -247,9 +248,9 @@ func decodeHdr(file *os.File) (data []byte, iwidth int32, iheight int32) {
 			g := float32(exponent * float64(line[loffset+1]) / 256.0)
 			b := float32(exponent * float64(line[loffset+2]) / 256.0)
 
-			cxcore.WriteMemF32(data, xoffset, r)
-			cxcore.WriteMemF32(data, xoffset+4, g)
-			cxcore.WriteMemF32(data, xoffset+8, b)
+			mem.WriteMemF32(data, xoffset, r)
+			mem.WriteMemF32(data, xoffset+4, g)
+			mem.WriteMemF32(data, xoffset+8, b)
 		}
 	}
 	return

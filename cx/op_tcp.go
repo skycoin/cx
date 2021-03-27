@@ -3,6 +3,7 @@ package cxcore
 import (
 	"context"
 	"github.com/skycoin/cx/cx/ast"
+	"github.com/skycoin/cx/cx/mem"
 	"log"
 	"net"
 	"net/rpc"
@@ -40,7 +41,7 @@ func opTCPDial(expr *ast.CXExpression, fp int) {
 	conn, err := net.Dial("tcp", "localhost:9000")
 
 	if err != nil {
-		WriteString(fp, err.Error(), errorstring)
+		mem.WriteString(fp, err.Error(), errorstring)
 	}
 
 	conn.Close()
@@ -77,7 +78,7 @@ func opTCPListen(expr *ast.CXExpression, fp int) {
 	ln.Close()
 
 	if err != nil {
-		WriteString(fp, err.Error(), errorstring)
+		mem.WriteString(fp, err.Error(), errorstring)
 	}
 
 }

@@ -4,6 +4,7 @@ import (
 	"github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/mem"
 	"os"
 )
 
@@ -28,7 +29,7 @@ func Callback(cxprogram *ast.CXProgram, fn *ast.CXFunction, inputs [][]byte) (ou
 	}
 
 	for i, inp := range inputs {
-		cxcore.WriteMemory(cxcore.GetFinalOffset(newFP, newCall.Operator.Inputs[i]), inp)
+		mem.WriteMemory(cxcore.GetFinalOffset(newFP, newCall.Operator.Inputs[i]), inp)
 	}
 
 	var nCalls = 0

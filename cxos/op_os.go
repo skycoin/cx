@@ -8,6 +8,7 @@ import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/globals"
+	"github.com/skycoin/cx/cx/mem"
 	"github.com/skycoin/cx/cx/util/file"
 
 	"math"
@@ -437,7 +438,7 @@ func opOsReadF64Slice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 				success = true
 				outputSliceData := cxcore.GetSliceData(outputSliceOffset, sizeofElement)
 				for i := uint64(0); i < count; i++ {
-					cxcore.WriteMemF64(outputSliceData, int(i)*sizeofElement, values[i])
+					mem.WriteMemF64(outputSliceData, int(i)*sizeofElement, values[i])
 				}
 			}
 		}
@@ -457,7 +458,7 @@ func opOsReadF32Slice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 				success = true
 				outputSliceData := cxcore.GetSliceData(outputSliceOffset, sizeofElement)
 				for i := uint64(0); i < count; i++ {
-					cxcore.WriteMemF32(outputSliceData, int(i)*sizeofElement, values[i])
+					mem.WriteMemF32(outputSliceData, int(i)*sizeofElement, values[i])
 				}
 			}
 		}
@@ -477,7 +478,7 @@ func opOsReadUI64Slice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 				success = true
 				outputSliceData := cxcore.GetSliceData(outputSliceOffset, sizeofElement)
 				for i := uint64(0); i < count; i++ {
-					cxcore.WriteMemUI64(outputSliceData, int(i)*sizeofElement, values[i])
+					mem.WriteMemUI64(outputSliceData, int(i)*sizeofElement, values[i])
 				}
 			}
 		}
@@ -497,7 +498,7 @@ func opOsReadUI32Slice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 				success = true
 				outputSliceData := cxcore.GetSliceData(outputSliceOffset, sizeofElement)
 				for i := uint64(0); i < count; i++ {
-					cxcore.WriteMemUI32(outputSliceData, int(i)*sizeofElement, values[i])
+					mem.WriteMemUI32(outputSliceData, int(i)*sizeofElement, values[i])
 				}
 			}
 		}
@@ -517,7 +518,7 @@ func opOsReadUI16Slice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 				success = true
 				outputSliceData := cxcore.GetSliceData(outputSliceOffset, sizeofElement)
 				for i := uint64(0); i < count; i++ {
-					cxcore.WriteMemUI16(outputSliceData, int(i)*sizeofElement, values[i])
+					mem.WriteMemUI16(outputSliceData, int(i)*sizeofElement, values[i])
 				}
 			}
 		}
@@ -537,7 +538,7 @@ func opOsReadUI8Slice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 				success = true
 				outputSliceData := cxcore.GetSliceData(outputSliceOffset, sizeofElement)
 				for i := uint64(0); i < count; i++ {
-					cxcore.WriteMemUI8(outputSliceData, int(i)*sizeofElement, values[i])
+					mem.WriteMemUI8(outputSliceData, int(i)*sizeofElement, values[i])
 				}
 			}
 		}
@@ -557,7 +558,7 @@ func opOsReadI64Slice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 				success = true
 				outputSliceData := cxcore.GetSliceData(outputSliceOffset, sizeofElement)
 				for i := uint64(0); i < count; i++ {
-					cxcore.WriteMemI64(outputSliceData, int(i)*sizeofElement, values[i])
+					mem.WriteMemI64(outputSliceData, int(i)*sizeofElement, values[i])
 				}
 			}
 		}
@@ -577,7 +578,7 @@ func opOsReadI32Slice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 				success = true
 				outputSliceData := cxcore.GetSliceData(outputSliceOffset, sizeofElement)
 				for i := uint64(0); i < count; i++ {
-					cxcore.WriteMemI32(outputSliceData, int(i)*sizeofElement, values[i])
+					mem.WriteMemI32(outputSliceData, int(i)*sizeofElement, values[i])
 				}
 			}
 		}
@@ -597,7 +598,7 @@ func opOsReadI16Slice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 				success = true
 				outputSliceData := cxcore.GetSliceData(outputSliceOffset, sizeofElement)
 				for i := uint64(0); i < count; i++ {
-					cxcore.WriteMemI16(outputSliceData, int(i)*sizeofElement, values[i])
+					mem.WriteMemI16(outputSliceData, int(i)*sizeofElement, values[i])
 				}
 			}
 		}
@@ -617,7 +618,7 @@ func opOsReadI8Slice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 				success = true
 				outputSliceData := cxcore.GetSliceData(outputSliceOffset, sizeofElement)
 				for i := uint64(0); i < count; i++ {
-					cxcore.WriteMemI8(outputSliceData, int(i)*sizeofElement, values[i])
+					mem.WriteMemI8(outputSliceData, int(i)*sizeofElement, values[i])
 				}
 			}
 		}

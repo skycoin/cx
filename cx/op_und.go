@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/mem"
 	"github.com/skycoin/cx/cx/tostring"
 	"os"
 	"strconv"
@@ -19,9 +20,9 @@ func opLen(expr *ast.CXExpression, fp int) {
 		var sliceOffset = GetSliceOffset(fp, inp1)
 		if sliceOffset > 0 {
 			sliceLen := GetSliceHeader(sliceOffset)[4:8]
-			WriteMemory(GetFinalOffset(fp, out1), sliceLen)
+			mem.WriteMemory(GetFinalOffset(fp, out1), sliceLen)
 		} else if sliceOffset == 0 {
-			WriteI32(GetFinalOffset(fp, out1), 0)
+			mem.WriteI32(GetFinalOffset(fp, out1), 0)
 		} else {
 			panic(constants.CX_RUNTIME_ERROR)
 		}
@@ -36,10 +37,10 @@ func opLen(expr *ast.CXExpression, fp int) {
 			strOffset += constants.OBJECT_HEADER_SIZE
 		}
 
-		WriteMemory(GetFinalOffset(fp, out1), ast.PROGRAM.Memory[strOffset:strOffset+constants.STR_HEADER_SIZE])
+		mem.WriteMemory(GetFinalOffset(fp, out1), ast.PROGRAM.Memory[strOffset:strOffset+constants.STR_HEADER_SIZE])
 	} else {
 		outV0 := int32(elt.Lengths[len(elt.Indexes)])
-		WriteI32(GetFinalOffset(fp, out1), outV0)
+		mem.WriteI32(GetFinalOffset(fp, out1), outV0)
 	}
 }
 
@@ -67,14 +68,14 @@ func opAppend(expr *ast.CXExpression, fp int) {
 
 	if inp2.Type == constants.TYPE_STR || inp2.Type == constants.TYPE_AFF {
 		var obj [4]byte
-		WriteMemI32(obj[:], 0, int32(GetStrOffset(fp, inp2)))
+		mem.WriteMemI32(obj[:], 0, int32(GetStrOffset(fp, inp2)))
 		SliceAppendWrite(outputSliceOffset, obj[:], inputSliceLen)
 	} else {
 		obj := ReadMemory(GetFinalOffset(fp, inp2), inp2)
 		SliceAppendWrite(outputSliceOffset, obj, inputSliceLen)
 	}
 
-	WriteI32(outputSlicePointer, outputSliceOffset)
+	mem.WriteI32(outputSlicePointer, outputSliceOffset)
 }
 
 func opResize(expr *ast.CXExpression, fp int) {
@@ -86,7 +87,7 @@ func opResize(expr *ast.CXExpression, fp int) {
 
 	outputSliceOffset := int32(SliceResize(fp, out1, inp1, ReadI32(fp, inp2), ast.GetAssignmentElement(inp1).TotalSize))
 	outputSlicePointer := GetFinalOffset(fp, out1)
-	WriteI32(outputSlicePointer, outputSliceOffset)
+	mem.WriteI32(outputSlicePointer, outputSliceOffset)
 }
 
 func opInsert(expr *ast.CXExpression, fp int) {
@@ -100,13 +101,13 @@ func opInsert(expr *ast.CXExpression, fp int) {
 
 	if inp3.Type == constants.TYPE_STR || inp3.Type == constants.TYPE_AFF {
 		var obj [4]byte
-		WriteMemI32(obj[:], 0, int32(GetStrOffset(fp, inp3)))
+		mem.WriteMemI32(obj[:], 0, int32(GetStrOffset(fp, inp3)))
 		outputSliceOffset := int32(SliceInsert(fp, out1, inp1, ReadI32(fp, inp2), obj[:]))
-		WriteI32(outputSlicePointer, outputSliceOffset)
+		mem.WriteI32(outputSlicePointer, outputSliceOffset)
 	} else {
 		obj := ReadMemory(GetFinalOffset(fp, inp3), inp3)
 		outputSliceOffset := int32(SliceInsert(fp, out1, inp1, ReadI32(fp, inp2), obj))
-		WriteI32(outputSlicePointer, outputSliceOffset)
+		mem.WriteI32(outputSlicePointer, outputSliceOffset)
 	}
 }
 
@@ -119,7 +120,7 @@ func opRemove(expr *ast.CXExpression, fp int) {
 
 	outputSlicePointer := GetFinalOffset(fp, out1)
 	outputSliceOffset := int32(SliceRemove(fp, out1, inp1, ReadI32(fp, inp2), int32(ast.GetAssignmentElement(inp1).TotalSize)))
-	WriteI32(outputSlicePointer, outputSliceOffset)
+	mem.WriteI32(outputSlicePointer, outputSliceOffset)
 }
 
 func opCopy(expr *ast.CXExpression, fp int) {
@@ -144,7 +145,7 @@ func opCopy(expr *ast.CXExpression, fp int) {
 	} else {
 		panic(constants.CX_RUNTIME_INVALID_ARGUMENT)
 	}
-	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), int32(count/dstElem.TotalSize))
+	mem.WriteI32(GetFinalOffset(fp, expr.Outputs[0]), int32(count/dstElem.TotalSize))
 }
 
 func buildString(expr *ast.CXExpression, fp int) []byte {
@@ -258,7 +259,7 @@ func buildString(expr *ast.CXExpression, fp int) []byte {
 }
 
 func opSprintf(expr *ast.CXExpression, fp int) {
-	WriteString(fp, string(buildString(expr, fp)), expr.Outputs[0])
+	mem.WriteString(fp, string(buildString(expr, fp)), expr.Outputs[0])
 }
 
 func opPrintf(expr *ast.CXExpression, fp int) {

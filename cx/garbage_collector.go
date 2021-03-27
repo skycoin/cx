@@ -4,6 +4,7 @@ import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/helper"
+	"github.com/skycoin/cx/cx/mem"
 	"github.com/skycoin/cx/cx/tostring"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
@@ -146,7 +147,7 @@ func updateDisplaceReference(prgrm *ast.CXProgram, updated *map[int]int, atOffse
 
 	// Adding `plusOff` to the address and updating the address pointed by
 	// element at `atOffset`.
-	WriteMemI32(prgrm.Memory, atOffset, int32(int(dsCurrAddr)+plusOff))
+	mem.WriteMemI32(prgrm.Memory, atOffset, int32(int(dsCurrAddr)+plusOff))
 
 	// Keeping a record of this address. We don't want to displace the object twice.
 	// We're using a map to speed things up a tiny bit.
@@ -242,7 +243,7 @@ func Mark(prgrm *ast.CXProgram, heapOffset int32) {
 	prgrm.Memory[heapOffset] = 1
 
 	// Setting forwarding address. This address is used to know where the object used to live on the heap. With it we can know what symbols were pointing to that dead object and then update their address.
-	WriteMemI32(prgrm.Memory, int(heapOffset+constants.MARK_SIZE), heapOffset)
+	mem.WriteMemI32(prgrm.Memory, int(heapOffset+constants.MARK_SIZE), heapOffset)
 }
 
 // MarkObjectsTree traverses and marks a possible tree of heap objects (slices of slices, slices of pointers, etc.).
@@ -299,7 +300,7 @@ func MarkObjectsTree(prgrm *ast.CXProgram, offset int, baseType int, declSpecs [
 
 // updatePointer changes the address of the pointer located at `atOffset` to `newAddress`.
 func updatePointer(prgrm *ast.CXProgram, atOffset int, toAddress int32) {
-	WriteMemI32(prgrm.Memory, atOffset, toAddress)
+	mem.WriteMemI32(prgrm.Memory, atOffset, toAddress)
 }
 
 // updatePointerTree changes the address of the pointer located at `atOffset` to `newAddress` and checks if it is the
