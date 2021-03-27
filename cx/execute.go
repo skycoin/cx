@@ -11,7 +11,7 @@ import (
 
 // Only called in this file
 // TODO: What does this do? Is it named poorly?
-func (cxprogram *CXProgram) ToCall() *CXExpression {
+func ToCall(cxprogram *CXProgram) *CXExpression {
 	for c := cxprogram.CallCounter - 1; c >= 0; c-- {
 		if cxprogram.CallStack[c].Line+1 >= len(cxprogram.CallStack[c].Operator.Expressions) {
 			// then it'll also return from this function call; continue
@@ -55,7 +55,7 @@ func (cxprogram *CXProgram) Run(untilEnd bool, nCalls *int, untilCall int) error
 			}
 
 			if call.Line >= call.Operator.Length && cxprogram.CallCounter != 0 {
-				toCall = cxprogram.ToCall()
+				toCall = ToCall(cxprogram)
 				// toCall = cxprogram.CallStack[cxprogram.CallCounter-1].Operator.Expressions[cxprogram.CallStack[cxprogram.CallCounter-1].Line + 1]
 				inName = cxprogram.CallStack[cxprogram.CallCounter-1].Operator.Name
 			} else {
