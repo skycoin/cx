@@ -3,6 +3,7 @@ package cxparser
 import (
 	"bufio"
 	"bytes"
+	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cxgo/globals"
 	"io"
@@ -56,10 +57,10 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 	// package.
 	if osPkg, err := actions.AST.GetPackage(constants.OS_PKG); err == nil {
 		if _, err := osPkg.GetGlobal(constants.OS_ARGS); err != nil {
-			arg0 := cxcore.MakeArgument(constants.OS_ARGS, "", -1).AddType(constants.TypeNames[constants.TYPE_UNDEFINED])
+			arg0 := ast.MakeArgument(constants.OS_ARGS, "", -1).AddType(constants.TypeNames[constants.TYPE_UNDEFINED])
 			arg0.Package = osPkg
 
-			arg1 := cxcore.MakeArgument(constants.OS_ARGS, "", -1).AddType(constants.TypeNames[constants.TYPE_STR])
+			arg1 := ast.MakeArgument(constants.OS_ARGS, "", -1).AddType(constants.TypeNames[constants.TYPE_STR])
 			arg1 = actions.DeclarationSpecifiers(arg1, []int{0}, constants.DECL_BASIC)
 			arg1 = actions.DeclarationSpecifiers(arg1, []int{0}, constants.DECL_SLICE)
 
@@ -93,7 +94,7 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 // lexerStep0 performs a first pass for the CX cxgo. Globals, packages and
 // custom types are added to `cxgo0.PRGRM0`.
 func lexerStep0(srcStrs, srcNames []string) int {
-	var prePkg *cxcore.CXPackage
+	var prePkg *ast.CXPackage
 	parseErrors := 0
 
 	reMultiCommentOpen := regexp.MustCompile(`/\*`)
@@ -157,7 +158,7 @@ func lexerStep0(srcStrs, srcNames []string) int {
 				if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
 					if pkg, err := cxgo0.PRGRM0.GetPackage(match[len(match)-1]); err != nil {
 						// then it hasn't been added
-						newPkg := cxcore.MakePackage(match[len(match)-1])
+						newPkg := ast.MakePackage(match[len(match)-1])
 						cxgo0.PRGRM0.AddPackage(newPkg)
 						prePkg = newPkg
 					} else {
@@ -181,7 +182,7 @@ func lexerStep0(srcStrs, srcNames []string) int {
 							"No package defined")
 					} else if _, err := cxgo0.PRGRM0.GetStruct(match[len(match)-1], prePkg.Name); err != nil {
 						// then it hasn't been added
-						strct := cxcore.MakeStruct(match[len(match)-1])
+						strct := ast.MakeStruct(match[len(match)-1])
 						prePkg.AddStruct(strct)
 					}
 				}
@@ -257,7 +258,7 @@ func lexerStep0(srcStrs, srcNames []string) int {
 				if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
 					if pkg, err := cxgo0.PRGRM0.GetPackage(match[len(match)-1]); err != nil {
 						// then it hasn't been added
-						prePkg = cxcore.MakePackage(match[len(match)-1])
+						prePkg = ast.MakePackage(match[len(match)-1])
 						cxgo0.PRGRM0.AddPackage(prePkg)
 					} else {
 						prePkg = pkg
@@ -328,7 +329,7 @@ func lexerStep0(srcStrs, srcNames []string) int {
 				if match := reGlblName.FindStringSubmatch(string(line)); match != nil {
 					if _, err := prePkg.GetGlobal(match[len(match)-1]); err != nil {
 						// then it hasn't been added
-						arg := cxcore.MakeArgument(match[len(match)-1], "", 0)
+						arg := ast.MakeArgument(match[len(match)-1], "", 0)
 						arg.Offset = -1
 						arg.Package = prePkg
 						prePkg.AddGlobal(arg)
@@ -356,13 +357,13 @@ func lexerStep0(srcStrs, srcNames []string) int {
 	return parseErrors
 }
 
-func AddInitFunction(prgrm *cxcore.CXProgram) error {
+func AddInitFunction(prgrm *ast.CXProgram) error {
 	mainPkg, err := prgrm.GetPackage(constants.MAIN_PKG)
 	if err != nil {
 		return err
 	}
 
-	initFn := cxcore.MakeFunction(constants.SYS_INIT_FUNC, actions.CurrentFile, actions.LineNo)
+	initFn := ast.MakeFunction(constants.SYS_INIT_FUNC, actions.CurrentFile, actions.LineNo)
 	mainPkg.AddFunction(initFn)
 
 	//Init Expressions

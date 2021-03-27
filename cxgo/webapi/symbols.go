@@ -1,6 +1,7 @@
 package api
 
 import (
+	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"unicode"
 
@@ -15,7 +16,7 @@ type ProgramMetaResp struct {
 	CallStackSize  int `json:"call_stack_size"`
 }
 
-func extractProgramMeta(pg *cxcore.CXProgram) ProgramMetaResp {
+func extractProgramMeta(pg *ast.CXProgram) ProgramMetaResp {
 	return ProgramMetaResp{
 		UsedHeapMemory: pg.HeapPointer - pg.HeapStartsAt,
 		FreeHeapMemory: pg.HeapSize - pg.HeapStartsAt,
@@ -39,7 +40,7 @@ type ExportedSymbolsResp struct {
 	Globals   []ExportedSymbol `json:"globals"`
 }
 
-func extractExportedSymbols(pkg *cxcore.CXPackage) ExportedSymbolsResp {
+func extractExportedSymbols(pkg *ast.CXPackage) ExportedSymbolsResp {
 	resp := ExportedSymbolsResp{
 		Functions: make([]ExportedSymbol, 0, len(pkg.Functions)),
 		Structs:   make([]ExportedSymbol, 0, len(pkg.Structs)),
@@ -67,7 +68,7 @@ func extractExportedSymbols(pkg *cxcore.CXPackage) ExportedSymbolsResp {
 	return resp
 }
 
-func displayCXFunction(pkg *cxcore.CXPackage, f *cxcore.CXFunction) ExportedSymbol {
+func displayCXFunction(pkg *ast.CXPackage, f *ast.CXFunction) ExportedSymbol {
 	return ExportedSymbol{
 		Name:      f.Name,
 		Signature: cxcore.SignatureStringOfFunction(pkg, f),
@@ -76,7 +77,7 @@ func displayCXFunction(pkg *cxcore.CXPackage, f *cxcore.CXFunction) ExportedSymb
 	}
 }
 
-func displayCXStruct(s *cxcore.CXStruct) ExportedSymbol {
+func displayCXStruct(s *ast.CXStruct) ExportedSymbol {
 	return ExportedSymbol{
 		Name:      s.Name,
 		Signature: cxcore.SignatureStringOfStruct(s),
@@ -85,7 +86,7 @@ func displayCXStruct(s *cxcore.CXStruct) ExportedSymbol {
 	}
 }
 
-func displayCXGlobal(a *cxcore.CXArgument) ExportedSymbol {
+func displayCXGlobal(a *ast.CXArgument) ExportedSymbol {
 	return ExportedSymbol{
 		Name:      a.Name,
 		Signature: nil,

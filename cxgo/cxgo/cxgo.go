@@ -4,6 +4,7 @@ package cxgo
 
 import (
 	__yyfmt__ "fmt"
+	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 )
 
@@ -54,20 +55,20 @@ type yySymType struct {
 
 	line int
 
-	argument  *cxcore.CXArgument
-	arguments []*cxcore.CXArgument
+	argument  *ast.CXArgument
+	arguments []*ast.CXArgument
 
-	expression  *cxcore.CXExpression
-	expressions []*cxcore.CXExpression
+	expression  *ast.CXExpression
+	expressions []*ast.CXExpression
 
 	SelectStatement  actions.SelectStatement
 	SelectStatements []actions.SelectStatement
 
 	ReturnExpressions actions.ReturnExpressions
 
-	arrayArguments [][]*cxcore.CXExpression
+	arrayArguments [][]*ast.CXExpression
 
-	function *cxcore.CXFunction
+	function *ast.CXFunction
 }
 
 type yyXError struct {
@@ -1664,7 +1665,7 @@ yynewstate:
 		}
 	case 16:
 		{
-			yyVAL.arguments = []*cxcore.CXArgument{yyS[yypt-1].argument}
+			yyVAL.arguments = []*ast.CXArgument{yyS[yypt-1].argument}
 		}
 	case 17:
 		{
@@ -1705,7 +1706,7 @@ yynewstate:
 		}
 	case 27:
 		{
-			yyVAL.arguments = []*cxcore.CXArgument{yyS[yypt-0].argument}
+			yyVAL.arguments = []*ast.CXArgument{yyS[yypt-0].argument}
 		}
 	case 28:
 		{
@@ -1721,7 +1722,7 @@ yynewstate:
 	case 31:
 		{
 			if pkg, err := actions.AST.GetCurrentPackage(); err == nil {
-				arg := cxcore.MakeArgument("", actions.CurrentFile, actions.LineNo)
+				arg := ast.MakeArgument("", actions.CurrentFile, actions.LineNo)
 				arg.AddType(constants.TypeNames[constants.TYPE_UNDEFINED])
 				arg.Name = yyS[yypt-0].tok
 				arg.Package = pkg
@@ -1737,12 +1738,12 @@ yynewstate:
 	case 33:
 		{
 			arg := actions.DeclarationSpecifiersStruct(yyS[yypt-0].tok, "", false, actions.CurrentFile, actions.LineNo)
-			yyVAL.arguments = []*cxcore.CXArgument{arg}
+			yyVAL.arguments = []*ast.CXArgument{arg}
 		}
 	case 34:
 		{
 			arg := actions.DeclarationSpecifiersBasic(yyS[yypt-0].i)
-			yyVAL.arguments = []*cxcore.CXArgument{arg}
+			yyVAL.arguments = []*ast.CXArgument{arg}
 		}
 	case 35:
 		{
@@ -1766,7 +1767,7 @@ yynewstate:
 		}
 	case 39:
 		{
-			arg := cxcore.MakeArgument("", actions.CurrentFile, actions.LineNo).AddType("func")
+			arg := ast.MakeArgument("", actions.CurrentFile, actions.LineNo).AddType("func")
 			arg.Inputs = yyS[yypt-1].arguments
 			arg.Outputs = yyS[yypt-0].arguments
 			yyVAL.argument = actions.DeclarationSpecifiers(arg, []int{0}, constants.DECL_FUNC)
@@ -1864,17 +1865,17 @@ yynewstate:
 	case 62:
 		{
 			if yyS[yypt-0].expressions[0].IsStructLiteral {
-				yyVAL.expressions = actions.StructLiteralAssignment([]*cxcore.CXExpression{actions.StructLiteralFields(yyS[yypt-2].tok)}, yyS[yypt-0].expressions)
+				yyVAL.expressions = actions.StructLiteralAssignment([]*ast.CXExpression{actions.StructLiteralFields(yyS[yypt-2].tok)}, yyS[yypt-0].expressions)
 			} else {
-				yyVAL.expressions = actions.Assignment([]*cxcore.CXExpression{actions.StructLiteralFields(yyS[yypt-2].tok)}, "=", yyS[yypt-0].expressions)
+				yyVAL.expressions = actions.Assignment([]*ast.CXExpression{actions.StructLiteralFields(yyS[yypt-2].tok)}, "=", yyS[yypt-0].expressions)
 			}
 		}
 	case 63:
 		{
 			if yyS[yypt-0].expressions[0].IsStructLiteral {
-				yyVAL.expressions = append(yyS[yypt-4].expressions, actions.StructLiteralAssignment([]*cxcore.CXExpression{actions.StructLiteralFields(yyS[yypt-2].tok)}, yyS[yypt-0].expressions)...)
+				yyVAL.expressions = append(yyS[yypt-4].expressions, actions.StructLiteralAssignment([]*ast.CXExpression{actions.StructLiteralFields(yyS[yypt-2].tok)}, yyS[yypt-0].expressions)...)
 			} else {
-				yyVAL.expressions = append(yyS[yypt-4].expressions, actions.Assignment([]*cxcore.CXExpression{actions.StructLiteralFields(yyS[yypt-2].tok)}, "=", yyS[yypt-0].expressions)...)
+				yyVAL.expressions = append(yyS[yypt-4].expressions, actions.Assignment([]*ast.CXExpression{actions.StructLiteralFields(yyS[yypt-2].tok)}, "=", yyS[yypt-0].expressions)...)
 			}
 		}
 	case 64:
@@ -2004,7 +2005,7 @@ yynewstate:
 		}
 	case 91:
 		{
-			var exprs []*cxcore.CXExpression
+			var exprs []*ast.CXExpression
 			for _, str := range yyS[yypt-0].stringA {
 				expr := actions.WritePrimary(constants.TYPE_AFF, encoder.Serialize(str), false)
 				expr[len(expr)-1].IsArrayLiteral = true
@@ -2424,16 +2425,16 @@ yynewstate:
 	case 225:
 		{
 			if pkg, err := actions.AST.GetCurrentPackage(); err == nil {
-				expr := cxcore.MakeExpression(cxcore.Natives[cxcore.OP_JMP], actions.CurrentFile, actions.LineNo)
+				expr := ast.MakeExpression(cxcore.Natives[cxcore.OP_JMP], actions.CurrentFile, actions.LineNo)
 				expr.Package = pkg
 				expr.Label = yyS[yypt-1].tok
 
-				arg := cxcore.MakeArgument("", actions.CurrentFile, actions.LineNo).AddType("bool")
+				arg := ast.MakeArgument("", actions.CurrentFile, actions.LineNo).AddType("bool")
 				arg.Package = pkg
 
 				expr.AddInput(arg)
 
-				yyVAL.expressions = []*cxcore.CXExpression{expr}
+				yyVAL.expressions = []*ast.CXExpression{expr}
 			} else {
 				panic(err)
 			}

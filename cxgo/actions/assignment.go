@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"os"
 
@@ -9,7 +10,7 @@ import (
 
 // assignStructLiteralFields converts a struct literal to a series of struct field assignments.
 // For example, `foo = Item{x: 10, y: 20}` is converted to: `foo.x = 10; foo.y = 20;`.
-func assignStructLiteralFields(to []*cxcore.CXExpression, from []*cxcore.CXExpression, name string) []*cxcore.CXExpression {
+func assignStructLiteralFields(to []*ast.CXExpression, from []*ast.CXExpression, name string) []*ast.CXExpression {
 	for _, f := range from {
 		f.Outputs[0].Name = name
 
@@ -27,7 +28,7 @@ func assignStructLiteralFields(to []*cxcore.CXExpression, from []*cxcore.CXExpre
 
 // StructLiteralAssignment handles struct literals, e.g. `Item{x: 10, y: 20}`, and references to
 // struct literals, e.g. `&Item{x: 10, y: 20}` in assignment expressions.
-func StructLiteralAssignment(to []*cxcore.CXExpression, from []*cxcore.CXExpression) []*cxcore.CXExpression {
+func StructLiteralAssignment(to []*ast.CXExpression, from []*ast.CXExpression) []*ast.CXExpression {
 	lastFrom := from[len(from)-1]
 	// If the last expression in `from` is declared as pointer
 	// then it means the whole struct literal needs to be passed by reference.
@@ -38,7 +39,7 @@ func StructLiteralAssignment(to []*cxcore.CXExpression, from []*cxcore.CXExpress
 		// otherwise we'd be trying to assign the fields to a nil value.
 		fOut := lastFrom.Outputs[0]
 		auxName := cxcore.MakeGenSym(constants.LOCAL_PREFIX)
-		aux := cxcore.MakeArgument(auxName, lastFrom.FileName, lastFrom.FileLine).AddType(constants.TypeNames[fOut.Type])
+		aux := ast.MakeArgument(auxName, lastFrom.FileName, lastFrom.FileLine).AddType(constants.TypeNames[fOut.Type])
 		aux.DeclarationSpecifiers = append(aux.DeclarationSpecifiers, constants.DECL_POINTER)
 		aux.CustomType = fOut.CustomType
 		aux.Size = fOut.Size
@@ -46,26 +47,26 @@ func StructLiteralAssignment(to []*cxcore.CXExpression, from []*cxcore.CXExpress
 		aux.PreviouslyDeclared = true
 		aux.Package = lastFrom.Package
 
-		declExpr := cxcore.MakeExpression(nil, lastFrom.FileName, lastFrom.FileLine)
+		declExpr := ast.MakeExpression(nil, lastFrom.FileName, lastFrom.FileLine)
 		declExpr.Package = lastFrom.Package
 		declExpr.AddOutput(aux)
 
 		from = assignStructLiteralFields(to, from, auxName)
 
-		assignExpr := cxcore.MakeExpression(cxcore.Natives[cxcore.OP_IDENTITY], lastFrom.FileName, lastFrom.FileLine)
+		assignExpr := ast.MakeExpression(cxcore.Natives[cxcore.OP_IDENTITY], lastFrom.FileName, lastFrom.FileLine)
 		assignExpr.Package = lastFrom.Package
-		out := cxcore.MakeArgument(to[0].Outputs[0].Name, lastFrom.FileName, lastFrom.FileLine)
+		out := ast.MakeArgument(to[0].Outputs[0].Name, lastFrom.FileName, lastFrom.FileLine)
 		out.PassBy = constants.PASSBY_REFERENCE
 		out.Package = lastFrom.Package
 		assignExpr.AddOutput(out)
 		assignExpr.AddInput(aux)
 
-		from = append([]*cxcore.CXExpression{declExpr}, from...)
+		from = append([]*ast.CXExpression{declExpr}, from...)
 		return append(from, assignExpr)
 	}
 }
 
-func ArrayLiteralAssignment(to []*cxcore.CXExpression, from []*cxcore.CXExpression) []*cxcore.CXExpression {
+func ArrayLiteralAssignment(to []*ast.CXExpression, from []*ast.CXExpression) []*ast.CXExpression {
 	for _, f := range from {
 		f.Outputs[0].Name = to[0].Outputs[0].Name
 		f.Outputs[0].DereferenceOperations = append(f.Outputs[0].DereferenceOperations, constants.DEREF_ARRAY)
@@ -74,7 +75,7 @@ func ArrayLiteralAssignment(to []*cxcore.CXExpression, from []*cxcore.CXExpressi
 	return from
 }
 
-func ShortAssignment(expr *cxcore.CXExpression, to []*cxcore.CXExpression, from []*cxcore.CXExpression, pkg *cxcore.CXPackage, idx int) []*cxcore.CXExpression {
+func ShortAssignment(expr *ast.CXExpression, to []*ast.CXExpression, from []*ast.CXExpression, pkg *ast.CXPackage, idx int) []*ast.CXExpression {
 	expr.AddInput(to[0].Outputs[0])
 	expr.AddOutput(to[0].Outputs[0])
 	expr.Package = pkg
@@ -82,7 +83,7 @@ func ShortAssignment(expr *cxcore.CXExpression, to []*cxcore.CXExpression, from 
 	if from[idx].Operator == nil {
 		expr.AddInput(from[idx].Outputs[0])
 	} else {
-		sym := cxcore.MakeArgument(cxcore.MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(constants.TypeNames[from[idx].Inputs[0].Type])
+		sym := ast.MakeArgument(cxcore.MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(constants.TypeNames[from[idx].Inputs[0].Type])
 		sym.Package = pkg
 		sym.PreviouslyDeclared = true
 		from[idx].AddOutput(sym)
@@ -91,7 +92,7 @@ func ShortAssignment(expr *cxcore.CXExpression, to []*cxcore.CXExpression, from 
 
 	//must check if from expression is naked previously declared variable
 	if len(from) == 1 && from[0].Operator == nil && len(from[0].Outputs) > 0 && len(from[0].Inputs) == 0 {
-		return []*cxcore.CXExpression{expr}
+		return []*ast.CXExpression{expr}
 	} else {
 		return append(from, expr)
 	}
@@ -102,7 +103,7 @@ func ShortAssignment(expr *cxcore.CXExpression, to []*cxcore.CXExpression, from 
 // This function is needed because CX has some standard library functions that return cxcore.TYPE_UNDEFINED
 // arguments. In these cases, the output type depends on its input arguments' type. In the rest of
 // the cases, we can simply use the function's return type.
-func getOutputType(expr *cxcore.CXExpression) *cxcore.CXArgument {
+func getOutputType(expr *ast.CXExpression) *ast.CXArgument {
 	if expr.Operator.Outputs[0].Type != constants.TYPE_UNDEFINED {
 		return expr.Operator.Outputs[0]
 	}
@@ -111,7 +112,7 @@ func getOutputType(expr *cxcore.CXExpression) *cxcore.CXArgument {
 }
 
 // Assignment handles assignment statements with different operators, like =, :=, +=, *=.
-func Assignment(to []*cxcore.CXExpression, assignOp string, from []*cxcore.CXExpression) []*cxcore.CXExpression {
+func Assignment(to []*ast.CXExpression, assignOp string, from []*ast.CXExpression) []*ast.CXExpression {
 	idx := len(from) - 1
 
 	// Checking if we're trying to assign stuff from a function call
@@ -126,22 +127,22 @@ func Assignment(to []*cxcore.CXExpression, assignOp string, from []*cxcore.CXExp
 		panic(err)
 	}
 
-	var expr *cxcore.CXExpression
+	var expr *ast.CXExpression
 
 	switch assignOp {
 	case ":=":
-		expr = cxcore.MakeExpression(nil, CurrentFile, LineNo)
+		expr = ast.MakeExpression(nil, CurrentFile, LineNo)
 		expr.Package = pkg
 
-		var sym *cxcore.CXArgument
+		var sym *ast.CXArgument
 
 		if from[idx].Operator == nil {
 			// then it's a literal
-			sym = cxcore.MakeArgument(to[0].Outputs[0].Name, CurrentFile, LineNo).AddType(constants.TypeNames[from[idx].Outputs[0].Type])
+			sym = ast.MakeArgument(to[0].Outputs[0].Name, CurrentFile, LineNo).AddType(constants.TypeNames[from[idx].Outputs[0].Type])
 		} else {
 			outTypeArg := getOutputType(from[idx])
 
-			sym = cxcore.MakeArgument(to[0].Outputs[0].Name, CurrentFile, LineNo).AddType(constants.TypeNames[outTypeArg.Type])
+			sym = ast.MakeArgument(to[0].Outputs[0].Name, CurrentFile, LineNo).AddType(constants.TypeNames[outTypeArg.Type])
 
 			if from[idx].IsArrayLiteral {
 				sym.Size = from[idx].Inputs[0].Size
@@ -168,36 +169,36 @@ func Assignment(to []*cxcore.CXExpression, assignOp string, from []*cxcore.CXExp
 			toExpr.Outputs[0].IsShortAssignmentDeclaration = true
 		}
 
-		to = append([]*cxcore.CXExpression{expr}, to...)
+		to = append([]*ast.CXExpression{expr}, to...)
 	case ">>=":
-		expr = cxcore.MakeExpression(cxcore.Natives[cxcore.OP_BITSHR], CurrentFile, LineNo)
+		expr = ast.MakeExpression(cxcore.Natives[cxcore.OP_BITSHR], CurrentFile, LineNo)
 		return ShortAssignment(expr, to, from, pkg, idx)
 	case "<<=":
-		expr = cxcore.MakeExpression(cxcore.Natives[cxcore.OP_BITSHL], CurrentFile, LineNo)
+		expr = ast.MakeExpression(cxcore.Natives[cxcore.OP_BITSHL], CurrentFile, LineNo)
 		return ShortAssignment(expr, to, from, pkg, idx)
 	case "+=":
-		expr = cxcore.MakeExpression(cxcore.Natives[cxcore.OP_ADD], CurrentFile, LineNo)
+		expr = ast.MakeExpression(cxcore.Natives[cxcore.OP_ADD], CurrentFile, LineNo)
 		return ShortAssignment(expr, to, from, pkg, idx)
 	case "-=":
-		expr = cxcore.MakeExpression(cxcore.Natives[cxcore.OP_SUB], CurrentFile, LineNo)
+		expr = ast.MakeExpression(cxcore.Natives[cxcore.OP_SUB], CurrentFile, LineNo)
 		return ShortAssignment(expr, to, from, pkg, idx)
 	case "*=":
-		expr = cxcore.MakeExpression(cxcore.Natives[cxcore.OP_MUL], CurrentFile, LineNo)
+		expr = ast.MakeExpression(cxcore.Natives[cxcore.OP_MUL], CurrentFile, LineNo)
 		return ShortAssignment(expr, to, from, pkg, idx)
 	case "/=":
-		expr = cxcore.MakeExpression(cxcore.Natives[cxcore.OP_DIV], CurrentFile, LineNo)
+		expr = ast.MakeExpression(cxcore.Natives[cxcore.OP_DIV], CurrentFile, LineNo)
 		return ShortAssignment(expr, to, from, pkg, idx)
 	case "%=":
-		expr = cxcore.MakeExpression(cxcore.Natives[cxcore.OP_MOD], CurrentFile, LineNo)
+		expr = ast.MakeExpression(cxcore.Natives[cxcore.OP_MOD], CurrentFile, LineNo)
 		return ShortAssignment(expr, to, from, pkg, idx)
 	case "&=":
-		expr = cxcore.MakeExpression(cxcore.Natives[cxcore.OP_BITAND], CurrentFile, LineNo)
+		expr = ast.MakeExpression(cxcore.Natives[cxcore.OP_BITAND], CurrentFile, LineNo)
 		return ShortAssignment(expr, to, from, pkg, idx)
 	case "^=":
-		expr = cxcore.MakeExpression(cxcore.Natives[cxcore.OP_BITXOR], CurrentFile, LineNo)
+		expr = ast.MakeExpression(cxcore.Natives[cxcore.OP_BITXOR], CurrentFile, LineNo)
 		return ShortAssignment(expr, to, from, pkg, idx)
 	case "|=":
-		expr = cxcore.MakeExpression(cxcore.Natives[cxcore.OP_BITOR], CurrentFile, LineNo)
+		expr = ast.MakeExpression(cxcore.Natives[cxcore.OP_BITOR], CurrentFile, LineNo)
 		return ShortAssignment(expr, to, from, pkg, idx)
 	}
 

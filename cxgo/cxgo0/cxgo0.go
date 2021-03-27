@@ -4,14 +4,14 @@ package cxgo0
 
 import (
 	__yyfmt__ "fmt"
+	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 )
 
 import (
 	// "fmt"
 	"bytes"
-	// "os"
-	. "github.com/skycoin/cx/cx"
+
 	. "github.com/skycoin/cx/cxgo/actions"
 )
 
@@ -21,7 +21,7 @@ import (
    - ./bin/goyacc -o cxgo/cxgo0/cxgo0.go cxgo/cxgo0/cxgo0.y
 */
 
-var PRGRM0 *CXProgram
+var PRGRM0 *ast.CXProgram
 
 var lineNo int = -1
 var replMode bool = false
@@ -36,7 +36,7 @@ func Parse(code string) int {
 	return yyParse(NewLexer(codeBuf))
 }
 
-func PreFunctionDeclaration(fn *CXFunction, inputs []*CXArgument, outputs []*CXArgument) {
+func PreFunctionDeclaration(fn *ast.CXFunction, inputs []*ast.CXArgument, outputs []*ast.CXArgument) {
 	// adding inputs, outputs
 	for _, inp := range inputs {
 		fn.AddInput(inp)
@@ -67,13 +67,13 @@ type yySymType struct {
 
 	line int
 
-	argument  *CXArgument
-	arguments []*CXArgument
+	argument  *ast.CXArgument
+	arguments []*ast.CXArgument
 
-	expression  *CXExpression
-	expressions []*CXExpression
+	expression  *ast.CXExpression
+	expressions []*ast.CXExpression
 
-	function *CXFunction
+	function *ast.CXFunction
 }
 
 type yyXError struct {
@@ -1637,7 +1637,7 @@ yynewstate:
 		}
 	case 13:
 		{
-			yyVAL.arguments = []*CXArgument{yyS[yypt-1].argument}
+			yyVAL.arguments = []*ast.CXArgument{yyS[yypt-1].argument}
 		}
 	case 14:
 		{
@@ -1654,7 +1654,7 @@ yynewstate:
 	case 17:
 		{
 			if pkg, err := PRGRM0.GetCurrentPackage(); err == nil {
-				fn := MakeFunction(yyS[yypt-0].tok, CurrentFileName, lineNo)
+				fn := ast.MakeFunction(yyS[yypt-0].tok, CurrentFileName, lineNo)
 				pkg.AddFunction(fn)
 
 				yyVAL.function = fn
@@ -1671,7 +1671,7 @@ yynewstate:
 			fnName := yyS[yypt-2].arguments[0].CustomType.Name + "." + yyS[yypt-0].tok
 
 			if pkg, err := PRGRM0.GetCurrentPackage(); err == nil {
-				fn := MakeFunction(fnName, CurrentFileName, lineNo)
+				fn := ast.MakeFunction(fnName, CurrentFileName, lineNo)
 				pkg.AddFunction(fn)
 
 				fn.AddInput(yyS[yypt-2].arguments[0])
@@ -1699,7 +1699,7 @@ yynewstate:
 		}
 	case 24:
 		{
-			yyVAL.arguments = []*CXArgument{yyS[yypt-0].argument}
+			yyVAL.arguments = []*ast.CXArgument{yyS[yypt-0].argument}
 		}
 	case 25:
 		{
@@ -1715,7 +1715,7 @@ yynewstate:
 	case 30:
 		{
 			if pkg, err := PRGRM0.GetCurrentPackage(); err == nil {
-				arg := MakeArgument("", CurrentFile, LineNo)
+				arg := ast.MakeArgument("", CurrentFile, LineNo)
 				arg.AddType(constants.TypeNames[constants.TYPE_UNDEFINED])
 				arg.Name = yyS[yypt-0].tok
 				arg.Package = pkg
@@ -1731,12 +1731,12 @@ yynewstate:
 	case 32:
 		{
 			arg := DeclarationSpecifiersStruct(yyS[yypt-0].tok, "", false, CurrentFile, LineNo)
-			yyVAL.arguments = []*CXArgument{arg}
+			yyVAL.arguments = []*ast.CXArgument{arg}
 		}
 	case 33:
 		{
 			arg := DeclarationSpecifiersBasic(yyS[yypt-0].i)
-			yyVAL.arguments = []*CXArgument{arg}
+			yyVAL.arguments = []*ast.CXArgument{arg}
 		}
 	case 34:
 		{
@@ -1758,7 +1758,7 @@ yynewstate:
 		}
 	case 38:
 		{
-			arg := MakeArgument("", CurrentFile, LineNo).AddType("func")
+			arg := ast.MakeArgument("", CurrentFile, LineNo).AddType("func")
 			arg.Inputs = yyS[yypt-1].arguments
 			arg.Outputs = yyS[yypt-0].arguments
 			yyVAL.argument = DeclarationSpecifiers(arg, []int{0}, constants.DECL_FUNC)

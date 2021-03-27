@@ -2,6 +2,7 @@ package cxcore
 
 import (
 	"fmt"
+	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"strconv"
 	// "github.com/skycoin/skycoin/src/cipher/encoder"
@@ -24,7 +25,7 @@ var ofMessages = map[string]string{
 }
 
 // GetInferActions ...
-func GetInferActions(inp *CXArgument, fp int) []string {
+func GetInferActions(inp *ast.CXArgument, fp int) []string {
 	inpOffset := GetFinalOffset(fp, inp)
 
 	off := Deserialize_i32(PROGRAM.Memory[inpOffset : inpOffset+constants.TYPE_POINTER_SIZE])
@@ -51,7 +52,7 @@ func GetInferActions(inp *CXArgument, fp int) []string {
 	return result
 }
 
-func opAffPrint(expr *CXExpression, fp int) {
+func opAffPrint(expr *ast.CXExpression, fp int) {
 	inp1 := expr.Inputs[0]
 	fmt.Println(GetInferActions(inp1, fp))
 	// for _, aff := range GetInferActions(inp1, fp) {
@@ -60,7 +61,7 @@ func opAffPrint(expr *CXExpression, fp int) {
 }
 
 // CallAffPredicate ...
-func CallAffPredicate(fn *CXFunction, predValue []byte) byte {
+func CallAffPredicate(fn *ast.CXFunction, predValue []byte) byte {
 	prevCall := &PROGRAM.CallStack[PROGRAM.CallCounter]
 
 	PROGRAM.CallCounter++
@@ -137,7 +138,7 @@ func CallAffPredicate(fn *CXFunction, predValue []byte) byte {
 // }
 
 // Used by QueryArgument to query inputs and then outputs from expressions.
-func queryParam(fn *CXFunction, args []*CXArgument, exprLbl string, argOffsetB []byte, affOffset *int) {
+func queryParam(fn *ast.CXFunction, args []*ast.CXArgument, exprLbl string, argOffsetB []byte, affOffset *int) {
 	for i, arg := range args {
 
 		var typOffset int
@@ -184,7 +185,7 @@ func queryParam(fn *CXFunction, args []*CXArgument, exprLbl string, argOffsetB [
 }
 
 // QueryArgument ...
-func QueryArgument(fn *CXFunction, expr *CXExpression, argOffsetB []byte, affOffset *int) {
+func QueryArgument(fn *ast.CXFunction, expr *ast.CXExpression, argOffsetB []byte, affOffset *int) {
 	for _, ex := range expr.Function.Expressions {
 		if ex.Label == "" {
 			// it's a non-labeled expression
@@ -197,7 +198,7 @@ func QueryArgument(fn *CXFunction, expr *CXExpression, argOffsetB []byte, affOff
 }
 
 // QueryExpressions ...
-func QueryExpressions(fn *CXFunction, expr *CXExpression, exprOffsetB []byte, affOffset *int) {
+func QueryExpressions(fn *ast.CXFunction, expr *ast.CXExpression, exprOffsetB []byte, affOffset *int) {
 	for _, ex := range expr.Function.Expressions {
 		if ex.Operator == nil || ex.Label == "" {
 			// then it's a variable declaration
@@ -235,7 +236,7 @@ func QueryExpressions(fn *CXFunction, expr *CXExpression, exprOffsetB []byte, af
 	}
 }
 
-func getSignatureSlice(params []*CXArgument) int {
+func getSignatureSlice(params []*ast.CXArgument) int {
 	var sliceOffset int
 	for _, param := range params {
 
@@ -259,7 +260,7 @@ func getSignatureSlice(params []*CXArgument) int {
 }
 
 // Helper function for QueryStructure. Used to query all the structs in a particular package
-func queryStructsInPackage(fn *CXFunction, strctOffsetB []byte, affOffset *int, pkg *CXPackage) {
+func queryStructsInPackage(fn *ast.CXFunction, strctOffsetB []byte, affOffset *int, pkg *ast.CXPackage) {
 	for _, f := range pkg.Structs {
 		// strctNameB := encoder.Serialize(f.Name)
 
@@ -283,7 +284,7 @@ func queryStructsInPackage(fn *CXFunction, strctOffsetB []byte, affOffset *int, 
 }
 
 // QueryStructure ...
-func QueryStructure(fn *CXFunction, expr *CXExpression, strctOffsetB []byte, affOffset *int) {
+func QueryStructure(fn *ast.CXFunction, expr *ast.CXExpression, strctOffsetB []byte, affOffset *int) {
 	queryStructsInPackage(fn, strctOffsetB, affOffset, expr.Package)
 	for _, imp := range expr.Package.Imports {
 		queryStructsInPackage(fn, strctOffsetB, affOffset, imp)
@@ -291,7 +292,7 @@ func QueryStructure(fn *CXFunction, expr *CXExpression, strctOffsetB []byte, aff
 }
 
 // QueryFunction ...
-func QueryFunction(fn *CXFunction, expr *CXExpression, fnOffsetB []byte, affOffset *int) {
+func QueryFunction(fn *ast.CXFunction, expr *ast.CXExpression, fnOffsetB []byte, affOffset *int) {
 	for _, f := range expr.Package.Functions {
 		if f.Name == constants.SYS_INIT_FUNC {
 			continue
@@ -333,7 +334,7 @@ func QueryFunction(fn *CXFunction, expr *CXExpression, fnOffsetB []byte, affOffs
 }
 
 // QueryCaller ...
-func QueryCaller(fn *CXFunction, expr *CXExpression, callerOffsetB []byte, affOffset *int) {
+func QueryCaller(fn *ast.CXFunction, expr *ast.CXExpression, callerOffsetB []byte, affOffset *int) {
 	if PROGRAM.CallCounter == 0 {
 		// then it's entry point
 		return
@@ -370,7 +371,7 @@ func QueryCaller(fn *CXFunction, expr *CXExpression, callerOffsetB []byte, affOf
 }
 
 // QueryProgram ...
-func QueryProgram(fn *CXFunction, expr *CXExpression, prgrmOffsetB []byte, affOffset *int) {
+func QueryProgram(fn *ast.CXFunction, expr *ast.CXExpression, prgrmOffsetB []byte, affOffset *int) {
 	prgrmOffset := AllocateSeq(constants.OBJECT_HEADER_SIZE + constants.I32_SIZE + constants.I64_SIZE + constants.STR_SIZE + constants.I32_SIZE)
 	// Callcounter
 	WriteI32(prgrmOffset+constants.OBJECT_HEADER_SIZE, int32(PROGRAM.CallCounter))
@@ -416,8 +417,8 @@ func QueryProgram(fn *CXFunction, expr *CXExpression, prgrmOffsetB []byte, affOf
 	}
 }
 
-func getTarget(inp2 *CXArgument, fp int, tgtElt *string, tgtArgType *string, tgtArgIndex *int,
-	tgtPkg *CXPackage, tgtFn *CXFunction, tgtExpr *CXExpression) {
+func getTarget(inp2 *ast.CXArgument, fp int, tgtElt *string, tgtArgType *string, tgtArgIndex *int,
+	tgtPkg *ast.CXPackage, tgtFn *ast.CXFunction, tgtExpr *ast.CXExpression) {
 	for _, aff := range GetInferActions(inp2, fp) {
 		switch aff {
 		case "prgrm":
@@ -481,9 +482,9 @@ func getTarget(inp2 *CXArgument, fp int, tgtElt *string, tgtArgType *string, tgt
 	}
 }
 
-func getAffordances(inp1 *CXArgument, fp int,
+func getAffordances(inp1 *ast.CXArgument, fp int,
 	tgtElt string, tgtArgType string, tgtArgIndex int,
-	tgtPkg *CXPackage, tgtFn *CXFunction, tgtExpr *CXExpression,
+	tgtPkg *ast.CXPackage, tgtFn *ast.CXFunction, tgtExpr *ast.CXExpression,
 	affMsgs map[string]string,
 	affs *[]string) {
 	var fltrElt string
@@ -608,16 +609,16 @@ func getAffordances(inp1 *CXArgument, fp int,
 	}
 }
 
-func opAffOn(expr *CXExpression, fp int) {
+func opAffOn(expr *ast.CXExpression, fp int) {
 	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
 
 	prevPkg := PROGRAM.CurrentPackage
 	prevFn := prevPkg.CurrentFunction
 	prevExpr := prevFn.CurrentExpression
 
-	var tgtPkg = CXPackage(*prevPkg)
-	var tgtFn = CXFunction(*expr.Function)
-	var tgtExpr = CXExpression(*prevExpr)
+	var tgtPkg = ast.CXPackage(*prevPkg)
+	var tgtFn = ast.CXFunction(*expr.Function)
+	var tgtExpr = ast.CXExpression(*prevExpr)
 
 	// processing the target
 	var tgtElt string
@@ -644,16 +645,16 @@ func opAffOn(expr *CXExpression, fp int) {
 	}
 }
 
-func opAffOf(expr *CXExpression, fp int) {
+func opAffOf(expr *ast.CXExpression, fp int) {
 	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
 
 	prevPkg := PROGRAM.CurrentPackage
 	prevFn := prevPkg.CurrentFunction
 	prevExpr := prevFn.CurrentExpression
 
-	var tgtPkg = CXPackage(*expr.Package)
-	var tgtFn = CXFunction(*expr.Function)
-	var tgtExpr = CXExpression(*prevExpr)
+	var tgtPkg = ast.CXPackage(*expr.Package)
+	var tgtFn = ast.CXFunction(*expr.Function)
+	var tgtExpr = ast.CXExpression(*prevExpr)
 
 	// processing the target
 	var tgtElt string
@@ -676,7 +677,7 @@ func opAffOf(expr *CXExpression, fp int) {
 	}
 }
 
-func readStrctAff(aff string, tgtPkg *CXPackage) *CXStruct {
+func readStrctAff(aff string, tgtPkg *ast.CXPackage) *ast.CXStruct {
 	strct, err := tgtPkg.GetStruct(aff)
 	if err != nil {
 		panic(err)
@@ -685,8 +686,8 @@ func readStrctAff(aff string, tgtPkg *CXPackage) *CXStruct {
 	return strct
 }
 
-func readArgAff(aff string, tgtFn *CXFunction) *CXArgument {
-	var affExpr *CXExpression
+func readArgAff(aff string, tgtFn *ast.CXFunction) *ast.CXArgument {
+	var affExpr *ast.CXExpression
 	var lIdx int
 	var rIdx int
 	var ch rune
@@ -742,16 +743,16 @@ func readArgAff(aff string, tgtFn *CXFunction) *CXArgument {
 
 }
 
-func opAffInform(expr *CXExpression, fp int) {
+func opAffInform(expr *ast.CXExpression, fp int) {
 	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
 
 	prevPkg := PROGRAM.CurrentPackage
 	prevFn := prevPkg.CurrentFunction
 	prevExpr := prevFn.CurrentExpression
 
-	var tgtPkg = CXPackage(*prevPkg)
-	var tgtFn = CXFunction(*expr.Function)
-	var tgtExpr = CXExpression(*prevExpr)
+	var tgtPkg = ast.CXPackage(*prevPkg)
+	var tgtFn = ast.CXFunction(*expr.Function)
+	var tgtExpr = ast.CXExpression(*prevExpr)
 
 	// processing the target
 	var tgtElt string
@@ -841,16 +842,16 @@ func opAffInform(expr *CXExpression, fp int) {
 	PROGRAM.CurrentPackage.CurrentFunction.CurrentExpression = prevExpr
 }
 
-func opAffRequest(expr *CXExpression, fp int) {
+func opAffRequest(expr *ast.CXExpression, fp int) {
 	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
 
 	prevPkg := PROGRAM.CurrentPackage
 	prevFn := prevPkg.CurrentFunction
 	prevExpr := prevFn.CurrentExpression
 
-	var tgtPkg = CXPackage(*prevPkg)
-	var tgtFn = CXFunction(*expr.Function)
-	var tgtExpr = CXExpression(*prevExpr)
+	var tgtPkg = ast.CXPackage(*prevPkg)
+	var tgtFn = ast.CXFunction(*expr.Function)
+	var tgtExpr = ast.CXExpression(*prevExpr)
 
 	// processing the target
 	var tgtElt string
@@ -960,7 +961,7 @@ func opAffRequest(expr *CXExpression, fp int) {
 	PROGRAM.CurrentPackage.CurrentFunction.CurrentExpression = prevExpr
 }
 
-func opAffQuery(expr *CXExpression, fp int) {
+func opAffQuery(expr *ast.CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 
 	out1Offset := GetFinalOffset(fp, out1)

@@ -1,8 +1,9 @@
-package cxcore
+package ast
 
 import (
 	"errors"
 	"fmt"
+	"github.com/skycoin/cx/cx"
 )
 
 // Only Used by Affordances in op_aff.go
@@ -58,8 +59,8 @@ func (pkg *CXPackage) GetMethod(fnName string, receiverType string) (*CXFunction
 
 	// Trying to find it in `Natives`.
 	// Most likely a method from a core package.
-	if opCode, found := OpCodes[pkg.Name+"."+fnName]; found {
-		return Natives[opCode], nil
+	if opCode, found := cxcore.OpCodes[pkg.Name+"."+fnName]; found {
+		return cxcore.Natives[opCode], nil
 	}
 
 	return nil, fmt.Errorf("method '%s' not found in package '%s'", fnName, pkg.Name)

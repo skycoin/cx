@@ -3,7 +3,9 @@ package cxcore
 import (
 	"bytes"
 	"fmt"
+	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/execute"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -16,24 +18,24 @@ import (
 )
 
 func init() {
-	httpPkg := MakePackage("http")
-	urlStrct := MakeStruct("URL")
+	httpPkg := ast.MakePackage("http")
+	urlStrct := ast.MakeStruct("URL")
 
-	urlStrct.AddField(MakeArgument("Scheme", "", 0).AddType(constants.TypeNames[constants.TYPE_STR]).AddPackage(httpPkg))
-	urlStrct.AddField(MakeArgument("Opaque", "", 0).AddType(constants.TypeNames[constants.TYPE_STR]).AddPackage(httpPkg))
-	urlStrct.AddField(MakeArgument("Host", "", 0).AddType(constants.TypeNames[constants.TYPE_STR]).AddPackage(httpPkg))
-	urlStrct.AddField(MakeArgument("Path", "", 0).AddType(constants.TypeNames[constants.TYPE_STR]).AddPackage(httpPkg))
-	urlStrct.AddField(MakeArgument("RawPath", "", 0).AddType(constants.TypeNames[constants.TYPE_STR]).AddPackage(httpPkg))
-	urlStrct.AddField(MakeArgument("ForceQuery", "", 0).AddType(constants.TypeNames[constants.TYPE_BOOL]).AddPackage(httpPkg))
-	urlStrct.AddField(MakeArgument("RawQuery", "", 0).AddType(constants.TypeNames[constants.TYPE_STR]).AddPackage(httpPkg))
-	urlStrct.AddField(MakeArgument("Fragment", "", 0).AddType(constants.TypeNames[constants.TYPE_STR]).AddPackage(httpPkg))
+	urlStrct.AddField(ast.MakeArgument("Scheme", "", 0).AddType(constants.TypeNames[constants.TYPE_STR]).AddPackage(httpPkg))
+	urlStrct.AddField(ast.MakeArgument("Opaque", "", 0).AddType(constants.TypeNames[constants.TYPE_STR]).AddPackage(httpPkg))
+	urlStrct.AddField(ast.MakeArgument("Host", "", 0).AddType(constants.TypeNames[constants.TYPE_STR]).AddPackage(httpPkg))
+	urlStrct.AddField(ast.MakeArgument("Path", "", 0).AddType(constants.TypeNames[constants.TYPE_STR]).AddPackage(httpPkg))
+	urlStrct.AddField(ast.MakeArgument("RawPath", "", 0).AddType(constants.TypeNames[constants.TYPE_STR]).AddPackage(httpPkg))
+	urlStrct.AddField(ast.MakeArgument("ForceQuery", "", 0).AddType(constants.TypeNames[constants.TYPE_BOOL]).AddPackage(httpPkg))
+	urlStrct.AddField(ast.MakeArgument("RawQuery", "", 0).AddType(constants.TypeNames[constants.TYPE_STR]).AddPackage(httpPkg))
+	urlStrct.AddField(ast.MakeArgument("Fragment", "", 0).AddType(constants.TypeNames[constants.TYPE_STR]).AddPackage(httpPkg))
 
 	httpPkg.AddStruct(urlStrct)
 
-	requestStrct := MakeStruct("Request")
+	requestStrct := ast.MakeStruct("Request")
 
-	requestStrct.AddField(MakeArgument("Method", "", 0).AddType(constants.TypeNames[constants.TYPE_STR]).AddPackage(httpPkg))
-	urlFld := MakeArgument("URL", "", 0).AddType(constants.TypeNames[constants.TYPE_CUSTOM]).AddPackage(httpPkg)
+	requestStrct.AddField(ast.MakeArgument("Method", "", 0).AddType(constants.TypeNames[constants.TYPE_STR]).AddPackage(httpPkg))
+	urlFld := ast.MakeArgument("URL", "", 0).AddType(constants.TypeNames[constants.TYPE_CUSTOM]).AddPackage(httpPkg)
 	urlFld.DeclarationSpecifiers = append(urlFld.DeclarationSpecifiers, constants.DECL_STRUCT)
 	urlFld.DeclarationSpecifiers = append(urlFld.DeclarationSpecifiers, constants.DECL_POINTER)
 	urlFld.IsPointer = true
@@ -42,7 +44,7 @@ func init() {
 	urlFld.CustomType = urlStrct
 	requestStrct.AddField(urlFld)
 
-	headerFld := MakeArgument("Header", "", 0).AddType(constants.TypeNames[constants.TYPE_STR]).AddPackage(httpPkg) // will be a slice of strings
+	headerFld := ast.MakeArgument("Header", "", 0).AddType(constants.TypeNames[constants.TYPE_STR]).AddPackage(httpPkg) // will be a slice of strings
 	headerFld.DeclarationSpecifiers = append(headerFld.DeclarationSpecifiers, constants.DECL_SLICE)
 	headerFld.DeclarationSpecifiers = append(headerFld.DeclarationSpecifiers, constants.DECL_SLICE)
 	headerFld.IsSlice = true
@@ -53,22 +55,22 @@ func init() {
 
 	requestStrct.AddField(headerFld)
 
-	requestStrct.AddField(MakeArgument("Body", "", 0).AddType(constants.TypeNames[constants.TYPE_STR]).AddPackage(httpPkg))
+	requestStrct.AddField(ast.MakeArgument("Body", "", 0).AddType(constants.TypeNames[constants.TYPE_STR]).AddPackage(httpPkg))
 
 	httpPkg.AddStruct(requestStrct)
 
 	// Mapping http.Response struct
-	responseStruct := MakeStruct("Response")
-	responseStruct.AddField(MakeArgument("Status", "", 0).AddType(constants.TypeNames[constants.TYPE_STR]).AddPackage(httpPkg))
-	responseStruct.AddField(MakeArgument("StatusCode", "", 0).AddType(constants.TypeNames[constants.TYPE_I32]).AddPackage(httpPkg))
-	responseStruct.AddField(MakeArgument("Proto", "", 0).AddType(constants.TypeNames[constants.TYPE_STR]).AddPackage(httpPkg))
-	responseStruct.AddField(MakeArgument("ProtoMajor", "", 0).AddType(constants.TypeNames[constants.TYPE_I32]).AddPackage(httpPkg))
-	responseStruct.AddField(MakeArgument("ProtoMinor", "", 0).AddType(constants.TypeNames[constants.TYPE_I32]).AddPackage(httpPkg))
-	responseStruct.AddField(MakeArgument("Body", "", 0).AddType(constants.TypeNames[constants.TYPE_STR]).AddPackage(httpPkg))
+	responseStruct := ast.MakeStruct("Response")
+	responseStruct.AddField(ast.MakeArgument("Status", "", 0).AddType(constants.TypeNames[constants.TYPE_STR]).AddPackage(httpPkg))
+	responseStruct.AddField(ast.MakeArgument("StatusCode", "", 0).AddType(constants.TypeNames[constants.TYPE_I32]).AddPackage(httpPkg))
+	responseStruct.AddField(ast.MakeArgument("Proto", "", 0).AddType(constants.TypeNames[constants.TYPE_STR]).AddPackage(httpPkg))
+	responseStruct.AddField(ast.MakeArgument("ProtoMajor", "", 0).AddType(constants.TypeNames[constants.TYPE_I32]).AddPackage(httpPkg))
+	responseStruct.AddField(ast.MakeArgument("ProtoMinor", "", 0).AddType(constants.TypeNames[constants.TYPE_I32]).AddPackage(httpPkg))
+	responseStruct.AddField(ast.MakeArgument("Body", "", 0).AddType(constants.TypeNames[constants.TYPE_STR]).AddPackage(httpPkg))
 	//TODO Header Header - not sure if headerFld used for http.Request can be used here
 	//TODO Body io.ReadCloser
-	responseStruct.AddField(MakeArgument("ContentLength", "", 0).AddType(constants.TypeNames[constants.TYPE_I64]).AddPackage(httpPkg))
-	transferEncodingFld := MakeArgument("TransferEncoding", "", 0).AddType(constants.TypeNames[constants.TYPE_STR]).AddPackage(httpPkg)
+	responseStruct.AddField(ast.MakeArgument("ContentLength", "", 0).AddType(constants.TypeNames[constants.TYPE_I64]).AddPackage(httpPkg))
+	transferEncodingFld := ast.MakeArgument("TransferEncoding", "", 0).AddType(constants.TypeNames[constants.TYPE_STR]).AddPackage(httpPkg)
 	transferEncodingFld.DeclarationSpecifiers = append(transferEncodingFld.DeclarationSpecifiers, constants.DECL_SLICE)
 	transferEncodingFld.IsSlice = true
 	transferEncodingFld.IsReference = true
@@ -76,8 +78,8 @@ func init() {
 	transferEncodingFld.PassBy = constants.PASSBY_REFERENCE
 	transferEncodingFld.Lengths = []int{0}
 	responseStruct.AddField(transferEncodingFld)
-	urlStrct.AddField(MakeArgument("Close", "", 0).AddType(constants.TypeNames[constants.TYPE_BOOL]).AddPackage(httpPkg))
-	urlStrct.AddField(MakeArgument("Uncompressed", "", 0).AddType(constants.TypeNames[constants.TYPE_BOOL]).AddPackage(httpPkg))
+	urlStrct.AddField(ast.MakeArgument("Close", "", 0).AddType(constants.TypeNames[constants.TYPE_BOOL]).AddPackage(httpPkg))
+	urlStrct.AddField(ast.MakeArgument("Uncompressed", "", 0).AddType(constants.TypeNames[constants.TYPE_BOOL]).AddPackage(httpPkg))
 	//TODO Trailer Header
 	//TODO Request *Request
 	//TODO TLS *tls.ConnectionState
@@ -87,7 +89,7 @@ func init() {
 	PROGRAM.AddPackage(httpPkg)
 }
 
-func opHTTPHandle(expr *CXExpression, fp int) {
+func opHTTPHandle(expr *ast.CXExpression, fp int) {
 
 	//step 3  : specify the input and outout parameters of Handle function.
 	urlstring, functionnamestring := expr.Inputs[0], expr.Inputs[1]
@@ -128,18 +130,19 @@ func opHTTPHandle(expr *CXExpression, fp int) {
 		copy(i1, PROGRAM.Memory[i1Off:i1Off+i1Size])
 		copy(i2, PROGRAM.Memory[i2Off:i2Off+i2Size])
 
-		PROGRAM.Callback(handlerFn, [][]byte{i1, i2})
+		//PROGRAM.Callback(handlerFn, [][]byte{i1, i2})
+		execute.Callback(PROGRAM, handlerFn, [][]byte{i1, i2})
 		fmt.Fprint(w, ReadStr(callFP, handlerFn.Inputs[0]))
 	})
 }
 
 var server *http.Server
 
-func opHTTPClose(expr *CXExpression, fp int) {
+func opHTTPClose(expr *ast.CXExpression, fp int) {
 	server.Close()
 }
 
-func opHTTPListenAndServe(expr *CXExpression, fp int) {
+func opHTTPListenAndServe(expr *ast.CXExpression, fp int) {
 
 	//step 3  : specify the input and outout parameters of HTTPServe function.
 	urlstring, errstring := expr.Inputs[0], expr.Outputs[0]
@@ -152,7 +155,7 @@ func opHTTPListenAndServe(expr *CXExpression, fp int) {
 	WriteString(fp, err.Error(), errstring)
 }
 
-func opHTTPServe(expr *CXExpression, fp int) {
+func opHTTPServe(expr *ast.CXExpression, fp int) {
 
 	//step 3  : specify the imput and out of HTTPServe function.
 	urlstring, errstring := expr.Inputs[0], expr.Outputs[0]
@@ -170,7 +173,7 @@ func opHTTPServe(expr *CXExpression, fp int) {
 	}
 }
 
-func opHTTPNewRequest(expr *CXExpression, fp int) {
+func opHTTPNewRequest(expr *ast.CXExpression, fp int) {
 	// TODO: This whole OP needs rewriting/finishing.
 	// Seems more a prototype.
 	stringmethod, stringurl, stringbody, errorstring := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Outputs[0]
@@ -209,8 +212,8 @@ func opHTTPNewRequest(expr *CXExpression, fp int) {
 	WriteObject(out1Offset, byts)
 }
 
-func writeHTTPRequest(fp int, param *CXArgument, request *http.Request) {
-	req := CXArgument{}
+func writeHTTPRequest(fp int, param *ast.CXArgument, request *http.Request) {
+	req := ast.CXArgument{}
 	err := copier.Copy(&req, param)
 	if err != nil {
 		panic(err)
@@ -245,7 +248,7 @@ func writeHTTPRequest(fp int, param *CXArgument, request *http.Request) {
 		panic(err)
 	}
 
-	derefURLFld := CXArgument{}
+	derefURLFld := ast.CXArgument{}
 	err = copier.Copy(&derefURLFld, urlFld)
 	if err != nil {
 		panic(err)
@@ -274,14 +277,14 @@ func writeHTTPRequest(fp int, param *CXArgument, request *http.Request) {
 		panic(err)
 	}
 
-	accessMethod := []*CXArgument{methodFld}
-	accessBody := []*CXArgument{bodyFld}
-	accessURL := []*CXArgument{urlFld}
-	accessURLScheme := []*CXArgument{&derefURLFld, schemeFld}
-	accessURLHost := []*CXArgument{&derefURLFld, hostFld}
-	accessURLPath := []*CXArgument{&derefURLFld, pathFld}
-	accessURLRawPath := []*CXArgument{&derefURLFld, rawPathFld}
-	accessURLForceQuery := []*CXArgument{&derefURLFld, forceQueryFld}
+	accessMethod := []*ast.CXArgument{methodFld}
+	accessBody := []*ast.CXArgument{bodyFld}
+	accessURL := []*ast.CXArgument{urlFld}
+	accessURLScheme := []*ast.CXArgument{&derefURLFld, schemeFld}
+	accessURLHost := []*ast.CXArgument{&derefURLFld, hostFld}
+	accessURLPath := []*ast.CXArgument{&derefURLFld, pathFld}
+	accessURLRawPath := []*ast.CXArgument{&derefURLFld, rawPathFld}
+	accessURLForceQuery := []*ast.CXArgument{&derefURLFld, forceQueryFld}
 
 	// Creating empty `http.Request` object on heap.
 	reqOff := WriteObjectData(make([]byte, requestType.Size))
@@ -317,13 +320,13 @@ func writeHTTPRequest(fp int, param *CXArgument, request *http.Request) {
 	WriteMemory(GetFinalOffset(fp, &req), FromBool(request.URL.ForceQuery))
 }
 
-func opHTTPDo(expr *CXExpression, fp int) {
+func opHTTPDo(expr *ast.CXExpression, fp int) {
 
 	reqstruct, respstruct, errorstring := expr.Inputs[0], expr.Outputs[0], expr.Outputs[1]
 	//TODO read req from the inputs
 	// reqByts := ReadMemory(GetFinalOffset(fp, inp1), inp1)
 
-	req := CXArgument{}
+	req := ast.CXArgument{}
 	err := copier.Copy(&req, reqstruct)
 	if err != nil {
 		panic(err)
@@ -352,7 +355,7 @@ func opHTTPDo(expr *CXExpression, fp int) {
 		panic(err)
 	}
 
-	derefURLFld := CXArgument{}
+	derefURLFld := ast.CXArgument{}
 	err = copier.Copy(&derefURLFld, urlFld)
 	if err != nil {
 		panic(err)
@@ -381,12 +384,12 @@ func opHTTPDo(expr *CXExpression, fp int) {
 		panic(err)
 	}
 
-	accessMethod := []*CXArgument{methodFld}
-	accessURLScheme := []*CXArgument{&derefURLFld, schemeFld}
-	accessURLHost := []*CXArgument{&derefURLFld, hostFld}
-	accessURLPath := []*CXArgument{&derefURLFld, pathFld}
-	accessURLRawPath := []*CXArgument{&derefURLFld, rawPathFld}
-	accessURLForceQuery := []*CXArgument{&derefURLFld, forceQueryFld}
+	accessMethod := []*ast.CXArgument{methodFld}
+	accessURLScheme := []*ast.CXArgument{&derefURLFld, schemeFld}
+	accessURLHost := []*ast.CXArgument{&derefURLFld, hostFld}
+	accessURLPath := []*ast.CXArgument{&derefURLFld, pathFld}
+	accessURLRawPath := []*ast.CXArgument{&derefURLFld, rawPathFld}
+	accessURLForceQuery := []*ast.CXArgument{&derefURLFld, forceQueryFld}
 
 	request := http.Request{}
 	url := url.URL{}
@@ -414,7 +417,7 @@ func opHTTPDo(expr *CXExpression, fp int) {
 		return
 	}
 
-	resp := CXArgument{}
+	resp := ast.CXArgument{}
 	err = copier.Copy(&resp, respstruct)
 	if err != nil {
 		panic(err)
@@ -454,13 +457,13 @@ func opHTTPDo(expr *CXExpression, fp int) {
 		panic(err)
 	}
 
-	accessStatus := []*CXArgument{statusFld}
-	accessStatusCode := []*CXArgument{statusCodeFld}
-	accessProto := []*CXArgument{protoFld}
-	accessProtoMajor := []*CXArgument{protoMajorFld}
-	accessProtoMinor := []*CXArgument{protoMinorFld}
-	accessContentLength := []*CXArgument{contentLengthFld}
-	accessBody := []*CXArgument{bodyFld}
+	accessStatus := []*ast.CXArgument{statusFld}
+	accessStatusCode := []*ast.CXArgument{statusCodeFld}
+	accessProto := []*ast.CXArgument{protoFld}
+	accessProtoMajor := []*ast.CXArgument{protoMajorFld}
+	accessProtoMinor := []*ast.CXArgument{protoMinorFld}
+	accessContentLength := []*ast.CXArgument{contentLengthFld}
+	accessBody := []*ast.CXArgument{bodyFld}
 
 	resp.Fields = accessStatus
 	WriteString(fp, response.Status, &resp)
@@ -482,7 +485,7 @@ func opHTTPDo(expr *CXExpression, fp int) {
 	WriteString(fp, string(body), &resp)
 }
 
-func opDMSGDo(expr *CXExpression, fp int) {
+func opDMSGDo(expr *ast.CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	var req http.Request
 	byts1 := ReadMemory(GetFinalOffset(fp, inp1), inp1)

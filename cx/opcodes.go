@@ -2,6 +2,7 @@ package cxcore
 
 import (
 	"fmt"
+	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 
@@ -483,8 +484,8 @@ const (
 )
 
 type CXValue struct {
-    Arg *CXArgument
-    Expr *CXExpression
+    Arg *ast.CXArgument
+    Expr *ast.CXExpression
     Type int
     memory []byte
     Offset int
@@ -725,7 +726,7 @@ func (value *CXValue) Set_str(data string) {
 }
 
 // OpcodeHandler ...
-type OpcodeHandler func(expr *CXExpression, fp int)
+type OpcodeHandler func(expr *ast.CXExpression, fp int)
 type OpcodeHandler_V2 func(inputs []CXValue, outputs []CXValue)
 
 var (
@@ -739,9 +740,9 @@ var (
 	OpVersions = map[int]int{}
 
 	// Natives ...
-	Natives        = map[int]*CXFunction{}
+	Natives        = map[int]*ast.CXFunction{}
 
-    Operators []*CXFunction
+    Operators []*ast.CXFunction
 
     opcodeHandlers []OpcodeHandler
 
@@ -775,19 +776,19 @@ func GetTypedOperatorOffset(typeCode int, opCode int) int {
     return typeCode * OPERATOR_COUNT + opCode - START_OF_OPERATORS - 1
 }
 
-func GetTypedOperator(typeCode int, opCode int) *CXFunction {
+func GetTypedOperator(typeCode int, opCode int) *ast.CXFunction {
     return Operators[GetTypedOperatorOffset(typeCode, opCode)]
 }
 
 // Operator ...
-func Operator(code int, name string, handler OpcodeHandler_V2, inputs []*CXArgument, outputs []*CXArgument, atomicType int, operator int) {
+func Operator(code int, name string, handler OpcodeHandler_V2, inputs []*ast.CXArgument, outputs []*ast.CXArgument, atomicType int, operator int) {
     Op_V2(code, name, handler, inputs, outputs)
     native := Natives[code]
     Operators[GetTypedOperatorOffset(atomicType, operator)] = native
 }
 
 // Op ...
-func Op_V2(code int, name string, handler OpcodeHandler_V2, inputs []*CXArgument, outputs []*CXArgument) {
+func Op_V2(code int, name string, handler OpcodeHandler_V2, inputs []*ast.CXArgument, outputs []*ast.CXArgument) {
 	if code >= len(opcodeHandlers_V2) {
 		opcodeHandlers_V2 = append(opcodeHandlers_V2, make([]OpcodeHandler_V2, code+1)...)
 	}
@@ -801,17 +802,17 @@ func Op_V2(code int, name string, handler OpcodeHandler_V2, inputs []*CXArgument
 	OpVersions[code] = 2
 
 	if inputs == nil {
-		inputs = []*CXArgument{}
+		inputs = []*ast.CXArgument{}
 	}
 	if outputs == nil {
-		outputs = []*CXArgument{}
+		outputs = []*ast.CXArgument{}
 	}
-	Natives[code] = MakeNativeFunctionV2(code, inputs, outputs)
+	Natives[code] = ast.MakeNativeFunctionV2(code, inputs, outputs)
 }
 
 
 // Op ...
-func Op(code int, name string, handler OpcodeHandler, inputs []*CXArgument, outputs []*CXArgument) {
+func Op(code int, name string, handler OpcodeHandler, inputs []*ast.CXArgument, outputs []*ast.CXArgument) {
 	if code >= len(opcodeHandlers) {
 		opcodeHandlers = append(opcodeHandlers, make([]OpcodeHandler, code+1)...)
 	}
@@ -824,12 +825,12 @@ func Op(code int, name string, handler OpcodeHandler, inputs []*CXArgument, outp
 	OpCodes[name] = code
 	OpVersions[code] = 1
 	if inputs == nil {
-		inputs = []*CXArgument{}
+		inputs = []*ast.CXArgument{}
 	}
 	if outputs == nil {
-		outputs = []*CXArgument{}
+		outputs = []*ast.CXArgument{}
 	}
-	Natives[code] = MakeNativeFunction(code, inputs, outputs)
+	Natives[code] = ast.MakeNativeFunction(code, inputs, outputs)
 }
 
 /*
@@ -848,7 +849,7 @@ func dumpOpCodes(opCode int) {
 }*/
 
 // Pointer takes an already defined `CXArgument` and turns it into a pointer.
-func Pointer(arg *CXArgument) *CXArgument {
+func Pointer(arg *ast.CXArgument) *ast.CXArgument {
 	arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_POINTER)
 	arg.IsPointer = true
 	arg.Size = constants.TYPE_POINTER_SIZE
@@ -860,7 +861,7 @@ func Pointer(arg *CXArgument) *CXArgument {
 // Struct helper for creating a struct parameter. It creates a
 // `CXArgument` named `argName`, that represents a structure instane of
 // `strctName`, from package `pkgName`.
-func Struct(pkgName, strctName, argName string) *CXArgument {
+func Struct(pkgName, strctName, argName string) *ast.CXArgument {
 	pkg, err := PROGRAM.GetPackage(pkgName)
 	if err != nil {
 		panic(err)
@@ -871,7 +872,7 @@ func Struct(pkgName, strctName, argName string) *CXArgument {
 		panic(err)
 	}
 
-	arg := MakeArgument(argName, "", -1).AddType(constants.TypeNames[constants.TYPE_CUSTOM])
+	arg := ast.MakeArgument(argName, "", -1).AddType(constants.TypeNames[constants.TYPE_CUSTOM])
 	arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_STRUCT)
 	arg.Size = strct.Size
 	arg.TotalSize = strct.Size
@@ -882,7 +883,7 @@ func Struct(pkgName, strctName, argName string) *CXArgument {
 
 // Slice Helper function for creating parameters for standard library operators.
 // The current standard library only uses basic types and slices. If more options are needed, modify this function
-func Slice(typCode int) *CXArgument {
+func Slice(typCode int) *ast.CXArgument {
 	arg := Param(typCode)
 	arg.IsSlice = true
 	arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_SLICE)
@@ -890,26 +891,26 @@ func Slice(typCode int) *CXArgument {
 }
 
 // Param ...
-func Param(typCode int) *CXArgument {
-	arg := MakeArgument("", "", -1).AddType(constants.TypeNames[typCode])
+func Param(typCode int) *ast.CXArgument {
+	arg := ast.MakeArgument("", "", -1).AddType(constants.TypeNames[typCode])
 	arg.IsLocalDeclaration = true
 	return arg
 }
 
 // ParamData ...
 type ParamData struct {
-	typCode   int           // The type code of the parameter.
-	paramType int           // Type of the parameter (struct, slice, etc.).
-	strctName string        // Name of the struct in case we're handling a struct instance.
-	pkg       *CXPackage    // To what package does this param belongs to.
-	inputs    []*CXArgument // Input parameters to a TYPE_FUNC parameter.
-	outputs   []*CXArgument // Output parameters to a TYPE_FUNC parameter.
+	typCode   int               // The type code of the parameter.
+	paramType int               // Type of the parameter (struct, slice, etc.).
+	strctName string            // Name of the struct in case we're handling a struct instance.
+	pkg       *ast.CXPackage    // To what package does this param belongs to.
+	inputs    []*ast.CXArgument // Input parameters to a TYPE_FUNC parameter.
+	outputs   []*ast.CXArgument // Output parameters to a TYPE_FUNC parameter.
 }
 
 // ParamEx Helper function for creating parameters for standard library operators.
 // The current standard library only uses basic types and slices. If more options are needed, modify this function
-func ParamEx(paramData ParamData) *CXArgument {
-	var arg *CXArgument
+func ParamEx(paramData ParamData) *ast.CXArgument {
+	var arg *ast.CXArgument
 	switch paramData.paramType {
 	case constants.PARAM_DEFAULT:
 		arg = Param(paramData.typCode)
@@ -967,16 +968,16 @@ var AUND = Param(constants.TYPE_UNDEFINED)
 var AAFF = Param(constants.TYPE_AFF)
 
 // In Returns a slice of arguments from an argument list
-func In(params ...*CXArgument) []*CXArgument {
+func In(params ...*ast.CXArgument) []*ast.CXArgument {
 	return params
 }
 
 // Out Returns a slice of arguments from an argument list
-func Out(params ...*CXArgument) []*CXArgument {
+func Out(params ...*ast.CXArgument) []*ast.CXArgument {
 	return params
 }
 
-func opDebug(*CXExpression, int) {
+func opDebug(*ast.CXExpression, int) {
 	PROGRAM.PrintStack()
 }
 
@@ -986,7 +987,7 @@ func init() {
 		panic(err)
 	}
 
-    Operators = make([]*CXFunction, OPERATOR_HANDLER_COUNT)
+    Operators = make([]*ast.CXFunction, OPERATOR_HANDLER_COUNT)
 
     Op(OP_IDENTITY, "identity", opIdentity, In(AUND), Out(AUND))
 	Op(OP_JMP, "jmp", opJmp, In(ABOOL), nil) // AUND to allow 0 inputs (goto)
@@ -1424,7 +1425,7 @@ func init() {
 	Op(OP_HTTP_HANDLE, "http.Handle", opHTTPHandle,
 		In(
 			ASTR,
-			ParamEx(ParamData{typCode: constants.TYPE_FUNC, pkg: httpPkg, inputs: In(MakeArgument("ResponseWriter", "", -1).AddType(constants.TypeNames[constants.TYPE_STR]), Pointer(Struct("http", "Request", "r")))})),
+			ParamEx(ParamData{typCode: constants.TYPE_FUNC, pkg: httpPkg, inputs: In(ast.MakeArgument("ResponseWriter", "", -1).AddType(constants.TypeNames[constants.TYPE_STR]), Pointer(Struct("http", "Request", "r")))})),
 		Out())
 
 	Op(OP_HTTP_CLOSE, "http.Close", opHTTPClose, nil, nil)

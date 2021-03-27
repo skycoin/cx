@@ -2,6 +2,7 @@ package actions
 
 import (
 	"fmt"
+	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"os"
 
@@ -14,10 +15,10 @@ import (
 // For example: `return foo() + bar()` is a set of 3 expressions and they represent a single return argument
 type ReturnExpressions struct {
 	Size        int
-	Expressions []*cxcore.CXExpression
+	Expressions []*ast.CXExpression
 }
 
-func IterationExpressions(init []*cxcore.CXExpression, cond []*cxcore.CXExpression, incr []*cxcore.CXExpression, statements []*cxcore.CXExpression) []*cxcore.CXExpression {
+func IterationExpressions(init []*ast.CXExpression, cond []*ast.CXExpression, incr []*ast.CXExpression, statements []*ast.CXExpression) []*ast.CXExpression {
 	jmpFn := cxcore.Natives[cxcore.OP_JMP]
 
 	pkg, err := AST.GetCurrentPackage()
@@ -25,7 +26,7 @@ func IterationExpressions(init []*cxcore.CXExpression, cond []*cxcore.CXExpressi
 		panic(err)
 	}
 
-	upExpr := cxcore.MakeExpression(jmpFn, CurrentFile, LineNo)
+	upExpr := ast.MakeExpression(jmpFn, CurrentFile, LineNo)
 	upExpr.Package = pkg
 
 	trueArg := WritePrimary(constants.TYPE_BOOL, encoder.Serialize(true), false)
@@ -37,11 +38,11 @@ func IterationExpressions(init []*cxcore.CXExpression, cond []*cxcore.CXExpressi
 	upExpr.ThenLines = upLines
 	upExpr.ElseLines = downLines
 
-	downExpr := cxcore.MakeExpression(jmpFn, CurrentFile, LineNo)
+	downExpr := ast.MakeExpression(jmpFn, CurrentFile, LineNo)
 	downExpr.Package = pkg
 
 	if len(cond[len(cond)-1].Outputs) < 1 {
-		predicate := cxcore.MakeArgument(cxcore.MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(constants.TypeNames[cond[len(cond)-1].Operator.Outputs[0].Type])
+		predicate := ast.MakeArgument(cxcore.MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(constants.TypeNames[cond[len(cond)-1].Operator.Outputs[0].Type])
 		predicate.Package = pkg
 		predicate.PreviouslyDeclared = true
 		cond[len(cond)-1].AddOutput(predicate)
@@ -85,35 +86,35 @@ func IterationExpressions(init []*cxcore.CXExpression, cond []*cxcore.CXExpressi
 	return exprs
 }
 
-func trueJmpExpressions() []*cxcore.CXExpression {
+func trueJmpExpressions() []*ast.CXExpression {
 	pkg, err := AST.GetCurrentPackage()
 	if err != nil {
 		panic(err)
 	}
 
-	expr := cxcore.MakeExpression(cxcore.Natives[cxcore.OP_JMP], CurrentFile, LineNo)
+	expr := ast.MakeExpression(cxcore.Natives[cxcore.OP_JMP], CurrentFile, LineNo)
 
 	trueArg := WritePrimary(constants.TYPE_BOOL, encoder.Serialize(true), false)
 	expr.AddInput(trueArg[0].Outputs[0])
 
 	expr.Package = pkg
 
-	return []*cxcore.CXExpression{expr}
+	return []*ast.CXExpression{expr}
 }
 
-func BreakExpressions() []*cxcore.CXExpression {
+func BreakExpressions() []*ast.CXExpression {
 	exprs := trueJmpExpressions()
 	exprs[0].IsBreak = true
 	return exprs
 }
 
-func ContinueExpressions() []*cxcore.CXExpression {
+func ContinueExpressions() []*ast.CXExpression {
 	exprs := trueJmpExpressions()
 	exprs[0].IsContinue = true
 	return exprs
 }
 
-func SelectionExpressions(condExprs []*cxcore.CXExpression, thenExprs []*cxcore.CXExpression, elseExprs []*cxcore.CXExpression) []*cxcore.CXExpression {
+func SelectionExpressions(condExprs []*ast.CXExpression, thenExprs []*ast.CXExpression, elseExprs []*ast.CXExpression) []*ast.CXExpression {
 	DefineNewScope(thenExprs)
 	DefineNewScope(elseExprs)
 
@@ -122,16 +123,16 @@ func SelectionExpressions(condExprs []*cxcore.CXExpression, thenExprs []*cxcore.
 	if err != nil {
 		panic(err)
 	}
-	ifExpr := cxcore.MakeExpression(jmpFn, CurrentFile, LineNo)
+	ifExpr := ast.MakeExpression(jmpFn, CurrentFile, LineNo)
 	ifExpr.Package = pkg
 
-	var predicate *cxcore.CXArgument
+	var predicate *ast.CXArgument
 	if condExprs[len(condExprs)-1].Operator == nil && !condExprs[len(condExprs)-1].IsMethodCall {
 		// then it's a literal
 		predicate = condExprs[len(condExprs)-1].Outputs[0]
 	} else {
 		// then it's an expression
-		predicate = cxcore.MakeArgument(cxcore.MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo)
+		predicate = ast.MakeArgument(cxcore.MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo)
 		if condExprs[len(condExprs)-1].IsMethodCall {
 			// we'll change this once we have access to method's types in
 			// ProcessMethodCall
@@ -154,7 +155,7 @@ func SelectionExpressions(condExprs []*cxcore.CXExpression, thenExprs []*cxcore.
 	ifExpr.ThenLines = thenLines
 	ifExpr.ElseLines = elseLines
 
-	skipExpr := cxcore.MakeExpression(jmpFn, CurrentFile, LineNo)
+	skipExpr := ast.MakeExpression(jmpFn, CurrentFile, LineNo)
 	skipExpr.Package = pkg
 
 	trueArg := WritePrimary(constants.TYPE_BOOL, encoder.Serialize(true), false)
@@ -164,7 +165,7 @@ func SelectionExpressions(condExprs []*cxcore.CXExpression, thenExprs []*cxcore.
 	skipExpr.ThenLines = skipLines
 	skipExpr.ElseLines = 0
 
-	var exprs []*cxcore.CXExpression
+	var exprs []*ast.CXExpression
 	if condExprs[len(condExprs)-1].Operator != nil || condExprs[len(condExprs)-1].IsMethodCall {
 		exprs = append(exprs, condExprs...)
 	}
@@ -177,7 +178,7 @@ func SelectionExpressions(condExprs []*cxcore.CXExpression, thenExprs []*cxcore.
 }
 
 // resolveTypeForUnd tries to determine the type that will be returned from an expression
-func resolveTypeForUnd(expr *cxcore.CXExpression) int {
+func resolveTypeForUnd(expr *ast.CXExpression) int {
 	if len(expr.Inputs) > 0 {
 		// it's a literal
 		return expr.Inputs[0].Type
@@ -200,14 +201,14 @@ func resolveTypeForUnd(expr *cxcore.CXExpression) int {
 }
 
 //TODO: Delete this function, we always know the correct type and operator to call
-func UndefinedTypeOperation(leftExprs []*cxcore.CXExpression, rightExprs []*cxcore.CXExpression, operator *cxcore.CXFunction) (out []*cxcore.CXExpression) {
+func UndefinedTypeOperation(leftExprs []*ast.CXExpression, rightExprs []*ast.CXExpression, operator *ast.CXFunction) (out []*ast.CXExpression) {
 	pkg, err := AST.GetCurrentPackage()
 	if err != nil {
 		panic(err)
 	}
 
 	if len(leftExprs[len(leftExprs)-1].Outputs) < 1 {
-		name := cxcore.MakeArgument(cxcore.MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(constants.TypeNames[resolveTypeForUnd(leftExprs[len(leftExprs)-1])])
+		name := ast.MakeArgument(cxcore.MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(constants.TypeNames[resolveTypeForUnd(leftExprs[len(leftExprs)-1])])
 		name.Size = leftExprs[len(leftExprs)-1].Operator.Outputs[0].Size
 		name.TotalSize = cxcore.GetSize(leftExprs[len(leftExprs)-1].Operator.Outputs[0])
 		name.Type = leftExprs[len(leftExprs)-1].Operator.Outputs[0].Type
@@ -218,7 +219,7 @@ func UndefinedTypeOperation(leftExprs []*cxcore.CXExpression, rightExprs []*cxco
 	}
 
 	if len(rightExprs[len(rightExprs)-1].Outputs) < 1 {
-		name := cxcore.MakeArgument(cxcore.MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(constants.TypeNames[resolveTypeForUnd(rightExprs[len(rightExprs)-1])])
+		name := ast.MakeArgument(cxcore.MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(constants.TypeNames[resolveTypeForUnd(rightExprs[len(rightExprs)-1])])
 
 		name.Size = rightExprs[len(rightExprs)-1].Operator.Outputs[0].Size
 		name.TotalSize = cxcore.GetSize(rightExprs[len(rightExprs)-1].Operator.Outputs[0])
@@ -229,7 +230,7 @@ func UndefinedTypeOperation(leftExprs []*cxcore.CXExpression, rightExprs []*cxco
 		rightExprs[len(rightExprs)-1].Outputs = append(rightExprs[len(rightExprs)-1].Outputs, name)
 	}
 
-	expr := cxcore.MakeExpression(operator, CurrentFile, LineNo)
+	expr := ast.MakeExpression(operator, CurrentFile, LineNo)
 	// we can't know the type until we compile the full function
 	expr.IsUndType = true
 	expr.Package = pkg
@@ -267,11 +268,11 @@ func UndefinedTypeOperation(leftExprs []*cxcore.CXExpression, rightExprs []*cxco
 
 // TODO: What is a shorthand expression
 // TODO: Remove
-func ShorthandExpression(leftExprs []*cxcore.CXExpression, rightExprs []*cxcore.CXExpression, op int) []*cxcore.CXExpression {
+func ShorthandExpression(leftExprs []*ast.CXExpression, rightExprs []*ast.CXExpression, op int) []*ast.CXExpression {
 	return UndefinedTypeOperation(leftExprs, rightExprs, cxcore.Natives[op])
 }
 
-func UnaryExpression(op string, prevExprs []*cxcore.CXExpression) []*cxcore.CXExpression {
+func UnaryExpression(op string, prevExprs []*ast.CXExpression) []*ast.CXExpression {
 	if len(prevExprs[len(prevExprs)-1].Outputs) == 0 {
 		println(cxcore.CompilationError(CurrentFile, LineNo), "invalid indirection")
 		// needs to be stopped immediately
@@ -302,7 +303,7 @@ func UnaryExpression(op string, prevExprs []*cxcore.CXExpression) []*cxcore.CXEx
 		}
 	case "!":
 		if pkg, err := AST.GetCurrentPackage(); err == nil {
-			expr := cxcore.MakeExpression(cxcore.Natives[cxcore.OP_BOOL_NOT], CurrentFile, LineNo)
+			expr := ast.MakeExpression(cxcore.Natives[cxcore.OP_BOOL_NOT], CurrentFile, LineNo)
 			expr.Package = pkg
 
 			expr.AddInput(exprOut)
@@ -313,7 +314,7 @@ func UnaryExpression(op string, prevExprs []*cxcore.CXExpression) []*cxcore.CXEx
 		}
 	case "-":
 		if pkg, err := AST.GetCurrentPackage(); err == nil {
-			expr := cxcore.MakeExpression(cxcore.Natives[cxcore.OP_NEG], CurrentFile, LineNo)
+			expr := ast.MakeExpression(cxcore.Natives[cxcore.OP_NEG], CurrentFile, LineNo)
 			expr.Package = pkg
 			expr.AddInput(exprOut)
 			prevExprs[len(prevExprs)-1] = expr
@@ -326,9 +327,9 @@ func UnaryExpression(op string, prevExprs []*cxcore.CXExpression) []*cxcore.CXEx
 
 // AssociateReturnExpressions associates the output of `retExprs` to the
 // `idx`th output parameter of the current function.
-func AssociateReturnExpressions(idx int, retExprs []*cxcore.CXExpression) []*cxcore.CXExpression {
-	var pkg *cxcore.CXPackage
-	var fn *cxcore.CXFunction
+func AssociateReturnExpressions(idx int, retExprs []*ast.CXExpression) []*ast.CXExpression {
+	var pkg *ast.CXPackage
+	var fn *ast.CXFunction
 	var err error
 
 	pkg, err = AST.GetCurrentPackage()
@@ -345,7 +346,7 @@ func AssociateReturnExpressions(idx int, retExprs []*cxcore.CXExpression) []*cxc
 
 	outParam := fn.Outputs[idx]
 
-	out := cxcore.MakeArgument(outParam.Name, CurrentFile, LineNo)
+	out := ast.MakeArgument(outParam.Name, CurrentFile, LineNo)
 	out.AddType(constants.TypeNames[outParam.Type])
 	out.CustomType = outParam.CustomType
 	out.PreviouslyDeclared = true
@@ -359,7 +360,7 @@ func AssociateReturnExpressions(idx int, retExprs []*cxcore.CXExpression) []*cxc
 
 		return retExprs
 	} else if len(lastExpr.Outputs) > 0 {
-		expr := cxcore.MakeExpression(cxcore.Natives[cxcore.OP_IDENTITY], CurrentFile, LineNo)
+		expr := ast.MakeExpression(cxcore.Natives[cxcore.OP_IDENTITY], CurrentFile, LineNo)
 		expr.AddInput(lastExpr.Outputs[0])
 		expr.AddOutput(out)
 
@@ -372,9 +373,9 @@ func AssociateReturnExpressions(idx int, retExprs []*cxcore.CXExpression) []*cxc
 }
 
 // AddJmpToReturnExpressions adds an jump expression that makes a function stop its execution
-func AddJmpToReturnExpressions(exprs ReturnExpressions) []*cxcore.CXExpression {
-	var pkg *cxcore.CXPackage
-	var fn *cxcore.CXFunction
+func AddJmpToReturnExpressions(exprs ReturnExpressions) []*ast.CXExpression {
+	var pkg *ast.CXPackage
+	var fn *ast.CXFunction
 	var err error
 
 	pkg, err = AST.GetCurrentPackage()
@@ -407,14 +408,14 @@ func AddJmpToReturnExpressions(exprs ReturnExpressions) []*cxcore.CXExpression {
 	}
 
 	// expression to jump to the end of the embedding function
-	expr := cxcore.MakeExpression(cxcore.Natives[cxcore.OP_JMP], CurrentFile, LineNo)
+	expr := ast.MakeExpression(cxcore.Natives[cxcore.OP_JMP], CurrentFile, LineNo)
 
 	// simulating a label so it gets executed without evaluating a predicate
 	expr.Label = cxcore.MakeGenSym(constants.LABEL_PREFIX)
 	expr.ThenLines = constants.MAX_INT32
 	expr.Package = pkg
 
-	arg := cxcore.MakeArgument("", CurrentFile, LineNo).AddType("bool")
+	arg := ast.MakeArgument("", CurrentFile, LineNo).AddType("bool")
 	arg.Package = pkg
 
 	expr.AddInput(arg)

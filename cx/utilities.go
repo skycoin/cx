@@ -3,6 +3,7 @@ package cxcore
 import (
 	"bytes"
 	"fmt"
+	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"io/ioutil"
 	"os"
@@ -19,7 +20,7 @@ func Debug(args ...interface{}) {
 }
 
 // GetType ...
-func GetType(arg *CXArgument) int {
+func GetType(arg *ast.CXArgument) int {
     fieldCount := len(arg.Fields)
     if fieldCount > 0 {
         return GetType(arg.Fields[fieldCount - 1])
@@ -29,7 +30,7 @@ func GetType(arg *CXArgument) int {
 }
 
 // ExprOpName ...
-func ExprOpName(expr *CXExpression) string {
+func ExprOpName(expr *ast.CXExpression) string {
 	if expr.Operator.IsAtomic {
 		return OpNames[expr.Operator.OpCode]
 	}
@@ -46,7 +47,7 @@ func stackValueHeader(fileName string, fileLine int) string {
 }
 
 // PrintStack ...
-func (cxprogram *CXProgram) PrintStack() {
+func (cxprogram *ast.CXProgram) PrintStack() {
 	fmt.Println()
 	fmt.Println("===Callstack===")
 
@@ -133,7 +134,7 @@ func (cxprogram *CXProgram) PrintStack() {
 
 // getFormattedDerefs is an auxiliary function for `GetFormattedName`. This
 // function formats indexing and pointer dereferences associated to `arg`.
-func getFormattedDerefs(arg *CXArgument, includePkg bool) string {
+func getFormattedDerefs(arg *ast.CXArgument, includePkg bool) string {
 	name := ""
 	// Checking if we should include `arg`'s package name.
 	if includePkg {
@@ -180,7 +181,7 @@ func getFormattedDerefs(arg *CXArgument, includePkg bool) string {
 // depicts how an argument is being accessed. Example outputs: "foo[3]",
 // "**bar", "foo.bar[0]". If `includePkg` is `true`, the argument name will
 // include the package name that contains it, such as in "pkg.foo".
-func GetFormattedName(arg *CXArgument, includePkg bool) string {
+func GetFormattedName(arg *ast.CXArgument, includePkg bool) string {
 	// Getting formatted name which does not include fields.
 	name := getFormattedDerefs(arg, includePkg)
 
@@ -200,7 +201,7 @@ func GetFormattedName(arg *CXArgument, includePkg bool) string {
 // formatParameters returns a string containing a list of the formatted types of
 // each of `params`, enclosed in parethesis. This function is used only when
 // formatting functions as first-class objects.
-func formatParameters(params []*CXArgument) string {
+func formatParameters(params []*ast.CXArgument) string {
 	types := "("
 	for i, param := range params {
 		types += GetFormattedType(param)
@@ -214,7 +215,7 @@ func formatParameters(params []*CXArgument) string {
 }
 
 // GetFormattedType builds a string with the CXGO type representation of `arg`.
-func GetFormattedType(arg *CXArgument) string {
+func GetFormattedType(arg *ast.CXArgument) string {
 	typ := ""
 	elt := GetAssignmentElement(arg)
 
@@ -279,7 +280,7 @@ func GetFormattedType(arg *CXArgument) string {
 // name of a `CXExpression`'s input and output parameters (`CXArgument`s). Examples
 // of these formattings are "pkg.foo[0]", "&*foo.field1". The result is written to
 // `buf`.
-func getFormattedParam(params []*CXArgument, pkg *CXPackage, buf *bytes.Buffer) {
+func getFormattedParam(params []*ast.CXArgument, pkg *ast.CXPackage, buf *bytes.Buffer) {
 	for i, param := range params {
 		elt := GetAssignmentElement(param)
 
@@ -299,7 +300,7 @@ func getFormattedParam(params []*CXArgument, pkg *CXPackage, buf *bytes.Buffer) 
 
 // buildStrImports is an auxiliary function for `toString`. It builds
 // string representation all the imported packages of `pkg`.
-func buildStrImports(pkg *CXPackage, ast *string) {
+func buildStrImports(pkg *ast.CXPackage, ast *string) {
 	if len(pkg.Imports) > 0 {
 		*ast += "\tImports\n"
 	}
@@ -311,7 +312,7 @@ func buildStrImports(pkg *CXPackage, ast *string) {
 
 // buildStrGlobals is an auxiliary function for `toString`. It builds
 // string representation of all the global variables of `pkg`.
-func buildStrGlobals(pkg *CXPackage, ast *string) {
+func buildStrGlobals(pkg *ast.CXPackage, ast *string) {
 	if len(pkg.Globals) > 0 {
 		*ast += "\tGlobals\n"
 	}
@@ -322,7 +323,7 @@ func buildStrGlobals(pkg *CXPackage, ast *string) {
 }
 
 // SignatureStringOfStruct returns the signature string of a struct.
-func SignatureStringOfStruct(s *CXStruct) string {
+func SignatureStringOfStruct(s *ast.CXStruct) string {
 	fields := ""
 	for _, f := range s.Fields {
 		fields += fmt.Sprintf(" %s %s;", f.Name, GetFormattedType(f))
@@ -333,7 +334,7 @@ func SignatureStringOfStruct(s *CXStruct) string {
 
 // buildStrStructs is an auxiliary function for `toString`. It builds
 // string representation of all the structures defined in `pkg`.
-func buildStrStructs(pkg *CXPackage, ast *string) {
+func buildStrStructs(pkg *ast.CXPackage, ast *string) {
 	if len(pkg.Structs) > 0 {
 		*ast += "\tStructs\n"
 	}
@@ -349,7 +350,7 @@ func buildStrStructs(pkg *CXPackage, ast *string) {
 }
 
 // SignatureStringOfFunction returns the signature string of a function.
-func SignatureStringOfFunction(pkg *CXPackage, f *CXFunction) string {
+func SignatureStringOfFunction(pkg *ast.CXPackage, f *ast.CXFunction) string {
 	var ins bytes.Buffer
 	var outs bytes.Buffer
 	getFormattedParam(f.Inputs, pkg, &ins)
@@ -361,7 +362,7 @@ func SignatureStringOfFunction(pkg *CXPackage, f *CXFunction) string {
 
 // buildStrFunctions is an auxiliary function for `toString`. It builds
 // string representation of all the functions defined in `pkg`.
-func buildStrFunctions(pkg *CXPackage, ast *string) {
+func buildStrFunctions(pkg *ast.CXPackage, ast *string) {
 	if len(pkg.Functions) > 0 {
 		*ast += "\tFunctions\n"
 	}
@@ -445,7 +446,7 @@ func buildStrFunctions(pkg *CXPackage, ast *string) {
 
 // buildStrPackages is an auxiliary function for `ToString`. It starts the
 // process of building string format of the abstract syntax tree of a CX program.
-func buildStrPackages(prgrm *CXProgram, ast *string) {
+func buildStrPackages(prgrm *ast.CXProgram, ast *string) {
 	// We need to declare the counter outside so we can
 	// ignore the increments from core or stdlib packages.
 	var i int
@@ -552,7 +553,7 @@ func checkForEscapedChars(str string) []byte {
 }
 
 // GetAssignmentElement ...
-func GetAssignmentElement(arg *CXArgument) *CXArgument {
+func GetAssignmentElement(arg *ast.CXArgument) *ast.CXArgument {
 	if len(arg.Fields) > 0 {
 		return arg.Fields[len(arg.Fields)-1]
 	}
@@ -578,7 +579,7 @@ func GetPointerOffset(pointer int32) int32 {
 }
 
 // GetSliceOffset ...
-func GetSliceOffset(fp int, arg *CXArgument) int32 {
+func GetSliceOffset(fp int, arg *ast.CXArgument) int32 {
 	element := GetAssignmentElement(arg)
 	if element.IsSlice {
 		return GetPointerOffset(int32(GetFinalOffset(fp, arg)))
@@ -659,7 +660,7 @@ func SliceResizeEx(outputSliceOffset int32, count int32, sizeofElement int) int 
 }
 
 // SliceResize ...
-func SliceResize(fp int, out *CXArgument, inp *CXArgument, count int32, sizeofElement int) int {
+func SliceResize(fp int, out *ast.CXArgument, inp *ast.CXArgument, count int32, sizeofElement int) int {
 	outputSliceOffset := GetSliceOffset(fp, out)
 
 	outputSliceOffset = int32(SliceResizeEx(outputSliceOffset, count, sizeofElement))
@@ -691,13 +692,13 @@ func SliceCopyEx(outputSliceOffset int32, inputSliceOffset int32, count int32, s
 }
 
 // SliceCopy copies the contents from the slice located at `inputSliceOffset` to the slice located at `outputSliceOffset`.
-func SliceCopy(fp int, outputSliceOffset int32, inp *CXArgument, count int32, sizeofElement int) {
+func SliceCopy(fp int, outputSliceOffset int32, inp *ast.CXArgument, count int32, sizeofElement int) {
 	inputSliceOffset := GetSliceOffset(fp, inp)
 	SliceCopyEx(outputSliceOffset, inputSliceOffset, count, sizeofElement)
 }
 
 // SliceAppendResize prepares a slice to be able to store a new object of length `sizeofElement`. It checks if the slice needs to be relocated in memory, and if it is needed it relocates it and a new `outputSliceOffset` is calculated for the new slice.
-func SliceAppendResize(fp int, out *CXArgument, inp *CXArgument, sizeofElement int) int32 {
+func SliceAppendResize(fp int, out *ast.CXArgument, inp *ast.CXArgument, sizeofElement int) int32 {
 	inputSliceOffset := GetSliceOffset(fp, inp)
 	var inputSliceLen int32
 	if inputSliceOffset != 0 {
@@ -723,7 +724,7 @@ func SliceAppendWriteByte(outputSliceOffset int32, object []byte, index int32) {
 }
 
 // SliceInsert ...
-func SliceInsert(fp int, out *CXArgument, inp *CXArgument, index int32, object []byte) int {
+func SliceInsert(fp int, out *ast.CXArgument, inp *ast.CXArgument, index int32, object []byte) int {
 	inputSliceOffset := GetSliceOffset(fp, inp)
 	// outputSliceOffset := GetSliceOffset(fp, out)
 
@@ -746,7 +747,7 @@ func SliceInsert(fp int, out *CXArgument, inp *CXArgument, index int32, object [
 }
 
 // SliceRemove ...
-func SliceRemove(fp int, out *CXArgument, inp *CXArgument, index int32, sizeofElement int32) int {
+func SliceRemove(fp int, out *ast.CXArgument, inp *ast.CXArgument, index int32, sizeofElement int32) int {
 	inputSliceOffset := GetSliceOffset(fp, inp)
 	outputSliceOffset := GetSliceOffset(fp, out)
 
@@ -861,7 +862,7 @@ func RuntimeError() {
 	}
 }
 
-func getNonCollectionValue(fp int, arg, elt *CXArgument, typ string) string {
+func getNonCollectionValue(fp int, arg, elt *ast.CXArgument, typ string) string {
 	switch typ {
 	case "bool":
 		return fmt.Sprintf("%v", ReadBool(fp, elt))
@@ -909,7 +910,7 @@ func getNonCollectionValue(fp int, arg, elt *CXArgument, typ string) string {
 }
 
 // GetPrintableValue ...
-func GetPrintableValue(fp int, arg *CXArgument) string {
+func GetPrintableValue(fp int, arg *ast.CXArgument) string {
 	var typ string
 	elt := GetAssignmentElement(arg)
 	if elt.CustomType != nil {
@@ -1200,7 +1201,7 @@ func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCod
 // IsPointer checks if `sym` is a candidate for the garbage collector to check.
 // For example, if `sym` is a slice, the garbage collector will need to check
 // if the slice on the heap needs to be relocated.
-func IsPointer(sym *CXArgument) bool {
+func IsPointer(sym *ast.CXArgument) bool {
 	// There's no need to add global variables in `fn.ListOfPointers` as we can access them easily through `CXPackage.Globals`
 	// TODO: We could still pre-compute a list of candidates for globals.
 	if sym.Offset >= PROGRAM.StackSize && sym.Name != "" {

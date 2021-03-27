@@ -1,6 +1,7 @@
 package cxcore
 
 import (
+	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
@@ -42,7 +43,7 @@ import (
 //TODO: DELETE THIS FUNCTION
 //TODO: Avoid all read memory commands for fixed width types (i32,f32,etc)
 //TODO: Make "ReadMemoryI32", "ReadMemoryI16", etc
-func ReadMemory(offset int, arg *CXArgument) []byte {
+func ReadMemory(offset int, arg *ast.CXArgument) []byte {
 	size := GetSize(arg)
 	return PROGRAM.Memory[offset : offset+size]
 }
@@ -83,13 +84,13 @@ func ReadStr(fp int, inp *CXArgument) (out string) {
 // -ReadStrFromOffset is weird
 
 // ReadStr ...
-func ReadStr(fp int, inp *CXArgument) (out string) {
+func ReadStr(fp int, inp *ast.CXArgument) (out string) {
 	off := GetFinalOffset(fp, inp)
 	return ReadStrFromOffset(off, inp)
 }
 
 // ReadStrFromOffset ...
-func ReadStrFromOffset(off int, inp *CXArgument) (out string) {
+func ReadStrFromOffset(off int, inp *ast.CXArgument) (out string) {
 	var offset int32
 	if inp.Name == "" {
 		// Then it's a literal.

@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/skycoin/cx/cx/ast"
+	"github.com/skycoin/cx/cx/execute"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -12,11 +14,10 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cxgo/actions"
-	"github.com/skycoin/cx/cxgo/cxparser"
-	"github.com/skycoin/cx/cxgo/cxgo0"
 	"github.com/skycoin/cx/cxgo/cxgo"
+	"github.com/skycoin/cx/cxgo/cxgo0"
+	"github.com/skycoin/cx/cxgo/cxparser"
 )
 
 var (
@@ -147,7 +148,7 @@ func unsafeeval(code string) (out string) {
 
 	actions.LineNo = 0
 
-	actions.AST = cxcore.MakeProgram()
+	actions.AST = ast.MakeProgram()
 	cxgo0.PRGRM0 = actions.AST
 
 	cxgo0.Parse(code)
@@ -163,9 +164,9 @@ func unsafeeval(code string) (out string) {
 		return fmt.Sprintf("%s", err)
 	}
 	//if err := actions.AST.RunCompiled(0, nil); err != nil {
-	err = cxcore.RunCompiled(actions.AST, 0, nil)
+	err = execute.RunCompiled(actions.AST, 0, nil)
 	if err != nil {
-		actions.AST = cxcore.MakeProgram()
+		actions.AST = ast.MakeProgram()
 		return fmt.Sprintf("%s", err)
 	}
 
@@ -180,7 +181,7 @@ func unsafeeval(code string) (out string) {
 	os.Stdout = old // restoring the real stdout
 	out = <-outC
 
-	actions.AST = cxcore.MakeProgram()
+	actions.AST = ast.MakeProgram()
 	return out
 }
 
@@ -202,7 +203,7 @@ func eval(code string) string {
 	case <-ch:
 		return result
 	case <-timer.C:
-		actions.AST = cxcore.MakeProgram()
+		actions.AST = ast.MakeProgram()
 		return "Timed out."
 	}
 }

@@ -1,6 +1,7 @@
 package cxcore
 
 import (
+	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"log"
 )
@@ -25,7 +26,7 @@ var ENHANCED_DEBUGING4 bool = false
 //GetFinalOffsetF32
 //GetfinalOffsetI16
 //ETC
-func GetFinalOffset(fp int, arg *CXArgument) int {
+func GetFinalOffset(fp int, arg *ast.CXArgument) int {
 
 	if ENHANCED_DEBUGING3 {
 		if !(arg.IsPointer || arg.IsSlice || arg.IsArray){
@@ -70,7 +71,7 @@ func GetFinalOffset(fp int, arg *CXArgument) int {
 }
 
 //this is simplest version of function that works for atomic types
-func GetOffsetAtomicSimple(fp int, arg *CXArgument) int {
+func GetOffsetAtomicSimple(fp int, arg *ast.CXArgument) int {
 
 	if ENHANCED_DEBUGING1 {
 		if arg.IsPointer || arg.IsSlice || arg.IsArray{
@@ -99,7 +100,7 @@ var ENHANCED_DEBUGING bool = true //runs asserts to find error
 
 var ENABLE_MIRACLE_BUG bool    = false
 //this is version with type assertions
-func GetOffsetAtomic(fp int, arg *CXArgument) int {
+func GetOffsetAtomic(fp int, arg *ast.CXArgument) int {
 	if !ENABLE_MIRACLE_BUG {
 		return GetFinalOffset(fp, arg)
 	}
@@ -125,70 +126,70 @@ func GetOffsetAtomic(fp int, arg *CXArgument) int {
 }
 
 // GetOffset_i8 ...
-func GetOffset_i8(fp int, arg *CXArgument) int {
+func GetOffset_i8(fp int, arg *ast.CXArgument) int {
 	//return GetFinalOffset(fp, arg)
 	//return GetOffsetAtomic(fp,arg)
 	return GetOffsetAtomicSimple(fp,arg)
 }
 
 // GetOffset_i16 ...
-func GetOffset_i16(fp int, arg *CXArgument) int {
+func GetOffset_i16(fp int, arg *ast.CXArgument) int {
 	//return GetFinalOffset(fp, arg)
 	//return GetOffsetAtomic(fp, arg)
 	return GetOffsetAtomicSimple(fp,arg)
 }
 
 // GetOffset_i32 ...
-func GetOffset_i32(fp int, arg *CXArgument) int {
+func GetOffset_i32(fp int, arg *ast.CXArgument) int {
 	//return GetFinalOffset(fp, arg)
 	//return GetOffsetAtomic(fp, arg)
 	return GetOffsetAtomicSimple(fp,arg)
 }
 
 // GetOffset_i64 ...
-func GetOffset_i64(fp int, arg *CXArgument) int {
+func GetOffset_i64(fp int, arg *ast.CXArgument) int {
 	//return GetFinalOffset(fp, arg)
 	//return GetOffsetAtomic(fp, arg)
 	return GetOffsetAtomicSimple(fp,arg)
 }
 
 // GetOffset_ui8 ...
-func GetOffset_ui8(fp int, arg *CXArgument) int {
+func GetOffset_ui8(fp int, arg *ast.CXArgument) int {
 	//return GetFinalOffset(fp, arg)
 	//return GetOffsetAtomic(fp, arg)
 	return GetOffsetAtomicSimple(fp,arg)
 }
 
 // GetOffset_ui16 ...
-func GetOffset_ui16(fp int, arg *CXArgument) int {
+func GetOffset_ui16(fp int, arg *ast.CXArgument) int {
 	//return GetFinalOffset(fp, arg)
 	//return GetOffsetAtomic(fp, arg)
 	return GetOffsetAtomicSimple(fp,arg)
 }
 
 // GetOffset_ui32 ...
-func GetOffset_ui32(fp int, arg *CXArgument) int {
+func GetOffset_ui32(fp int, arg *ast.CXArgument) int {
 	//return GetFinalOffset(fp, arg)
 	//return GetOffsetAtomic(fp, arg)
 	return GetOffsetAtomicSimple(fp,arg)
 }
 
 // GetOffset_ui64 ...
-func GetOffset_ui64(fp int, arg *CXArgument) int {
+func GetOffset_ui64(fp int, arg *ast.CXArgument) int {
 	//return GetFinalOffset(fp, arg)
 	//return GetOffsetAtomic(fp, arg)
 	return GetOffsetAtomicSimple(fp,arg)
 }
 
 // GetOffset_f32 ...
-func GetOffset_f32(fp int, arg *CXArgument) int {
+func GetOffset_f32(fp int, arg *ast.CXArgument) int {
 	//return GetFinalOffset(fp, arg)
 	//return GetOffsetAtomic(fp, arg)
 	return GetOffsetAtomicSimple(fp,arg)
 }
 
 // GetOffset_f64 ...
-func GetOffset_f64(fp int, arg *CXArgument) int {
+func GetOffset_f64(fp int, arg *ast.CXArgument) int {
 	//return GetFinalOffset(fp, arg)
 	// return GetOffsetAtomic(fp, arg)
 	return GetOffsetAtomicSimple(fp,arg)
@@ -196,13 +197,13 @@ func GetOffset_f64(fp int, arg *CXArgument) int {
 
 // GetOffset_bool ...
 //NOTE: BOOL is not ready for migration yet
-func GetOffset_bool(fp int, arg *CXArgument) int {
+func GetOffset_bool(fp int, arg *ast.CXArgument) int {
 	//return GetFinalOffset(fp, arg)
 	//return GetOffsetAtomic(fp, arg)
 	return GetOffsetAtomicSimple(fp,arg)
 }
 
 // GetOffset_str ...
-func GetOffset_str(fp int, arg *CXArgument) int {
+func GetOffset_str(fp int, arg *ast.CXArgument) int {
 	return GetFinalOffset(fp, arg)
 }

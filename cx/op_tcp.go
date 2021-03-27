@@ -2,6 +2,7 @@ package cxcore
 
 import (
 	"context"
+	"github.com/skycoin/cx/cx/ast"
 	"log"
 	"net"
 	"net/rpc"
@@ -19,9 +20,9 @@ var DefaultServer = rpc.NewServer()
 
 func init() {
 
-	netPkg := MakePackage("tcp")
+	netPkg := ast.MakePackage("tcp")
 
-	dialerStrct := MakeStruct("Dialer")
+	dialerStrct := ast.MakeStruct("Dialer")
 
 	netPkg.AddStruct(dialerStrct)
 
@@ -29,7 +30,7 @@ func init() {
 
 }
 
-func opTCPDial(expr *CXExpression, fp int) {
+func opTCPDial(expr *ast.CXExpression, fp int) {
 
 	network, address, errorstring := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 
@@ -46,19 +47,19 @@ func opTCPDial(expr *CXExpression, fp int) {
 
 }
 
-func opTCPClose(expr *CXExpression, fp int) {
+func opTCPClose(expr *ast.CXExpression, fp int) {
 
 	ln.Close()
 }
 
-func opTCPAccept(expr *CXExpression, fp int) {
+func opTCPAccept(expr *ast.CXExpression, fp int) {
 
 	conn, _ = ln.Accept()
 
 	conn.Close()
 }
 
-func opTCPListen(expr *CXExpression, fp int) {
+func opTCPListen(expr *ast.CXExpression, fp int) {
 
 	network, address, errorstring := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 

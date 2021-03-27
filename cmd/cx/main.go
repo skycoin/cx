@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/execute"
 
 	repl "github.com/skycoin/cx/cmd/cxrepl"
 	cxcore "github.com/skycoin/cx/cx"
@@ -133,10 +135,10 @@ func Run(args []string) {
 }
 
 // initMainPkg adds a `main` package with an empty `main` function to `prgrm`.
-func initMainPkg(prgrm *cxcore.CXProgram) {
-	mod := cxcore.MakePackage(constants.MAIN_PKG)
+func initMainPkg(prgrm *ast.CXProgram) {
+	mod := ast.MakePackage(constants.MAIN_PKG)
 	prgrm.AddPackage(mod)
-	fn := cxcore.MakeFunction(constants.MAIN_FUNC, actions.CurrentFile, actions.LineNo)
+	fn := ast.MakeFunction(constants.MAIN_FUNC, actions.CurrentFile, actions.LineNo)
 	mod.AddFunction(fn)
 }
 
@@ -186,10 +188,10 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 	profiling.StartProfile("parse")
 	defer profiling.StopProfile("parse")
 
-	actions.AST = cxcore.MakeProgram()
+	actions.AST = ast.MakeProgram()
 
 	//corePkgsPrgrm, err := cxcore.GetCurrentCxProgram()
-	var corePkgsPrgrm *cxcore.CXProgram = cxcore.PROGRAM
+	var corePkgsPrgrm *ast.CXProgram = cxcore.PROGRAM
 
 	if corePkgsPrgrm == nil {
 		panic("CxProgram is nil")
@@ -254,7 +256,7 @@ func runProgram(options cxCmdFlags, cxArgs []string, sourceCode []*os.File) {
 
 	// Normal run of a CX program.
 	//err := actions.AST.RunCompiled(0, cxArgs)
-	err := cxcore.RunCompiled(actions.AST, 0, cxArgs)
+	err := execute.RunCompiled(actions.AST, 0, cxArgs)
 	if err != nil {
 		panic(err)
 	}

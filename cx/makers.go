@@ -2,6 +2,7 @@ package cxcore
 
 import (
 	"fmt"
+	"github.com/skycoin/cx/cx/ast"
 
 	//uuid "github.com/satori/go.uuid"
 	//"github.com/skycoin/skycoin/src/cipher/encoder"
@@ -32,8 +33,8 @@ func MakeGenSym(name string) string {
 //./cx/execute.go:181:				mainCall := MakeCall(fn)
 //./cx/execute.go:210:				mainCall := MakeCall(fn)
 
-func MakeCall(op *CXFunction) CXCall {
-	return CXCall{
+func MakeCall(op *ast.CXFunction) ast.CXCall {
+	return ast.CXCall{
 		Operator:     op,
 		Line:         0,
 		FramePointer: 0,
@@ -41,16 +42,6 @@ func MakeCall(op *CXFunction) CXCall {
 		// Program:       prgrm,
 	}
 }
-
-// MakeCallStack ...
-//./cx/execute.go:14:// 	prgrm.CallStack = MakeCallStack(0)
-func MakeCallStack(size int) []CXCall {
-	return make([]CXCall, 0)
-	// return &CXCallStack{
-	// 	Calls: make([]*CXCall, size),
-	// }
-}
-
 
 /*
 // MakeDefaultValue Used only for native types

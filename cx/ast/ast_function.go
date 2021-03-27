@@ -1,8 +1,9 @@
-package cxcore
+package ast
 
 import (
 	"errors"
 	"fmt"
+	"github.com/skycoin/cx/cx"
 )
 
 // MakeFunction creates an empty function.
@@ -28,13 +29,13 @@ func MakeNativeFunction(opCode int, inputs []*CXArgument, outputs []*CXArgument)
 	offset := 0
 	for _, inp := range inputs {
 		inp.Offset = offset
-		offset += GetSize(inp)
+		offset += cxcore.GetSize(inp)
 		fn.Inputs = append(fn.Inputs, inp)
 	}
 	for _, out := range outputs {
 		fn.Outputs = append(fn.Outputs, out)
 		out.Offset = offset
-		offset += GetSize(out)
+		offset += cxcore.GetSize(out)
 	}
 
 	return fn
@@ -51,13 +52,13 @@ func MakeNativeFunctionV2(opCode int, inputs []*CXArgument, outputs []*CXArgumen
 	offset := 0
 	for _, inp := range inputs {
 		inp.Offset = offset
-		offset += GetSize(inp)
+		offset += cxcore.GetSize(inp)
 		fn.Inputs = append(fn.Inputs, inp)
 	}
 	for _, out := range outputs {
 		fn.Outputs = append(fn.Outputs, out)
 		out.Offset = offset
-		offset += GetSize(out)
+		offset += cxcore.GetSize(out)
 	}
 
 	return fn

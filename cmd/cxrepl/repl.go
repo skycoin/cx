@@ -6,6 +6,8 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"github.com/skycoin/cx/cx/ast"
+	"github.com/skycoin/cx/cx/execute"
 	"io"
 	"os"
 	"runtime"
@@ -42,7 +44,7 @@ func unsafeEval(code string) (out string) {
 
 	actions.LineNo = 0
 
-	actions.AST = cxcore.MakeProgram()
+	actions.AST = ast.MakeProgram()
 	cxgo0.PRGRM0 = actions.AST
 
 	cxgo0.Parse(code)
@@ -58,9 +60,9 @@ func unsafeEval(code string) (out string) {
 	}
 
 	//err = actions.AST.RunCompiled(0, nil);
-	err = cxcore.RunCompiled(actions.AST, 0, nil)
+	err = execute.RunCompiled(actions.AST, 0, nil)
 	if err != nil {
-		actions.AST = cxcore.MakeProgram()
+		actions.AST = ast.MakeProgram()
 		return fmt.Sprintf("%s", err)
 	}
 	//Tod: If error equals nill?
@@ -76,7 +78,7 @@ func unsafeEval(code string) (out string) {
 	os.Stdout = old // restoring the real stdout
 	out = <-outC
 
-	actions.AST = cxcore.MakeProgram()
+	actions.AST = ast.MakeProgram()
 	return out
 }
 
@@ -98,7 +100,7 @@ func Eval(code string) string {
 	case <-ch:
 		return result
 	case <-timer.C:
-		actions.AST = cxcore.MakeProgram()
+		actions.AST = ast.MakeProgram()
 		return "Timed out."
 	}
 }

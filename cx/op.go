@@ -5,11 +5,12 @@ import (
 	//"math"
 
 	//"github.com/skycoin/skycoin/src/cipher/encoder"
+	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 )
 
 // GetSize ...
-func GetSize(arg *CXArgument) int {
+func GetSize(arg *ast.CXArgument) int {
 	if len(arg.Fields) > 0 {
 		return GetSize(arg.Fields[len(arg.Fields)-1])
 	}
@@ -36,7 +37,7 @@ func GetSize(arg *CXArgument) int {
 }
 
 // GetDerefSize ...
-func GetDerefSize(arg *CXArgument) int {
+func GetDerefSize(arg *ast.CXArgument) int {
 	if arg.CustomType != nil {
 		return arg.CustomType.Size
 	}

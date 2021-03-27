@@ -1,12 +1,13 @@
 package cxcore
 
 import (
+	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 // MarkAndCompact ...
-func MarkAndCompact(prgrm *CXProgram) {
+func MarkAndCompact(prgrm *ast.CXProgram) {
 	var fp int
 	var faddr = int32(constants.NULL_HEAP_ADDRESS_OFFSET)
 
@@ -131,7 +132,7 @@ func MarkAndCompact(prgrm *CXProgram) {
 }
 
 // updateDisplaceReference performs the actual addition or subtraction of `plusOff` to the address being pointed by the element at `atOffset`.
-func updateDisplaceReference(prgrm *CXProgram, updated *map[int]int, atOffset, plusOff int) {
+func updateDisplaceReference(prgrm *ast.CXProgram, updated *map[int]int, atOffset, plusOff int) {
 	// Checking if it was already updated.
 	if _, found := (*updated)[atOffset]; found {
 		return
@@ -151,7 +152,7 @@ func updateDisplaceReference(prgrm *CXProgram, updated *map[int]int, atOffset, p
 }
 
 // doDisplaceReferences checks if the element at `atOffset` is pointing to an object on the heap and, if this is the case, it displaces it by `plusOff`. `updated` keeps a record of all the offsets that have already been updated.
-func doDisplaceReferences(prgrm *CXProgram, updated *map[int]int, atOffset int, plusOff int, baseType int, declSpecs []int) {
+func doDisplaceReferences(prgrm *ast.CXProgram, updated *map[int]int, atOffset int, plusOff int, baseType int, declSpecs []int) {
 	var numDeclSpecs = len(declSpecs)
 
 	// Getting the offset to the object in the heap.
@@ -206,7 +207,7 @@ func doDisplaceReferences(prgrm *CXProgram, updated *map[int]int, atOffset int, 
 }
 
 // DisplaceReferences displaces all the pointer-like variables, slice elements or field structures by `off`. `numPkgs` tells us the number of packages to consider for the reference desplacement (this number should equal to the number of packages that represent the blockchain code in a CX chain).
-func DisplaceReferences(prgrm *CXProgram, off int, numPkgs int) {
+func DisplaceReferences(prgrm *ast.CXProgram, off int, numPkgs int) {
 	// We're going to keep a record of all the references that were already updated.
 	updated := make(map[int]int)
 
@@ -234,7 +235,7 @@ func DisplaceReferences(prgrm *CXProgram, off int, numPkgs int) {
 }
 
 // Mark marks the object located at `heapOffset` as alive and sets the object's referencing address to `heapOffset`.
-func Mark(prgrm *CXProgram, heapOffset int32) {
+func Mark(prgrm *ast.CXProgram, heapOffset int32) {
 	// Marking as alive.
 	prgrm.Memory[heapOffset] = 1
 
@@ -243,7 +244,7 @@ func Mark(prgrm *CXProgram, heapOffset int32) {
 }
 
 // MarkObjectsTree traverses and marks a possible tree of heap objects (slices of slices, slices of pointers, etc.).
-func MarkObjectsTree(prgrm *CXProgram, offset int, baseType int, declSpecs []int) {
+func MarkObjectsTree(prgrm *ast.CXProgram, offset int, baseType int, declSpecs []int) {
 	lenMem := len(prgrm.Memory)
 	// Checking if it's a valid heap address. An invalid address
 	// usually occurs in CX chains, with the split of blockchain
@@ -295,13 +296,13 @@ func MarkObjectsTree(prgrm *CXProgram, offset int, baseType int, declSpecs []int
 }
 
 // updatePointer changes the address of the pointer located at `atOffset` to `newAddress`.
-func updatePointer(prgrm *CXProgram, atOffset int, toAddress int32) {
+func updatePointer(prgrm *ast.CXProgram, atOffset int, toAddress int32) {
 	WriteMemI32(prgrm.Memory, atOffset, toAddress)
 }
 
 // updatePointerTree changes the address of the pointer located at `atOffset` to `newAddress` and checks if it is the
 // root of a tree of objects, such as a slice or the instance of a struct where some of its fields are pointers.
-func updatePointerTree(prgrm *CXProgram, atOffset int, oldAddr, newAddr int32, baseType int, declSpecs []int) {
+func updatePointerTree(prgrm *ast.CXProgram, atOffset int, oldAddr, newAddr int32, baseType int, declSpecs []int) {
 	var numDeclSpecs = len(declSpecs)
 
 	// Getting the offset to the object in the heap
@@ -352,7 +353,7 @@ func updatePointerTree(prgrm *CXProgram, atOffset int, oldAddr, newAddr int32, b
 // For example, if `foo` was pointing to an object located at address 5151 and after calling the garbage collector it was
 // moved to address 4141, every symbol in a `CXProgram`'s `CallStack` and in its global variables need to be updated to point now to
 // 4141 instead of 5151.
-func updatePointers(prgrm *CXProgram, oldAddr, newAddr int32) {
+func updatePointers(prgrm *ast.CXProgram, oldAddr, newAddr int32) {
 	if oldAddr == newAddr {
 		return
 	}

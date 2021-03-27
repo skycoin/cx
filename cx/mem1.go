@@ -1,6 +1,7 @@
 package cxcore
 
 import (
+	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 )
 
@@ -10,7 +11,7 @@ import (
 
 
 // GetStrOffset ...
-func GetStrOffset(fp int, arg *CXArgument) int {
+func GetStrOffset(fp int, arg *ast.CXArgument) int {
 	strOffset := GetFinalOffset(fp, arg)
 	if arg.Name != "" {
 		// then it's not a literal
@@ -21,7 +22,7 @@ func GetStrOffset(fp int, arg *CXArgument) int {
 }
 
 // ResizeMemory ...
-func ResizeMemory(prgrm *CXProgram, newMemSize int, isExpand bool) {
+func ResizeMemory(prgrm *ast.CXProgram, newMemSize int, isExpand bool) {
 	// We can't expand memory to a value greater than `memLimit`.
 	if newMemSize > constants.MAX_HEAP_SIZE {
 		newMemSize = constants.MAX_HEAP_SIZE

@@ -3,13 +3,14 @@ package cxcore
 import (
 	"bufio"
 	"fmt"
+	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"os"
 	"strconv"
 	"strings"
 )
 
-func opLen(expr *CXExpression, fp int) {
+func opLen(expr *ast.CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	elt := GetAssignmentElement(inp1)
 
@@ -41,7 +42,7 @@ func opLen(expr *CXExpression, fp int) {
 	}
 }
 
-func opAppend(expr *CXExpression, fp int) {
+func opAppend(expr *ast.CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 
 	eltInp1 := GetAssignmentElement(inp1)
@@ -75,7 +76,7 @@ func opAppend(expr *CXExpression, fp int) {
 	WriteI32(outputSlicePointer, outputSliceOffset)
 }
 
-func opResize(expr *CXExpression, fp int) {
+func opResize(expr *ast.CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 
 	if inp1.Type != out1.Type || !GetAssignmentElement(inp1).IsSlice || !GetAssignmentElement(out1).IsSlice {
@@ -87,7 +88,7 @@ func opResize(expr *CXExpression, fp int) {
 	WriteI32(outputSlicePointer, outputSliceOffset)
 }
 
-func opInsert(expr *CXExpression, fp int) {
+func opInsert(expr *ast.CXExpression, fp int) {
 	inp1, inp2, inp3, out1 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Outputs[0]
 
 	if inp1.Type != inp3.Type || inp1.Type != out1.Type || !GetAssignmentElement(inp1).IsSlice || !GetAssignmentElement(out1).IsSlice {
@@ -108,7 +109,7 @@ func opInsert(expr *CXExpression, fp int) {
 	}
 }
 
-func opRemove(expr *CXExpression, fp int) {
+func opRemove(expr *ast.CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 
 	if inp1.Type != out1.Type || !GetAssignmentElement(inp1).IsSlice || !GetAssignmentElement(out1).IsSlice {
@@ -120,7 +121,7 @@ func opRemove(expr *CXExpression, fp int) {
 	WriteI32(outputSlicePointer, outputSliceOffset)
 }
 
-func opCopy(expr *CXExpression, fp int) {
+func opCopy(expr *ast.CXExpression, fp int) {
 	dstInput := expr.Inputs[0]
 	srcInput := expr.Inputs[1]
 	dstOffset := GetSliceOffset(fp, dstInput)
@@ -145,7 +146,7 @@ func opCopy(expr *CXExpression, fp int) {
 	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), int32(count/dstElem.TotalSize))
 }
 
-func buildString(expr *CXExpression, fp int) []byte {
+func buildString(expr *ast.CXExpression, fp int) []byte {
 	inp1 := expr.Inputs[0]
 
 	fmtStr := ReadStr(fp, inp1)
@@ -255,11 +256,11 @@ func buildString(expr *CXExpression, fp int) []byte {
 	return res
 }
 
-func opSprintf(expr *CXExpression, fp int) {
+func opSprintf(expr *ast.CXExpression, fp int) {
 	WriteString(fp, string(buildString(expr, fp)), expr.Outputs[0])
 }
 
-func opPrintf(expr *CXExpression, fp int) {
+func opPrintf(expr *ast.CXExpression, fp int) {
 	fmt.Print(string(buildString(expr, fp)))
 }
 

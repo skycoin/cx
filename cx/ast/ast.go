@@ -1,8 +1,9 @@
-package cxcore
+package ast
 
 import (
 	"errors"
 	"fmt"
+	"github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cx/constants"
 )
 
@@ -44,10 +45,10 @@ type CXProgram struct {
 	HeapStartsAt int           // Offset at which the heap starts in a CX program's memory (normally the stack size)
 	HeapPointer  int           // At what offset a CX program can insert a new object to the heap
 
-	CallStack    []CXCall      // Collection of function calls
-	CallCounter  int           // What function call is the currently being executed in the CallStack
-	Terminated   bool          // Utility field for the runtime. Indicates if a CX program has already finished or not.
-	Version      string        // CX version used to build this CX program.
+	CallStack    []CXCall // Collection of function calls
+	CallCounter  int      // What function call is the currently being executed in the CallStack
+	Terminated   bool     // Utility field for the runtime. Indicates if a CX program has already finished or not.
+	Version      string   // CX version used to build this CX program.
 
 	// Used by the REPL and cxgo
 	CurrentPackage *CXPackage // Represents the currently active package in the REPL or when parsing a CX file.
@@ -475,8 +476,8 @@ func (cxprogram *CXProgram) RemovePackage(modName string) {
 //Very strange
 //Beware whenever this function is called
 func (cxprogram *CXProgram) SetCurrentCxProgram() (*CXProgram, error) {
-	PROGRAM = cxprogram
-	return PROGRAM, nil
+	cxcore.PROGRAM = cxprogram
+	return cxcore.PROGRAM, nil
 }
 
 // GetCurrentCxProgram returns the CX program assigned to global variable `PROGRAM`.
@@ -502,7 +503,7 @@ func (cxprogram *CXProgram) PrintAllObjects() {
 		op := cxprogram.CallStack[c].Operator
 
 		for _, ptr := range op.ListOfPointers {
-			heapOffset := Deserialize_i32(cxprogram.Memory[fp+ptr.Offset : fp+ptr.Offset+constants.TYPE_POINTER_SIZE])
+			heapOffset := cxcore.Deserialize_i32(cxprogram.Memory[fp+ptr.Offset : fp+ptr.Offset+constants.TYPE_POINTER_SIZE])
 
 			var byts []byte
 
@@ -631,8 +632,8 @@ func (pkg *CXPackage) AddFunction(fn *CXFunction) *CXPackage {
 			break
 		}
 	}
-	if found && !InREPL {
-		println(CompilationError(fn.FileName, fn.FileLine), "function redeclaration")
+	if found && !cxcore.InREPL {
+		println(cxcore.CompilationError(fn.FileName, fn.FileLine), "function redeclaration")
 	}
 	if !found {
 		pkg.Functions = append(pkg.Functions, fn)
@@ -770,7 +771,7 @@ func (strct *CXStruct) AddField(fld *CXArgument) *CXStruct {
 			lastFld := strct.Fields[numFlds-1]
 			fld.Offset = lastFld.Offset + lastFld.TotalSize
 		}
-		strct.Size += GetSize(fld)
+		strct.Size += cxcore.GetSize(fld)
 	} else {
 		panic("duplicate field")
 	}
@@ -1042,16 +1043,16 @@ func MakeField(name string, typ int, fileName string, fileLine int) *CXArgument 
 
 // MakeGlobal ...
 func MakeGlobal(name string, typ int, fileName string, fileLine int) *CXArgument {
-	size := GetArgSize(typ)
+	size := cxcore.GetArgSize(typ)
 	global := &CXArgument{
 		Name:     name,
 		Type:     typ,
 		Size:     size,
-		Offset:   HeapOffset,
+		Offset:   cxcore.HeapOffset,
 		FileName: fileName,
 		FileLine: fileLine,
 	}
-	HeapOffset += size
+	cxcore.HeapOffset += size
 	return global
 }
 
@@ -1075,7 +1076,7 @@ func (arg *CXArgument) AddPackage(pkg *CXPackage) *CXArgument {
 func (arg *CXArgument) AddType(typ string) *CXArgument {
 	if typCode, found := constants.TypeCodes[typ]; found {
 		arg.Type = typCode
-		size := GetArgSize(typCode)
+		size := cxcore.GetArgSize(typCode)
 		arg.Size = size
 		arg.TotalSize = size
 		arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_BASIC)
@@ -1128,7 +1129,7 @@ func (cxprogram *CXProgram) ToString() string {
 	currentFunction, _ = cxprogram.GetCurrentFunction();
 	currentPackage.CurrentFunction = currentFunction
 
-	buildStrPackages(cxprogram, &ast) //what does this do?
+	cxcore.buildStrPackages(cxprogram, &ast) //what does this do?
 
 	return ast
 }

@@ -1,4 +1,4 @@
-package cxcore
+package ast
 
 import "github.com/skycoin/cx/cx/constants"
 

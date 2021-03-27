@@ -2,21 +2,19 @@ package api
 
 import (
 	"fmt"
+	"github.com/skycoin/cx/cx/ast"
 	"net/http"
 	"strings"
-
-	"github.com/skycoin/cx/cx"
-	"github.com/skycoin/cx//cx/globals"
 )
 
 // API represents an HTTP API.
 type API struct {
 	root string
-	pg   *cxcore.CXProgram
+	pg   *ast.CXProgram
 }
 
 // NewAPI returns a new API given a CX Program.
-func NewAPI(root string, pg *cxcore.CXProgram) *API {
+func NewAPI(root string, pg *ast.CXProgram) *API {
 	if root == "" {
 		root = "/"
 	}
@@ -37,7 +35,7 @@ func (a *API) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 }
 
 // ProgramMeta returns the program meta data.
-func ProgramMeta(pg *cxcore.CXProgram) http.HandlerFunc {
+func ProgramMeta(pg *ast.CXProgram) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		resp := extractProgramMeta(pg)
 		//httputil.WriteJSON(w, req, http.StatusOK, resp)
@@ -46,7 +44,7 @@ func ProgramMeta(pg *cxcore.CXProgram) http.HandlerFunc {
 }
 
 // PackagesOfProgram returns an array of package names of a given program.
-func PackagesOfProgram(pg *cxcore.CXProgram) http.HandlerFunc {
+func PackagesOfProgram(pg *ast.CXProgram) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		pkgNames := make([]string, 0, len(pg.Packages))
 		for _, pkg := range pg.Packages {
@@ -59,7 +57,7 @@ func PackagesOfProgram(pg *cxcore.CXProgram) http.HandlerFunc {
 }
 
 // ExportedSymbolsOfPackage returns exported symbols of a given package.
-func ExportedSymbolsOfPackage(pg *cxcore.CXProgram, pkgName string) http.HandlerFunc {
+func ExportedSymbolsOfPackage(pg *ast.CXProgram, pkgName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		for _, pkg := range pg.Packages {
 			if pkg.Name != pkgName {

@@ -1,13 +1,13 @@
 package actions
 
 import (
-	"github.com/skycoin/cx/cx"
+	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 )
 
 //Move out actions/interactive to own module?
 
-var AST *cxcore.CXProgram
+var AST *ast.CXProgram
 
 //TODO: THIS IS WRONG
 //USE AST.HeapStartsAt

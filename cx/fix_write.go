@@ -1,6 +1,7 @@
 package cxcore
 
 import (
+	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 	"math"
@@ -38,7 +39,7 @@ func WriteStringData(str string) int {
 }
 
 // WriteString writes the string `str` on memory, starting at byte number `fp`.
-func WriteString(fp int, str string, out *CXArgument) {
+func WriteString(fp int, str string, out *ast.CXArgument) {
 	WriteObject(GetOffset_str(fp, out), encoder.Serialize(str))
 }
 

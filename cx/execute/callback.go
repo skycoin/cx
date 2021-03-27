@@ -1,15 +1,17 @@
-package cxcore
+package execute
 
 import (
+	"github.com/skycoin/cx/cx"
+	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"os"
 )
 
-// What calls Callback?
+// What calls Callback?ex
 // Callback is only called from opHttpHandle, can probably be removed
 // TODO: Delete and delete call from opHTTPHandle
 // TODO: We probably dont need this? HTTPHandle can work in another way
-func (cxprogram *CXProgram) Callback(fn *CXFunction, inputs [][]byte) (outputs [][]byte) {
+func Callback(cxprogram *ast.CXProgram, fn *ast.CXFunction, inputs [][]byte) (outputs [][]byte) {
 	line := cxprogram.CallStack[cxprogram.CallCounter].Line
 	previousCall := cxprogram.CallCounter
 	cxprogram.CallCounter++
@@ -26,17 +28,16 @@ func (cxprogram *CXProgram) Callback(fn *CXFunction, inputs [][]byte) (outputs [
 	}
 
 	for i, inp := range inputs {
-		WriteMemory(GetFinalOffset(newFP, newCall.Operator.Inputs[i]), inp)
+		cxcore.WriteMemory(cxcore.GetFinalOffset(newFP, newCall.Operator.Inputs[i]), inp)
 	}
 
 	var nCalls = 0
 
 	//err := cxprogram.Run(true, &nCalls, previousCall)
-	err := RunCxAst(cxprogram,true, &nCalls, previousCall)
+	err := RunCxAst(cxprogram, true, &nCalls, previousCall)
 	if err != nil {
 		os.Exit(constants.CX_INTERNAL_ERROR)
 	}
-
 
 	cxprogram.CallCounter = previousCall
 	cxprogram.CallStack[cxprogram.CallCounter].Line = line
@@ -44,7 +45,7 @@ func (cxprogram *CXProgram) Callback(fn *CXFunction, inputs [][]byte) (outputs [
 	for _, out := range fn.Outputs {
 		// Making a copy of the bytes, so if we modify the bytes being held by `outputs`
 		// we don't modify the program memory.
-		mem := ReadMemory(GetFinalOffset(newFP, out), out)
+		mem := cxcore.ReadMemory(cxcore.GetFinalOffset(newFP, out), out)
 		cop := make([]byte, len(mem))
 		copy(cop, mem)
 		outputs = append(outputs, cop)

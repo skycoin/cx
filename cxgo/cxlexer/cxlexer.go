@@ -3,6 +3,7 @@ package cxlexer
 import (
 	"bufio"
 	"bytes"
+	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"io"
 	"os"
@@ -83,7 +84,7 @@ func SetLogger(log logrus.FieldLogger) {
 // Step0 performs a first pass for the CX cxgo. Globals, packages and
 // custom types are added to `cxgo0.PRGRM0`.
 func Step0(srcStrs, srcNames []string) int {
-	var prePkg *cxcore.CXPackage
+	var prePkg *ast.CXPackage
 	parseErrs := 0
 
 	// 1. Identify all the packages and structs
@@ -128,7 +129,7 @@ func Step0(srcStrs, srcNames []string) int {
 }
 
 // idPkgAndStructs (1) identifies packages and structs contained within given file.
-func idPkgAndStructs(filename string, r io.Reader, prePkg **cxcore.CXPackage) {
+func idPkgAndStructs(filename string, r io.Reader, prePkg **ast.CXPackage) {
 	if lg.l1 != nil {
 		_, stopL1x := cxprof.StartProfile(lg.l1.WithField("src_file", filename))
 		defer stopL1x()
@@ -163,7 +164,7 @@ func idPkgAndStructs(filename string, r io.Reader, prePkg **cxcore.CXPackage) {
 			if match := re.pkgName.FindStringSubmatch(string(line)); match != nil {
 				if pkg, err := cxgo0.PRGRM0.GetPackage(match[len(match)-1]); err != nil {
 					// then it hasn't been added
-					newPkg := cxcore.MakePackage(match[len(match)-1])
+					newPkg := ast.MakePackage(match[len(match)-1])
 					cxgo0.PRGRM0.AddPackage(newPkg)
 					*prePkg = newPkg
 				} else {
@@ -186,7 +187,7 @@ func idPkgAndStructs(filename string, r io.Reader, prePkg **cxcore.CXPackage) {
 					println(cxcore.CompilationError(filename, lineN), "No package defined")
 				} else if _, err := cxgo0.PRGRM0.GetStruct(match[len(match)-1], (*prePkg).Name); err != nil {
 					// then it hasn't been added
-					strct := cxcore.MakeStruct(match[len(match)-1])
+					strct := ast.MakeStruct(match[len(match)-1])
 					(*prePkg).AddStruct(strct)
 				}
 			}
@@ -196,7 +197,7 @@ func idPkgAndStructs(filename string, r io.Reader, prePkg **cxcore.CXPackage) {
 
 // idGlobVars (2) identifies global variables contained within given file.
 // We also need to identify packages again, so we know which package to add
-func idGlobVars(filename string, r io.Reader, prePkg **cxcore.CXPackage) {
+func idGlobVars(filename string, r io.Reader, prePkg **ast.CXPackage) {
 	if lg.l2 != nil {
 		_, stopL2x := cxprof.StartProfile(lg.l2.WithField("src_file", filename))
 		defer stopL2x()
@@ -242,7 +243,7 @@ func idGlobVars(filename string, r io.Reader, prePkg **cxcore.CXPackage) {
 			if match := re.pkgName.FindStringSubmatch(string(line)); match != nil {
 				if pkg, err := cxgo0.PRGRM0.GetPackage(match[len(match)-1]); err != nil {
 					// then it hasn't been added
-					*prePkg = cxcore.MakePackage(match[len(match)-1])
+					*prePkg = ast.MakePackage(match[len(match)-1])
 					cxgo0.PRGRM0.AddPackage(*prePkg)
 				} else {
 					*prePkg = pkg
@@ -308,7 +309,7 @@ func idGlobVars(filename string, r io.Reader, prePkg **cxcore.CXPackage) {
 			if match := re.glName.FindStringSubmatch(string(line)); match != nil {
 				if _, err := (*prePkg).GetGlobal(match[len(match)-1]); err != nil {
 					// then it hasn't been added
-					arg := cxcore.MakeArgument(match[len(match)-1], "", 0)
+					arg := ast.MakeArgument(match[len(match)-1], "", 0)
 					arg.Offset = -1
 					arg.Package = *prePkg
 					(*prePkg).AddGlobal(arg)
@@ -367,10 +368,10 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) int {
 	// package.
 	if osPkg, err := actions.AST.GetPackage(constants.OS_PKG); err == nil {
 		if _, err := osPkg.GetGlobal(constants.OS_ARGS); err != nil {
-			arg0 := cxcore.MakeArgument(constants.OS_ARGS, "", -1).AddType(constants.TypeNames[constants.TYPE_UNDEFINED])
+			arg0 := ast.MakeArgument(constants.OS_ARGS, "", -1).AddType(constants.TypeNames[constants.TYPE_UNDEFINED])
 			arg0.Package = osPkg
 
-			arg1 := cxcore.MakeArgument(constants.OS_ARGS, "", -1).AddType(constants.TypeNames[constants.TYPE_STR])
+			arg1 := ast.MakeArgument(constants.OS_ARGS, "", -1).AddType(constants.TypeNames[constants.TYPE_STR])
 			arg1 = actions.DeclarationSpecifiers(arg1, []int{0}, constants.DECL_BASIC)
 			arg1 = actions.DeclarationSpecifiers(arg1, []int{0}, constants.DECL_SLICE)
 

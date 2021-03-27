@@ -2,6 +2,7 @@ package cxcore
 
 import (
 	"fmt"
+	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 )
 
@@ -12,7 +13,7 @@ func AssertFailed() bool {
 	return !assertSuccess
 }
 
-func assert(expr *CXExpression, fp int) (same bool) {
+func assert(expr *ast.CXExpression, fp int) (same bool) {
 	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
 	var byts1, byts2 []byte
 
@@ -57,23 +58,23 @@ func assert(expr *CXExpression, fp int) (same bool) {
 	return same
 }
 
-func opAssertValue(expr *CXExpression, fp int) {
+func opAssertValue(expr *ast.CXExpression, fp int) {
 	same := assert(expr, fp)
 	WriteBool(GetFinalOffset(fp, expr.Outputs[0]), same)
 }
 
-func opTest(expr *CXExpression, fp int) {
+func opTest(expr *ast.CXExpression, fp int) {
 	assert(expr, fp)
 }
 
-func opPanic(expr *CXExpression, fp int) {
+func opPanic(expr *ast.CXExpression, fp int) {
 	if !assert(expr, fp) {
 		panic(constants.CX_ASSERT)
 	}
 }
 
 // panicIf/panicIfNot implementation
-func panicIf(expr *CXExpression, fp int, condition bool) {
+func panicIf(expr *ast.CXExpression, fp int, condition bool) {
 	if ReadBool(fp, expr.Inputs[0]) == condition {
 		fmt.Printf("%s : %d, %s\n", expr.FileName, expr.FileLine, ReadStr(fp, expr.Inputs[1]))
 		panic(constants.CX_ASSERT)
@@ -81,15 +82,15 @@ func panicIf(expr *CXExpression, fp int, condition bool) {
 }
 
 // panic with CX_ASSERT exit code if condition is true
-func opPanicIf(expr *CXExpression, fp int) {
+func opPanicIf(expr *ast.CXExpression, fp int) {
 	panicIf(expr, fp, true)
 }
 
 // panic with CX_ASSERT exit code if condition is false
-func opPanicIfNot(expr *CXExpression, fp int) {
+func opPanicIfNot(expr *ast.CXExpression, fp int) {
 	panicIf(expr, fp, false)
 }
 
-func opStrError(expr *CXExpression, fp int) {
+func opStrError(expr *ast.CXExpression, fp int) {
 	WriteString(fp, ErrorString(int(ReadI32(fp, expr.Inputs[0]))), expr.Outputs[0])
 }

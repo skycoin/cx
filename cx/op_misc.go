@@ -1,11 +1,14 @@
 package cxcore
 
-import "github.com/skycoin/cx/cx/constants"
+import (
+	"github.com/skycoin/cx/cx/ast"
+	"github.com/skycoin/cx/cx/constants"
+)
 
 // "fmt"
 
 // EscapeAnalysis ...
-func EscapeAnalysis(fp int, inpOffset, outOffset int, arg *CXArgument) {
+func EscapeAnalysis(fp int, inpOffset, outOffset int, arg *ast.CXArgument) {
 	heapOffset := AllocateSeq(arg.TotalSize + constants.OBJECT_HEADER_SIZE)
 
 	byts := ReadMemory(inpOffset, arg)
@@ -20,12 +23,12 @@ func EscapeAnalysis(fp int, inpOffset, outOffset int, arg *CXArgument) {
 	WriteI32(outOffset, int32(heapOffset))
 }
 
-func opIdentity(expr *CXExpression, fp int) {
+func opIdentity(expr *ast.CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	inp1Offset := GetFinalOffset(fp, inp1)
 	out1Offset := GetFinalOffset(fp, out1)
 
-	var elt *CXArgument
+	var elt *ast.CXArgument
 	if len(out1.Fields) > 0 {
 		elt = out1.Fields[len(out1.Fields)-1]
 	} else {
@@ -44,7 +47,7 @@ func opIdentity(expr *CXExpression, fp int) {
 	}
 }
 
-func opJmp(expr *CXExpression, fp int) {
+func opJmp(expr *ast.CXExpression, fp int) {
 	call := PROGRAM.GetCurrentCall()
 	inp1 := expr.Inputs[0]
 	var predicate bool
