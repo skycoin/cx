@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/skycoin/cx/cx"
+	"github.com/skycoin/cx//cx/globals"
 )
 
 // API represents an HTTP API.
@@ -71,7 +72,7 @@ func ExportedSymbolsOfPackage(pg *cxcore.CXProgram, pkgName string) http.Handler
 			return
 		}
 
-		err := fmt.Errorf("package '%s' is not found in program '%s'", pkgName, pg.Path)
+		err := fmt.Errorf("package '%s' is not found in program'", pkgName)
 		//httputil.WriteJSON(w, req, http.StatusNotFound, err)
 		WriteJSON(w, req, http.StatusNotFound, err)
 	}

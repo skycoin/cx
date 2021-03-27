@@ -86,7 +86,7 @@ The actual arunes consumed by the last Scan can be retrieved by Token.
 
 If the assigned token ids do not overlap with the otherwise expected arunes, i.e. their ids are e.g. in the Unicode private usage area,
 then it is possible, as any other unsuccessful scan will return either zero (EOF) or unicode.ReplacementChar,
-to ignore the returned ok value and drive a parser only by the arune/token id value. This is presumably the easier way for e.g. goyacc.
+to ignore the returned ok value and drive a cxgo only by the arune/token id value. This is presumably the easier way for e.g. goyacc.
 
 ¹The FSM has stopped in an accepting state without consuming any arunes. Caused by using (re)* or (re)? for negative numeric id (i.e. ignored) tokens.
 Better avoid that.
@@ -133,7 +133,7 @@ func (s *Scanner) Scan() (arune rune, ok bool) {
 			break
 		}
 
-		// moves > 1, don't confuse an easy parser by returning the last arune of an invalid token
+		// moves > 1, don't confuse an easy cxgo by returning the last arune of an invalid token
 		arune = unicode.ReplacementChar
 		break
 

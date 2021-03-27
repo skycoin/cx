@@ -14,7 +14,7 @@ import (
 	"github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cxgo/actions"
 	"github.com/skycoin/cx/cxgo/cxgo0"
-	"github.com/skycoin/cx/cxgo/parser"
+	"github.com/skycoin/cx/cxgo/cxgo"
 	"github.com/skycoin/cx/cxgo/util/cxprof"
 )
 
@@ -79,7 +79,7 @@ func SetLogger(log logrus.FieldLogger) {
 	}
 }
 
-// Step0 performs a first pass for the CX parser. Globals, packages and
+// Step0 performs a first pass for the CX cxgo. Globals, packages and
 // custom types are added to `cxgo0.PRGRM0`.
 func Step0(srcStrs, srcNames []string) int {
 	var prePkg *cxcore.CXPackage
@@ -355,7 +355,7 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) int {
 		parseErrors = Step0(sourceCodeCopy, fileNames)
 	}
 
-	actions.PRGRM.SelectProgram()
+	actions.PRGRM.SetCurrentCxProgram()
 
 	actions.PRGRM = cxgo0.PRGRM0
 	if cxcore.FoundCompileErrors || parseErrors > 0 {
@@ -399,7 +399,7 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) int {
 				_, stopL4x := cxprof.StartProfile(lg.l4.WithField("src_file", actions.CurrentFile))
 				defer stopL4x()
 			}
-			parseErrors += parser.Parse(parser.NewLexer(b))
+			parseErrors += cxgo.Parse(cxgo.NewLexer(b))
 		}()
 	}
 

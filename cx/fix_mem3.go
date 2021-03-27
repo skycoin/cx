@@ -68,11 +68,6 @@ func GetFinalOffset(fp int, arg *CXArgument) int {
 	return finalOffset
 }
 
-
-//OMFG. set ENABLE_MIRACLE_BUG to true and do `make build; make test`
-//var ENABLE_MIRACLE_BUG bool = true //uses GetFinalOffset for everything
-var ENHANCED_DEBUGING bool = true //runs asserts to find error
-
 //this is simplest version of function that works for atomic types
 func GetOffsetAtomicSimple(fp int, arg *CXArgument) int {
 
@@ -96,6 +91,10 @@ func GetOffsetAtomicSimple(fp int, arg *CXArgument) int {
 	}
 	return finalOffset
 }
+
+//OMFG. set ENABLE_MIRACLE_BUG to true and do `make build; make test`
+//var ENABLE_MIRACLE_BUG bool = true //uses GetFinalOffset for everything
+var ENHANCED_DEBUGING bool = true //runs asserts to find error
 
 var ENABLE_MIRACLE_BUG bool    = false
 //this is version with type assertions

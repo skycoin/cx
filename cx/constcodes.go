@@ -17,7 +17,7 @@ const (
 	CONST_CX_RUNTIME_NOT_IMPLEMENTED
 )
 
-// For the parser. These shouldn't be used in the runtime for performance reasons
+// For the cxgo. These shouldn't be used in the runtime for performance reasons
 var (
 	ConstNames = map[int]string{}
 	ConstCodes = map[string]int{}

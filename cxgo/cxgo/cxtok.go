@@ -1,4 +1,4 @@
-package parser
+package cxgo
 
 import (
 	"fmt"
@@ -12,12 +12,12 @@ func Tokenize(r io.Reader, w io.Writer) {
 	lex := NewLexer(r)
 	token := lex.Lex(&sym)
 	for token > 0 {
-		fmt.Fprintln(w, tokenName(token), tokenValue(token, &sym))
+		fmt.Fprintln(w, TokenName(token), TokenValue(token, &sym))
 		token = lex.Lex(&sym)
 	}
 }
 
-func tokenValue(token int, sym *yySymType) interface{} {
+func TokenValue(token int, sym *yySymType) interface{} {
 	switch token {
 	case BOOLEAN_LITERAL:
 		return sym.bool
@@ -51,7 +51,7 @@ func tokenValue(token int, sym *yySymType) interface{} {
 	return ""
 }
 
-func tokenName(token int) string {
+func TokenName(token int) string {
 	switch token {
 	case ADDR:
 		return "  ADDR"
@@ -261,8 +261,12 @@ func tokenName(token int) string {
 		return "PLUSEQ"
 	case PLUSPLUS:
 		return " PLUS2"
-	case PSTEP:
-		return " PSTEP"
+	//case PSTEP:
+	//	return " PSTEP"
+	//case STEP:
+	//	return "  STEP"
+	//case TSTEP:
+	//	return " TSTEP"
 	case PTR_OP:
 		return " PTROP"
 	case RBRACE:
@@ -291,16 +295,14 @@ func tokenName(token int) string {
 		return "RPAREN"
 	case SEMICOLON:
 		return "SCOLON"
-	case SFUNC:
-		return " SFUNC"
 	case SHORT_LITERAL:
 		return "SHRTLT"
-	case SPACKAGE:
-		return "SPACKG"
-	case SSTRUCT:
-		return "SSTRCT"
-	case STEP:
-		return "  STEP"
+	//case SPACKAGE:
+	//	return "SPACKG"
+	//case SSTRUCT:
+	//	return "SSTRCT"
+	//case SFUNC:
+	//	return " SFUNC"
 	case STR:
 		return "   STR"
 	case STRING_LITERAL:
@@ -315,8 +317,6 @@ func tokenName(token int) string {
 		return "SWITCH"
 	case TAG:
 		return "   TAG"
-	case TSTEP:
-		return " TSTEP"
 	case TYPE:
 		return "  TYPE"
 	case TYPSTRUCT:

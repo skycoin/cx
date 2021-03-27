@@ -5,9 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/skycoin/cx/cx"
-
 	"github.com/jinzhu/copier"
+	"github.com/skycoin/cx/cx"
 )
 
 // FunctionHeader takes a function name ('ident') and either creates the
@@ -98,7 +97,25 @@ func CheckUndValidTypes(expr *cxcore.CXExpression) {
 	}
 }
 
+func FunctionProcessParameters(symbols *[]map[string]*cxcore.CXArgument, symbolsScope *map[string]bool, offset *int, fn *cxcore.CXFunction, params []*cxcore.CXArgument) {
+	for _, param := range params {
+		ProcessLocalDeclaration(symbols, symbolsScope, param)
+
+		UpdateSymbolsTable(symbols, param, offset, false)
+		GiveOffset(symbols, param, offset, false)
+		SetFinalSize(symbols, param)
+
+		AddPointer(fn, param)
+
+		// as these are declarations, they should not have any dereference operations
+		param.DereferenceOperations = nil
+	}
+}
+
 func FunctionDeclaration(fn *cxcore.CXFunction, inputs, outputs []*cxcore.CXArgument, exprs []*cxcore.CXExpression) {
+
+	//var exprs []*cxcore.CXExpression = globals.SysInitExprs
+
 	if cxcore.FoundCompileErrors {
 		return
 	}
@@ -107,7 +124,7 @@ func FunctionDeclaration(fn *cxcore.CXFunction, inputs, outputs []*cxcore.CXArgu
 
 	// getting offset to use by statements (excluding inputs, outputs and receiver)
 	var offset int
-	PRGRM.HeapStartsAt = DataOffset
+	PRGRM.HeapStartsAt = DataOffset //Why would declaring a function set heap?
 
 	ProcessGoTos(fn, exprs)
 
@@ -127,7 +144,7 @@ func FunctionDeclaration(fn *cxcore.CXFunction, inputs, outputs []*cxcore.CXArgu
 	FunctionProcessParameters(symbols, &symbolsScope, &offset, fn, fn.Outputs)
 
 	for i, expr := range fn.Expressions {
-		if expr.ScopeOperation == cxcore.SCOPE_NEW {
+		if expr.ScopeOperation == SCOPE_NEW {
 			*symbols = append(*symbols, make(map[string]*cxcore.CXArgument))
 		}
 
@@ -143,8 +160,11 @@ func FunctionDeclaration(fn *cxcore.CXFunction, inputs, outputs []*cxcore.CXArgu
 		ProcessStringAssignment(expr)
 		ProcessReferenceAssignment(expr)
 
+		//if expr.Outputs[0].IsShortAssignmentDeclaration {
+		//	panic("ATWETEWTASGDFG")
+		//}
 		// process short declaration
-		if len(expr.Outputs) > 0 && len(expr.Inputs) > 0 && expr.Outputs[0].IsShortDeclaration && !expr.IsStructLiteral && !isParseOp(expr) {
+		if len(expr.Outputs) > 0 && len(expr.Inputs) > 0 && expr.Outputs[0].IsShortAssignmentDeclaration && !expr.IsStructLiteral && !isParseOp(expr) {
 			if expr.IsMethodCall {
 				fn.Expressions[i-1].Outputs[0].Type = fn.Expressions[i].Operator.Outputs[0].Type
 				fn.Expressions[i].Outputs[0].Type = fn.Expressions[i].Operator.Outputs[0].Type
@@ -159,7 +179,7 @@ func FunctionDeclaration(fn *cxcore.CXFunction, inputs, outputs []*cxcore.CXArgu
 		CheckTypes(expr)
 		CheckUndValidTypes(expr)
 
-		if expr.ScopeOperation == cxcore.SCOPE_REM {
+		if expr.ScopeOperation == SCOPE_REM {
 			*symbols = (*symbols)[:len(*symbols)-1]
 		}
 	}
@@ -445,20 +465,7 @@ func ProcessLocalDeclaration(symbols *[]map[string]*cxcore.CXArgument, symbolsSc
 	arg.IsLocalDeclaration = (*symbolsScope)[arg.Package.Name+"."+arg.Name]
 }
 
-func FunctionProcessParameters(symbols *[]map[string]*cxcore.CXArgument, symbolsScope *map[string]bool, offset *int, fn *cxcore.CXFunction, params []*cxcore.CXArgument) {
-	for _, param := range params {
-		ProcessLocalDeclaration(symbols, symbolsScope, param)
 
-		UpdateSymbolsTable(symbols, param, offset, false)
-		GiveOffset(symbols, param, offset, false)
-		SetFinalSize(symbols, param)
-
-		AddPointer(fn, param)
-
-		// as these are declarations, they should not have any dereference operations
-		param.DereferenceOperations = nil
-	}
-}
 
 func ProcessGoTos(fn *cxcore.CXFunction, exprs []*cxcore.CXExpression) {
 	for i, expr := range exprs {
@@ -508,7 +515,7 @@ func checkMatchParamTypes(expr *cxcore.CXExpression, expected, received []*cxcor
 		}
 
 		// In the case of assignment we need to check that the input's type matches the output's type.
-		// FIXME: There are some expressions added by the parser where temporary variables are used.
+		// FIXME: There are some expressions added by the cxgo where temporary variables are used.
 		// These temporary variables' types are not properly being set. That's why we use !cxcore.IsTempVar to
 		// exclude these cases for now.
 		if expr.Operator.OpCode == cxcore.OP_IDENTITY && !cxcore.IsTempVar(expr.Outputs[0].Name) {
@@ -977,7 +984,7 @@ func CopyArgFields(sym *cxcore.CXArgument, arg *cxcore.CXArgument) {
 	sym.CustomType = arg.CustomType
 
 	// FIXME: In other processes like ProcessSymbolFields the symbol is assigned with lengths.
-	// If we already have some lengths, we skip this. This needs to be fixed in the redesign of the parser.
+	// If we already have some lengths, we skip this. This needs to be fixed in the redesign of the cxgo.
 	if len(sym.Lengths) == 0 {
 		sym.Lengths = arg.Lengths
 	}
@@ -998,7 +1005,7 @@ func CopyArgFields(sym *cxcore.CXArgument, arg *cxcore.CXArgument) {
 	if !arg.IsSlice && arg.CustomType != nil && elt.IsSlice {
 		// elt.DereferenceOperations = []int{4, 4}
 		for i, deref := range elt.DereferenceOperations {
-			// The parser when reading `foo[5]` in postfix.go does not know if `foo`
+			// The cxgo when reading `foo[5]` in postfix.go does not know if `foo`
 			// is a slice or an array. At this point we now know it's a slice and we need
 			// to change those dereferences to cxcore.DEREF_SLICE.
 			if deref == cxcore.DEREF_ARRAY {
@@ -1016,7 +1023,7 @@ func CopyArgFields(sym *cxcore.CXArgument, arg *cxcore.CXArgument) {
 			sym.DereferenceOperations = append([]int{cxcore.DEREF_POINTER}, sym.DereferenceOperations...)
 		} else {
 			for i, deref := range sym.DereferenceOperations {
-				// The parser when reading `foo[5]` in postfix.go does not know if `foo`
+				// The cxgo when reading `foo[5]` in postfix.go does not know if `foo`
 				// is a slice or an array. At this point we now know it's a slice and we need
 				// to change those dereferences to cxcore.DEREF_SLICE.
 				if deref == cxcore.DEREF_ARRAY {
