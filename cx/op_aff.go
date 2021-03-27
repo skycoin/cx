@@ -173,7 +173,7 @@ func queryParam(fn *ast.CXFunction, args []*ast.CXArgument, exprLbl string, argO
 		res := CallAffPredicate(fn, ast.PROGRAM.Memory[argOffset+constants.OBJECT_HEADER_SIZE:argOffset+constants.OBJECT_HEADER_SIZE+constants.STR_SIZE+constants.I32_SIZE+constants.STR_SIZE])
 
 		if res == 1 {
-			*affOffset = WriteToSlice(*affOffset, argOffsetB)
+			*affOffset = ast.WriteToSlice(*affOffset, argOffsetB)
 
 			// affNameB := encoder.Serialize(fmt.Sprintf("%s.%d", exprLbl, i))
 			// affNameOffset := AllocateSeq(len(affNameB))
@@ -182,7 +182,7 @@ func queryParam(fn *ast.CXFunction, args []*ast.CXArgument, exprLbl string, argO
 
 			var affNameOffsetBytes [4]byte
 			mem.WriteMemI32(affNameOffsetBytes[:], 0, int32(affNameOffset))
-			*affOffset = WriteToSlice(*affOffset, affNameOffsetBytes[:])
+			*affOffset = ast.WriteToSlice(*affOffset, affNameOffsetBytes[:])
 		}
 	}
 }
@@ -226,7 +226,7 @@ func QueryExpressions(fn *ast.CXFunction, expr *ast.CXExpression, exprOffsetB []
 		res := CallAffPredicate(fn, opNameOffsetB[:])
 
 		if res == 1 {
-			*affOffset = WriteToSlice(*affOffset, exprOffsetB)
+			*affOffset = ast.WriteToSlice(*affOffset, exprOffsetB)
 
 			// lblNameB := encoder.Serialize(ex.Label)
 			// lblNameOffset := AllocateSeq(len(lblNameB))
@@ -234,7 +234,7 @@ func QueryExpressions(fn *ast.CXFunction, expr *ast.CXExpression, exprOffsetB []
 			// WriteMemory(lblNameOffset, lblNameB)
 			var lblNameOffsetB [4]byte
 			mem.WriteMemI32(lblNameOffsetB[:], 0, int32(lblNameOffset))
-			*affOffset = WriteToSlice(*affOffset, lblNameOffsetB[:])
+			*affOffset = ast.WriteToSlice(*affOffset, lblNameOffsetB[:])
 		}
 	}
 }
@@ -256,7 +256,7 @@ func getSignatureSlice(params []*ast.CXArgument) int {
 
 		var typOffsetB [4]byte
 		mem.WriteMemI32(typOffsetB[:], 0, int32(typOffset))
-		sliceOffset = WriteToSlice(sliceOffset, typOffsetB[:])
+		sliceOffset = ast.WriteToSlice(sliceOffset, typOffsetB[:])
 	}
 
 	return sliceOffset
@@ -280,8 +280,8 @@ func queryStructsInPackage(fn *ast.CXFunction, strctOffsetB []byte, affOffset *i
 		res := CallAffPredicate(fn, val)
 
 		if res == 1 {
-			*affOffset = WriteToSlice(*affOffset, strctOffsetB)
-			*affOffset = WriteToSlice(*affOffset, strctNameOffsetB[:])
+			*affOffset = ast.WriteToSlice(*affOffset, strctOffsetB)
+			*affOffset = ast.WriteToSlice(*affOffset, strctNameOffsetB[:])
 		}
 	}
 }
@@ -330,8 +330,8 @@ func QueryFunction(fn *ast.CXFunction, expr *ast.CXExpression, fnOffsetB []byte,
 		res := CallAffPredicate(fn, val)
 
 		if res == 1 {
-			*affOffset = WriteToSlice(*affOffset, fnOffsetB)
-			*affOffset = WriteToSlice(*affOffset, opNameOffsetB[:])
+			*affOffset = ast.WriteToSlice(*affOffset, fnOffsetB)
+			*affOffset = ast.WriteToSlice(*affOffset, opNameOffsetB[:])
 		}
 	}
 }
@@ -369,7 +369,7 @@ func QueryCaller(fn *ast.CXFunction, expr *ast.CXExpression, callerOffsetB []byt
 	res := CallAffPredicate(fn, ast.PROGRAM.Memory[callOffset+constants.OBJECT_HEADER_SIZE:callOffset+constants.OBJECT_HEADER_SIZE+constants.STR_SIZE+constants.I32_SIZE])
 
 	if res == 1 {
-		*affOffset = WriteToSlice(*affOffset, callerOffsetB)
+		*affOffset = ast.WriteToSlice(*affOffset, callerOffsetB)
 	}
 }
 
@@ -415,8 +415,8 @@ func QueryProgram(fn *ast.CXFunction, expr *ast.CXExpression, prgrmOffsetB []byt
 	res := CallAffPredicate(fn, ast.PROGRAM.Memory[prgrmOffset+constants.OBJECT_HEADER_SIZE:prgrmOffset+constants.OBJECT_HEADER_SIZE+constants.I32_SIZE+constants.I64_SIZE+constants.STR_SIZE+constants.I32_SIZE])
 
 	if res == 1 {
-		*affOffset = WriteToSlice(*affOffset, prgrmOffsetB)
-		*affOffset = WriteToSlice(*affOffset, prgrmOffsetB)
+		*affOffset = ast.WriteToSlice(*affOffset, prgrmOffsetB)
+		*affOffset = ast.WriteToSlice(*affOffset, prgrmOffsetB)
 	}
 }
 

@@ -2,7 +2,6 @@ package execute
 
 import (
 	"fmt"
-	"github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/mem"
@@ -171,7 +170,7 @@ func RunCompiled(cxprogram *ast.CXProgram, nCalls int, args []string) error {
 
 							var argOffsetBytes [4]byte
 							mem.WriteMemI32(argOffsetBytes[:], 0, int32(argOffset))
-							argsOffset = cxcore.WriteToSlice(argsOffset, argOffsetBytes[:])
+							argsOffset = ast.WriteToSlice(argsOffset, argOffsetBytes[:])
 						}
 						mem.WriteI32(ast.GetFinalOffset(0, osGbl), int32(argsOffset))
 					}

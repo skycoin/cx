@@ -16,7 +16,7 @@ func opSerialize(expr *ast.CXExpression, fp int) {
 	var slcOff int
 	byts := ast.SerializeCXProgram(ast.PROGRAM, true)
 	for _, b := range byts {
-		slcOff = WriteToSlice(slcOff, []byte{b})
+		slcOff = ast.WriteToSlice(slcOff, []byte{b})
 	}
 
 	mem.WriteI32(out1Offset, int32(slcOff))

@@ -122,7 +122,7 @@ func Param(typCode int) *ast.CXArgument {
 	return arg
 }
 
-// ParamData ...
+//TODO: Deprecate, ParamData is only use by http package
 type ParamData struct {
 	typCode   int               // The type code of the parameter.
 	paramType int               // Type of the parameter (struct, slice, etc.).
