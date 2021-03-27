@@ -1,7 +1,6 @@
 package cxcore
 
 import (
-	"bytes"
 	"fmt"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
@@ -283,17 +282,6 @@ func SignatureStringOfStruct(s *ast.CXStruct) string {
 	}
 
 	return fmt.Sprintf("%s struct {%s }", s.Name, fields)
-}
-
-// SignatureStringOfFunction returns the signature string of a function.
-func SignatureStringOfFunction(pkg *ast.CXPackage, f *ast.CXFunction) string {
-	var ins bytes.Buffer
-	var outs bytes.Buffer
-	getFormattedParam(f.Inputs, pkg, &ins)
-	getFormattedParam(f.Outputs, pkg, &outs)
-
-	return fmt.Sprintf("func %s(%s) (%s)",
-		f.Name, ins.String(), outs.String())
 }
 
 // IsCorePackage ...

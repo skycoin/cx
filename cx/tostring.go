@@ -176,3 +176,14 @@ func getFormattedParam(params []*ast.CXArgument, pkg *ast.CXPackage, buf *bytes.
 	}
 }
 
+// SignatureStringOfFunction returns the signature string of a function.
+func SignatureStringOfFunction(pkg *ast.CXPackage, f *ast.CXFunction) string {
+	var ins bytes.Buffer
+	var outs bytes.Buffer
+	getFormattedParam(f.Inputs, pkg, &ins)
+	getFormattedParam(f.Outputs, pkg, &outs)
+
+	return fmt.Sprintf("func %s(%s) (%s)",
+		f.Name, ins.String(), outs.String())
+}
+
