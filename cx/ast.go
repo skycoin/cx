@@ -447,13 +447,13 @@ func (cxprogram *CXProgram) GetCurrentFunction() *CXFunction {
 }
 
 // GetCurrentExpression ...
-func (cxprogram *CXProgram) GetCurrentExpression() (*CXExpression, error) {
+func (cxprogram *CXProgram) GetCurrentExpression() *CXExpression {
 	if cxprogram.CurrentPackage != nil &&
 		cxprogram.CurrentPackage.CurrentFunction != nil &&
 		cxprogram.CurrentPackage.CurrentFunction.CurrentExpression != nil {
-		return cxprogram.CurrentPackage.CurrentFunction.CurrentExpression, nil
+		return cxprogram.CurrentPackage.CurrentFunction.CurrentExpression
 	}
-	return nil, errors.New("current package, function or expression is nil")
+	return nil
 
 }
 
