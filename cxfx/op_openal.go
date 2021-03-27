@@ -6,14 +6,14 @@ import (
 	"bufio"
 	"github.com/mjibson/go-dsp/wav"
 	"github.com/skycoin/cx/cx/ast"
-	file2 "github.com/skycoin/cx/cx/util/file"
+	"github.com/skycoin/cx/cx/util"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 
 	//"golang.org/x/mobile/exp/audio/al"
 )
 
 func opAlLoadWav(inputs []ast.CXValue, outputs []ast.CXValue) {
-	file, err := file2.CXOpenFile(inputs[0].Get_str())
+	file, err := util.CXOpenFile(inputs[0].Get_str())
 	defer file.Close()
 	if err != nil {
 		panic(err)

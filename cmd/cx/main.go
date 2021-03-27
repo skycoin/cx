@@ -2,14 +2,13 @@ package main
 
 import (
 	"fmt"
+	repl "github.com/skycoin/cx/cmd/cxrepl"
+	cxcore "github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/execute"
 	"github.com/skycoin/cx/cx/globals"
-	"github.com/skycoin/cx/cx/util/file"
-
-	repl "github.com/skycoin/cx/cmd/cxrepl"
-	cxcore "github.com/skycoin/cx/cx"
+	"github.com/skycoin/cx/cx/util"
 	"github.com/skycoin/cx/cxgo/actions"
 	"github.com/skycoin/cx/cxgo/cxgo"
 	"github.com/skycoin/cx/cxgo/cxparser"
@@ -157,7 +156,7 @@ func printTokenize(options cxCmdFlags, fileNames []string) {
 		if len(fileNames) > 1 {
 			fmt.Fprintln(os.Stderr, "Multiple source files detected. Ignoring all except", sourceFilename)
 		}
-		r, err = file.CXOpenFile(sourceFilename)
+		r, err = util.CXOpenFile(sourceFilename)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "ProgramError reading:", sourceFilename, err)
 			return
@@ -169,7 +168,7 @@ func printTokenize(options cxCmdFlags, fileNames []string) {
 		w = os.Stdout
 	} else {
 		tokenFilename := options.compileOutput
-		w, err = file.CXCreateFile(tokenFilename)
+		w, err = util.CXCreateFile(tokenFilename)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "ProgramError writing:", tokenFilename, err)
 			return

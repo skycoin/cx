@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/helper"
-	file2 "github.com/skycoin/cx/cx/util/file"
+	"github.com/skycoin/cx/cx/util"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -406,7 +406,7 @@ func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCod
 			continue
 		}
 
-		fi, err := file2.CXStatFile(arg)
+		fi, err := util.CXStatFile(arg)
 		if err != nil {
 			println(fmt.Sprintf("%s: source file or library not found", arg))
 			os.Exit(constants.CX_COMPILATION_ERROR)
@@ -430,7 +430,7 @@ func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCod
 			}
 
 			for _, path := range fileList {
-				file, err := file2.CXOpenFile(path)
+				file, err := util.CXOpenFile(path)
 
 				if err != nil {
 					println(fmt.Sprintf("%s: source file or library not found", arg))
@@ -447,7 +447,7 @@ func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCod
 				}
 			}
 		case mode.IsRegular():
-			file, err := file2.CXOpenFile(arg)
+			file, err := util.CXOpenFile(arg)
 
 			if err != nil {
 				panic(err)

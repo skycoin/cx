@@ -5,7 +5,7 @@ package cxos
 import (
 	"fmt"
 	"github.com/skycoin/cx/cx/ast"
-	"github.com/skycoin/cx/cx/util/file"
+	"github.com/skycoin/cx/cx/util"
 	"os"
 	"runtime"
 	"runtime/pprof"
@@ -14,7 +14,7 @@ import (
 var openProfiles map[string]*os.File = make(map[string]*os.File, 0)
 
 func startCPUProfile(name string, rate int) *os.File {
-	f, err := file.CXCreateFile(fmt.Sprintf("%s_%s_cpu.pprof", os.Args[0], name))
+	f, err := util.CXCreateFile(fmt.Sprintf("%s_%s_cpu.pprof", os.Args[0], name))
 	if err != nil {
 		fmt.Println("Failed to create CPU profile: ", err)
 	}
