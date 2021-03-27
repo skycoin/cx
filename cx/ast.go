@@ -401,14 +401,6 @@ grep -rn "PassBy" .
 ./cx/utilities.go:184:	if arg.PassBy == PASSBY_REFERENCE {
 */
 
-
-// CXCall ...
-type CXCall struct {
-	Operator     *CXFunction // What CX function will be called when running this CXCall in the runtime
-	Line         int         // What line in the CX function is currently being executed
-	FramePointer int         // Where in the stack is this function call's local variables stored
-}
-
 // MakeProgram ...
 func MakeProgram() *CXProgram {
 	minHeapSize := minHeapSize()
@@ -610,6 +602,7 @@ func (cxprogram *CXProgram) GetFunction(functionNameToFind string, pkgName strin
 
 // GetCurrentCall returns the current CXCall
 //TODO: What does this do?
+//TODO: Only used in OP_JMP
 func (cxprogram *CXProgram) GetCurrentCall() *CXCall {
 	return &cxprogram.CallStack[cxprogram.CallCounter]
 }
