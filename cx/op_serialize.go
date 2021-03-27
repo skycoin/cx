@@ -14,7 +14,7 @@ func opSerialize(expr *ast.CXExpression, fp int) {
 	_ = inp1
 
 	var slcOff int
-	byts := SerializeCXProgram(ast.PROGRAM, true)
+	byts := ast.SerializeCXProgram(ast.PROGRAM, true)
 	for _, b := range byts {
 		slcOff = WriteToSlice(slcOff, []byte{b})
 	}
@@ -32,5 +32,5 @@ func opDeserialize(expr *ast.CXExpression, fp int) {
 	_l := ast.PROGRAM.Memory[off+constants.OBJECT_HEADER_SIZE : off+constants.OBJECT_HEADER_SIZE+constants.SLICE_HEADER_SIZE]
 	l := helper.Deserialize_i32(_l[4:8])
 
-	Deserialize(ast.PROGRAM.Memory[off+constants.OBJECT_HEADER_SIZE+constants.SLICE_HEADER_SIZE : off+constants.OBJECT_HEADER_SIZE+constants.SLICE_HEADER_SIZE+l]) // BUG : should be l * elt.TotalSize ?
+	ast.Deserialize(ast.PROGRAM.Memory[off+constants.OBJECT_HEADER_SIZE+constants.SLICE_HEADER_SIZE : off+constants.OBJECT_HEADER_SIZE+constants.SLICE_HEADER_SIZE+l]) // BUG : should be l * elt.TotalSize ?
 }
