@@ -40,29 +40,6 @@ func MakeNativeFunction(opCode int, inputs []*CXArgument, outputs []*CXArgument)
 	return fn
 }
 
-//not used
-func MakeNativeFunctionV2(opCode int, inputs []*CXArgument, outputs []*CXArgument) *CXFunction {
-	fn := &CXFunction{
-		IsAtomic: true,
-		OpCode:   opCode,
-		Version:  2,
-	}
-
-	offset := 0
-	for _, inp := range inputs {
-		inp.Offset = offset
-		offset += GetSize(inp)
-		fn.Inputs = append(fn.Inputs, inp)
-	}
-	for _, out := range outputs {
-		fn.Outputs = append(fn.Outputs, out)
-		out.Offset = offset
-		offset += GetSize(out)
-	}
-
-	return fn
-}
-
 // ----------------------------------------------------------------
 //                             `CXFunction` Getters
 

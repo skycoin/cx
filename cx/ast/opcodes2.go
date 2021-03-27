@@ -1,7 +1,6 @@
 package ast
 
 import (
-	"github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cx/constants"
 )
 
@@ -32,7 +31,7 @@ func GetTypedOperator(typeCode int, opCode int) *CXFunction {
 
 // Operator ...
 func Operator(code int, name string, handler OpcodeHandler_V2, inputs []*CXArgument, outputs []*CXArgument, atomicType int, operator int) {
-	cxcore.Op_V2(code, name, handler, inputs, outputs)
+	Op_V2(code, name, handler, inputs, outputs)
 	native := Natives[code]
 	Operators[GetTypedOperatorOffset(atomicType, operator)] = native
 }
