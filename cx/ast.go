@@ -438,15 +438,11 @@ func (cxprogram *CXProgram) GetCurrentStruct() *CXStruct {
 }
 
 // GetCurrentFunction ...
-func (cxprogram *CXProgram) GetCurrentFunction() (*CXFunction, error) {
+func (cxprogram *CXProgram) GetCurrentFunction() *CXFunction {
 	if cxprogram.CurrentPackage != nil {
-		if cxprogram.CurrentPackage.CurrentFunction != nil {
-			return cxprogram.CurrentPackage.CurrentFunction, nil
-		}
-		return nil, errors.New("current function is nil")
-
+		return cxprogram.CurrentPackage.CurrentFunction
 	}
-	return nil, errors.New("current package is nil")
+	return nil
 
 }
 
@@ -1132,7 +1128,7 @@ func (cxprogram *CXProgram) ToString() string {
 		panic("CXProgram.ToString(): error, currentPackage is nil")
 	}
 
-	currentFunction, _ = cxprogram.GetCurrentFunction()
+	currentFunction = cxprogram.GetCurrentFunction()
 	currentPackage.CurrentFunction = currentFunction
 
 	buildStrPackages(cxprogram, &ast) //what does this do?
