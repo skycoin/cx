@@ -4,3 +4,10 @@ package globals
 //Path and working directory should not be hard coded into program struct (etc, when serialized)
 //Working directory is property of executable and can be retrieved with golang library
 var CxProgramPath string = ""
+
+// Var
+var (
+	HeapOffset    int
+	GenSymCounter int
+)
+

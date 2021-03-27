@@ -3,15 +3,10 @@ package cxcore
 import (
 	"fmt"
 	"github.com/skycoin/cx/cx/ast"
+	"github.com/skycoin/cx/cx/globals"
 
 	//uuid "github.com/satori/go.uuid"
 	//"github.com/skycoin/skycoin/src/cipher/encoder"
-)
-
-// Var
-var (
-	HeapOffset    int
-	GenSymCounter int
 )
 
 // MakeElementID ...
@@ -23,8 +18,8 @@ func MakeElementID() uuid.UUID {
 
 // MakeGenSym ...
 func MakeGenSym(name string) string {
-	gensym := fmt.Sprintf("%s_%d", name, GenSymCounter)
-	GenSymCounter++
+	gensym := fmt.Sprintf("%s_%d", name, globals.GenSymCounter)
+	globals.GenSymCounter++
 
 	return gensym
 }

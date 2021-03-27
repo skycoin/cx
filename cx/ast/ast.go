@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/globals"
 )
 
 /*
@@ -1048,11 +1049,11 @@ func MakeGlobal(name string, typ int, fileName string, fileLine int) *CXArgument
 		Name:     name,
 		Type:     typ,
 		Size:     size,
-		Offset:   cxcore.HeapOffset,
+		Offset:   globals.HeapOffset,
 		FileName: fileName,
 		FileLine: fileLine,
 	}
-	cxcore.HeapOffset += size
+	globals.HeapOffset += size
 	return global
 }
 
