@@ -25,8 +25,8 @@ var (
 )
 
 var (
-    opcodeHandlers []OpcodeHandler
-	opcodeHandlers_V2 []OpcodeHandler_V2
+    OpcodeHandlers    []OpcodeHandler
+	OpcodeHandlers_V2 []OpcodeHandler_V2
 )
 
 // RegisterPackage registers a package on the CX standard library. This does not create a `CXPackage` structure,
@@ -37,7 +37,7 @@ func RegisterPackage(pkgName string) {
 
 // GetOpCodeCount returns an op code that is available for usage on the CX standard library.
 func GetOpCodeCount() int {
-	return len(opcodeHandlers)
+	return len(OpcodeHandlers)
 }
 
 func IsOperator(opCode int) bool {
@@ -69,13 +69,13 @@ func Operator(code int, name string, handler OpcodeHandler_V2, inputs []*ast.CXA
 
 // Op ...
 func Op_V2(code int, name string, handler OpcodeHandler_V2, inputs []*ast.CXArgument, outputs []*ast.CXArgument) {
-	if code >= len(opcodeHandlers_V2) {
-		opcodeHandlers_V2 = append(opcodeHandlers_V2, make([]OpcodeHandler_V2, code+1)...)
+	if code >= len(OpcodeHandlers_V2) {
+		OpcodeHandlers_V2 = append(OpcodeHandlers_V2, make([]OpcodeHandler_V2, code+1)...)
 	}
-	if opcodeHandlers_V2[code] != nil {
+	if OpcodeHandlers_V2[code] != nil {
 		panic(fmt.Sprintf("duplicate opcode %d : '%s' width '%s'.\n", code, name, globals.OpNames[code]))
 	}
-	opcodeHandlers_V2[code] = handler
+	OpcodeHandlers_V2[code] = handler
 
 	globals.OpNames[code] = name
 	globals.OpCodes[name] = code
@@ -93,13 +93,13 @@ func Op_V2(code int, name string, handler OpcodeHandler_V2, inputs []*ast.CXArgu
 
 // Op ...
 func Op(code int, name string, handler OpcodeHandler, inputs []*ast.CXArgument, outputs []*ast.CXArgument) {
-	if code >= len(opcodeHandlers) {
-		opcodeHandlers = append(opcodeHandlers, make([]OpcodeHandler, code+1)...)
+	if code >= len(OpcodeHandlers) {
+		OpcodeHandlers = append(OpcodeHandlers, make([]OpcodeHandler, code+1)...)
 	}
-	if opcodeHandlers[code] != nil {
+	if OpcodeHandlers[code] != nil {
 		panic(fmt.Sprintf("duplicate opcode %d : '%s' width '%s'.\n", code, name, globals.OpNames[code]))
 	}
-	opcodeHandlers[code] = handler
+	OpcodeHandlers[code] = handler
 
 	globals.OpNames[code] = name
 	globals.OpCodes[name] = code
