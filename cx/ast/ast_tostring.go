@@ -57,7 +57,7 @@ func buildStrGlobals(pkg *CXPackage, ast *string) {
 	}
 
 	for j, v := range pkg.Globals {
-		*ast += fmt.Sprintf("\t\t%d.- Global: %s %s\n", j, v.Name, cxcore.GetFormattedType(v))
+		*ast += fmt.Sprintf("\t\t%d.- Global: %s %s\n", j, v.Name, GetFormattedType(v))
 	}
 }
 
@@ -73,7 +73,7 @@ func buildStrStructs(pkg *CXPackage, ast *string) {
 
 		for k, fld := range strct.Fields {
 			*ast += fmt.Sprintf("\t\t\t%d.- Field: %s %s\n",
-				k, fld.Name, cxcore.GetFormattedType(fld))
+				k, fld.Name, GetFormattedType(fld))
 		}
 	}
 }
@@ -153,7 +153,7 @@ func buildStrFunctions(pkg *CXPackage, ast *string) {
 						k,
 						lbl,
 						expr.Outputs[0].Name,
-						cxcore.GetFormattedType(out))
+						GetFormattedType(out))
 				}
 			}
 		}
@@ -169,7 +169,7 @@ func BuildStrPackages(prgrm *CXProgram, ast *string) {
 	// ignore the increments from core or stdlib packages.
 	var i int
 	for _, pkg := range prgrm.Packages {
-		if cxcore.IsCorePackage(pkg.Name) {
+		if constants.IsCorePackage(pkg.Name) {
 			continue
 		}
 
@@ -199,9 +199,9 @@ func getFormattedParam(params []*CXArgument, pkg *CXPackage, buf *bytes.Buffer) 
 		}
 
 		if i == len(params)-1 {
-			buf.WriteString(fmt.Sprintf("%s %s", cxcore.GetFormattedName(param, externalPkg), cxcore.GetFormattedType(elt)))
+			buf.WriteString(fmt.Sprintf("%s %s", GetFormattedName(param, externalPkg), GetFormattedType(elt)))
 		} else {
-			buf.WriteString(fmt.Sprintf("%s %s, ", cxcore.GetFormattedName(param, externalPkg), cxcore.GetFormattedType(elt)))
+			buf.WriteString(fmt.Sprintf("%s %s, ", GetFormattedName(param, externalPkg), GetFormattedType(elt)))
 		}
 	}
 }
@@ -582,3 +582,176 @@ func IsPointer(sym *CXArgument) bool {
 	// }
 	return false
 }
+
+// getFormattedDerefs is an auxiliary function for `GetFormattedName`. This
+// function formats indexing and pointer dereferences associated to `arg`.
+func getFormattedDerefs(arg *CXArgument, includePkg bool) string {
+	name := ""
+	// Checking if we should include `arg`'s package name.
+	if includePkg {
+		name = fmt.Sprintf("%s.%s", arg.Package.Name, arg.Name)
+	} else {
+		name = arg.Name
+	}
+
+	// If it's a literal, just override the name with LITERAL_PLACEHOLDER.
+	if arg.Name == "" {
+		name = constants.LITERAL_PLACEHOLDER
+	}
+
+	// Checking if we got dereferences, e.g. **foo
+	derefLevels := ""
+	if arg.DereferenceLevels > 0 {
+		for c := 0; c < arg.DereferenceLevels; c++ {
+			derefLevels += "*"
+		}
+	}
+	name = derefLevels + name
+
+	// Checking if we have indexing operations, e.g. foo[2][1]
+	for _, idx := range arg.Indexes {
+		// Checking if the value is in data segment.
+		// If this is the case, we can safely display it.
+		idxValue := ""
+		if idx.Offset > PROGRAM.StackSize {
+			// Then it's a literal.
+			idxI32 := helper.Deserialize_i32(PROGRAM.Memory[idx.Offset : idx.Offset+constants.TYPE_POINTER_SIZE])
+			idxValue = fmt.Sprintf("%d", idxI32)
+		} else {
+			// Then let's just print the variable name.
+			idxValue = idx.Name
+		}
+
+		name = fmt.Sprintf("%s[%s]", name, idxValue)
+	}
+
+	return name
+}
+
+// GetFormattedName reads `arg.DereferenceOperations` and builds a string that
+// depicts how an argument is being accessed. Example outputs: "foo[3]",
+// "**bar", "foo.bar[0]". If `includePkg` is `true`, the argument name will
+// include the package name that contains it, such as in "pkg.foo".
+func GetFormattedName(arg *CXArgument, includePkg bool) string {
+	// Getting formatted name which does not include fields.
+	name := getFormattedDerefs(arg, includePkg)
+
+	// Adding as suffixes all the fields.
+	for _, fld := range arg.Fields {
+		name = fmt.Sprintf("%s.%s", name, getFormattedDerefs(fld, includePkg))
+	}
+
+	// Checking if we're referencing `arg`.
+	if arg.PassBy == constants.PASSBY_REFERENCE {
+		name = "&" + name
+	}
+
+	return name
+}
+
+// formatParameters returns a string containing a list of the formatted types of
+// each of `params`, enclosed in parethesis. This function is used only when
+// formatting functions as first-class objects.
+func formatParameters(params []*CXArgument) string {
+	types := "("
+	for i, param := range params {
+		types += GetFormattedType(param)
+		if i != len(params)-1 {
+			types += ", "
+		}
+	}
+	types += ")"
+
+	return types
+}
+
+// GetFormattedType builds a string with the CXGO type representation of `arg`.
+func GetFormattedType(arg *CXArgument) string {
+	typ := ""
+	elt := cxcore.GetAssignmentElement(arg)
+
+	// this is used to know what arg.Lengths index to use
+	// used for cases like [5]*[3]i32, where we jump to another decl spec
+	arrDeclCount := len(arg.Lengths) - 1
+	// looping declaration specifiers
+	for _, spec := range elt.DeclarationSpecifiers {
+		switch spec {
+		case constants.DECL_POINTER:
+			typ = "*" + typ
+		case constants.DECL_DEREF:
+			typ = typ[1:]
+		case constants.DECL_ARRAY:
+			typ = fmt.Sprintf("[%d]%s", arg.Lengths[arrDeclCount], typ)
+			arrDeclCount--
+		case constants.DECL_SLICE:
+			typ = "[]" + typ
+		case constants.DECL_INDEXING:
+		default:
+			// base type
+			if elt.CustomType != nil {
+				// then it's custom type
+				typ += elt.CustomType.Name
+			} else {
+				// then it's basic type
+				typ += constants.TypeNames[elt.Type]
+
+				// If it's a function, let's add the inputs and outputs.
+				if elt.Type == constants.TYPE_FUNC {
+					if elt.IsLocalDeclaration {
+						// Then it's a local variable, which can be assigned to a
+						// lambda function, for example.
+						typ += formatParameters(elt.Inputs)
+						typ += formatParameters(elt.Outputs)
+					} else {
+						// Then it refers to a named function defined in a package.
+						pkg, err := PROGRAM.GetPackage(arg.Package.Name)
+						if err != nil {
+							println(CompilationError(elt.FileName, elt.FileLine), err.Error())
+							os.Exit(constants.CX_COMPILATION_ERROR)
+						}
+
+						fn, err := pkg.GetFunction(elt.Name)
+						if err == nil {
+							// println(CompilationError(elt.FileName, elt.FileLine), err.ProgramError())
+							// os.Exit(CX_COMPILATION_ERROR)
+							// Adding list of inputs and outputs types.
+							typ += formatParameters(fn.Inputs)
+							typ += formatParameters(fn.Outputs)
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return typ
+}
+
+// SignatureStringOfStruct returns the signature string of a struct.
+func SignatureStringOfStruct(s *CXStruct) string {
+	fields := ""
+	for _, f := range s.Fields {
+		fields += fmt.Sprintf(" %s %s;", f.Name, GetFormattedType(f))
+	}
+
+	return fmt.Sprintf("%s struct {%s }", s.Name, fields)
+}
+
+// GetArgSizeFromTypeName ...
+func GetArgSizeFromTypeName(typeName string) int {
+	switch typeName {
+	case "bool", "i8", "ui8":
+		return 1
+	case "i16", "ui16":
+		return 2
+	case "str", "i32", "ui32", "f32", "aff":
+		return 4
+	case "i64", "ui64", "f64":
+		return 8
+	default:
+		return 4
+		// return -1
+		// panic(CX_INTERNAL_ERROR)
+	}
+}
+

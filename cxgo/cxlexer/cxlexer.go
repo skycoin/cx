@@ -14,7 +14,6 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cxgo/actions"
 	"github.com/skycoin/cx/cxgo/cxgo"
 	"github.com/skycoin/cx/cxgo/cxgo0"
@@ -227,7 +226,7 @@ func idGlobVars(filename string, r io.Reader, prePkg **ast.CXPackage) {
 			if match := re.impName.FindStringSubmatch(string(line)); match != nil {
 				pkgName := match[len(match)-1]
 				// Checking if `pkgName` already exists and if it's not a standard library package.
-				if _, err := cxgo0.PRGRM0.GetPackage(pkgName); err != nil && !cxcore.IsCorePackage(pkgName) {
+				if _, err := cxgo0.PRGRM0.GetPackage(pkgName); err != nil && !constants.IsCorePackage(pkgName) {
 					// _, sourceCode, srcNames := ParseArgsForCX([]string{fmt.Sprintf("%s%s", SRCPATH, pkgName)}, false)
 					_, sourceCode, fileNames := ast.ParseArgsForCX([]string{filepath.Join(globals.SRCPATH, pkgName)}, false)
 					ParseSourceCode(sourceCode, fileNames) // TODO @evanlinjin: Check return value.

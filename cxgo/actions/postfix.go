@@ -275,7 +275,7 @@ func PostfixExpressionField(prevExprs []*ast.CXExpression, ident string) []*ast.
 		// the external property will be propagated to the following arguments
 		// this way we avoid considering these arguments as module names
 
-		if cxcore.IsCorePackage(left.Name) {
+		if constants.IsCorePackage(left.Name) {
 			if code, ok := cxcore.ConstCodes[left.Name+"."+ident]; ok {
 				constant := cxcore.Constants[code]
 				val := WritePrimary(constant.Type, constant.Value, false)
@@ -318,7 +318,7 @@ func PostfixExpressionField(prevExprs []*ast.CXExpression, ident string) []*ast.
 		}
 	} else {
 		// then left is not a package name
-		if cxcore.IsCorePackage(left.Name) {
+		if constants.IsCorePackage(left.Name) {
 			println(ast.CompilationError(left.FileName, left.FileLine),
 				fmt.Sprintf("identifier '%s' does not exist",
 					left.Name))

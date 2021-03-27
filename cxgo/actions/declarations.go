@@ -263,7 +263,7 @@ func DeclareImport(name string, currentFile string, lineNo int) {
 	// All packages are read during the first pass of the compilation.  So
 	// if we get here during the 2nd pass, it's either a core package or
 	// something is panic-level wrong.
-	if cxcore.IsCorePackage(ident) {
+	if constants.IsCorePackage(ident) {
 		imp := ast.MakePackage(ident)
 		pkg.AddImport(imp)
 		AST.AddPackage(imp)

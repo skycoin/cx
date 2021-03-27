@@ -4,8 +4,6 @@ import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"unicode"
-
-	"github.com/skycoin/cx/cx"
 )
 
 // ProgramMetaResp is a program meta data response.
@@ -80,7 +78,7 @@ func displayCXFunction(pkg *ast.CXPackage, f *ast.CXFunction) ExportedSymbol {
 func displayCXStruct(s *ast.CXStruct) ExportedSymbol {
 	return ExportedSymbol{
 		Name:      s.Name,
-		Signature: cxcore.SignatureStringOfStruct(s),
+		Signature: ast.SignatureStringOfStruct(s),
 		Type:      constants.TYPE_CUSTOM,
 		TypeName:  "struct",
 	}
