@@ -275,28 +275,6 @@ func GetFormattedType(arg *ast.CXArgument) string {
 	return typ
 }
 
-// getFormattedParam is an auxiliary function for `ToString`. It formats the
-// name of a `CXExpression`'s input and output parameters (`CXArgument`s). Examples
-// of these formattings are "pkg.foo[0]", "&*foo.field1". The result is written to
-// `buf`.
-func getFormattedParam(params []*ast.CXArgument, pkg *ast.CXPackage, buf *bytes.Buffer) {
-	for i, param := range params {
-		elt := GetAssignmentElement(param)
-
-		// Checking if this argument comes from an imported package.
-		externalPkg := false
-		if pkg != param.Package {
-			externalPkg = true
-		}
-
-		if i == len(params)-1 {
-			buf.WriteString(fmt.Sprintf("%s %s", GetFormattedName(param, externalPkg), GetFormattedType(elt)))
-		} else {
-			buf.WriteString(fmt.Sprintf("%s %s, ", GetFormattedName(param, externalPkg), GetFormattedType(elt)))
-		}
-	}
-}
-
 // SignatureStringOfStruct returns the signature string of a struct.
 func SignatureStringOfStruct(s *ast.CXStruct) string {
 	fields := ""
