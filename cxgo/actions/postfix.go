@@ -6,8 +6,6 @@ import (
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/globals"
 	"os"
-
-	"github.com/skycoin/cx/cx"
 )
 
 // PostfixExpressionArray...
@@ -277,8 +275,8 @@ func PostfixExpressionField(prevExprs []*ast.CXExpression, ident string) []*ast.
 		// this way we avoid considering these arguments as module names
 
 		if constants.IsCorePackage(left.Name) {
-			if code, ok := cxcore.ConstCodes[left.Name+"."+ident]; ok {
-				constant := cxcore.Constants[code]
+			if code, ok := constants.ConstCodes[left.Name+"."+ident]; ok {
+				constant := constants.Constants[code]
 				val := WritePrimary(constant.Type, constant.Value, false)
 				prevExprs[len(prevExprs)-1].Outputs[0] = val[0].Outputs[0]
 				return prevExprs
