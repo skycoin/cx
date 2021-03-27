@@ -124,12 +124,12 @@ func PrimaryStructLiteral(ident string, strctFlds []*cxcore.CXExpression) []*cxc
 				expr.IsStructLiteral = true
 
 				expr.Outputs[0].Package = pkg
-				// expr.Outputs[0].Program = PRGRM
+				// expr.ProgramOutput[0].Program = PRGRM
 
 				if expr.Outputs[0].CustomType == nil {
 					expr.Outputs[0].CustomType = strct
 				}
-				// expr.Outputs[0].CustomType = strct
+				// expr.ProgramOutput[0].CustomType = strct
 				fld.CustomType = strct
 
 				expr.Outputs[0].Size = strct.Size
@@ -161,7 +161,7 @@ func PrimaryStructLiteralExternal(impName string, ident string, strctFlds []*cxc
 					expr.IsStructLiteral = true
 
 					expr.Outputs[0].Package = pkg
-					// expr.Outputs[0].Program = PRGRM
+					// expr.ProgramOutput[0].Program = PRGRM
 
 					expr.Outputs[0].CustomType = strct
 					expr.Outputs[0].Size = strct.Size
@@ -242,7 +242,7 @@ func ArrayLiteralExpression(arrSizes []int, typSpec int, exprs []*cxcore.CXExpre
 
 			result = append(result, symExpr)
 
-			// sym.Lengths = append(expr.Outputs[0].Lengths, arrSizes[len(arrSizes)-1])
+			// sym.Lengths = append(expr.ProgramOutput[0].Lengths, arrSizes[len(arrSizes)-1])
 			sym.Lengths = arrSizes
 			sym.TotalSize = sym.Size * TotalLength(sym.Lengths)
 		} else {

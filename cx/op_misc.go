@@ -43,7 +43,7 @@ func opIdentity(expr *CXExpression, fp int) {
 }
 
 func opJmp(expr *CXExpression, fp int) {
-	call := PROGRAM.GetCall()
+	call := PROGRAM.GetCurrentCall()
 	inp1 := expr.Inputs[0]
 	var predicate bool
 

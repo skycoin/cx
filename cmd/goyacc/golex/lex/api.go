@@ -391,7 +391,7 @@ func BOMMode(mode int) Option {
 }
 
 // ErrorFunc option sets a function called when an, for example I/O error,
-// occurs.  The default is to call Error with the position and message already
+// occurs.  The default is to call ProgramError with the position and message already
 // formated as a string.
 func ErrorFunc(f func(token.Pos, string)) Option {
 	return func(l *Lexer) error {

@@ -452,7 +452,7 @@ func init() {
 	Op_V2(OP_AL_DELETE_BUFFERS, "al.DeleteBuffers", opAlDeleteBuffers, In(AI32), nil)
 	Op_V2(OP_AL_DELETE_SOURCES, "al.DeleteSources", opAlDeleteSources, In(Slice(TYPE_I32)), nil)
 	Op_V2(OP_AL_DEVICE_ERROR, "al.DeviceError", opAlDeviceError, nil, Out(AI32))
-	Op_V2(OP_AL_ERROR, "al.Error", opAlError, nil, Out(AI32))
+	Op_V2(OP_AL_ERROR, "al.ProgramError", opAlError, nil, Out(AI32))
 	Op_V2(OP_AL_EXTENSIONS, "al.Extensions", opAlExtensions, nil, Out(ASTR))
 	Op_V2(OP_AL_OPEN_DEVICE, "al.OpenDevice", opAlOpenDevice, nil, nil)
 	Op_V2(OP_AL_PAUSE_SOURCES, "al.PauseSources", opAlPauseSources, In(Slice(TYPE_I32)), nil)

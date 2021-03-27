@@ -65,7 +65,7 @@ func PostfixExpressionArray(prevExprs []*cxcore.CXExpression, postExprs []*cxcor
 		fld := prevExprs[len(prevExprs)-1].Outputs[0].Fields[len(prevExprs[len(prevExprs)-1].Outputs[0].Fields)-1]
 
 		if postExprs[len(postExprs)-1].Operator == nil {
-			// expr.AddInput(postExprs[len(postExprs)-1].Outputs[0])
+			// expr.AddInput(postExprs[len(postExprs)-1].ProgramOutput[0])
 			fld.Indexes = append(fld.Indexes, postExprs[len(postExprs)-1].Outputs[0])
 		} else {
 			sym := cxcore.MakeArgument(cxcore.MakeGenSym(cxcore.LOCAL_PREFIX), CurrentFile, LineNo).AddType(cxcore.TypeNames[postExprs[len(postExprs)-1].Operator.Outputs[0].Type])
@@ -130,12 +130,12 @@ func PostfixExpressionEmptyFunCall(prevExprs []*cxcore.CXExpression) []*cxcore.C
 		// prevExprs[len(prevExprs) - 1].IsMethodCall = true
 		// expr.IsMethodCall = true
 		// // method name
-		// expr.Operator = MakeFunction(expr.Outputs[0].Fields[0].Name)
-		// inp := cxcore.MakeArgument(expr.Outputs[0].Name, CurrentFile, LineNo)
+		// expr.Operator = MakeFunction(expr.ProgramOutput[0].Fields[0].Name)
+		// inp := cxcore.MakeArgument(expr.ProgramOutput[0].Name, CurrentFile, LineNo)
 		// inp.Package = expr.Package
-		// inp.Type = expr.Outputs[0].Type
-		// inp.CustomType = expr.Outputs[0].CustomType
-		// expr.Inputs = append(expr.Inputs, inp)
+		// inp.Type = expr.ProgramOutput[0].Type
+		// inp.CustomType = expr.ProgramOutput[0].CustomType
+		// expr.ProgramInput = append(expr.ProgramInput, inp)
 
 	} else if prevExprs[len(prevExprs)-1].Operator == nil {
 		if opCode, ok := cxcore.OpCodes[prevExprs[len(prevExprs)-1].Outputs[0].Name]; ok {
@@ -292,7 +292,7 @@ func PostfixExpressionField(prevExprs []*cxcore.CXExpression, ident string) []*c
 
 		if glbl, err := imp.GetGlobal(ident); err == nil {
 			// then it's a global
-			// prevExprs[len(prevExprs)-1].Outputs[0] = glbl
+			// prevExprs[len(prevExprs)-1].ProgramOutput[0] = glbl
 			prevExprs[len(prevExprs)-1].Outputs[0].Name = glbl.Name
 			prevExprs[len(prevExprs)-1].Outputs[0].Type = glbl.Type
 			prevExprs[len(prevExprs)-1].Outputs[0].CustomType = glbl.CustomType

@@ -86,7 +86,7 @@ func CallAffPredicate(fn *CXFunction, predValue []byte) byte {
 	prevCC := PROGRAM.CallCounter
 	for {
 		call := &PROGRAM.CallStack[PROGRAM.CallCounter]
-		err := call.ccall(PROGRAM, &inputs, &outputs)
+		err := call.Ccall(PROGRAM, &inputs, &outputs)
 		if err != nil {
 			panic(err)
 		}
@@ -111,8 +111,8 @@ func CallAffPredicate(fn *CXFunction, predValue []byte) byte {
 
 // 		for _, expr := range op.Expressions {
 // 			if expr.Operator == nil {
-// 				for _, out := range expr.Outputs {
-// 					if fn.Inputs[0].Type == out.Type && out.Name != "" {
+// 				for _, out := range expr.ProgramOutput {
+// 					if fn.ProgramInput[0].Type == out.Type && out.Name != "" {
 // 						res := CallAffPredicate(fn, PROGRAM.Memory[inFP + out.Offset : inFP + out.Offset + out.TotalSize])
 
 // 						if res == 1 {
@@ -870,10 +870,10 @@ func opAffRequest(expr *CXExpression, fp int) {
 		switch tgtElt {
 		case "arg":
 			if tgtArgType == "inp" {
-				// tgtExpr.Inputs[tgtArgIndex] = readArgAff(elt, &tgtFn)
+				// tgtExpr.ProgramInput[tgtArgIndex] = readArgAff(elt, &tgtFn)
 				*readArgAff(elt, &tgtFn) = *tgtExpr.Inputs[tgtArgIndex]
 			} else {
-				// tgtExpr.Outputs[tgtArgIndex] = readArgAff(elt, &tgtFn)
+				// tgtExpr.ProgramOutput[tgtArgIndex] = readArgAff(elt, &tgtFn)
 				*readArgAff(elt, &tgtFn) = *tgtExpr.Outputs[tgtArgIndex]
 			}
 		case "strct":
@@ -919,10 +919,10 @@ func opAffRequest(expr *CXExpression, fp int) {
 		switch tgtElt {
 		case "arg":
 			if tgtArgType == "inp" {
-				// tgtExpr.Inputs[tgtArgIndex] = readArgAff(elt, &tgtFn)
+				// tgtExpr.ProgramInput[tgtArgIndex] = readArgAff(elt, &tgtFn)
 				readStrctAff(elt, &tgtPkg).AddField(tgtExpr.Inputs[tgtArgIndex])
 			} else {
-				// tgtExpr.Outputs[tgtArgIndex] = readArgAff(elt, &tgtFn)
+				// tgtExpr.ProgramOutput[tgtArgIndex] = readArgAff(elt, &tgtFn)
 				readStrctAff(elt, &tgtPkg).AddField(tgtExpr.Outputs[tgtArgIndex])
 			}
 		case "fn":

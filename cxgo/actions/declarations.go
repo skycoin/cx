@@ -56,7 +56,7 @@ func DeclareGlobalInPackage(pkg *cxcore.CXPackage,
 
 			glbl.Offset = offExpr[0].Outputs[0].Offset
 			glbl.PassBy = offExpr[0].Outputs[0].PassBy
-			// glbl.Package = offExpr[0].Outputs[0].Package
+			// glbl.Package = offExpr[0].ProgramOutput[0].Package
 		}
 
 		// Checking if something is supposed to be initialized
@@ -162,7 +162,7 @@ func DeclareGlobalInPackage(pkg *cxcore.CXPackage,
 			}
 		} else {
 			// offExpr := WritePrimary(declaration_specifiers.Type, make([]byte, declaration_specifiers.Size), true)
-			// exprOut := expr[0].Outputs[0]
+			// exprOut := expr[0].ProgramOutput[0]
 
 			declaration_specifiers.Name = declarator.Name
 			declaration_specifiers.FileLine = declarator.FileLine

@@ -27,9 +27,9 @@ type CXProgram struct {
 	Packages []*CXPackage // Packages in a CX program; use map, so dont have to iterate for lookup
 
 	// Runtime information
-	Inputs  []*CXArgument // OS input arguments
-	Outputs []*CXArgument // outputs to the OS
-	Memory  []byte        // Used when running the program
+	ProgramInput  []*CXArgument // OS input arguments
+	ProgramOutput []*CXArgument // outputs to the OS
+	Memory        []byte        // Used when running the program
 
 	StackSize    int // This field stores the size of a CX program's stack
 	StackPointer int // At what byte the current stack frame is
@@ -45,7 +45,7 @@ type CXProgram struct {
 
 	// Used by the REPL and cxgo
 	CurrentPackage *CXPackage // Represents the currently active package in the REPL or when parsing a CX file.
-	Error          error
+	ProgramError   error
 }
 
 // CXPackage is used to represent a CX package.
@@ -100,7 +100,7 @@ type CXFunction struct {
 	// Used by the GC
 	ListOfPointers []*CXArgument // Root pointers for the GC algorithm
 
-	// Used by the REPL and cxgo
+	// Used by the REPL and parser
 	CurrentExpression *CXExpression
 	Version           int
 }
@@ -217,11 +217,11 @@ type CXArgument struct {
 	Fields []*CXArgument
 	// Inputs defines the input parameters of a first-class
 	// function. The `CXArgument` is of type `TYPE_FUNC` if
-	// `Inputs` is non-nil.
+	// `ProgramInput` is non-nil.
 	Inputs []*CXArgument
 	// Outputs defines the output parameters of a first-class
 	// function. The `CXArgument` is of type `TYPE_FUNC` if
-	// `Outputs` is non-nil.
+	// `ProgramOutput` is non-nil.
 	Outputs []*CXArgument
 	// Name defines the name of the `CXArgument`. Most of the
 	// time, this field will be non-nil as this defines the name
@@ -457,6 +457,17 @@ func (cxprogram *CXProgram) GetCurrentExpression() *CXExpression {
 
 }
 
+// GetCurrentExpression2 returns the current CXExpression
+//redundant, also get  Expression
+/*
+func (cxprogram *CXProgram) GetCurrentExpression2() *CXExpression {
+	//call := cxprogram.GetCurrentCall()
+	//return call.Operator.Expressions[call.Line]
+	call := &cxprogram.CallStack[cxprogram.CallCounter]
+	return call.Operator.Expressions[call.Line]
+}
+*/
+
 // GetGlobal ...
 func (cxprogram *CXProgram) GetGlobal(name string) *CXArgument {
 	mod := cxprogram.GetCurrentPackage()
@@ -580,29 +591,25 @@ func (cxprogram *CXProgram) GetFunction(functionNameToFind string, pkgName strin
 	return nil
 }
 
-// GetExpr returns the current CXExpression
-func (cxprogram *CXProgram) GetExpr() *CXExpression {
-	//call := cxprogram.GetCall()
-	//return call.Operator.Expressions[call.Line]
-	call := &cxprogram.CallStack[cxprogram.CallCounter]
-	return call.Operator.Expressions[call.Line]
-}
-
-// GetCall returns the current CXCall
+// GetCurrentCall returns the current CXCall
 //TODO: What does this do?
-func (cxprogram *CXProgram) GetCall() *CXCall {
+func (cxprogram *CXProgram) GetCurrentCall() *CXCall {
 	return &cxprogram.CallStack[cxprogram.CallCounter]
 }
 
-// GetOpCode returns the current OpCode
-func (cxprogram *CXProgram) GetOpCode() int {
-	return cxprogram.GetExpr().Operator.OpCode
+/*
+// GetCurrentOpCode returns the current OpCode
+func (cxprogram *CXProgram) GetCurrentOpCode() int {
+	return cxprogram.GetCurrentExpression2().Operator.OpCode
 }
+*/
 
-// GetFramePointer returns the current frame pointer
+/*
+//not used
 func (cxprogram *CXProgram) GetFramePointer() int {
-	return cxprogram.GetCall().FramePointer
+	return cxprogram.GetCurrentCall().FramePointer
 }
+*/
 
 // ----------------------------------------------------------------
 //                         `CXProgram` Package handling
@@ -970,6 +977,45 @@ func (strct *CXStruct) RemoveField(fldName string) {
 }
 
 // ----------------------------------------------------------------
+//                             `CXFunction` Getters
+
+// ----------------------------------------------------------------
+//                     `CXFunction` Member handling
+
+// ----------------------------------------------------------------
+//                             `CXFunction` Selectors
+
+// SelectExpression ...
+func (fn *CXFunction) SelectExpression(line int) (*CXExpression, error) {
+	// prgrmStep := &CXProgramStep{
+	// 	Action: func(cxt *CXProgram) {
+	// 		if mod, err := cxt.GetCurrentPackage(); err == nil {
+	// 			if fn, err := mod.GetCurrentFunction(); err == nil {
+	// 				fn.SelectExpression(line)
+	// 			}
+	// 		}
+	// 	},
+	// }
+	// saveProgramStep(prgrmStep, fn.Context)
+	if len(fn.Expressions) == 0 {
+		return nil, errors.New("There are no expressions in this function")
+	}
+
+	if line >= len(fn.Expressions) {
+		line = len(fn.Expressions) - 1
+	}
+
+	if line < 0 {
+		line = 0
+	}
+
+	expr := fn.Expressions[line]
+	fn.CurrentExpression = expr
+
+	return expr, nil
+}
+
+// ----------------------------------------------------------------
 //                             `CXExpression` Getters
 
 /*
@@ -1025,6 +1071,128 @@ func (expr *CXExpression) AddLabel(lbl string) *CXExpression {
 	return expr
 }
 
+/*
+	FileName              string
+- filename and line number
+- can be moved to CX AST annotations (comments to be skipped or map)
+
+	FileLine
+*/
+
+/*
+Note: Dereference Levels, is possible unused
+
+grep -rn "DereferenceLevels" .
+
+./cxgo/actions/functions.go:328:			if fld.IsPointer && fld.DereferenceLevels == 0 {
+./cxgo/actions/functions.go:329:				fld.DereferenceLevels++
+./cxgo/actions/functions.go:333:		if arg.IsStruct && arg.IsPointer && len(arg.Fields) > 0 && arg.DereferenceLevels == 0 {
+./cxgo/actions/functions.go:334:			arg.DereferenceLevels++
+./cxgo/actions/functions.go:1132:					nameFld.DereferenceLevels = sym.DereferenceLevels
+./cxgo/actions/functions.go:1150:						nameFld.DereferenceLevels++
+./cxgo/actions/expressions.go:328:		exprOut.DereferenceLevels++
+./CompilerDevelopment.md:70:* DereferenceLevels - How many dereference operations are performed to get this CXArgument?
+./cx/serialize.go:149:	DereferenceLevels           int32
+./cx/serialize.go:300:	s.Arguments[argOff].DereferenceLevels = int32(arg.DereferenceLevels)
+./cx/serialize.go:1008:	arg.DereferenceLevels = int(sArg.DereferenceLevels)
+./cx/cxargument.go:22:	DereferenceLevels     int
+./cx/utilities.go:143:	if arg.DereferenceLevels > 0 {
+./cx/utilities.go:144:		for c := 0; c < arg.DereferenceLevels; c++ {
+*/
+
+/*
+Note: IndirectionLevels does not appear to be used at all
+
+ grep -rn "IndirectionLevels" .
+./cxgo/actions/functions.go:951:	sym.IndirectionLevels = arg.IndirectionLevels
+./cxgo/actions/declarations.go:379:			declSpec.IndirectionLevels++
+./cxgo/actions/declarations.go:383:			for c := declSpec.IndirectionLevels - 1; c > 0; c-- {
+./cxgo/actions/declarations.go:384:				pointer.IndirectionLevels = c
+./cxgo/actions/declarations.go:388:			declSpec.IndirectionLevels++
+./CompilerDevelopment.md:69:* IndirectionLevels - how many discrete levels of indirection to this specific CXArgument?
+Binary file ./bin/cx matches
+./cx/serialize.go:148:	IndirectionLevels           int32
+./cx/serialize.go:299:	s.Arguments[argOff].IndirectionLevels = int32(arg.IndirectionLevels)
+./cx/serialize.go:1007:	arg.IndirectionLevels = int(sArg.IndirectionLevels)
+./cx/cxargument.go:21:	IndirectionLevels     int
+*/
+
+/*
+IsDereferenceFirst - is this both an array and a pointer, and if so,
+is the pointer first? Mutually exclusive with IsArrayFirst.
+
+grep -rn "IsDereferenceFirst" .
+./cxgo/actions/postfix.go:60:	if !elt.IsDereferenceFirst {
+./cxgo/actions/expressions.go:331:			exprOut.IsDereferenceFirst = true
+./CompilerDevelopment.md:76:* IsArrayFirst - is this both a pointer and an array, and if so, is the array first? Mutually exclusive with IsDereferenceFirst
+./CompilerDevelopment.md:78:* IsDereferenceFirst - is this both an array and a pointer, and if so, is the pointer first? Mutually exclusive with IsArrayFirst.
+Binary file ./bin/cx matches
+./cx/serialize.go:161:	IsDereferenceFirst int32
+./cx/serialize.go:314:	s.Arguments[argOff].IsDereferenceFirst = serializeBoolean(arg.IsDereferenceFirst)
+./cx/serialize.go:1019:	arg.IsDereferenceFirst = dsBool(sArg.IsDereferenceFirst)
+./cx/cxargument.go:32:	IsDereferenceFirst    bool // and then array
+./cx/cxargument.go:43:IsDereferenceFirst - is this both an array and a pointer, and if so,
+
+*/
+
+/*
+All "Is" can be removed
+- because there is a constants for type (int) for defining the types
+- could look in definition, specifier
+- but use int lookup
+	IsSlice               bool
+	IsArray               bool
+	IsArrayFirst          bool // and then dereference
+	IsPointer             bool
+	IsReference           bool
+	IsDereferenceFirst    bool // and then array
+	IsStruct              bool
+	IsRest                bool // pkg.var <- var is rest
+	IsLocalDeclaration    bool
+	IsShortDeclaration    bool
+	IsInnerReference      bool // for example: &slice[0] or &struct.field
+
+*/
+
+/*
+
+Note: PAssBy is not used too many place
+Note: Low priority for deprecation
+- isnt this same as "pointer"
+
+grep -rn "PassBy" .
+./cxgo/actions/misc.go:425:			arg.PassBy = PASSBY_REFERENCE
+./cxgo/actions/functions.go:666:					out.PassBy = PASSBY_VALUE
+./cxgo/actions/functions.go:678:		if elt.PassBy == PASSBY_REFERENCE &&
+./cxgo/actions/functions.go:712:			out.PassBy = PASSBY_VALUE
+./cxgo/actions/functions.go:723:				assignElt.PassBy = PASSBY_VALUE
+./cxgo/actions/functions.go:915:			expr.ProgramInput[0].PassBy = PASSBY_REFERENCE
+./cxgo/actions/functions.go:1153:					nameFld.PassBy = fld.PassBy
+./cxgo/actions/functions.go:1157:						nameFld.PassBy = PASSBY_REFERENCE
+./cxgo/actions/literals.go:219:				sym.PassBy = PASSBY_REFERENCE
+./cxgo/actions/expressions.go:336:		baseOut.PassBy = PASSBY_REFERENCE
+./cxgo/actions/assignment.go:57:		out.PassBy = PASSBY_REFERENCE
+./cxgo/actions/assignment.go:208:		to[0].ProgramOutput[0].PassBy = from[idx].ProgramOutput[0].PassBy
+./cxgo/actions/assignment.go:234:			to[0].ProgramOutput[0].PassBy = from[idx].Operator.ProgramOutput[0].PassBy
+./cxgo/actions/assignment.go:244:			to[0].ProgramOutput[0].PassBy = from[idx].Operator.ProgramOutput[0].PassBy
+./cxgo/actions/declarations.go:55:			glbl.PassBy = offExpr[0].ProgramOutput[0].PassBy
+./cxgo/actions/declarations.go:69:				declaration_specifiers.PassBy = glbl.PassBy
+./cxgo/actions/declarations.go:85:				declaration_specifiers.PassBy = glbl.PassBy
+./cxgo/actions/declarations.go:103:			declaration_specifiers.PassBy = glbl.PassBy
+./cxgo/actions/declarations.go:324:			declarationSpecifiers.PassBy = initOut.PassBy
+./cxgo/actions/declarations.go:417:		arg.PassBy = PASSBY_REFERENCE
+./CompilerDevelopment.md:71:* PassBy - an int constant representing how the variable is passed - pass by value, or pass by reference.
+
+./cx/op_http.go:50:	headerFld.PassBy = PASSBY_REFERENCE
+./cx/op_http.go:75:	transferEncodingFld.PassBy = PASSBY_REFERENCE
+./cx/serialize.go:168:	PassBy     int32
+./cx/serialize.go:321:	s.Arguments[argOff].PassBy = int32(arg.PassBy)
+./cx/serialize.go:1009:	arg.PassBy = int(sArg.PassBy)
+./cx/execute.go:366:				if inp.PassBy == PASSBY_REFERENCE {
+./cx/cxargument.go:23:	PassBy                int // pass by value or reference
+./cx/op_misc.go:36:		switch elt.PassBy {
+./cx/utilities.go:184:	if arg.PassBy == PASSBY_REFERENCE {
+*/
 // MakeArgument ...
 func MakeArgument(name string, fileName string, fileLine int) *CXArgument {
 	return &CXArgument{

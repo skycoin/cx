@@ -1,6 +1,6 @@
 module github.com/skycoin/cx
 
-go 1.13
+go 1.15
 
 require (
 	github.com/go-gl/gl v0.0.0-20190320180904-bf2b1f2f34d7

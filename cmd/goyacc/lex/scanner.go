@@ -23,7 +23,7 @@ func (t *tokenizer) Lex(lval *yySymType) (c int) {
 }
 
 func (t *tokenizer) Error(e string) {
-	println("Error:", fmt.Sprintf("%s:%q\n", t.scanner.Position(), e))
+	println("ProgramError:", fmt.Sprintf("%s:%q\n", t.scanner.Position(), e))
 	logErr(fmt.Sprintf("%s:%q\n", t.scanner.Position(), e))
 }
 
