@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/globals"
 	"github.com/skycoin/cx/cx/helper"
 )
 
@@ -25,7 +26,7 @@ func GetType(arg *ast.CXArgument) int {
 // ExprOpName ...
 func ExprOpName(expr *ast.CXExpression) string {
 	if expr.Operator.IsAtomic {
-		return OpNames[expr.Operator.OpCode]
+		return globals.OpNames[expr.Operator.OpCode]
 	}
 	return expr.Operator.Name
 

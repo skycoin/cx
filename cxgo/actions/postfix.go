@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/globals"
 	"os"
 
 	"github.com/skycoin/cx/cx"
@@ -108,7 +109,7 @@ func PostfixExpressionArray(prevExprs []*ast.CXExpression, postExprs []*ast.CXEx
 
 func PostfixExpressionNative(typCode int, opStrCode string) []*ast.CXExpression {
 	// these will always be native functions
-	opCode, ok := cxcore.OpCodes[constants.TypeNames[typCode]+"."+opStrCode]
+	opCode, ok := globals.OpCodes[constants.TypeNames[typCode]+"."+opStrCode]
 	if !ok {
 		println(ast.CompilationError(CurrentFile, LineNo) + " function '" +
 			constants.TypeNames[typCode] + "." + opStrCode + "' does not exist")
@@ -140,7 +141,7 @@ func PostfixExpressionEmptyFunCall(prevExprs []*ast.CXExpression) []*ast.CXExpre
 		// expr.ProgramInput = append(expr.ProgramInput, inp)
 
 	} else if prevExprs[len(prevExprs)-1].Operator == nil {
-		if opCode, ok := cxcore.OpCodes[prevExprs[len(prevExprs)-1].Outputs[0].Name]; ok {
+		if opCode, ok := globals.OpCodes[prevExprs[len(prevExprs)-1].Outputs[0].Name]; ok {
 			if pkg, err := AST.GetCurrentPackage(); err == nil {
 				prevExprs[0].Package = pkg
 			}
@@ -160,7 +161,7 @@ func PostfixExpressionFunCall(prevExprs []*ast.CXExpression, args []*ast.CXExpre
 		// prevExprs[len(prevExprs) - 1].IsMethodCall = true
 
 	} else if prevExprs[len(prevExprs)-1].Operator == nil {
-		if opCode, ok := cxcore.OpCodes[prevExprs[len(prevExprs)-1].Outputs[0].Name]; ok {
+		if opCode, ok := globals.OpCodes[prevExprs[len(prevExprs)-1].Outputs[0].Name]; ok {
 			if pkg, err := AST.GetCurrentPackage(); err == nil {
 				prevExprs[0].Package = pkg
 			}
@@ -281,7 +282,7 @@ func PostfixExpressionField(prevExprs []*ast.CXExpression, ident string) []*ast.
 				val := WritePrimary(constant.Type, constant.Value, false)
 				prevExprs[len(prevExprs)-1].Outputs[0] = val[0].Outputs[0]
 				return prevExprs
-			} else if _, ok := cxcore.OpCodes[left.Name+"."+ident]; ok {
+			} else if _, ok := globals.OpCodes[left.Name+"."+ident]; ok {
 				// then it's a native
 				// TODO: we'd be referring to the function itself, not a function call
 				// (functions as first-class objects)

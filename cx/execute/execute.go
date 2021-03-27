@@ -5,6 +5,7 @@ import (
 	"github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/globals"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 	"math/rand"
 	"time"
@@ -66,7 +67,7 @@ func RunCxAst(cxprogram *ast.CXProgram, untilEnd bool, nCalls *int, untilCall in
 				// then it's a declaration
 				toCallName = "declaration"
 			} else if toCall.Operator.IsAtomic {
-				toCallName = cxcore.OpNames[toCall.Operator.OpCode]
+				toCallName = globals.OpNames[toCall.Operator.OpCode]
 			} else {
 				if toCall.Operator.Name != "" {
 					toCallName = toCall.Operator.Package.Name + "." + toCall.Operator.Name

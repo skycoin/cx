@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/globals"
 	"github.com/skycoin/cx/cx/helper"
 	file2 "github.com/skycoin/cx/cx/util/file"
 	"io/ioutil"
@@ -121,7 +122,7 @@ func buildStrFunctions(pkg *CXPackage, ast *string) {
 			// Determining operator's name.
 			if expr.Operator != nil {
 				if expr.Operator.IsAtomic {
-					opName = cxcore.OpNames[expr.Operator.OpCode]
+					opName = globals.OpNames[expr.Operator.OpCode]
 				} else {
 					opName = expr.Operator.Name
 				}

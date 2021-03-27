@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/globals"
 	"github.com/skycoin/cx/cx/helper"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
@@ -260,17 +261,6 @@ type OpcodeHandler func(expr *ast.CXExpression, fp int)
 type OpcodeHandler_V2 func(inputs []CXValue, outputs []CXValue)
 
 var (
-	// OpNames ...
-	OpNames = map[int]string{}
-
-	// OpCodes ...
-	OpCodes = map[string]int{}
-
-	// Versions ...
-	OpVersions = map[int]int{}
-)
-
-var (
 
 	// Natives ...
 	Natives        = map[int]*ast.CXFunction{}
@@ -327,13 +317,13 @@ func Op_V2(code int, name string, handler OpcodeHandler_V2, inputs []*ast.CXArgu
 		opcodeHandlers_V2 = append(opcodeHandlers_V2, make([]OpcodeHandler_V2, code+1)...)
 	}
 	if opcodeHandlers_V2[code] != nil {
-		panic(fmt.Sprintf("duplicate opcode %d : '%s' width '%s'.\n", code, name, OpNames[code]))
+		panic(fmt.Sprintf("duplicate opcode %d : '%s' width '%s'.\n", code, name, globals.OpNames[code]))
 	}
 	opcodeHandlers_V2[code] = handler
 
-	OpNames[code] = name
-	OpCodes[name] = code
-	OpVersions[code] = 2
+	globals.OpNames[code] = name
+	globals.OpCodes[name] = code
+	globals.OpVersions[code] = 2
 
 	if inputs == nil {
 		inputs = []*ast.CXArgument{}
@@ -351,13 +341,13 @@ func Op(code int, name string, handler OpcodeHandler, inputs []*ast.CXArgument, 
 		opcodeHandlers = append(opcodeHandlers, make([]OpcodeHandler, code+1)...)
 	}
 	if opcodeHandlers[code] != nil {
-		panic(fmt.Sprintf("duplicate opcode %d : '%s' width '%s'.\n", code, name, OpNames[code]))
+		panic(fmt.Sprintf("duplicate opcode %d : '%s' width '%s'.\n", code, name, globals.OpNames[code]))
 	}
 	opcodeHandlers[code] = handler
 
-	OpNames[code] = name
-	OpCodes[name] = code
-	OpVersions[code] = 1
+	globals.OpNames[code] = name
+	globals.OpCodes[name] = code
+	globals.OpVersions[code] = 1
 	if inputs == nil {
 		inputs = []*ast.CXArgument{}
 	}

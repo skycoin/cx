@@ -96,7 +96,7 @@ func isParseOp(expr *ast.CXExpression) bool {
 // the expression `sa + sb` is not valid if they are struct instances.
 func CheckUndValidTypes(expr *ast.CXExpression) {
 	if expr.Operator != nil && cxcore.IsOperator(expr.Operator.OpCode) && !IsAllArgsBasicTypes(expr) {
-		println(ast.CompilationError(CurrentFile, LineNo), fmt.Sprintf("invalid argument types for '%s' operator", cxcore.OpNames[expr.Operator.OpCode]))
+		println(ast.CompilationError(CurrentFile, LineNo), fmt.Sprintf("invalid argument types for '%s' operator", globals.OpNames[expr.Operator.OpCode]))
 	}
 }
 
@@ -329,7 +329,7 @@ func processTestExpression(expr *ast.CXExpression) {
 			inp1Type := ast.GetFormattedType(expr.Inputs[0])
 			inp2Type := ast.GetFormattedType(expr.Inputs[1])
 			if inp1Type != inp2Type {
-				println(ast.CompilationError(CurrentFile, LineNo), fmt.Sprintf("first and second input arguments' types are not equal in '%s' call ('%s' != '%s')", cxcore.OpNames[expr.Operator.OpCode], inp1Type, inp2Type))
+				println(ast.CompilationError(CurrentFile, LineNo), fmt.Sprintf("first and second input arguments' types are not equal in '%s' call ('%s' != '%s')", globals.OpNames[expr.Operator.OpCode], inp1Type, inp2Type))
 			}
 		}
 	}
@@ -508,7 +508,7 @@ func checkMatchParamTypes(expr *ast.CXExpression, expected, received []*ast.CXAr
 		if expectedType != receivedType && inp.Type != constants.TYPE_UNDEFINED {
 			var opName string
 			if expr.Operator.IsAtomic {
-				opName = cxcore.OpNames[expr.Operator.OpCode]
+				opName = globals.OpNames[expr.Operator.OpCode]
 			} else {
 				opName = expr.Operator.Name
 			}

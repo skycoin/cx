@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/globals"
 	"github.com/skycoin/cx/cx/helper"
 	"strconv"
 	// "github.com/skycoin/skycoin/src/cipher/encoder"
@@ -211,7 +212,7 @@ func QueryExpressions(fn *ast.CXFunction, expr *ast.CXExpression, exprOffsetB []
 		opNameOffset := 0
 		if ex.Operator.IsAtomic {
 			// opNameB = encoder.Serialize(OpNames[ex.Operator.OpCode])
-			opNameOffset = WriteStringData(OpNames[ex.Operator.OpCode])
+			opNameOffset = WriteStringData(globals.OpNames[ex.Operator.OpCode])
 		} else {
 			// opNameB = encoder.Serialize(ex.Operator.Name)
 			opNameOffset = WriteStringData(ex.Operator.Name)
@@ -303,7 +304,7 @@ func QueryFunction(fn *ast.CXFunction, expr *ast.CXExpression, fnOffsetB []byte,
 		opNameOffset := 0
 		if f.IsAtomic {
 			// opNameB = encoder.Serialize(OpNames[f.OpCode])
-			opNameOffset = WriteStringData(OpNames[f.OpCode])
+			opNameOffset = WriteStringData(globals.OpNames[f.OpCode])
 		} else {
 			// opNameB = encoder.Serialize(f.Name)
 			opNameOffset = WriteStringData(f.Name)
@@ -347,7 +348,7 @@ func QueryCaller(fn *ast.CXFunction, expr *ast.CXExpression, callerOffsetB []byt
 	opNameOffset := 0
 	if call.Operator.IsAtomic {
 		// opNameB = encoder.Serialize(OpNames[call.Operator.OpCode])
-		opNameOffset = WriteStringData(OpNames[call.Operator.OpCode])
+		opNameOffset = WriteStringData(globals.OpNames[call.Operator.OpCode])
 	} else {
 		// opNameB = encoder.Serialize(call.Operator.Package.Name + "." + call.Operator.Name)
 		opNameOffset = WriteStringData(call.Operator.Package.Name + "." + call.Operator.Name)
@@ -388,7 +389,7 @@ func QueryProgram(fn *ast.CXFunction, expr *ast.CXExpression, prgrmOffsetB []byt
 		opNameOffset := 0
 		if call.Operator.IsAtomic {
 			// opNameB = encoder.Serialize(OpNames[call.Operator.OpCode])
-			opNameOffset = WriteStringData(OpNames[call.Operator.OpCode])
+			opNameOffset = WriteStringData(globals.OpNames[call.Operator.OpCode])
 		} else {
 			// opNameB = encoder.Serialize(call.Operator.Package.Name + "." + call.Operator.Name)
 			opNameOffset = WriteStringData(call.Operator.Package.Name + "." + call.Operator.Name)
@@ -899,7 +900,7 @@ func opAffRequest(expr *ast.CXExpression, fp int) {
 			panic(err)
 		}
 	case "fn":
-		fn := Natives[OpCodes[elt]]
+		fn := Natives[globals.OpCodes[elt]]
 		if fn == nil {
 			var err error
 			fn, err = tgtPkg.GetFunction(elt)
