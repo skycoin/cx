@@ -183,7 +183,7 @@ func idPkgAndStructs(filename string, r io.Reader, prePkg **cxcore.CXPackage) {
 			if match := re.strName.FindStringSubmatch(string(line)); match != nil {
 				if prePkg == nil {
 					println(cxcore.CompilationError(filename, lineN), "No package defined")
-				} else if _, err := cxgo0.PRGRM0.GetStruct(match[len(match)-1], (*prePkg).Name); err != nil {
+				} else if checkStrct := cxgo0.PRGRM0.GetStruct(match[len(match)-1], (*prePkg).Name); checkStrct == nil {
 					// then it hasn't been added
 					strct := cxcore.MakeStruct(match[len(match)-1])
 					(*prePkg).AddStruct(strct)

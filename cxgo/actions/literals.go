@@ -114,7 +114,7 @@ func PrimaryStructLiteral(ident string, strctFlds []*cxcore.CXExpression) []*cxc
 	var result []*cxcore.CXExpression
 
 	if pkg := PRGRM.GetCurrentPackage(); pkg != nil {
-		if strct, err := PRGRM.GetStruct(ident, pkg.Name); err == nil {
+		if strct := PRGRM.GetStruct(ident, pkg.Name); strct != nil {
 			for _, expr := range strctFlds {
 				name := expr.Outputs[0].Name
 
@@ -139,7 +139,7 @@ func PrimaryStructLiteral(ident string, strctFlds []*cxcore.CXExpression) []*cxc
 				result = append(result, expr)
 			}
 		} else {
-			panic("type '" + ident + "' does not exist")
+			panic("PrimaryStructLiteral(): error, PRGRM.GetStruct is nil")
 		}
 	} else {
 		panic("PrimaryStructLiteral(): error, PRGRM.GetCurrentPackage is nil")
@@ -152,7 +152,7 @@ func PrimaryStructLiteralExternal(impName string, ident string, strctFlds []*cxc
 	var result []*cxcore.CXExpression
 	if pkg := PRGRM.GetCurrentPackage(); pkg != nil {
 		if _, err := pkg.GetImport(impName); err == nil {
-			if strct, err := PRGRM.GetStruct(ident, impName); err == nil {
+			if strct := PRGRM.GetStruct(ident, impName); strct != nil {
 				for _, expr := range strctFlds {
 					fld := cxcore.MakeArgument("", CurrentFile, LineNo)
 					fld.AddType(cxcore.TypeNames[cxcore.TYPE_IDENTIFIER])
@@ -171,7 +171,7 @@ func PrimaryStructLiteralExternal(impName string, ident string, strctFlds []*cxc
 					result = append(result, expr)
 				}
 			} else {
-				panic("type '" + ident + "' does not exist")
+				panic("PrimaryStructLiteralExternal(): error, PRGRM.GetStruct is nil")
 			}
 		} else {
 			panic(err)

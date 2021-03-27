@@ -180,7 +180,7 @@ func lexerStep0(srcStrs, srcNames []string) int {
 					if prePkg == nil {
 						println(cxcore.CompilationError(srcName, lineno),
 							"No package defined")
-					} else if _, err := cxgo0.PRGRM0.GetStruct(match[len(match)-1], prePkg.Name); err != nil {
+					} else if checkStrct := cxgo0.PRGRM0.GetStruct(match[len(match)-1], prePkg.Name); checkStrct == nil {
 						// then it hasn't been added
 						strct := cxcore.MakeStruct(match[len(match)-1])
 						prePkg.AddStruct(strct)

@@ -307,7 +307,7 @@ func PostfixExpressionField(prevExprs []*cxcore.CXExpression, ident string) []*c
 			// not sure about this next line
 			prevExprs[len(prevExprs)-1].Outputs = nil
 			prevExprs[len(prevExprs)-1].Operator = fn
-		} else if strct, err := PRGRM.GetStruct(ident, imp.Name); err == nil {
+		} else if strct := PRGRM.GetStruct(ident, imp.Name); strct != nil {
 			prevExprs[len(prevExprs)-1].Outputs[0].CustomType = strct
 		} else {
 			// panic(err)

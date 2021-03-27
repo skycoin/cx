@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -187,10 +188,10 @@ func DeclareStruct(ident string, strctFlds []*cxcore.CXArgument) {
 	}
 
 	// Make sure a struct with the same name is not yet defined.
-	strct, err := PRGRM.GetStruct(ident, pkg.Name)
-	if err != nil {
+	strct := PRGRM.GetStruct(ident, pkg.Name)
+	if strct == nil {
 		// FIXME: Should give a relevant error message
-		panic(err)
+		panic("DeclareStruct(): error, PRGRM.GetStruct is nil")
 	}
 
 	strct.Fields = nil
@@ -473,9 +474,9 @@ func DeclarationSpecifiersStruct(ident string, pkgName string,
 			panic(err)
 		}
 
-		strct, err := PRGRM.GetStruct(ident, imp.Name)
-		if err != nil {
-			println(cxcore.CompilationError(currentFile, lineNo), err.Error())
+		strct := PRGRM.GetStruct(ident, imp.Name)
+		if strct == nil {
+			println(cxcore.CompilationError(currentFile, lineNo), errors.New("PRGRM.GetCurrentPackage is nil"))
 			return nil
 		}
 
@@ -491,9 +492,9 @@ func DeclarationSpecifiersStruct(ident string, pkgName string,
 		return arg
 	} else {
 		// custom type in the current package
-		strct, err := PRGRM.GetStruct(ident, pkg.Name)
-		if err != nil {
-			println(cxcore.CompilationError(currentFile, lineNo), err.Error())
+		strct := PRGRM.GetStruct(ident, pkg.Name)
+		if strct == nil {
+			println(cxcore.CompilationError(currentFile, lineNo), errors.New("PRGRM.GetCurrentPackage is nil"))
 			return nil
 		}
 
