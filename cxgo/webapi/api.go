@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/skycoin/cx/cx"
-	"github.com/skycoin/cx//cx/globals"
+	_ "github.com/skycoin/cx/cx/globals"
 )
 
 // API represents an HTTP API.
