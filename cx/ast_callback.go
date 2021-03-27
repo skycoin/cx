@@ -30,9 +30,13 @@ func (cxprogram *CXProgram) Callback(fn *CXFunction, inputs [][]byte) (outputs [
 	}
 
 	var nCalls = 0
-	if err := cxprogram.Run(true, &nCalls, previousCall); err != nil {
+
+	//err := cxprogram.Run(true, &nCalls, previousCall)
+	err := RunCxAst(cxprogram,true, &nCalls, previousCall)
+	if err != nil {
 		os.Exit(constants.CX_INTERNAL_ERROR)
 	}
+	//TODO; handle nil
 
 	cxprogram.CallCounter = previousCall
 	cxprogram.CallStack[cxprogram.CallCounter].Line = line

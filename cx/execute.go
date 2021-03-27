@@ -28,10 +28,6 @@ func ToCall(cxprogram *CXProgram) *CXExpression {
 // Run is called in two places, both in execute.go
 // Run is called in Callback and this could be removed? Why should callback call run?
 
-func (cxprogram *CXProgram) Run(untilEnd bool, nCalls *int, untilCall int) error {
-	return nil
-}
-
 func RunCxAst(cxprogram *CXProgram, untilEnd bool, nCalls *int, untilCall int) error {
 	defer RuntimeError()
 	var err error
