@@ -46,7 +46,8 @@ func (prgrm *CXProgram) UnRun(nCalls int) {
 }
 */
 
-// ToCall ...
+// Only called in this file
+// TODO: What does this do? Is it named poorly?
 func (cxprogram *CXProgram) ToCall() *CXExpression {
 	for c := cxprogram.CallCounter - 1; c >= 0; c-- {
 		if cxprogram.CallStack[c].Line+1 >= len(cxprogram.CallStack[c].Operator.Expressions) {
@@ -61,7 +62,8 @@ func (cxprogram *CXProgram) ToCall() *CXExpression {
 	// panic("")
 }
 
-// Run ...
+// Run is called in two places, both in execute.go
+// Run is called in Callback and this could be removed? Why should callback call run?
 func (cxprogram *CXProgram) Run(untilEnd bool, nCalls *int, untilCall int) error {
 	defer RuntimeError()
 	var err error
@@ -473,7 +475,9 @@ func (call *CXCall) ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 	return nil
 }
 
-// Callback ...
+// What calls Callback?
+// Callback is only called from opHttpHandle, can probably be removed
+// TODO: Delete and delete call from opHTTPHandle
 func (cxprogram *CXProgram) Callback(fn *CXFunction, inputs [][]byte) (outputs [][]byte) {
 	line := cxprogram.CallStack[cxprogram.CallCounter].Line
 	previousCall := cxprogram.CallCounter
