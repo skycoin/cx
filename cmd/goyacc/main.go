@@ -37,7 +37,7 @@
 // 2017-08-01: New option -fs emits a table of the follow sets. Index is the
 // state number.
 //
-// 2016-03-17: Error messages now use the last token literal string, if any, to
+// 2016-03-17: ProgramError messages now use the last token literal string, if any, to
 // produce nicer text like "unexpected integer constant". If using xerrors the
 // message could be, for example, something like "unexpected integer constant,
 // expected '{'"-
@@ -74,7 +74,7 @@
 //
 //	type yyLexer interface {
 //		Lex(lval *yySymType) int
-//		Error(e string)
+//		ProgramError(e string)
 //	}
 //
 // Optionally the argument to yyParse may implement the following interface:
@@ -86,7 +86,7 @@
 //	}
 //
 // Lex should return the token identifier, and place other token information in
-// lval (which replaces the usual yylval). Error is equivalent to yyerror in
+// lval (which replaces the usual yylval). ProgramError is equivalent to yyerror in
 // the original yacc.
 //
 // Code inside the cxgo may refer to the variable yylex, which holds the
@@ -101,7 +101,7 @@
 //
 // Differences wrt go tool yacc
 //
-// - goyacc implements ideas from "Generating LR Syntax Error Messages from
+// - goyacc implements ideas from "Generating LR Syntax ProgramError Messages from
 // Examples"[1]. Use the -xe flag to pass a name of the example file. For more
 // details about the example format please see [2].
 //
@@ -551,7 +551,7 @@ var %[1]sDebug = 0
 
 type %[1]sLexer interface {
 	Lex(lval *%[1]sSymType) int
-	Error(s string)
+	ProgramError(s string)
 }
 
 type %[1]sLexerEx interface {
@@ -703,7 +703,7 @@ yynewstate:
 			if msg == "" {
 				msg = "syntax error"
 			}
-			yylex.Error(msg)
+			yylex.ProgramError(msg)
 			Nerrs++
 			fallthrough
 

@@ -4,7 +4,7 @@
 
 //TODO +Engine, and export it.
 
-// Package y converts .y (yacc[2]) source files to data suitable for a cxgo
+// Package y converts .y (yacc[2]) source files to data suitable for a parser
 // generator.
 //
 // Changelog
@@ -52,7 +52,7 @@ const (
 	AssocPrecedence   // %precedence
 )
 
-// Action describes one cell of the cxgo table, ie. the action to be taken when
+// Action describes one cell of the parser table, ie. the action to be taken when
 // the lookahead is Sym.
 type Action struct {
 	Sym *Symbol
@@ -100,10 +100,10 @@ type AssocDef struct {
 
 // Options amend the behavior of the various Process* functions.
 //
-// Error Examples
+// ProgramError Examples
 //
-// Error examples implement the ideas in "Generating LR Syntax Error Messages
-// from Examples"[1]. They extend the capability of a LALR cxgo to produce
+// ProgramError examples implement the ideas in "Generating LR Syntax ProgramError Messages
+// from Examples"[1]. They extend the capability of a LALR parser to produce
 // better error messages.
 //
 // XErrorSrc is a sequence of Go tokens separated by white space using the same
@@ -158,7 +158,7 @@ type AssocDef struct {
 //	PACKAGE ';'
 //	`Missing package name or newline after "package"`
 //
-//	// A calculator cxgo might have error examples like
+//	// A calculator parser might have error examples like
 //	NUMBER '+' "operand expected"
 //	NUMBER '-' error "invalid operand for subtraction"
 //
@@ -185,12 +185,12 @@ type AssocDef struct {
 //	TYPE   |
 //	VAR "package clause must be first"
 //
-// It's an error if the example token sequence is accepted by the cxgo, ie.
+// It's an error if the example token sequence is accepted by the parser, ie.
 // if it does not produce an error.
 //
 // Note: In the case of example with a state set, the example tokens, except for
 // the last one, serve only documentation purposes. Only the combination of a state and a particular
-// lookahead is actually considered by the cxgo.
+// lookahead is actually considered by the parser.
 //
 // Examples without a state set are processed differently and all the example
 // tokens matter. An attempt is made to find the applicable state set
@@ -223,7 +223,7 @@ func (o *Options) boot(fset *token.FileSet) (*Options, error) {
 	return &p, nil
 }
 
-// Parser describes the resulting cxgo. The intended client is a cxgo
+// Parser describes the resulting parser. The intended client is a parser
 // generator (like eg. [0]) producing the final Go source code.
 type Parser struct {
 	AssocDefs      []*AssocDef           // %left, %right, %nonassoc definitions in the order of appearance in the source code.
@@ -291,7 +291,7 @@ stack:
 		}
 		return yystate, fmt.Errorf("no action for %s in state %d", yychar, yystate)
 	}
-	return yystate, fmt.Errorf("cxgo stall in state %d", yystate)
+	return yystate, fmt.Errorf("parser stall in state %d", yystate)
 }
 
 // AcceptsEmptyInput returns whether the token string [$end] is accepted by the
@@ -593,7 +593,7 @@ func (r *Rule) Actions() string {
 	return buf.String()
 }
 
-// State represents one state of the cxgo.
+// State represents one state of the parser.
 type State struct {
 	actions   map[*Symbol][]action //
 	distance  int                  // On path to state 0.
@@ -651,7 +651,7 @@ func (s *State) syms0() []*Symbol {
 // Note: Invalid grammars and grammars with conflicts may have not all states
 // reachable.
 //
-// To construct an example of a string for which the cxgo enters state s:
+// To construct an example of a string for which the parser enters state s:
 //
 //	syms, la := s.Syms0()
 //	if la != nil {
@@ -723,7 +723,7 @@ func (s *State) Reduce0(r *Rule) []*Symbol {
 //
 // LiteralString field
 //
-// Some cxgo generators accept an optional literal string token associated
+// Some parser generators accept an optional literal string token associated
 // with a token definition. From [6]:
 //
 //	You can associate a literal string token with a token type name by
@@ -743,7 +743,7 @@ func (s *State) Reduce0(r *Rule) []*Symbol {
 //	interchangeably in further declarations or the grammar rules. The yylex
 //	function can use the token name or the literal string to obtain the
 //	token type code number (see Calling Convention). Syntax error messages
-//	passed to yyerror from the cxgo will reference the literal string
+//	passed to yyerror from the parser will reference the literal string
 //	instead of the token name.
 //
 // The LiteralString captures the value of other definitions as well, namely
@@ -958,10 +958,10 @@ func (s *Symbol) String() string {
 	return "<nil>"
 }
 
-// XError describes the cxgo state for an error by example. See [1].
+// XError describes the parser state for an error by example. See [1].
 type XError struct {
 	Stack     []int   // Parser states stack, potentially partial, of the error event. TOS is Stack[len(Stack)-1].
-	Lookahead *Symbol // Error lookahead symbol. Nil if LA is the reserved error symbol.
+	Lookahead *Symbol // ProgramError lookahead symbol. Nil if LA is the reserved error symbol.
 	Msg       string  // Textual representation of the error condition.
 }
 

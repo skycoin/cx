@@ -61,14 +61,14 @@ func (cxprogram *CXProgram) PrintStack() {
 		fmt.Printf(">>> %s()\n", op.Name)
 
 		for _, inp := range op.Inputs {
-			fmt.Println("Inputs")
+			fmt.Println("ProgramInput")
 			fmt.Printf("\t%s : %s() : %s\n", stackValueHeader(inp.FileName, inp.FileLine), op.Name, GetPrintableValue(fp, inp))
 
 			dupNames = append(dupNames, inp.Package.Name+inp.Name)
 		}
 
 		for _, out := range op.Outputs {
-			fmt.Println("Outputs")
+			fmt.Println("ProgramOutput")
 			fmt.Printf("\t%s : %s() : %s\n", stackValueHeader(out.FileName, out.FileLine), op.Name, GetPrintableValue(fp, out))
 
 			dupNames = append(dupNames, out.Package.Name+out.Name)
@@ -259,7 +259,7 @@ func GetFormattedType(arg *CXArgument) string {
 
 						fn, err := pkg.GetFunction(elt.Name)
 						if err == nil {
-							// println(CompilationError(elt.FileName, elt.FileLine), err.Error())
+							// println(CompilationError(elt.FileName, elt.FileLine), err.ProgramError())
 							// os.Exit(CX_COMPILATION_ERROR)
 							// Adding list of inputs and outputs types.
 							typ += formatParameters(fn.Inputs)
