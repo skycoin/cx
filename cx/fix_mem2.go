@@ -32,6 +32,14 @@ func GetDerefSize(arg *CXArgument) int {
 }
 */
 
+// GetDerefSize ...
+func GetDerefSize(arg *ast.CXArgument) int {
+	if arg.CustomType != nil {
+		return arg.CustomType.Size
+	}
+	return arg.Size
+}
+
 
 func CalculateDereferences(arg *ast.CXArgument, finalOffset *int, fp int) {
 	var isPointer bool
@@ -168,4 +176,3 @@ func CalculateDereferences_str(arg *ast.CXArgument, finalOffset *int, fp int) {
 func CalculateDereferences_bool(arg *ast.CXArgument, finalOffset *int, fp int) {
 	CalculateDereferences(arg, finalOffset, fp)
 }
-
