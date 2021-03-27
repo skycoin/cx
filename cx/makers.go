@@ -11,7 +11,7 @@ import (
 // Var
 var (
 	HeapOffset    int
-	genSymCounter int
+	GenSymCounter int
 )
 
 // MakeElementID ...
@@ -23,8 +23,8 @@ func MakeElementID() uuid.UUID {
 
 // MakeGenSym ...
 func MakeGenSym(name string) string {
-	gensym := fmt.Sprintf("%s_%d", name, genSymCounter)
-	genSymCounter++
+	gensym := fmt.Sprintf("%s_%d", name, GenSymCounter)
+	GenSymCounter++
 
 	return gensym
 }
