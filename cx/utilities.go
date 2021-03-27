@@ -176,6 +176,7 @@ func GetPointerOffset(pointer int32) int32 {
 }
 
 // GetSliceOffset ...
+//TODO: DANGER, WEIRD INT CAST FROM GetFinalOffset
 func GetSliceOffset(fp int, arg *ast.CXArgument) int32 {
 	element := ast.GetAssignmentElement(arg)
 	if element.IsSlice {

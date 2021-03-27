@@ -23,7 +23,7 @@ func (value *CXValue) GetSlice_i8() []int8 {
 	//value.Used = TYPE_SLICE
 	value.Used = int8(value.Type) // TODO: type checking for slice is not working
 	if mem := cxcore.GetSliceData(cxcore.GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
-		return cxcore.ReadDataI8(mem)
+		return helper.ReadDataI8(mem)
 	}
 	return nil
 }
@@ -32,7 +32,7 @@ func (value *CXValue) GetSlice_i16() []int16 {
 	//value.Used = TYPE_SLICE
 	value.Used = int8(value.Type) // TODO: type checking for slice is not working
 	if mem := cxcore.GetSliceData(cxcore.GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
-		return cxcore.ReadDataI16(mem)
+		return helper.ReadDataI16(mem)
 	}
 	return nil
 }
@@ -41,7 +41,7 @@ func (value *CXValue) GetSlice_i32() []int32 {
 	//value.Used = TYPE_SLICE
 	value.Used = int8(value.Type) // TODO: type checking for slice is not working
 	if mem := cxcore.GetSliceData(cxcore.GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
-		return cxcore.ReadDataI32(mem)
+		return helper.ReadDataI32(mem)
 	}
 	return nil
 }
@@ -50,7 +50,7 @@ func (value *CXValue) GetSlice_i64() []int64 {
 	//value.Used = TYPE_SLICE
 	value.Used = int8(value.Type) // TODO: type checking for slice is not working
 	if mem := cxcore.GetSliceData(cxcore.GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
-		return cxcore.ReadDataI64(mem)
+		return helper.ReadDataI64(mem)
 	}
 	return nil
 }
@@ -59,7 +59,7 @@ func (value *CXValue) GetSlice_ui8() []uint8 {
 	//value.Used = TYPE_SLICE
 	value.Used = int8(value.Type) // TODO: type checking for slice is not working
 	if mem := cxcore.GetSliceData(cxcore.GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
-		return cxcore.ReadDataUI8(mem)
+		return helper.ReadDataUI8(mem)
 	}
 	return nil
 }
@@ -68,7 +68,7 @@ func (value *CXValue) GetSlice_ui16() []uint16 {
 	//value.Used = TYPE_SLICE
 	value.Used = int8(value.Type) // TODO: type checking for slice is not working
 	if mem := cxcore.GetSliceData(cxcore.GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
-		return cxcore.ReadDataUI16(mem)
+		return helper.ReadDataUI16(mem)
 	}
 	return nil
 }
@@ -77,7 +77,7 @@ func (value *CXValue) GetSlice_ui32() []uint32 {
 	//value.Used = TYPE_SLICE
 	value.Used = int8(value.Type) // TODO: type checking for slice is not working
 	if mem := cxcore.GetSliceData(cxcore.GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
-		return cxcore.ReadDataUI32(mem)
+		return helper.ReadDataUI32(mem)
 	}
 	return nil
 }
@@ -86,7 +86,7 @@ func (value *CXValue) GetSlice_ui64() []uint64 {
 	//value.Used = TYPE_SLICE
 	value.Used = int8(value.Type) // TODO: type checking for slice is not working
 	if mem := cxcore.GetSliceData(cxcore.GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
-		return cxcore.ReadDataUI64(mem)
+		return helper.ReadDataUI64(mem)
 	}
 	return nil
 }
@@ -95,7 +95,7 @@ func (value *CXValue) GetSlice_f32() []float32 {
 	//value.Used = TYPE_SLICE
 	value.Used = int8(value.Type) // TODO: type checking for slice is not working
 	if mem := cxcore.GetSliceData(cxcore.GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
-		return cxcore.ReadDataF32(mem)
+		return helper.ReadDataF32(mem)
 	}
 	return nil
 }
@@ -104,7 +104,7 @@ func (value *CXValue) GetSlice_f64() []float64 {
 	//value.Used = TYPE_SLICE
 	value.Used = int8(value.Type) // TODO: type checking for slice is not working
 	if mem := cxcore.GetSliceData(cxcore.GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
-		return cxcore.ReadDataF64(mem)
+		return helper.ReadDataF64(mem)
 	}
 	return nil
 }
