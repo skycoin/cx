@@ -211,7 +211,7 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 	//globals2.SetWorkingDir(sourceCode[0].Name())
 
 	// Checking if a main package exists. If not, create and add it to `PRGRM`.
-	if _, err := actions.PRGRM.GetFunction(cxcore.MAIN_FUNC, cxcore.MAIN_PKG); err != nil {
+	if checkFunc := actions.PRGRM.GetFunction(cxcore.MAIN_FUNC, cxcore.MAIN_PKG); checkFunc == nil {
 		panic("error")
 	}
 	initMainPkg(actions.PRGRM)

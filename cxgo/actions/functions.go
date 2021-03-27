@@ -24,7 +24,7 @@ func FunctionHeader(ident string, receiver []*cxcore.CXArgument, isMethod bool) 
 		if pkg := PRGRM.GetCurrentPackage(); pkg != nil {
 			fnName := receiver[0].CustomType.Name + "." + ident
 
-			if fn, err := PRGRM.GetFunction(fnName, pkg.Name); err == nil {
+			if fn := PRGRM.GetFunction(fnName, pkg.Name); fn != nil {
 				fn.AddInput(receiver[0])
 				pkg.CurrentFunction = fn
 				return fn
@@ -39,7 +39,7 @@ func FunctionHeader(ident string, receiver []*cxcore.CXArgument, isMethod bool) 
 		}
 	} else {
 		if pkg := PRGRM.GetCurrentPackage(); pkg != nil {
-			if fn, err := PRGRM.GetFunction(ident, pkg.Name); err == nil {
+			if fn := PRGRM.GetFunction(ident, pkg.Name); fn != nil {
 				pkg.CurrentFunction = fn
 				return fn
 			} else {
@@ -194,11 +194,11 @@ func FunctionCall(exprs []*cxcore.CXExpression, args []*cxcore.CXExpression) []*
 		opName := expr.Outputs[0].Name
 		opPkg := expr.Outputs[0].Package
 
-		if op, err := PRGRM.GetFunction(opName, opPkg.Name); err == nil {
+		if op := PRGRM.GetFunction(opName, opPkg.Name); op != nil {
 			expr.Operator = op
 		} else if expr.Outputs[0].Fields == nil {
 			// then it's not a possible method call
-			println(cxcore.CompilationError(CurrentFile, LineNo), err.Error())
+			println(cxcore.CompilationError(CurrentFile, LineNo), errors.New("error, PRGRM.GetFunction is nil"))
 			return nil
 		} else {
 			expr.IsMethodCall = true
