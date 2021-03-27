@@ -100,7 +100,7 @@ func opAlVersion(inputs []ast.CXValue, outputs []ast.CXValue) {
 func opAlGenBuffers(inputs []ast.CXValue, outputs []ast.CXValue) {
 	buffers := al.GenBuffers(int(inputs[0].Get_i32()))
 	outputSlicePointer := outputs[0].Offset
-	outputSliceOffset := cxcore.GetPointerOffset(int32(outputSlicePointer))
+	outputSliceOffset := ast.GetPointerOffset(int32(outputSlicePointer))
 	for _, b := range buffers { // REFACTOR append with copy ?
 		obj := helper.FromI32(int32(b))
 		outputSliceOffset = int32(cxcore.WriteToSlice(int(outputSliceOffset), obj))
@@ -119,7 +119,7 @@ func opAlBufferData(inputs []ast.CXValue, outputs []ast.CXValue) {
 func opAlGenSources(inputs []ast.CXValue, outputs []ast.CXValue) {
 	sources := al.GenSources(int(inputs[0].Get_i32()))
 	outputSlicePointer := outputs[0].Offset
-	outputSliceOffset := cxcore.GetPointerOffset(int32(outputSlicePointer))
+	outputSliceOffset := ast.GetPointerOffset(int32(outputSlicePointer))
 	for _, s := range sources { // REFACTOR append with copy ?
 		obj := helper.FromI32(int32(s))
 		outputSliceOffset = int32(cxcore.WriteToSlice(int(outputSliceOffset), obj))

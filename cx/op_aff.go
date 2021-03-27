@@ -8,6 +8,7 @@ import (
 	"github.com/skycoin/cx/cx/helper"
 	"github.com/skycoin/cx/cx/mem"
 	"github.com/skycoin/cx/cx/tostring"
+	"github.com/skycoin/cx/cx/util3"
 	"strconv"
 	// "github.com/skycoin/skycoin/src/cipher/encoder"
 )
@@ -34,7 +35,7 @@ func GetInferActions(inp *ast.CXArgument, fp int) []string {
 
 	off := helper.Deserialize_i32(ast.PROGRAM.Memory[inpOffset : inpOffset+constants.TYPE_POINTER_SIZE])
 
-	l := helper.Deserialize_i32(GetSliceHeader(GetSliceOffset(fp, inp))[4:8])
+	l := helper.Deserialize_i32(util3.GetSliceHeader(util3.GetSliceOffset(fp, inp))[4:8])
 
 	result := make([]string, l)
 

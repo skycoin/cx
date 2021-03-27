@@ -7,6 +7,7 @@ import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/mem"
 	file2 "github.com/skycoin/cx/cx/util/file"
+	"github.com/skycoin/cx/cx/util3"
 
 	"fmt"
 	"image"
@@ -22,8 +23,6 @@ import (
 	"strings"
 	//"bytes"
 	"unsafe"
-
-	"github.com/skycoin/cx/cx"
 )
 
 type Texture struct {
@@ -435,22 +434,22 @@ func opGlGIFFrameToTexture(inputs []ast.CXValue, outputs []ast.CXValue) {
 
 func opGlAppend(inputs []ast.CXValue, outputs []ast.CXValue) {
 	outputSlicePointer := outputs[0].Offset
-	outputSliceOffset := cxcore.GetPointerOffset(int32(outputSlicePointer))
+	outputSliceOffset := ast.GetPointerOffset(int32(outputSlicePointer))
 
     inputs[0].Used = int8(inputs[0].Type)
 
-    inputSliceOffset := cxcore.GetSliceOffset(inputs[0].FramePointer, inputs[0].Arg)
+    inputSliceOffset := util3.GetSliceOffset(inputs[0].FramePointer, inputs[0].Arg)
 	var inputSliceLen int32
 	if inputSliceOffset != 0 {
-		inputSliceLen = cxcore.GetSliceLen(inputSliceOffset)
+		inputSliceLen = util3.GetSliceLen(inputSliceOffset)
 	}
 
 	obj := inputs[1].Get_bytes()
 
 	objLen := int32(len(obj))
-	outputSliceOffset = int32(cxcore.SliceResizeEx(outputSliceOffset, inputSliceLen+objLen, 1))
-	cxcore.SliceCopyEx(outputSliceOffset, inputSliceOffset, inputSliceLen+objLen, 1)
-	cxcore.SliceAppendWriteByte(outputSliceOffset, obj, inputSliceLen)
+	outputSliceOffset = int32(util3.SliceResizeEx(outputSliceOffset, inputSliceLen+objLen, 1))
+	util3.SliceCopyEx(outputSliceOffset, inputSliceOffset, inputSliceLen+objLen, 1)
+	util3.SliceAppendWriteByte(outputSliceOffset, obj, inputSliceLen)
 	outputs[0].SetSlice(outputSliceOffset)
 }
 

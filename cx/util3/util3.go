@@ -1,67 +1,11 @@
-package cxcore
+package util3
 
 import (
-	"fmt"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
-	"github.com/skycoin/cx/cx/globals"
 	"github.com/skycoin/cx/cx/helper"
 	"github.com/skycoin/cx/cx/mem"
 )
-
-// Debug ...
-func Debug(args ...interface{}) {
-	fmt.Println(args...)
-}
-
-// TODO: Deprecate
-func ExprOpName(expr *ast.CXExpression) string {
-	if expr.Operator.IsAtomic {
-		return globals.OpNames[expr.Operator.OpCode]
-	}
-	return expr.Operator.Name
-
-}
-
-// IsTempVar ...
-func IsTempVar(name string) bool {
-	if len(name) >= len(constants.LOCAL_PREFIX) && name[:len(constants.LOCAL_PREFIX)] == constants.LOCAL_PREFIX {
-		return true
-	}
-	return false
-}
-
-func CheckForEscapedChars(str string) []byte {
-	var res []byte
-	var lenStr = int(len(str))
-	for c := 0; c < len(str); c++ {
-		var nextCh byte
-		ch := str[c]
-		if c < lenStr-1 {
-			nextCh = str[c+1]
-		}
-		if ch == '\\' {
-			switch nextCh {
-			case '%':
-				c++
-				res = append(res, nextCh)
-				continue
-			case 'n':
-				c++
-				res = append(res, '\n')
-				continue
-			default:
-				res = append(res, ch)
-				continue
-			}
-
-		} else {
-			res = append(res, ch)
-		}
-	}
-
-	return res
-}
 
 // IsValidSliceIndex ...
 func IsValidSliceIndex(offset int, index int, sizeofElement int) bool {
@@ -75,17 +19,12 @@ func IsValidSliceIndex(offset int, index int, sizeofElement int) bool {
 	return false
 }
 
-// GetPointerOffset ...
-func GetPointerOffset(pointer int32) int32 {
-	return helper.Deserialize_i32(ast.PROGRAM.Memory[pointer : pointer+constants.TYPE_POINTER_SIZE])
-}
-
 // GetSliceOffset ...
 //TODO: DANGER, WEIRD INT CAST FROM GetFinalOffset
 func GetSliceOffset(fp int, arg *ast.CXArgument) int32 {
 	element := ast.GetAssignmentElement(arg)
 	if element.IsSlice {
-		return GetPointerOffset(int32(ast.GetFinalOffset(fp, arg)))
+		return ast.GetPointerOffset(int32(ast.GetFinalOffset(fp, arg)))
 	}
 
 	return -1
@@ -268,4 +207,3 @@ func SliceRemove(fp int, out *ast.CXArgument, inp *ast.CXArgument, index int32, 
 	outputSliceOffset = int32(SliceResize(fp, out, inp, inputSliceLen-1, int(sizeofElement)))
 	return int(outputSliceOffset)
 }
-

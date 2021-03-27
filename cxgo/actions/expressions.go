@@ -5,6 +5,7 @@ import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/globals"
+	"github.com/skycoin/cx/cx/util2"
 	"os"
 
 	"github.com/skycoin/skycoin/src/cipher/encoder"
@@ -240,7 +241,7 @@ func UndefinedTypeOperation(leftExprs []*ast.CXExpression, rightExprs []*ast.CXE
 		// then it's a function call or an array access
 		expr.AddInput(leftExprs[len(leftExprs)-1].Outputs[0])
 
-		if cxcore.IsTempVar(leftExprs[len(leftExprs)-1].Outputs[0].Name) {
+		if util2.IsTempVar(leftExprs[len(leftExprs)-1].Outputs[0].Name) {
 			out = append(out, leftExprs...)
 		} else {
 			out = append(out, leftExprs[:len(leftExprs)-1]...)
@@ -253,7 +254,7 @@ func UndefinedTypeOperation(leftExprs []*ast.CXExpression, rightExprs []*ast.CXE
 		// then it's a function call or an array access
 		expr.AddInput(rightExprs[len(rightExprs)-1].Outputs[0])
 
-		if cxcore.IsTempVar(rightExprs[len(rightExprs)-1].Outputs[0].Name) {
+		if util2.IsTempVar(rightExprs[len(rightExprs)-1].Outputs[0].Name) {
 			out = append(out, rightExprs...)
 		} else {
 			out = append(out, rightExprs[:len(rightExprs)-1]...)

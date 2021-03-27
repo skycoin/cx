@@ -7,6 +7,7 @@ import (
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/globals"
 	"github.com/skycoin/cx/cx/tostring"
+	"github.com/skycoin/cx/cx/util2"
 	"os"
 
 	"github.com/jinzhu/copier"
@@ -526,7 +527,7 @@ func checkMatchParamTypes(expr *ast.CXExpression, expected, received []*ast.CXAr
 		// FIXME: There are some expressions added by the cxgo where temporary variables are used.
 		// These temporary variables' types are not properly being set. That's why we use !cxcore.IsTempVar to
 		// exclude these cases for now.
-		if expr.Operator.OpCode == constants.OP_IDENTITY && !cxcore.IsTempVar(expr.Outputs[0].Name) {
+		if expr.Operator.OpCode == constants.OP_IDENTITY && !util2.IsTempVar(expr.Outputs[0].Name) {
 			inpType := tostring.GetFormattedType(expr.Inputs[0])
 			outType := tostring.GetFormattedType(expr.Outputs[0])
 
@@ -541,7 +542,7 @@ func checkMatchParamTypes(expr *ast.CXExpression, expected, received []*ast.CXAr
 
 func CheckTypes(expr *ast.CXExpression) {
 	if expr.Operator != nil {
-		opName := cxcore.ExprOpName(expr)
+		opName := ast.ExprOpName(expr)
 
 		// checking if number of inputs is less than the required number of inputs
 		if len(expr.Inputs) != len(expr.Operator.Inputs) {
@@ -909,7 +910,7 @@ func ProcessTempVariable(expr *ast.CXExpression) {
 	if expr.Operator != nil && (expr.Operator == globals.Natives[constants.OP_IDENTITY] || globals.IsArithmeticOperator(expr.Operator.OpCode)) && len(expr.Outputs) > 0 && len(expr.Inputs) > 0 {
 		name := expr.Outputs[0].Name
 		arg := expr.Outputs[0]
-		if cxcore.IsTempVar(name) {
+		if util2.IsTempVar(name) {
 			// then it's a temporary variable and it needs to adopt its input's type
 			arg.Type = expr.Inputs[0].Type
 			arg.Size = expr.Inputs[0].Size
