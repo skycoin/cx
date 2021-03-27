@@ -81,7 +81,7 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]cxcore.CXValue, glob
 		} else {
 			switch expr.Operator.Version {
 			case 1: // old version
-				cxcore.opcodeHandlers[expr.Operator.OpCode](expr, call.FramePointer)
+				globals.OpcodeHandlers[expr.Operator.OpCode](expr, call.FramePointer)
 				call.Line++
 			case 2: // new version
 				fp := call.FramePointer;
@@ -134,7 +134,7 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]cxcore.CXValue, glob
 					argIndex++
 				}
 
-				cxcore.opcodeHandlers_V2[expr.Operator.OpCode](inputValues, outputValues)
+				globals.OpcodeHandlers_V2[expr.Operator.OpCode](inputValues, outputValues)
 
 				for inputIndex := 0; inputIndex < inputCount; inputIndex++ { // TODO: remove in release builds
 					if inputValues[inputIndex].Used != int8(inputs[inputIndex].Type) { // TODO: remove cast
