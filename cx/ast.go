@@ -429,15 +429,11 @@ func (cxprogram *CXProgram) GetCurrentPackage() *CXPackage {
 }
 
 // GetCurrentStruct ...
-func (cxprogram *CXProgram) GetCurrentStruct() (*CXStruct, error) {
+func (cxprogram *CXProgram) GetCurrentStruct() *CXStruct {
 	if cxprogram.CurrentPackage != nil {
-		if cxprogram.CurrentPackage.CurrentStruct != nil {
-			return cxprogram.CurrentPackage.CurrentStruct, nil
-		}
-		return nil, errors.New("current struct is nil")
-
+		return cxprogram.CurrentPackage.CurrentStruct
 	}
-	return nil, errors.New("current package is nil")
+	return nil
 
 }
 
