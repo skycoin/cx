@@ -10,8 +10,6 @@ import (
 	//"fmt"
 	"sync"
 	"time"
-
-	"github.com/skycoin/cx/cx"
 )
 
 const (
@@ -57,18 +55,18 @@ type CXCallback struct {
 	functionName    string
 }
 
-func (cb *CXCallback) init(inputs []cxcore.CXValue, outputs []cxcore.CXValue, packageName string) {
+func (cb *CXCallback) init(inputs []ast.CXValue, outputs []ast.CXValue, packageName string) {
 	cb.windowName = inputs[0].Get_str()
 	cb.windowNameBytes = helper.FromI32(int32(mem.WriteStringData(cb.windowName)))
 	cb.functionName = inputs[1].Get_str()
 	cb.packageName = packageName
 }
 
-func (cb *CXCallback) Init(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func (cb *CXCallback) Init(inputs []ast.CXValue, outputs []ast.CXValue) {
 	cb.init(inputs, outputs, inputs[0].Expr.Package.Name)
 }
 
-func (cb *CXCallback) InitEx(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func (cb *CXCallback) InitEx(inputs []ast.CXValue, outputs []ast.CXValue) {
 	cb.init(inputs, outputs, inputs[2].Get_str())
 }
 

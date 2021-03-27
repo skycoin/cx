@@ -266,7 +266,7 @@ func opPrintf(expr *ast.CXExpression, fp int) {
 	fmt.Print(string(buildString(expr, fp)))
 }
 
-func opRead(inputs []CXValue, outputs []CXValue) {
+func opRead(inputs []ast.CXValue, outputs []ast.CXValue) {
 
 	reader := bufio.NewReader(os.Stdin)
 	text, err := reader.ReadString('\n')

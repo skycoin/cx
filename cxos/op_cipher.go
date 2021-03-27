@@ -6,8 +6,6 @@ import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/skycoin/src/cipher"
-
-	"github.com/skycoin/cx/cx"
 )
 
 func init() {
@@ -39,7 +37,7 @@ func init() {
 }
 
 // opCipherGenerateKeyPair generates a PubKey and a SecKey.
-func opCipherGenerateKeyPair(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opCipherGenerateKeyPair(inputs []ast.CXValue, outputs []ast.CXValue) {
 	pubKey, secKey := cipher.GenerateKeyPair()
 
 	bPubKey := make([]byte, len(pubKey))

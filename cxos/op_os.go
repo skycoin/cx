@@ -38,11 +38,11 @@ func ValidFile(handle int32) *os.File {
 	return nil
 }
 
-func opOsLogFile(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opOsLogFile(inputs []ast.CXValue, outputs []ast.CXValue) {
 	file.CXLogFile(inputs[0].Get_bool())
 }
 
-func opOsReadAllText(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opOsReadAllText(inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
 
 	if byts, err := file.CXReadFile(inputs[0].Get_str()); err == nil {
@@ -73,7 +73,7 @@ func getFileHandle(file *os.File) int32 {
 	return handle
 }
 
-func opOsOpen(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opOsOpen(inputs []ast.CXValue, outputs []ast.CXValue) {
 	handle := int32(-1)
 	if file, err := file.CXOpenFile(inputs[0].Get_str()); err == nil {
 		handle = getFileHandle(file)
@@ -82,7 +82,7 @@ func opOsOpen(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputs[0].Set_i32(int32(handle))
 }
 
-func opOsCreate(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opOsCreate(inputs []ast.CXValue, outputs []ast.CXValue) {
 	handle := int32(-1)
 	if file, err := file.CXCreateFile(inputs[0].Get_str()); err == nil {
 		handle = getFileHandle(file)
@@ -91,7 +91,7 @@ func opOsCreate(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputs[0].Set_i32(int32(handle))
 }
 
-func opOsClose(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opOsClose(inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
 
 	handle := inputs[0].Get_i32()
@@ -107,7 +107,7 @@ func opOsClose(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputs[0].Set_bool(success)
 }
 
-func opOsSeek(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opOsSeek(inputs []ast.CXValue, outputs []ast.CXValue) {
 	offset := int64(-1)
 	if file := ValidFile(inputs[0].Get_i32()); file != nil {
 		var err error
@@ -118,7 +118,7 @@ func opOsSeek(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputs[0].Set_i64(offset)
 }
 
-func opOsReadStr(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opOsReadStr(inputs []ast.CXValue, outputs []ast.CXValue) {
 	var len uint64
 	var value string
 	success := false
@@ -135,7 +135,7 @@ func opOsReadStr(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputs[1].Set_bool(success)
 }
 
-func opOsReadF64(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opOsReadF64(inputs []ast.CXValue, outputs []ast.CXValue) {
 	var value float64
 	success := false
 	if file := ValidFile(inputs[0].Get_i32()); file != nil {
@@ -148,7 +148,7 @@ func opOsReadF64(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputs[1].Set_bool(success)
 }
 
-func opOsReadF32(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opOsReadF32(inputs []ast.CXValue, outputs []ast.CXValue) {
 	var value float32
 	success := false
 	if file := ValidFile(inputs[0].Get_i32()); file != nil {
@@ -161,7 +161,7 @@ func opOsReadF32(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputs[1].Set_bool(success)
 }
 
-func opOsReadUI64(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opOsReadUI64(inputs []ast.CXValue, outputs []ast.CXValue) {
 	var value uint64
 	success := false
 	if file := ValidFile(inputs[0].Get_i32()); file != nil {
@@ -174,7 +174,7 @@ func opOsReadUI64(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputs[1].Set_bool(success)
 }
 
-func opOsReadUI32(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opOsReadUI32(inputs []ast.CXValue, outputs []ast.CXValue) {
 	var value uint32
 	success := false
 	if file := ValidFile(inputs[0].Get_i32()); file != nil {
@@ -187,7 +187,7 @@ func opOsReadUI32(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputs[1].Set_bool(success)
 }
 
-func opOsReadUI16(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opOsReadUI16(inputs []ast.CXValue, outputs []ast.CXValue) {
 	var value uint16
 	success := false
 	if file := ValidFile(inputs[0].Get_i32()); file != nil {
@@ -200,7 +200,7 @@ func opOsReadUI16(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputs[1].Set_bool(success)
 }
 
-func opOsReadUI8(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opOsReadUI8(inputs []ast.CXValue, outputs []ast.CXValue) {
 	var value uint8
 	success := false
 	if file := ValidFile(inputs[0].Get_i32()); file != nil {
@@ -213,7 +213,7 @@ func opOsReadUI8(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputs[1].Set_bool(success)
 }
 
-func opOsReadI64(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opOsReadI64(inputs []ast.CXValue, outputs []ast.CXValue) {
 	var value int64
 	success := false
 	if file := ValidFile(inputs[0].Get_i32()); file != nil {
@@ -226,7 +226,7 @@ func opOsReadI64(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputs[1].Set_bool(success)
 }
 
-func opOsReadI32(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opOsReadI32(inputs []ast.CXValue, outputs []ast.CXValue) {
 	var value int32
 	success := false
 	if file := ValidFile(inputs[0].Get_i32()); file != nil {
@@ -239,7 +239,7 @@ func opOsReadI32(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputs[1].Set_bool(success)
 }
 
-func opOsReadI16(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opOsReadI16(inputs []ast.CXValue, outputs []ast.CXValue) {
 	var value int16
 	success := false
 	if file := ValidFile(inputs[0].Get_i32()); file != nil {
@@ -252,7 +252,7 @@ func opOsReadI16(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputs[1].Set_bool(success)
 }
 
-func opOsReadI8(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opOsReadI8(inputs []ast.CXValue, outputs []ast.CXValue) {
 	var value int8
 	success := false
 	if file := ValidFile(inputs[0].Get_i32()); file != nil {
@@ -265,7 +265,7 @@ func opOsReadI8(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputs[1].Set_bool(success)
 }
 
-func opOsReadBOOL(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opOsReadBOOL(inputs []ast.CXValue, outputs []ast.CXValue) {
 	var value bool
 	success := false
 	if file := ValidFile(inputs[0].Get_i32()); file != nil {
@@ -278,7 +278,7 @@ func opOsReadBOOL(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputs[1].Set_bool(success)
 }
 
-func opOsWriteStr(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opOsWriteStr(inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
 	if file := ValidFile(inputs[0].Get_i32()); file != nil {
 		value := inputs[1].Get_str()
@@ -293,7 +293,7 @@ func opOsWriteStr(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputs[0].Set_bool(success)
 }
 
-func opOsWriteF64(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opOsWriteF64(inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
 	if file := ValidFile(inputs[0].Get_i32()); file != nil {
 		if err := binary.Write(file, binary.LittleEndian, inputs[1].Get_f64()); err == nil {
@@ -304,7 +304,7 @@ func opOsWriteF64(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputs[0].Set_bool(success)
 }
 
-func opOsWriteF32(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opOsWriteF32(inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
 	if file := ValidFile(inputs[0].Get_i32()); file != nil {
 		if err := binary.Write(file, binary.LittleEndian, inputs[1].Get_f32()); err == nil {
@@ -315,7 +315,7 @@ func opOsWriteF32(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputs[0].Set_bool(success)
 }
 
-func opOsWriteUI64(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opOsWriteUI64(inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
 	if file := ValidFile(inputs[0].Get_i32()); file != nil {
 		if err := binary.Write(file, binary.LittleEndian, inputs[1].Get_ui64()); err == nil {
@@ -326,7 +326,7 @@ func opOsWriteUI64(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputs[0].Set_bool(success)
 }
 
-func opOsWriteUI32(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opOsWriteUI32(inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
 	if file := ValidFile(inputs[0].Get_i32()); file != nil {
 		if err := binary.Write(file, binary.LittleEndian, inputs[1].Get_i32()); err == nil {
@@ -337,7 +337,7 @@ func opOsWriteUI32(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputs[0].Set_bool(success)
 }
 
-func opOsWriteUI16(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opOsWriteUI16(inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
 	if file := ValidFile(inputs[0].Get_i32()); file != nil {
 		if err := binary.Write(file, binary.LittleEndian, inputs[1].Get_ui16()); err == nil {
@@ -348,7 +348,7 @@ func opOsWriteUI16(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputs[0].Set_bool(success)
 }
 
-func opOsWriteUI8(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opOsWriteUI8(inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
 	if file := ValidFile(inputs[0].Get_i32()); file != nil {
 		if err := binary.Write(file, binary.LittleEndian, inputs[1].Get_ui8()); err == nil {
@@ -359,7 +359,7 @@ func opOsWriteUI8(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputs[0].Set_bool(success)
 }
 
-func opOsWriteI64(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opOsWriteI64(inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
 	if file := ValidFile(inputs[0].Get_i32()); file != nil {
 		if err := binary.Write(file, binary.LittleEndian, inputs[1].Get_i64()); err == nil {
@@ -370,7 +370,7 @@ func opOsWriteI64(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputs[0].Set_bool(success)
 }
 
-func opOsWriteI32(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opOsWriteI32(inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
 	if file := ValidFile(inputs[0].Get_i32()); file != nil {
 		if err := binary.Write(file, binary.LittleEndian, inputs[1].Get_i32()); err == nil {
@@ -381,7 +381,7 @@ func opOsWriteI32(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputs[0].Set_bool(success)
 }
 
-func opOsWriteI16(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opOsWriteI16(inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
 	if file := ValidFile(inputs[0].Get_i32()); file != nil {
 		if err := binary.Write(file, binary.LittleEndian, inputs[1].Get_i16()); err == nil {
@@ -392,7 +392,7 @@ func opOsWriteI16(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputs[0].Set_bool(success)
 }
 
-func opOsWriteI8(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opOsWriteI8(inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
 	if file := ValidFile(inputs[0].Get_i32()); file != nil {
 		if err := binary.Write(file, binary.LittleEndian, inputs[1].Get_i8()); err == nil {
@@ -403,7 +403,7 @@ func opOsWriteI8(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputs[0].Set_bool(success)
 }
 
-func opOsWriteBOOL(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opOsWriteBOOL(inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
 	if file := ValidFile(inputs[0].Get_i32()); file != nil {
 		if err := binary.Write(file, binary.LittleEndian, inputs[1].Get_bool()); err == nil {
@@ -414,7 +414,7 @@ func opOsWriteBOOL(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputs[0].Set_bool(success)
 }
 
-func getSlice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) (outputSlicePointer int, outputSliceOffset int32, sizeofElement int, count uint64) {
+func getSlice(inputs []ast.CXValue, outputs []ast.CXValue) (outputSlicePointer int, outputSliceOffset int32, sizeofElement int, count uint64) {
 	inp1, out0 := inputs[1].Arg, outputs[0].Arg
     
 	if inp1.Type != out0.Type || !ast.GetAssignmentElement(inp1).IsSlice || !ast.GetAssignmentElement(out0).IsSlice {
@@ -428,7 +428,7 @@ func getSlice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) (outputSlicePoi
 	return
 }
 
-func opOsReadF64Slice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opOsReadF64Slice(inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
     _, outputSliceOffset, sizeofElement, count := getSlice(inputs, outputs)
 	if count > 0 {
@@ -448,7 +448,7 @@ func opOsReadF64Slice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputs[1].Set_bool(success)
 }
 
-func opOsReadF32Slice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opOsReadF32Slice(inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
 	_, outputSliceOffset, sizeofElement, count := getSlice(inputs, outputs)
 	if count > 0 {
@@ -468,7 +468,7 @@ func opOsReadF32Slice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputs[1].Set_bool(success)
 }
 
-func opOsReadUI64Slice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opOsReadUI64Slice(inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
 	_, outputSliceOffset, sizeofElement, count := getSlice(inputs, outputs)
 	if count > 0 {
@@ -488,7 +488,7 @@ func opOsReadUI64Slice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputs[1].Set_bool(success)
 }
 
-func opOsReadUI32Slice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opOsReadUI32Slice(inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
 	_, outputSliceOffset, sizeofElement, count := getSlice(inputs, outputs)
 	if count > 0 {
@@ -508,7 +508,7 @@ func opOsReadUI32Slice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputs[1].Set_bool(success)
 }
 
-func opOsReadUI16Slice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opOsReadUI16Slice(inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
     _, outputSliceOffset, sizeofElement, count := getSlice(inputs, outputs)
 	if count > 0 {
@@ -528,7 +528,7 @@ func opOsReadUI16Slice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputs[1].Set_bool(success)
 }
 
-func opOsReadUI8Slice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opOsReadUI8Slice(inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
 	_, outputSliceOffset, sizeofElement, count := getSlice(inputs, outputs)
 	if count > 0 {
@@ -548,7 +548,7 @@ func opOsReadUI8Slice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputs[1].Set_bool(success)
 }
 
-func opOsReadI64Slice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opOsReadI64Slice(inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
     _, outputSliceOffset, sizeofElement, count := getSlice(inputs, outputs)
 	if count > 0 {
@@ -568,7 +568,7 @@ func opOsReadI64Slice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputs[1].Set_bool(success)
 }
 
-func opOsReadI32Slice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opOsReadI32Slice(inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
 	_, outputSliceOffset, sizeofElement, count := getSlice(inputs, outputs)
 	if count > 0 {
@@ -588,7 +588,7 @@ func opOsReadI32Slice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputs[1].Set_bool(success)
 }
 
-func opOsReadI16Slice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opOsReadI16Slice(inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
 	_, outputSliceOffset, sizeofElement, count := getSlice(inputs, outputs)
 	if count > 0 {
@@ -608,7 +608,7 @@ func opOsReadI16Slice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputs[1].Set_bool(success)
 }
 
-func opOsReadI8Slice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opOsReadI8Slice(inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
 	_, outputSliceOffset, sizeofElement, count := getSlice(inputs, outputs)
 	if count > 0 {
@@ -628,7 +628,7 @@ func opOsReadI8Slice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputs[1].Set_bool(success)
 }
 
-func opOsWriteF64Slice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opOsWriteF64Slice(inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
 	if file := ValidFile(inputs[0].Get_i32()); file != nil {
 		if data := inputs[1].GetSlice_f64(); data != nil {
@@ -640,7 +640,7 @@ func opOsWriteF64Slice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputs[0].Set_bool(success)
 }
 
-func opOsWriteF32Slice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opOsWriteF32Slice(inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
 	if file := ValidFile(inputs[0].Get_i32()); file != nil {
 		if data := inputs[1].GetSlice_f32(); data != nil {
@@ -652,7 +652,7 @@ func opOsWriteF32Slice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputs[0].Set_bool(success)
 }
 
-func opOsWriteUI64Slice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opOsWriteUI64Slice(inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
 	if file := ValidFile(inputs[0].Get_i32()); file != nil {
 		if data := inputs[1].GetSlice_f64(); data != nil {
@@ -664,7 +664,7 @@ func opOsWriteUI64Slice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputs[0].Set_bool(success)
 }
 
-func opOsWriteUI32Slice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opOsWriteUI32Slice(inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
 	if file := ValidFile(inputs[0].Get_i32()); file != nil {
 		if data := inputs[1].GetSlice_ui32(); data != nil {
@@ -676,7 +676,7 @@ func opOsWriteUI32Slice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputs[0].Set_bool(success)
 }
 
-func opOsWriteUI16Slice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opOsWriteUI16Slice(inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
 	if file := ValidFile(inputs[0].Get_i32()); file != nil {
 		if data := inputs[1].GetSlice_ui16(); data != nil {
@@ -688,7 +688,7 @@ func opOsWriteUI16Slice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputs[0].Set_bool(success)
 }
 
-func opOsWriteUI8Slice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opOsWriteUI8Slice(inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
 	if file := ValidFile(inputs[0].Get_i32()); file != nil {
 		if data := inputs[1].GetSlice_ui8(); data != nil {
@@ -700,7 +700,7 @@ func opOsWriteUI8Slice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputs[0].Set_bool(success)
 }
 
-func opOsWriteI64Slice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opOsWriteI64Slice(inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
 	if file := ValidFile(inputs[0].Get_i32()); file != nil {
 		if data := inputs[1].GetSlice_i64(); data != nil {
@@ -712,7 +712,7 @@ func opOsWriteI64Slice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputs[0].Set_bool(success)
 }
 
-func opOsWriteI32Slice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opOsWriteI32Slice(inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
 	if file := ValidFile(inputs[0].Get_i32()); file != nil {
 		if data := inputs[1].GetSlice_i32(); data != nil {
@@ -724,7 +724,7 @@ func opOsWriteI32Slice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputs[0].Set_bool(success)
 }
 
-func opOsWriteI16Slice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opOsWriteI16Slice(inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
 	if file := ValidFile(inputs[0].Get_i32()); file != nil {
 		if data := inputs[1].GetSlice_i16(); data != nil {
@@ -736,7 +736,7 @@ func opOsWriteI16Slice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputs[0].Set_bool(success)
 }
 
-func opOsWriteI8Slice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opOsWriteI8Slice(inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
 	if file := ValidFile(inputs[0].Get_i32()); file != nil {
 		if data := inputs[1].GetSlice_i8(); data != nil {
@@ -748,17 +748,17 @@ func opOsWriteI8Slice(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
 	outputs[0].Set_bool(success)
 }
 
-func opOsGetWorkingDirectory(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opOsGetWorkingDirectory(inputs []ast.CXValue, outputs []ast.CXValue) {
     //outputs[0].Set_str(cxcore.PROGRAM.Path)
 	outputs[0].Set_str(globals.CxProgramPath)
 }
 
-func opOsExit(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opOsExit(inputs []ast.CXValue, outputs []ast.CXValue) {
 	exitCode := inputs[0].Get_i32()
 	os.Exit(int(exitCode))
 }
 
-func opOsRun(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opOsRun(inputs []ast.CXValue, outputs []ast.CXValue) {
 	var runError int32 = OS_RUN_SUCCESS
 
 	command := inputs[0].Get_str()

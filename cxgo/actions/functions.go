@@ -96,7 +96,7 @@ func isParseOp(expr *ast.CXExpression) bool {
 // accept `cxcore.TYPE_UNDEFINED` arguments) is receiving arguments of valid types. For example,
 // the expression `sa + sb` is not valid if they are struct instances.
 func CheckUndValidTypes(expr *ast.CXExpression) {
-	if expr.Operator != nil && cxcore.IsOperator(expr.Operator.OpCode) && !IsAllArgsBasicTypes(expr) {
+	if expr.Operator != nil && globals.IsOperator(expr.Operator.OpCode) && !IsAllArgsBasicTypes(expr) {
 		println(ast.CompilationError(CurrentFile, LineNo), fmt.Sprintf("invalid argument types for '%s' operator", globals.OpNames[expr.Operator.OpCode]))
 	}
 }
@@ -288,7 +288,7 @@ func checkSameNativeType(expr *ast.CXExpression) error {
 }
 
 func ProcessUndExpression(expr *ast.CXExpression) {
-	if expr.Operator != nil && cxcore.IsOperator(expr.Operator.OpCode) {
+	if expr.Operator != nil && globals.IsOperator(expr.Operator.OpCode) {
 		if err := checkSameNativeType(expr); err != nil {
 			println(ast.CompilationError(CurrentFile, LineNo), err.Error())
 		}
@@ -296,7 +296,7 @@ func ProcessUndExpression(expr *ast.CXExpression) {
 	if expr.IsUndType {
 		for _, out := range expr.Outputs {
             size := 1
-            if !cxcore.IsComparisonOperator(expr.Operator.OpCode) {
+            if !globals.IsComparisonOperator(expr.Operator.OpCode) {
 		        size = ast.GetSize(ast.GetAssignmentElement(expr.Inputs[0]))
             }
             out.Size = size
@@ -906,7 +906,7 @@ func GiveOffset(symbols *[]map[string]*ast.CXArgument, sym *ast.CXArgument, offs
 }
 
 func ProcessTempVariable(expr *ast.CXExpression) {
-	if expr.Operator != nil && (expr.Operator == globals.Natives[constants.OP_IDENTITY] || cxcore.IsArithmeticOperator(expr.Operator.OpCode)) && len(expr.Outputs) > 0 && len(expr.Inputs) > 0 {
+	if expr.Operator != nil && (expr.Operator == globals.Natives[constants.OP_IDENTITY] || globals.IsArithmeticOperator(expr.Operator.OpCode)) && len(expr.Outputs) > 0 && len(expr.Inputs) > 0 {
 		name := expr.Outputs[0].Name
 		arg := expr.Outputs[0]
 		if cxcore.IsTempVar(name) {

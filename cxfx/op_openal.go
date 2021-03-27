@@ -4,6 +4,7 @@ package cxfx
 
 import (
 	"bufio"
+	"github.com/skycoin/cx/cx/ast"
 	file2 "github.com/skycoin/cx/cx/util/file"
 
 	"github.com/mjibson/go-dsp/wav"
@@ -13,7 +14,7 @@ import (
 	//"golang.org/x/mobile/exp/audio/al"
 )
 
-func opAlLoadWav(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opAlLoadWav(inputs []ast.CXValue, outputs []ast.CXValue) {
 	file, err := file2.CXOpenFile(inputs[0].Get_str())
 	defer file.Close()
 	if err != nil {

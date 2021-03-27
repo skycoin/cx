@@ -32,8 +32,8 @@ func RunCxAst(cxprogram *ast.CXProgram, untilEnd bool, nCalls *int, untilCall in
 	defer ast.RuntimeError()
 	var err error
 
-	var inputs []cxcore.CXValue
-	var outputs []cxcore.CXValue
+	var inputs []ast.CXValue
+	var outputs []ast.CXValue
 	for !cxprogram.Terminated && (untilEnd || *nCalls != 0) && cxprogram.CallCounter > untilCall {
 		call := &cxprogram.CallStack[cxprogram.CallCounter]
 
@@ -113,8 +113,8 @@ func RunCompiled(cxprogram *ast.CXProgram, nCalls int, args []string) error {
 		// initializing program resources
 		// cxprogram.Stacks = append(cxprogram.Stacks, MakeStack(1024))
 
-		var inputs []cxcore.CXValue
-		var outputs []cxcore.CXValue
+		var inputs []ast.CXValue
+		var outputs []ast.CXValue
 		if cxprogram.CallStack[0].Operator == nil {
 			// then the program is just starting and we need to run the SYS_INIT_FUNC
 			if fn, err := mod.SelectFunction(constants.SYS_INIT_FUNC); err == nil {

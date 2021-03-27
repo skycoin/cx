@@ -87,8 +87,8 @@ func CallAffPredicate(fn *ast.CXFunction, predValue []byte) byte {
 		GetFinalOffset(newFP, newCall.Operator.Inputs[0]),
 		predValue)
 
-    var inputs []CXValue
-    var outputs []CXValue
+    var inputs []ast.CXValue
+    var outputs []ast.CXValue
 	prevCC := ast.PROGRAM.CallCounter
 	for {
 		call := &ast.PROGRAM.CallStack[ast.PROGRAM.CallCounter]

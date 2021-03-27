@@ -18,7 +18,7 @@ type CXCall struct {
 
 //function is only called once and by affordances
 //is a function on CXCal, not PROGRAM
-func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]cxcore.CXValue, globalOutputs *[]cxcore.CXValue) error {
+func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutputs *[]CXValue) error {
 	// CX is still single-threaded, so only one stack
 	if call.Line >= call.Operator.Length {
 		/*
@@ -85,15 +85,15 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]cxcore.CXValue, glob
 				call.Line++
 			case 2: // new version
 				fp := call.FramePointer;
-				if cxcore.IsOperator(expr.Operator.OpCode) {
+				if globals.IsOperator(expr.Operator.OpCode) {
 					// TODO: resolve this at compile time
 					atomicType := GetType(expr.Inputs[0])
-					expr.Operator = cxcore.GetTypedOperator(atomicType, expr.Operator.OpCode)
+					expr.Operator = globals.GetTypedOperator(atomicType, expr.Operator.OpCode)
 				}
 				inputs := expr.Inputs
 				inputCount := len(inputs)
 				if inputCount > len(*globalInputs) {
-					*globalInputs = make([]cxcore.CXValue, inputCount)
+					*globalInputs = make([]CXValue, inputCount)
 				}
 				inputValues := (*globalInputs)[:inputCount]
 
@@ -101,7 +101,7 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]cxcore.CXValue, glob
 				outputs := expr.Outputs
 				outputCount := len(outputs)
 				if outputCount > len(*globalOutputs) {
-					*globalOutputs = make([]cxcore.CXValue, outputCount)
+					*globalOutputs = make([]CXValue, outputCount)
 				}
 				outputValues := (*globalOutputs)[:outputCount]
 
