@@ -1,7 +1,6 @@
 package ast
 
 import (
-	"github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/helper"
 )
@@ -51,7 +50,7 @@ func AllocateSeq(size int) (offset int) {
 	// Checking if we can allocate the entirety of the object in the current heap.
 	if newFree > PROGRAM.HeapSize {
 		// It does not fit, so calling garbage collector.
-		cxcore.MarkAndCompact(PROGRAM)
+		MarkAndCompact(PROGRAM)
 		// Heap pointer got moved by GC and recalculate these variables based on the new pointer.
 		addr = PROGRAM.HeapPointer
 		newFree = addr + size

@@ -15,7 +15,7 @@ func Debug(args ...interface{}) {
 	fmt.Println(args...)
 }
 
-// ExprOpName ...
+// TODO: Deprecate
 func ExprOpName(expr *ast.CXExpression) string {
 	if expr.Operator.IsAtomic {
 		return globals.OpNames[expr.Operator.OpCode]
@@ -23,10 +23,6 @@ func ExprOpName(expr *ast.CXExpression) string {
 	return expr.Operator.Name
 
 }
-
-// func limitString (str string) string {
-// 	if len(str) > 3
-// }
 
 func stackValueHeader(fileName string, fileLine int) string {
 	return fmt.Sprintf("%s:%d", fileName, fileLine)
