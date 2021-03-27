@@ -450,10 +450,10 @@ func getTarget(inp2 *CXArgument, fp int, tgtElt *string, tgtArgType *string, tgt
 					panic(err)
 				}
 			case "expr":
-				if expr, err := tgtFn.GetExpressionByLabel(aff); err == nil {
+				if expr := tgtFn.GetExpressionByLabel(aff); expr != nil {
 					*tgtExpr = *expr
 				} else {
-					panic(err)
+					panic("getTarget(): error, tgtFn.GetExpressionByLabel is nil")
 				}
 			case "inp":
 				*tgtArgType = "inp"
@@ -537,7 +537,7 @@ func getAffordances(inp1 *CXArgument, fp int,
 					*affs = append(*affs, "Print FA's value")
 				}
 			case "expr":
-				if expr, err := tgtFn.GetExpressionByLabel(elt); err == nil {
+				if expr := tgtFn.GetExpressionByLabel(elt); expr != nil {
 					_ = expr
 					switch tgtElt {
 					case "arg":
@@ -548,7 +548,7 @@ func getAffordances(inp1 *CXArgument, fp int,
 						*affs = append(*affs, "Call FE")
 					}
 				} else {
-					panic(err)
+					panic("getAffordances(): error, tgtFn.GetExpressionByLabel is nil")
 				}
 			case "fn":
 				if fn, err := tgtPkg.GetFunction(elt); err == nil {
@@ -779,7 +779,7 @@ func opAffInform(expr *CXExpression, fp int) {
 
 		}
 	case "expr":
-		if expr, err := tgtFn.GetExpressionByLabel(elt); err == nil {
+		if expr := tgtFn.GetExpressionByLabel(elt); expr != nil {
 			_ = expr
 			switch tgtElt {
 			case "arg":
@@ -790,7 +790,7 @@ func opAffInform(expr *CXExpression, fp int) {
 
 			}
 		} else {
-			panic(err)
+			panic("opAffInform(): error, tgtFn.GetExpressionByLabel is nil")
 		}
 	case "fn":
 		if fn, err := tgtPkg.GetFunction(elt); err == nil {
@@ -882,7 +882,7 @@ func opAffRequest(expr *CXExpression, fp int) {
 			fmt.Println(GetPrintableValue(fp, readArgAff(elt, &tgtFn)))
 		}
 	case "expr":
-		if expr, err := tgtFn.GetExpressionByLabel(elt); err == nil {
+		if expr := tgtFn.GetExpressionByLabel(elt); expr != nil {
 			_ = expr
 			switch tgtElt {
 			case "arg":
@@ -893,7 +893,7 @@ func opAffRequest(expr *CXExpression, fp int) {
 
 			}
 		} else {
-			panic(err)
+			panic("opAffRequest(): error, tgtFn.GetExpressionByLabel is nil")
 		}
 	case "fn":
 		fn := Natives[OpCodes[elt]]
