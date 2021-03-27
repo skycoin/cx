@@ -74,16 +74,16 @@ func (fn *CXFunction) GetExpressions() []*CXExpression {
 }
 
 // GetExpressionByLabel
-func (fn *CXFunction) GetExpressionByLabel(lbl string) (*CXExpression, error) {
+func (fn *CXFunction) GetExpressionByLabel(lbl string) *CXExpression {
 	if fn.Expressions == nil {
-		return nil, fmt.Errorf("function '%s' has no expressions", fn.Name)
+		return nil
 	}
 	for _, expr := range fn.Expressions {
 		if expr.Label == lbl {
-			return expr, nil
+			return expr
 		}
 	}
-	return nil, fmt.Errorf("expression '%s' not found in function '%s'", lbl, fn.Name)
+	return nil
 }
 
 // GetExpressionByLine ...
