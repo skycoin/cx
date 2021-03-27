@@ -3,6 +3,7 @@ package cxcore
 import (
 	"bytes"
 	"fmt"
+	ast2 "github.com/skycoin/cx/ast"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/helper"
@@ -10,7 +11,6 @@ import (
 	"os"
 	"path/filepath"
 	"runtime/debug"
-	"strconv"
 	"strings"
 	"text/tabwriter"
 )
@@ -774,15 +774,10 @@ func WriteToSlice(off int, inp []byte) int {
 
 }
 
-// ErrorHeader ...
-func ErrorHeader(currentFile string, lineNo int) string {
-	return "error: " + currentFile + ":" + strconv.FormatInt(int64(lineNo), 10)
-}
-
 // CompilationError is a helper function that concatenates the `currentFile` and `lineNo` data to a error header and returns the full error string.
 func CompilationError(currentFile string, lineNo int) string {
 	FoundCompileErrors = true
-	return ErrorHeader(currentFile, lineNo)
+	return ast2.ErrorHeader(currentFile, lineNo)
 }
 
 // ErrorString ...
@@ -802,7 +797,7 @@ func errorCode(r interface{}) int {
 	}
 }
 
-func runtimeErrorInfo(r interface{}, printStack bool, defaultError int) {
+func RuntimeErrorInfo(r interface{}, printStack bool, defaultError int) {
 	call := ast.PROGRAM.CallStack[ast.PROGRAM.CallCounter]
 	expr := call.Operator.Expressions[call.Line]
 	code := errorCode(r)
@@ -810,7 +805,7 @@ func runtimeErrorInfo(r interface{}, printStack bool, defaultError int) {
 		code = defaultError
 	}
 
-	fmt.Printf("%s, %s, %v", ErrorHeader(expr.FileName, expr.FileLine), ErrorString(code), r)
+	fmt.Printf("%s, %s, %v", ast2.ErrorHeader(expr.FileName, expr.FileLine), ErrorString(code), r)
 
 	if printStack {
 		ast.PROGRAM.PrintStack()
@@ -832,15 +827,15 @@ func RuntimeError() {
 			if ast.PROGRAM.CallCounter > 0 {
 				ast.PROGRAM.CallCounter--
 				ast.PROGRAM.StackPointer = call.FramePointer
-				runtimeErrorInfo(r, true, constants.CX_RUNTIME_STACK_OVERFLOW_ERROR)
+				RuntimeErrorInfo(r, true, constants.CX_RUNTIME_STACK_OVERFLOW_ERROR)
 			} else {
 				// error at entry point
-				runtimeErrorInfo(r, false, constants.CX_RUNTIME_STACK_OVERFLOW_ERROR)
+				RuntimeErrorInfo(r, false, constants.CX_RUNTIME_STACK_OVERFLOW_ERROR)
 			}
 		case constants.HEAP_EXHAUSTED_ERROR:
-			runtimeErrorInfo(r, true, constants.CX_RUNTIME_HEAP_EXHAUSTED_ERROR)
+			RuntimeErrorInfo(r, true, constants.CX_RUNTIME_HEAP_EXHAUSTED_ERROR)
 		default:
-			runtimeErrorInfo(r, true, constants.CX_RUNTIME_ERROR)
+			RuntimeErrorInfo(r, true, constants.CX_RUNTIME_ERROR)
 		}
 	}
 }
