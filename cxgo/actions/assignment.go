@@ -3,7 +3,7 @@ package actions
 import (
 	"os"
 
-	"github.com/skycoin/cx/cx"
+	cxcore "github.com/skycoin/cx/cx"
 )
 
 // assignStructLiteralFields converts a struct literal to a series of struct field assignments.
@@ -120,9 +120,9 @@ func Assignment(to []*cxcore.CXExpression, assignOp string, from []*cxcore.CXExp
 		os.Exit(cxcore.CX_COMPILATION_ERROR)
 	}
 
-	pkg, err := PRGRM.GetCurrentPackage()
-	if err != nil {
-		panic(err)
+	pkg := PRGRM.GetCurrentPackage()
+	if pkg == nil {
+		panic("Assignment(): error, PRGRM.GetCurrentPackage is nil")
 	}
 
 	var expr *cxcore.CXExpression

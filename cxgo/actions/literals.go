@@ -3,16 +3,16 @@ package actions
 import (
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 
-	"github.com/skycoin/cx/cx"
+	cxcore "github.com/skycoin/cx/cx"
 )
 
 // SliceLiteralExpression handles literal expressions by converting it to a series of `append` expressions.
 func SliceLiteralExpression(typSpec int, exprs []*cxcore.CXExpression) []*cxcore.CXExpression {
 	var result []*cxcore.CXExpression
 
-	pkg, err := PRGRM.GetCurrentPackage()
-	if err != nil {
-		panic(err)
+	pkg := PRGRM.GetCurrentPackage()
+	if pkg == nil {
+		panic("SliceLiteralExpression(): error, PRGRM.GetCurrentPackage is nil")
 	}
 
 	symName := cxcore.MakeGenSym(cxcore.LOCAL_PREFIX)
@@ -113,7 +113,7 @@ func SliceLiteralExpression(typSpec int, exprs []*cxcore.CXExpression) []*cxcore
 func PrimaryStructLiteral(ident string, strctFlds []*cxcore.CXExpression) []*cxcore.CXExpression {
 	var result []*cxcore.CXExpression
 
-	if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
+	if pkg := PRGRM.GetCurrentPackage(); pkg != nil {
 		if strct, err := PRGRM.GetStruct(ident, pkg.Name); err == nil {
 			for _, expr := range strctFlds {
 				name := expr.Outputs[0].Name
@@ -142,7 +142,7 @@ func PrimaryStructLiteral(ident string, strctFlds []*cxcore.CXExpression) []*cxc
 			panic("type '" + ident + "' does not exist")
 		}
 	} else {
-		panic(err)
+		panic("PrimaryStructLiteral(): error, PRGRM.GetCurrentPackage is nil")
 	}
 
 	return result
@@ -150,7 +150,7 @@ func PrimaryStructLiteral(ident string, strctFlds []*cxcore.CXExpression) []*cxc
 
 func PrimaryStructLiteralExternal(impName string, ident string, strctFlds []*cxcore.CXExpression) []*cxcore.CXExpression {
 	var result []*cxcore.CXExpression
-	if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
+	if pkg := PRGRM.GetCurrentPackage(); pkg != nil {
 		if _, err := pkg.GetImport(impName); err == nil {
 			if strct, err := PRGRM.GetStruct(ident, impName); err == nil {
 				for _, expr := range strctFlds {
@@ -177,7 +177,7 @@ func PrimaryStructLiteralExternal(impName string, ident string, strctFlds []*cxc
 			panic(err)
 		}
 	} else {
-		panic(err)
+		panic("PrimaryStructLiteralExternal(): error, PRGRM.GetCurrentPackage is nil")
 	}
 
 	return result
@@ -186,9 +186,9 @@ func PrimaryStructLiteralExternal(impName string, ident string, strctFlds []*cxc
 func ArrayLiteralExpression(arrSizes []int, typSpec int, exprs []*cxcore.CXExpression) []*cxcore.CXExpression {
 	var result []*cxcore.CXExpression
 
-	pkg, err := PRGRM.GetCurrentPackage()
-	if err != nil {
-		panic(err)
+	pkg := PRGRM.GetCurrentPackage()
+	if pkg != nil {
+		panic("ArrayLiteralExpression(): error, PRGRM.GetCurrentPackage is nil")
 	}
 
 	symName := cxcore.MakeGenSym(cxcore.LOCAL_PREFIX)

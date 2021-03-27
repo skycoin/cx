@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/skycoin/cx/cx"
+	cxcore "github.com/skycoin/cx/cx"
 )
 
 // PostfixExpressionArray...
@@ -115,9 +115,9 @@ func PostfixExpressionNative(typCode int, opStrCode string) []*cxcore.CXExpressi
 	}
 
 	expr := cxcore.MakeExpression(cxcore.Natives[opCode], CurrentFile, LineNo)
-	pkg, err := PRGRM.GetCurrentPackage()
-	if err != nil {
-		panic(err)
+	pkg := PRGRM.GetCurrentPackage()
+	if pkg != nil {
+		panic("PostfixExpressionsNative(): error, PRGRM.GetCurrentPackage is nil")
 	}
 	expr.Package = pkg
 
@@ -139,7 +139,7 @@ func PostfixExpressionEmptyFunCall(prevExprs []*cxcore.CXExpression) []*cxcore.C
 
 	} else if prevExprs[len(prevExprs)-1].Operator == nil {
 		if opCode, ok := cxcore.OpCodes[prevExprs[len(prevExprs)-1].Outputs[0].Name]; ok {
-			if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
+			if pkg := PRGRM.GetCurrentPackage(); pkg != nil {
 				prevExprs[0].Package = pkg
 			}
 			prevExprs[0].Outputs = nil
@@ -159,7 +159,7 @@ func PostfixExpressionFunCall(prevExprs []*cxcore.CXExpression, args []*cxcore.C
 
 	} else if prevExprs[len(prevExprs)-1].Operator == nil {
 		if opCode, ok := cxcore.OpCodes[prevExprs[len(prevExprs)-1].Outputs[0].Name]; ok {
-			if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
+			if pkg := PRGRM.GetCurrentPackage(); pkg != nil {
 				prevExprs[0].Package = pkg
 			}
 			prevExprs[0].Outputs = nil
@@ -173,9 +173,9 @@ func PostfixExpressionFunCall(prevExprs []*cxcore.CXExpression, args []*cxcore.C
 }
 
 func PostfixExpressionIncDec(prevExprs []*cxcore.CXExpression, isInc bool) []*cxcore.CXExpression {
-	pkg, err := PRGRM.GetCurrentPackage()
-	if err != nil {
-		panic(err)
+	pkg := PRGRM.GetCurrentPackage()
+	if pkg == nil {
+		panic("PostfixExpressionInDec(): error, PRGRM.GetCurrentPackage is nil")
 	}
 
 	var expr *cxcore.CXExpression
@@ -264,9 +264,9 @@ func PostfixExpressionField(prevExprs []*cxcore.CXExpression, ident string) []*c
 	left.IsRest = true
 	// then left is a first (e.g first.rest) and right is a rest
 	// let's check if left is a package
-	pkg, err := PRGRM.GetCurrentPackage()
-	if err != nil {
-		panic(err)
+	pkg := PRGRM.GetCurrentPackage()
+	if pkg == nil {
+		panic("PostfixExpressionsField(): error, PRGRM.GetCurrentPackage is nil")
 	}
 
 	if imp, err := pkg.GetImport(left.Name); err == nil {

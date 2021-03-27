@@ -340,14 +340,14 @@ declarator:     direct_declarator
 direct_declarator:
                 IDENTIFIER
                 {
-			if pkg, err := actions.PRGRM.GetCurrentPackage(); err == nil {
+			if pkg := actions.PRGRM.GetCurrentPackage(); pkg != nil {
 				arg := cxcore.MakeArgument("", actions.CurrentFile, actions.LineNo)
                                 arg.AddType(cxcore.TypeNames[cxcore.TYPE_UNDEFINED])
 				arg.Name = $1
 				arg.Package = pkg
 				$$ = arg
 			} else {
-				panic(err)
+				panic("direct_declarator: error, PRGRM.GetCurrentPackage is nil")
 			}
                 }
 	|       LPAREN declarator RPAREN
@@ -1217,7 +1217,7 @@ return_expression:
 
 jump_statement: GOTO IDENTIFIER SEMICOLON
                 {
-			if pkg, err := actions.PRGRM.GetCurrentPackage(); err == nil {
+			if pkg := actions.PRGRM.GetCurrentPackage(); pkg != nil {
 				expr := cxcore.MakeExpression(cxcore.Natives[cxcore.OP_JMP], actions.CurrentFile, actions.LineNo)
 				expr.Package = pkg
 				expr.Label = $2
@@ -1229,7 +1229,7 @@ jump_statement: GOTO IDENTIFIER SEMICOLON
 					
 				$$ = []*cxcore.CXExpression{expr}
 			} else {
-				panic(err)
+				panic("jum_statement: error, PRGRM.GetCurrentPackage is nil")
 			}
                 }
 	|       CONTINUE SEMICOLON

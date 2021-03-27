@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/jinzhu/copier"
-	"github.com/skycoin/cx/cx"
+	cxcore "github.com/skycoin/cx/cx"
 )
 
 // FunctionHeader takes a function name ('ident') and either creates the
@@ -21,7 +21,7 @@ func FunctionHeader(ident string, receiver []*cxcore.CXArgument, isMethod bool) 
 		if len(receiver) > 1 {
 			panic("method has multiple receivers")
 		}
-		if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
+		if pkg := PRGRM.GetCurrentPackage(); pkg != nil {
 			fnName := receiver[0].CustomType.Name + "." + ident
 
 			if fn, err := PRGRM.GetFunction(fnName, pkg.Name); err == nil {
@@ -35,10 +35,10 @@ func FunctionHeader(ident string, receiver []*cxcore.CXArgument, isMethod bool) 
 				return fn
 			}
 		} else {
-			panic(err)
+			panic("FunctionHeaders() isMethod: error, PRGRM.GetCurrentPackage is nil")
 		}
 	} else {
-		if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
+		if pkg := PRGRM.GetCurrentPackage(); pkg != nil {
 			if fn, err := PRGRM.GetFunction(ident, pkg.Name); err == nil {
 				pkg.CurrentFunction = fn
 				return fn
@@ -48,7 +48,7 @@ func FunctionHeader(ident string, receiver []*cxcore.CXArgument, isMethod bool) 
 				return fn
 			}
 		} else {
-			panic(err)
+			panic("FunctionHeader() isNotMethod: error, PRGRM.GetCurrentPackage is nil")
 		}
 	}
 }
@@ -287,11 +287,11 @@ func ProcessUndExpression(expr *cxcore.CXExpression) {
 	}
 	if expr.IsUndType {
 		for _, out := range expr.Outputs {
-            size := 1
-            if !cxcore.IsComparisonOperator(expr.Operator.OpCode) {
-		        size = cxcore.GetSize(cxcore.GetAssignmentElement(expr.Inputs[0]))
-            }
-            out.Size = size
+			size := 1
+			if !cxcore.IsComparisonOperator(expr.Operator.OpCode) {
+				size = cxcore.GetSize(cxcore.GetAssignmentElement(expr.Inputs[0]))
+			}
+			out.Size = size
 			out.TotalSize = size
 		}
 	}
@@ -464,8 +464,6 @@ func ProcessLocalDeclaration(symbols *[]map[string]*cxcore.CXArgument, symbolsSc
 	}
 	arg.IsLocalDeclaration = (*symbolsScope)[arg.Package.Name+"."+arg.Name]
 }
-
-
 
 func ProcessGoTos(fn *cxcore.CXFunction, exprs []*cxcore.CXExpression) {
 	for i, expr := range exprs {
