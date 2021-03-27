@@ -15,16 +15,6 @@ func Debug(args ...interface{}) {
 	fmt.Println(args...)
 }
 
-// GetType ...
-func GetType(arg *ast.CXArgument) int {
-    fieldCount := len(arg.Fields)
-    if fieldCount > 0 {
-        return GetType(arg.Fields[fieldCount - 1])
-    }
-
-    return arg.Type
-}
-
 // ExprOpName ...
 func ExprOpName(expr *ast.CXExpression) string {
 	if expr.Operator.IsAtomic {

@@ -8,3 +8,14 @@ func GetAssignmentElement(arg *CXArgument) *CXArgument {
 	return arg
 
 }
+
+// GetType ...
+func GetType(arg *CXArgument) int {
+	fieldCount := len(arg.Fields)
+	if fieldCount > 0 {
+		return GetType(arg.Fields[fieldCount-1])
+	}
+
+	return arg.Type
+}
+
