@@ -443,9 +443,9 @@ func buildStrFunctions(pkg *ast.CXPackage, ast *string) {
 	}
 }
 
-// buildStrPackages is an auxiliary function for `ToString`. It starts the
+// BuildStrPackages is an auxiliary function for `ToString`. It starts the
 // process of building string format of the abstract syntax tree of a CX program.
-func buildStrPackages(prgrm *ast.CXProgram, ast *string) {
+func BuildStrPackages(prgrm *ast.CXProgram, ast *string) {
 	// We need to declare the counter outside so we can
 	// ignore the increments from core or stdlib packages.
 	var i int
