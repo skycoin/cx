@@ -188,7 +188,7 @@ func buildString(expr *ast.CXExpression, fp int) []byte {
 			inp := expr.Inputs[specifiersCounter+1]
 			switch nextCh {
 			case 's':
-				res = append(res, []byte(checkForEscapedChars(ast.ReadStr(fp, inp)))...)
+				res = append(res, []byte(CheckForEscapedChars(ast.ReadStr(fp, inp)))...)
 			case 'd':
 				switch inp.Type {
 				case constants.TYPE_I8:

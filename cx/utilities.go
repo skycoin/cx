@@ -31,7 +31,7 @@ func IsTempVar(name string) bool {
 	return false
 }
 
-func checkForEscapedChars(str string) []byte {
+func CheckForEscapedChars(str string) []byte {
 	var res []byte
 	var lenStr = int(len(str))
 	for c := 0; c < len(str); c++ {
