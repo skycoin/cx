@@ -3,7 +3,6 @@ package api
 import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
-	"github.com/skycoin/cx/cx/tostring"
 	"unicode"
 )
 
@@ -70,7 +69,7 @@ func extractExportedSymbols(pkg *ast.CXPackage) ExportedSymbolsResp {
 func displayCXFunction(pkg *ast.CXPackage, f *ast.CXFunction) ExportedSymbol {
 	return ExportedSymbol{
 		Name:      f.Name,
-		Signature: tostring.SignatureStringOfFunction(pkg, f),
+		Signature: ast.SignatureStringOfFunction(pkg, f),
 		Type:      constants.TYPE_FUNC,
 		TypeName:  constants.TypeNames[constants.TYPE_FUNC],
 	}
@@ -79,7 +78,7 @@ func displayCXFunction(pkg *ast.CXPackage, f *ast.CXFunction) ExportedSymbol {
 func displayCXStruct(s *ast.CXStruct) ExportedSymbol {
 	return ExportedSymbol{
 		Name:      s.Name,
-		Signature: tostring.SignatureStringOfStruct(s),
+		Signature: ast.SignatureStringOfStruct(s),
 		Type:      constants.TYPE_CUSTOM,
 		TypeName:  "struct",
 	}

@@ -6,7 +6,6 @@ import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/globals"
-	"github.com/skycoin/cx/cx/tostring"
 	"io"
 	"os"
 	"path/filepath"
@@ -229,7 +228,7 @@ func idGlobVars(filename string, r io.Reader, prePkg **ast.CXPackage) {
 				// Checking if `pkgName` already exists and if it's not a standard library package.
 				if _, err := cxgo0.PRGRM0.GetPackage(pkgName); err != nil && !constants.IsCorePackage(pkgName) {
 					// _, sourceCode, srcNames := ParseArgsForCX([]string{fmt.Sprintf("%s%s", SRCPATH, pkgName)}, false)
-					_, sourceCode, fileNames := tostring.ParseArgsForCX([]string{filepath.Join(globals.SRCPATH, pkgName)}, false)
+					_, sourceCode, fileNames := ast.ParseArgsForCX([]string{filepath.Join(globals.SRCPATH, pkgName)}, false)
 					ParseSourceCode(sourceCode, fileNames) // TODO @evanlinjin: Check return value.
 				}
 			}

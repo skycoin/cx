@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
-	"github.com/skycoin/cx/cx/tostring"
 	"github.com/skycoin/cx/cx/util2"
 	"os"
 	"strconv"
@@ -216,7 +215,7 @@ func buildString(expr *ast.CXExpression, fp int) []byte {
 					res = append(res, []byte(strconv.FormatFloat(ast.ReadF64(fp, inp), 'f', 16, 64))...)
 				}
 			case 'v':
-				res = append(res, []byte(tostring.GetPrintableValue(fp, inp))...)
+				res = append(res, []byte(ast.GetPrintableValue(fp, inp))...)
 			}
 			c++
 			specifiersCounter++
@@ -243,9 +242,9 @@ func buildString(expr *ast.CXExpression, fp int) []byte {
 			}
 
 			if c == lInps-1 {
-				extra += fmt.Sprintf("%s=%s", typ, tostring.GetPrintableValue(fp, elt))
+				extra += fmt.Sprintf("%s=%s", typ, ast.GetPrintableValue(fp, elt))
 			} else {
-				extra += fmt.Sprintf("%s=%s, ", typ, tostring.GetPrintableValue(fp, elt))
+				extra += fmt.Sprintf("%s=%s, ", typ, ast.GetPrintableValue(fp, elt))
 			}
 
 		}

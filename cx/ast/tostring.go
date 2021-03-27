@@ -1,9 +1,8 @@
-package tostring
+package ast
 
 import (
 	"bytes"
 	"fmt"
-	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/helper"
 	file2 "github.com/skycoin/cx/cx/util/file"
@@ -189,7 +188,7 @@ func BuildStrPackages(prgrm *ast.CXProgram, ast *string) {
 // `buf`.
 func getFormattedParam(params []*ast.CXArgument, pkg *ast.CXPackage, buf *bytes.Buffer) {
 	for i, param := range params {
-		elt := ast.GetAssignmentElement(param)
+		elt := GetAssignmentElement(param)
 
 		// Checking if this argument comes from an imported package.
 		externalPkg := false
@@ -219,29 +218,29 @@ func SignatureStringOfFunction(pkg *ast.CXPackage, f *ast.CXFunction) string {
 func getNonCollectionValue(fp int, arg, elt *ast.CXArgument, typ string) string {
 	switch typ {
 	case "bool":
-		return fmt.Sprintf("%v", ast.ReadBool(fp, elt))
+		return fmt.Sprintf("%v", ReadBool(fp, elt))
 	case "str":
-		return fmt.Sprintf("%v", ast.ReadStr(fp, elt))
+		return fmt.Sprintf("%v", ReadStr(fp, elt))
 	case "i8":
-		return fmt.Sprintf("%v", ast.ReadI8(fp, elt))
+		return fmt.Sprintf("%v", ReadI8(fp, elt))
 	case "i16":
-		return fmt.Sprintf("%v", ast.ReadI16(fp, elt))
+		return fmt.Sprintf("%v", ReadI16(fp, elt))
 	case "i32":
-		return fmt.Sprintf("%v", ast.ReadI32(fp, elt))
+		return fmt.Sprintf("%v", ReadI32(fp, elt))
 	case "i64":
-		return fmt.Sprintf("%v", ast.ReadI64(fp, elt))
+		return fmt.Sprintf("%v", ReadI64(fp, elt))
 	case "ui8":
-		return fmt.Sprintf("%v", ast.ReadUI8(fp, elt))
+		return fmt.Sprintf("%v", ReadUI8(fp, elt))
 	case "ui16":
-		return fmt.Sprintf("%v", ast.ReadUI16(fp, elt))
+		return fmt.Sprintf("%v", ReadUI16(fp, elt))
 	case "ui32":
-		return fmt.Sprintf("%v", ast.ReadUI32(fp, elt))
+		return fmt.Sprintf("%v", ReadUI32(fp, elt))
 	case "ui64":
-		return fmt.Sprintf("%v", ast.ReadUI64(fp, elt))
+		return fmt.Sprintf("%v", ReadUI64(fp, elt))
 	case "f32":
-		return fmt.Sprintf("%v", ast.ReadF32(fp, elt))
+		return fmt.Sprintf("%v", ReadF32(fp, elt))
 	case "f64":
-		return fmt.Sprintf("%v", ast.ReadF64(fp, elt))
+		return fmt.Sprintf("%v", ReadF64(fp, elt))
 	default:
 		// then it's a struct
 		var val string
@@ -266,7 +265,7 @@ func getNonCollectionValue(fp int, arg, elt *ast.CXArgument, typ string) string 
 // GetPrintableValue ...
 func GetPrintableValue(fp int, arg *ast.CXArgument) string {
 	var typ string
-	elt := ast.GetAssignmentElement(arg)
+	elt := GetAssignmentElement(arg)
 	if elt.CustomType != nil {
 		// then it's custom type
 		typ = elt.CustomType.Name
@@ -467,7 +466,7 @@ func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCod
 func IsPointer(sym *ast.CXArgument) bool {
 	// There's no need to add global variables in `fn.ListOfPointers` as we can access them easily through `CXPackage.Globals`
 	// TODO: We could still pre-compute a list of candidates for globals.
-	if sym.Offset >= ast.PROGRAM.StackSize && sym.Name != "" {
+	if sym.Offset >= PROGRAM.StackSize && sym.Name != "" {
 		return false
 	}
 	// NOTE: Strings are considered as `IsPointer`s by the runtime.
@@ -521,9 +520,9 @@ func getFormattedDerefs(arg *ast.CXArgument, includePkg bool) string {
 		// Checking if the value is in data segment.
 		// If this is the case, we can safely display it.
 		idxValue := ""
-		if idx.Offset > ast.PROGRAM.StackSize {
+		if idx.Offset > PROGRAM.StackSize {
 			// Then it's a literal.
-			idxI32 := helper.Deserialize_i32(ast.PROGRAM.Memory[idx.Offset : idx.Offset+constants.TYPE_POINTER_SIZE])
+			idxI32 := helper.Deserialize_i32(PROGRAM.Memory[idx.Offset : idx.Offset+constants.TYPE_POINTER_SIZE])
 			idxValue = fmt.Sprintf("%d", idxI32)
 		} else {
 			// Then let's just print the variable name.
@@ -576,7 +575,7 @@ func formatParameters(params []*ast.CXArgument) string {
 // GetFormattedType builds a string with the CXGO type representation of `arg`.
 func GetFormattedType(arg *ast.CXArgument) string {
 	typ := ""
-	elt := ast.GetAssignmentElement(arg)
+	elt := GetAssignmentElement(arg)
 
 	// this is used to know what arg.Lengths index to use
 	// used for cases like [5]*[3]i32, where we jump to another decl spec
@@ -612,9 +611,9 @@ func GetFormattedType(arg *ast.CXArgument) string {
 						typ += formatParameters(elt.Outputs)
 					} else {
 						// Then it refers to a named function defined in a package.
-						pkg, err := ast.PROGRAM.GetPackage(arg.Package.Name)
+						pkg, err := PROGRAM.GetPackage(arg.Package.Name)
 						if err != nil {
-							println(ast.CompilationError(elt.FileName, elt.FileLine), err.Error())
+							println(CompilationError(elt.FileName, elt.FileLine), err.Error())
 							os.Exit(constants.CX_COMPILATION_ERROR)
 						}
 
