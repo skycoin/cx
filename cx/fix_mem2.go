@@ -4,7 +4,6 @@ import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/helper"
-	"github.com/skycoin/cx/cx/util3"
 )
 
 //NOTE: Temp file for resolving CalculateDereferences issue
@@ -64,7 +63,7 @@ func CalculateDereferences(arg *ast.CXArgument, finalOffset *int, fp int) {
 
 			sizeToUse := GetDerefSize(arg) //GetDerefSize
 			*finalOffset += int(ReadI32(fp, arg.Indexes[idxCounter])) * sizeToUse
-			if !util3.IsValidSliceIndex(baseOffset, *finalOffset, sizeToUse) {
+			if !ast.IsValidSliceIndex(baseOffset, *finalOffset, sizeToUse) {
 				panic(constants.CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)
 			}
 
@@ -103,7 +102,7 @@ func CalculateDereferences(arg *ast.CXArgument, finalOffset *int, fp int) {
 		*finalOffset += constants.OBJECT_HEADER_SIZE
 		if arg.IsSlice {
 			*finalOffset += constants.SLICE_HEADER_SIZE
-			if !util3.IsValidSliceIndex(baseOffset, *finalOffset, sizeofElement) {
+			if !ast.IsValidSliceIndex(baseOffset, *finalOffset, sizeofElement) {
 				panic(constants.CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)
 			}
 		}

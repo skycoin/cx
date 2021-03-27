@@ -4,7 +4,6 @@ import (
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/helper"
 	"github.com/skycoin/cx/cx/mem"
-	"github.com/skycoin/cx/cx/util3"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
@@ -28,7 +27,7 @@ func GetPointerOffset(pointer int32) int32 {
 func (value *CXValue) GetSlice_i8() []int8 {
 	//value.Used = TYPE_SLICE
 	value.Used = int8(value.Type) // TODO: type checking for slice is not working
-	if mem := util3.GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
+	if mem := GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
 		return helper.ReadDataI8(mem)
 	}
 	return nil
@@ -37,7 +36,7 @@ func (value *CXValue) GetSlice_i8() []int8 {
 func (value *CXValue) GetSlice_i16() []int16 {
 	//value.Used = TYPE_SLICE
 	value.Used = int8(value.Type) // TODO: type checking for slice is not working
-	if mem := util3.GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
+	if mem := GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
 		return helper.ReadDataI16(mem)
 	}
 	return nil
@@ -46,7 +45,7 @@ func (value *CXValue) GetSlice_i16() []int16 {
 func (value *CXValue) GetSlice_i32() []int32 {
 	//value.Used = TYPE_SLICE
 	value.Used = int8(value.Type) // TODO: type checking for slice is not working
-	if mem := util3.GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
+	if mem := GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
 		return helper.ReadDataI32(mem)
 	}
 	return nil
@@ -55,7 +54,7 @@ func (value *CXValue) GetSlice_i32() []int32 {
 func (value *CXValue) GetSlice_i64() []int64 {
 	//value.Used = TYPE_SLICE
 	value.Used = int8(value.Type) // TODO: type checking for slice is not working
-	if mem := util3.GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
+	if mem := GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
 		return helper.ReadDataI64(mem)
 	}
 	return nil
@@ -64,7 +63,7 @@ func (value *CXValue) GetSlice_i64() []int64 {
 func (value *CXValue) GetSlice_ui8() []uint8 {
 	//value.Used = TYPE_SLICE
 	value.Used = int8(value.Type) // TODO: type checking for slice is not working
-	if mem := util3.GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
+	if mem := GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
 		return helper.ReadDataUI8(mem)
 	}
 	return nil
@@ -73,7 +72,7 @@ func (value *CXValue) GetSlice_ui8() []uint8 {
 func (value *CXValue) GetSlice_ui16() []uint16 {
 	//value.Used = TYPE_SLICE
 	value.Used = int8(value.Type) // TODO: type checking for slice is not working
-	if mem := util3.GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
+	if mem := GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
 		return helper.ReadDataUI16(mem)
 	}
 	return nil
@@ -82,7 +81,7 @@ func (value *CXValue) GetSlice_ui16() []uint16 {
 func (value *CXValue) GetSlice_ui32() []uint32 {
 	//value.Used = TYPE_SLICE
 	value.Used = int8(value.Type) // TODO: type checking for slice is not working
-	if mem := util3.GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
+	if mem := GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
 		return helper.ReadDataUI32(mem)
 	}
 	return nil
@@ -91,7 +90,7 @@ func (value *CXValue) GetSlice_ui32() []uint32 {
 func (value *CXValue) GetSlice_ui64() []uint64 {
 	//value.Used = TYPE_SLICE
 	value.Used = int8(value.Type) // TODO: type checking for slice is not working
-	if mem := util3.GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
+	if mem := GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
 		return helper.ReadDataUI64(mem)
 	}
 	return nil
@@ -100,7 +99,7 @@ func (value *CXValue) GetSlice_ui64() []uint64 {
 func (value *CXValue) GetSlice_f32() []float32 {
 	//value.Used = TYPE_SLICE
 	value.Used = int8(value.Type) // TODO: type checking for slice is not working
-	if mem := util3.GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
+	if mem := GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
 		return helper.ReadDataF32(mem)
 	}
 	return nil
@@ -109,7 +108,7 @@ func (value *CXValue) GetSlice_f32() []float32 {
 func (value *CXValue) GetSlice_f64() []float64 {
 	//value.Used = TYPE_SLICE
 	value.Used = int8(value.Type) // TODO: type checking for slice is not working
-	if mem := util3.GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
+	if mem := GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
 		return helper.ReadDataF64(mem)
 	}
 	return nil
@@ -133,7 +132,7 @@ func (value *CXValue) Set_bytes(data []byte) () {
 
 func (value *CXValue) GetSlice_bytes() []byte {
 	value.Used = int8(value.Type) // TODO: type checking for slice is not working
-	return util3.GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size)
+	return GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size)
 }
 
 func (value *CXValue) Get_i8() int8 {

@@ -8,7 +8,6 @@ import (
 	"github.com/skycoin/cx/cx/mem"
 	"github.com/skycoin/cx/cx/tostring"
 	"github.com/skycoin/cx/cx/util2"
-	"github.com/skycoin/cx/cx/util3"
 	"os"
 	"strconv"
 	"strings"
@@ -19,9 +18,9 @@ func opLen(expr *ast.CXExpression, fp int) {
 	elt := ast.GetAssignmentElement(inp1)
 
 	if elt.IsSlice || elt.Type == constants.TYPE_AFF {
-		var sliceOffset = util3.GetSliceOffset(fp, inp1)
+		var sliceOffset = ast.GetSliceOffset(fp, inp1)
 		if sliceOffset > 0 {
-			sliceLen := util3.GetSliceHeader(sliceOffset)[4:8]
+			sliceLen := ast.GetSliceHeader(sliceOffset)[4:8]
 			mem.WriteMemory(ast.GetFinalOffset(fp, out1), sliceLen)
 		} else if sliceOffset == 0 {
 			mem.WriteI32(ast.GetFinalOffset(fp, out1), 0)
@@ -56,13 +55,13 @@ func opAppend(expr *ast.CXExpression, fp int) {
 	}
 
 	var inputSliceLen int32
-	inputSliceOffset := util3.GetSliceOffset(fp, inp1)
+	inputSliceOffset := ast.GetSliceOffset(fp, inp1)
 	if inputSliceOffset != 0 {
-		inputSliceLen = util3.GetSliceLen(inputSliceOffset)
+		inputSliceLen = ast.GetSliceLen(inputSliceOffset)
 	}
 
 	// Preparing slice in case more memory is needed for the new element.
-	outputSliceOffset := util3.SliceAppendResize(fp, out1, inp1, inp2.Size)
+	outputSliceOffset := ast.SliceAppendResize(fp, out1, inp1, inp2.Size)
 
 	// We need to update the address of the output and input, as the final offsets
 	// could be on the heap and they could have been moved by the GC.
@@ -71,10 +70,10 @@ func opAppend(expr *ast.CXExpression, fp int) {
 	if inp2.Type == constants.TYPE_STR || inp2.Type == constants.TYPE_AFF {
 		var obj [4]byte
 		mem.WriteMemI32(obj[:], 0, int32(ast.GetStrOffset(fp, inp2)))
-		util3.SliceAppendWrite(outputSliceOffset, obj[:], inputSliceLen)
+		ast.SliceAppendWrite(outputSliceOffset, obj[:], inputSliceLen)
 	} else {
 		obj := ast.ReadMemory(ast.GetFinalOffset(fp, inp2), inp2)
-		util3.SliceAppendWrite(outputSliceOffset, obj, inputSliceLen)
+		ast.SliceAppendWrite(outputSliceOffset, obj, inputSliceLen)
 	}
 
 	mem.WriteI32(outputSlicePointer, outputSliceOffset)
@@ -87,7 +86,7 @@ func opResize(expr *ast.CXExpression, fp int) {
 		panic(constants.CX_RUNTIME_INVALID_ARGUMENT)
 	}
 
-	outputSliceOffset := int32(util3.SliceResize(fp, out1, inp1, ReadI32(fp, inp2), ast.GetAssignmentElement(inp1).TotalSize))
+	outputSliceOffset := int32(ast.SliceResize(fp, out1, inp1, ReadI32(fp, inp2), ast.GetAssignmentElement(inp1).TotalSize))
 	outputSlicePointer := ast.GetFinalOffset(fp, out1)
 	mem.WriteI32(outputSlicePointer, outputSliceOffset)
 }
@@ -104,11 +103,11 @@ func opInsert(expr *ast.CXExpression, fp int) {
 	if inp3.Type == constants.TYPE_STR || inp3.Type == constants.TYPE_AFF {
 		var obj [4]byte
 		mem.WriteMemI32(obj[:], 0, int32(ast.GetStrOffset(fp, inp3)))
-		outputSliceOffset := int32(util3.SliceInsert(fp, out1, inp1, ReadI32(fp, inp2), obj[:]))
+		outputSliceOffset := int32(ast.SliceInsert(fp, out1, inp1, ReadI32(fp, inp2), obj[:]))
 		mem.WriteI32(outputSlicePointer, outputSliceOffset)
 	} else {
 		obj := ast.ReadMemory(ast.GetFinalOffset(fp, inp3), inp3)
-		outputSliceOffset := int32(util3.SliceInsert(fp, out1, inp1, ReadI32(fp, inp2), obj))
+		outputSliceOffset := int32(ast.SliceInsert(fp, out1, inp1, ReadI32(fp, inp2), obj))
 		mem.WriteI32(outputSlicePointer, outputSliceOffset)
 	}
 }
@@ -121,15 +120,15 @@ func opRemove(expr *ast.CXExpression, fp int) {
 	}
 
 	outputSlicePointer := ast.GetFinalOffset(fp, out1)
-	outputSliceOffset := int32(util3.SliceRemove(fp, out1, inp1, ReadI32(fp, inp2), int32(ast.GetAssignmentElement(inp1).TotalSize)))
+	outputSliceOffset := int32(ast.SliceRemove(fp, out1, inp1, ReadI32(fp, inp2), int32(ast.GetAssignmentElement(inp1).TotalSize)))
 	mem.WriteI32(outputSlicePointer, outputSliceOffset)
 }
 
 func opCopy(expr *ast.CXExpression, fp int) {
 	dstInput := expr.Inputs[0]
 	srcInput := expr.Inputs[1]
-	dstOffset := util3.GetSliceOffset(fp, dstInput)
-	srcOffset := util3.GetSliceOffset(fp, srcInput)
+	dstOffset := ast.GetSliceOffset(fp, dstInput)
+	srcOffset := ast.GetSliceOffset(fp, srcInput)
 
 	dstElem := ast.GetAssignmentElement(dstInput)
 	srcElem := ast.GetAssignmentElement(srcInput)
@@ -140,7 +139,7 @@ func opCopy(expr *ast.CXExpression, fp int) {
 
 	var count int
 	if dstInput.Type == srcInput.Type && dstOffset >= 0 && srcOffset >= 0 {
-		count = copy(util3.GetSliceData(dstOffset, dstElem.TotalSize), util3.GetSliceData(srcOffset, srcElem.TotalSize))
+		count = copy(ast.GetSliceData(dstOffset, dstElem.TotalSize), ast.GetSliceData(srcOffset, srcElem.TotalSize))
 		if count%dstElem.TotalSize != 0 {
 			panic(constants.CX_RUNTIME_ERROR)
 		}

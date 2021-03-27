@@ -10,8 +10,6 @@ import (
 	"github.com/skycoin/cx/cx/globals"
 	"github.com/skycoin/cx/cx/mem"
 	"github.com/skycoin/cx/cx/util/file"
-	"github.com/skycoin/cx/cx/util3"
-
 	"math"
 	"os"
 	"os/exec"
@@ -423,7 +421,7 @@ func getSlice(inputs []ast.CXValue, outputs []ast.CXValue) (outputSlicePointer i
 	count = inputs[2].Get_ui64()
 	outputSlicePointer = outputs[0].Offset
 	sizeofElement = ast.GetAssignmentElement(inp1).Size
-	outputSliceOffset = int32(util3.SliceResize(outputs[0].FramePointer, out0, inp1, int32(count), sizeofElement))
+	outputSliceOffset = int32(ast.SliceResize(outputs[0].FramePointer, out0, inp1, int32(count), sizeofElement))
 	return
 }
 
@@ -435,7 +433,7 @@ func opOsReadF64Slice(inputs []ast.CXValue, outputs []ast.CXValue) {
 			values := make([]float64, count)
 			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
 				success = true
-				outputSliceData := util3.GetSliceData(outputSliceOffset, sizeofElement)
+				outputSliceData := ast.GetSliceData(outputSliceOffset, sizeofElement)
 				for i := uint64(0); i < count; i++ {
 					mem.WriteMemF64(outputSliceData, int(i)*sizeofElement, values[i])
 				}
@@ -455,7 +453,7 @@ func opOsReadF32Slice(inputs []ast.CXValue, outputs []ast.CXValue) {
 			values := make([]float32, count)
 			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
 				success = true
-				outputSliceData := util3.GetSliceData(outputSliceOffset, sizeofElement)
+				outputSliceData := ast.GetSliceData(outputSliceOffset, sizeofElement)
 				for i := uint64(0); i < count; i++ {
 					mem.WriteMemF32(outputSliceData, int(i)*sizeofElement, values[i])
 				}
@@ -475,7 +473,7 @@ func opOsReadUI64Slice(inputs []ast.CXValue, outputs []ast.CXValue) {
 			values := make([]uint64, count)
 			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
 				success = true
-				outputSliceData := util3.GetSliceData(outputSliceOffset, sizeofElement)
+				outputSliceData := ast.GetSliceData(outputSliceOffset, sizeofElement)
 				for i := uint64(0); i < count; i++ {
 					mem.WriteMemUI64(outputSliceData, int(i)*sizeofElement, values[i])
 				}
@@ -495,7 +493,7 @@ func opOsReadUI32Slice(inputs []ast.CXValue, outputs []ast.CXValue) {
 			values := make([]uint32, count)
 			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
 				success = true
-				outputSliceData := util3.GetSliceData(outputSliceOffset, sizeofElement)
+				outputSliceData := ast.GetSliceData(outputSliceOffset, sizeofElement)
 				for i := uint64(0); i < count; i++ {
 					mem.WriteMemUI32(outputSliceData, int(i)*sizeofElement, values[i])
 				}
@@ -515,7 +513,7 @@ func opOsReadUI16Slice(inputs []ast.CXValue, outputs []ast.CXValue) {
 			values := make([]uint16, count)
 			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
 				success = true
-				outputSliceData := util3.GetSliceData(outputSliceOffset, sizeofElement)
+				outputSliceData := ast.GetSliceData(outputSliceOffset, sizeofElement)
 				for i := uint64(0); i < count; i++ {
 					mem.WriteMemUI16(outputSliceData, int(i)*sizeofElement, values[i])
 				}
@@ -535,7 +533,7 @@ func opOsReadUI8Slice(inputs []ast.CXValue, outputs []ast.CXValue) {
 			values := make([]uint8, count)
 			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
 				success = true
-				outputSliceData := util3.GetSliceData(outputSliceOffset, sizeofElement)
+				outputSliceData := ast.GetSliceData(outputSliceOffset, sizeofElement)
 				for i := uint64(0); i < count; i++ {
 					mem.WriteMemUI8(outputSliceData, int(i)*sizeofElement, values[i])
 				}
@@ -555,7 +553,7 @@ func opOsReadI64Slice(inputs []ast.CXValue, outputs []ast.CXValue) {
 			values := make([]int64, count)
 			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
 				success = true
-				outputSliceData := util3.GetSliceData(outputSliceOffset, sizeofElement)
+				outputSliceData := ast.GetSliceData(outputSliceOffset, sizeofElement)
 				for i := uint64(0); i < count; i++ {
 					mem.WriteMemI64(outputSliceData, int(i)*sizeofElement, values[i])
 				}
@@ -575,7 +573,7 @@ func opOsReadI32Slice(inputs []ast.CXValue, outputs []ast.CXValue) {
 			values := make([]int32, count)
 			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
 				success = true
-				outputSliceData := util3.GetSliceData(outputSliceOffset, sizeofElement)
+				outputSliceData := ast.GetSliceData(outputSliceOffset, sizeofElement)
 				for i := uint64(0); i < count; i++ {
 					mem.WriteMemI32(outputSliceData, int(i)*sizeofElement, values[i])
 				}
@@ -595,7 +593,7 @@ func opOsReadI16Slice(inputs []ast.CXValue, outputs []ast.CXValue) {
 			values := make([]int16, count)
 			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
 				success = true
-				outputSliceData := util3.GetSliceData(outputSliceOffset, sizeofElement)
+				outputSliceData := ast.GetSliceData(outputSliceOffset, sizeofElement)
 				for i := uint64(0); i < count; i++ {
 					mem.WriteMemI16(outputSliceData, int(i)*sizeofElement, values[i])
 				}
@@ -615,7 +613,7 @@ func opOsReadI8Slice(inputs []ast.CXValue, outputs []ast.CXValue) {
 			values := make([]int8, count)
 			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
 				success = true
-				outputSliceData := util3.GetSliceData(outputSliceOffset, sizeofElement)
+				outputSliceData := ast.GetSliceData(outputSliceOffset, sizeofElement)
 				for i := uint64(0); i < count; i++ {
 					mem.WriteMemI8(outputSliceData, int(i)*sizeofElement, values[i])
 				}

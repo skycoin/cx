@@ -4,11 +4,9 @@ package cxfx
 
 import (
 	"bufio"
+	"github.com/mjibson/go-dsp/wav"
 	"github.com/skycoin/cx/cx/ast"
 	file2 "github.com/skycoin/cx/cx/util/file"
-	"github.com/skycoin/cx/cx/util3"
-
-	"github.com/mjibson/go-dsp/wav"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 
 	//"golang.org/x/mobile/exp/audio/al"
@@ -45,8 +43,8 @@ func opAlLoadWav(inputs []ast.CXValue, outputs []ast.CXValue) {
 
 	outputSlicePointer := outputs[8].Offset
 	outputSliceOffset := ast.GetPointerOffset(int32(outputSlicePointer))
-	outputSliceOffset = int32(util3.SliceResizeEx(outputSliceOffset, int32(len(data)), 1))
-	copy(util3.GetSliceData(outputSliceOffset, 1), data)
+	outputSliceOffset = int32(ast.SliceResizeEx(outputSliceOffset, int32(len(data)), 1))
+	copy(ast.GetSliceData(outputSliceOffset, 1), data)
 	outputs[8].SetSlice(outputSliceOffset)
 }
 

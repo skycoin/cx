@@ -4,12 +4,10 @@ package cxfx
 
 import (
 	"bufio"
+	"fmt"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/mem"
 	file2 "github.com/skycoin/cx/cx/util/file"
-	"github.com/skycoin/cx/cx/util3"
-
-	"fmt"
 	"image"
 	"image/draw"
 	"image/gif"
@@ -438,18 +436,18 @@ func opGlAppend(inputs []ast.CXValue, outputs []ast.CXValue) {
 
     inputs[0].Used = int8(inputs[0].Type)
 
-    inputSliceOffset := util3.GetSliceOffset(inputs[0].FramePointer, inputs[0].Arg)
+    inputSliceOffset := ast.GetSliceOffset(inputs[0].FramePointer, inputs[0].Arg)
 	var inputSliceLen int32
 	if inputSliceOffset != 0 {
-		inputSliceLen = util3.GetSliceLen(inputSliceOffset)
+		inputSliceLen = ast.GetSliceLen(inputSliceOffset)
 	}
 
 	obj := inputs[1].Get_bytes()
 
 	objLen := int32(len(obj))
-	outputSliceOffset = int32(util3.SliceResizeEx(outputSliceOffset, inputSliceLen+objLen, 1))
-	util3.SliceCopyEx(outputSliceOffset, inputSliceOffset, inputSliceLen+objLen, 1)
-	util3.SliceAppendWriteByte(outputSliceOffset, obj, inputSliceLen)
+	outputSliceOffset = int32(ast.SliceResizeEx(outputSliceOffset, inputSliceLen+objLen, 1))
+	ast.SliceCopyEx(outputSliceOffset, inputSliceOffset, inputSliceLen+objLen, 1)
+	ast.SliceAppendWriteByte(outputSliceOffset, obj, inputSliceLen)
 	outputs[0].SetSlice(outputSliceOffset)
 }
 

@@ -1,7 +1,6 @@
-package util3
+package ast
 
 import (
-	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/helper"
 	"github.com/skycoin/cx/cx/mem"
@@ -21,10 +20,10 @@ func IsValidSliceIndex(offset int, index int, sizeofElement int) bool {
 
 // GetSliceOffset ...
 //TODO: DANGER, WEIRD INT CAST FROM GetFinalOffset
-func GetSliceOffset(fp int, arg *ast.CXArgument) int32 {
-	element := ast.GetAssignmentElement(arg)
+func GetSliceOffset(fp int, arg *CXArgument) int32 {
+	element := GetAssignmentElement(arg)
 	if element.IsSlice {
-		return ast.GetPointerOffset(int32(ast.GetFinalOffset(fp, arg)))
+		return GetPointerOffset(int32(GetFinalOffset(fp, arg)))
 	}
 
 	return -1
@@ -32,12 +31,12 @@ func GetSliceOffset(fp int, arg *ast.CXArgument) int32 {
 
 // GetObjectHeader ...
 func GetObjectHeader(offset int32) []byte {
-	return ast.PROGRAM.Memory[offset : offset+constants.OBJECT_HEADER_SIZE]
+	return PROGRAM.Memory[offset : offset+constants.OBJECT_HEADER_SIZE]
 }
 
 // GetSliceHeader ...
 func GetSliceHeader(offset int32) []byte {
-	return ast.PROGRAM.Memory[offset+constants.OBJECT_HEADER_SIZE : offset+constants.OBJECT_HEADER_SIZE+constants.SLICE_HEADER_SIZE]
+	return PROGRAM.Memory[offset+constants.OBJECT_HEADER_SIZE : offset+constants.OBJECT_HEADER_SIZE+constants.SLICE_HEADER_SIZE]
 }
 
 // GetSliceLen ...
@@ -53,7 +52,7 @@ func GetSlice(offset int32, sizeofElement int) []byte {
 		if sliceLen > 0 {
 			dataOffset := offset + constants.OBJECT_HEADER_SIZE + constants.SLICE_HEADER_SIZE - 4
 			dataLen := 4 + sliceLen*int32(sizeofElement)
-			return ast.PROGRAM.Memory[dataOffset : dataOffset+dataLen]
+			return PROGRAM.Memory[dataOffset : dataOffset+dataLen]
 		}
 	}
 	return nil
@@ -90,7 +89,7 @@ func SliceResizeEx(outputSliceOffset int32, count int32, sizeofElement int) int 
 			newCap *= 2
 		}
 		var outputObjectSize = constants.OBJECT_HEADER_SIZE + constants.SLICE_HEADER_SIZE + newCap*int32(sizeofElement)
-		outputSliceOffset = int32(ast.AllocateSeq(int(outputObjectSize)))
+		outputSliceOffset = int32(AllocateSeq(int(outputObjectSize)))
 		mem.WriteMemI32(GetObjectHeader(outputSliceOffset)[5:9], 0, outputObjectSize)
 
 		outputSliceHeader = GetSliceHeader(outputSliceOffset)
@@ -102,7 +101,7 @@ func SliceResizeEx(outputSliceOffset int32, count int32, sizeofElement int) int 
 }
 
 // SliceResize ...
-func SliceResize(fp int, out *ast.CXArgument, inp *ast.CXArgument, count int32, sizeofElement int) int {
+func SliceResize(fp int, out *CXArgument, inp *CXArgument, count int32, sizeofElement int) int {
 	outputSliceOffset := GetSliceOffset(fp, out)
 
 	outputSliceOffset = int32(SliceResizeEx(outputSliceOffset, count, sizeofElement))
@@ -134,13 +133,13 @@ func SliceCopyEx(outputSliceOffset int32, inputSliceOffset int32, count int32, s
 }
 
 // SliceCopy copies the contents from the slice located at `inputSliceOffset` to the slice located at `outputSliceOffset`.
-func SliceCopy(fp int, outputSliceOffset int32, inp *ast.CXArgument, count int32, sizeofElement int) {
+func SliceCopy(fp int, outputSliceOffset int32, inp *CXArgument, count int32, sizeofElement int) {
 	inputSliceOffset := GetSliceOffset(fp, inp)
 	SliceCopyEx(outputSliceOffset, inputSliceOffset, count, sizeofElement)
 }
 
 // SliceAppendResize prepares a slice to be able to store a new object of length `sizeofElement`. It checks if the slice needs to be relocated in memory, and if it is needed it relocates it and a new `outputSliceOffset` is calculated for the new slice.
-func SliceAppendResize(fp int, out *ast.CXArgument, inp *ast.CXArgument, sizeofElement int) int32 {
+func SliceAppendResize(fp int, out *CXArgument, inp *CXArgument, sizeofElement int) int32 {
 	inputSliceOffset := GetSliceOffset(fp, inp)
 	var inputSliceLen int32
 	if inputSliceOffset != 0 {
@@ -166,7 +165,7 @@ func SliceAppendWriteByte(outputSliceOffset int32, object []byte, index int32) {
 }
 
 // SliceInsert ...
-func SliceInsert(fp int, out *ast.CXArgument, inp *ast.CXArgument, index int32, object []byte) int {
+func SliceInsert(fp int, out *CXArgument, inp *CXArgument, index int32, object []byte) int {
 	inputSliceOffset := GetSliceOffset(fp, inp)
 	// outputSliceOffset := GetSliceOffset(fp, out)
 
@@ -189,7 +188,7 @@ func SliceInsert(fp int, out *ast.CXArgument, inp *ast.CXArgument, index int32, 
 }
 
 // SliceRemove ...
-func SliceRemove(fp int, out *ast.CXArgument, inp *ast.CXArgument, index int32, sizeofElement int32) int {
+func SliceRemove(fp int, out *CXArgument, inp *CXArgument, index int32, sizeofElement int32) int {
 	inputSliceOffset := GetSliceOffset(fp, inp)
 	outputSliceOffset := GetSliceOffset(fp, out)
 

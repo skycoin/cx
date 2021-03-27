@@ -5,7 +5,6 @@ import (
 	"github.com/skycoin/cx/cx/helper"
 	"github.com/skycoin/cx/cx/mem"
 	"github.com/skycoin/cx/cx/tostring"
-	"github.com/skycoin/cx/cx/util3"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
@@ -190,7 +189,7 @@ func doDisplaceReferences(prgrm *CXProgram, updated *map[int]int, atOffset int, 
 			(numDeclSpecs == 1 && baseType == constants.TYPE_STR) {
 			// Then we need to iterate each of the slice objects
 			// and check if we need to update their address.
-			sliceLen := helper.Deserialize_i32(util3.GetSliceHeader(heapOffset + int32(condPlusOff))[4:8])
+			sliceLen := helper.Deserialize_i32(GetSliceHeader(heapOffset + int32(condPlusOff))[4:8])
 
 			offsetToElements := constants.OBJECT_HEADER_SIZE + constants.SLICE_HEADER_SIZE
 
@@ -281,7 +280,7 @@ func MarkObjectsTree(prgrm *CXProgram, offset int, baseType int, declSpecs []int
 				declSpecs[1] == constants.DECL_POINTER)) ||
 			(numDeclSpecs == 1 && baseType == constants.TYPE_STR) {
 			// Then we need to iterate each of the slice objects and mark them as alive
-			sliceLen := helper.Deserialize_i32(util3.GetSliceHeader(heapOffset)[4:8])
+			sliceLen := helper.Deserialize_i32(GetSliceHeader(heapOffset)[4:8])
 
 			for c := int32(0); c < sliceLen; c++ {
 				offsetToElements := constants.OBJECT_HEADER_SIZE + constants.SLICE_HEADER_SIZE
@@ -330,7 +329,7 @@ func updatePointerTree(prgrm *CXProgram, atOffset int, oldAddr, newAddr int32, b
 			(numDeclSpecs == 1 && baseType == constants.TYPE_STR) {
 			// Then we need to iterate each of the slice objects
 			// and check if we need to update their address.
-			sliceLen := helper.Deserialize_i32(util3.GetSliceHeader(heapOffset)[4:8])
+			sliceLen := helper.Deserialize_i32(GetSliceHeader(heapOffset)[4:8])
 
 			offsetToElements := constants.OBJECT_HEADER_SIZE + constants.SLICE_HEADER_SIZE
 
