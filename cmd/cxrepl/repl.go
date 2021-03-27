@@ -14,7 +14,6 @@ import (
 	"strings"
 	"time"
 
-	cxcore "github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cxgo/actions"
 	"github.com/skycoin/cx/cxgo/cxgo"
 	"github.com/skycoin/cx/cxgo/cxgo0"
@@ -109,7 +108,7 @@ func Repl() {
 	fmt.Println("CX", VERSION)
 	fmt.Println("More information about CX is available at http://cx.skycoin.com/ and https://github.com/skycoin/cx/")
 
-	cxcore.InREPL = true
+	ast.InREPL = true
 
 	// fi := bufio.NewReader(os.NewFile(0, "stdin"))
 	fi := bufio.NewReader(os.Stdin)

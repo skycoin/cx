@@ -633,7 +633,7 @@ func (pkg *CXPackage) AddFunction(fn *CXFunction) *CXPackage {
 			break
 		}
 	}
-	if found && !cxcore.InREPL {
+	if found && !InREPL {
 		println(cxcore.CompilationError(fn.FileName, fn.FileLine), "function redeclaration")
 	}
 	if !found {
