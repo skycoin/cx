@@ -8,7 +8,6 @@ import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/globals"
-	"github.com/skycoin/cx/cx/mem"
 	"github.com/skycoin/cx/cx/util/file"
 	"math"
 	"os"
@@ -435,7 +434,7 @@ func opOsReadF64Slice(inputs []ast.CXValue, outputs []ast.CXValue) {
 				success = true
 				outputSliceData := ast.GetSliceData(outputSliceOffset, sizeofElement)
 				for i := uint64(0); i < count; i++ {
-					mem.WriteMemF64(outputSliceData, int(i)*sizeofElement, values[i])
+					ast.WriteMemF64(outputSliceData, int(i)*sizeofElement, values[i])
 				}
 			}
 		}
@@ -455,7 +454,7 @@ func opOsReadF32Slice(inputs []ast.CXValue, outputs []ast.CXValue) {
 				success = true
 				outputSliceData := ast.GetSliceData(outputSliceOffset, sizeofElement)
 				for i := uint64(0); i < count; i++ {
-					mem.WriteMemF32(outputSliceData, int(i)*sizeofElement, values[i])
+					ast.WriteMemF32(outputSliceData, int(i)*sizeofElement, values[i])
 				}
 			}
 		}
@@ -475,7 +474,7 @@ func opOsReadUI64Slice(inputs []ast.CXValue, outputs []ast.CXValue) {
 				success = true
 				outputSliceData := ast.GetSliceData(outputSliceOffset, sizeofElement)
 				for i := uint64(0); i < count; i++ {
-					mem.WriteMemUI64(outputSliceData, int(i)*sizeofElement, values[i])
+					ast.WriteMemUI64(outputSliceData, int(i)*sizeofElement, values[i])
 				}
 			}
 		}
@@ -495,7 +494,7 @@ func opOsReadUI32Slice(inputs []ast.CXValue, outputs []ast.CXValue) {
 				success = true
 				outputSliceData := ast.GetSliceData(outputSliceOffset, sizeofElement)
 				for i := uint64(0); i < count; i++ {
-					mem.WriteMemUI32(outputSliceData, int(i)*sizeofElement, values[i])
+					ast.WriteMemUI32(outputSliceData, int(i)*sizeofElement, values[i])
 				}
 			}
 		}
@@ -515,7 +514,7 @@ func opOsReadUI16Slice(inputs []ast.CXValue, outputs []ast.CXValue) {
 				success = true
 				outputSliceData := ast.GetSliceData(outputSliceOffset, sizeofElement)
 				for i := uint64(0); i < count; i++ {
-					mem.WriteMemUI16(outputSliceData, int(i)*sizeofElement, values[i])
+					ast.WriteMemUI16(outputSliceData, int(i)*sizeofElement, values[i])
 				}
 			}
 		}
@@ -535,7 +534,7 @@ func opOsReadUI8Slice(inputs []ast.CXValue, outputs []ast.CXValue) {
 				success = true
 				outputSliceData := ast.GetSliceData(outputSliceOffset, sizeofElement)
 				for i := uint64(0); i < count; i++ {
-					mem.WriteMemUI8(outputSliceData, int(i)*sizeofElement, values[i])
+					ast.WriteMemUI8(outputSliceData, int(i)*sizeofElement, values[i])
 				}
 			}
 		}
@@ -555,7 +554,7 @@ func opOsReadI64Slice(inputs []ast.CXValue, outputs []ast.CXValue) {
 				success = true
 				outputSliceData := ast.GetSliceData(outputSliceOffset, sizeofElement)
 				for i := uint64(0); i < count; i++ {
-					mem.WriteMemI64(outputSliceData, int(i)*sizeofElement, values[i])
+					ast.WriteMemI64(outputSliceData, int(i)*sizeofElement, values[i])
 				}
 			}
 		}
@@ -575,7 +574,7 @@ func opOsReadI32Slice(inputs []ast.CXValue, outputs []ast.CXValue) {
 				success = true
 				outputSliceData := ast.GetSliceData(outputSliceOffset, sizeofElement)
 				for i := uint64(0); i < count; i++ {
-					mem.WriteMemI32(outputSliceData, int(i)*sizeofElement, values[i])
+					ast.WriteMemI32(outputSliceData, int(i)*sizeofElement, values[i])
 				}
 			}
 		}
@@ -595,7 +594,7 @@ func opOsReadI16Slice(inputs []ast.CXValue, outputs []ast.CXValue) {
 				success = true
 				outputSliceData := ast.GetSliceData(outputSliceOffset, sizeofElement)
 				for i := uint64(0); i < count; i++ {
-					mem.WriteMemI16(outputSliceData, int(i)*sizeofElement, values[i])
+					ast.WriteMemI16(outputSliceData, int(i)*sizeofElement, values[i])
 				}
 			}
 		}
@@ -615,7 +614,7 @@ func opOsReadI8Slice(inputs []ast.CXValue, outputs []ast.CXValue) {
 				success = true
 				outputSliceData := ast.GetSliceData(outputSliceOffset, sizeofElement)
 				for i := uint64(0); i < count; i++ {
-					mem.WriteMemI8(outputSliceData, int(i)*sizeofElement, values[i])
+					ast.WriteMemI8(outputSliceData, int(i)*sizeofElement, values[i])
 				}
 			}
 		}

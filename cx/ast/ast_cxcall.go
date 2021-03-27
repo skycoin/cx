@@ -3,7 +3,6 @@ package ast
 import (
 	"fmt"
 	"github.com/skycoin/cx/cx/constants"
-	"github.com/skycoin/cx/cx/mem"
 )
 
 // CXCall ...
@@ -43,7 +42,7 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 				if i >= lenOuts {
 					continue
 				}
-				mem.WriteMemory(
+				WriteMemory(
 					GetFinalOffset(returnFP, expr.Outputs[i]),
 					ReadMemory(
 						GetFinalOffset(fp, out),
@@ -204,7 +203,7 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 							finalOffset -= constants.OBJECT_HEADER_SIZE
 						}
 						var finalOffsetB [4]byte
-						mem.WriteMemI32(finalOffsetB[:], 0, int32(finalOffset))
+						WriteMemI32(finalOffsetB[:], 0, int32(finalOffset))
 						byts = finalOffsetB[:]
 					} else {
 						size := GetSize(inp)
@@ -212,7 +211,7 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 					}
 
 					// writing inputs to new stack frame
-					mem.WriteMemory(
+					WriteMemory(
 						GetFinalOffset(newFP, newCall.Operator.Inputs[i]),
 						// newFP + newCall.Operator.ProgramInput[i].Offset,
 						// GetFinalOffset(prgrm.Memory, newFP, newCall.Operator.ProgramInput[i], MEM_WRITE),

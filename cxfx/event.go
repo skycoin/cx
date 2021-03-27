@@ -5,8 +5,6 @@ package cxfx
 import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/helper"
-	"github.com/skycoin/cx/cx/mem"
-
 	//"fmt"
 	"sync"
 	"time"
@@ -57,7 +55,7 @@ type CXCallback struct {
 
 func (cb *CXCallback) init(inputs []ast.CXValue, outputs []ast.CXValue, packageName string) {
 	cb.windowName = inputs[0].Get_str()
-	cb.windowNameBytes = helper.FromI32(int32(mem.WriteStringData(cb.windowName)))
+	cb.windowNameBytes = helper.FromI32(int32(ast.WriteStringData(cb.windowName)))
 	cb.functionName = inputs[1].Get_str()
 	cb.packageName = packageName
 }

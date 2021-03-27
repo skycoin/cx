@@ -3,7 +3,6 @@ package ast
 import (
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/helper"
-	"github.com/skycoin/cx/cx/mem"
 )
 
 // IsValidSliceIndex ...
@@ -90,11 +89,11 @@ func SliceResizeEx(outputSliceOffset int32, count int32, sizeofElement int) int 
 		}
 		var outputObjectSize = constants.OBJECT_HEADER_SIZE + constants.SLICE_HEADER_SIZE + newCap*int32(sizeofElement)
 		outputSliceOffset = int32(AllocateSeq(int(outputObjectSize)))
-		mem.WriteMemI32(GetObjectHeader(outputSliceOffset)[5:9], 0, outputObjectSize)
+		WriteMemI32(GetObjectHeader(outputSliceOffset)[5:9], 0, outputObjectSize)
 
 		outputSliceHeader = GetSliceHeader(outputSliceOffset)
-		mem.WriteMemI32(outputSliceHeader[0:4], 0, newCap)
-		mem.WriteMemI32(outputSliceHeader[4:8], 0, newLen)
+		WriteMemI32(outputSliceHeader[0:4], 0, newCap)
+		WriteMemI32(outputSliceHeader[4:8], 0, newLen)
 	}
 
 	return int(outputSliceOffset)
@@ -124,7 +123,7 @@ func SliceCopyEx(outputSliceOffset int32, inputSliceOffset int32, count int32, s
 
 	if outputSliceOffset > 0 {
 		outputSliceHeader := GetSliceHeader(outputSliceOffset)
-		mem.WriteMemI32(outputSliceHeader[4:8], 0, count)
+		WriteMemI32(outputSliceHeader[4:8], 0, count)
 		outputSliceData := GetSliceData(outputSliceOffset, sizeofElement)
 		if (outputSliceOffset != inputSliceOffset) && inputSliceLen > 0 {
 			copy(outputSliceData, GetSliceData(inputSliceOffset, sizeofElement))

@@ -4,7 +4,6 @@ import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/helper"
-	"github.com/skycoin/cx/cx/mem"
 )
 
 func opSerialize(expr *ast.CXExpression, fp int) {
@@ -19,7 +18,7 @@ func opSerialize(expr *ast.CXExpression, fp int) {
 		slcOff = ast.WriteToSlice(slcOff, []byte{b})
 	}
 
-	mem.WriteI32(out1Offset, int32(slcOff))
+	ast.WriteI32(out1Offset, int32(slcOff))
 }
 
 func opDeserialize(expr *ast.CXExpression, fp int) {

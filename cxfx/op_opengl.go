@@ -6,7 +6,6 @@ import (
 	"bufio"
 	"fmt"
 	"github.com/skycoin/cx/cx/ast"
-	"github.com/skycoin/cx/cx/mem"
 	file2 "github.com/skycoin/cx/cx/util/file"
 	"image"
 	"image/draw"
@@ -246,9 +245,9 @@ func decodeHdr(file *os.File) (data []byte, iwidth int32, iheight int32) {
 			g := float32(exponent * float64(line[loffset+1]) / 256.0)
 			b := float32(exponent * float64(line[loffset+2]) / 256.0)
 
-			mem.WriteMemF32(data, xoffset, r)
-			mem.WriteMemF32(data, xoffset+4, g)
-			mem.WriteMemF32(data, xoffset+8, b)
+			ast.WriteMemF32(data, xoffset, r)
+			ast.WriteMemF32(data, xoffset+4, g)
+			ast.WriteMemF32(data, xoffset+8, b)
 		}
 	}
 	return

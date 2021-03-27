@@ -7,7 +7,6 @@ import (
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/execute"
 	"github.com/skycoin/cx/cx/helper"
-	"github.com/skycoin/cx/cx/mem"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -154,7 +153,7 @@ func opHTTPListenAndServe(expr *ast.CXExpression, fp int) {
 	server = &http.Server{Addr: url}
 
 	err := server.ListenAndServe()
-	mem.WriteString(fp, err.Error(), errstring)
+	ast.WriteString(fp, err.Error(), errstring)
 }
 
 func opHTTPServe(expr *ast.CXExpression, fp int) {
@@ -166,12 +165,12 @@ func opHTTPServe(expr *ast.CXExpression, fp int) {
 
 	l, err := net.Listen("tcp", url)
 	if err != nil {
-		mem.WriteString(fp, err.Error(), errstring)
+		ast.WriteString(fp, err.Error(), errstring)
 	}
 
 	err = http.Serve(l, nil)
 	if err != nil {
-		mem.WriteString(fp, err.Error(), errstring)
+		ast.WriteString(fp, err.Error(), errstring)
 	}
 }
 
@@ -188,7 +187,7 @@ func opHTTPNewRequest(expr *ast.CXExpression, fp int) {
 	//above is an alternative for following 3 lines of code that fail due to URL
 	req, err := http.NewRequest(method, urlString, bytes.NewBuffer([]byte(body)))
 	if err != nil {
-		mem.WriteString(fp, err.Error(), errorstring)
+		ast.WriteString(fp, err.Error(), errorstring)
 	}
 
 	var netClient = &http.Client{
@@ -196,7 +195,7 @@ func opHTTPNewRequest(expr *ast.CXExpression, fp int) {
 	}
 	resp, err := netClient.Do(req)
 	if err != nil {
-		mem.WriteString(fp, err.Error(), errorstring)
+		ast.WriteString(fp, err.Error(), errorstring)
 	}
 	resp1 := *resp // dereference to exclude pointer issue
 
@@ -211,7 +210,7 @@ func opHTTPNewRequest(expr *ast.CXExpression, fp int) {
 	// TODO: Used `Response.Status` for now, to avoid getting an error.
 	// This will be rewritten as the whole operator is unfinished.
 	byts := encoder.Serialize(resp1.Status)
-	mem.WriteObject(out1Offset, byts)
+	ast.WriteObject(out1Offset, byts)
 }
 
 func writeHTTPRequest(fp int, param *ast.CXArgument, request *http.Request) {
@@ -289,37 +288,37 @@ func writeHTTPRequest(fp int, param *ast.CXArgument, request *http.Request) {
 	accessURLForceQuery := []*ast.CXArgument{&derefURLFld, forceQueryFld}
 
 	// Creating empty `http.Request` object on heap.
-	reqOff := mem.WriteObjectData(make([]byte, requestType.Size))
+	reqOff := ast.WriteObjectData(make([]byte, requestType.Size))
 	reqOffByts := encoder.SerializeAtomic(int32(reqOff))
-	mem.WriteMemory(ast.GetFinalOffset(fp, &req), reqOffByts)
+	ast.WriteMemory(ast.GetFinalOffset(fp, &req), reqOffByts)
 
 	req.DereferenceOperations = append(req.DereferenceOperations, constants.DEREF_POINTER)
 
 	// Creating empty `http.URL` object on heap.
 	req.Fields = accessURL
-	urlOff := mem.WriteObjectData(make([]byte, urlType.Size))
+	urlOff := ast.WriteObjectData(make([]byte, urlType.Size))
 	urlOffByts := encoder.SerializeAtomic(int32(urlOff))
-	mem.WriteMemory(ast.GetFinalOffset(fp, &req), urlOffByts)
+	ast.WriteMemory(ast.GetFinalOffset(fp, &req), urlOffByts)
 
 	req.Fields = accessMethod
-	mem.WriteString(fp, request.Method, &req)
+	ast.WriteString(fp, request.Method, &req)
 
 	req.Fields = accessBody
 	body, err := ioutil.ReadAll(request.Body)
 	if err != nil {
 		panic(err)
 	}
-	mem.WriteString(fp, string(body), &req)
+	ast.WriteString(fp, string(body), &req)
 	req.Fields = accessURLScheme
-	mem.WriteString(fp, request.URL.Scheme, &req)
+	ast.WriteString(fp, request.URL.Scheme, &req)
 	req.Fields = accessURLHost
-	mem.WriteString(fp, request.URL.Host, &req)
+	ast.WriteString(fp, request.URL.Host, &req)
 	req.Fields = accessURLPath
-	mem.WriteString(fp, request.URL.Path, &req)
+	ast.WriteString(fp, request.URL.Path, &req)
 	req.Fields = accessURLRawPath
-	mem.WriteString(fp, request.URL.RawPath, &req)
+	ast.WriteString(fp, request.URL.RawPath, &req)
 	req.Fields = accessURLForceQuery
-	mem.WriteMemory(ast.GetFinalOffset(fp, &req), helper.FromBool(request.URL.ForceQuery))
+	ast.WriteMemory(ast.GetFinalOffset(fp, &req), helper.FromBool(request.URL.ForceQuery))
 }
 
 func opHTTPDo(expr *ast.CXExpression, fp int) {
@@ -415,7 +414,7 @@ func opHTTPDo(expr *ast.CXExpression, fp int) {
 	}
 	response, err := netClient.Do(&request)
 	if err != nil {
-		mem.WriteString(fp, err.Error(), errorstring)
+		ast.WriteString(fp, err.Error(), errorstring)
 		return
 	}
 
@@ -468,23 +467,23 @@ func opHTTPDo(expr *ast.CXExpression, fp int) {
 	accessBody := []*ast.CXArgument{bodyFld}
 
 	resp.Fields = accessStatus
-	mem.WriteString(fp, response.Status, &resp)
+	ast.WriteString(fp, response.Status, &resp)
 	resp.Fields = accessStatusCode
-	mem.WriteMemory(ast.GetFinalOffset(fp, &resp), helper.FromI32(int32(response.StatusCode)))
+	ast.WriteMemory(ast.GetFinalOffset(fp, &resp), helper.FromI32(int32(response.StatusCode)))
 	resp.Fields = accessProto
-	mem.WriteString(fp, response.Proto, &resp)
+	ast.WriteString(fp, response.Proto, &resp)
 	resp.Fields = accessProtoMajor
-	mem.WriteMemory(ast.GetFinalOffset(fp, &resp), helper.FromI32(int32(response.ProtoMajor)))
+	ast.WriteMemory(ast.GetFinalOffset(fp, &resp), helper.FromI32(int32(response.ProtoMajor)))
 	resp.Fields = accessProtoMinor
-	mem.WriteMemory(ast.GetFinalOffset(fp, &resp), helper.FromI32(int32(response.ProtoMinor)))
+	ast.WriteMemory(ast.GetFinalOffset(fp, &resp), helper.FromI32(int32(response.ProtoMinor)))
 	resp.Fields = accessContentLength
-	mem.WriteMemory(ast.GetFinalOffset(fp, &resp), helper.FromI64(int64(response.ContentLength)))
+	ast.WriteMemory(ast.GetFinalOffset(fp, &resp), helper.FromI64(int64(response.ContentLength)))
 	resp.Fields = accessBody
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		panic(err)
 	}
-	mem.WriteString(fp, string(body), &resp)
+	ast.WriteString(fp, string(body), &resp)
 }
 
 func opDMSGDo(expr *ast.CXExpression, fp int) {
@@ -493,6 +492,6 @@ func opDMSGDo(expr *ast.CXExpression, fp int) {
 	byts1 := ast.ReadMemory(ast.GetFinalOffset(fp, inp1), inp1)
 	err := encoder.DeserializeRawExact(byts1, &req)
 	if err != nil {
-		mem.WriteString(fp, err.Error(), out1)
+		ast.WriteString(fp, err.Error(), out1)
 	}
 }

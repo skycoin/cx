@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
-	"github.com/skycoin/cx/cx/mem"
 )
 
 var assertSuccess = true
@@ -61,7 +60,7 @@ func assert(expr *ast.CXExpression, fp int) (same bool) {
 
 func opAssertValue(expr *ast.CXExpression, fp int) {
 	same := assert(expr, fp)
-	mem.WriteBool(ast.GetFinalOffset(fp, expr.Outputs[0]), same)
+	ast.WriteBool(ast.GetFinalOffset(fp, expr.Outputs[0]), same)
 }
 
 func opTest(expr *ast.CXExpression, fp int) {
@@ -93,5 +92,5 @@ func opPanicIfNot(expr *ast.CXExpression, fp int) {
 }
 
 func opStrError(expr *ast.CXExpression, fp int) {
-	mem.WriteString(fp, ast.ErrorString(int(ast.ReadI32(fp, expr.Inputs[0]))), expr.Outputs[0])
+	ast.WriteString(fp, ast.ErrorString(int(ast.ReadI32(fp, expr.Inputs[0]))), expr.Outputs[0])
 }

@@ -3,7 +3,6 @@ package execute
 import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
-	"github.com/skycoin/cx/cx/mem"
 	"os"
 )
 
@@ -28,7 +27,7 @@ func Callback(cxprogram *ast.CXProgram, fn *ast.CXFunction, inputs [][]byte) (ou
 	}
 
 	for i, inp := range inputs {
-		mem.WriteMemory(ast.GetFinalOffset(newFP, newCall.Operator.Inputs[i]), inp)
+		ast.WriteMemory(ast.GetFinalOffset(newFP, newCall.Operator.Inputs[i]), inp)
 	}
 
 	var nCalls = 0

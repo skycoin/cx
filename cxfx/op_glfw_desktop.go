@@ -6,7 +6,6 @@ import (
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/helper"
-	"github.com/skycoin/cx/cx/mem"
 )
 
 var windows map[string]*glfw.Window = make(map[string]*glfw.Window, 0)
@@ -230,7 +229,7 @@ func opGlfwSetShouldClose(inputs []ast.CXValue, outputs []ast.CXValue) {
 func getWindowName(w *glfw.Window) []byte {
 	for key, win := range windows {
 		if w == win {
-			return helper.FromI32(int32(mem.WriteStringData(key)))
+			return helper.FromI32(int32(ast.WriteStringData(key)))
 		}
 	}
 

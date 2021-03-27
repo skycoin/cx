@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
-	"github.com/skycoin/cx/cx/mem"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 	"math/rand"
 	"time"
@@ -163,16 +162,16 @@ func RunCompiled(cxprogram *ast.CXProgram, nCalls int, args []string) error {
 							argOffset := ast.AllocateSeq(len(argBytes) + constants.OBJECT_HEADER_SIZE)
 
 							var header = make([]byte, constants.OBJECT_HEADER_SIZE)
-							mem.WriteMemI32(header, 5, int32(encoder.Size(arg)+constants.OBJECT_HEADER_SIZE))
+							ast.WriteMemI32(header, 5, int32(encoder.Size(arg)+constants.OBJECT_HEADER_SIZE))
 							obj := append(header, argBytes...)
 
-							mem.WriteMemory(argOffset, obj)
+							ast.WriteMemory(argOffset, obj)
 
 							var argOffsetBytes [4]byte
-							mem.WriteMemI32(argOffsetBytes[:], 0, int32(argOffset))
+							ast.WriteMemI32(argOffsetBytes[:], 0, int32(argOffset))
 							argsOffset = ast.WriteToSlice(argsOffset, argOffsetBytes[:])
 						}
-						mem.WriteI32(ast.GetFinalOffset(0, osGbl), int32(argsOffset))
+						ast.WriteI32(ast.GetFinalOffset(0, osGbl), int32(argsOffset))
 					}
 				}
 				cxprogram.Terminated = false
