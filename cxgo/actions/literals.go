@@ -187,7 +187,7 @@ func ArrayLiteralExpression(arrSizes []int, typSpec int, exprs []*cxcore.CXExpre
 	var result []*cxcore.CXExpression
 
 	pkg := PRGRM.GetCurrentPackage()
-	if pkg != nil {
+	if pkg == nil {
 		panic("ArrayLiteralExpression(): error, PRGRM.GetCurrentPackage is nil")
 	}
 

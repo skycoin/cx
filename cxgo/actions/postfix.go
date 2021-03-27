@@ -116,7 +116,7 @@ func PostfixExpressionNative(typCode int, opStrCode string) []*cxcore.CXExpressi
 
 	expr := cxcore.MakeExpression(cxcore.Natives[opCode], CurrentFile, LineNo)
 	pkg := PRGRM.GetCurrentPackage()
-	if pkg != nil {
+	if pkg == nil {
 		panic("PostfixExpressionsNative(): error, PRGRM.GetCurrentPackage is nil")
 	}
 	expr.Package = pkg

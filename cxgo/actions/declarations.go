@@ -292,7 +292,7 @@ func DeclareLocal(declarator *cxcore.CXArgument, declarationSpecifiers *cxcore.C
 	declarationSpecifiers.IsLocalDeclaration = true
 
 	pkg := PRGRM.GetCurrentPackage()
-	if pkg != nil {
+	if pkg == nil {
 		panic("DeclareLocal(): error, PRGRM.GetCurrentPackage is nil")
 	}
 
