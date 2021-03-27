@@ -186,9 +186,12 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 	defer profiling.StopProfile("parse")
 
 	actions.PRGRM = cxcore.MakeProgram()
-	corePkgsPrgrm, err := cxcore.GetCurrentCxProgram()
-	if err != nil {
-		panic(err)
+
+	//corePkgsPrgrm, err := cxcore.GetCurrentCxProgram()
+	var corePkgsPrgrm *cxcore.CXProgram = cxcore.PROGRAM
+
+	if corePkgsPrgrm == nil {
+		panic("CxProgram is nil")
 	}
 	actions.PRGRM.Packages = corePkgsPrgrm.Packages
 
@@ -220,9 +223,9 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 	repl.ReplTargetFn = cxcore.MAIN_FUNC
 
 	// Adding *init function that initializes all the global variables.
-	err = cxparser.AddInitFunction(actions.PRGRM)
+	err := cxparser.AddInitFunction(actions.PRGRM)
 	if err != nil {
-		return false
+		return false //why return false, instead of panicing
 	}
 
 	actions.LineNo = 0

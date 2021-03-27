@@ -468,7 +468,6 @@ func (cxprogram *CXProgram) GetCurrentExpression() (*CXExpression, error) {
 		return cxprogram.CurrentPackage.CurrentFunction.CurrentExpression, nil
 	}
 	return nil, errors.New("current package, function or expression is nil")
-
 }
 
 // GetCurrentExpression2 returns the current CXExpression
@@ -686,12 +685,14 @@ func (cxprogram *CXProgram) SetCurrentCxProgram() (*CXProgram, error) {
 
 // GetCurrentCxProgram returns the CX program assigned to global variable `PROGRAM`.
 // This function is mainly used for CX chains.
+/*
 func GetCurrentCxProgram() (*CXProgram, error) {
 	if PROGRAM == nil {
 		return nil, fmt.Errorf("a CX program has not been loaded")
 	}
 	return PROGRAM, nil
 }
+*/
 
 // ----------------------------------------------------------------
 //                             `CXProgram` Debugging
