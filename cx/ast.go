@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/skycoin/cx/cx/constants"
-	"strings"
 )
 
 /*
@@ -19,6 +18,11 @@ import (
 // It is the root data structure for the declarations of all functions,
 // variables and data structures.
 //
+
+//TODO: URGENT, no "DataSegmentStart", no "DataSegmentSize"
+//TODO: StackSegmentStruct?
+//TODO: DataSegmentStruct?
+//TODO: HEAPSegmentStruct?
 type CXProgram struct {
 	// Metadata
 	//Remove Path //moved to cx/globals
@@ -31,12 +35,13 @@ type CXProgram struct {
 	ProgramInput  []*CXArgument // OS input arguments
 	ProgramOutput []*CXArgument // outputs to the OS
 	Memory        []byte        // Used when running the program
-	
+
+	//TODO: Add StackStartsAt
 	StackSize    int           // This field stores the size of a CX program's stack
 	StackPointer int           // At what byte the current stack frame is
 
 	HeapSize     int           // This field stores the size of a CX program's heap
-	HeapStartsAt int           // Offset at which the heap starts in a CX program's memory
+	HeapStartsAt int           // Offset at which the heap starts in a CX program's memory (normally the stack size)
 	HeapPointer  int           // At what offset a CX program can insert a new object to the heap
 
 	CallStack    []CXCall      // Collection of function calls
@@ -415,211 +420,6 @@ func MakeProgram() *CXProgram {
 	return newPrgrm
 }
 
-// ----------------------------------------------------------------
-//                             `CXProgram` Getters
-
-// GetCurrentPackage ...
-func (cxprogram *CXProgram) GetCurrentPackage() (*CXPackage, error) {
-	if cxprogram.CurrentPackage != nil {
-		return cxprogram.CurrentPackage, nil
-	}
-	return nil, errors.New("current package is nil")
-
-}
-
-// GetCurrentStruct ...
-func (cxprogram *CXProgram) GetCurrentStruct() (*CXStruct, error) {
-	if cxprogram.CurrentPackage != nil {
-		if cxprogram.CurrentPackage.CurrentStruct != nil {
-			return cxprogram.CurrentPackage.CurrentStruct, nil
-		}
-		return nil, errors.New("current struct is nil")
-
-	}
-	return nil, errors.New("current package is nil")
-
-}
-
-// GetCurrentFunction ...
-func (cxprogram *CXProgram) GetCurrentFunction() (*CXFunction, error) {
-	if cxprogram.CurrentPackage != nil {
-		if cxprogram.CurrentPackage.CurrentFunction != nil {
-			return cxprogram.CurrentPackage.CurrentFunction, nil
-		}
-		return nil, errors.New("current function is nil")
-
-	}
-	return nil, errors.New("current package is nil")
-
-}
-
-// GetCurrentExpression ...
-func (cxprogram *CXProgram) GetCurrentExpression() (*CXExpression, error) {
-	if cxprogram.CurrentPackage != nil &&
-		cxprogram.CurrentPackage.CurrentFunction != nil &&
-		cxprogram.CurrentPackage.CurrentFunction.CurrentExpression != nil {
-		return cxprogram.CurrentPackage.CurrentFunction.CurrentExpression, nil
-	}
-	return nil, errors.New("current package, function or expression is nil")
-}
-
-// GetCurrentExpression2 returns the current CXExpression
-//redundant, also get  Expression
-/*
-func (cxprogram *CXProgram) GetCurrentExpression2() *CXExpression {
-	//call := cxprogram.GetCurrentCall()
-	//return call.Operator.Expressions[call.Line]
-	call := &cxprogram.CallStack[cxprogram.CallCounter]
-	return call.Operator.Expressions[call.Line]
-}
-*/
-
-// GetGlobal ...
-func (cxprogram *CXProgram) GetGlobal(name string) (*CXArgument, error) {
-	mod, err := cxprogram.GetCurrentPackage()
-	if err != nil {
-		return nil, err
-	}
-
-	var foundArgument *CXArgument
-	for _, def := range mod.Globals {
-		if def.Name == name {
-			foundArgument = def
-			break
-		}
-	}
-
-	for _, imp := range mod.Imports {
-		for _, def := range imp.Globals {
-			if def.Name == name {
-				foundArgument = def
-				break
-			}
-		}
-	}
-
-	if foundArgument == nil {
-		return nil, fmt.Errorf("global '%s' not found", name)
-	}
-	return foundArgument, nil
-}
-
-// Refactor to return nil on error
-func (cxprogram *CXProgram) GetPackage(packageNameToFind string) (*CXPackage, error) {
-	//iterate packages looking for package; same as GetPackage?
-	for _, cxpackage := range cxprogram.Packages {
-		if cxpackage.Name == packageNameToFind {
-			return cxpackage, nil //can return once found
-		}
-	}
-	//not found
-	return nil, fmt.Errorf("package '%s' not found", packageNameToFind)
-}
-
-// GetStruct ...
-func (cxprogram *CXProgram) GetStruct(strctName string, modName string) (*CXStruct, error) {
-	var foundPkg *CXPackage
-	for _, mod := range cxprogram.Packages {
-		if modName == mod.Name {
-			foundPkg = mod
-			break
-		}
-	}
-
-	var foundStrct *CXStruct
-
-	if foundPkg != nil {
-		for _, strct := range foundPkg.Structs {
-			if strct.Name == strctName {
-				foundStrct = strct
-				break
-			}
-		}
-	}
-
-	if foundStrct == nil {
-		//looking in imports
-		typParts := strings.Split(strctName, ".")
-
-		if mod, err := cxprogram.GetPackage(modName); err == nil {
-			for _, imp := range mod.Imports {
-				for _, strct := range imp.Structs {
-					if strct.Name == typParts[0] {
-						foundStrct = strct
-						break
-					}
-				}
-			}
-		}
-	}
-
-	if foundPkg != nil && foundStrct != nil {
-		return foundStrct, nil
-	}
-	return nil, fmt.Errorf("struct '%s' not found in package '%s'", strctName, modName)
-
-}
-
-// GetFunction ...
-func (cxprogram *CXProgram) GetFunction(functionNameToFind string, pkgName string) (*CXFunction, error) {
-	// I need to first look for the function in the current package
-
-
-	//TODO: WHEN WOULD CurrentPackage not be in cxprogram.Packages?
-	//TODO: Add assert to crash if CurrentPackage is not in cxprogram.Packages
-	if pkg, err := cxprogram.GetCurrentPackage(); err == nil {
-		for _, fn := range pkg.Functions {
-			if fn.Name == functionNameToFind {
-				return fn, nil
-			}
-		}
-	}
-
-	//iterate packages until the package is found
-	//Same as GetPackage? Use GetPackage
-	var foundPkg *CXPackage
-	for _, pkg := range cxprogram.Packages {
-		if pkgName == pkg.Name {
-			foundPkg = pkg
-			break
-		}
-	}
-	if foundPkg == nil {
-		return nil, fmt.Errorf("package '%s' not found", pkgName)
-	}
-
-	//iterates package to find function
-	//same as GetFunction?
-	for _, fn := range foundPkg.Functions {
-		if fn.Name == functionNameToFind {
-			return fn, nil //can return when found
-		}
-	}
-	return nil, fmt.Errorf("function '%s' not found in package '%s'", functionNameToFind, pkgName)
-}
-
-
-
-// GetCurrentCall returns the current CXCall
-//TODO: What does this do?
-//TODO: Only used in OP_JMP
-func (cxprogram *CXProgram) GetCurrentCall() *CXCall {
-	return &cxprogram.CallStack[cxprogram.CallCounter]
-}
-
-/*
-// GetCurrentOpCode returns the current OpCode
-func (cxprogram *CXProgram) GetCurrentOpCode() int {
-	return cxprogram.GetCurrentExpression2().Operator.OpCode
-}
-*/
-
-/*
-//not used
-func (cxprogram *CXProgram) GetFramePointer() int {
-	return cxprogram.GetCurrentCall().FramePointer
-}
-*/
 
 // ----------------------------------------------------------------
 //                         `CXProgram` Package handling

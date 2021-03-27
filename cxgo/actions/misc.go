@@ -6,7 +6,7 @@ import (
 )
 
 func SelectProgram(prgrm *cxcore.CXProgram) {
-	PRGRM = prgrm
+	AST = prgrm
 }
 
 func SetCorrectArithmeticOp(expr *cxcore.CXExpression) {
@@ -43,9 +43,9 @@ func hasDerefOp(arg *cxcore.CXArgument, spec int) bool {
 	return found
 }
 
-// This function writes those bytes to PRGRM.Data
+// This function writes those bytes to AST.Data
 func WritePrimary(typ int, byts []byte, isGlobal bool) []*cxcore.CXExpression {
-	if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
+	if pkg, err := AST.GetCurrentPackage(); err == nil {
 		arg := cxcore.MakeArgument("", CurrentFile, LineNo)
 		arg.AddType(constants.TypeNames[typ])
 		arg.Package = pkg
@@ -65,21 +65,21 @@ func WritePrimary(typ int, byts []byte, isGlobal bool) []*cxcore.CXExpression {
 		// A CX program allocates min(INIT_HEAP_SIZE, MAX_HEAP_SIZE) bytes
 		// after the stack segment. These bytes are used to allocate the data segment
 		// at compile time. If the data segment is bigger than min(INIT_HEAP_SIZE, MAX_HEAP_SIZE),
-		// we'll start appending the bytes to PRGRM.Memory.
+		// we'll start appending the bytes to AST.Memory.
 		// After compilation, we calculate how many bytes we need to add to have a heap segment
 		// equal to `minHeapSize()` that is allocated after the data segment.
-		if size+DataOffset > len(PRGRM.Memory) {
+		if size+DataOffset > len(AST.Memory) {
 			var i int
 			// First we need to fill the remaining free bytes in
-			// the current `PRGRM.Memory` slice.
-			for i = 0; i < len(PRGRM.Memory)-DataOffset; i++ {
-				PRGRM.Memory[DataOffset+i] = byts[i]
+			// the current `AST.Memory` slice.
+			for i = 0; i < len(AST.Memory)-DataOffset; i++ {
+				AST.Memory[DataOffset+i] = byts[i]
 			}
 			// Then we append the bytes that didn't fit.
-			PRGRM.Memory = append(PRGRM.Memory, byts[i:]...)
+			AST.Memory = append(AST.Memory, byts[i:]...)
 		} else {
 			for i, byt := range byts {
-				PRGRM.Memory[DataOffset+i] = byt
+				AST.Memory[DataOffset+i] = byt
 			}
 		}
 		DataOffset += size
@@ -102,7 +102,7 @@ func TotalLength(lengths []int) int {
 }
 
 func StructLiteralFields(ident string) *cxcore.CXExpression {
-	if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
+	if pkg, err := AST.GetCurrentPackage(); err == nil {
 		arg := cxcore.MakeArgument("", CurrentFile, LineNo)
 		arg.AddType(constants.TypeNames[constants.TYPE_IDENTIFIER])
 		arg.Name = ident
@@ -224,7 +224,7 @@ func AffordanceStructs(pkg *cxcore.CXPackage, currentFile string, lineNo int) {
 }
 
 func PrimaryIdentifier(ident string) []*cxcore.CXExpression {
-	if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
+	if pkg, err := AST.GetCurrentPackage(); err == nil {
 		arg := cxcore.MakeArgument(ident, CurrentFile, LineNo) // fix: line numbers in errors sometimes report +1 or -1. Issue #195
 		arg.AddType(constants.TypeNames[constants.TYPE_IDENTIFIER])
 		// arg.Typ = "ident"

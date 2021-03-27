@@ -121,7 +121,7 @@ func Assignment(to []*cxcore.CXExpression, assignOp string, from []*cxcore.CXExp
 		os.Exit(constants.CX_COMPILATION_ERROR)
 	}
 
-	pkg, err := PRGRM.GetCurrentPackage()
+	pkg, err := AST.GetCurrentPackage()
 	if err != nil {
 		panic(err)
 	}
@@ -208,7 +208,7 @@ func Assignment(to []*cxcore.CXExpression, assignOp string, from []*cxcore.CXExp
 		to[0].Outputs[0].Lengths = from[idx].Outputs[0].Lengths
 		to[0].Outputs[0].PassBy = from[idx].Outputs[0].PassBy
 		to[0].Outputs[0].DoesEscape = from[idx].Outputs[0].DoesEscape
-		// to[0].ProgramOutput[0].Program = PRGRM
+		// to[0].ProgramOutput[0].Program = AST
 
 		if from[idx].IsMethodCall {
 			from[idx].Inputs = append(from[idx].Outputs, from[idx].Inputs...)
@@ -217,7 +217,7 @@ func Assignment(to []*cxcore.CXExpression, assignOp string, from []*cxcore.CXExp
 		}
 
 		from[idx].Outputs = to[len(to)-1].Outputs
-		// from[idx].Program = PRGRM
+		// from[idx].Program = AST
 
 		return append(to[:len(to)-1], from...)
 	} else {
@@ -233,7 +233,7 @@ func Assignment(to []*cxcore.CXExpression, assignOp string, from []*cxcore.CXExp
 
 			to[0].Outputs[0].DoesEscape = from[idx].Operator.Outputs[0].DoesEscape
 			to[0].Outputs[0].PassBy = from[idx].Operator.Outputs[0].PassBy
-			// to[0].ProgramOutput[0].Program = PRGRM
+			// to[0].ProgramOutput[0].Program = AST
 		} else {
 			// we'll delegate multiple-value returns to the 'expression' grammar rule
 			// only assigning as if the operator had only one output defined
@@ -243,7 +243,7 @@ func Assignment(to []*cxcore.CXExpression, assignOp string, from []*cxcore.CXExp
 			to[0].Outputs[0].Lengths = from[idx].Operator.Outputs[0].Lengths
 			to[0].Outputs[0].DoesEscape = from[idx].Operator.Outputs[0].DoesEscape
 			to[0].Outputs[0].PassBy = from[idx].Operator.Outputs[0].PassBy
-			// to[0].ProgramOutput[0].Program = PRGRM
+			// to[0].ProgramOutput[0].Program = AST
 		}
 
 		from[idx].Outputs = to[len(to)-1].Outputs

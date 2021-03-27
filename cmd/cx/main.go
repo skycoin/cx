@@ -186,7 +186,7 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 	profiling.StartProfile("parse")
 	defer profiling.StopProfile("parse")
 
-	actions.PRGRM = cxcore.MakeProgram()
+	actions.AST = cxcore.MakeProgram()
 
 	//corePkgsPrgrm, err := cxcore.GetCurrentCxProgram()
 	var corePkgsPrgrm *cxcore.CXProgram = cxcore.PROGRAM
@@ -194,7 +194,7 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 	if corePkgsPrgrm == nil {
 		panic("CxProgram is nil")
 	}
-	actions.PRGRM.Packages = corePkgsPrgrm.Packages
+	actions.AST.Packages = corePkgsPrgrm.Packages
 
 	// var bcPrgrm *CXProgram
 	//var sPrgrm []byte
@@ -214,17 +214,17 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 	//globals.CxProgramPath = determineWorkDir(sourceCode[0].Name())
 	//globals2.SetWorkingDir(sourceCode[0].Name())
 
-	// Checking if a main package exists. If not, create and add it to `PRGRM`.
-	if _, err := actions.PRGRM.GetFunction(constants.MAIN_FUNC, constants.MAIN_PKG); err != nil {
+	// Checking if a main package exists. If not, create and add it to `AST`.
+	if _, err := actions.AST.GetFunction(constants.MAIN_FUNC, constants.MAIN_PKG); err != nil {
 		panic("error")
 	}
-	initMainPkg(actions.PRGRM)
+	initMainPkg(actions.AST)
 
 	// Setting what function to start in if using the REPL.
 	repl.ReplTargetFn = constants.MAIN_FUNC
 
 	// Adding *init function that initializes all the global variables.
-	err := cxparser.AddInitFunction(actions.PRGRM)
+	err := cxparser.AddInitFunction(actions.AST)
 	if err != nil {
 		return false //why return false, instead of panicing
 	}
@@ -247,13 +247,13 @@ func runProgram(options cxCmdFlags, cxArgs []string, sourceCode []*os.File) {
 	defer profiling.StopProfile("run")
 
 	if options.replMode || len(sourceCode) == 0 {
-		actions.PRGRM.SetCurrentCxProgram()
+		actions.AST.SetCurrentCxProgram()
 		repl.Repl()
 		return
 	}
 
 	// Normal run of a CX program.
-	err := actions.PRGRM.RunCompiled(0, cxArgs)
+	err := actions.AST.RunCompiled(0, cxArgs)
 	if err != nil {
 		panic(err)
 	}
@@ -268,13 +268,13 @@ func printProgramAST(options cxCmdFlags, cxArgs []string, sourceCode []*os.File)
 	defer profiling.StopProfile("run")
 
 	if options.replMode || len(sourceCode) == 0 {
-		actions.PRGRM.SetCurrentCxProgram()
+		actions.AST.SetCurrentCxProgram()
 		repl.Repl()
 		return
 	}
 
 	// Print CX program.
-	actions.PRGRM.PrintProgram()
+	actions.AST.PrintProgram()
 
 	if cxcore.AssertFailed() {
 		os.Exit(constants.CX_ASSERT)

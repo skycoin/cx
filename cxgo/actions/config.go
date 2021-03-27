@@ -7,11 +7,17 @@ import (
 
 //Move out actions/interactive to own module?
 
-var PRGRM *cxcore.CXProgram
+var AST *cxcore.CXProgram
+
+//TODO: THIS IS WRONG
+//USE AST.HeapStartsAt
+
 var DataOffset int = constants.STACK_SIZE //Heap Offset is Stack Size
 
+//var DataOffset int = constants.STACK_SIZE //Heap Offset is Stack Size
+
 //!!!
-//Why cxcore.STACK_SIZE and not PRGRM.STACK_SIZE
+//Why cxcore.STACK_SIZE and not AST.STACK_SIZE
 
 var CurrentFile string
 var LineNo int

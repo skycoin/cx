@@ -22,10 +22,10 @@ func FunctionHeader(ident string, receiver []*cxcore.CXArgument, isMethod bool) 
 		if len(receiver) > 1 {
 			panic("method has multiple receivers")
 		}
-		if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
+		if pkg, err := AST.GetCurrentPackage(); err == nil {
 			fnName := receiver[0].CustomType.Name + "." + ident
 
-			if fn, err := PRGRM.GetFunction(fnName, pkg.Name); err == nil {
+			if fn, err := AST.GetFunction(fnName, pkg.Name); err == nil {
 				fn.AddInput(receiver[0])
 				pkg.CurrentFunction = fn
 				return fn
@@ -39,8 +39,8 @@ func FunctionHeader(ident string, receiver []*cxcore.CXArgument, isMethod bool) 
 			panic(err)
 		}
 	} else {
-		if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
-			if fn, err := PRGRM.GetFunction(ident, pkg.Name); err == nil {
+		if pkg, err := AST.GetCurrentPackage(); err == nil {
+			if fn, err := AST.GetFunction(ident, pkg.Name); err == nil {
 				pkg.CurrentFunction = fn
 				return fn
 			} else {
@@ -125,7 +125,11 @@ func FunctionDeclaration(fn *cxcore.CXFunction, inputs, outputs []*cxcore.CXArgu
 
 	// getting offset to use by statements (excluding inputs, outputs and receiver)
 	var offset int
-	PRGRM.HeapStartsAt = DataOffset //Why would declaring a function set heap?
+	//TODO: Why would the heap starting position always be incrasing?
+	//TODO: HeapStartsAt only increases, with every write?
+	//DataOffset only increases
+	AST.HeapStartsAt = DataOffset //Why would declaring a function set heap?
+	//AST.HeapStartsAt = constants.STACK_SIZE
 
 	ProcessGoTos(fn, exprs)
 
@@ -195,7 +199,7 @@ func FunctionCall(exprs []*cxcore.CXExpression, args []*cxcore.CXExpression) []*
 		opName := expr.Outputs[0].Name
 		opPkg := expr.Outputs[0].Package
 
-		if op, err := PRGRM.GetFunction(opName, opPkg.Name); err == nil {
+		if op, err := AST.GetFunction(opName, opPkg.Name); err == nil {
 			expr.Operator = op
 		} else if expr.Outputs[0].Fields == nil {
 			// then it's not a possible method call
@@ -414,7 +418,7 @@ func isPointerAdded(fn *cxcore.CXFunction, sym *cxcore.CXArgument) (found bool) 
 // `fn.ListOfPointers` so the CX runtime does not have to determine this.
 func AddPointer(fn *cxcore.CXFunction, sym *cxcore.CXArgument) {
 	// Ignore if it's a global variable.
-	if sym.Offset > PRGRM.StackSize {
+	if sym.Offset > AST.StackSize {
 		return
 	}
 	// We first need to check if we're going to add `sym` with fields.
@@ -703,7 +707,7 @@ func lookupSymbol(pkgName, ident string, symbols *[]map[string]*cxcore.CXArgumen
 	}
 
 	// Checking if `ident` refers to a function.
-	pkg, err := PRGRM.GetPackage(pkgName)
+	pkg, err := AST.GetPackage(pkgName)
 	if err != nil {
 		return nil, err
 	}

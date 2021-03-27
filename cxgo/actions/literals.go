@@ -11,7 +11,7 @@ import (
 func SliceLiteralExpression(typSpec int, exprs []*cxcore.CXExpression) []*cxcore.CXExpression {
 	var result []*cxcore.CXExpression
 
-	pkg, err := PRGRM.GetCurrentPackage()
+	pkg, err := AST.GetCurrentPackage()
 	if err != nil {
 		panic(err)
 	}
@@ -114,8 +114,8 @@ func SliceLiteralExpression(typSpec int, exprs []*cxcore.CXExpression) []*cxcore
 func PrimaryStructLiteral(ident string, strctFlds []*cxcore.CXExpression) []*cxcore.CXExpression {
 	var result []*cxcore.CXExpression
 
-	if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
-		if strct, err := PRGRM.GetStruct(ident, pkg.Name); err == nil {
+	if pkg, err := AST.GetCurrentPackage(); err == nil {
+		if strct, err := AST.GetStruct(ident, pkg.Name); err == nil {
 			for _, expr := range strctFlds {
 				name := expr.Outputs[0].Name
 
@@ -125,7 +125,7 @@ func PrimaryStructLiteral(ident string, strctFlds []*cxcore.CXExpression) []*cxc
 				expr.IsStructLiteral = true
 
 				expr.Outputs[0].Package = pkg
-				// expr.ProgramOutput[0].Program = PRGRM
+				// expr.ProgramOutput[0].Program = AST
 
 				if expr.Outputs[0].CustomType == nil {
 					expr.Outputs[0].CustomType = strct
@@ -151,9 +151,9 @@ func PrimaryStructLiteral(ident string, strctFlds []*cxcore.CXExpression) []*cxc
 
 func PrimaryStructLiteralExternal(impName string, ident string, strctFlds []*cxcore.CXExpression) []*cxcore.CXExpression {
 	var result []*cxcore.CXExpression
-	if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
+	if pkg, err := AST.GetCurrentPackage(); err == nil {
 		if _, err := pkg.GetImport(impName); err == nil {
-			if strct, err := PRGRM.GetStruct(ident, impName); err == nil {
+			if strct, err := AST.GetStruct(ident, impName); err == nil {
 				for _, expr := range strctFlds {
 					fld := cxcore.MakeArgument("", CurrentFile, LineNo)
 					fld.AddType(constants.TypeNames[constants.TYPE_IDENTIFIER])
@@ -162,7 +162,7 @@ func PrimaryStructLiteralExternal(impName string, ident string, strctFlds []*cxc
 					expr.IsStructLiteral = true
 
 					expr.Outputs[0].Package = pkg
-					// expr.ProgramOutput[0].Program = PRGRM
+					// expr.ProgramOutput[0].Program = AST
 
 					expr.Outputs[0].CustomType = strct
 					expr.Outputs[0].Size = strct.Size
@@ -187,7 +187,7 @@ func PrimaryStructLiteralExternal(impName string, ident string, strctFlds []*cxc
 func ArrayLiteralExpression(arrSizes []int, typSpec int, exprs []*cxcore.CXExpression) []*cxcore.CXExpression {
 	var result []*cxcore.CXExpression
 
-	pkg, err := PRGRM.GetCurrentPackage()
+	pkg, err := AST.GetCurrentPackage()
 	if err != nil {
 		panic(err)
 	}

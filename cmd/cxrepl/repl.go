@@ -42,22 +42,22 @@ func unsafeEval(code string) (out string) {
 
 	actions.LineNo = 0
 
-	actions.PRGRM = cxcore.MakeProgram()
-	cxgo0.PRGRM0 = actions.PRGRM
+	actions.AST = cxcore.MakeProgram()
+	cxgo0.PRGRM0 = actions.AST
 
 	cxgo0.Parse(code)
 
-	actions.PRGRM = cxgo0.PRGRM0
+	actions.AST = cxgo0.PRGRM0
 
 	lexer = cxgo.NewLexer(bytes.NewBufferString(code))
 	cxgo.Parse(lexer)
 	//yyParse(lexer)
-	err := cxparser.AddInitFunction(actions.PRGRM)
+	err := cxparser.AddInitFunction(actions.AST)
 	if err != nil {
 		return fmt.Sprintf("%s", err)
 	}
-	if err := actions.PRGRM.RunCompiled(0, nil); err != nil {
-		actions.PRGRM = cxcore.MakeProgram()
+	if err := actions.AST.RunCompiled(0, nil); err != nil {
+		actions.AST = cxcore.MakeProgram()
 		return fmt.Sprintf("%s", err)
 	}
 
@@ -72,7 +72,7 @@ func unsafeEval(code string) (out string) {
 	os.Stdout = old // restoring the real stdout
 	out = <-outC
 
-	actions.PRGRM = cxcore.MakeProgram()
+	actions.AST = cxcore.MakeProgram()
 	return out
 }
 
@@ -94,7 +94,7 @@ func Eval(code string) string {
 	case <-ch:
 		return result
 	case <-timer.C:
-		actions.PRGRM = cxcore.MakeProgram()
+		actions.AST = cxcore.MakeProgram()
 		return "Timed out."
 	}
 }

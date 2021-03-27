@@ -27,7 +27,7 @@ build-parser: ## Generate lexer and parser for CX grammar
 - cxgo/cxgo0/cxgo0.y is input
 */
 
-// var actions.PRGRM = MakeProgram(CALLSTACK_SIZE, STACK_SIZE, INIT_HEAP_SIZE)
+// var actions.AST = MakeProgram(CALLSTACK_SIZE, STACK_SIZE, INIT_HEAP_SIZE)
 
 func Parse(lexer *Lexer) int {
 	return yyParse(lexer)
@@ -1636,7 +1636,7 @@ yynewstate:
 	switch r {
 	case 9:
 		{
-			actions.PRGRM.PrintProgram()
+			actions.AST.PrintProgram()
 		}
 	case 10:
 		{
@@ -1720,7 +1720,7 @@ yynewstate:
 		}
 	case 31:
 		{
-			if pkg, err := actions.PRGRM.GetCurrentPackage(); err == nil {
+			if pkg, err := actions.AST.GetCurrentPackage(); err == nil {
 				arg := cxcore.MakeArgument("", actions.CurrentFile, actions.LineNo)
 				arg.AddType(constants.TypeNames[constants.TYPE_UNDEFINED])
 				arg.Name = yyS[yypt-0].tok
@@ -2423,7 +2423,7 @@ yynewstate:
 		}
 	case 225:
 		{
-			if pkg, err := actions.PRGRM.GetCurrentPackage(); err == nil {
+			if pkg, err := actions.AST.GetCurrentPackage(); err == nil {
 				expr := cxcore.MakeExpression(cxcore.Natives[cxcore.OP_JMP], actions.CurrentFile, actions.LineNo)
 				expr.Package = pkg
 				expr.Label = yyS[yypt-1].tok

@@ -20,7 +20,7 @@ import (
 //
 func DeclareGlobal(declarator *cxcore.CXArgument, declarationSpecifiers *cxcore.CXArgument,
 	initializer []*cxcore.CXExpression, doesInitialize bool) {
-	pkg, err := PRGRM.GetCurrentPackage()
+	pkg, err := AST.GetCurrentPackage()
 	if err != nil {
 		panic(err)
 	}
@@ -180,14 +180,14 @@ func DeclareGlobalInPackage(pkg *cxcore.CXPackage,
 //
 func DeclareStruct(ident string, strctFlds []*cxcore.CXArgument) {
 	// Make sure we are inside a package.
-	pkg, err := PRGRM.GetCurrentPackage()
+	pkg, err := AST.GetCurrentPackage()
 	if err != nil {
 		// FIXME: Should give a relevant error message
 		panic(err)
 	}
 
 	// Make sure a struct with the same name is not yet defined.
-	strct, err := PRGRM.GetStruct(ident, pkg.Name)
+	strct, err := AST.GetStruct(ident, pkg.Name)
 	if err != nil {
 		// FIXME: Should give a relevant error message
 		panic(err)
@@ -208,19 +208,19 @@ func DeclareStruct(ident string, strctFlds []*cxcore.CXArgument) {
 //
 func DeclarePackage(ident string) {
 	// Add a new package to the program if it's not previously defined.
-	if _, err := PRGRM.GetPackage(ident); err != nil {
+	if _, err := AST.GetPackage(ident); err != nil {
 		pkg := cxcore.MakePackage(ident)
-		PRGRM.AddPackage(pkg)
+		AST.AddPackage(pkg)
 	}
 
-	PRGRM.SelectPackage(ident)
+	AST.SelectPackage(ident)
 }
 
 // DeclareImport()
 //
 func DeclareImport(name string, currentFile string, lineNo int) {
 	// Make sure we are inside a package
-	pkg, err := PRGRM.GetCurrentPackage()
+	pkg, err := AST.GetCurrentPackage()
 	if err != nil {
 		// FIXME: Should give a relevant error message
 		panic(err)
@@ -253,7 +253,7 @@ func DeclareImport(name string, currentFile string, lineNo int) {
 
 	// If the package is already defined in the program, just add it to
 	// the importing package.
-	if imp, err := PRGRM.GetPackage(ident); err == nil {
+	if imp, err := AST.GetPackage(ident); err == nil {
 		pkg.AddImport(imp)
 		return
 	}
@@ -264,8 +264,8 @@ func DeclareImport(name string, currentFile string, lineNo int) {
 	if cxcore.IsCorePackage(ident) {
 		imp := cxcore.MakePackage(ident)
 		pkg.AddImport(imp)
-		PRGRM.AddPackage(imp)
-		PRGRM.CurrentPackage = pkg
+		AST.AddPackage(imp)
+		AST.CurrentPackage = pkg
 
 		if ident == "aff" {
 			AffordanceStructs(imp, currentFile, lineNo)
@@ -291,7 +291,7 @@ func DeclareLocal(declarator *cxcore.CXArgument, declarationSpecifiers *cxcore.C
 
 	declarationSpecifiers.IsLocalDeclaration = true
 
-	pkg, err := PRGRM.GetCurrentPackage()
+	pkg, err := AST.GetCurrentPackage()
 	if err != nil {
 		panic(err)
 	}
@@ -461,7 +461,7 @@ func DeclarationSpecifiersBasic(typ int) *cxcore.CXArgument {
 // DeclarationSpecifiersStruct() declares a struct
 func DeclarationSpecifiersStruct(ident string, pkgName string,
 	isExternal bool, currentFile string, lineNo int) *cxcore.CXArgument {
-	pkg, err := PRGRM.GetCurrentPackage()
+	pkg, err := AST.GetCurrentPackage()
 	if err != nil {
 		panic(err)
 	}
@@ -473,7 +473,7 @@ func DeclarationSpecifiersStruct(ident string, pkgName string,
 			panic(err)
 		}
 
-		strct, err := PRGRM.GetStruct(ident, imp.Name)
+		strct, err := AST.GetStruct(ident, imp.Name)
 		if err != nil {
 			println(cxcore.CompilationError(currentFile, lineNo), err.Error())
 			return nil
@@ -491,7 +491,7 @@ func DeclarationSpecifiersStruct(ident string, pkgName string,
 		return arg
 	} else {
 		// custom type in the current package
-		strct, err := PRGRM.GetStruct(ident, pkg.Name)
+		strct, err := AST.GetStruct(ident, pkg.Name)
 		if err != nil {
 			println(cxcore.CompilationError(currentFile, lineNo), err.Error())
 			return nil

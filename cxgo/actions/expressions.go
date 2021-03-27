@@ -20,7 +20,7 @@ type ReturnExpressions struct {
 func IterationExpressions(init []*cxcore.CXExpression, cond []*cxcore.CXExpression, incr []*cxcore.CXExpression, statements []*cxcore.CXExpression) []*cxcore.CXExpression {
 	jmpFn := cxcore.Natives[cxcore.OP_JMP]
 
-	pkg, err := PRGRM.GetCurrentPackage()
+	pkg, err := AST.GetCurrentPackage()
 	if err != nil {
 		panic(err)
 	}
@@ -86,7 +86,7 @@ func IterationExpressions(init []*cxcore.CXExpression, cond []*cxcore.CXExpressi
 }
 
 func trueJmpExpressions() []*cxcore.CXExpression {
-	pkg, err := PRGRM.GetCurrentPackage()
+	pkg, err := AST.GetCurrentPackage()
 	if err != nil {
 		panic(err)
 	}
@@ -118,7 +118,7 @@ func SelectionExpressions(condExprs []*cxcore.CXExpression, thenExprs []*cxcore.
 	DefineNewScope(elseExprs)
 
 	jmpFn := cxcore.Natives[cxcore.OP_JMP]
-	pkg, err := PRGRM.GetCurrentPackage()
+	pkg, err := AST.GetCurrentPackage()
 	if err != nil {
 		panic(err)
 	}
@@ -199,8 +199,9 @@ func resolveTypeForUnd(expr *cxcore.CXExpression) int {
 	return -1
 }
 
+//TODO: Delete this function, we always know the correct type and operator to call
 func UndefinedTypeOperation(leftExprs []*cxcore.CXExpression, rightExprs []*cxcore.CXExpression, operator *cxcore.CXFunction) (out []*cxcore.CXExpression) {
-	pkg, err := PRGRM.GetCurrentPackage()
+	pkg, err := AST.GetCurrentPackage()
 	if err != nil {
 		panic(err)
 	}
@@ -264,8 +265,10 @@ func UndefinedTypeOperation(leftExprs []*cxcore.CXExpression, rightExprs []*cxco
 	return
 }
 
+// TODO: What is a shorthand expression
+// TODO: Remove
 func ShorthandExpression(leftExprs []*cxcore.CXExpression, rightExprs []*cxcore.CXExpression, op int) []*cxcore.CXExpression {
-    return UndefinedTypeOperation(leftExprs, rightExprs, cxcore.Natives[op])
+	return UndefinedTypeOperation(leftExprs, rightExprs, cxcore.Natives[op])
 }
 
 func UnaryExpression(op string, prevExprs []*cxcore.CXExpression) []*cxcore.CXExpression {
@@ -298,7 +301,7 @@ func UnaryExpression(op string, prevExprs []*cxcore.CXExpression) []*cxcore.CXEx
 			baseOut.IsInnerReference = true
 		}
 	case "!":
-		if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
+		if pkg, err := AST.GetCurrentPackage(); err == nil {
 			expr := cxcore.MakeExpression(cxcore.Natives[cxcore.OP_BOOL_NOT], CurrentFile, LineNo)
 			expr.Package = pkg
 
@@ -309,7 +312,7 @@ func UnaryExpression(op string, prevExprs []*cxcore.CXExpression) []*cxcore.CXEx
 			panic(err)
 		}
 	case "-":
-		if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
+		if pkg, err := AST.GetCurrentPackage(); err == nil {
 			expr := cxcore.MakeExpression(cxcore.Natives[cxcore.OP_NEG], CurrentFile, LineNo)
 			expr.Package = pkg
 			expr.AddInput(exprOut)
@@ -328,7 +331,7 @@ func AssociateReturnExpressions(idx int, retExprs []*cxcore.CXExpression) []*cxc
 	var fn *cxcore.CXFunction
 	var err error
 
-	pkg, err = PRGRM.GetCurrentPackage()
+	pkg, err = AST.GetCurrentPackage()
 	if err != nil {
 		panic(err)
 	}
@@ -374,7 +377,7 @@ func AddJmpToReturnExpressions(exprs ReturnExpressions) []*cxcore.CXExpression {
 	var fn *cxcore.CXFunction
 	var err error
 
-	pkg, err = PRGRM.GetCurrentPackage()
+	pkg, err = AST.GetCurrentPackage()
 	if err != nil {
 		panic(err)
 	}

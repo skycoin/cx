@@ -19,11 +19,11 @@ import (
 )
 
 // ParseSourceCode takes a group of files representing CX `sourceCode` and
-// parses it into CX program structures for `PRGRM`.
+// parses it into CX program structures for `AST`.
 func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 
 	//local
-	cxgo0.PRGRM0 = actions.PRGRM
+	cxgo0.PRGRM0 = actions.AST
 
 	// Copy the contents of the file pointers containing the CX source
 	// code into sourceCodeCopy
@@ -44,9 +44,9 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 	}
 
 	//package level program
-	actions.PRGRM.SetCurrentCxProgram()
+	actions.AST.SetCurrentCxProgram()
 
-	actions.PRGRM = cxgo0.PRGRM0
+	actions.AST = cxgo0.PRGRM0
 
 	if cxcore.FoundCompileErrors || parseErrors > 0 {
 		profiling.CleanupAndExit(constants.CX_COMPILATION_ERROR)
@@ -54,7 +54,7 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 
 	// Adding global variables `OS_ARGS` to the `os` (operating system)
 	// package.
-	if osPkg, err := actions.PRGRM.GetPackage(constants.OS_PKG); err == nil {
+	if osPkg, err := actions.AST.GetPackage(constants.OS_PKG); err == nil {
 		if _, err := osPkg.GetGlobal(constants.OS_ARGS); err != nil {
 			arg0 := cxcore.MakeArgument(constants.OS_ARGS, "", -1).AddType(constants.TypeNames[constants.TYPE_UNDEFINED])
 			arg0.Package = osPkg

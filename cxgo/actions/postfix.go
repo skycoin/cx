@@ -116,7 +116,7 @@ func PostfixExpressionNative(typCode int, opStrCode string) []*cxcore.CXExpressi
 	}
 
 	expr := cxcore.MakeExpression(cxcore.Natives[opCode], CurrentFile, LineNo)
-	pkg, err := PRGRM.GetCurrentPackage()
+	pkg, err := AST.GetCurrentPackage()
 	if err != nil {
 		panic(err)
 	}
@@ -140,7 +140,7 @@ func PostfixExpressionEmptyFunCall(prevExprs []*cxcore.CXExpression) []*cxcore.C
 
 	} else if prevExprs[len(prevExprs)-1].Operator == nil {
 		if opCode, ok := cxcore.OpCodes[prevExprs[len(prevExprs)-1].Outputs[0].Name]; ok {
-			if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
+			if pkg, err := AST.GetCurrentPackage(); err == nil {
 				prevExprs[0].Package = pkg
 			}
 			prevExprs[0].Outputs = nil
@@ -160,7 +160,7 @@ func PostfixExpressionFunCall(prevExprs []*cxcore.CXExpression, args []*cxcore.C
 
 	} else if prevExprs[len(prevExprs)-1].Operator == nil {
 		if opCode, ok := cxcore.OpCodes[prevExprs[len(prevExprs)-1].Outputs[0].Name]; ok {
-			if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
+			if pkg, err := AST.GetCurrentPackage(); err == nil {
 				prevExprs[0].Package = pkg
 			}
 			prevExprs[0].Outputs = nil
@@ -174,7 +174,7 @@ func PostfixExpressionFunCall(prevExprs []*cxcore.CXExpression, args []*cxcore.C
 }
 
 func PostfixExpressionIncDec(prevExprs []*cxcore.CXExpression, isInc bool) []*cxcore.CXExpression {
-	pkg, err := PRGRM.GetCurrentPackage()
+	pkg, err := AST.GetCurrentPackage()
 	if err != nil {
 		panic(err)
 	}
@@ -265,7 +265,7 @@ func PostfixExpressionField(prevExprs []*cxcore.CXExpression, ident string) []*c
 	left.IsRest = true
 	// then left is a first (e.g first.rest) and right is a rest
 	// let's check if left is a package
-	pkg, err := PRGRM.GetCurrentPackage()
+	pkg, err := AST.GetCurrentPackage()
 	if err != nil {
 		panic(err)
 	}
@@ -308,7 +308,7 @@ func PostfixExpressionField(prevExprs []*cxcore.CXExpression, ident string) []*c
 			// not sure about this next line
 			prevExprs[len(prevExprs)-1].Outputs = nil
 			prevExprs[len(prevExprs)-1].Operator = fn
-		} else if strct, err := PRGRM.GetStruct(ident, imp.Name); err == nil {
+		} else if strct, err := AST.GetStruct(ident, imp.Name); err == nil {
 			prevExprs[len(prevExprs)-1].Outputs[0].CustomType = strct
 		} else {
 			// panic(err)
