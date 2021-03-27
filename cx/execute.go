@@ -10,43 +10,6 @@ import (
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-// It "un-runs" a program
-// func (prgrm *CXProgram) Reset() {
-// 	prgrm.CallStack = MakeCallStack(0)
-// 	prgrm.Steps = make([][]CXCall, 0)
-// 	prgrm.ProgramOutput = make([]*CXArgument, 0)
-// 	//prgrm.ProgramSteps = nil
-// }
-
-// UnRun ...
-/*
-func (prgrm *CXProgram) UnRun(nCalls int) {
-	if nCalls >= 0 || prgrm.CallCounter < 0 {
-		return
-	}
-
-	call := &prgrm.CallStack[prgrm.CallCounter]
-
-	for c := nCalls; c < 0; c++ {
-		if call.Line >= c {
-			// then we stay in this call counter
-			call.Line += c
-			c -= c
-		} else {
-
-			if prgrm.CallCounter == 0 {
-				call.Line = 0
-				return
-			}
-			c += call.Line
-			call.Line = 0
-			prgrm.CallCounter--
-			call = &prgrm.CallStack[prgrm.CallCounter]
-		}
-	}
-}
-*/
-
 // Only called in this file
 // TODO: What does this do? Is it named poorly?
 func (cxprogram *CXProgram) ToCall() *CXExpression {
