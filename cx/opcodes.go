@@ -24,6 +24,11 @@ var (
     Operators []*ast.CXFunction
 )
 
+var (
+    OpcodeHandlers    []OpcodeHandler
+	OpcodeHandlers_V2 []OpcodeHandler_V2
+)
+
 // RegisterPackage registers a package on the CX standard library. This does not create a `CXPackage` structure,
 // it only tells the CX runtime that `pkgName` will exist by the time a CX program is run.
 func RegisterPackage(pkgName string) {
@@ -32,7 +37,7 @@ func RegisterPackage(pkgName string) {
 
 // GetOpCodeCount returns an op code that is available for usage on the CX standard library.
 func GetOpCodeCount() int {
-	return len(globals.OpcodeHandlers)
+	return len(OpcodeHandlers)
 }
 
 func IsOperator(opCode int) bool {
@@ -64,13 +69,13 @@ func Operator(code int, name string, handler OpcodeHandler_V2, inputs []*ast.CXA
 
 // Op ...
 func Op_V2(code int, name string, handler OpcodeHandler_V2, inputs []*ast.CXArgument, outputs []*ast.CXArgument) {
-	if code >= len(globals.OpcodeHandlers_V2) {
-		globals.OpcodeHandlers_V2 = append(globals.OpcodeHandlers_V2, make([]OpcodeHandler_V2, code+1)...)
+	if code >= len(OpcodeHandlers_V2) {
+		OpcodeHandlers_V2 = append(OpcodeHandlers_V2, make([]OpcodeHandler_V2, code+1)...)
 	}
-	if globals.OpcodeHandlers_V2[code] != nil {
+	if OpcodeHandlers_V2[code] != nil {
 		panic(fmt.Sprintf("duplicate opcode %d : '%s' width '%s'.\n", code, name, globals.OpNames[code]))
 	}
-	globals.OpcodeHandlers_V2[code] = handler
+	OpcodeHandlers_V2[code] = handler
 
 	globals.OpNames[code] = name
 	globals.OpCodes[name] = code
@@ -88,13 +93,13 @@ func Op_V2(code int, name string, handler OpcodeHandler_V2, inputs []*ast.CXArgu
 
 // Op ...
 func Op(code int, name string, handler OpcodeHandler, inputs []*ast.CXArgument, outputs []*ast.CXArgument) {
-	if code >= len(globals.OpcodeHandlers) {
-		globals.OpcodeHandlers = append(globals.OpcodeHandlers, make([]OpcodeHandler, code+1)...)
+	if code >= len(OpcodeHandlers) {
+		OpcodeHandlers = append(OpcodeHandlers, make([]OpcodeHandler, code+1)...)
 	}
-	if globals.OpcodeHandlers[code] != nil {
+	if OpcodeHandlers[code] != nil {
 		panic(fmt.Sprintf("duplicate opcode %d : '%s' width '%s'.\n", code, name, globals.OpNames[code]))
 	}
-	globals.OpcodeHandlers[code] = handler
+	OpcodeHandlers[code] = handler
 
 	globals.OpNames[code] = name
 	globals.OpCodes[name] = code
