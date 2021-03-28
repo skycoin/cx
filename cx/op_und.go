@@ -11,6 +11,7 @@ import (
 	"strings"
 )
 
+//TODO: Rename opSliceLen
 func opLen(expr *ast.CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	elt := ast.GetAssignmentElement(inp1)
@@ -43,6 +44,7 @@ func opLen(expr *ast.CXExpression, fp int) {
 	}
 }
 
+//TODO: Rename OpSliceAppend
 func opAppend(expr *ast.CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 
@@ -77,6 +79,7 @@ func opAppend(expr *ast.CXExpression, fp int) {
 	ast.WriteI32(outputSlicePointer, outputSliceOffset)
 }
 
+//TODO: Rename opSliceResize
 func opResize(expr *ast.CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 
@@ -89,6 +92,7 @@ func opResize(expr *ast.CXExpression, fp int) {
 	ast.WriteI32(outputSlicePointer, outputSliceOffset)
 }
 
+//TODO: Rename opSliceInsertElement
 func opInsert(expr *ast.CXExpression, fp int) {
 	inp1, inp2, inp3, out1 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Outputs[0]
 
@@ -110,6 +114,7 @@ func opInsert(expr *ast.CXExpression, fp int) {
 	}
 }
 
+//TODO: Rename opSliceRemoveElement
 func opRemove(expr *ast.CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 
@@ -122,6 +127,7 @@ func opRemove(expr *ast.CXExpression, fp int) {
 	ast.WriteI32(outputSlicePointer, outputSliceOffset)
 }
 
+//TODO: Rename opSliceCopy
 func opCopy(expr *ast.CXExpression, fp int) {
 	dstInput := expr.Inputs[0]
 	srcInput := expr.Inputs[1]
