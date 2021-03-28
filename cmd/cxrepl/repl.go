@@ -6,13 +6,14 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"github.com/skycoin/cx/cx/ast"
+	"github.com/skycoin/cx/cx/execute"
 	"io"
 	"os"
 	"runtime"
 	"strings"
 	"time"
 
-	cxcore "github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cxgo/actions"
 	"github.com/skycoin/cx/cxgo/cxgo"
 	"github.com/skycoin/cx/cxgo/cxgo0"
@@ -42,24 +43,28 @@ func unsafeEval(code string) (out string) {
 
 	actions.LineNo = 0
 
-	actions.PRGRM = cxcore.MakeProgram()
-	cxgo0.PRGRM0 = actions.PRGRM
+	actions.AST = ast.MakeProgram()
+	cxgo0.PRGRM0 = actions.AST
 
 	cxgo0.Parse(code)
 
-	actions.PRGRM = cxgo0.PRGRM0
+	actions.AST = cxgo0.PRGRM0
 
 	lexer = cxgo.NewLexer(bytes.NewBufferString(code))
 	cxgo.Parse(lexer)
 	//yyParse(lexer)
-	err := cxparser.AddInitFunction(actions.PRGRM)
+	err := cxparser.AddInitFunction(actions.AST)
 	if err != nil {
 		return fmt.Sprintf("%s", err)
 	}
-	if err := actions.PRGRM.RunCompiled(0, nil); err != nil {
-		actions.PRGRM = cxcore.MakeProgram()
+
+	//err = actions.AST.RunCompiled(0, nil);
+	err = execute.RunCompiled(actions.AST, 0, nil)
+	if err != nil {
+		actions.AST = ast.MakeProgram()
 		return fmt.Sprintf("%s", err)
 	}
+	//Tod: If error equals nill?
 
 	outC := make(chan string)
 	go func() {
@@ -72,7 +77,7 @@ func unsafeEval(code string) (out string) {
 	os.Stdout = old // restoring the real stdout
 	out = <-outC
 
-	actions.PRGRM = cxcore.MakeProgram()
+	actions.AST = ast.MakeProgram()
 	return out
 }
 
@@ -94,7 +99,7 @@ func Eval(code string) string {
 	case <-ch:
 		return result
 	case <-timer.C:
-		actions.PRGRM = cxcore.MakeProgram()
+		actions.AST = ast.MakeProgram()
 		return "Timed out."
 	}
 }
@@ -103,7 +108,7 @@ func Repl() {
 	fmt.Println("CX", VERSION)
 	fmt.Println("More information about CX is available at http://cx.skycoin.com/ and https://github.com/skycoin/cx/")
 
-	cxcore.InREPL = true
+	ast.InREPL = true
 
 	// fi := bufio.NewReader(os.NewFile(0, "stdin"))
 	fi := bufio.NewReader(os.Stdin)

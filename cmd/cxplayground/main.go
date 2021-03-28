@@ -26,7 +26,7 @@ func main() {
 	mux.HandleFunc("/playground/examples/code", playground.GetExampleFileContent)
 
 	mux.Handle("/", http.FileServer(http.Dir("./dist")))
-	mux.Handle("/program/", webapi.NewAPI("/program", actions.PRGRM))
+	mux.Handle("/program/", webapi.NewAPI("/program", actions.AST))
 	mux.HandleFunc("/eval", playground.RunProgram)
 
 	if listener, err := net.Listen("tcp", host); err == nil {

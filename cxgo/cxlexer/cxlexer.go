@@ -3,6 +3,9 @@ package cxlexer
 import (
 	"bufio"
 	"bytes"
+	"github.com/skycoin/cx/cx/ast"
+	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/globals"
 	"io"
 	"os"
 	"path/filepath"
@@ -11,10 +14,9 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cxgo/actions"
-	"github.com/skycoin/cx/cxgo/cxgo0"
 	"github.com/skycoin/cx/cxgo/cxgo"
+	"github.com/skycoin/cx/cxgo/cxgo0"
 	"github.com/skycoin/cx/cxgo/util/cxprof"
 )
 
@@ -82,7 +84,7 @@ func SetLogger(log logrus.FieldLogger) {
 // Step0 performs a first pass for the CX cxgo. Globals, packages and
 // custom types are added to `cxgo0.PRGRM0`.
 func Step0(srcStrs, srcNames []string) int {
-	var prePkg *cxcore.CXPackage
+	var prePkg *ast.CXPackage
 	parseErrs := 0
 
 	// 1. Identify all the packages and structs
@@ -127,7 +129,7 @@ func Step0(srcStrs, srcNames []string) int {
 }
 
 // idPkgAndStructs (1) identifies packages and structs contained within given file.
-func idPkgAndStructs(filename string, r io.Reader, prePkg **cxcore.CXPackage) {
+func idPkgAndStructs(filename string, r io.Reader, prePkg **ast.CXPackage) {
 	if lg.l1 != nil {
 		_, stopL1x := cxprof.StartProfile(lg.l1.WithField("src_file", filename))
 		defer stopL1x()
@@ -162,7 +164,7 @@ func idPkgAndStructs(filename string, r io.Reader, prePkg **cxcore.CXPackage) {
 			if match := re.pkgName.FindStringSubmatch(string(line)); match != nil {
 				if pkg, err := cxgo0.PRGRM0.GetPackage(match[len(match)-1]); err != nil {
 					// then it hasn't been added
-					newPkg := cxcore.MakePackage(match[len(match)-1])
+					newPkg := ast.MakePackage(match[len(match)-1])
 					cxgo0.PRGRM0.AddPackage(newPkg)
 					*prePkg = newPkg
 				} else {
@@ -182,10 +184,10 @@ func idPkgAndStructs(filename string, r io.Reader, prePkg **cxcore.CXPackage) {
 
 			if match := re.strName.FindStringSubmatch(string(line)); match != nil {
 				if prePkg == nil {
-					println(cxcore.CompilationError(filename, lineN), "No package defined")
+					println(ast.CompilationError(filename, lineN), "No package defined")
 				} else if _, err := cxgo0.PRGRM0.GetStruct(match[len(match)-1], (*prePkg).Name); err != nil {
 					// then it hasn't been added
-					strct := cxcore.MakeStruct(match[len(match)-1])
+					strct := ast.MakeStruct(match[len(match)-1])
 					(*prePkg).AddStruct(strct)
 				}
 			}
@@ -195,7 +197,7 @@ func idPkgAndStructs(filename string, r io.Reader, prePkg **cxcore.CXPackage) {
 
 // idGlobVars (2) identifies global variables contained within given file.
 // We also need to identify packages again, so we know which package to add
-func idGlobVars(filename string, r io.Reader, prePkg **cxcore.CXPackage) {
+func idGlobVars(filename string, r io.Reader, prePkg **ast.CXPackage) {
 	if lg.l2 != nil {
 		_, stopL2x := cxprof.StartProfile(lg.l2.WithField("src_file", filename))
 		defer stopL2x()
@@ -224,9 +226,9 @@ func idGlobVars(filename string, r io.Reader, prePkg **cxcore.CXPackage) {
 			if match := re.impName.FindStringSubmatch(string(line)); match != nil {
 				pkgName := match[len(match)-1]
 				// Checking if `pkgName` already exists and if it's not a standard library package.
-				if _, err := cxgo0.PRGRM0.GetPackage(pkgName); err != nil && !cxcore.IsCorePackage(pkgName) {
+				if _, err := cxgo0.PRGRM0.GetPackage(pkgName); err != nil && !constants.IsCorePackage(pkgName) {
 					// _, sourceCode, srcNames := ParseArgsForCX([]string{fmt.Sprintf("%s%s", SRCPATH, pkgName)}, false)
-					_, sourceCode, fileNames := cxcore.ParseArgsForCX([]string{filepath.Join(cxcore.SRCPATH, pkgName)}, false)
+					_, sourceCode, fileNames := ast.ParseArgsForCX([]string{filepath.Join(globals.SRCPATH, pkgName)}, false)
 					ParseSourceCode(sourceCode, fileNames) // TODO @evanlinjin: Check return value.
 				}
 			}
@@ -241,7 +243,7 @@ func idGlobVars(filename string, r io.Reader, prePkg **cxcore.CXPackage) {
 			if match := re.pkgName.FindStringSubmatch(string(line)); match != nil {
 				if pkg, err := cxgo0.PRGRM0.GetPackage(match[len(match)-1]); err != nil {
 					// then it hasn't been added
-					*prePkg = cxcore.MakePackage(match[len(match)-1])
+					*prePkg = ast.MakePackage(match[len(match)-1])
 					cxgo0.PRGRM0.AddPackage(*prePkg)
 				} else {
 					*prePkg = pkg
@@ -307,7 +309,7 @@ func idGlobVars(filename string, r io.Reader, prePkg **cxcore.CXPackage) {
 			if match := re.glName.FindStringSubmatch(string(line)); match != nil {
 				if _, err := (*prePkg).GetGlobal(match[len(match)-1]); err != nil {
 					// then it hasn't been added
-					arg := cxcore.MakeArgument(match[len(match)-1], "", 0)
+					arg := ast.MakeArgument(match[len(match)-1], "", 0)
 					arg.Offset = -1
 					arg.Package = *prePkg
 					(*prePkg).AddGlobal(arg)
@@ -333,9 +335,9 @@ func cxgo0Parse(filename string, src string) int {
 }
 
 // ParseSourceCode takes a group of files representing CX `sourceCode` and
-// parses it into CX program structures for `PRGRM`.
+// parses it into CX program structures for `AST`.
 func ParseSourceCode(sourceCode []*os.File, fileNames []string) int {
-	cxgo0.PRGRM0 = actions.PRGRM
+	cxgo0.PRGRM0 = actions.AST
 
 	// Copy the contents of the file pointers containing the CX source
 	// code into sourceCodeCopy
@@ -355,23 +357,23 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) int {
 		parseErrors = Step0(sourceCodeCopy, fileNames)
 	}
 
-	actions.PRGRM.SetCurrentCxProgram()
+	actions.AST.SetCurrentCxProgram()
 
-	actions.PRGRM = cxgo0.PRGRM0
-	if cxcore.FoundCompileErrors || parseErrors > 0 {
-		return cxcore.CX_COMPILATION_ERROR
+	actions.AST = cxgo0.PRGRM0
+	if globals.FoundCompileErrors || parseErrors > 0 {
+		return constants.CX_COMPILATION_ERROR
 	}
 
 	// Adding global variables `OS_ARGS` to the `os` (operating system)
 	// package.
-	if osPkg, err := actions.PRGRM.GetPackage(cxcore.OS_PKG); err == nil {
-		if _, err := osPkg.GetGlobal(cxcore.OS_ARGS); err != nil {
-			arg0 := cxcore.MakeArgument(cxcore.OS_ARGS, "", -1).AddType(cxcore.TypeNames[cxcore.TYPE_UNDEFINED])
+	if osPkg, err := actions.AST.GetPackage(constants.OS_PKG); err == nil {
+		if _, err := osPkg.GetGlobal(constants.OS_ARGS); err != nil {
+			arg0 := ast.MakeArgument(constants.OS_ARGS, "", -1).AddType(constants.TypeNames[constants.TYPE_UNDEFINED])
 			arg0.Package = osPkg
 
-			arg1 := cxcore.MakeArgument(cxcore.OS_ARGS, "", -1).AddType(cxcore.TypeNames[cxcore.TYPE_STR])
-			arg1 = actions.DeclarationSpecifiers(arg1, []int{0}, cxcore.DECL_BASIC)
-			arg1 = actions.DeclarationSpecifiers(arg1, []int{0}, cxcore.DECL_SLICE)
+			arg1 := ast.MakeArgument(constants.OS_ARGS, "", -1).AddType(constants.TypeNames[constants.TYPE_STR])
+			arg1 = actions.DeclarationSpecifiers(arg1, []int{0}, constants.DECL_BASIC)
+			arg1 = actions.DeclarationSpecifiers(arg1, []int{0}, constants.DECL_SLICE)
 
 			actions.DeclareGlobalInPackage(osPkg, arg0, arg1, nil, false)
 		}
@@ -403,8 +405,8 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) int {
 		}()
 	}
 
-	if cxcore.FoundCompileErrors || parseErrors > 0 {
-		return cxcore.CX_COMPILATION_ERROR
+	if globals.FoundCompileErrors || parseErrors > 0 {
+		return constants.CX_COMPILATION_ERROR
 	}
 
 	return 0

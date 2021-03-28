@@ -1,6 +1,8 @@
 package actions
 
-import cxcore "github.com/skycoin/cx/cx"
+import (
+	"github.com/skycoin/cx/cx/ast"
+)
 
 // DefineNewScope marks the first and last expressions to define the boundaries of a scope.
 
@@ -23,7 +25,7 @@ const (
 	SCOPE_REM           // 2
 )
 
-func DefineNewScope(exprs []*cxcore.CXExpression) {
+func DefineNewScope(exprs []*ast.CXExpression) {
 	if len(exprs) > 1 {
 		// initialize new scope
 		exprs[0].ScopeOperation = SCOPE_NEW

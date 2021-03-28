@@ -9,9 +9,12 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/skycoin/cx/cx/ast"
+	"github.com/skycoin/cx/cx/constants"
+	globals2 "github.com/skycoin/cx/cx/globals"
+
 	"github.com/skycoin/cx/cxgo/globals"
 
-	cxcore "github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cxgo/actions"
 	"github.com/skycoin/cx/cxgo/cxgo"
 	"github.com/skycoin/cx/cxgo/cxgo0"
@@ -19,11 +22,11 @@ import (
 )
 
 // ParseSourceCode takes a group of files representing CX `sourceCode` and
-// parses it into CX program structures for `PRGRM`.
+// parses it into CX program structures for `AST`.
 func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 
 	//local
-	cxgo0.PRGRM0 = actions.PRGRM
+	cxgo0.PRGRM0 = actions.AST
 
 	programsourceCode := make([]string, len(sourceCode))
 	for i, source := range sourceCode {
@@ -46,24 +49,24 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 	}
 
 	//package level program
-	actions.PRGRM.SetCurrentCxProgram()
+	actions.AST.SetCurrentCxProgram()
 
-	actions.PRGRM = cxgo0.PRGRM0
+	actions.AST = cxgo0.PRGRM0
 
-	if cxcore.FoundCompileErrors || parseErrors > 0 {
-		profiling.CleanupAndExit(cxcore.CX_COMPILATION_ERROR)
+	if globals2.FoundCompileErrors || parseErrors > 0 {
+		profiling.CleanupAndExit(constants.CX_COMPILATION_ERROR)
 	}
 
 	// Adding global variables `OS_ARGS` to the `os` (operating system)
 	// package.
-	if osPkg, err := actions.PRGRM.GetPackage(cxcore.OS_PKG); err == nil {
-		if _, err := osPkg.GetGlobal(cxcore.OS_ARGS); err != nil {
-			arg0 := cxcore.MakeArgument(cxcore.OS_ARGS, "", -1).AddType(cxcore.TypeNames[cxcore.TYPE_UNDEFINED])
+	if osPkg, err := actions.AST.GetPackage(constants.OS_PKG); err == nil {
+		if _, err := osPkg.GetGlobal(constants.OS_ARGS); err != nil {
+			arg0 := ast.MakeArgument(constants.OS_ARGS, "", -1).AddType(constants.TypeNames[constants.TYPE_UNDEFINED])
 			arg0.Package = osPkg
 
-			arg1 := cxcore.MakeArgument(cxcore.OS_ARGS, "", -1).AddType(cxcore.TypeNames[cxcore.TYPE_STR])
-			arg1 = actions.DeclarationSpecifiers(arg1, []int{0}, cxcore.DECL_BASIC)
-			arg1 = actions.DeclarationSpecifiers(arg1, []int{0}, cxcore.DECL_SLICE)
+			arg1 := ast.MakeArgument(constants.OS_ARGS, "", -1).AddType(constants.TypeNames[constants.TYPE_STR])
+			arg1 = actions.DeclarationSpecifiers(arg1, []int{0}, constants.DECL_BASIC)
+			arg1 = actions.DeclarationSpecifiers(arg1, []int{0}, constants.DECL_SLICE)
 
 			actions.DeclareGlobalInPackage(osPkg, arg0, arg1, nil, false)
 		}
@@ -87,8 +90,8 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 	}
 	profiling.StopProfile("4. parse")
 
-	if cxcore.FoundCompileErrors || parseErrors > 0 {
-		profiling.CleanupAndExit(cxcore.CX_COMPILATION_ERROR)
+	if globals2.FoundCompileErrors || parseErrors > 0 {
+		profiling.CleanupAndExit(constants.CX_COMPILATION_ERROR)
 	}
 }
 
@@ -104,7 +107,7 @@ func lexer(programSourceCode, programFileNames []string) int {
 
 	fmt.Println(programFileNames)
 
-	var prePkg *cxcore.CXPackage
+	var prePkg *ast.CXPackage
 	parseErrors := 0
 
 	re := newRegulaEexpression()
@@ -131,25 +134,7 @@ func lexer(programSourceCode, programFileNames []string) int {
 	return parseErrors
 }
 
-func AddInitFunction(prgrm *cxcore.CXProgram) error {
-	mainPkg, err := prgrm.GetPackage(cxcore.MAIN_PKG)
-	if err != nil {
-		return err
-	}
-
-	initFn := cxcore.MakeFunction(cxcore.SYS_INIT_FUNC, actions.CurrentFile, actions.LineNo)
-	mainPkg.AddFunction(initFn)
-
-	//Init Expressions
-	actions.FunctionDeclaration(initFn, nil, nil, globals.SysInitExprs)
-
-	if _, err := mainPkg.SelectFunction(cxcore.MAIN_FUNC); err != nil {
-		return err
-	}
-	return nil
-}
-
-func lexstruct(programSourceCode []string, programFileNames []string, prePkg *cxcore.CXPackage, re RegularExpression) {
+func lexstruct(programSourceCode []string, programFileNames []string, prePkg *ast.CXPackage, re RegularExpression) {
 
 	// 1. Identify all the packages and structs
 	for srcI, srcStr := range programSourceCode {
@@ -194,7 +179,7 @@ func lexstruct(programSourceCode []string, programFileNames []string, prePkg *cx
 				if match := re.rePackageName.FindStringSubmatch(string(line)); match != nil {
 					if pkg, err := cxgo0.PRGRM0.GetPackage(match[len(match)-1]); err != nil {
 						// then it hasn't been added
-						newPkg := cxcore.MakePackage(match[len(match)-1])
+						newPkg := ast.MakePackage(match[len(match)-1])
 						cxgo0.PRGRM0.AddPackage(newPkg)
 						prePkg = newPkg
 					} else {
@@ -214,11 +199,11 @@ func lexstruct(programSourceCode []string, programFileNames []string, prePkg *cx
 
 				if match := re.reStructName.FindStringSubmatch(string(line)); match != nil {
 					if prePkg == nil {
-						println(cxcore.CompilationError(srcName, lineno),
+						println(ast.CompilationError(srcName, lineno),
 							"No package defined")
 					} else if _, err := cxgo0.PRGRM0.GetStruct(match[len(match)-1], prePkg.Name); err != nil {
 						// then it hasn't been added
-						strct := cxcore.MakeStruct(match[len(match)-1])
+						strct := ast.MakeStruct(match[len(match)-1])
 						prePkg.AddStruct(strct)
 					}
 				}
@@ -230,7 +215,7 @@ func lexstruct(programSourceCode []string, programFileNames []string, prePkg *cx
 
 }
 
-func lexglobal(programSourceCode []string, programFileNames []string, prePkg *cxcore.CXPackage, re RegularExpression) {
+func lexglobal(programSourceCode []string, programFileNames []string, prePkg *ast.CXPackage, re RegularExpression) {
 
 	profiling.StartProfile("2. globals")
 	// 2. Identify all global variables
@@ -278,9 +263,9 @@ func lexglobal(programSourceCode []string, programFileNames []string, prePkg *cx
 				if match := re.reImportName.FindStringSubmatch(string(line)); match != nil {
 					pkgName := match[len(match)-1]
 					// Checking if `pkgName` already exists and if it's not a standard library package.
-					if _, err := cxgo0.PRGRM0.GetPackage(pkgName); err != nil && !cxcore.IsCorePackage(pkgName) {
+					if _, err := cxgo0.PRGRM0.GetPackage(pkgName); err != nil && !constants.IsCorePackage(pkgName) {
 						// _, sourceCode, srcNames := ParseArgsForCX([]string{fmt.Sprintf("%s%s", SRCPATH, pkgName)}, false)
-						_, sourceCode, fileNames := cxcore.ParseArgsForCX([]string{filepath.Join(cxcore.SRCPATH, pkgName)}, false)
+						_, sourceCode, fileNames := ast.ParseArgsForCX([]string{filepath.Join(globals2.SRCPATH, pkgName)}, false)
 						ParseSourceCode(sourceCode, fileNames)
 					}
 				}
@@ -298,7 +283,7 @@ func lexglobal(programSourceCode []string, programFileNames []string, prePkg *cx
 				if match := re.rePackageName.FindStringSubmatch(string(line)); match != nil {
 					if pkg, err := cxgo0.PRGRM0.GetPackage(match[len(match)-1]); err != nil {
 						// then it hasn't been added
-						prePkg = cxcore.MakePackage(match[len(match)-1])
+						prePkg = ast.MakePackage(match[len(match)-1])
 						cxgo0.PRGRM0.AddPackage(prePkg)
 					} else {
 						prePkg = pkg
@@ -369,7 +354,7 @@ func lexglobal(programSourceCode []string, programFileNames []string, prePkg *cx
 				if match := re.reGlobalName.FindStringSubmatch(string(line)); match != nil {
 					if _, err := prePkg.GetGlobal(match[len(match)-1]); err != nil {
 						// then it hasn't been added
-						arg := cxcore.MakeArgument(match[len(match)-1], "", 0)
+						arg := ast.MakeArgument(match[len(match)-1], "", 0)
 						arg.Offset = -1
 						arg.Package = prePkg
 						prePkg.AddGlobal(arg)
@@ -380,4 +365,23 @@ func lexglobal(programSourceCode []string, programFileNames []string, prePkg *cx
 		profiling.StopProfile(programFileNames[i])
 	}
 	profiling.StopProfile("2. globals")
+}
+
+func AddInitFunction(program *ast.CXProgram) error {
+
+	mainPackage, err := program.GetPackage(constants.MAIN_PKG)
+	if err != nil {
+		return err
+	}
+
+	initFn := ast.MakeFunction(constants.SYS_INIT_FUNC, actions.CurrentFile, actions.LineNo)
+	mainPackage.AddFunction(initFn)
+
+	//Init Expressions
+	actions.FunctionDeclaration(initFn, nil, nil, globals.SysInitExprs)
+
+	if _, err := mainPackage.SelectFunction(constants.MAIN_FUNC); err != nil {
+		return err
+	}
+	return nil
 }

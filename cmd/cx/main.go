@@ -2,9 +2,13 @@ package main
 
 import (
 	"fmt"
-
 	repl "github.com/skycoin/cx/cmd/cxrepl"
 	cxcore "github.com/skycoin/cx/cx"
+	"github.com/skycoin/cx/cx/ast"
+	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/execute"
+	"github.com/skycoin/cx/cx/globals"
+	"github.com/skycoin/cx/cx/util"
 	"github.com/skycoin/cx/cxgo/actions"
 	"github.com/skycoin/cx/cxgo/cxgo"
 	"github.com/skycoin/cx/cxgo/cxparser"
@@ -79,28 +83,28 @@ func Run(args []string) {
 	}
 
 	if options.initialHeap != "" {
-		cxcore.INIT_HEAP_SIZE = parseMemoryString(options.initialHeap)
+		constants.INIT_HEAP_SIZE = parseMemoryString(options.initialHeap)
 	}
 	if options.maxHeap != "" {
-		cxcore.MAX_HEAP_SIZE = parseMemoryString(options.maxHeap)
-		if cxcore.MAX_HEAP_SIZE < cxcore.INIT_HEAP_SIZE {
+		constants.MAX_HEAP_SIZE = parseMemoryString(options.maxHeap)
+		if constants.MAX_HEAP_SIZE < constants.INIT_HEAP_SIZE {
 			// Then MAX_HEAP_SIZE overrides INIT_HEAP_SIZE's value.
-			cxcore.INIT_HEAP_SIZE = cxcore.MAX_HEAP_SIZE
+			constants.INIT_HEAP_SIZE = constants.MAX_HEAP_SIZE
 		}
 	}
 	if options.stackSize != "" {
-		cxcore.STACK_SIZE = parseMemoryString(options.stackSize)
-		actions.DataOffset = cxcore.STACK_SIZE
+		constants.STACK_SIZE = parseMemoryString(options.stackSize)
+		actions.DataOffset = constants.STACK_SIZE
 	}
 	if options.minHeapFreeRatio != float64(0) {
-		cxcore.MIN_HEAP_FREE_RATIO = float32(options.minHeapFreeRatio)
+		constants.MIN_HEAP_FREE_RATIO = float32(options.minHeapFreeRatio)
 	}
 	if options.maxHeapFreeRatio != float64(0) {
-		cxcore.MAX_HEAP_FREE_RATIO = float32(options.maxHeapFreeRatio)
+		constants.MAX_HEAP_FREE_RATIO = float32(options.maxHeapFreeRatio)
 	}
 
 	// options, file pointers, filenames
-	cxArgs, sourceCode, fileNames := cxcore.ParseArgsForCX(commandLine.Args(), true)
+	cxArgs, sourceCode, fileNames := ast.ParseArgsForCX(commandLine.Args(), true)
 
 	fmt.Println("fileNames :", fileNames)
 	//	fmt.Print("sourceCode :", sourceCode, "\n")
@@ -132,10 +136,10 @@ func Run(args []string) {
 }
 
 // initMainPkg adds a `main` package with an empty `main` function to `prgrm`.
-func initMainPkg(prgrm *cxcore.CXProgram) {
-	mod := cxcore.MakePackage(cxcore.MAIN_PKG)
+func initMainPkg(prgrm *ast.CXProgram) {
+	mod := ast.MakePackage(constants.MAIN_PKG)
 	prgrm.AddPackage(mod)
-	fn := cxcore.MakeFunction(cxcore.MAIN_FUNC, actions.CurrentFile, actions.LineNo)
+	fn := ast.MakeFunction(constants.MAIN_FUNC, actions.CurrentFile, actions.LineNo)
 	mod.AddFunction(fn)
 }
 
@@ -152,7 +156,7 @@ func printTokenize(options cxCmdFlags, fileNames []string) {
 		if len(fileNames) > 1 {
 			fmt.Fprintln(os.Stderr, "Multiple source files detected. Ignoring all except", sourceFilename)
 		}
-		r, err = cxcore.CXOpenFile(sourceFilename)
+		r, err = util.CXOpenFile(sourceFilename)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "ProgramError reading:", sourceFilename, err)
 			return
@@ -164,7 +168,7 @@ func printTokenize(options cxCmdFlags, fileNames []string) {
 		w = os.Stdout
 	} else {
 		tokenFilename := options.compileOutput
-		w, err = cxcore.CXCreateFile(tokenFilename)
+		w, err = util.CXCreateFile(tokenFilename)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "ProgramError writing:", tokenFilename, err)
 			return
@@ -185,12 +189,15 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 	profiling.StartProfile("parse")
 	defer profiling.StopProfile("parse")
 
-	actions.PRGRM = cxcore.MakeProgram()
-	corePkgsPrgrm, err := cxcore.GetCurrentCxProgram()
-	if err != nil {
-		panic(err)
+	actions.AST = ast.MakeProgram()
+
+	//corePkgsPrgrm, err := cxcore.GetCurrentCxProgram()
+	var corePkgsPrgrm *ast.CXProgram = ast.PROGRAM
+
+	if corePkgsPrgrm == nil {
+		panic("CxProgram is nil")
 	}
-	actions.PRGRM.Packages = corePkgsPrgrm.Packages
+	actions.AST.Packages = corePkgsPrgrm.Packages
 
 	// var bcPrgrm *CXProgram
 	//var sPrgrm []byte
@@ -210,27 +217,27 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 	//globals.CxProgramPath = determineWorkDir(sourceCode[0].Name())
 	//globals2.SetWorkingDir(sourceCode[0].Name())
 
-	// Checking if a main package exists. If not, create and add it to `PRGRM`.
-	if _, err := actions.PRGRM.GetFunction(cxcore.MAIN_FUNC, cxcore.MAIN_PKG); err != nil {
+	// Checking if a main package exists. If not, create and add it to `AST`.
+	if _, err := actions.AST.GetFunction(constants.MAIN_FUNC, constants.MAIN_PKG); err != nil {
 		panic("error")
 	}
-	initMainPkg(actions.PRGRM)
+	initMainPkg(actions.AST)
 
 	// Setting what function to start in if using the REPL.
-	repl.ReplTargetFn = cxcore.MAIN_FUNC
+	repl.ReplTargetFn = constants.MAIN_FUNC
 
 	// Adding *init function that initializes all the global variables.
-	err = cxparser.AddInitFunction(actions.PRGRM)
+	err := cxparser.AddInitFunction(actions.AST)
 	if err != nil {
-		return false
+		return false //why return false, instead of panicing
 	}
 
 	actions.LineNo = 0
 
-	if cxcore.FoundCompileErrors {
+	if globals.FoundCompileErrors {
 		//cleanupAndExit(cxcore.CX_COMPILATION_ERROR)
 		profiling.StopCPUProfile(profile)
-		exitCode := cxcore.CX_COMPILATION_ERROR
+		exitCode := constants.CX_COMPILATION_ERROR
 		os.Exit(exitCode)
 
 	}
@@ -243,19 +250,20 @@ func runProgram(options cxCmdFlags, cxArgs []string, sourceCode []*os.File) {
 	defer profiling.StopProfile("run")
 
 	if options.replMode || len(sourceCode) == 0 {
-		actions.PRGRM.SetCurrentCxProgram()
+		actions.AST.SetCurrentCxProgram()
 		repl.Repl()
 		return
 	}
 
 	// Normal run of a CX program.
-	err := actions.PRGRM.RunCompiled(0, cxArgs)
+	//err := actions.AST.RunCompiled(0, cxArgs)
+	err := execute.RunCompiled(actions.AST, 0, cxArgs)
 	if err != nil {
 		panic(err)
 	}
 
 	if cxcore.AssertFailed() {
-		os.Exit(cxcore.CX_ASSERT)
+		os.Exit(constants.CX_ASSERT)
 	}
 }
 
@@ -264,16 +272,16 @@ func printProgramAST(options cxCmdFlags, cxArgs []string, sourceCode []*os.File)
 	defer profiling.StopProfile("run")
 
 	if options.replMode || len(sourceCode) == 0 {
-		actions.PRGRM.SetCurrentCxProgram()
+		actions.AST.SetCurrentCxProgram()
 		repl.Repl()
 		return
 	}
 
 	// Print CX program.
-	actions.PRGRM.PrintProgram()
+	actions.AST.PrintProgram()
 
 	if cxcore.AssertFailed() {
-		os.Exit(cxcore.CX_ASSERT)
+		os.Exit(constants.CX_ASSERT)
 	}
 }
 
@@ -351,9 +359,9 @@ func GetCXPath(options cxCmdFlags) {
 
 		CXPATH = usr.HomeDir + "/cx/"
 	}
-	cxcore.BINPATH = filepath.Join(CXPATH, "bin/")
-	cxcore.PKGPATH = filepath.Join(CXPATH, "pkg/")
-	cxcore.SRCPATH = filepath.Join(CXPATH, "src/")
+	globals.BINPATH = filepath.Join(CXPATH, "bin/")
+	globals.PKGPATH = filepath.Join(CXPATH, "pkg/")
+	globals.SRCPATH = filepath.Join(CXPATH, "src/")
 	//why would we create directories on executing every CX program?
 	//directory creation should be on installation
 	//CreateCxDirectories(CXPATH)

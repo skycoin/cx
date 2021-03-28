@@ -2,6 +2,8 @@ package cxcore
 
 import (
 	"fmt"
+	"github.com/skycoin/cx/cx/ast"
+	"github.com/skycoin/cx/cx/constants"
 )
 
 var assertSuccess = true
@@ -11,16 +13,16 @@ func AssertFailed() bool {
 	return !assertSuccess
 }
 
-func assert(expr *CXExpression, fp int) (same bool) {
+func assert(expr *ast.CXExpression, fp int) (same bool) {
 	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
 	var byts1, byts2 []byte
 
-	if inp1.Type == TYPE_STR {
-		byts1 = []byte(ReadStr(fp, inp1))
-		byts2 = []byte(ReadStr(fp, inp2))
+	if inp1.Type == constants.TYPE_STR {
+		byts1 = []byte(ast.ReadStr(fp, inp1))
+		byts2 = []byte(ast.ReadStr(fp, inp2))
 	} else {
-		byts1 = ReadMemory(GetFinalOffset(fp, inp1), inp1)
-		byts2 = ReadMemory(GetFinalOffset(fp, inp2), inp2)
+		byts1 = ast.ReadMemory(ast.GetFinalOffset(fp, inp1), inp1)
+		byts2 = ast.ReadMemory(ast.GetFinalOffset(fp, inp2), inp2)
 	}
 
 	same = true
@@ -42,7 +44,7 @@ func assert(expr *CXExpression, fp int) (same bool) {
 		}
 	}
 
-	message := ReadStr(fp, inp3)
+	message := ast.ReadStr(fp, inp3)
 
 	if !same {
 		if message != "" {
@@ -56,39 +58,39 @@ func assert(expr *CXExpression, fp int) (same bool) {
 	return same
 }
 
-func opAssertValue(expr *CXExpression, fp int) {
+func opAssertValue(expr *ast.CXExpression, fp int) {
 	same := assert(expr, fp)
-	WriteBool(GetFinalOffset(fp, expr.Outputs[0]), same)
+	ast.WriteBool(ast.GetFinalOffset(fp, expr.Outputs[0]), same)
 }
 
-func opTest(expr *CXExpression, fp int) {
+func opTest(expr *ast.CXExpression, fp int) {
 	assert(expr, fp)
 }
 
-func opPanic(expr *CXExpression, fp int) {
+func opPanic(expr *ast.CXExpression, fp int) {
 	if !assert(expr, fp) {
-		panic(CX_ASSERT)
+		panic(constants.CX_ASSERT)
 	}
 }
 
 // panicIf/panicIfNot implementation
-func panicIf(expr *CXExpression, fp int, condition bool) {
-	if ReadBool(fp, expr.Inputs[0]) == condition {
-		fmt.Printf("%s : %d, %s\n", expr.FileName, expr.FileLine, ReadStr(fp, expr.Inputs[1]))
-		panic(CX_ASSERT)
+func panicIf(expr *ast.CXExpression, fp int, condition bool) {
+	if ast.ReadBool(fp, expr.Inputs[0]) == condition {
+		fmt.Printf("%s : %d, %s\n", expr.FileName, expr.FileLine, ast.ReadStr(fp, expr.Inputs[1]))
+		panic(constants.CX_ASSERT)
 	}
 }
 
 // panic with CX_ASSERT exit code if condition is true
-func opPanicIf(expr *CXExpression, fp int) {
+func opPanicIf(expr *ast.CXExpression, fp int) {
 	panicIf(expr, fp, true)
 }
 
 // panic with CX_ASSERT exit code if condition is false
-func opPanicIfNot(expr *CXExpression, fp int) {
+func opPanicIfNot(expr *ast.CXExpression, fp int) {
 	panicIf(expr, fp, false)
 }
 
-func opStrError(expr *CXExpression, fp int) {
-	WriteString(fp, ErrorString(int(ReadI32(fp, expr.Inputs[0]))), expr.Outputs[0])
+func opStrError(expr *ast.CXExpression, fp int) {
+	ast.WriteString(fp, ast.ErrorString(int(ast.ReadI32(fp, expr.Inputs[0]))), expr.Outputs[0])
 }

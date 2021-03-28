@@ -2,14 +2,13 @@ package cxprof
 
 import (
 	"fmt"
+	"github.com/skycoin/cx/cx/util"
 	"os"
 	"runtime"
 	"runtime/pprof"
 	"time"
 
 	"github.com/sirupsen/logrus"
-
-	"github.com/skycoin/cx/cx"
 )
 
 type StopFunc func() time.Duration
@@ -37,7 +36,7 @@ func StartCPUProfile(name string, profRate int) (func() error, error) {
 		return func() error { return nil }, nil
 	}
 
-	f, err := cxcore.CXCreateFile(fmt.Sprintf("%s_%s_cpu.pprof", os.Args[0], name))
+	f, err := util.CXCreateFile(fmt.Sprintf("%s_%s_cpu.pprof", os.Args[0], name))
 	if err != nil {
 		return func() error { return nil }, err
 	}
@@ -61,7 +60,7 @@ func StartCPUProfile(name string, profRate int) (func() error, error) {
 
 func DumpMemProfile(name string) (err error) {
 	var f *os.File
-	if f, err = cxcore.CXCreateFile(fmt.Sprintf("%s_%s_mem.pprof", os.Args[0], name)); err != nil {
+	if f, err = util.CXCreateFile(fmt.Sprintf("%s_%s_mem.pprof", os.Args[0], name)); err != nil {
 		return fmt.Errorf("failed to create MEM pprof file: %w", err)
 	}
 

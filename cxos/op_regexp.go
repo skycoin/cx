@@ -3,44 +3,44 @@
 package cxos
 
 import (
+	"github.com/skycoin/cx/cx/ast"
+	"github.com/skycoin/cx/cx/constants"
 	"regexp"
 
 	"github.com/jinzhu/copier"
-
-	"github.com/skycoin/cx/cx"
 )
 
 var regexps map[string]*regexp.Regexp = make(map[string]*regexp.Regexp, 0)
 
 func init() {
-	regexpPkg := cxcore.MakePackage("regexp")
-	regexpStrct := cxcore.MakeStruct("Regexp")
+	regexpPkg := ast.MakePackage("regexp")
+	regexpStrct := ast.MakeStruct("Regexp")
 
-	regexpStrct.AddField(cxcore.MakeArgument("exp", "", 0).AddType(cxcore.TypeNames[cxcore.TYPE_STR]).AddPackage(regexpPkg))
+	regexpStrct.AddField(ast.MakeArgument("exp", "", 0).AddType(constants.TypeNames[constants.TYPE_STR]).AddPackage(regexpPkg))
 
 	regexpPkg.AddStruct(regexpStrct)
 
-	cxcore.PROGRAM.AddPackage(regexpPkg)
+	ast.PROGRAM.AddPackage(regexpPkg)
 }
 
 // regexpCompile is a helper function for `opRegexpMustCompile` and
 // `opRegexpCompile`. `regexpCompile` compiles a `regexp.Regexp` structure
 // and adds it to global `regexps`. It also writes CX structure `regexp.Regexp`.
-func regexpCompile(expr *cxcore.CXExpression, fp int) error {
+func regexpCompile(expr *ast.CXExpression, fp int) error {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 
 	// Extracting regular expression to work with, contained in `inp1`.
-	exp := cxcore.ReadStr(fp, inp1)
+	exp := ast.ReadStr(fp, inp1)
 
 	// Output structure `Regexp`.
-	reg := cxcore.CXArgument{}
+	reg := ast.CXArgument{}
 	err := copier.Copy(&reg, out1)
 	if err != nil {
 		panic(err)
 	}
 
 	// Extracting CX `regexp` package.
-	regexpPkg, err := cxcore.PROGRAM.GetPackage("regexp")
+	regexpPkg, err := ast.PROGRAM.GetPackage("regexp")
 	if err != nil {
 		panic(err)
 	}
@@ -63,9 +63,9 @@ func regexpCompile(expr *cxcore.CXExpression, fp int) error {
 	// TODO: I don't know what would happen if the user uses the same regex
 	// in two parts of a CX program. They'll be using the same instance
 	// internally.
-	accessExp := []*cxcore.CXArgument{expFld}
+	accessExp := []*ast.CXArgument{expFld}
 	reg.Fields = accessExp
-	cxcore.WriteString(fp, exp, &reg)
+	ast.WriteString(fp, exp, &reg)
 
 	// Storing `Regexp` instance.
 	regexps[exp], err = regexp.Compile(exp)
@@ -74,18 +74,18 @@ func regexpCompile(expr *cxcore.CXExpression, fp int) error {
 }
 
 // opRegexpMustCompile is a wrapper for golang's `regexp`'s `MustCompile`.
-func opRegexpMustCompile(expr *cxcore.CXExpression, fp int) {
+func opRegexpMustCompile(expr *ast.CXExpression, fp int) {
 	err := regexpCompile(expr, fp)
 
 	if err != nil {
 		println(err.Error())
-		panic(cxcore.CX_RUNTIME_ERROR)
+		panic(constants.CX_RUNTIME_ERROR)
 	}
 
 }
 
 // opRegexpCompile is a wrapper for golang's `regexp`'s `MustCompile`.
-func opRegexpCompile(expr *cxcore.CXExpression, fp int) {
+func opRegexpCompile(expr *ast.CXExpression, fp int) {
 	// We're only interested in `out2`, which represents the
 	// returned error.
 	out2 := expr.Outputs[1]
@@ -94,23 +94,23 @@ func opRegexpCompile(expr *cxcore.CXExpression, fp int) {
 
 	// Writing error message to `out2`.
 	if err != nil {
-		cxcore.WriteString(fp, err.Error(), out2)
+		ast.WriteString(fp, err.Error(), out2)
 	}
 }
 
 // opRegexpCompile is a wrapper for golang's `regexp`'s `MustCompile`.
-func opRegexpFind(expr *cxcore.CXExpression, fp int) {
+func opRegexpFind(expr *ast.CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 
 	// Output structure `Regexp`.
-	reg := cxcore.CXArgument{}
+	reg := ast.CXArgument{}
 	err := copier.Copy(&reg, inp1)
 	if err != nil {
 		panic(err)
 	}
 
 	// Extracting CX `regexp` package.
-	regexpPkg, err := cxcore.PROGRAM.GetPackage("regexp")
+	regexpPkg, err := ast.PROGRAM.GetPackage("regexp")
 	if err != nil {
 		panic(err)
 	}
@@ -128,10 +128,10 @@ func opRegexpFind(expr *cxcore.CXExpression, fp int) {
 	}
 
 	// Getting corresponding `Regexp` instance.
-	accessExp := []*cxcore.CXArgument{expFld}
+	accessExp := []*ast.CXArgument{expFld}
 	reg.Fields = accessExp
-	exp := cxcore.ReadStr(fp, &reg)
+	exp := ast.ReadStr(fp, &reg)
 	r := regexps[exp]
 
-	cxcore.WriteString(fp, string(r.Find([]byte(cxcore.ReadStr(fp, inp2)))), out1)
+	ast.WriteString(fp, string(r.Find([]byte(ast.ReadStr(fp, inp2)))), out1)
 }
