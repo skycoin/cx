@@ -12,7 +12,7 @@ var (
 	OpCodes = map[string]int{}
 
 	// Versions ...
-	OpVersions = map[int]int{}
+	//OpVersions = map[int]int{}
 )
 
 var (

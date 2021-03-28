@@ -37,7 +37,7 @@ func Op_V2(code int, name string, handler OpcodeHandler_V2, inputs []*CXArgument
 
 	OpNames[code] = name
 	OpCodes[name] = code
-	OpVersions[code] = 2
+	//OpVersions[code] = 2
 
 	if inputs == nil {
 		inputs = []*CXArgument{}

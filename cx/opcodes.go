@@ -24,7 +24,7 @@ func Op(code int, name string, handler ast.OpcodeHandler, inputs []*ast.CXArgume
 
 	ast.OpNames[code] = name
 	ast.OpCodes[name] = code
-	ast.OpVersions[code] = 1
+	//ast.OpVersions[code] = 1
 	if inputs == nil {
 		inputs = []*ast.CXArgument{}
 	}
