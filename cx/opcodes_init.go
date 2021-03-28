@@ -9,7 +9,7 @@ import (
 //TODO: dont need opcode for non-atomic types
 //TODO: Compiler needs to substitute for types and specify earlier
 
-func init() {
+func LoadOpCodeTables() {
 	httpPkg, err := ast.PROGRAM.GetPackage("http")
 	if err != nil {
 		panic(err)
