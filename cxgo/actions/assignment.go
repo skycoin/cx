@@ -144,7 +144,7 @@ func Assignment(to []*ast.CXExpression, assignOp string, from []*ast.CXExpressio
 
 			sym = ast.MakeArgument(to[0].Outputs[0].Name, CurrentFile, LineNo).AddType(constants.TypeNames[outTypeArg.Type])
 
-			if from[idx].IsArrayLiteral {
+			if from[idx].IsArrayLiteral() {
 				sym.Size = from[idx].Inputs[0].Size
 				sym.TotalSize = from[idx].Inputs[0].TotalSize
 				sym.Lengths = from[idx].Inputs[0].Lengths

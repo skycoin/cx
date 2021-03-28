@@ -261,7 +261,7 @@ func FunctionCall(exprs []*ast.CXExpression, args []*ast.CXExpression) []*ast.CX
 				inpExpr.AddOutput(out)
 				expr.AddInput(out)
 			}
-			if len(inpExpr.Outputs) > 0 && inpExpr.IsArrayLiteral {
+			if len(inpExpr.Outputs) > 0 && inpExpr.IsArrayLiteral() {
 				expr.AddInput(inpExpr.Outputs[0])
 			}
 			nestedExprs = append(nestedExprs, inpExpr)

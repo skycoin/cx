@@ -503,12 +503,12 @@ struct_literal_fields:
 array_literal_expression_list:
                 assignment_expression
                 {
-			$1[len($1) - 1].IsArrayLiteral = true
+			$1[len($1) - 1].ExpressionType = ast.CXEXPR_ARRAY_LITERAL
 			$$ = $1
                 }
 	|       array_literal_expression_list COMMA assignment_expression
                 {
-			$3[len($3) - 1].IsArrayLiteral = true
+			$3[len($3) - 1].ExpressionType = ast.CXEXPR_ARRAY_LITERAL
 			$$ = append($1, $3...)
                 }
                 ;
@@ -564,13 +564,13 @@ array_literal_expression:
 slice_literal_expression_list:
                 assignment_expression
                 {
-			$1[len($1) - 1].IsArrayLiteral = true
+			$1[len($1) - 1].ExpressionType = ast.CXEXPR_ARRAY_LITERAL
 			$$ = $1
                 }
 	|       slice_literal_expression_list COMMA assignment_expression
                 {
 
-			$3[len($3) - 1].IsArrayLiteral = true
+			$3[len($3) - 1].ExpressionType = ast.CXEXPR_ARRAY_LITERAL
 			$$ = append($1, $3...)
                 }
                 ;
@@ -601,7 +601,7 @@ slice_literal_expression:
                                     }
 			}
 	
-			$3[len($3)-1].IsArrayLiteral = true
+			$3[len($3)-1].ExpressionType = ast.CXEXPR_ARRAY_LITERAL
 			$$ = $3
                 }
                 ;
@@ -665,7 +665,7 @@ infer_clauses:
 			var exprs []*cxcore.CXExpression
 			for _, str := range $1 {
 				expr := actions.WritePrimary(cxcore.TYPE_AFF, encoder.Serialize(str), false)
-				expr[len(expr) - 1].IsArrayLiteral = true
+				expr[len(expr) - 1].ExpressionType = ast.CXEXPR_ARRAY_LITERAL
 				exprs = append(exprs, expr...)
 			}
 			
@@ -971,7 +971,7 @@ assignment_expression:
 				$$ = nil
 			}
 			if $3 != nil {
-				if $3[0].IsArrayLiteral {
+				if $3[0].IsArrayLiteral() {
 					if $2 != "=" && $2 != ":=" {
 						panic("")
 					}

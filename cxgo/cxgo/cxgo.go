@@ -1876,12 +1876,12 @@ yynewstate:
 		}
 	case 64:
 		{
-			yyS[yypt-0].expressions[len(yyS[yypt-0].expressions)-1].IsArrayLiteral = true
+			yyS[yypt-0].expressions[len(yyS[yypt-0].expressions)-1].ExpressionType = ast.CXEXPR_ARRAY_LITERAL
 			yyVAL.expressions = yyS[yypt-0].expressions
 		}
 	case 65:
 		{
-			yyS[yypt-0].expressions[len(yyS[yypt-0].expressions)-1].IsArrayLiteral = true
+			yyS[yypt-0].expressions[len(yyS[yypt-0].expressions)-1].ExpressionType = ast.CXEXPR_ARRAY_LITERAL
 			yyVAL.expressions = append(yyS[yypt-2].expressions, yyS[yypt-0].expressions...)
 		}
 	case 66:
@@ -1918,13 +1918,13 @@ yynewstate:
 		}
 	case 74:
 		{
-			yyS[yypt-0].expressions[len(yyS[yypt-0].expressions)-1].IsArrayLiteral = true
+			yyS[yypt-0].expressions[len(yyS[yypt-0].expressions)-1].ExpressionType = ast.CXEXPR_ARRAY_LITERAL
 			yyVAL.expressions = yyS[yypt-0].expressions
 		}
 	case 75:
 		{
 
-			yyS[yypt-0].expressions[len(yyS[yypt-0].expressions)-1].IsArrayLiteral = true
+			yyS[yypt-0].expressions[len(yyS[yypt-0].expressions)-1].ExpressionType = ast.CXEXPR_ARRAY_LITERAL
 			yyVAL.expressions = append(yyS[yypt-2].expressions, yyS[yypt-0].expressions...)
 		}
 	case 76:
@@ -1952,7 +1952,7 @@ yynewstate:
 				}
 			}
 
-			yyS[yypt-0].expressions[len(yyS[yypt-0].expressions)-1].IsArrayLiteral = true
+			yyS[yypt-0].expressions[len(yyS[yypt-0].expressions)-1].ExpressionType = ast.CXEXPR_ARRAY_LITERAL
 			yyVAL.expressions = yyS[yypt-0].expressions
 		}
 	case 81:
@@ -2004,7 +2004,7 @@ yynewstate:
 			var exprs []*ast.CXExpression
 			for _, str := range yyS[yypt-0].stringA {
 				expr := actions.WritePrimary(constants.TYPE_AFF, encoder.Serialize(str), false)
-				expr[len(expr)-1].IsArrayLiteral = true
+				expr[len(expr)-1].ExpressionType = ast.CXEXPR_ARRAY_LITERAL
 				exprs = append(exprs, expr...)
 			}
 
@@ -2235,7 +2235,7 @@ yynewstate:
 				yyVAL.expressions = nil
 			}
 			if yyS[yypt-0].expressions != nil {
-				if yyS[yypt-0].expressions[0].IsArrayLiteral {
+				if yyS[yypt-0].expressions[0].IsArrayLiteral() {
 					if yyS[yypt-1].tok != "=" && yyS[yypt-1].tok != ":=" {
 						panic("")
 					}

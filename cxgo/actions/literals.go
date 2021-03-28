@@ -35,7 +35,7 @@ func SliceLiteralExpression(typSpec int, exprs []*ast.CXExpression) []*ast.CXExp
 
 	var endPointsCounter int
 	for _, expr := range exprs {
-		if expr.IsArrayLiteral {
+		if expr.IsArrayLiteral() {
 			symInp := ast.MakeArgument(symName, CurrentFile, LineNo).AddType(constants.TypeNames[typSpec])
 			symInp.Package = pkg
 			symOut := ast.MakeArgument(symName, CurrentFile, LineNo).AddType(constants.TypeNames[typSpec])
@@ -83,7 +83,7 @@ func SliceLiteralExpression(typSpec int, exprs []*ast.CXExpression) []*ast.CXExp
 		} else {
 			result = append(result, expr)
 		}
-		expr.IsArrayLiteral = false
+		expr.ExpressionType = ast.CXEXPR_UNUSED
 	}
 
 	symNameOutput := globals.MakeGenSym(constants.LOCAL_PREFIX)
@@ -209,8 +209,8 @@ func ArrayLiteralExpression(arrSizes []int, typSpec int, exprs []*ast.CXExpressi
 
 	var endPointsCounter int
 	for _, expr := range exprs {
-		if expr.IsArrayLiteral {
-			expr.IsArrayLiteral = false
+		if expr.IsArrayLiteral() {
+			expr.ExpressionType = ast.CXEXPR_UNUSED
 
 			sym := ast.MakeArgument(symName, CurrentFile, LineNo).AddType(constants.TypeNames[typSpec])
 			sym.Package = pkg
@@ -275,7 +275,7 @@ func ArrayLiteralExpression(arrSizes []int, typSpec int, exprs []*ast.CXExpressi
 	// symOutput.SynonymousTo = symInput.Name
 
 	// marking the output so multidimensional arrays identify the expressions
-	symExpr.IsArrayLiteral = true
+	symExpr.ExpressionType = ast.CXEXPR_ARRAY_LITERAL
 	result = append(result, symExpr)
 
 	return result
