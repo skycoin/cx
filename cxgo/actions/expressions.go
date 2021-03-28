@@ -67,7 +67,7 @@ func IterationExpressions(init []*ast.CXExpression, cond []*ast.CXExpression, in
 
 	// processing possible continues
 	for i, stat := range statements {
-		if stat.IsContinue {
+		if stat.IsContinue() {
 			stat.ThenLines = len(statements) - i - 1
 		}
 	}
@@ -111,7 +111,7 @@ func BreakExpressions() []*ast.CXExpression {
 
 func ContinueExpressions() []*ast.CXExpression {
 	exprs := trueJmpExpressions()
-	exprs[0].IsContinue = true
+	exprs[0].ExpressionType = ast.CXEXPR_CONTINUE
 	return exprs
 }
 
