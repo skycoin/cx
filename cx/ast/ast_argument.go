@@ -36,14 +36,15 @@ func Pointer(arg *CXArgument) *CXArgument {
 // Slice Helper function for creating parameters for standard library operators.
 // The current standard library only uses basic types and slices. If more options are needed, modify this function
 func Slice(typCode int) *CXArgument {
-	arg := Param(typCode)
+	arg := NewCXArgument(typCode)
 	arg.IsSlice = true
 	arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_SLICE)
 	return arg
 }
 
-// Param ...
-func Param(typCode int) *CXArgument {
+// NewCXArgument ...
+// Was "Param"
+func NewCXArgument(typCode int) *CXArgument {
 	arg := MakeArgument("", "", -1).AddType(constants.TypeNames[typCode])
 	arg.IsLocalDeclaration = true
 	return arg
