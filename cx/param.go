@@ -123,6 +123,8 @@ func init() {
 	RegisterOpCode(constants.OP_UND_LEN, "len", opLen, In(AUND), Out(AI32))
 	RegisterOpCode(constants.OP_UND_PRINTF, "printf", opPrintf, In(AUND), nil)
 	RegisterOpCode(constants.OP_UND_SPRINTF, "sprintf", opSprintf, In(AUND), Out(ASTR))
+
+	//read user input from standard input
 	ast.Op_V2(constants.OP_UND_READ, "read", opRead, nil, Out(ASTR))
 
 	ast.Op_V2(constants.OP_BOOL_PRINT, "bool.print", opBoolPrint, In(ABOOL), nil)

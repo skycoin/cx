@@ -129,8 +129,8 @@ func opPrintf(expr *ast.CXExpression, fp int) {
 	fmt.Print(string(buildString(expr, fp)))
 }
 
+//Reads input from Standard Inpuit
 func opRead(inputs []ast.CXValue, outputs []ast.CXValue) {
-
 	reader := bufio.NewReader(os.Stdin)
 	text, err := reader.ReadString('\n')
     if err != nil {
