@@ -128,7 +128,6 @@ type serializedExpression struct {
 	ExpressionType int64
 
 	IsUndType  int64
-	IsBreak    int64
 	IsContinue int64
 
 	FunctionOffset int64
@@ -408,7 +407,6 @@ func serializeExpression(expr *CXExpression, s *serializedCXProgram) int {
 
 	sExpr.ExpressionType = int64(expr.ExpressionType)
 	sExpr.IsUndType = serializeBoolean(expr.IsUndType)
-	sExpr.IsBreak = serializeBoolean(expr.IsBreak)
 	sExpr.IsContinue = serializeBoolean(expr.IsContinue)
 
 	fnName := expr.Function.Package.Name + "." + expr.Function.Name
@@ -1135,7 +1133,6 @@ func deserializeExpression(sExpr *serializedExpression, s *serializedCXProgram, 
 
 	expr.ExpressionType = CXEXPR_TYPE(sExpr.ExpressionType)
 	expr.IsUndType = deserializeBool(sExpr.IsUndType)
-	expr.IsBreak = deserializeBool(sExpr.IsBreak)
 	expr.IsContinue = deserializeBool(sExpr.IsContinue)
 
 	expr.Function = deserializeExpressionFunction(sExpr, s, prgrm)

@@ -60,7 +60,7 @@ func IterationExpressions(init []*ast.CXExpression, cond []*ast.CXExpression, in
 
 	// processing possible breaks
 	for i, stat := range statements {
-		if stat.IsBreak {
+		if stat.IsBreak() {
 			stat.ThenLines = elseLines - i - 1
 		}
 	}
@@ -105,7 +105,7 @@ func trueJmpExpressions() []*ast.CXExpression {
 
 func BreakExpressions() []*ast.CXExpression {
 	exprs := trueJmpExpressions()
-	exprs[0].IsBreak = true
+	exprs[0].ExpressionType = ast.CXEXPR_BREAK
 	return exprs
 }
 
