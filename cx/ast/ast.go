@@ -21,6 +21,8 @@ const (
 	CXEXPR_ARRAY_LITERAL
 	CXEXPR_BREAK
 	CXEXPR_CONTINUE
+	CXEXPR_UND_TYPE
+	CXEXPR_SCOPE_UNUSED // this maybe unnecessary
 	CXEXPR_SCOPE_NEW
 	CXEXPR_SCOPE_DEL
 )
@@ -163,8 +165,6 @@ type CXExpression struct {
 	ScopeOperation int
 
 	ExpressionType CXEXPR_TYPE
-
-	IsUndType bool
 }
 
 // IsMethodCall checks if expression type is method call
@@ -190,6 +190,11 @@ func (cxe CXExpression) IsBreak() bool {
 // IsContinue checks if expression type is continue
 func (cxe CXExpression) IsContinue() bool {
 	return cxe.ExpressionType == CXEXPR_CONTINUE
+}
+
+// IsScopeNew checks if expression type is scope new
+func (cxe CXExpression) IsUndType() bool {
+	return cxe.ExpressionType == CXEXPR_UND_TYPE
 }
 
 /*
