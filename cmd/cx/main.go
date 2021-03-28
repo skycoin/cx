@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+
 	repl "github.com/skycoin/cx/cmd/cxrepl"
 	cxcore "github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cx/ast"
@@ -113,6 +114,9 @@ func Run(args []string) {
 	cxgo.DebugLexer = options.debugLexer // in package cxgo
 	profiling.DebugProfileRate = options.debugProfile
 	profiling.DebugProfile = profiling.DebugProfileRate > 0
+
+	// Load op code tables
+	cxcore.LoadOpCodeTables()
 
 	if run := parseProgram(options, fileNames, sourceCode); run {
 
