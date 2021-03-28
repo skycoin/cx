@@ -24,15 +24,17 @@ var ConstCxArg_F64 = ast.NewCXArgument(constants.TYPE_F64)
 // ConstCxArg_BOOL Default bool parameter
 var ConstCxArg_BOOL = ast.NewCXArgument(constants.TYPE_BOOL)
 
-// ASTR Default str parameter
-var ASTR = ast.NewCXArgument(constants.TYPE_STR)
+// ConstCxArg_STR Default str parameter
+var ConstCxArg_STR = ast.NewCXArgument(constants.TYPE_STR)
 
-// AUND Default und parameter
-var AUND = ast.NewCXArgument(constants.TYPE_UNDEFINED)
+// ConstCxArg_UND_TYPE Default und parameter
+var ConstCxArg_UND_TYPE = ast.NewCXArgument(constants.TYPE_UNDEFINED)
 
-// AAFF Default aff parameter
-var AAFF = ast.NewCXArgument(constants.TYPE_AFF)
+// ConstCxArg_Affordance Default aff parameter
+var ConstCxArg_Affordance = ast.NewCXArgument(constants.TYPE_AFF)
 
+//TODO:
+//UND is used for both integers and for undefined
 
 func init() {
 	httpPkg, err := ast.PROGRAM.GetPackage("http")
@@ -42,39 +44,39 @@ func init() {
 
 	ast.Operators = make([]*ast.CXFunction, ast.OPERATOR_HANDLER_COUNT)
 
-	RegisterOpCode(constants.OP_IDENTITY, "identity", opIdentity, In(AUND), Out(AUND))
-	RegisterOpCode(constants.OP_JMP, "jmp", opJmp, In(ConstCxArg_BOOL), nil) // AUND to allow 0 inputs (goto)
+	RegisterOpCode(constants.OP_IDENTITY, "identity", opIdentity, In(ConstCxArg_UND_TYPE), Out(ConstCxArg_UND_TYPE))
+	RegisterOpCode(constants.OP_JMP, "jmp", opJmp, In(ConstCxArg_BOOL), nil) // ConstCxArg_UND_TYPE to allow 0 inputs (goto)
 	RegisterOpCode(constants.OP_DEBUG, "debug", opDebug, nil, nil)
-	RegisterOpCode(constants.OP_SERIALIZE, "serialize", opSerialize, In(AAFF), Out(ConstCxArg_UI8))
+	RegisterOpCode(constants.OP_SERIALIZE, "serialize", opSerialize, In(ConstCxArg_Affordance), Out(ConstCxArg_UI8))
 	RegisterOpCode(constants.OP_DESERIALIZE, "deserialize", opDeserialize, In(ConstCxArg_UI8), nil)
 
-	ast.Op_V2(constants.OP_EQUAL, "eq", nil, In(AUND, AUND), Out(ConstCxArg_BOOL))
-	ast.Op_V2(constants.OP_UNEQUAL, "uneq", nil, In(AUND, AUND), Out(ConstCxArg_BOOL))
-	ast.Op_V2(constants.OP_BITAND, "bitand", nil, In(AUND, AUND), Out(AUND))
-	ast.Op_V2(constants.OP_BITOR, "bitor", nil, In(AUND, AUND), Out(AUND))
-	ast.Op_V2(constants.OP_BITXOR, "bitxor", nil, In(AUND, AUND), Out(AUND))
-	ast.Op_V2(constants.OP_BITCLEAR, "bitclear", nil, In(AUND, AUND), Out(AUND))
-	ast.Op_V2(constants.OP_BITSHL, "bitshl", nil, In(AUND, AUND), Out(AUND))
-	ast.Op_V2(constants.OP_BITSHR, "bitshr", nil, In(AUND, AUND), Out(AUND))
-	ast.Op_V2(constants.OP_MUL, "mul", nil, In(AUND, AUND), Out(AUND))
-	ast.Op_V2(constants.OP_DIV, "div", nil, In(AUND, AUND), Out(AUND))
-	ast.Op_V2(constants.OP_MOD, "mod", nil, In(AUND, AUND), Out(AUND))
-	ast.Op_V2(constants.OP_ADD, "add", nil, In(AUND, AUND), Out(AUND))
-	ast.Op_V2(constants.OP_SUB, "sub", nil, In(AUND, AUND), Out(AUND))
-	ast.Op_V2(constants.OP_NEG, "neg", nil, In(AUND), Out(AUND))
-	ast.Op_V2(constants.OP_LT, "lt", nil, In(AUND, AUND), Out(ConstCxArg_BOOL))
-	ast.Op_V2(constants.OP_GT, "gt", nil, In(AUND, AUND), Out(ConstCxArg_BOOL))
-	ast.Op_V2(constants.OP_LTEQ, "lteq", nil, In(AUND, AUND), Out(ConstCxArg_BOOL))
-	ast.Op_V2(constants.OP_GTEQ, "gteq", nil, In(AUND, AUND), Out(ConstCxArg_BOOL))
+	ast.Op_V2(constants.OP_EQUAL, "eq", nil, In(ConstCxArg_UND_TYPE, ConstCxArg_UND_TYPE), Out(ConstCxArg_BOOL))
+	ast.Op_V2(constants.OP_UNEQUAL, "uneq", nil, In(ConstCxArg_UND_TYPE, ConstCxArg_UND_TYPE), Out(ConstCxArg_BOOL))
+	ast.Op_V2(constants.OP_BITAND, "bitand", nil, In(ConstCxArg_UND_TYPE, ConstCxArg_UND_TYPE), Out(ConstCxArg_UND_TYPE))
+	ast.Op_V2(constants.OP_BITOR, "bitor", nil, In(ConstCxArg_UND_TYPE, ConstCxArg_UND_TYPE), Out(ConstCxArg_UND_TYPE))
+	ast.Op_V2(constants.OP_BITXOR, "bitxor", nil, In(ConstCxArg_UND_TYPE, ConstCxArg_UND_TYPE), Out(ConstCxArg_UND_TYPE))
+	ast.Op_V2(constants.OP_BITCLEAR, "bitclear", nil, In(ConstCxArg_UND_TYPE, ConstCxArg_UND_TYPE), Out(ConstCxArg_UND_TYPE))
+	ast.Op_V2(constants.OP_BITSHL, "bitshl", nil, In(ConstCxArg_UND_TYPE, ConstCxArg_UND_TYPE), Out(ConstCxArg_UND_TYPE))
+	ast.Op_V2(constants.OP_BITSHR, "bitshr", nil, In(ConstCxArg_UND_TYPE, ConstCxArg_UND_TYPE), Out(ConstCxArg_UND_TYPE))
+	ast.Op_V2(constants.OP_MUL, "mul", nil, In(ConstCxArg_UND_TYPE, ConstCxArg_UND_TYPE), Out(ConstCxArg_UND_TYPE))
+	ast.Op_V2(constants.OP_DIV, "div", nil, In(ConstCxArg_UND_TYPE, ConstCxArg_UND_TYPE), Out(ConstCxArg_UND_TYPE))
+	ast.Op_V2(constants.OP_MOD, "mod", nil, In(ConstCxArg_UND_TYPE, ConstCxArg_UND_TYPE), Out(ConstCxArg_UND_TYPE))
+	ast.Op_V2(constants.OP_ADD, "add", nil, In(ConstCxArg_UND_TYPE, ConstCxArg_UND_TYPE), Out(ConstCxArg_UND_TYPE))
+	ast.Op_V2(constants.OP_SUB, "sub", nil, In(ConstCxArg_UND_TYPE, ConstCxArg_UND_TYPE), Out(ConstCxArg_UND_TYPE))
+	ast.Op_V2(constants.OP_NEG, "neg", nil, In(ConstCxArg_UND_TYPE), Out(ConstCxArg_UND_TYPE))
+	ast.Op_V2(constants.OP_LT, "lt", nil, In(ConstCxArg_UND_TYPE, ConstCxArg_UND_TYPE), Out(ConstCxArg_BOOL))
+	ast.Op_V2(constants.OP_GT, "gt", nil, In(ConstCxArg_UND_TYPE, ConstCxArg_UND_TYPE), Out(ConstCxArg_BOOL))
+	ast.Op_V2(constants.OP_LTEQ, "lteq", nil, In(ConstCxArg_UND_TYPE, ConstCxArg_UND_TYPE), Out(ConstCxArg_BOOL))
+	ast.Op_V2(constants.OP_GTEQ, "gteq", nil, In(ConstCxArg_UND_TYPE, ConstCxArg_UND_TYPE), Out(ConstCxArg_BOOL))
 
-	RegisterOpCode(constants.OP_UND_LEN, "len", opLen, In(AUND), Out(ConstCxArg_I32))
-	RegisterOpCode(constants.OP_UND_PRINTF, "printf", opPrintf, In(AUND), nil)
-	RegisterOpCode(constants.OP_UND_SPRINTF, "sprintf", opSprintf, In(AUND), Out(ASTR))
+	RegisterOpCode(constants.OP_UND_LEN, "len", opLen, In(ConstCxArg_UND_TYPE), Out(ConstCxArg_I32))
+	RegisterOpCode(constants.OP_UND_PRINTF, "printf", opPrintf, In(ConstCxArg_UND_TYPE), nil)
+	RegisterOpCode(constants.OP_UND_SPRINTF, "sprintf", opSprintf, In(ConstCxArg_UND_TYPE), Out(ConstCxArg_STR))
 
 	//read user input from standard input
 	//TODO: Better Keyword
 	//TODO: Put into package
-	ast.Op_V2(constants.OP_UND_READ, "read", OpReadStdin, nil, Out(ASTR))
+	ast.Op_V2(constants.OP_UND_READ, "read", OpReadStdin, nil, Out(ConstCxArg_STR))
 
 	ast.Op_V2(constants.OP_BOOL_PRINT, "bool.print", opBoolPrint, In(ConstCxArg_BOOL), nil)
 	ast.Operator(constants.OP_BOOL_EQUAL, "bool.eq", opBoolEqual, In(ConstCxArg_BOOL, ConstCxArg_BOOL), Out(ConstCxArg_BOOL), constants.TYPE_BOOL, constants.OP_EQUAL)
@@ -101,7 +103,7 @@ func init() {
 	ast.Operator(constants.OP_I8_GTEQ, "i8.gteq", opI8Gteq, In(ConstCXArg_I8, ConstCXArg_I8), Out(ConstCxArg_BOOL), constants.TYPE_I8, constants.OP_GTEQ)
 	ast.Operator(constants.OP_I8_LT, "i8.lt", opI8Lt, In(ConstCXArg_I8, ConstCXArg_I8), Out(ConstCxArg_BOOL), constants.TYPE_I8, constants.OP_LT)
 	ast.Operator(constants.OP_I8_LTEQ, "i8.lteq", opI8Lteq, In(ConstCXArg_I8, ConstCXArg_I8), Out(ConstCxArg_BOOL), constants.TYPE_I8, constants.OP_LTEQ)
-	ast.Op_V2(constants.OP_I8_STR, "i8.str", opI8ToStr, In(ConstCXArg_I8), Out(ASTR))
+	ast.Op_V2(constants.OP_I8_STR, "i8.str", opI8ToStr, In(ConstCXArg_I8), Out(ConstCxArg_STR))
 	ast.Op_V2(constants.OP_I8_I16, "i8.i16", opI8ToI16, In(ConstCXArg_I8), Out(ConstCxArg_I16))
 	ast.Op_V2(constants.OP_I8_I32, "i8.i32", opI8ToI32, In(ConstCXArg_I8), Out(ConstCxArg_I32))
 	ast.Op_V2(constants.OP_I8_I64, "i8.i64", opI8ToI64, In(ConstCXArg_I8), Out(ConstCxArg_I64))
@@ -135,7 +137,7 @@ func init() {
 	ast.Operator(constants.OP_I16_GTEQ, "i16.gteq", opI16Gteq, In(ConstCxArg_I16, ConstCxArg_I16), Out(ConstCxArg_BOOL), constants.TYPE_I16, constants.OP_GTEQ)
 	ast.Operator(constants.OP_I16_LT, "i16.lt", opI16Lt, In(ConstCxArg_I16, ConstCxArg_I16), Out(ConstCxArg_BOOL), constants.TYPE_I16, constants.OP_LT)
 	ast.Operator(constants.OP_I16_LTEQ, "i16.lteq", opI16Lteq, In(ConstCxArg_I16, ConstCxArg_I16), Out(ConstCxArg_BOOL), constants.TYPE_I16, constants.OP_LTEQ)
-	ast.Op_V2(constants.OP_I16_STR, "i16.str", opI16ToStr, In(ConstCxArg_I16), Out(ASTR))
+	ast.Op_V2(constants.OP_I16_STR, "i16.str", opI16ToStr, In(ConstCxArg_I16), Out(ConstCxArg_STR))
 	ast.Op_V2(constants.OP_I16_I8, "i16.i8", opI16ToI8, In(ConstCxArg_I16), Out(ConstCXArg_I8))
 	ast.Op_V2(constants.OP_I16_I32, "i16.i32", opI16ToI32, In(ConstCxArg_I16), Out(ConstCxArg_I32))
 	ast.Op_V2(constants.OP_I16_I64, "i16.i64", opI16ToI64, In(ConstCxArg_I16), Out(ConstCxArg_I64))
@@ -169,7 +171,7 @@ func init() {
 	ast.Operator(constants.OP_I32_GTEQ, "i32.gteq", opI32Gteq, In(ConstCxArg_I32, ConstCxArg_I32), Out(ConstCxArg_BOOL), constants.TYPE_I32, constants.OP_GTEQ)
 	ast.Operator(constants.OP_I32_LT, "i32.lt", opI32Lt, In(ConstCxArg_I32, ConstCxArg_I32), Out(ConstCxArg_BOOL), constants.TYPE_I32, constants.OP_LT)
 	ast.Operator(constants.OP_I32_LTEQ, "i32.lteq", opI32Lteq, In(ConstCxArg_I32, ConstCxArg_I32), Out(ConstCxArg_BOOL), constants.TYPE_I32, constants.OP_LTEQ)
-	ast.Op_V2(constants.OP_I32_STR, "i32.str", opI32ToStr, In(ConstCxArg_I32), Out(ASTR))
+	ast.Op_V2(constants.OP_I32_STR, "i32.str", opI32ToStr, In(ConstCxArg_I32), Out(ConstCxArg_STR))
 	ast.Op_V2(constants.OP_I32_I8, "i32.i8", opI32ToI8, In(ConstCxArg_I32), Out(ConstCXArg_I8))
 	ast.Op_V2(constants.OP_I32_I16, "i32.i16", opI32ToI16, In(ConstCxArg_I32), Out(ConstCxArg_I16))
 	ast.Op_V2(constants.OP_I32_I64, "i32.i64", opI32ToI64, In(ConstCxArg_I32), Out(ConstCxArg_I64))
@@ -203,7 +205,7 @@ func init() {
 	ast.Operator(constants.OP_I64_GTEQ, "i64.gteq", opI64Gteq, In(ConstCxArg_I64, ConstCxArg_I64), Out(ConstCxArg_BOOL), constants.TYPE_I64, constants.OP_GTEQ)
 	ast.Operator(constants.OP_I64_LT, "i64.lt", opI64Lt, In(ConstCxArg_I64, ConstCxArg_I64), Out(ConstCxArg_BOOL), constants.TYPE_I64, constants.OP_LT)
 	ast.Operator(constants.OP_I64_LTEQ, "i64.lteq", opI64Lteq, In(ConstCxArg_I64, ConstCxArg_I64), Out(ConstCxArg_BOOL), constants.TYPE_I64, constants.OP_LTEQ)
-	ast.Op_V2(constants.OP_I64_STR, "i64.str", opI64ToStr, In(ConstCxArg_I64), Out(ASTR))
+	ast.Op_V2(constants.OP_I64_STR, "i64.str", opI64ToStr, In(ConstCxArg_I64), Out(ConstCxArg_STR))
 	ast.Op_V2(constants.OP_I64_I8, "i64.i8", opI64ToI8, In(ConstCxArg_I64), Out(ConstCXArg_I8))
 	ast.Op_V2(constants.OP_I64_I16, "i64.i16", opI64ToI16, In(ConstCxArg_I64), Out(ConstCxArg_I16))
 	ast.Op_V2(constants.OP_I64_I32, "i64.i32", opI64ToI32, In(ConstCxArg_I64), Out(ConstCxArg_I32))
@@ -236,7 +238,7 @@ func init() {
 	ast.Operator(constants.OP_UI8_GTEQ, "ui8.gteq", opUI8Gteq, In(ConstCxArg_UI8, ConstCxArg_UI8), Out(ConstCxArg_BOOL), constants.TYPE_UI8, constants.OP_GTEQ)
 	ast.Operator(constants.OP_UI8_LT, "ui8.lt", opUI8Lt, In(ConstCxArg_UI8, ConstCxArg_UI8), Out(ConstCxArg_BOOL), constants.TYPE_UI8, constants.OP_LT)
 	ast.Operator(constants.OP_UI8_LTEQ, "ui8.lteq", opUI8Lteq, In(ConstCxArg_UI8, ConstCxArg_UI8), Out(ConstCxArg_BOOL), constants.TYPE_UI8, constants.OP_LTEQ)
-	ast.Op_V2(constants.OP_UI8_STR, "ui8.str", opUI8ToStr, In(ConstCxArg_UI8), Out(ASTR))
+	ast.Op_V2(constants.OP_UI8_STR, "ui8.str", opUI8ToStr, In(ConstCxArg_UI8), Out(ConstCxArg_STR))
 	ast.Op_V2(constants.OP_UI8_I8, "ui8.i8", opUI8ToI8, In(ConstCxArg_UI8), Out(ConstCXArg_I8))
 	ast.Op_V2(constants.OP_UI8_I16, "ui8.i16", opUI8ToI16, In(ConstCxArg_UI8), Out(ConstCxArg_I16))
 	ast.Op_V2(constants.OP_UI8_I32, "ui8.i32", opUI8ToI32, In(ConstCxArg_UI8), Out(ConstCxArg_I32))
@@ -268,7 +270,7 @@ func init() {
 	ast.Operator(constants.OP_UI16_GTEQ, "ui16.gteq", opUI16Gteq, In(ConstCxArg_UI16, ConstCxArg_UI16), Out(ConstCxArg_BOOL), constants.TYPE_UI16, constants.OP_GTEQ)
 	ast.Operator(constants.OP_UI16_LT, "ui16.lt", opUI16Lt, In(ConstCxArg_UI16, ConstCxArg_UI16), Out(ConstCxArg_BOOL), constants.TYPE_UI16, constants.OP_LT)
 	ast.Operator(constants.OP_UI16_LTEQ, "ui16.lteq", opUI16Lteq, In(ConstCxArg_UI16, ConstCxArg_UI16), Out(ConstCxArg_BOOL), constants.TYPE_UI16, constants.OP_LTEQ)
-	ast.Op_V2(constants.OP_UI16_STR, "ui16.str", opUI16ToStr, In(ConstCxArg_UI16), Out(ASTR))
+	ast.Op_V2(constants.OP_UI16_STR, "ui16.str", opUI16ToStr, In(ConstCxArg_UI16), Out(ConstCxArg_STR))
 	ast.Op_V2(constants.OP_UI16_I8, "ui16.i8", opUI16ToI8, In(ConstCxArg_UI16), Out(ConstCXArg_I8))
 	ast.Op_V2(constants.OP_UI16_I16, "ui16.i16", opUI16ToI16, In(ConstCxArg_UI16), Out(ConstCxArg_I16))
 	ast.Op_V2(constants.OP_UI16_I32, "ui16.i32", opUI16ToI32, In(ConstCxArg_UI16), Out(ConstCxArg_I32))
@@ -300,7 +302,7 @@ func init() {
 	ast.Operator(constants.OP_UI32_GTEQ, "ui32.gteq", opUI32Gteq, In(ConstCxArg_UI32, ConstCxArg_UI32), Out(ConstCxArg_BOOL), constants.TYPE_UI32, constants.OP_GTEQ)
 	ast.Operator(constants.OP_UI32_LT, "ui32.lt", opUI32Lt, In(ConstCxArg_UI32, ConstCxArg_UI32), Out(ConstCxArg_BOOL), constants.TYPE_UI32, constants.OP_LT)
 	ast.Operator(constants.OP_UI32_LTEQ, "ui32.lteq", opUI32Lteq, In(ConstCxArg_UI32, ConstCxArg_UI32), Out(ConstCxArg_BOOL), constants.TYPE_UI32, constants.OP_LTEQ)
-	ast.Op_V2(constants.OP_UI32_STR, "ui32.str", opUI32ToStr, In(ConstCxArg_UI32), Out(ASTR))
+	ast.Op_V2(constants.OP_UI32_STR, "ui32.str", opUI32ToStr, In(ConstCxArg_UI32), Out(ConstCxArg_STR))
 	ast.Op_V2(constants.OP_UI32_I8, "ui32.i8", opUI32ToI8, In(ConstCxArg_UI32), Out(ConstCXArg_I8))
 	ast.Op_V2(constants.OP_UI32_I16, "ui32.i16", opUI32ToI16, In(ConstCxArg_UI32), Out(ConstCxArg_I16))
 	ast.Op_V2(constants.OP_UI32_I32, "ui32.i32", opUI32ToI32, In(ConstCxArg_UI32), Out(ConstCxArg_I32))
@@ -332,7 +334,7 @@ func init() {
 	ast.Operator(constants.OP_UI64_GTEQ, "ui64.gteq", opUI64Gteq, In(ConstCxArg_UI64, ConstCxArg_UI64), Out(ConstCxArg_BOOL), constants.TYPE_UI64, constants.OP_GTEQ)
 	ast.Operator(constants.OP_UI64_LT, "ui64.lt", opUI64Lt, In(ConstCxArg_UI64, ConstCxArg_UI64), Out(ConstCxArg_BOOL), constants.TYPE_UI64, constants.OP_LT)
 	ast.Operator(constants.OP_UI64_LTEQ, "ui64.lteq", opUI64Lteq, In(ConstCxArg_UI64, ConstCxArg_UI64), Out(ConstCxArg_BOOL), constants.TYPE_UI64, constants.OP_LTEQ)
-	ast.Op_V2(constants.OP_UI64_STR, "ui64.str", opUI64ToStr, In(ConstCxArg_UI64), Out(ASTR))
+	ast.Op_V2(constants.OP_UI64_STR, "ui64.str", opUI64ToStr, In(ConstCxArg_UI64), Out(ConstCxArg_STR))
 	ast.Op_V2(constants.OP_UI64_I8, "ui64.i8", opUI64ToI8, In(ConstCxArg_UI64), Out(ConstCXArg_I8))
 	ast.Op_V2(constants.OP_UI64_I16, "ui64.i16", opUI64ToI16, In(ConstCxArg_UI64), Out(ConstCxArg_I16))
 	ast.Op_V2(constants.OP_UI64_I32, "ui64.i32", opUI64ToI32, In(ConstCxArg_UI64), Out(ConstCxArg_I32))
@@ -360,7 +362,7 @@ func init() {
 	ast.Operator(constants.OP_F32_LT, "f32.lt", opF32Lt, In(ConstCxArg_F32, ConstCxArg_F32), Out(ConstCxArg_BOOL), constants.TYPE_F32, constants.OP_LT)
 	ast.Operator(constants.OP_F32_LTEQ, "f32.lteq", opF32Lteq, In(ConstCxArg_F32, ConstCxArg_F32), Out(ConstCxArg_BOOL), constants.TYPE_F32, constants.OP_LTEQ)
 	ast.Op_V2(constants.OP_F32_IS_NAN, "f32.isnan", opF32Isnan, In(ConstCxArg_F32), Out(ConstCxArg_BOOL))
-	ast.Op_V2(constants.OP_F32_STR, "f32.str", opF32ToStr, In(ConstCxArg_F32), Out(ASTR))
+	ast.Op_V2(constants.OP_F32_STR, "f32.str", opF32ToStr, In(ConstCxArg_F32), Out(ConstCxArg_STR))
 	ast.Op_V2(constants.OP_F32_I8, "f32.i8", opF32ToI8, In(ConstCxArg_F32), Out(ConstCXArg_I8))
 	ast.Op_V2(constants.OP_F32_I16, "f32.i16", opF32ToI16, In(ConstCxArg_F32), Out(ConstCxArg_I16))
 	ast.Op_V2(constants.OP_F32_I32, "f32.i32", opF32ToI32, In(ConstCxArg_F32), Out(ConstCxArg_I32))
@@ -398,7 +400,7 @@ func init() {
 	ast.Operator(constants.OP_F64_LT, "f64.lt", opF64Lt, In(ConstCxArg_F64, ConstCxArg_F64), Out(ConstCxArg_BOOL), constants.TYPE_F64, constants.OP_LT)
 	ast.Operator(constants.OP_F64_LTEQ, "f64.lteq", opF64Lteq, In(ConstCxArg_F64, ConstCxArg_F64), Out(ConstCxArg_BOOL), constants.TYPE_F64, constants.OP_LTEQ)
 	ast.Op_V2(constants.OP_F64_IS_NAN, "f64.isnan", opF64Isnan, In(ConstCxArg_F64), Out(ConstCxArg_BOOL))
-	ast.Op_V2(constants.OP_F64_STR, "f64.str", opF64ToStr, In(ConstCxArg_F64), Out(ASTR))
+	ast.Op_V2(constants.OP_F64_STR, "f64.str", opF64ToStr, In(ConstCxArg_F64), Out(ConstCxArg_STR))
 	ast.Op_V2(constants.OP_F64_I8, "f64.i8", opF64ToI8, In(ConstCxArg_F64), Out(ConstCXArg_I8))
 	ast.Op_V2(constants.OP_F64_I16, "f64.i16", opF64ToI16, In(ConstCxArg_F64), Out(ConstCxArg_I16))
 	ast.Op_V2(constants.OP_F64_I32, "f64.i32", opF64ToI32, In(ConstCxArg_F64), Out(ConstCxArg_I32))
@@ -423,24 +425,24 @@ func init() {
 	ast.Op_V2(constants.OP_F64_MIN, "f64.min", opF64Min, In(ConstCxArg_F64, ConstCxArg_F64), Out(ConstCxArg_F64))
 	ast.Op_V2(constants.OP_F64_RAND, "f64.rand", opF64Rand, nil, Out(ConstCxArg_F64))
 
-	ast.Operator(constants.OP_STR_EQ, "str.eq", opStrEq, In(ASTR, ASTR), Out(ConstCxArg_BOOL), constants.TYPE_STR, constants.OP_EQUAL)
-	ast.Operator(constants.OP_STR_UNEQ, "str.uneq", opStrUneq, In(ASTR, ASTR), Out(ConstCxArg_BOOL), constants.TYPE_STR, constants.OP_UNEQUAL)
-	ast.Operator(constants.OP_STR_CONCAT, "str.concat", opStrConcat, In(ASTR, ASTR), Out(ASTR), constants.TYPE_STR, constants.OP_ADD)
-	ast.Op_V2(constants.OP_STR_I8, "str.i8", opStrToI8, In(ASTR), Out(ConstCXArg_I8))
-	ast.Op_V2(constants.OP_STR_I16, "str.i16", opStrToI16, In(ASTR), Out(ConstCxArg_I16))
-	ast.Op_V2(constants.OP_STR_I32, "str.i32", opStrToI32, In(ASTR), Out(ConstCxArg_I32))
-	ast.Op_V2(constants.OP_STR_I64, "str.i64", opStrToI64, In(ASTR), Out(ConstCxArg_I64))
-	ast.Op_V2(constants.OP_STR_UI8, "str.ui8", opStrToUI8, In(ASTR), Out(ConstCxArg_UI8))
-	ast.Op_V2(constants.OP_STR_UI16, "str.ui16", opStrToUI16, In(ASTR), Out(ConstCxArg_UI16))
-	ast.Op_V2(constants.OP_STR_UI32, "str.ui32", opStrToUI32, In(ASTR), Out(ConstCxArg_UI32))
-	ast.Op_V2(constants.OP_STR_UI64, "str.ui64", opStrToUI64, In(ASTR), Out(ConstCxArg_UI64))
-	ast.Op_V2(constants.OP_STR_F32, "str.f32", opStrToF32, In(ASTR), Out(ConstCxArg_F32))
-	ast.Op_V2(constants.OP_STR_F64, "str.f64", opStrToF64, In(ASTR), Out(ConstCxArg_F64))
-	ast.Op_V2(constants.OP_STR_PRINT, "str.print", opStrPrint, In(ASTR), nil)
-	ast.Op_V2(constants.OP_STR_SUBSTR, "str.substr", opStrSubstr, In(ASTR, ConstCxArg_I32, ConstCxArg_I32), Out(ASTR))
-	ast.Op_V2(constants.OP_STR_INDEX, "str.index", opStrIndex, In(ASTR, ASTR), Out(ConstCxArg_I32))
-	ast.Op_V2(constants.OP_STR_LAST_INDEX, "str.lastindex", opStrLastIndex, In(ASTR, ASTR), Out(ConstCxArg_I32))
-	ast.Op_V2(constants.OP_STR_TRIM_SPACE, "str.trimspace", opStrTrimSpace, In(ASTR), Out(ASTR))
+	ast.Operator(constants.OP_STR_EQ, "str.eq", opStrEq, In(ConstCxArg_STR, ConstCxArg_STR), Out(ConstCxArg_BOOL), constants.TYPE_STR, constants.OP_EQUAL)
+	ast.Operator(constants.OP_STR_UNEQ, "str.uneq", opStrUneq, In(ConstCxArg_STR, ConstCxArg_STR), Out(ConstCxArg_BOOL), constants.TYPE_STR, constants.OP_UNEQUAL)
+	ast.Operator(constants.OP_STR_CONCAT, "str.concat", opStrConcat, In(ConstCxArg_STR, ConstCxArg_STR), Out(ConstCxArg_STR), constants.TYPE_STR, constants.OP_ADD)
+	ast.Op_V2(constants.OP_STR_I8, "str.i8", opStrToI8, In(ConstCxArg_STR), Out(ConstCXArg_I8))
+	ast.Op_V2(constants.OP_STR_I16, "str.i16", opStrToI16, In(ConstCxArg_STR), Out(ConstCxArg_I16))
+	ast.Op_V2(constants.OP_STR_I32, "str.i32", opStrToI32, In(ConstCxArg_STR), Out(ConstCxArg_I32))
+	ast.Op_V2(constants.OP_STR_I64, "str.i64", opStrToI64, In(ConstCxArg_STR), Out(ConstCxArg_I64))
+	ast.Op_V2(constants.OP_STR_UI8, "str.ui8", opStrToUI8, In(ConstCxArg_STR), Out(ConstCxArg_UI8))
+	ast.Op_V2(constants.OP_STR_UI16, "str.ui16", opStrToUI16, In(ConstCxArg_STR), Out(ConstCxArg_UI16))
+	ast.Op_V2(constants.OP_STR_UI32, "str.ui32", opStrToUI32, In(ConstCxArg_STR), Out(ConstCxArg_UI32))
+	ast.Op_V2(constants.OP_STR_UI64, "str.ui64", opStrToUI64, In(ConstCxArg_STR), Out(ConstCxArg_UI64))
+	ast.Op_V2(constants.OP_STR_F32, "str.f32", opStrToF32, In(ConstCxArg_STR), Out(ConstCxArg_F32))
+	ast.Op_V2(constants.OP_STR_F64, "str.f64", opStrToF64, In(ConstCxArg_STR), Out(ConstCxArg_F64))
+	ast.Op_V2(constants.OP_STR_PRINT, "str.print", opStrPrint, In(ConstCxArg_STR), nil)
+	ast.Op_V2(constants.OP_STR_SUBSTR, "str.substr", opStrSubstr, In(ConstCxArg_STR, ConstCxArg_I32, ConstCxArg_I32), Out(ConstCxArg_STR))
+	ast.Op_V2(constants.OP_STR_INDEX, "str.index", opStrIndex, In(ConstCxArg_STR, ConstCxArg_STR), Out(ConstCxArg_I32))
+	ast.Op_V2(constants.OP_STR_LAST_INDEX, "str.lastindex", opStrLastIndex, In(ConstCxArg_STR, ConstCxArg_STR), Out(ConstCxArg_I32))
+	ast.Op_V2(constants.OP_STR_TRIM_SPACE, "str.trimspace", opStrTrimSpace, In(ConstCxArg_STR), Out(ConstCxArg_STR))
 
 	RegisterOpCode(constants.OP_APPEND, "append", opAppend, In(ast.Slice(constants.TYPE_UNDEFINED), ast.Slice(constants.TYPE_UNDEFINED)), Out(ast.Slice(constants.TYPE_UNDEFINED)))
 	RegisterOpCode(constants.OP_RESIZE, "resize", opResize, In(ast.Slice(constants.TYPE_UNDEFINED), ConstCxArg_I32), Out(ast.Slice(constants.TYPE_UNDEFINED)))
@@ -448,12 +450,12 @@ func init() {
 	RegisterOpCode(constants.OP_REMOVE, "remove", opRemove, In(ast.Slice(constants.TYPE_UNDEFINED), ConstCxArg_I32), Out(ast.Slice(constants.TYPE_UNDEFINED)))
 	RegisterOpCode(constants.OP_COPY, "copy", opCopy, In(ast.Slice(constants.TYPE_UNDEFINED), ast.Slice(constants.TYPE_UNDEFINED)), Out(ConstCxArg_I32))
 
-	RegisterOpCode(constants.OP_ASSERT, "assert", opAssertValue, In(AUND, AUND, ASTR), Out(ConstCxArg_BOOL))
-	RegisterOpCode(constants.OP_TEST, "test", opTest, In(AUND, AUND, ASTR), nil)
-	RegisterOpCode(constants.OP_PANIC, "panic", opPanic, In(AUND, AUND, ASTR), nil)
-	RegisterOpCode(constants.OP_PANIC_IF, "panicIf", opPanicIf, In(ConstCxArg_BOOL, ASTR), nil)
-	RegisterOpCode(constants.OP_PANIC_IF_NOT, "panicIfNot", opPanicIfNot, In(ConstCxArg_BOOL, ASTR), nil)
-	RegisterOpCode(constants.OP_STRERROR, "strerror", opStrError, In(ConstCxArg_I32), Out(ASTR))
+	RegisterOpCode(constants.OP_ASSERT, "assert", opAssertValue, In(ConstCxArg_UND_TYPE, ConstCxArg_UND_TYPE, ConstCxArg_STR), Out(ConstCxArg_BOOL))
+	RegisterOpCode(constants.OP_TEST, "test", opTest, In(ConstCxArg_UND_TYPE, ConstCxArg_UND_TYPE, ConstCxArg_STR), nil)
+	RegisterOpCode(constants.OP_PANIC, "panic", opPanic, In(ConstCxArg_UND_TYPE, ConstCxArg_UND_TYPE, ConstCxArg_STR), nil)
+	RegisterOpCode(constants.OP_PANIC_IF, "panicIf", opPanicIf, In(ConstCxArg_BOOL, ConstCxArg_STR), nil)
+	RegisterOpCode(constants.OP_PANIC_IF_NOT, "panicIfNot", opPanicIfNot, In(ConstCxArg_BOOL, ConstCxArg_STR), nil)
+	RegisterOpCode(constants.OP_STRERROR, "strerror", opStrError, In(ConstCxArg_I32), Out(ConstCxArg_STR))
 
 	RegisterOpCode(constants.OP_AFF_PRINT, "aff.print", opAffPrint, In(ast.Slice(constants.TYPE_AFF)), nil)
 	RegisterOpCode(constants.OP_AFF_QUERY, "aff.query", opAffQuery, In(ast.Slice(constants.TYPE_AFF)), Out(ast.Slice(constants.TYPE_AFF)))
@@ -462,17 +464,17 @@ func init() {
 	RegisterOpCode(constants.OP_AFF_INFORM, "aff.inform", opAffInform, In(ast.Slice(constants.TYPE_AFF), ConstCxArg_I32, ast.Slice(constants.TYPE_AFF)), nil)
 	RegisterOpCode(constants.OP_AFF_REQUEST, "aff.request", opAffRequest, In(ast.Slice(constants.TYPE_AFF), ConstCxArg_I32, ast.Slice(constants.TYPE_AFF)), nil)
 
-	RegisterOpCode(constants.OP_HTTP_SERVE, "http.Serve", opHTTPServe, In(ASTR), Out(ASTR))
-	RegisterOpCode(constants.OP_HTTP_LISTEN_AND_SERVE, "http.ListenAndServe", opHTTPListenAndServe, In(ASTR), Out(ASTR))
-	RegisterOpCode(constants.OP_HTTP_NEW_REQUEST, "http.NewRequest", opHTTPNewRequest, In(ASTR, ASTR, ASTR), Out(ASTR))
-	RegisterOpCode(constants.OP_HTTP_DO, "http.Do", opHTTPDo, In(AUND), Out(AUND, ASTR))
-	RegisterOpCode(constants.OP_DMSG_DO, "http.DmsgDo", opDMSGDo, In(AUND), Out(ASTR))
+	RegisterOpCode(constants.OP_HTTP_SERVE, "http.Serve", opHTTPServe, In(ConstCxArg_STR), Out(ConstCxArg_STR))
+	RegisterOpCode(constants.OP_HTTP_LISTEN_AND_SERVE, "http.ListenAndServe", opHTTPListenAndServe, In(ConstCxArg_STR), Out(ConstCxArg_STR))
+	RegisterOpCode(constants.OP_HTTP_NEW_REQUEST, "http.NewRequest", opHTTPNewRequest, In(ConstCxArg_STR, ConstCxArg_STR, ConstCxArg_STR), Out(ConstCxArg_STR))
+	RegisterOpCode(constants.OP_HTTP_DO, "http.Do", opHTTPDo, In(ConstCxArg_UND_TYPE), Out(ConstCxArg_UND_TYPE, ConstCxArg_STR))
+	RegisterOpCode(constants.OP_DMSG_DO, "http.DmsgDo", opDMSGDo, In(ConstCxArg_UND_TYPE), Out(ConstCxArg_STR))
 
-	RegisterOpCode(constants.OP_TCP_DIAL, "tcp.Dial", opTCPDial, In(ASTR, ASTR), Out(ASTR))
+	RegisterOpCode(constants.OP_TCP_DIAL, "tcp.Dial", opTCPDial, In(ConstCxArg_STR, ConstCxArg_STR), Out(ConstCxArg_STR))
 
-	RegisterOpCode(constants.OP_TCP_LISTEN, "tcp.Listen", opTCPListen, In(ASTR, ASTR), Out(ASTR))
+	RegisterOpCode(constants.OP_TCP_LISTEN, "tcp.Listen", opTCPListen, In(ConstCxArg_STR, ConstCxArg_STR), Out(ConstCxArg_STR))
 
-	RegisterOpCode(constants.OP_TCP_ACCEPT, "tcp.Accept", opTCPAccept, In(ASTR, ASTR), Out(ASTR))
+	RegisterOpCode(constants.OP_TCP_ACCEPT, "tcp.Accept", opTCPAccept, In(ConstCxArg_STR, ConstCxArg_STR), Out(ConstCxArg_STR))
 
 	RegisterOpCode(constants.OP_TCP_CLOSE, "tcp.Close", opTCPClose, nil, nil)
 
@@ -481,7 +483,7 @@ func init() {
 
 	RegisterOpCode(constants.OP_HTTP_HANDLE, "http.Handle", opHTTPHandle,
 		In(
-			ASTR,
+			ConstCxArg_STR,
 			ParamEx(ParamData{TypCode: constants.TYPE_FUNC, Pkg: httpPkg, inputs: In(ast.MakeArgument("ResponseWriter", "", -1).AddType(constants.TypeNames[constants.TYPE_STR]), ast.Pointer(Struct("http", "Request", "r")))})),
 		Out())
 
