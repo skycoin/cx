@@ -8,12 +8,12 @@ import (
 
 // RegisterPackage registers a package on the CX standard library. This does not create a `CXPackage` structure,
 // it only tells the CX runtime that `pkgName` will exist by the time a CX program is run.
-func RegisterPackage(pkgName string) {
-	constants.CorePackages = append(constants.CorePackages, pkgName)
-}
+//func RegisterPackage(pkgName string) {
+//	constants.CorePackages = append(constants.CorePackages, pkgName)
+//}
 
-// Op ...
-func Op(code int, name string, handler ast.OpcodeHandler, inputs []*ast.CXArgument, outputs []*ast.CXArgument) {
+// RegisterOpCode ...
+func RegisterOpCode(code int, name string, handler ast.OpcodeHandler, inputs []*ast.CXArgument, outputs []*ast.CXArgument) {
 	if code >= len(ast.OpcodeHandlers) {
 		ast.OpcodeHandlers = append(ast.OpcodeHandlers, make([]ast.OpcodeHandler, code+1)...)
 	}
@@ -49,16 +49,6 @@ func dumpOpCodes(opCode int) {
 	fmt.Printf("opCode : %d\n", opCode)
 }*/
 
-// Pointer takes an already defined `CXArgument` and turns it into a pointer.
-func Pointer(arg *ast.CXArgument) *ast.CXArgument {
-	arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_POINTER)
-	arg.IsPointer = true
-	arg.Size = constants.TYPE_POINTER_SIZE
-	arg.TotalSize = constants.TYPE_POINTER_SIZE
-
-	return arg
-}
-
 // Struct helper for creating a struct parameter. It creates a
 // `CXArgument` named `argName`, that represents a structure instane of
 // `strctName`, from package `pkgName`.
@@ -82,22 +72,6 @@ func Struct(pkgName, strctName, argName string) *ast.CXArgument {
 	return arg
 }
 
-// Slice Helper function for creating parameters for standard library operators.
-// The current standard library only uses basic types and slices. If more options are needed, modify this function
-func Slice(typCode int) *ast.CXArgument {
-	arg := Param(typCode)
-	arg.IsSlice = true
-	arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_SLICE)
-	return arg
-}
-
-// Param ...
-func Param(typCode int) *ast.CXArgument {
-	arg := ast.MakeArgument("", "", -1).AddType(constants.TypeNames[typCode])
-	arg.IsLocalDeclaration = true
-	return arg
-}
-
 //TODO: Deprecate, ParamData is only use by http package
 type ParamData struct {
 	typCode   int               // The type code of the parameter.
@@ -114,9 +88,9 @@ func ParamEx(paramData ParamData) *ast.CXArgument {
 	var arg *ast.CXArgument
 	switch paramData.paramType {
 	case constants.PARAM_DEFAULT:
-		arg = Param(paramData.typCode)
+		arg = ast.Param(paramData.typCode)
 	case constants.PARAM_SLICE:
-		arg = Slice(paramData.typCode)
+		arg = ast.Slice(paramData.typCode)
 	case constants.PARAM_STRUCT:
 		arg = Struct(paramData.pkg.Name, paramData.strctName, "")
 	}
@@ -127,46 +101,46 @@ func ParamEx(paramData ParamData) *ast.CXArgument {
 }
 
 // AI8 Default i8 parameter
-var AI8 = Param(constants.TYPE_I8)
+var AI8 = ast.Param(constants.TYPE_I8)
 
 // AI16 Default i16 parameter
-var AI16 = Param(constants.TYPE_I16)
+var AI16 = ast.Param(constants.TYPE_I16)
 
 // AI32 Default i32 parameter
-var AI32 = Param(constants.TYPE_I32)
+var AI32 = ast.Param(constants.TYPE_I32)
 
 // AI64 Default i64 parameter
-var AI64 = Param(constants.TYPE_I64)
+var AI64 = ast.Param(constants.TYPE_I64)
 
 // AUI8 Default ui8 parameter
-var AUI8 = Param(constants.TYPE_UI8)
+var AUI8 = ast.Param(constants.TYPE_UI8)
 
 // AUI16 Default ui16 parameter
-var AUI16 = Param(constants.TYPE_UI16)
+var AUI16 = ast.Param(constants.TYPE_UI16)
 
 // AUI32 Default ui32 parameter
-var AUI32 = Param(constants.TYPE_UI32)
+var AUI32 = ast.Param(constants.TYPE_UI32)
 
 // AUI64 Default ui64 parameter
-var AUI64 = Param(constants.TYPE_UI64)
+var AUI64 = ast.Param(constants.TYPE_UI64)
 
 // AF32 Default f32 parameter
-var AF32 = Param(constants.TYPE_F32)
+var AF32 = ast.Param(constants.TYPE_F32)
 
 // AF64 Default f64 parameter
-var AF64 = Param(constants.TYPE_F64)
+var AF64 = ast.Param(constants.TYPE_F64)
 
 // ASTR Default str parameter
-var ASTR = Param(constants.TYPE_STR)
+var ASTR = ast.Param(constants.TYPE_STR)
 
 // ABOOL Default bool parameter
-var ABOOL = Param(constants.TYPE_BOOL)
+var ABOOL = ast.Param(constants.TYPE_BOOL)
 
 // AUND Default und parameter
-var AUND = Param(constants.TYPE_UNDEFINED)
+var AUND = ast.Param(constants.TYPE_UNDEFINED)
 
 // AAFF Default aff parameter
-var AAFF = Param(constants.TYPE_AFF)
+var AAFF = ast.Param(constants.TYPE_AFF)
 
 // In Returns a slice of arguments from an argument list
 func In(params ...*ast.CXArgument) []*ast.CXArgument {
@@ -190,11 +164,11 @@ func init() {
 
     ast.Operators = make([]*ast.CXFunction, ast.OPERATOR_HANDLER_COUNT)
 
-    Op(constants.OP_IDENTITY, "identity", opIdentity, In(AUND), Out(AUND))
-	Op(constants.OP_JMP, "jmp", opJmp, In(ABOOL), nil) // AUND to allow 0 inputs (goto)
-	Op(constants.OP_DEBUG, "debug", opDebug, nil, nil)
-	Op(constants.OP_SERIALIZE, "serialize", opSerialize, In(AAFF), Out(AUI8))
-	Op(constants.OP_DESERIALIZE, "deserialize", opDeserialize, In(AUI8), nil)
+    RegisterOpCode(constants.OP_IDENTITY, "identity", opIdentity, In(AUND), Out(AUND))
+	RegisterOpCode(constants.OP_JMP, "jmp", opJmp, In(ABOOL), nil) // AUND to allow 0 inputs (goto)
+	RegisterOpCode(constants.OP_DEBUG, "debug", opDebug, nil, nil)
+	RegisterOpCode(constants.OP_SERIALIZE, "serialize", opSerialize, In(AAFF), Out(AUI8))
+	RegisterOpCode(constants.OP_DESERIALIZE, "deserialize", opDeserialize, In(AUI8), nil)
 
     ast.Op_V2(constants.OP_EQUAL, "eq", nil, In(AUND, AUND), Out(ABOOL))
 	ast.Op_V2(constants.OP_UNEQUAL, "uneq", nil, In(AUND, AUND), Out(ABOOL))
@@ -215,9 +189,9 @@ func init() {
 	ast.Op_V2(constants.OP_LTEQ, "lteq", nil, In(AUND, AUND), Out(ABOOL))
 	ast.Op_V2(constants.OP_GTEQ, "gteq", nil, In(AUND, AUND), Out(ABOOL))
 
-    Op(constants.OP_UND_LEN, "len", opLen, In(AUND), Out(AI32))
-	Op(constants.OP_UND_PRINTF, "printf", opPrintf, In(AUND), nil)
-	Op(constants.OP_UND_SPRINTF, "sprintf", opSprintf, In(AUND), Out(ASTR))
+    RegisterOpCode(constants.OP_UND_LEN, "len", opLen, In(AUND), Out(AI32))
+	RegisterOpCode(constants.OP_UND_PRINTF, "printf", opPrintf, In(AUND), nil)
+	RegisterOpCode(constants.OP_UND_SPRINTF, "sprintf", opSprintf, In(AUND), Out(ASTR))
 	ast.Op_V2(constants.OP_UND_READ, "read", opRead, nil, Out(ASTR))
 
 	ast.Op_V2(constants.OP_BOOL_PRINT, "bool.print", opBoolPrint, In(ABOOL), nil)
@@ -586,48 +560,48 @@ func init() {
 	ast.Op_V2(constants.OP_STR_LAST_INDEX, "str.lastindex", opStrLastIndex, In(ASTR, ASTR), Out(AI32))
 	ast.Op_V2(constants.OP_STR_TRIM_SPACE, "str.trimspace", opStrTrimSpace, In(ASTR), Out(ASTR))
 
-	Op(constants.OP_APPEND, "append", opAppend, In(Slice(constants.TYPE_UNDEFINED), Slice(constants.TYPE_UNDEFINED)), Out(Slice(constants.TYPE_UNDEFINED)))
-	Op(constants.OP_RESIZE, "resize", opResize, In(Slice(constants.TYPE_UNDEFINED), AI32), Out(Slice(constants.TYPE_UNDEFINED)))
-	Op(constants.OP_INSERT, "insert", opInsert, In(Slice(constants.TYPE_UNDEFINED), Slice(constants.TYPE_UNDEFINED)), Out(Slice(constants.TYPE_UNDEFINED)))
-	Op(constants.OP_REMOVE, "remove", opRemove, In(Slice(constants.TYPE_UNDEFINED), AI32), Out(Slice(constants.TYPE_UNDEFINED)))
-	Op(constants.OP_COPY, "copy", opCopy, In(Slice(constants.TYPE_UNDEFINED), Slice(constants.TYPE_UNDEFINED)), Out(AI32))
+	RegisterOpCode(constants.OP_APPEND, "append", opAppend, In(ast.Slice(constants.TYPE_UNDEFINED), ast.Slice(constants.TYPE_UNDEFINED)), Out(ast.Slice(constants.TYPE_UNDEFINED)))
+	RegisterOpCode(constants.OP_RESIZE, "resize", opResize, In(ast.Slice(constants.TYPE_UNDEFINED), AI32), Out(ast.Slice(constants.TYPE_UNDEFINED)))
+	RegisterOpCode(constants.OP_INSERT, "insert", opInsert, In(ast.Slice(constants.TYPE_UNDEFINED), ast.Slice(constants.TYPE_UNDEFINED)), Out(ast.Slice(constants.TYPE_UNDEFINED)))
+	RegisterOpCode(constants.OP_REMOVE, "remove", opRemove, In(ast.Slice(constants.TYPE_UNDEFINED), AI32), Out(ast.Slice(constants.TYPE_UNDEFINED)))
+	RegisterOpCode(constants.OP_COPY, "copy", opCopy, In(ast.Slice(constants.TYPE_UNDEFINED), ast.Slice(constants.TYPE_UNDEFINED)), Out(AI32))
 
-	Op(constants.OP_ASSERT, "assert", opAssertValue, In(AUND, AUND, ASTR), Out(ABOOL))
-	Op(constants.OP_TEST, "test", opTest, In(AUND, AUND, ASTR), nil)
-	Op(constants.OP_PANIC, "panic", opPanic, In(AUND, AUND, ASTR), nil)
-	Op(constants.OP_PANIC_IF, "panicIf", opPanicIf, In(ABOOL, ASTR), nil)
-	Op(constants.OP_PANIC_IF_NOT, "panicIfNot", opPanicIfNot, In(ABOOL, ASTR), nil)
-	Op(constants.OP_STRERROR, "strerror", opStrError, In(AI32), Out(ASTR))
+	RegisterOpCode(constants.OP_ASSERT, "assert", opAssertValue, In(AUND, AUND, ASTR), Out(ABOOL))
+	RegisterOpCode(constants.OP_TEST, "test", opTest, In(AUND, AUND, ASTR), nil)
+	RegisterOpCode(constants.OP_PANIC, "panic", opPanic, In(AUND, AUND, ASTR), nil)
+	RegisterOpCode(constants.OP_PANIC_IF, "panicIf", opPanicIf, In(ABOOL, ASTR), nil)
+	RegisterOpCode(constants.OP_PANIC_IF_NOT, "panicIfNot", opPanicIfNot, In(ABOOL, ASTR), nil)
+	RegisterOpCode(constants.OP_STRERROR, "strerror", opStrError, In(AI32), Out(ASTR))
 
-	Op(constants.OP_AFF_PRINT, "aff.print", opAffPrint, In(Slice(constants.TYPE_AFF)), nil)
-	Op(constants.OP_AFF_QUERY, "aff.query", opAffQuery, In(Slice(constants.TYPE_AFF)), Out(Slice(constants.TYPE_AFF)))
-	Op(constants.OP_AFF_ON, "aff.on", opAffOn, In(Slice(constants.TYPE_AFF), Slice(constants.TYPE_AFF)), nil)
-	Op(constants.OP_AFF_OF, "aff.of", opAffOf, In(Slice(constants.TYPE_AFF), Slice(constants.TYPE_AFF)), nil)
-	Op(constants.OP_AFF_INFORM, "aff.inform", opAffInform, In(Slice(constants.TYPE_AFF), AI32, Slice(constants.TYPE_AFF)), nil)
-	Op(constants.OP_AFF_REQUEST, "aff.request", opAffRequest, In(Slice(constants.TYPE_AFF), AI32, Slice(constants.TYPE_AFF)), nil)
+	RegisterOpCode(constants.OP_AFF_PRINT, "aff.print", opAffPrint, In(ast.Slice(constants.TYPE_AFF)), nil)
+	RegisterOpCode(constants.OP_AFF_QUERY, "aff.query", opAffQuery, In(ast.Slice(constants.TYPE_AFF)), Out(ast.Slice(constants.TYPE_AFF)))
+	RegisterOpCode(constants.OP_AFF_ON, "aff.on", opAffOn, In(ast.Slice(constants.TYPE_AFF), ast.Slice(constants.TYPE_AFF)), nil)
+	RegisterOpCode(constants.OP_AFF_OF, "aff.of", opAffOf, In(ast.Slice(constants.TYPE_AFF), ast.Slice(constants.TYPE_AFF)), nil)
+	RegisterOpCode(constants.OP_AFF_INFORM, "aff.inform", opAffInform, In(ast.Slice(constants.TYPE_AFF), AI32, ast.Slice(constants.TYPE_AFF)), nil)
+	RegisterOpCode(constants.OP_AFF_REQUEST, "aff.request", opAffRequest, In(ast.Slice(constants.TYPE_AFF), AI32, ast.Slice(constants.TYPE_AFF)), nil)
 
-	Op(constants.OP_HTTP_SERVE, "http.Serve", opHTTPServe, In(ASTR), Out(ASTR))
-	Op(constants.OP_HTTP_LISTEN_AND_SERVE, "http.ListenAndServe", opHTTPListenAndServe, In(ASTR), Out(ASTR))
-	Op(constants.OP_HTTP_NEW_REQUEST, "http.NewRequest", opHTTPNewRequest, In(ASTR, ASTR, ASTR), Out(ASTR))
-	Op(constants.OP_HTTP_DO, "http.Do", opHTTPDo, In(AUND), Out(AUND, ASTR))
-	Op(constants.OP_DMSG_DO, "http.DmsgDo", opDMSGDo, In(AUND), Out(ASTR))
+	RegisterOpCode(constants.OP_HTTP_SERVE, "http.Serve", opHTTPServe, In(ASTR), Out(ASTR))
+	RegisterOpCode(constants.OP_HTTP_LISTEN_AND_SERVE, "http.ListenAndServe", opHTTPListenAndServe, In(ASTR), Out(ASTR))
+	RegisterOpCode(constants.OP_HTTP_NEW_REQUEST, "http.NewRequest", opHTTPNewRequest, In(ASTR, ASTR, ASTR), Out(ASTR))
+	RegisterOpCode(constants.OP_HTTP_DO, "http.Do", opHTTPDo, In(AUND), Out(AUND, ASTR))
+	RegisterOpCode(constants.OP_DMSG_DO, "http.DmsgDo", opDMSGDo, In(AUND), Out(ASTR))
 
-	Op(constants.OP_TCP_DIAL, "tcp.Dial", opTCPDial, In(ASTR, ASTR), Out(ASTR))
+	RegisterOpCode(constants.OP_TCP_DIAL, "tcp.Dial", opTCPDial, In(ASTR, ASTR), Out(ASTR))
 
-	Op(constants.OP_TCP_LISTEN, "tcp.Listen", opTCPListen, In(ASTR, ASTR), Out(ASTR))
+	RegisterOpCode(constants.OP_TCP_LISTEN, "tcp.Listen", opTCPListen, In(ASTR, ASTR), Out(ASTR))
 
-	Op(constants.OP_TCP_ACCEPT, "tcp.Accept", opTCPAccept, In(ASTR, ASTR), Out(ASTR))
+	RegisterOpCode(constants.OP_TCP_ACCEPT, "tcp.Accept", opTCPAccept, In(ASTR, ASTR), Out(ASTR))
 
-	Op(constants.OP_TCP_CLOSE, "tcp.Close", opTCPClose, nil, nil)
+	RegisterOpCode(constants.OP_TCP_CLOSE, "tcp.Close", opTCPClose, nil, nil)
 
-	// Op(OP_EVOLVE_EVOLVE, "evolve.evolve", opEvolve, In(Slice(TYPE_AFF), Slice(TYPE_AFF), Slice(TYPE_F64), Slice(TYPE_F64), AI32, AI32, AI32, AF64), nil)
-	// Op(OP_EVOLVE_EVOLVE, "evolve.evolve", opEvolve, In(Slice(TYPE_AFF), Slice(TYPE_AFF), Slice(TYPE_AFF), Slice(TYPE_AFF), Slice(TYPE_AFF), AI32, AI32, AI32, AF64), nil)
+	// RegisterOpCode(OP_EVOLVE_EVOLVE, "evolve.evolve", opEvolve, In(Slice(TYPE_AFF), Slice(TYPE_AFF), Slice(TYPE_F64), Slice(TYPE_F64), AI32, AI32, AI32, AF64), nil)
+	// RegisterOpCode(OP_EVOLVE_EVOLVE, "evolve.evolve", opEvolve, In(Slice(TYPE_AFF), Slice(TYPE_AFF), Slice(TYPE_AFF), Slice(TYPE_AFF), Slice(TYPE_AFF), AI32, AI32, AI32, AF64), nil)
 
-	Op(constants.OP_HTTP_HANDLE, "http.Handle", opHTTPHandle,
+	RegisterOpCode(constants.OP_HTTP_HANDLE, "http.Handle", opHTTPHandle,
 		In(
 			ASTR,
-			ParamEx(ParamData{typCode: constants.TYPE_FUNC, pkg: httpPkg, inputs: In(ast.MakeArgument("ResponseWriter", "", -1).AddType(constants.TypeNames[constants.TYPE_STR]), Pointer(Struct("http", "Request", "r")))})),
+			ParamEx(ParamData{typCode: constants.TYPE_FUNC, pkg: httpPkg, inputs: In(ast.MakeArgument("ResponseWriter", "", -1).AddType(constants.TypeNames[constants.TYPE_STR]), ast.Pointer(Struct("http", "Request", "r")))})),
 		Out())
 
-	Op(constants.OP_HTTP_CLOSE, "http.Close", opHTTPClose, nil, nil)
+	RegisterOpCode(constants.OP_HTTP_CLOSE, "http.Close", opHTTPClose, nil, nil)
 }
