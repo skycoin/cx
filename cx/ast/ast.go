@@ -164,8 +164,7 @@ type CXExpression struct {
 
 	ExpressionType CXEXPR_TYPE
 
-	IsUndType  bool
-	IsContinue bool
+	IsUndType bool
 }
 
 // IsMethodCall checks if expression type is method call
@@ -186,6 +185,11 @@ func (cxe CXExpression) IsArrayLiteral() bool {
 // IsBreak checks if expression type is break
 func (cxe CXExpression) IsBreak() bool {
 	return cxe.ExpressionType == CXEXPR_BREAK
+}
+
+// IsContinue checks if expression type is continue
+func (cxe CXExpression) IsContinue() bool {
+	return cxe.ExpressionType == CXEXPR_CONTINUE
 }
 
 /*
