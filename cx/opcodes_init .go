@@ -33,8 +33,9 @@ var ConstCxArg_UND_TYPE = ast.NewCXArgument(constants.TYPE_UNDEFINED)
 // ConstCxArg_Affordance Default aff parameter
 var ConstCxArg_Affordance = ast.NewCXArgument(constants.TYPE_AFF)
 
-//TODO:
-//UND is used for both integers and for undefined
+//TODO: UND is used for both integers and for undefined
+//TODO: dont need opcode for non-atomic types
+//TODO: Compiler needs to substitute for types and specify earlier
 
 func init() {
 	httpPkg, err := ast.PROGRAM.GetPackage("http")
