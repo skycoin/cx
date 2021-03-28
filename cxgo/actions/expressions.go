@@ -233,7 +233,7 @@ func UndefinedTypeOperation(leftExprs []*ast.CXExpression, rightExprs []*ast.CXE
 
 	expr := ast.MakeExpression(operator, CurrentFile, LineNo)
 	// we can't know the type until we compile the full function
-	expr.IsUndType = true
+	expr.ExpressionType = ast.CXEXPR_UND_TYPE
 	expr.Package = pkg
 
 	if len(leftExprs[len(leftExprs)-1].Outputs[0].Indexes) > 0 || leftExprs[len(leftExprs)-1].Operator != nil {

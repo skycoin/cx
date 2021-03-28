@@ -127,8 +127,6 @@ type serializedExpression struct {
 
 	ExpressionType int64
 
-	IsUndType int64
-
 	FunctionOffset int64
 	PackageOffset  int64
 }
@@ -405,7 +403,6 @@ func serializeExpression(expr *CXExpression, s *serializedCXProgram) int {
 	sExpr.ScopeOperation = int64(expr.ScopeOperation)
 
 	sExpr.ExpressionType = int64(expr.ExpressionType)
-	sExpr.IsUndType = serializeBoolean(expr.IsUndType)
 
 	fnName := expr.Function.Package.Name + "." + expr.Function.Name
 	if fnOff, found := s.FunctionsMap[fnName]; found {
@@ -1130,7 +1127,6 @@ func deserializeExpression(sExpr *serializedExpression, s *serializedCXProgram, 
 	expr.ScopeOperation = int(sExpr.ScopeOperation)
 
 	expr.ExpressionType = CXEXPR_TYPE(sExpr.ExpressionType)
-	expr.IsUndType = deserializeBool(sExpr.IsUndType)
 
 	expr.Function = deserializeExpressionFunction(sExpr, s, prgrm)
 	expr.Package = prgrm.Packages[sExpr.PackageOffset]

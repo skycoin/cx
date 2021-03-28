@@ -293,7 +293,7 @@ func ProcessUndExpression(expr *ast.CXExpression) {
 			println(ast.CompilationError(CurrentFile, LineNo), err.Error())
 		}
 	}
-	if expr.IsUndType {
+	if expr.IsUndType() {
 		for _, out := range expr.Outputs {
 			size := 1
 			if !ast.IsComparisonOperator(expr.Operator.OpCode) {
