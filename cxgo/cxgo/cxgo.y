@@ -484,7 +484,7 @@ struct_literal_fields:
                 { $$ = nil }
         |       IDENTIFIER COLON constant_expression
                 {
-			if $3[0].IsStructLiteral {
+			if $3[0].IsStructLiteral() {
 				$$ = actions.StructLiteralAssignment([]*cxcore.CXExpression{actions.StructLiteralFields($1)}, $3)
 			} else {
 				$$ = actions.Assignment([]*cxcore.CXExpression{actions.StructLiteralFields($1)}, "=", $3)
@@ -492,7 +492,7 @@ struct_literal_fields:
                 }
         |       struct_literal_fields COMMA IDENTIFIER COLON constant_expression
                 {
-			if $5[0].IsStructLiteral {
+			if $5[0].IsStructLiteral() {
 				$$ = append($1, actions.StructLiteralAssignment([]*cxcore.CXExpression{actions.StructLiteralFields($3)}, $5)...)
 			} else {
 				$$ = append($1, actions.Assignment([]*cxcore.CXExpression{actions.StructLiteralFields($3)}, "=", $5)...)
@@ -982,7 +982,7 @@ assignment_expression:
 						}
 					}
 					$$ = actions.ArrayLiteralAssignment($1, $3)
-				} else if $3[len($3) - 1].IsStructLiteral {
+				} else if $3[len($3) - 1].IsStructLiteral() {
 					if $2 != "=" && $2 != ":=" {
 						panic("")
 					}

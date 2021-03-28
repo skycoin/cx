@@ -127,11 +127,10 @@ type serializedExpression struct {
 
 	ExpressionType int64
 
-	IsStructLiteral int64
-	IsArrayLiteral  int64
-	IsUndType       int64
-	IsBreak         int64
-	IsContinue      int64
+	IsArrayLiteral int64
+	IsUndType      int64
+	IsBreak        int64
+	IsContinue     int64
 
 	FunctionOffset int64
 	PackageOffset  int64
@@ -409,7 +408,6 @@ func serializeExpression(expr *CXExpression, s *serializedCXProgram) int {
 	sExpr.ScopeOperation = int64(expr.ScopeOperation)
 
 	sExpr.ExpressionType = int64(expr.ExpressionType)
-	sExpr.IsStructLiteral = serializeBoolean(expr.IsStructLiteral)
 	sExpr.IsArrayLiteral = serializeBoolean(expr.IsArrayLiteral)
 	sExpr.IsUndType = serializeBoolean(expr.IsUndType)
 	sExpr.IsBreak = serializeBoolean(expr.IsBreak)
@@ -1138,7 +1136,6 @@ func deserializeExpression(sExpr *serializedExpression, s *serializedCXProgram, 
 	expr.ScopeOperation = int(sExpr.ScopeOperation)
 
 	expr.ExpressionType = CXEXPR_TYPE(sExpr.ExpressionType)
-	expr.IsStructLiteral = deserializeBool(sExpr.IsStructLiteral)
 	expr.IsArrayLiteral = deserializeBool(sExpr.IsArrayLiteral)
 	expr.IsUndType = deserializeBool(sExpr.IsUndType)
 	expr.IsBreak = deserializeBool(sExpr.IsBreak)

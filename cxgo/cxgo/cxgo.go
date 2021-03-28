@@ -1860,7 +1860,7 @@ yynewstate:
 		}
 	case 62:
 		{
-			if yyS[yypt-0].expressions[0].IsStructLiteral {
+			if yyS[yypt-0].expressions[0].IsStructLiteral() {
 				yyVAL.expressions = actions.StructLiteralAssignment([]*ast.CXExpression{actions.StructLiteralFields(yyS[yypt-2].tok)}, yyS[yypt-0].expressions)
 			} else {
 				yyVAL.expressions = actions.Assignment([]*ast.CXExpression{actions.StructLiteralFields(yyS[yypt-2].tok)}, "=", yyS[yypt-0].expressions)
@@ -1868,7 +1868,7 @@ yynewstate:
 		}
 	case 63:
 		{
-			if yyS[yypt-0].expressions[0].IsStructLiteral {
+			if yyS[yypt-0].expressions[0].IsStructLiteral() {
 				yyVAL.expressions = append(yyS[yypt-4].expressions, actions.StructLiteralAssignment([]*ast.CXExpression{actions.StructLiteralFields(yyS[yypt-2].tok)}, yyS[yypt-0].expressions)...)
 			} else {
 				yyVAL.expressions = append(yyS[yypt-4].expressions, actions.Assignment([]*ast.CXExpression{actions.StructLiteralFields(yyS[yypt-2].tok)}, "=", yyS[yypt-0].expressions)...)
@@ -2246,7 +2246,7 @@ yynewstate:
 						}
 					}
 					yyVAL.expressions = actions.ArrayLiteralAssignment(yyS[yypt-2].expressions, yyS[yypt-0].expressions)
-				} else if yyS[yypt-0].expressions[len(yyS[yypt-0].expressions)-1].IsStructLiteral {
+				} else if yyS[yypt-0].expressions[len(yyS[yypt-0].expressions)-1].IsStructLiteral() {
 					if yyS[yypt-1].tok != "=" && yyS[yypt-1].tok != ":=" {
 						panic("")
 					}

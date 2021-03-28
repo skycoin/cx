@@ -122,7 +122,7 @@ func PrimaryStructLiteral(ident string, strctFlds []*ast.CXExpression) []*ast.CX
 				fld := ast.MakeArgument(name, CurrentFile, LineNo)
 				fld.Type = expr.Outputs[0].Type
 
-				expr.IsStructLiteral = true
+				expr.ExpressionType = ast.CXEXPR_STRUCT_LITERAL
 
 				expr.Outputs[0].Package = pkg
 				// expr.ProgramOutput[0].Program = AST
@@ -159,7 +159,7 @@ func PrimaryStructLiteralExternal(impName string, ident string, strctFlds []*ast
 					fld.AddType(constants.TypeNames[constants.TYPE_IDENTIFIER])
 					fld.Name = expr.Outputs[0].Name
 
-					expr.IsStructLiteral = true
+					expr.ExpressionType = ast.CXEXPR_STRUCT_LITERAL
 
 					expr.Outputs[0].Package = pkg
 					// expr.ProgramOutput[0].Program = AST
