@@ -1,10 +1,11 @@
 package actions
 
 import (
+	"os"
+
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/globals"
-	"os"
 )
 
 // assignStructLiteralFields converts a struct literal to a series of struct field assignments.
@@ -210,7 +211,7 @@ func Assignment(to []*ast.CXExpression, assignOp string, from []*ast.CXExpressio
 		to[0].Outputs[0].DoesEscape = from[idx].Outputs[0].DoesEscape
 		// to[0].ProgramOutput[0].Program = AST
 
-		if from[idx].IsMethodCall {
+		if from[idx].IsMethodCall() {
 			from[idx].Inputs = append(from[idx].Outputs, from[idx].Inputs...)
 		} else {
 			from[idx].Inputs = from[idx].Outputs

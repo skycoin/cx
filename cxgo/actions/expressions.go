@@ -2,11 +2,12 @@ package actions
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/globals"
 	"github.com/skycoin/cx/cx/util2"
-	"os"
 
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
@@ -127,13 +128,13 @@ func SelectionExpressions(condExprs []*ast.CXExpression, thenExprs []*ast.CXExpr
 	ifExpr.Package = pkg
 
 	var predicate *ast.CXArgument
-	if condExprs[len(condExprs)-1].Operator == nil && !condExprs[len(condExprs)-1].IsMethodCall {
+	if condExprs[len(condExprs)-1].Operator == nil && !condExprs[len(condExprs)-1].IsMethodCall() {
 		// then it's a literal
 		predicate = condExprs[len(condExprs)-1].Outputs[0]
 	} else {
 		// then it's an expression
 		predicate = ast.MakeArgument(globals.MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo)
-		if condExprs[len(condExprs)-1].IsMethodCall {
+		if condExprs[len(condExprs)-1].IsMethodCall() {
 			// we'll change this once we have access to method's types in
 			// ProcessMethodCall
 			predicate.AddType(constants.TypeNames[constants.TYPE_BOOL])
@@ -166,7 +167,7 @@ func SelectionExpressions(condExprs []*ast.CXExpression, thenExprs []*ast.CXExpr
 	skipExpr.ElseLines = 0
 
 	var exprs []*ast.CXExpression
-	if condExprs[len(condExprs)-1].Operator != nil || condExprs[len(condExprs)-1].IsMethodCall {
+	if condExprs[len(condExprs)-1].Operator != nil || condExprs[len(condExprs)-1].IsMethodCall() {
 		exprs = append(exprs, condExprs...)
 	}
 	exprs = append(exprs, ifExpr)

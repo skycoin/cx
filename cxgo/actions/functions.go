@@ -3,11 +3,12 @@ package actions
 import (
 	"errors"
 	"fmt"
+	"os"
+
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/globals"
 	"github.com/skycoin/cx/cx/util2"
-	"os"
 
 	"github.com/jinzhu/copier"
 )
@@ -172,7 +173,7 @@ func FunctionDeclaration(fn *ast.CXFunction, inputs, outputs []*ast.CXArgument, 
 		//}
 		// process short declaration
 		if len(expr.Outputs) > 0 && len(expr.Inputs) > 0 && expr.Outputs[0].IsShortAssignmentDeclaration && !expr.IsStructLiteral && !isParseOp(expr) {
-			if expr.IsMethodCall {
+			if expr.IsMethodCall() {
 				fn.Expressions[i-1].Outputs[0].Type = fn.Expressions[i].Operator.Outputs[0].Type
 				fn.Expressions[i].Outputs[0].Type = fn.Expressions[i].Operator.Outputs[0].Type
 			} else {
@@ -208,7 +209,7 @@ func FunctionCall(exprs []*ast.CXExpression, args []*ast.CXExpression) []*ast.CX
 			println(ast.CompilationError(CurrentFile, LineNo), err.Error())
 			return nil
 		} else {
-			expr.IsMethodCall = true
+			expr.ExpressionType = ast.CXEXPR_METHOD_CALL
 		}
 
 		if len(expr.Outputs) > 0 && expr.Outputs[0].Fields == nil {
@@ -294,11 +295,11 @@ func ProcessUndExpression(expr *ast.CXExpression) {
 	}
 	if expr.IsUndType {
 		for _, out := range expr.Outputs {
-            size := 1
-            if !ast.IsComparisonOperator(expr.Operator.OpCode) {
-		        size = ast.GetSize(ast.GetAssignmentElement(expr.Inputs[0]))
-            }
-            out.Size = size
+			size := 1
+			if !ast.IsComparisonOperator(expr.Operator.OpCode) {
+				size = ast.GetSize(ast.GetAssignmentElement(expr.Inputs[0]))
+			}
+			out.Size = size
 			out.TotalSize = size
 		}
 	}
@@ -472,8 +473,6 @@ func ProcessLocalDeclaration(symbols *[]map[string]*ast.CXArgument, symbolsScope
 	arg.IsLocalDeclaration = (*symbolsScope)[arg.Package.Name+"."+arg.Name]
 }
 
-
-
 func ProcessGoTos(fn *ast.CXFunction, exprs []*ast.CXExpression) {
 	for i, expr := range exprs {
 		if expr.Label != "" && expr.Operator == ast.Natives[constants.OP_JMP] {
@@ -496,7 +495,7 @@ func checkMatchParamTypes(expr *ast.CXExpression, expected, received []*ast.CXAr
 		expectedType := ast.GetFormattedType(expected[i])
 		receivedType := ast.GetFormattedType(received[i])
 
-		if expr.IsMethodCall && expected[i].IsPointer && i == 0 {
+		if expr.IsMethodCall() && expected[i].IsPointer && i == 0 {
 			// if method receiver is pointer, remove *
 			if expectedType[0] == '*' {
 				// we need to check if it's not an `str`
@@ -764,7 +763,7 @@ func UpdateSymbolsTable(symbols *[]map[string]*ast.CXArgument, sym *ast.CXArgume
 }
 
 func ProcessMethodCall(expr *ast.CXExpression, symbols *[]map[string]*ast.CXArgument, offset *int, shouldExist bool) {
-	if expr.IsMethodCall {
+	if expr.IsMethodCall() {
 		var inp *ast.CXArgument
 		var out *ast.CXArgument
 

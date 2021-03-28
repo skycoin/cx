@@ -4,14 +4,12 @@ package cxgo
 
 import (
 	__yyfmt__ "fmt"
+	"strconv"
+
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
-)
-
-import (
 	"github.com/skycoin/cx/cxgo/actions"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
-	"strconv"
 )
 
 /*
@@ -2319,7 +2317,7 @@ yynewstate:
 		}
 	case 205:
 		{
-			if len(yyS[yypt-1].expressions) > 0 && yyS[yypt-1].expressions[len(yyS[yypt-1].expressions)-1].Operator == nil && !yyS[yypt-1].expressions[len(yyS[yypt-1].expressions)-1].IsMethodCall {
+			if len(yyS[yypt-1].expressions) > 0 && yyS[yypt-1].expressions[len(yyS[yypt-1].expressions)-1].Operator == nil && !yyS[yypt-1].expressions[len(yyS[yypt-1].expressions)-1].IsMethodCall() {
 				outs := yyS[yypt-1].expressions[len(yyS[yypt-1].expressions)-1].Outputs
 				if len(outs) > 0 {
 					println(ast.CompilationError(outs[0].FileName, outs[0].FileLine), "invalid expression")
