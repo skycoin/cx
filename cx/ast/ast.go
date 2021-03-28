@@ -10,6 +10,27 @@ import (
 )
 
 /*
+ * CXEXPR_TYPE enum contains CX expressions types for CXExpression struct
+ */
+type CXEXPR_TYPE int
+
+const (
+	CXEXPR_UNUSED CXEXPR_TYPE = iota
+	CXEXPR_METHOD_CALL
+	CXEXPR_STRUCT_LITERAL
+	CXEXPR_ARRAY_LITERAL
+	CXEXPR_BREAK
+	CXEXPR_CONTINUE
+	CXEXPR_SCOPE_NEW
+	CXEXPR_SCOPE_DEL
+)
+
+// String returns alias for constants defined for cx edpression type
+func (cxet CXEXPR_TYPE) String() string {
+	return [...]string{"Unused", "MethodCall", "StructLiteral", "ArrayLiteral", "Break", "Continue", "ScopeNew", "ScopeDel"}[cxet]
+}
+
+/*
  * The CXProgram struct contains a full program.
  *
  * It is the root data structures for all code, variable and data structures
@@ -141,12 +162,18 @@ type CXExpression struct {
 	// 1 = start new scope; -1 = end scope; 0 = just regular expression
 	ScopeOperation int
 
-	IsMethodCall    bool
+	ExpressionType CXEXPR_TYPE
+
 	IsStructLiteral bool
 	IsArrayLiteral  bool
 	IsUndType       bool
 	IsBreak         bool
 	IsContinue      bool
+}
+
+// IsMethodCall checks if expression type is method call
+func (cxe CXExpression) IsMethodCall() bool {
+	return cxe.ExpressionType == CXEXPR_METHOD_CALL
 }
 
 /*
