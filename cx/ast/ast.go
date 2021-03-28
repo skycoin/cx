@@ -164,16 +164,20 @@ type CXExpression struct {
 
 	ExpressionType CXEXPR_TYPE
 
-	IsStructLiteral bool
-	IsArrayLiteral  bool
-	IsUndType       bool
-	IsBreak         bool
-	IsContinue      bool
+	IsArrayLiteral bool
+	IsUndType      bool
+	IsBreak        bool
+	IsContinue     bool
 }
 
 // IsMethodCall checks if expression type is method call
 func (cxe CXExpression) IsMethodCall() bool {
 	return cxe.ExpressionType == CXEXPR_METHOD_CALL
+}
+
+// IsStructLiteral checks if expression type is struct literal
+func (cxe CXExpression) IsStructLiteral() bool {
+	return cxe.ExpressionType == CXEXPR_STRUCT_LITERAL
 }
 
 /*
