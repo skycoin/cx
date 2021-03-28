@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	repl "github.com/skycoin/cx/cmd/cxrepl"
 	cxcore "github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cx/ast"
@@ -102,9 +100,6 @@ func Run(args []string) {
 
 	// options, file pointers, filenames
 	cxArgs, sourceCode, fileNames := ast.ParseArgsForCX(commandLine.Args(), true)
-
-	fmt.Println("fileNames :", fileNames)
-	//	fmt.Print("sourceCode :", sourceCode, "\n")
 
 	// Propagate some options out to other packages.
 	cxgo.DebugLexer = options.debugLexer // in package cxgo
