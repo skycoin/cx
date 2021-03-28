@@ -125,7 +125,9 @@ func init() {
 	RegisterOpCode(constants.OP_UND_SPRINTF, "sprintf", opSprintf, In(AUND), Out(ASTR))
 
 	//read user input from standard input
-	ast.Op_V2(constants.OP_UND_READ, "read", opRead, nil, Out(ASTR))
+	//TODO: Better Keyword
+	//TODO: Put into package
+	ast.Op_V2(constants.OP_UND_READ, "read", OpReadStdin, nil, Out(ASTR))
 
 	ast.Op_V2(constants.OP_BOOL_PRINT, "bool.print", opBoolPrint, In(ABOOL), nil)
 	ast.Operator(constants.OP_BOOL_EQUAL, "bool.eq", opBoolEqual, In(ABOOL, ABOOL), Out(ABOOL), constants.TYPE_BOOL, constants.OP_EQUAL)
