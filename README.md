@@ -185,6 +185,9 @@ The docs also provide a high level [overview](docs/overview.md) over the languag
 
 Guide for  cx compiler development
 * [Compiler Development](docs/CompilerDevelopment.md)
+* [cxgrammer](docs/cxgrammer.md)
+* [controlofdataforparser](docs/controlofdataforparser.md)
+
 
 how  to write cx wrapping libraty in Go Programming Language
 * [Wrapping golang libraries](docs/Wrappinggolanglibraries.md)
