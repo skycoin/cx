@@ -25,10 +25,6 @@ import (
 	yparser "github.com/skycoin/cx/cmd/goyacc/parser/yacc"
 )
 
-func init() {
-	isTesting = true
-}
-
 // func caller(s string, va ...interface{}) {
 // 	_, fn, fl, _ := runtime.Caller(2)
 // 	fmt.Fprintf(os.Stderr, "caller: %s:%d: ", path.Base(fn), fl)
@@ -173,7 +169,7 @@ func test0(t *testing.T, root string, filter func(pth string) bool, opts *Option
 
 		if xerrors {
 			var buf bytes.Buffer
-			if err := p.SkeletonXErrors(&buf); err != nil {
+			if err = p.SkeletonXErrors(&buf); err != nil {
 				t.Error(err)
 			} else {
 				t.Logf("\n%s", buf.Bytes())

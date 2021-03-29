@@ -81,7 +81,7 @@ func GetExampleFileContent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var example ExampleContent
-	if err := json.Unmarshal(b, &example); err != nil {
+	if err = json.Unmarshal(b, &example); err != nil {
 		http.Error(w, err.Error(), 500)
 		return
 	}

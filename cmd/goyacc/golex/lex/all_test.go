@@ -6,10 +6,8 @@ package lex // import "github.com/skycoin/cx/cmd/goyacc/golex/lex"
 
 import (
 	"fmt"
-	"os"
 	"path"
 	"runtime"
-	"strings"
 	"testing"
 )
 
