@@ -228,11 +228,11 @@ exit /b
 
 
 :buildCX
-  %BIN_PATH%\goyacc -o %CXGO_PATH%\cxgo0\cxgo0.go %CXGO_PATH%\cxgo0\cxgo0.y
-  call :showResults "goyacc cxgo0" "1st pass -" "ERROR in 1st pass -"
+  %BIN_PATH%\goyacc -o %CXGO_PATH%\cxgo0\parser.go %CXGO_PATH%\cxgo0\grammer.y
+  call :showResults "goyacc parser" "1st pass -" "ERROR in 1st pass -"
 
-  %BIN_PATH%\goyacc -o %CXGO_PATH%\parser\cxgo.go %CXGO_PATH%\parser\cxgo.y
-  call :showResults "goyacc cxgo" "2nd pass -" "ERROR in 2nd pass -"
+  %BIN_PATH%\goyacc -o %CXGO_PATH%\parser\lexer.go %CXGO_PATH%\parser\lexer.y
+  call :showResults "goyacc lexer" "2nd pass -" "ERROR in 2nd pass -"
 
 
   go build -tags="base cxfx" -i -o %BIN_PATH%\cx.exe github.com\skycoin\cx\cmd\cx

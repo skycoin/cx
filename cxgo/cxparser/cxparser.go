@@ -3,15 +3,16 @@ package cxparser
 import (
 	"bufio"
 	"bytes"
-	"github.com/skycoin/cx/cx/ast"
-	"github.com/skycoin/cx/cx/constants"
-	globals2 "github.com/skycoin/cx/cx/globals"
-	"github.com/skycoin/cx/cxgo/globals"
 	"io"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"github.com/skycoin/cx/cx/ast"
+	"github.com/skycoin/cx/cx/constants"
+	globals2 "github.com/skycoin/cx/cx/globals"
+	"github.com/skycoin/cx/cxgo/globals"
 
 	"github.com/skycoin/cx/cxgo/actions"
 	"github.com/skycoin/cx/cxgo/cxgo"
@@ -38,7 +39,7 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 	// We need to traverse the elements by hierarchy first add all the
 	// packages and structs at the same time then add globals, as these
 	// can be of a custom type (and it could be imported) the signatures
-	// of functions and methods are added in the cxgo0.y pass
+	// of functions and methods are added in the grammer.y pass
 	parseErrors := 0
 	if len(sourceCode) > 0 {
 		parseErrors = lexerStep0(sourceCodeCopy, fileNames)

@@ -42,8 +42,8 @@ install:
 
 # scripts to run before build
 before_build:
-  - goyacc -o %GOPATH%\src\github.com\skycoin\cx\cxgo\cxgo0\cxgo0.go %GOPATH%\src\github.com\skycoin\cx\cxgo\cxgo0\cxgo0.y
-  - goyacc -o %GOPATH%\src\github.com\skycoin\cx\cxgo\cxgo.go %GOPATH%\src\github.com\skycoin\cx\cxgo\cxgo.y
+  - goyacc -o %GOPATH%\src\github.com\skycoin\cx\cxgo\cxgo0\parser.go %GOPATH%\src\github.com\skycoin\cx\cxgo\cxgo0\grammer.y
+  - goyacc -o %GOPATH%\src\github.com\skycoin\cx\cxgo\lexer.go %GOPATH%\src\github.com\skycoin\cx\cxgo\lexer.y
 
 # use custom build_script
 build_script:

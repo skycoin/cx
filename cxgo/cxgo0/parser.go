@@ -17,8 +17,8 @@ import (
 
 /*
    This is a computer generated file
-   - cxgo0.go is generated from cxgo0.go via
-   - ./bin/goyacc -o cxgo/cxgo0/cxgo0.go cxgo/cxgo0/cxgo0.y
+   - parser.go is generated from grammer.y via
+   - ./bin/goyacc -o cxgo/cxgo0/parser.go cxgo/cxgo0/grammer.y
 */
 
 var PRGRM0 *ast.CXProgram
