@@ -454,7 +454,7 @@ func init() {
 	ast.Op_V2(OP_AL_DELETE_BUFFERS, "al.DeleteBuffers", opAlDeleteBuffers, In(ast.ConstCxArg_I32), nil)
 	ast.Op_V2(OP_AL_DELETE_SOURCES, "al.DeleteSources", opAlDeleteSources, In(ast.Slice(constants.TYPE_I32)), nil)
 	ast.Op_V2(OP_AL_DEVICE_ERROR, "al.DeviceError", opAlDeviceError, nil, Out(ast.ConstCxArg_I32))
-	ast.Op_V2(OP_AL_ERROR, "al.ProgramError", opAlError, nil, Out(ast.ConstCxArg_I32))
+	ast.Op_V2(OP_AL_ERROR, "al.Error", opAlError, nil, Out(ast.ConstCxArg_I32))
 	ast.Op_V2(OP_AL_EXTENSIONS, "al.Extensions", opAlExtensions, nil, Out(ast.ConstCxArg_STR))
 	ast.Op_V2(OP_AL_OPEN_DEVICE, "al.OpenDevice", opAlOpenDevice, nil, nil)
 	ast.Op_V2(OP_AL_PAUSE_SOURCES, "al.PauseSources", opAlPauseSources, In(ast.Slice(constants.TYPE_I32)), nil)
