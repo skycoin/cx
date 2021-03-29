@@ -95,7 +95,7 @@ yystate4:
 	}
 
 yystate5:
-	c = s.next()
+	// c = s.next()
 	goto yyrule9
 
 yystate6:
@@ -193,7 +193,7 @@ yystate15:
 	}
 
 yystate16:
-	c = s.next()
+	// c = s.next()
 	goto yyrule3
 
 yystate17:
@@ -210,7 +210,7 @@ yystate17:
 	}
 
 yystate18:
-	c = s.next()
+	// c = s.next()
 	goto yyrule7
 
 yystate19:
@@ -346,7 +346,7 @@ yystate32:
 	}
 
 yystate33:
-	c = s.next()
+	// c = s.next()
 	goto yyrule4
 
 yystate34:
@@ -359,7 +359,7 @@ yystate34:
 	}
 
 yystate35:
-	c = s.next()
+	// c = s.next()
 	goto yyrule5
 
 yyrule1: // [ \t]+
