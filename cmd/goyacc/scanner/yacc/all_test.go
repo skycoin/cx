@@ -8,18 +8,16 @@ import (
 	"bytes"
 	"fmt"
 	"go/token"
-	"path"
-	"runtime"
 	"testing"
 	"unicode"
 )
 
-func dbg(s string, va ...interface{}) {
-	_, fn, fl, _ := runtime.Caller(1)
-	fmt.Printf("%s:%d: ", path.Base(fn), fl)
-	fmt.Printf(s, va...)
-	fmt.Println()
-}
+// func dbg(s string, va ...interface{}) {
+// 	_, fn, fl, _ := runtime.Caller(1)
+// 	fmt.Printf("%s:%d: ", path.Base(fn), fl)
+// 	fmt.Printf(s, va...)
+// 	fmt.Println()
+// }
 
 type row struct {
 	src string

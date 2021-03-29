@@ -3,23 +3,22 @@
 package cxos
 
 import (
+	"github.com/skycoin/cx/cx/ast"
 	"time"
-
-	"github.com/skycoin/cx/cx"
 )
 
 func makeTimestamp() int64 {
 	return time.Now().UnixNano() / (int64(time.Millisecond) / int64(time.Nanosecond))
 }
 
-func opTimeUnixMilli(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opTimeUnixMilli(inputs []ast.CXValue, outputs []ast.CXValue) {
 	outputs[0].Set_i64(makeTimestamp())
 }
 
-func opTimeUnixNano(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opTimeUnixNano(inputs []ast.CXValue, outputs []ast.CXValue) {
     outputs[0].Set_i64(time.Now().UnixNano())
 }
 
-func opTimeSleep(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opTimeSleep(inputs []ast.CXValue, outputs []ast.CXValue) {
 	time.Sleep(time.Duration(inputs[0].Get_i32()) * time.Millisecond)
 }

@@ -141,6 +141,13 @@ func checkAST(args []string) bool {
 	return false
 }
 
+func checktokenizeMode(args []string) bool {
+	if strings.Contains(args[0], "tokenize") {
+		return true
+	}
+	return false
+}
+
 func printEnv() {
 	ex, _ := os.Executable()
 

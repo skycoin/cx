@@ -34,8 +34,8 @@ var (
 		AssocNone:       "%nonassoc",
 		AssocPrecedence: "%precedence",
 	}
-	empty     = "ε"
-	isTesting bool
+	empty = "ε"
+	// isTesting bool
 )
 
 type action struct {
@@ -142,9 +142,9 @@ type item1 struct { // LR 1 item
 	sym  *Symbol
 }
 
-func (i item1) dump(y *y) string {
-	return fmt.Sprintf("%s, %s", i.item.dump(y), i.sym.Name)
-}
+// func (i item1) dump(y *y) string {
+// 	return fmt.Sprintf("%s, %s", i.item.dump(y), i.sym.Name)
+// }
 
 type itemSet []item
 
@@ -236,20 +236,20 @@ func (s itemSet) state(y *y) (int, bool) {
 	return n, ok
 }
 
-type itemSet1 map[item1]bool
+// type itemSet1 map[item1]bool
 
-func (s itemSet1) add(i item1) bool { // true: s already has i
-	if i.sym.id == 0 {
-		return true
-	}
+// func (s itemSet1) add(i item1) bool { // true: s already has i
+// 	if i.sym.id == 0 {
+// 		return true
+// 	}
 
-	if _, ok := s[i]; ok {
-		return true
-	}
+// 	if _, ok := s[i]; ok {
+// 		return true
+// 	}
 
-	s[i] = true
-	return false
-}
+// 	s[i] = true
+// 	return false
+// }
 
 type stateItem struct {
 	state int
@@ -2070,7 +2070,7 @@ examples:
 
 				stack, la, ok := parse(example)
 				if !ok {
-					y.err(pos, "parser unexpectedly accepts xerror example: %v %s", example, lit)
+					y.err(pos, "cxgo unexpectedly accepts xerror example: %v %s", example, lit)
 					continue
 				}
 

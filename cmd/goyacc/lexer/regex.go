@@ -17,7 +17,7 @@ func qs(s string) string {
 }
 
 // ParseRE compiles a regular expression re into Nfa, returns the re component starting
-// and accepting states or an Error if any.
+// and accepting states or an ProgramError if any.
 func (n *Nfa) ParseRE(name, re string) (in, out *NfaState, err error) {
 	s := NewScannerSource(name, strings.NewReader(re))
 
@@ -215,7 +215,7 @@ func (s *ScannerSource) parseChar(more string) (arune rune) {
 	s.Move()
 	switch arune = s.Current(); arune {
 	default:
-		if strings.IndexAny(string(arune), more) < 0 {
+		if !strings.ContainsAny(string(arune), more) {
 			panic(fmt.Errorf(`unknown escape sequence "\%s (more: %q)"`, string(arune), more))
 		}
 

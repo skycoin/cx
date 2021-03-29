@@ -3,26 +3,26 @@
 package cxos
 
 import (
+	"github.com/skycoin/cx/cx/ast"
+	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/skycoin/src/cipher"
-
-	"github.com/skycoin/cx/cx"
 )
 
 func init() {
-	cipherPkg := cxcore.MakePackage("cipher")
-	pubkeyStrct := cxcore.MakeStruct("PubKey")
-	seckeyStrct := cxcore.MakeStruct("SecKey")
+	cipherPkg := ast.MakePackage("cipher")
+	pubkeyStrct := ast.MakeStruct("PubKey")
+	seckeyStrct := ast.MakeStruct("SecKey")
 
 	// PubKey
-	pubkeyFld := cxcore.MakeArgument("PubKey", "", -1).AddType(cxcore.TypeNames[cxcore.TYPE_UI8]).AddPackage(cipherPkg)
-	pubkeyFld.DeclarationSpecifiers = append(pubkeyFld.DeclarationSpecifiers, cxcore.DECL_ARRAY)
+	pubkeyFld := ast.MakeArgument("PubKey", "", -1).AddType(constants.TypeNames[constants.TYPE_UI8]).AddPackage(cipherPkg)
+	pubkeyFld.DeclarationSpecifiers = append(pubkeyFld.DeclarationSpecifiers, constants.DECL_ARRAY)
 	pubkeyFld.IsArray = true
 	pubkeyFld.Lengths = []int{33} // Yes, PubKey is 33 bytes long.
 	pubkeyFld.TotalSize = 33      // 33 * 1 byte (ui8)
 
 	// SecKey
-	seckeyFld := cxcore.MakeArgument("SecKey", "", -1).AddType(cxcore.TypeNames[cxcore.TYPE_UI8]).AddPackage(cipherPkg)
-	seckeyFld.DeclarationSpecifiers = append(seckeyFld.DeclarationSpecifiers, cxcore.DECL_ARRAY)
+	seckeyFld := ast.MakeArgument("SecKey", "", -1).AddType(constants.TypeNames[constants.TYPE_UI8]).AddPackage(cipherPkg)
+	seckeyFld.DeclarationSpecifiers = append(seckeyFld.DeclarationSpecifiers, constants.DECL_ARRAY)
 	seckeyFld.IsArray = true
 	seckeyFld.Lengths = []int{32} // Yes, SecKey is 32 bytes long.
 	seckeyFld.TotalSize = 33      // 33 * 1 byte (ui8)
@@ -33,11 +33,11 @@ func init() {
 	cipherPkg.AddStruct(pubkeyStrct)
 	cipherPkg.AddStruct(seckeyStrct)
 
-	cxcore.PROGRAM.AddPackage(cipherPkg)
+	ast.PROGRAM.AddPackage(cipherPkg)
 }
 
 // opCipherGenerateKeyPair generates a PubKey and a SecKey.
-func opCipherGenerateKeyPair(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opCipherGenerateKeyPair(inputs []ast.CXValue, outputs []ast.CXValue) {
 	pubKey, secKey := cipher.GenerateKeyPair()
 
 	bPubKey := make([]byte, len(pubKey))

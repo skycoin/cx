@@ -100,9 +100,9 @@ type AssocDef struct {
 
 // Options amend the behavior of the various Process* functions.
 //
-// Error Examples
+// ProgramError Examples
 //
-// Error examples implement the ideas in "Generating LR Syntax Error Messages
+// ProgramError examples implement the ideas in "Generating LR Syntax ProgramError Messages
 // from Examples"[1]. They extend the capability of a LALR parser to produce
 // better error messages.
 //
@@ -604,11 +604,11 @@ type State struct {
 	parent    *State               // On path to state 0.
 	psym      *Symbol              // Label for the edge parent -> state.
 	resolved  []string             //TODO non string data.
-	sym       *Symbol              // Sym transfering from parent to state.
-	trans     map[trans]stateItem  // sym.i -> stateItem
-	xitems    itemSet              // {x ∈ closure(kernel) | x.rule -> ε }.
-	xla       []symSet             // xitems LA.
-	y         *y                   //
+	// sym       *Symbol              // Sym transfering from parent to state.
+	trans  map[trans]stateItem // sym.i -> stateItem
+	xitems itemSet             // {x ∈ closure(kernel) | x.rule -> ε }.
+	xla    []symSet            // xitems LA.
+	y      *y                  //
 }
 
 func newState(y *y, s itemSet) *State {
@@ -622,13 +622,13 @@ func newState(y *y, s itemSet) *State {
 	}
 }
 
-func (s *State) zpath() []int {
-	if s == nil {
-		return nil
-	}
+// func (s *State) zpath() []int {
+// 	if s == nil {
+// 		return nil
+// 	}
 
-	return append(s.parent.zpath(), s.id)
-}
+// 	return append(s.parent.zpath(), s.id)
+// }
 
 func (s *State) syms0() []*Symbol {
 	s.y.zeroPaths()
@@ -961,7 +961,7 @@ func (s *Symbol) String() string {
 // XError describes the parser state for an error by example. See [1].
 type XError struct {
 	Stack     []int   // Parser states stack, potentially partial, of the error event. TOS is Stack[len(Stack)-1].
-	Lookahead *Symbol // Error lookahead symbol. Nil if LA is the reserved error symbol.
+	Lookahead *Symbol // ProgramError lookahead symbol. Nil if LA is the reserved error symbol.
 	Msg       string  // Textual representation of the error condition.
 }
 

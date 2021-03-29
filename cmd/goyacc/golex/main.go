@@ -28,14 +28,14 @@ var (
 	stderr = bufio.NewWriter(os.Stderr)
 )
 
-type renderer interface {
-	render(srcname string, l *lex.L)
-}
+// type renderer interface {
+// 	render(srcname string, l *lex.L)
+// }
 
-type writer interface {
-	io.Writer
-	wprintf(s string, args ...interface{}) (n int, err error)
-}
+// type writer interface {
+// 	io.Writer
+// 	wprintf(s string, args ...interface{}) (n int, err error)
+// }
 
 type noRender struct {
 	w io.Writer

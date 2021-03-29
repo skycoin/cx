@@ -3,17 +3,17 @@
 package cxfx
 
 import (
+	"github.com/skycoin/cx/cx/ast"
 	"unicode/utf8"
 
 	"github.com/skycoin/gltext"
 
-	"github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cxos"
 )
 
 var fonts map[string]*gltext.Font = make(map[string]*gltext.Font, 0)
 
-func loadTrueType(inputs []cxcore.CXValue, outputs []cxcore.CXValue, fixedPipeline bool) {
+func loadTrueType(inputs []ast.CXValue, outputs []ast.CXValue, fixedPipeline bool) {
 	if file := cxos.ValidFile(inputs[0].Get_i32()); file != nil {
 		if theFont, err := gltext.LoadTruetype(file,
             inputs[2].Get_i32(), rune(inputs[3].Get_i32()), rune(inputs[4].Get_i32()),
@@ -23,32 +23,32 @@ func loadTrueType(inputs []cxcore.CXValue, outputs []cxcore.CXValue, fixedPipeli
 	}
 }
 
-func opGltextLoadTrueType(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opGltextLoadTrueType(inputs []ast.CXValue, outputs []ast.CXValue) {
 	loadTrueType(inputs, outputs, true)
 }
 
-func opGltextLoadTrueTypeCore(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opGltextLoadTrueTypeCore(inputs []ast.CXValue, outputs []ast.CXValue) {
 	loadTrueType(inputs, outputs, false)
 }
 
-func opGltextPrintf(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opGltextPrintf(inputs []ast.CXValue, outputs []ast.CXValue) {
 	if err := fonts[inputs[0].Get_str()].Printf(inputs[1].Get_f32(), inputs[2].Get_f32(), inputs[3].Get_str()); err != nil {
 		panic(err)
 	}
 }
 
-func opGltextMetrics(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opGltextMetrics(inputs []ast.CXValue, outputs []ast.CXValue) {
 	width, height := fonts[inputs[0].Get_str()].Metrics(inputs[1].Get_str())
 
 	outputs[0].Set_i32(int32(width))
 	outputs[1].Set_i32(int32(height))
 }
 
-func opGltextTexture(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opGltextTexture(inputs []ast.CXValue, outputs []ast.CXValue) {
 	outputs[0].Set_i32(int32(fonts[inputs[0].Get_str()].Texture()))
 }
 
-func opGltextNextGlyph(inputs []cxcore.CXValue, outputs []cxcore.CXValue) { // refactor
+func opGltextNextGlyph(inputs []ast.CXValue, outputs []ast.CXValue) { // refactor
 	font := fonts[inputs[0].Get_str()]
 	str := inputs[1].Get_str()
 	var index int = int(inputs[2].Get_i32())
@@ -78,21 +78,21 @@ func opGltextNextGlyph(inputs []cxcore.CXValue, outputs []cxcore.CXValue) { // r
 	outputs[6].Set_i32(int32(advance))
 }
 
-func opGltextGlyphBounds(inputs []cxcore.CXValue, outputs []cxcore.CXValue) {
+func opGltextGlyphBounds(inputs []ast.CXValue, outputs []ast.CXValue) {
 	font := fonts[inputs[0].Get_str()]
 	var maxGlyphWidth, maxGlyphHeight int = font.GlyphBounds()
 	outputs[0].Set_i32(int32(maxGlyphWidth))
 	outputs[1].Set_i32(int32(maxGlyphHeight))
 }
 
-func opGltextGlyphMetrics(inputs []cxcore.CXValue, outputs []cxcore.CXValue) { // refactor
+func opGltextGlyphMetrics(inputs []ast.CXValue, outputs []ast.CXValue) { // refactor
 	width, height := fonts[inputs[0].Get_str()].GlyphMetrics(uint32(inputs[1].Get_i32()))
 
 	outputs[0].Set_i32(int32(width))
 	outputs[1].Set_i32(int32(height))
 }
 
-func opGltextGlyphInfo(inputs []cxcore.CXValue, outputs []cxcore.CXValue) { // refactor
+func opGltextGlyphInfo(inputs []ast.CXValue, outputs []ast.CXValue) { // refactor
 	font := fonts[inputs[0].Get_str()]
 	glyph := inputs[1].Get_i32()
 	var x int = 0
