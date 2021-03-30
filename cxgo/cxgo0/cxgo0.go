@@ -2,17 +2,15 @@
 
 package cxgo0
 
-import (
-	__yyfmt__ "fmt"
-	"github.com/skycoin/cx/cx/ast"
-	"github.com/skycoin/cx/cx/constants"
-)
+import __yyfmt__ "fmt"
 
 import (
 	// "fmt"
 	"bytes"
-
-	. "github.com/skycoin/cx/cxgo/actions"
+	// "os"
+	"github.com/skycoin/cx/cx/ast"
+	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cxgo/actions"
 )
 
 /*
@@ -1617,15 +1615,15 @@ yynewstate:
 	switch r {
 	case 8:
 		{
-			DeclareGlobal(yyS[yypt-2].argument, yyS[yypt-1].argument, nil, false)
+			actions.DeclareGlobal(yyS[yypt-2].argument, yyS[yypt-1].argument, nil, false)
 		}
 	case 9:
 		{
-			DeclareGlobal(yyS[yypt-4].argument, yyS[yypt-3].argument, nil, false)
+			actions.DeclareGlobal(yyS[yypt-4].argument, yyS[yypt-3].argument, nil, false)
 		}
 	case 10:
 		{
-			DeclareStruct(yyS[yypt-2].tok, yyS[yypt-0].arguments)
+			actions.DeclareStruct(yyS[yypt-2].tok, yyS[yypt-0].arguments)
 		}
 	case 11:
 		{
@@ -1645,11 +1643,11 @@ yynewstate:
 		}
 	case 15:
 		{
-			DeclarePackage(yyS[yypt-1].tok)
+			actions.DeclarePackage(yyS[yypt-1].tok)
 		}
 	case 16:
 		{
-			DeclareImport(yyS[yypt-1].tok, CurrentFileName, lineNo)
+			actions.DeclareImport(yyS[yypt-1].tok, CurrentFileName, lineNo)
 		}
 	case 17:
 		{
@@ -1715,7 +1713,7 @@ yynewstate:
 	case 30:
 		{
 			if pkg, err := PRGRM0.GetCurrentPackage(); err == nil {
-				arg := ast.MakeArgument("", CurrentFile, LineNo)
+				arg := ast.MakeArgument("", actions.CurrentFile, actions.LineNo)
 				arg.AddType(constants.TypeNames[constants.TYPE_UNDEFINED])
 				arg.Name = yyS[yypt-0].tok
 				arg.Package = pkg
@@ -1730,22 +1728,22 @@ yynewstate:
 		}
 	case 32:
 		{
-			arg := DeclarationSpecifiersStruct(yyS[yypt-0].tok, "", false, CurrentFile, LineNo)
+			arg := actions.DeclarationSpecifiersStruct(yyS[yypt-0].tok, "", false, actions.CurrentFile, actions.LineNo)
 			yyVAL.arguments = []*ast.CXArgument{arg}
 		}
 	case 33:
 		{
-			arg := DeclarationSpecifiersBasic(yyS[yypt-0].i)
+			arg := actions.DeclarationSpecifiersBasic(yyS[yypt-0].i)
 			yyVAL.arguments = []*ast.CXArgument{arg}
 		}
 	case 34:
 		{
-			arg := DeclarationSpecifiersStruct(yyS[yypt-0].tok, "", false, CurrentFile, LineNo)
+			arg := actions.DeclarationSpecifiersStruct(yyS[yypt-0].tok, "", false, actions.CurrentFile, actions.LineNo)
 			yyVAL.arguments = append(yyS[yypt-2].arguments, arg)
 		}
 	case 35:
 		{
-			arg := DeclarationSpecifiersBasic(yyS[yypt-0].i)
+			arg := actions.DeclarationSpecifiersBasic(yyS[yypt-0].i)
 			yyVAL.arguments = append(yyS[yypt-2].arguments, arg)
 		}
 	case 36:
@@ -1758,44 +1756,44 @@ yynewstate:
 		}
 	case 38:
 		{
-			arg := ast.MakeArgument("", CurrentFile, LineNo).AddType("func")
+			arg := ast.MakeArgument("", actions.CurrentFile, actions.LineNo).AddType("func")
 			arg.Inputs = yyS[yypt-1].arguments
 			arg.Outputs = yyS[yypt-0].arguments
-			yyVAL.argument = DeclarationSpecifiers(arg, []int{0}, constants.DECL_FUNC)
+			yyVAL.argument = actions.DeclarationSpecifiers(arg, []int{0}, constants.DECL_FUNC)
 		}
 	case 39:
 		{
-			yyVAL.argument = DeclarationSpecifiers(yyS[yypt-0].argument, []int{0}, constants.DECL_POINTER)
+			yyVAL.argument = actions.DeclarationSpecifiers(yyS[yypt-0].argument, []int{0}, constants.DECL_POINTER)
 		}
 	case 40:
 		{
-			yyVAL.argument = DeclarationSpecifiers(yyS[yypt-0].argument, []int{0}, constants.DECL_SLICE)
+			yyVAL.argument = actions.DeclarationSpecifiers(yyS[yypt-0].argument, []int{0}, constants.DECL_SLICE)
 		}
 	case 41:
 		{
-			yyVAL.argument = DeclarationSpecifiersBasic(yyS[yypt-0].i)
+			yyVAL.argument = actions.DeclarationSpecifiersBasic(yyS[yypt-0].i)
 		}
 	case 42:
 		{
-			yyVAL.argument = DeclarationSpecifiersStruct(yyS[yypt-0].tok, "", false, CurrentFileName, lineNo)
+			yyVAL.argument = actions.DeclarationSpecifiersStruct(yyS[yypt-0].tok, "", false, CurrentFileName, lineNo)
 		}
 	case 43:
 		{
-			basic := DeclarationSpecifiersBasic(yyS[yypt-0].i)
-			yyVAL.argument = DeclarationSpecifiers(basic, yyS[yypt-1].ints, constants.DECL_ARRAY)
+			basic := actions.DeclarationSpecifiersBasic(yyS[yypt-0].i)
+			yyVAL.argument = actions.DeclarationSpecifiers(basic, yyS[yypt-1].ints, constants.DECL_ARRAY)
 		}
 	case 44:
 		{
-			strct := DeclarationSpecifiersStruct(yyS[yypt-0].tok, "", false, CurrentFile, LineNo)
-			yyVAL.argument = DeclarationSpecifiers(strct, yyS[yypt-1].ints, constants.DECL_ARRAY)
+			strct := actions.DeclarationSpecifiersStruct(yyS[yypt-0].tok, "", false, actions.CurrentFile, actions.LineNo)
+			yyVAL.argument = actions.DeclarationSpecifiers(strct, yyS[yypt-1].ints, constants.DECL_ARRAY)
 		}
 	case 45:
 		{
-			yyVAL.argument = DeclarationSpecifiersStruct(yyS[yypt-0].tok, yyS[yypt-2].tok, true, CurrentFileName, lineNo)
+			yyVAL.argument = actions.DeclarationSpecifiersStruct(yyS[yypt-0].tok, yyS[yypt-2].tok, true, CurrentFileName, lineNo)
 		}
 	case 46:
 		{
-			yyVAL.argument = DeclarationSpecifiersStruct(yyS[yypt-0].tok, constants.TypeNames[yyS[yypt-2].i], true, CurrentFileName, lineNo)
+			yyVAL.argument = actions.DeclarationSpecifiersStruct(yyS[yypt-0].tok, constants.TypeNames[yyS[yypt-2].i], true, CurrentFileName, lineNo)
 		}
 	case 47:
 		{

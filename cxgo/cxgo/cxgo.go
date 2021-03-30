@@ -10,7 +10,7 @@ import (
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cxgo/actions"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
-)
+) // "fmt"
 
 /*
 This is a machine generated file
