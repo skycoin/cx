@@ -13,7 +13,8 @@ import (
 )
 
 func (l *lexer) scan() lex.Char {
-	c := l.Enter()
+	// c := l.Enter()
+	var c int
 
 yystate0:
 	yyrule := -1
@@ -89,7 +90,7 @@ yystart1:
 	}
 
 yystate2:
-	c = l.Next()
+	// c = l.Next()
 	yyrule = 1
 	l.Mark()
 	goto yyrule1
@@ -108,7 +109,7 @@ yystate3:
 	}
 
 yystate4:
-	c = l.Next()
+	// c = l.Next()
 	yyrule = 19
 	l.Mark()
 	goto yyrule19
@@ -152,7 +153,7 @@ yystate6:
 	}
 
 yystate7:
-	c = l.Next()
+	// c = l.Next()
 	yyrule = 6
 	l.Mark()
 	goto yyrule6
@@ -266,7 +267,7 @@ yystate19:
 	}
 
 yystate20:
-	c = l.Next()
+	// c = l.Next()
 	yyrule = 16
 	l.Mark()
 	goto yyrule16
@@ -299,7 +300,7 @@ yystate23:
 	}
 
 yystate24:
-	c = l.Next()
+	// c = l.Next()
 	yyrule = 7
 	l.Mark()
 	goto yyrule7
@@ -368,7 +369,7 @@ yystate31:
 	}
 
 yystate32:
-	c = l.Next()
+	// c = l.Next()
 	yyrule = 8
 	l.Mark()
 	goto yyrule8
@@ -457,7 +458,7 @@ yystate41:
 	}
 
 yystate42:
-	c = l.Next()
+	// c = l.Next()
 	yyrule = 10
 	l.Mark()
 	goto yyrule10
@@ -499,7 +500,7 @@ yystate46:
 	}
 
 yystate47:
-	c = l.Next()
+	// c = l.Next()
 	yyrule = 11
 	l.Mark()
 	goto yyrule11
@@ -541,7 +542,7 @@ yystate51:
 	}
 
 yystate52:
-	c = l.Next()
+	// c = l.Next()
 	yyrule = 12
 	l.Mark()
 	goto yyrule12
@@ -585,7 +586,7 @@ yystate56:
 	}
 
 yystate57:
-	c = l.Next()
+	// c = l.Next()
 	yyrule = 13
 	l.Mark()
 	goto yyrule13
@@ -609,7 +610,7 @@ yystate59:
 	}
 
 yystate60:
-	c = l.Next()
+	// c = l.Next()
 	yyrule = 14
 	l.Mark()
 	goto yyrule14
@@ -651,19 +652,19 @@ yystate64:
 	}
 
 yystate65:
-	c = l.Next()
+	// c = l.Next()
 	yyrule = 15
 	l.Mark()
 	goto yyrule15
 
 yystate66:
-	c = l.Next()
+	// c = l.Next()
 	yyrule = 4
 	l.Mark()
 	goto yyrule4
 
 yystate67:
-	c = l.Next()
+	// c = l.Next()
 	yyrule = 5
 	l.Mark()
 	goto yyrule5
@@ -682,7 +683,7 @@ yystate68:
 	}
 
 yystate69:
-	c = l.Next()
+	// c = l.Next()
 	yyrule = 18
 	l.Mark()
 	goto yyrule18
@@ -732,7 +733,7 @@ yystate73:
 	}
 
 yystate74:
-	c = l.Next()
+	// c = l.Next()
 	yyrule = 3
 	l.Mark()
 	goto yyrule3

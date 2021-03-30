@@ -5,9 +5,11 @@ import (
 )
 
 // GetOpCodeCount returns an op code that is available for usage on the CX standard library.
+/*
 func GetOpCodeCount() int {
 	return len(OpcodeHandlers)
 }
+*/
 
 func IsOperator(opCode int) bool {
 	return opCode > constants.START_OF_OPERATORS && opCode < constants.END_OF_OPERATORS

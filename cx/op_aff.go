@@ -424,8 +424,8 @@ func getTarget(inp2 *ast.CXArgument, fp int, tgtElt *string, tgtArgType *string,
 		switch aff {
 		case "prgrm":
 			*tgtElt = "prgrm"
-		case "pkg":
-			*tgtElt = "pkg"
+		case "Pkg":
+			*tgtElt = "Pkg"
 		case "strct":
 			*tgtElt = "strct"
 		case "fn":
@@ -440,7 +440,7 @@ func getTarget(inp2 *ast.CXArgument, fp int, tgtElt *string, tgtArgType *string,
 			*tgtElt = "out"
 		default:
 			switch *tgtElt {
-			case "pkg":
+			case "Pkg":
 				if pkg, err := ast.PROGRAM.GetPackage(aff); err == nil {
 					*tgtPkg = *pkg
 				} else {
@@ -502,8 +502,8 @@ func getAffordances(inp1 *ast.CXArgument, fp int,
 			fltrElt = "fn"
 		case "strct":
 			fltrElt = "strct"
-		case "pkg":
-			fltrElt = "pkg"
+		case "Pkg":
+			fltrElt = "Pkg"
 		case "prgrm":
 			fltrElt = "prgrm"
 			// skipping the extra "prgrm"
@@ -561,7 +561,7 @@ func getAffordances(inp1 *ast.CXArgument, fp int,
 						*affs = append(*affs, "Replace TA by a call to FF")
 					case "expr":
 						*affs = append(*affs, "Change TE's operator to FF")
-					case "pkg":
+					case "Pkg":
 						// affs = append(affs, fmt.Sprintf("[%s.Operator = %s]", tgtExpr.Label, fn.Name))
 						*affs = append(*affs, "Move FF to TP")
 					case "prgrm":
@@ -587,14 +587,14 @@ func getAffordances(inp1 *ast.CXArgument, fp int,
 					}
 				case "fn":
 					*affs = append(*affs, "Add or change TF's receiver to FS")
-				case "pkg":
+				case "Pkg":
 					*affs = append(*affs, "Move FS to TP")
 				}
-			case "pkg":
+			case "Pkg":
 				if pkg, err := ast.PROGRAM.GetPackage(elt); err == nil {
 					_ = pkg
 					switch tgtElt {
-					case "pkg":
+					case "Pkg":
 						*affs = append(*affs, "Make TP import FP")
 					}
 				} else {
@@ -803,7 +803,7 @@ func opAffInform(expr *ast.CXExpression, fp int) {
 
 			case "expr":
 
-			case "pkg":
+			case "Pkg":
 
 			case "prgrm":
 
@@ -817,14 +817,14 @@ func opAffInform(expr *ast.CXExpression, fp int) {
 
 		case "fn":
 
-		case "pkg":
+		case "Pkg":
 
 		}
-	case "pkg":
+	case "Pkg":
 		if pkg, err := ast.PROGRAM.GetPackage(elt); err == nil {
 			_ = pkg
 			switch tgtElt {
-			case "pkg":
+			case "Pkg":
 
 			}
 		} else {
@@ -913,7 +913,7 @@ func opAffRequest(expr *ast.CXExpression, fp int) {
 
 		case "expr":
 
-		case "pkg":
+		case "Pkg":
 
 		case "prgrm":
 
@@ -930,14 +930,14 @@ func opAffRequest(expr *ast.CXExpression, fp int) {
 			}
 		case "fn":
 
-		case "pkg":
+		case "Pkg":
 
 		}
-	case "pkg":
+	case "Pkg":
 		if pkg, err := ast.PROGRAM.GetPackage(elt); err == nil {
 			_ = pkg
 			switch tgtElt {
-			case "pkg":
+			case "Pkg":
 
 			}
 		} else {

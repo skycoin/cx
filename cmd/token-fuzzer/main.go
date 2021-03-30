@@ -170,10 +170,6 @@ var tok2ideal map[int]string = map[int]string{
 
 	/* Types */
 	BASICTYPE: "",
-	/* Selectors */
-	SPACKAGE: ":package",
-	SSTRUCT:  ":struct",
-	SFUNC:    ":func",
 	/* Removers */
 	REM:     ":rem",
 	DEF:     "def",
@@ -182,10 +178,6 @@ var tok2ideal map[int]string = map[int]string{
 	CLAUSES: "clauses",
 	OBJECT:  "",
 	OBJECTS: "",
-	/* Stepping */
-	STEP:  ":step",
-	PSTEP: ":pstep",
-	TSTEP: ":tstep",
 	/* Debugging */
 	DSTACK:   ":ds",
 	DPROGRAM: ":dp",

@@ -120,8 +120,6 @@ func RunCompiled(cxprogram *ast.CXProgram, nCalls int, args []string) error {
 				cxprogram.CallStack[0] = mainCall
 				cxprogram.StackPointer = fn.Size
 
-				var err error
-
 				for !cxprogram.Terminated {
 					call := &cxprogram.CallStack[cxprogram.CallCounter]
 					err = call.Ccall(cxprogram, &inputs, &outputs)

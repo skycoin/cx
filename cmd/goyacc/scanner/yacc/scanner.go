@@ -430,8 +430,8 @@ func (s *Scanner) Scan() (tok Token, lval interface{}, num int) {
 // character or number/string/char literal.
 func (s *Scanner) ScanRaw() (tok Token, lval interface{}, num int) {
 	//defer func() { fmt.Printf("%s(%d) %v\n", tok, int(tok), lval) }()
-	c0, c := s.c, s.c
-
+	c := s.c
+	var c0 int
 yystate0:
 
 	s.val = s.val[:0]
@@ -489,7 +489,7 @@ yystart1:
 	}
 
 yystate2:
-	c = s.next()
+	// c = s.next()
 	goto yyrule1
 
 yystate3:
@@ -535,7 +535,7 @@ yystate5:
 	}
 
 yystate6:
-	c = s.next()
+	// c = s.next()
 	goto yyrule94
 
 yystate7:
@@ -647,7 +647,7 @@ yystate18:
 	}
 
 yystate19:
-	c = s.next()
+	// c = s.next()
 	goto yyrule95
 
 yystate20:
@@ -678,7 +678,7 @@ yystate22:
 	}
 
 yystate23:
-	c = s.next()
+	// c = s.next()
 	goto yyrule96
 
 yystate24:
@@ -745,7 +745,7 @@ yystate30:
 	}
 
 yystate31:
-	c = s.next()
+	// c = s.next()
 	goto yyrule97
 
 yystate32:
@@ -830,7 +830,7 @@ yystate40:
 	}
 
 yystate41:
-	c = s.next()
+	// c = s.next()
 	goto yyrule99
 
 yystate42:
@@ -870,7 +870,7 @@ yystate45:
 	}
 
 yystate46:
-	c = s.next()
+	// c = s.next()
 	goto yyrule100
 
 yystate47:
@@ -910,7 +910,7 @@ yystate50:
 	}
 
 yystate51:
-	c = s.next()
+	// c = s.next()
 	goto yyrule101
 
 yystate52:
@@ -952,7 +952,7 @@ yystate55:
 	}
 
 yystate56:
-	c = s.next()
+	// c = s.next()
 	goto yyrule102
 
 yystate57:
@@ -974,7 +974,7 @@ yystate58:
 	}
 
 yystate59:
-	c = s.next()
+	// c = s.next()
 	goto yyrule103
 
 yystate60:
@@ -1014,15 +1014,15 @@ yystate63:
 	}
 
 yystate64:
-	c = s.next()
+	// c = s.next()
 	goto yyrule104
 
 yystate65:
-	c = s.next()
+	// c = s.next()
 	goto yyrule92
 
 yystate66:
-	c = s.next()
+	// c = s.next()
 	goto yyrule93
 
 yystate67:
@@ -1050,11 +1050,11 @@ yystate68:
 	}
 
 yystate69:
-	c = s.next()
+	// c = s.next()
 	goto yyrule89
 
 yystate70:
-	c = s.next()
+	// c = s.next()
 	goto yyrule87
 
 yystate71:
@@ -1080,7 +1080,7 @@ yystate72:
 	}
 
 yystate73:
-	c = s.next()
+	// c = s.next()
 	goto yyrule105
 
 yystate74:
@@ -1119,7 +1119,7 @@ yystate76:
 	}
 
 yystate77:
-	c = s.next()
+	// c = s.next()
 	goto yyrule3
 
 yystate78:
@@ -1201,7 +1201,7 @@ yystate86:
 	}
 
 yystate87:
-	c = s.next()
+	// c = s.next()
 	goto yyrule109
 
 yystate88:
@@ -1335,7 +1335,7 @@ yystate91:
 	}
 
 yystate92:
-	c = s.next()
+	// c = s.next()
 	goto yyrule10
 
 yystate93:
@@ -1354,7 +1354,7 @@ yystate93:
 	}
 
 yystate94:
-	c = s.next()
+	// c = s.next()
 	goto yyrule8
 
 yystate95:
@@ -1409,7 +1409,7 @@ yystate99:
 	}
 
 yystate100:
-	c = s.next()
+	// c = s.next()
 	goto yyrule6
 
 yystate101:
@@ -1440,7 +1440,7 @@ yystate103:
 	}
 
 yystate104:
-	c = s.next()
+	// c = s.next()
 	goto yyrule12
 
 yystate105:
@@ -1457,11 +1457,11 @@ yystate105:
 	}
 
 yystate106:
-	c = s.next()
+	// c = s.next()
 	goto yyrule14
 
 yystate107:
-	c = s.next()
+	// c = s.next()
 	goto yyrule15
 
 yystate108:
@@ -1474,15 +1474,15 @@ yystate108:
 	}
 
 yystate109:
-	c = s.next()
+	// c = s.next()
 	goto yyrule17
 
 yystate110:
-	c = s.next()
+	// c = s.next()
 	goto yyrule18
 
 yystate111:
-	c = s.next()
+	// c = s.next()
 	goto yyrule19
 
 yystate112:
@@ -1495,7 +1495,7 @@ yystate112:
 	}
 
 yystate113:
-	c = s.next()
+	// c = s.next()
 	goto yyrule21
 
 yystate114:
@@ -1510,15 +1510,15 @@ yystate114:
 	}
 
 yystate115:
-	c = s.next()
+	// c = s.next()
 	goto yyrule23
 
 yystate116:
-	c = s.next()
+	// c = s.next()
 	goto yyrule24
 
 yystate117:
-	c = s.next()
+	// c = s.next()
 	goto yyrule25
 
 yystate118:
@@ -1533,11 +1533,11 @@ yystate118:
 	}
 
 yystate119:
-	c = s.next()
+	// c = s.next()
 	goto yyrule27
 
 yystate120:
-	c = s.next()
+	// c = s.next()
 	goto yyrule28
 
 yystate121:
@@ -1561,7 +1561,7 @@ yystate122:
 	}
 
 yystate123:
-	c = s.next()
+	// c = s.next()
 	goto yyrule30
 
 yystate124:
@@ -1609,7 +1609,7 @@ yystate127:
 	}
 
 yystate128:
-	c = s.next()
+	// c = s.next()
 	goto yyrule82
 
 yystate129:
@@ -1626,7 +1626,7 @@ yystate129:
 	}
 
 yystate130:
-	c = s.next()
+	// c = s.next()
 	goto yyrule32
 
 yystate131:
@@ -1681,7 +1681,7 @@ yystate133:
 	}
 
 yystate134:
-	c = s.next()
+	// c = s.next()
 	goto yyrule81
 
 yystate135:
@@ -1709,11 +1709,11 @@ yystate136:
 	}
 
 yystate137:
-	c = s.next()
+	// c = s.next()
 	goto yyrule34
 
 yystate138:
-	c = s.next()
+	// c = s.next()
 	goto yyrule35
 
 yystate139:
@@ -1730,7 +1730,7 @@ yystate139:
 	}
 
 yystate140:
-	c = s.next()
+	// c = s.next()
 	goto yyrule37
 
 yystate141:
@@ -1743,11 +1743,11 @@ yystate141:
 	}
 
 yystate142:
-	c = s.next()
+	// c = s.next()
 	goto yyrule39
 
 yystate143:
-	c = s.next()
+	// c = s.next()
 	goto yyrule40
 
 yystate144:
@@ -1760,7 +1760,7 @@ yystate144:
 	}
 
 yystate145:
-	c = s.next()
+	// c = s.next()
 	goto yyrule42
 
 yystate146:
@@ -1775,7 +1775,7 @@ yystate146:
 	}
 
 yystate147:
-	c = s.next()
+	// c = s.next()
 	goto yyrule44
 
 yystate148:
@@ -1788,7 +1788,7 @@ yystate148:
 	}
 
 yystate149:
-	c = s.next()
+	// c = s.next()
 	goto yyrule46
 
 yystate150:
@@ -1801,11 +1801,11 @@ yystate150:
 	}
 
 yystate151:
-	c = s.next()
+	// c = s.next()
 	goto yyrule47
 
 yystate152:
-	c = s.next()
+	// c = s.next()
 	goto yyrule48
 
 yystate153:
@@ -1818,7 +1818,7 @@ yystate153:
 	}
 
 yystate154:
-	c = s.next()
+	// c = s.next()
 	goto yyrule50
 
 yystate155:
@@ -3028,7 +3028,7 @@ yystate266:
 	}
 
 yystate267:
-	c = s.next()
+	// c = s.next()
 	goto yyrule51
 
 yystate268:
@@ -3043,15 +3043,15 @@ yystate268:
 	}
 
 yystate269:
-	c = s.next()
+	// c = s.next()
 	goto yyrule53
 
 yystate270:
-	c = s.next()
+	// c = s.next()
 	goto yyrule54
 
 yystate271:
-	c = s.next()
+	// c = s.next()
 	goto yyrule55
 
 yystate272:
@@ -3064,7 +3064,7 @@ yystate272:
 	}
 
 yystate273:
-	c = s.next()
+	// c = s.next()
 	goto yyrule108
 
 yystate274:
@@ -3114,7 +3114,7 @@ yystate277:
 	}
 
 yystate278:
-	c = s.next()
+	// c = s.next()
 	goto yyrule90
 
 yystate279:
@@ -3151,7 +3151,7 @@ yystate281:
 	}
 
 yystate282:
-	c = s.next()
+	// c = s.next()
 	goto yyrule91
 
 yyrule1: // \0

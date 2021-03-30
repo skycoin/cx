@@ -322,11 +322,11 @@ func GetPrintableValue(fp int, arg *CXArgument) string {
 				}
 
 				if closeCount > 0 {
-					for c := 0; c < closeCount; c++ {
+					for i := 0; i < closeCount; i++ {
 						val += "]"
 					}
 					val += " "
-					for c := 0; c < closeCount; c++ {
+					for i := 0; i < closeCount; i++ {
 						val += "["
 					}
 

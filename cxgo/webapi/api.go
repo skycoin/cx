@@ -1,4 +1,4 @@
-package api
+package webapi
 
 import (
 	"fmt"

@@ -1,4 +1,4 @@
-package api
+package webapi
 
 import (
 	"github.com/skycoin/cx/cx/ast"
