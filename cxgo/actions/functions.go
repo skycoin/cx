@@ -152,7 +152,7 @@ func FunctionDeclaration(fn *ast.CXFunction, inputs, outputs []*ast.CXArgument, 
 	FunctionProcessParameters(symbols, &symbolsScope, &offset, fn, fn.Outputs)
 
 	for i, expr := range fn.Expressions {
-		if expr.ScopeOperation == SCOPE_NEW {
+		if expr.IsScopeNew() {
 			*symbols = append(*symbols, make(map[string]*ast.CXArgument))
 		}
 
@@ -187,7 +187,7 @@ func FunctionDeclaration(fn *ast.CXFunction, inputs, outputs []*ast.CXArgument, 
 		CheckTypes(expr)
 		CheckUndValidTypes(expr)
 
-		if expr.ScopeOperation == SCOPE_REM {
+		if expr.IsScopeDel() {
 			*symbols = (*symbols)[:len(*symbols)-1]
 		}
 	}

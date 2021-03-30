@@ -6,8 +6,6 @@ import (
 
 // DefineNewScope marks the first and last expressions to define the boundaries of a scope.
 
-
-
 /*
 ./cxgo/actions/scope.go:11:	SCOPE_UNUSED = iota //if this value appears; program should crash
 ./cxgo/actions/scope.go:12:	SCOPE_NEW           //= iota + 1 // 1
@@ -28,10 +26,8 @@ const (
 func DefineNewScope(exprs []*ast.CXExpression) {
 	if len(exprs) > 1 {
 		// initialize new scope
-		exprs[0].ScopeOperation = SCOPE_NEW
+		exprs[0].ExpressionType = ast.CXEXPR_SCOPE_NEW
 		// remove last scope
-		exprs[len(exprs)-1].ScopeOperation = SCOPE_REM
+		exprs[len(exprs)-1].ExpressionType = ast.CXEXPR_SCOPE_DEL
 	}
 }
-
-
