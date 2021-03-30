@@ -2,11 +2,12 @@ package actions
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	globals2 "github.com/skycoin/cx/cx/globals"
 	"github.com/skycoin/cx/cxgo/globals"
-	"os"
 )
 
 // DeclareGlobal creates a global variable in the current package.
@@ -90,7 +91,7 @@ func DeclareGlobalInPackage(pkg *ast.CXPackage,
 
 				*glbl = *declaration_specifiers
 
-				if initializer[len(initializer)-1].IsStructLiteral {
+				if initializer[len(initializer)-1].IsStructLiteral() {
 					initializer = StructLiteralAssignment([]*ast.CXExpression{&ast.CXExpression{Outputs: []*ast.CXArgument{glbl}}}, initializer)
 				} else {
 					initializer[len(initializer)-1].Outputs = nil
@@ -148,7 +149,7 @@ func DeclareGlobalInPackage(pkg *ast.CXPackage,
 				declaration_specifiers.TotalSize = offExpr[0].Outputs[0].TotalSize
 				declaration_specifiers.Package = pkg
 
-				if initializer[len(initializer)-1].IsStructLiteral {
+				if initializer[len(initializer)-1].IsStructLiteral() {
 					initializer = StructLiteralAssignment([]*ast.CXExpression{&ast.CXExpression{Outputs: []*ast.CXArgument{declaration_specifiers}}}, initializer)
 				} else {
 					initializer[len(initializer)-1].Outputs = nil

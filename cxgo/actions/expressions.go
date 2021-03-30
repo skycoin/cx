@@ -2,11 +2,12 @@ package actions
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/globals"
 	"github.com/skycoin/cx/cx/util2"
-	"os"
 
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
@@ -59,14 +60,14 @@ func IterationExpressions(init []*ast.CXExpression, cond []*ast.CXExpression, in
 
 	// processing possible breaks
 	for i, stat := range statements {
-		if stat.IsBreak {
+		if stat.IsBreak() {
 			stat.ThenLines = elseLines - i - 1
 		}
 	}
 
 	// processing possible continues
 	for i, stat := range statements {
-		if stat.IsContinue {
+		if stat.IsContinue() {
 			stat.ThenLines = len(statements) - i - 1
 		}
 	}
@@ -104,13 +105,13 @@ func trueJmpExpressions() []*ast.CXExpression {
 
 func BreakExpressions() []*ast.CXExpression {
 	exprs := trueJmpExpressions()
-	exprs[0].IsBreak = true
+	exprs[0].ExpressionType = ast.CXEXPR_BREAK
 	return exprs
 }
 
 func ContinueExpressions() []*ast.CXExpression {
 	exprs := trueJmpExpressions()
-	exprs[0].IsContinue = true
+	exprs[0].ExpressionType = ast.CXEXPR_CONTINUE
 	return exprs
 }
 
@@ -127,13 +128,13 @@ func SelectionExpressions(condExprs []*ast.CXExpression, thenExprs []*ast.CXExpr
 	ifExpr.Package = pkg
 
 	var predicate *ast.CXArgument
-	if condExprs[len(condExprs)-1].Operator == nil && !condExprs[len(condExprs)-1].IsMethodCall {
+	if condExprs[len(condExprs)-1].Operator == nil && !condExprs[len(condExprs)-1].IsMethodCall() {
 		// then it's a literal
 		predicate = condExprs[len(condExprs)-1].Outputs[0]
 	} else {
 		// then it's an expression
 		predicate = ast.MakeArgument(globals.MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo)
-		if condExprs[len(condExprs)-1].IsMethodCall {
+		if condExprs[len(condExprs)-1].IsMethodCall() {
 			// we'll change this once we have access to method's types in
 			// ProcessMethodCall
 			predicate.AddType(constants.TypeNames[constants.TYPE_BOOL])
@@ -166,7 +167,7 @@ func SelectionExpressions(condExprs []*ast.CXExpression, thenExprs []*ast.CXExpr
 	skipExpr.ElseLines = 0
 
 	var exprs []*ast.CXExpression
-	if condExprs[len(condExprs)-1].Operator != nil || condExprs[len(condExprs)-1].IsMethodCall {
+	if condExprs[len(condExprs)-1].Operator != nil || condExprs[len(condExprs)-1].IsMethodCall() {
 		exprs = append(exprs, condExprs...)
 	}
 	exprs = append(exprs, ifExpr)
@@ -232,7 +233,7 @@ func UndefinedTypeOperation(leftExprs []*ast.CXExpression, rightExprs []*ast.CXE
 
 	expr := ast.MakeExpression(operator, CurrentFile, LineNo)
 	// we can't know the type until we compile the full function
-	expr.IsUndType = true
+	expr.ExpressionType = ast.CXEXPR_UND_TYPE
 	expr.Package = pkg
 
 	if len(leftExprs[len(leftExprs)-1].Outputs[0].Indexes) > 0 || leftExprs[len(leftExprs)-1].Operator != nil {

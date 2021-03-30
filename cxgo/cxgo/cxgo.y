@@ -485,7 +485,7 @@ struct_literal_fields:
                 { $$ = nil }
         |       IDENTIFIER COLON constant_expression
                 {
-			if $3[0].IsStructLiteral {
+			if $3[0].IsStructLiteral() {
 				$$ = actions.StructLiteralAssignment([]*ast.CXExpression{actions.StructLiteralFields($1)}, $3)
 			} else {
 				$$ = actions.Assignment([]*ast.CXExpression{actions.StructLiteralFields($1)}, "=", $3)
@@ -493,7 +493,7 @@ struct_literal_fields:
                 }
         |       struct_literal_fields COMMA IDENTIFIER COLON constant_expression
                 {
-			if $5[0].IsStructLiteral {
+			if $5[0].IsStructLiteral() {
 				$$ = append($1, actions.StructLiteralAssignment([]*ast.CXExpression{actions.StructLiteralFields($3)}, $5)...)
 			} else {
 				$$ = append($1, actions.Assignment([]*ast.CXExpression{actions.StructLiteralFields($3)}, "=", $5)...)
@@ -504,12 +504,12 @@ struct_literal_fields:
 array_literal_expression_list:
                 assignment_expression
                 {
-			$1[len($1) - 1].IsArrayLiteral = true
+			$1[len($1) - 1].ExpressionType = ast.CXEXPR_ARRAY_LITERAL
 			$$ = $1
                 }
 	|       array_literal_expression_list COMMA assignment_expression
                 {
-			$3[len($3) - 1].IsArrayLiteral = true
+			$3[len($3) - 1].ExpressionType = ast.CXEXPR_ARRAY_LITERAL
 			$$ = append($1, $3...)
                 }
                 ;
@@ -565,13 +565,13 @@ array_literal_expression:
 slice_literal_expression_list:
                 assignment_expression
                 {
-			$1[len($1) - 1].IsArrayLiteral = true
+			$1[len($1) - 1].ExpressionType = ast.CXEXPR_ARRAY_LITERAL
 			$$ = $1
                 }
 	|       slice_literal_expression_list COMMA assignment_expression
                 {
 
-			$3[len($3) - 1].IsArrayLiteral = true
+			$3[len($3) - 1].ExpressionType = ast.CXEXPR_ARRAY_LITERAL
 			$$ = append($1, $3...)
                 }
                 ;
@@ -602,7 +602,7 @@ slice_literal_expression:
                                     }
 			}
 	
-			$3[len($3)-1].IsArrayLiteral = true
+			$3[len($3)-1].ExpressionType = ast.CXEXPR_ARRAY_LITERAL
 			$$ = $3
                 }
                 ;
@@ -665,8 +665,13 @@ infer_clauses:
                 {
 			var exprs []*ast.CXExpression
 			for _, str := range $1 {
+<<<<<<< HEAD
+				expr := actions.WritePrimary(cxcore.TYPE_AFF, encoder.Serialize(str), false)
+				expr[len(expr) - 1].ExpressionType = ast.CXEXPR_ARRAY_LITERAL
+=======
 				expr := actions.WritePrimary(constants.TYPE_AFF, encoder.Serialize(str), false)
 				expr[len(expr) - 1].IsArrayLiteral = true
+>>>>>>> develop
 				exprs = append(exprs, expr...)
 			}
 			
@@ -972,7 +977,7 @@ assignment_expression:
 				$$ = nil
 			}
 			if $3 != nil {
-				if $3[0].IsArrayLiteral {
+				if $3[0].IsArrayLiteral() {
 					if $2 != "=" && $2 != ":=" {
 						panic("")
 					}
@@ -983,7 +988,7 @@ assignment_expression:
 						}
 					}
 					$$ = actions.ArrayLiteralAssignment($1, $3)
-				} else if $3[len($3) - 1].IsStructLiteral {
+				} else if $3[len($3) - 1].IsStructLiteral() {
 					if $2 != "=" && $2 != ":=" {
 						panic("")
 					}
@@ -1099,7 +1104,7 @@ expression_statement:
                 { $$ = nil }
 	|       expression SEMICOLON
                 {
-			if len($1) > 0 && $1[len($1) - 1].Operator == nil && !$1[len($1) - 1].IsMethodCall {
+			if len($1) > 0 && $1[len($1) - 1].Operator == nil && !$1[len($1) - 1].IsMethodCall() {
 				outs := $1[len($1) - 1].Outputs
 				if len(outs) > 0 {
 					println(ast.CompilationError(outs[0].FileName, outs[0].FileLine), "invalid expression")

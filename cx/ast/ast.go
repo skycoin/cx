@@ -3,10 +3,34 @@ package ast
 import (
 	"errors"
 	"fmt"
+
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/globals"
 	"github.com/skycoin/cx/cx/helper"
 )
+
+/*
+ * CXEXPR_TYPE enum contains CX expressions types for CXExpression struct
+ */
+type CXEXPR_TYPE int
+
+const (
+	CXEXPR_UNUSED CXEXPR_TYPE = iota
+	CXEXPR_METHOD_CALL
+	CXEXPR_STRUCT_LITERAL
+	CXEXPR_ARRAY_LITERAL
+	CXEXPR_BREAK
+	CXEXPR_CONTINUE
+	CXEXPR_UND_TYPE
+	CXEXPR_SCOPE_UNUSED // this maybe unnecessary
+	CXEXPR_SCOPE_NEW
+	CXEXPR_SCOPE_DEL
+)
+
+// String returns alias for constants defined for cx edpression type
+func (cxet CXEXPR_TYPE) String() string {
+	return [...]string{"Unused", "MethodCall", "StructLiteral", "ArrayLiteral", "Break", "Continue", "ScopeNew", "ScopeDel"}[cxet]
+}
 
 /*
  * The CXProgram struct contains a full program.
@@ -39,17 +63,17 @@ type CXProgram struct {
 	Memory        []byte        // Used when running the program
 
 	//TODO: Add StackStartsAt
-	StackSize    int           // This field stores the size of a CX program's stack
-	StackPointer int           // At what byte the current stack frame is
+	StackSize    int // This field stores the size of a CX program's stack
+	StackPointer int // At what byte the current stack frame is
 
-	HeapSize     int           // This field stores the size of a CX program's heap
-	HeapStartsAt int           // Offset at which the heap starts in a CX program's memory (normally the stack size)
-	HeapPointer  int           // At what offset a CX program can insert a new object to the heap
+	HeapSize     int // This field stores the size of a CX program's heap
+	HeapStartsAt int // Offset at which the heap starts in a CX program's memory (normally the stack size)
+	HeapPointer  int // At what offset a CX program can insert a new object to the heap
 
-	CallStack    []CXCall // Collection of function calls
-	CallCounter  int      // What function call is the currently being executed in the CallStack
-	Terminated   bool     // Utility field for the runtime. Indicates if a CX program has already finished or not.
-	Version      string   // CX version used to build this CX program.
+	CallStack   []CXCall // Collection of function calls
+	CallCounter int      // What function call is the currently being executed in the CallStack
+	Terminated  bool     // Utility field for the runtime. Indicates if a CX program has already finished or not.
+	Version     string   // CX version used to build this CX program.
 
 	// Used by the REPL and cxgo
 	CurrentPackage *CXPackage // Represents the currently active package in the REPL or when parsing a CX file.
@@ -99,9 +123,9 @@ type CXFunction struct {
 	Outputs     []*CXArgument   // Output parameters from the function
 	Expressions []*CXExpression // Expressions, including control flow statements, in the function
 	//TODO: Better Comment for this
-	Length      int             // number of expressions, pre-computed for performance
+	Length int // number of expressions, pre-computed for performance
 	//TODO: Better Comment for this
-	Size        int             // automatic memory size
+	Size int // automatic memory size
 
 	// Debugging
 	FileName string
@@ -112,7 +136,7 @@ type CXFunction struct {
 
 	// Used by the REPL and parser
 	CurrentExpression *CXExpression
-	Version int
+	Version           int
 }
 
 // CXExpression is used represent a CX expression.
@@ -137,17 +161,48 @@ type CXExpression struct {
 	ThenLines int
 	ElseLines int
 
-	// 1 = start new scope; -1 = end scope; 0 = just regular expression
-	ScopeOperation int
-
-	IsMethodCall    bool
-	IsStructLiteral bool
-	IsArrayLiteral  bool
-	IsUndType       bool
-	IsBreak         bool
-	IsContinue      bool
+	ExpressionType CXEXPR_TYPE
 }
 
+// IsMethodCall checks if expression type is method call
+func (cxe CXExpression) IsMethodCall() bool {
+	return cxe.ExpressionType == CXEXPR_METHOD_CALL
+}
+
+// IsStructLiteral checks if expression type is struct literal
+func (cxe CXExpression) IsStructLiteral() bool {
+	return cxe.ExpressionType == CXEXPR_STRUCT_LITERAL
+}
+
+// IsArrayLiteral checks if expression type is array literal
+func (cxe CXExpression) IsArrayLiteral() bool {
+	return cxe.ExpressionType == CXEXPR_ARRAY_LITERAL
+}
+
+// IsBreak checks if expression type is break
+func (cxe CXExpression) IsBreak() bool {
+	return cxe.ExpressionType == CXEXPR_BREAK
+}
+
+// IsContinue checks if expression type is continue
+func (cxe CXExpression) IsContinue() bool {
+	return cxe.ExpressionType == CXEXPR_CONTINUE
+}
+
+// IsUndType checks if expression type is und type
+func (cxe CXExpression) IsUndType() bool {
+	return cxe.ExpressionType == CXEXPR_UND_TYPE
+}
+
+// IsScopeNew checks if expression type is scope new
+func (cxe CXExpression) IsScopeNew() bool {
+	return cxe.ExpressionType == CXEXPR_SCOPE_NEW
+}
+
+// IsScopeDel checks if expression type is scope del
+func (cxe CXExpression) IsScopeDel() bool {
+	return cxe.ExpressionType == CXEXPR_SCOPE_DEL
+}
 
 /*
 grep -rn "IsShortAssignmentDeclaration" .
@@ -184,7 +239,7 @@ Binary file ./bin/cx matches
 ./cx/ast.go:1517:	IsRest                bool // pkg.var <- var is rest
 ./vendor/golang.org/x/sys/windows/security_windows.go:841:// IsRestricted reports whether the access token t is a restricted token.
 ./vendor/golang.org/x/sys/windows/security_windows.go:842:func (t Token) IsRestricted() (isRestricted bool, err error) {
-	*/
+*/
 
 // CXArgument is used to define local variables, global variables,
 // literals (strings, numbers), inputs and outputs to function
@@ -198,7 +253,7 @@ type CXArgument struct {
 	// `Lengths` only determines the number of dimensions and the
 	// sizes are all equal to 0 (these 0s are not used for any
 	// computation).
-	Lengths               []int
+	Lengths []int
 	// DereferenceOperations is a slice of integers where each
 	// integer corresponds a `DEREF_*` constant (for example
 	// `DEREF_ARRAY`, `DEREF_POINTER`.). A dereference is a
@@ -219,57 +274,57 @@ type CXArgument struct {
 	// `CXArgument` is an index or a slice. The elements of
 	// `Indexes` can be any `CXArgument` (for example, literals
 	// and variables).
-	Indexes               []*CXArgument
+	Indexes []*CXArgument
 	// Fields stores what fields are being accessed from the
 	// `CXArgument` and in what order. Whenever a `DEREF_FIELD` in
 	// `DereferenceOperations` is found, we consume a field from
 	// `Field` to determine the new offset to the desired
 	// value.
-	Fields                []*CXArgument
+	Fields []*CXArgument
 	// Inputs defines the input parameters of a first-class
 	// function. The `CXArgument` is of type `TYPE_FUNC` if
 	// `ProgramInput` is non-nil.
-	Inputs                []*CXArgument
+	Inputs []*CXArgument
 	// Outputs defines the output parameters of a first-class
 	// function. The `CXArgument` is of type `TYPE_FUNC` if
 	// `ProgramOutput` is non-nil.
-	Outputs               []*CXArgument
+	Outputs []*CXArgument
 	// Name defines the name of the `CXArgument`. Most of the
 	// time, this field will be non-nil as this defines the name
 	// of a variable or parameter in source code, but some
 	// exceptions exist, such as in the case of literals
 	// (e.g. `4`, `"Hello world!"`, `[3]i32{1, 2, 3}`.)
-	Name                  string
+	Name string
 	// Type defines what's the basic or primitev type of the
 	// `CXArgument`. `Type` can be equal to any of the `TYPE_*`
 	// constants (e.g. `TYPE_STR`, `TYPE_I32`).
-	Type                  int
+	Type int
 	// Size determines the size of the basic type. For example, if
 	// the `CXArgument` is of type `TYPE_CUSTOM` (i.e. a
 	// user-defined type or struct) and the size of the struct
 	// representing the custom type is 10 bytes, then `Size == 10`.
-	Size                  int
+	Size int
 	// TotalSize represents how many bytes are referenced by the
 	// `CXArgument` in total. For example, if the `CXArgument`
 	// defines an array of 5 struct instances of size 10 bytes,
 	// then `TotalSize == 50`.
-	TotalSize             int
+	TotalSize int
 	// Offset defines a relative memory offset (used in
 	// conjunction with the frame pointer), in the case of local
 	// variables, or it could define an absolute memory offset, in
 	// the case of global variables and literals. It is used by
 	// the CX virtual machine to find the bytes that represent the
 	// value of the `CXArgument`.
-	Offset                int
+	Offset int
 	// IndirectionLevels
-	IndirectionLevels     int
-	DereferenceLevels     int
-	PassBy                int // pass by value or reference
+	IndirectionLevels int
+	DereferenceLevels int
+	PassBy            int // pass by value or reference
 
-	FileName              string
-	FileLine              int
+	FileName string
+	FileLine int
 
-	CustomType            *CXStruct
+	CustomType                   *CXStruct
 	Package                      *CXPackage
 	IsSlice                      bool
 	IsArray                      bool
@@ -350,7 +405,6 @@ Binary file ./bin/cx matches
 
 */
 
-
 /*
 All "Is" can be removed
 - because there is a constants for type (int) for defining the types
@@ -424,12 +478,11 @@ func MakeProgram() *CXProgram {
 	return newPrgrm
 }
 
-
 // ----------------------------------------------------------------
 //                         `CXProgram` Package handling
 
 // AddPackage ...
-func (cxprogram *CXProgram) AddPackage(mod *CXPackage)  {
+func (cxprogram *CXProgram) AddPackage(mod *CXPackage) {
 	found := false
 	for _, md := range cxprogram.Packages {
 		if md.Name == mod.Name {
@@ -569,8 +622,6 @@ func MakePackage(name string) *CXPackage {
 
 // ----------------------------------------------------------------
 //                             `CXPackage` Getters
-
-
 
 // GetCurrentStruct ...
 func (pkg *CXPackage) GetCurrentStruct() (*CXStruct, error) {
@@ -727,8 +778,6 @@ func (pkg *CXPackage) RemoveGlobal(defName string) {
 	}
 }
 
-
-
 // ----------------------------------------------------------------
 //                             `CXStruct` Getters
 
@@ -796,20 +845,11 @@ func (strct *CXStruct) RemoveField(fldName string) {
 	}
 }
 
-
-
-
-
 // ----------------------------------------------------------------
 //                             `CXFunction` Getters
 
 // ----------------------------------------------------------------
 //                     `CXFunction` Member handling
-
-
-
-
-
 
 // ----------------------------------------------------------------
 //                             `CXFunction` Selectors
@@ -843,7 +883,6 @@ func (fn *CXFunction) SelectExpression(line int) (*CXExpression, error) {
 
 	return expr, nil
 }
-
 
 // ----------------------------------------------------------------
 //                             `CXExpression` Getters
@@ -905,7 +944,7 @@ func (expr *CXExpression) AddLabel(lbl string) *CXExpression {
 	FileName              string
 - filename and line number
 - can be moved to CX AST annotations (comments to be skipped or map)
-	
+
 	FileLine
 */
 
@@ -948,7 +987,7 @@ Binary file ./bin/cx matches
 */
 
 /*
-IsDereferenceFirst - is this both an array and a pointer, and if so, 
+IsDereferenceFirst - is this both an array and a pointer, and if so,
 is the pointer first? Mutually exclusive with IsArrayFirst.
 
 grep -rn "IsDereferenceFirst" .
@@ -961,10 +1000,9 @@ Binary file ./bin/cx matches
 ./cx/serialize.go:314:	s.Arguments[argOff].IsDereferenceFirst = serializeBoolean(arg.IsDereferenceFirst)
 ./cx/serialize.go:1019:	arg.IsDereferenceFirst = dsBool(sArg.IsDereferenceFirst)
 ./cx/cxargument.go:32:	IsDereferenceFirst    bool // and then array
-./cx/cxargument.go:43:IsDereferenceFirst - is this both an array and a pointer, and if so, 
+./cx/cxargument.go:43:IsDereferenceFirst - is this both an array and a pointer, and if so,
 
 */
-
 
 /*
 All "Is" can be removed
@@ -1111,4 +1149,3 @@ func (arg *CXArgument) AddOutput(out *CXArgument) *CXArgument {
 func (cxprogram *CXProgram) PrintProgram() {
 	fmt.Println(ToString(cxprogram))
 }
-

@@ -123,14 +123,7 @@ type serializedExpression struct {
 	ThenLines   int64
 	ElseLines   int64
 
-	ScopeOperation int64
-
-	IsMethodCall    int64
-	IsStructLiteral int64
-	IsArrayLiteral  int64
-	IsUndType       int64
-	IsBreak         int64
-	IsContinue      int64
+	ExpressionType int64
 
 	FunctionOffset int64
 	PackageOffset  int64
@@ -405,14 +398,8 @@ func serializeExpression(expr *CXExpression, s *serializedCXProgram) int {
 	sExpr.LabelOffset, sExpr.LabelSize = serializeString(expr.Label, s)
 	sExpr.ThenLines = int64(expr.ThenLines)
 	sExpr.ElseLines = int64(expr.ElseLines)
-	sExpr.ScopeOperation = int64(expr.ScopeOperation)
 
-	sExpr.IsMethodCall = serializeBoolean(expr.IsMethodCall)
-	sExpr.IsStructLiteral = serializeBoolean(expr.IsStructLiteral)
-	sExpr.IsArrayLiteral = serializeBoolean(expr.IsArrayLiteral)
-	sExpr.IsUndType = serializeBoolean(expr.IsUndType)
-	sExpr.IsBreak = serializeBoolean(expr.IsBreak)
-	sExpr.IsContinue = serializeBoolean(expr.IsContinue)
+	sExpr.ExpressionType = int64(expr.ExpressionType)
 
 	fnName := expr.Function.Package.Name + "." + expr.Function.Name
 	if fnOff, found := s.FunctionsMap[fnName]; found {
@@ -1134,14 +1121,8 @@ func deserializeExpression(sExpr *serializedExpression, s *serializedCXProgram, 
 
 	expr.ThenLines = int(sExpr.ThenLines)
 	expr.ElseLines = int(sExpr.ElseLines)
-	expr.ScopeOperation = int(sExpr.ScopeOperation)
 
-	expr.IsMethodCall = deserializeBool(sExpr.IsMethodCall)
-	expr.IsStructLiteral = deserializeBool(sExpr.IsStructLiteral)
-	expr.IsArrayLiteral = deserializeBool(sExpr.IsArrayLiteral)
-	expr.IsUndType = deserializeBool(sExpr.IsUndType)
-	expr.IsBreak = deserializeBool(sExpr.IsBreak)
-	expr.IsContinue = deserializeBool(sExpr.IsContinue)
+	expr.ExpressionType = CXEXPR_TYPE(sExpr.ExpressionType)
 
 	expr.Function = deserializeExpressionFunction(sExpr, s, prgrm)
 	expr.Package = prgrm.Packages[sExpr.PackageOffset]

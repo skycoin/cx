@@ -2,16 +2,15 @@
 
 package cxgo
 
-import __yyfmt__ "fmt"
-
 import (
-	// "fmt"
+	__yyfmt__ "fmt"
+	"strconv"
+
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cxgo/actions"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
-	"strconv"
-)
+) // "fmt"
 
 /*
 This is a machine generated file
@@ -1861,7 +1860,7 @@ yynewstate:
 		}
 	case 62:
 		{
-			if yyS[yypt-0].expressions[0].IsStructLiteral {
+			if yyS[yypt-0].expressions[0].IsStructLiteral() {
 				yyVAL.expressions = actions.StructLiteralAssignment([]*ast.CXExpression{actions.StructLiteralFields(yyS[yypt-2].tok)}, yyS[yypt-0].expressions)
 			} else {
 				yyVAL.expressions = actions.Assignment([]*ast.CXExpression{actions.StructLiteralFields(yyS[yypt-2].tok)}, "=", yyS[yypt-0].expressions)
@@ -1869,7 +1868,7 @@ yynewstate:
 		}
 	case 63:
 		{
-			if yyS[yypt-0].expressions[0].IsStructLiteral {
+			if yyS[yypt-0].expressions[0].IsStructLiteral() {
 				yyVAL.expressions = append(yyS[yypt-4].expressions, actions.StructLiteralAssignment([]*ast.CXExpression{actions.StructLiteralFields(yyS[yypt-2].tok)}, yyS[yypt-0].expressions)...)
 			} else {
 				yyVAL.expressions = append(yyS[yypt-4].expressions, actions.Assignment([]*ast.CXExpression{actions.StructLiteralFields(yyS[yypt-2].tok)}, "=", yyS[yypt-0].expressions)...)
@@ -1877,12 +1876,12 @@ yynewstate:
 		}
 	case 64:
 		{
-			yyS[yypt-0].expressions[len(yyS[yypt-0].expressions)-1].IsArrayLiteral = true
+			yyS[yypt-0].expressions[len(yyS[yypt-0].expressions)-1].ExpressionType = ast.CXEXPR_ARRAY_LITERAL
 			yyVAL.expressions = yyS[yypt-0].expressions
 		}
 	case 65:
 		{
-			yyS[yypt-0].expressions[len(yyS[yypt-0].expressions)-1].IsArrayLiteral = true
+			yyS[yypt-0].expressions[len(yyS[yypt-0].expressions)-1].ExpressionType = ast.CXEXPR_ARRAY_LITERAL
 			yyVAL.expressions = append(yyS[yypt-2].expressions, yyS[yypt-0].expressions...)
 		}
 	case 66:
@@ -1919,13 +1918,13 @@ yynewstate:
 		}
 	case 74:
 		{
-			yyS[yypt-0].expressions[len(yyS[yypt-0].expressions)-1].IsArrayLiteral = true
+			yyS[yypt-0].expressions[len(yyS[yypt-0].expressions)-1].ExpressionType = ast.CXEXPR_ARRAY_LITERAL
 			yyVAL.expressions = yyS[yypt-0].expressions
 		}
 	case 75:
 		{
 
-			yyS[yypt-0].expressions[len(yyS[yypt-0].expressions)-1].IsArrayLiteral = true
+			yyS[yypt-0].expressions[len(yyS[yypt-0].expressions)-1].ExpressionType = ast.CXEXPR_ARRAY_LITERAL
 			yyVAL.expressions = append(yyS[yypt-2].expressions, yyS[yypt-0].expressions...)
 		}
 	case 76:
@@ -1953,7 +1952,7 @@ yynewstate:
 				}
 			}
 
-			yyS[yypt-0].expressions[len(yyS[yypt-0].expressions)-1].IsArrayLiteral = true
+			yyS[yypt-0].expressions[len(yyS[yypt-0].expressions)-1].ExpressionType = ast.CXEXPR_ARRAY_LITERAL
 			yyVAL.expressions = yyS[yypt-0].expressions
 		}
 	case 81:
@@ -2005,7 +2004,7 @@ yynewstate:
 			var exprs []*ast.CXExpression
 			for _, str := range yyS[yypt-0].stringA {
 				expr := actions.WritePrimary(constants.TYPE_AFF, encoder.Serialize(str), false)
-				expr[len(expr)-1].IsArrayLiteral = true
+				expr[len(expr)-1].ExpressionType = ast.CXEXPR_ARRAY_LITERAL
 				exprs = append(exprs, expr...)
 			}
 
@@ -2236,7 +2235,7 @@ yynewstate:
 				yyVAL.expressions = nil
 			}
 			if yyS[yypt-0].expressions != nil {
-				if yyS[yypt-0].expressions[0].IsArrayLiteral {
+				if yyS[yypt-0].expressions[0].IsArrayLiteral() {
 					if yyS[yypt-1].tok != "=" && yyS[yypt-1].tok != ":=" {
 						panic("")
 					}
@@ -2247,7 +2246,7 @@ yynewstate:
 						}
 					}
 					yyVAL.expressions = actions.ArrayLiteralAssignment(yyS[yypt-2].expressions, yyS[yypt-0].expressions)
-				} else if yyS[yypt-0].expressions[len(yyS[yypt-0].expressions)-1].IsStructLiteral {
+				} else if yyS[yypt-0].expressions[len(yyS[yypt-0].expressions)-1].IsStructLiteral() {
 					if yyS[yypt-1].tok != "=" && yyS[yypt-1].tok != ":=" {
 						panic("")
 					}
@@ -2318,7 +2317,7 @@ yynewstate:
 		}
 	case 205:
 		{
-			if len(yyS[yypt-1].expressions) > 0 && yyS[yypt-1].expressions[len(yyS[yypt-1].expressions)-1].Operator == nil && !yyS[yypt-1].expressions[len(yyS[yypt-1].expressions)-1].IsMethodCall {
+			if len(yyS[yypt-1].expressions) > 0 && yyS[yypt-1].expressions[len(yyS[yypt-1].expressions)-1].Operator == nil && !yyS[yypt-1].expressions[len(yyS[yypt-1].expressions)-1].IsMethodCall() {
 				outs := yyS[yypt-1].expressions[len(yyS[yypt-1].expressions)-1].Outputs
 				if len(outs) > 0 {
 					println(ast.CompilationError(outs[0].FileName, outs[0].FileLine), "invalid expression")

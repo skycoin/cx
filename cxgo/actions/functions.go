@@ -3,11 +3,12 @@ package actions
 import (
 	"errors"
 	"fmt"
+	"os"
+
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/globals"
 	"github.com/skycoin/cx/cx/util2"
-	"os"
 
 	"github.com/jinzhu/copier"
 )
@@ -151,7 +152,7 @@ func FunctionDeclaration(fn *ast.CXFunction, inputs, outputs []*ast.CXArgument, 
 	FunctionProcessParameters(symbols, &symbolsScope, &offset, fn, fn.Outputs)
 
 	for i, expr := range fn.Expressions {
-		if expr.ScopeOperation == SCOPE_NEW {
+		if expr.IsScopeNew() {
 			*symbols = append(*symbols, make(map[string]*ast.CXArgument))
 		}
 
@@ -171,8 +172,8 @@ func FunctionDeclaration(fn *ast.CXFunction, inputs, outputs []*ast.CXArgument, 
 		//	panic("ATWETEWTASGDFG")
 		//}
 		// process short declaration
-		if len(expr.Outputs) > 0 && len(expr.Inputs) > 0 && expr.Outputs[0].IsShortAssignmentDeclaration && !expr.IsStructLiteral && !isParseOp(expr) {
-			if expr.IsMethodCall {
+		if len(expr.Outputs) > 0 && len(expr.Inputs) > 0 && expr.Outputs[0].IsShortAssignmentDeclaration && !expr.IsStructLiteral() && !isParseOp(expr) {
+			if expr.IsMethodCall() {
 				fn.Expressions[i-1].Outputs[0].Type = fn.Expressions[i].Operator.Outputs[0].Type
 				fn.Expressions[i].Outputs[0].Type = fn.Expressions[i].Operator.Outputs[0].Type
 			} else {
@@ -186,7 +187,7 @@ func FunctionDeclaration(fn *ast.CXFunction, inputs, outputs []*ast.CXArgument, 
 		CheckTypes(expr)
 		CheckUndValidTypes(expr)
 
-		if expr.ScopeOperation == SCOPE_REM {
+		if expr.IsScopeDel() {
 			*symbols = (*symbols)[:len(*symbols)-1]
 		}
 	}
@@ -208,7 +209,7 @@ func FunctionCall(exprs []*ast.CXExpression, args []*ast.CXExpression) []*ast.CX
 			println(ast.CompilationError(CurrentFile, LineNo), err.Error())
 			return nil
 		} else {
-			expr.IsMethodCall = true
+			expr.ExpressionType = ast.CXEXPR_METHOD_CALL
 		}
 
 		if len(expr.Outputs) > 0 && expr.Outputs[0].Fields == nil {
@@ -260,7 +261,7 @@ func FunctionCall(exprs []*ast.CXExpression, args []*ast.CXExpression) []*ast.CX
 				inpExpr.AddOutput(out)
 				expr.AddInput(out)
 			}
-			if len(inpExpr.Outputs) > 0 && inpExpr.IsArrayLiteral {
+			if len(inpExpr.Outputs) > 0 && inpExpr.IsArrayLiteral() {
 				expr.AddInput(inpExpr.Outputs[0])
 			}
 			nestedExprs = append(nestedExprs, inpExpr)
@@ -292,13 +293,13 @@ func ProcessUndExpression(expr *ast.CXExpression) {
 			println(ast.CompilationError(CurrentFile, LineNo), err.Error())
 		}
 	}
-	if expr.IsUndType {
+	if expr.IsUndType() {
 		for _, out := range expr.Outputs {
-            size := 1
-            if !ast.IsComparisonOperator(expr.Operator.OpCode) {
-		        size = ast.GetSize(ast.GetAssignmentElement(expr.Inputs[0]))
-            }
-            out.Size = size
+			size := 1
+			if !ast.IsComparisonOperator(expr.Operator.OpCode) {
+				size = ast.GetSize(ast.GetAssignmentElement(expr.Inputs[0]))
+			}
+			out.Size = size
 			out.TotalSize = size
 		}
 	}
@@ -472,8 +473,6 @@ func ProcessLocalDeclaration(symbols *[]map[string]*ast.CXArgument, symbolsScope
 	arg.IsLocalDeclaration = (*symbolsScope)[arg.Package.Name+"."+arg.Name]
 }
 
-
-
 func ProcessGoTos(fn *ast.CXFunction, exprs []*ast.CXExpression) {
 	for i, expr := range exprs {
 		if expr.Label != "" && expr.Operator == ast.Natives[constants.OP_JMP] {
@@ -496,7 +495,7 @@ func checkMatchParamTypes(expr *ast.CXExpression, expected, received []*ast.CXAr
 		expectedType := ast.GetFormattedType(expected[i])
 		receivedType := ast.GetFormattedType(received[i])
 
-		if expr.IsMethodCall && expected[i].IsPointer && i == 0 {
+		if expr.IsMethodCall() && expected[i].IsPointer && i == 0 {
 			// if method receiver is pointer, remove *
 			if expectedType[0] == '*' {
 				// we need to check if it's not an `str`
@@ -604,7 +603,7 @@ func CheckTypes(expr *ast.CXExpression) {
 
 			// if cxcore.GetAssignmentElement(expr.ProgramOutput[i]).Type != cxcore.GetAssignmentElement(inp).Type {
 			if receivedType != expectedType {
-				if expr.IsStructLiteral {
+				if expr.IsStructLiteral() {
 					println(ast.CompilationError(expr.Outputs[i].FileName, expr.Outputs[i].FileLine), fmt.Sprintf("field '%s' in struct literal of type '%s' expected argument of type '%s'; '%s' was provided", expr.Outputs[i].Fields[0].Name, expr.Outputs[i].CustomType.Name, expectedType, receivedType))
 				} else {
 					println(ast.CompilationError(expr.Outputs[i].FileName, expr.Outputs[i].FileLine), fmt.Sprintf("trying to assign argument of type '%s' to symbol '%s' of type '%s'", receivedType, ast.GetAssignmentElement(expr.Outputs[i]).Name, expectedType))
@@ -764,7 +763,7 @@ func UpdateSymbolsTable(symbols *[]map[string]*ast.CXArgument, sym *ast.CXArgume
 }
 
 func ProcessMethodCall(expr *ast.CXExpression, symbols *[]map[string]*ast.CXArgument, offset *int, shouldExist bool) {
-	if expr.IsMethodCall {
+	if expr.IsMethodCall() {
 		var inp *ast.CXArgument
 		var out *ast.CXArgument
 
