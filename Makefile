@@ -101,8 +101,8 @@ build-goyacc: ## Builds goyacc into /bin/goyacc
 
 build-parser: ## Generate lexer and parser for CX grammar
 	#go build -o ./bin/goyacc ./cmd/goyacc/main.go
-	./bin/goyacc -o cxgo/cxgo0/cxgo0.go cxgo/cxgo0/cxgo0.y
-	./bin/goyacc -o cxgo/cxgo/cxgo.go cxgo/cxgo/cxgo.y
+	./bin/goyacc -o cxgo/cxgo0/parser.go cxgo/cxgo0/grammer.y
+	./bin/goyacc -o cxgo/cxgo/lexer.go cxgo/cxgo/lexer.y
 
 token-fuzzer:
 	go build $(GO_OPTS) -o ./bin/cx-token-fuzzer $(PWD)/development/token-fuzzer/main.go
