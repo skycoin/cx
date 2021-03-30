@@ -161,9 +161,6 @@ type CXExpression struct {
 	ThenLines int
 	ElseLines int
 
-	// 1 = start new scope; -1 = end scope; 0 = just regular expression
-	ScopeOperation int
-
 	ExpressionType CXEXPR_TYPE
 }
 
@@ -192,9 +189,19 @@ func (cxe CXExpression) IsContinue() bool {
 	return cxe.ExpressionType == CXEXPR_CONTINUE
 }
 
-// IsScopeNew checks if expression type is scope new
+// IsUndType checks if expression type is und type
 func (cxe CXExpression) IsUndType() bool {
 	return cxe.ExpressionType == CXEXPR_UND_TYPE
+}
+
+// IsScopeNew checks if expression type is scope new
+func (cxe CXExpression) IsScopeNew() bool {
+	return cxe.ExpressionType == CXEXPR_SCOPE_NEW
+}
+
+// IsScopeDel checks if expression type is scope del
+func (cxe CXExpression) IsScopeDel() bool {
+	return cxe.ExpressionType == CXEXPR_SCOPE_DEL
 }
 
 /*
