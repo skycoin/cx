@@ -2,13 +2,12 @@
 
 package cxgo
 
-import (
-	__yyfmt__ "fmt"
-	"github.com/skycoin/cx/cx/ast"
-	"github.com/skycoin/cx/cx/constants"
-)
+import __yyfmt__ "fmt"
 
 import (
+	// "fmt"
+	"github.com/skycoin/cx/cx/ast"
+	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cxgo/actions"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 	"strconv"
