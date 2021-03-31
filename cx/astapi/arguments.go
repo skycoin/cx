@@ -115,30 +115,6 @@ func GetAccessibleArgsForFunctionByType(cxprogram *cxast.CXProgram, packageLocat
 	var argsList []*cxast.CXArgument
 
 	// Get all globals
-	// pkgList := GetPackagesNameList(cxprogram)
-	// for _, pkgName := range pkgList {
-	// 	pkg, err := FindPackage(cxprogram, pkgName)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	// 	for _, global := range pkg.Globals {
-	// 		if global.Type == argType {
-	// 			argsList = append(argsList, global)
-	// 		}
-	// 	}
-
-	// 	if pkgName == packageLocationName {
-	// 		for _, imp := range pkg.Imports {
-	// 			for _, global := range imp.Globals {
-	// 				if global.Type == argType {
-	// 					argsList = append(argsList, global)
-	// 				}
-	// 			}
-	// 		}
-	// 	}
-	// }
-
-	// Get all globals
 	pkg, err := FindPackage(cxprogram, packageLocationName)
 	if err != nil {
 		return nil, err
