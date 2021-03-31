@@ -5,6 +5,8 @@ import (
 	cxconstants "github.com/skycoin/cx/cx/constants"
 )
 
+// AddNativeInputToExpression adds native input to an expression
+// in a function in cx program.
 func AddNativeInputToExpression(cxprogram *cxast.CXProgram, packageName, functionName, inputName string, inputType, lineNumber int) error {
 	pkg, err := FindPackage(cxprogram, packageName)
 	if err != nil {
@@ -28,6 +30,8 @@ func AddNativeInputToExpression(cxprogram *cxast.CXProgram, packageName, functio
 	return nil
 }
 
+// RemoveInputFromExpression removes an input from an
+// expression in a function in cx program.
 func RemoveInputFromExpression(cxprogram *cxast.CXProgram, functionName string, lineNumber int) error {
 	fn, err := FindFunction(cxprogram, functionName)
 	if err != nil {
@@ -43,6 +47,8 @@ func RemoveInputFromExpression(cxprogram *cxast.CXProgram, functionName string, 
 	return nil
 }
 
+// AddNativeOutputToExpression adds native output to
+// an expression in a function in cx program.
 func AddNativeOutputToExpression(cxprogram *cxast.CXProgram, packageName, functionName, outputName string, outputType, lineNumber int) error {
 	pkg, err := FindPackage(cxprogram, packageName)
 	if err != nil {
@@ -66,6 +72,8 @@ func AddNativeOutputToExpression(cxprogram *cxast.CXProgram, packageName, functi
 	return nil
 }
 
+// RemoveOutputFromExpression removes an output
+// from an expression in a function in cx program.
 func RemoveOutputFromExpression(cxprogram *cxast.CXProgram, functionName string, lineNumber int) error {
 	fn, err := FindFunction(cxprogram, functionName)
 	if err != nil {
@@ -81,6 +89,8 @@ func RemoveOutputFromExpression(cxprogram *cxast.CXProgram, functionName string,
 	return nil
 }
 
+// MakeInputExpressionAPointer makes an input of an
+// expression a pointer.
 func MakeInputExpressionAPointer(cxprogram *cxast.CXProgram, functionName string, lineNumber, expressionNumber int) error {
 	fn, err := FindFunction(cxprogram, functionName)
 	if err != nil {
@@ -96,6 +106,8 @@ func MakeInputExpressionAPointer(cxprogram *cxast.CXProgram, functionName string
 	return nil
 }
 
+// MakeOutputExpressionAPointer makes an output
+// of an expression a pointer.
 func MakeOutputExpressionAPointer(cxprogram *cxast.CXProgram, functionName string, lineNumber, expressionNumber int) error {
 	fn, err := FindFunction(cxprogram, functionName)
 	if err != nil {
@@ -111,6 +123,9 @@ func MakeOutputExpressionAPointer(cxprogram *cxast.CXProgram, functionName strin
 	return nil
 }
 
+// GetAccessibleArgsForFunctionByType gets all accessible
+// arguments in cx program for a function by specified
+// argument type.
 func GetAccessibleArgsForFunctionByType(cxprogram *cxast.CXProgram, packageLocationName, functionName string, argType int) ([]*cxast.CXArgument, error) {
 	var argsList []*cxast.CXArgument
 
