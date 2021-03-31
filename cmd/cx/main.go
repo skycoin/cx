@@ -96,10 +96,7 @@ func Run(args []string) {
 			constants.INIT_HEAP_SIZE = constants.MAX_HEAP_SIZE
 		}
 	}
-	if options.stackSize != "" {
-		constants.STACK_SIZE = parseMemoryString(options.stackSize)
-		actions.DataOffset = constants.STACK_SIZE
-	}
+
 	if options.minHeapFreeRatio != float64(0) {
 		constants.MIN_HEAP_FREE_RATIO = float32(options.minHeapFreeRatio)
 	}
@@ -194,6 +191,13 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 	defer profiling.StopProfile("parse")
 
 	actions.AST = ast.MakeProgram()
+
+	if options.stackSize != "" {
+		constants.STACK_SIZE = parseMemoryString(options.stackSize)
+		actions.AST.DataSegmentSize = constants.STACK_SIZE
+		actions.AST.DataSegmentSize = constants.STACK_SIZE
+
+	}
 
 	//corePkgsPrgrm, err := cxcore.GetCurrentCxProgram()
 	var corePkgsPrgrm *ast.CXProgram = ast.PROGRAM
