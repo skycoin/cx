@@ -121,14 +121,26 @@ func GetAccessibleArgsForFunctionByType(cxprogram *cxast.CXProgram, packageLocat
 	}
 
 	for _, global := range pkg.Globals {
-		if global.Type == argType {
+		if global.IsStruct {
+			for _, field := range global.CustomType.Fields {
+				if field.Type == argType {
+					argsList = append(argsList, field)
+				}
+			}
+		} else if global.Type == argType {
 			argsList = append(argsList, global)
 		}
 	}
 
 	for _, imp := range pkg.Imports {
 		for _, global := range imp.Globals {
-			if global.Type == argType {
+			if global.IsStruct {
+				for _, field := range global.CustomType.Fields {
+					if field.Type == argType {
+						argsList = append(argsList, field)
+					}
+				}
+			} else if global.Type == argType {
 				argsList = append(argsList, global)
 			}
 		}
