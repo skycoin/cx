@@ -14,11 +14,11 @@ func SetCorrectArithmeticOp(expr *ast.CXExpression) {
 		return
 	}
 
-    code := expr.Operator.OpCode
-    if code > constants.START_OF_OPERATORS && code < constants.END_OF_OPERATORS {
-	    // TODO: argument type are not fully resolved here, should be move elsewhere.
-        //expr.Operator = cxcore.GetTypedOperator(cxcore.GetType(expr.ProgramInput[0]), code)
-    }
+	code := expr.Operator.OpCode
+	if code > constants.START_OF_OPERATORS && code < constants.END_OF_OPERATORS {
+		// TODO: argument type are not fully resolved here, should be move elsewhere.
+		//expr.Operator = cxcore.GetTypedOperator(cxcore.GetType(expr.ProgramInput[0]), code)
+	}
 }
 
 // hasDeclSpec determines if an argument has certain declaration specifier
@@ -54,7 +54,7 @@ func WritePrimary(typ int, byts []byte, isGlobal bool) []*ast.CXExpression {
 
 		arg.Size = constants.GetArgSize(typ)
 		arg.TotalSize = size
-		arg.Offset = DataOffset
+		arg.Offset = AST.DataSegmentSize
 
 		if arg.Type == constants.TYPE_STR || arg.Type == constants.TYPE_AFF {
 			arg.PassBy = constants.PASSBY_REFERENCE
@@ -68,21 +68,21 @@ func WritePrimary(typ int, byts []byte, isGlobal bool) []*ast.CXExpression {
 		// we'll start appending the bytes to AST.Memory.
 		// After compilation, we calculate how many bytes we need to add to have a heap segment
 		// equal to `minHeapSize()` that is allocated after the data segment.
-		if size+DataOffset > len(AST.Memory) {
+		if size+AST.DataSegmentSize > len(AST.Memory) {
 			var i int
 			// First we need to fill the remaining free bytes in
 			// the current `AST.Memory` slice.
-			for i = 0; i < len(AST.Memory)-DataOffset; i++ {
-				AST.Memory[DataOffset+i] = byts[i]
+			for i = 0; i < len(AST.Memory)-AST.DataSegmentSize; i++ {
+				AST.Memory[AST.DataSegmentSize+i] = byts[i]
 			}
 			// Then we append the bytes that didn't fit.
 			AST.Memory = append(AST.Memory, byts[i:]...)
 		} else {
 			for i, byt := range byts {
-				AST.Memory[DataOffset+i] = byt
+				AST.Memory[AST.DataSegmentSize+i] = byt
 			}
 		}
-		DataOffset += size
+		AST.DataSegmentSize += size
 
 		expr := ast.MakeExpression(nil, CurrentFile, LineNo)
 		expr.Package = pkg
