@@ -66,6 +66,9 @@ type CXProgram struct {
 	StackSize    int // This field stores the size of a CX program's stack
 	StackPointer int // At what byte the current stack frame is
 
+	DataSegmentSize     int // This field stores the size of a CX program's data segment size
+	DataSegmentStartsAt int // Offset at which the data segment starts in a CX program's memory
+
 	HeapSize     int // This field stores the size of a CX program's heap
 	HeapStartsAt int // Offset at which the heap starts in a CX program's memory (normally the stack size)
 	HeapPointer  int // At what offset a CX program can insert a new object to the heap
@@ -468,12 +471,13 @@ grep -rn "PassBy" .
 func MakeProgram() *CXProgram {
 	minHeapSize := minHeapSize()
 	newPrgrm := &CXProgram{
-		Packages:    make([]*CXPackage, 0),
-		CallStack:   make([]CXCall, constants.CALLSTACK_SIZE),
-		Memory:      make([]byte, constants.STACK_SIZE+minHeapSize),
-		StackSize:   constants.STACK_SIZE,
-		HeapSize:    minHeapSize,
-		HeapPointer: constants.NULL_HEAP_ADDRESS_OFFSET, // We can start adding objects to the heap after the NULL (nil) bytes.
+		Packages:            make([]*CXPackage, 0),
+		CallStack:           make([]CXCall, constants.CALLSTACK_SIZE),
+		Memory:              make([]byte, constants.STACK_SIZE+minHeapSize),
+		StackSize:           constants.STACK_SIZE,
+		DataSegmentStartsAt: constants.STACK_SIZE,
+		HeapSize:            minHeapSize,
+		HeapPointer:         constants.NULL_HEAP_ADDRESS_OFFSET, // We can start adding objects to the heap after the NULL (nil) bytes.
 	}
 	return newPrgrm
 }

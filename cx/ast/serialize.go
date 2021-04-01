@@ -41,6 +41,9 @@ type serializedProgram struct {
 	StackPointer int64
 	StackSize    int64
 
+	DataSegmentSize     int64
+	DataSegmentStartsAt int64
+
 	HeapPointer  int64 //HeapPointer is probably related to HeapStartsAt
 	HeapStartsAt int64
 	HeapSize     int64
@@ -649,6 +652,8 @@ func serializeProgram(prgrm *CXProgram, s *serializedCXProgram) {
 	sPrgrm.HeapPointer = int64(prgrm.HeapPointer)
 	sPrgrm.StackPointer = int64(prgrm.StackPointer)
 	sPrgrm.StackSize = int64(prgrm.StackSize)
+	sPrgrm.DataSegmentSize = int64(prgrm.DataSegmentSize)
+	sPrgrm.DataSegmentStartsAt = int64(prgrm.DataSegmentStartsAt)
 	sPrgrm.HeapSize = int64(prgrm.HeapSize)
 	sPrgrm.HeapStartsAt = int64(prgrm.HeapStartsAt)
 
@@ -1171,6 +1176,8 @@ func initDeserialization(prgrm *CXProgram, s *serializedCXProgram) {
 	prgrm.HeapStartsAt = int(s.Program.HeapStartsAt)
 	prgrm.HeapPointer = int(s.Program.HeapPointer)
 	prgrm.StackSize = int(s.Program.StackSize)
+	prgrm.DataSegmentSize = int(s.Program.DataSegmentSize)
+	prgrm.DataSegmentStartsAt = int(s.Program.DataSegmentStartsAt)
 	prgrm.HeapSize = int(s.Program.HeapSize)
 	prgrm.Version = deserializeString(s.Program.VersionOffset, s.Program.VersionSize, s)
 
