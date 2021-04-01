@@ -6,7 +6,7 @@ import (
 	"github.com/skycoin/cx/cx/constants"
 )
 
-var ENHANCED_DEBUGING1 bool = false
+var ENHANCED_DEBUGING1 bool = true
 var ENHANCED_DEBUGING2 bool = false
 var ENHANCED_DEBUGING3 bool = false
 var ENHANCED_DEBUGING4 bool = false
@@ -63,6 +63,12 @@ func GetFinalOffset(fp int, arg *CXArgument) int {
 	return finalOffset
 }
 
+//OMFG. set ENABLE_MIRACLE_BUG to true and do `make build; make test`
+//var ENABLE_MIRACLE_BUG bool = true //uses GetFinalOffset for everything
+var ENHANCED_DEBUGING bool = true //runs asserts to find error
+
+var ENABLE_MIRACLE_BUG bool = false
+
 //this is simplest version of function that works for atomic types
 func GetOffsetAtomicSimple(fp int, arg *CXArgument) int {
 
@@ -86,12 +92,6 @@ func GetOffsetAtomicSimple(fp int, arg *CXArgument) int {
 	}
 	return finalOffset
 }
-
-//OMFG. set ENABLE_MIRACLE_BUG to true and do `make build; make test`
-//var ENABLE_MIRACLE_BUG bool = true //uses GetFinalOffset for everything
-var ENHANCED_DEBUGING bool = true //runs asserts to find error
-
-var ENABLE_MIRACLE_BUG bool = false
 
 //this is version with type assertions
 func GetOffsetAtomic(fp int, arg *CXArgument) int {
