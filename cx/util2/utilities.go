@@ -1,14 +1,15 @@
 package util2
 
 import (
-	"fmt"
 	"github.com/skycoin/cx/cx/constants"
 )
 
 // Debug ...
+/*
 func Debug(args ...interface{}) {
 	fmt.Println(args...)
 }
+*/
 
 // IsTempVar ...
 func IsTempVar(name string) bool {
