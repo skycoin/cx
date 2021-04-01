@@ -213,8 +213,3 @@ func MakeExpression(op *CXFunction, fileName string, fileLine int) *CXExpression
 		FileLine: fileLine,
 		FileName: fileName}
 }
-
-// Debug ...
-func Debug(args ...interface{}) {
-	fmt.Println(args...)
-}
