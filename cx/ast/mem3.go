@@ -19,6 +19,8 @@ var ENHANCED_DEBUGING4 bool = false
 //GetFinalOffsetF32
 //GetfinalOffsetI16
 //ETC
+
+//TODO: Delete this eventually
 func GetFinalOffset(fp int, arg *CXArgument) int {
 
 	if ENHANCED_DEBUGING3 {
