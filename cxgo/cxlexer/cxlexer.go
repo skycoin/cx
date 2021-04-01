@@ -311,7 +311,7 @@ func idGlobVars(filename string, r io.Reader, prePkg **ast.CXPackage) {
 				if _, err := (*prePkg).GetGlobal(match[len(match)-1]); err != nil {
 					// then it hasn't been added
 					arg := ast.MakeArgument(match[len(match)-1], "", 0)
-					arg.DatasegmentOffset = -1
+					arg.DataSegmentOffset = -1
 					arg.Package = *prePkg
 					(*prePkg).AddGlobal(arg)
 				}
