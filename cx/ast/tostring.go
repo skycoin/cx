@@ -3,13 +3,14 @@ package ast
 import (
 	"bytes"
 	"fmt"
-	"github.com/skycoin/cx/cx/constants"
-	"github.com/skycoin/cx/cx/helper"
-	"github.com/skycoin/cx/cx/util"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/helper"
+	"github.com/skycoin/cx/cx/util"
 )
 
 // ToString returns the abstract syntax tree of a CX program in a
@@ -252,9 +253,9 @@ func getNonCollectionValue(fp int, arg, elt *CXArgument, typ string) string {
 		for c := 0; c < lFlds; c++ {
 			fld := elt.CustomType.Fields[c]
 			if c == lFlds-1 {
-				val += fmt.Sprintf("%s: %s", fld.Name, GetPrintableValue(fp+arg.Offset+off, fld))
+				val += fmt.Sprintf("%s: %s", fld.Name, GetPrintableValue(fp+arg.DataSegmentOffset+off, fld))
 			} else {
-				val += fmt.Sprintf("%s: %s, ", fld.Name, GetPrintableValue(fp+arg.Offset+off, fld))
+				val += fmt.Sprintf("%s: %s, ", fld.Name, GetPrintableValue(fp+arg.DataSegmentOffset+off, fld))
 			}
 			off += fld.TotalSize
 		}
@@ -467,7 +468,7 @@ func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCod
 func IsPointer(sym *CXArgument) bool {
 	// There's no need to add global variables in `fn.ListOfPointers` as we can access them easily through `CXPackage.Globals`
 	// TODO: We could still pre-compute a list of candidates for globals.
-	if sym.Offset >= PROGRAM.StackSize && sym.Name != "" {
+	if sym.DataSegmentOffset >= PROGRAM.StackSize && sym.Name != "" {
 		return false
 	}
 	// NOTE: Strings are considered as `IsPointer`s by the runtime.
@@ -521,9 +522,9 @@ func getFormattedDerefs(arg *CXArgument, includePkg bool) string {
 		// Checking if the value is in data segment.
 		// If this is the case, we can safely display it.
 		idxValue := ""
-		if idx.Offset > PROGRAM.StackSize {
+		if idx.DataSegmentOffset > PROGRAM.StackSize {
 			// Then it's a literal.
-			idxI32 := helper.Deserialize_i32(PROGRAM.Memory[idx.Offset : idx.Offset+constants.TYPE_POINTER_SIZE])
+			idxI32 := helper.Deserialize_i32(PROGRAM.Memory[idx.DataSegmentOffset : idx.DataSegmentOffset+constants.TYPE_POINTER_SIZE])
 			idxValue = fmt.Sprintf("%d", idxI32)
 		} else {
 			// Then let's just print the variable name.
@@ -662,4 +663,3 @@ func GetArgSizeFromTypeName(typeName string) int {
 		// panic(CX_INTERNAL_ERROR)
 	}
 }
-
