@@ -3,15 +3,16 @@ package cxparser
 import (
 	"bufio"
 	"bytes"
-	"github.com/skycoin/cx/cx/ast"
-	"github.com/skycoin/cx/cx/constants"
-	globals2 "github.com/skycoin/cx/cx/globals"
-	"github.com/skycoin/cx/cxgo/globals"
 	"io"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"github.com/skycoin/cx/cx/ast"
+	"github.com/skycoin/cx/cx/constants"
+	globals2 "github.com/skycoin/cx/cx/globals"
+	"github.com/skycoin/cx/cxgo/globals"
 
 	"github.com/skycoin/cx/cxgo/actions"
 	"github.com/skycoin/cx/cxgo/cxgo"
@@ -330,7 +331,7 @@ func lexerStep0(srcStrs, srcNames []string) int {
 					if _, err := prePkg.GetGlobal(match[len(match)-1]); err != nil {
 						// then it hasn't been added
 						arg := ast.MakeArgument(match[len(match)-1], "", 0)
-						arg.Offset = -1
+						arg.DatasegmentOffset = -1
 						arg.Package = prePkg
 						prePkg.AddGlobal(arg)
 					}

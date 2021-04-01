@@ -3,14 +3,15 @@ package cxlexer
 import (
 	"bufio"
 	"bytes"
-	"github.com/skycoin/cx/cx/ast"
-	"github.com/skycoin/cx/cx/constants"
-	"github.com/skycoin/cx/cx/globals"
 	"io"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"github.com/skycoin/cx/cx/ast"
+	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/globals"
 
 	"github.com/sirupsen/logrus"
 
@@ -310,7 +311,7 @@ func idGlobVars(filename string, r io.Reader, prePkg **ast.CXPackage) {
 				if _, err := (*prePkg).GetGlobal(match[len(match)-1]); err != nil {
 					// then it hasn't been added
 					arg := ast.MakeArgument(match[len(match)-1], "", 0)
-					arg.Offset = -1
+					arg.DatasegmentOffset = -1
 					arg.Package = *prePkg
 					(*prePkg).AddGlobal(arg)
 				}

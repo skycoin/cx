@@ -27,13 +27,13 @@ func MakeNativeFunction(opCode int, inputs []*CXArgument, outputs []*CXArgument)
 
 	offset := 0
 	for _, inp := range inputs {
-		inp.Offset = offset
+		inp.DatasegmentOffset = offset
 		offset += GetSize(inp)
 		fn.Inputs = append(fn.Inputs, inp)
 	}
 	for _, out := range outputs {
 		fn.Outputs = append(fn.Outputs, out)
-		out.Offset = offset
+		out.DatasegmentOffset = offset
 		offset += GetSize(out)
 	}
 
@@ -57,12 +57,12 @@ func (fn *CXFunction) GetExpressionByLabel(lbl string) (*CXExpression, error) {
 	if fn.Expressions == nil {
 		return nil, fmt.Errorf("function '%s' has no expressions", fn.Name)
 	}
-		for _, expr := range fn.Expressions {
-			if expr.Label == lbl {
-				return expr, nil
-			}
+	for _, expr := range fn.Expressions {
+		if expr.Label == lbl {
+			return expr, nil
 		}
-		return nil, fmt.Errorf("expression '%s' not found in function '%s'", lbl, fn.Name)
+	}
+	return nil, fmt.Errorf("expression '%s' not found in function '%s'", lbl, fn.Name)
 }
 
 // GetExpressionByLine ...
@@ -188,7 +188,6 @@ func (fn *CXFunction) RemoveExpression(line int) {
 
 // ----------------------------------------------------------------
 //                             `CXFunction` Selectors
-
 
 // MakeExpression ...
 func MakeExpression(op *CXFunction, fileName string, fileLine int) *CXExpression {
