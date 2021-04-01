@@ -214,8 +214,6 @@ func MakeCall(op *ast.CXFunction) ast.CXCall {
 func RunCxAst_ForCXEvolves(cxprogram *ast.CXProgram, untilEnd bool, nCalls *int, untilCall int) (err error) {
 	defer ast.RuntimeError()
 	err = nil
-	var maxRecovery int = 1
-	var recoveryCount int = 0
 
 	var inputs []ast.CXValue
 	var outputs []ast.CXValue
@@ -272,12 +270,9 @@ func RunCxAst_ForCXEvolves(cxprogram *ast.CXProgram, untilEnd bool, nCalls *int,
 		}
 
 		defer func() {
-			if recoveryCount < maxRecovery {
-				// recover from panic if one occured. Set err to nil otherwise.
-				if recover() != nil {
-					recoveryCount++
-					err = errors.New("panic from cx program call")
-				}
+			// recover from panic if one occured. Set err to nil otherwise.
+			if recover() != nil {
+				err = errors.New("panic from cx program call")
 			}
 
 		}()
