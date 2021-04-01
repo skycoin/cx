@@ -131,7 +131,7 @@ func FunctionDeclaration(fn *ast.CXFunction, inputs, outputs []*ast.CXArgument, 
 	//TODO: Why would the heap starting position always be incrasing?
 	//TODO: HeapStartsAt only increases, with every write?
 	//DataOffset only increases
-	AST.HeapStartsAt = AST.DataSegmentSize //Why would declaring a function set heap?
+	AST.HeapStartsAt = AST.DataSegmentSize + AST.DataSegmentStartsAt //Why would declaring a function set heap?
 	//AST.HeapStartsAt = constants.STACK_SIZE
 
 	ProcessGoTos(fn, exprs)

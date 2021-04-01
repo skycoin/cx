@@ -476,7 +476,6 @@ func MakeProgram() *CXProgram {
 		Memory:              make([]byte, constants.STACK_SIZE+minHeapSize),
 		StackSize:           constants.STACK_SIZE,
 		DataSegmentStartsAt: constants.STACK_SIZE,
-		DataSegmentSize:     constants.STACK_SIZE,
 		HeapSize:            minHeapSize,
 		HeapPointer:         constants.NULL_HEAP_ADDRESS_OFFSET, // We can start adding objects to the heap after the NULL (nil) bytes.
 	}

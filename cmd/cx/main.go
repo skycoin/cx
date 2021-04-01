@@ -194,7 +194,6 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 
 	if options.stackSize != "" {
 		constants.STACK_SIZE = parseMemoryString(options.stackSize)
-		actions.AST.DataSegmentSize = constants.STACK_SIZE
 		actions.AST.DataSegmentStartsAt = constants.STACK_SIZE
 
 	}
