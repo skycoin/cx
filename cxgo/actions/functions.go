@@ -5,12 +5,10 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/jinzhu/copier"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/globals"
-	"github.com/skycoin/cx/cx/util2"
-
-	"github.com/jinzhu/copier"
 )
 
 // FunctionHeader takes a function name ('ident') and either creates the
@@ -524,7 +522,7 @@ func checkMatchParamTypes(expr *ast.CXExpression, expected, received []*ast.CXAr
 		// FIXME: There are some expressions added by the cxgo where temporary variables are used.
 		// These temporary variables' types are not properly being set. That's why we use !cxcore.IsTempVar to
 		// exclude these cases for now.
-		if expr.Operator.OpCode == constants.OP_IDENTITY && !util2.IsTempVar(expr.Outputs[0].Name) {
+		if expr.Operator.OpCode == constants.OP_IDENTITY && !IsTempVar(expr.Outputs[0].Name) {
 			inpType := ast.GetFormattedType(expr.Inputs[0])
 			outType := ast.GetFormattedType(expr.Outputs[0])
 
@@ -907,7 +905,7 @@ func ProcessTempVariable(expr *ast.CXExpression) {
 	if expr.Operator != nil && (expr.Operator == ast.Natives[constants.OP_IDENTITY] || ast.IsArithmeticOperator(expr.Operator.OpCode)) && len(expr.Outputs) > 0 && len(expr.Inputs) > 0 {
 		name := expr.Outputs[0].Name
 		arg := expr.Outputs[0]
-		if util2.IsTempVar(name) {
+		if IsTempVar(name) {
 			// then it's a temporary variable and it needs to adopt its input's type
 			arg.Type = expr.Inputs[0].Type
 			arg.Size = expr.Inputs[0].Size

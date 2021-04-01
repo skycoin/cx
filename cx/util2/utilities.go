@@ -1,24 +1,5 @@
 package util2
 
-import (
-	"github.com/skycoin/cx/cx/constants"
-)
-
-// Debug ...
-/*
-func Debug(args ...interface{}) {
-	fmt.Println(args...)
-}
-*/
-
-// IsTempVar ...
-func IsTempVar(name string) bool {
-	if len(name) >= len(constants.LOCAL_PREFIX) && name[:len(constants.LOCAL_PREFIX)] == constants.LOCAL_PREFIX {
-		return true
-	}
-	return false
-}
-
 func CheckForEscapedChars(str string) []byte {
 	var res []byte
 	var lenStr = int(len(str))
