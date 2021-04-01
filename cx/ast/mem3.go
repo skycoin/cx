@@ -7,8 +7,8 @@ import (
 )
 
 var ENHANCED_DEBUGING1 bool = true
-var ENHANCED_DEBUGING2 bool = false
-var ENHANCED_DEBUGING3 bool = false
+var ENHANCED_DEBUGING2 bool = true
+var ENHANCED_DEBUGING3 bool = true //needs to check for structs too
 var ENHANCED_DEBUGING4 bool = false
 
 //NEEDS COMMENT. WTF DOES THIS DO?
@@ -22,7 +22,7 @@ var ENHANCED_DEBUGING4 bool = false
 func GetFinalOffset(fp int, arg *CXArgument) int {
 
 	if ENHANCED_DEBUGING3 {
-		if !(arg.IsPointer || arg.IsSlice || arg.IsArray) {
+		if !(arg.IsPointer || arg.IsSlice || arg.IsArray || arg.IsStruct) {
 			panic("arg is in invalid format")
 		}
 	}
