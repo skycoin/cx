@@ -52,6 +52,7 @@ func Op_V2(code int, name string, handler OpcodeHandler_V2, inputs []*CXArgument
 // not used
 // TODO: Delete MakeNativeFunctionV1
 // TODO: Delete opcode.version
+// Only used in one place?
 func MakeNativeFunctionV1(opCode int, inputs []*CXArgument, outputs []*CXArgument) *CXFunction {
 	fn := &CXFunction{
 		IsAtomic: true,
