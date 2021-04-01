@@ -4,10 +4,6 @@
  
 [![Build Status](https://travis-ci.com/skycoin/cx.svg?branch=develop)](https://travis-ci.com/skycoin/cx) [![Build status](https://ci.appveyor.com/api/projects/status/y04pofhhfmpw8vef/branch/master?svg=true)](https://ci.appveyor.com/project/skycoin/cx/branch/master)
 
-CX is a general purpose, interpreted and compiled programming
-language, with a very strict type system and a syntax
-similar to Golang's. CX provides a new programming paradigm based on
-the concept of affordances.
 
 ## Table of Contents
 
