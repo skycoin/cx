@@ -28,33 +28,6 @@ expressions, packages, etc.), and interactively or automatically choose
 one of the affordances to be applied. This paradigm has the main objective
 of providing an additional security layer for decentralized,
 blockchain-based applications, but can also be used for general
-purpose programming. 
-
-## Installation
-
-CX requires a Golang version of `1.15` or higher. 
-
-### Binary Releases
-
-You can find binary releases for most major systems on the [release page](https://github.com/skycoin/cx/releases). 
-
-### Compiling on Linux
-
-If you are using a `apt` compatible system, install the dependencies with"
-
-```
-sudo apt-get update
-
-sudo apt-get install -y glade xvfb libxinerama-dev libxcursor-dev libxrandr-dev libgl1-mesa-dev libxi-dev libperl-dev libcairo2-dev libpango1.0-dev libglib2.0-dev libopenal-dev libxxf86vm-dev make
-```
-
-If you have not setup Golang on your machine, follow this [guide](https://www.tecmint.com/install-go-in-ubuntu/) to install and setup Go. 
-
-Download CX's repository using Go:
-
-```
-go get github.com/skycoin/cx
-```
 
 Get required Go dependencies with:
 
