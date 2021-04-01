@@ -48,9 +48,9 @@ func Op_V2(code int, name string, handler OpcodeHandler_V2, inputs []*CXArgument
 	Natives[code] = MakeNativeFunctionV2(code, inputs, outputs)
 }
 
-// MakeNativeFunction creates a native function such as i32.add()
+// MakeNativeFunctionV1 creates a native function such as i32.add()
 // not used
-func MakeNativeFunction(opCode int, inputs []*CXArgument, outputs []*CXArgument) *CXFunction {
+func MakeNativeFunctionV1(opCode int, inputs []*CXArgument, outputs []*CXArgument) *CXFunction {
 	fn := &CXFunction{
 		IsAtomic: true,
 		OpCode:   opCode,
