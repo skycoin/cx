@@ -3,15 +3,16 @@ package cxparser
 import (
 	"bufio"
 	"bytes"
-	"github.com/skycoin/cx/cx/ast"
-	"github.com/skycoin/cx/cx/constants"
-	globals2 "github.com/skycoin/cx/cx/globals"
-	"github.com/skycoin/cx/cxgo/globals"
 	"io"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"github.com/skycoin/cx/cx/ast"
+	"github.com/skycoin/cx/cx/constants"
+	globals2 "github.com/skycoin/cx/cx/globals"
+	"github.com/skycoin/cx/cxgo/globals"
 
 	"github.com/skycoin/cx/cxgo/actions"
 	"github.com/skycoin/cx/cxgo/cxgo"
@@ -82,8 +83,10 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 		}
 		profiling.StartProfile(actions.CurrentFile)
 		parseErrors += cxgo.Parse(cxgo.NewLexer(b))
+
 		profiling.StopProfile(actions.CurrentFile)
 	}
+
 	profiling.StopProfile("4. parse")
 
 	if globals2.FoundCompileErrors || parseErrors > 0 {
@@ -343,6 +346,7 @@ func lexerStep0(srcStrs, srcNames []string) int {
 
 	profiling.StartProfile("3. cxgo0")
 	// cxgo0.Parse(allSC)
+
 	for i, source := range srcStrs {
 		profiling.StartProfile(srcNames[i])
 		source = source + "\n"
@@ -353,6 +357,7 @@ func lexerStep0(srcStrs, srcNames []string) int {
 		parseErrors += cxgo0.Parse(source)
 		profiling.StopProfile(srcNames[i])
 	}
+
 	profiling.StopProfile("3. cxgo0")
 	return parseErrors
 }

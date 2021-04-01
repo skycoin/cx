@@ -2,184 +2,22 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"os/user"
+	"path/filepath"
+	"strconv"
 
 	repl "github.com/skycoin/cx/cmd/cxrepl"
 	cxcore "github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
-	"github.com/skycoin/cx/cx/execute"
 	"github.com/skycoin/cx/cx/globals"
 	"github.com/skycoin/cx/cx/util"
 	"github.com/skycoin/cx/cxgo/actions"
 	"github.com/skycoin/cx/cxgo/cxgo"
 	"github.com/skycoin/cx/cxgo/cxparser"
 	"github.com/skycoin/cx/cxgo/util/profiling"
-
-	//"github.com/skycoin/cx/cxparser/cxgo0"
-	"os"
-	"os/user"
-	"path/filepath"
-	"runtime"
-	"strconv"
 )
-
-func main() {
-	//cx.CXLogFile(true)
-	if os.Args != nil && len(os.Args) > 1 {
-		Run(os.Args[1:])
-	}
-}
-
-func Run(args []string) {
-
-	runtime.LockOSThread()
-	runtime.GOMAXPROCS(2)
-
-	options := defaultCmdFlags()
-
-	parseFlags(&options, args)
-
-	// Checking if CXPATH is set, either by setting an environment variable
-	// or by setting the `--cxpath` flag.
-	GetCXPath(options)
-
-	//checkHelp check command line argumenets
-	//$ cx help
-	if checkHelp(args) {
-		commandLine.PrintDefaults()
-		return
-	}
-
-	// Does the user want to print the command-line help?
-	//options.printHelp works when flags are provided.
-	//$ cx --vesion
-	if options.printHelp {
-		printHelp()
-		return
-	}
-
-	// Does the user want to print CX's version?
-	if options.printVersion {
-		printVersion()
-		return
-	}
-
-	//checkversion check command line argumenets
-	//$ cx version
-	if checkversion(args) {
-		printVersion()
-		return
-	}
-
-	// User wants to print CX env
-	if options.printEnv {
-		printEnv()
-		return
-	}
-
-	//checkenv check command line argumenets
-	//$ cx
-	if checkenv(args) {
-		printEnv()
-		return
-	}
-
-	if options.initialHeap != "" {
-		constants.INIT_HEAP_SIZE = parseMemoryString(options.initialHeap)
-	}
-	if options.maxHeap != "" {
-		constants.MAX_HEAP_SIZE = parseMemoryString(options.maxHeap)
-		if constants.MAX_HEAP_SIZE < constants.INIT_HEAP_SIZE {
-			// Then MAX_HEAP_SIZE overrides INIT_HEAP_SIZE's value.
-			constants.INIT_HEAP_SIZE = constants.MAX_HEAP_SIZE
-		}
-	}
-	if options.stackSize != "" {
-		constants.STACK_SIZE = parseMemoryString(options.stackSize)
-		actions.DataOffset = constants.STACK_SIZE
-	}
-	if options.minHeapFreeRatio != float64(0) {
-		constants.MIN_HEAP_FREE_RATIO = float32(options.minHeapFreeRatio)
-	}
-	if options.maxHeapFreeRatio != float64(0) {
-		constants.MAX_HEAP_FREE_RATIO = float32(options.maxHeapFreeRatio)
-	}
-
-	// options, file pointers, filenames
-	cxArgs, sourceCode, fileNames := ast.ParseArgsForCX(commandLine.Args(), true)
-
-	// Propagate some options out to other packages.
-	cxgo.DebugLexer = options.debugLexer // in package cxgo
-	profiling.DebugProfileRate = options.debugProfile
-	profiling.DebugProfile = profiling.DebugProfileRate > 0
-
-	// Load op code tables
-	cxcore.LoadOpCodeTables()
-
-	if run := parseProgram(options, fileNames, sourceCode); run {
-
-		if checkAST(args) {
-			printProgramAST(options, cxArgs, sourceCode)
-			return
-		}
-
-		if options.tokenizeMode {
-			printTokenize(options, fileNames)
-			return
-		}
-
-		if checktokenizeMode(args) {
-			printTokenize(options, fileNames)
-			return
-		}
-
-		runProgram(options, cxArgs, sourceCode)
-	}
-}
-
-// initMainPkg adds a `main` package with an empty `main` function to `prgrm`.
-func initMainPkg(prgrm *ast.CXProgram) {
-	mod := ast.MakePackage(constants.MAIN_PKG)
-	prgrm.AddPackage(mod)
-	fn := ast.MakeFunction(constants.MAIN_FUNC, actions.CurrentFile, actions.LineNo)
-	mod.AddFunction(fn)
-}
-
-// optionTokenize checks if the user wants to use CX to generate the lexer tokens
-func printTokenize(options cxCmdFlags, fileNames []string) {
-	var r *os.File
-	var w *os.File
-	var err error
-
-	if len(fileNames) == 0 {
-		r = os.Stdin
-	} else {
-		sourceFilename := fileNames[0]
-		if len(fileNames) > 1 {
-			fmt.Fprintln(os.Stderr, "Multiple source files detected. Ignoring all except", sourceFilename)
-		}
-		r, err = util.CXOpenFile(sourceFilename)
-		if err != nil {
-			fmt.Fprintln(os.Stderr, "ProgramError reading:", sourceFilename, err)
-			return
-		}
-		defer r.Close()
-	}
-
-	if options.compileOutput == "" {
-		w = os.Stdout
-	} else {
-		tokenFilename := options.compileOutput
-		w, err = util.CXCreateFile(tokenFilename)
-		if err != nil {
-			fmt.Fprintln(os.Stderr, "ProgramError writing:", tokenFilename, err)
-			return
-		}
-		defer w.Close()
-	}
-
-	cxgo.Tokenize(r, w)
-}
 
 func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File) bool {
 
@@ -247,26 +85,48 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 	return true
 }
 
-func runProgram(options cxCmdFlags, cxArgs []string, sourceCode []*os.File) {
-	profiling.StartProfile("run")
-	defer profiling.StopProfile("run")
+// initMainPkg adds a `main` package with an empty `main` function to `prgrm`.
+func initMainPkg(prgrm *ast.CXProgram) {
+	mod := ast.MakePackage(constants.MAIN_PKG)
+	prgrm.AddPackage(mod)
+	fn := ast.MakeFunction(constants.MAIN_FUNC, actions.CurrentFile, actions.LineNo)
+	mod.AddFunction(fn)
+}
 
-	if options.replMode || len(sourceCode) == 0 {
-		actions.AST.SetCurrentCxProgram()
-		repl.Repl()
-		return
+// optionTokenize checks if the user wants to use CX to generate the lexer tokens
+func printTokenize(options cxCmdFlags, fileNames []string) {
+	var r *os.File
+	var w *os.File
+	var err error
+
+	if len(fileNames) == 0 {
+		r = os.Stdin
+	} else {
+		sourceFilename := fileNames[0]
+		if len(fileNames) > 1 {
+			fmt.Fprintln(os.Stderr, "Multiple source files detected. Ignoring all except", sourceFilename)
+		}
+		r, err = util.CXOpenFile(sourceFilename)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "ProgramError reading:", sourceFilename, err)
+			return
+		}
+		defer r.Close()
 	}
 
-	// Normal run of a CX program.
-	//err := actions.AST.RunCompiled(0, cxArgs)
-	err := execute.RunCompiled(actions.AST, 0, cxArgs)
-	if err != nil {
-		panic(err)
+	if options.compileOutput == "" {
+		w = os.Stdout
+	} else {
+		tokenFilename := options.compileOutput
+		w, err = util.CXCreateFile(tokenFilename)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "ProgramError writing:", tokenFilename, err)
+			return
+		}
+		defer w.Close()
 	}
 
-	if cxcore.AssertFailed() {
-		os.Exit(constants.CX_ASSERT)
-	}
+	cxgo.Tokenize(r, w)
 }
 
 func printProgramAST(options cxCmdFlags, cxArgs []string, sourceCode []*os.File) {
