@@ -16,30 +16,6 @@ func MakeFunction(name string, fileName string, fileLine int) *CXFunction {
 	}
 }
 
-// MakeNativeFunction creates a native function such as i32.add()
-// not used
-func MakeNativeFunction(opCode int, inputs []*CXArgument, outputs []*CXArgument) *CXFunction {
-	fn := &CXFunction{
-		IsAtomic: true,
-		OpCode:   opCode,
-		Version:  1,
-	}
-
-	offset := 0
-	for _, inp := range inputs {
-		inp.DataSegmentOffset = offset
-		offset += GetSize(inp)
-		fn.Inputs = append(fn.Inputs, inp)
-	}
-	for _, out := range outputs {
-		fn.Outputs = append(fn.Outputs, out)
-		out.DataSegmentOffset = offset
-		offset += GetSize(out)
-	}
-
-	return fn
-}
-
 // ----------------------------------------------------------------
 //                             `CXFunction` Getters
 
