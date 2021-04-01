@@ -91,10 +91,11 @@ func init() {
 	ast.PROGRAM.AddPackage(httpPkg)
 }
 
-func opHTTPHandle(expr *ast.CXExpression, fp int) {
+func opHTTPHandle(inputs []ast.CXValue, outputs []ast.CXValue) {
 
 	//step 3  : specify the input and outout parameters of Handle function.
-	urlstring, functionnamestring := expr.Inputs[0], expr.Inputs[1]
+	urlstring, functionnamestring := inputs[0].Arg, inputs[1].Arg
+    fp := inputs[0].FramePointer
 
 	// Getting handler function.
 	handlerPkg, err := ast.PROGRAM.GetPackage(functionnamestring.Package.Name)
@@ -140,45 +141,48 @@ func opHTTPHandle(expr *ast.CXExpression, fp int) {
 
 var server *http.Server
 
-func opHTTPClose(expr *ast.CXExpression, fp int) {
+func opHTTPClose(inputs []ast.CXValue, outputs []ast.CXValue) {
 	server.Close()
 }
 
-func opHTTPListenAndServe(expr *ast.CXExpression, fp int) {
+func opHTTPListenAndServe(inputs []ast.CXValue, outputs []ast.CXValue) {
 
 	//step 3  : specify the input and outout parameters of HTTPServe function.
-	urlstring, errstring := expr.Inputs[0], expr.Outputs[0]
 
-	url := ast.ReadStr(fp, urlstring)
+	url := inputs[0].Get_str()
 
 	server = &http.Server{Addr: url}
 
 	err := server.ListenAndServe()
-	ast.WriteString(fp, err.Error(), errstring)
+    outputs[0].Set_str(err.Error())
 }
 
-func opHTTPServe(expr *ast.CXExpression, fp int) {
+func opHTTPServe(inputs []ast.CXValue, outputs []ast.CXValue) {
 
 	//step 3  : specify the imput and out of HTTPServe function.
-	urlstring, errstring := expr.Inputs[0], expr.Outputs[0]
 
-	url := ast.ReadStr(fp, urlstring)
+	url := inputs[0].Get_str()
 
 	l, err := net.Listen("tcp", url)
+    var errStr string
 	if err != nil {
-		ast.WriteString(fp, err.Error(), errstring)
+        errStr = err.Error()
 	}
 
 	err = http.Serve(l, nil)
 	if err != nil {
-		ast.WriteString(fp, err.Error(), errstring)
+        errStr = err.Error()
 	}
+
+    outputs[0].Set_str(errStr)
 }
 
-func opHTTPNewRequest(expr *ast.CXExpression, fp int) {
+func opHTTPNewRequest(inputs []ast.CXValue, outputs []ast.CXValue) {
 	// TODO: This whole OP needs rewriting/finishing.
 	// Seems more a prototype.
-	stringmethod, stringurl, stringbody, errorstring := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Outputs[0]
+	stringmethod, stringurl, stringbody, errorstring := inputs[0].Arg, inputs[1].Arg, inputs[2].Arg, outputs[0].Arg
+
+    fp := inputs[0].FramePointer
 
 	//this is an alternative for following 3 lines of code that fail due to URL
 	method := ast.ReadStr(fp, stringmethod)
@@ -322,10 +326,12 @@ func writeHTTPRequest(fp int, param *ast.CXArgument, request *http.Request) {
 	ast.WriteMemory(ast.GetFinalOffset(fp, &req), helper.FromBool(request.URL.ForceQuery))
 }
 
-func opHTTPDo(expr *ast.CXExpression, fp int) {
+func opHTTPDo(inputs []ast.CXValue, outputs []ast.CXValue) {
 
-	reqstruct, respstruct, errorstring := expr.Inputs[0], expr.Outputs[0], expr.Outputs[1]
-	//TODO read req from the inputs
+	reqstruct, respstruct, errorstring := inputs[0].Arg, outputs[0].Arg, outputs[1].Arg
+	fp := inputs[0].FramePointer
+
+    //TODO read req from the inputs
 	// reqByts := ReadMemory(GetFinalOffset(fp, inp1), inp1)
 
 	req := ast.CXArgument{}
@@ -487,9 +493,11 @@ func opHTTPDo(expr *ast.CXExpression, fp int) {
 	ast.WriteString(fp, string(body), &resp)
 }
 
-func opDMSGDo(expr *ast.CXExpression, fp int) {
-	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
-	var req http.Request
+func opDMSGDo(inputs []ast.CXValue, outputs []ast.CXValue) {
+	inp1, out1 := inputs[0].Arg, outputs[0].Arg
+    fp := inputs[0].FramePointer
+
+    var req http.Request
 	byts1 := ast.ReadMemory(ast.GetFinalOffset(fp, inp1), inp1)
 	err := encoder.DeserializeRawExact(byts1, &req)
 	if err != nil {

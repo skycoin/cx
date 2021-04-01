@@ -7,16 +7,18 @@ import (
 	"strconv"
 )
 
-func buildString(expr *ast.CXExpression, fp int) []byte {
-	inp1 := expr.Inputs[0]
-
-	fmtStr := ast.ReadStr(fp, inp1)
+func buildString(inputs []ast.CXValue, outputs []ast.CXValue) []byte {
+	fmtStr := inputs[0].Get_str()
 
 	var res []byte
 	var specifiersCounter int
 	var lenStr = int(len(fmtStr))
 
-	for c := 0; c < len(fmtStr); c++ {
+	call := ast.PROGRAM.GetCurrentCall()
+	expr := call.Operator.Expressions[call.Line]
+    fp := inputs[0].FramePointer
+
+    for c := 0; c < len(fmtStr); c++ {
 		var nextCh byte
 		ch := fmtStr[c]
 		if c < lenStr-1 {
@@ -117,12 +119,12 @@ func buildString(expr *ast.CXExpression, fp int) []byte {
 	return res
 }
 
-func opSprintf(expr *ast.CXExpression, fp int) {
-	ast.WriteString(fp, string(buildString(expr, fp)), expr.Outputs[0])
+func opSprintf(inputs []ast.CXValue, outputs []ast.CXValue) {
+    outputs[0].Set_str(string(buildString(inputs, outputs)))
 }
 
-func opPrintf(expr *ast.CXExpression, fp int) {
-	fmt.Print(string(buildString(expr, fp)))
+func opPrintf(inputs []ast.CXValue, outputs []ast.CXValue) {
+	fmt.Print(string(buildString(inputs, outputs)))
 }
 
 //Only used in op_fmt.go, once

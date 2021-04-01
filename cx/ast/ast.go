@@ -139,7 +139,6 @@ type CXFunction struct {
 
 	// Used by the REPL and parser
 	CurrentExpression *CXExpression
-	Version           int
 }
 
 // CXExpression is used represent a CX expression.

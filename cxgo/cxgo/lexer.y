@@ -665,13 +665,8 @@ infer_clauses:
                 {
 			var exprs []*ast.CXExpression
 			for _, str := range $1 {
-<<<<<<< HEAD
-				expr := actions.WritePrimary(cxcore.TYPE_AFF, encoder.Serialize(str), false)
-				expr[len(expr) - 1].ExpressionType = ast.CXEXPR_ARRAY_LITERAL
-=======
 				expr := actions.WritePrimary(constants.TYPE_AFF, encoder.Serialize(str), false)
-				expr[len(expr) - 1].IsArrayLiteral = true
->>>>>>> develop
+				expr[len(expr) - 1].ExpressionType = ast.CXEXPR_ARRAY_LITERAL
 				exprs = append(exprs, expr...)
 			}
 			
@@ -1224,7 +1219,7 @@ return_expression:
 jump_statement: GOTO IDENTIFIER SEMICOLON
                 {
 			if pkg, err := actions.AST.GetCurrentPackage(); err == nil {
-				expr := ast.MakeExpression(ast.Natives[constants.OP_JMP], actions.CurrentFile, actions.LineNo)
+				expr := ast.MakeExpression(ast.Natives[constants.OP_GOTO], actions.CurrentFile, actions.LineNo)
 				expr.Package = pkg
 				expr.Label = $2
 

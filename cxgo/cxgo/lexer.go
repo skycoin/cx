@@ -2,15 +2,16 @@
 
 package cxgo
 
-import (
-	__yyfmt__ "fmt"
-	"strconv"
+import __yyfmt__ "fmt"
 
+import (
+	// "fmt"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cxgo/actions"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
-) // "fmt"
+	"strconv"
+)
 
 /*
 This is a machine generated file
@@ -2421,7 +2422,7 @@ yynewstate:
 	case 225:
 		{
 			if pkg, err := actions.AST.GetCurrentPackage(); err == nil {
-				expr := ast.MakeExpression(ast.Natives[constants.OP_JMP], actions.CurrentFile, actions.LineNo)
+				expr := ast.MakeExpression(ast.Natives[constants.OP_GOTO], actions.CurrentFile, actions.LineNo)
 				expr.Package = pkg
 				expr.Label = yyS[yypt-1].tok
 

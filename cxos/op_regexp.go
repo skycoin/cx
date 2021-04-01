@@ -26,8 +26,9 @@ func init() {
 // regexpCompile is a helper function for `opRegexpMustCompile` and
 // `opRegexpCompile`. `regexpCompile` compiles a `regexp.Regexp` structure
 // and adds it to global `regexps`. It also writes CX structure `regexp.Regexp`.
-func regexpCompile(expr *ast.CXExpression, fp int) error {
-	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
+func regexpCompile(inputs []ast.CXValue, outputs []ast.CXValue) error {
+	inp1, out1 := inputs[0].Arg, outputs[0].Arg
+    fp := inputs[0].FramePointer
 
 	// Extracting regular expression to work with, contained in `inp1`.
 	exp := ast.ReadStr(fp, inp1)
@@ -74,8 +75,8 @@ func regexpCompile(expr *ast.CXExpression, fp int) error {
 }
 
 // opRegexpMustCompile is a wrapper for golang's `regexp`'s `MustCompile`.
-func opRegexpMustCompile(expr *ast.CXExpression, fp int) {
-	err := regexpCompile(expr, fp)
+func opRegexpMustCompile(inputs []ast.CXValue, outputs []ast.CXValue) {
+	err := regexpCompile(inputs, outputs)
 
 	if err != nil {
 		println(err.Error())
@@ -85,12 +86,12 @@ func opRegexpMustCompile(expr *ast.CXExpression, fp int) {
 }
 
 // opRegexpCompile is a wrapper for golang's `regexp`'s `MustCompile`.
-func opRegexpCompile(expr *ast.CXExpression, fp int) {
+func opRegexpCompile(inputs []ast.CXValue, outputs []ast.CXValue) {
 	// We're only interested in `out2`, which represents the
 	// returned error.
-	out2 := expr.Outputs[1]
-
-	err := regexpCompile(expr, fp)
+	out2 := outputs[1].Arg
+    fp := outputs[1].FramePointer 
+	err := regexpCompile(inputs, outputs)
 
 	// Writing error message to `out2`.
 	if err != nil {
@@ -99,8 +100,9 @@ func opRegexpCompile(expr *ast.CXExpression, fp int) {
 }
 
 // opRegexpCompile is a wrapper for golang's `regexp`'s `MustCompile`.
-func opRegexpFind(expr *ast.CXExpression, fp int) {
-	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
+func opRegexpFind(inputs []ast.CXValue, outputs []ast.CXValue) {
+	inp1, inp2, out1 := inputs[0].Arg, inputs[1].Arg, outputs[0].Arg
+    fp := inputs[0].FramePointer
 
 	// Output structure `Regexp`.
 	reg := ast.CXArgument{}
