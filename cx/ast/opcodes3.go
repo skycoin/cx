@@ -50,6 +50,8 @@ func Op_V2(code int, name string, handler OpcodeHandler_V2, inputs []*CXArgument
 
 // MakeNativeFunctionV1 creates a native function such as i32.add()
 // not used
+// TODO: Delete MakeNativeFunctionV1
+// TODO: Delete opcode.version
 func MakeNativeFunctionV1(opCode int, inputs []*CXArgument, outputs []*CXArgument) *CXFunction {
 	fn := &CXFunction{
 		IsAtomic: true,
