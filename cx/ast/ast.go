@@ -344,6 +344,8 @@ type CXArgument struct {
 	DoesEscape                   bool
 }
 
+//TODO: Comment or delete "IsRest"
+
 /*
 	FileName              string
 - filename and line number

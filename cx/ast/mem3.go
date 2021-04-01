@@ -8,7 +8,7 @@ import (
 
 var ENHANCED_DEBUGING1 bool = true
 var ENHANCED_DEBUGING2 bool = true
-var ENHANCED_DEBUGING3 bool = true //needs to check for structs too
+var ENHANCED_DEBUGING3 bool = false //needs to check for structs too
 var ENHANCED_DEBUGING4 bool = false
 
 //NEEDS COMMENT. WTF DOES THIS DO?
@@ -28,9 +28,9 @@ func GetFinalOffset(fp int, arg *CXArgument) int {
 	}
 
 	if ENHANCED_DEBUGING4 {
-		if arg.Type == constants.TYPE_F32 || arg.Type == constants.TYPE_F64 ||
+		if !(arg.IsPointer) && (arg.Type == constants.TYPE_F32 || arg.Type == constants.TYPE_F64 ||
 			arg.Type == constants.TYPE_UI8 || arg.Type == constants.TYPE_UI16 || arg.Type == constants.TYPE_UI32 || arg.Type == constants.TYPE_UI64 ||
-			arg.Type == constants.TYPE_I8 || arg.Type == constants.TYPE_I16 || arg.Type == constants.TYPE_I32 || arg.Type == constants.TYPE_I64 {
+			arg.Type == constants.TYPE_I8 || arg.Type == constants.TYPE_I16 || arg.Type == constants.TYPE_I32 || arg.Type == constants.TYPE_I64) {
 			panic("arg is in invalid format")
 		}
 	}
