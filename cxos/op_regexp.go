@@ -27,15 +27,12 @@ func init() {
 // `opRegexpCompile`. `regexpCompile` compiles a `regexp.Regexp` structure
 // and adds it to global `regexps`. It also writes CX structure `regexp.Regexp`.
 func regexpCompile(inputs []ast.CXValue, outputs []ast.CXValue) error {
-	inp1, out1 := inputs[0].Arg, outputs[0].Arg
-    fp := inputs[0].FramePointer
-
-	// Extracting regular expression to work with, contained in `inp1`.
-	exp := ast.ReadStr(fp, inp1)
+	// Extracting regular expression to work with, contained in `inp0`.
+	exp := inputs[0].Get_str()
 
 	// Output structure `Regexp`.
 	reg := ast.CXArgument{}
-	err := copier.Copy(&reg, out1)
+	err := copier.Copy(&reg, outputs[0].Arg)
 	if err != nil {
 		panic(err)
 	}
@@ -66,8 +63,8 @@ func regexpCompile(inputs []ast.CXValue, outputs []ast.CXValue) error {
 	// internally.
 	accessExp := []*ast.CXArgument{expFld}
 	reg.Fields = accessExp
-	ast.WriteString(fp, exp, &reg)
-
+	ast.WriteString(outputs[0].FramePointer, exp, &reg)
+    outputs[0].Used = int8(outputs[0].Type) // TODO: Remove hacked type check
 	// Storing `Regexp` instance.
 	regexps[exp], err = regexp.Compile(exp)
 
@@ -87,26 +84,23 @@ func opRegexpMustCompile(inputs []ast.CXValue, outputs []ast.CXValue) {
 
 // opRegexpCompile is a wrapper for golang's `regexp`'s `MustCompile`.
 func opRegexpCompile(inputs []ast.CXValue, outputs []ast.CXValue) {
-	// We're only interested in `out2`, which represents the
+	// We're only interested in `out1`, which represents the
 	// returned error.
-	out2 := outputs[1].Arg
-    fp := outputs[1].FramePointer 
 	err := regexpCompile(inputs, outputs)
 
-	// Writing error message to `out2`.
+	// Writing error message to `out1`.
+    var errStr string
 	if err != nil {
-		ast.WriteString(fp, err.Error(), out2)
+        errStr = err.Error()
 	}
+    outputs[1].Set_str(errStr)
 }
 
 // opRegexpCompile is a wrapper for golang's `regexp`'s `MustCompile`.
 func opRegexpFind(inputs []ast.CXValue, outputs []ast.CXValue) {
-	inp1, inp2, out1 := inputs[0].Arg, inputs[1].Arg, outputs[0].Arg
-    fp := inputs[0].FramePointer
-
 	// Output structure `Regexp`.
 	reg := ast.CXArgument{}
-	err := copier.Copy(&reg, inp1)
+	err := copier.Copy(&reg, inputs[0].Arg)
 	if err != nil {
 		panic(err)
 	}
@@ -132,8 +126,9 @@ func opRegexpFind(inputs []ast.CXValue, outputs []ast.CXValue) {
 	// Getting corresponding `Regexp` instance.
 	accessExp := []*ast.CXArgument{expFld}
 	reg.Fields = accessExp
-	exp := ast.ReadStr(fp, &reg)
+	exp := ast.ReadStr(inputs[0].FramePointer, &reg)
 	r := regexps[exp]
 
-	ast.WriteString(fp, string(r.Find([]byte(ast.ReadStr(fp, inp2)))), out1)
+    inputs[0].Used = int8(inputs[0].Type) // TODO: Remove hacked type check.
+    outputs[0].Set_str(string(r.Find([]byte(inputs[1].Get_str()))))
 }

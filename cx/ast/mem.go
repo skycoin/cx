@@ -6,14 +6,12 @@ import (
 )
 
 // GetStrOffset ...
-func GetStrOffset(fp int, arg *CXArgument) int {
-	strOffset := GetFinalOffset(fp, arg)
-	if arg.Name != "" {
+func GetStrOffset(offset int, name string) int32 {
+	if name != "" {
 		// then it's not a literal
-		offset := helper.Deserialize_i32(PROGRAM.Memory[strOffset : strOffset+constants.TYPE_POINTER_SIZE])
-		strOffset = int(offset)
+		return helper.Deserialize_i32(PROGRAM.Memory[offset : offset+constants.TYPE_POINTER_SIZE])
 	}
-	return strOffset
+	return int32(offset) // TODO: Remove cast.
 }
 
 // ResizeMemory ...

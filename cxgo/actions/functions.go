@@ -473,7 +473,8 @@ func ProcessLocalDeclaration(symbols *[]map[string]*ast.CXArgument, symbolsScope
 
 func ProcessGoTos(fn *ast.CXFunction, exprs []*ast.CXExpression) {
 	for i, expr := range exprs {
-		if expr.Operator == ast.Natives[constants.OP_GOTO] {
+		if expr.Label != "" && expr.Operator == ast.Natives[constants.OP_JMP] {
+			// then it's a goto
 			for j, e := range exprs {
 				if e.Label == expr.Label && i != j {
 					// ElseLines is used because arg's default val is false

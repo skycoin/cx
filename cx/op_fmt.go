@@ -14,10 +14,6 @@ func buildString(inputs []ast.CXValue, outputs []ast.CXValue) []byte {
 	var specifiersCounter int
 	var lenStr = int(len(fmtStr))
 
-	call := ast.PROGRAM.GetCurrentCall()
-	expr := call.Operator.Expressions[call.Line]
-    fp := inputs[0].FramePointer
-
     for c := 0; c < len(fmtStr); c++ {
 		var nextCh byte
 		ch := fmtStr[c]
@@ -40,44 +36,47 @@ func buildString(inputs []ast.CXValue, outputs []ast.CXValue) []byte {
 			}
 		}
 		if ch == '%' {
-			if specifiersCounter+1 == len(expr.Inputs) {
+			if specifiersCounter+1 == len(inputs) {
 				res = append(res, []byte(fmt.Sprintf("%%!%c(MISSING)", nextCh))...)
 				c++
 				continue
 			}
 
-			inp := expr.Inputs[specifiersCounter+1]
+			inp := &inputs[specifiersCounter+1]
 			switch nextCh {
 			case 's':
-				res = append(res, []byte(CheckForEscapedChars(ast.ReadStr(fp, inp)))...)
+				res = append(res, []byte(CheckForEscapedChars(inp.Get_str()))...)
 			case 'd':
 				switch inp.Type {
 				case constants.TYPE_I8:
-					res = append(res, []byte(strconv.FormatInt(int64(ast.ReadI8(fp, inp)), 10))...)
+					res = append(res, []byte(strconv.FormatInt(int64(inp.Get_i8()), 10))...)
 				case constants.TYPE_I16:
-					res = append(res, []byte(strconv.FormatInt(int64(ast.ReadI16(fp, inp)), 10))...)
+					res = append(res, []byte(strconv.FormatInt(int64(inp.Get_i16()), 10))...)
 				case constants.TYPE_I32:
-					res = append(res, []byte(strconv.FormatInt(int64(ast.ReadI32(fp, inp)), 10))...)
+					res = append(res, []byte(strconv.FormatInt(int64(inp.Get_i32()), 10))...)
 				case constants.TYPE_I64:
-					res = append(res, []byte(strconv.FormatInt(ast.ReadI64(fp, inp), 10))...)
+					res = append(res, []byte(strconv.FormatInt(inp.Get_i64(), 10))...)
 				case constants.TYPE_UI8:
-					res = append(res, []byte(strconv.FormatUint(uint64(ast.ReadUI8(fp, inp)), 10))...)
+					res = append(res, []byte(strconv.FormatUint(uint64(inp.Get_ui8()), 10))...)
 				case constants.TYPE_UI16:
-					res = append(res, []byte(strconv.FormatUint(uint64(ast.ReadUI16(fp, inp)), 10))...)
+					res = append(res, []byte(strconv.FormatUint(uint64(inp.Get_ui16()), 10))...)
 				case constants.TYPE_UI32:
-					res = append(res, []byte(strconv.FormatUint(uint64(ast.ReadUI32(fp, inp)), 10))...)
+					res = append(res, []byte(strconv.FormatUint(uint64(inp.Get_ui32()), 10))...)
 				case constants.TYPE_UI64:
-					res = append(res, []byte(strconv.FormatUint(ast.ReadUI64(fp, inp), 10))...)
+					res = append(res, []byte(strconv.FormatUint(inp.Get_ui64(), 10))...)
 				}
 			case 'f':
 				switch inp.Type {
 				case constants.TYPE_F32:
-					res = append(res, []byte(strconv.FormatFloat(float64(ast.ReadF32(fp, inp)), 'f', 7, 32))...)
+					res = append(res, []byte(strconv.FormatFloat(float64(inp.Get_f32()), 'f', 7, 32))...)
 				case constants.TYPE_F64:
-					res = append(res, []byte(strconv.FormatFloat(ast.ReadF64(fp, inp), 'f', 16, 64))...)
+					res = append(res, []byte(strconv.FormatFloat(inp.Get_f64(), 'f', 16, 64))...)
 				}
 			case 'v':
-				res = append(res, []byte(ast.GetPrintableValue(fp, inp))...)
+				res = append(res, []byte(ast.GetPrintableValue(inp.FramePointer, inp.Arg))...)
+                inp.Used = int8(inp.Type) // TODO: Remove hacked type check
+            case 'b':
+                res = append(res, []byte(strconv.FormatBool(inp.Get_bool()))...)
 			}
 			c++
 			specifiersCounter++
@@ -86,13 +85,13 @@ func buildString(inputs []ast.CXValue, outputs []ast.CXValue) []byte {
 		}
 	}
 
-	if specifiersCounter != len(expr.Inputs)-1 {
+	if specifiersCounter != len(inputs)-1 {
 		extra := "%!(EXTRA "
 		// for _, inp := range expr.ProgramInput[:specifiersCounter] {
-		lInps := len(expr.Inputs[specifiersCounter+1:])
+		lInps := len(inputs[specifiersCounter+1:])
 		for c := 0; c < lInps; c++ {
-			inp := expr.Inputs[specifiersCounter+1+c]
-			elt := ast.GetAssignmentElement(inp)
+			inp := &inputs[specifiersCounter+1+c]
+			elt := ast.GetAssignmentElement(inp.Arg)
 			typ := ""
 			_ = typ
 			if elt.CustomType != nil {
@@ -104,9 +103,9 @@ func buildString(inputs []ast.CXValue, outputs []ast.CXValue) []byte {
 			}
 
 			if c == lInps-1 {
-				extra += fmt.Sprintf("%s=%s", typ, ast.GetPrintableValue(fp, elt))
+				extra += fmt.Sprintf("%s=%s", typ, ast.GetPrintableValue(inp.FramePointer, elt))
 			} else {
-				extra += fmt.Sprintf("%s=%s, ", typ, ast.GetPrintableValue(fp, elt))
+				extra += fmt.Sprintf("%s=%s, ", typ, ast.GetPrintableValue(inp.FramePointer, elt))
 			}
 
 		}

@@ -21,8 +21,8 @@ func assert(inputs []ast.CXValue, outputs []ast.CXValue) (same bool) {
 		byts1 = []byte(inputs[0].Get_str())
 		byts2 = []byte(inputs[1].Get_str())
 	} else {
-		byts1 = ast.ReadMemory(inputs[0].Offset, inputs[0].Arg)
-		byts2 = ast.ReadMemory(inputs[1].Offset, inputs[1].Arg)
+		byts1 = inputs[0].Get_bytes()
+		byts2 = inputs[1].Get_bytes()
 	}
 
 	same = true

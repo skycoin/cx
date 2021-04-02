@@ -4,7 +4,6 @@ package constants
 // nolint golint
 const (
 	OP_IDENTITY = iota + 1
-	OP_GOTO
     OP_JMP
 	OP_DEBUG
 
