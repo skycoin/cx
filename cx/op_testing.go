@@ -77,10 +77,11 @@ func opPanic(inputs []ast.CXValue, outputs []ast.CXValue) {
 
 // panicIf/panicIfNot implementation
 func panicIf(inputs []ast.CXValue, outputs []ast.CXValue, condition bool) {
+    str := inputs[1].Get_str()
 	if inputs[0].Get_bool() == condition {
 	    call := ast.PROGRAM.GetCurrentCall()
     	expr := call.Operator.Expressions[call.Line]
-		fmt.Printf("%s : %d, %s\n", expr.FileName, expr.FileLine, inputs[1].Get_str())
+		fmt.Printf("%s : %d, %s\n", expr.FileName, expr.FileLine, str)
 		panic(constants.CX_ASSERT)
 	}
 }
