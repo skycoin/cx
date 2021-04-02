@@ -72,7 +72,7 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 			newFP := newCall.FramePointer
 			size := GetSize(expr.Outputs[0])
 			for c := 0; c < size; c++ {
-				prgrm.Memory[newFP+expr.Outputs[0].DataSegmentOffset+c] = 0
+				prgrm.Memory[newFP+expr.Outputs[0].Offset+c] = 0
 			}
 			call.Line++
 		} else {

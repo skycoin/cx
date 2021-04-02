@@ -54,7 +54,7 @@ func WritePrimary(typ int, byts []byte, isGlobal bool) []*ast.CXExpression {
 
 		arg.Size = constants.GetArgSize(typ)
 		arg.TotalSize = size
-		arg.DataSegmentOffset = AST.DataSegmentSize + AST.DataSegmentStartsAt
+		arg.Offset = AST.DataSegmentSize + AST.DataSegmentStartsAt
 
 		if arg.Type == constants.TYPE_STR || arg.Type == constants.TYPE_AFF {
 			arg.PassBy = constants.PASSBY_REFERENCE

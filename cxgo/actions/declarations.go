@@ -43,7 +43,7 @@ func DeclareGlobalInPackage(pkg *ast.CXPackage,
 	if glbl, err := pkg.GetGlobal(declarator.Name); err == nil {
 		// The name is already defined.
 
-		if glbl.DataSegmentOffset < 0 || glbl.Size == 0 || glbl.TotalSize == 0 {
+		if glbl.Offset < 0 || glbl.Size == 0 || glbl.TotalSize == 0 {
 			// then it was only added a reference to the symbol
 			var offExpr []*ast.CXExpression
 			if declaration_specifiers.IsSlice {
@@ -54,7 +54,7 @@ func DeclareGlobalInPackage(pkg *ast.CXPackage,
 					make([]byte, declaration_specifiers.TotalSize), true)
 			}
 
-			glbl.DataSegmentOffset = offExpr[0].Outputs[0].DataSegmentOffset
+			glbl.Offset = offExpr[0].Outputs[0].Offset
 			glbl.PassBy = offExpr[0].Outputs[0].PassBy
 			// glbl.Package = offExpr[0].ProgramOutput[0].Package
 		}
@@ -68,7 +68,7 @@ func DeclareGlobalInPackage(pkg *ast.CXPackage,
 			if initializer[len(initializer)-1].Operator == nil {
 				// then it's a literal
 				declaration_specifiers.Name = glbl.Name
-				declaration_specifiers.DataSegmentOffset = glbl.DataSegmentOffset
+				declaration_specifiers.Offset = glbl.Offset
 				declaration_specifiers.PassBy = glbl.PassBy
 				declaration_specifiers.Package = glbl.Package
 
@@ -85,7 +85,7 @@ func DeclareGlobalInPackage(pkg *ast.CXPackage,
 			} else {
 				// then it's an expression
 				declaration_specifiers.Name = glbl.Name
-				declaration_specifiers.DataSegmentOffset = glbl.DataSegmentOffset
+				declaration_specifiers.Offset = glbl.Offset
 				declaration_specifiers.PassBy = glbl.PassBy
 				declaration_specifiers.Package = glbl.Package
 
@@ -103,7 +103,7 @@ func DeclareGlobalInPackage(pkg *ast.CXPackage,
 		} else {
 			// we keep the last value for now
 			declaration_specifiers.Name = glbl.Name
-			declaration_specifiers.DataSegmentOffset = glbl.DataSegmentOffset
+			declaration_specifiers.Offset = glbl.Offset
 			declaration_specifiers.PassBy = glbl.PassBy
 			declaration_specifiers.Package = glbl.Package
 			*glbl = *declaration_specifiers
@@ -127,7 +127,7 @@ func DeclareGlobalInPackage(pkg *ast.CXPackage,
 
 				declaration_specifiers.Name = declarator.Name
 				declaration_specifiers.FileLine = declarator.FileLine
-				declaration_specifiers.DataSegmentOffset = offExpr[0].Outputs[0].DataSegmentOffset
+				declaration_specifiers.Offset = offExpr[0].Outputs[0].Offset
 				declaration_specifiers.Size = offExpr[0].Outputs[0].Size
 				declaration_specifiers.TotalSize = offExpr[0].Outputs[0].TotalSize
 				declaration_specifiers.Package = pkg
@@ -144,7 +144,7 @@ func DeclareGlobalInPackage(pkg *ast.CXPackage,
 				// then it's an expression
 				declaration_specifiers.Name = declarator.Name
 				declaration_specifiers.FileLine = declarator.FileLine
-				declaration_specifiers.DataSegmentOffset = offExpr[0].Outputs[0].DataSegmentOffset
+				declaration_specifiers.Offset = offExpr[0].Outputs[0].Offset
 				declaration_specifiers.Size = offExpr[0].Outputs[0].Size
 				declaration_specifiers.TotalSize = offExpr[0].Outputs[0].TotalSize
 				declaration_specifiers.Package = pkg
@@ -166,7 +166,7 @@ func DeclareGlobalInPackage(pkg *ast.CXPackage,
 
 			declaration_specifiers.Name = declarator.Name
 			declaration_specifiers.FileLine = declarator.FileLine
-			declaration_specifiers.DataSegmentOffset = offExpr[0].Outputs[0].DataSegmentOffset
+			declaration_specifiers.Offset = offExpr[0].Outputs[0].Offset
 			declaration_specifiers.Size = offExpr[0].Outputs[0].Size
 			declaration_specifiers.TotalSize = offExpr[0].Outputs[0].TotalSize
 			declaration_specifiers.Package = pkg
