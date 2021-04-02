@@ -1,9 +1,10 @@
 package ast
 
 import (
+	"github.com/skycoin/skycoin/src/cipher/encoder"
+
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/helper"
-	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 type CXValue struct {
@@ -21,7 +22,6 @@ type CXValue struct {
 func GetPointerOffset(pointer int32) int32 {
 	return helper.Deserialize_i32(PROGRAM.Memory[pointer : pointer+constants.TYPE_POINTER_SIZE])
 }
-
 
 func (value *CXValue) GetSlice_i8() []int8 {
 	//value.Used = TYPE_SLICE
@@ -124,7 +124,7 @@ func (value *CXValue) Get_bytes() []byte {
 	return ReadMemory(value.Offset, value.Arg)
 }
 
-func (value *CXValue) Set_bytes(data []byte) () {
+func (value *CXValue) Set_bytes(data []byte) {
 	value.Used = constants.TYPE_CUSTOM
 	WriteMemory(value.Offset, data)
 }

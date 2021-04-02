@@ -1,9 +1,11 @@
 package ast
 
 import (
-	"github.com/skycoin/cx/cx/constants"
-	"github.com/skycoin/skycoin/src/cipher/encoder"
 	"math"
+
+	"github.com/skycoin/skycoin/src/cipher/encoder"
+
+	"github.com/skycoin/cx/cx/constants"
 )
 
 // WriteMemory ...
@@ -22,7 +24,7 @@ func WriteObjectData(obj []byte) int {
 	size := len(obj) + constants.OBJECT_HEADER_SIZE
 	heapOffset := AllocateSeq(size)
 	WriteI32(heapOffset, int32(size))
-	WriteMemory(heapOffset +constants.OBJECT_HEADER_SIZE, obj)
+	WriteMemory(heapOffset+constants.OBJECT_HEADER_SIZE, obj)
 	return heapOffset
 }
 
@@ -41,7 +43,6 @@ func WriteStringData(str string) int {
 func WriteString(fp int, str string, out *CXArgument) {
 	WriteObject(GetOffset_str(fp, out), encoder.Serialize(str))
 }
-
 
 // WriteBool ...
 func WriteBool(offset int, b bool) {

@@ -74,4 +74,3 @@ func MakeNativeFunctionV1(opCode int, inputs []*CXArgument, outputs []*CXArgumen
 
 	return fn
 }
-

@@ -230,4 +230,3 @@ func WriteToSlice(off int, inp []byte) int {
 	return newOff
 
 }
-

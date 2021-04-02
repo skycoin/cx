@@ -3,9 +3,10 @@
 package cxfx
 
 import (
+	"golang.org/x/mobile/exp/audio/al"
+
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/helper"
-	"golang.org/x/mobile/exp/audio/al"
 )
 
 func toBuffers(in interface{}) []al.Buffer { // REFACTOR : ??
@@ -73,7 +74,7 @@ func opAlPlaySources(inputs []ast.CXValue, outputs []ast.CXValue) {
 
 func opAlRenderer(inputs []ast.CXValue, outputs []ast.CXValue) {
 	renderer := al.Renderer()
-    outputs[0].Set_str(renderer)
+	outputs[0].Set_str(renderer)
 }
 
 func opAlRewindSources(inputs []ast.CXValue, outputs []ast.CXValue) {
@@ -88,12 +89,12 @@ func opAlStopSources(inputs []ast.CXValue, outputs []ast.CXValue) {
 
 func opAlVendor(inputs []ast.CXValue, outputs []ast.CXValue) {
 	vendor := al.Vendor()
-    outputs[0].Set_str(vendor)
+	outputs[0].Set_str(vendor)
 }
 
 func opAlVersion(inputs []ast.CXValue, outputs []ast.CXValue) {
 	version := al.Version()
-    outputs[0].Set_str(version)
+	outputs[0].Set_str(version)
 }
 
 func opAlGenBuffers(inputs []ast.CXValue, outputs []ast.CXValue) {
@@ -104,7 +105,7 @@ func opAlGenBuffers(inputs []ast.CXValue, outputs []ast.CXValue) {
 		obj := helper.FromI32(int32(b))
 		outputSliceOffset = int32(ast.WriteToSlice(int(outputSliceOffset), obj))
 	}
-    outputs[0].SetSlice(outputSliceOffset)
+	outputs[0].SetSlice(outputSliceOffset)
 }
 
 func opAlBufferData(inputs []ast.CXValue, outputs []ast.CXValue) {
@@ -123,12 +124,12 @@ func opAlGenSources(inputs []ast.CXValue, outputs []ast.CXValue) {
 		obj := helper.FromI32(int32(s))
 		outputSliceOffset = int32(ast.WriteToSlice(int(outputSliceOffset), obj))
 	}
-    outputs[0].SetSlice(outputSliceOffset)
+	outputs[0].SetSlice(outputSliceOffset)
 }
 
 func opAlSourceBuffersProcessed(inputs []ast.CXValue, outputs []ast.CXValue) {
 	source := al.Source(inputs[0].Get_i32())
-    outputs[0].Set_i32(source.BuffersProcessed())
+	outputs[0].Set_i32(source.BuffersProcessed())
 }
 
 func opAlSourceBuffersQueued(inputs []ast.CXValue, outputs []ast.CXValue) {
@@ -144,7 +145,7 @@ func opAlSourceQueueBuffers(inputs []ast.CXValue, outputs []ast.CXValue) {
 
 func opAlSourceState(inputs []ast.CXValue, outputs []ast.CXValue) {
 	source := al.Source(inputs[0].Get_i32())
-    outputs[0].Set_i32(source.State())
+	outputs[0].Set_i32(source.State())
 }
 
 func opAlSourceUnqueueBuffers(inputs []ast.CXValue, outputs []ast.CXValue) {

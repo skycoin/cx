@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/jinzhu/copier"
+
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/globals"

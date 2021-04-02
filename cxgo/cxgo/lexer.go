@@ -6,10 +6,11 @@ import (
 	__yyfmt__ "fmt"
 	"strconv"
 
+	"github.com/skycoin/skycoin/src/cipher/encoder"
+
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cxgo/actions"
-	"github.com/skycoin/skycoin/src/cipher/encoder"
 ) // "fmt"
 
 /*

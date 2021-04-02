@@ -1,6 +1,6 @@
 package ast
 
-import(
+import (
 	"github.com/skycoin/cx/cx/helper"
 )
 

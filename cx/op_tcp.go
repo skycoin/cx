@@ -2,11 +2,12 @@ package cxcore
 
 import (
 	"context"
-	"github.com/skycoin/cx/cx/ast"
 	"log"
 	"net"
 	"net/rpc"
 	"time"
+
+	"github.com/skycoin/cx/cx/ast"
 )
 
 //todo need to find a way to support Listener and connection interface

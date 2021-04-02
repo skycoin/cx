@@ -15,4 +15,3 @@ func IsCorePackage(ident string) bool {
 	}
 	return false
 }
-

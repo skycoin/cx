@@ -2,6 +2,7 @@ package assert
 
 import (
 	"fmt"
+
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 )

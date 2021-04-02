@@ -2,9 +2,10 @@ package cxcore
 
 import (
 	"fmt"
+	"strconv"
+
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
-	"strconv"
 )
 
 func buildString(expr *ast.CXExpression, fp int) []byte {
@@ -157,4 +158,3 @@ func CheckForEscapedChars(str string) []byte {
 
 	return res
 }
-

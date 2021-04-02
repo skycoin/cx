@@ -2,9 +2,10 @@ package webapi
 
 import (
 	"fmt"
-	"github.com/skycoin/cx/cx/ast"
 	"net/http"
 	"strings"
+
+	"github.com/skycoin/cx/cx/ast"
 )
 
 // API represents an HTTP API.

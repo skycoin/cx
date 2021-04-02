@@ -2,6 +2,7 @@ package cxgo0
 
 import (
 	"fmt"
+
 	"github.com/skycoin/cx/cx/constants"
 
 	//"github.com/skycoin/cx/cxgo/globals"

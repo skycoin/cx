@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/skycoin/skycoin/src/cipher/encoder"
+
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/globals"
-	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 // ReturnExpressions stores the `Size` of the return arguments represented by `Expressions`.
@@ -432,4 +433,3 @@ func AddJmpToReturnExpressions(exprs ReturnExpressions) []*ast.CXExpression {
 
 	return retExprs
 }
-

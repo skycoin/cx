@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/skycoin/cx/cx/ast"
-	"github.com/skycoin/cx/cx/execute"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -13,6 +11,9 @@ import (
 	"path/filepath"
 	"runtime"
 	"time"
+
+	"github.com/skycoin/cx/cx/ast"
+	"github.com/skycoin/cx/cx/execute"
 
 	"github.com/skycoin/cx/cxgo/actions"
 	"github.com/skycoin/cx/cxgo/cxgo"

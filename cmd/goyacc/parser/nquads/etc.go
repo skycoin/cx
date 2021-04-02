@@ -24,7 +24,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/skycoin/cx/cmd/goyacc/scanner/nquads"
+	scanner "github.com/skycoin/cx/cmd/goyacc/scanner/nquads"
 )
 
 type lexer struct {

@@ -1,9 +1,10 @@
 package webapi
 
 import (
+	"unicode"
+
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
-	"unicode"
 )
 
 // ProgramMetaResp is a program meta data response.

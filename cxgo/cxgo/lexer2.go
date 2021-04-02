@@ -71,5 +71,3 @@ func (lval *yySymType) scancopy(tok *yySymType) {
 
 //Warning Unused
 //is duplicated in cxparser/cxgo0/lexer.go, also unused
-
-

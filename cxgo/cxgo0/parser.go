@@ -2,16 +2,16 @@
 
 package cxgo0
 
-import __yyfmt__ "fmt"
-
 import (
-	// "fmt"
 	"bytes"
-	// "os"
+	__yyfmt__ "fmt"
+
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cxgo/actions"
-)
+) // "fmt"
+
+// "os"
 
 /*
    This is a computer generated file

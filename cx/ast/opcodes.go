@@ -36,4 +36,3 @@ var (
 	Natives   = map[int]*CXFunction{}
 	Operators []*CXFunction
 )
-

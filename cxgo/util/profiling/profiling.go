@@ -2,15 +2,16 @@ package profiling
 
 import (
 	"fmt"
-	"github.com/skycoin/cx/cx/util"
 	"os"
 	"runtime"
 	"runtime/pprof"
 	"time"
+
+	"github.com/skycoin/cx/cx/util"
 )
 
 var (
-	// profile         *os.File
+// profile         *os.File
 )
 
 var DebugProfile bool

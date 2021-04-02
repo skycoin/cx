@@ -12,4 +12,3 @@ func init() {
 	prgrm := CXProgram{Packages: make([]*CXPackage, 0)}
 	PROGRAM = &prgrm
 }
-

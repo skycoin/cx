@@ -44,4 +44,3 @@ func In(params ...*ast.CXArgument) []*ast.CXArgument {
 func Out(params ...*ast.CXArgument) []*ast.CXArgument {
 	return params
 }
-

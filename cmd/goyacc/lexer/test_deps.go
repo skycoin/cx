@@ -6,6 +6,5 @@ package lexer // import "github.com/skycoin/cx/cmd/goyacc/lexer"
 
 // Pull test dependencies too.
 // Enables easy 'go test X' after 'go get X'
-import (
+
 // nothing yet
-)

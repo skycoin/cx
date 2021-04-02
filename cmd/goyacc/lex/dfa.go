@@ -6,9 +6,10 @@ package lex // import "github.com/skycoin/cx/cmd/goyacc/lex"
 
 import (
 	"fmt"
-	"github.com/skycoin/cx/cmd/goyacc/lexer"
 	"sort"
 	"unicode"
+
+	"github.com/skycoin/cx/cmd/goyacc/lexer"
 )
 
 var (

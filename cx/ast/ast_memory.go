@@ -28,4 +28,3 @@ func (cxprogram *CXProgram) EnsureMinimumHeapSize() {
 		cxprogram.Memory = append(cxprogram.Memory, make([]byte, minHeapSize-currHeapSize)...)
 	}
 }
-

@@ -3,10 +3,12 @@
 package cxfx
 
 import (
+	"strings"
+
 	"github.com/go-gl/gl/v3.2-compatibility/gl"
+
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
-	"strings"
 )
 
 const (

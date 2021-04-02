@@ -2,6 +2,7 @@ package cxgo
 
 import (
 	"fmt"
+
 	"github.com/skycoin/cx/cx/constants"
 
 	//"github.com/skycoin/cx/cxgo/cxgo0"
@@ -12,7 +13,6 @@ import (
 	"unicode"
 	"unicode/utf8"
 )
-
 
 type Lexer struct {
 	l, c      int    //line and column numbers
@@ -800,7 +800,7 @@ func (s *Lexer) stdString() {
 		}
 		if s.ch == '\\' {
 			s.nextch()
-			
+
 			if !s.IsEscape('"') {
 				continue
 				//nothing? Empty Branch?
@@ -886,7 +886,6 @@ func (s *Lexer) IsEscape(quote rune) bool {
 
 	return true
 }
-
 
 //has side effects???
 //replace with "IsEscape" and call nextch() manuelly

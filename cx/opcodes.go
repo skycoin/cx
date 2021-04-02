@@ -2,6 +2,7 @@ package cxcore
 
 import (
 	"fmt"
+
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 )
@@ -76,4 +77,3 @@ func Struct(pkgName, strctName, argName string) *ast.CXArgument {
 func opDebug(*ast.CXExpression, int) {
 	ast.PROGRAM.PrintStack()
 }
-

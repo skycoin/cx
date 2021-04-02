@@ -2,10 +2,11 @@ package cxcore
 
 import (
 	"fmt"
-	"github.com/skycoin/cx/cx/ast"
 	"math"
 	"math/rand"
 	"strconv"
+
+	"github.com/skycoin/cx/cx/ast"
 )
 
 // The built-in str function returns the base 10 string representation of operand 1.
@@ -17,55 +18,55 @@ func opF32ToStr(inputs []ast.CXValue, outputs []ast.CXValue) {
 // The built-in i8 function returns operand 1 casted from type f32 to type i8.
 func opF32ToI8(inputs []ast.CXValue, outputs []ast.CXValue) {
 	outV0 := int8(inputs[0].Get_f32())
-    outputs[0].Set_i8(outV0)
+	outputs[0].Set_i8(outV0)
 }
 
 // The built-in i16 function returns operand 1 casted from type f32 to type i16.
 func opF32ToI16(inputs []ast.CXValue, outputs []ast.CXValue) {
 	outV0 := int16(inputs[0].Get_f32())
-    outputs[0].Set_i16(outV0)
+	outputs[0].Set_i16(outV0)
 }
 
 // The built-in i32 function return operand 1 casted from type f32 to type i32.
 func opF32ToI32(inputs []ast.CXValue, outputs []ast.CXValue) {
 	outV0 := int32(inputs[0].Get_f32())
-    outputs[0].Set_i32(outV0)
+	outputs[0].Set_i32(outV0)
 }
 
 // The built-in i64 function returns operand 1 casted from type f32 to type i64.
 func opF32ToI64(inputs []ast.CXValue, outputs []ast.CXValue) {
 	outV0 := int64(inputs[0].Get_f32())
-    outputs[0].Set_i64(outV0)
+	outputs[0].Set_i64(outV0)
 }
 
 // The built-in ui8 function returns operand 1 casted from type f32 to type ui8.
 func opF32ToUI8(inputs []ast.CXValue, outputs []ast.CXValue) {
 	outV0 := uint8(inputs[0].Get_f32())
-    outputs[0].Set_ui8(outV0)
+	outputs[0].Set_ui8(outV0)
 }
 
 // The built-in ui16 function returns the operand 1 casted from type f32 to type ui16.
 func opF32ToUI16(inputs []ast.CXValue, outputs []ast.CXValue) {
 	outV0 := uint16(inputs[0].Get_f32())
-    outputs[0].Set_ui16(outV0)
+	outputs[0].Set_ui16(outV0)
 }
 
 // The built-in ui32 function returns the operand 1 casted from type f32 to type ui32.
 func opF32ToUI32(inputs []ast.CXValue, outputs []ast.CXValue) {
 	outV0 := uint32(inputs[0].Get_f32())
-    outputs[0].Set_ui32(outV0)
+	outputs[0].Set_ui32(outV0)
 }
 
 // The built-in ui64 function returns the operand 1 casted from type f32 to type ui64.
 func opF32ToUI64(inputs []ast.CXValue, outputs []ast.CXValue) {
 	outV0 := uint64(inputs[0].Get_f32())
-    outputs[0].Set_ui64(outV0)
+	outputs[0].Set_ui64(outV0)
 }
 
 // The built-in f64 function returns operand 1 casted from type f32 to type f64.
 func opF32ToF64(inputs []ast.CXValue, outputs []ast.CXValue) {
 	outV0 := float64(inputs[0].Get_f32())
-    outputs[0].Set_f64(outV0)
+	outputs[0].Set_f64(outV0)
 }
 
 // The built-in isnan function returns true if operand is nan value.
@@ -167,7 +168,7 @@ func opF32Uneq(inputs []ast.CXValue, outputs []ast.CXValue) {
 
 // The built-in rand function returns a pseudo-random number in [0.0,1.0) from the default Source
 func opF32Rand(inputs []ast.CXValue, outputs []ast.CXValue) {
-    outputs[0].Set_f32(rand.Float32())
+	outputs[0].Set_f32(rand.Float32())
 }
 
 // The built-in acos function returns the arc cosine of the operand.

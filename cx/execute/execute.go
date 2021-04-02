@@ -2,11 +2,13 @@ package execute
 
 import (
 	"fmt"
-	"github.com/skycoin/cx/cx/ast"
-	"github.com/skycoin/cx/cx/constants"
-	"github.com/skycoin/skycoin/src/cipher/encoder"
 	"math/rand"
 	"time"
+
+	"github.com/skycoin/skycoin/src/cipher/encoder"
+
+	"github.com/skycoin/cx/cx/ast"
+	"github.com/skycoin/cx/cx/constants"
 )
 
 // Only called in this file
@@ -208,4 +210,3 @@ func MakeCall(op *ast.CXFunction) ast.CXCall {
 		// Program:       prgrm,
 	}
 }
-

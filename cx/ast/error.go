@@ -2,11 +2,12 @@ package ast
 
 import (
 	"fmt"
-	"github.com/skycoin/cx/cx/constants"
-	"github.com/skycoin/cx/cx/globals"
 	"os"
 	"runtime/debug"
 	"strconv"
+
+	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/globals"
 )
 
 // ErrorHeader ...
@@ -79,4 +80,3 @@ func RuntimeError() {
 		}
 	}
 }
-

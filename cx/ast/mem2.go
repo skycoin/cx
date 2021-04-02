@@ -8,7 +8,6 @@ import (
 //NOTE: Temp file for resolving CalculateDereferences issue
 //TODO: What should this function be called?
 
-
 //Todo: This function needs comments? What does it do?
 //Todo: Can this function be specialized?
 //CalculateDeference
@@ -38,7 +37,6 @@ func GetDerefSize(arg *CXArgument) int {
 	}
 	return arg.Size
 }
-
 
 func CalculateDereferences(arg *CXArgument, finalOffset *int, fp int) {
 	var isPointer bool

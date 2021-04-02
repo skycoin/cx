@@ -19,7 +19,7 @@ func SetWorkingDir(filename string)  {
 func GetWorkDir(filename string) string {
 	return CxProgramPath
 }
- */
+*/
 
 //What does this do?
 //This is where intializers get pushed, but only used 4 times

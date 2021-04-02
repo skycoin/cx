@@ -5,8 +5,6 @@ package cxfx
 import (
 	"bufio"
 	"fmt"
-	"github.com/skycoin/cx/cx/ast"
-	"github.com/skycoin/cx/cx/util"
 	"image"
 	"image/draw"
 	"image/gif"
@@ -18,6 +16,10 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+
+	"github.com/skycoin/cx/cx/ast"
+	"github.com/skycoin/cx/cx/util"
+
 	//"bytes"
 	"unsafe"
 )
@@ -31,35 +33,35 @@ type Texture struct {
 }
 
 func Slice_ui8_ToPtr(value []uint8) unsafe.Pointer {
-    count := len(value)
-    if count == 0 {
-        return unsafe.Pointer(nil)
-    }
-    return unsafe.Pointer(&value[0])
+	count := len(value)
+	if count == 0 {
+		return unsafe.Pointer(nil)
+	}
+	return unsafe.Pointer(&value[0])
 }
 
 func Slice_ui32_ToPtr(value []uint32) unsafe.Pointer {
-    count := len(value)
-    if count == 0 {
-        return unsafe.Pointer(nil)
-    }
-    return unsafe.Pointer(&value[0])
+	count := len(value)
+	if count == 0 {
+		return unsafe.Pointer(nil)
+	}
+	return unsafe.Pointer(&value[0])
 }
 
 func Slice_i32_ToPtr(value []int32) unsafe.Pointer {
-    count := len(value)
-    if count == 0 {
-        return unsafe.Pointer(nil)
-    }
-    return unsafe.Pointer(&value[0])
+	count := len(value)
+	if count == 0 {
+		return unsafe.Pointer(nil)
+	}
+	return unsafe.Pointer(&value[0])
 }
 
 func Slice_f32_ToPtr(value []float32) unsafe.Pointer {
-    count := len(value)
-    if count == 0 {
-        return unsafe.Pointer(nil)
-    }
-    return unsafe.Pointer(&value[0])
+	count := len(value)
+	if count == 0 {
+		return unsafe.Pointer(nil)
+	}
+	return unsafe.Pointer(&value[0])
 }
 
 var gifs map[string]*gif.GIF = make(map[string]*gif.GIF, 0)
@@ -433,9 +435,9 @@ func opGlAppend(inputs []ast.CXValue, outputs []ast.CXValue) {
 	outputSlicePointer := outputs[0].Offset
 	outputSliceOffset := ast.GetPointerOffset(int32(outputSlicePointer))
 
-    inputs[0].Used = int8(inputs[0].Type)
+	inputs[0].Used = int8(inputs[0].Type)
 
-    inputSliceOffset := ast.GetSliceOffset(inputs[0].FramePointer, inputs[0].Arg)
+	inputSliceOffset := ast.GetSliceOffset(inputs[0].FramePointer, inputs[0].Arg)
 	var inputSliceLen int32
 	if inputSliceOffset != 0 {
 		inputSliceLen = ast.GetSliceLen(inputSliceOffset)
@@ -490,7 +492,7 @@ func opGlTexImage2D(inputs []ast.CXValue, outputs []ast.CXValue) {
 		inputs[5].Get_i32(),
 		uint32(inputs[6].Get_i32()),
 		uint32(inputs[7].Get_i32()),
-        inputs[8].GetSlice_bytes())
+		inputs[8].GetSlice_bytes())
 }
 
 func opGlClear(inputs []ast.CXValue, outputs []ast.CXValue) {

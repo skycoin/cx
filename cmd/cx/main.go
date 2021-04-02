@@ -56,9 +56,9 @@ func Run(args []string) {
 		return
 	}
 
-	//checkversion check command line argumenets
+	//checkVersion check command line argumenets
 	//$ cx version
-	if checkversion(args) {
+	if checkVersion(args) {
 		printVersion()
 		return
 	}
@@ -69,9 +69,9 @@ func Run(args []string) {
 		return
 	}
 
-	//checkenv check command line argumenets
+	//checkENV check command line argumenets
 	//$ cx
-	if checkenv(args) {
+	if checkENV(args) {
 		printEnv()
 		return
 	}
@@ -117,7 +117,7 @@ func Run(args []string) {
 			return
 		}
 
-		if checktokenizeMode(args) {
+		if checkTokenizeMode(args) {
 			printTokenize(options, fileNames)
 			return
 		}

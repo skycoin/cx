@@ -4,11 +4,12 @@ package cxfx
 
 import (
 	"bufio"
+
 	"github.com/mjibson/go-dsp/wav"
-	"github.com/skycoin/cx/cx/ast"
-	"github.com/skycoin/cx/cx/util"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 
+	"github.com/skycoin/cx/cx/ast"
+	"github.com/skycoin/cx/cx/util"
 	//"golang.org/x/mobile/exp/audio/al"
 )
 
@@ -54,4 +55,3 @@ func toBytes(in interface{}) []byte { // REFACTOR : ??
 	}
 	return nil
 }
-

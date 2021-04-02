@@ -9,15 +9,16 @@
 
 package lex // import "github.com/skycoin/cx/cmd/goyacc/lex"
 
-import __yyfmt__ "fmt"
+import (
+	"fmt"
+	__yyfmt__ "fmt"
+	"go/token"
+	"strings"
+)
 
 //line cxgo.y:10
-import (
-	// "fmt"
-	"strings"
 
-	"go/token"
-)
+// "fmt"
 
 var (
 	defNamePos0 token.Position

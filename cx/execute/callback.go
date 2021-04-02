@@ -1,9 +1,10 @@
 package execute
 
 import (
+	"os"
+
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
-	"os"
 )
 
 // What calls Callback?ex

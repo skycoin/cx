@@ -27,7 +27,7 @@ func opGlfwFuncI32I32(inputs []ast.CXValue, outputs []ast.CXValue) {
 	}
 
 	Functions_i32_i32 = append(Functions_i32_i32, callback)
-	outputs[0].Set_i32(int32(len(Functions_i32_i32)-1))
+	outputs[0].Set_i32(int32(len(Functions_i32_i32) - 1))
 }
 
 func opGlfwCallI32I32(inputs []ast.CXValue, outputs []ast.CXValue) {

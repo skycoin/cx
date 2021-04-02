@@ -2,11 +2,12 @@ package cxprof
 
 import (
 	"fmt"
-	"github.com/skycoin/cx/cx/util"
 	"os"
 	"runtime"
 	"runtime/pprof"
 	"time"
+
+	"github.com/skycoin/cx/cx/util"
 
 	"github.com/sirupsen/logrus"
 )

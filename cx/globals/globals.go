@@ -7,7 +7,7 @@ import (
 
 // Var
 var (
-	HeapOffset    int
+	HeapOffset int
 )
 
 //Path is only used by os module and only to get working directory
@@ -31,4 +31,3 @@ func MakeGenSym(name string) string {
 
 	return gensym
 }
-

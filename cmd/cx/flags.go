@@ -120,14 +120,14 @@ func checkHelp(args []string) bool {
 	return false
 }
 
-func checkversion(args []string) bool {
+func checkVersion(args []string) bool {
 	if strings.Contains(args[0], "version") {
 		return true
 	}
 	return false
 }
 
-func checkenv(args []string) bool {
+func checkENV(args []string) bool {
 	if strings.Contains(args[0], "env") {
 		return true
 	}
@@ -141,7 +141,7 @@ func checkAST(args []string) bool {
 	return false
 }
 
-func checktokenizeMode(args []string) bool {
+func checkTokenizeMode(args []string) bool {
 	if strings.Contains(args[0], "tokenize") {
 		return true
 	}

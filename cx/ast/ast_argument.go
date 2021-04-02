@@ -49,4 +49,3 @@ func NewCXArgument(typCode int) *CXArgument {
 	arg.IsLocalDeclaration = true
 	return arg
 }
-

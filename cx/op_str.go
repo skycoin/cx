@@ -2,10 +2,11 @@ package cxcore
 
 import (
 	"fmt"
-	"github.com/skycoin/cx/cx/ast"
-	"github.com/skycoin/cx/cx/constants"
 	"strconv"
 	"strings"
+
+	"github.com/skycoin/cx/cx/ast"
+	"github.com/skycoin/cx/cx/constants"
 )
 
 func opStrToI8(inputs []ast.CXValue, outputs []ast.CXValue) {
@@ -13,7 +14,7 @@ func opStrToI8(inputs []ast.CXValue, outputs []ast.CXValue) {
 	if err != nil {
 		panic(constants.CX_RUNTIME_ERROR)
 	}
-    outputs[0].Set_i8(int8(outV0))
+	outputs[0].Set_i8(int8(outV0))
 }
 
 func opStrToI16(inputs []ast.CXValue, outputs []ast.CXValue) {
@@ -21,7 +22,7 @@ func opStrToI16(inputs []ast.CXValue, outputs []ast.CXValue) {
 	if err != nil {
 		panic(constants.CX_RUNTIME_ERROR)
 	}
-    outputs[0].Set_i16(int16(outV0))
+	outputs[0].Set_i16(int16(outV0))
 }
 
 func opStrToI32(inputs []ast.CXValue, outputs []ast.CXValue) {
@@ -29,7 +30,7 @@ func opStrToI32(inputs []ast.CXValue, outputs []ast.CXValue) {
 	if err != nil {
 		panic(constants.CX_RUNTIME_ERROR)
 	}
-    outputs[0].Set_i32(int32(outV0))
+	outputs[0].Set_i32(int32(outV0))
 }
 
 func opStrToI64(inputs []ast.CXValue, outputs []ast.CXValue) {
@@ -37,7 +38,7 @@ func opStrToI64(inputs []ast.CXValue, outputs []ast.CXValue) {
 	if err != nil {
 		panic(constants.CX_RUNTIME_ERROR)
 	}
-    outputs[0].Set_i64(int64(outV0))
+	outputs[0].Set_i64(int64(outV0))
 }
 
 func opStrToUI8(inputs []ast.CXValue, outputs []ast.CXValue) {
@@ -45,7 +46,7 @@ func opStrToUI8(inputs []ast.CXValue, outputs []ast.CXValue) {
 	if err != nil {
 		panic(constants.CX_RUNTIME_ERROR)
 	}
-    outputs[0].Set_ui8(uint8(outV0))
+	outputs[0].Set_ui8(uint8(outV0))
 }
 
 func opStrToUI16(inputs []ast.CXValue, outputs []ast.CXValue) {
@@ -53,7 +54,7 @@ func opStrToUI16(inputs []ast.CXValue, outputs []ast.CXValue) {
 	if err != nil {
 		panic(constants.CX_RUNTIME_ERROR)
 	}
-    outputs[0].Set_ui16(uint16(outV0))
+	outputs[0].Set_ui16(uint16(outV0))
 }
 
 func opStrToUI32(inputs []ast.CXValue, outputs []ast.CXValue) {
@@ -61,7 +62,7 @@ func opStrToUI32(inputs []ast.CXValue, outputs []ast.CXValue) {
 	if err != nil {
 		panic(constants.CX_RUNTIME_ERROR)
 	}
-    outputs[0].Set_ui32(uint32(outV0))
+	outputs[0].Set_ui32(uint32(outV0))
 }
 
 func opStrToUI64(inputs []ast.CXValue, outputs []ast.CXValue) {
@@ -69,7 +70,7 @@ func opStrToUI64(inputs []ast.CXValue, outputs []ast.CXValue) {
 	if err != nil {
 		panic(constants.CX_RUNTIME_ERROR)
 	}
-    outputs[0].Set_ui64(uint64(outV0))
+	outputs[0].Set_ui64(uint64(outV0))
 }
 
 func opStrToF32(inputs []ast.CXValue, outputs []ast.CXValue) {
@@ -77,7 +78,7 @@ func opStrToF32(inputs []ast.CXValue, outputs []ast.CXValue) {
 	if err != nil {
 		panic(constants.CX_RUNTIME_ERROR)
 	}
-    outputs[0].Set_f32(float32(outV0))
+	outputs[0].Set_f32(float32(outV0))
 }
 
 func opStrToF64(inputs []ast.CXValue, outputs []ast.CXValue) {
@@ -85,7 +86,7 @@ func opStrToF64(inputs []ast.CXValue, outputs []ast.CXValue) {
 	if err != nil {
 		panic(constants.CX_RUNTIME_ERROR)
 	}
-    outputs[0].Set_f64(float64(outV0))
+	outputs[0].Set_f64(float64(outV0))
 }
 
 func opStrEq(inputs []ast.CXValue, outputs []ast.CXValue) {

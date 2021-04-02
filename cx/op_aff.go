@@ -2,10 +2,11 @@ package cxcore
 
 import (
 	"fmt"
+	"strconv"
+
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/helper"
-	"strconv"
 	// "github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
@@ -84,8 +85,8 @@ func CallAffPredicate(fn *ast.CXFunction, predValue []byte) byte {
 		ast.GetFinalOffset(newFP, newCall.Operator.Inputs[0]),
 		predValue)
 
-    var inputs []ast.CXValue
-    var outputs []ast.CXValue
+	var inputs []ast.CXValue
+	var outputs []ast.CXValue
 	prevCC := ast.PROGRAM.CallCounter
 	for {
 		call := &ast.PROGRAM.CallStack[ast.PROGRAM.CallCounter]

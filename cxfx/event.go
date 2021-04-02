@@ -6,6 +6,7 @@ import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/execute"
 	"github.com/skycoin/cx/cx/helper"
+
 	//"fmt"
 	"sync"
 	"time"
@@ -48,7 +49,7 @@ type Event struct {
 }
 
 type CXCallback struct {
-    windowNameBytes []byte
+	windowNameBytes []byte
 	windowName      string
 	packageName     string
 	functionName    string

@@ -4,6 +4,7 @@ package cxfx
 
 import (
 	"github.com/go-gl/glfw/v3.3/glfw"
+
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/helper"
 )

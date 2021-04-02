@@ -14,9 +14,8 @@
 
 package parser // import "github.com/skycoin/cx/cmd/goyacc/cxgo/nquads"
 
-import __yyfmt__ "fmt"
-
 import (
+	__yyfmt__ "fmt"
 	"net/url"
 )
 

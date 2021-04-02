@@ -1,9 +1,10 @@
 package ast
 
 import (
+	"github.com/skycoin/skycoin/src/cipher/encoder"
+
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/helper"
-	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 /*

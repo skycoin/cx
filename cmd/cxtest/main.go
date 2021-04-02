@@ -3,11 +3,12 @@ package main
 import (
 	"errors"
 	"fmt"
-	"github.com/urfave/cli/v2"
 	"log"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/urfave/cli/v2"
 )
 
 func main() {

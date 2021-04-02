@@ -3,8 +3,9 @@
 package cxfx
 
 import (
-	"github.com/skycoin/cx/cx/ast"
 	"unicode/utf8"
+
+	"github.com/skycoin/cx/cx/ast"
 
 	"github.com/skycoin/gltext"
 
@@ -16,8 +17,8 @@ var fonts map[string]*gltext.Font = make(map[string]*gltext.Font, 0)
 func loadTrueType(inputs []ast.CXValue, outputs []ast.CXValue, fixedPipeline bool) {
 	if file := cxos.ValidFile(inputs[0].Get_i32()); file != nil {
 		if theFont, err := gltext.LoadTruetype(file,
-            inputs[2].Get_i32(), rune(inputs[3].Get_i32()), rune(inputs[4].Get_i32()),
-            gltext.Direction(inputs[5].Get_i32()), fixedPipeline); err == nil {
+			inputs[2].Get_i32(), rune(inputs[3].Get_i32()), rune(inputs[4].Get_i32()),
+			gltext.Direction(inputs[5].Get_i32()), fixedPipeline); err == nil {
 			fonts[inputs[1].Get_str()] = theFont
 		}
 	}
@@ -69,7 +70,7 @@ func opGltextNextGlyph(inputs []ast.CXValue, outputs []ast.CXValue) { // refacto
 		advance = g.Advance
 	}
 
-	outputs[0].Set_i32(int32(runeValue-font.Low()))
+	outputs[0].Set_i32(int32(runeValue - font.Low()))
 	outputs[1].Set_i32(int32(width))
 	outputs[2].Set_i32(int32(x))
 	outputs[3].Set_i32(int32(y))

@@ -2,10 +2,11 @@ package cxcore
 
 import (
 	"fmt"
-	"github.com/skycoin/cx/cx/ast"
 	"math"
 	"math/rand"
 	"strconv"
+
+	"github.com/skycoin/cx/cx/ast"
 )
 
 // The built-in str function returns the base 10 string representation of operand 1.
@@ -23,49 +24,49 @@ func opF64ToI8(inputs []ast.CXValue, outputs []ast.CXValue) {
 // The built-in i16 function returns operand 1 casted from type f64 to type i16.
 func opF64ToI16(inputs []ast.CXValue, outputs []ast.CXValue) {
 	outV0 := int16(inputs[0].Get_f64())
-    outputs[0].Set_i16(outV0)
+	outputs[0].Set_i16(outV0)
 }
 
 // The built-in i32 function return operand 1 casted from type f64 to type i32.
 func opF64ToI32(inputs []ast.CXValue, outputs []ast.CXValue) {
 	outV0 := int32(inputs[0].Get_f64())
-    outputs[0].Set_i32(outV0)
+	outputs[0].Set_i32(outV0)
 }
 
 // The built-in i64 function returns operand 1 casted from type f64 to type i64.
 func opF64ToI64(inputs []ast.CXValue, outputs []ast.CXValue) {
 	outV0 := int64(inputs[0].Get_f64())
-    outputs[0].Set_i64(outV0)
+	outputs[0].Set_i64(outV0)
 }
 
 // The built-in ui8 function returns operand 1 casted from type f64 to type ui8.
 func opF64ToUI8(inputs []ast.CXValue, outputs []ast.CXValue) {
 	outV0 := uint8(inputs[0].Get_f64())
-    outputs[0].Set_ui8(outV0)
+	outputs[0].Set_ui8(outV0)
 }
 
 // The built-in ui16 function returns the operand 1 casted from type f64 to type ui16.
 func opF64ToUI16(inputs []ast.CXValue, outputs []ast.CXValue) {
 	outV0 := uint16(inputs[0].Get_f64())
-    outputs[0].Set_ui16(outV0)
+	outputs[0].Set_ui16(outV0)
 }
 
 // The built-in ui32 function returns the operand 1 casted from type f64 to type ui32.
 func opF64ToUI32(inputs []ast.CXValue, outputs []ast.CXValue) {
 	outV0 := uint32(inputs[0].Get_f64())
-    outputs[0].Set_ui32(outV0)
+	outputs[0].Set_ui32(outV0)
 }
 
 // The built-in ui64 function returns the operand 1 casted from type f64 to type ui64.
 func opF64ToUI64(inputs []ast.CXValue, outputs []ast.CXValue) {
 	outV0 := uint64(inputs[0].Get_f64())
-    outputs[0].Set_ui64(outV0)
+	outputs[0].Set_ui64(outV0)
 }
 
 // The built-in f32 function returns operand 1 casted from type f64 to type f32.
 func opF64ToF32(inputs []ast.CXValue, outputs []ast.CXValue) {
 	outV0 := float32(inputs[0].Get_f64())
-    outputs[0].Set_f32(outV0)
+	outputs[0].Set_f32(outV0)
 }
 
 // The built-in isnan function returns true if operand is nan value.

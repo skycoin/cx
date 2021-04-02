@@ -166,7 +166,6 @@ func (cxprogram *CXProgram) GetStruct(strctName string, modName string) (*CXStru
 func (cxprogram *CXProgram) GetFunction(functionNameToFind string, pkgName string) (*CXFunction, error) {
 	// I need to first look for the function in the current package
 
-
 	//TODO: WHEN WOULD CurrentPackage not be in cxprogram.Packages?
 	//TODO: Add assert to crash if CurrentPackage is not in cxprogram.Packages
 	if pkg, err := cxprogram.GetCurrentPackage(); err == nil {
@@ -199,8 +198,6 @@ func (cxprogram *CXProgram) GetFunction(functionNameToFind string, pkgName strin
 	}
 	return nil, fmt.Errorf("function '%s' not found in package '%s'", functionNameToFind, pkgName)
 }
-
-
 
 // GetCurrentCall returns the current CXCall
 //TODO: What does this do?
