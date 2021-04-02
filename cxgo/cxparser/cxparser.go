@@ -333,7 +333,7 @@ func lexerStep0(srcStrs, srcNames []string) int {
 					if _, err := prePkg.GetGlobal(match[len(match)-1]); err != nil {
 						// then it hasn't been added
 						arg := ast.MakeArgument(match[len(match)-1], "", 0)
-						arg.Offset = -1
+						arg.DataSegmentOffset = -1
 						arg.Package = prePkg
 						prePkg.AddGlobal(arg)
 					}

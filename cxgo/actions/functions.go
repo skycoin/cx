@@ -5,12 +5,10 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/jinzhu/copier"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/globals"
-	"github.com/skycoin/cx/cx/util2"
-
-	"github.com/jinzhu/copier"
 )
 
 // FunctionHeader takes a function name ('ident') and either creates the
@@ -131,7 +129,7 @@ func FunctionDeclaration(fn *ast.CXFunction, inputs, outputs []*ast.CXArgument, 
 	//TODO: Why would the heap starting position always be incrasing?
 	//TODO: HeapStartsAt only increases, with every write?
 	//DataOffset only increases
-	AST.HeapStartsAt = DataOffset //Why would declaring a function set heap?
+	AST.HeapStartsAt = AST.DataSegmentSize + AST.DataSegmentStartsAt //Why would declaring a function set heap?
 	//AST.HeapStartsAt = constants.STACK_SIZE
 
 	ProcessGoTos(fn, exprs)
@@ -421,7 +419,7 @@ func isPointerAdded(fn *ast.CXFunction, sym *ast.CXArgument) (found bool) {
 // `fn.ListOfPointers` so the CX runtime does not have to determine this.
 func AddPointer(fn *ast.CXFunction, sym *ast.CXArgument) {
 	// Ignore if it's a global variable.
-	if sym.Offset > AST.StackSize {
+	if sym.DataSegmentOffset > AST.StackSize {
 		return
 	}
 	// We first need to check if we're going to add `sym` with fields.
@@ -524,7 +522,7 @@ func checkMatchParamTypes(expr *ast.CXExpression, expected, received []*ast.CXAr
 		// FIXME: There are some expressions added by the cxgo where temporary variables are used.
 		// These temporary variables' types are not properly being set. That's why we use !cxcore.IsTempVar to
 		// exclude these cases for now.
-		if expr.Operator.OpCode == constants.OP_IDENTITY && !util2.IsTempVar(expr.Outputs[0].Name) {
+		if expr.Operator.OpCode == constants.OP_IDENTITY && !IsTempVar(expr.Outputs[0].Name) {
 			inpType := ast.GetFormattedType(expr.Inputs[0])
 			outType := ast.GetFormattedType(expr.Outputs[0])
 
@@ -755,7 +753,7 @@ func UpdateSymbolsTable(symbols *[]map[string]*ast.CXArgument, sym *ast.CXArgume
 		// then it is a new declaration
 		if !shouldExist && !found {
 			// then it was declared in an outer scope
-			sym.Offset = *offset
+			sym.DataSegmentOffset = *offset
 			(*symbols)[lastIdx][fullName] = sym
 			*offset += ast.GetSize(sym)
 		}
@@ -907,7 +905,7 @@ func ProcessTempVariable(expr *ast.CXExpression) {
 	if expr.Operator != nil && (expr.Operator == ast.Natives[constants.OP_IDENTITY] || ast.IsArithmeticOperator(expr.Operator.OpCode)) && len(expr.Outputs) > 0 && len(expr.Inputs) > 0 {
 		name := expr.Outputs[0].Name
 		arg := expr.Outputs[0]
-		if util2.IsTempVar(name) {
+		if IsTempVar(name) {
 			// then it's a temporary variable and it needs to adopt its input's type
 			arg.Type = expr.Inputs[0].Type
 			arg.Size = expr.Inputs[0].Size
@@ -918,7 +916,7 @@ func ProcessTempVariable(expr *ast.CXExpression) {
 }
 
 func CopyArgFields(sym *ast.CXArgument, arg *ast.CXArgument) {
-	sym.Offset = arg.Offset
+	sym.DataSegmentOffset = arg.DataSegmentOffset
 	sym.IsPointer = arg.IsPointer
 	sym.IndirectionLevels = arg.IndirectionLevels
 
@@ -1137,7 +1135,7 @@ func ProcessSymbolFields(sym *ast.CXArgument, arg *ast.CXArgument) {
 					break
 				}
 
-				nameFld.Offset += ast.GetSize(fld)
+				nameFld.DataSegmentOffset += ast.GetSize(fld)
 			}
 		}
 	}

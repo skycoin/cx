@@ -31,7 +31,8 @@ func RegisterOpCode(code int, name string, handler ast.OpcodeHandler, inputs []*
 	if outputs == nil {
 		outputs = []*ast.CXArgument{}
 	}
-	ast.Natives[code] = ast.MakeNativeFunction(code, inputs, outputs)
+	//TODO: Replace with MakeNativeFunctionV2
+	ast.Natives[code] = ast.MakeNativeFunctionV1(code, inputs, outputs)
 }
 
 /*

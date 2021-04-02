@@ -3,15 +3,16 @@ package cxcore
 import (
 	"bytes"
 	"fmt"
-	"github.com/skycoin/cx/cx/ast"
-	"github.com/skycoin/cx/cx/constants"
-	"github.com/skycoin/cx/cx/execute"
-	"github.com/skycoin/cx/cx/helper"
 	"io/ioutil"
 	"net"
 	"net/http"
 	"net/url"
 	"time"
+
+	"github.com/skycoin/cx/cx/ast"
+	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/execute"
+	"github.com/skycoin/cx/cx/helper"
 
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 
@@ -120,9 +121,9 @@ func opHTTPHandle(expr *ast.CXExpression, fp int) {
 		// PROGRAM.StackPointer -= handlerFn.Size
 		ast.PROGRAM.CallCounter--
 
-		i1Off := callFP + handlerFn.Inputs[0].Offset
+		i1Off := callFP + handlerFn.Inputs[0].DataSegmentOffset
 		i1Size := handlerFn.Inputs[0].TotalSize
-		i2Off := callFP + handlerFn.Inputs[1].Offset
+		i2Off := callFP + handlerFn.Inputs[1].DataSegmentOffset
 		i2Size := handlerFn.Inputs[1].TotalSize
 
 		i1 := make([]byte, i1Size)

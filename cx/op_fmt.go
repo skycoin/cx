@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
-	"github.com/skycoin/cx/cx/util2"
 	"strconv"
 )
 
@@ -48,7 +47,7 @@ func buildString(expr *ast.CXExpression, fp int) []byte {
 			inp := expr.Inputs[specifiersCounter+1]
 			switch nextCh {
 			case 's':
-				res = append(res, []byte(util2.CheckForEscapedChars(ast.ReadStr(fp, inp)))...)
+				res = append(res, []byte(CheckForEscapedChars(ast.ReadStr(fp, inp)))...)
 			case 'd':
 				switch inp.Type {
 				case constants.TYPE_I8:
@@ -125,3 +124,37 @@ func opSprintf(expr *ast.CXExpression, fp int) {
 func opPrintf(expr *ast.CXExpression, fp int) {
 	fmt.Print(string(buildString(expr, fp)))
 }
+
+//Only used in op_fmt.go, once
+func CheckForEscapedChars(str string) []byte {
+	var res []byte
+	var lenStr = int(len(str))
+	for c := 0; c < len(str); c++ {
+		var nextCh byte
+		ch := str[c]
+		if c < lenStr-1 {
+			nextCh = str[c+1]
+		}
+		if ch == '\\' {
+			switch nextCh {
+			case '%':
+				c++
+				res = append(res, nextCh)
+				continue
+			case 'n':
+				c++
+				res = append(res, '\n')
+				continue
+			default:
+				res = append(res, ch)
+				continue
+			}
+
+		} else {
+			res = append(res, ch)
+		}
+	}
+
+	return res
+}
+

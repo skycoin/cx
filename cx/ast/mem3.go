@@ -1,13 +1,14 @@
 package ast
 
 import (
-	"github.com/skycoin/cx/cx/constants"
 	"log"
+
+	"github.com/skycoin/cx/cx/constants"
 )
 
-var ENHANCED_DEBUGING1 bool = false
-var ENHANCED_DEBUGING2 bool = false
-var ENHANCED_DEBUGING3 bool = false
+var ENHANCED_DEBUGING1 bool = true
+var ENHANCED_DEBUGING2 bool = true
+var ENHANCED_DEBUGING3 bool = false //needs to check for structs too
 var ENHANCED_DEBUGING4 bool = false
 
 //NEEDS COMMENT. WTF DOES THIS DO?
@@ -18,25 +19,27 @@ var ENHANCED_DEBUGING4 bool = false
 //GetFinalOffsetF32
 //GetfinalOffsetI16
 //ETC
+
+//TODO: Delete this eventually
 func GetFinalOffset(fp int, arg *CXArgument) int {
 
 	if ENHANCED_DEBUGING3 {
-		if !(arg.IsPointer || arg.IsSlice || arg.IsArray) {
+		if !(arg.IsPointer || arg.IsSlice || arg.IsArray || arg.IsStruct) {
 			panic("arg is in invalid format")
 		}
 	}
 
 	if ENHANCED_DEBUGING4 {
-		if arg.Type == constants.TYPE_F32 || arg.Type == constants.TYPE_F64 ||
+		if !(arg.IsPointer) && (arg.Type == constants.TYPE_F32 || arg.Type == constants.TYPE_F64 ||
 			arg.Type == constants.TYPE_UI8 || arg.Type == constants.TYPE_UI16 || arg.Type == constants.TYPE_UI32 || arg.Type == constants.TYPE_UI64 ||
-			arg.Type == constants.TYPE_I8 || arg.Type == constants.TYPE_I16 || arg.Type == constants.TYPE_I32 || arg.Type == constants.TYPE_I64 {
+			arg.Type == constants.TYPE_I8 || arg.Type == constants.TYPE_I16 || arg.Type == constants.TYPE_I32 || arg.Type == constants.TYPE_I64) {
 			panic("arg is in invalid format")
 		}
 	}
 
 	// defer RuntimeError(PROGRAM)
 	// var elt *CXArgument
-	finalOffset := arg.Offset
+	finalOffset := arg.DataSegmentOffset
 	// var fldIdx int
 
 	// elt = arg
@@ -55,12 +58,18 @@ func GetFinalOffset(fp int, arg *CXArgument) int {
 	CalculateDereferences(arg, &finalOffset, fp)
 	for _, fld := range arg.Fields {
 		// elt = fld
-		finalOffset += fld.Offset
+		finalOffset += fld.DataSegmentOffset
 		CalculateDereferences(fld, &finalOffset, fp)
 	}
 
 	return finalOffset
 }
+
+//OMFG. set ENABLE_MIRACLE_BUG to true and do `make build; make test`
+//var ENABLE_MIRACLE_BUG bool = true //uses GetFinalOffset for everything
+var ENHANCED_DEBUGING bool = true //runs asserts to find error
+
+var ENABLE_MIRACLE_BUG bool = false
 
 //this is simplest version of function that works for atomic types
 func GetOffsetAtomicSimple(fp int, arg *CXArgument) int {
@@ -79,18 +88,12 @@ func GetOffsetAtomicSimple(fp int, arg *CXArgument) int {
 		}
 	}
 
-	finalOffset := arg.Offset
+	finalOffset := arg.DataSegmentOffset
 	if finalOffset < PROGRAM.StackSize {
 		finalOffset += fp //check if on stack
 	}
 	return finalOffset
 }
-
-//OMFG. set ENABLE_MIRACLE_BUG to true and do `make build; make test`
-//var ENABLE_MIRACLE_BUG bool = true //uses GetFinalOffset for everything
-var ENHANCED_DEBUGING bool = true //runs asserts to find error
-
-var ENABLE_MIRACLE_BUG bool = false
 
 //this is version with type assertions
 func GetOffsetAtomic(fp int, arg *CXArgument) int {
@@ -98,7 +101,7 @@ func GetOffsetAtomic(fp int, arg *CXArgument) int {
 		return GetFinalOffset(fp, arg)
 	}
 
-	finalOffset := arg.Offset
+	finalOffset := arg.DataSegmentOffset
 	//Todo: find way to eliminate this check
 	if finalOffset < PROGRAM.StackSize {
 		// Then it's in the stack, not in data or heap and we need to consider the frame pointer.

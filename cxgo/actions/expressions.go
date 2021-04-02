@@ -7,8 +7,6 @@ import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/globals"
-	"github.com/skycoin/cx/cx/util2"
-
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
@@ -201,6 +199,15 @@ func resolveTypeForUnd(expr *ast.CXExpression) int {
 	return -1
 }
 
+// IsTempVar ...
+//TODO: Delete this function; only called by next function
+func IsTempVar(name string) bool {
+	if len(name) >= len(constants.LOCAL_PREFIX) && name[:len(constants.LOCAL_PREFIX)] == constants.LOCAL_PREFIX {
+		return true
+	}
+	return false
+}
+
 //TODO: Delete this function, we always know the correct type and operator to call
 func UndefinedTypeOperation(leftExprs []*ast.CXExpression, rightExprs []*ast.CXExpression, operator *ast.CXFunction) (out []*ast.CXExpression) {
 	pkg, err := AST.GetCurrentPackage()
@@ -240,7 +247,7 @@ func UndefinedTypeOperation(leftExprs []*ast.CXExpression, rightExprs []*ast.CXE
 		// then it's a function call or an array access
 		expr.AddInput(leftExprs[len(leftExprs)-1].Outputs[0])
 
-		if util2.IsTempVar(leftExprs[len(leftExprs)-1].Outputs[0].Name) {
+		if IsTempVar(leftExprs[len(leftExprs)-1].Outputs[0].Name) {
 			out = append(out, leftExprs...)
 		} else {
 			out = append(out, leftExprs[:len(leftExprs)-1]...)
@@ -253,7 +260,7 @@ func UndefinedTypeOperation(leftExprs []*ast.CXExpression, rightExprs []*ast.CXE
 		// then it's a function call or an array access
 		expr.AddInput(rightExprs[len(rightExprs)-1].Outputs[0])
 
-		if util2.IsTempVar(rightExprs[len(rightExprs)-1].Outputs[0].Name) {
+		if IsTempVar(rightExprs[len(rightExprs)-1].Outputs[0].Name) {
 			out = append(out, rightExprs...)
 		} else {
 			out = append(out, rightExprs[:len(rightExprs)-1]...)
@@ -425,3 +432,4 @@ func AddJmpToReturnExpressions(exprs ReturnExpressions) []*ast.CXExpression {
 
 	return retExprs
 }
+

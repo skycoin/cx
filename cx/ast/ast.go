@@ -66,6 +66,9 @@ type CXProgram struct {
 	StackSize    int // This field stores the size of a CX program's stack
 	StackPointer int // At what byte the current stack frame is
 
+	DataSegmentSize     int // This field stores the size of a CX program's data segment size
+	DataSegmentStartsAt int // Offset at which the data segment starts in a CX program's memory
+
 	HeapSize     int // This field stores the size of a CX program's heap
 	HeapStartsAt int // Offset at which the heap starts in a CX program's memory (normally the stack size)
 	HeapPointer  int // At what offset a CX program can insert a new object to the heap
@@ -315,7 +318,7 @@ type CXArgument struct {
 	// the case of global variables and literals. It is used by
 	// the CX virtual machine to find the bytes that represent the
 	// value of the `CXArgument`.
-	Offset int
+	DataSegmentOffset int
 	// IndirectionLevels
 	IndirectionLevels int
 	DereferenceLevels int
@@ -340,6 +343,8 @@ type CXArgument struct {
 	PreviouslyDeclared           bool
 	DoesEscape                   bool
 }
+
+//TODO: Comment or delete "IsRest"
 
 /*
 	FileName              string
@@ -468,12 +473,13 @@ grep -rn "PassBy" .
 func MakeProgram() *CXProgram {
 	minHeapSize := minHeapSize()
 	newPrgrm := &CXProgram{
-		Packages:    make([]*CXPackage, 0),
-		CallStack:   make([]CXCall, constants.CALLSTACK_SIZE),
-		Memory:      make([]byte, constants.STACK_SIZE+minHeapSize),
-		StackSize:   constants.STACK_SIZE,
-		HeapSize:    minHeapSize,
-		HeapPointer: constants.NULL_HEAP_ADDRESS_OFFSET, // We can start adding objects to the heap after the NULL (nil) bytes.
+		Packages:            make([]*CXPackage, 0),
+		CallStack:           make([]CXCall, constants.CALLSTACK_SIZE),
+		Memory:              make([]byte, constants.STACK_SIZE+minHeapSize),
+		StackSize:           constants.STACK_SIZE,
+		DataSegmentStartsAt: constants.STACK_SIZE,
+		HeapSize:            minHeapSize,
+		HeapPointer:         constants.NULL_HEAP_ADDRESS_OFFSET, // We can start adding objects to the heap after the NULL (nil) bytes.
 	}
 	return newPrgrm
 }
@@ -557,7 +563,7 @@ func (cxprogram *CXProgram) PrintAllObjects() {
 		op := cxprogram.CallStack[c].Operator
 
 		for _, ptr := range op.ListOfPointers {
-			heapOffset := helper.Deserialize_i32(cxprogram.Memory[fp+ptr.Offset : fp+ptr.Offset+constants.TYPE_POINTER_SIZE])
+			heapOffset := helper.Deserialize_i32(cxprogram.Memory[fp+ptr.DataSegmentOffset : fp+ptr.DataSegmentOffset+constants.TYPE_POINTER_SIZE])
 
 			var byts []byte
 
@@ -819,7 +825,7 @@ func (strct *CXStruct) AddField(fld *CXArgument) *CXStruct {
 		if numFlds != 0 {
 			// Pre-compiling the offset of the field.
 			lastFld := strct.Fields[numFlds-1]
-			fld.Offset = lastFld.Offset + lastFld.TotalSize
+			fld.DataSegmentOffset = lastFld.DataSegmentOffset + lastFld.TotalSize
 		}
 		strct.Size += GetSize(fld)
 	} else {
@@ -1084,12 +1090,12 @@ func MakeField(name string, typ int, fileName string, fileLine int) *CXArgument 
 func MakeGlobal(name string, typ int, fileName string, fileLine int) *CXArgument {
 	size := constants.GetArgSize(typ)
 	global := &CXArgument{
-		Name:     name,
-		Type:     typ,
-		Size:     size,
-		Offset:   globals.HeapOffset,
-		FileName: fileName,
-		FileLine: fileLine,
+		Name:              name,
+		Type:              typ,
+		Size:              size,
+		DataSegmentOffset: globals.HeapOffset,
+		FileName:          fileName,
+		FileLine:          fileLine,
 	}
 	globals.HeapOffset += size
 	return global

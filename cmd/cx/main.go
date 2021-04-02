@@ -86,10 +86,7 @@ func Run(args []string) {
 			constants.INIT_HEAP_SIZE = constants.MAX_HEAP_SIZE
 		}
 	}
-	if options.stackSize != "" {
-		constants.STACK_SIZE = parseMemoryString(options.stackSize)
-		actions.DataOffset = constants.STACK_SIZE
-	}
+
 	if options.minHeapFreeRatio != float64(0) {
 		constants.MIN_HEAP_FREE_RATIO = float32(options.minHeapFreeRatio)
 	}

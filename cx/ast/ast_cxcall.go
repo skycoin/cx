@@ -2,6 +2,7 @@ package ast
 
 import (
 	"fmt"
+
 	"github.com/skycoin/cx/cx/constants"
 )
 
@@ -11,7 +12,6 @@ type CXCall struct {
 	Line         int         // What line in the CX function is currently being executed
 	FramePointer int         // Where in the stack is this function call's local variables stored
 }
-
 
 //function is only called once and by affordances
 //is a function on CXCal, not PROGRAM
@@ -72,7 +72,7 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 			newFP := newCall.FramePointer
 			size := GetSize(expr.Outputs[0])
 			for c := 0; c < size; c++ {
-				prgrm.Memory[newFP+expr.Outputs[0].Offset+c] = 0
+				prgrm.Memory[newFP+expr.Outputs[0].DataSegmentOffset+c] = 0
 			}
 			call.Line++
 		} else {
@@ -81,7 +81,7 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 				OpcodeHandlers[expr.Operator.OpCode](expr, call.FramePointer)
 				call.Line++
 			case 2: // new version
-				fp := call.FramePointer;
+				fp := call.FramePointer
 				if IsOperator(expr.Operator.OpCode) {
 					// TODO: resolve this at compile time
 					atomicType := GetType(expr.Inputs[0])
@@ -94,7 +94,6 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 				}
 				inputValues := (*globalInputs)[:inputCount]
 
-
 				outputs := expr.Outputs
 				outputCount := len(outputs)
 				if outputCount > len(*globalOutputs) {
@@ -102,8 +101,7 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 				}
 				outputValues := (*globalOutputs)[:outputCount]
 
-
-				argIndex := 0;
+				argIndex := 0
 				for inputIndex := 0; inputIndex < inputCount; inputIndex++ {
 					input := inputs[inputIndex]
 					offset := GetFinalOffset(fp, input)
@@ -137,7 +135,7 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 					if inputValues[inputIndex].Used != int8(inputs[inputIndex].Type) { // TODO: remove cast
 						panic(fmt.Sprintf("Input value not used for opcode: '%s', param #%d. Expected type %d, '%s', used type %d, '%s'.",
 							OpNames[expr.Operator.OpCode],
-							inputIndex + 1,
+							inputIndex+1,
 							inputs[inputIndex].Type, constants.TypeNames[inputs[inputIndex].Type],
 							inputValues[inputIndex].Used, constants.TypeNames[int(inputValues[inputIndex].Used)]))
 					}
@@ -147,7 +145,7 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 					if outputValues[outputIndex].Used != int8(outputs[outputIndex].Type) { // TODO: remove cast
 						panic(fmt.Sprintf("Output value not used for opcode: '%s', param #%d. Expected type %d, '%s', used type %d '%s'.",
 							OpNames[expr.Operator.OpCode],
-							outputIndex + 1,
+							outputIndex+1,
 							outputs[outputIndex].Type, constants.TypeNames[outputs[outputIndex].Type],
 							outputValues[outputIndex].Used, constants.TypeNames[int(outputValues[outputIndex].Used)]))
 					}
@@ -230,5 +228,3 @@ func MakeCallStack(size int) []CXCall {
 	// 	Calls: make([]*CXCall, size),
 	// }
 }
-
-

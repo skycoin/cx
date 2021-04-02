@@ -16,30 +16,6 @@ func MakeFunction(name string, fileName string, fileLine int) *CXFunction {
 	}
 }
 
-// MakeNativeFunction creates a native function such as i32.add()
-// not used
-func MakeNativeFunction(opCode int, inputs []*CXArgument, outputs []*CXArgument) *CXFunction {
-	fn := &CXFunction{
-		IsAtomic: true,
-		OpCode:   opCode,
-		Version:  1,
-	}
-
-	offset := 0
-	for _, inp := range inputs {
-		inp.Offset = offset
-		offset += GetSize(inp)
-		fn.Inputs = append(fn.Inputs, inp)
-	}
-	for _, out := range outputs {
-		fn.Outputs = append(fn.Outputs, out)
-		out.Offset = offset
-		offset += GetSize(out)
-	}
-
-	return fn
-}
-
 // ----------------------------------------------------------------
 //                             `CXFunction` Getters
 
@@ -57,12 +33,12 @@ func (fn *CXFunction) GetExpressionByLabel(lbl string) (*CXExpression, error) {
 	if fn.Expressions == nil {
 		return nil, fmt.Errorf("function '%s' has no expressions", fn.Name)
 	}
-		for _, expr := range fn.Expressions {
-			if expr.Label == lbl {
-				return expr, nil
-			}
+	for _, expr := range fn.Expressions {
+		if expr.Label == lbl {
+			return expr, nil
 		}
-		return nil, fmt.Errorf("expression '%s' not found in function '%s'", lbl, fn.Name)
+	}
+	return nil, fmt.Errorf("expression '%s' not found in function '%s'", lbl, fn.Name)
 }
 
 // GetExpressionByLine ...
@@ -171,6 +147,23 @@ func (fn *CXFunction) AddExpression(expr *CXExpression) *CXFunction {
 	return fn
 }
 
+func (fn *CXFunction) AddExpressionByLineNumber(expr *CXExpression, line int) *CXFunction {
+	expr.Package = fn.Package
+	expr.Function = fn
+
+	lenExprs := len(fn.Expressions)
+	if lenExprs == line {
+		fn.Expressions = append(fn.Expressions, expr)
+	} else {
+		fn.Expressions = append(fn.Expressions[:line+1], fn.Expressions[line:]...)
+		fn.Expressions[line] = expr
+	}
+
+	fn.CurrentExpression = expr
+	fn.Length++
+	return fn
+}
+
 // RemoveExpression ...
 func (fn *CXFunction) RemoveExpression(line int) {
 	if len(fn.Expressions) > 0 {
@@ -188,7 +181,6 @@ func (fn *CXFunction) RemoveExpression(line int) {
 
 // ----------------------------------------------------------------
 //                             `CXFunction` Selectors
-
 
 // MakeExpression ...
 func MakeExpression(op *CXFunction, fileName string, fileLine int) *CXExpression {

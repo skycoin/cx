@@ -1,4 +1,11 @@
-package mem
+package ast
+
+import "fmt"
+
+// Debug ...
+func Debug(args ...interface{}) {
+	fmt.Println(args...)
+}
 
 /*
 // DebugHeap prints the symbols that are acting as pointers in a CX program at certain point during the execution of the program along with the addresses they are pointing. Additionally, a list of the objects in the heap is printed, which shows their address in the heap, if they are marked as alive or as dead by the garbage collector, the address where they used to live after a garbage collector call, the full size of the object, the object itself as a slice of bytes and the pointers that are pointing to that object.
@@ -92,3 +99,4 @@ func DebugHeap() {
 	w.Flush()
 }
 */
+

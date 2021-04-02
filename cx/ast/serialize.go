@@ -41,6 +41,9 @@ type serializedProgram struct {
 	StackPointer int64
 	StackSize    int64
 
+	DataSegmentSize     int64
+	DataSegmentStartsAt int64
+
 	HeapPointer  int64 //HeapPointer is probably related to HeapStartsAt
 	HeapStartsAt int64
 	HeapSize     int64
@@ -137,7 +140,7 @@ type serializedArgument struct {
 	Size             int64
 	TotalSize        int64
 
-	Offset int64
+	DataSegmentOffset int64
 
 	IndirectionLevels           int64
 	DereferenceLevels           int64
@@ -302,7 +305,7 @@ func serializeArgument(arg *CXArgument, s *serializedCXProgram) int {
 
 	s.Arguments[argOff].Size = int64(arg.Size)
 	s.Arguments[argOff].TotalSize = int64(arg.TotalSize)
-	s.Arguments[argOff].Offset = int64(arg.Offset)
+	s.Arguments[argOff].DataSegmentOffset = int64(arg.DataSegmentOffset)
 	s.Arguments[argOff].IndirectionLevels = int64(arg.IndirectionLevels)
 	s.Arguments[argOff].DereferenceLevels = int64(arg.DereferenceLevels)
 
@@ -649,6 +652,8 @@ func serializeProgram(prgrm *CXProgram, s *serializedCXProgram) {
 	sPrgrm.HeapPointer = int64(prgrm.HeapPointer)
 	sPrgrm.StackPointer = int64(prgrm.StackPointer)
 	sPrgrm.StackSize = int64(prgrm.StackSize)
+	sPrgrm.DataSegmentSize = int64(prgrm.DataSegmentSize)
+	sPrgrm.DataSegmentStartsAt = int64(prgrm.DataSegmentStartsAt)
 	sPrgrm.HeapSize = int64(prgrm.HeapSize)
 	sPrgrm.HeapStartsAt = int64(prgrm.HeapStartsAt)
 
@@ -1009,7 +1014,7 @@ func deserializeArgument(sArg *serializedArgument, s *serializedCXProgram, prgrm
 
 	arg.Size = int(sArg.Size)
 	arg.TotalSize = int(sArg.TotalSize)
-	arg.Offset = int(sArg.Offset)
+	arg.DataSegmentOffset = int(sArg.DataSegmentOffset)
 	arg.IndirectionLevels = int(sArg.IndirectionLevels)
 	arg.DereferenceLevels = int(sArg.DereferenceLevels)
 	arg.PassBy = int(sArg.PassBy)
@@ -1171,6 +1176,8 @@ func initDeserialization(prgrm *CXProgram, s *serializedCXProgram) {
 	prgrm.HeapStartsAt = int(s.Program.HeapStartsAt)
 	prgrm.HeapPointer = int(s.Program.HeapPointer)
 	prgrm.StackSize = int(s.Program.StackSize)
+	prgrm.DataSegmentSize = int(s.Program.DataSegmentSize)
+	prgrm.DataSegmentStartsAt = int(s.Program.DataSegmentStartsAt)
 	prgrm.HeapSize = int(s.Program.HeapSize)
 	prgrm.Version = deserializeString(s.Program.VersionOffset, s.Program.VersionSize, s)
 
