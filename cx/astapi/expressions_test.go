@@ -3,10 +3,10 @@ package astapi_test
 import (
 	"testing"
 
-	cxcore "github.com/skycoin/cx/cx"
 	cxast "github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/astapi"
 	cxconstants "github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cxgo/cxgo"
 )
 
 func TestASTAPI_Expressions(t *testing.T) {
@@ -14,7 +14,7 @@ func TestASTAPI_Expressions(t *testing.T) {
 
 	// Needed for AddNativeExpressionToFunction
 	// because of dependency on cxast.OpNames
-	cxcore.LoadOpCodeTables()
+	cxgo.InitCXCore()
 
 	t.Run("make program", func(t *testing.T) {
 		cxprogram = cxast.MakeProgram()
