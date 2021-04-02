@@ -18,7 +18,7 @@ func MarkAndCompact(prgrm *CXProgram) {
 			if (glbl.IsPointer || glbl.IsSlice || glbl.Type == constants.TYPE_STR) && glbl.CustomType == nil {
 				// Getting the offset to the object in the heap
 				var heapOffset int32
-				_, err := encoder.DeserializeAtomic(prgrm.Memory[glbl.DataSegmentOffset:glbl.DataSegmentOffset+constants.TYPE_POINTER_SIZE], &heapOffset)
+				_, err := encoder.DeserializeAtomic(prgrm.Memory[glbl.Offset:glbl.Offset+constants.TYPE_POINTER_SIZE], &heapOffset)
 				if err != nil {
 					panic(err)
 				}
@@ -26,13 +26,13 @@ func MarkAndCompact(prgrm *CXProgram) {
 				if int(heapOffset) < prgrm.HeapStartsAt {
 					continue
 				}
-				MarkObjectsTree(prgrm, glbl.DataSegmentOffset, glbl.Type, glbl.DeclarationSpecifiers[1:])
+				MarkObjectsTree(prgrm, glbl.Offset, glbl.Type, glbl.DeclarationSpecifiers[1:])
 			}
 
 			// If `ptr` has fields, we need to navigate the heap and mark its fields too.
 			if glbl.CustomType != nil {
 				for _, fld := range glbl.CustomType.Fields {
-					offset := glbl.DataSegmentOffset + fld.DataSegmentOffset
+					offset := glbl.Offset + fld.Offset
 					// Getting the offset to the object in the heap
 					var heapOffset int32
 					_, err := encoder.DeserializeAtomic(prgrm.Memory[offset:offset+constants.TYPE_POINTER_SIZE], &heapOffset)
@@ -68,7 +68,7 @@ func MarkAndCompact(prgrm *CXProgram) {
 		}
 
 		for _, ptr := range op.ListOfPointers {
-			offset := ptr.DataSegmentOffset
+			offset := ptr.Offset
 			offset += fp
 
 			ptrIsPointer := IsPointer(ptr)
@@ -86,7 +86,7 @@ func MarkAndCompact(prgrm *CXProgram) {
 
 					if int(heapOffset) >= prgrm.HeapStartsAt {
 						for _, fld := range ptr.CustomType.Fields {
-							MarkObjectsTree(prgrm, int(heapOffset)+constants.OBJECT_HEADER_SIZE+fld.DataSegmentOffset, fld.Type, fld.DeclarationSpecifiers[1:])
+							MarkObjectsTree(prgrm, int(heapOffset)+constants.OBJECT_HEADER_SIZE+fld.Offset, fld.Type, fld.DeclarationSpecifiers[1:])
 						}
 					}
 				}
@@ -98,7 +98,7 @@ func MarkAndCompact(prgrm *CXProgram) {
 			// If the root (`ptr`) is a pointer, this step is unnecessary.
 			if len(ptr.Fields) > 0 && !ptrIsPointer && IsPointer(ptr.Fields[len(ptr.Fields)-1]) {
 				fld := ptr.Fields[len(ptr.Fields)-1]
-				MarkObjectsTree(prgrm, offset+fld.DataSegmentOffset, fld.Type, fld.DeclarationSpecifiers[1:])
+				MarkObjectsTree(prgrm, offset+fld.Offset, fld.Type, fld.DeclarationSpecifiers[1:])
 			}
 		}
 
@@ -219,14 +219,14 @@ func DisplaceReferences(prgrm *CXProgram, off int, numPkgs int) {
 		// execution.
 		for _, glbl := range pkg.Globals {
 			if glbl.IsPointer || glbl.IsSlice {
-				doDisplaceReferences(prgrm, &updated, glbl.DataSegmentOffset, off, glbl.Type, glbl.DeclarationSpecifiers[1:])
+				doDisplaceReferences(prgrm, &updated, glbl.Offset, off, glbl.Type, glbl.DeclarationSpecifiers[1:])
 			}
 
 			// If it's a struct instance we need to displace each of its fields.
 			if glbl.CustomType != nil {
 				for _, fld := range glbl.CustomType.Fields {
 					if fld.IsPointer || fld.IsSlice {
-						doDisplaceReferences(prgrm, &updated, glbl.DataSegmentOffset+fld.DataSegmentOffset, off, fld.Type, fld.DeclarationSpecifiers[1:])
+						doDisplaceReferences(prgrm, &updated, glbl.Offset+fld.Offset, off, fld.Type, fld.DeclarationSpecifiers[1:])
 					}
 				}
 			}
@@ -365,7 +365,7 @@ func updatePointers(prgrm *CXProgram, oldAddr, newAddr int32) {
 			if (glbl.IsPointer || glbl.IsSlice || glbl.Type == constants.TYPE_STR) && glbl.CustomType == nil {
 				// Getting the offset to the object in the heap
 				var heapOffset int32
-				_, err := encoder.DeserializeAtomic(prgrm.Memory[glbl.DataSegmentOffset:glbl.DataSegmentOffset+constants.TYPE_POINTER_SIZE], &heapOffset)
+				_, err := encoder.DeserializeAtomic(prgrm.Memory[glbl.Offset:glbl.Offset+constants.TYPE_POINTER_SIZE], &heapOffset)
 				if err != nil {
 					panic(err)
 				}
@@ -374,7 +374,7 @@ func updatePointers(prgrm *CXProgram, oldAddr, newAddr int32) {
 					continue
 				}
 
-				updatePointerTree(prgrm, glbl.DataSegmentOffset, oldAddr, newAddr, glbl.Type, glbl.DeclarationSpecifiers[1:])
+				updatePointerTree(prgrm, glbl.Offset, oldAddr, newAddr, glbl.Type, glbl.DeclarationSpecifiers[1:])
 			}
 
 			// If `ptr` has fields, we need to navigate the heap and mark its fields too.
@@ -383,7 +383,7 @@ func updatePointers(prgrm *CXProgram, oldAddr, newAddr int32) {
 					if !IsPointer(fld) {
 						continue
 					}
-					offset := glbl.DataSegmentOffset + fld.DataSegmentOffset
+					offset := glbl.Offset + fld.Offset
 					// Getting the offset to the object in the heap
 					var heapOffset int32
 					_, err := encoder.DeserializeAtomic(prgrm.Memory[offset:offset+constants.TYPE_POINTER_SIZE], &heapOffset)
@@ -419,7 +419,7 @@ func updatePointers(prgrm *CXProgram, oldAddr, newAddr int32) {
 		}
 
 		for _, ptr := range op.ListOfPointers {
-			offset := ptr.DataSegmentOffset
+			offset := ptr.Offset
 			offset += fp
 
 			ptrIsPointer := IsPointer(ptr)
@@ -440,7 +440,7 @@ func updatePointers(prgrm *CXProgram, oldAddr, newAddr int32) {
 					if ptr.CustomType != nil {
 						if int(heapOffset) >= prgrm.HeapStartsAt {
 							for _, fld := range ptr.CustomType.Fields {
-								updatePointerTree(prgrm, int(heapOffset)+constants.OBJECT_HEADER_SIZE+fld.DataSegmentOffset, oldAddr, newAddr, fld.Type, fld.DeclarationSpecifiers[1:])
+								updatePointerTree(prgrm, int(heapOffset)+constants.OBJECT_HEADER_SIZE+fld.Offset, oldAddr, newAddr, fld.Type, fld.DeclarationSpecifiers[1:])
 							}
 						}
 					}
@@ -454,13 +454,13 @@ func updatePointers(prgrm *CXProgram, oldAddr, newAddr int32) {
 
 				// Getting the offset to the object in the heap
 				var heapOffset int32
-				_, err := encoder.DeserializeAtomic(prgrm.Memory[offset+fld.DataSegmentOffset:offset+fld.DataSegmentOffset+constants.TYPE_POINTER_SIZE], &heapOffset)
+				_, err := encoder.DeserializeAtomic(prgrm.Memory[offset+fld.Offset:offset+fld.Offset+constants.TYPE_POINTER_SIZE], &heapOffset)
 				if err != nil {
 					panic(err)
 				}
 
 				if int(heapOffset) > prgrm.HeapStartsAt {
-					updatePointerTree(prgrm, offset+fld.DataSegmentOffset, oldAddr, newAddr, fld.Type, fld.DeclarationSpecifiers[1:])
+					updatePointerTree(prgrm, offset+fld.Offset, oldAddr, newAddr, fld.Type, fld.DeclarationSpecifiers[1:])
 				}
 			}
 

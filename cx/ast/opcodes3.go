@@ -12,13 +12,13 @@ func MakeNativeFunctionV2(opCode int, inputs []*CXArgument, outputs []*CXArgumen
 
 	offset := 0
 	for _, inp := range inputs {
-		inp.DataSegmentOffset = offset
+		inp.Offset = offset
 		offset += GetSize(inp)
 		fn.Inputs = append(fn.Inputs, inp)
 	}
 	for _, out := range outputs {
 		fn.Outputs = append(fn.Outputs, out)
-		out.DataSegmentOffset = offset
+		out.Offset = offset
 		offset += GetSize(out)
 	}
 
@@ -62,13 +62,13 @@ func MakeNativeFunctionV1(opCode int, inputs []*CXArgument, outputs []*CXArgumen
 
 	offset := 0
 	for _, inp := range inputs {
-		inp.DataSegmentOffset = offset
+		inp.Offset = offset
 		offset += GetSize(inp)
 		fn.Inputs = append(fn.Inputs, inp)
 	}
 	for _, out := range outputs {
 		fn.Outputs = append(fn.Outputs, out)
-		out.DataSegmentOffset = offset
+		out.Offset = offset
 		offset += GetSize(out)
 	}
 

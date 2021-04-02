@@ -140,7 +140,7 @@ type serializedArgument struct {
 	Size             int64
 	TotalSize        int64
 
-	DataSegmentOffset int64
+	Offset int64
 
 	IndirectionLevels           int64
 	DereferenceLevels           int64
@@ -305,7 +305,7 @@ func serializeArgument(arg *CXArgument, s *serializedCXProgram) int {
 
 	s.Arguments[argOff].Size = int64(arg.Size)
 	s.Arguments[argOff].TotalSize = int64(arg.TotalSize)
-	s.Arguments[argOff].DataSegmentOffset = int64(arg.DataSegmentOffset)
+	s.Arguments[argOff].Offset = int64(arg.Offset)
 	s.Arguments[argOff].IndirectionLevels = int64(arg.IndirectionLevels)
 	s.Arguments[argOff].DereferenceLevels = int64(arg.DereferenceLevels)
 
@@ -1014,7 +1014,7 @@ func deserializeArgument(sArg *serializedArgument, s *serializedCXProgram, prgrm
 
 	arg.Size = int(sArg.Size)
 	arg.TotalSize = int(sArg.TotalSize)
-	arg.DataSegmentOffset = int(sArg.DataSegmentOffset)
+	arg.Offset = int(sArg.Offset)
 	arg.IndirectionLevels = int(sArg.IndirectionLevels)
 	arg.DereferenceLevels = int(sArg.DereferenceLevels)
 	arg.PassBy = int(sArg.PassBy)

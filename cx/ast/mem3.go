@@ -39,7 +39,7 @@ func GetFinalOffset(fp int, arg *CXArgument) int {
 
 	// defer RuntimeError(PROGRAM)
 	// var elt *CXArgument
-	finalOffset := arg.DataSegmentOffset
+	finalOffset := arg.Offset
 	// var fldIdx int
 
 	// elt = arg
@@ -58,7 +58,7 @@ func GetFinalOffset(fp int, arg *CXArgument) int {
 	CalculateDereferences(arg, &finalOffset, fp)
 	for _, fld := range arg.Fields {
 		// elt = fld
-		finalOffset += fld.DataSegmentOffset
+		finalOffset += fld.Offset
 		CalculateDereferences(fld, &finalOffset, fp)
 	}
 
@@ -88,7 +88,7 @@ func GetOffsetAtomicSimple(fp int, arg *CXArgument) int {
 		}
 	}
 
-	finalOffset := arg.DataSegmentOffset
+	finalOffset := arg.Offset
 	if finalOffset < PROGRAM.StackSize {
 		finalOffset += fp //check if on stack
 	}
@@ -101,7 +101,7 @@ func GetOffsetAtomic(fp int, arg *CXArgument) int {
 		return GetFinalOffset(fp, arg)
 	}
 
-	finalOffset := arg.DataSegmentOffset
+	finalOffset := arg.Offset
 	//Todo: find way to eliminate this check
 	if finalOffset < PROGRAM.StackSize {
 		// Then it's in the stack, not in data or heap and we need to consider the frame pointer.
