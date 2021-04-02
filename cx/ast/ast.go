@@ -3,7 +3,7 @@ package ast
 import (
 	"errors"
 	"fmt"
-
+    "math"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/globals"
 	"github.com/skycoin/cx/cx/helper"
@@ -16,20 +16,20 @@ type CXEXPR_TYPE int
 
 const (
 	CXEXPR_UNUSED CXEXPR_TYPE = iota
-	CXEXPR_METHOD_CALL
-	CXEXPR_STRUCT_LITERAL
-	CXEXPR_ARRAY_LITERAL
-	CXEXPR_BREAK
-	CXEXPR_CONTINUE
-	CXEXPR_UND_TYPE
-	CXEXPR_SCOPE_UNUSED // this maybe unnecessary
-	CXEXPR_SCOPE_NEW
-	CXEXPR_SCOPE_DEL
+	CXEXPR_METHOD_CALL = 1
+	CXEXPR_STRUCT_LITERAL = 2
+	CXEXPR_ARRAY_LITERAL = 4
+	CXEXPR_BREAK = 8
+	CXEXPR_CONTINUE = 16
+	CXEXPR_UND_TYPE = 32
+	CXEXPR_SCOPE_UNUSED = 64// this maybe unnecessary
+	CXEXPR_SCOPE_NEW = 128
+	CXEXPR_SCOPE_DEL = 256
 )
 
 // String returns alias for constants defined for cx edpression type
 func (cxet CXEXPR_TYPE) String() string {
-	return [...]string{"Unused", "MethodCall", "StructLiteral", "ArrayLiteral", "Break", "Continue", "ScopeNew", "ScopeDel"}[cxet]
+	return [...]string{"Unused", "MethodCall", "StructLiteral", "ArrayLiteral", "Break", "Continue", "ScopeNew", "ScopeDel"}[int(math.Log2(float64(cxet)))]
 }
 
 /*
@@ -163,47 +163,59 @@ type CXExpression struct {
 	ThenLines int
 	ElseLines int
 
-	ExpressionType CXEXPR_TYPE
+	expressionType CXEXPR_TYPE
+}
+
+func (cxe *CXExpression) RemoveExpressionType(exprType CXEXPR_TYPE) {
+    cxe.expressionType = cxe.expressionType &^ exprType
+}
+
+func (cxe *CXExpression) SetExpressionType(exprType CXEXPR_TYPE) {
+    cxe.expressionType |= exprType
+}
+
+func (cxe CXExpression) ExpressionType() CXEXPR_TYPE {
+    return cxe.expressionType
 }
 
 // IsMethodCall checks if expression type is method call
 func (cxe CXExpression) IsMethodCall() bool {
-	return cxe.ExpressionType == CXEXPR_METHOD_CALL
+	return (cxe.expressionType & CXEXPR_METHOD_CALL) != 0
 }
 
 // IsStructLiteral checks if expression type is struct literal
 func (cxe CXExpression) IsStructLiteral() bool {
-	return cxe.ExpressionType == CXEXPR_STRUCT_LITERAL
+	return (cxe.expressionType & CXEXPR_STRUCT_LITERAL) != 0
 }
 
 // IsArrayLiteral checks if expression type is array literal
 func (cxe CXExpression) IsArrayLiteral() bool {
-	return cxe.ExpressionType == CXEXPR_ARRAY_LITERAL
+	return (cxe.expressionType & CXEXPR_ARRAY_LITERAL) != 0
 }
 
 // IsBreak checks if expression type is break
 func (cxe CXExpression) IsBreak() bool {
-	return cxe.ExpressionType == CXEXPR_BREAK
+	return (cxe.expressionType & CXEXPR_BREAK) != 0
 }
 
 // IsContinue checks if expression type is continue
 func (cxe CXExpression) IsContinue() bool {
-	return cxe.ExpressionType == CXEXPR_CONTINUE
+	return (cxe.expressionType & CXEXPR_CONTINUE) != 0
 }
 
 // IsUndType checks if expression type is und type
 func (cxe CXExpression) IsUndType() bool {
-	return cxe.ExpressionType == CXEXPR_UND_TYPE
+	return (cxe.expressionType & CXEXPR_UND_TYPE) != 0
 }
 
 // IsScopeNew checks if expression type is scope new
 func (cxe CXExpression) IsScopeNew() bool {
-	return cxe.ExpressionType == CXEXPR_SCOPE_NEW
+	return (cxe.expressionType & CXEXPR_SCOPE_NEW) != 0
 }
 
 // IsScopeDel checks if expression type is scope del
 func (cxe CXExpression) IsScopeDel() bool {
-	return cxe.ExpressionType == CXEXPR_SCOPE_DEL
+	return (cxe.expressionType & CXEXPR_SCOPE_DEL) != 0
 }
 
 /*

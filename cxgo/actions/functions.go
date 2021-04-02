@@ -207,7 +207,7 @@ func FunctionCall(exprs []*ast.CXExpression, args []*ast.CXExpression) []*ast.CX
 			println(ast.CompilationError(CurrentFile, LineNo), err.Error())
 			return nil
 		} else {
-			expr.ExpressionType = ast.CXEXPR_METHOD_CALL
+			expr.SetExpressionType(ast.CXEXPR_METHOD_CALL)
 		}
 
 		if len(expr.Outputs) > 0 && expr.Outputs[0].Fields == nil {
