@@ -103,7 +103,7 @@ func Run(args []string) {
 	profiling.DebugProfile = profiling.DebugProfileRate > 0
 
 	// Load op code tables
-	cxcore.LoadOpCodeTables()
+	cxgo.InitCXCore()
 
 	if run := parseProgram(options, fileNames, sourceCode); run {
 
