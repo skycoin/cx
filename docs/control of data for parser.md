@@ -1,6 +1,6 @@
 CX Parser
 
-The compiler creates an AST first by using regular expression parsing 
+The compiler creates an AST first by using regular expression parsing
 (found in /cx/cxgo/cxgo/cxparser.go) which structures the AST to include all package declarations, import chains, struct declarations, and globals, skipping over comments. This preliminary stage of parsing aids further stages since the structure of a CX repository and the names of custom types are already known.
 
 After this preliminary stage, the first parsing stage compiles function primitives and types, along with the structure of their parameters and global variables. This stage also finalizes compilation of structs and ensures packages and their imports are correct. This uses goyacc for parsing and creates a chain of tokens for the parser using an in-house lexer known as Lexer.
@@ -22,30 +22,3 @@ We can now do the third step, which is the first call to the parser (cxgo0). Thi
 As an intermediate step, after the program has been selected for and after the program has been checked for any compile or parsing errors, os arguments are added to the program.
 The OS package builtin for CX is grabbed, and for all globals in the OS package not currently added to said package, they are declared, and DeclareGlobalInPackage is called on them, after getting rid of the first two arguments, presumed to be the call to CX and the name of the program to call.
 Finally, the program is fully parsed by the cxgo/parser code.
-
-
-
-
-
-
-function parseProgram take source code as input 
-
-task I
-create program 
-goto
-actions.PRGRM = cxcore.MakeProgram()
-
-task II 
-ParseSourceCode
-cxgo.ParseSourceCode(sourceCode, fileNames)
-
-goto
-ParseSourceCode 
-
-goto
-lexerStep0
-// lexerStep0 performs a first pass for the CX parser. Globals, packages and
-// custom types are added to `cxgo0.PRGRM0`
-
-cxgo0.PRGRM0 has all data into Packages []*CXPackage varaiable.
-

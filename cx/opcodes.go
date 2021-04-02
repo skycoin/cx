@@ -35,13 +35,13 @@ func MakeNativeFunction(opCode int, inputs []*ast.CXArgument, outputs []*ast.CXA
 
 	offset := 0
 	for _, inp := range inputs {
-		inp.DataSegmentOffset = offset
+		inp.Offset = offset
 		offset += ast.GetSize(inp)
 		fn.Inputs = append(fn.Inputs, inp)
 	}
 	for _, out := range outputs {
 		fn.Outputs = append(fn.Outputs, out)
-		out.DataSegmentOffset = offset
+		out.Offset = offset
 		offset += ast.GetSize(out)
 	}
 

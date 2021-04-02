@@ -3,7 +3,6 @@ package cxcore
 import (
     "github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
-	"github.com/skycoin/cx/cx/helper"
 )
 
 // "fmt"
@@ -48,46 +47,19 @@ func opIdentity(inputs []ast.CXValue, outputs []ast.CXValue) {
 	outputs[0].Used = int8(outputs[0].Type)
 }
 
-/*func opGoto(inputs []ast.CXValue, outputs []ast.CXValue) {
+func opGoto(inputs []ast.CXValue, outputs []ast.CXValue) {
 	call := ast.PROGRAM.GetCurrentCall()
 	expr := call.Operator.Expressions[call.Line]
 	call.Line = call.Line + expr.ThenLines
-    fmt.Printf("GOTO LABEL '%s'\n", expr.Label)
 }
 
 func opJmp(inputs []ast.CXValue, outputs []ast.CXValue) {
 	call := ast.PROGRAM.GetCurrentCall()
 	expr := call.Operator.Expressions[call.Line]
-    fmt.Printf("JMP LABEL '%s'\n", expr.Label)
 	if inputs[0].Get_bool() {
-       fmt.Printf("TRUE %d\n", expr.ThenLines) 
 		call.Line = call.Line + expr.ThenLines
 	} else {
 		call.Line = call.Line + expr.ElseLines
 	}
-}*/
-
-func opJmp(inputs []ast.CXValue, outputs []ast.CXValue) {
-	call := ast.PROGRAM.GetCurrentCall()
-	expr := call.Operator.Expressions[call.Line]
-	inp1 := expr.Inputs[0]
-	var predicate bool
-
-	if expr.Label != "" {
-		// then it's a goto
-		call.Line = call.Line + expr.ThenLines
-	} else {
-		inp1Offset := ast.GetFinalOffset(inputs[0].FramePointer, inp1)
-
-		predicateB := ast.PROGRAM.Memory[inp1Offset : inp1Offset+ast.GetSize(inp1)]
-		predicate = helper.DeserializeBool(predicateB)
-
-		if predicate {
-			call.Line = call.Line + expr.ThenLines
-		} else {
-			call.Line = call.Line + expr.ElseLines
-		}
-	}
-
-    inputs[0].Used = int8(inputs[0].Type)
 }
+

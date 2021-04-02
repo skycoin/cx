@@ -419,7 +419,7 @@ func isPointerAdded(fn *ast.CXFunction, sym *ast.CXArgument) (found bool) {
 // `fn.ListOfPointers` so the CX runtime does not have to determine this.
 func AddPointer(fn *ast.CXFunction, sym *ast.CXArgument) {
 	// Ignore if it's a global variable.
-	if sym.DataSegmentOffset > AST.StackSize {
+	if sym.Offset > AST.StackSize {
 		return
 	}
 	// We first need to check if we're going to add `sym` with fields.
@@ -473,7 +473,7 @@ func ProcessLocalDeclaration(symbols *[]map[string]*ast.CXArgument, symbolsScope
 
 func ProcessGoTos(fn *ast.CXFunction, exprs []*ast.CXExpression) {
 	for i, expr := range exprs {
-		if expr.Label != "" && expr.Operator == ast.Natives[constants.OP_JMP] {
+		if expr.Operator == ast.Natives[constants.OP_GOTO] {
 			// then it's a goto
 			for j, e := range exprs {
 				if e.Label == expr.Label && i != j {
@@ -753,7 +753,7 @@ func UpdateSymbolsTable(symbols *[]map[string]*ast.CXArgument, sym *ast.CXArgume
 		// then it is a new declaration
 		if !shouldExist && !found {
 			// then it was declared in an outer scope
-			sym.DataSegmentOffset = *offset
+			sym.Offset = *offset
 			(*symbols)[lastIdx][fullName] = sym
 			*offset += ast.GetSize(sym)
 		}
@@ -916,7 +916,7 @@ func ProcessTempVariable(expr *ast.CXExpression) {
 }
 
 func CopyArgFields(sym *ast.CXArgument, arg *ast.CXArgument) {
-	sym.DataSegmentOffset = arg.DataSegmentOffset
+	sym.Offset = arg.Offset
 	sym.IsPointer = arg.IsPointer
 	sym.IndirectionLevels = arg.IndirectionLevels
 
@@ -1135,7 +1135,7 @@ func ProcessSymbolFields(sym *ast.CXArgument, arg *ast.CXArgument) {
 					break
 				}
 
-				nameFld.DataSegmentOffset += ast.GetSize(fld)
+				nameFld.Offset += ast.GetSize(fld)
 			}
 		}
 	}

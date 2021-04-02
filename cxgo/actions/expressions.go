@@ -416,17 +416,12 @@ func AddJmpToReturnExpressions(exprs ReturnExpressions) []*ast.CXExpression {
 	}
 
 	// expression to jump to the end of the embedding function
-	expr := ast.MakeExpression(ast.Natives[constants.OP_JMP], CurrentFile, LineNo)
+	expr := ast.MakeExpression(ast.Natives[constants.OP_GOTO], CurrentFile, LineNo)
 
 	// simulating a label so it gets executed without evaluating a predicate
 	expr.Label = globals.MakeGenSym(constants.LABEL_PREFIX)
 	expr.ThenLines = constants.MAX_INT32
 	expr.Package = pkg
-
-	arg := ast.MakeArgument("", CurrentFile, LineNo).AddType("bool")
-	arg.Package = pkg
-
-	expr.AddInput(arg)
 
 	retExprs = append(retExprs, expr)
 

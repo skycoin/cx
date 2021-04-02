@@ -3,33 +3,8 @@ package ast
 import (
 	"fmt"
 	"github.com/skycoin/cx/cx/constants"
-    "github.com/skycoin/cx/cx/helper"
 )
 
-func opJmp2(expr *CXExpression, fp int, inputs []CXValue, outputs []CXValue) {
-	call := PROGRAM.GetCurrentCall()
-    expr = call.Operator.Expressions[call.Line]
-	inp1 := expr.Inputs[0]
-	var predicate bool
-
-	if expr.Label != "" {
-		// then it's a goto
-		call.Line = call.Line + expr.ThenLines
-	} else {
-		inp1Offset := GetFinalOffset(fp, inp1)
-
-		predicateB := PROGRAM.Memory[inp1Offset : inp1Offset+GetSize(inp1)]
-		predicate = helper.DeserializeBool(predicateB)
-
-		if predicate {
-			call.Line = call.Line + expr.ThenLines
-		} else {
-			call.Line = call.Line + expr.ElseLines
-		}
-	}
-
-    inputs[0].Used = int8(inputs[0].Type)
-}
 // CXCall ...
 type CXCall struct {
 	Operator     *CXFunction // What CX function will be called when running this CXCall in the runtime
@@ -96,7 +71,7 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 			newFP := newCall.FramePointer
 			size := GetSize(expr.Outputs[0])
 			for c := 0; c < size; c++ {
-				prgrm.Memory[newFP+expr.Outputs[0].DataSegmentOffset+c] = 0
+				prgrm.Memory[newFP+expr.Outputs[0].Offset+c] = 0
 			}
 			call.Line++
 		} else if expr.Operator.IsAtomic {
@@ -148,11 +123,7 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 				argIndex++
 			}
 
-if expr.Operator.OpCode == constants.OP_JMP {
-    opJmp2(expr, fp, inputValues, outputValues)
-} else {
-OpcodeHandlers[expr.Operator.OpCode](inputValues, outputValues)
-}
+            OpcodeHandlers[expr.Operator.OpCode](inputValues, outputValues)
 
 			for inputIndex := 0; inputIndex < inputCount; inputIndex++ { // TODO: remove in release builds
 				if inputValues[inputIndex].Used != int8(inputs[inputIndex].Type) { // TODO: remove cast

@@ -317,7 +317,7 @@ type CXArgument struct {
 	// the case of global variables and literals. It is used by
 	// the CX virtual machine to find the bytes that represent the
 	// value of the `CXArgument`.
-	DataSegmentOffset int
+	Offset int
 	// IndirectionLevels
 	IndirectionLevels int
 	DereferenceLevels int
@@ -562,7 +562,7 @@ func (cxprogram *CXProgram) PrintAllObjects() {
 		op := cxprogram.CallStack[c].Operator
 
 		for _, ptr := range op.ListOfPointers {
-			heapOffset := helper.Deserialize_i32(cxprogram.Memory[fp+ptr.DataSegmentOffset : fp+ptr.DataSegmentOffset+constants.TYPE_POINTER_SIZE])
+			heapOffset := helper.Deserialize_i32(cxprogram.Memory[fp+ptr.Offset : fp+ptr.Offset+constants.TYPE_POINTER_SIZE])
 
 			var byts []byte
 
@@ -824,7 +824,7 @@ func (strct *CXStruct) AddField(fld *CXArgument) *CXStruct {
 		if numFlds != 0 {
 			// Pre-compiling the offset of the field.
 			lastFld := strct.Fields[numFlds-1]
-			fld.DataSegmentOffset = lastFld.DataSegmentOffset + lastFld.TotalSize
+			fld.Offset = lastFld.Offset + lastFld.TotalSize
 		}
 		strct.Size += GetSize(fld)
 	} else {
@@ -1092,7 +1092,7 @@ func MakeGlobal(name string, typ int, fileName string, fileLine int) *CXArgument
 		Name:              name,
 		Type:              typ,
 		Size:              size,
-		DataSegmentOffset: globals.HeapOffset,
+		Offset: globals.HeapOffset,
 		FileName:          fileName,
 		FileLine:          fileLine,
 	}

@@ -5,7 +5,8 @@ package constants
 const (
 	OP_IDENTITY = iota + 1
     OP_JMP
-	OP_DEBUG
+    OP_GOTO
+    OP_DEBUG
 
 	OP_SERIALIZE
 	OP_DESERIALIZE

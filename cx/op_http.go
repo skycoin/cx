@@ -122,9 +122,9 @@ func opHTTPHandle(inputs []ast.CXValue, outputs []ast.CXValue) {
 		// PROGRAM.StackPointer -= handlerFn.Size
 		ast.PROGRAM.CallCounter--
 
-		i1Off := callFP + handlerFn.Inputs[0].DataSegmentOffset
+		i1Off := callFP + handlerFn.Inputs[0].Offset
 		i1Size := handlerFn.Inputs[0].TotalSize
-		i2Off := callFP + handlerFn.Inputs[1].DataSegmentOffset
+		i2Off := callFP + handlerFn.Inputs[1].Offset
 		i2Size := handlerFn.Inputs[1].TotalSize
 
 		i1 := make([]byte, i1Size)

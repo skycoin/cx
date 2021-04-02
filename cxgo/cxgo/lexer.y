@@ -1219,15 +1219,9 @@ return_expression:
 jump_statement: GOTO IDENTIFIER SEMICOLON
                 {
 			if pkg, err := actions.AST.GetCurrentPackage(); err == nil {
-				expr := ast.MakeExpression(ast.Natives[constants.OP_JMP], actions.CurrentFile, actions.LineNo)
+				expr := ast.MakeExpression(ast.Natives[constants.OP_GOTO], actions.CurrentFile, actions.LineNo)
 				expr.Package = pkg
 				expr.Label = $2
-
-				arg := ast.MakeArgument("", actions.CurrentFile, actions.LineNo).AddType("bool")
-				arg.Package = pkg
-
-				expr.AddInput(arg)
-					
 				$$ = []*ast.CXExpression{expr}
 			} else {
 				panic(err)
