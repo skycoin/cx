@@ -4,10 +4,16 @@
 // 
 package main
 
+
+
 // This main function will print a string in the terminal
 // str.print("") prints the string 
 func main () {
+
+    var	loco i32
+
+	str.print("print string")
+
  	str.print("Hello World!")
+
 }
-
-
