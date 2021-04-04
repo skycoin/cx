@@ -84,7 +84,7 @@ ifndef CXVERSION
 	@echo "cx not found in $(PWD)/bin, please run make install first"
 else
 	# go test $(GO_OPTS) -race -tags base github.com/skycoin/cx/cxgo/
-	go run -mod=vendor ./cmd/cxtest --cxpath=$(PWD)/bin/cx --wdir=./tests --log=fail,stderr --disable-tests=gui,issue
+	go run -mod=vendor ./cmd/cxtest/main.go --cxpath=$(PWD)/bin/cx --wdir=./tests --log=fail,stderr --disable-tests=gui,issue
 
 endif
 
@@ -93,7 +93,7 @@ ifndef CXVERSION
 	@echo "cx not found in $(PWD)/bin, please run make install first"
 else
 	# go test $(GO_OPTS) -race -tags base github.com/skycoin/cx/cxgo/
-	go run -mod=vendor ./cmd/cxtest --cxpath=$(PWD)/bin/cx --wdir=./tests --log=fail,stderr
+	go run -mod=vendor ./cmd/cxtest/main.go --cxpath=$(PWD)/bin/cx --wdir=./tests --log=fail,stderr
 endif
 
 build-goyacc: ## Builds goyacc into /bin/goyacc
