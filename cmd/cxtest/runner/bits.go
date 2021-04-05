@@ -1,4 +1,4 @@
-package main
+package runner
 
 type Bits uint8
 
