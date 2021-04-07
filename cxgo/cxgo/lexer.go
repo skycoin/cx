@@ -2,15 +2,16 @@
 
 package cxgo
 
-import (
-	__yyfmt__ "fmt"
-	"strconv"
+import __yyfmt__ "fmt"
 
+import (
+	// "fmt"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cxgo/actions"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
-) // "fmt"
+	"strconv"
+)
 
 /*
 This is a machine generated file
@@ -1876,12 +1877,12 @@ yynewstate:
 		}
 	case 64:
 		{
-			yyS[yypt-0].expressions[len(yyS[yypt-0].expressions)-1].ExpressionType = ast.CXEXPR_ARRAY_LITERAL
+			yyS[yypt-0].expressions[len(yyS[yypt-0].expressions)-1].SetExpressionType(ast.CXEXPR_ARRAY_LITERAL)
 			yyVAL.expressions = yyS[yypt-0].expressions
 		}
 	case 65:
 		{
-			yyS[yypt-0].expressions[len(yyS[yypt-0].expressions)-1].ExpressionType = ast.CXEXPR_ARRAY_LITERAL
+			yyS[yypt-0].expressions[len(yyS[yypt-0].expressions)-1].SetExpressionType(ast.CXEXPR_ARRAY_LITERAL)
 			yyVAL.expressions = append(yyS[yypt-2].expressions, yyS[yypt-0].expressions...)
 		}
 	case 66:
@@ -1918,13 +1919,13 @@ yynewstate:
 		}
 	case 74:
 		{
-			yyS[yypt-0].expressions[len(yyS[yypt-0].expressions)-1].ExpressionType = ast.CXEXPR_ARRAY_LITERAL
+			yyS[yypt-0].expressions[len(yyS[yypt-0].expressions)-1].SetExpressionType(ast.CXEXPR_ARRAY_LITERAL)
 			yyVAL.expressions = yyS[yypt-0].expressions
 		}
 	case 75:
 		{
 
-			yyS[yypt-0].expressions[len(yyS[yypt-0].expressions)-1].ExpressionType = ast.CXEXPR_ARRAY_LITERAL
+			yyS[yypt-0].expressions[len(yyS[yypt-0].expressions)-1].SetExpressionType(ast.CXEXPR_ARRAY_LITERAL)
 			yyVAL.expressions = append(yyS[yypt-2].expressions, yyS[yypt-0].expressions...)
 		}
 	case 76:
@@ -1952,7 +1953,7 @@ yynewstate:
 				}
 			}
 
-			yyS[yypt-0].expressions[len(yyS[yypt-0].expressions)-1].ExpressionType = ast.CXEXPR_ARRAY_LITERAL
+			yyS[yypt-0].expressions[len(yyS[yypt-0].expressions)-1].SetExpressionType(ast.CXEXPR_ARRAY_LITERAL)
 			yyVAL.expressions = yyS[yypt-0].expressions
 		}
 	case 81:
@@ -2004,7 +2005,7 @@ yynewstate:
 			var exprs []*ast.CXExpression
 			for _, str := range yyS[yypt-0].stringA {
 				expr := actions.WritePrimary(constants.TYPE_AFF, encoder.Serialize(str), false)
-				expr[len(expr)-1].ExpressionType = ast.CXEXPR_ARRAY_LITERAL
+				expr[len(expr)-1].SetExpressionType(ast.CXEXPR_ARRAY_LITERAL)
 				exprs = append(exprs, expr...)
 			}
 
@@ -2421,15 +2422,9 @@ yynewstate:
 	case 225:
 		{
 			if pkg, err := actions.AST.GetCurrentPackage(); err == nil {
-				expr := ast.MakeExpression(ast.Natives[constants.OP_JMP], actions.CurrentFile, actions.LineNo)
+				expr := ast.MakeExpression(ast.Natives[constants.OP_GOTO], actions.CurrentFile, actions.LineNo)
 				expr.Package = pkg
 				expr.Label = yyS[yypt-1].tok
-
-				arg := ast.MakeArgument("", actions.CurrentFile, actions.LineNo).AddType("bool")
-				arg.Package = pkg
-
-				expr.AddInput(arg)
-
 				yyVAL.expressions = []*ast.CXExpression{expr}
 			} else {
 				panic(err)

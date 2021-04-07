@@ -1,18 +1,17 @@
 package cxcore
 
 import (
-	"github.com/skycoin/cx/cx/ast"
+    "github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
-	"github.com/skycoin/cx/cx/helper"
 )
 
 // "fmt"
 
 // EscapeAnalysis ...
-func EscapeAnalysis(fp int, inpOffset, outOffset int, arg *ast.CXArgument) {
-	heapOffset := ast.AllocateSeq(arg.TotalSize + constants.OBJECT_HEADER_SIZE)
+func EscapeAnalysis(input *ast.CXValue) int32 {
+	heapOffset := ast.AllocateSeq(input.Arg.TotalSize + constants.OBJECT_HEADER_SIZE)
 
-	byts := ast.ReadMemory(inpOffset, arg)
+	byts := input.Get_bytes()
 
 	// creating a header for this object
 	var header = make([]byte, constants.OBJECT_HEADER_SIZE)
@@ -21,14 +20,11 @@ func EscapeAnalysis(fp int, inpOffset, outOffset int, arg *ast.CXArgument) {
 	obj := append(header, byts...)
 	ast.WriteMemory(heapOffset, obj)
 
-	ast.WriteI32(outOffset, int32(heapOffset))
+	return int32(heapOffset)
 }
 
-func opIdentity(expr *ast.CXExpression, fp int) {
-	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
-	inp1Offset := ast.GetFinalOffset(fp, inp1)
-	out1Offset := ast.GetFinalOffset(fp, out1)
-
+func opIdentity(inputs []ast.CXValue, outputs []ast.CXValue) {
+    out1 := outputs[0].Arg
 	var elt *ast.CXArgument
 	if len(out1.Fields) > 0 {
 		elt = out1.Fields[len(out1.Fields)-1]
@@ -37,35 +33,33 @@ func opIdentity(expr *ast.CXExpression, fp int) {
 	}
 
 	if elt.DoesEscape {
-		EscapeAnalysis(fp, inp1Offset, out1Offset, inp1)
+		outputs[0].Set_i32(EscapeAnalysis(&inputs[0]))
 	} else {
 		switch elt.PassBy {
 		case constants.PASSBY_VALUE:
-			ast.WriteMemory(out1Offset, ast.ReadMemory(inp1Offset, inp1))
+			outputs[0].Set_bytes(inputs[0].Get_bytes())
 		case constants.PASSBY_REFERENCE:
-			ast.WriteI32(out1Offset, int32(inp1Offset))
+			outputs[0].Set_i32(int32(inputs[0].Offset))
 		}
 	}
+
+	inputs[0].Used = int8(inputs[0].Type)
+	outputs[0].Used = int8(outputs[0].Type)
 }
 
-func opJmp(expr *ast.CXExpression, fp int) {
+func opGoto(inputs []ast.CXValue, outputs []ast.CXValue) {
 	call := ast.PROGRAM.GetCurrentCall()
-	inp1 := expr.Inputs[0]
-	var predicate bool
+	expr := call.Operator.Expressions[call.Line]
+	call.Line = call.Line + expr.ThenLines
+}
 
-	if expr.Label != "" {
-		// then it's a goto
+func opJmp(inputs []ast.CXValue, outputs []ast.CXValue) {
+	call := ast.PROGRAM.GetCurrentCall()
+	expr := call.Operator.Expressions[call.Line]
+	if inputs[0].Get_bool() {
 		call.Line = call.Line + expr.ThenLines
 	} else {
-		inp1Offset := ast.GetFinalOffset(fp, inp1)
-
-		predicateB := ast.PROGRAM.Memory[inp1Offset : inp1Offset+ast.GetSize(inp1)]
-		predicate = helper.DeserializeBool(predicateB)
-
-		if predicate {
-			call.Line = call.Line + expr.ThenLines
-		} else {
-			call.Line = call.Line + expr.ElseLines
-		}
+		call.Line = call.Line + expr.ElseLines
 	}
 }
+

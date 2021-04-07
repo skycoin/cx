@@ -74,8 +74,8 @@ func testF32Slice(file i32, s []f32) {
 	panic(len(s), len(values), sprintf("failed to read []f32:  lens don't match, %d != %d", len(s), len(values)))
 	var count i32 = len(s)
 	for i := 0; i < count; i++ {
-		panic(s[i], values[i], sprintf("failed to read []f32: value don't match, %d != %d", s[i], values[i]))
-		debugOutput(sprintf("F32 %d/%d, %d\n", i, len(values), values[i]))
+		panic(s[i], values[i], sprintf("failed to read []f32: value don't match, %f != %f", s[i], values[i]))
+		debugOutput(sprintf("F32 %d/%d, %f\n", i, len(values), values[i]))
 	}
 }
 

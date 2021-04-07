@@ -10,14 +10,10 @@ var (
 
 	// OpCodes ...
 	OpCodes = map[string]int{}
-
-	// Versions ...
-	//OpVersions = map[int]int{}
 )
 
 var (
 	OpcodeHandlers    []OpcodeHandler
-	OpcodeHandlers_V2 []OpcodeHandler_V2
 )
 
 const (
@@ -26,8 +22,7 @@ const (
 )
 
 // OpcodeHandler ...
-type OpcodeHandler func(expr *CXExpression, fp int)
-type OpcodeHandler_V2 func(inputs []CXValue, outputs []CXValue)
+type OpcodeHandler func(inputs []CXValue, outputs []CXValue)
 
 //Todo: Rename Natives
 //Todo: What is an operator?

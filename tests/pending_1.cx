@@ -1,0 +1,6 @@
+package main
+
+func main()() {
+    printf("%d\n", 4.0)
+}
+

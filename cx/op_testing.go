@@ -13,16 +13,16 @@ func AssertFailed() bool {
 	return !assertSuccess
 }
 
-func assert(expr *ast.CXExpression, fp int) (same bool) {
-	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
+//TODO: Rework
+func assert(inputs []ast.CXValue, outputs []ast.CXValue) (same bool) {
 	var byts1, byts2 []byte
 
-	if inp1.Type == constants.TYPE_STR {
-		byts1 = []byte(ast.ReadStr(fp, inp1))
-		byts2 = []byte(ast.ReadStr(fp, inp2))
+	if inputs[0].Arg.Type == constants.TYPE_STR {
+		byts1 = []byte(inputs[0].Get_str())
+		byts2 = []byte(inputs[1].Get_str())
 	} else {
-		byts1 = ast.ReadMemory(ast.GetFinalOffset(fp, inp1), inp1)
-		byts2 = ast.ReadMemory(ast.GetFinalOffset(fp, inp2), inp2)
+		byts1 = inputs[0].Get_bytes()
+		byts2 = inputs[1].Get_bytes()
 	}
 
 	same = true
@@ -44,9 +44,11 @@ func assert(expr *ast.CXExpression, fp int) (same bool) {
 		}
 	}
 
-	message := ast.ReadStr(fp, inp3)
+	message := inputs[2].Get_str()
 
 	if !same {
+	    call := ast.PROGRAM.GetCurrentCall()
+    	expr := call.Operator.Expressions[call.Line]
 		if message != "" {
 			fmt.Printf("%s: %d: result was not equal to the expected value; %s\n", expr.FileName, expr.FileLine, message)
 		} else {
@@ -58,39 +60,42 @@ func assert(expr *ast.CXExpression, fp int) (same bool) {
 	return same
 }
 
-func opAssertValue(expr *ast.CXExpression, fp int) {
-	same := assert(expr, fp)
-	ast.WriteBool(ast.GetFinalOffset(fp, expr.Outputs[0]), same)
+func opAssertValue(inputs []ast.CXValue, outputs []ast.CXValue) {
+	same := assert(inputs, outputs)
+    outputs[0].Set_bool(same)
 }
 
-func opTest(expr *ast.CXExpression, fp int) {
-	assert(expr, fp)
+func opTest(inputs []ast.CXValue, outputs []ast.CXValue) {
+	assert(inputs, outputs)
 }
 
-func opPanic(expr *ast.CXExpression, fp int) {
-	if !assert(expr, fp) {
+func opPanic(inputs []ast.CXValue, outputs []ast.CXValue) {
+	if !assert(inputs, outputs) {
 		panic(constants.CX_ASSERT)
 	}
 }
 
 // panicIf/panicIfNot implementation
-func panicIf(expr *ast.CXExpression, fp int, condition bool) {
-	if ast.ReadBool(fp, expr.Inputs[0]) == condition {
-		fmt.Printf("%s : %d, %s\n", expr.FileName, expr.FileLine, ast.ReadStr(fp, expr.Inputs[1]))
+func panicIf(inputs []ast.CXValue, outputs []ast.CXValue, condition bool) {
+    str := inputs[1].Get_str()
+	if inputs[0].Get_bool() == condition {
+	    call := ast.PROGRAM.GetCurrentCall()
+    	expr := call.Operator.Expressions[call.Line]
+		fmt.Printf("%s : %d, %s\n", expr.FileName, expr.FileLine, str)
 		panic(constants.CX_ASSERT)
 	}
 }
 
 // panic with CX_ASSERT exit code if condition is true
-func opPanicIf(expr *ast.CXExpression, fp int) {
-	panicIf(expr, fp, true)
+func opPanicIf(inputs []ast.CXValue, outputs []ast.CXValue) {
+	panicIf(inputs, outputs, true)
 }
 
 // panic with CX_ASSERT exit code if condition is false
-func opPanicIfNot(expr *ast.CXExpression, fp int) {
-	panicIf(expr, fp, false)
+func opPanicIfNot(inputs []ast.CXValue, outputs []ast.CXValue) {
+	panicIf(inputs, outputs, false)
 }
 
-func opStrError(expr *ast.CXExpression, fp int) {
-	ast.WriteString(fp, ast.ErrorString(int(ast.ReadI32(fp, expr.Inputs[0]))), expr.Outputs[0])
+func opStrError(inputs []ast.CXValue, outputs []ast.CXValue) {
+    outputs[0].Set_str(ast.ErrorString(int(inputs[0].Get_i32())))
 }

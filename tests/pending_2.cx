@@ -1,0 +1,9 @@
+package main
+
+func main()() {
+var b0 bool = false
+var b1 bool = false
+var i i32
+    b  := bool.uneq(i, b1)
+}
+

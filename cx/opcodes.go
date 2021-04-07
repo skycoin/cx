@@ -12,6 +12,42 @@ import (
 //	constants.CorePackages = append(constants.CorePackages, pkgName)
 //}
 
+// GetOpCodeCount returns an op code that is available for usage on the CX standard library.
+/*
+func GetOpCodeCount() int {
+	return len(OpcodeHandlers)
+}
+*/
+
+// RegisterOperator ...
+func RegisterOperator(code int, name string, handler ast.OpcodeHandler, inputs []*ast.CXArgument, outputs []*ast.CXArgument, atomicType int, operator int) {
+	RegisterOpCode(code, name, handler, inputs, outputs)
+	native := ast.Natives[code]
+	ast.Operators[ast.GetTypedOperatorOffset(atomicType, operator)] = native
+}
+
+// MakeNativeFunction ...
+func MakeNativeFunction(opCode int, inputs []*ast.CXArgument, outputs []*ast.CXArgument) *ast.CXFunction {
+	fn := &ast.CXFunction{
+		IsAtomic: true,
+		OpCode:   opCode,
+	}
+
+	offset := 0
+	for _, inp := range inputs {
+		inp.Offset = offset
+		offset += ast.GetSize(inp)
+		fn.Inputs = append(fn.Inputs, inp)
+	}
+	for _, out := range outputs {
+		fn.Outputs = append(fn.Outputs, out)
+		out.Offset = offset
+		offset += ast.GetSize(out)
+	}
+
+	return fn
+}
+
 // RegisterOpCode ...
 func RegisterOpCode(code int, name string, handler ast.OpcodeHandler, inputs []*ast.CXArgument, outputs []*ast.CXArgument) {
 	if code >= len(ast.OpcodeHandlers) {
@@ -24,34 +60,34 @@ func RegisterOpCode(code int, name string, handler ast.OpcodeHandler, inputs []*
 
 	ast.OpNames[code] = name
 	ast.OpCodes[name] = code
-	//ast.OpVersions[code] = 1
+	//OpVersions[code] = 2
+
 	if inputs == nil {
 		inputs = []*ast.CXArgument{}
 	}
 	if outputs == nil {
 		outputs = []*ast.CXArgument{}
 	}
-	//TODO: Replace with MakeNativeFunctionV2
-	ast.Natives[code] = ast.MakeNativeFunctionV1(code, inputs, outputs)
+	ast.Natives[code] = MakeNativeFunction(code, inputs, outputs)
 }
 
 /*
 // Debug helper function used to find opcodes when they are not registered
 func dumpOpCodes(opCode int) {
 	var keys []int
-	for k := range OpNames {
+	for k := range ast.OpNames {
 		keys = append(keys, k)
 	}
 	sort.Ints(keys)
 	for _, k := range keys {
-		fmt.Printf("%5d : %s\n", k, OpNames[k])
+		fmt.Printf("%5d : %s\n", k, ast.OpNames[k])
 	}
 
 	fmt.Printf("opCode : %d\n", opCode)
 }*/
 
 // Struct helper for creating a struct parameter. It creates a
-// `CXArgument` named `argName`, that represents a structure instance of
+// `ast.CXArgument` named `argName`, that represents a structure instance of
 // `strctName`, from package `pkgName`.
 func Struct(pkgName, strctName, argName string) *ast.CXArgument {
 	pkg, err := ast.PROGRAM.GetPackage(pkgName)
@@ -73,7 +109,7 @@ func Struct(pkgName, strctName, argName string) *ast.CXArgument {
 	return arg
 }
 
-func opDebug(*ast.CXExpression, int) {
+func opDebug([]ast.CXValue, []ast.CXValue) {
 	ast.PROGRAM.PrintStack()
 }
 

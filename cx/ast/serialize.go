@@ -402,7 +402,7 @@ func serializeExpression(expr *CXExpression, s *serializedCXProgram) int {
 	sExpr.ThenLines = int64(expr.ThenLines)
 	sExpr.ElseLines = int64(expr.ElseLines)
 
-	sExpr.ExpressionType = int64(expr.ExpressionType)
+	sExpr.ExpressionType = int64(expr.ExpressionType())
 
 	fnName := expr.Function.Package.Name + "." + expr.Function.Name
 	if fnOff, found := s.FunctionsMap[fnName]; found {
@@ -1127,7 +1127,7 @@ func deserializeExpression(sExpr *serializedExpression, s *serializedCXProgram, 
 	expr.ThenLines = int(sExpr.ThenLines)
 	expr.ElseLines = int(sExpr.ElseLines)
 
-	expr.ExpressionType = CXEXPR_TYPE(sExpr.ExpressionType)
+	expr.SetExpressionType(CXEXPR_TYPE(sExpr.ExpressionType))
 
 	expr.Function = deserializeExpressionFunction(sExpr, s, prgrm)
 	expr.Package = prgrm.Packages[sExpr.PackageOffset]

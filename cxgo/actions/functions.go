@@ -207,7 +207,7 @@ func FunctionCall(exprs []*ast.CXExpression, args []*ast.CXExpression) []*ast.CX
 			println(ast.CompilationError(CurrentFile, LineNo), err.Error())
 			return nil
 		} else {
-			expr.ExpressionType = ast.CXEXPR_METHOD_CALL
+			expr.SetExpressionType(ast.CXEXPR_METHOD_CALL)
 		}
 
 		if len(expr.Outputs) > 0 && expr.Outputs[0].Fields == nil {
@@ -473,7 +473,7 @@ func ProcessLocalDeclaration(symbols *[]map[string]*ast.CXArgument, symbolsScope
 
 func ProcessGoTos(fn *ast.CXFunction, exprs []*ast.CXExpression) {
 	for i, expr := range exprs {
-		if expr.Label != "" && expr.Operator == ast.Natives[constants.OP_JMP] {
+		if expr.Operator == ast.Natives[constants.OP_GOTO] {
 			// then it's a goto
 			for j, e := range exprs {
 				if e.Label == expr.Label && i != j {
