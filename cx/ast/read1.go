@@ -1,6 +1,6 @@
 package ast
 
-import(
+import (
 	"github.com/skycoin/cx/cx/helper"
 )
 
@@ -23,8 +23,13 @@ func ReadI16(fp int, inp *CXArgument) int16 {
 	return helper.Deserialize_i16(ReadMemory(GetFinalOffset(fp, inp), inp))
 }
 
+var DEBUG_CALL_GET_FINAL_OFFSET_I32 = false
+
 // ReadI32 ...
 func ReadI32(fp int, inp *CXArgument) int32 {
+	if DEBUG_CALL_GET_FINAL_OFFSET_I32 {
+		return helper.Deserialize_i32(ReadMemory(GetOffset_i32(fp, inp), inp))
+	}
 	return helper.Deserialize_i32(ReadMemory(GetFinalOffset(fp, inp), inp))
 }
 
