@@ -131,6 +131,10 @@ func CalculateDereferences_array(arg *CXArgument, finalOffset *int, fp int) {
 // CalculateDereferences_slice
 func CalculateDereferences_slice(arg *CXArgument, finalOffset *int, fp int) {
 
+	// remove this check
+	if !arg.IsSlice {
+		panic("not slice")
+	}
 	var isPointer bool
 	var baseOffset int
 	var sizeofElement int
