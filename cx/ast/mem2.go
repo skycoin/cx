@@ -109,7 +109,6 @@ func CalculateDereferences(arg *CXArgument, finalOffset *int, fp int) {
 
 // CalculateDereferences_array ...
 func CalculateDereferences_array(arg *CXArgument, finalOffset *int, fp int) {
-	var isPointer bool
 	var sizeofElement int
 
 	idxCounter := 0
@@ -126,12 +125,6 @@ func CalculateDereferences_array(arg *CXArgument, finalOffset *int, fp int) {
 		sizeofElement = subSize * sizeToUse
 		*finalOffset += int(ReadI32(fp, arg.Indexes[idxCounter])) * sizeofElement
 		idxCounter++
-	}
-
-	// if *finalOffset >= PROGRAM.HeapStartsAt {
-	if *finalOffset >= PROGRAM.HeapStartsAt && isPointer {
-		// then it's an object
-		*finalOffset += constants.OBJECT_HEADER_SIZE
 	}
 }
 
