@@ -109,6 +109,11 @@ func CalculateDereferences(arg *CXArgument, finalOffset *int, fp int) {
 
 // CalculateDereferences_array ...
 func CalculateDereferences_array(arg *CXArgument, finalOffset *int, fp int) {
+
+	// remove this check
+	if !arg.IsArray {
+		panic("not slice")
+	}
 	var sizeofElement int
 
 	idxCounter := 0
@@ -121,9 +126,11 @@ func CalculateDereferences_array(arg *CXArgument, finalOffset *int, fp int) {
 			subSize *= len
 		}
 
-		sizeToUse := GetDerefSize(arg) //GetDerefSize
+		//TODO: Delete
+		sizeToUse := GetDerefSize(arg) //TODO: is always arg.Size unless arg.CustomType != nil
+
 		sizeofElement = subSize * sizeToUse
-		*finalOffset += int(ReadI32(fp, arg.Indexes[idxCounter])) * sizeofElement
+		*finalOffset += int(ReadI32(fp, arg.Indexes[idxCounter])) * sizeofElement //TODO: FIX INTEGER CAST
 		idxCounter++
 	}
 }
@@ -135,33 +142,37 @@ func CalculateDereferences_slice(arg *CXArgument, finalOffset *int, fp int) {
 	if !arg.IsSlice {
 		panic("not slice")
 	}
-	var isPointer bool
 	var baseOffset int
-	var sizeofElement int
 
-	for _, op := range arg.DereferenceOperations {
-		if op != constants.DEREF_POINTER {
-			panic("not pointer")
+	idxCounter := 0
+	for _, _ = range arg.DereferenceOperations {
+		if len(arg.Indexes) == 0 {
+			continue
 		}
-		isPointer = true
+
 		var offset int32
 		var byts []byte
 
 		byts = PROGRAM.Memory[*finalOffset : *finalOffset+constants.TYPE_POINTER_SIZE]
 
 		offset = helper.Deserialize_i32(byts)
+
 		*finalOffset = int(offset)
 
-	}
+		baseOffset = *finalOffset
 
-	// if *finalOffset >= PROGRAM.HeapStartsAt {
-	if *finalOffset >= PROGRAM.HeapStartsAt && isPointer {
-		// then it's an object
 		*finalOffset += constants.OBJECT_HEADER_SIZE
 		*finalOffset += constants.SLICE_HEADER_SIZE
-		if !IsValidSliceIndex(baseOffset, *finalOffset, sizeofElement) {
+
+		//TODO: delete
+		sizeToUse := GetDerefSize(arg) //TODO: is always arg.Size unless arg.CustomType != nil
+		*finalOffset += int(ReadI32(fp, arg.Indexes[idxCounter])) * sizeToUse
+		if !IsValidSliceIndex(baseOffset, *finalOffset, sizeToUse) {
 			panic(constants.CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)
 		}
+
+		idxCounter++
+
 	}
 
 }
@@ -169,6 +180,8 @@ func CalculateDereferences_slice(arg *CXArgument, finalOffset *int, fp int) {
 // CalculateDereferences_ptr
 func CalculateDereferences_ptr(arg *CXArgument, finalOffset *int, fp int) {
 	var isPointer bool
+	var baseOffset int
+	var sizeofElement int
 
 	for _, _ = range arg.DereferenceOperations {
 
@@ -179,13 +192,20 @@ func CalculateDereferences_ptr(arg *CXArgument, finalOffset *int, fp int) {
 		byts = PROGRAM.Memory[*finalOffset : *finalOffset+constants.TYPE_POINTER_SIZE]
 
 		offset = helper.Deserialize_i32(byts)
-		*finalOffset = int(offset)
+		*finalOffset = int(offset) //TODO: FIX INTEGER CAST
+
 	}
 
 	// if *finalOffset >= PROGRAM.HeapStartsAt {
 	if *finalOffset >= PROGRAM.HeapStartsAt && isPointer {
 		// then it's an object
 		*finalOffset += constants.OBJECT_HEADER_SIZE
+		if arg.IsSlice {
+			*finalOffset += constants.SLICE_HEADER_SIZE
+			if !IsValidSliceIndex(baseOffset, *finalOffset, sizeofElement) {
+				panic(constants.CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)
+			}
+		}
 	}
 }
 
