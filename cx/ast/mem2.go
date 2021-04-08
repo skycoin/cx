@@ -20,7 +20,6 @@ import (
 //TODO: For int32, f32, etc, this function should not be called at all
 //reduce loops and switches in op code execution flow path
 
-
 // GetDerefSize ...
 func GetDerefSize(arg *CXArgument) int {
 	if arg.CustomType != nil {
@@ -111,7 +110,6 @@ func CalculateDereferences(arg *CXArgument, finalOffset *int, fp int) {
 // CalculateDereferences_array ...
 func CalculateDereferences_array(arg *CXArgument, finalOffset *int, fp int) {
 	var isPointer bool
-	var baseOffset int
 	var sizeofElement int
 
 	idxCounter := 0
@@ -125,8 +123,6 @@ func CalculateDereferences_array(arg *CXArgument, finalOffset *int, fp int) {
 		}
 
 		sizeToUse := GetDerefSize(arg) //GetDerefSize
-
-		baseOffset = *finalOffset
 		sizeofElement = subSize * sizeToUse
 		*finalOffset += int(ReadI32(fp, arg.Indexes[idxCounter])) * sizeofElement
 		idxCounter++
@@ -136,12 +132,6 @@ func CalculateDereferences_array(arg *CXArgument, finalOffset *int, fp int) {
 	if *finalOffset >= PROGRAM.HeapStartsAt && isPointer {
 		// then it's an object
 		*finalOffset += constants.OBJECT_HEADER_SIZE
-		if arg.IsSlice {
-			*finalOffset += constants.SLICE_HEADER_SIZE
-			if !IsValidSliceIndex(baseOffset, *finalOffset, sizeofElement) {
-				panic(constants.CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)
-			}
-		}
 	}
 }
 
@@ -171,11 +161,9 @@ func CalculateDereferences_slice(arg *CXArgument, finalOffset *int, fp int) {
 	if *finalOffset >= PROGRAM.HeapStartsAt && isPointer {
 		// then it's an object
 		*finalOffset += constants.OBJECT_HEADER_SIZE
-		if arg.IsSlice {
-			*finalOffset += constants.SLICE_HEADER_SIZE
-			if !IsValidSliceIndex(baseOffset, *finalOffset, sizeofElement) {
-				panic(constants.CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)
-			}
+		*finalOffset += constants.SLICE_HEADER_SIZE
+		if !IsValidSliceIndex(baseOffset, *finalOffset, sizeofElement) {
+			panic(constants.CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)
 		}
 	}
 
@@ -184,8 +172,6 @@ func CalculateDereferences_slice(arg *CXArgument, finalOffset *int, fp int) {
 // CalculateDereferences_ptr
 func CalculateDereferences_ptr(arg *CXArgument, finalOffset *int, fp int) {
 	var isPointer bool
-	var baseOffset int
-	var sizeofElement int
 
 	for _, _ = range arg.DereferenceOperations {
 
@@ -203,12 +189,6 @@ func CalculateDereferences_ptr(arg *CXArgument, finalOffset *int, fp int) {
 	if *finalOffset >= PROGRAM.HeapStartsAt && isPointer {
 		// then it's an object
 		*finalOffset += constants.OBJECT_HEADER_SIZE
-		if arg.IsSlice {
-			*finalOffset += constants.SLICE_HEADER_SIZE
-			if !IsValidSliceIndex(baseOffset, *finalOffset, sizeofElement) {
-				panic(constants.CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)
-			}
-		}
 	}
 }
 
