@@ -13,6 +13,7 @@ func MakeFunction(name string, fileName string, fileLine int) *CXFunction {
 		Name:     name,
 		FileName: fileName,
 		FileLine: fileLine,
+		IsAtomic: false,
 	}
 }
 

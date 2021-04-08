@@ -13,7 +13,7 @@ func opLen(inputs []ast.CXValue, outputs []ast.CXValue) {
 	elt := ast.GetAssignmentElement(inputs[0].Arg)
 
 	var sliceLen int32
-	if elt.IsSlice || elt.Type == constants.TYPE_AFF {
+	if elt.IsSlice || elt.Type == constants.TYPE_AFF { //TODO: FIX
 		sliceOffset := ast.GetPointerOffset(int32(inputs[0].Offset))
 		if sliceOffset > 0 {
 			sliceLen = helper.Deserialize_i32(ast.GetSliceHeader(sliceOffset)[4:8])

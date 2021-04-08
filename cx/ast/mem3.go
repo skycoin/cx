@@ -20,6 +20,16 @@ var ENHANCED_DEBUGING4 bool = false
 //GetfinalOffsetI16
 //ETC
 
+/*
+	if ENHANCED_DEBUGING4 {
+		if !(arg.IsPointer) && (arg.Type == constants.TYPE_F32 || arg.Type == constants.TYPE_F64 ||
+			arg.Type == constants.TYPE_UI8 || arg.Type == constants.TYPE_UI16 || arg.Type == constants.TYPE_UI32 || arg.Type == constants.TYPE_UI64 ||
+			arg.Type == constants.TYPE_I8 || arg.Type == constants.TYPE_I16 || arg.Type == constants.TYPE_I32 || arg.Type == constants.TYPE_I64) {
+			panic("arg is in invalid format")
+		}
+	}
+*/
+
 //TODO: Delete this eventually
 func GetFinalOffset(fp int, arg *CXArgument) int {
 
@@ -29,20 +39,7 @@ func GetFinalOffset(fp int, arg *CXArgument) int {
 		}
 	}
 
-	if ENHANCED_DEBUGING4 {
-		if !(arg.IsPointer) && (arg.Type == constants.TYPE_F32 || arg.Type == constants.TYPE_F64 ||
-			arg.Type == constants.TYPE_UI8 || arg.Type == constants.TYPE_UI16 || arg.Type == constants.TYPE_UI32 || arg.Type == constants.TYPE_UI64 ||
-			arg.Type == constants.TYPE_I8 || arg.Type == constants.TYPE_I16 || arg.Type == constants.TYPE_I32 || arg.Type == constants.TYPE_I64) {
-			panic("arg is in invalid format")
-		}
-	}
-
-	// defer RuntimeError(PROGRAM)
-	// var elt *CXArgument
 	finalOffset := arg.Offset
-	// var fldIdx int
-
-	// elt = arg
 
 	//Todo: find way to eliminate this check
 	if finalOffset < PROGRAM.StackSize {
