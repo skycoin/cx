@@ -28,7 +28,7 @@ func GetDerefSize(arg *CXArgument) int {
 	return arg.Size
 }
 
-func CalculateDereferences(arg *CXArgument, finalOffset *int, fp int) {
+func CalculateDereferences(arg *CXArgument, finalOffset int, fp int) int {
 	var isPointer bool
 	var baseOffset int
 	var sizeofElement int
@@ -45,21 +45,21 @@ func CalculateDereferences(arg *CXArgument, finalOffset *int, fp int) {
 			var offset int32
 			var byts []byte
 
-			byts = PROGRAM.Memory[*finalOffset : *finalOffset+constants.TYPE_POINTER_SIZE]
+			byts = PROGRAM.Memory[finalOffset : finalOffset+constants.TYPE_POINTER_SIZE]
 
 			offset = helper.Deserialize_i32(byts)
 
-			*finalOffset = int(offset)
+			finalOffset = int(offset)
 
-			baseOffset = *finalOffset
+			baseOffset = finalOffset
 
-			*finalOffset += constants.OBJECT_HEADER_SIZE
-			*finalOffset += constants.SLICE_HEADER_SIZE
+			finalOffset += constants.OBJECT_HEADER_SIZE
+			finalOffset += constants.SLICE_HEADER_SIZE
 
 			//TODO: delete
 			sizeToUse := GetDerefSize(arg) //TODO: is always arg.Size unless arg.CustomType != nil
-			*finalOffset += int(ReadI32(fp, arg.Indexes[idxCounter])) * sizeToUse
-			if !IsValidSliceIndex(baseOffset, *finalOffset, sizeToUse) {
+			finalOffset += int(ReadI32(fp, arg.Indexes[idxCounter])) * sizeToUse
+			if !IsValidSliceIndex(baseOffset, finalOffset, sizeToUse) {
 				panic(constants.CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)
 			}
 
@@ -77,34 +77,36 @@ func CalculateDereferences(arg *CXArgument, finalOffset *int, fp int) {
 			//TODO: Delete
 			sizeToUse := GetDerefSize(arg) //TODO: is always arg.Size unless arg.CustomType != nil
 
-			baseOffset = *finalOffset
+			baseOffset = finalOffset
 			sizeofElement = subSize * sizeToUse
-			*finalOffset += int(ReadI32(fp, arg.Indexes[idxCounter])) * sizeofElement //TODO: FIX INTEGER CAST
+			finalOffset += int(ReadI32(fp, arg.Indexes[idxCounter])) * sizeofElement //TODO: FIX INTEGER CAST
 			idxCounter++
 		case constants.DEREF_POINTER: //TODO: Move to CalculateDereference_ptr
 			isPointer = true
 			var offset int32
 			var byts []byte
 
-			byts = PROGRAM.Memory[*finalOffset : *finalOffset+constants.TYPE_POINTER_SIZE]
+			byts = PROGRAM.Memory[finalOffset : finalOffset+constants.TYPE_POINTER_SIZE]
 
 			offset = helper.Deserialize_i32(byts)
-			*finalOffset = int(offset) //TODO: FIX INTEGER CAST
+			finalOffset = int(offset) //TODO: FIX INTEGER CAST
 		}
 
 	}
 
-	// if *finalOffset >= PROGRAM.HeapStartsAt {
-	if *finalOffset >= PROGRAM.HeapStartsAt && isPointer {
+	// if finalOffset >= PROGRAM.HeapStartsAt {
+	if finalOffset >= PROGRAM.HeapStartsAt && isPointer {
 		// then it's an object
-		*finalOffset += constants.OBJECT_HEADER_SIZE
+		finalOffset += constants.OBJECT_HEADER_SIZE
 		if arg.IsSlice {
-			*finalOffset += constants.SLICE_HEADER_SIZE
-			if !IsValidSliceIndex(baseOffset, *finalOffset, sizeofElement) {
+			finalOffset += constants.SLICE_HEADER_SIZE
+			if !IsValidSliceIndex(baseOffset, finalOffset, sizeofElement) {
 				panic(constants.CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)
 			}
 		}
 	}
+
+	return finalOffset
 }
 
 // CalculateDereferences_array ...
@@ -213,61 +215,97 @@ func CalculateDereferences_ptr(arg *CXArgument, finalOffset *int, fp int) {
 }
 
 // CalculateDereferences_i8 ...
-func CalculateDereferences_i8(arg *CXArgument, finalOffset *int, fp int) {
-	CalculateDereferences(arg, finalOffset, fp)
+func CalculateDereferences_i8(arg *CXArgument, finalOffset int, fp int) int {
+	if len(arg.DereferenceOperations) == 0 {
+		panic("0 dereference operations")
+	}
+	return CalculateDereferences(arg, finalOffset, fp)
 }
 
 // CalculateDereferences_i16 ...
-func CalculateDereferences_i16(arg *CXArgument, finalOffset *int, fp int) {
-	CalculateDereferences(arg, finalOffset, fp)
+func CalculateDereferences_i16(arg *CXArgument, finalOffset int, fp int) int {
+	if len(arg.DereferenceOperations) == 0 {
+		panic("0 dereference operations")
+	}
+	return CalculateDereferences(arg, finalOffset, fp)
 }
 
 // CalculateDereferences_i32 ...
-func CalculateDereferences_i32(arg *CXArgument, finalOffset *int, fp int) {
-	CalculateDereferences(arg, finalOffset, fp)
+func CalculateDereferences_i32(arg *CXArgument, finalOffset int, fp int) int {
+	if len(arg.DereferenceOperations) == 0 {
+		panic("0 dereference operations")
+	}
+	return CalculateDereferences(arg, finalOffset, fp)
 }
 
 // CalculateDereferences_i64 ...
-func CalculateDereferences_i64(arg *CXArgument, finalOffset *int, fp int) {
-	CalculateDereferences(arg, finalOffset, fp)
+func CalculateDereferences_i64(arg *CXArgument, finalOffset int, fp int) int {
+	if len(arg.DereferenceOperations) == 0 {
+		panic("0 dereference operations")
+	}
+	return CalculateDereferences(arg, finalOffset, fp)
 }
 
 // CalculateDereferences_ui8 ...
-func CalculateDereferences_ui8(arg *CXArgument, finalOffset *int, fp int) {
-	CalculateDereferences(arg, finalOffset, fp)
+func CalculateDereferences_ui8(arg *CXArgument, finalOffset int, fp int) int {
+	if len(arg.DereferenceOperations) == 0 {
+		panic("0 dereference operations")
+	}
+	return CalculateDereferences(arg, finalOffset, fp)
 }
 
 // CalculateDereferences_ui16 ...
-func CalculateDereferences_ui16(arg *CXArgument, finalOffset *int, fp int) {
-	CalculateDereferences(arg, finalOffset, fp)
+func CalculateDereferences_ui16(arg *CXArgument, finalOffset int, fp int) int {
+	if len(arg.DereferenceOperations) == 0 {
+		panic("0 dereference operations")
+	}
+	return CalculateDereferences(arg, finalOffset, fp)
 }
 
 // CalculateDereferences_ui32 ...
-func CalculateDereferences_ui32(arg *CXArgument, finalOffset *int, fp int) {
-	CalculateDereferences(arg, finalOffset, fp)
+func CalculateDereferences_ui32(arg *CXArgument, finalOffset int, fp int) int {
+	if len(arg.DereferenceOperations) == 0 {
+		panic("0 dereference operations")
+	}
+	return CalculateDereferences(arg, finalOffset, fp)
 }
 
 // CalculateDereferences_ui64 ...
-func CalculateDereferences_ui64(arg *CXArgument, finalOffset *int, fp int) {
-	CalculateDereferences(arg, finalOffset, fp)
+func CalculateDereferences_ui64(arg *CXArgument, finalOffset int, fp int) int {
+	if len(arg.DereferenceOperations) == 0 {
+		panic("0 dereference operations")
+	}
+	return CalculateDereferences(arg, finalOffset, fp)
 }
 
 // CalculateDereferences_f32 ...
-func CalculateDereferences_f32(arg *CXArgument, finalOffset *int, fp int) {
-	CalculateDereferences(arg, finalOffset, fp)
+func CalculateDereferences_f32(arg *CXArgument, finalOffset int, fp int) int {
+	if len(arg.DereferenceOperations) == 0 {
+		panic("0 dereference operations")
+	}
+	return CalculateDereferences(arg, finalOffset, fp)
 }
 
 // CalculateDereferences_f64 ...
-func CalculateDereferences_f64(arg *CXArgument, finalOffset *int, fp int) {
-	CalculateDereferences(arg, finalOffset, fp)
+func CalculateDereferences_f64(arg *CXArgument, finalOffset int, fp int) int {
+	if len(arg.DereferenceOperations) == 0 {
+		panic("0 dereference operations")
+	}
+	return CalculateDereferences(arg, finalOffset, fp)
 }
 
 // CalculateDereferences_str ...
-func CalculateDereferences_str(arg *CXArgument, finalOffset *int, fp int) {
-	CalculateDereferences(arg, finalOffset, fp)
+func CalculateDereferences_str(arg *CXArgument, finalOffset int, fp int) int {
+	if len(arg.DereferenceOperations) == 0 {
+		panic("0 dereference operations")
+	}
+	return CalculateDereferences(arg, finalOffset, fp)
 }
 
 // CalculateDereferences_bool ...
-func CalculateDereferences_bool(arg *CXArgument, finalOffset *int, fp int) {
-	CalculateDereferences(arg, finalOffset, fp)
+func CalculateDereferences_bool(arg *CXArgument, finalOffset int, fp int) int {
+	if len(arg.DereferenceOperations) == 0 {
+		panic("0 dereference operations")
+	}
+	return CalculateDereferences(arg, finalOffset, fp)
 }
