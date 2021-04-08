@@ -34,7 +34,7 @@ func GetDerefSize(arg *CXArgument) int {
 // GetDerefSize ...
 func GetDerefSize(arg *CXArgument) int {
 	if arg.CustomType != nil {
-		return arg.CustomType.Size
+		return arg.CustomType.Size //TODO: WTF is a custom type?
 	}
 	return arg.Size
 }
@@ -88,7 +88,7 @@ func CalculateDereferences(arg *CXArgument, finalOffset *int, fp int) {
 
 			baseOffset = *finalOffset
 			sizeofElement = subSize * sizeToUse
-			*finalOffset += int(ReadI32(fp, arg.Indexes[idxCounter])) * sizeofElement
+			*finalOffset += int(ReadI32(fp, arg.Indexes[idxCounter])) * sizeofElement //TODO: FIX INTEGER CAST
 			idxCounter++
 		case constants.DEREF_POINTER:
 			isPointer = true
@@ -98,7 +98,7 @@ func CalculateDereferences(arg *CXArgument, finalOffset *int, fp int) {
 			byts = PROGRAM.Memory[*finalOffset : *finalOffset+constants.TYPE_POINTER_SIZE]
 
 			offset = helper.Deserialize_i32(byts)
-			*finalOffset = int(offset)
+			*finalOffset = int(offset) //TODO: FIX INTEGER CAST
 		}
 
 	}
