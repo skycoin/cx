@@ -52,11 +52,11 @@ func GetFinalOffset(fp int, arg *CXArgument) int {
 	//TODO: Eliminate this loop
 	//Q: How can CalculateDereferences change offset?
 	//Why is finalOffset fed in as a pointer?
-	CalculateDereferences(arg, &finalOffset, fp)
+	finalOffset = CalculateDereferences(arg, finalOffset, fp)
 	for _, fld := range arg.Fields {
 		// elt = fld
 		finalOffset += fld.Offset
-		CalculateDereferences(fld, &finalOffset, fp)
+		finalOffset = CalculateDereferences(fld, finalOffset, fp)
 	}
 
 	return finalOffset
@@ -107,7 +107,7 @@ func GetOffsetAtomic(fp int, arg *CXArgument) int {
 
 	if ENHANCED_DEBUGING {
 		offset1 := finalOffset //save value
-		CalculateDereferences(arg, &offset1, fp)
+		finalOffset = CalculateDereferences(arg, offset1, fp)
 		if offset1 != finalOffset {
 			log.Panicf("fix_mem3.go, GetOffsetAtomic(), offfset1 != finalOffset, offset1= %d, finalOffset= %d \n", offset1, finalOffset)
 		}
