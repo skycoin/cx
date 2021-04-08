@@ -21,15 +21,6 @@ import (
 //TODO: For int32, f32, etc, this function should not be called at all
 //reduce loops and switches in op code execution flow path
 
-/*
-// GetDerefSize ...
-func GetDerefSize(arg *CXArgument) int {
-	if arg.CustomType != nil {
-		return arg.CustomType.Size
-	}
-	return arg.Size
-}
-*/
 
 // GetDerefSize ...
 func GetDerefSize(arg *CXArgument) int {
@@ -48,7 +39,7 @@ func CalculateDereferences(arg *CXArgument, finalOffset *int, fp int) {
 	idxCounter := 0
 	for _, op := range arg.DereferenceOperations {
 		switch op {
-		case constants.DEREF_SLICE:
+		case constants.DEREF_SLICE: //TODO: Move to CalculateDereference_slice
 			if len(arg.Indexes) == 0 {
 				continue
 			}
@@ -68,14 +59,16 @@ func CalculateDereferences(arg *CXArgument, finalOffset *int, fp int) {
 			*finalOffset += constants.OBJECT_HEADER_SIZE
 			*finalOffset += constants.SLICE_HEADER_SIZE
 
-			sizeToUse := GetDerefSize(arg) //GetDerefSize
+			//TODO: delete
+			sizeToUse := GetDerefSize(arg) //TODO: is always arg.Size unless arg.CustomType != nil
 			*finalOffset += int(ReadI32(fp, arg.Indexes[idxCounter])) * sizeToUse
 			if !IsValidSliceIndex(baseOffset, *finalOffset, sizeToUse) {
 				panic(constants.CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)
 			}
 
 			idxCounter++
-		case constants.DEREF_ARRAY:
+
+		case constants.DEREF_ARRAY: //TODO: Move to CalculateDereference_array
 			if len(arg.Indexes) == 0 {
 				continue
 			}
@@ -84,13 +77,14 @@ func CalculateDereferences(arg *CXArgument, finalOffset *int, fp int) {
 				subSize *= len
 			}
 
-			sizeToUse := GetDerefSize(arg) //GetDerefSize
+			//TODO: Delete
+			sizeToUse := GetDerefSize(arg) //TODO: is always arg.Size unless arg.CustomType != nil
 
 			baseOffset = *finalOffset
 			sizeofElement = subSize * sizeToUse
 			*finalOffset += int(ReadI32(fp, arg.Indexes[idxCounter])) * sizeofElement //TODO: FIX INTEGER CAST
 			idxCounter++
-		case constants.DEREF_POINTER:
+		case constants.DEREF_POINTER: //TODO: Move to CalculateDereference_ptr
 			isPointer = true
 			var offset int32
 			var byts []byte
