@@ -64,6 +64,7 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 
 		// if it's a native, then we just process the arguments with execNative
 
+		//TODO: WHEN WOULD OPERATOR EVER BE NIL?
 		if expr.Operator == nil {
 			// then it's a declaration
 			// wiping this declaration's memory (removing garbage)
@@ -75,6 +76,8 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 			}
 			call.Line++
 		} else if expr.Operator.IsAtomic {
+			//TODO: SLICES ARE NON ATOMIC
+
 			fp := call.FramePointer
 			if IsOperator(expr.Operator.OpCode) {
 				// TODO: resolve this at compile time
@@ -146,7 +149,8 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 			}
 
 			call.Line++
-        } else {
+        } else { //NON-ATOMIC OPERATOR
+        	panic("BULLSHIT")
 			/*
 			   It was not a native, so we need to create another call
 			   with the current expression's operator
