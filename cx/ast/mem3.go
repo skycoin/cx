@@ -200,3 +200,43 @@ func GetOffset_bool(fp int, arg *CXArgument) int {
 func GetOffset_str(fp int, arg *CXArgument) int {
 	return GetFinalOffset(fp, arg)
 }
+
+// GetOffset_slice ...
+func GetOffset_slice(fp int, arg *CXArgument) int {
+	finalOffset := arg.Offset
+
+	if finalOffset < PROGRAM.StackSize {
+		// Then it's in the stack, not in data or heap and we need to consider the frame pointer.
+		finalOffset += fp
+	}
+
+	CalculateDereferences_slice(arg, &finalOffset, fp)
+	for _, fld := range arg.Fields {
+		// elt = fld
+		finalOffset += fld.Offset
+		CalculateDereferences_slice(fld, &finalOffset, fp)
+	}
+
+	return finalOffset
+}
+
+// GetOffset_ptr ...
+func GetOffset_ptr(fp int, arg *CXArgument) int {
+	// defer RuntimeError(PROGRAM)
+	// var elt *CXArgument
+	finalOffset := arg.Offset
+
+	//Todo: find way to eliminate this check
+	if finalOffset < PROGRAM.StackSize {
+		// Then it's in the stack, not in data or heap and we need to consider the frame pointer.
+		finalOffset += fp
+	}
+	CalculateDereferences_ptr(arg, &finalOffset, fp)
+	for _, fld := range arg.Fields {
+		// elt = fld
+		finalOffset += fld.Offset
+		CalculateDereferences_ptr(fld, &finalOffset, fp)
+	}
+
+	return finalOffset
+}
