@@ -150,7 +150,9 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 
 			call.Line++
         } else { //NON-ATOMIC OPERATOR
-        	panic("BULLSHIT")
+        	//TODO: Is this only called for user defined functions?
+        	
+        	//panic("BULLSHIT")
 			/*
 			   It was not a native, so we need to create another call
 			   with the current expression's operator
