@@ -6,18 +6,19 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"github.com/skycoin/cx/cx/ast"
-	"github.com/skycoin/cx/cx/execute"
 	"io"
 	"os"
 	"runtime"
 	"strings"
 	"time"
 
-	"github.com/skycoin/cx/cxgo/actions"
-	"github.com/skycoin/cx/cxgo/cxgo"
-	"github.com/skycoin/cx/cxgo/cxgo0"
-	"github.com/skycoin/cx/cxgo/cxparser"
+	"github.com/skycoin/cx/cx/ast"
+	"github.com/skycoin/cx/cx/execute"
+
+	"github.com/skycoin/cx/parsergenerator/actions"
+	"github.com/skycoin/cx/parsergenerator/cxparser"
+	cxgo "github.com/skycoin/cx/parsergenerator/parsingcompletor"
+	cxgo0 "github.com/skycoin/cx/parsergenerator/partialparsing"
 )
 
 const VERSION = "0.8.0"

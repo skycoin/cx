@@ -1,4 +1,4 @@
-package cxgo0
+package parsingcompletor
 
 var KeywordMap map[string]int = map[string]int{
 	"func":      FUNC,
@@ -40,15 +40,7 @@ var KeywordMap map[string]int = map[string]int{
 	":dStack":   DSTACK,
 	":dp":       DPROGRAM,
 	":dProgram": DPROGRAM,
-	//":package":  SPACKAGE,
-	//":struct":   SSTRUCT,
-	//":func":     SFUNC,
 	":rem":      REM,
-	//":step":     STEP,
-	//":tStep":    TSTEP,
-	//":tstep":    TSTEP,
-	//":pStep":    PSTEP,
-	//":pstep":    PSTEP,
 	":aff":      CAFF,
 	"def":       DEF,
 	"clauses":   CLAUSES,

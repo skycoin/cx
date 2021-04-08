@@ -7,8 +7,8 @@ import (
 	"os"
 
 	"github.com/skycoin/cx/cmd/cxplayground/playground"
-	"github.com/skycoin/cx/cxgo/actions"
-	"github.com/skycoin/cx/cxgo/webapi"
+	"github.com/skycoin/cx/parsergenerator/actions"
+	"github.com/skycoin/cx/parsergenerator/webapi"
 )
 
 func main() {

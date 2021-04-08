@@ -1,10 +1,10 @@
-package cxgo
+package parsingcompletor
 
 import (
 	"fmt"
 	"io"
 
-	"github.com/skycoin/cx/cxgo/actions"
+	"github.com/skycoin/cx/parsergenerator/actions"
 )
 
 var DebugLexer bool
@@ -27,9 +27,11 @@ func (yylex *Lexer) Next() int {
 	return yylex.tok.yys
 }
 
-// func (yylex *Lexer) Stop() {
-// 	// yylex.stop() //bug???? # https://github.com/skycoin/cx/issues/529
-// }
+/* func (yylex *Lexer) Stop() {
+
+	yylex.stop() //bug???? # https://github.com/skycoin/cx/issues/529
+ }
+*/
 
 func NewLexer(rdr io.Reader) *Lexer {
 	lx := &Lexer{}
@@ -68,8 +70,3 @@ func (lval *yySymType) scancopy(tok *yySymType) {
 	lval.ui8 = tok.ui8
 	lval.yys = tok.yys
 }
-
-//Warning Unused
-//is duplicated in cxparser/cxgo0/lexer.go, also unused
-
-

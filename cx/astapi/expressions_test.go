@@ -6,7 +6,7 @@ import (
 	cxast "github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/astapi"
 	cxconstants "github.com/skycoin/cx/cx/constants"
-	"github.com/skycoin/cx/cxgo/cxgo"
+	cxgo "github.com/skycoin/cx/parsergenerator/parsingcompletor"
 )
 
 func TestASTAPI_Expressions(t *testing.T) {

@@ -7,7 +7,7 @@ import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	globals2 "github.com/skycoin/cx/cx/globals"
-	"github.com/skycoin/cx/cxgo/globals"
+	"github.com/skycoin/cx/parsergenerator/globals"
 )
 
 // DeclareGlobal creates a global variable in the current package.

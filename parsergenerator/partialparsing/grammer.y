@@ -1,12 +1,12 @@
 %{
-	package cxgo0
+	package partialparsing
 	import (
 		// "fmt"
 		"bytes"
 		// "os"
 	    "github.com/skycoin/cx/cx/ast"
 	    "github.com/skycoin/cx/cx/constants"
-		"github.com/skycoin/cx/cxgo/actions"
+		"github.com/skycoin/cx/parsergenerator/actions"
 	)
 
         /*

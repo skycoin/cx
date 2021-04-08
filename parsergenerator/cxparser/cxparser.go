@@ -12,12 +12,12 @@ import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	globals2 "github.com/skycoin/cx/cx/globals"
-	"github.com/skycoin/cx/cxgo/globals"
+	"github.com/skycoin/cx/parsergenerator/globals"
 
-	"github.com/skycoin/cx/cxgo/actions"
-	"github.com/skycoin/cx/cxgo/cxgo"
-	"github.com/skycoin/cx/cxgo/cxgo0"
-	"github.com/skycoin/cx/cxgo/util/profiling"
+	"github.com/skycoin/cx/parsergenerator/actions"
+	cxgo "github.com/skycoin/cx/parsergenerator/parsingcompletor"
+	cxgo0 "github.com/skycoin/cx/parsergenerator/partialparsing"
+	"github.com/skycoin/cx/parsergenerator/util/profiling"
 )
 
 // ParseSourceCode takes a group of files representing CX `sourceCode` and
