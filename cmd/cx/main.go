@@ -9,9 +9,9 @@ import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/execute"
-	"github.com/skycoin/cx/parsergenerator/actions"
-	"github.com/skycoin/cx/parsergenerator/parsingcompletor"
-	"github.com/skycoin/cx/parsergenerator/util/profiling"
+	"github.com/skycoin/cx/cxparsergenerator/actions"
+	parsingcompletor "github.com/skycoin/cx/cxparsergenerator/cxparsingcompletor"
+	"github.com/skycoin/cx/cxparsergenerator/util/profiling"
 )
 
 func main() {

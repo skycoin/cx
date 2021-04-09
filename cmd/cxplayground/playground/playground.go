@@ -15,11 +15,11 @@ import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/execute"
 
-	"github.com/skycoin/cx/parsergenerator/actions"
-	"github.com/skycoin/cx/parsergenerator/cxparser"
+	"github.com/skycoin/cx/cxparsergenerator/actions"
+	"github.com/skycoin/cx/cxparsergenerator/cxparser"
 
-	cxgo "github.com/skycoin/cx/parsergenerator/parsingcompletor"
-	cxgo0 "github.com/skycoin/cx/parsergenerator/partialparsing"
+	cxparsingcompletor "github.com/skycoin/cx/cxparsergenerator/cxparsingcompletor"
+	cxpartialparsing "github.com/skycoin/cx/cxparsergenerator/cxpartialparsing"
 )
 
 var (
@@ -131,8 +131,8 @@ func RunProgram(w http.ResponseWriter, r *http.Request) {
 }
 
 func unsafeeval(code string) (out string) {
-	var lexer *cxgo.Lexer
-	defer func(lexer *cxgo.Lexer) {
+	var lexer *cxparsingcompletor.Lexer
+	defer func(lexer *cxparsingcompletor.Lexer) {
 		if r := recover(); r != nil {
 			out = fmt.Sprintf("%v", r)
 			// lexer.Stop()
@@ -151,14 +151,14 @@ func unsafeeval(code string) (out string) {
 	actions.LineNo = 0
 
 	actions.AST = ast.MakeProgram()
-	cxgo0.PRGRM0 = actions.AST
+	cxpartialparsing.Program = actions.AST
 
-	cxgo0.Parse(code)
+	cxpartialparsing.Parse(code)
 
-	actions.AST = cxgo0.PRGRM0
+	actions.AST = cxpartialparsing.Program
 
-	lexer = cxgo.NewLexer(bytes.NewBufferString(code))
-	cxgo.Parse(lexer)
+	lexer = cxparsingcompletor.NewLexer(bytes.NewBufferString(code))
+	cxparsingcompletor.Parse(lexer)
 	//yyParse(lexer)
 
 	err = cxparser.AddInitFunction(actions.AST)

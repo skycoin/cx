@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/skycoin/cx/parsergenerator/actions"
+	"github.com/skycoin/cx/cxparsergenerator/actions"
 )
 
 var DebugLexer bool

@@ -12,12 +12,12 @@ import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	globals2 "github.com/skycoin/cx/cx/globals"
-	"github.com/skycoin/cx/parsergenerator/globals"
+	"github.com/skycoin/cx/cxparsergenerator/globals"
 
-	"github.com/skycoin/cx/parsergenerator/actions"
-	cxgo "github.com/skycoin/cx/parsergenerator/parsingcompletor"
-	cxgo0 "github.com/skycoin/cx/parsergenerator/partialparsing"
-	"github.com/skycoin/cx/parsergenerator/util/profiling"
+	"github.com/skycoin/cx/cxparsergenerator/actions"
+	cxparsingcompletor "github.com/skycoin/cx/cxparsergenerator/cxparsingcompletor"
+	cxpartialparsing "github.com/skycoin/cx/cxparsergenerator/cxpartialparsing"
+	"github.com/skycoin/cx/cxparsergenerator/util/profiling"
 )
 
 // ParseSourceCode takes a group of files representing CX `sourceCode` and
@@ -25,7 +25,7 @@ import (
 func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 
 	//local
-	cxgo0.PRGRM0 = actions.AST
+	cxpartialparsing.Program = actions.AST
 
 	// Copy the contents of the file pointers containing the CX source
 	// code into sourceCodeCopy
@@ -39,7 +39,7 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 	// We need to traverse the elements by hierarchy first add all the
 	// packages and structs at the same time then add globals, as these
 	// can be of a custom type (and it could be imported) the signatures
-	// of functions and methods are added in the cxgo0.y pass
+	// of functions and methods are added in the cxpartialparsing.y pass
 	parseErrors := 0
 	if len(sourceCode) > 0 {
 		parseErrors = lexerStep0(sourceCodeCopy, fileNames)
@@ -48,7 +48,7 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 	//package level program
 	actions.AST.SetCurrentCxProgram()
 
-	actions.AST = cxgo0.PRGRM0
+	actions.AST = cxpartialparsing.Program
 
 	if globals2.FoundCompileErrors || parseErrors > 0 {
 		profiling.CleanupAndExit(constants.CX_COMPILATION_ERROR)
@@ -82,7 +82,7 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 			actions.CurrentFile = fileNames[i]
 		}
 		profiling.StartProfile(actions.CurrentFile)
-		parseErrors += cxgo.Parse(cxgo.NewLexer(b))
+		parseErrors += cxparsingcompletor.Parse(cxparsingcompletor.NewLexer(b))
 
 		profiling.StopProfile(actions.CurrentFile)
 	}
@@ -95,7 +95,7 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 }
 
 // lexerStep0 performs a first pass for the CX cxgo. Globals, packages and
-// custom types are added to `cxgo0.PRGRM0`.
+// custom types are added to `cxpartialparsing.Program`.
 func lexerStep0(srcStrs, srcNames []string) int {
 	var prePkg *ast.CXPackage
 	parseErrors := 0
@@ -159,10 +159,10 @@ func lexerStep0(srcStrs, srcNames []string) int {
 				}
 
 				if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
-					if pkg, err := cxgo0.PRGRM0.GetPackage(match[len(match)-1]); err != nil {
+					if pkg, err := cxpartialparsing.Program.GetPackage(match[len(match)-1]); err != nil {
 						// then it hasn't been added
 						newPkg := ast.MakePackage(match[len(match)-1])
-						cxgo0.PRGRM0.AddPackage(newPkg)
+						cxpartialparsing.Program.AddPackage(newPkg)
 						prePkg = newPkg
 					} else {
 						prePkg = pkg
@@ -183,7 +183,7 @@ func lexerStep0(srcStrs, srcNames []string) int {
 					if prePkg == nil {
 						println(ast.CompilationError(srcName, lineno),
 							"No package defined")
-					} else if _, err := cxgo0.PRGRM0.GetStruct(match[len(match)-1], prePkg.Name); err != nil {
+					} else if _, err := cxpartialparsing.Program.GetStruct(match[len(match)-1], prePkg.Name); err != nil {
 						// then it hasn't been added
 						strct := ast.MakeStruct(match[len(match)-1])
 						prePkg.AddStruct(strct)
@@ -241,7 +241,7 @@ func lexerStep0(srcStrs, srcNames []string) int {
 				if match := reImpName.FindStringSubmatch(string(line)); match != nil {
 					pkgName := match[len(match)-1]
 					// Checking if `pkgName` already exists and if it's not a standard library package.
-					if _, err := cxgo0.PRGRM0.GetPackage(pkgName); err != nil && !constants.IsCorePackage(pkgName) {
+					if _, err := cxpartialparsing.Program.GetPackage(pkgName); err != nil && !constants.IsCorePackage(pkgName) {
 						// _, sourceCode, srcNames := ParseArgsForCX([]string{fmt.Sprintf("%s%s", SRCPATH, pkgName)}, false)
 						_, sourceCode, fileNames := ast.ParseArgsForCX([]string{filepath.Join(globals2.SRCPATH, pkgName)}, false)
 						ParseSourceCode(sourceCode, fileNames)
@@ -259,10 +259,10 @@ func lexerStep0(srcStrs, srcNames []string) int {
 				}
 
 				if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
-					if pkg, err := cxgo0.PRGRM0.GetPackage(match[len(match)-1]); err != nil {
+					if pkg, err := cxpartialparsing.Program.GetPackage(match[len(match)-1]); err != nil {
 						// then it hasn't been added
 						prePkg = ast.MakePackage(match[len(match)-1])
-						cxgo0.PRGRM0.AddPackage(prePkg)
+						cxpartialparsing.Program.AddPackage(prePkg)
 					} else {
 						prePkg = pkg
 					}
@@ -310,7 +310,7 @@ func lexerStep0(srcStrs, srcNames []string) int {
 				}
 
 				if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
-					if pkg, err := cxgo0.PRGRM0.GetPackage(match[len(match)-1]); err != nil {
+					if pkg, err := cxpartialparsing.Program.GetPackage(match[len(match)-1]); err != nil {
 						// it should be already present
 						panic(err)
 					} else {
@@ -344,21 +344,20 @@ func lexerStep0(srcStrs, srcNames []string) int {
 	}
 	profiling.StopProfile("2. globals")
 
-	profiling.StartProfile("3. cxgo0")
-	// cxgo0.Parse(allSC)
+	profiling.StartProfile("3. cxpartialparsing")
 
 	for i, source := range srcStrs {
 		profiling.StartProfile(srcNames[i])
 		source = source + "\n"
 		if len(srcNames) > 0 {
-			cxgo0.CurrentFileName = srcNames[i]
+			cxpartialparsing.CurrentFileName = srcNames[i]
 		}
 		//Parse calls yyParse
-		parseErrors += cxgo0.Parse(source)
+		parseErrors += cxpartialparsing.Parse(source)
 		profiling.StopProfile(srcNames[i])
 	}
 
-	profiling.StopProfile("3. cxgo0")
+	profiling.StopProfile("3. cxpartialparsing")
 	return parseErrors
 }
 

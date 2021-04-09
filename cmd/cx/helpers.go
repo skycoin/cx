@@ -13,10 +13,10 @@ import (
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/globals"
 	"github.com/skycoin/cx/cx/util"
-	"github.com/skycoin/cx/parsergenerator/actions"
-	"github.com/skycoin/cx/parsergenerator/cxparser"
-	cxgo "github.com/skycoin/cx/parsergenerator/parsingcompletor"
-	"github.com/skycoin/cx/parsergenerator/util/profiling"
+	"github.com/skycoin/cx/cxparsergenerator/actions"
+	"github.com/skycoin/cx/cxparsergenerator/cxparser"
+	cxgo "github.com/skycoin/cx/cxparsergenerator/cxparsingcompletor"
+	"github.com/skycoin/cx/cxparsergenerator/util/profiling"
 )
 
 func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File) bool {
