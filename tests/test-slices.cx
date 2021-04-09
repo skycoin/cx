@@ -208,15 +208,15 @@ func testAppend() {
 	test(slc9[5], 115B, "")
 
 	var slc11 []str
-	slc11 = append(slc11, "hello world", "")
-	slc11 = append(slc11, "bye oh cruel world", "")
+	slc11 = append(slc11, "hello world")
+	slc11 = append(slc11, "bye oh cruel world")
 
 	test(slc11[0], "hello world", "")
 	test(slc11[1], "bye oh cruel world", "")
 
 	var slc12 []str
-	slc12 = append(slc11, "1", "")
-	slc12 = append(slc12, "22", "")
+	slc12 = append(slc11, "1")
+	slc12 = append(slc12, "22")
 
 	test(slc12[0], "hello world", "")
 	test(slc12[1], "bye oh cruel world", "")

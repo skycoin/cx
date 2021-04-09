@@ -103,13 +103,13 @@ func trueJmpExpressions() []*ast.CXExpression {
 
 func BreakExpressions() []*ast.CXExpression {
 	exprs := trueJmpExpressions()
-	exprs[0].ExpressionType = ast.CXEXPR_BREAK
+	exprs[0].SetExpressionType(ast.CXEXPR_BREAK)
 	return exprs
 }
 
 func ContinueExpressions() []*ast.CXExpression {
 	exprs := trueJmpExpressions()
-	exprs[0].ExpressionType = ast.CXEXPR_CONTINUE
+	exprs[0].SetExpressionType(ast.CXEXPR_CONTINUE)
 	return exprs
 }
 
@@ -240,7 +240,7 @@ func UndefinedTypeOperation(leftExprs []*ast.CXExpression, rightExprs []*ast.CXE
 
 	expr := ast.MakeExpression(operator, CurrentFile, LineNo)
 	// we can't know the type until we compile the full function
-	expr.ExpressionType = ast.CXEXPR_UND_TYPE
+	expr.SetExpressionType(ast.CXEXPR_UND_TYPE)
 	expr.Package = pkg
 
 	if len(leftExprs[len(leftExprs)-1].Outputs[0].Indexes) > 0 || leftExprs[len(leftExprs)-1].Operator != nil {
@@ -416,17 +416,12 @@ func AddJmpToReturnExpressions(exprs ReturnExpressions) []*ast.CXExpression {
 	}
 
 	// expression to jump to the end of the embedding function
-	expr := ast.MakeExpression(ast.Natives[constants.OP_JMP], CurrentFile, LineNo)
+	expr := ast.MakeExpression(ast.Natives[constants.OP_GOTO], CurrentFile, LineNo)
 
 	// simulating a label so it gets executed without evaluating a predicate
 	expr.Label = globals.MakeGenSym(constants.LABEL_PREFIX)
 	expr.ThenLines = constants.MAX_INT32
 	expr.Package = pkg
-
-	arg := ast.MakeArgument("", CurrentFile, LineNo).AddType("bool")
-	arg.Package = pkg
-
-	expr.AddInput(arg)
 
 	retExprs = append(retExprs, expr)
 

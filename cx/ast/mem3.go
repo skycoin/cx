@@ -20,6 +20,16 @@ var ENHANCED_DEBUGING4 bool = false
 //GetfinalOffsetI16
 //ETC
 
+/*
+	if ENHANCED_DEBUGING4 {
+		if !(arg.IsPointer) && (arg.Type == constants.TYPE_F32 || arg.Type == constants.TYPE_F64 ||
+			arg.Type == constants.TYPE_UI8 || arg.Type == constants.TYPE_UI16 || arg.Type == constants.TYPE_UI32 || arg.Type == constants.TYPE_UI64 ||
+			arg.Type == constants.TYPE_I8 || arg.Type == constants.TYPE_I16 || arg.Type == constants.TYPE_I32 || arg.Type == constants.TYPE_I64) {
+			panic("arg is in invalid format")
+		}
+	}
+*/
+
 //TODO: Delete this eventually
 func GetFinalOffset(fp int, arg *CXArgument) int {
 
@@ -29,20 +39,7 @@ func GetFinalOffset(fp int, arg *CXArgument) int {
 		}
 	}
 
-	if ENHANCED_DEBUGING4 {
-		if !(arg.IsPointer) && (arg.Type == constants.TYPE_F32 || arg.Type == constants.TYPE_F64 ||
-			arg.Type == constants.TYPE_UI8 || arg.Type == constants.TYPE_UI16 || arg.Type == constants.TYPE_UI32 || arg.Type == constants.TYPE_UI64 ||
-			arg.Type == constants.TYPE_I8 || arg.Type == constants.TYPE_I16 || arg.Type == constants.TYPE_I32 || arg.Type == constants.TYPE_I64) {
-			panic("arg is in invalid format")
-		}
-	}
-
-	// defer RuntimeError(PROGRAM)
-	// var elt *CXArgument
 	finalOffset := arg.Offset
-	// var fldIdx int
-
-	// elt = arg
 
 	//Todo: find way to eliminate this check
 	if finalOffset < PROGRAM.StackSize {
@@ -55,11 +52,11 @@ func GetFinalOffset(fp int, arg *CXArgument) int {
 	//TODO: Eliminate this loop
 	//Q: How can CalculateDereferences change offset?
 	//Why is finalOffset fed in as a pointer?
-	CalculateDereferences(arg, &finalOffset, fp)
+	finalOffset = CalculateDereferences(arg, finalOffset, fp)
 	for _, fld := range arg.Fields {
 		// elt = fld
 		finalOffset += fld.Offset
-		CalculateDereferences(fld, &finalOffset, fp)
+		finalOffset = CalculateDereferences(fld, finalOffset, fp)
 	}
 
 	return finalOffset
@@ -110,7 +107,7 @@ func GetOffsetAtomic(fp int, arg *CXArgument) int {
 
 	if ENHANCED_DEBUGING {
 		offset1 := finalOffset //save value
-		CalculateDereferences(arg, &offset1, fp)
+		finalOffset = CalculateDereferences(arg, offset1, fp)
 		if offset1 != finalOffset {
 			log.Panicf("fix_mem3.go, GetOffsetAtomic(), offfset1 != finalOffset, offset1= %d, finalOffset= %d \n", offset1, finalOffset)
 		}
@@ -202,4 +199,44 @@ func GetOffset_bool(fp int, arg *CXArgument) int {
 // GetOffset_str ...
 func GetOffset_str(fp int, arg *CXArgument) int {
 	return GetFinalOffset(fp, arg)
+}
+
+// GetOffset_slice ...
+func GetOffset_slice(fp int, arg *CXArgument) int {
+	finalOffset := arg.Offset
+
+	if finalOffset < PROGRAM.StackSize {
+		// Then it's in the stack, not in data or heap and we need to consider the frame pointer.
+		finalOffset += fp
+	}
+
+	CalculateDereferences_ptr(arg, &finalOffset, fp)
+	for _, fld := range arg.Fields {
+		// elt = fld
+		finalOffset += fld.Offset
+		CalculateDereferences_ptr(fld, &finalOffset, fp)
+	}
+
+	return finalOffset
+}
+
+// GetOffset_ptr ...
+func GetOffset_ptr(fp int, arg *CXArgument) int {
+	// defer RuntimeError(PROGRAM)
+	// var elt *CXArgument
+	finalOffset := arg.Offset
+
+	//Todo: find way to eliminate this check
+	if finalOffset < PROGRAM.StackSize {
+		// Then it's in the stack, not in data or heap and we need to consider the frame pointer.
+		finalOffset += fp
+	}
+	CalculateDereferences_ptr(arg, &finalOffset, fp)
+	for _, fld := range arg.Fields {
+		// elt = fld
+		finalOffset += fld.Offset
+		CalculateDereferences_ptr(fld, &finalOffset, fp)
+	}
+
+	return finalOffset
 }

@@ -28,8 +28,9 @@ func init() {
 	ast.PROGRAM.AddPackage(netPkg)
 }
 
-func opTCPDial(expr *ast.CXExpression, fp int) {
-	network, address, errorstring := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
+func opTCPDial(inputs []ast.CXValue, outputs []ast.CXValue) {
+	network, address, errorstring := inputs[0].Arg, inputs[1].Arg, outputs[0].Arg
+    fp := inputs[0].FramePointer
 
 	log.Println("network", network)
 	log.Println("address", address)
@@ -44,17 +45,18 @@ func opTCPDial(expr *ast.CXExpression, fp int) {
 	conn.Close()
 }
 
-func opTCPClose(expr *ast.CXExpression, fp int) {
+func opTCPClose(inputs []ast.CXValue, outputs []ast.CXValue) {
 	ln.Close()
 }
 
-func opTCPAccept(expr *ast.CXExpression, fp int) {
+func opTCPAccept(inputs []ast.CXValue, outputs []ast.CXValue) {
 	conn, _ = ln.Accept()
 	conn.Close()
 }
 
-func opTCPListen(expr *ast.CXExpression, fp int) {
-	network, address, errorstring := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
+func opTCPListen(inputs []ast.CXValue, outputs []ast.CXValue) {
+	network, address, errorstring := inputs[0].Arg, inputs[1].Arg, outputs[0].Arg
+    fp := inputs[0].FramePointer
 
 	log.Println("network", network)
 	log.Println("address", address)

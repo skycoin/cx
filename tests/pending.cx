@@ -1,0 +1,6 @@
+package main
+
+func main()() {
+    var si []i32
+    si = append(si, 0, 0)
+}
