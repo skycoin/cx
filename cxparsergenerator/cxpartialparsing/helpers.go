@@ -1,4 +1,4 @@
-package cxgo0
+package partialparsing
 
 import (
 	"fmt"
@@ -188,13 +188,13 @@ var tokenNames = map[int]string{
 	CONTINUE:     "CONTINUE",
 	TYPE:         "TYPE",
 
-	// Types 
+	// Types
 	BASICTYPE: "BASICTYPE",
-	// Selectors 
+	// Selectors
 	SPACKAGE: "SPACKAGE",
 	SSTRUCT:  "SSTRUCT",
 	SFUNC:    "SFUNC",
-	// Removers 
+	// Removers
 	REM:     "REM",
 	DEF:     "DEF",
 	EXPR:    "EXPR",
@@ -202,21 +202,21 @@ var tokenNames = map[int]string{
 	CLAUSES: "CLAUSES",
 	OBJECT:  "OBJECT",
 	OBJECTS: "OBJECTS",
-	// Stepping 
+	// Stepping
 	STEP:  "STEP",
 	PSTEP: "PSTEP",
 	TSTEP: "TSTEP",
-	// Debugging 
+	// Debugging
 	DSTACK:   "DSTACK",
 	DPROGRAM: "DPROGRAM",
 	DSTATE:   "DSTATE",
-	// Affordances 
+	// Affordances
 	AFF:   "AFF",
 	CAFF:  "CAFF",
 	TAG:   "TAG",
 	INFER: "INFER",
 	VALUE: "VALUE",
-	// Pointers 
+	// Pointers
 	ADDR: "ADDR",
 }
 */

@@ -1,8 +1,6 @@
 package main
 
 import (
-	//. "github.com/skycoin/cx/cxparser"
-
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -10,7 +8,7 @@ import (
 	"os"
 	"strconv"
 
-	. "github.com/skycoin/cx/cxgo/cxgo"
+	. "github.com/skycoin/cx/cxparsergenerator/cxparsingcompletor"
 )
 
 var tbits int = 4

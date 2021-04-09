@@ -1,15 +1,14 @@
-package cxgo0
+package partialparsing
 
 import (
 	"fmt"
-	"github.com/skycoin/cx/cx/constants"
-
-	//"github.com/skycoin/cx/cxgo/globals"
 	"io"
 	"os"
 	"strconv"
 	"unicode"
 	"unicode/utf8"
+
+	"github.com/skycoin/cx/cx/constants"
 )
 
 type Lexer struct {

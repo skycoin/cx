@@ -1,12 +1,12 @@
 %{
-	package cxgo0
+	package partialparsing
 	import (
 		// "fmt"
 		"bytes"
 		// "os"
 	    "github.com/skycoin/cx/cx/ast"
 	    "github.com/skycoin/cx/cx/constants"
-		"github.com/skycoin/cx/cxgo/actions"
+		"github.com/skycoin/cx/cxparsergenerator/actions"
 	)
 
         /*
@@ -15,7 +15,7 @@
         - ./bin/goyacc -o cxgo/cxgo0/cxgo0.go cxgo/cxgo0/cxgo0.y
         */
 
-	var PRGRM0 *ast.CXProgram
+	var Program *ast.CXProgram
 
 	var lineNo int = -1
 	var replMode bool = false
@@ -221,7 +221,7 @@ import_declaration:
 function_header:
                 FUNC IDENTIFIER
                 {
-			if pkg, err := PRGRM0.GetCurrentPackage(); err == nil {
+			if pkg, err := Program.GetCurrentPackage(); err == nil {
 				fn := ast.MakeFunction($2, CurrentFileName, lineNo)
 				pkg.AddFunction(fn)
 
@@ -238,7 +238,7 @@ function_header:
 
 			fnName := $3[0].CustomType.Name + "." + $5
 
-			if pkg, err := PRGRM0.GetCurrentPackage(); err == nil {
+			if pkg, err := Program.GetCurrentPackage(); err == nil {
 				fn := ast.MakeFunction(fnName, CurrentFileName, lineNo)
 				pkg.AddFunction(fn)
 
@@ -306,7 +306,7 @@ declarator:     direct_declarator
 direct_declarator:
                 IDENTIFIER
                 {
-			if pkg, err := PRGRM0.GetCurrentPackage(); err == nil {
+			if pkg, err := Program.GetCurrentPackage(); err == nil {
 				arg := ast.MakeArgument("", actions.CurrentFile, actions.LineNo)
 				arg.AddType(constants.TypeNames[constants.TYPE_UNDEFINED])
 				arg.Name = $1

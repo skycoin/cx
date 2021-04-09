@@ -1,4 +1,4 @@
-package cxgo
+package parsingcompletor
 
 import (
 	"fmt"
