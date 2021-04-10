@@ -64,7 +64,7 @@ func RunCxAst(cxprogram *ast.CXProgram, untilEnd bool, nCalls *int, untilCall in
 			if toCall.Operator == nil {
 				// then it's a declaration
 				toCallName = "declaration"
-			} else if toCall.Operator.IsAtomic {
+			} else if toCall.Operator.IsBuiltin {
 				toCallName = ast.OpNames[toCall.Operator.OpCode]
 			} else {
 				if toCall.Operator.Name != "" {
