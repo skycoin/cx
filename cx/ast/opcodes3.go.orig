@@ -6,7 +6,7 @@ package ast
 //not used
 func MakeNativeFunctionV2(opCode int, inputs []*CXArgument, outputs []*CXArgument) *CXFunction {
 	fn := &CXFunction{
-		IsAtomic: true,
+		IsBuiltin: true,
 		OpCode:   opCode,
 		Version:  2,
 	}
@@ -56,7 +56,7 @@ func Op_V2(code int, name string, handler OpcodeHandler_V2, inputs []*CXArgument
 // Only used in one place?
 func MakeNativeFunctionV1(opCode int, inputs []*CXArgument, outputs []*CXArgument) *CXFunction {
 	fn := &CXFunction{
-		IsAtomic: true,
+		IsBuiltin: true,
 		OpCode:   opCode,
 		Version:  1,
 	}

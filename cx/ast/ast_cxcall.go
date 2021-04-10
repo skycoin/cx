@@ -2,6 +2,7 @@ package ast
 
 import (
 	"fmt"
+
 	"github.com/skycoin/cx/cx/constants"
 )
 
@@ -75,7 +76,7 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 				prgrm.Memory[newFP+expr.Outputs[0].Offset+c] = 0
 			}
 			call.Line++
-		} else if expr.Operator.IsAtomic {
+		} else if expr.Operator.IsBuiltin {
 			//TODO: SLICES ARE NON ATOMIC
 
 			fp := call.FramePointer
@@ -126,7 +127,7 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 				argIndex++
 			}
 
-            OpcodeHandlers[expr.Operator.OpCode](inputValues, outputValues)
+			OpcodeHandlers[expr.Operator.OpCode](inputValues, outputValues)
 
 			for inputIndex := 0; inputIndex < inputCount; inputIndex++ { // TODO: remove in release builds
 				if inputValues[inputIndex].Used != int8(inputs[inputIndex].Type) { // TODO: remove cast
@@ -149,10 +150,10 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 			}
 
 			call.Line++
-        } else { //NON-ATOMIC OPERATOR
-        	//TODO: Is this only called for user defined functions?
+		} else { //NON-ATOMIC OPERATOR
+			//TODO: Is this only called for user defined functions?
 
-        	//panic("BULLSHIT")
+			//panic("BULLSHIT")
 			/*
 			   It was not a native, so we need to create another call
 			   with the current expression's operator
