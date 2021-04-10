@@ -20,6 +20,11 @@ import (
 //TODO: For int32, f32, etc, this function should not be called at all
 //reduce loops and switches in op code execution flow path
 
+// readI32 ...
+func readI32(fp int, inp *CXArgument) int32 {
+	return helper.Deserialize_i32(ReadMemory(GetFinalOffset(fp, inp), inp))
+}
+
 // GetDerefSize ...
 func GetDerefSize(arg *CXArgument) int {
 	if arg.CustomType != nil {
@@ -58,7 +63,7 @@ func CalculateDereferences(arg *CXArgument, finalOffset int, fp int) int {
 
 			//TODO: delete
 			sizeToUse := GetDerefSize(arg) //TODO: is always arg.Size unless arg.CustomType != nil
-			finalOffset += int(ReadI32(fp, arg.Indexes[idxCounter])) * sizeToUse
+			finalOffset += int(readI32(fp, arg.Indexes[idxCounter])) * sizeToUse
 			if !IsValidSliceIndex(baseOffset, finalOffset, sizeToUse) {
 				panic(constants.CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)
 			}
@@ -79,7 +84,7 @@ func CalculateDereferences(arg *CXArgument, finalOffset int, fp int) int {
 
 			baseOffset = finalOffset
 			sizeofElement = subSize * sizeToUse
-			finalOffset += int(ReadI32(fp, arg.Indexes[idxCounter])) * sizeofElement //TODO: FIX INTEGER CAST
+			finalOffset += int(readI32(fp, arg.Indexes[idxCounter])) * sizeofElement //TODO: FIX INTEGER CAST
 			idxCounter++
 		case constants.DEREF_POINTER: //TODO: Move to CalculateDereference_ptr
 			isPointer = true
@@ -132,7 +137,7 @@ func CalculateDereferences_array(arg *CXArgument, finalOffset *int, fp int) {
 		sizeToUse := GetDerefSize(arg) //TODO: is always arg.Size unless arg.CustomType != nil
 
 		sizeofElement = subSize * sizeToUse
-		*finalOffset += int(ReadI32(fp, arg.Indexes[idxCounter])) * sizeofElement //TODO: FIX INTEGER CAST
+		*finalOffset += int(readI32(fp, arg.Indexes[idxCounter])) * sizeofElement //TODO: FIX INTEGER CAST
 		idxCounter++
 	}
 }
@@ -168,7 +173,7 @@ func CalculateDereferences_slice(arg *CXArgument, finalOffset *int, fp int) {
 
 		//TODO: delete
 		sizeToUse := GetDerefSize(arg) //TODO: is always arg.Size unless arg.CustomType != nil
-		*finalOffset += int(ReadI32(fp, arg.Indexes[idxCounter])) * sizeToUse
+		*finalOffset += int(readI32(fp, arg.Indexes[idxCounter])) * sizeToUse
 		if !IsValidSliceIndex(baseOffset, *finalOffset, sizeToUse) {
 			panic(constants.CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)
 		}

@@ -218,31 +218,39 @@ func SignatureStringOfFunction(pkg *CXPackage, f *CXFunction) string {
 }
 
 func getNonCollectionValue(fp int, arg, elt *CXArgument, typ string) string {
+    offset := GetFinalOffset(fp, elt)
+	value := CXValue{
+        FramePointer: fp,
+        Offset : offset,
+        memory : ReadMemory(offset, elt),
+        Arg: elt,
+    }
+
 	switch typ {
 	case "bool":
-		return fmt.Sprintf("%v", ReadBool(fp, elt))
+		return fmt.Sprintf("%v", value.Get_bool())
 	case "str":
-		return fmt.Sprintf("%v", ReadStr(fp, elt))
+		return fmt.Sprintf("%v", value.Get_str())
 	case "i8":
-		return fmt.Sprintf("%v", ReadI8(fp, elt))
+		return fmt.Sprintf("%v", value.Get_i8())
 	case "i16":
-		return fmt.Sprintf("%v", ReadI16(fp, elt))
+		return fmt.Sprintf("%v", value.Get_i16())
 	case "i32":
-		return fmt.Sprintf("%v", ReadI32(fp, elt))
+		return fmt.Sprintf("%v", value.Get_i32())
 	case "i64":
-		return fmt.Sprintf("%v", ReadI64(fp, elt))
+		return fmt.Sprintf("%v", value.Get_i64())
 	case "ui8":
-		return fmt.Sprintf("%v", ReadUI8(fp, elt))
+		return fmt.Sprintf("%v", value.Get_ui8())
 	case "ui16":
-		return fmt.Sprintf("%v", ReadUI16(fp, elt))
+		return fmt.Sprintf("%v", value.Get_ui16())
 	case "ui32":
-		return fmt.Sprintf("%v", ReadUI32(fp, elt))
+		return fmt.Sprintf("%v", value.Get_ui32())
 	case "ui64":
-		return fmt.Sprintf("%v", ReadUI64(fp, elt))
+		return fmt.Sprintf("%v", value.Get_ui64())
 	case "f32":
-		return fmt.Sprintf("%v", ReadF32(fp, elt))
+		return fmt.Sprintf("%v", value.Get_f32())
 	case "f64":
-		return fmt.Sprintf("%v", ReadF64(fp, elt))
+		return fmt.Sprintf("%v", value.Get_f64())
 	default:
 		// then it's a struct
 		var val string

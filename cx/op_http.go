@@ -19,6 +19,10 @@ import (
 	"github.com/jinzhu/copier"
 )
 
+func readBool(fp int, inp *ast.CXArgument) bool {
+	return helper.DeserializeBool(ast.ReadMemory(ast.GetFinalOffset(fp, inp), inp))
+}
+
 func init() {
 	httpPkg := ast.MakePackage("http")
 	urlStrct := ast.MakeStruct("URL")
@@ -165,12 +169,12 @@ func opHTTPServe(inputs []ast.CXValue, outputs []ast.CXValue) {
 
 	l, err := net.Listen("tcp", url)
     var errStr string
-	if err != nil {
-        errStr = err.Error()
-	}
-
-	err = http.Serve(l, nil)
-	if err != nil {
+	if err == nil {
+	    err = http.Serve(l, nil)
+        if err != nil {
+            errStr = err.Error()
+	    }
+    } else {
         errStr = err.Error()
 	}
 
@@ -180,42 +184,39 @@ func opHTTPServe(inputs []ast.CXValue, outputs []ast.CXValue) {
 func opHTTPNewRequest(inputs []ast.CXValue, outputs []ast.CXValue) {
 	// TODO: This whole OP needs rewriting/finishing.
 	// Seems more a prototype.
-	stringmethod, stringurl, stringbody, errorstring := inputs[0].Arg, inputs[1].Arg, inputs[2].Arg, outputs[0].Arg
-
-    fp := inputs[0].FramePointer
 
 	//this is an alternative for following 3 lines of code that fail due to URL
-	method := ast.ReadStr(fp, stringmethod)
-	urlString := ast.ReadStr(fp, stringurl)
-	body := ast.ReadStr(fp, stringbody)
+	method := inputs[0].Get_str()
+	urlString := inputs[1].Get_str()
+	body := inputs[2].Get_str()
 
 	//above is an alternative for following 3 lines of code that fail due to URL
+	var errStr string
 	req, err := http.NewRequest(method, urlString, bytes.NewBuffer([]byte(body)))
-	if err != nil {
-		ast.WriteString(fp, err.Error(), errorstring)
+	if err == nil {
+		var netClient = &http.Client{
+			Timeout: time.Second * 30,
+		}
+		resp, err := netClient.Do(req)
+		if err != nil {
+			errStr = err.Error()
+		}
+		resp1 := *resp // dereference to exclude pointer issue
+
+		// TODO issue with returning response,
+		// the line where resp is serialized (byts := encoder.Serialize(resp)) throws following error, adding response object content for context:
+		// &{404 Not Found 404 HTTP/1.1 1 1 map[Content-Length:[19] Content-Type:[text/plain; charset=utf-8] Date:[Sun, 27 Oct 2019 22:10:14 GMT] X-Content-Type-Options:[nosniff]] 0xc0000c8700 19 [] false false map[] 0xc000175400 <nil>}
+		// 2019/10/27 23:10:14 invalid type int
+		// error: examples/http-serve-and-request-mine.cx:8, CX_RUNTIME_ERROR, invalid type int
+		// TODO: Used `Response.Status` for now, to avoid getting an error.
+		// This will be rewritten as the whole operator is unfinished.
+		errStr = resp1.Status
+	} else {
+		errStr = err.Error()
 	}
 
-	var netClient = &http.Client{
-		Timeout: time.Second * 30,
-	}
-	resp, err := netClient.Do(req)
-	if err != nil {
-		ast.WriteString(fp, err.Error(), errorstring)
-	}
-	resp1 := *resp // dereference to exclude pointer issue
 
-	// TODO issue with returning response,
-	// the line where resp is serialized (byts := encoder.Serialize(resp)) throws following error, adding response object content for context:
-	// &{404 Not Found 404 HTTP/1.1 1 1 map[Content-Length:[19] Content-Type:[text/plain; charset=utf-8] Date:[Sun, 27 Oct 2019 22:10:14 GMT] X-Content-Type-Options:[nosniff]] 0xc0000c8700 19 [] false false map[] 0xc000175400 <nil>}
-	// 2019/10/27 23:10:14 invalid type int
-	// error: examples/http-serve-and-request-mine.cx:8, CX_RUNTIME_ERROR, invalid type int
-
-	out1Offset := ast.GetFinalOffset(fp, errorstring)
-
-	// TODO: Used `Response.Status` for now, to avoid getting an error.
-	// This will be rewritten as the whole operator is unfinished.
-	byts := encoder.Serialize(resp1.Status)
-	ast.WriteObject(out1Offset, byts)
+	outputs[0].Set_str(errStr)
 }
 
 func writeHTTPRequest(fp int, param *ast.CXArgument, request *http.Request) {
@@ -414,7 +415,7 @@ func opHTTPDo(inputs []ast.CXValue, outputs []ast.CXValue) {
 	req.Fields = accessURLRawPath
 	url.RawPath = ast.ReadStr(fp, &req)
 	req.Fields = accessURLForceQuery
-	url.ForceQuery = ast.ReadBool(fp, &req)
+	url.ForceQuery = readBool(fp, &req)
 
 	var netClient = &http.Client{
 		Timeout: time.Second * 30,
@@ -494,13 +495,12 @@ func opHTTPDo(inputs []ast.CXValue, outputs []ast.CXValue) {
 }
 
 func opDMSGDo(inputs []ast.CXValue, outputs []ast.CXValue) {
-	inp1, out1 := inputs[0].Arg, outputs[0].Arg
-    fp := inputs[0].FramePointer
-
     var req http.Request
-	byts1 := ast.ReadMemory(ast.GetFinalOffset(fp, inp1), inp1)
+	byts1 := ast.ReadMemory(inputs[0].Offset, inputs[0].Arg)
 	err := encoder.DeserializeRawExact(byts1, &req)
+    var errStr string
 	if err != nil {
-		ast.WriteString(fp, err.Error(), out1)
+        errStr = err.Error()
 	}
+    outputs[0].Set_str(errStr)
 }

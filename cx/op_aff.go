@@ -26,12 +26,10 @@ var ofMessages = map[string]string{
 }
 
 // GetInferActions ...
-func GetInferActions(inp *ast.CXArgument, fp int) []string {
-	inpOffset := ast.GetFinalOffset(fp, inp)
+func GetInferActions(input *ast.CXValue) []string {
+	off := helper.Deserialize_i32(ast.PROGRAM.Memory[input.Offset : input.Offset+constants.TYPE_POINTER_SIZE])
 
-	off := helper.Deserialize_i32(ast.PROGRAM.Memory[inpOffset : inpOffset+constants.TYPE_POINTER_SIZE])
-
-	l := helper.Deserialize_i32(ast.GetSliceHeader(ast.GetSliceOffset(fp, inp))[4:8])
+	l := helper.Deserialize_i32(ast.GetSliceHeader(ast.GetSliceOffset(input.FramePointer, input.Arg))[4:8])
 
 	result := make([]string, l)
 
@@ -54,9 +52,8 @@ func GetInferActions(inp *ast.CXArgument, fp int) []string {
 }
 
 func opAffPrint(inputs []ast.CXValue, outputs []ast.CXValue) {
-	inp1 := inputs[0]
-	fmt.Println(GetInferActions(inp1.Arg, inp1.FramePointer))
-	// for _, aff := range GetInferActions(inp1, fp) {
+	fmt.Println(GetInferActions(&inputs[0]))
+	// for _, aff := range GetInferActions(&inputs[0]) {
 	// 	fmt.Println(aff)
 	// }
 }
@@ -418,9 +415,9 @@ func QueryProgram(fn *ast.CXFunction, expr *ast.CXExpression, prgrmOffsetB []byt
 	}
 }
 
-func getTarget(inp2 *ast.CXArgument, fp int, tgtElt *string, tgtArgType *string, tgtArgIndex *int,
+func getTarget(input *ast.CXValue, tgtElt *string, tgtArgType *string, tgtArgIndex *int,
 	tgtPkg *ast.CXPackage, tgtFn *ast.CXFunction, tgtExpr *ast.CXExpression) {
-	for _, aff := range GetInferActions(inp2, fp) {
+	for _, aff := range GetInferActions(input) {
 		switch aff {
 		case "prgrm":
 			*tgtElt = "prgrm"
@@ -483,13 +480,13 @@ func getTarget(inp2 *ast.CXArgument, fp int, tgtElt *string, tgtArgType *string,
 	}
 }
 
-func getAffordances(inp1 *ast.CXArgument, fp int,
+func getAffordances(input *ast.CXValue,
 	tgtElt string, tgtArgType string, tgtArgIndex int,
 	tgtPkg *ast.CXPackage, tgtFn *ast.CXFunction, tgtExpr *ast.CXExpression,
 	affMsgs map[string]string,
 	affs *[]string) {
 	var fltrElt string
-	elts := GetInferActions(inp1, fp)
+	elts := GetInferActions(input)
 	// for _, elt := range elts {
 	for c := 0; c < len(elts); c++ {
 		elt := elts[c]
@@ -611,15 +608,12 @@ func getAffordances(inp1 *ast.CXArgument, fp int,
 }
 
 func opAffOn(inputs []ast.CXValue, outputs []ast.CXValue) {
-	inp1, inp2 := inputs[0].Arg, inputs[1].Arg
-
 	prevPkg := ast.PROGRAM.CurrentPackage
 	prevFn := prevPkg.CurrentFunction
 	prevExpr := prevFn.CurrentExpression
 
 	call := ast.PROGRAM.GetCurrentCall()
 	expr := call.Operator.Expressions[call.Line]
-    fp := inputs[0].FramePointer
 
     var tgtPkg = ast.CXPackage(*prevPkg)
 	var tgtFn = ast.CXFunction(*expr.Function)
@@ -630,7 +624,7 @@ func opAffOn(inputs []ast.CXValue, outputs []ast.CXValue) {
 	var tgtArgType string
 	var tgtArgIndex int
 
-	getTarget(inp2, fp, &tgtElt, &tgtArgType, &tgtArgIndex, &tgtPkg, &tgtFn, &tgtExpr)
+	getTarget(&inputs[1], &tgtElt, &tgtArgType, &tgtArgIndex, &tgtPkg, &tgtFn, &tgtExpr)
 
 	// var affPkg *CXPackage = prevPkg
 	// var affFn *CXFunction = prevFn
@@ -638,7 +632,7 @@ func opAffOn(inputs []ast.CXValue, outputs []ast.CXValue) {
 
 	// processing the affordances
 	var affs []string
-	getAffordances(inp1, fp, tgtElt, tgtArgType, tgtArgIndex, &tgtPkg, &tgtFn, &tgtExpr, onMessages, &affs)
+	getAffordances(&inputs[0], tgtElt, tgtArgType, tgtArgIndex, &tgtPkg, &tgtFn, &tgtExpr, onMessages, &affs)
 
 	// returning to previous state
 	ast.PROGRAM.CurrentPackage = prevPkg
@@ -651,15 +645,12 @@ func opAffOn(inputs []ast.CXValue, outputs []ast.CXValue) {
 }
 
 func opAffOf(inputs []ast.CXValue, outputs []ast.CXValue) {
-	inp1, inp2 := inputs[0].Arg, inputs[1].Arg
-
 	prevPkg := ast.PROGRAM.CurrentPackage
 	prevFn := prevPkg.CurrentFunction
 	prevExpr := prevFn.CurrentExpression
 
 	call := ast.PROGRAM.GetCurrentCall()
 	expr := call.Operator.Expressions[call.Line]
-    fp := inputs[0].FramePointer
 
 	var tgtPkg = ast.CXPackage(*expr.Package)
 	var tgtFn = ast.CXFunction(*expr.Function)
@@ -670,11 +661,11 @@ func opAffOf(inputs []ast.CXValue, outputs []ast.CXValue) {
 	var tgtArgType string
 	var tgtArgIndex int
 
-	getTarget(inp2, fp, &tgtElt, &tgtArgType, &tgtArgIndex, &tgtPkg, &tgtFn, &tgtExpr)
+	getTarget(&inputs[1], &tgtElt, &tgtArgType, &tgtArgIndex, &tgtPkg, &tgtFn, &tgtExpr)
 
 	// processing the affordances
 	var affs []string
-	getAffordances(inp1, fp, tgtElt, tgtArgType, tgtArgIndex, &tgtPkg, &tgtFn, &tgtExpr, ofMessages, &affs)
+	getAffordances(&inputs[0], tgtElt, tgtArgType, tgtArgIndex, &tgtPkg, &tgtFn, &tgtExpr, ofMessages, &affs)
 
 	// returning to previous state
 	ast.PROGRAM.CurrentPackage = prevPkg
@@ -753,11 +744,8 @@ func readArgAff(aff string, tgtFn *ast.CXFunction) *ast.CXArgument {
 }
 
 func opAffInform(inputs []ast.CXValue, outputs []ast.CXValue) {
-	inp1, inp2, inp3 := inputs[0].Arg, inputs[1].Arg, inputs[2].Arg
-
 	call := ast.PROGRAM.GetCurrentCall()
 	expr := call.Operator.Expressions[call.Line]
-    fp := inputs[0].FramePointer
 
 	prevPkg := ast.PROGRAM.CurrentPackage
 	prevFn := prevPkg.CurrentFunction
@@ -772,10 +760,10 @@ func opAffInform(inputs []ast.CXValue, outputs []ast.CXValue) {
 	var tgtArgType string
 	var tgtArgIndex int
 
-	getTarget(inp3, fp, &tgtElt, &tgtArgType, &tgtArgIndex, &tgtPkg, &tgtFn, &tgtExpr)
+	getTarget(&inputs[2], &tgtElt, &tgtArgType, &tgtArgIndex, &tgtPkg, &tgtFn, &tgtExpr)
 
-	elts := GetInferActions(inp1, fp)
-	eltIdx := ast.ReadI32(fp, inp2)
+	elts := GetInferActions(&inputs[0])
+	eltIdx := inputs[1].Get_i32()
 	eltType := elts[eltIdx*2]
 	elt := elts[eltIdx*2+1]
 
@@ -856,8 +844,6 @@ func opAffInform(inputs []ast.CXValue, outputs []ast.CXValue) {
 }
 
 func opAffRequest(inputs []ast.CXValue, outputs []ast.CXValue) {
-	inp1, inp2, inp3 := inputs[0].Arg, inputs[1].Arg, inputs[2].Arg
-
 	call := ast.PROGRAM.GetCurrentCall()
 	expr := call.Operator.Expressions[call.Line]
     fp := inputs[0].FramePointer
@@ -875,12 +861,12 @@ func opAffRequest(inputs []ast.CXValue, outputs []ast.CXValue) {
 	var tgtArgType string
 	var tgtArgIndex int
 
-	getTarget(inp3, fp, &tgtElt, &tgtArgType, &tgtArgIndex, &tgtPkg, &tgtFn, &tgtExpr)
+	getTarget(&inputs[2], &tgtElt, &tgtArgType, &tgtArgIndex, &tgtPkg, &tgtFn, &tgtExpr)
 
 	// var affs []string
 
-	elts := GetInferActions(inp1, fp)
-	eltIdx := ast.ReadI32(fp, inp2)
+	elts := GetInferActions(&inputs[0])
+	eltIdx := inputs[1].Get_i32()
 	eltType := elts[eltIdx*2]
 	elt := elts[eltIdx*2+1]
 
@@ -979,18 +965,13 @@ func opAffRequest(inputs []ast.CXValue, outputs []ast.CXValue) {
 }
 
 func opAffQuery(inputs []ast.CXValue, outputs []ast.CXValue) {
-	inp1, out1 := inputs[0].Arg, outputs[0].Arg
-
 	call := ast.PROGRAM.GetCurrentCall()
 	expr := call.Operator.Expressions[call.Line]
-    fp := inputs[0].FramePointer
-
-	out1Offset := ast.GetFinalOffset(fp, out1)
 
 	var affOffset int
 
 	var cmd string
-	for _, rule := range GetInferActions(inp1, fp) {
+	for _, rule := range GetInferActions(&inputs[0]) {
 		switch rule {
 		case "filter":
 			cmd = "filter"
@@ -999,7 +980,7 @@ func opAffQuery(inputs []ast.CXValue, outputs []ast.CXValue) {
 		default:
 			switch cmd {
 			case "filter":
-				if fn, err := inp1.Package.GetFunction(rule); err == nil {
+				if fn, err := inputs[0].Arg.Package.GetFunction(rule); err == nil {
 
 					// arg keyword
 					// argB := encoder.Serialize("arg")
@@ -1079,5 +1060,5 @@ func opAffQuery(inputs []ast.CXValue, outputs []ast.CXValue) {
 		}
 	}
 
-	ast.WriteI32(out1Offset, int32(affOffset))
+	outputs[0].Set_i32(int32(affOffset))
 }
