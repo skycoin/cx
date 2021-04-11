@@ -493,6 +493,7 @@ func opHTTPDo(inputs []ast.CXValue, outputs []ast.CXValue) {
 	ast.WriteString(fp, string(body), &resp)
 }
 
+/*
 func opDMSGDo(inputs []ast.CXValue, outputs []ast.CXValue) {
 	inp1, out1 := inputs[0].Arg, outputs[0].Arg
     fp := inputs[0].FramePointer
@@ -504,3 +505,4 @@ func opDMSGDo(inputs []ast.CXValue, outputs []ast.CXValue) {
 		ast.WriteString(fp, err.Error(), out1)
 	}
 }
+*/
