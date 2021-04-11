@@ -122,6 +122,8 @@ func IsAtomic(arg *CXArgument) bool {
 		return true
 	case constants.TYPE_I64:
 		return true
+	case constants.TYPE_BOOL:
+		return true
 	default:
 		return false
 	}
