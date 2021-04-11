@@ -1,7 +1,6 @@
 package ast
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/skycoin/cx/cx/constants"
@@ -74,7 +73,6 @@ func GetOffsetAtomicSimple(fp int, arg *CXArgument) int {
 
 	if ENHANCED_DEBUGING1 {
 		if IsNotAtomic(arg) {
-			fmt.Printf("%+v", arg)
 			panic("arg is in invalid format")
 		}
 	}
