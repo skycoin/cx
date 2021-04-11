@@ -1,9 +1,7 @@
 %{
 	package partialparsing
 	import (
-		// "fmt"
 		"bytes"
-		// "os"
 	    "github.com/skycoin/cx/cx/ast"
 	    "github.com/skycoin/cx/cx/constants"
 		"github.com/skycoin/cx/cxparsergenerator/actions"

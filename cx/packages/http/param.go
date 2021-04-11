@@ -3,7 +3,6 @@ package http
 import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
-	"github.com/skycoin/cx/cx/opcodes"
 )
 
 //TODO: FIX
@@ -35,4 +34,3 @@ func ParamEx(paramData ParamData) *ast.CXArgument {
 	arg.Package = paramData.Pkg
 	return arg
 }
-
