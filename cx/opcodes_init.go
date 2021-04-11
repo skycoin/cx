@@ -20,16 +20,13 @@ func Out(params ...*ast.CXArgument) []*ast.CXArgument {
 }
 
 func LoadOpCodeTables() {
-	//httpPkg, err := ast.PROGRAM.GetPackage("http")
-	//if err != nil {
-	//	panic(err)
-	//}
 
 	ast.Operators = make([]*ast.CXFunction, ast.OPERATOR_HANDLER_COUNT)
 
 	RegisterOpCode(constants.OP_IDENTITY, "identity", opIdentity, In(ast.ConstCxArg_UND_TYPE), Out(ast.ConstCxArg_UND_TYPE))
 	RegisterOpCode(constants.OP_GOTO, "goto", opGoto, nil, nil)                  // ConstCxArg_UND_TYPE to allow 0 inputs (goto)
 	RegisterOpCode(constants.OP_JMP, "jmp", opJmp, In(ast.ConstCxArg_BOOL), nil) // ConstCxArg_UND_TYPE to allow 0 inputs (goto)
+	//TODO: Rename OP_DEBUG, OP_DEBUG_PRINT_STACK
 	RegisterOpCode(constants.OP_DEBUG, "debug", opDebug, nil, nil)
 	RegisterOpCode(constants.OP_SERIALIZE, "serialize", opSerialize, In(ast.ConstCxArg_Affordance), Out(ast.ConstCxArg_UI8))
 	RegisterOpCode(constants.OP_DESERIALIZE, "deserialize", opDeserialize, In(ast.ConstCxArg_I32), nil)

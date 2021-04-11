@@ -109,6 +109,7 @@ func Struct(pkgName, strctName, argName string) *ast.CXArgument {
 	return arg
 }
 
+//TODO: Rename OP_DEBUG, OP_DEBUG_PRINT_STACK
 func opDebug([]ast.CXValue, []ast.CXValue) {
 	ast.PROGRAM.PrintStack()
 }
