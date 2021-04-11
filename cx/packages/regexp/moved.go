@@ -2,6 +2,10 @@
 
 package regexp
 
+//TODO: Get method of assigning the enums dynamically
+
+//TODO: Add init function to register the call back functions
+
 /*
 	// regexp
 	OP_REGEXP_COMPILE
