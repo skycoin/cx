@@ -1,4 +1,4 @@
-// +build os
+// +build cipher
 
 package cipher
 
