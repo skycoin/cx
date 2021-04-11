@@ -77,3 +77,8 @@ func ReadSlice(fp int, inp *CXArgument) int32 {
 func ReadArray(fp int, inp *CXArgument) int32 {
 	return helper.Deserialize_i32(ReadMemory(GetFinalOffset(fp, inp), inp))
 }
+
+// ReadPtr ...
+func ReadPtr(fp int, inp *CXArgument) int32 {
+	return helper.Deserialize_i32(ReadMemory(GetFinalOffset(fp, inp), inp))
+}
