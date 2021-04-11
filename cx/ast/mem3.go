@@ -73,13 +73,13 @@ func GetOffsetAtomicSimple(fp int, arg *CXArgument) int {
 
 	if ENHANCED_DEBUGING1 {
 		if IsNotAtomic(arg) {
-			panic("arg is in invalid format")
+			panic("error: arg is non-atomic type")
 		}
 	}
 
 	if ENHANCED_DEBUGING2 {
 		if !IsAtomic(arg) {
-			panic("arg is in invalid format")
+			panic("error: arg is non-atomic type")
 		}
 	}
 
