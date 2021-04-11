@@ -9,6 +9,16 @@ import (
 //TODO: dont need opcode for non-atomic types
 //TODO: Compiler needs to substitute for types and specify earlier
 
+// In Returns a slice of arguments from an argument list
+func In(params ...*ast.CXArgument) []*ast.CXArgument {
+	return params
+}
+
+// Out Returns a slice of arguments from an argument list
+func Out(params ...*ast.CXArgument) []*ast.CXArgument {
+	return params
+}
+
 func LoadOpCodeTables() {
 	//httpPkg, err := ast.PROGRAM.GetPackage("http")
 	//if err != nil {
