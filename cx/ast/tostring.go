@@ -3,6 +3,7 @@ package ast
 import (
 	"bytes"
 	"fmt"
+	constants2 "github.com/skycoin/cx/cxparsergenerator/constants"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -119,7 +120,7 @@ func buildStrFunctions(pkg *CXPackage, ast1 *string) {
 
 			// Determining operator's name.
 			if expr.Operator != nil {
-				if expr.Operator.IsAtomic {
+				if expr.Operator.IsBuiltin {
 
 					opName1 = OpNames[expr.Operator.OpCode]
 				} else {
@@ -169,7 +170,7 @@ func BuildStrPackages(prgrm *CXProgram, ast *string) {
 	// ignore the increments from core or stdlib packages.
 	var i int
 	for _, pkg := range prgrm.Packages {
-		if constants.IsCorePackage(pkg.Name) {
+		if constants2.IsCorePackage(pkg.Name) {
 			continue
 		}
 
@@ -218,6 +219,9 @@ func SignatureStringOfFunction(pkg *CXPackage, f *CXFunction) string {
 }
 
 func getNonCollectionValue(fp int, arg, elt *CXArgument, typ string) string {
+	if arg.IsPointer {
+		return fmt.Sprintf("%v", ReadPtr(fp, elt))
+	}
 	switch typ {
 	case "bool":
 		return fmt.Sprintf("%v", ReadBool(fp, elt))

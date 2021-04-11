@@ -2,13 +2,13 @@ package main
 
 import (
 	"fmt"
+	"github.com/skycoin/cx/cx/opcodes"
 	"os"
 	"os/user"
 	"path/filepath"
 	"strconv"
 
 	repl "github.com/skycoin/cx/cmd/cxrepl"
-	cxcore "github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/globals"
@@ -142,7 +142,7 @@ func printProgramAST(options cxCmdFlags, cxArgs []string, sourceCode []*os.File)
 	// Print CX program.
 	actions.AST.PrintProgram()
 
-	if cxcore.AssertFailed() {
+	if opcodes.AssertFailed() {
 		os.Exit(constants.CX_ASSERT)
 	}
 }

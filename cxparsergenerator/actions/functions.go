@@ -227,7 +227,7 @@ func FunctionCall(exprs []*ast.CXExpression, args []*ast.CXExpression) []*ast.CX
 
 				if inpExpr.Operator.Outputs[0].Type == constants.TYPE_UNDEFINED {
 					// if undefined type, then adopt argument's type
-					out = ast.MakeArgument(globals.MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, inpExpr.FileLine).AddType(constants.TypeNames[inpExpr.Inputs[0].Type])
+					out = ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, inpExpr.FileLine).AddType(constants.TypeNames[inpExpr.Inputs[0].Type])
 					out.CustomType = inpExpr.Inputs[0].CustomType
 
 					out.Size = inpExpr.Inputs[0].Size
@@ -236,7 +236,7 @@ func FunctionCall(exprs []*ast.CXExpression, args []*ast.CXExpression) []*ast.CX
 					out.Type = inpExpr.Inputs[0].Type
 					out.PreviouslyDeclared = true
 				} else {
-					out = ast.MakeArgument(globals.MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, inpExpr.FileLine).AddType(constants.TypeNames[inpExpr.Operator.Outputs[0].Type])
+					out = ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, inpExpr.FileLine).AddType(constants.TypeNames[inpExpr.Operator.Outputs[0].Type])
 					out.DeclarationSpecifiers = inpExpr.Operator.Outputs[0].DeclarationSpecifiers
 
 					out.CustomType = inpExpr.Operator.Outputs[0].CustomType
@@ -504,7 +504,7 @@ func checkMatchParamTypes(expr *ast.CXExpression, expected, received []*ast.CXAr
 
 		if expectedType != receivedType && inp.Type != constants.TYPE_UNDEFINED {
 			var opName string
-			if expr.Operator.IsAtomic {
+			if expr.Operator.IsBuiltin {
 				opName = ast.OpNames[expr.Operator.OpCode]
 			} else {
 				opName = expr.Operator.Name
@@ -579,7 +579,7 @@ func CheckTypes(expr *ast.CXExpression) {
 		}
 	}
 
-	if expr.Operator != nil && expr.Operator.IsAtomic && expr.Operator.OpCode == constants.OP_IDENTITY {
+	if expr.Operator != nil && expr.Operator.IsBuiltin && expr.Operator.OpCode == constants.OP_IDENTITY {
 		for i := range expr.Inputs {
 			var expectedType string
 			var receivedType string
@@ -682,7 +682,7 @@ func ProcessSliceAssignment(expr *ast.CXExpression) {
 			out.PassBy = constants.PASSBY_VALUE
 		}
 	}
-	if expr.Operator != nil && !expr.Operator.IsAtomic {
+	if expr.Operator != nil && !expr.Operator.IsBuiltin {
 		// then it's a function call
 		for _, inp := range expr.Inputs {
 			assignElt := ast.GetAssignmentElement(inp)

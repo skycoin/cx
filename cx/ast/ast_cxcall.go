@@ -1,7 +1,6 @@
 package ast
 
 import (
-	"fmt"
 	"github.com/skycoin/cx/cx/constants"
 )
 
@@ -75,7 +74,7 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 				prgrm.Memory[newFP+expr.Outputs[0].Offset+c] = 0
 			}
 			call.Line++
-		} else if expr.Operator.IsAtomic {
+		} else if expr.Operator.IsBuiltin {
 			//TODO: SLICES ARE NON ATOMIC
 
 			fp := call.FramePointer
@@ -104,7 +103,7 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 				offset := GetFinalOffset(fp, input)
 				value := &inputValues[inputIndex]
 				value.Arg = input
-				value.Used = -1
+				//value.Used = -1
 				value.Offset = offset
 				value.Type = input.Type
 				value.FramePointer = fp
@@ -118,7 +117,7 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 				offset := GetFinalOffset(fp, output)
 				value := &outputValues[outputIndex]
 				value.Arg = output
-				value.Used = -1
+				//value.Used = -1
 				value.Offset = offset
 				value.Type = output.Type
 				value.FramePointer = fp
@@ -126,33 +125,39 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 				argIndex++
 			}
 
-            OpcodeHandlers[expr.Operator.OpCode](inputValues, outputValues)
+			OpcodeHandlers[expr.Operator.OpCode](inputValues, outputValues)
 
-			for inputIndex := 0; inputIndex < inputCount; inputIndex++ { // TODO: remove in release builds
-				if inputValues[inputIndex].Used != int8(inputs[inputIndex].Type) { // TODO: remove cast
-					panic(fmt.Sprintf("Input value not used for opcode: '%s', param #%d. Expected type %d, '%s', used type %d, '%s'.",
-						OpNames[expr.Operator.OpCode],
-						inputIndex+1,
-						inputs[inputIndex].Type, constants.TypeNames[inputs[inputIndex].Type],
-						inputValues[inputIndex].Used, constants.TypeNames[int(inputValues[inputIndex].Used)]))
+			//inputValues[inputIndex].Used
+			//WTF is ".Used"
+			/*
+				for inputIndex := 0; inputIndex < inputCount; inputIndex++ { // TODO: remove in release builds
+					if inputValues[inputIndex].Used != int8(inputs[inputIndex].Type) { // TODO: remove cast
+						panic(fmt.Sprintf("Input value not used for opcode: '%s', param #%d. Expected type %d, '%s', used type %d, '%s'.",
+							OpNames[expr.Operator.OpCode],
+							inputIndex+1,
+							inputs[inputIndex].Type, constants.TypeNames[inputs[inputIndex].Type],
+							inputValues[inputIndex].Used, constants.TypeNames[int(inputValues[inputIndex].Used)]))
+					}
 				}
-			}
+			*/
 
-			for outputIndex := 0; outputIndex < outputCount; outputIndex++ { // TODO: remove in release builds
-				if outputValues[outputIndex].Used != int8(outputs[outputIndex].Type) { // TODO: remove cast
-					panic(fmt.Sprintf("Output value not used for opcode: '%s', param #%d. Expected type %d, '%s', used type %d '%s'.",
-						OpNames[expr.Operator.OpCode],
-						outputIndex+1,
-						outputs[outputIndex].Type, constants.TypeNames[outputs[outputIndex].Type],
-						outputValues[outputIndex].Used, constants.TypeNames[int(outputValues[outputIndex].Used)]))
+			/*
+				for outputIndex := 0; outputIndex < outputCount; outputIndex++ { // TODO: remove in release builds
+					if outputValues[outputIndex].Used != int8(outputs[outputIndex].Type) { // TODO: remove cast
+						panic(fmt.Sprintf("Output value not used for opcode: '%s', param #%d. Expected type %d, '%s', used type %d '%s'.",
+							OpNames[expr.Operator.OpCode],
+							outputIndex+1,
+							outputs[outputIndex].Type, constants.TypeNames[outputs[outputIndex].Type],
+							outputValues[outputIndex].Used, constants.TypeNames[int(outputValues[outputIndex].Used)]))
+					}
 				}
-			}
+			*/
 
 			call.Line++
-        } else { //NON-ATOMIC OPERATOR
-        	//TODO: Is this only called for user defined functions?
+		} else { //NON-ATOMIC OPERATOR
+			//TODO: Is this only called for user defined functions?
 
-        	//panic("BULLSHIT")
+			//panic("BULLSHIT")
 			/*
 			   It was not a native, so we need to create another call
 			   with the current expression's operator

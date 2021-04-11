@@ -416,7 +416,7 @@ func getSlice(inputs []ast.CXValue, outputs []ast.CXValue) (outputSlicePointer i
 	if inp1.Type != out0.Type || !ast.GetAssignmentElement(inp1).IsSlice || !ast.GetAssignmentElement(out0).IsSlice {
 		panic(constants.CX_RUNTIME_INVALID_ARGUMENT)
 	}
-    inputs[1].Used = int8(inp1.Type)
+    //inputs[1].Used = int8(inp1.Type)
 	count = inputs[2].Get_ui64()
 	outputSlicePointer = outputs[0].Offset
 	sizeofElement = ast.GetAssignmentElement(inp1).Size

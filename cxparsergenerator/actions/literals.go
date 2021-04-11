@@ -3,7 +3,6 @@ package actions
 import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
-	"github.com/skycoin/cx/cx/globals"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
@@ -16,7 +15,7 @@ func SliceLiteralExpression(typSpec int, exprs []*ast.CXExpression) []*ast.CXExp
 		panic(err)
 	}
 
-	symName := globals.MakeGenSym(constants.LOCAL_PREFIX)
+	symName := MakeGenSym(constants.LOCAL_PREFIX)
 
 	// adding the declaration
 	slcVarExpr := ast.MakeExpression(nil, CurrentFile, LineNo)
@@ -57,7 +56,7 @@ func SliceLiteralExpression(typSpec int, exprs []*ast.CXExpression) []*ast.CXExp
 			} else {
 				// We need to create a temporary variable to hold the result of the
 				// nested expressions. Then use that variable as part of the slice literal.
-				out := ast.MakeArgument(globals.MakeGenSym(constants.LOCAL_PREFIX), expr.FileName, expr.FileLine)
+				out := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), expr.FileName, expr.FileLine)
 				outArg := getOutputType(expr)
 				out.AddType(constants.TypeNames[outArg.Type])
 				out.CustomType = outArg.CustomType
@@ -86,7 +85,7 @@ func SliceLiteralExpression(typSpec int, exprs []*ast.CXExpression) []*ast.CXExp
 		expr.RemoveExpressionType(ast.CXEXPR_ARRAY_LITERAL)
 	}
 
-	symNameOutput := globals.MakeGenSym(constants.LOCAL_PREFIX)
+	symNameOutput := MakeGenSym(constants.LOCAL_PREFIX)
 
 	symOutput := ast.MakeArgument(symNameOutput, CurrentFile, LineNo).AddType(constants.TypeNames[typSpec])
 	symOutput.IsSlice = true
@@ -192,7 +191,7 @@ func ArrayLiteralExpression(arrSizes []int, typSpec int, exprs []*ast.CXExpressi
 		panic(err)
 	}
 
-	symName := globals.MakeGenSym(constants.LOCAL_PREFIX)
+	symName := MakeGenSym(constants.LOCAL_PREFIX)
 
 	arrVarExpr := ast.MakeExpression(nil, CurrentFile, LineNo)
 	arrVarExpr.Package = pkg
@@ -251,7 +250,7 @@ func ArrayLiteralExpression(arrSizes []int, typSpec int, exprs []*ast.CXExpressi
 		}
 	}
 
-	symNameOutput := globals.MakeGenSym(constants.LOCAL_PREFIX)
+	symNameOutput := MakeGenSym(constants.LOCAL_PREFIX)
 
 	symOutput := ast.MakeArgument(symNameOutput, CurrentFile, LineNo).AddType(constants.TypeNames[typSpec])
 	// symOutput.Lengths = append(symOutput.Lengths, arrSizes[len(arrSizes)-1])
