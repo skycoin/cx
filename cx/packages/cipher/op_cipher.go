@@ -8,6 +8,7 @@ import (
 	"github.com/skycoin/skycoin/src/cipher"
 )
 
+//Todo; Change Init to "register"
 func init() {
 	cipherPkg := ast.MakePackage("cipher")
 	pubkeyStrct := ast.MakeStruct("PubKey")

@@ -10,6 +10,7 @@ import (
 // Callback is only called from opHttpHandle, can probably be removed
 // TODO: Delete and delete call from opHTTPHandle
 // TODO: We probably dont need this? HTTPHandle can work in another way
+//TODO: Is Callback actually "CallFunction" ?
 func Callback(cxprogram *ast.CXProgram, fn *ast.CXFunction, inputs [][]byte) (outputs [][]byte) {
 	line := cxprogram.CallStack[cxprogram.CallCounter].Line
 	previousCall := cxprogram.CallCounter

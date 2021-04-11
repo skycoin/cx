@@ -166,6 +166,7 @@ func Run(args []string) {
 			return
 		}
 
+		//if strings.Contains(args[0], "tokenize") {
 		if checktokenizeMode(args) {
 			printTokenize(options, fileNames)
 			return

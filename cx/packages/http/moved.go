@@ -1,5 +1,7 @@
 package http
 
+// TODO, add function to register these op codes for usage
+
 /*
 func LoadOpCodeTables() {
 	httpPkg, err := ast.PROGRAM.GetPackage("http")
