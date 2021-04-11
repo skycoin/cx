@@ -3,12 +3,13 @@ package cxparser
 import (
 	"bufio"
 	"bytes"
-	constants2 "github.com/skycoin/cx/cxparsergenerator/constants"
 	"io"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	constants2 "github.com/skycoin/cx/cxparsergenerator/constants"
 
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
@@ -16,7 +17,6 @@ import (
 	"github.com/skycoin/cx/cxparsergenerator/globals"
 
 	"github.com/skycoin/cx/cxparsergenerator/actions"
-	cxparsingcompletor "github.com/skycoin/cx/cxparsergenerator/cxparsingcompletor"
 	cxpartialparsing "github.com/skycoin/cx/cxparsergenerator/cxpartialparsing"
 	"github.com/skycoin/cx/cxparsergenerator/util/profiling"
 )
@@ -43,7 +43,7 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 	// of functions and methods are added in the cxpartialparsing.y pass
 	parseErrors := 0
 	if len(sourceCode) > 0 {
-		parseErrors = lexerStep0(sourceCodeCopy, fileNames)
+		parseErrors = preliminarystage(sourceCodeCopy, fileNames)
 	}
 
 	//package level program
@@ -83,7 +83,7 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 			actions.CurrentFile = fileNames[i]
 		}
 		profiling.StartProfile(actions.CurrentFile)
-		parseErrors += cxparsingcompletor.Parse(cxparsingcompletor.NewLexer(b))
+		parseErrors += passtwo(b)
 
 		profiling.StopProfile(actions.CurrentFile)
 	}
@@ -95,9 +95,9 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 	}
 }
 
-// lexerStep0 performs a first pass for the CX cxgo. Globals, packages and
+// preliminarystage performs a first pass for the CX cxgo. Globals, packages and
 // custom types are added to `cxpartialparsing.Program`.
-func lexerStep0(srcStrs, srcNames []string) int {
+func preliminarystage(srcStrs, srcNames []string) int {
 	var prePkg *ast.CXPackage
 	parseErrors := 0
 
@@ -354,7 +354,7 @@ func lexerStep0(srcStrs, srcNames []string) int {
 			cxpartialparsing.CurrentFileName = srcNames[i]
 		}
 		//Parse calls yyParse
-		parseErrors += cxpartialparsing.Parse(source)
+		parseErrors += passone(source)
 		profiling.StopProfile(srcNames[i])
 	}
 

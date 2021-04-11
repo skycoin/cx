@@ -13,6 +13,7 @@ github.com/go-gl/glfw/v3.3/glfw/glfw/deps/vs2008
 github.com/go-gl/glfw/v3.3/glfw/glfw/include/GLFW
 github.com/go-gl/glfw/v3.3/glfw/glfw/src
 # github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
+## explicit
 github.com/golang/freetype
 github.com/golang/freetype/raster
 github.com/golang/freetype/truetype
@@ -35,8 +36,6 @@ github.com/shurcooL/sanitized_anchor_name
 # github.com/sirupsen/logrus v1.8.0
 ## explicit
 github.com/sirupsen/logrus
-# github.com/skycoin/cx-evolves v0.0.0-20210310150738-b80a380d127e
-## explicit
 # github.com/skycoin/gltext v0.0.0-20200425002731-afdd8ff94e14
 ## explicit
 github.com/skycoin/gltext
@@ -48,6 +47,8 @@ github.com/skycoin/skycoin/src/cipher/encoder
 github.com/skycoin/skycoin/src/cipher/ripemd160
 github.com/skycoin/skycoin/src/cipher/secp256k1-go
 github.com/skycoin/skycoin/src/cipher/secp256k1-go/secp256k1-go2
+# github.com/stretchr/testify v1.7.0
+## explicit
 # github.com/urfave/cli/v2 v2.3.0
 ## explicit
 github.com/urfave/cli/v2
@@ -87,3 +88,5 @@ golang.org/x/mobile/internal/mobileinit
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
 golang.org/x/sys/windows
+# gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c
+## explicit
