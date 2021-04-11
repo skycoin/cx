@@ -8,6 +8,8 @@ import (
 // "fmt"
 
 // EscapeAnalysis ...
+//TODO: Comment this out
+//TODO: Delete this, probably not needed
 func EscapeAnalysis(input *ast.CXValue) int32 {
 	heapOffset := ast.AllocateSeq(input.Arg.TotalSize + constants.OBJECT_HEADER_SIZE)
 
@@ -32,6 +34,7 @@ func opIdentity(inputs []ast.CXValue, outputs []ast.CXValue) {
 		elt = out1
 	}
 
+	//TODO: Delete
 	if elt.DoesEscape {
 		outputs[0].Set_i32(EscapeAnalysis(&inputs[0]))
 	} else {
