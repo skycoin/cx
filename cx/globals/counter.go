@@ -17,6 +17,6 @@ func RegisterOpCodeWithIndex(name string, id int) {
 
 func RegisterOpCode(name string) {
 
-	
+
 	return
 }

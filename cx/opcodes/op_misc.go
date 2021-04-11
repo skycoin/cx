@@ -1,7 +1,7 @@
-package cxcore
+package opcodes
 
 import (
-    "github.com/skycoin/cx/cx/ast"
+	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 )
 

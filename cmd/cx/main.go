@@ -1,11 +1,11 @@
 package main
 
 import (
+	"github.com/skycoin/cx/cx/opcodes"
 	"os"
 	"runtime"
 
 	repl "github.com/skycoin/cx/cmd/cxrepl"
-	cxcore "github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/execute"
@@ -196,7 +196,7 @@ func runProgram(options cxCmdFlags, cxArgs []string, sourceCode []*os.File) {
 		panic(err)
 	}
 
-	if cxcore.AssertFailed() {
+	if opcodes.AssertFailed() {
 		os.Exit(constants.CX_ASSERT)
 	}
 }

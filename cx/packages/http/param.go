@@ -1,9 +1,9 @@
 package http
 
 import (
-	"github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/opcodes"
 )
 
 //TODO: FIX
@@ -28,7 +28,7 @@ func ParamEx(paramData ParamData) *ast.CXArgument {
 	case constants.PARAM_SLICE:
 		arg = ast.Slice(paramData.TypCode)
 	case constants.PARAM_STRUCT:
-		arg = cxcore.Struct(paramData.Pkg.Name, paramData.strctName, "")
+		arg = opcodes.cxcore.Struct(paramData.Pkg.Name, paramData.strctName, "")
 	}
 	arg.Inputs = paramData.inputs
 	arg.Outputs = paramData.outputs
