@@ -3,12 +3,13 @@ package main
 import (
 	"errors"
 	"fmt"
-	"github.com/skycoin/cx/cmd/cxtest/runner"
-	"github.com/urfave/cli/v2"
 	"log"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/skycoin/cx/cmd/cxtest/runner"
+	"github.com/urfave/cli/v2"
 )
 
 func main() {
@@ -171,10 +172,10 @@ func runTestCases(t *runner.TestRunner) {
 	t.RunEx("-heap-initial 0 test-gc.cx", runner.CxSuccess, "Stress-testing the garbage collector", runner.TestIssue, 0)
 	t.Run("../lib/json.cx test-json.cx", runner.CxSuccess, "ProgramError in json lib.")
 	t.Run("../lib/args.cx test-args.cx", runner.CxSuccess, "ProgramError in args lib.")
-	t.Run("test-regexp-must-compile-fail.cx", runner.CxRuntimeError, "ProgramError in regexp lib - MustCompile should have thrown an error.")
-	t.Run("test-regexp-compile-fail.cx", runner.CxSuccess, "ProgramError in regexp lib - error thrown by regexp.Compile does not matches expected error.")
-	t.Run("test-regexp.cx", runner.CxSuccess, "ProgramError in regexp lib.")
-	t.Run("test-cipher.cx", runner.CxSuccess, "ProgramError in cipher lib.")
+	// t.Run("test-regexp-must-compile-fail.cx", runner.CxRuntimeError, "ProgramError in regexp lib - MustCompile should have thrown an error.")
+	// t.Run("test-regexp-compile-fail.cx", runner.CxSuccess, "ProgramError in regexp lib - error thrown by regexp.Compile does not matches expected error.")
+	// t.Run("test-regexp.cx", runner.CxSuccess, "ProgramError in regexp lib.")
+	// t.Run("test-cipher.cx", runner.CxSuccess, "ProgramError in cipher lib.")
 	// t.RunEx("test-regexp.cx", CxCompilationError, "Panic when calling gl.BindBuffer with only one argument.", TestGui|TestStable, 0)
 
 	// issues
