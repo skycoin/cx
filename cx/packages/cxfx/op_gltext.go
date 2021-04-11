@@ -8,7 +8,7 @@ import (
 
 	"github.com/skycoin/gltext"
 
-	"github.com/skycoin/cx/cxos"
+	"github.com/skycoin/cx/cx/packages/cxos"
 )
 
 var fonts map[string]*gltext.Font = make(map[string]*gltext.Font, 0)
