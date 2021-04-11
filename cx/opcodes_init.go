@@ -10,8 +10,8 @@ import (
 //TODO: Compiler needs to substitute for types and specify earlier
 
 func LoadOpCodeTables() {
-	httpPkg, err := ast.PROGRAM.GetPackage("http")
-	if err != nil {
+	//httpPkg, err := ast.PROGRAM.GetPackage("http")
+	//if err != nil {
 		panic(err)
 	}
 
@@ -438,12 +438,6 @@ func LoadOpCodeTables() {
 	RegisterOpCode(constants.OP_AFF_INFORM, "aff.inform", opAffInform, In(ast.Slice(constants.TYPE_AFF), ast.ConstCxArg_I32, ast.Slice(constants.TYPE_AFF)), nil)
 	RegisterOpCode(constants.OP_AFF_REQUEST, "aff.request", opAffRequest, In(ast.Slice(constants.TYPE_AFF), ast.ConstCxArg_I32, ast.Slice(constants.TYPE_AFF)), nil)
 
-	RegisterOpCode(constants.OP_HTTP_SERVE, "http.Serve", opHTTPServe, In(ast.ConstCxArg_STR), Out(ast.ConstCxArg_STR))
-	RegisterOpCode(constants.OP_HTTP_LISTEN_AND_SERVE, "http.ListenAndServe", opHTTPListenAndServe, In(ast.ConstCxArg_STR), Out(ast.ConstCxArg_STR))
-	RegisterOpCode(constants.OP_HTTP_NEW_REQUEST, "http.NewRequest", opHTTPNewRequest, In(ast.ConstCxArg_STR, ast.ConstCxArg_STR, ast.ConstCxArg_STR), Out(ast.ConstCxArg_STR))
-	RegisterOpCode(constants.OP_HTTP_DO, "http.Do", opHTTPDo, In(ast.ConstCxArg_UND_TYPE), Out(ast.ConstCxArg_UND_TYPE, ast.ConstCxArg_STR))
-	//RegisterOpCode(constants.OP_DMSG_DO, "http.DmsgDo", opDMSGDo, In(ast.ConstCxArg_UND_TYPE), Out(ast.ConstCxArg_STR))
-
 	RegisterOpCode(constants.OP_TCP_DIAL, "tcp.Dial", opTCPDial, In(ast.ConstCxArg_STR, ast.ConstCxArg_STR), Out(ast.ConstCxArg_STR))
 
 	RegisterOpCode(constants.OP_TCP_LISTEN, "tcp.Listen", opTCPListen, In(ast.ConstCxArg_STR, ast.ConstCxArg_STR), Out(ast.ConstCxArg_STR))
@@ -455,11 +449,4 @@ func LoadOpCodeTables() {
 	// RegisterOpCode(OP_EVOLVE_EVOLVE, "evolve.evolve", opEvolve, In(Slice(TYPE_AFF), Slice(TYPE_AFF), Slice(TYPE_F64), Slice(TYPE_F64), ConstCxArg_I32, ConstCxArg_I32, ConstCxArg_I32, ConstCxArg_F64), nil)
 	// RegisterOpCode(OP_EVOLVE_EVOLVE, "evolve.evolve", opEvolve, In(Slice(TYPE_AFF), Slice(TYPE_AFF), Slice(TYPE_AFF), Slice(TYPE_AFF), Slice(TYPE_AFF), ConstCxArg_I32, ConstCxArg_I32, ConstCxArg_I32, ConstCxArg_F64), nil)
 
-	RegisterOpCode(constants.OP_HTTP_HANDLE, "http.Handle", opHTTPHandle,
-		In(
-			ast.ConstCxArg_STR,
-			ParamEx(ParamData{TypCode: constants.TYPE_FUNC, Pkg: httpPkg, inputs: In(ast.MakeArgument("ResponseWriter", "", -1).AddType(constants.TypeNames[constants.TYPE_STR]), ast.Pointer(Struct("http", "Request", "r")))})),
-		Out())
-
-	RegisterOpCode(constants.OP_HTTP_CLOSE, "http.Close", opHTTPClose, nil, nil)
 }
