@@ -218,6 +218,9 @@ func SignatureStringOfFunction(pkg *CXPackage, f *CXFunction) string {
 }
 
 func getNonCollectionValue(fp int, arg, elt *CXArgument, typ string) string {
+	if arg.IsPointer {
+		return fmt.Sprintf("%v", ReadPtr(fp, elt))
+	}
 	switch typ {
 	case "bool":
 		return fmt.Sprintf("%v", ReadBool(fp, elt))

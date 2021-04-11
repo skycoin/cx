@@ -72,15 +72,13 @@ var ENABLE_MIRACLE_BUG bool = false
 func GetOffsetAtomicSimple(fp int, arg *CXArgument) int {
 
 	if ENHANCED_DEBUGING1 {
-		if arg.IsPointer || arg.IsSlice || arg.IsArray {
+		if IsNotAtomic(arg) {
 			panic("arg is in invalid format")
 		}
 	}
 
 	if ENHANCED_DEBUGING2 {
-		if arg.Type == constants.TYPE_F32 || arg.Type == constants.TYPE_F64 ||
-			arg.Type == constants.TYPE_UI8 || arg.Type == constants.TYPE_UI16 || arg.Type == constants.TYPE_UI32 || arg.Type == constants.TYPE_UI64 ||
-			arg.Type == constants.TYPE_I8 || arg.Type == constants.TYPE_I16 || arg.Type == constants.TYPE_I32 || arg.Type == constants.TYPE_I64 {
+		if !IsAtomic(arg) {
 			panic("arg is in invalid format")
 		}
 	}
@@ -90,6 +88,43 @@ func GetOffsetAtomicSimple(fp int, arg *CXArgument) int {
 		finalOffset += fp //check if on stack
 	}
 	return finalOffset
+}
+
+//IsNotAtomic checks if arg is pointer, slice or array and returns
+func IsNotAtomic(arg *CXArgument) bool {
+	if arg.IsPointer || arg.IsSlice || arg.IsArray {
+		return true
+	}
+
+	return false
+}
+
+//IsAtomic checks if arg is of atomic type else returns
+func IsAtomic(arg *CXArgument) bool {
+	switch arg.Type {
+	case constants.TYPE_F32:
+		return true
+	case constants.TYPE_F64:
+		return true
+	case constants.TYPE_UI8:
+		return true
+	case constants.TYPE_UI16:
+		return true
+	case constants.TYPE_UI32:
+		return true
+	case constants.TYPE_UI64:
+		return true
+	case constants.TYPE_I8:
+		return true
+	case constants.TYPE_I16:
+		return true
+	case constants.TYPE_I32:
+		return true
+	case constants.TYPE_I64:
+		return true
+	default:
+		return false
+	}
 }
 
 //this is version with type assertions
