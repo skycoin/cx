@@ -274,8 +274,12 @@ func PostfixExpressionField(prevExprs []*ast.CXExpression, ident string) []*ast.
 		// this way we avoid considering these arguments as module names
 
 		if constants.IsCorePackage(left.Name) {
-			if code, ok := constants.ConstCodes[left.Name+"."+ident]; ok {
-				constant := constants.Constants[code]
+
+			//TODO: constants.ConstCodes[left.Name+"."+ident]
+			//TODO: only play ConstCodes are used
+			//Is used for constant declaration? But only for core packages?
+			if code, ok := ConstCodes[left.Name+"."+ident]; ok {
+				constant := Constants[code]
 				val := WritePrimary(constant.Type, constant.Value, false)
 				prevExprs[len(prevExprs)-1].Outputs[0] = val[0].Outputs[0]
 				return prevExprs
