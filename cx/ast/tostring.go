@@ -3,6 +3,7 @@ package ast
 import (
 	"bytes"
 	"fmt"
+	constants2 "github.com/skycoin/cx/cxparsergenerator/constants"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -169,7 +170,7 @@ func BuildStrPackages(prgrm *CXProgram, ast *string) {
 	// ignore the increments from core or stdlib packages.
 	var i int
 	for _, pkg := range prgrm.Packages {
-		if constants.IsCorePackage(pkg.Name) {
+		if constants2.IsCorePackage(pkg.Name) {
 			continue
 		}
 

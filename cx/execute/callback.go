@@ -6,6 +6,8 @@ import (
 	"os"
 )
 
+//TODO: Define Function Pointers and deprecate Callback
+
 // What calls Callback?ex
 // Callback is only called from opHttpHandle, can probably be removed
 // TODO: Delete and delete call from opHTTPHandle

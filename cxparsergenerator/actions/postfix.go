@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
+	constants2 "github.com/skycoin/cx/cxparsergenerator/constants"
 	"os"
 )
 
@@ -273,7 +274,7 @@ func PostfixExpressionField(prevExprs []*ast.CXExpression, ident string) []*ast.
 		// the external property will be propagated to the following arguments
 		// this way we avoid considering these arguments as module names
 
-		if constants.IsCorePackage(left.Name) {
+		if constants2.IsCorePackage(left.Name) {
 
 			//TODO: constants.ConstCodes[left.Name+"."+ident]
 			//TODO: only play ConstCodes are used
@@ -320,7 +321,7 @@ func PostfixExpressionField(prevExprs []*ast.CXExpression, ident string) []*ast.
 		}
 	} else {
 		// then left is not a package name
-		if constants.IsCorePackage(left.Name) {
+		if constants2.IsCorePackage(left.Name) {
 			println(ast.CompilationError(left.FileName, left.FileLine),
 				fmt.Sprintf("identifier '%s' does not exist",
 					left.Name))

@@ -3,6 +3,7 @@ package cxparser
 import (
 	"bufio"
 	"bytes"
+	constants2 "github.com/skycoin/cx/cxparsergenerator/constants"
 	"io"
 	"os"
 	"path/filepath"
@@ -241,7 +242,7 @@ func lexerStep0(srcStrs, srcNames []string) int {
 				if match := reImpName.FindStringSubmatch(string(line)); match != nil {
 					pkgName := match[len(match)-1]
 					// Checking if `pkgName` already exists and if it's not a standard library package.
-					if _, err := cxpartialparsing.Program.GetPackage(pkgName); err != nil && !constants.IsCorePackage(pkgName) {
+					if _, err := cxpartialparsing.Program.GetPackage(pkgName); err != nil && !constants2.IsCorePackage(pkgName) {
 						// _, sourceCode, srcNames := ParseArgsForCX([]string{fmt.Sprintf("%s%s", SRCPATH, pkgName)}, false)
 						_, sourceCode, fileNames := ast.ParseArgsForCX([]string{filepath.Join(globals2.SRCPATH, pkgName)}, false)
 						ParseSourceCode(sourceCode, fileNames)

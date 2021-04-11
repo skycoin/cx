@@ -2,6 +2,7 @@ package actions
 
 import (
 	"fmt"
+	constants2 "github.com/skycoin/cx/cxparsergenerator/constants"
 	"os"
 
 	"github.com/skycoin/cx/cx/ast"
@@ -262,7 +263,7 @@ func DeclareImport(name string, currentFile string, lineNo int) {
 	// All packages are read during the first pass of the compilation.  So
 	// if we get here during the 2nd pass, it's either a core package or
 	// something is panic-level wrong.
-	if constants.IsCorePackage(ident) {
+	if constants2.IsCorePackage(ident) {
 		imp := ast.MakePackage(ident)
 		pkg.AddImport(imp)
 		AST.AddPackage(imp)
