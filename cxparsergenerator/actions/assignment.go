@@ -5,7 +5,6 @@ import (
 
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
-	"github.com/skycoin/cx/cx/globals"
 )
 
 // assignStructLiteralFields converts a struct literal to a series of struct field assignments.
@@ -38,7 +37,7 @@ func StructLiteralAssignment(to []*ast.CXExpression, from []*ast.CXExpression) [
 		// And we also need an auxiliary variable to point to,
 		// otherwise we'd be trying to assign the fields to a nil value.
 		fOut := lastFrom.Outputs[0]
-		auxName := globals.MakeGenSym(constants.LOCAL_PREFIX)
+		auxName := MakeGenSym(constants.LOCAL_PREFIX)
 		aux := ast.MakeArgument(auxName, lastFrom.FileName, lastFrom.FileLine).AddType(constants.TypeNames[fOut.Type])
 		aux.DeclarationSpecifiers = append(aux.DeclarationSpecifiers, constants.DECL_POINTER)
 		aux.CustomType = fOut.CustomType
@@ -83,7 +82,7 @@ func ShortAssignment(expr *ast.CXExpression, to []*ast.CXExpression, from []*ast
 	if from[idx].Operator == nil {
 		expr.AddInput(from[idx].Outputs[0])
 	} else {
-		sym := ast.MakeArgument(globals.MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(constants.TypeNames[from[idx].Inputs[0].Type])
+		sym := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(constants.TypeNames[from[idx].Inputs[0].Type])
 		sym.Package = pkg
 		sym.PreviouslyDeclared = true
 		from[idx].AddOutput(sym)

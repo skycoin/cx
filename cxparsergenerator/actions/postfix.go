@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
-	"github.com/skycoin/cx/cx/globals"
 	"os"
 )
 
@@ -15,7 +14,7 @@ func PostfixExpressionArray(prevExprs []*ast.CXExpression, postExprs []*ast.CXEx
 	prevExpr := prevExprs[len(prevExprs)-1]
 
 	if prevExpr.Operator != nil && len(prevExpr.Outputs) == 0 {
-		genName := globals.MakeGenSym(constants.LOCAL_PREFIX)
+		genName := MakeGenSym(constants.LOCAL_PREFIX)
 
 		out := ast.MakeArgument(genName, prevExpr.FileName, prevExpr.FileLine-1).AddType(constants.TypeNames[prevExpr.Operator.Outputs[0].Type])
 
@@ -69,7 +68,7 @@ func PostfixExpressionArray(prevExprs []*ast.CXExpression, postExprs []*ast.CXEx
 			// expr.AddInput(postExprs[len(postExprs)-1].ProgramOutput[0])
 			fld.Indexes = append(fld.Indexes, postExprs[len(postExprs)-1].Outputs[0])
 		} else {
-			sym := ast.MakeArgument(globals.MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(constants.TypeNames[postExprs[len(postExprs)-1].Operator.Outputs[0].Type])
+			sym := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(constants.TypeNames[postExprs[len(postExprs)-1].Operator.Outputs[0].Type])
 			sym.Package = postExprs[len(postExprs)-1].Package
 			sym.PreviouslyDeclared = true
 			postExprs[len(postExprs)-1].AddOutput(sym)
@@ -83,7 +82,7 @@ func PostfixExpressionArray(prevExprs []*ast.CXExpression, postExprs []*ast.CXEx
 		if len(postExprs[len(postExprs)-1].Outputs) < 1 {
 			// then it's an expression (e.g. i32.add(0, 0))
 			// we create a gensym for it
-			idxSym := ast.MakeArgument(globals.MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(constants.TypeNames[postExprs[len(postExprs)-1].Operator.Outputs[0].Type])
+			idxSym := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(constants.TypeNames[postExprs[len(postExprs)-1].Operator.Outputs[0].Type])
 			idxSym.Size = postExprs[len(postExprs)-1].Operator.Outputs[0].Size
 			idxSym.TotalSize = ast.GetSize(postExprs[len(postExprs)-1].Operator.Outputs[0])
 
@@ -211,7 +210,7 @@ func PostfixExpressionField(prevExprs []*ast.CXExpression, ident string) []*ast.
 	// the function call
 	if lastExpr.Operator != nil {
 		opOut := lastExpr.Operator.Outputs[0]
-		symName := globals.MakeGenSym(constants.LOCAL_PREFIX)
+		symName := MakeGenSym(constants.LOCAL_PREFIX)
 
 		// we associate the result of the function call to the aux variable
 		out := ast.MakeArgument(symName, lastExpr.FileName, lastExpr.FileLine).AddType(constants.TypeNames[opOut.Type])
