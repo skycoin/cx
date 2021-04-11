@@ -23,7 +23,7 @@ func ReadI16(fp int, inp *CXArgument) int16 {
 	return helper.Deserialize_i16(ReadMemory(GetFinalOffset(fp, inp), inp))
 }
 
-var DEBUG_CALL_GET_FINAL_OFFSET_I32 = false
+var DEBUG_CALL_GET_FINAL_OFFSET_I32 = true
 
 // ReadI32 ...
 func ReadI32(fp int, inp *CXArgument) int32 {
@@ -66,4 +66,14 @@ func ReadF32(fp int, inp *CXArgument) float32 {
 // ReadF64 ...
 func ReadF64(fp int, inp *CXArgument) float64 {
 	return helper.Deserialize_f64(ReadMemory(GetFinalOffset(fp, inp), inp))
+}
+
+// ReadSlice ...
+func ReadSlice(fp int, inp *CXArgument) int32 {
+	return helper.Deserialize_i32(ReadMemory(GetOffset_slice(fp, inp), inp))
+}
+
+// ReadArray ...
+func ReadArray(fp int, inp *CXArgument) int32 {
+	return helper.Deserialize_i32(ReadMemory(GetFinalOffset(fp, inp), inp))
 }
