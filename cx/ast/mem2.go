@@ -79,6 +79,7 @@ func CalculateDereferences(arg *CXArgument, finalOffset int, fp int) int {
 
 			baseOffset = finalOffset
 			sizeofElement = subSize * sizeToUse
+			// finalOffset += int(ReadI32(fp, arg.Indexes[idxCounter])) * sizeofElement //TODO: FIX INTEGER CAST
 			finalOffset += int(ReadArray(fp, arg.Indexes[idxCounter])) * sizeofElement //TODO: FIX INTEGER CAST
 			idxCounter++
 		case constants.DEREF_POINTER: //TODO: Move to CalculateDereference_ptr
@@ -132,6 +133,7 @@ func CalculateDereferences_array(arg *CXArgument, finalOffset *int, fp int) {
 		sizeToUse := GetDerefSize(arg) //TODO: is always arg.Size unless arg.CustomType != nil
 
 		sizeofElement = subSize * sizeToUse
+		// *finalOffset += int(ReadI32(fp, arg.Indexes[idxCounter])) * sizeofElement //TODO: FIX INTEGER CAST
 		*finalOffset += int(ReadArray(fp, arg.Indexes[idxCounter])) * sizeofElement //TODO: FIX INTEGER CAST
 		idxCounter++
 	}
@@ -168,6 +170,7 @@ func CalculateDereferences_slice(arg *CXArgument, finalOffset *int, fp int) {
 
 		//TODO: delete
 		sizeToUse := GetDerefSize(arg) //TODO: is always arg.Size unless arg.CustomType != nil
+		// *finalOffset += int(ReadI32(fp, arg.Indexes[idxCounter])) * sizeToUse
 		*finalOffset += int(ReadSlice(fp, arg.Indexes[idxCounter])) * sizeToUse
 		if !IsValidSliceIndex(baseOffset, *finalOffset, sizeToUse) {
 			panic(constants.CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)
