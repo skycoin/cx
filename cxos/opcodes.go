@@ -97,9 +97,6 @@ const (
 	OP_REGEXP_MUST_COMPILE
 	OP_REGEXP_FIND
 
-	// cipher
-	OP_CIPHER_GENERATE_KEY_PAIR
-
 	END_OF_OS_OPS
 )
 
@@ -188,7 +185,4 @@ func init() {
 	RegisterOpCode(OP_REGEXP_COMPILE, "regexp.Compile", opRegexpCompile, In(ast.ConstCxArg_STR), Out(Struct("regexp", "Regexp", "r"), ast.ConstCxArg_STR))
 	RegisterOpCode(OP_REGEXP_MUST_COMPILE, "regexp.MustCompile", opRegexpMustCompile, In(ast.ConstCxArg_STR), Out(Struct("regexp", "Regexp", "r")))
 	RegisterOpCode(OP_REGEXP_FIND, "regexp.Regexp.Find", opRegexpFind, In(Struct("regexp", "Regexp", "r"), ast.ConstCxArg_STR), Out(ast.ConstCxArg_STR))
-
-	// cipher
-	RegisterOpCode(OP_CIPHER_GENERATE_KEY_PAIR, "cipher.GenerateKeyPair", opCipherGenerateKeyPair, nil, Out(Struct("cipher", "PubKey", "pubKey"), Struct("cipher", "SecKey", "sec")))
 }

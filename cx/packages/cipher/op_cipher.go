@@ -1,6 +1,6 @@
 // +build os
 
-package cxos
+package cipher
 
 import (
 	"github.com/skycoin/cx/cx/ast"
