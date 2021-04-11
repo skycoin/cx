@@ -1,7 +1,6 @@
 package ast
 
 import (
-	"fmt"
 	"github.com/skycoin/cx/cx/constants"
 )
 
@@ -75,7 +74,7 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 				prgrm.Memory[newFP+expr.Outputs[0].Offset+c] = 0
 			}
 			call.Line++
-		} else if expr.Operator.IsAtomic {
+		} else if expr.Operator.IsBuiltin {
 			//TODO: SLICES ARE NON ATOMIC
 
 			fp := call.FramePointer
@@ -126,8 +125,11 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 				argIndex++
 			}
 
-            OpcodeHandlers[expr.Operator.OpCode](inputValues, outputValues)
+			OpcodeHandlers[expr.Operator.OpCode](inputValues, outputValues)
 
+			//inputValues[inputIndex].Used
+			//WTF is ".Used"
+			/*
 			for inputIndex := 0; inputIndex < inputCount; inputIndex++ { // TODO: remove in release builds
 				if inputValues[inputIndex].Used != int8(inputs[inputIndex].Type) { // TODO: remove cast
 					panic(fmt.Sprintf("Input value not used for opcode: '%s', param #%d. Expected type %d, '%s', used type %d, '%s'.",
@@ -137,7 +139,9 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 						inputValues[inputIndex].Used, constants.TypeNames[int(inputValues[inputIndex].Used)]))
 				}
 			}
+			*/
 
+			/*
 			for outputIndex := 0; outputIndex < outputCount; outputIndex++ { // TODO: remove in release builds
 				if outputValues[outputIndex].Used != int8(outputs[outputIndex].Type) { // TODO: remove cast
 					panic(fmt.Sprintf("Output value not used for opcode: '%s', param #%d. Expected type %d, '%s', used type %d '%s'.",
@@ -147,12 +151,13 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 						outputValues[outputIndex].Used, constants.TypeNames[int(outputValues[outputIndex].Used)]))
 				}
 			}
+			*/
 
 			call.Line++
-        } else { //NON-ATOMIC OPERATOR
-        	//TODO: Is this only called for user defined functions?
+		} else { //NON-ATOMIC OPERATOR
+			//TODO: Is this only called for user defined functions?
 
-        	//panic("BULLSHIT")
+			//panic("BULLSHIT")
 			/*
 			   It was not a native, so we need to create another call
 			   with the current expression's operator

@@ -14,7 +14,7 @@ type CXValue struct {
 	Offset int
 	//size int. //unused field
 	FramePointer int
-	Used         int8
+	Used         int8 //wtf is "used"
 }
 
 // GetPointerOffset ...

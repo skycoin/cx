@@ -74,7 +74,7 @@ func buildString(inputs []ast.CXValue, outputs []ast.CXValue) []byte {
 				}
 			case 'v':
 				res = append(res, []byte(ast.GetPrintableValue(inp.FramePointer, inp.Arg))...)
-                inp.Used = int8(inp.Type) // TODO: Remove hacked type check
+                //inp.Used = int8(inp.Type) // TODO: Remove hacked type check
             case 'b':
                 res = append(res, []byte(strconv.FormatBool(inp.Get_bool()))...)
 			}

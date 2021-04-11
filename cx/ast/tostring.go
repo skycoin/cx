@@ -119,7 +119,7 @@ func buildStrFunctions(pkg *CXPackage, ast1 *string) {
 
 			// Determining operator's name.
 			if expr.Operator != nil {
-				if expr.Operator.IsAtomic {
+				if expr.Operator.IsBuiltin {
 
 					opName1 = OpNames[expr.Operator.OpCode]
 				} else {
