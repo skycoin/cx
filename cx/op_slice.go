@@ -36,7 +36,7 @@ func opLen(inputs []ast.CXValue, outputs []ast.CXValue) {
 		sliceLen = int32(elt.Lengths[len(elt.Indexes)])
 	}
 
-    inputs[0].Used = int8(inputs[0].Type) // TODO: Remove hacked type check
+    //inputs[0].Used = int8(inputs[0].Type) // TODO: Remove hacked type check
 	outputs[0].Set_i32(sliceLen)
 }
 
@@ -72,8 +72,8 @@ func opAppend(inputs []ast.CXValue, outputs []ast.CXValue) {
 		ast.SliceAppendWrite(outputSliceOffset, obj, inputSliceLen)
 	}
 
-	inputs[0].Used = int8(inputs[0].Type) // TODO: Remove hacked type check
-	inputs[1].Used = int8(inputs[1].Type) // TODO: Remove hacked type check
+	//inputs[0].Used = int8(inputs[0].Type) // TODO: Remove hacked type check
+	//inputs[1].Used = int8(inputs[1].Type) // TODO: Remove hacked type check
 	outputs[0].SetSlice(outputSliceOffset)
 }
 
@@ -89,7 +89,7 @@ func opResize(inputs []ast.CXValue, outputs []ast.CXValue) {
 
 	outputSliceOffset := int32(ast.SliceResize(fp, out0, inp0, inputs[1].Get_i32(), ast.GetAssignmentElement(inp0).TotalSize))
 
-	inputs[0].Used = int8(inputs[0].Type) // TODO: Remove hacked type check
+	//inputs[0].Used = int8(inputs[0].Type) // TODO: Remove hacked type check
     outputs[0].SetSlice(outputSliceOffset)
 }
 
@@ -115,8 +115,8 @@ func opInsert(inputs []ast.CXValue, outputs []ast.CXValue) {
 		outputSliceOffset = int32(ast.SliceInsert(fp, out0, inp0, index, obj))
 	}
 
-	inputs[0].Used = int8(inputs[0].Type) // TODO: Remove hacked type check
-	inputs[2].Used = int8(inputs[2].Type) // TODO: Remove hacked type check
+	//inputs[0].Used = int8(inputs[0].Type) // TODO: Remove hacked type check
+	//inputs[2].Used = int8(inputs[2].Type) // TODO: Remove hacked type check
 	outputs[0].SetSlice(outputSliceOffset)
 }
 
@@ -132,7 +132,7 @@ func opRemove(inputs []ast.CXValue, outputs []ast.CXValue) {
 
 	outputSliceOffset := int32(ast.SliceRemove(fp, out0, inp0, inputs[1].Get_i32(), int32(ast.GetAssignmentElement(inp0).TotalSize)))
 
-	inputs[0].Used = int8(inputs[0].Type) // TODO: Remove hacked type check
+	//inputs[0].Used = int8(inputs[0].Type) // TODO: Remove hacked type check
     outputs[0].SetSlice(outputSliceOffset)
 }
 
@@ -162,7 +162,7 @@ func opCopy(inputs []ast.CXValue, outputs []ast.CXValue) {
 		panic(constants.CX_RUNTIME_INVALID_ARGUMENT)
 	}
 	
-    inputs[0].Used = int8(inputs[0].Type) // TODO: Remove hacked type check
-	inputs[1].Used = int8(inputs[1].Type) // TODO: Remove hacked type check
+    //inputs[0].Used = int8(inputs[0].Type) // TODO: Remove hacked type check
+	//inputs[1].Used = int8(inputs[1].Type) // TODO: Remove hacked type check
 	outputs[0].Set_i32(int32(count/dstElem.TotalSize))
 }

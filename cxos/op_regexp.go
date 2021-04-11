@@ -64,7 +64,7 @@ func regexpCompile(inputs []ast.CXValue, outputs []ast.CXValue) error {
 	accessExp := []*ast.CXArgument{expFld}
 	reg.Fields = accessExp
 	ast.WriteString(outputs[0].FramePointer, exp, &reg)
-    outputs[0].Used = int8(outputs[0].Type) // TODO: Remove hacked type check
+    //outputs[0].Used = int8(outputs[0].Type) // TODO: Remove hacked type check
 	// Storing `Regexp` instance.
 	regexps[exp], err = regexp.Compile(exp)
 
@@ -129,6 +129,6 @@ func opRegexpFind(inputs []ast.CXValue, outputs []ast.CXValue) {
 	exp := ast.ReadStr(inputs[0].FramePointer, &reg)
 	r := regexps[exp]
 
-    inputs[0].Used = int8(inputs[0].Type) // TODO: Remove hacked type check.
+    //inputs[0].Used = int8(inputs[0].Type) // TODO: Remove hacked type check.
     outputs[0].Set_str(string(r.Find([]byte(inputs[1].Get_str()))))
 }

@@ -103,7 +103,7 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 				offset := GetFinalOffset(fp, input)
 				value := &inputValues[inputIndex]
 				value.Arg = input
-				value.Used = -1
+				//value.Used = -1
 				value.Offset = offset
 				value.Type = input.Type
 				value.FramePointer = fp
@@ -117,7 +117,7 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 				offset := GetFinalOffset(fp, output)
 				value := &outputValues[outputIndex]
 				value.Arg = output
-				value.Used = -1
+				//value.Used = -1
 				value.Offset = offset
 				value.Type = output.Type
 				value.FramePointer = fp

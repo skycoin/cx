@@ -43,8 +43,8 @@ func opIdentity(inputs []ast.CXValue, outputs []ast.CXValue) {
 		}
 	}
 
-	inputs[0].Used = int8(inputs[0].Type)
-	outputs[0].Used = int8(outputs[0].Type)
+	//inputs[0].Used = int8(inputs[0].Type)
+	//outputs[0].Used = int8(outputs[0].Type)
 }
 
 func opGoto(inputs []ast.CXValue, outputs []ast.CXValue) {
