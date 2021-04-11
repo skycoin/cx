@@ -92,11 +92,6 @@ const (
 	// object explorer
 	OP_OBJ_QUERY
 
-	// regexp
-	OP_REGEXP_COMPILE
-	OP_REGEXP_MUST_COMPILE
-	OP_REGEXP_FIND
-
 	END_OF_OS_OPS
 )
 
@@ -105,9 +100,6 @@ func init() {
 	RegisterOpCode(OP_TIME_SLEEP, "time.Sleep", opTimeSleep, In(ast.ConstCxArg_I32), nil)
 	RegisterOpCode(OP_TIME_UNIX_MILLI, "time.UnixMilli", opTimeUnixMilli, nil, Out(ast.ConstCxArg_I64))
 	RegisterOpCode(OP_TIME_UNIX_NANO, "time.UnixNano", opTimeUnixNano, nil, Out(ast.ConstCxArg_I64))
-
-	// http
-	// RegisterOpCode(OP_HTTP_GET, "http.Get", opHttpGet, In(ConstCxArg_STR), Out(ConstCxArg_STR))
 
 	// os
 	RegisterOpCode(OP_OS_GET_WORKING_DIRECTORY, "os.GetWorkingDirectory", opOsGetWorkingDirectory, nil, Out(ast.ConstCxArg_STR))
@@ -181,8 +173,4 @@ func init() {
 	RegisterOpCode(OP_START_CPU_PROFILE, "StartCPUProfile", opStartProfile, In(ast.ConstCxArg_STR, ast.ConstCxArg_I32), nil)
 	RegisterOpCode(OP_STOP_CPU_PROFILE, "StopCPUProfile", opStopProfile, In(ast.ConstCxArg_STR), nil)
 
-	// regexp
-	RegisterOpCode(OP_REGEXP_COMPILE, "regexp.Compile", opRegexpCompile, In(ast.ConstCxArg_STR), Out(Struct("regexp", "Regexp", "r"), ast.ConstCxArg_STR))
-	RegisterOpCode(OP_REGEXP_MUST_COMPILE, "regexp.MustCompile", opRegexpMustCompile, In(ast.ConstCxArg_STR), Out(Struct("regexp", "Regexp", "r")))
-	RegisterOpCode(OP_REGEXP_FIND, "regexp.Regexp.Find", opRegexpFind, In(Struct("regexp", "Regexp", "r"), ast.ConstCxArg_STR), Out(ast.ConstCxArg_STR))
 }

@@ -1,6 +1,6 @@
-// +build os
+// +build regexp
 
-package cxos
+package regexp
 
 import (
 	"github.com/skycoin/cx/cx/ast"
