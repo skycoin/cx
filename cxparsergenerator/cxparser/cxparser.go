@@ -14,15 +14,25 @@ import (
 	"github.com/skycoin/cx/cxparsergenerator/util/profiling"
 )
 
-// ParseSourceCode takes a group of files representing CX `sourceCode` and
-// parses it into CX program structures for `AST`.
+/*
+	ParseSourceCode takes a group of files representing CX `sourceCode` and
+ 	parses it into CX program structures for `AST`.
+
+	 ParseSourceCode performs the steps
+	 step 1 :  preliminarystage
+
+	 step 2 :  passone
+
+	 step 2 : passtwo
+*/
 func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 
 	//local
 	cxpartialparsing.Program = actions.AST
 
-	// Copy the contents of the file pointers containing the CX source
-	// code into sourceCodeCopy
+	/* Copy the contents of the file pointers containing the CX source
+	code into sourceCodeCopy
+	*/
 	sourceCodeCopy := make([]string, len(sourceCode))
 	for i, source := range sourceCode {
 		tmp := bytes.NewBuffer(nil)
@@ -30,11 +40,12 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 		sourceCodeCopy[i] = tmp.String()
 	}
 
-	// We need to traverse the elements by hierarchy first add all the
-	// packages and structs at the same time then add globals, as these
-	// can be of a custom type (and it could be imported) the signatures
-	// of functions and methods are added in the cxpartialparsing.y pass
-
+	/*
+		We need to traverse the elements by hierarchy first add all the
+		packages and structs at the same time then add globals, as these
+		can be of a custom type (and it could be imported) the signatures
+		of functions and methods are added in the cxpartialparsing.y pass
+	*/
 	parseErrors := 0
 	if len(sourceCode) > 0 {
 		parseErrors = preliminarystage(sourceCodeCopy, fileNames)
