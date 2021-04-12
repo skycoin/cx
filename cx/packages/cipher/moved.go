@@ -5,7 +5,6 @@ package cipher
 enum(
 	OP_CIPHER_GENERATE_KEY_PAIR
 _
- */
 
 */
 
