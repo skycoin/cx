@@ -20,8 +20,13 @@ const LITERAL_PLACEHOLDER = "*lit"
 const ID_FN = "identity"
 const INIT_FN = "initDef"
 
+const BOOL_SIZE = 1
+const I8_SIZE = 1
+const I16_SIZE = 2
 const I32_SIZE = 4
 const I64_SIZE = 8
+const F32_SIZE = 4
+const F64_SIZE = 8
 const STR_SIZE = 4
 
 const MARK_SIZE = 1
@@ -57,11 +62,10 @@ var BASIC_TYPES []string = []string{
 //VERY WEIRD
 //gives error, "cx" not found, even if it exists when changed
 
-
 /*
 grep -rn "PARAM_DEFAULT" .
 ./cx/config.go:87:	PARAM_DEFAULT = iota
-./cx/config.go:96:	PARAM_DEFAULT 
+./cx/config.go:96:	PARAM_DEFAULT
 ./cx/opcodes.go:843:	case PARAM_DEFAULT:
 
 grep -rn "PARAM_SLICE" .
@@ -88,12 +92,11 @@ const (
 //doesnt work
 const (
 	PARAM_UNUSED = iota
-	PARAM_DEFAULT 
+	PARAM_DEFAULT
 	PARAM_SLICE
 	PARAM_STRUCT
 )
 */
-
 
 const (
 	CX_SUCCESS = iota //zero can be success
@@ -124,8 +127,8 @@ var ErrorStrings map[int]string = map[int]string{
 }
 
 const (
-	DECL_UNUSED = iota   //if this value appears, program should crash; is error
-	DECL_POINTER		 // 1
+	DECL_UNUSED   = iota //if this value appears, program should crash; is error
+	DECL_POINTER         // 1
 	DECL_DEREF           // 2
 	DECL_ARRAY           // 3
 	DECL_SLICE           // 4
@@ -193,7 +196,7 @@ grep -rn "PASSBY_REFERENCE" .
 ./cx/utilities.go:182:	if arg.PassBy == PASSBY_REFERENCE {
 */
 
-//ERROR: see below, 
+//ERROR: see below,
 const (
 	//PASSBY_UNUSED = iota
 	PASSBY_VALUE = iota
@@ -210,8 +213,8 @@ const (
 */
 
 const (
-	DEREF_UNUSED = iota //reserve zero value, if this value appears, program should crash; should be assert
-	DEREF_ARRAY   		// 1
+	DEREF_UNUSED  = iota //reserve zero value, if this value appears, program should crash; should be assert
+	DEREF_ARRAY          // 1
 	DEREF_FIELD          // 2
 	DEREF_POINTER        // 3
 	DEREF_DEREF          // 4
@@ -241,7 +244,7 @@ const (
 	TYPE_ARRAY
 	TYPE_SLICE
 	TYPE_IDENTIFIER
-    TYPE_COUNT
+	TYPE_COUNT
 )
 
 var TypeCounter int
@@ -310,4 +313,3 @@ func GetArgSize(typ int) int {
 		//panic(CX_INTERNAL_ERROR)
 	}
 }
-

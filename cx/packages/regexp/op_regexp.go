@@ -12,16 +12,6 @@ import (
 
 var regexps map[string]*regexp.Regexp = make(map[string]*regexp.Regexp, 0)
 
-func init() {
-	regexpPkg := ast.MakePackage("regexp")
-	regexpStrct := ast.MakeStruct("Regexp")
-
-	regexpStrct.AddField(ast.MakeArgument("exp", "", 0).AddType(constants.TypeNames[constants.TYPE_STR]).AddPackage(regexpPkg))
-
-	regexpPkg.AddStruct(regexpStrct)
-
-	ast.PROGRAM.AddPackage(regexpPkg)
-}
 
 // regexpCompile is a helper function for `opRegexpMustCompile` and
 // `opRegexpCompile`. `regexpCompile` compiles a `regexp.Regexp` structure

@@ -11,6 +11,7 @@ func GetOpCodeCount() int {
 }
 */
 
+//TODO: WHAT IS AN "OPERATOR"
 func IsOperator(opCode int) bool {
 	return opCode > constants.START_OF_OPERATORS && opCode < constants.END_OF_OPERATORS
 }

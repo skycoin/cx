@@ -5,7 +5,7 @@
 		"github.com/skycoin/skycoin/src/cipher/encoder"
 		"github.com/skycoin/cx/cx/ast"
 		"github.com/skycoin/cx/cx/constants"
-		"github.com/skycoin/cx/parsergenerator/actions"
+		"github.com/skycoin/cx/cxparsergenerator/actions"
 	)
 
 /*
