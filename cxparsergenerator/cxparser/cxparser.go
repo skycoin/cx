@@ -19,6 +19,7 @@ import (
  	parses it into CX program structures for `AST`.
 
 	 ParseSourceCode performs the steps
+
 	 step 1 :  preliminarystage
 
 	 step 2 :  passone
@@ -30,14 +31,15 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 	//local
 	cxpartialparsing.Program = actions.AST
 
-	/* Copy the contents of the file pointers containing the CX source
-	code into sourceCodeCopy
+	/*
+		Copy the contents of the file pointers containing the CX source
+		code into sourceCodeStrings
 	*/
-	sourceCodeCopy := make([]string, len(sourceCode))
+	sourceCodeStrings := make([]string, len(sourceCode))
 	for i, source := range sourceCode {
 		tmp := bytes.NewBuffer(nil)
 		io.Copy(tmp, source)
-		sourceCodeCopy[i] = tmp.String()
+		sourceCodeStrings[i] = tmp.String()
 	}
 
 	/*
@@ -48,7 +50,7 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 	*/
 	parseErrors := 0
 	if len(sourceCode) > 0 {
-		parseErrors = preliminarystage(sourceCodeCopy, fileNames)
+		parseErrors = preliminarystage(sourceCodeStrings, fileNames)
 	}
 
 	//package level program
@@ -66,14 +68,14 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 	*/
 	if osPkg, err := actions.AST.GetPackage(constants.OS_PKG); err == nil {
 		if _, err := osPkg.GetGlobal(constants.OS_ARGS); err != nil {
-			arg0 := ast.MakeArgument(constants.OS_ARGS, "", -1).AddType(constants.TypeNames[constants.TYPE_UNDEFINED])
-			arg0.Package = osPkg
+			argzero := ast.MakeArgument(constants.OS_ARGS, "", -1).AddType(constants.TypeNames[constants.TYPE_UNDEFINED])
+			argzero.Package = osPkg
 
-			arg1 := ast.MakeArgument(constants.OS_ARGS, "", -1).AddType(constants.TypeNames[constants.TYPE_STR])
-			arg1 = actions.DeclarationSpecifiers(arg1, []int{0}, constants.DECL_BASIC)
-			arg1 = actions.DeclarationSpecifiers(arg1, []int{0}, constants.DECL_SLICE)
+			argone := ast.MakeArgument(constants.OS_ARGS, "", -1).AddType(constants.TypeNames[constants.TYPE_STR])
+			argone = actions.DeclarationSpecifiers(argone, []int{0}, constants.DECL_BASIC)
+			argone = actions.DeclarationSpecifiers(argzero, []int{0}, constants.DECL_SLICE)
 
-			actions.DeclareGlobalInPackage(osPkg, arg0, arg1, nil, false)
+			actions.DeclareGlobalInPackage(osPkg, argzero, argone, nil, false)
 		}
 	}
 
@@ -83,7 +85,7 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 	 The pass two of parsing that generates the actual output.
 	*/
 
-	for i, source := range sourceCodeCopy {
+	for i, source := range sourceCodeStrings {
 
 		/*
 			Because of an unkown reason, sometimes some CX programs
