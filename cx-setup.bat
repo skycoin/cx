@@ -50,7 +50,7 @@ rem check for %BIN_PATH% in %PATH%
 set BIN_PATH=%GI_PATH%\bin
 set GH_PATH=%GI_PATH%\src\github.com
 set SKYCOIN_PATH=%GH_PATH%\skycoin
-set CXGO_PATH=%SKYCOIN_PATH%\cx\cxparsergenerator
+set CXGO_PATH=%SKYCOIN_PATH%\cx\cxparser
 rem attempt to replace %BIN_PATH% text with nothing...
 call set COMPARISON_PATH=%%PATH:%BIN_PATH%=%%
 rem ...if found/replaced %BIN_PATH%, below vars aren't equal

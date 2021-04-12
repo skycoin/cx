@@ -1,4 +1,4 @@
-package cxparser
+package cxparsering
 
 import (
 	"bytes"
@@ -9,9 +9,9 @@ import (
 	"github.com/skycoin/cx/cx/constants"
 	globals2 "github.com/skycoin/cx/cx/globals"
 
-	"github.com/skycoin/cx/cxparsergenerator/actions"
-	cxpartialparsing "github.com/skycoin/cx/cxparsergenerator/cxpartialparsing"
-	"github.com/skycoin/cx/cxparsergenerator/util/profiling"
+	"github.com/skycoin/cx/cxparser/actions"
+	cxpartialparsing "github.com/skycoin/cx/cxparser/cxpartialparsing"
+	"github.com/skycoin/cx/cxparser/util/profiling"
 )
 
 /*

@@ -2,10 +2,11 @@ package actions
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
-	constants2 "github.com/skycoin/cx/cxparsergenerator/constants"
-	"os"
+	constants2 "github.com/skycoin/cx/cxparser/constants"
 )
 
 // PostfixExpressionArray...

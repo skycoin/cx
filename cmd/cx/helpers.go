@@ -2,21 +2,21 @@ package main
 
 import (
 	"fmt"
-	"github.com/skycoin/cx/cx/opcodes"
 	"os"
 	"os/user"
 	"path/filepath"
 	"strconv"
+
+	"github.com/skycoin/cx/cx/opcodes"
 
 	repl "github.com/skycoin/cx/cmd/cxrepl"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/globals"
 	"github.com/skycoin/cx/cx/util"
-	"github.com/skycoin/cx/cxparsergenerator/actions"
-	"github.com/skycoin/cx/cxparsergenerator/cxparser"
-	cxgo "github.com/skycoin/cx/cxparsergenerator/cxparsingcompletor"
-	"github.com/skycoin/cx/cxparsergenerator/util/profiling"
+	"github.com/skycoin/cx/cxparser/actions"
+	cxgo "github.com/skycoin/cx/cxparser/cxparsingcompletor"
+	"github.com/skycoin/cx/cxparser/util/profiling"
 )
 
 func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File) bool {

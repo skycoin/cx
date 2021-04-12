@@ -42,12 +42,12 @@ install:
 
 # scripts to run before build
 before_build:
-  - goyacc -o %GOPATH%\src\github.com\skycoin\cx\cxparsergenerator\cxpartialparsing\parser.go %GOPATH%\src\github.com\skycoin\cx\cxparsergenerator\cxpartialparsing\grammer.y
-  - goyacc -o %GOPATH%\src\github.com\skycoin\cx\cxparsergenerator\cxparsingcompletor\lexer.go %GOPATH%\src\github.com\skycoin\cx\cxparsergenerator\cxparsingcompletor\lexer.y
+  - goyacc -o %GOPATH%\src\github.com\skycoin\cx\cxparser\cxpartialparsing\parser.go %GOPATH%\src\github.com\skycoin\cx\cxparser\cxpartialparsing\grammer.y
+  - goyacc -o %GOPATH%\src\github.com\skycoin\cx\cxparser\cxparsingcompletor\lexer.go %GOPATH%\src\github.com\skycoin\cx\cxparser\cxparsingcompletor\lexer.y
 
 # use custom build_script
 build_script:
-  - go build -race -tags="base opengl" -i -o %GOPATH%\bin\cx.exe github.com\skycoin\cx\cxparsergenerator\
+  - go build -race -tags="base opengl" -i -o %GOPATH%\bin\cx.exe github.com\skycoin\cx\cxparser\
 
 # Copy cx executable into project folder to avoid relative path problems
 after_build:
@@ -55,7 +55,7 @@ after_build:
 
 # use custom test_script
 test_script:
-  - go test -race -tags="base opengl" -i -o %GOPATH%\bin\cx github.com\skycoin\cx\cxparsergenerator\
+  - go test -race -tags="base opengl" -i -o %GOPATH%\bin\cx github.com\skycoin\cx\cxparser\
   - cmd: cx.exe %GOPATH%\src\github.com\skycoin\cx\lib\args.cx %GOPATH%\src\github.com\skycoin\cx\tests\main.cx ++cxpath=%GOPATH%\bin\cx.exe ++wdir=%GOPATH%\src\github.com\skycoin\cx\tests ++disable-tests=gui,issue
 
 #specify artifacts to upload

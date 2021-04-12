@@ -8,13 +8,13 @@ import (
 	"bytes"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
-	"github.com/skycoin/cx/cxparsergenerator/actions"
+	"github.com/skycoin/cx/cxparser/actions"
 )
 
 /*
    This is a computer generated file
    - parser.go is generated from grammer.y via
-   - ./bin/goyacc -o cxparsergenerator/cxpartialparsing/parser.go cxparsergenerator/cxpartialparsing/grammer.y
+   - ./bin/goyacc -o cxparser/cxpartialparsing/parser.go cxparser/cxpartialparsing/grammer.y
 */
 
 var Program *ast.CXProgram

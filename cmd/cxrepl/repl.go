@@ -15,10 +15,10 @@ import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/execute"
 
-	"github.com/skycoin/cx/cxparsergenerator/actions"
-	"github.com/skycoin/cx/cxparsergenerator/cxparser"
-	cxparsingcompletor "github.com/skycoin/cx/cxparsergenerator/cxparsingcompletor"
-	cxpartialparsing "github.com/skycoin/cx/cxparsergenerator/cxpartialparsing"
+	"github.com/skycoin/cx/cxparser/actions"
+	"github.com/skycoin/cx/cxparser/cxparser"
+	cxparsingcompletor "github.com/skycoin/cx/cxparser/cxparsingcompletor"
+	cxpartialparsing "github.com/skycoin/cx/cxparser/cxpartialparsing"
 )
 
 const VERSION = "0.8.0"

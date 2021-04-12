@@ -1,10 +1,10 @@
-package cxparser
+package cxparsering
 
 import (
 	"bytes"
 
-	cxparsingcompletor "github.com/skycoin/cx/cxparsergenerator/cxparsingcompletor"
-	cxpartialparsing "github.com/skycoin/cx/cxparsergenerator/cxpartialparsing"
+	cxparsingcompletor "github.com/skycoin/cx/cxparser/cxparsingcompletor"
+	cxpartialparsing "github.com/skycoin/cx/cxparser/cxpartialparsing"
 )
 
 /*

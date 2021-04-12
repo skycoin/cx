@@ -1,4 +1,4 @@
-package cxparser
+package cxparsering
 
 import (
 	"bufio"
@@ -9,11 +9,11 @@ import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	globals2 "github.com/skycoin/cx/cx/globals"
-	"github.com/skycoin/cx/cxparsergenerator/actions"
-	constants2 "github.com/skycoin/cx/cxparsergenerator/constants"
-	cxpartialparsing "github.com/skycoin/cx/cxparsergenerator/cxpartialparsing"
-	"github.com/skycoin/cx/cxparsergenerator/globals"
-	"github.com/skycoin/cx/cxparsergenerator/util/profiling"
+	"github.com/skycoin/cx/cxparser/actions"
+	constants2 "github.com/skycoin/cx/cxparser/constants"
+	cxpartialparsing "github.com/skycoin/cx/cxparser/cxpartialparsing"
+	"github.com/skycoin/cx/cxparser/globals"
+	"github.com/skycoin/cx/cxparser/util/profiling"
 )
 
 // preliminarystage performs a first pass for the CX cxgo. Globals, packages and

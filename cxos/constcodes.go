@@ -3,7 +3,7 @@
 package cxos
 
 import (
-	"github.com/skycoin/cx/cxparsergenerator/actions"
+	"github.com/skycoin/cx/cxparser/actions"
 )
 
 const (
