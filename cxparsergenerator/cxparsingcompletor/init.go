@@ -2,6 +2,7 @@ package parsingcompletor
 
 import (
 	"github.com/skycoin/cx/cx/opcodes"
+	cxinit "github.com/skycoin/cx/cx/init"
 )
 
 var Initialized bool
@@ -12,7 +13,8 @@ func init() {
 
 func InitCXCore() {
 	if !Initialized {
-		opcodes.LoadOpCodeTables()
+		opcodes.RegisterOpcodes()
+		cxinit.RegisterPackages()
 		Initialized = true
 	}
 }

@@ -1,4 +1,4 @@
-// +build os
+// +build cxos
 
 package cxos
 

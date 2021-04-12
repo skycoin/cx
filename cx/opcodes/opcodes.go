@@ -3,7 +3,8 @@ package opcodes
 import (
 	"fmt"
 	"github.com/skycoin/cx/cx/ast"
-	"github.com/skycoin/cx/cx/constants"
+    "github.com/skycoin/cx/cx/constants"
+    "github.com/skycoin/cx/cx/globals"
 )
 
 // RegisterPackage registers a package on the CX standard library. This does not create a `CXPackage` structure,
@@ -19,34 +20,6 @@ func GetOpCodeCount() int {
 }
 */
 
-// RegisterOperator ...
-func RegisterOperator(code int, name string, handler ast.OpcodeHandler, inputs []*ast.CXArgument, outputs []*ast.CXArgument, atomicType int, operator int) {
-	RegisterOpCode(code, name, handler, inputs, outputs)
-	native := ast.Natives[code]
-	ast.Operators[ast.GetTypedOperatorOffset(atomicType, operator)] = native
-}
-
-// MakeNativeFunction ...
-func MakeNativeFunction(opCode int, inputs []*ast.CXArgument, outputs []*ast.CXArgument) *ast.CXFunction {
-	fn := &ast.CXFunction{
-		IsBuiltin: true,
-		OpCode:   opCode,
-	}
-
-	offset := 0
-	for _, inp := range inputs {
-		inp.Offset = offset
-		offset += ast.GetSize(inp)
-		fn.Inputs = append(fn.Inputs, inp)
-	}
-	for _, out := range outputs {
-		fn.Outputs = append(fn.Outputs, out)
-		out.Offset = offset
-		offset += ast.GetSize(out)
-	}
-
-	return fn
-}
 
 // RegisterOpCode ...
 func RegisterOpCode(code int, name string, handler ast.OpcodeHandler, inputs []*ast.CXArgument, outputs []*ast.CXArgument) {
@@ -71,6 +44,45 @@ func RegisterOpCode(code int, name string, handler ast.OpcodeHandler, inputs []*
 	ast.Natives[code] = MakeNativeFunction(code, inputs, outputs)
 }
 
+// RegisterFunction ...
+func RegisterFunction(name string, handler ast.OpcodeHandler, inputs []*ast.CXArgument, outputs []*ast.CXArgument) {
+	RegisterOpCode(globals.OpCodeSystemCounter, name, handler, inputs, outputs)
+	globals.OpCodeSystemCounter++
+}
+
+// RegisterOperator ...
+func RegisterOperator(name string, handler ast.OpcodeHandler, inputs []*ast.CXArgument, outputs []*ast.CXArgument, atomicType int, operator int) {
+	RegisterOpCode(globals.OpCodeSystemCounter, name, handler, inputs, outputs)
+	native := ast.Natives[globals.OpCodeSystemCounter]
+	ast.Operators[ast.GetTypedOperatorOffset(atomicType, operator)] = native
+	globals.OpCodeSystemCounter++
+}
+
+// MakeNativeFunction ...
+func MakeNativeFunction(opCode int, inputs []*ast.CXArgument, outputs []*ast.CXArgument) *ast.CXFunction {
+	fn := &ast.CXFunction{
+		IsBuiltin: true,
+		OpCode:   opCode,
+	}
+
+	offset := 0
+	for _, inp := range inputs {
+		inp.Offset = offset
+		offset += ast.GetSize(inp)
+		fn.Inputs = append(fn.Inputs, inp)
+	}
+	for _, out := range outputs {
+		fn.Outputs = append(fn.Outputs, out)
+		out.Offset = offset
+		offset += ast.GetSize(out)
+	}
+
+	return fn
+}
+
+
+
+
 /*
 // Debug helper function used to find opcodes when they are not registered
 func dumpOpCodes(opCode int) {
@@ -86,8 +98,18 @@ func dumpOpCodes(opCode int) {
 	fmt.Printf("opCode : %d\n", opCode)
 }*/
 
+// Pointer takes an already defined `CXArgument` and turns it into a pointer.
+func Pointer(arg *ast.CXArgument) *ast.CXArgument {
+	arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_POINTER)
+	arg.IsPointer = true
+	arg.Size = constants.TYPE_POINTER_SIZE
+	arg.TotalSize = constants.TYPE_POINTER_SIZE
+
+	return arg
+}
+
 // Struct helper for creating a struct parameter. It creates a
-// `ast.CXArgument` named `argName`, that represents a structure instance of
+// `CXArgument` named `argName`, that represents a structure instane of
 // `strctName`, from package `pkgName`.
 func Struct(pkgName, strctName, argName string) *ast.CXArgument {
 	pkg, err := ast.PROGRAM.GetPackage(pkgName)
@@ -106,6 +128,32 @@ func Struct(pkgName, strctName, argName string) *ast.CXArgument {
 	arg.TotalSize = strct.Size
 	arg.CustomType = strct
 
+	return arg
+}
+
+// Slice Helper function for creating parameters for standard library operators.
+// The current standard library only uses basic types and slices. If more options are needed, modify this function
+func Slice(typCode int) *ast.CXArgument {
+	arg := Param(typCode)
+	arg.IsSlice = true
+	arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_SLICE)
+	return arg
+}
+
+// Func Helper function for creating function parameters for standard library operators.
+// The current standard library only uses basic types and slices. If more options are needed, modify this function
+func Func(pkg *ast.CXPackage, inputs []*ast.CXArgument, outputs []*ast.CXArgument) *ast.CXArgument {
+	arg := Param(constants.TYPE_FUNC)
+	arg.Package = pkg
+	arg.Inputs = inputs
+	arg.Outputs = outputs
+	return arg
+}
+
+// Param ...
+func Param(typCode int) *ast.CXArgument {
+	arg := ast.MakeArgument("", "", -1).AddType(constants.TypeNames[typCode])
+	arg.IsLocalDeclaration = true
 	return arg
 }
 

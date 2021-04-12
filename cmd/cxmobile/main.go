@@ -16,7 +16,7 @@ import (
 	"golang.org/x/mobile/gl"
 
 	"github.com/skycoin/cx/cx"
-	"github.com/skycoin/cx/cxfx"
+	"github.com/skycoin/cx/packages/cxfx"
 )
 
 func startCXVM() {
