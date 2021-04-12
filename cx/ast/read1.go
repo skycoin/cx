@@ -15,52 +15,72 @@ func ReadBool(fp int, inp *CXArgument) bool {
 
 // ReadI8 ...
 func ReadI8(fp int, inp *CXArgument) int8 {
-	return helper.Deserialize_i8(ReadMemory(GetOffset_i8(fp, inp), inp))
+	offset := GetOffset_i8(fp, inp)
+	readMemory := PROGRAM.Memory[offset : offset+1]
+	return helper.Deserialize_i8(readMemory)
 }
 
 // ReadI16 ...
 func ReadI16(fp int, inp *CXArgument) int16 {
-	return helper.Deserialize_i16(ReadMemory(GetOffset_i16(fp, inp), inp))
+	offset := GetOffset_i16(fp, inp)
+	readMemory := PROGRAM.Memory[offset : offset+2]
+	return helper.Deserialize_i16(readMemory)
 }
 
 // ReadI32 ...
 func ReadI32(fp int, inp *CXArgument) int32 {
-	return helper.Deserialize_i32(ReadMemory(GetOffset_i32(fp, inp), inp))
+	offset := GetOffset_i32(fp, inp)
+	readMemory := PROGRAM.Memory[offset : offset+4]
+	return helper.Deserialize_i32(readMemory)
 }
 
 // ReadI64 ...
 func ReadI64(fp int, inp *CXArgument) int64 {
-	return helper.Deserialize_i64(ReadMemory(GetOffset_i64(fp, inp), inp))
+	offset := GetOffset_i64(fp, inp)
+	readMemory := PROGRAM.Memory[offset : offset+8]
+	return helper.Deserialize_i64(readMemory)
 }
 
 // ReadUI8 ...
 func ReadUI8(fp int, inp *CXArgument) uint8 {
-	return helper.Deserialize_ui8(ReadMemory(GetOffset_ui8(fp, inp), inp))
+	offset := GetOffset_ui8(fp, inp)
+	readMemory := PROGRAM.Memory[offset : offset+1]
+	return helper.Deserialize_ui8(readMemory)
 }
 
 // ReadUI16 ...
 func ReadUI16(fp int, inp *CXArgument) uint16 {
-	return helper.Deserialize_ui16(ReadMemory(GetOffset_ui16(fp, inp), inp))
+	offset := GetOffset_ui16(fp, inp)
+	readMemory := PROGRAM.Memory[offset : offset+2]
+	return helper.Deserialize_ui16(readMemory)
 }
 
 // ReadUI32 ...
 func ReadUI32(fp int, inp *CXArgument) uint32 {
-	return helper.Deserialize_ui32(ReadMemory(GetOffset_ui32(fp, inp), inp))
+	offset := GetOffset_ui32(fp, inp)
+	readMemory := PROGRAM.Memory[offset : offset+4]
+	return helper.Deserialize_ui32(readMemory)
 }
 
 // ReadUI64 ...
 func ReadUI64(fp int, inp *CXArgument) uint64 {
-	return helper.Deserialize_ui64(ReadMemory(GetOffset_ui64(fp, inp), inp))
+	offset := GetOffset_ui64(fp, inp)
+	readMemory := PROGRAM.Memory[offset : offset+8]
+	return helper.Deserialize_ui64(readMemory)
 }
 
 // ReadF32 ...
 func ReadF32(fp int, inp *CXArgument) float32 {
-	return helper.Deserialize_f32(ReadMemory(GetOffset_f32(fp, inp), inp))
+	offset := GetOffset_f32(fp, inp)
+	readMemory := PROGRAM.Memory[offset : offset+4]
+	return helper.Deserialize_f32(readMemory)
 }
 
 // ReadF64 ...
 func ReadF64(fp int, inp *CXArgument) float64 {
-	return helper.Deserialize_f64(ReadMemory(GetOffset_f64(fp, inp), inp))
+	offset := GetOffset_f64(fp, inp)
+	readMemory := PROGRAM.Memory[offset : offset+8]
+	return helper.Deserialize_f64(readMemory)
 }
 
 // ReadSlice ...
