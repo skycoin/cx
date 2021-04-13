@@ -27,7 +27,7 @@ func SliceLiteralExpression(typSpec int, exprs []*ast.CXExpression) []*ast.CXExp
 	slcVar.TotalSize = constants.TYPE_POINTER_SIZE
 
 	slcVarExpr.Outputs = append(slcVarExpr.Outputs, slcVar)
-	slcVar.Package = pkg
+	slcVar.ArgDetails.Package = pkg
 	slcVar.PreviouslyDeclared = true
 
 	result = append(result, slcVarExpr)
@@ -36,9 +36,9 @@ func SliceLiteralExpression(typSpec int, exprs []*ast.CXExpression) []*ast.CXExp
 	for _, expr := range exprs {
 		if expr.IsArrayLiteral() {
 			symInp := ast.MakeArgument(symName, CurrentFile, LineNo).AddType(constants.TypeNames[typSpec])
-			symInp.Package = pkg
+			symInp.ArgDetails.Package = pkg
 			symOut := ast.MakeArgument(symName, CurrentFile, LineNo).AddType(constants.TypeNames[typSpec])
-			symOut.Package = pkg
+			symOut.ArgDetails.Package = pkg
 
 			endPointsCounter++
 
@@ -89,12 +89,12 @@ func SliceLiteralExpression(typSpec int, exprs []*ast.CXExpression) []*ast.CXExp
 
 	symOutput := ast.MakeArgument(symNameOutput, CurrentFile, LineNo).AddType(constants.TypeNames[typSpec])
 	symOutput.IsSlice = true
-	symOutput.Package = pkg
+	symOutput.ArgDetails.Package = pkg
 	symOutput.PreviouslyDeclared = true
 
 	symInput := ast.MakeArgument(symName, CurrentFile, LineNo).AddType(constants.TypeNames[typSpec])
 	symInput.IsSlice = true
-	symInput.Package = pkg
+	symInput.ArgDetails.Package = pkg
 
 	symInput.TotalSize = constants.TYPE_POINTER_SIZE
 	symOutput.TotalSize = constants.TYPE_POINTER_SIZE
@@ -116,14 +116,14 @@ func PrimaryStructLiteral(ident string, strctFlds []*ast.CXExpression) []*ast.CX
 	if pkg, err := AST.GetCurrentPackage(); err == nil {
 		if strct, err := AST.GetStruct(ident, pkg.Name); err == nil {
 			for _, expr := range strctFlds {
-				name := expr.Outputs[0].Name
+				name := expr.Outputs[0].ArgDetails.Name
 
 				fld := ast.MakeArgument(name, CurrentFile, LineNo)
 				fld.Type = expr.Outputs[0].Type
 
 				expr.SetExpressionType(ast.CXEXPR_STRUCT_LITERAL)
 
-				expr.Outputs[0].Package = pkg
+				expr.Outputs[0].ArgDetails.Package = pkg
 				// expr.ProgramOutput[0].Program = AST
 
 				if expr.Outputs[0].CustomType == nil {
@@ -134,7 +134,7 @@ func PrimaryStructLiteral(ident string, strctFlds []*ast.CXExpression) []*ast.CX
 
 				expr.Outputs[0].Size = strct.Size
 				expr.Outputs[0].TotalSize = strct.Size
-				expr.Outputs[0].Name = ident
+				expr.Outputs[0].ArgDetails.Name = ident
 				expr.Outputs[0].Fields = append(expr.Outputs[0].Fields, fld)
 				result = append(result, expr)
 			}
@@ -156,17 +156,17 @@ func PrimaryStructLiteralExternal(impName string, ident string, strctFlds []*ast
 				for _, expr := range strctFlds {
 					fld := ast.MakeArgument("", CurrentFile, LineNo)
 					fld.AddType(constants.TypeNames[constants.TYPE_IDENTIFIER])
-					fld.Name = expr.Outputs[0].Name
+					fld.ArgDetails.Name = expr.Outputs[0].ArgDetails.Name
 
 					expr.SetExpressionType(ast.CXEXPR_STRUCT_LITERAL)
 
-					expr.Outputs[0].Package = pkg
+					expr.Outputs[0].ArgDetails.Package = pkg
 					// expr.ProgramOutput[0].Program = AST
 
 					expr.Outputs[0].CustomType = strct
 					expr.Outputs[0].Size = strct.Size
 					expr.Outputs[0].TotalSize = strct.Size
-					expr.Outputs[0].Name = ident
+					expr.Outputs[0].ArgDetails.Name = ident
 					expr.Outputs[0].Fields = append(expr.Outputs[0].Fields, fld)
 					result = append(result, expr)
 				}
@@ -201,7 +201,7 @@ func ArrayLiteralExpression(arrSizes []int, typSpec int, exprs []*ast.CXExpressi
 	arrVar.TotalSize = arrVar.Size * TotalLength(arrVar.Lengths)
 
 	arrVarExpr.Outputs = append(arrVarExpr.Outputs, arrVar)
-	arrVar.Package = pkg
+	arrVar.ArgDetails.Package = pkg
 	arrVar.PreviouslyDeclared = true
 
 	result = append(result, arrVarExpr)
@@ -212,7 +212,7 @@ func ArrayLiteralExpression(arrSizes []int, typSpec int, exprs []*ast.CXExpressi
 			expr.RemoveExpressionType(ast.CXEXPR_ARRAY_LITERAL)
 
 			sym := ast.MakeArgument(symName, CurrentFile, LineNo).AddType(constants.TypeNames[typSpec])
-			sym.Package = pkg
+			sym.ArgDetails.Package = pkg
 			sym.PreviouslyDeclared = true
 
 			if sym.Type == constants.TYPE_STR || sym.Type == constants.TYPE_AFF {
@@ -255,14 +255,14 @@ func ArrayLiteralExpression(arrSizes []int, typSpec int, exprs []*ast.CXExpressi
 	symOutput := ast.MakeArgument(symNameOutput, CurrentFile, LineNo).AddType(constants.TypeNames[typSpec])
 	// symOutput.Lengths = append(symOutput.Lengths, arrSizes[len(arrSizes)-1])
 	symOutput.Lengths = arrSizes
-	symOutput.Package = pkg
+	symOutput.ArgDetails.Package = pkg
 	symOutput.PreviouslyDeclared = true
 	symOutput.TotalSize = symOutput.Size * TotalLength(symOutput.Lengths)
 
 	symInput := ast.MakeArgument(symName, CurrentFile, LineNo).AddType(constants.TypeNames[typSpec])
 	// symInput.Lengths = append(symInput.Lengths, arrSizes[len(arrSizes)-1])
 	symInput.Lengths = arrSizes
-	symInput.Package = pkg
+	symInput.ArgDetails.Package = pkg
 	symInput.PreviouslyDeclared = true
 	symInput.TotalSize = symInput.Size * TotalLength(symInput.Lengths)
 

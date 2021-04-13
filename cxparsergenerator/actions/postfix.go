@@ -2,10 +2,11 @@ package actions
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	constants2 "github.com/skycoin/cx/cxparsergenerator/constants"
-	"os"
 )
 
 // PostfixExpressionArray...
@@ -70,7 +71,7 @@ func PostfixExpressionArray(prevExprs []*ast.CXExpression, postExprs []*ast.CXEx
 			fld.Indexes = append(fld.Indexes, postExprs[len(postExprs)-1].Outputs[0])
 		} else {
 			sym := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(constants.TypeNames[postExprs[len(postExprs)-1].Operator.Outputs[0].Type])
-			sym.Package = postExprs[len(postExprs)-1].Package
+			sym.ArgDetails.Package = postExprs[len(postExprs)-1].Package
 			sym.PreviouslyDeclared = true
 			postExprs[len(postExprs)-1].AddOutput(sym)
 
@@ -87,7 +88,7 @@ func PostfixExpressionArray(prevExprs []*ast.CXExpression, postExprs []*ast.CXEx
 			idxSym.Size = postExprs[len(postExprs)-1].Operator.Outputs[0].Size
 			idxSym.TotalSize = ast.GetSize(postExprs[len(postExprs)-1].Operator.Outputs[0])
 
-			idxSym.Package = postExprs[len(postExprs)-1].Package
+			idxSym.ArgDetails.Package = postExprs[len(postExprs)-1].Package
 			idxSym.PreviouslyDeclared = true
 			postExprs[len(postExprs)-1].Outputs = append(postExprs[len(postExprs)-1].Outputs, idxSym)
 
@@ -139,7 +140,7 @@ func PostfixExpressionEmptyFunCall(prevExprs []*ast.CXExpression) []*ast.CXExpre
 		// expr.ProgramInput = append(expr.ProgramInput, inp)
 
 	} else if prevExprs[len(prevExprs)-1].Operator == nil {
-		if opCode, ok := ast.OpCodes[prevExprs[len(prevExprs)-1].Outputs[0].Name]; ok {
+		if opCode, ok := ast.OpCodes[prevExprs[len(prevExprs)-1].Outputs[0].ArgDetails.Name]; ok {
 			if pkg, err := AST.GetCurrentPackage(); err == nil {
 				prevExprs[0].Package = pkg
 			}
@@ -159,7 +160,7 @@ func PostfixExpressionFunCall(prevExprs []*ast.CXExpression, args []*ast.CXExpre
 		// prevExprs[len(prevExprs) - 1].IsMethodCall = true
 
 	} else if prevExprs[len(prevExprs)-1].Operator == nil {
-		if opCode, ok := ast.OpCodes[prevExprs[len(prevExprs)-1].Outputs[0].Name]; ok {
+		if opCode, ok := ast.OpCodes[prevExprs[len(prevExprs)-1].Outputs[0].ArgDetails.Name]; ok {
 			if pkg, err := AST.GetCurrentPackage(); err == nil {
 				prevExprs[0].Package = pkg
 			}
@@ -222,7 +223,7 @@ func PostfixExpressionField(prevExprs []*ast.CXExpression, ident string) []*ast.
 		out.IsArray = opOut.IsArray
 		out.IsReference = opOut.IsReference
 		out.Lengths = opOut.Lengths
-		out.Package = lastExpr.Package
+		out.ArgDetails.Package = lastExpr.Package
 		out.PreviouslyDeclared = true
 		out.IsRest = true
 
@@ -235,7 +236,7 @@ func PostfixExpressionField(prevExprs []*ast.CXExpression, ident string) []*ast.
 		inp.CustomType = opOut.CustomType
 		inp.Size = opOut.Size
 		inp.TotalSize = opOut.TotalSize
-		inp.Package = lastExpr.Package
+		inp.ArgDetails.Package = lastExpr.Package
 		inp.IsRest = true
 
 		expr := ast.MakeExpression(nil, lastExpr.FileName, lastExpr.FileLine)
@@ -257,7 +258,7 @@ func PostfixExpressionField(prevExprs []*ast.CXExpression, ident string) []*ast.
 		// left.DereferenceOperations = append(left.DereferenceOperations, cxcore.DEREF_FIELD)
 		left.IsStruct = true
 		fld := ast.MakeArgument(ident, CurrentFile, LineNo)
-		fld.AddType(constants.TypeNames[constants.TYPE_IDENTIFIER]).AddPackage(left.Package)
+		fld.AddType(constants.TypeNames[constants.TYPE_IDENTIFIER]).AddPackage(left.ArgDetails.Package)
 		left.Fields = append(left.Fields, fld)
 		return prevExprs
 	}
@@ -270,35 +271,35 @@ func PostfixExpressionField(prevExprs []*ast.CXExpression, ident string) []*ast.
 		panic(err)
 	}
 
-	if imp, err := pkg.GetImport(left.Name); err == nil {
+	if imp, err := pkg.GetImport(left.ArgDetails.Name); err == nil {
 		// the external property will be propagated to the following arguments
 		// this way we avoid considering these arguments as module names
 
-		if constants2.IsCorePackage(left.Name) {
+		if constants2.IsCorePackage(left.ArgDetails.Name) {
 
-			//TODO: constants.ConstCodes[left.Name+"."+ident]
+			//TODO: constants.ConstCodes[left.ArgDetails.Name+"."+ident]
 			//TODO: only play ConstCodes are used
 			//Is used for constant declaration? But only for core packages?
-			if code, ok := ConstCodes[left.Name+"."+ident]; ok {
+			if code, ok := ConstCodes[left.ArgDetails.Name+"."+ident]; ok {
 				constant := Constants[code]
 				val := WritePrimary(constant.Type, constant.Value, false)
 				prevExprs[len(prevExprs)-1].Outputs[0] = val[0].Outputs[0]
 				return prevExprs
-			} else if _, ok := ast.OpCodes[left.Name+"."+ident]; ok {
+			} else if _, ok := ast.OpCodes[left.ArgDetails.Name+"."+ident]; ok {
 				// then it's a native
 				// TODO: we'd be referring to the function itself, not a function call
 				// (functions as first-class objects)
-				left.Name = left.Name + "." + ident
+				left.ArgDetails.Name = left.ArgDetails.Name + "." + ident
 				return prevExprs
 			}
 		}
 
-		left.Package = imp
+		left.ArgDetails.Package = imp
 
 		if glbl, err := imp.GetGlobal(ident); err == nil {
 			// then it's a global
 			// prevExprs[len(prevExprs)-1].ProgramOutput[0] = glbl
-			prevExprs[len(prevExprs)-1].Outputs[0].Name = glbl.Name
+			prevExprs[len(prevExprs)-1].Outputs[0].ArgDetails.Name = glbl.ArgDetails.Name
 			prevExprs[len(prevExprs)-1].Outputs[0].Type = glbl.Type
 			prevExprs[len(prevExprs)-1].Outputs[0].CustomType = glbl.CustomType
 			prevExprs[len(prevExprs)-1].Outputs[0].Size = glbl.Size
@@ -306,7 +307,7 @@ func PostfixExpressionField(prevExprs []*ast.CXExpression, ident string) []*ast.
 			prevExprs[len(prevExprs)-1].Outputs[0].IsPointer = glbl.IsPointer
 			prevExprs[len(prevExprs)-1].Outputs[0].IsSlice = glbl.IsSlice
 			prevExprs[len(prevExprs)-1].Outputs[0].IsStruct = glbl.IsStruct
-			prevExprs[len(prevExprs)-1].Outputs[0].Package = glbl.Package
+			prevExprs[len(prevExprs)-1].Outputs[0].ArgDetails.Package = glbl.ArgDetails.Package
 		} else if fn, err := imp.GetFunction(ident); err == nil {
 			// then it's a function
 			// not sure about this next line
@@ -321,17 +322,17 @@ func PostfixExpressionField(prevExprs []*ast.CXExpression, ident string) []*ast.
 		}
 	} else {
 		// then left is not a package name
-		if constants2.IsCorePackage(left.Name) {
-			println(ast.CompilationError(left.FileName, left.FileLine),
+		if constants2.IsCorePackage(left.ArgDetails.Name) {
+			println(ast.CompilationError(left.ArgDetails.FileName, left.ArgDetails.FileLine),
 				fmt.Sprintf("identifier '%s' does not exist",
-					left.Name))
+					left.ArgDetails.Name))
 			os.Exit(constants.CX_COMPILATION_ERROR)
 		}
 		// then it's a struct
 		left.IsStruct = true
 
 		fld := ast.MakeArgument(ident, CurrentFile, LineNo)
-		fld.AddType(constants.TypeNames[constants.TYPE_IDENTIFIER]).AddPackage(left.Package)
+		fld.AddType(constants.TypeNames[constants.TYPE_IDENTIFIER]).AddPackage(left.ArgDetails.Package)
 
 		left.Fields = append(left.Fields, fld)
 	}

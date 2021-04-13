@@ -11,7 +11,7 @@ import (
 // For example, `foo = Item{x: 10, y: 20}` is converted to: `foo.x = 10; foo.y = 20;`.
 func assignStructLiteralFields(to []*ast.CXExpression, from []*ast.CXExpression, name string) []*ast.CXExpression {
 	for _, f := range from {
-		f.Outputs[0].Name = name
+		f.Outputs[0].ArgDetails.Name = name
 
 		if len(to[0].Outputs[0].Indexes) > 0 {
 			f.Outputs[0].Lengths = to[0].Outputs[0].Lengths
@@ -32,7 +32,7 @@ func StructLiteralAssignment(to []*ast.CXExpression, from []*ast.CXExpression) [
 	// If the last expression in `from` is declared as pointer
 	// then it means the whole struct literal needs to be passed by reference.
 	if !hasDeclSpec(ast.GetAssignmentElement(lastFrom.Outputs[0]), constants.DECL_POINTER) {
-		return assignStructLiteralFields(to, from, to[0].Outputs[0].Name)
+		return assignStructLiteralFields(to, from, to[0].Outputs[0].ArgDetails.Name)
 	} else {
 		// And we also need an auxiliary variable to point to,
 		// otherwise we'd be trying to assign the fields to a nil value.
@@ -44,7 +44,7 @@ func StructLiteralAssignment(to []*ast.CXExpression, from []*ast.CXExpression) [
 		aux.Size = fOut.Size
 		aux.TotalSize = fOut.TotalSize
 		aux.PreviouslyDeclared = true
-		aux.Package = lastFrom.Package
+		aux.ArgDetails.Package = lastFrom.Package
 
 		declExpr := ast.MakeExpression(nil, lastFrom.FileName, lastFrom.FileLine)
 		declExpr.Package = lastFrom.Package
@@ -54,9 +54,9 @@ func StructLiteralAssignment(to []*ast.CXExpression, from []*ast.CXExpression) [
 
 		assignExpr := ast.MakeExpression(ast.Natives[constants.OP_IDENTITY], lastFrom.FileName, lastFrom.FileLine)
 		assignExpr.Package = lastFrom.Package
-		out := ast.MakeArgument(to[0].Outputs[0].Name, lastFrom.FileName, lastFrom.FileLine)
+		out := ast.MakeArgument(to[0].Outputs[0].ArgDetails.Name, lastFrom.FileName, lastFrom.FileLine)
 		out.PassBy = constants.PASSBY_REFERENCE
-		out.Package = lastFrom.Package
+		out.ArgDetails.Package = lastFrom.Package
 		assignExpr.AddOutput(out)
 		assignExpr.AddInput(aux)
 
@@ -67,7 +67,7 @@ func StructLiteralAssignment(to []*ast.CXExpression, from []*ast.CXExpression) [
 
 func ArrayLiteralAssignment(to []*ast.CXExpression, from []*ast.CXExpression) []*ast.CXExpression {
 	for _, f := range from {
-		f.Outputs[0].Name = to[0].Outputs[0].Name
+		f.Outputs[0].ArgDetails.Name = to[0].Outputs[0].ArgDetails.Name
 		f.Outputs[0].DereferenceOperations = append(f.Outputs[0].DereferenceOperations, constants.DEREF_ARRAY)
 	}
 
@@ -83,7 +83,7 @@ func ShortAssignment(expr *ast.CXExpression, to []*ast.CXExpression, from []*ast
 		expr.AddInput(from[idx].Outputs[0])
 	} else {
 		sym := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(constants.TypeNames[from[idx].Inputs[0].Type])
-		sym.Package = pkg
+		sym.ArgDetails.Package = pkg
 		sym.PreviouslyDeclared = true
 		from[idx].AddOutput(sym)
 		expr.AddInput(sym)
@@ -117,7 +117,7 @@ func Assignment(to []*ast.CXExpression, assignOp string, from []*ast.CXExpressio
 	// Checking if we're trying to assign stuff from a function call
 	// And if that function call actually returns something. If not, throw an error.
 	if from[idx].Operator != nil && len(from[idx].Operator.Outputs) == 0 {
-		println(ast.CompilationError(to[0].Outputs[0].FileName, to[0].Outputs[0].FileLine), "trying to use an outputless operator in an assignment")
+		println(ast.CompilationError(to[0].Outputs[0].ArgDetails.FileName, to[0].Outputs[0].ArgDetails.FileLine), "trying to use an outputless operator in an assignment")
 		os.Exit(constants.CX_COMPILATION_ERROR)
 	}
 
@@ -137,11 +137,11 @@ func Assignment(to []*ast.CXExpression, assignOp string, from []*ast.CXExpressio
 
 		if from[idx].Operator == nil {
 			// then it's a literal
-			sym = ast.MakeArgument(to[0].Outputs[0].Name, CurrentFile, LineNo).AddType(constants.TypeNames[from[idx].Outputs[0].Type])
+			sym = ast.MakeArgument(to[0].Outputs[0].ArgDetails.Name, CurrentFile, LineNo).AddType(constants.TypeNames[from[idx].Outputs[0].Type])
 		} else {
 			outTypeArg := getOutputType(from[idx])
 
-			sym = ast.MakeArgument(to[0].Outputs[0].Name, CurrentFile, LineNo).AddType(constants.TypeNames[outTypeArg.Type])
+			sym = ast.MakeArgument(to[0].Outputs[0].ArgDetails.Name, CurrentFile, LineNo).AddType(constants.TypeNames[outTypeArg.Type])
 
 			if from[idx].IsArrayLiteral() {
 				sym.Size = from[idx].Inputs[0].Size
@@ -157,7 +157,7 @@ func Assignment(to []*ast.CXExpression, assignOp string, from []*ast.CXExpressio
 			sym.IsSlice = outTypeArg.IsSlice
 			// sym.IsSlice = from[idx].Operator.ProgramOutput[0].IsSlice
 		}
-		sym.Package = pkg
+		sym.ArgDetails.Package = pkg
 		sym.PreviouslyDeclared = true
 		sym.IsShortAssignmentDeclaration = true
 

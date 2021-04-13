@@ -98,7 +98,7 @@ func (pkg *CXPackage) GetStruct(strctName string) (*CXStruct, error) {
 func (pkg *CXPackage) GetGlobal(defName string) (*CXArgument, error) {
 	var foundDef *CXArgument
 	for _, def := range pkg.Globals {
-		if def.Name == defName {
+		if def.ArgDetails.Name == defName {
 			foundDef = def
 			break
 		}

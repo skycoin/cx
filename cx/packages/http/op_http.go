@@ -23,15 +23,15 @@ func opHTTPHandle(inputs []ast.CXValue, outputs []ast.CXValue) {
 
 	//step 3  : specify the input and outout parameters of Handle function.
 	urlstring, functionnamestring := inputs[0].Arg, inputs[1].Arg
-    fp := inputs[0].FramePointer
+	fp := inputs[0].FramePointer
 
 	// Getting handler function.
-	handlerPkg, err := ast.PROGRAM.GetPackage(functionnamestring.Package.Name)
+	handlerPkg, err := ast.PROGRAM.GetPackage(functionnamestring.ArgDetails.Package.Name)
 
 	if err != nil {
 		panic(err)
 	}
-	handlerFn, err := handlerPkg.GetFunction(functionnamestring.Name)
+	handlerFn, err := handlerPkg.GetFunction(functionnamestring.ArgDetails.Name)
 	if err != nil {
 		panic(err)
 	}
@@ -82,7 +82,7 @@ func opHTTPListenAndServe(inputs []ast.CXValue, outputs []ast.CXValue) {
 	server = &http.Server{Addr: url}
 
 	err := server.ListenAndServe()
-    outputs[0].Set_str(err.Error())
+	outputs[0].Set_str(err.Error())
 }
 
 func opHTTPServe(inputs []ast.CXValue, outputs []ast.CXValue) {
@@ -92,17 +92,17 @@ func opHTTPServe(inputs []ast.CXValue, outputs []ast.CXValue) {
 	url := inputs[0].Get_str()
 
 	l, err := net.Listen("tcp", url)
-    var errStr string
+	var errStr string
 	if err != nil {
-        errStr = err.Error()
+		errStr = err.Error()
 	}
 
 	err = http.Serve(l, nil)
 	if err != nil {
-        errStr = err.Error()
+		errStr = err.Error()
 	}
 
-    outputs[0].Set_str(errStr)
+	outputs[0].Set_str(errStr)
 }
 
 func opHTTPNewRequest(inputs []ast.CXValue, outputs []ast.CXValue) {
@@ -110,7 +110,7 @@ func opHTTPNewRequest(inputs []ast.CXValue, outputs []ast.CXValue) {
 	// Seems more a prototype.
 	stringmethod, stringurl, stringbody, errorstring := inputs[0].Arg, inputs[1].Arg, inputs[2].Arg, outputs[0].Arg
 
-    fp := inputs[0].FramePointer
+	fp := inputs[0].FramePointer
 
 	//this is an alternative for following 3 lines of code that fail due to URL
 	method := ast.ReadStr(fp, stringmethod)
@@ -259,7 +259,7 @@ func opHTTPDo(inputs []ast.CXValue, outputs []ast.CXValue) {
 	reqstruct, respstruct, errorstring := inputs[0].Arg, outputs[0].Arg, outputs[1].Arg
 	fp := inputs[0].FramePointer
 
-    //TODO read req from the inputs
+	//TODO read req from the inputs
 	// reqByts := ReadMemory(GetFinalOffset(fp, inp1), inp1)
 
 	req := ast.CXArgument{}

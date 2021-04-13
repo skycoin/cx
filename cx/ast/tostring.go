@@ -3,11 +3,12 @@ package ast
 import (
 	"bytes"
 	"fmt"
-	constants2 "github.com/skycoin/cx/cxparsergenerator/constants"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
+
+	constants2 "github.com/skycoin/cx/cxparsergenerator/constants"
 
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/helper"
@@ -57,7 +58,7 @@ func buildStrGlobals(pkg *CXPackage, ast *string) {
 	}
 
 	for j, v := range pkg.Globals {
-		*ast += fmt.Sprintf("\t\t%d.- Global: %s %s\n", j, v.Name, GetFormattedType(v))
+		*ast += fmt.Sprintf("\t\t%d.- Global: %s %s\n", j, v.ArgDetails.Name, GetFormattedType(v))
 	}
 }
 
@@ -73,7 +74,7 @@ func buildStrStructs(pkg *CXPackage, ast *string) {
 
 		for k, fld := range strct.Fields {
 			*ast += fmt.Sprintf("\t\t\t%d.- Field: %s %s\n",
-				k, fld.Name, GetFormattedType(fld))
+				k, fld.ArgDetails.Name, GetFormattedType(fld))
 		}
 	}
 }
@@ -153,7 +154,7 @@ func buildStrFunctions(pkg *CXPackage, ast1 *string) {
 					*ast1 += fmt.Sprintf("\t\t\t%d.- Declaration%s: %s %s\n",
 						k,
 						lbl,
-						expr.Outputs[0].Name,
+						expr.Outputs[0].ArgDetails.Name,
 						GetFormattedType(out))
 				}
 			}
@@ -195,7 +196,7 @@ func getFormattedParam(params []*CXArgument, pkg *CXPackage, buf *bytes.Buffer) 
 
 		// Checking if this argument comes from an imported package.
 		externalPkg := false
-		if pkg != param.Package {
+		if pkg != param.ArgDetails.Package {
 			externalPkg = true
 		}
 
@@ -257,9 +258,9 @@ func getNonCollectionValue(fp int, arg, elt *CXArgument, typ string) string {
 		for c := 0; c < lFlds; c++ {
 			fld := elt.CustomType.Fields[c]
 			if c == lFlds-1 {
-				val += fmt.Sprintf("%s: %s", fld.Name, GetPrintableValue(fp+arg.Offset+off, fld))
+				val += fmt.Sprintf("%s: %s", fld.ArgDetails.Name, GetPrintableValue(fp+arg.Offset+off, fld))
 			} else {
-				val += fmt.Sprintf("%s: %s, ", fld.Name, GetPrintableValue(fp+arg.Offset+off, fld))
+				val += fmt.Sprintf("%s: %s, ", fld.ArgDetails.Name, GetPrintableValue(fp+arg.Offset+off, fld))
 			}
 			off += fld.TotalSize
 		}
@@ -472,17 +473,17 @@ func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCod
 func IsPointer(sym *CXArgument) bool {
 	// There's no need to add global variables in `fn.ListOfPointers` as we can access them easily through `CXPackage.Globals`
 	// TODO: We could still pre-compute a list of candidates for globals.
-	if sym.Offset >= PROGRAM.StackSize && sym.Name != "" {
+	if sym.Offset >= PROGRAM.StackSize && sym.ArgDetails.Name != "" {
 		return false
 	}
 	// NOTE: Strings are considered as `IsPointer`s by the runtime.
-	// if (sym.IsPointer || sym.IsSlice) && sym.Name != "" {
+	// if (sym.IsPointer || sym.IsSlice) && sym.ArgDetails.Name != "" {
 	// 	return true
 	// }
-	if (sym.IsPointer || sym.IsSlice) && sym.Name != "" && len(sym.Fields) == 0 {
+	if (sym.IsPointer || sym.IsSlice) && sym.ArgDetails.Name != "" && len(sym.Fields) == 0 {
 		return true
 	}
-	if sym.Type == constants.TYPE_STR && sym.Name != "" && len(sym.Fields) == 0 {
+	if sym.Type == constants.TYPE_STR && sym.ArgDetails.Name != "" && len(sym.Fields) == 0 {
 		return true
 	}
 	// if (sym.Type == TYPE_STR && sym.Name != "") {
@@ -502,13 +503,13 @@ func getFormattedDerefs(arg *CXArgument, includePkg bool) string {
 	name := ""
 	// Checking if we should include `arg`'s package name.
 	if includePkg {
-		name = fmt.Sprintf("%s.%s", arg.Package.Name, arg.Name)
+		name = fmt.Sprintf("%s.%s", arg.ArgDetails.Package.Name, arg.ArgDetails.Name)
 	} else {
-		name = arg.Name
+		name = arg.ArgDetails.Name
 	}
 
 	// If it's a literal, just override the name with LITERAL_PLACEHOLDER.
-	if arg.Name == "" {
+	if arg.ArgDetails.Name == "" {
 		name = constants.LITERAL_PLACEHOLDER
 	}
 
@@ -532,7 +533,7 @@ func getFormattedDerefs(arg *CXArgument, includePkg bool) string {
 			idxValue = fmt.Sprintf("%d", idxI32)
 		} else {
 			// Then let's just print the variable name.
-			idxValue = idx.Name
+			idxValue = idx.ArgDetails.Name
 		}
 
 		name = fmt.Sprintf("%s[%s]", name, idxValue)
@@ -617,13 +618,13 @@ func GetFormattedType(arg *CXArgument) string {
 						typ += formatParameters(elt.Outputs)
 					} else {
 						// Then it refers to a named function defined in a package.
-						pkg, err := PROGRAM.GetPackage(arg.Package.Name)
+						pkg, err := PROGRAM.GetPackage(arg.ArgDetails.Package.Name)
 						if err != nil {
-							println(CompilationError(elt.FileName, elt.FileLine), err.Error())
+							println(CompilationError(elt.ArgDetails.FileName, elt.ArgDetails.FileLine), err.Error())
 							os.Exit(constants.CX_COMPILATION_ERROR)
 						}
 
-						fn, err := pkg.GetFunction(elt.Name)
+						fn, err := pkg.GetFunction(elt.ArgDetails.Name)
 						if err == nil {
 							// println(CompilationError(elt.FileName, elt.FileLine), err.ProgramError())
 							// os.Exit(CX_COMPILATION_ERROR)
@@ -644,7 +645,7 @@ func GetFormattedType(arg *CXArgument) string {
 func SignatureStringOfStruct(s *CXStruct) string {
 	fields := ""
 	for _, f := range s.Fields {
-		fields += fmt.Sprintf(" %s %s;", f.Name, GetFormattedType(f))
+		fields += fmt.Sprintf(" %s %s;", f.ArgDetails.Name, GetFormattedType(f))
 	}
 
 	return fmt.Sprintf("%s struct {%s }", s.Name, fields)

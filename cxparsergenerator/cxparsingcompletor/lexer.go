@@ -2,14 +2,14 @@
 
 package parsingcompletor
 
-import __yyfmt__ "fmt"
-
 import (
+	__yyfmt__ "fmt"
+	"strconv"
+
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cxparsergenerator/actions"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
-	"strconv"
 )
 
 /*
@@ -1710,8 +1710,8 @@ yynewstate:
 		}
 	case 29:
 		{
-			yyS[yypt-0].argument.Name = yyS[yypt-1].argument.Name
-			yyS[yypt-0].argument.Package = yyS[yypt-1].argument.Package
+			yyS[yypt-0].argument.ArgDetails.Name = yyS[yypt-1].argument.ArgDetails.Name
+			yyS[yypt-0].argument.ArgDetails.Package = yyS[yypt-1].argument.ArgDetails.Package
 			yyS[yypt-0].argument.IsLocalDeclaration = true
 			yyVAL.argument = yyS[yypt-0].argument
 		}
@@ -1720,8 +1720,8 @@ yynewstate:
 			if pkg, err := actions.AST.GetCurrentPackage(); err == nil {
 				arg := ast.MakeArgument("", actions.CurrentFile, actions.LineNo)
 				arg.AddType(constants.TypeNames[constants.TYPE_UNDEFINED])
-				arg.Name = yyS[yypt-0].tok
-				arg.Package = pkg
+				arg.ArgDetails.Name = yyS[yypt-0].tok
+				arg.ArgDetails.Package = pkg
 				yyVAL.argument = arg
 			} else {
 				panic(err)
@@ -1946,7 +1946,7 @@ yynewstate:
 	case 80:
 		{
 			for _, expr := range yyS[yypt-0].expressions {
-				if expr.Outputs[0].Name == yyS[yypt-0].expressions[len(yyS[yypt-0].expressions)-1].Inputs[0].Name {
+				if expr.Outputs[0].ArgDetails.Name == yyS[yypt-0].expressions[len(yyS[yypt-0].expressions)-1].Inputs[0].ArgDetails.Name {
 					expr.Outputs[0].Lengths = append(expr.Outputs[0].Lengths, 0)
 					expr.Outputs[0].DeclarationSpecifiers = append(expr.Outputs[0].DeclarationSpecifiers, constants.DECL_SLICE)
 				}
@@ -2227,7 +2227,7 @@ yynewstate:
 		}
 	case 166:
 		{
-			yyVAL.expressions = actions.PrimaryStructLiteralExternal(yyS[yypt-5].expressions[0].Outputs[0].Name, yyS[yypt-3].tok, yyS[yypt-1].expressions)
+			yyVAL.expressions = actions.PrimaryStructLiteralExternal(yyS[yypt-5].expressions[0].Outputs[0].ArgDetails.Name, yyS[yypt-3].tok, yyS[yypt-1].expressions)
 		}
 	case 168:
 		{
@@ -2320,7 +2320,7 @@ yynewstate:
 			if len(yyS[yypt-1].expressions) > 0 && yyS[yypt-1].expressions[len(yyS[yypt-1].expressions)-1].Operator == nil && !yyS[yypt-1].expressions[len(yyS[yypt-1].expressions)-1].IsMethodCall() {
 				outs := yyS[yypt-1].expressions[len(yyS[yypt-1].expressions)-1].Outputs
 				if len(outs) > 0 {
-					println(ast.CompilationError(outs[0].FileName, outs[0].FileLine), "invalid expression")
+					println(ast.CompilationError(outs[0].ArgDetails.FileName, outs[0].ArgDetails.FileLine), "invalid expression")
 				} else {
 					println(ast.CompilationError(actions.CurrentFile, actions.LineNo), "invalid expression")
 				}
