@@ -3,7 +3,8 @@ package ast
 import (
 	"errors"
 	"fmt"
-    "math"
+	"math"
+
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/globals"
 	"github.com/skycoin/cx/cx/helper"
@@ -15,16 +16,16 @@ import (
 type CXEXPR_TYPE int
 
 const (
-	CXEXPR_UNUSED CXEXPR_TYPE = iota
-	CXEXPR_METHOD_CALL = 1
-	CXEXPR_STRUCT_LITERAL = 2
-	CXEXPR_ARRAY_LITERAL = 4
-	CXEXPR_BREAK = 8
-	CXEXPR_CONTINUE = 16
-	CXEXPR_UND_TYPE = 32
-	CXEXPR_SCOPE_UNUSED = 64// this maybe unnecessary
-	CXEXPR_SCOPE_NEW = 128
-	CXEXPR_SCOPE_DEL = 256
+	CXEXPR_UNUSED         CXEXPR_TYPE = iota
+	CXEXPR_METHOD_CALL                = 1
+	CXEXPR_STRUCT_LITERAL             = 2
+	CXEXPR_ARRAY_LITERAL              = 4
+	CXEXPR_BREAK                      = 8
+	CXEXPR_CONTINUE                   = 16
+	CXEXPR_UND_TYPE                   = 32
+	CXEXPR_SCOPE_UNUSED               = 64 // this maybe unnecessary
+	CXEXPR_SCOPE_NEW                  = 128
+	CXEXPR_SCOPE_DEL                  = 256
 )
 
 // String returns alias for constants defined for cx edpression type
@@ -117,10 +118,10 @@ type CXStruct struct {
 //TODO: Rename OpCode to "AtomicOPCode" and is Atomic if set
 type CXFunction struct {
 	// Metadata
-	Name     string     // Name of the function
-	Package  *CXPackage // The package it's a member of
+	Name      string     // Name of the function
+	Package   *CXPackage // The package it's a member of
 	IsBuiltin bool       // True if the function is native to CX, e.g. int32.add()
-	OpCode   int        // opcode if IsBuiltin = true
+	OpCode    int        // opcode if IsBuiltin = true
 	// Contents
 	Inputs      []*CXArgument   // Input parameters to the function
 	Outputs     []*CXArgument   // Output parameters from the function
@@ -167,15 +168,15 @@ type CXExpression struct {
 }
 
 func (cxe *CXExpression) RemoveExpressionType(exprType CXEXPR_TYPE) {
-    cxe.expressionType = cxe.expressionType &^ exprType
+	cxe.expressionType = cxe.expressionType &^ exprType
 }
 
 func (cxe *CXExpression) SetExpressionType(exprType CXEXPR_TYPE) {
-    cxe.expressionType |= exprType
+	cxe.expressionType |= exprType
 }
 
 func (cxe CXExpression) ExpressionType() CXEXPR_TYPE {
-    return cxe.expressionType
+	return cxe.expressionType
 }
 
 // IsMethodCall checks if expression type is method call
@@ -255,104 +256,26 @@ Binary file ./bin/cx matches
 ./vendor/golang.org/x/sys/windows/security_windows.go:842:func (t Token) IsRestricted() (isRestricted bool, err error) {
 */
 
-// CXArgument is used to define local variables, global variables,
-// literals (strings, numbers), inputs and outputs to function
-// calls. All of the fields in this structure are determined at
-// compile time.
-type CXArgument struct {
-	// Lengths is used if the `CXArgument` defines an array or a
-	// slice. The number of dimensions for the array/slice is
-	// equal to `len(Lengths)`, while the contents of `Lengths`
-	// define the sizes of each dimension. In the case of a slice,
-	// `Lengths` only determines the number of dimensions and the
-	// sizes are all equal to 0 (these 0s are not used for any
-	// computation).
-	Lengths []int
-	// DereferenceOperations is a slice of integers where each
-	// integer corresponds a `DEREF_*` constant (for example
-	// `DEREF_ARRAY`, `DEREF_POINTER`.). A dereference is a
-	// process where we consider the bytes at `Offset : Offset +
-	// TotalSize` as an address in memory, and we use that address
-	// to find the desired value (the referenced
-	// value).
-	DereferenceOperations []int
-	// DeclarationSpecifiers is a slice of integers where each
-	// integer corresponds a `DECL_*` constant (for example
-	// `DECL_ARRAY`, `DECL_POINTER`.). Declarations are used to
-	// create complex types such as `[5][]*Point` (an array of 5
-	// slices of pointers to struct instances of type
-	// `Point`).
-	DeclarationSpecifiers []int
-	// Indexes stores what indexes we want to access from the
-	// `CXArgument`. A non-nil `Indexes` means that the
-	// `CXArgument` is an index or a slice. The elements of
-	// `Indexes` can be any `CXArgument` (for example, literals
-	// and variables).
-	Indexes []*CXArgument
-	// Fields stores what fields are being accessed from the
-	// `CXArgument` and in what order. Whenever a `DEREF_FIELD` in
-	// `DereferenceOperations` is found, we consume a field from
-	// `Field` to determine the new offset to the desired
-	// value.
-	Fields []*CXArgument
-	// Inputs defines the input parameters of a first-class
-	// function. The `CXArgument` is of type `TYPE_FUNC` if
-	// `ProgramInput` is non-nil.
-	Inputs []*CXArgument
-	// Outputs defines the output parameters of a first-class
-	// function. The `CXArgument` is of type `TYPE_FUNC` if
-	// `ProgramOutput` is non-nil.
-	Outputs []*CXArgument
+// CXArgumentDebug ...
+type CXArgumentDebug struct {
 	// Name defines the name of the `CXArgument`. Most of the
 	// time, this field will be non-nil as this defines the name
 	// of a variable or parameter in source code, but some
 	// exceptions exist, such as in the case of literals
 	// (e.g. `4`, `"Hello world!"`, `[3]i32{1, 2, 3}`.)
 	Name string
-	// Type defines what's the basic or primitev type of the
-	// `CXArgument`. `Type` can be equal to any of the `TYPE_*`
-	// constants (e.g. `TYPE_STR`, `TYPE_I32`).
-	Type int
-	// Size determines the size of the basic type. For example, if
-	// the `CXArgument` is of type `TYPE_CUSTOM` (i.e. a
-	// user-defined type or struct) and the size of the struct
-	// representing the custom type is 10 bytes, then `Size == 10`.
-	Size int
-	// TotalSize represents how many bytes are referenced by the
-	// `CXArgument` in total. For example, if the `CXArgument`
-	// defines an array of 5 struct instances of size 10 bytes,
-	// then `TotalSize == 50`.
-	TotalSize int
-	// Offset defines a relative memory offset (used in
-	// conjunction with the frame pointer), in the case of local
-	// variables, or it could define an absolute memory offset, in
-	// the case of global variables and literals. It is used by
-	// the CX virtual machine to find the bytes that represent the
-	// value of the `CXArgument`.
-	Offset int
-	// IndirectionLevels
-	IndirectionLevels int
-	DereferenceLevels int
-	PassBy            int // pass by value or reference
 
 	FileName string
 	FileLine int
+	Package  *CXPackage
+}
 
-	CustomType                   *CXStruct
-	Package                      *CXPackage
-	IsSlice                      bool
-	IsArray                      bool
-	IsArrayFirst                 bool // and then dereference
-	IsPointer                    bool
-	IsReference                  bool
-	IsDereferenceFirst           bool // and then array
-	IsStruct                     bool
-	IsRest                       bool // pkg.var <- var is rest
-	IsLocalDeclaration           bool
-	IsShortAssignmentDeclaration bool // variables defined with :=
-	IsInnerReference             bool // for example: &slice[0] or &struct.field
-	PreviouslyDeclared           bool
-	DoesEscape                   bool
+// CXArgumentStruct ...
+type CXArgumentStruct struct {
+}
+
+// CXArgumentPointer ...
+type CXArgumentPointer struct {
 }
 
 //TODO: Comment or delete "IsRest"
@@ -616,7 +539,7 @@ func (cxprogram *CXProgram) PrintAllObjects() {
 
 			fmt.Println("declarat", ptr.DeclarationSpecifiers)
 
-			fmt.Println("obj", ptr.Name, ptr.CustomType, cxprogram.Memory[heapOffset:int(heapOffset)+op.Size], byts)
+			fmt.Println("obj", ptr.ArgDetails.Name, ptr.CustomType, cxprogram.Memory[heapOffset:int(heapOffset)+op.Size], byts)
 		}
 
 		fp += op.Size
@@ -764,10 +687,10 @@ func (pkg *CXPackage) RemoveStruct(strctName string) {
 
 // AddGlobal ...
 func (pkg *CXPackage) AddGlobal(def *CXArgument) *CXPackage {
-	def.Package = pkg
+	def.ArgDetails.Package = pkg
 	found := false
 	for i, df := range pkg.Globals {
-		if df.Name == def.Name {
+		if df.ArgDetails.Name == def.ArgDetails.Name {
 			pkg.Globals[i] = def
 			found = true
 			break
@@ -784,7 +707,7 @@ func (pkg *CXPackage) AddGlobal(def *CXArgument) *CXPackage {
 func (pkg *CXPackage) RemoveGlobal(defName string) {
 	lenGlobals := len(pkg.Globals)
 	for i, def := range pkg.Globals {
-		if def.Name == defName {
+		if def.ArgDetails.Name == defName {
 			if i == lenGlobals-1 {
 				pkg.Globals = pkg.Globals[:len(pkg.Globals)-1]
 			} else {
@@ -801,7 +724,7 @@ func (pkg *CXPackage) RemoveGlobal(defName string) {
 // GetField ...
 func (strct *CXStruct) GetField(name string) (*CXArgument, error) {
 	for _, fld := range strct.Fields {
-		if fld.Name == name {
+		if fld.ArgDetails.Name == name {
 			return fld, nil
 		}
 	}
@@ -822,7 +745,7 @@ func MakeStruct(name string) *CXStruct {
 func (strct *CXStruct) AddField(fld *CXArgument) *CXStruct {
 	found := false
 	for _, fl := range strct.Fields {
-		if fl.Name == fld.Name {
+		if fl.ArgDetails.Name == fld.ArgDetails.Name {
 			found = true
 			break
 		}
@@ -850,7 +773,7 @@ func (strct *CXStruct) RemoveField(fldName string) {
 	if len(strct.Fields) > 0 {
 		lenFlds := len(strct.Fields)
 		for i, fld := range strct.Fields {
-			if fld.Name == fldName {
+			if fld.ArgDetails.Name == fldName {
 				if i == lenFlds-1 {
 					strct.Fields = strct.Fields[:len(strct.Fields)-1]
 				} else {
@@ -921,8 +844,8 @@ func (expr *CXExpression) GetInputs() ([]*CXArgument, error) {
 func (expr *CXExpression) AddInput(param *CXArgument) *CXExpression {
 	// param.Package = expr.Package
 	expr.Inputs = append(expr.Inputs, param)
-	if param.Package == nil {
-		param.Package = expr.Package
+	if param.ArgDetails.Package == nil {
+		param.ArgDetails.Package = expr.Package
 	}
 	return expr
 }
@@ -938,8 +861,8 @@ func (expr *CXExpression) RemoveInput() {
 func (expr *CXExpression) AddOutput(param *CXArgument) *CXExpression {
 	// param.Package = expr.Package
 	expr.Outputs = append(expr.Outputs, param)
-	if param.Package == nil {
-		param.Package = expr.Package
+	if param.ArgDetails.Package == nil {
+		param.ArgDetails.Package = expr.Package
 	}
 	return expr
 }
@@ -1082,18 +1005,25 @@ grep -rn "PassBy" .
 // MakeArgument ...
 func MakeArgument(name string, fileName string, fileLine int) *CXArgument {
 	return &CXArgument{
-		Name:     name,
-		FileName: fileName,
-		FileLine: fileLine}
+		ArgDetails: &CXArgumentDebug{
+			Name:     name,
+			FileName: fileName,
+			FileLine: fileLine,
+		},
+	}
+
 }
 
 // MakeField ...
 func MakeField(name string, typ int, fileName string, fileLine int) *CXArgument {
 	return &CXArgument{
-		Name:     name,
-		Type:     typ,
-		FileName: fileName,
-		FileLine: fileLine,
+		ArgDetails: &CXArgumentDebug{
+			Name:     name,
+			FileName: fileName,
+			FileLine: fileLine,
+		},
+
+		Type: typ,
 	}
 }
 
@@ -1101,12 +1031,14 @@ func MakeField(name string, typ int, fileName string, fileLine int) *CXArgument 
 func MakeGlobal(name string, typ int, fileName string, fileLine int) *CXArgument {
 	size := constants.GetArgSize(typ)
 	global := &CXArgument{
-		Name:              name,
-		Type:              typ,
-		Size:              size,
+		ArgDetails: &CXArgumentDebug{
+			Name:     name,
+			FileName: fileName,
+			FileLine: fileLine,
+		},
+		Type:   typ,
+		Size:   size,
 		Offset: globals.HeapOffset,
-		FileName:          fileName,
-		FileLine:          fileLine,
 	}
 	globals.HeapOffset += size
 	return global
@@ -1124,7 +1056,7 @@ func (arg *CXArgument) AddPackage(pkg *CXPackage) *CXArgument {
 	// if err != nil {
 	// 	panic(err)
 	// }
-	arg.Package = pkg
+	arg.ArgDetails.Package = pkg
 	return arg
 }
 
@@ -1146,8 +1078,8 @@ func (arg *CXArgument) AddType(typ string) *CXArgument {
 // AddInput adds input parameters to `arg` in case arg is of type `TYPE_FUNC`.
 func (arg *CXArgument) AddInput(inp *CXArgument) *CXArgument {
 	arg.Inputs = append(arg.Inputs, inp)
-	if inp.Package == nil {
-		inp.Package = arg.Package
+	if inp.ArgDetails.Package == nil {
+		inp.ArgDetails.Package = arg.ArgDetails.Package
 	}
 	return arg
 }
@@ -1155,8 +1087,8 @@ func (arg *CXArgument) AddInput(inp *CXArgument) *CXArgument {
 // AddOutput adds output parameters to `arg` in case arg is of type `TYPE_FUNC`.
 func (arg *CXArgument) AddOutput(out *CXArgument) *CXArgument {
 	arg.Outputs = append(arg.Outputs, out)
-	if out.Package == nil {
-		out.Package = arg.Package
+	if out.ArgDetails.Package == nil {
+		out.ArgDetails.Package = arg.ArgDetails.Package
 	}
 	return arg
 }
