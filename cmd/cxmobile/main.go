@@ -14,6 +14,8 @@ import (
 	"golang.org/x/mobile/event/size"
 	"golang.org/x/mobile/event/touch"
 	"golang.org/x/mobile/gl"
+
+	"github.com/skycoin/cx/cx/packages/cxfx"
 )
 
 func startCXVM() {
