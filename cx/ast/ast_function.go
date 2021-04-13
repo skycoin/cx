@@ -10,9 +10,9 @@ import (
 //
 func MakeFunction(name string, fileName string, fileLine int) *CXFunction {
 	return &CXFunction{
-		Name:     name,
-		FileName: fileName,
-		FileLine: fileLine,
+		Name:      name,
+		FileName:  fileName,
+		FileLine:  fileLine,
 		IsBuiltin: false,
 	}
 }
@@ -73,7 +73,7 @@ func (fn *CXFunction) GetCurrentExpression() (*CXExpression, error) {
 func (fn *CXFunction) AddInput(param *CXArgument) *CXFunction {
 	found := false
 	for _, inp := range fn.Inputs {
-		if inp.Name == param.Name {
+		if inp.ArgDetails.Name == param.ArgDetails.Name {
 			found = true
 			break
 		}
@@ -90,7 +90,7 @@ func (fn *CXFunction) RemoveInput(inpName string) {
 	if len(fn.Inputs) > 0 {
 		lenInps := len(fn.Inputs)
 		for i, inp := range fn.Inputs {
-			if inp.Name == inpName {
+			if inp.ArgDetails.Name == inpName {
 				if i == lenInps {
 					fn.Inputs = fn.Inputs[:len(fn.Inputs)-1]
 				} else {
@@ -106,7 +106,7 @@ func (fn *CXFunction) RemoveInput(inpName string) {
 func (fn *CXFunction) AddOutput(param *CXArgument) *CXFunction {
 	found := false
 	for _, out := range fn.Outputs {
-		if out.Name == param.Name {
+		if out.ArgDetails.Name == param.ArgDetails.Name {
 			found = true
 			break
 		}
@@ -115,7 +115,7 @@ func (fn *CXFunction) AddOutput(param *CXArgument) *CXFunction {
 		fn.Outputs = append(fn.Outputs, param)
 	}
 
-	param.Package = fn.Package
+	param.ArgDetails.Package = fn.Package
 
 	return fn
 }
@@ -125,7 +125,7 @@ func (fn *CXFunction) RemoveOutput(outName string) {
 	if len(fn.Outputs) > 0 {
 		lenOuts := len(fn.Outputs)
 		for i, out := range fn.Outputs {
-			if out.Name == outName {
+			if out.ArgDetails.Name == outName {
 				if i == lenOuts {
 					fn.Outputs = fn.Outputs[:len(fn.Outputs)-1]
 				} else {

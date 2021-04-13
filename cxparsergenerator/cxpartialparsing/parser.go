@@ -2,16 +2,16 @@
 
 package partialparsing
 
-import __yyfmt__ "fmt"
-
 import (
-	// "fmt"
 	"bytes"
-	// "os"
+	__yyfmt__ "fmt"
+
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cxparsergenerator/actions"
-)
+) // "fmt"
+
+// "os"
 
 /*
    This is a computer generated file
@@ -1705,8 +1705,8 @@ yynewstate:
 		}
 	case 26:
 		{
-			yyS[yypt-0].argument.Name = yyS[yypt-1].argument.Name
-			yyS[yypt-0].argument.Package = yyS[yypt-1].argument.Package
+			yyS[yypt-0].argument.ArgDetails.Name = yyS[yypt-1].argument.ArgDetails.Name
+			yyS[yypt-0].argument.ArgDetails.Package = yyS[yypt-1].argument.ArgDetails.Package
 			yyS[yypt-0].argument.IsLocalDeclaration = true
 			yyVAL.argument = yyS[yypt-0].argument
 		}
@@ -1715,8 +1715,8 @@ yynewstate:
 			if pkg, err := Program.GetCurrentPackage(); err == nil {
 				arg := ast.MakeArgument("", actions.CurrentFile, actions.LineNo)
 				arg.AddType(constants.TypeNames[constants.TYPE_UNDEFINED])
-				arg.Name = yyS[yypt-0].tok
-				arg.Package = pkg
+				arg.ArgDetails.Name = yyS[yypt-0].tok
+				arg.ArgDetails.Package = pkg
 				yyVAL.argument = arg
 			} else {
 				panic(err)

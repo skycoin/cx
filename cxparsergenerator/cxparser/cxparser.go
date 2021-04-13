@@ -60,7 +60,7 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 	if osPkg, err := actions.AST.GetPackage(constants.OS_PKG); err == nil {
 		if _, err := osPkg.GetGlobal(constants.OS_ARGS); err != nil {
 			arg0 := ast.MakeArgument(constants.OS_ARGS, "", -1).AddType(constants.TypeNames[constants.TYPE_UNDEFINED])
-			arg0.Package = osPkg
+			arg0.ArgDetails.Package = osPkg
 
 			arg1 := ast.MakeArgument(constants.OS_ARGS, "", -1).AddType(constants.TypeNames[constants.TYPE_STR])
 			arg1 = actions.DeclarationSpecifiers(arg1, []int{0}, constants.DECL_BASIC)
@@ -335,7 +335,7 @@ func preliminarystage(srcStrs, srcNames []string) int {
 						// then it hasn't been added
 						arg := ast.MakeArgument(match[len(match)-1], "", 0)
 						arg.Offset = -1
-						arg.Package = prePkg
+						arg.ArgDetails.Package = prePkg
 						prePkg.AddGlobal(arg)
 					}
 				}

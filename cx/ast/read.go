@@ -57,7 +57,7 @@ func ReadStr(fp int, inp *CXArgument) (out string) {
 // ReadStrFromOffset ...
 func ReadStrFromOffset(off int, inp *CXArgument) (out string) {
 	var offset int32
-	if inp.Name == "" {
+	if inp.ArgDetails.Name == "" {
 		// Then it's a literal.
 		offset = int32(off)
 	} else {
