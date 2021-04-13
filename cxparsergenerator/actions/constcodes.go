@@ -2,7 +2,7 @@ package actions
 
 import (
 	"github.com/skycoin/cx/cx/constants"
-	"github.com/skycoin/cx/cx/helper"
+	"github.com/skycoin/cx/cx/ast"
 )
 
 // constant codes
@@ -54,7 +54,7 @@ func AddConstCode(code int, name string, typ int, value []byte) {
 
 // AddConstI32 ...
 func AddConstI32(code int, name string, value int32) {
-	AddConstCode(code, name, constants.TYPE_I32, helper.FromI32(value))
+	AddConstCode(code, name, constants.TYPE_I32, ast.FromI32(value))
 }
 
 // CXConstant ...

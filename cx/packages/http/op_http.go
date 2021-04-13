@@ -12,12 +12,24 @@ import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/execute"
-	"github.com/skycoin/cx/cx/helper"
+    "github.com/skycoin/cx/cx/helper"
 
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 
 	"github.com/jinzhu/copier"
 )
+
+func fromBool(in bool) []byte {
+    var b[1]byte
+    ast.WriteMemBool(b[:1], 0, in)
+    return b[:1]
+}
+
+func readBool(fp int, inp *ast.CXArgument) bool {
+	offset := ast.GetFinalOffset(fp, inp)
+	readMemory := ast.PROGRAM.Memory[offset : offset+constants.BOOL_SIZE]
+	return helper.Deserialize_bool(readMemory)
+}
 
 func opHTTPHandle(inputs []ast.CXValue, outputs []ast.CXValue) {
 
@@ -242,16 +254,21 @@ func writeHTTPRequest(fp int, param *ast.CXArgument, request *http.Request) {
 		panic(err)
 	}
 	ast.WriteString(fp, string(body), &req)
-	req.Fields = accessURLScheme
+
+    req.Fields = accessURLScheme
 	ast.WriteString(fp, request.URL.Scheme, &req)
-	req.Fields = accessURLHost
+
+    req.Fields = accessURLHost
 	ast.WriteString(fp, request.URL.Host, &req)
-	req.Fields = accessURLPath
+
+    req.Fields = accessURLPath
 	ast.WriteString(fp, request.URL.Path, &req)
-	req.Fields = accessURLRawPath
+
+    req.Fields = accessURLRawPath
 	ast.WriteString(fp, request.URL.RawPath, &req)
-	req.Fields = accessURLForceQuery
-	ast.WriteMemory(ast.GetFinalOffset(fp, &req), helper.FromBool(request.URL.ForceQuery))
+
+    req.Fields = accessURLForceQuery
+	ast.WriteMemory(ast.GetFinalOffset(fp, &req), fromBool(request.URL.ForceQuery))
 }
 
 func opHTTPDo(inputs []ast.CXValue, outputs []ast.CXValue) {
@@ -342,7 +359,7 @@ func opHTTPDo(inputs []ast.CXValue, outputs []ast.CXValue) {
 	req.Fields = accessURLRawPath
 	url.RawPath = ast.ReadStr(fp, &req)
 	req.Fields = accessURLForceQuery
-	url.ForceQuery = ast.ReadBool(fp, &req)
+	url.ForceQuery = readBool(fp, &req)
 
 	var netClient = &http.Client{
 		Timeout: time.Second * 30,
@@ -404,15 +421,15 @@ func opHTTPDo(inputs []ast.CXValue, outputs []ast.CXValue) {
 	resp.Fields = accessStatus
 	ast.WriteString(fp, response.Status, &resp)
 	resp.Fields = accessStatusCode
-	ast.WriteMemory(ast.GetFinalOffset(fp, &resp), helper.FromI32(int32(response.StatusCode)))
+	ast.WriteMemory(ast.GetFinalOffset(fp, &resp), ast.FromI32(int32(response.StatusCode)))
 	resp.Fields = accessProto
 	ast.WriteString(fp, response.Proto, &resp)
 	resp.Fields = accessProtoMajor
-	ast.WriteMemory(ast.GetFinalOffset(fp, &resp), helper.FromI32(int32(response.ProtoMajor)))
+	ast.WriteMemory(ast.GetFinalOffset(fp, &resp), ast.FromI32(int32(response.ProtoMajor)))
 	resp.Fields = accessProtoMinor
-	ast.WriteMemory(ast.GetFinalOffset(fp, &resp), helper.FromI32(int32(response.ProtoMinor)))
+	ast.WriteMemory(ast.GetFinalOffset(fp, &resp), ast.FromI32(int32(response.ProtoMinor)))
 	resp.Fields = accessContentLength
-	ast.WriteMemory(ast.GetFinalOffset(fp, &resp), helper.FromI64(int64(response.ContentLength)))
+	ast.WriteMemory(ast.GetFinalOffset(fp, &resp), ast.FromI64(int64(response.ContentLength)))
 	resp.Fields = accessBody
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {

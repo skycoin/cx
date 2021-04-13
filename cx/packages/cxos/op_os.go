@@ -411,16 +411,18 @@ func opOsWriteBOOL(inputs []ast.CXValue, outputs []ast.CXValue) {
 }
 
 func getSlice(inputs []ast.CXValue, outputs []ast.CXValue) (outputSlicePointer int, outputSliceOffset int32, sizeofElement int, count uint64) {
-	inp1, out0 := inputs[1].Arg, outputs[0].Arg
-    
-	if inp1.Type != out0.Type || !ast.GetAssignmentElement(inp1).IsSlice || !ast.GetAssignmentElement(out0).IsSlice {
+	inp1, out0 := &inputs[1], &outputs[0]
+    eltInp1 := ast.GetAssignmentElement(inp1.Arg)
+    eltOut0 := ast.GetAssignmentElement(out0.Arg)
+	if inp1.Arg.Type != out0.Arg.Type || !eltInp1.IsSlice || !eltOut0.IsSlice {
 		panic(constants.CX_RUNTIME_INVALID_ARGUMENT)
 	}
+
     //inputs[1].Used = int8(inp1.Type)
 	count = inputs[2].Get_ui64()
 	outputSlicePointer = outputs[0].Offset
-	sizeofElement = ast.GetAssignmentElement(inp1).Size
-	outputSliceOffset = int32(ast.SliceResize(outputs[0].FramePointer, out0, inp1, int32(count), sizeofElement))
+	sizeofElement = eltInp1.Size
+	outputSliceOffset = int32(ast.SliceResize(out0, inp1, int32(count), sizeofElement))
 	return
 }
 

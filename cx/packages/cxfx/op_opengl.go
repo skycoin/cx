@@ -435,7 +435,7 @@ func opGlAppend(inputs []ast.CXValue, outputs []ast.CXValue) {
 
     //inputs[0].Used = int8(inputs[0].Type)
 
-    inputSliceOffset := ast.GetSliceOffset(inputs[0].FramePointer, inputs[0].Arg)
+    inputSliceOffset := ast.GetSliceOffset(&inputs[0])
 	var inputSliceLen int32
 	if inputSliceOffset != 0 {
 		inputSliceLen = ast.GetSliceLen(inputSliceOffset)

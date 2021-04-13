@@ -19,11 +19,10 @@ func IsValidSliceIndex(offset int, index int, sizeofElement int) bool {
 
 // GetSliceOffset ...
 //TODO: DANGER, WEIRD INT CAST FROM GetFinalOffset
-func GetSliceOffset(fp int, arg *CXArgument) int32 {
-	element := GetAssignmentElement(arg)
+func GetSliceOffset(value *CXValue) int32 {
+	element := GetAssignmentElement(value.Arg)
 	if element.IsSlice {
-		// return GetPointerOffset(int32(GetFinalOffset(fp, arg)))
-		return GetPointerOffset(int32(GetOffset_slice(fp, arg)))
+		return GetPointerOffset(int32(value.Offset))
 	}
 
 	return -1
@@ -66,7 +65,7 @@ func GetSliceData(offset int32, sizeofElement int) []byte {
 	return nil
 }
 
-// SliceResizeEx does the logic required by `SliceResize`. It is separated because some other functions might have access to the offsets of the slices, but not the `CXArgument`s.
+// SliceResizeEx does the logic required by `SliceResize`. It is separated because some other functions might have access to the offsets of the slices, but not the `CXValue`s.
 func SliceResizeEx(outputSliceOffset int32, count int32, sizeofElement int) int {
 	if count < 0 {
 		panic(constants.CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE) // TODO : should use uint32
@@ -101,17 +100,17 @@ func SliceResizeEx(outputSliceOffset int32, count int32, sizeofElement int) int 
 }
 
 // SliceResize ...
-func SliceResize(fp int, out *CXArgument, inp *CXArgument, count int32, sizeofElement int) int {
-	outputSliceOffset := GetSliceOffset(fp, out)
+func SliceResize(out *CXValue, inp *CXValue, count int32, sizeofElement int) int {
+	outputSliceOffset := GetSliceOffset(out)
 
 	outputSliceOffset = int32(SliceResizeEx(outputSliceOffset, count, sizeofElement))
 
-	SliceCopy(fp, outputSliceOffset, inp, count, sizeofElement)
+	SliceCopy(outputSliceOffset, inp, count, sizeofElement)
 
 	return int(outputSliceOffset)
 }
 
-// SliceCopyEx does the logic required by `SliceCopy`. It is separated because some other functions might have access to the offsets of the slices, but not the `CXArgument`s.
+// SliceCopyEx does the logic required by `SliceCopy`. It is separated because some other functions might have access to the offsets of the slices, but not the `CXValue`s.
 func SliceCopyEx(outputSliceOffset int32, inputSliceOffset int32, count int32, sizeofElement int) {
 	if count < 0 {
 		panic(constants.CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE) // TODO : should use uint32
@@ -133,21 +132,21 @@ func SliceCopyEx(outputSliceOffset int32, inputSliceOffset int32, count int32, s
 }
 
 // SliceCopy copies the contents from the slice located at `inputSliceOffset` to the slice located at `outputSliceOffset`.
-func SliceCopy(fp int, outputSliceOffset int32, inp *CXArgument, count int32, sizeofElement int) {
-	inputSliceOffset := GetSliceOffset(fp, inp)
+func SliceCopy(outputSliceOffset int32, inp *CXValue, count int32, sizeofElement int) {
+	inputSliceOffset := GetSliceOffset(inp)
 	SliceCopyEx(outputSliceOffset, inputSliceOffset, count, sizeofElement)
 }
 
 // SliceAppendResize prepares a slice to be able to store a new object of length `sizeofElement`. It checks if the slice needs to be relocated in memory, and if it is needed it relocates it and a new `outputSliceOffset` is calculated for the new slice.
-func SliceAppendResize(fp int, out *CXArgument, inp *CXArgument, sizeofElement int) int32 {
-	inputSliceOffset := GetSliceOffset(fp, inp)
+func SliceAppendResize(out *CXValue, inp *CXValue, sizeofElement int) int32 {
+	inputSliceOffset := GetSliceOffset(inp)
 	var inputSliceLen int32
 	if inputSliceOffset != 0 {
 		inputSliceLen = GetSliceLen(inputSliceOffset)
 	}
 
 	// TODO: Are we limited then to only one element for now? (because of that +1)
-	outputSliceOffset := int32(SliceResize(fp, out, inp, inputSliceLen+1, sizeofElement))
+	outputSliceOffset := int32(SliceResize(out, inp, inputSliceLen+1, sizeofElement))
 	return outputSliceOffset
 }
 
@@ -165,8 +164,8 @@ func SliceAppendWriteByte(outputSliceOffset int32, object []byte, index int32) {
 }
 
 // SliceInsert ...
-func SliceInsert(fp int, out *CXArgument, inp *CXArgument, index int32, object []byte) int {
-	inputSliceOffset := GetSliceOffset(fp, inp)
+func SliceInsert(out *CXValue, inp *CXValue, index int32, object []byte) int {
+	inputSliceOffset := GetSliceOffset(inp)
 	// outputSliceOffset := GetSliceOffset(fp, out)
 
 	var inputSliceLen int32
@@ -180,7 +179,7 @@ func SliceInsert(fp int, out *CXArgument, inp *CXArgument, index int32, object [
 
 	var newLen = inputSliceLen + 1
 	sizeofElement := len(object)
-	outputSliceOffset := int32(SliceResize(fp, out, inp, newLen, sizeofElement))
+	outputSliceOffset := int32(SliceResize(out, inp, newLen, sizeofElement))
 	outputSliceData := GetSliceData(outputSliceOffset, sizeofElement)
 	copy(outputSliceData[int(index+1)*sizeofElement:], outputSliceData[int(index)*sizeofElement:])
 	copy(outputSliceData[int(index)*sizeofElement:], object)
@@ -188,9 +187,9 @@ func SliceInsert(fp int, out *CXArgument, inp *CXArgument, index int32, object [
 }
 
 // SliceRemove ...
-func SliceRemove(fp int, out *CXArgument, inp *CXArgument, index int32, sizeofElement int32) int {
-	inputSliceOffset := GetSliceOffset(fp, inp)
-	outputSliceOffset := GetSliceOffset(fp, out)
+func SliceRemove(out *CXValue, inp *CXValue, index int32, sizeofElement int32) int {
+	inputSliceOffset := GetSliceOffset(inp)
+	outputSliceOffset := GetSliceOffset(out)
 
 	var inputSliceLen int32
 	if inputSliceOffset != 0 {
@@ -203,7 +202,7 @@ func SliceRemove(fp int, out *CXArgument, inp *CXArgument, index int32, sizeofEl
 
 	outputSliceData := GetSliceData(outputSliceOffset, int(sizeofElement))
 	copy(outputSliceData[index*sizeofElement:], outputSliceData[(index+1)*sizeofElement:])
-	outputSliceOffset = int32(SliceResize(fp, out, inp, inputSliceLen-1, int(sizeofElement)))
+	outputSliceOffset = int32(SliceResize(out, inp, inputSliceLen-1, int(sizeofElement)))
 	return int(outputSliceOffset)
 }
 

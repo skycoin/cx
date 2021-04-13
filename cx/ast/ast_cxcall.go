@@ -129,6 +129,7 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 
 			//inputValues[inputIndex].Used
 			//WTF is ".Used"
+            // ".Used" helps checking at runtime if an opcodes consumed all of the inputs and outputs declared in its signature. It helps detecting faulty opcode implementation.
 			/*
 				for inputIndex := 0; inputIndex < inputCount; inputIndex++ { // TODO: remove in release builds
 					if inputValues[inputIndex].Used != int8(inputs[inputIndex].Type) { // TODO: remove cast

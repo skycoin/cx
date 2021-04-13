@@ -2,17 +2,7 @@ package ast
 
 import (
 	"github.com/skycoin/cx/cx/constants"
-	"github.com/skycoin/cx/cx/helper"
 )
-
-// GetStrOffset ...
-func GetStrOffset(offset int, name string) int32 {
-	if name != "" {
-		// then it's not a literal
-		return helper.Deserialize_i32(PROGRAM.Memory[offset : offset+constants.TYPE_POINTER_SIZE])
-	}
-	return int32(offset) // TODO: Remove cast.
-}
 
 // ResizeMemory ...
 func ResizeMemory(prgrm *CXProgram, newMemSize int, isExpand bool) {

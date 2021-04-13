@@ -20,8 +20,15 @@ import (
 //TODO: For int32, f32, etc, this function should not be called at all
 //reduce loops and switches in op code execution flow path
 
-// GetDerefSize ...
-func GetDerefSize(arg *CXArgument) int {
+// readI32 ...
+func readI32(fp int, inp *CXArgument) int32 {
+	offset := GetFinalOffset(fp, inp)
+	readMemory := PROGRAM.Memory[offset : offset+constants.I32_SIZE]
+	return helper.Deserialize_i32(readMemory)
+}
+
+// getDerefSize ...
+func getDerefSize(arg *CXArgument) int {
 	if arg.CustomType != nil {
 		return arg.CustomType.Size //TODO: WTF is a custom type?
 	}
@@ -57,8 +64,8 @@ func CalculateDereferences(arg *CXArgument, finalOffset int, fp int) int {
 			finalOffset += constants.SLICE_HEADER_SIZE
 
 			//TODO: delete
-			sizeToUse := GetDerefSize(arg) //TODO: is always arg.Size unless arg.CustomType != nil
-			finalOffset += int(ReadI32(fp, arg.Indexes[idxCounter])) * sizeToUse
+			sizeToUse := getDerefSize(arg) //TODO: is always arg.Size unless arg.CustomType != nil
+			finalOffset += int(readI32(fp, arg.Indexes[idxCounter])) * sizeToUse
 			if !IsValidSliceIndex(baseOffset, finalOffset, sizeToUse) {
 				panic(constants.CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)
 			}
@@ -75,12 +82,12 @@ func CalculateDereferences(arg *CXArgument, finalOffset int, fp int) int {
 			}
 
 			//TODO: Delete
-			sizeToUse := GetDerefSize(arg) //TODO: is always arg.Size unless arg.CustomType != nil
+			sizeToUse := getDerefSize(arg) //TODO: is always arg.Size unless arg.CustomType != nil
 
 			baseOffset = finalOffset
 			sizeofElement = subSize * sizeToUse
-			// finalOffset += int(ReadI32(fp, arg.Indexes[idxCounter])) * sizeofElement //TODO: FIX INTEGER CAST
-			finalOffset += int(ReadArray(fp, arg.Indexes[idxCounter])) * sizeofElement //TODO: FIX INTEGER CAST
+			// finalOffset += int(readI32(fp, arg.Indexes[idxCounter])) * sizeofElement //TODO: FIX INTEGER CAST
+			finalOffset += int(readI32(fp, arg.Indexes[idxCounter])) * sizeofElement //TODO: FIX INTEGER CAST
 			idxCounter++
 		case constants.DEREF_POINTER: //TODO: Move to CalculateDereference_ptr
 			isPointer = true
@@ -130,11 +137,11 @@ func CalculateDereferences_array(arg *CXArgument, finalOffset *int, fp int) {
 		}
 
 		//TODO: Delete
-		sizeToUse := GetDerefSize(arg) //TODO: is always arg.Size unless arg.CustomType != nil
+		sizeToUse := getDerefSize(arg) //TODO: is always arg.Size unless arg.CustomType != nil
 
 		sizeofElement = subSize * sizeToUse
-		// *finalOffset += int(ReadI32(fp, arg.Indexes[idxCounter])) * sizeofElement //TODO: FIX INTEGER CAST
-		*finalOffset += int(ReadArray(fp, arg.Indexes[idxCounter])) * sizeofElement //TODO: FIX INTEGER CAST
+		// *finalOffset += int(readI32(fp, arg.Indexes[idxCounter])) * sizeofElement //TODO: FIX INTEGER CAST
+		*finalOffset += int(readI32(fp, arg.Indexes[idxCounter])) * sizeofElement //TODO: FIX INTEGER CAST
 		idxCounter++
 	}
 }
@@ -169,9 +176,9 @@ func CalculateDereferences_slice(arg *CXArgument, finalOffset *int, fp int) {
 		*finalOffset += constants.SLICE_HEADER_SIZE
 
 		//TODO: delete
-		sizeToUse := GetDerefSize(arg) //TODO: is always arg.Size unless arg.CustomType != nil
-		// *finalOffset += int(ReadI32(fp, arg.Indexes[idxCounter])) * sizeToUse
-		*finalOffset += int(ReadSlice(fp, arg.Indexes[idxCounter])) * sizeToUse
+		sizeToUse := getDerefSize(arg) //TODO: is always arg.Size unless arg.CustomType != nil
+		// *finalOffset += int(readI32(fp, arg.Indexes[idxCounter])) * sizeToUse
+		*finalOffset += int(readI32(fp, arg.Indexes[idxCounter])) * sizeToUse
 		if !IsValidSliceIndex(baseOffset, *finalOffset, sizeToUse) {
 			panic(constants.CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)
 		}

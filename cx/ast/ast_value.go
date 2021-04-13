@@ -112,6 +112,10 @@ func (value *CXValue) GetSlice_f64() []float64 {
 	return nil
 }
 
+func (value *CXValue) Get_ptr() int32 {
+	return helper.Deserialize_i32(value.memory)
+}
+
 func (value *CXValue) SetSlice(data int32) {
 	//value.Used = int8(value.Type) // TODO: type checking for slice is not working
 	WriteI32(value.Offset, data)
