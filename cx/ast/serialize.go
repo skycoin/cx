@@ -1007,6 +1007,7 @@ func deserializeArguments(off int64, size int64, s *serializedCXProgram, prgrm *
 
 func deserializeArgument(sArg *serializedArgument, s *serializedCXProgram, prgrm *CXProgram) *CXArgument {
 	var arg CXArgument
+	arg.ArgDetails = &CXArgumentDebug{}
 	arg.ArgDetails.Name = deserializeString(sArg.NameOffset, sArg.NameSize, s)
 	arg.Type = int(sArg.Type)
 
