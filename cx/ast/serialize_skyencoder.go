@@ -52,3 +52,12 @@ func SerializeCXProgramV3(prgrm *CXProgram, includeMemory bool) (b []byte) {
 
 	return b
 }
+
+func DeserializeCXProgramV3(b []byte) *CXProgram {
+	prgrm := &CXProgram{}
+	var sPrgrm SerializedCXProgram
+
+	DecodeSerializedCXProgram(b, &sPrgrm)
+	initDeserialization(prgrm, &sPrgrm)
+	return prgrm
+}
