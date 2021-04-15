@@ -584,7 +584,7 @@ func SerializeCXProgram(prgrm *CXProgram, includeMemory bool) (b []byte) {
 	serializeProgram(prgrm, &s)
 
 	// assign cx program's offsets
-	assignSerializedCXProgramOffset(s)
+	assignSerializedCXProgramOffset(&s)
 
 	// serializing everything
 	b = append(b, encoder.Serialize(s.Index)...)
@@ -1031,7 +1031,7 @@ func GetSerializedDataSize(sPrgrm []byte) int {
 	return int(prgrmInfo.HeapStartsAt - prgrmInfo.StackSize)
 }
 
-func assignSerializedCXProgramOffset(s SerializedCXProgram) {
+func assignSerializedCXProgramOffset(s *SerializedCXProgram) {
 	s.Index = serializedCXProgramIndex{}
 	sIdx := &s.Index
 
