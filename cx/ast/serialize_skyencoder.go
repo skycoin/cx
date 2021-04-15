@@ -14,9 +14,6 @@ func SerializeCXProgramV3(prgrm *CXProgram, includeMemory bool) (b []byte) {
 	// serialize cx program's program
 	serializeProgram(prgrm, &s)
 
-	// assign cx program's offsets
-	assignSerializedCXProgramOffset(&s)
-
 	// serializing everything
 	b, err := EncodeSerializedCXProgram(&s)
 	if err != nil {
