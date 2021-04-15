@@ -21,6 +21,8 @@ func SerializeCXProgramV2(prgrm *CXProgram, includeMemory bool) (b []byte) {
 
 	// serializing everything
 	b = encoder.Serialize(s)
+	b = append(b, s.Strings...)
+	b = append(b, s.Memory...)
 
 	return b
 }
