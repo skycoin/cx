@@ -583,31 +583,8 @@ func SerializeCXProgram(prgrm *CXProgram, includeMemory bool) (b []byte) {
 	// serialize cx program's program
 	serializeProgram(prgrm, &s)
 
-	s.Index = serializedCXProgramIndex{}
-	sIdx := &s.Index
-
-	// assigning relative offset
-	idxSize := encoder.Size(s.Index)
-	prgrmSize := encoder.Size(s.Program)
-	callSize := encoder.Size(s.Calls)
-	pkgSize := encoder.Size(s.Packages)
-	strctSize := encoder.Size(s.Structs)
-	fnSize := encoder.Size(s.Functions)
-	exprSize := encoder.Size(s.Expressions)
-	argSize := encoder.Size(s.Arguments)
-	intSize := encoder.Size(s.Integers)
-
-	// assigning absolute offset
-	sIdx.ProgramOffset += int64(idxSize)
-	sIdx.CallsOffset += sIdx.ProgramOffset + int64(prgrmSize)
-	sIdx.PackagesOffset += sIdx.CallsOffset + int64(callSize)
-	sIdx.StructsOffset += sIdx.PackagesOffset + int64(pkgSize)
-	sIdx.FunctionsOffset += sIdx.StructsOffset + int64(strctSize)
-	sIdx.ExpressionsOffset += sIdx.FunctionsOffset + int64(fnSize)
-	sIdx.ArgumentsOffset += sIdx.ExpressionsOffset + int64(exprSize)
-	sIdx.IntegersOffset += sIdx.ArgumentsOffset + int64(argSize)
-	sIdx.StringsOffset += sIdx.IntegersOffset + int64(intSize)
-	sIdx.MemoryOffset += sIdx.StringsOffset + int64(len(s.Strings))
+	// assign cx program's offsets
+	assignSerializedCXProgramOffset(s)
 
 	// serializing everything
 	b = append(b, encoder.Serialize(s.Index)...)
@@ -1052,4 +1029,32 @@ func GetSerializedDataSize(sPrgrm []byte) int {
 	helper.DeserializeRaw(sPrgrm[index.ProgramOffset:index.CallsOffset], &prgrmInfo)
 
 	return int(prgrmInfo.HeapStartsAt - prgrmInfo.StackSize)
+}
+
+func assignSerializedCXProgramOffset(s SerializedCXProgram) {
+	s.Index = serializedCXProgramIndex{}
+	sIdx := &s.Index
+
+	// assigning relative offset
+	idxSize := encoder.Size(s.Index)
+	prgrmSize := encoder.Size(s.Program)
+	callSize := encoder.Size(s.Calls)
+	pkgSize := encoder.Size(s.Packages)
+	strctSize := encoder.Size(s.Structs)
+	fnSize := encoder.Size(s.Functions)
+	exprSize := encoder.Size(s.Expressions)
+	argSize := encoder.Size(s.Arguments)
+	intSize := encoder.Size(s.Integers)
+
+	// assigning absolute offset
+	sIdx.ProgramOffset += int64(idxSize)
+	sIdx.CallsOffset += sIdx.ProgramOffset + int64(prgrmSize)
+	sIdx.PackagesOffset += sIdx.CallsOffset + int64(callSize)
+	sIdx.StructsOffset += sIdx.PackagesOffset + int64(pkgSize)
+	sIdx.FunctionsOffset += sIdx.StructsOffset + int64(strctSize)
+	sIdx.ExpressionsOffset += sIdx.FunctionsOffset + int64(fnSize)
+	sIdx.ArgumentsOffset += sIdx.ExpressionsOffset + int64(exprSize)
+	sIdx.IntegersOffset += sIdx.ArgumentsOffset + int64(argSize)
+	sIdx.StringsOffset += sIdx.IntegersOffset + int64(intSize)
+	sIdx.MemoryOffset += sIdx.StringsOffset + int64(len(s.Strings))
 }
