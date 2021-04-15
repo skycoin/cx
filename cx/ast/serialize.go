@@ -957,7 +957,7 @@ func initDeserialization(prgrm *CXProgram, s *SerializedCXProgram) {
 // Deserialize deserializes a serialized CX program back to its golang struct representation.
 func Deserialize(b []byte) (prgrm *CXProgram) {
 	prgrm = &CXProgram{}
-	idxSize := encoder.Size(serializedCXProgramIndex{})
+	// idxSize := encoder.Size(serializedCXProgramIndex{})
 
 	var s SerializedCXProgram
 
