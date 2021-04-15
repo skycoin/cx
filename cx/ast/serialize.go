@@ -957,21 +957,21 @@ func initDeserialization(prgrm *CXProgram, s *SerializedCXProgram) {
 // Deserialize deserializes a serialized CX program back to its golang struct representation.
 func Deserialize(b []byte) (prgrm *CXProgram) {
 	prgrm = &CXProgram{}
-	// idxSize := encoder.Size(serializedCXProgramIndex{})
+	idxSize := encoder.Size(serializedCXProgramIndex{})
 
 	var s SerializedCXProgram
 
-	helper.DeserializeRaw(b, &s)
-	// helper.DeserializeRaw(b[s.Index.ProgramOffset:s.Index.CallsOffset], &s.Program)
-	// helper.DeserializeRaw(b[s.Index.CallsOffset:s.Index.PackagesOffset], &s.Calls)
-	// helper.DeserializeRaw(b[s.Index.PackagesOffset:s.Index.StructsOffset], &s.Packages)
-	// helper.DeserializeRaw(b[s.Index.StructsOffset:s.Index.FunctionsOffset], &s.Structs)
-	// helper.DeserializeRaw(b[s.Index.FunctionsOffset:s.Index.ExpressionsOffset], &s.Functions)
-	// helper.DeserializeRaw(b[s.Index.ExpressionsOffset:s.Index.ArgumentsOffset], &s.Expressions)
-	// helper.DeserializeRaw(b[s.Index.ArgumentsOffset:s.Index.IntegersOffset], &s.Arguments)
-	// helper.DeserializeRaw(b[s.Index.IntegersOffset:s.Index.StringsOffset], &s.Integers)
-	// s.Strings = b[s.Index.StringsOffset:s.Index.MemoryOffset]
-	// s.Memory = b[s.Index.MemoryOffset:]
+	helper.DeserializeRaw(b[:idxSize], &s.Index)
+	helper.DeserializeRaw(b[s.Index.ProgramOffset:s.Index.CallsOffset], &s.Program)
+	helper.DeserializeRaw(b[s.Index.CallsOffset:s.Index.PackagesOffset], &s.Calls)
+	helper.DeserializeRaw(b[s.Index.PackagesOffset:s.Index.StructsOffset], &s.Packages)
+	helper.DeserializeRaw(b[s.Index.StructsOffset:s.Index.FunctionsOffset], &s.Structs)
+	helper.DeserializeRaw(b[s.Index.FunctionsOffset:s.Index.ExpressionsOffset], &s.Functions)
+	helper.DeserializeRaw(b[s.Index.ExpressionsOffset:s.Index.ArgumentsOffset], &s.Expressions)
+	helper.DeserializeRaw(b[s.Index.ArgumentsOffset:s.Index.IntegersOffset], &s.Arguments)
+	helper.DeserializeRaw(b[s.Index.IntegersOffset:s.Index.StringsOffset], &s.Integers)
+	s.Strings = b[s.Index.StringsOffset:s.Index.MemoryOffset]
+	s.Memory = b[s.Index.MemoryOffset:]
 
 	initDeserialization(prgrm, &s)
 
