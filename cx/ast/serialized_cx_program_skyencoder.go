@@ -167,6 +167,20 @@ func EncodeSizeSerializedCXProgram(obj *SerializedCXProgram) uint64 {
 		i0 += i1
 	}
 
+	// obj.PackagesMapKV
+	i0 += 4
+	for _, x1 := range obj.PackagesMapKV {
+		i1 := uint64(0)
+
+		// x1.Key
+		i1 += 4 + uint64(len(x1.Key))
+
+		// x1.Value
+		i1 += 8
+
+		i0 += i1
+	}
+
 	// obj.Structs
 	i0 += 4
 	{
@@ -202,6 +216,20 @@ func EncodeSizeSerializedCXProgram(obj *SerializedCXProgram) uint64 {
 		i1 += 4 + uint64(len(k1))
 
 		// v1
+		i1 += 8
+
+		i0 += i1
+	}
+
+	// obj.StructsMapKV
+	i0 += 4
+	for _, x1 := range obj.StructsMapKV {
+		i1 := uint64(0)
+
+		// x1.Key
+		i1 += 4 + uint64(len(x1.Key))
+
+		// x1.Value
 		i1 += 8
 
 		i0 += i1
@@ -266,6 +294,20 @@ func EncodeSizeSerializedCXProgram(obj *SerializedCXProgram) uint64 {
 		i1 += 4 + uint64(len(k1))
 
 		// v1
+		i1 += 8
+
+		i0 += i1
+	}
+
+	// obj.FunctionsMapKV
+	i0 += 4
+	for _, x1 := range obj.FunctionsMapKV {
+		i1 := uint64(0)
+
+		// x1.Key
+		i1 += 4 + uint64(len(x1.Key))
+
+		// x1.Value
 		i1 += 8
 
 		i0 += i1
@@ -469,6 +511,20 @@ func EncodeSizeSerializedCXProgram(obj *SerializedCXProgram) uint64 {
 		i1 += 4 + uint64(len(k1))
 
 		// v1
+		i1 += 8
+
+		i0 += i1
+	}
+
+	// obj.StringsMapKV
+	i0 += 4
+	for _, x1 := range obj.StringsMapKV {
+		i1 := uint64(0)
+
+		// x1.Key
+		i1 += 4 + uint64(len(x1.Key))
+
+		// x1.Value
 		i1 += 8
 
 		i0 += i1
@@ -685,6 +741,30 @@ func EncodeSerializedCXProgramToBuffer(buf []byte, obj *SerializedCXProgram) err
 
 	}
 
+	// obj.PackagesMapKV length check
+	if uint64(len(obj.PackagesMapKV)) > math.MaxUint32 {
+		return errors.New("obj.PackagesMapKV length exceeds math.MaxUint32")
+	}
+
+	// obj.PackagesMapKV length
+	e.Uint32(uint32(len(obj.PackagesMapKV)))
+
+	// obj.PackagesMapKV
+	for _, x := range obj.PackagesMapKV {
+
+		// x.Key length check
+		if uint64(len(x.Key)) > math.MaxUint32 {
+			return errors.New("x.Key length exceeds math.MaxUint32")
+		}
+
+		// x.Key
+		e.ByteSlice([]byte(x.Key))
+
+		// x.Value
+		e.Int64(x.Value)
+
+	}
+
 	// obj.Structs length check
 	if uint64(len(obj.Structs)) > math.MaxUint32 {
 		return errors.New("obj.Structs length exceeds math.MaxUint32")
@@ -738,6 +818,30 @@ func EncodeSerializedCXProgramToBuffer(buf []byte, obj *SerializedCXProgram) err
 
 		// v
 		e.Int64(v)
+
+	}
+
+	// obj.StructsMapKV length check
+	if uint64(len(obj.StructsMapKV)) > math.MaxUint32 {
+		return errors.New("obj.StructsMapKV length exceeds math.MaxUint32")
+	}
+
+	// obj.StructsMapKV length
+	e.Uint32(uint32(len(obj.StructsMapKV)))
+
+	// obj.StructsMapKV
+	for _, x := range obj.StructsMapKV {
+
+		// x.Key length check
+		if uint64(len(x.Key)) > math.MaxUint32 {
+			return errors.New("x.Key length exceeds math.MaxUint32")
+		}
+
+		// x.Key
+		e.ByteSlice([]byte(x.Key))
+
+		// x.Value
+		e.Int64(x.Value)
 
 	}
 
@@ -818,6 +922,30 @@ func EncodeSerializedCXProgramToBuffer(buf []byte, obj *SerializedCXProgram) err
 
 		// v
 		e.Int64(v)
+
+	}
+
+	// obj.FunctionsMapKV length check
+	if uint64(len(obj.FunctionsMapKV)) > math.MaxUint32 {
+		return errors.New("obj.FunctionsMapKV length exceeds math.MaxUint32")
+	}
+
+	// obj.FunctionsMapKV length
+	e.Uint32(uint32(len(obj.FunctionsMapKV)))
+
+	// obj.FunctionsMapKV
+	for _, x := range obj.FunctionsMapKV {
+
+		// x.Key length check
+		if uint64(len(x.Key)) > math.MaxUint32 {
+			return errors.New("x.Key length exceeds math.MaxUint32")
+		}
+
+		// x.Key
+		e.ByteSlice([]byte(x.Key))
+
+		// x.Value
+		e.Int64(x.Value)
 
 	}
 
@@ -1055,6 +1183,30 @@ func EncodeSerializedCXProgramToBuffer(buf []byte, obj *SerializedCXProgram) err
 
 		// v
 		e.Int64(v)
+
+	}
+
+	// obj.StringsMapKV length check
+	if uint64(len(obj.StringsMapKV)) > math.MaxUint32 {
+		return errors.New("obj.StringsMapKV length exceeds math.MaxUint32")
+	}
+
+	// obj.StringsMapKV length
+	e.Uint32(uint32(len(obj.StringsMapKV)))
+
+	// obj.StringsMapKV
+	for _, x := range obj.StringsMapKV {
+
+		// x.Key length check
+		if uint64(len(x.Key)) > math.MaxUint32 {
+			return errors.New("x.Key length exceeds math.MaxUint32")
+		}
+
+		// x.Key
+		e.ByteSlice([]byte(x.Key))
+
+		// x.Value
+		e.Int64(x.Value)
 
 	}
 
@@ -1570,6 +1722,53 @@ func DecodeSerializedCXProgram(buf []byte, obj *SerializedCXProgram) (uint64, er
 	}
 
 	{
+		// obj.PackagesMapKV
+
+		ul, err := d.Uint32()
+		if err != nil {
+			return 0, err
+		}
+
+		length := int(ul)
+		if length < 0 || length > len(d.Buffer) {
+			return 0, encoder.ErrBufferUnderflow
+		}
+
+		if length != 0 {
+			obj.PackagesMapKV = make([]KeyValuePair, length)
+
+			for z1 := range obj.PackagesMapKV {
+				{
+					// obj.PackagesMapKV[z1].Key
+
+					ul, err := d.Uint32()
+					if err != nil {
+						return 0, err
+					}
+
+					length := int(ul)
+					if length < 0 || length > len(d.Buffer) {
+						return 0, encoder.ErrBufferUnderflow
+					}
+
+					obj.PackagesMapKV[z1].Key = string(d.Buffer[:length])
+					d.Buffer = d.Buffer[length:]
+				}
+
+				{
+					// obj.PackagesMapKV[z1].Value
+					i, err := d.Int64()
+					if err != nil {
+						return 0, err
+					}
+					obj.PackagesMapKV[z1].Value = i
+				}
+
+			}
+		}
+	}
+
+	{
 		// obj.Structs
 
 		ul, err := d.Uint32()
@@ -1696,6 +1895,53 @@ func DecodeSerializedCXProgram(buf []byte, obj *SerializedCXProgram) (uint64, er
 				}
 
 				obj.StructsMap[k1] = v1
+			}
+		}
+	}
+
+	{
+		// obj.StructsMapKV
+
+		ul, err := d.Uint32()
+		if err != nil {
+			return 0, err
+		}
+
+		length := int(ul)
+		if length < 0 || length > len(d.Buffer) {
+			return 0, encoder.ErrBufferUnderflow
+		}
+
+		if length != 0 {
+			obj.StructsMapKV = make([]KeyValuePair, length)
+
+			for z1 := range obj.StructsMapKV {
+				{
+					// obj.StructsMapKV[z1].Key
+
+					ul, err := d.Uint32()
+					if err != nil {
+						return 0, err
+					}
+
+					length := int(ul)
+					if length < 0 || length > len(d.Buffer) {
+						return 0, encoder.ErrBufferUnderflow
+					}
+
+					obj.StructsMapKV[z1].Key = string(d.Buffer[:length])
+					d.Buffer = d.Buffer[length:]
+				}
+
+				{
+					// obj.StructsMapKV[z1].Value
+					i, err := d.Int64()
+					if err != nil {
+						return 0, err
+					}
+					obj.StructsMapKV[z1].Value = i
+				}
+
 			}
 		}
 	}
@@ -1899,6 +2145,53 @@ func DecodeSerializedCXProgram(buf []byte, obj *SerializedCXProgram) (uint64, er
 				}
 
 				obj.FunctionsMap[k1] = v1
+			}
+		}
+	}
+
+	{
+		// obj.FunctionsMapKV
+
+		ul, err := d.Uint32()
+		if err != nil {
+			return 0, err
+		}
+
+		length := int(ul)
+		if length < 0 || length > len(d.Buffer) {
+			return 0, encoder.ErrBufferUnderflow
+		}
+
+		if length != 0 {
+			obj.FunctionsMapKV = make([]KeyValuePair, length)
+
+			for z1 := range obj.FunctionsMapKV {
+				{
+					// obj.FunctionsMapKV[z1].Key
+
+					ul, err := d.Uint32()
+					if err != nil {
+						return 0, err
+					}
+
+					length := int(ul)
+					if length < 0 || length > len(d.Buffer) {
+						return 0, encoder.ErrBufferUnderflow
+					}
+
+					obj.FunctionsMapKV[z1].Key = string(d.Buffer[:length])
+					d.Buffer = d.Buffer[length:]
+				}
+
+				{
+					// obj.FunctionsMapKV[z1].Value
+					i, err := d.Int64()
+					if err != nil {
+						return 0, err
+					}
+					obj.FunctionsMapKV[z1].Value = i
+				}
+
 			}
 		}
 	}
@@ -2525,6 +2818,53 @@ func DecodeSerializedCXProgram(buf []byte, obj *SerializedCXProgram) (uint64, er
 				}
 
 				obj.StringsMap[k1] = v1
+			}
+		}
+	}
+
+	{
+		// obj.StringsMapKV
+
+		ul, err := d.Uint32()
+		if err != nil {
+			return 0, err
+		}
+
+		length := int(ul)
+		if length < 0 || length > len(d.Buffer) {
+			return 0, encoder.ErrBufferUnderflow
+		}
+
+		if length != 0 {
+			obj.StringsMapKV = make([]KeyValuePair, length)
+
+			for z1 := range obj.StringsMapKV {
+				{
+					// obj.StringsMapKV[z1].Key
+
+					ul, err := d.Uint32()
+					if err != nil {
+						return 0, err
+					}
+
+					length := int(ul)
+					if length < 0 || length > len(d.Buffer) {
+						return 0, encoder.ErrBufferUnderflow
+					}
+
+					obj.StringsMapKV[z1].Key = string(d.Buffer[:length])
+					d.Buffer = d.Buffer[length:]
+				}
+
+				{
+					// obj.StringsMapKV[z1].Value
+					i, err := d.Int64()
+					if err != nil {
+						return 0, err
+					}
+					obj.StringsMapKV[z1].Value = i
+				}
+
 			}
 		}
 	}
