@@ -8,7 +8,7 @@ import (
 )
 
 /*
-passone perform cxpartial parsing using grammmer.y
+passone perform cxpartial parsing using partialparsing.y and partialparsing.go
 */
 func Passone(source string) int {
 
@@ -18,7 +18,7 @@ func Passone(source string) int {
 }
 
 /*
-passtwo perform cxparsingcompletor parsing using lexer.y
+passtwo perform cxparsingcompletor parsing using parsingcompletor.y and parsingcompletor.go
 */
 
 func Passtwo(b *bytes.Buffer) int {
