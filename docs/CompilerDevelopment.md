@@ -13,18 +13,31 @@ Documentation: godoc.org/modernc.org/goyacc
 
 When submitting changes to CX core, the development team uses Git pull requests for staging. Submit changes as a pull request and after review by the development team additional changes may be suggested prior to merging.
 
+# CX Lexer
+CX in house `lexer` generates a chain of tokens which is used by yacc for parsing.
+(found in)[lex.go] (https://github.com/skycoin/cx/cxparser/cxpartialparsing/lex.go )
+
+
+
 # CX Compiler Stages
 
-The compiler creates an AST first by using regular expression parsing (found in [parse.go](https://github.com/skycoin/cx/blob/develop/cxgo/cxgo/cxgo.go#L90) which structures the AST to include all package declarations, import chains, struct declarations, and globals, skipping over comments. This preliminary stage of parsing aids further stages since the structure of a CX repository and the names of custom types are already known. 
+`Preliminarystage`
+
+The compiler creates an AST first by using regular expression parsing (found in [utils.go](https://github.com/PratikDhanave/cx/blob/develop/cxparser/cxparsing/utils.go#L21) which structures the AST to include all package declarations, import chains, struct declarations, and globals, skipping over comments. 
+This preliminary stage of parsing aids further stages since the structure of a CX repository and the names of custom types are already known. 
+
+`Passone`
 
 After this preliminary stage, the first parsing stage compiles function primitives and types, along with the structure of their parameters and global variables. This stage also finalizes compilation of structs and ensures packages and their imports are correct. This uses `goyacc` for parsing and creates a chain of tokens for the parser using an in-house lexer known as `Lexer`. 
 
-The second parsing stage fully compiles functions and all expressions. This functions similarly to the first stage, using `Lexer` and `goyacc`, but also uses `cxgo/actions` for each action the parser should take after encountering a valid syntactical production rule. These work entirely to validate program structure and to build the AST for a CX program. 
+`Passtwo`
+
+The second parsing stage fully compiles functions and all expressions. This functions similarly to the first stage, using `Lexer` and `goyacc`, but also uses `cxparser/actions` for each action the parser should take after encountering a valid syntactical production rule. These work entirely to validate program structure and to build the AST for a CX program. 
 
 Finally, the `main` function and invisible `*init` functions are created, the latter of which acts as an initializer for global variables. 
 
 The lifetime of a CX program in depth is given here:
-1. [lexerStep0](https://github.com/skycoin/cx/blob/55391915c2fac1701d4af0f2567410ccbb9ad734/cxgo/cxlexer/parse.go#L84) - here, a copy of the source code is passed in as an array of strings, along with the file names. A series of regular expressions are compiled to check for various things. Finally, the source code is iterated over, and for each file, we iterate over a scanner of the file. Then, for each successful scan:
+1.Preliminarystage ](https://github.com/PratikDhanave/cx/blob/develop/cxparser/cxparsing/utils.go#L21) - here, a copy of the source code is passed in as an array of strings, along with the file names. A series of regular expressions are compiled to check for various things. Finally, the source code is iterated over, and for each file, we iterate over a scanner of the file. Then, for each successful scan:
     1. We first check if we’re in a comment or not. If we are, we continue scanning and ignore the following steps.
     2. Next, we check if this current line contains a package declaration. If so, then we check if the program has added a package with that name. If not, then we add that package to the CXProgram (PRGM0, basically the main program). Remember, now that package is the current package.
     3. We do the same thing for structures.
