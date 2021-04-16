@@ -15,8 +15,8 @@ import (
 
 /*
    This is a computer generated file
-   - parser.go is generated from grammer.y via
-   - ./bin/goyacc -o cxparser/cxpartialparsing/parser.go cxparser/cxpartialparsing/grammer.y
+   - partialparsing.go is generated from partialparsing.y via
+   - ./bin/goyacc -o cxparser/cxpartialparsing/partialparsing.go cxparser/cxpartialparsing/partialparsing.y
 */
 
 var Program *ast.CXProgram

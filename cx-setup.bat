@@ -228,10 +228,10 @@ exit /b
 
 
 :buildCX
-  %BIN_PATH%\goyacc -o %CXGO_PATH%\cxpartialparsing\parser.go %CXGO_PATH%\cxpartialparsing\grammer.y
+  %BIN_PATH%\goyacc -o %CXGO_PATH%\cxpartialparsing\partialparsing.go %CXGO_PATH%\cxpartialparsing\partialparsing.y
   call :showResults "goyacc cxpartialparsing" "1st pass -" "ERROR in 1st pass -"
 
-  %BIN_PATH%\goyacc -o %CXGO_PATH%\parscxparsingcompletorer\lexer.go %CXGO_PATH%\cxparsingcompletor\lexer.y
+  %BIN_PATH%\goyacc -o %CXGO_PATH%\parscxparsingcompletorer\parsingcompletorer.go %CXGO_PATH%\cxparsingcompletor\parsingcompletorer.y
   call :showResults "goyacc cxparsingcompletor" "2nd pass -" "ERROR in 2nd pass -"
 
 
