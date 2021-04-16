@@ -41,7 +41,7 @@ func opLen(inputs []ast.CXValue, outputs []ast.CXValue) {
 
 //TODO: Rename OpSliceAppend
 //TODO: Rework
-func opAppend(inputs []ast.CXValue, outputs []ast.CXValue) {
+func opSliceAppend(inputs []ast.CXValue, outputs []ast.CXValue) {
 	inp0, inp1, out0 := inputs[0].Arg, inputs[1].Arg, outputs[0].Arg
 
 	eltInp0 := ast.GetAssignmentElement(inp0)
