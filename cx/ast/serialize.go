@@ -149,13 +149,11 @@ type serializedArgument struct {
 	DeclarationSpecifiersOffset int64
 	DeclarationSpecifiersSize   int64
 
-	IsSlice      int64
-	IsArray      int64
-	IsArrayFirst int64
-	IsPointer    int64
-	IsReference  int64
+	IsSlice     int64
+	IsArray     int64
+	IsPointer   int64
+	IsReference int64
 
-	IsDereferenceFirst int64
 	IsStruct           int64
 	IsRest             int64
 	IsLocalDeclaration int64
@@ -317,11 +315,9 @@ func serializeArgument(arg *CXArgument, s *serializedCXProgram) int {
 
 	s.Arguments[argOff].IsSlice = serializeBoolean(arg.IsSlice)
 	s.Arguments[argOff].IsArray = serializeBoolean(arg.IsArray)
-	s.Arguments[argOff].IsArrayFirst = serializeBoolean(arg.IsArrayFirst)
 	s.Arguments[argOff].IsPointer = serializeBoolean(arg.IsPointer)
 	s.Arguments[argOff].IsReference = serializeBoolean(arg.IsReference)
 
-	s.Arguments[argOff].IsDereferenceFirst = serializeBoolean(arg.IsDereferenceFirst)
 	s.Arguments[argOff].IsStruct = serializeBoolean(arg.IsStruct)
 	s.Arguments[argOff].IsRest = serializeBoolean(arg.IsRest)
 	s.Arguments[argOff].IsLocalDeclaration = serializeBoolean(arg.IsLocalDeclaration)
@@ -1025,10 +1021,8 @@ func deserializeArgument(sArg *serializedArgument, s *serializedCXProgram, prgrm
 
 	arg.IsSlice = deserializeBool(sArg.IsSlice)
 	arg.IsArray = deserializeBool(sArg.IsArray)
-	arg.IsArrayFirst = deserializeBool(sArg.IsArrayFirst)
 	arg.IsPointer = deserializeBool(sArg.IsPointer)
 	arg.IsReference = deserializeBool(sArg.IsReference)
-	arg.IsDereferenceFirst = deserializeBool(sArg.IsDereferenceFirst)
 	arg.IsStruct = deserializeBool(sArg.IsStruct)
 	arg.IsRest = deserializeBool(sArg.IsRest)
 	arg.IsLocalDeclaration = deserializeBool(sArg.IsLocalDeclaration)
