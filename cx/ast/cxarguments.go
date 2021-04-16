@@ -79,10 +79,8 @@ type CXArgument struct {
 	CustomType                   *CXStruct
 	IsSlice                      bool
 	IsArray                      bool
-	IsArrayFirst                 bool // and then dereference
 	IsPointer                    bool
 	IsReference                  bool
-	IsDereferenceFirst           bool // and then array
 	IsStruct                     bool
 	IsRest                       bool // pkg.var <- var is rest
 	IsLocalDeclaration           bool
