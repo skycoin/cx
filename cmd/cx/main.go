@@ -1,17 +1,18 @@
 package main
 
 import (
-	"github.com/skycoin/cx/cx/opcodes"
 	"os"
 	"runtime"
+
+	"github.com/skycoin/cx/cx/opcodes"
 
 	repl "github.com/skycoin/cx/cmd/cxrepl"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/execute"
-	"github.com/skycoin/cx/cxparsergenerator/actions"
-	parsingcompletor "github.com/skycoin/cx/cxparsergenerator/cxparsingcompletor"
-	"github.com/skycoin/cx/cxparsergenerator/util/profiling"
+	"github.com/skycoin/cx/cxparser/actions"
+	parsingcompletor "github.com/skycoin/cx/cxparser/cxparsingcompletor"
+	"github.com/skycoin/cx/cxparser/util/profiling"
 )
 
 func main() {

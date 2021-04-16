@@ -6,7 +6,7 @@ import (
 
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
-	constants2 "github.com/skycoin/cx/cxparsergenerator/constants"
+	constants2 "github.com/skycoin/cx/cxparser/constants"
 )
 
 // PostfixExpressionArray...

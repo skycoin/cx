@@ -3,7 +3,7 @@
 package cxfx
 
 import (
-	"github.com/skycoin/cx/cxparsergenerator/actions"
+	"github.com/skycoin/cx/cxparser/actions"
 )
 
 // constant codes

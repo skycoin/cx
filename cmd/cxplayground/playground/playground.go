@@ -15,11 +15,11 @@ import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/execute"
 
-	"github.com/skycoin/cx/cxparsergenerator/actions"
-	"github.com/skycoin/cx/cxparsergenerator/cxparser"
+	"github.com/skycoin/cx/cxparser/actions"
+	cxparsing "github.com/skycoin/cx/cxparser/cxparsing"
 
-	cxparsingcompletor "github.com/skycoin/cx/cxparsergenerator/cxparsingcompletor"
-	cxpartialparsing "github.com/skycoin/cx/cxparsergenerator/cxpartialparsing"
+	cxparsingcompletor "github.com/skycoin/cx/cxparser/cxparsingcompletor"
+	cxpartialparsing "github.com/skycoin/cx/cxparser/cxpartialparsing"
 )
 
 var (
@@ -161,7 +161,7 @@ func unsafeeval(code string) (out string) {
 	cxparsingcompletor.Parse(lexer)
 	//yyParse(lexer)
 
-	err = cxparser.AddInitFunction(actions.AST)
+	err = cxparsing.AddInitFunction(actions.AST)
 	if err != nil {
 		return fmt.Sprintf("%s", err)
 	}
