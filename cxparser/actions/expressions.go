@@ -41,13 +41,13 @@ func IterationExpressions(init []*ast.CXExpression, cond []*ast.CXExpression, in
 
 	if len(cond[len(cond)-1].Outputs) < 1 {
 		predicate := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(constants.TypeNames[cond[len(cond)-1].Operator.Outputs[0].Type])
-		predicate.Package = pkg
+		predicate.ArgDetails.Package = pkg
 		predicate.PreviouslyDeclared = true
 		cond[len(cond)-1].AddOutput(predicate)
 		downExpr.AddInput(predicate)
 	} else {
 		predicate := cond[len(cond)-1].Outputs[0]
-		predicate.Package = pkg
+		predicate.ArgDetails.Package = pkg
 		predicate.PreviouslyDeclared = true
 		downExpr.AddInput(predicate)
 	}
@@ -219,7 +219,7 @@ func UndefinedTypeOperation(leftExprs []*ast.CXExpression, rightExprs []*ast.CXE
 		name.Size = leftExprs[len(leftExprs)-1].Operator.Outputs[0].Size
 		name.TotalSize = ast.GetSize(leftExprs[len(leftExprs)-1].Operator.Outputs[0])
 		name.Type = leftExprs[len(leftExprs)-1].Operator.Outputs[0].Type
-		name.Package = pkg
+		name.ArgDetails.Package = pkg
 		name.PreviouslyDeclared = true
 
 		leftExprs[len(leftExprs)-1].Outputs = append(leftExprs[len(leftExprs)-1].Outputs, name)
@@ -231,7 +231,7 @@ func UndefinedTypeOperation(leftExprs []*ast.CXExpression, rightExprs []*ast.CXE
 		name.Size = rightExprs[len(rightExprs)-1].Operator.Outputs[0].Size
 		name.TotalSize = ast.GetSize(rightExprs[len(rightExprs)-1].Operator.Outputs[0])
 		name.Type = rightExprs[len(rightExprs)-1].Operator.Outputs[0].Type
-		name.Package = pkg
+		name.ArgDetails.Package = pkg
 		name.PreviouslyDeclared = true
 
 		rightExprs[len(rightExprs)-1].Outputs = append(rightExprs[len(rightExprs)-1].Outputs, name)
@@ -246,7 +246,7 @@ func UndefinedTypeOperation(leftExprs []*ast.CXExpression, rightExprs []*ast.CXE
 		// then it's a function call or an array access
 		expr.AddInput(leftExprs[len(leftExprs)-1].Outputs[0])
 
-		if IsTempVar(leftExprs[len(leftExprs)-1].Outputs[0].Name) {
+		if IsTempVar(leftExprs[len(leftExprs)-1].Outputs[0].ArgDetails.Name) {
 			out = append(out, leftExprs...)
 		} else {
 			out = append(out, leftExprs[:len(leftExprs)-1]...)
@@ -259,7 +259,7 @@ func UndefinedTypeOperation(leftExprs []*ast.CXExpression, rightExprs []*ast.CXE
 		// then it's a function call or an array access
 		expr.AddInput(rightExprs[len(rightExprs)-1].Outputs[0])
 
-		if IsTempVar(rightExprs[len(rightExprs)-1].Outputs[0].Name) {
+		if IsTempVar(rightExprs[len(rightExprs)-1].Outputs[0].ArgDetails.Name) {
 			out = append(out, rightExprs...)
 		} else {
 			out = append(out, rightExprs[:len(rightExprs)-1]...)
@@ -353,7 +353,7 @@ func AssociateReturnExpressions(idx int, retExprs []*ast.CXExpression) []*ast.CX
 
 	outParam := fn.Outputs[idx]
 
-	out := ast.MakeArgument(outParam.Name, CurrentFile, LineNo)
+	out := ast.MakeArgument(outParam.ArgDetails.Name, CurrentFile, LineNo)
 	out.AddType(constants.TypeNames[outParam.Type])
 	out.CustomType = outParam.CustomType
 	out.PreviouslyDeclared = true
@@ -426,4 +426,3 @@ func AddJmpToReturnExpressions(exprs ReturnExpressions) []*ast.CXExpression {
 
 	return retExprs
 }
-

@@ -2,9 +2,10 @@ package opcodes
 
 import (
 	"fmt"
+
 	"github.com/skycoin/cx/cx/ast"
-    "github.com/skycoin/cx/cx/constants"
-    "github.com/skycoin/cx/cx/globals"
+	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/globals"
 )
 
 // RegisterPackage registers a package on the CX standard library. This does not create a `CXPackage` structure,
@@ -19,7 +20,6 @@ func GetOpCodeCount() int {
 	return len(OpcodeHandlers)
 }
 */
-
 
 // RegisterOpCode ...
 func RegisterOpCode(code int, name string, handler ast.OpcodeHandler, inputs []*ast.CXArgument, outputs []*ast.CXArgument) {
@@ -62,7 +62,7 @@ func RegisterOperator(name string, handler ast.OpcodeHandler, inputs []*ast.CXAr
 func MakeNativeFunction(opCode int, inputs []*ast.CXArgument, outputs []*ast.CXArgument) *ast.CXFunction {
 	fn := &ast.CXFunction{
 		IsBuiltin: true,
-		OpCode:   opCode,
+		OpCode:    opCode,
 	}
 
 	offset := 0
@@ -79,9 +79,6 @@ func MakeNativeFunction(opCode int, inputs []*ast.CXArgument, outputs []*ast.CXA
 
 	return fn
 }
-
-
-
 
 /*
 // Debug helper function used to find opcodes when they are not registered
@@ -144,7 +141,7 @@ func Slice(typCode int) *ast.CXArgument {
 // The current standard library only uses basic types and slices. If more options are needed, modify this function
 func Func(pkg *ast.CXPackage, inputs []*ast.CXArgument, outputs []*ast.CXArgument) *ast.CXArgument {
 	arg := Param(constants.TYPE_FUNC)
-	arg.Package = pkg
+	arg.ArgDetails.Package = pkg
 	arg.Inputs = inputs
 	arg.Outputs = outputs
 	return arg
@@ -161,4 +158,3 @@ func Param(typCode int) *ast.CXArgument {
 func opDebug([]ast.CXValue, []ast.CXValue) {
 	ast.PROGRAM.PrintStack()
 }
-

@@ -143,9 +143,9 @@ func CalculateDereferences_array(arg *CXArgument, finalOffset *int, fp int) {
 func CalculateDereferences_slice(arg *CXArgument, finalOffset *int, fp int) {
 
 	// remove this check
-	if !arg.IsSlice {
-		panic("not slice")
-	}
+	//if !arg.IsSlice {
+	//panic("not slice")
+	//	}
 	var baseOffset int
 
 	idxCounter := 0

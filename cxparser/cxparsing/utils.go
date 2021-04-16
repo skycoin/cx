@@ -18,7 +18,7 @@ import (
 
 // preliminarystage performs a first pass for the CX cxgo. Globals, packages and
 // custom types are added to `cxpartialparsing.Program`.
-func preliminarystage(srcStrs, srcNames []string) int {
+func Preliminarystage(srcStrs, srcNames []string) int {
 	var prePkg *ast.CXPackage
 	parseErrors := 0
 
@@ -256,7 +256,7 @@ func preliminarystage(srcStrs, srcNames []string) int {
 						// then it hasn't been added
 						arg := ast.MakeArgument(match[len(match)-1], "", 0)
 						arg.Offset = -1
-						arg.Package = prePkg
+						arg.ArgDetails.Package = prePkg
 						prePkg.AddGlobal(arg)
 					}
 				}
@@ -277,7 +277,7 @@ func preliminarystage(srcStrs, srcNames []string) int {
 		/*
 			passone
 		*/
-		parseErrors += passone(source)
+		parseErrors += Passone(source)
 		profiling.StopProfile(srcNames[i])
 	}
 

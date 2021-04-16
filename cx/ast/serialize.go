@@ -288,7 +288,7 @@ func serializeArgument(arg *CXArgument, s *serializedCXProgram) int {
 
 	sNil := int64(-1)
 
-	s.Arguments[argOff].NameOffset, s.Arguments[argOff].NameSize = serializeString(arg.Name, s)
+	s.Arguments[argOff].NameOffset, s.Arguments[argOff].NameSize = serializeString(arg.ArgDetails.Name, s)
 
 	s.Arguments[argOff].Type = int64(arg.Type)
 
@@ -337,7 +337,7 @@ func serializeArgument(arg *CXArgument, s *serializedCXProgram) int {
 	s.Arguments[argOff].InputsOffset, s.Arguments[argOff].InputsSize = serializeSliceOfArguments(arg.Inputs, s)
 	s.Arguments[argOff].OutputsOffset, s.Arguments[argOff].OutputsSize = serializeSliceOfArguments(arg.Outputs, s)
 
-	if pkgOff, found := s.PackagesMap[arg.Package.Name]; found {
+	if pkgOff, found := s.PackagesMap[arg.ArgDetails.Package.Name]; found {
 		s.Arguments[argOff].PackageOffset = int64(pkgOff)
 	} else {
 		panic("package reference not found")
@@ -1007,7 +1007,8 @@ func deserializeArguments(off int64, size int64, s *serializedCXProgram, prgrm *
 
 func deserializeArgument(sArg *serializedArgument, s *serializedCXProgram, prgrm *CXProgram) *CXArgument {
 	var arg CXArgument
-	arg.Name = deserializeString(sArg.NameOffset, sArg.NameSize, s)
+	arg.ArgDetails = &CXArgumentDebug{}
+	arg.ArgDetails.Name = deserializeString(sArg.NameOffset, sArg.NameSize, s)
 	arg.Type = int(sArg.Type)
 
 	//arg.CustomType = getStructType(sArg, s, prgrm)
@@ -1041,7 +1042,7 @@ func deserializeArgument(sArg *serializedArgument, s *serializedCXProgram, prgrm
 	arg.Inputs = deserializeArguments(sArg.InputsOffset, sArg.InputsSize, s, prgrm)
 	arg.Outputs = deserializeArguments(sArg.OutputsOffset, sArg.OutputsSize, s, prgrm)
 
-	arg.Package = prgrm.Packages[sArg.PackageOffset]
+	arg.ArgDetails.Package = prgrm.Packages[sArg.PackageOffset]
 
 	return &arg
 }

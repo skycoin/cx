@@ -247,11 +247,11 @@ func GetOffset_slice(fp int, arg *CXArgument) int {
 		finalOffset += fp
 	}
 
-	CalculateDereferences_ptr(arg, &finalOffset, fp)
+	CalculateDereferences_slice(arg, &finalOffset, fp)
 	for _, fld := range arg.Fields {
 		// elt = fld
 		finalOffset += fld.Offset
-		CalculateDereferences_ptr(fld, &finalOffset, fp)
+		CalculateDereferences_slice(fld, &finalOffset, fp)
 	}
 
 	return finalOffset

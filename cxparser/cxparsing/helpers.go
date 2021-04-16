@@ -10,7 +10,7 @@ import (
 /*
 passone perform cxpartial parsing using grammmer.y
 */
-func passone(source string) int {
+func Passone(source string) int {
 
 	parseErrors := cxpartialparsing.Parse(source)
 
@@ -21,7 +21,7 @@ func passone(source string) int {
 passtwo perform cxparsingcompletor parsing using lexer.y
 */
 
-func passtwo(b *bytes.Buffer) int {
+func Passtwo(b *bytes.Buffer) int {
 
 	parseErrors := cxparsingcompletor.Parse(cxparsingcompletor.NewLexer(b))
 

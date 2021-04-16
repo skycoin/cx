@@ -2,10 +2,11 @@ package opcodes
 
 import (
 	"fmt"
+	"strconv"
+
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/helper"
-	"strconv"
 	// "github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
@@ -84,8 +85,8 @@ func CallAffPredicate(fn *ast.CXFunction, predValue []byte) byte {
 		ast.GetFinalOffset(newFP, newCall.Operator.Inputs[0]),
 		predValue)
 
-    var inputs []ast.CXValue
-    var outputs []ast.CXValue
+	var inputs []ast.CXValue
+	var outputs []ast.CXValue
 	prevCC := ast.PROGRAM.CallCounter
 	for {
 		call := &ast.PROGRAM.CallStack[ast.PROGRAM.CallCounter]
@@ -157,7 +158,7 @@ func queryParam(fn *ast.CXFunction, args []*ast.CXArgument, exprLbl string, argO
 		// Name
 		// argNameB := encoder.Serialize(arg.Name)
 		// argNameOffset := int32(WriteObjectRetOff(argNameB))
-		argNameOffset := ast.WriteStringData(arg.Name)
+		argNameOffset := ast.WriteStringData(arg.ArgDetails.Name)
 
 		argOffset := ast.AllocateSeq(constants.OBJECT_HEADER_SIZE + constants.STR_SIZE + constants.I32_SIZE + constants.STR_SIZE)
 		ast.WriteI32(argOffset+constants.OBJECT_HEADER_SIZE, int32(argNameOffset))
@@ -619,9 +620,9 @@ func opAffOn(inputs []ast.CXValue, outputs []ast.CXValue) {
 
 	call := ast.PROGRAM.GetCurrentCall()
 	expr := call.Operator.Expressions[call.Line]
-    fp := inputs[0].FramePointer
+	fp := inputs[0].FramePointer
 
-    var tgtPkg = ast.CXPackage(*prevPkg)
+	var tgtPkg = ast.CXPackage(*prevPkg)
 	var tgtFn = ast.CXFunction(*expr.Function)
 	var tgtExpr = ast.CXExpression(*prevExpr)
 
@@ -659,7 +660,7 @@ func opAffOf(inputs []ast.CXValue, outputs []ast.CXValue) {
 
 	call := ast.PROGRAM.GetCurrentCall()
 	expr := call.Operator.Expressions[call.Line]
-    fp := inputs[0].FramePointer
+	fp := inputs[0].FramePointer
 
 	var tgtPkg = ast.CXPackage(*expr.Package)
 	var tgtFn = ast.CXFunction(*expr.Function)
@@ -757,7 +758,7 @@ func opAffInform(inputs []ast.CXValue, outputs []ast.CXValue) {
 
 	call := ast.PROGRAM.GetCurrentCall()
 	expr := call.Operator.Expressions[call.Line]
-    fp := inputs[0].FramePointer
+	fp := inputs[0].FramePointer
 
 	prevPkg := ast.PROGRAM.CurrentPackage
 	prevFn := prevPkg.CurrentFunction
@@ -860,7 +861,7 @@ func opAffRequest(inputs []ast.CXValue, outputs []ast.CXValue) {
 
 	call := ast.PROGRAM.GetCurrentCall()
 	expr := call.Operator.Expressions[call.Line]
-    fp := inputs[0].FramePointer
+	fp := inputs[0].FramePointer
 
 	prevPkg := ast.PROGRAM.CurrentPackage
 	prevFn := prevPkg.CurrentFunction
@@ -983,7 +984,7 @@ func opAffQuery(inputs []ast.CXValue, outputs []ast.CXValue) {
 
 	call := ast.PROGRAM.GetCurrentCall()
 	expr := call.Operator.Expressions[call.Line]
-    fp := inputs[0].FramePointer
+	fp := inputs[0].FramePointer
 
 	out1Offset := ast.GetFinalOffset(fp, out1)
 
@@ -999,7 +1000,7 @@ func opAffQuery(inputs []ast.CXValue, outputs []ast.CXValue) {
 		default:
 			switch cmd {
 			case "filter":
-				if fn, err := inp1.Package.GetFunction(rule); err == nil {
+				if fn, err := inp1.ArgDetails.Package.GetFunction(rule); err == nil {
 
 					// arg keyword
 					// argB := encoder.Serialize("arg")

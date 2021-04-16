@@ -50,7 +50,7 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 	*/
 	parseErrors := 0
 	if len(sourceCode) > 0 {
-		parseErrors = preliminarystage(sourceCodeStrings, fileNames)
+		parseErrors = Preliminarystage(sourceCodeStrings, fileNames)
 	}
 
 	//package level program
@@ -68,14 +68,13 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 	*/
 	if osPkg, err := actions.AST.GetPackage(constants.OS_PKG); err == nil {
 		if _, err := osPkg.GetGlobal(constants.OS_ARGS); err != nil {
-			argzero := ast.MakeArgument(constants.OS_ARGS, "", -1).AddType(constants.TypeNames[constants.TYPE_UNDEFINED])
-			argzero.Package = osPkg
+			arg0 := ast.MakeArgument(constants.OS_ARGS, "", -1).AddType(constants.TypeNames[constants.TYPE_UNDEFINED])
+			arg0.ArgDetails.Package = osPkg
 
-			argone := ast.MakeArgument(constants.OS_ARGS, "", -1).AddType(constants.TypeNames[constants.TYPE_STR])
-			argone = actions.DeclarationSpecifiers(argone, []int{0}, constants.DECL_BASIC)
-			argone = actions.DeclarationSpecifiers(argzero, []int{0}, constants.DECL_SLICE)
-
-			actions.DeclareGlobalInPackage(osPkg, argzero, argone, nil, false)
+			arg1 := ast.MakeArgument(constants.OS_ARGS, "", -1).AddType(constants.TypeNames[constants.TYPE_STR])
+			arg1 = actions.DeclarationSpecifiers(arg1, []int{0}, constants.DECL_BASIC)
+			arg1 = actions.DeclarationSpecifiers(arg1, []int{0}, constants.DECL_SLICE)
+			actions.DeclareGlobalInPackage(osPkg, arg0, arg1, nil, false)
 		}
 	}
 
@@ -105,7 +104,7 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 
 		profiling.StartProfile(actions.CurrentFile)
 
-		parseErrors += passtwo(b)
+		parseErrors += Passtwo(b)
 
 		profiling.StopProfile(actions.CurrentFile)
 	}
