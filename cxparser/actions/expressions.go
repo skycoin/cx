@@ -294,9 +294,7 @@ func UnaryExpression(op string, prevExprs []*ast.CXExpression) []*ast.CXExpressi
 	case "*":
 		exprOut.DereferenceLevels++
 		exprOut.DereferenceOperations = append(exprOut.DereferenceOperations, constants.DEREF_POINTER)
-		if !exprOut.IsArrayFirst {
-			exprOut.IsDereferenceFirst = true
-		}
+
 		exprOut.DeclarationSpecifiers = append(exprOut.DeclarationSpecifiers, constants.DECL_DEREF)
 		exprOut.IsReference = false
 	case "&":
