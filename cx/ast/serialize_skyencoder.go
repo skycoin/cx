@@ -14,6 +14,8 @@ func SerializeCXProgramV3(prgrm *CXProgram, includeMemory bool) (b []byte) {
 	// serialize cx program's program
 	serializeProgram(prgrm, &s)
 
+	convertSerializedCXProgramMapsToKVPairs(&s)
+
 	// serializing everything
 	b, err := EncodeSerializedCXProgram(&s)
 	if err != nil {
@@ -28,6 +30,8 @@ func DeserializeCXProgramV3(b []byte) *CXProgram {
 	var sPrgrm SerializedCXProgram
 
 	DecodeSerializedCXProgram(b, &sPrgrm)
+
+	convertSerializedCXProgramKVPairsToMaps(&sPrgrm)
 	initDeserialization(prgrm, &sPrgrm)
 	return prgrm
 }

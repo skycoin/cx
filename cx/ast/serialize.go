@@ -973,6 +973,7 @@ func Deserialize(b []byte) (prgrm *CXProgram) {
 	s.Strings = b[s.Index.StringsOffset:s.Index.MemoryOffset]
 	s.Memory = b[s.Index.MemoryOffset:]
 
+	convertSerializedCXProgramKVPairsToMaps(&s)
 	initDeserialization(prgrm, &s)
 
 	// prgrm.PrintProgram()
