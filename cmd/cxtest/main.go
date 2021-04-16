@@ -313,6 +313,7 @@ func runTestCases(t *runner.TestRunner) {
 	t.RunEx("issue-131.cx", runner.CxSuccess, "Panic when using arithmetic operations.", runner.TestIssue, 0)
 	t.RunEx("test-ar-1.cx", runner.CxSuccess, "Panic when using string to pointer array.", runner.TestIssue, 0)
 	t.RunEx("issue-157.cx", runner.CxSuccess, "expected either 'i32' or 'i64', got 'ident'", runner.TestIssue, 0)
+	t.Run("issue-650.cx", runner.CxSuccess, "test should not fail")
 
 	// We need to fix serialization and deserialization as user-callable functions
 	// t.RunEx("issue-309.cx", CxSuccess, "Serialization is not taking into account non-default stack sizes.", TestIssue, 0)
