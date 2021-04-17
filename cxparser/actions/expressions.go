@@ -84,13 +84,13 @@ func IterationExpressions(init []*ast.CXExpression, cond []*ast.CXExpression, in
 	return exprs
 }
 
-func trueJmpExpressions() []*ast.CXExpression {
+func trueJmpExpressions(opcode int) []*ast.CXExpression {
 	pkg, err := AST.GetCurrentPackage()
 	if err != nil {
 		panic(err)
 	}
 
-	expr := ast.MakeExpression(ast.Natives[constants.OP_JMP], CurrentFile, LineNo)
+	expr := ast.MakeExpression(ast.Natives[opcode], CurrentFile, LineNo)
 
 	trueArg := WritePrimary(constants.TYPE_BOOL, encoder.Serialize(true), false)
 	expr.AddInput(trueArg[0].Outputs[0])
@@ -101,14 +101,12 @@ func trueJmpExpressions() []*ast.CXExpression {
 }
 
 func BreakExpressions() []*ast.CXExpression {
-	exprs := trueJmpExpressions()
-	exprs[0].SetExpressionType(ast.CXEXPR_BREAK)
+	exprs := trueJmpExpressions(constants.OP_BREAK)
 	return exprs
 }
 
 func ContinueExpressions() []*ast.CXExpression {
-	exprs := trueJmpExpressions()
-	exprs[0].SetExpressionType(ast.CXEXPR_CONTINUE)
+	exprs := trueJmpExpressions(constants.OP_CONTINUE)
 	return exprs
 }
 
@@ -207,8 +205,7 @@ func IsTempVar(name string) bool {
 	return false
 }
 
-//TODO: Delete this function, we always know the correct type and operator to call
-func UndefinedTypeOperation(leftExprs []*ast.CXExpression, rightExprs []*ast.CXExpression, operator *ast.CXFunction) (out []*ast.CXExpression) {
+func OperatorExpression(leftExprs []*ast.CXExpression, rightExprs []*ast.CXExpression, opcode int) (out []*ast.CXExpression) {
 	pkg, err := AST.GetCurrentPackage()
 	if err != nil {
 		panic(err)
@@ -237,9 +234,8 @@ func UndefinedTypeOperation(leftExprs []*ast.CXExpression, rightExprs []*ast.CXE
 		rightExprs[len(rightExprs)-1].Outputs = append(rightExprs[len(rightExprs)-1].Outputs, name)
 	}
 
-	expr := ast.MakeExpression(operator, CurrentFile, LineNo)
+	expr := ast.MakeExpression(ast.Natives[opcode], CurrentFile, LineNo)
 	// we can't know the type until we compile the full function
-	expr.SetExpressionType(ast.CXEXPR_UND_TYPE)
 	expr.Package = pkg
 
 	if len(leftExprs[len(leftExprs)-1].Outputs[0].Indexes) > 0 || leftExprs[len(leftExprs)-1].Operator != nil {
@@ -271,12 +267,6 @@ func UndefinedTypeOperation(leftExprs []*ast.CXExpression, rightExprs []*ast.CXE
 	out = append(out, expr)
 
 	return
-}
-
-// TODO: What is a shorthand expression
-// TODO: Remove
-func ShorthandExpression(leftExprs []*ast.CXExpression, rightExprs []*ast.CXExpression, op int) []*ast.CXExpression {
-	return UndefinedTypeOperation(leftExprs, rightExprs, ast.Natives[op])
 }
 
 func UnaryExpression(op string, prevExprs []*ast.CXExpression) []*ast.CXExpression {

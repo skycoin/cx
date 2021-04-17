@@ -207,7 +207,7 @@ func FunctionCall(exprs []*ast.CXExpression, args []*ast.CXExpression) []*ast.CX
 			println(ast.CompilationError(CurrentFile, LineNo), err.Error())
 			return nil
 		} else {
-			expr.SetExpressionType(ast.CXEXPR_METHOD_CALL)
+			expr.ExpressionType = ast.CXEXPR_METHOD_CALL
 		}
 
 		if len(expr.Outputs) > 0 && expr.Outputs[0].Fields == nil {
@@ -285,7 +285,7 @@ func checkSameNativeType(expr *ast.CXExpression) error {
 	return nil
 }
 
-func ProcessUndExpression(expr *ast.CXExpression) {
+func ProcessOperatorExpression(expr *ast.CXExpression) {
 	if expr.Operator != nil && ast.IsOperator(expr.Operator.OpCode) {
 		if err := checkSameNativeType(expr); err != nil {
 			println(ast.CompilationError(CurrentFile, LineNo), err.Error())
@@ -354,7 +354,7 @@ func ProcessExpressionArguments(symbols *[]map[string]*ast.CXArgument, symbolsSc
 		}
 
 		if !isInput {
-			ProcessUndExpression(expr)
+			ProcessOperatorExpression(expr)
 		}
 
 		if arg.PreviouslyDeclared {

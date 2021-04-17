@@ -66,3 +66,14 @@ func opJmp(inputs []ast.CXValue, outputs []ast.CXValue) {
 	}
 }
 
+func opBreak(inputs []ast.CXValue, outputs []ast.CXValue) {
+	call := ast.PROGRAM.GetCurrentCall()
+	expr := call.Operator.Expressions[call.Line]
+	call.Line = call.Line + expr.ThenLines
+}
+
+func opContinue(inputs []ast.CXValue, outputs []ast.CXValue) {
+	call := ast.PROGRAM.GetCurrentCall()
+	expr := call.Operator.Expressions[call.Line]
+	call.Line = call.Line + expr.ThenLines
+}
