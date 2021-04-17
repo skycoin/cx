@@ -6,7 +6,7 @@ import (
 	cxast "github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/astapi"
 	cxconstants "github.com/skycoin/cx/cx/constants"
-	cxgo "github.com/skycoin/cx/cxparsergenerator/cxparsingcompletor"
+	cxparsingcompletor "github.com/skycoin/cx/cxparser/cxparsingcompletor"
 )
 
 func TestSerialize_CipherEncoder(t *testing.T) {
@@ -18,7 +18,6 @@ func TestSerialize_CipherEncoder(t *testing.T) {
 		{
 			scenario: "Valid program",
 			program:  generateSampleProgram(t),
-			wantErr:  nil,
 		},
 	}
 
@@ -38,12 +37,11 @@ func TestSerialize_SkyEncoder(t *testing.T) {
 	tests := []struct {
 		scenario string
 		program  *cxast.CXProgram
-		wantErr  error
+		wantSame bool
 	}{
 		{
 			scenario: "Valid program",
 			program:  generateSampleProgram(t),
-			wantErr:  nil,
 		},
 	}
 
@@ -63,7 +61,7 @@ func generateSampleProgram(t *testing.T) *cxast.CXProgram {
 
 	// Needed for AddNativeExpressionToFunction
 	// because of dependency on cxast.OpNames
-	cxgo.InitCXCore()
+	cxparsingcompletor.InitCXCore()
 	cxProgram = cxast.MakeProgram()
 
 	err := astapi.AddEmptyPackage(cxProgram, "main")
