@@ -404,7 +404,7 @@ func DeclarationSpecifiers(declSpec *ast.CXArgument, arrayLengths []int, opTyp i
 			declSpec.DeclarationSpecifiers = append(declSpec.DeclarationSpecifiers, constants.DECL_ARRAY)
 		}
 		arg := declSpec
-		arg.IsArray = true
+		// arg.IsArray = true
 		arg.Lengths = arrayLengths
 		arg.TotalSize = arg.Size * TotalLength(arg.Lengths)
 
@@ -420,7 +420,7 @@ func DeclarationSpecifiers(declSpec *ast.CXArgument, arrayLengths []int, opTyp i
 
 		arg.IsSlice = true
 		arg.IsReference = true
-		arg.IsArray = true
+		// arg.IsArray = true
 		arg.PassBy = constants.PASSBY_REFERENCE
 
 		arg.Lengths = append([]int{0}, arg.Lengths...)

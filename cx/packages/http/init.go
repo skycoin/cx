@@ -40,7 +40,7 @@ func RegisterPackage() {
 	headerFld.DeclarationSpecifiers = append(headerFld.DeclarationSpecifiers, constants.DECL_SLICE)
 	headerFld.IsSlice = true
 	headerFld.IsReference = true
-	headerFld.IsArray = true
+	// headerFld.IsArray = true
 	headerFld.PassBy = constants.PASSBY_REFERENCE
 	headerFld.Lengths = []int{0, 0}
 
@@ -65,7 +65,7 @@ func RegisterPackage() {
 	transferEncodingFld.DeclarationSpecifiers = append(transferEncodingFld.DeclarationSpecifiers, constants.DECL_SLICE)
 	transferEncodingFld.IsSlice = true
 	transferEncodingFld.IsReference = true
-	transferEncodingFld.IsArray = true
+	// transferEncodingFld.IsArray = true
 	transferEncodingFld.PassBy = constants.PASSBY_REFERENCE
 	transferEncodingFld.Lengths = []int{0}
 	responseStruct.AddField(transferEncodingFld)
@@ -79,7 +79,6 @@ func RegisterPackage() {
 
 	ast.PROGRAM.AddPackage(httpPkg)
 
-
 	opcodes.RegisterFunction("http.Serve", opHTTPServe, opcodes.In(ast.ConstCxArg_STR), opcodes.Out(ast.ConstCxArg_STR))
 	opcodes.RegisterFunction("http.ListenAndServe", opHTTPListenAndServe, opcodes.In(ast.ConstCxArg_STR), opcodes.Out(ast.ConstCxArg_STR))
 	opcodes.RegisterFunction("http.NewRequest", opHTTPNewRequest, opcodes.In(ast.ConstCxArg_STR, ast.ConstCxArg_STR, ast.ConstCxArg_STR), opcodes.Out(ast.ConstCxArg_STR))
@@ -91,6 +90,5 @@ func RegisterPackage() {
 			opcodes.Func(httpPkg, opcodes.In(ast.MakeArgument("ResponseWriter", "", -1).AddType(constants.TypeNames[constants.TYPE_STR]), opcodes.Pointer(opcodes.Struct("http", "Request", "r"))), nil)),
 		nil)
 	opcodes.RegisterFunction("http.Close", opHTTPClose, nil, nil)
-
 
 }

@@ -55,7 +55,7 @@ func PostfixExpressionArray(prevExprs []*ast.CXExpression, postExprs []*ast.CXEx
 		elt = prevExpr.Outputs[0]
 	}
 
-	elt.IsArray = false
+	// elt.IsArray = false
 	elt.DereferenceOperations = append(elt.DereferenceOperations, constants.DEREF_ARRAY)
 	elt.DeclarationSpecifiers = append(elt.DeclarationSpecifiers, constants.DECL_INDEXING)
 
@@ -216,7 +216,7 @@ func PostfixExpressionField(prevExprs []*ast.CXExpression, ident string) []*ast.
 		out.CustomType = opOut.CustomType
 		out.Size = opOut.Size
 		out.TotalSize = opOut.TotalSize
-		out.IsArray = opOut.IsArray
+		// out.IsArray = opOut.IsArray
 		out.IsReference = opOut.IsReference
 		out.Lengths = opOut.Lengths
 		out.ArgDetails.Package = lastExpr.Package
