@@ -930,10 +930,10 @@ func EncodeSerializedCXProgramToBuffer(buf []byte, obj *SerializedCXProgram) err
 		e.Int64(x.IsSlice)
 
 		// x.IsArray
-		e.Int64(x.IsArray)
+		// e.Int64(x.IsArray)
 
-		// x.IsArrayFirst
-		e.Int64(x.IsArrayFirst)
+		// // x.IsArrayFirst
+		// e.Int64(x.IsArrayFirst)
 
 		// x.IsPointer
 		e.Int64(x.IsPointer)
@@ -2193,23 +2193,23 @@ func DecodeSerializedCXProgram(buf []byte, obj *SerializedCXProgram) (uint64, er
 					obj.Arguments[z1].IsSlice = i
 				}
 
-				{
-					// obj.Arguments[z1].IsArray
-					i, err := d.Int64()
-					if err != nil {
-						return 0, err
-					}
-					obj.Arguments[z1].IsArray = i
-				}
+				// {
+				// 	// obj.Arguments[z1].IsArray
+				// 	i, err := d.Int64()
+				// 	if err != nil {
+				// 		return 0, err
+				// 	}
+				// 	obj.Arguments[z1].IsArray = i
+				// }
 
-				{
-					// obj.Arguments[z1].IsArrayFirst
-					i, err := d.Int64()
-					if err != nil {
-						return 0, err
-					}
-					obj.Arguments[z1].IsArrayFirst = i
-				}
+				// {
+				// 	// obj.Arguments[z1].IsArrayFirst
+				// 	i, err := d.Int64()
+				// 	if err != nil {
+				// 		return 0, err
+				// 	}
+				// 	obj.Arguments[z1].IsArrayFirst = i
+				// }
 
 				{
 					// obj.Arguments[z1].IsPointer

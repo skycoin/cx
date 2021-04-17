@@ -143,11 +143,11 @@ type serializedArgument struct {
 	DeclarationSpecifiersOffset int64
 	DeclarationSpecifiersSize   int64
 
-	IsSlice      int64
-	IsArray      int64
-	IsArrayFirst int64
-	IsPointer    int64
-	IsReference  int64
+	IsSlice int64
+	// IsArray      int64
+	// IsArrayFirst int64
+	IsPointer   int64
+	IsReference int64
 
 	IsDereferenceFirst int64
 	IsStruct           int64
