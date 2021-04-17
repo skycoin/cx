@@ -1,9 +1,8 @@
 package ast
 
-// SerializeCXProgramV3 translates cx program to slice of bytes that we can save.
-// These slice of bytes can then be deserialize in the future and
-// be translated back to cx program.
-func SerializeCXProgramV3(prgrm *CXProgram, includeMemory bool) (b []byte) {
+// SerializeCXProgramV2 is using skyencoder generated
+// encoder/decoder for serializing cx program.
+func SerializeCXProgramV2(prgrm *CXProgram, includeMemory bool) (b []byte) {
 	s := SerializedCXProgram{}
 	initSerialization(prgrm, &s, includeMemory)
 
@@ -14,8 +13,6 @@ func SerializeCXProgramV3(prgrm *CXProgram, includeMemory bool) (b []byte) {
 	// serialize cx program's program
 	serializeProgram(prgrm, &s)
 
-	convertSerializedCXProgramMapsToKVPairs(&s)
-
 	// serializing everything
 	b, err := EncodeSerializedCXProgram(&s)
 	if err != nil {
@@ -25,13 +22,11 @@ func SerializeCXProgramV3(prgrm *CXProgram, includeMemory bool) (b []byte) {
 	return b
 }
 
-func DeserializeCXProgramV3(b []byte) *CXProgram {
+func DeserializeCXProgramV2(b []byte) *CXProgram {
 	prgrm := &CXProgram{}
 	var sPrgrm SerializedCXProgram
 
 	DecodeSerializedCXProgram(b, &sPrgrm)
-
-	convertSerializedCXProgramKVPairsToMaps(&sPrgrm)
 	initDeserialization(prgrm, &sPrgrm)
 	return prgrm
 }

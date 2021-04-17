@@ -173,33 +173,24 @@ type serializedArgument struct {
 	PackageOffset int64
 }
 
-type KeyValuePair struct {
-	Key   string
-	Value int64
-}
-
 type SerializedCXProgram struct {
 	Index   serializedCXProgramIndex
 	Program serializedProgram
 
-	Packages       []serializedPackage
-	PackagesMap    map[string]int64
-	PackagesMapKV  []KeyValuePair
-	Structs        []serializedStruct
-	StructsMap     map[string]int64
-	StructsMapKV   []KeyValuePair
-	Functions      []serializedFunction
-	FunctionsMap   map[string]int64
-	FunctionsMapKV []KeyValuePair
+	Packages     []serializedPackage
+	PackagesMap  map[string]int64
+	Structs      []serializedStruct
+	StructsMap   map[string]int64
+	Functions    []serializedFunction
+	FunctionsMap map[string]int64
 
 	Expressions []serializedExpression
 	Arguments   []serializedArgument
 	Calls       []serializedCall
 
-	Strings      []byte
-	StringsMap   map[string]int64
-	StringsMapKV []KeyValuePair
-	Integers     []int64
+	Strings    []byte
+	StringsMap map[string]int64
+	Integers   []int64
 
 	Memory []byte
 }

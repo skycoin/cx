@@ -583,21 +583,8 @@ func SerializeCXProgram(prgrm *CXProgram, includeMemory bool) (b []byte) {
 	// serialize cx program's program
 	serializeProgram(prgrm, &s)
 
-	// assign cx program's offsets
-	assignSerializedCXProgramOffset(&s)
-
 	// serializing everything
-	b = append(b, encoder.Serialize(s.Index)...)
-	b = append(b, encoder.Serialize(s.Program)...)
-	b = append(b, encoder.Serialize(s.Calls)...)
-	b = append(b, encoder.Serialize(s.Packages)...)
-	b = append(b, encoder.Serialize(s.Structs)...)
-	b = append(b, encoder.Serialize(s.Functions)...)
-	b = append(b, encoder.Serialize(s.Expressions)...)
-	b = append(b, encoder.Serialize(s.Arguments)...)
-	b = append(b, encoder.Serialize(s.Integers)...)
-	b = append(b, s.Strings...)
-	b = append(b, s.Memory...)
+	b = encoder.Serialize(s)
 
 	return b
 }
@@ -957,26 +944,10 @@ func initDeserialization(prgrm *CXProgram, s *SerializedCXProgram) {
 // Deserialize deserializes a serialized CX program back to its golang struct representation.
 func Deserialize(b []byte) (prgrm *CXProgram) {
 	prgrm = &CXProgram{}
-	idxSize := encoder.Size(serializedCXProgramIndex{})
-
 	var s SerializedCXProgram
 
-	helper.DeserializeRaw(b[:idxSize], &s.Index)
-	helper.DeserializeRaw(b[s.Index.ProgramOffset:s.Index.CallsOffset], &s.Program)
-	helper.DeserializeRaw(b[s.Index.CallsOffset:s.Index.PackagesOffset], &s.Calls)
-	helper.DeserializeRaw(b[s.Index.PackagesOffset:s.Index.StructsOffset], &s.Packages)
-	helper.DeserializeRaw(b[s.Index.StructsOffset:s.Index.FunctionsOffset], &s.Structs)
-	helper.DeserializeRaw(b[s.Index.FunctionsOffset:s.Index.ExpressionsOffset], &s.Functions)
-	helper.DeserializeRaw(b[s.Index.ExpressionsOffset:s.Index.ArgumentsOffset], &s.Expressions)
-	helper.DeserializeRaw(b[s.Index.ArgumentsOffset:s.Index.IntegersOffset], &s.Arguments)
-	helper.DeserializeRaw(b[s.Index.IntegersOffset:s.Index.StringsOffset], &s.Integers)
-	s.Strings = b[s.Index.StringsOffset:s.Index.MemoryOffset]
-	s.Memory = b[s.Index.MemoryOffset:]
-
-	convertSerializedCXProgramKVPairsToMaps(&s)
+	helper.DeserializeRaw(b, &s)
 	initDeserialization(prgrm, &s)
-
-	// prgrm.PrintProgram()
 
 	return prgrm
 }
