@@ -286,8 +286,8 @@ parameter_list:
 parameter_declaration:
                 declarator declaration_specifiers
                 {
-			$2.Name = $1.Name
-			$2.Package = $1.Package
+			$2.ArgDetails.Name = $1.ArgDetails.Name
+			$2.ArgDetails.Package = $1.ArgDetails.Package
 			$2.IsLocalDeclaration = true
 			$$ = $2
                 }
@@ -307,8 +307,8 @@ direct_declarator:
 			if pkg, err := Program.GetCurrentPackage(); err == nil {
 				arg := ast.MakeArgument("", actions.CurrentFile, actions.LineNo)
 				arg.AddType(constants.TypeNames[constants.TYPE_UNDEFINED])
-				arg.Name = $1
-				arg.Package = pkg
+				arg.ArgDetails.Name = $1
+				arg.ArgDetails.Package = pkg
 				$$ = arg
 			} else {
 				panic(err)

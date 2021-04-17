@@ -18,7 +18,7 @@ import (
 	"github.com/skycoin/cx/cxparser/actions"
 	cxparsing "github.com/skycoin/cx/cxparser/cxparsing"
 
-	cxparsingcompletor "github.com/skycoin/cx/cxparser/cxparsingcompletor"
+	cxparsingcompletor "github.com/skycoin/cx/cxparser/parsingcompletor"
 	cxpartialparsing "github.com/skycoin/cx/cxparser/cxpartialparsing"
 )
 

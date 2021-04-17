@@ -64,7 +64,7 @@ endif
 ifeq ($(UNAME_S), Linux)
 endif
 
-build:  ## Build CX from sources
+build: build-parser  ## Build CX from sources
 	$(GO_OPTS) go build -tags="cipher cxfx cxos http regexp" -o ./bin/cx github.com/skycoin/cx/cmd/cx
 	chmod +x ./bin/cx
 
@@ -101,7 +101,7 @@ build-goyacc: ## Builds goyacc into /bin/goyacc
 
 build-parser: ## Generate lexer and parser for CX grammar
 	#go build -o ./bin/goyacc ./cmd/goyacc/main.go
-	./bin/goyacc -o cxparser/cxpartialparsing/partialparsing.go cxparser/cxpartialparsing/partialparsing.y
+	./bin/goyacc -o cxparser/cxpartialparsing/cxpartialparsing.go cxparser/cxpartialparsing/cxpartialparsing.y
 	./bin/goyacc -o cxparser/cxparsingcompletor/parsingcompletor.go cxparser/cxparsingcompletor/parsingcompletor.y
 
 token-fuzzer:

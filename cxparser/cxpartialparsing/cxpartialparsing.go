@@ -2,16 +2,14 @@
 
 package partialparsing
 
+import __yyfmt__ "fmt"
+
 import (
 	"bytes"
-	__yyfmt__ "fmt"
-
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cxparser/actions"
-) // "fmt"
-
-// "os"
+)
 
 /*
    This is a computer generated file

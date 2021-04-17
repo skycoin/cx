@@ -5,7 +5,7 @@
 		"github.com/skycoin/skycoin/src/cipher/encoder"
 		"github.com/skycoin/cx/cx/ast"
 		"github.com/skycoin/cx/cx/constants"
-		"github.com/skycoin/cx/cxparsergenerator/actions"
+		"github.com/skycoin/cx/cxparser/actions"
 	)
 
 /*
@@ -327,8 +327,8 @@ parameter_list:
 parameter_declaration:
                 declarator declaration_specifiers
                 {
-			$2.Name = $1.Name
-			$2.Package = $1.Package
+			$2.ArgDetails.Name = $1.ArgDetails.Name
+			$2.ArgDetails.Package = $1.ArgDetails.Package
 			$2.IsLocalDeclaration = true
 			$$ = $2
                 }
@@ -343,8 +343,8 @@ direct_declarator:
 			if pkg, err := actions.AST.GetCurrentPackage(); err == nil {
 				arg := ast.MakeArgument("", actions.CurrentFile, actions.LineNo)
                                 arg.AddType(constants.TypeNames[constants.TYPE_UNDEFINED])
-				arg.Name = $1
-				arg.Package = pkg
+				arg.ArgDetails.Name = $1
+				arg.ArgDetails.Package = pkg
 				$$ = arg
 			} else {
 				panic(err)
@@ -595,7 +595,7 @@ slice_literal_expression:
         |       LBRACK RBRACK slice_literal_expression
                 {
 			for _, expr := range $3 {
-				if expr.Outputs[0].Name == $3[len($3) - 1].Inputs[0].Name {
+				if expr.Outputs[0].ArgDetails.Name == $3[len($3) - 1].Inputs[0].ArgDetails.Name {
 					expr.Outputs[0].Lengths = append(expr.Outputs[0].Lengths, 0)
 					expr.Outputs[0].DeclarationSpecifiers = append(expr.Outputs[0].DeclarationSpecifiers, constants.DECL_SLICE)
                                     }
@@ -959,7 +959,7 @@ struct_literal_expression:
                 }
         |       postfix_expression PERIOD IDENTIFIER LBRACE struct_literal_fields RBRACE
                 {
-			$$ = actions.PrimaryStructLiteralExternal($1[0].Outputs[0].Name, $3, $5)
+			$$ = actions.PrimaryStructLiteralExternal($1[0].Outputs[0].ArgDetails.Name, $3, $5)
                 }
                 ;
 
@@ -1101,7 +1101,7 @@ expression_statement:
 			if len($1) > 0 && $1[len($1) - 1].Operator == nil && !$1[len($1) - 1].IsMethodCall() {
 				outs := $1[len($1) - 1].Outputs
 				if len(outs) > 0 {
-					println(ast.CompilationError(outs[0].FileName, outs[0].FileLine), "invalid expression")
+					println(ast.CompilationError(outs[0].ArgDetails.FileName, outs[0].ArgDetails.FileLine), "invalid expression")
 				} else {
 					println(ast.CompilationError(actions.CurrentFile, actions.LineNo), "invalid expression")
 				}
