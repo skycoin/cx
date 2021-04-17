@@ -48,7 +48,7 @@ func AddNativeInputToExpression(cxprogram *cxast.CXProgram, packageName, functio
 	}
 
 	arg := cxast.MakeField(inputName, inputType, "", -1).AddType(cxconstants.TypeNames[inputType])
-	arg.Package = pkg
+	arg.ArgDetails.Package = pkg
 	expr.AddInput(arg)
 
 	return nil
@@ -135,7 +135,7 @@ func AddNativeOutputToExpression(cxprogram *cxast.CXProgram, packageName, functi
 	}
 
 	arg := cxast.MakeField(outputName, outputType, "", -1).AddType(cxconstants.TypeNames[outputType])
-	arg.Package = pkg
+	arg.ArgDetails.Package = pkg
 	expr.AddOutput(arg)
 
 	return nil

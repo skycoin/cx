@@ -128,7 +128,7 @@ func TestASTAPI_Arguments(t *testing.T) {
 		}
 
 		for _, arg := range args {
-			t.Logf("Arg (name,type)=(%v,%v)\n", arg.Name, cxconstants.TypeNames[arg.Type])
+			t.Logf("Arg (name,type)=(%v,%v)\n", arg.ArgDetails.Name, cxconstants.TypeNames[arg.Type])
 		}
 	})
 }

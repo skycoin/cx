@@ -3,11 +3,11 @@
 package cxfx
 
 import (
-	"github.com/skycoin/cx/cx"
-	/*"bufio"
-	  "github.com/amherag/skycoin/src/cipher/encoder"
-	  "github.com/mjibson/go-dsp/wav"
-	  "golang.org/x/mobile/exp/audio/al"*/)
+/*"bufio"
+  "github.com/amherag/skycoin/src/cipher/encoder"
+  "github.com/mjibson/go-dsp/wav"
+  "golang.org/x/mobile/exp/audio/al"*/
+)
 
 func opAlCloseDevice(expr *CXExpression, fp int) {
 	//panic(CX_RUNTIME_NOT_IMPLEMENTED)

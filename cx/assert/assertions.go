@@ -2,6 +2,7 @@ package assert
 
 import (
 	"fmt"
+
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 )
@@ -9,66 +10,66 @@ import (
 func ArgOfType(arg *ast.CXArgument, t int) {
 	if arg.Type != t {
 		panic(fmt.Sprintf("Argument %s, expected type %s, got %s",
-			arg.Name, constants.TypeNames[t], constants.TypeNames[arg.Type]))
+			arg.ArgDetails.Name, constants.TypeNames[t], constants.TypeNames[arg.Type]))
 	}
 }
 
 func ArgAtomic(arg *ast.CXArgument) {
 	if arg.IsStruct || arg.IsPointer || arg.IsArray || arg.IsSlice {
-		panic(fmt.Sprintf("Argument %s of type %s is not atomic", arg.Name, constants.TypeNames[arg.Type]))
+		panic(fmt.Sprintf("Argument %s of type %s is not atomic", arg.ArgDetails.Name, constants.TypeNames[arg.Type]))
 	}
 }
 
 func ArgNotAtomic(arg *ast.CXArgument) {
 	if !arg.IsStruct && !arg.IsPointer && !arg.IsArray && !arg.IsSlice {
-		panic(fmt.Sprintf("Argument %s of type %s is atomic", arg.Name, constants.TypeNames[arg.Type]))
+		panic(fmt.Sprintf("Argument %s of type %s is atomic", arg.ArgDetails.Name, constants.TypeNames[arg.Type]))
 	}
 }
 
 func ArgPointer(arg *ast.CXArgument) {
 	if !arg.IsPointer {
-		panic(fmt.Sprintf("Argument %s is not a pointer", arg.Name))
+		panic(fmt.Sprintf("Argument %s is not a pointer", arg.ArgDetails.Name))
 	}
 }
 
 func ArgNotPointer(arg *ast.CXArgument) {
 	if arg.IsPointer {
-		panic(fmt.Sprintf("Argument %s is a pointer", arg.Name))
+		panic(fmt.Sprintf("Argument %s is a pointer", arg.ArgDetails.Name))
 	}
 }
 
 func ArgSlice(arg *ast.CXArgument) {
 	if !arg.IsSlice {
-		panic(fmt.Sprintf("Argument %s is not a slice", arg.Name))
+		panic(fmt.Sprintf("Argument %s is not a slice", arg.ArgDetails.Name))
 	}
 }
 
 func ArgNotSlice(arg *ast.CXArgument) {
 	if arg.IsSlice {
-		panic(fmt.Sprintf("Argument %s is a slice", arg.Name))
+		panic(fmt.Sprintf("Argument %s is a slice", arg.ArgDetails.Name))
 	}
 }
 
 func ArgStruct(arg *ast.CXArgument) {
 	if !arg.IsStruct {
-		panic(fmt.Sprintf("Argument %s is not a struct", arg.Name))
+		panic(fmt.Sprintf("Argument %s is not a struct", arg.ArgDetails.Name))
 	}
 }
 
 func ArgNotStruct(arg *ast.CXArgument) {
 	if arg.IsStruct {
-		panic(fmt.Sprintf("Argument %s is a struct", arg.Name))
+		panic(fmt.Sprintf("Argument %s is a struct", arg.ArgDetails.Name))
 	}
 }
 
 func ArgArray(arg *ast.CXArgument) {
 	if !arg.IsArray {
-		panic(fmt.Sprintf("Argument %s is not a array", arg.Name))
+		panic(fmt.Sprintf("Argument %s is not a array", arg.ArgDetails.Name))
 	}
 }
 
 func ArgNotArray(arg *ast.CXArgument) {
 	if arg.IsArray {
-		panic(fmt.Sprintf("Argument %s is a array", arg.Name))
+		panic(fmt.Sprintf("Argument %s is a array", arg.ArgDetails.Name))
 	}
 }
