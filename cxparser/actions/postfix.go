@@ -6,7 +6,7 @@ import (
 
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
-	constants2 "github.com/skycoin/cx/cxparsergenerator/constants"
+	constants2 "github.com/skycoin/cx/cxparser/constants"
 )
 
 // PostfixExpressionArray...
@@ -58,10 +58,6 @@ func PostfixExpressionArray(prevExprs []*ast.CXExpression, postExprs []*ast.CXEx
 	elt.IsArray = false
 	elt.DereferenceOperations = append(elt.DereferenceOperations, constants.DEREF_ARRAY)
 	elt.DeclarationSpecifiers = append(elt.DeclarationSpecifiers, constants.DECL_INDEXING)
-
-	if !elt.IsDereferenceFirst {
-		elt.IsArrayFirst = true
-	}
 
 	if len(prevExprs[len(prevExprs)-1].Outputs[0].Fields) > 0 {
 		fld := prevExprs[len(prevExprs)-1].Outputs[0].Fields[len(prevExprs[len(prevExprs)-1].Outputs[0].Fields)-1]

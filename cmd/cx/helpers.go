@@ -2,21 +2,23 @@ package main
 
 import (
 	"fmt"
-	"github.com/skycoin/cx/cx/opcodes"
 	"os"
 	"os/user"
 	"path/filepath"
 	"strconv"
+
+	"github.com/skycoin/cx/cx/opcodes"
 
 	repl "github.com/skycoin/cx/cmd/cxrepl"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/globals"
 	"github.com/skycoin/cx/cx/util"
-	"github.com/skycoin/cx/cxparsergenerator/actions"
-	"github.com/skycoin/cx/cxparsergenerator/cxparser"
-	cxgo "github.com/skycoin/cx/cxparsergenerator/cxparsingcompletor"
-	"github.com/skycoin/cx/cxparsergenerator/util/profiling"
+	"github.com/skycoin/cx/cxparser/actions"
+	cxparsering "github.com/skycoin/cx/cxparser/cxparsing"
+	cxparsing "github.com/skycoin/cx/cxparser/cxparsing"
+	cxgo "github.com/skycoin/cx/cxparser/cxparsingcompletor"
+	"github.com/skycoin/cx/cxparser/util/profiling"
 )
 
 func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File) bool {
@@ -46,7 +48,7 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 	//var bcHeap []byte
 
 	// Parsing all the source code files sent as CLI arguments to CX.
-	cxparser.ParseSourceCode(sourceCode, fileNames)
+	cxparsing.ParseSourceCode(sourceCode, fileNames)
 
 	//remove path variable, not used
 	// setting project's working directory
@@ -67,7 +69,7 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 	repl.ReplTargetFn = constants.MAIN_FUNC
 
 	// Adding *init function that initializes all the global variables.
-	err := cxparser.AddInitFunction(actions.AST)
+	err := cxparsering.AddInitFunction(actions.AST)
 	if err != nil {
 		return false //why return false, instead of panicing
 	}

@@ -56,13 +56,11 @@ func RegisterOpcodes() {
 	RegisterOpCode(constants.OP_TEST, "test", opTest, In(ast.ConstCxArg_UND_TYPE, ast.ConstCxArg_UND_TYPE, ast.ConstCxArg_STR), nil)
 	RegisterOpCode(constants.OP_PANIC, "panic", opPanic, In(ast.ConstCxArg_UND_TYPE, ast.ConstCxArg_UND_TYPE, ast.ConstCxArg_STR), nil)
 
-	RegisterOpCode(constants.OP_APPEND, "append", opAppend, In(ast.Slice(constants.TYPE_UNDEFINED), ast.Slice(constants.TYPE_UNDEFINED)), Out(ast.Slice(constants.TYPE_UNDEFINED)))
+	RegisterOpCode(constants.OP_APPEND, "append", opSliceAppend, In(ast.Slice(constants.TYPE_UNDEFINED), ast.Slice(constants.TYPE_UNDEFINED)), Out(ast.Slice(constants.TYPE_UNDEFINED)))
 
 	RegisterOpCode(constants.OP_BOOL_OR, "bool.or", opBoolOr, In(ast.ConstCxArg_BOOL, ast.ConstCxArg_BOOL), Out(ast.ConstCxArg_BOOL))
 	RegisterOpCode(constants.OP_BOOL_AND, "bool.and", opBoolAnd, In(ast.ConstCxArg_BOOL, ast.ConstCxArg_BOOL), Out(ast.ConstCxArg_BOOL))
-    RegisterOpCode(constants.OP_BOOL_NOT, "bool.not", opBoolNot, In(ast.ConstCxArg_BOOL), Out(ast.ConstCxArg_BOOL))
-
-
+	RegisterOpCode(constants.OP_BOOL_NOT, "bool.not", opBoolNot, In(ast.ConstCxArg_BOOL), Out(ast.ConstCxArg_BOOL))
 
 	RegisterFunction("len", opLen, In(ast.ConstCxArg_UND_TYPE), Out(ast.ConstCxArg_I32))
 	RegisterFunction("printf", opPrintf, In(ast.ConstCxArg_UND_TYPE), nil)
@@ -80,7 +78,7 @@ func RegisterOpcodes() {
 	// TODO: Rename to CASTING_OPS ?
 	// TODO: Remove START_PARSE_OPS/END_PARSE_OPS, somehow we need to now start/end of these operator : used in isParseOp
 	constants.START_PARSE_OPS = globals.OpCodeSystemCounter - 1
-    RegisterFunction("i8.str", opI8ToStr, In(ast.ConstCXArg_I8), Out(ast.ConstCxArg_STR))
+	RegisterFunction("i8.str", opI8ToStr, In(ast.ConstCXArg_I8), Out(ast.ConstCxArg_STR))
 	RegisterFunction("i8.i16", opI8ToI16, In(ast.ConstCXArg_I8), Out(ast.ConstCxArg_I16))
 	RegisterFunction("i8.i32", opI8ToI32, In(ast.ConstCXArg_I8), Out(ast.ConstCxArg_I32))
 	RegisterFunction("i8.i64", opI8ToI64, In(ast.ConstCXArg_I8), Out(ast.ConstCxArg_I64))
@@ -192,7 +190,6 @@ func RegisterOpcodes() {
 	// TODO: Rename to CASTING_OPS ?
 	// TODO: Remove START_PARSE_OPS/END_PARSE_OPS, somehow we need to now start/end of these operator : used in isParseOp
 	constants.END_PARSE_OPS = globals.OpCodeSystemCounter
-
 
 	RegisterOperator("i8.eq", opI8Eq, In(ast.ConstCXArg_I8, ast.ConstCXArg_I8), Out(ast.ConstCxArg_BOOL), constants.TYPE_I8, constants.OP_EQUAL)
 	RegisterOperator("i8.uneq", opI8Uneq, In(ast.ConstCXArg_I8, ast.ConstCXArg_I8), Out(ast.ConstCxArg_BOOL), constants.TYPE_I8, constants.OP_UNEQUAL)

@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"os"
 
-	constants2 "github.com/skycoin/cx/cxparsergenerator/constants"
+	constants2 "github.com/skycoin/cx/cxparser/constants"
 
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	globals2 "github.com/skycoin/cx/cx/globals"
-	"github.com/skycoin/cx/cxparsergenerator/globals"
+	"github.com/skycoin/cx/cxparser/globals"
 )
 
 // DeclareGlobal creates a global variable in the current package.

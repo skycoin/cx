@@ -1,0 +1,14 @@
+package main
+
+type Soo struct {
+    sliceI32 []i32
+}
+
+func main()() {
+    var sliceSoo []Soo
+
+    var soo Soo
+    sliceSoo = append(sliceSoo, soo)
+
+    sliceSoo[0].sliceI32 = append(sliceSoo[0].sliceI32, 5)
+}

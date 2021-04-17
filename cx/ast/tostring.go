@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	constants2 "github.com/skycoin/cx/cxparsergenerator/constants"
+	constants2 "github.com/skycoin/cx/cxparser/constants"
 
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/helper"
