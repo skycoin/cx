@@ -1,6 +1,10 @@
 package ast
 
-import "github.com/skycoin/skycoin/src/cipher/encoder"
+import (
+	"sort"
+
+	"github.com/skycoin/skycoin/src/cipher/encoder"
+)
 
 // SerializeCXProgramV2 translates cx program to slice of bytes that we can save.
 // These slice of bytes can then be deserialize in the future and
@@ -35,6 +39,15 @@ func convertMapToKVPairs(inputMap map[string]int64) []KeyValuePair {
 		kvPairs[index].Value = v
 		index++
 	}
+
+	// Sort KV pairs by its key, alphabetically
+	sort.SliceStable(kvPairs, func(i, j int) bool {
+		if kvPairs[i].Key != kvPairs[j].Key {
+			return kvPairs[i].Key < kvPairs[j].Key
+		}
+
+		return kvPairs[i].Key < kvPairs[j].Key
+	})
 
 	return kvPairs
 }
