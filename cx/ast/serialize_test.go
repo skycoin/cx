@@ -59,6 +59,7 @@ func TestSerialize_SkyEncoder(t *testing.T) {
 
 func TestSerialize_SkyEncoder_VS_CipherEncoder(t *testing.T) {
 	prgrm := readCXProgramFromTestData(t, "serialized_1")
+	prgrm.PrintProgram()
 	tests := []struct {
 		scenario string
 		program  *cxast.CXProgram
