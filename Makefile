@@ -1,6 +1,6 @@
 export GO111MODULE=on
 
-.DEFAULT_GOAL := test-parser
+.DEFAULT_GOAL := help
 .PHONY: build-parser build test test-parser build-core
 .PHONY: install
 .PHONY: dep
