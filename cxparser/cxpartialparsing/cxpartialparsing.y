@@ -307,7 +307,7 @@ direct_declarator:
 			if pkg, err := Program.GetCurrentPackage(); err == nil {
 				arg := ast.MakeArgument("", actions.CurrentFile, actions.LineNo)
 				arg.AddType(constants.TypeNames[constants.TYPE_UNDEFINED])
-				arg.Name = $1
+				arg.ArgDetails.Name = $1
 				arg.Package = pkg
 				$$ = arg
 			} else {
