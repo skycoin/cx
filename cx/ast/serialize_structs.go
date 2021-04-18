@@ -149,7 +149,6 @@ type serializedArgument struct {
 	IsPointer   int64
 	IsReference int64
 
-	IsDereferenceFirst int64
 	IsStruct           int64
 	IsRest             int64
 	IsLocalDeclaration int64
