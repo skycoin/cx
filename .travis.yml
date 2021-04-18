@@ -37,6 +37,7 @@ matrix:
 
 # Build, test & run cx test
 script:
+  - make build-parser
   - make build
   - make install
   - make test
