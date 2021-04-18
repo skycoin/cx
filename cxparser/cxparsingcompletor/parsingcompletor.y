@@ -5,7 +5,7 @@
 		"github.com/skycoin/skycoin/src/cipher/encoder"
 		"github.com/skycoin/cx/cx/ast"
 		"github.com/skycoin/cx/cx/constants"
-		"github.com/skycoin/cx/cxparsergenerator/actions"
+		"github.com/skycoin/cx/cxparser/actions"
 	)
 
 /*
@@ -327,8 +327,8 @@ parameter_list:
 parameter_declaration:
                 declarator declaration_specifiers
                 {
-			$2.Name = $1.Name
-			$2.Package = $1.Package
+			$2.ArgDetails.Name = $1.ArgDetails.Name
+			$2.ArgDetails.Package = $1.ArgDetails.Package
 			$2.IsLocalDeclaration = true
 			$$ = $2
                 }
@@ -344,7 +344,7 @@ direct_declarator:
 				arg := ast.MakeArgument("", actions.CurrentFile, actions.LineNo)
                                 arg.AddType(constants.TypeNames[constants.TYPE_UNDEFINED])
 				arg.ArgDetails.Name = $1
-				arg.Package = pkg
+				arg.ArgDetails.Package = pkg
 				$$ = arg
 			} else {
 				panic(err)
@@ -503,12 +503,12 @@ struct_literal_fields:
 array_literal_expression_list:
                 assignment_expression
                 {
-			$1[len($1) - 1].SetExpressionType(ast.CXEXPR_ARRAY_LITERAL)
+			$1[len($1) - 1].ExpressionType = ast.CXEXPR_ARRAY_LITERAL
 			$$ = $1
                 }
 	|       array_literal_expression_list COMMA assignment_expression
                 {
-			$3[len($3) - 1].SetExpressionType(ast.CXEXPR_ARRAY_LITERAL)
+			$3[len($3) - 1].ExpressionType = ast.CXEXPR_ARRAY_LITERAL
 			$$ = append($1, $3...)
                 }
                 ;
@@ -564,13 +564,13 @@ array_literal_expression:
 slice_literal_expression_list:
                 assignment_expression
                 {
-			$1[len($1) - 1].SetExpressionType(ast.CXEXPR_ARRAY_LITERAL)
+			$1[len($1) - 1].ExpressionType = ast.CXEXPR_ARRAY_LITERAL
 			$$ = $1
                 }
 	|       slice_literal_expression_list COMMA assignment_expression
                 {
 
-			$3[len($3) - 1].SetExpressionType(ast.CXEXPR_ARRAY_LITERAL)
+			$3[len($3) - 1].ExpressionType = ast.CXEXPR_ARRAY_LITERAL
 			$$ = append($1, $3...)
                 }
                 ;
@@ -595,13 +595,13 @@ slice_literal_expression:
         |       LBRACK RBRACK slice_literal_expression
                 {
 			for _, expr := range $3 {
-				if expr.Outputs[0].Name == $3[len($3) - 1].Inputs[0].Name {
+				if expr.Outputs[0].ArgDetails.Name == $3[len($3) - 1].Inputs[0].ArgDetails.Name {
 					expr.Outputs[0].Lengths = append(expr.Outputs[0].Lengths, 0)
 					expr.Outputs[0].DeclarationSpecifiers = append(expr.Outputs[0].DeclarationSpecifiers, constants.DECL_SLICE)
                                     }
 			}
 	
-			$3[len($3)-1].SetExpressionType(ast.CXEXPR_ARRAY_LITERAL)
+			$3[len($3)-1].ExpressionType = ast.CXEXPR_ARRAY_LITERAL
 			$$ = $3
                 }
                 ;
@@ -665,7 +665,7 @@ infer_clauses:
 			var exprs []*ast.CXExpression
 			for _, str := range $1 {
 				expr := actions.WritePrimary(constants.TYPE_AFF, encoder.Serialize(str), false)
-				expr[len(expr) - 1].SetExpressionType(ast.CXEXPR_ARRAY_LITERAL)
+				expr[len(expr) - 1].ExpressionType = ast.CXEXPR_ARRAY_LITERAL
 				exprs = append(exprs, expr...)
 			}
 			
@@ -835,15 +835,15 @@ multiplicative_expression:
                 unary_expression
         |       multiplicative_expression MUL_OP unary_expression
                 {
-			$$ = actions.ShorthandExpression($1, $3, constants.OP_MUL)
+			$$ = actions.OperatorExpression($1, $3, constants.OP_MUL)
                 }
         |       multiplicative_expression DIV_OP unary_expression
                 {
-			$$ = actions.ShorthandExpression($1, $3, constants.OP_DIV)
+			$$ = actions.OperatorExpression($1, $3, constants.OP_DIV)
                 }
         |       multiplicative_expression MOD_OP unary_expression
                 {
-			$$ = actions.ShorthandExpression($1, $3, constants.OP_MOD)
+			$$ = actions.OperatorExpression($1, $3, constants.OP_MOD)
                 }
                 ;
 
@@ -851,11 +851,11 @@ additive_expression:
                 multiplicative_expression
         |       additive_expression ADD_OP multiplicative_expression
                 {
-			$$ = actions.ShorthandExpression($1, $3, constants.OP_ADD)
+			$$ = actions.OperatorExpression($1, $3, constants.OP_ADD)
                 }
 	|       additive_expression SUB_OP multiplicative_expression
                 {
-			$$ = actions.ShorthandExpression($1, $3, constants.OP_SUB)
+			$$ = actions.OperatorExpression($1, $3, constants.OP_SUB)
                 }
                 ;
 
@@ -863,15 +863,15 @@ shift_expression:
                 additive_expression
         |       shift_expression LEFT_OP additive_expression
                 {
-			$$ = actions.ShorthandExpression($1, $3, constants.OP_BITSHL)
+			$$ = actions.OperatorExpression($1, $3, constants.OP_BITSHL)
                 }
         |       shift_expression RIGHT_OP additive_expression
                 {
-			$$ = actions.ShorthandExpression($1, $3, constants.OP_BITSHR)
+			$$ = actions.OperatorExpression($1, $3, constants.OP_BITSHR)
                 }
         |       shift_expression BITCLEAR_OP additive_expression
                 {
-			$$ = actions.ShorthandExpression($1, $3, constants.OP_BITCLEAR)
+			$$ = actions.OperatorExpression($1, $3, constants.OP_BITCLEAR)
                 }
                 ;
 
@@ -879,34 +879,34 @@ relational_expression:
                 shift_expression
         |       relational_expression EQ_OP shift_expression
                 {
-			$$ = actions.ShorthandExpression($1, $3, constants.OP_EQUAL)
+			$$ = actions.OperatorExpression($1, $3, constants.OP_EQUAL)
                 }
         |       relational_expression NE_OP shift_expression
                 {
-			$$ = actions.ShorthandExpression($1, $3, constants.OP_UNEQUAL)
+			$$ = actions.OperatorExpression($1, $3, constants.OP_UNEQUAL)
                 }
         |       relational_expression LT_OP shift_expression
                 {
-			$$ = actions.ShorthandExpression($1, $3, constants.OP_LT)
+			$$ = actions.OperatorExpression($1, $3, constants.OP_LT)
                 }
         |       relational_expression GT_OP shift_expression
                 {
-			$$ = actions.ShorthandExpression($1, $3, constants.OP_GT)
+			$$ = actions.OperatorExpression($1, $3, constants.OP_GT)
                 }
         |       relational_expression LTEQ_OP shift_expression
                 {
-			$$ = actions.ShorthandExpression($1, $3, constants.OP_LTEQ)
+			$$ = actions.OperatorExpression($1, $3, constants.OP_LTEQ)
                 }
         |       relational_expression GTEQ_OP shift_expression
                 {
-			$$ = actions.ShorthandExpression($1, $3, constants.OP_GTEQ)
+			$$ = actions.OperatorExpression($1, $3, constants.OP_GTEQ)
                 }
                 ;
 
 and_expression: relational_expression
         |       and_expression REF_OP relational_expression
                 {
-			$$ = actions.ShorthandExpression($1, $3, constants.OP_BITAND)
+			$$ = actions.OperatorExpression($1, $3, constants.OP_BITAND)
                 }
                 ;
 
@@ -914,7 +914,7 @@ exclusive_or_expression:
                 and_expression
         |       exclusive_or_expression BITXOR_OP and_expression
                 {
-			$$ = actions.ShorthandExpression($1, $3, constants.OP_BITXOR)
+			$$ = actions.OperatorExpression($1, $3, constants.OP_BITXOR)
                 }
                 ;
 
@@ -922,7 +922,7 @@ inclusive_or_expression:
                 exclusive_or_expression
         |       inclusive_or_expression BITOR_OP exclusive_or_expression
                 {
-			$$ = actions.ShorthandExpression($1, $3, constants.OP_BITOR)
+			$$ = actions.OperatorExpression($1, $3, constants.OP_BITOR)
                 }
                 ;
 
@@ -930,7 +930,7 @@ logical_and_expression:
                 inclusive_or_expression
 	|       logical_and_expression AND_OP inclusive_or_expression
                 {
-			$$ = actions.UndefinedTypeOperation($1, $3, ast.Natives[constants.OP_BOOL_AND])
+			$$ = actions.OperatorExpression($1, $3, constants.OP_BOOL_AND)
                 }
                 ;
 
@@ -938,7 +938,7 @@ logical_or_expression:
                 logical_and_expression
 	|       logical_or_expression OR_OP logical_and_expression
                 {
-			$$ = actions.UndefinedTypeOperation($1, $3, ast.Natives[constants.OP_BOOL_OR])
+			$$ = actions.OperatorExpression($1, $3, constants.OP_BOOL_OR)
                 }
                 ;
 
@@ -959,7 +959,7 @@ struct_literal_expression:
                 }
         |       postfix_expression PERIOD IDENTIFIER LBRACE struct_literal_fields RBRACE
                 {
-			$$ = actions.PrimaryStructLiteralExternal($1[0].Outputs[0].Name, $3, $5)
+			$$ = actions.PrimaryStructLiteralExternal($1[0].Outputs[0].ArgDetails.Name, $3, $5)
                 }
                 ;
 
@@ -1101,7 +1101,7 @@ expression_statement:
 			if len($1) > 0 && $1[len($1) - 1].Operator == nil && !$1[len($1) - 1].IsMethodCall() {
 				outs := $1[len($1) - 1].Outputs
 				if len(outs) > 0 {
-					println(ast.CompilationError(outs[0].FileName, outs[0].FileLine), "invalid expression")
+					println(ast.CompilationError(outs[0].ArgDetails.FileName, outs[0].ArgDetails.FileLine), "invalid expression")
 				} else {
 					println(ast.CompilationError(actions.CurrentFile, actions.LineNo), "invalid expression")
 				}

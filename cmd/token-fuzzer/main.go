@@ -8,7 +8,7 @@ import (
 	"os"
 	"strconv"
 
-	. "github.com/skycoin/cx/cxparser/cxparsingcompletor"
+	. "github.com/skycoin/cx/cxparser/parsingcompletor"
 )
 
 var tbits int = 4

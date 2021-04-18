@@ -1,7 +1,7 @@
 export GO111MODULE=on
 
 .DEFAULT_GOAL := help
-.PHONY: build-parser build test build-core
+.PHONY: build-parser build test test-parser build-core
 .PHONY: install
 .PHONY: dep
 
@@ -64,7 +64,7 @@ endif
 ifeq ($(UNAME_S), Linux)
 endif
 
-build:  ## Build CX from sources
+build: ## Build CX from sources
 	$(GO_OPTS) go build -tags="cipher cxfx cxos http regexp" -o ./bin/cx github.com/skycoin/cx/cmd/cx
 	chmod +x ./bin/cx
 
@@ -78,6 +78,8 @@ clean: ## Removes binaries.
 install: configure-workspace ## Install CX from sources. Build dependencies
 	@echo 'NOTE:\tWe recommend you to test your CX installation by running "cx ./tests"'
 	./bin/cx -v
+
+test-parser: build-parser build test
 
 test:  ## Run CX test suite.
 ifndef CXVERSION
@@ -101,7 +103,7 @@ build-goyacc: ## Builds goyacc into /bin/goyacc
 
 build-parser: ## Generate lexer and parser for CX grammar
 	#go build -o ./bin/goyacc ./cmd/goyacc/main.go
-	./bin/goyacc -o cxparser/cxpartialparsing/partialparsing.go cxparser/cxpartialparsing/partialparsing.y
+	./bin/goyacc -o cxparser/cxpartialparsing/cxpartialparsing.go cxparser/cxpartialparsing/cxpartialparsing.y
 	./bin/goyacc -o cxparser/cxparsingcompletor/parsingcompletor.go cxparser/cxparsingcompletor/parsingcompletor.y
 
 token-fuzzer:

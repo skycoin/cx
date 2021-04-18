@@ -6,6 +6,8 @@ const (
 	OP_IDENTITY = iota + 1
     OP_JMP
     OP_GOTO
+    OP_BREAK
+    OP_CONTINUE
     OP_DEBUG
 
 	OP_SERIALIZE

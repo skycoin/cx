@@ -25,8 +25,11 @@ func RegisterOpcodes() {
 	ast.Operators = make([]*ast.CXFunction, ast.OPERATOR_HANDLER_COUNT)
 
 	RegisterOpCode(constants.OP_IDENTITY, "identity", opIdentity, In(ast.ConstCxArg_UND_TYPE), Out(ast.ConstCxArg_UND_TYPE))
-	RegisterOpCode(constants.OP_JMP, "jmp", opJmp, In(ast.ConstCxArg_BOOL), nil) // ConstCxArg_UND_TYPE to allow 0 inputs (goto)
-	RegisterOpCode(constants.OP_GOTO, "goto", opGoto, nil, nil)                  // ConstCxArg_UND_TYPE to allow 0 inputs (goto)
+	RegisterOpCode(constants.OP_JMP, "jmp", opJmp, In(ast.ConstCxArg_BOOL), nil)
+	RegisterOpCode(constants.OP_GOTO, "goto", opGoto, nil, nil)
+	RegisterOpCode(constants.OP_BREAK, "break", opBreak, nil, nil)
+	RegisterOpCode(constants.OP_CONTINUE, "continue", opContinue, nil, nil)
+
 	//TODO: Rename OP_DEBUG, OP_DEBUG_PRINT_STACK
 	RegisterOpCode(constants.OP_DEBUG, "debug", opDebug, nil, nil)
 	RegisterOpCode(constants.OP_SERIALIZE, "serialize", opSerialize, In(ast.ConstCxArg_Affordance), Out(ast.ConstCxArg_UI8))

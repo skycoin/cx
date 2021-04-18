@@ -7,7 +7,7 @@ import (
 	cxast "github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/astapi"
 	cxconstants "github.com/skycoin/cx/cx/constants"
-	cxparsingcompletor "github.com/skycoin/cx/cxparser/cxparsingcompletor"
+	cxparsingcompletor "github.com/skycoin/cx/cxparser/parsingcompletor"
 )
 
 func TestSerialize_CipherEncoder(t *testing.T) {
