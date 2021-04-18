@@ -1,6 +1,7 @@
 package ast_test
 
 import (
+	"io/ioutil"
 	"testing"
 
 	cxast "github.com/skycoin/cx/cx/ast"
@@ -52,6 +53,39 @@ func TestSerialize_SkyEncoder(t *testing.T) {
 			if cxast.ToString(deserializedCXProgram) != cxast.ToString(tc.program) {
 				t.Errorf("want same program, got different")
 			}
+		})
+	}
+}
+
+func TestSerialize_SkyEncoder_VS_CipherEncoder(t *testing.T) {
+	prgrm := readCXProgramFromTestData(t, "serialized_1")
+	prgrm.PrintProgram()
+	tests := []struct {
+		scenario string
+		program  *cxast.CXProgram
+		wantSame bool
+	}{
+		{
+			scenario: "Valid program",
+			program:  prgrm,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.scenario, func(t *testing.T) {
+			skyEncoderSerializedBytes := cxast.SerializeCXProgramV2(tc.program, false)
+			cipherEncoderSerializedBytes := cxast.SerializeCXProgram(tc.program, false)
+
+			// Check byte per byte
+			var diffCount int = 0
+			var pos []int
+			for i := range skyEncoderSerializedBytes {
+				if skyEncoderSerializedBytes[i] != cipherEncoderSerializedBytes[i] {
+					pos = append(pos, i)
+					diffCount++
+				}
+			}
+			t.Logf("There were %v indexes that have different values. \nThese indexes are %v", diffCount, pos)
 		})
 	}
 }
@@ -124,5 +158,14 @@ func generateSampleProgram(t *testing.T) *cxast.CXProgram {
 		t.Errorf("want no error, got %v", err)
 	}
 
+	cxProgram.PrintProgram()
 	return cxProgram
+}
+
+func readCXProgramFromTestData(t *testing.T, filename string) *cxast.CXProgram {
+	dat, err := ioutil.ReadFile("./test_data/ast/" + filename + ".ast")
+	if err != nil {
+		t.Fatalf("Error reading test data file: %v", err)
+	}
+	return cxast.Deserialize(dat)
 }

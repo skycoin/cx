@@ -76,9 +76,9 @@ type CXArgument struct {
 
 	ArgDetails *CXArgumentDebug
 
-	CustomType                   *CXStruct
-	IsSlice                      bool
-	IsArray                      bool
+	CustomType *CXStruct
+	IsSlice    bool
+	// IsArray                      bool
 	IsPointer                    bool
 	IsReference                  bool
 	IsStruct                     bool
