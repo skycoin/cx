@@ -136,10 +136,8 @@ type serializedArgument struct {
 
 	Offset int64
 
-	IndirectionLevels           int64
-	DereferenceLevels           int64
-	DereferenceOperationsOffset int64
-	DereferenceOperationsSize   int64
+	IndirectionLevels int64
+	DereferenceLevels int64
 
 	IsSlice int64
 	// IsArray      int64

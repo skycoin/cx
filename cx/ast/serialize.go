@@ -101,9 +101,6 @@ func serializeArgument(arg *CXArgument, s *SerializedCXProgram) int {
 	s.Arguments[argOff].IndirectionLevels = int64(arg.IndirectionLevels)
 	s.Arguments[argOff].DereferenceLevels = int64(arg.DereferenceLevels)
 
-	s.Arguments[argOff].DereferenceOperationsOffset,
-		s.Arguments[argOff].DereferenceOperationsSize = serializeIntegers(arg.DereferenceOperations, s)
-
 	s.Arguments[argOff].IsSlice = serializeBoolean(arg.IsSlice)
 	s.Arguments[argOff].IsPointer = serializeBoolean(arg.IsPointer)
 	s.Arguments[argOff].IsReference = serializeBoolean(arg.IsReference)
@@ -769,8 +766,6 @@ func deserializeArgument(sArg *serializedArgument, s *SerializedCXProgram, prgrm
 	arg.IndirectionLevels = int(sArg.IndirectionLevels)
 	arg.DereferenceLevels = int(sArg.DereferenceLevels)
 	arg.PassBy = int(sArg.PassBy)
-
-	arg.DereferenceOperations = deserializeIntegers(sArg.DereferenceOperationsOffset, sArg.DereferenceOperationsSize, s)
 
 	arg.IsSlice = deserializeBool(sArg.IsSlice)
 	arg.IsPointer = deserializeBool(sArg.IsPointer)
