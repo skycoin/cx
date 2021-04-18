@@ -359,8 +359,8 @@ func EncodeSizeSerializedCXProgram(obj *SerializedCXProgram) uint64 {
 		// x1.DereferenceOperationsSize
 		i1 += 8
 
-		// x1.DeclarationSpecifiersOffset
-		i1 += 8
+		// // x1.DeclarationSpecifiersOffset
+		// i1 += 8
 
 		// x1.DeclarationSpecifiersSize
 		i1 += 8
@@ -920,11 +920,11 @@ func EncodeSerializedCXProgramToBuffer(buf []byte, obj *SerializedCXProgram) err
 		// x.DereferenceOperationsSize
 		e.Int64(x.DereferenceOperationsSize)
 
-		// x.DeclarationSpecifiersOffset
-		e.Int64(x.DeclarationSpecifiersOffset)
+		// // x.DeclarationSpecifiersOffset
+		// e.Int64(x.DeclarationSpecifiersOffset)
 
-		// x.DeclarationSpecifiersSize
-		e.Int64(x.DeclarationSpecifiersSize)
+		// // x.DeclarationSpecifiersSize
+		// e.Int64(x.DeclarationSpecifiersSize)
 
 		// x.IsSlice
 		e.Int64(x.IsSlice)
@@ -2166,23 +2166,23 @@ func DecodeSerializedCXProgram(buf []byte, obj *SerializedCXProgram) (uint64, er
 					obj.Arguments[z1].DereferenceOperationsSize = i
 				}
 
-				{
-					// obj.Arguments[z1].DeclarationSpecifiersOffset
-					i, err := d.Int64()
-					if err != nil {
-						return 0, err
-					}
-					obj.Arguments[z1].DeclarationSpecifiersOffset = i
-				}
+				// {
+				// 	// obj.Arguments[z1].DeclarationSpecifiersOffset
+				// 	i, err := d.Int64()
+				// 	if err != nil {
+				// 		return 0, err
+				// 	}
+				// 	obj.Arguments[z1].DeclarationSpecifiersOffset = i
+				// }
 
-				{
-					// obj.Arguments[z1].DeclarationSpecifiersSize
-					i, err := d.Int64()
-					if err != nil {
-						return 0, err
-					}
-					obj.Arguments[z1].DeclarationSpecifiersSize = i
-				}
+				// {
+				// 	// obj.Arguments[z1].DeclarationSpecifiersSize
+				// 	i, err := d.Int64()
+				// 	if err != nil {
+				// 		return 0, err
+				// 	}
+				// 	obj.Arguments[z1].DeclarationSpecifiersSize = i
+				// }
 
 				{
 					// obj.Arguments[z1].IsSlice
