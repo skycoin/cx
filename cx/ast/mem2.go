@@ -112,11 +112,6 @@ func CalculateDereferences(arg *CXArgument, finalOffset int, fp int) int {
 
 // CalculateDereferences_array ...
 func CalculateDereferences_array(arg *CXArgument, finalOffset *int, fp int) {
-
-	// remove this check
-	if !arg.IsArray {
-		panic("not array")
-	}
 	var sizeofElement int
 
 	idxCounter := 0

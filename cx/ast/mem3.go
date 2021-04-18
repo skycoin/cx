@@ -34,8 +34,11 @@ var ENHANCED_DEBUGING4 bool = false
 func GetFinalOffset(fp int, arg *CXArgument) int {
 
 	if ENHANCED_DEBUGING3 {
-		if !(arg.IsPointer || arg.IsSlice || arg.IsArray || arg.IsStruct) {
-			panic("arg is in invalid format")
+		// if !(arg.IsPointer || arg.IsSlice || arg.IsArray || arg.IsStruct) {
+		// 	panic("arg is in invalid format")
+		// }
+		if !IsNotAtomic(arg) {
+			panic("error: arg is non-atomic type")
 		}
 	}
 
@@ -92,7 +95,8 @@ func GetOffsetAtomicSimple(fp int, arg *CXArgument) int {
 
 //IsNotAtomic checks if arg is pointer, slice or array and returns
 func IsNotAtomic(arg *CXArgument) bool {
-	if arg.IsPointer || arg.IsSlice || arg.IsArray {
+	// if arg.IsPointer || arg.IsSlice || arg.IsArray {
+	if arg.IsPointer || arg.IsSlice {
 		return true
 	}
 
