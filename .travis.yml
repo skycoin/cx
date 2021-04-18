@@ -37,8 +37,6 @@ matrix:
 
 # Build, test & run cx test
 script:
-  - make build-goyacc
-  - make build-parser
   - make build
   - make install
   - make test
