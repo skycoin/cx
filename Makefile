@@ -1,7 +1,7 @@
 export GO111MODULE=on
 
-.DEFAULT_GOAL := help
-.PHONY: build-parser build test build-core
+.DEFAULT_GOAL := test-parser
+.PHONY: build-parser build test test-parser build-core
 .PHONY: install
 .PHONY: dep
 
@@ -64,7 +64,7 @@ endif
 ifeq ($(UNAME_S), Linux)
 endif
 
-build: build-parser  ## Build CX from sources
+build: ## Build CX from sources
 	$(GO_OPTS) go build -tags="cipher cxfx cxos http regexp" -o ./bin/cx github.com/skycoin/cx/cmd/cx
 	chmod +x ./bin/cx
 
@@ -78,6 +78,8 @@ clean: ## Removes binaries.
 install: configure-workspace ## Install CX from sources. Build dependencies
 	@echo 'NOTE:\tWe recommend you to test your CX installation by running "cx ./tests"'
 	./bin/cx -v
+
+test-parser: build-parser build test
 
 test:  ## Run CX test suite.
 ifndef CXVERSION
