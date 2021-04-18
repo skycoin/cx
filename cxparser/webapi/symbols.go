@@ -1,9 +1,10 @@
 package webapi
 
 import (
+	"unicode"
+
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
-	"unicode"
 )
 
 // ProgramMetaResp is a program meta data response.
@@ -58,7 +59,7 @@ func extractExportedSymbols(pkg *ast.CXPackage) ExportedSymbolsResp {
 	}
 
 	for _, g := range pkg.Globals {
-		if isExported(g.Name) {
+		if isExported(g.ArgDetails.Name) {
 			resp.Globals = append(resp.Globals, displayCXGlobal(g))
 		}
 	}
@@ -86,7 +87,7 @@ func displayCXStruct(s *ast.CXStruct) ExportedSymbol {
 
 func displayCXGlobal(a *ast.CXArgument) ExportedSymbol {
 	return ExportedSymbol{
-		Name:      a.Name,
+		Name:      a.ArgDetails.Name,
 		Signature: nil,
 		Type:      a.Type,
 		TypeName:  constants.TypeNames[a.Type],
