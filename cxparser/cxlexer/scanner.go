@@ -10,26 +10,59 @@ type Scanner struct {
 	r *bufio.Reader
 }
 
+//NewScanner returns a new instance of Scanner.
 func NewScanner(r io.Reader) *Scanner {
 
 	return &Scanner{r: bufio.NewReader(r)}
 
 }
 
+//scan returns the next token and literal value.
 func (s *Scanner) Scan() (tok token, lit string) {
 
+	// Read the next rune.
 	ch := s.read()
 
-	if isWhitespace(ch) {
+	if s.isWhitespace(ch) {
+
 		s.unread()
 		return s.scanWhitespace()
+
 	} else if isLetter(ch) {
 		s.unread()
+		return s.scanIdent()
+	}
+
+	switch ch {
+
+	case eof:
+		return EOF, ""
 
 	}
 
+	return ILLEGAL, string(ch)
+}
+
+func (s *Scanner) scanIdent(tok token, lit string) {
+
+	var buf bytes.Buffer
+
 	buf.WriteRune(s.read())
 
+	for {
+		if ch := s.read(); ch == eof {
+			break
+		} else if !isLetter(ch) && isDigit(ch) {
+			s.unread()
+			break
+		} else {
+			_, _ = buf.WriteRune(ch)
+		}
+
+	}
+
+	//return as a regular identifier.
+	return IDENT, buff.String()
 }
 
 func (s *Scanner) scanWhitespace() (tok token, lit string) {
@@ -49,7 +82,7 @@ func (s *Scanner) scanWhitespace() (tok token, lit string) {
 
 			break
 
-		} else if !isWhitespace(ch) {
+		} else if !s.isWhitespace(ch) {
 
 			s.unread()
 			break
@@ -77,7 +110,7 @@ func (s *Scanner) read() rune {
 
 func (s *Scanner) isWhitespace(ch rune) bool {
 
-	return (ch == ' ' || ch == '\t' || ch == '\n')
+	return (ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r')
 }
 
 //unread places the previously read rune back on the reader.
