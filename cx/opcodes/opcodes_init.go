@@ -21,14 +21,24 @@ func Out(params ...*ast.CXArgument) []*ast.CXArgument {
 }
 
 func RegisterOpcodes() {
-
 	ast.Operators = make([]*ast.CXFunction, ast.OPERATOR_HANDLER_COUNT)
 
 	RegisterOpCode(constants.OP_IDENTITY, "identity", opIdentity, In(ast.ConstCxArg_UND_TYPE), Out(ast.ConstCxArg_UND_TYPE))
-	RegisterOpCode(constants.OP_JMP, "jmp", opJmp, In(ast.ConstCxArg_BOOL), nil)
 	RegisterOpCode(constants.OP_GOTO, "goto", opGoto, nil, nil)
 	RegisterOpCode(constants.OP_BREAK, "break", opBreak, nil, nil)
 	RegisterOpCode(constants.OP_CONTINUE, "continue", opContinue, nil, nil)
+	RegisterOpCode(constants.OP_NOP, "nop", opNop, nil, nil)
+
+	RegisterOpCode(constants.OP_JMP, "jmp", opJmp, In(ast.ConstCxArg_BOOL), nil)
+	RegisterOpCode(constants.OP_ABS_JMP, "absjmp", opAbsJmp, In(ast.ConstCxArg_BOOL), nil)
+	RegisterOpCode(constants.OP_JMP_EQ, "jmpeq", nil, In(ast.ConstCxArg_UND_TYPE, ast.ConstCxArg_UND_TYPE), nil)
+	RegisterOpCode(constants.OP_JMP_UNEQ, "jmpuneq", nil, In(ast.ConstCxArg_UND_TYPE, ast.ConstCxArg_UND_TYPE), nil)
+	RegisterOpCode(constants.OP_JMP_GT, "jmpgt", nil, In(ast.ConstCxArg_UND_TYPE, ast.ConstCxArg_UND_TYPE), nil)
+	RegisterOpCode(constants.OP_JMP_GTEQ, "jmpgteq", nil, In(ast.ConstCxArg_UND_TYPE, ast.ConstCxArg_UND_TYPE), nil)
+	RegisterOpCode(constants.OP_JMP_LT, "jmplt", nil, In(ast.ConstCxArg_UND_TYPE, ast.ConstCxArg_UND_TYPE), nil)
+	RegisterOpCode(constants.OP_JMP_LTEQ, "jmplteq", nil, In(ast.ConstCxArg_UND_TYPE, ast.ConstCxArg_UND_TYPE), nil)
+	RegisterOpCode(constants.OP_JMP_ZERO, "jmpzero", nil, In(ast.ConstCxArg_UND_TYPE), nil)
+	RegisterOpCode(constants.OP_JMP_NOT_ZERO, "jmpnotzero", nil, In(ast.ConstCxArg_UND_TYPE), nil)
 
 	//TODO: Rename OP_DEBUG, OP_DEBUG_PRINT_STACK
 	RegisterOpCode(constants.OP_DEBUG, "debug", opDebug, nil, nil)
@@ -241,6 +251,15 @@ func RegisterOpcodes() {
 	RegisterFunction("i16.max", opI16Max, In(ast.ConstCxArg_I16, ast.ConstCxArg_I16), Out(ast.ConstCxArg_I16))
 	RegisterFunction("i16.min", opI16Min, In(ast.ConstCxArg_I16, ast.ConstCxArg_I16), Out(ast.ConstCxArg_I16))
 	RegisterFunction("i16.rand", opI16Rand, In(ast.ConstCxArg_I16, ast.ConstCxArg_I16), Out(ast.ConstCxArg_I16))
+
+	RegisterOperator("i32.jmpeq", opI32JmpEq, In(ast.ConstCxArg_I32, ast.ConstCxArg_I32), nil, constants.TYPE_I32, constants.OP_JMP_EQ)
+	RegisterOperator("i32.jmpuneq", opI32JmpUnEq, In(ast.ConstCxArg_I32, ast.ConstCxArg_I32), nil, constants.TYPE_I32, constants.OP_JMP_UNEQ)
+	RegisterOperator("i32.jmpgt", opI32JmpGt, In(ast.ConstCxArg_I32, ast.ConstCxArg_I32), nil, constants.TYPE_I32, constants.OP_JMP_GT)
+	RegisterOperator("i32.jmpgteq", opI32JmpGtEq, In(ast.ConstCxArg_I32, ast.ConstCxArg_I32), nil, constants.TYPE_I32, constants.OP_JMP_GTEQ)
+	RegisterOperator("i32.jmplt", opI32JmpLt, In(ast.ConstCxArg_I32, ast.ConstCxArg_I32), nil, constants.TYPE_I32, constants.OP_JMP_LT)
+	RegisterOperator("i32.jmplteq", opI32JmpLtEq, In(ast.ConstCxArg_I32, ast.ConstCxArg_I32), nil, constants.TYPE_I32, constants.OP_JMP_LTEQ)
+	RegisterOperator("i32.jmpzero", opI32JmpZero, In(ast.ConstCxArg_I32), nil, constants.TYPE_I32, constants.OP_JMP_ZERO)
+	RegisterOperator("i32.jmpnotzero", opI32JmpNotZero, In(ast.ConstCxArg_I32), nil, constants.TYPE_I32, constants.OP_JMP_NOT_ZERO)
 
 	RegisterOperator("i32.eq", opI32Eq, In(ast.ConstCxArg_I32, ast.ConstCxArg_I32), Out(ast.ConstCxArg_BOOL), constants.TYPE_I32, constants.OP_EQUAL)
 	RegisterOperator("i32.uneq", opI32Uneq, In(ast.ConstCxArg_I32, ast.ConstCxArg_I32), Out(ast.ConstCxArg_BOOL), constants.TYPE_I32, constants.OP_UNEQUAL)
