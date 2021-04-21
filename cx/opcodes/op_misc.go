@@ -52,13 +52,14 @@ func opIdentity(inputs []ast.CXValue, outputs []ast.CXValue) {
 
 func opGoto(inputs []ast.CXValue, outputs []ast.CXValue) {
 	call := ast.PROGRAM.GetCurrentCall()
-	expr := call.Operator.Expressions[call.Line]
+	expr := inputs[0].Expr
 	call.Line = call.Line + expr.ThenLines
 }
 
 func opJmp(inputs []ast.CXValue, outputs []ast.CXValue) {
 	call := ast.PROGRAM.GetCurrentCall()
-	expr := call.Operator.Expressions[call.Line]
+	expr := inputs[0].Expr
+
 	if inputs[0].Get_bool() {
 		call.Line = call.Line + expr.ThenLines
 	} else {
@@ -68,7 +69,8 @@ func opJmp(inputs []ast.CXValue, outputs []ast.CXValue) {
 
 func opAbsJmp(inputs []ast.CXValue, outputs []ast.CXValue) {
 	call := ast.PROGRAM.GetCurrentCall()
-	expr := call.Operator.Expressions[call.Line]
+	expr := inputs[0].Expr
+
 	if inputs[0].Get_bool() {
 		call.Line = expr.ThenLines
 	} else {
@@ -78,13 +80,13 @@ func opAbsJmp(inputs []ast.CXValue, outputs []ast.CXValue) {
 
 func opBreak(inputs []ast.CXValue, outputs []ast.CXValue) {
 	call := ast.PROGRAM.GetCurrentCall()
-	expr := call.Operator.Expressions[call.Line]
+	expr := inputs[0].Expr
 	call.Line = call.Line + expr.ThenLines
 }
 
 func opContinue(inputs []ast.CXValue, outputs []ast.CXValue) {
 	call := ast.PROGRAM.GetCurrentCall()
-	expr := call.Operator.Expressions[call.Line]
+	expr := inputs[0].Expr
 	call.Line = call.Line + expr.ThenLines
 }
 
