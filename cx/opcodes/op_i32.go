@@ -229,7 +229,8 @@ func opI32Min(inputs []ast.CXValue, outputs []ast.CXValue) {
 
 func opI32JmpEq(inputs []ast.CXValue, outputs []ast.CXValue) {
 	call := ast.PROGRAM.GetCurrentCall()
-	expr := call.Operator.Expressions[call.Line]
+	// expr := call.Operator.Expressions[call.Line]
+	expr := inputs[0].Expr
 
 	res := inputs[0].Get_i32() == inputs[1].Get_i32()
 	if res {
