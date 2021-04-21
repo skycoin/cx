@@ -26,7 +26,7 @@ func EscapeAnalysis(input *ast.CXValue) int32 {
 }
 
 func opIdentity(inputs []ast.CXValue, outputs []ast.CXValue) {
-    out1 := outputs[0].Arg
+	out1 := outputs[0].Arg
 	var elt *ast.CXArgument
 	if len(out1.Fields) > 0 {
 		elt = out1.Fields[len(out1.Fields)-1]
@@ -66,6 +66,16 @@ func opJmp(inputs []ast.CXValue, outputs []ast.CXValue) {
 	}
 }
 
+func opAbsJmp(inputs []ast.CXValue, outputs []ast.CXValue) {
+	call := ast.PROGRAM.GetCurrentCall()
+	expr := call.Operator.Expressions[call.Line]
+	if inputs[0].Get_bool() {
+		call.Line = expr.ThenLines
+	} else {
+		call.Line = expr.ElseLines
+	}
+}
+
 func opBreak(inputs []ast.CXValue, outputs []ast.CXValue) {
 	call := ast.PROGRAM.GetCurrentCall()
 	expr := call.Operator.Expressions[call.Line]
@@ -76,4 +86,9 @@ func opContinue(inputs []ast.CXValue, outputs []ast.CXValue) {
 	call := ast.PROGRAM.GetCurrentCall()
 	expr := call.Operator.Expressions[call.Line]
 	call.Line = call.Line + expr.ThenLines
+}
+
+func opNop(inputs []ast.CXValue, outputs []ast.CXValue) {
+	// No Operation
+	// Do Nothing
 }
