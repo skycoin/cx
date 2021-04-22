@@ -374,8 +374,8 @@ func EncodeSizeSerializedCXProgram(obj *SerializedCXProgram) uint64 {
 		// x1.IsArrayFirst
 		i1 += 8
 
-		// x1.IsPointer
-		i1 += 8
+		// // x1.IsPointer
+		// i1 += 8
 
 		// x1.IsReference
 		i1 += 8
@@ -935,8 +935,8 @@ func EncodeSerializedCXProgramToBuffer(buf []byte, obj *SerializedCXProgram) err
 		// // x.IsArrayFirst
 		// e.Int64(x.IsArrayFirst)
 
-		// x.IsPointer
-		e.Int64(x.IsPointer)
+		// // x.IsPointer
+		// e.Int64(x.IsPointer)
 
 		// x.IsReference
 		e.Int64(x.IsReference)
@@ -2211,14 +2211,14 @@ func DecodeSerializedCXProgram(buf []byte, obj *SerializedCXProgram) (uint64, er
 				// 	obj.Arguments[z1].IsArrayFirst = i
 				// }
 
-				{
-					// obj.Arguments[z1].IsPointer
-					i, err := d.Int64()
-					if err != nil {
-						return 0, err
-					}
-					obj.Arguments[z1].IsPointer = i
-				}
+				// {
+				// 	// obj.Arguments[z1].IsPointer
+				// 	i, err := d.Int64()
+				// 	if err != nil {
+				// 		return 0, err
+				// 	}
+				// 	obj.Arguments[z1].IsPointer = i
+				// }
 
 				{
 					// obj.Arguments[z1].IsReference

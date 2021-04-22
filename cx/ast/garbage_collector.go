@@ -15,7 +15,7 @@ func MarkAndCompact(prgrm *CXProgram) {
 	// global variables
 	for _, pkg := range prgrm.Packages {
 		for _, glbl := range pkg.Globals {
-			if (glbl.IsPointer || glbl.IsSlice || glbl.Type == constants.TYPE_STR) && glbl.CustomType == nil {
+			if (glbl.IsPointer() || glbl.IsSlice || glbl.Type == constants.TYPE_STR) && glbl.CustomType == nil {
 				// Getting the offset to the object in the heap
 				var heapOffset int32
 				_, err := encoder.DeserializeAtomic(prgrm.Memory[glbl.Offset:glbl.Offset+constants.TYPE_POINTER_SIZE], &heapOffset)
@@ -44,7 +44,7 @@ func MarkAndCompact(prgrm *CXProgram) {
 						continue
 					}
 
-					if fld.IsPointer || fld.IsSlice || fld.Type == constants.TYPE_STR {
+					if fld.IsPointer() || fld.IsSlice || fld.Type == constants.TYPE_STR {
 						MarkObjectsTree(prgrm, offset, fld.Type, fld.DeclarationSpecifiers[1:])
 					}
 				}
@@ -218,14 +218,14 @@ func DisplaceReferences(prgrm *CXProgram, off int, numPkgs int) {
 		// as any other object should be destroyed, as the program finished its
 		// execution.
 		for _, glbl := range pkg.Globals {
-			if glbl.IsPointer || glbl.IsSlice {
+			if glbl.IsPointer() || glbl.IsSlice {
 				doDisplaceReferences(prgrm, &updated, glbl.Offset, off, glbl.Type, glbl.DeclarationSpecifiers[1:])
 			}
 
 			// If it's a struct instance we need to displace each of its fields.
 			if glbl.CustomType != nil {
 				for _, fld := range glbl.CustomType.Fields {
-					if fld.IsPointer || fld.IsSlice {
+					if fld.IsPointer() || fld.IsSlice {
 						doDisplaceReferences(prgrm, &updated, glbl.Offset+fld.Offset, off, fld.Type, fld.DeclarationSpecifiers[1:])
 					}
 				}
@@ -362,7 +362,7 @@ func updatePointers(prgrm *CXProgram, oldAddr, newAddr int32) {
 	// for a bit more of clarity.
 	for _, pkg := range prgrm.Packages {
 		for _, glbl := range pkg.Globals {
-			if (glbl.IsPointer || glbl.IsSlice || glbl.Type == constants.TYPE_STR) && glbl.CustomType == nil {
+			if (glbl.IsPointer() || glbl.IsSlice || glbl.Type == constants.TYPE_STR) && glbl.CustomType == nil {
 				// Getting the offset to the object in the heap
 				var heapOffset int32
 				_, err := encoder.DeserializeAtomic(prgrm.Memory[glbl.Offset:glbl.Offset+constants.TYPE_POINTER_SIZE], &heapOffset)
@@ -395,7 +395,7 @@ func updatePointers(prgrm *CXProgram, oldAddr, newAddr int32) {
 						continue
 					}
 
-					if fld.IsPointer || fld.IsSlice || fld.Type == constants.TYPE_STR {
+					if fld.IsPointer() || fld.IsSlice || fld.Type == constants.TYPE_STR {
 						updatePointerTree(prgrm, offset, oldAddr, newAddr, fld.Type, fld.DeclarationSpecifiers[1:])
 					}
 				}

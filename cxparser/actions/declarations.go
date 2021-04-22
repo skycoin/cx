@@ -379,8 +379,11 @@ func DeclarationSpecifiers(declSpec *ast.CXArgument, arrayLengths []int, opTyp i
 	switch opTyp {
 	case constants.DECL_POINTER:
 		declSpec.DeclarationSpecifiers = append(declSpec.DeclarationSpecifiers, constants.DECL_POINTER)
-		if !declSpec.IsPointer {
-			declSpec.IsPointer = true
+		if !declSpec.IsPointer() {
+			declSpec.AddRefArg(declSpec)
+			// declSpec.IsPointer = true
+			declSpec.Type = constants.TYPE_POINTER
+
 			declSpec.Size = constants.TYPE_POINTER_SIZE
 			declSpec.TotalSize = constants.TYPE_POINTER_SIZE
 			declSpec.IndirectionLevels++
@@ -389,7 +392,9 @@ func DeclarationSpecifiers(declSpec *ast.CXArgument, arrayLengths []int, opTyp i
 
 			for c := declSpec.IndirectionLevels - 1; c > 0; c-- {
 				pointer.IndirectionLevels = c
-				pointer.IsPointer = true
+				pointer.AddRefArg(pointer)
+				// pointer.IsPointer = true
+				pointer.Type = constants.TYPE_POINTER
 			}
 
 			declSpec.IndirectionLevels++

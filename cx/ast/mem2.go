@@ -179,7 +179,7 @@ func CalculateDereferences_slice(arg *CXArgument, finalOffset *int, fp int) {
 // CalculateDereferences_ptr
 func CalculateDereferences_ptr(arg *CXArgument, finalOffset *int, fp int) {
 	// remove this check
-	if !arg.IsPointer && !arg.IsSlice {
+	if !arg.IsPointer() && !arg.IsSlice {
 		panic("not pointer")
 	}
 	var isPointer bool

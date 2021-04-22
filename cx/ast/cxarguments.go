@@ -1,5 +1,7 @@
 package ast
 
+import "github.com/skycoin/cx/cx/constants"
+
 // CXArgument is used to define local variables, global variables,
 // literals (strings, numbers), inputs and outputs to function
 // calls. All of the fields in this structure are determined at
@@ -28,6 +30,10 @@ type CXArgument struct {
 	// slices of pointers to struct instances of type
 	// `Point`).
 	DeclarationSpecifiers []int
+
+	//RefCXArgument is a CXArgument that represents the value if the current CXArgument is a pointer type
+	RefCXArgument *CXArgument
+
 	// Indexes stores what indexes we want to access from the
 	// `CXArgument`. A non-nil `Indexes` means that the
 	// `CXArgument` is an index or a slice. The elements of
@@ -79,7 +85,7 @@ type CXArgument struct {
 	CustomType *CXStruct
 	IsSlice    bool
 	// IsArray                      bool
-	IsPointer                    bool
+	// IsPointer                    bool
 	IsReference                  bool
 	IsStruct                     bool
 	IsRest                       bool // pkg.var <- var is rest
@@ -88,4 +94,12 @@ type CXArgument struct {
 	IsInnerReference             bool // for example: &slice[0] or &struct.field
 	PreviouslyDeclared           bool
 	DoesEscape                   bool
+}
+
+func (arg *CXArgument) AddRefArg(refArg *CXArgument) {
+	arg.RefCXArgument = refArg
+}
+
+func (arg *CXArgument) IsPointer() bool {
+	return arg.Type == constants.TYPE_POINTER
 }

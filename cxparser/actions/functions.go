@@ -77,7 +77,7 @@ func FunctionAddParameters(fn *ast.CXFunction, inputs, outputs []*ast.CXArgument
 	}
 
 	for _, out := range fn.Outputs {
-		if out.IsPointer && out.Type != constants.TYPE_STR && out.Type != constants.TYPE_AFF {
+		if out.IsPointer() && out.Type != constants.TYPE_STR && out.Type != constants.TYPE_AFF {
 			out.DoesEscape = true
 		}
 	}
@@ -306,12 +306,12 @@ func ProcessOperatorExpression(expr *ast.CXExpression) {
 func ProcessPointerStructs(expr *ast.CXExpression) {
 	for _, arg := range append(expr.Inputs, expr.Outputs...) {
 		for _, fld := range arg.Fields {
-			if fld.IsPointer && fld.DereferenceLevels == 0 {
+			if fld.IsPointer() && fld.DereferenceLevels == 0 {
 				fld.DereferenceLevels++
 				fld.DereferenceOperations = append(fld.DereferenceOperations, constants.DEREF_POINTER)
 			}
 		}
-		if arg.IsStruct && arg.IsPointer && len(arg.Fields) > 0 && arg.DereferenceLevels == 0 {
+		if arg.IsStruct && arg.IsPointer() && len(arg.Fields) > 0 && arg.DereferenceLevels == 0 {
 			arg.DereferenceLevels++
 			arg.DereferenceOperations = append(arg.DereferenceOperations, constants.DEREF_POINTER)
 		}
@@ -493,7 +493,7 @@ func checkMatchParamTypes(expr *ast.CXExpression, expected, received []*ast.CXAr
 		expectedType := ast.GetFormattedType(expected[i])
 		receivedType := ast.GetFormattedType(received[i])
 
-		if expr.IsMethodCall() && expected[i].IsPointer && i == 0 {
+		if expr.IsMethodCall() && expected[i].IsPointer() && i == 0 {
 			// if method receiver is pointer, remove *
 			if expectedType[0] == '*' {
 				// we need to check if it's not an `str`
@@ -881,7 +881,7 @@ func ProcessMethodCall(expr *ast.CXExpression, symbols *[]map[string]*ast.CXArgu
 		}
 
 		// checking if receiver is sent as pointer or not
-		if expr.Operator.Inputs[0].IsPointer {
+		if expr.Operator.Inputs[0].IsPointer() {
 			expr.Inputs[0].PassBy = constants.PASSBY_REFERENCE
 		}
 	}
@@ -917,7 +917,8 @@ func ProcessTempVariable(expr *ast.CXExpression) {
 
 func CopyArgFields(sym *ast.CXArgument, arg *ast.CXArgument) {
 	sym.Offset = arg.Offset
-	sym.IsPointer = arg.IsPointer
+	// sym.IsPointer = arg.IsPointer
+	sym.Type = arg.Type
 	sym.IndirectionLevels = arg.IndirectionLevels
 
 	if sym.ArgDetails.FileLine != arg.ArgDetails.FileLine {
@@ -999,7 +1000,9 @@ func CopyArgFields(sym *ast.CXArgument, arg *ast.CXArgument) {
 	sym.Size = arg.Size
 
 	if arg.Type == constants.TYPE_STR {
-		sym.IsPointer = true
+		sym.AddRefArg(arg)
+		// sym.IsPointer = true
+		sym.Type = constants.TYPE_POINTER
 	}
 
 	// Checking if it's a slice struct field. We'll do the same process as
@@ -1100,7 +1103,7 @@ func ProcessSymbolFields(sym *ast.CXArgument, arg *ast.CXArgument) {
 					nameFld.Size = fld.Size
 					nameFld.TotalSize = fld.TotalSize
 					nameFld.DereferenceLevels = sym.DereferenceLevels
-					nameFld.IsPointer = fld.IsPointer
+					// nameFld.IsPointer = fld.IsPointer
 					nameFld.CustomType = fld.CustomType
 
 					sym.Lengths = fld.Lengths

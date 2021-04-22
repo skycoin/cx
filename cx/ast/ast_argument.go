@@ -26,7 +26,9 @@ func GetType(arg *CXArgument) int {
 //TODO: only used by HTTP, create a better module system
 func Pointer(arg *CXArgument) *CXArgument {
 	arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_POINTER)
-	arg.IsPointer = true
+	arg.AddRefArg(arg)
+	// arg.IsPointer = true
+	arg.Type = constants.TYPE_POINTER
 	arg.Size = constants.TYPE_POINTER_SIZE
 	arg.TotalSize = constants.TYPE_POINTER_SIZE
 
@@ -49,4 +51,3 @@ func NewCXArgument(typCode int) *CXArgument {
 	arg.IsLocalDeclaration = true
 	return arg
 }
-

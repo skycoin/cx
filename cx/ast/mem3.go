@@ -96,7 +96,7 @@ func GetOffsetAtomicSimple(fp int, arg *CXArgument) int {
 //IsNotAtomic checks if arg is pointer, slice or array and returns
 func IsNotAtomic(arg *CXArgument) bool {
 	// if arg.IsPointer || arg.IsSlice || arg.IsArray {
-	if arg.IsPointer || arg.IsSlice {
+	if arg.IsPointer() || arg.IsSlice {
 		return true
 	}
 

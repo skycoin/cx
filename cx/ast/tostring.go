@@ -220,7 +220,7 @@ func SignatureStringOfFunction(pkg *CXPackage, f *CXFunction) string {
 }
 
 func getNonCollectionValue(fp int, arg, elt *CXArgument, typ string) string {
-	if arg.IsPointer {
+	if arg.IsPointer() {
 		return fmt.Sprintf("%v", ReadPtr(fp, elt))
 	}
 	switch typ {
@@ -480,7 +480,7 @@ func IsPointer(sym *CXArgument) bool {
 	// if (sym.IsPointer || sym.IsSlice) && sym.ArgDetails.Name != "" {
 	// 	return true
 	// }
-	if (sym.IsPointer || sym.IsSlice) && sym.ArgDetails.Name != "" && len(sym.Fields) == 0 {
+	if (sym.IsPointer() || sym.IsSlice) && sym.ArgDetails.Name != "" && len(sym.Fields) == 0 {
 		return true
 	}
 	if sym.Type == constants.TYPE_STR && sym.ArgDetails.Name != "" && len(sym.Fields) == 0 {

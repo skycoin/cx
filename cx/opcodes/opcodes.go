@@ -98,7 +98,9 @@ func dumpOpCodes(opCode int) {
 // Pointer takes an already defined `CXArgument` and turns it into a pointer.
 func Pointer(arg *ast.CXArgument) *ast.CXArgument {
 	arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_POINTER)
-	arg.IsPointer = true
+	arg.AddRefArg(arg)
+	// arg.IsPointer = true
+	arg.Type = constants.TYPE_POINTER
 	arg.Size = constants.TYPE_POINTER_SIZE
 	arg.TotalSize = constants.TYPE_POINTER_SIZE
 
