@@ -144,8 +144,9 @@ type serializedArgument struct {
 	IsSlice int64
 	// IsArray      int64
 	// IsArrayFirst int64
-	IsPointer   int64
-	IsReference int64
+	IsPointer     int64
+	IsReference   int64
+	RefCXArgument *CXArgument
 
 	IsStruct           int64
 	IsRest             int64
