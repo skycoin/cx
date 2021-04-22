@@ -353,12 +353,6 @@ func EncodeSizeSerializedCXProgram(obj *SerializedCXProgram) uint64 {
 		// x1.DereferenceLevels
 		i1 += 8
 
-		// x1.DereferenceOperationsOffset
-		i1 += 8
-
-		// x1.DereferenceOperationsSize
-		i1 += 8
-
 		// x1.DeclarationSpecifiersOffset
 		i1 += 8
 
@@ -368,20 +362,11 @@ func EncodeSizeSerializedCXProgram(obj *SerializedCXProgram) uint64 {
 		// x1.IsSlice
 		i1 += 8
 
-		// x1.IsArray
-		i1 += 8
-
-		// x1.IsArrayFirst
-		i1 += 8
-
 		// x1.IsPointer
 		i1 += 8
 
 		// x1.IsReference
 		i1 += 8
-
-		// // x1.IsDereferenceFirst
-		// i1 += 8
 
 		// x1.IsStruct
 		i1 += 8
@@ -914,12 +899,6 @@ func EncodeSerializedCXProgramToBuffer(buf []byte, obj *SerializedCXProgram) err
 		// x.DereferenceLevels
 		e.Int64(x.DereferenceLevels)
 
-		// // x.DereferenceOperationsOffset
-		// e.Int64(x.DereferenceOperationsOffset)
-
-		// // x.DereferenceOperationsSize
-		// e.Int64(x.DereferenceOperationsSize)
-
 		// x.DeclarationSpecifiersOffset
 		e.Int64(x.DeclarationSpecifiersOffset)
 
@@ -929,20 +908,11 @@ func EncodeSerializedCXProgramToBuffer(buf []byte, obj *SerializedCXProgram) err
 		// x.IsSlice
 		e.Int64(x.IsSlice)
 
-		// x.IsArray
-		// e.Int64(x.IsArray)
-
-		// // x.IsArrayFirst
-		// e.Int64(x.IsArrayFirst)
-
 		// x.IsPointer
 		e.Int64(x.IsPointer)
 
 		// x.IsReference
 		e.Int64(x.IsReference)
-
-		// // x.IsDereferenceFirst
-		// e.Int64(x.IsDereferenceFirst)
 
 		// x.IsStruct
 		e.Int64(x.IsStruct)
@@ -2148,24 +2118,6 @@ func DecodeSerializedCXProgram(buf []byte, obj *SerializedCXProgram) (uint64, er
 					obj.Arguments[z1].DereferenceLevels = i
 				}
 
-				// {
-				// 	// obj.Arguments[z1].DereferenceOperationsOffset
-				// 	i, err := d.Int64()
-				// 	if err != nil {
-				// 		return 0, err
-				// 	}
-				// 	obj.Arguments[z1].DereferenceOperationsOffset = i
-				// }
-
-				// {
-				// 	// obj.Arguments[z1].DereferenceOperationsSize
-				// 	i, err := d.Int64()
-				// 	if err != nil {
-				// 		return 0, err
-				// 	}
-				// 	obj.Arguments[z1].DereferenceOperationsSize = i
-				// }
-
 				{
 					// obj.Arguments[z1].DeclarationSpecifiersOffset
 					i, err := d.Int64()
@@ -2193,24 +2145,6 @@ func DecodeSerializedCXProgram(buf []byte, obj *SerializedCXProgram) (uint64, er
 					obj.Arguments[z1].IsSlice = i
 				}
 
-				// {
-				// 	// obj.Arguments[z1].IsArray
-				// 	i, err := d.Int64()
-				// 	if err != nil {
-				// 		return 0, err
-				// 	}
-				// 	obj.Arguments[z1].IsArray = i
-				// }
-
-				// {
-				// 	// obj.Arguments[z1].IsArrayFirst
-				// 	i, err := d.Int64()
-				// 	if err != nil {
-				// 		return 0, err
-				// 	}
-				// 	obj.Arguments[z1].IsArrayFirst = i
-				// }
-
 				{
 					// obj.Arguments[z1].IsPointer
 					i, err := d.Int64()
@@ -2228,15 +2162,6 @@ func DecodeSerializedCXProgram(buf []byte, obj *SerializedCXProgram) (uint64, er
 					}
 					obj.Arguments[z1].IsReference = i
 				}
-
-				// {
-				// 	// obj.Arguments[z1].IsDereferenceFirst
-				// 	i, err := d.Int64()
-				// 	if err != nil {
-				// 		return 0, err
-				// 	}
-				// 	obj.Arguments[z1].IsDereferenceFirst = i
-				// }
 
 				{
 					// obj.Arguments[z1].IsStruct
