@@ -6,7 +6,7 @@ import (
 	cxast "github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/astapi"
 	cxconstants "github.com/skycoin/cx/cx/constants"
-	cxgo "github.com/skycoin/cx/cxparser/parsingcompletor"
+	parsingcompletor "github.com/skycoin/cx/cxparser/cxparsingcompletor"
 )
 
 func TestASTAPI_Arguments(t *testing.T) {
@@ -14,7 +14,7 @@ func TestASTAPI_Arguments(t *testing.T) {
 
 	// Needed for AddNativeExpressionToFunction
 	// because of dependency on cxast.OpNames
-	cxgo.InitCXCore()
+	parsingcompletor.InitCXCore()
 
 	t.Run("make program", func(t *testing.T) {
 		cxprogram = cxast.MakeProgram()

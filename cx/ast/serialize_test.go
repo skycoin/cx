@@ -7,7 +7,7 @@ import (
 	cxast "github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/astapi"
 	cxconstants "github.com/skycoin/cx/cx/constants"
-	cxparsingcompletor "github.com/skycoin/cx/cxparser/parsingcompletor"
+	cxparsingcompletor "github.com/skycoin/cx/cxparser/cxparsingcompletor"
 )
 
 func TestSerialize_CipherEncoder(t *testing.T) {
@@ -26,7 +26,6 @@ func TestSerialize_CipherEncoder(t *testing.T) {
 		t.Run(tc.scenario, func(t *testing.T) {
 			serializedBytes := cxast.SerializeCXProgram(tc.program, false)
 			deserializedCXProgram := cxast.Deserialize(serializedBytes)
-
 			if cxast.ToString(deserializedCXProgram) != cxast.ToString(tc.program) {
 				t.Errorf("want same program, got different")
 			}
