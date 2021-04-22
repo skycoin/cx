@@ -1,9 +1,10 @@
 package ast_test
 
 import (
-	"io/ioutil"
+	"fmt"
 	"testing"
 
+	cxevolves "github.com/skycoin/cx-evolves/evolve"
 	cxast "github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/astapi"
 	cxconstants "github.com/skycoin/cx/cx/constants"
@@ -18,7 +19,7 @@ func TestSerialize_CipherEncoder(t *testing.T) {
 	}{
 		{
 			scenario: "Valid program",
-			program:  generateSampleProgram(t),
+			program:  generateSampleProgramFromCXEvolves(t),
 		},
 	}
 
@@ -41,7 +42,7 @@ func TestSerialize_SkyEncoder(t *testing.T) {
 	}{
 		{
 			scenario: "Valid program",
-			program:  generateSampleProgram(t),
+			program:  generateSampleProgramFromCXEvolves(t),
 		},
 	}
 
@@ -57,8 +58,9 @@ func TestSerialize_SkyEncoder(t *testing.T) {
 }
 
 func TestSerialize_SkyEncoder_VS_CipherEncoder(t *testing.T) {
-	prgrm := readCXProgramFromTestData(t, "serialized_1")
-	prgrm.PrintProgram()
+	// prgrm := readCXProgramFromTestData(t, "serialized_1")
+	prgrm := generateSampleProgramFromCXEvolves(t)
+	// prgrm.PrintProgram()
 	tests := []struct {
 		scenario string
 		program  *cxast.CXProgram
@@ -89,7 +91,7 @@ func TestSerialize_SkyEncoder_VS_CipherEncoder(t *testing.T) {
 	}
 }
 
-func generateSampleProgram(t *testing.T) *cxast.CXProgram {
+func generateSampleProgramFromCXEvolves(t *testing.T) *cxast.CXProgram {
 	var cxProgram *cxast.CXProgram
 
 	// Needed for AddNativeExpressionToFunction
@@ -112,59 +114,20 @@ func generateSampleProgram(t *testing.T) *cxast.CXProgram {
 		t.Errorf("want no error, got %v", err)
 	}
 
-	err = astapi.AddNativeOutputToFunction(cxProgram, "main", "TestFunction", "outputOne", cxconstants.TYPE_I16)
+	err = astapi.AddNativeOutputToFunction(cxProgram, "main", "TestFunction", "outputOne", cxconstants.TYPE_I32)
 	if err != nil {
 		t.Errorf("want no error, got %v", err)
 	}
+	functionSetNames := []string{"i32.add", "i32.mul", "i32.sub", "i32.eq", "i32.uneq", "i32.gt", "i32.gteq", "i32.lt", "i32.lteq", "bool.not", "bool.or", "bool.and", "bool.uneq", "bool.eq", "i32.neg", "i32.abs", "i32.bitand", "i32.bitor", "i32.bitxor", "i32.bitclear", "i32.bitshl", "i32.bitshr", "i32.max", "i32.min", "i32.rand"}
+	fns := cxevolves.GetFunctionSet(functionSetNames)
 
-	err = astapi.AddNativeExpressionToFunction(cxProgram, "TestFunction", cxconstants.OP_ADD)
-	if err != nil {
-		t.Errorf("want no error, got %v", err)
-	}
-
-	err = astapi.AddNativeInputToExpression(cxProgram, "main", "TestFunction", "x", cxconstants.TYPE_I16, 0)
-	if err != nil {
-		t.Errorf("want no error, got %v", err)
-	}
-
-	err = astapi.AddNativeInputToExpression(cxProgram, "main", "TestFunction", "y", cxconstants.TYPE_I16, 0)
-	if err != nil {
-		t.Errorf("want no error, got %v", err)
-	}
-
-	err = astapi.AddNativeOutputToExpression(cxProgram, "main", "TestFunction", "z", cxconstants.TYPE_I16, 0)
-	if err != nil {
-		t.Errorf("want no error, got %v", err)
-	}
-
-	err = astapi.AddNativeExpressionToFunction(cxProgram, "TestFunction", cxconstants.OP_SUB)
-	if err != nil {
-		t.Errorf("want no error, got %v", err)
-	}
-
-	err = astapi.AddNativeInputToExpression(cxProgram, "main", "TestFunction", "x", cxconstants.TYPE_I16, 1)
-	if err != nil {
-		t.Errorf("want no error, got %v", err)
-	}
-
-	err = astapi.AddNativeInputToExpression(cxProgram, "main", "TestFunction", "y", cxconstants.TYPE_I16, 1)
-	if err != nil {
-		t.Errorf("want no error, got %v", err)
-	}
-
-	err = astapi.AddNativeOutputToExpression(cxProgram, "main", "TestFunction", "z", cxconstants.TYPE_I16, 1)
-	if err != nil {
-		t.Errorf("want no error, got %v", err)
-	}
+	fn, _ := cxProgram.GetFunction("TestFunction", "main")
+	fmt.Printf("got func=%v\n", fn)
+	pkg, _ := cxProgram.GetPackage("main")
+	fmt.Printf("got pkg=%v\n", pkg)
+	fmt.Printf("len expr:=%v\n", len(fn.Expressions))
+	cxevolves.GenerateRandomExpressions(fn, pkg, fns, 30)
 
 	cxProgram.PrintProgram()
 	return cxProgram
-}
-
-func readCXProgramFromTestData(t *testing.T, filename string) *cxast.CXProgram {
-	dat, err := ioutil.ReadFile("./test_data/ast/" + filename + ".ast")
-	if err != nil {
-		t.Fatalf("Error reading test data file: %v", err)
-	}
-	return cxast.Deserialize(dat)
 }
