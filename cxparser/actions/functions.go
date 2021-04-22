@@ -77,7 +77,7 @@ func FunctionAddParameters(fn *ast.CXFunction, inputs, outputs []*ast.CXArgument
 	}
 
 	for _, out := range fn.Outputs {
-		if out.IsPointer() && out.Type != constants.TYPE_STR && out.Type != constants.TYPE_AFF {
+		if out.IsPointer() && out.RefCXArgument.Type != constants.TYPE_STR && out.RefCXArgument.Type != constants.TYPE_AFF {
 			out.DoesEscape = true
 		}
 	}
@@ -1000,9 +1000,9 @@ func CopyArgFields(sym *ast.CXArgument, arg *ast.CXArgument) {
 	sym.Size = arg.Size
 
 	if arg.Type == constants.TYPE_STR {
-		sym.AddRefArg(arg)
+		// sym.AddRefArg(arg)
 		// sym.IsPointer = true
-		sym.Type = constants.TYPE_POINTER
+		// sym.Type = constants.TYPE_POINTER
 	}
 
 	// Checking if it's a slice struct field. We'll do the same process as

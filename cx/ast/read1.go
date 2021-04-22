@@ -109,5 +109,5 @@ func ReadArray(fp int, inp *CXArgument) int32 {
 
 // ReadPtr ...
 func ReadPtr(fp int, inp *CXArgument) int32 {
-	return helper.Deserialize_i32(ReadMemory(GetFinalOffset(fp, inp), inp))
+	return helper.Deserialize_i32(ReadMemory(GetFinalOffset(fp, inp.RefCXArgument), inp.RefCXArgument))
 }

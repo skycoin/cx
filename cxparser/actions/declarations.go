@@ -380,9 +380,9 @@ func DeclarationSpecifiers(declSpec *ast.CXArgument, arrayLengths []int, opTyp i
 	case constants.DECL_POINTER:
 		declSpec.DeclarationSpecifiers = append(declSpec.DeclarationSpecifiers, constants.DECL_POINTER)
 		if !declSpec.IsPointer() {
-			declSpec.AddRefArg(declSpec)
+			// declSpec.AddRefArg(declSpec)
 			// declSpec.IsPointer = true
-			declSpec.Type = constants.TYPE_POINTER
+			// declSpec.Type = constants.TYPE_POINTER
 
 			declSpec.Size = constants.TYPE_POINTER_SIZE
 			declSpec.TotalSize = constants.TYPE_POINTER_SIZE

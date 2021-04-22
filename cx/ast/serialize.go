@@ -107,7 +107,7 @@ func serializeArgument(arg *CXArgument, s *SerializedCXProgram) int {
 	s.Arguments[argOff].IsSlice = serializeBoolean(arg.IsSlice)
 	// s.Arguments[argOff].IsPointer = serializeBoolean(arg.IsPointer)
 	s.Arguments[argOff].IsReference = serializeBoolean(arg.IsReference)
-	s.Arguments[argOff].RefCXArgument = serializeBoolean(arg.RefCXArgument)
+	s.Arguments[argOff].RefCXArgument = arg.RefCXArgument
 
 	s.Arguments[argOff].IsStruct = serializeBoolean(arg.IsStruct)
 	s.Arguments[argOff].IsRest = serializeBoolean(arg.IsRest)

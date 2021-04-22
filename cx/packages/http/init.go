@@ -29,9 +29,9 @@ func RegisterPackage() {
 	urlFld := ast.MakeArgument("URL", "", 0).AddType(constants.TypeNames[constants.TYPE_CUSTOM]).AddPackage(httpPkg)
 	urlFld.DeclarationSpecifiers = append(urlFld.DeclarationSpecifiers, constants.DECL_STRUCT)
 	urlFld.DeclarationSpecifiers = append(urlFld.DeclarationSpecifiers, constants.DECL_POINTER)
-	urlFld.AddRefArg(urlFld)
+	// urlFld.AddRefArg(urlFld)
 	// urlFld.IsPointer = true
-	urlFld.Type = constants.TYPE_POINTER
+	// urlFld.Type = constants.TYPE_POINTER
 	urlFld.Size = constants.TYPE_POINTER_SIZE
 	urlFld.TotalSize = constants.TYPE_POINTER_SIZE
 	urlFld.CustomType = urlStrct
