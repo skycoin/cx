@@ -26,7 +26,6 @@ func TestSerialize_CipherEncoder(t *testing.T) {
 		t.Run(tc.scenario, func(t *testing.T) {
 			serializedBytes := cxast.SerializeCXProgram(tc.program, false)
 			deserializedCXProgram := cxast.Deserialize(serializedBytes)
-
 			if cxast.ToString(deserializedCXProgram) != cxast.ToString(tc.program) {
 				t.Errorf("want same program, got different")
 			}
