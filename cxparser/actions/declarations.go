@@ -384,19 +384,24 @@ func DeclarationSpecifiers(declSpec *ast.CXArgument, arrayLengths []int, opTyp i
 			declSpec.Size = constants.TYPE_POINTER_SIZE
 			declSpec.TotalSize = constants.TYPE_POINTER_SIZE
 			declSpec.IndirectionLevels++
-		} else {
-			pointer := declSpec
-
-			for c := declSpec.IndirectionLevels - 1; c > 0; c-- {
-				pointer.IndirectionLevels = c
-				pointer.IsPointer = true
-			}
-
-			declSpec.IndirectionLevels++
-
-			pointer.Size = constants.TYPE_POINTER_SIZE
-			pointer.TotalSize = constants.TYPE_POINTER_SIZE
 		}
+		// else {
+		// 	declSpec.IndirectionLevels = 2
+		// 	declSpec.IsPointer = true
+		// 	declSpec.Size = constants.TYPE_POINTER_SIZE
+		// 	declSpec.TotalSize = constants.TYPE_POINTER_SIZE
+		// 	// pointer := declSpec
+
+		// 	// for c := declSpec.IndirectionLevels; c > 1; c-- {
+		// 	// 	pointer.IndirectionLevels = c
+		// 	// 	pointer.IsPointer = true
+		// 	// }
+
+		// 	// declSpec.IndirectionLevels++
+
+		// 	// pointer.Size = constants.TYPE_POINTER_SIZE
+		// 	// pointer.TotalSize = constants.TYPE_POINTER_SIZE
+		// }
 
 		return declSpec
 	case constants.DECL_ARRAY:
