@@ -379,28 +379,24 @@ func DeclarationSpecifiers(declSpec *ast.CXArgument, arrayLengths []int, opTyp i
 	switch opTyp {
 	case constants.DECL_POINTER:
 		declSpec.DeclarationSpecifiers = append(declSpec.DeclarationSpecifiers, constants.DECL_POINTER)
-		if !declSpec.IsPointer {
-			declSpec.IsPointer = true
-			declSpec.Size = constants.TYPE_POINTER_SIZE
-			declSpec.TotalSize = constants.TYPE_POINTER_SIZE
-			declSpec.IndirectionLevels++
-		}
+		// if !declSpec.IsPointer {
+		declSpec.IsPointer = true
+		declSpec.Size = constants.TYPE_POINTER_SIZE
+		declSpec.TotalSize = constants.TYPE_POINTER_SIZE
+		declSpec.IndirectionLevels++
+		// }
 		// else {
-		// 	declSpec.IndirectionLevels = 2
-		// 	declSpec.IsPointer = true
-		// 	declSpec.Size = constants.TYPE_POINTER_SIZE
-		// 	declSpec.TotalSize = constants.TYPE_POINTER_SIZE
-		// 	// pointer := declSpec
+		// pointer := declSpec
 
-		// 	// for c := declSpec.IndirectionLevels; c > 1; c-- {
-		// 	// 	pointer.IndirectionLevels = c
-		// 	// 	pointer.IsPointer = true
-		// 	// }
+		// for c := declSpec.IndirectionLevels; c > 1; c-- {
+		// 	pointer.IndirectionLevels = c
+		// 	pointer.IsPointer = true
+		// }
 
-		// 	// declSpec.IndirectionLevels++
+		// declSpec.IndirectionLevels++
 
-		// 	// pointer.Size = constants.TYPE_POINTER_SIZE
-		// 	// pointer.TotalSize = constants.TYPE_POINTER_SIZE
+		// pointer.Size = constants.TYPE_POINTER_SIZE
+		// pointer.TotalSize = constants.TYPE_POINTER_SIZE
 		// }
 
 		return declSpec
