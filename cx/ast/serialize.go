@@ -580,6 +580,9 @@ func SerializeCXProgram(prgrm *CXProgram, includeMemory bool) (b []byte) {
 	// serializing everything
 	b = encoder.Serialize(s)
 
+	// Compress using LZ4
+	CompressBytesLZ4(&b)
+
 	return b
 }
 
@@ -935,6 +938,9 @@ func initDeserialization(prgrm *CXProgram, s *SerializedCXProgram) {
 func Deserialize(b []byte) (prgrm *CXProgram) {
 	prgrm = &CXProgram{}
 	var s SerializedCXProgram
+
+	// Uncompress using LZ4
+	UncompressBytesLZ4(&b)
 
 	helper.DeserializeRaw(b, &s)
 	initDeserialization(prgrm, &s)
