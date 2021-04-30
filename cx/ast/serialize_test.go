@@ -2,9 +2,11 @@ package ast_test
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	cxevolves "github.com/skycoin/cx-evolves/evolve"
+	"github.com/skycoin/cx/cx/ast"
 	cxast "github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/astapi"
 	cxconstants "github.com/skycoin/cx/cx/constants"
@@ -87,6 +89,41 @@ func TestSerialize_SkyEncoder_VS_CipherEncoder(t *testing.T) {
 				}
 			}
 			t.Logf("There were %v indexes that have different values. \nThese indexes are %v", diffCount, pos)
+		})
+	}
+}
+
+func TestCompression_LZ4(t *testing.T) {
+	tests := []struct {
+		scenario string
+		data     []byte
+	}{
+		{
+			scenario: "Valid data",
+			data:     []byte(strings.Repeat("HelloWorld", 100)),
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.scenario, func(t *testing.T) {
+			originalLen := len(tc.data)
+			t.Logf("Original length of data: %v\n", originalLen)
+
+			ast.CompressBytesLZ4(&tc.data)
+			compressedLen := len(tc.data)
+			t.Logf("Compressed length of data: %v\n", compressedLen)
+
+			ast.UncompressBytesLZ4(&tc.data)
+			unCompressedLen := len(tc.data)
+			t.Logf("Uncompressed length of data: %v\n", unCompressedLen)
+
+			if compressedLen > originalLen {
+				t.Errorf("want compressed length to be less than original length, got %v", compressedLen)
+			}
+
+			if originalLen != unCompressedLen {
+				t.Errorf("want uncompressed length %v, got %v", originalLen, unCompressedLen)
+			}
 		})
 	}
 }
