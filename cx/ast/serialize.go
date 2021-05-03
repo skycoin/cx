@@ -384,7 +384,7 @@ func serializeFunctionIntegers(fn *CXFunction, s *SerializedCXProgram) {
 // container for our serialized cx program.
 // Program memory is also added here to our container
 // if memory is to be included.
-func initSerialization(prgrm *CXProgram, s *SerializedCXProgram, includeMemory bool) {
+func initSerialization(prgrm *CXProgram, s *SerializedCXProgram, includeDataMemory, useCompression bool) {
 	s.PackagesMap = make(map[string]int64)
 	s.StructsMap = make(map[string]int64)
 	s.FunctionsMap = make(map[string]int64)
@@ -393,9 +393,12 @@ func initSerialization(prgrm *CXProgram, s *SerializedCXProgram, includeMemory b
 	s.Calls = make([]serializedCall, prgrm.CallCounter)
 	s.Packages = make([]serializedPackage, len(prgrm.Packages))
 
-	if includeMemory {
-		// s.Memory = prgrm.Memory[:PROGRAM.HeapStartsAt+PROGRAM.HeapPointer]
+	// If use compression, whole memory will be included
+	// If not and if includeDataMemory, only data segment memory will be included
+	if useCompression {
 		s.Memory = prgrm.Memory
+	} else if includeDataMemory {
+		s.DataSegmentMemory = prgrm.Memory[prgrm.DataSegmentStartsAt : prgrm.DataSegmentStartsAt+prgrm.DataSegmentSize]
 	}
 
 	var numStrcts int
@@ -566,9 +569,9 @@ func serializeCXProgramElements(prgrm *CXProgram, s *SerializedCXProgram) {
 // SerializeCXProgram translates cx program to slice of bytes that we can save.
 // These slice of bytes can then be deserialize in the future and
 // be translated back to cx program.
-func SerializeCXProgram(prgrm *CXProgram, includeMemory bool) (b []byte) {
+func SerializeCXProgram(prgrm *CXProgram, includeDataMemory, useCompression bool) (b []byte) {
 	s := SerializedCXProgram{}
-	initSerialization(prgrm, &s, includeMemory)
+	initSerialization(prgrm, &s, includeDataMemory, useCompression)
 
 	// serialize cx program's packages,
 	// structs, functions, etc.
@@ -580,18 +583,19 @@ func SerializeCXProgram(prgrm *CXProgram, includeMemory bool) (b []byte) {
 	// serializing everything
 	b = encoder.Serialize(s)
 
-	// Compress using LZ4
-	CompressBytesLZ4(&b)
-
+	if useCompression {
+		// Compress using LZ4
+		CompressBytesLZ4(&b)
+	}
 	return b
 }
 
 // SerializeDebugInfo prints the name of the serialized segment and byte size.
-func SerializeDebugInfo(prgrm *CXProgram, includeMemory bool) SerializedDataSize {
+func SerializeDebugInfo(prgrm *CXProgram, includeMemory, useCompression bool) SerializedDataSize {
 	idxSize := encoder.Size(serializedCXProgramIndex{})
 	var s SerializedCXProgram
 
-	bytes := SerializeCXProgram(prgrm, includeMemory)
+	bytes := SerializeCXProgram(prgrm, includeMemory, useCompression)
 	helper.DeserializeRaw(bytes[:idxSize], &s.Index)
 
 	data := &SerializedDataSize{
@@ -931,16 +935,28 @@ func initDeserialization(prgrm *CXProgram, s *SerializedCXProgram) {
 	prgrm.HeapSize = int(s.Program.HeapSize)
 	prgrm.Version = deserializeString(s.Program.VersionOffset, s.Program.VersionSize, s)
 
+	// This means reinstantiate memory and add DataSegmentMemory
+	if len(s.DataSegmentMemory) > 0 && len(s.Memory) == 0 {
+		minHeapSize := minHeapSize()
+		prgrm.Memory = make([]byte, constants.STACK_SIZE+minHeapSize)
+		y := 0
+		for i := prgrm.DataSegmentStartsAt; i < prgrm.DataSegmentStartsAt+prgrm.DataSegmentSize; i++ {
+			prgrm.Memory[i] = s.DataSegmentMemory[y]
+			y++
+		}
+	}
 	deserializePackages(s, prgrm)
 }
 
 // Deserialize deserializes a serialized CX program back to its golang struct representation.
-func Deserialize(b []byte) (prgrm *CXProgram) {
+func Deserialize(b []byte, useCompression bool) (prgrm *CXProgram) {
 	prgrm = &CXProgram{}
 	var s SerializedCXProgram
 
-	// Uncompress using LZ4
-	UncompressBytesLZ4(&b)
+	if useCompression {
+		// Uncompress using LZ4
+		UncompressBytesLZ4(&b)
+	}
 
 	helper.DeserializeRaw(b, &s)
 	initDeserialization(prgrm, &s)

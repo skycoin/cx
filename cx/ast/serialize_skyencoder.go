@@ -6,9 +6,9 @@ import (
 
 // SerializeCXProgramV2 is using skyencoder generated
 // encoder/decoder for serializing cx program.
-func SerializeCXProgramV2(prgrm *CXProgram, includeMemory bool) (b []byte) {
+func SerializeCXProgramV2(prgrm *CXProgram, includeDataMemory, useCompression bool) (b []byte) {
 	s := SerializedCXProgram{}
-	initSerialization(prgrm, &s, includeMemory)
+	initSerialization(prgrm, &s, includeDataMemory, useCompression)
 
 	// serialize cx program's packages,
 	// structs, functions, etc.
@@ -23,18 +23,22 @@ func SerializeCXProgramV2(prgrm *CXProgram, includeMemory bool) (b []byte) {
 		panic(err)
 	}
 
-	// Compress using LZ4
-	CompressBytesLZ4(&b)
+	if useCompression {
+		// Compress using LZ4
+		CompressBytesLZ4(&b)
+	}
 
 	return b
 }
 
-func DeserializeCXProgramV2(b []byte) *CXProgram {
+func DeserializeCXProgramV2(b []byte, useCompression bool) *CXProgram {
 	prgrm := &CXProgram{}
 	var sPrgrm SerializedCXProgram
 
-	// Uncompress using LZ4
-	UncompressBytesLZ4(&b)
+	if useCompression {
+		// Uncompress using LZ4
+		UncompressBytesLZ4(&b)
+	}
 
 	DecodeSerializedCXProgram(b, &sPrgrm)
 	initDeserialization(prgrm, &sPrgrm)
