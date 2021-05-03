@@ -66,6 +66,7 @@ func New(l *cxlexer.Lexer) *Parser {
 	p.registerPrefix(token.TRUE, p.parseBoolean)
 	p.registerPrefix(token.FALSE, p.parseBoolean)
 	p.registerPrefix(token.IF, p.parseIfExpression)
+	p.registerPrefix(token.LPAREN, p.parseGroupedExpression)
 	p.registerPrefix(token.FUNCTION, p.parseFunctionLiteral)
 
 	p.infixParseFns = make(map[token.TokenType]infixParseFn)
