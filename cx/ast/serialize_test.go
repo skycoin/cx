@@ -1,9 +1,12 @@
 package ast_test
 
 import (
-	"fmt"
+	"bytes"
+	"encoding/binary"
+	"reflect"
 	"strings"
 	"testing"
+	"time"
 
 	cxevolves "github.com/skycoin/cx-evolves/evolve"
 	"github.com/skycoin/cx/cx/ast"
@@ -13,24 +16,67 @@ import (
 	cxparsingcompletor "github.com/skycoin/cx/cxparser/cxparsingcompletor"
 )
 
+// t.Logf("Stack size=%v\n", tc.program.StackSize)
+// t.Logf("dataSegment size=%v\n", tc.program.DataSegmentSize)
+// t.Logf("dataSegment starts at=%v\n", tc.program.DataSegmentStartsAt)
+// t.Logf("heap size=%v\n", tc.program.HeapSize)
+// t.Logf("heap starts at=%v\n", tc.program.HeapStartsAt)
+// t.Logf("memory len=%v\n", len(tc.program.Memory))
+// t.Logf("value at memory data offset=%v\n", tc.program.Memory[tc.program.DataSegmentStartsAt:tc.program.DataSegmentStartsAt+tc.program.DataSegmentSize])
+
 func TestSerialize_CipherEncoder(t *testing.T) {
 	tests := []struct {
-		scenario string
-		program  *cxast.CXProgram
-		wantErr  error
+		scenario          string
+		program           *cxast.CXProgram
+		includeDataMemory bool
+		useCompression    bool
 	}{
 		{
-			scenario: "Valid program",
-			program:  generateSampleProgramFromCXEvolves(t),
+			scenario:          "program without literal",
+			program:           generateSampleProgramFromCXEvolves(t, false),
+			includeDataMemory: false,
+			useCompression:    false,
+		},
+		{
+			scenario:          "program with literal",
+			program:           generateSampleProgramFromCXEvolves(t, true),
+			includeDataMemory: true,
+			useCompression:    false,
+		},
+		{
+			scenario:          "program without literal, use compression",
+			program:           generateSampleProgramFromCXEvolves(t, false),
+			includeDataMemory: false,
+			useCompression:    true,
+		},
+		{
+			scenario:          "program with literal, use compression",
+			program:           generateSampleProgramFromCXEvolves(t, true),
+			includeDataMemory: true,
+			useCompression:    true,
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
-			serializedBytes := cxast.SerializeCXProgram(tc.program, false)
-			deserializedCXProgram := cxast.Deserialize(serializedBytes)
+			timeStart := time.Now()
+			serializedBytes := cxast.SerializeCXProgram(tc.program, tc.includeDataMemory, tc.useCompression)
+			t.Logf("Serialization took=%v\n", time.Since(timeStart))
+
+			timeStart = time.Now()
+			deserializedCXProgram := cxast.Deserialize(serializedBytes, tc.useCompression)
+			t.Logf("Deserialization took=%v\n", time.Since(timeStart))
+
 			if cxast.ToString(deserializedCXProgram) != cxast.ToString(tc.program) {
 				t.Errorf("want same program, got different")
+			}
+
+			if tc.includeDataMemory {
+				wantDataSegmentMemory := tc.program.Memory[tc.program.DataSegmentStartsAt : tc.program.DataSegmentStartsAt+tc.program.DataSegmentSize]
+				gotDataSegmentMemory := deserializedCXProgram.Memory[deserializedCXProgram.DataSegmentStartsAt : deserializedCXProgram.DataSegmentStartsAt+deserializedCXProgram.DataSegmentSize]
+				if !reflect.DeepEqual(wantDataSegmentMemory, gotDataSegmentMemory) {
+					t.Errorf("want %v, got %v", wantDataSegmentMemory, gotDataSegmentMemory)
+				}
 			}
 		})
 	}
@@ -38,31 +84,62 @@ func TestSerialize_CipherEncoder(t *testing.T) {
 
 func TestSerialize_SkyEncoder(t *testing.T) {
 	tests := []struct {
-		scenario string
-		program  *cxast.CXProgram
-		wantSame bool
+		scenario          string
+		program           *cxast.CXProgram
+		includeDataMemory bool
+		useCompression    bool
 	}{
 		{
-			scenario: "Valid program",
-			program:  generateSampleProgramFromCXEvolves(t),
+			scenario:          "program without literal",
+			program:           generateSampleProgramFromCXEvolves(t, false),
+			includeDataMemory: false,
+			useCompression:    false,
+		},
+		{
+			scenario:          "program with literal",
+			program:           generateSampleProgramFromCXEvolves(t, true),
+			includeDataMemory: true,
+			useCompression:    false,
+		},
+		{
+			scenario:          "program without literal, use compression",
+			program:           generateSampleProgramFromCXEvolves(t, false),
+			includeDataMemory: false,
+			useCompression:    true,
+		},
+		{
+			scenario:          "program with literal, use compression",
+			program:           generateSampleProgramFromCXEvolves(t, true),
+			includeDataMemory: true,
+			useCompression:    true,
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
-			serializedBytes := cxast.SerializeCXProgramV2(tc.program, false)
-			deserializedCXProgram := cxast.DeserializeCXProgramV2(serializedBytes)
+			timeStart := time.Now()
+			serializedBytes := cxast.SerializeCXProgramV2(tc.program, tc.includeDataMemory, tc.useCompression)
+			t.Logf("Serialization took=%v\n", time.Since(timeStart))
+
+			timeStart = time.Now()
+			deserializedCXProgram := cxast.DeserializeCXProgramV2(serializedBytes, tc.useCompression)
+			t.Logf("Deserialization took=%v\n", time.Since(timeStart))
 			if cxast.ToString(deserializedCXProgram) != cxast.ToString(tc.program) {
 				t.Errorf("want same program, got different")
+			}
+
+			if tc.includeDataMemory {
+				wantDataSegmentMemory := tc.program.Memory[tc.program.DataSegmentStartsAt : tc.program.DataSegmentStartsAt+tc.program.DataSegmentSize]
+				gotDataSegmentMemory := deserializedCXProgram.Memory[deserializedCXProgram.DataSegmentStartsAt : deserializedCXProgram.DataSegmentStartsAt+deserializedCXProgram.DataSegmentSize]
+				if !reflect.DeepEqual(wantDataSegmentMemory, gotDataSegmentMemory) {
+					t.Errorf("want %v, got %v", wantDataSegmentMemory, gotDataSegmentMemory)
+				}
 			}
 		})
 	}
 }
 
 func TestSerialize_SkyEncoder_VS_CipherEncoder(t *testing.T) {
-	// prgrm := readCXProgramFromTestData(t, "serialized_1")
-	prgrm := generateSampleProgramFromCXEvolves(t)
-	// prgrm.PrintProgram()
 	tests := []struct {
 		scenario string
 		program  *cxast.CXProgram
@@ -70,14 +147,14 @@ func TestSerialize_SkyEncoder_VS_CipherEncoder(t *testing.T) {
 	}{
 		{
 			scenario: "Valid program",
-			program:  prgrm,
+			program:  generateSampleProgramFromCXEvolves(t, false),
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
-			skyEncoderSerializedBytes := cxast.SerializeCXProgramV2(tc.program, false)
-			cipherEncoderSerializedBytes := cxast.SerializeCXProgram(tc.program, false)
+			skyEncoderSerializedBytes := cxast.SerializeCXProgramV2(tc.program, false, false)
+			cipherEncoderSerializedBytes := cxast.SerializeCXProgram(tc.program, false, false)
 
 			// Check byte per byte
 			var diffCount int = 0
@@ -128,7 +205,7 @@ func TestCompression_LZ4(t *testing.T) {
 	}
 }
 
-func generateSampleProgramFromCXEvolves(t *testing.T) *cxast.CXProgram {
+func generateSampleProgramFromCXEvolves(t *testing.T, withLiteral bool) *cxast.CXProgram {
 	var cxProgram *cxast.CXProgram
 
 	// Needed for AddNativeExpressionToFunction
@@ -159,11 +236,19 @@ func generateSampleProgramFromCXEvolves(t *testing.T) *cxast.CXProgram {
 	fns := cxevolves.GetFunctionSet(functionSetNames)
 
 	fn, _ := cxProgram.GetFunction("TestFunction", "main")
-	fmt.Printf("got func=%v\n", fn)
 	pkg, _ := cxProgram.GetPackage("main")
-	fmt.Printf("got pkg=%v\n", pkg)
-	fmt.Printf("len expr:=%v\n", len(fn.Expressions))
 	cxevolves.GenerateRandomExpressions(fn, pkg, fns, 30)
+
+	if withLiteral {
+		buf := new(bytes.Buffer)
+		var num int32 = 5
+		binary.Write(buf, binary.LittleEndian, num)
+		err = astapi.AddLiteralInputToExpression(cxProgram, "main", "TestFunction", buf.Bytes(), cxconstants.TYPE_I32, 2)
+		if err != nil {
+			t.Errorf("want no error, got %v", err)
+		}
+
+	}
 
 	cxProgram.PrintProgram()
 	return cxProgram
