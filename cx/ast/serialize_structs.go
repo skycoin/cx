@@ -189,7 +189,8 @@ type SerializedCXProgram struct {
 	StringsMap map[string]int64
 	Integers   []int64
 
-	Memory []byte
+	Memory            []byte
+	DataSegmentMemory []byte
 }
 
 type SerializedDataSize struct {
