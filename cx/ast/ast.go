@@ -15,7 +15,7 @@ import (
 type CXEXPR_TYPE int
 
 const (
-	CXEXPR_UNUSED         CXEXPR_TYPE = iota
+	CXEXPR_UNUSED CXEXPR_TYPE = iota
 	CXEXPR_METHOD_CALL
 	CXEXPR_STRUCT_LITERAL
 	CXEXPR_ARRAY_LITERAL
@@ -161,7 +161,6 @@ type CXExpression struct {
 
 	ExpressionType CXEXPR_TYPE
 }
-
 
 // IsMethodCall checks if expression type is method call
 func (cxe CXExpression) IsMethodCall() bool {
