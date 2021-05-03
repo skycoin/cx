@@ -397,7 +397,7 @@ func initSerialization(prgrm *CXProgram, s *SerializedCXProgram, includeDataMemo
 	// If not and if includeDataMemory, only data segment memory will be included
 	if useCompression {
 		s.Memory = prgrm.Memory
-	} else if includeDataMemory {
+	} else if includeDataMemory && len(prgrm.Memory) != 0 {
 		s.DataSegmentMemory = prgrm.Memory[prgrm.DataSegmentStartsAt : prgrm.DataSegmentStartsAt+prgrm.DataSegmentSize]
 	}
 
