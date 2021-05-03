@@ -1,6 +1,8 @@
 package astapi_test
 
 import (
+	"bytes"
+	"encoding/binary"
 	"testing"
 
 	cxast "github.com/skycoin/cx/cx/ast"
@@ -56,7 +58,10 @@ func TestASTAPI_Arguments(t *testing.T) {
 	})
 
 	t.Run("add first input to expression", func(t *testing.T) {
-		err := astapi.AddNativeInputToExpression(cxprogram, "main", "TestFunction", "x", cxconstants.TYPE_I16, 0)
+		buf := new(bytes.Buffer)
+		var num int32 = 5
+		binary.Write(buf, binary.LittleEndian, num)
+		err := astapi.AddLiteralInputToExpression(cxprogram, "main", "TestFunction", buf.Bytes(), cxconstants.TYPE_I16, 0)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}
