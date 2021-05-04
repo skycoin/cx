@@ -3,6 +3,7 @@ package astapi
 import (
 	cxast "github.com/skycoin/cx/cx/ast"
 	cxconstants "github.com/skycoin/cx/cx/constants"
+	cxparseractions "github.com/skycoin/cx/cxparser/actions"
 )
 
 // AddNativeInputToExpression adds native input to an expression
@@ -338,4 +339,29 @@ func GetAccessibleArgsForFunctionByType(cxprogram *cxast.CXProgram, packageLocat
 	}
 
 	return argsList, nil
+}
+
+func AddLiteralInputToExpression(cxprogram *cxast.CXProgram, packageName, functionName string, bytes []byte, argType, lineNumber int) error {
+	pkg, err := FindPackage(cxprogram, packageName)
+	if err != nil {
+		return err
+	}
+	cxprogram.CurrentPackage = pkg
+	fn, err := FindFunction(cxprogram, functionName)
+	if err != nil {
+		return err
+	}
+
+	expr, err := fn.GetExpressionByLine(lineNumber)
+	if err != nil {
+		return err
+	}
+
+	cxparseractions.AST = cxprogram
+	litArg := cxparseractions.WritePrimary(argType, bytes, false)
+	arg := litArg[0].Outputs[0]
+	arg.ArgDetails.Package = pkg
+	expr.AddInput(arg)
+
+	return nil
 }

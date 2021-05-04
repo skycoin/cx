@@ -353,14 +353,8 @@ func EncodeSizeSerializedCXProgram(obj *SerializedCXProgram) uint64 {
 		// x1.DereferenceLevels
 		i1 += 8
 
-		// x1.DereferenceOperationsOffset
+		// x1.DeclarationSpecifiersOffset
 		i1 += 8
-
-		// // x1.DereferenceOperationsSize
-		// i1 += 8
-
-		// // x1.DeclarationSpecifiersOffset
-		// i1 += 8
 
 		// x1.DeclarationSpecifiersSize
 		i1 += 8
@@ -368,20 +362,11 @@ func EncodeSizeSerializedCXProgram(obj *SerializedCXProgram) uint64 {
 		// x1.IsSlice
 		i1 += 8
 
-		// x1.IsArray
-		i1 += 8
-
-		// x1.IsArrayFirst
-		i1 += 8
-
 		// x1.IsPointer
 		i1 += 8
 
 		// x1.IsReference
 		i1 += 8
-
-		// // x1.IsDereferenceFirst
-		// i1 += 8
 
 		// x1.IsStruct
 		i1 += 8
@@ -487,6 +472,9 @@ func EncodeSizeSerializedCXProgram(obj *SerializedCXProgram) uint64 {
 
 	// obj.Memory
 	i0 += 4 + uint64(len(obj.Memory))
+
+	// obj.DataSegmentMemory
+	i0 += 4 + uint64(len(obj.DataSegmentMemory))
 
 	return i0
 }
@@ -914,35 +902,20 @@ func EncodeSerializedCXProgramToBuffer(buf []byte, obj *SerializedCXProgram) err
 		// x.DereferenceLevels
 		e.Int64(x.DereferenceLevels)
 
-		// // x.DereferenceOperationsOffset
-		// e.Int64(x.DereferenceOperationsOffset)
+		// x.DeclarationSpecifiersOffset
+		e.Int64(x.DeclarationSpecifiersOffset)
 
-		// // x.DereferenceOperationsSize
-		// e.Int64(x.DereferenceOperationsSize)
-
-		// // x.DeclarationSpecifiersOffset
-		// e.Int64(x.DeclarationSpecifiersOffset)
-
-		// // x.DeclarationSpecifiersSize
-		// e.Int64(x.DeclarationSpecifiersSize)
+		// x.DeclarationSpecifiersSize
+		e.Int64(x.DeclarationSpecifiersSize)
 
 		// x.IsSlice
 		e.Int64(x.IsSlice)
-
-		// x.IsArray
-		// e.Int64(x.IsArray)
-
-		// // x.IsArrayFirst
-		// e.Int64(x.IsArrayFirst)
 
 		// x.IsPointer
 		e.Int64(x.IsPointer)
 
 		// x.IsReference
 		e.Int64(x.IsReference)
-
-		// // x.IsDereferenceFirst
-		// e.Int64(x.IsDereferenceFirst)
 
 		// x.IsStruct
 		e.Int64(x.IsStruct)
@@ -1084,6 +1057,17 @@ func EncodeSerializedCXProgramToBuffer(buf []byte, obj *SerializedCXProgram) err
 
 	// obj.Memory copy
 	e.CopyBytes(obj.Memory)
+
+	// obj.DataSegmentMemory length check
+	if uint64(len(obj.DataSegmentMemory)) > math.MaxUint32 {
+		return errors.New("obj.DataSegmentMemory length exceeds math.MaxUint32")
+	}
+
+	// obj.DataSegmentMemory length
+	e.Uint32(uint32(len(obj.DataSegmentMemory)))
+
+	// obj.DataSegmentMemory copy
+	e.CopyBytes(obj.DataSegmentMemory)
 
 	return nil
 }
@@ -2148,41 +2132,23 @@ func DecodeSerializedCXProgram(buf []byte, obj *SerializedCXProgram) (uint64, er
 					obj.Arguments[z1].DereferenceLevels = i
 				}
 
-				// {
-				// 	// obj.Arguments[z1].DereferenceOperationsOffset
-				// 	i, err := d.Int64()
-				// 	if err != nil {
-				// 		return 0, err
-				// 	}
-				// 	obj.Arguments[z1].DereferenceOperationsOffset = i
-				// }
+				{
+					// obj.Arguments[z1].DeclarationSpecifiersOffset
+					i, err := d.Int64()
+					if err != nil {
+						return 0, err
+					}
+					obj.Arguments[z1].DeclarationSpecifiersOffset = i
+				}
 
-				// {
-				// 	// obj.Arguments[z1].DereferenceOperationsSize
-				// 	i, err := d.Int64()
-				// 	if err != nil {
-				// 		return 0, err
-				// 	}
-				// 	obj.Arguments[z1].DereferenceOperationsSize = i
-				// }
-
-				// {
-				// 	// obj.Arguments[z1].DeclarationSpecifiersOffset
-				// 	i, err := d.Int64()
-				// 	if err != nil {
-				// 		return 0, err
-				// 	}
-				// 	obj.Arguments[z1].DeclarationSpecifiersOffset = i
-				// }
-
-				// {
-				// 	// obj.Arguments[z1].DeclarationSpecifiersSize
-				// 	i, err := d.Int64()
-				// 	if err != nil {
-				// 		return 0, err
-				// 	}
-				// 	obj.Arguments[z1].DeclarationSpecifiersSize = i
-				// }
+				{
+					// obj.Arguments[z1].DeclarationSpecifiersSize
+					i, err := d.Int64()
+					if err != nil {
+						return 0, err
+					}
+					obj.Arguments[z1].DeclarationSpecifiersSize = i
+				}
 
 				{
 					// obj.Arguments[z1].IsSlice
@@ -2192,24 +2158,6 @@ func DecodeSerializedCXProgram(buf []byte, obj *SerializedCXProgram) (uint64, er
 					}
 					obj.Arguments[z1].IsSlice = i
 				}
-
-				// {
-				// 	// obj.Arguments[z1].IsArray
-				// 	i, err := d.Int64()
-				// 	if err != nil {
-				// 		return 0, err
-				// 	}
-				// 	obj.Arguments[z1].IsArray = i
-				// }
-
-				// {
-				// 	// obj.Arguments[z1].IsArrayFirst
-				// 	i, err := d.Int64()
-				// 	if err != nil {
-				// 		return 0, err
-				// 	}
-				// 	obj.Arguments[z1].IsArrayFirst = i
-				// }
 
 				{
 					// obj.Arguments[z1].IsPointer
@@ -2228,15 +2176,6 @@ func DecodeSerializedCXProgram(buf []byte, obj *SerializedCXProgram) (uint64, er
 					}
 					obj.Arguments[z1].IsReference = i
 				}
-
-				// {
-				// 	// obj.Arguments[z1].IsDereferenceFirst
-				// 	i, err := d.Int64()
-				// 	if err != nil {
-				// 		return 0, err
-				// 	}
-				// 	obj.Arguments[z1].IsDereferenceFirst = i
-				// }
 
 				{
 					// obj.Arguments[z1].IsStruct
@@ -2576,6 +2515,27 @@ func DecodeSerializedCXProgram(buf []byte, obj *SerializedCXProgram) (uint64, er
 			obj.Memory = make([]byte, length)
 
 			copy(obj.Memory[:], d.Buffer[:length])
+			d.Buffer = d.Buffer[length:]
+		}
+	}
+
+	{
+		// obj.DataSegmentMemory
+
+		ul, err := d.Uint32()
+		if err != nil {
+			return 0, err
+		}
+
+		length := int(ul)
+		if length < 0 || length > len(d.Buffer) {
+			return 0, encoder.ErrBufferUnderflow
+		}
+
+		if length != 0 {
+			obj.DataSegmentMemory = make([]byte, length)
+
+			copy(obj.DataSegmentMemory[:], d.Buffer[:length])
 			d.Buffer = d.Buffer[length:]
 		}
 	}

@@ -2,9 +2,10 @@ package opcodes
 
 import (
 	"fmt"
-	"github.com/skycoin/cx/cx/ast"
 	"math/rand"
 	"strconv"
+
+	"github.com/skycoin/cx/cx/ast"
 )
 
 // The built-in str function returns the base 10 string representation of operand 1.
@@ -22,49 +23,49 @@ func opI32ToI8(inputs []ast.CXValue, outputs []ast.CXValue) {
 // The built-in i16 function returns operand 1 casted from type i32 to type i16.
 func opI32ToI16(inputs []ast.CXValue, outputs []ast.CXValue) {
 	outV0 := int16(inputs[0].Get_i32())
-    outputs[0].Set_i16(outV0)
+	outputs[0].Set_i16(outV0)
 }
 
 // The built-in i64 function returns operand 1 casted from type i32 to type i64.
 func opI32ToI64(inputs []ast.CXValue, outputs []ast.CXValue) {
 	outV0 := int64(inputs[0].Get_i32())
-    outputs[0].Set_i64(outV0)
+	outputs[0].Set_i64(outV0)
 }
 
 // The built-in ui8 function returns operand 1 casted from type i32 to type ui8.
 func opI32ToUI8(inputs []ast.CXValue, outputs []ast.CXValue) {
 	outV0 := uint8(inputs[0].Get_i32())
-    outputs[0].Set_ui8(outV0)
+	outputs[0].Set_ui8(outV0)
 }
 
 // The built-in ui16 function returns the operand 1 casted from type i32 to type ui16.
 func opI32ToUI16(inputs []ast.CXValue, outputs []ast.CXValue) {
 	outV0 := uint16(inputs[0].Get_i32())
-    outputs[0].Set_ui16(outV0)
+	outputs[0].Set_ui16(outV0)
 }
 
 // The built-in ui32 function returns the operand 1 casted from type i32 to type ui32.
 func opI32ToUI32(inputs []ast.CXValue, outputs []ast.CXValue) {
 	outV0 := uint32(inputs[0].Get_i32())
-    outputs[0].Set_ui32(outV0)
+	outputs[0].Set_ui32(outV0)
 }
 
 // The built-in ui64 function returns the operand 1 casted from type i32 to type ui64.
 func opI32ToUI64(inputs []ast.CXValue, outputs []ast.CXValue) {
 	outV0 := uint64(inputs[0].Get_i32())
-    outputs[0].Set_ui64(outV0)
+	outputs[0].Set_ui64(outV0)
 }
 
 // The built-in f32 function returns operand 1 casted from type i32 to type f32.
 func opI32ToF32(inputs []ast.CXValue, outputs []ast.CXValue) {
 	outV0 := float32(inputs[0].Get_i32())
-    outputs[0].Set_f32(outV0)
+	outputs[0].Set_f32(outV0)
 }
 
 // The built-in f64 function returns operand 1 casted from type i32 to type f64.
 func opI32ToF64(inputs []ast.CXValue, outputs []ast.CXValue) {
 	outV0 := float64(inputs[0].Get_i32())
-    outputs[0].Set_f64(outV0)
+	outputs[0].Set_f64(outV0)
 }
 
 // The print built-in function formats its arguments and prints them.
@@ -75,7 +76,7 @@ func opI32Print(inputs []ast.CXValue, outputs []ast.CXValue) {
 // The built-in add function returns the sum of two i32 numbers.
 func opI32Add(inputs []ast.CXValue, outputs []ast.CXValue) {
 	outV0 := inputs[0].Get_i32() + inputs[1].Get_i32()
-	outputs[0].Set_i32(outV0);
+	outputs[0].Set_i32(outV0)
 }
 
 // The built-in sub function returns the difference of two i32 numbers.
@@ -213,7 +214,7 @@ func opI32Max(inputs []ast.CXValue, outputs []ast.CXValue) {
 	if inpV1 > inpV0 {
 		inpV0 = inpV1
 	}
-    outputs[0].Set_i32(inpV0)
+	outputs[0].Set_i32(inpV0)
 }
 
 // The built-in min function returns the smallest of the two operands.
@@ -223,5 +224,101 @@ func opI32Min(inputs []ast.CXValue, outputs []ast.CXValue) {
 	if inpV1 < inpV0 {
 		inpV0 = inpV1
 	}
-    outputs[0].Set_i32(inpV0)
+	outputs[0].Set_i32(inpV0)
+}
+
+func opI32JmpEq(inputs []ast.CXValue, outputs []ast.CXValue) {
+	call := ast.PROGRAM.GetCurrentCall()
+	expr := inputs[0].Expr
+
+	res := inputs[0].Get_i32() == inputs[1].Get_i32()
+	if res {
+		call.Line = call.Line + expr.ThenLines
+	} else {
+		call.Line = call.Line + expr.ElseLines
+	}
+}
+
+func opI32JmpUnEq(inputs []ast.CXValue, outputs []ast.CXValue) {
+	call := ast.PROGRAM.GetCurrentCall()
+	expr := inputs[0].Expr
+
+	res := inputs[0].Get_i32() != inputs[1].Get_i32()
+	if res {
+		call.Line = call.Line + expr.ThenLines
+	} else {
+		call.Line = call.Line + expr.ElseLines
+	}
+}
+
+func opI32JmpGt(inputs []ast.CXValue, outputs []ast.CXValue) {
+	call := ast.PROGRAM.GetCurrentCall()
+	expr := inputs[0].Expr
+
+	res := inputs[0].Get_i32() > inputs[1].Get_i32()
+	if res {
+		call.Line = call.Line + expr.ThenLines
+	} else {
+		call.Line = call.Line + expr.ElseLines
+	}
+}
+
+func opI32JmpGtEq(inputs []ast.CXValue, outputs []ast.CXValue) {
+	call := ast.PROGRAM.GetCurrentCall()
+	expr := inputs[0].Expr
+
+	res := inputs[0].Get_i32() >= inputs[1].Get_i32()
+	if res {
+		call.Line = call.Line + expr.ThenLines
+	} else {
+		call.Line = call.Line + expr.ElseLines
+	}
+}
+
+func opI32JmpLt(inputs []ast.CXValue, outputs []ast.CXValue) {
+	call := ast.PROGRAM.GetCurrentCall()
+	expr := inputs[0].Expr
+
+	res := inputs[0].Get_i32() < inputs[1].Get_i32()
+	if res {
+		call.Line = call.Line + expr.ThenLines
+	} else {
+		call.Line = call.Line + expr.ElseLines
+	}
+}
+
+func opI32JmpLtEq(inputs []ast.CXValue, outputs []ast.CXValue) {
+	call := ast.PROGRAM.GetCurrentCall()
+	expr := inputs[0].Expr
+
+	res := inputs[0].Get_i32() <= inputs[1].Get_i32()
+	if res {
+		call.Line = call.Line + expr.ThenLines
+	} else {
+		call.Line = call.Line + expr.ElseLines
+	}
+}
+
+func opI32JmpZero(inputs []ast.CXValue, outputs []ast.CXValue) {
+	call := ast.PROGRAM.GetCurrentCall()
+	expr := inputs[0].Expr
+
+	res := inputs[0].Get_i32() == 0
+	if res {
+		call.Line = call.Line + expr.ThenLines
+	} else {
+		call.Line = call.Line + expr.ElseLines
+	}
+}
+
+func opI32JmpNotZero(inputs []ast.CXValue, outputs []ast.CXValue) {
+	call := ast.PROGRAM.GetCurrentCall()
+	expr := inputs[0].Expr
+
+	res := inputs[0].Get_i32() != 0
+	if res {
+		call.Line = call.Line + expr.ThenLines
+	} else {
+		call.Line = call.Line + expr.ElseLines
+	}
 }
