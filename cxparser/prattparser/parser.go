@@ -82,9 +82,9 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 				 with p.curToken.Type in prefix position.
 	*/
 
-	prefix := p.prefixParseFns[p.curToken.Type]
+	prefixfn := GetprefixParseFns(p)
 
-	if prefix == nil {
+	if prefixfn == nil {
 		p.noPrefixParseFnError(p.curToken.Type)
 		return nil
 	}
@@ -96,7 +96,7 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 
 	*/
 
-	leftExp := prefix()
+	leftExp := prefixfn()
 
 	/*
 		check the precedence of token
@@ -105,9 +105,9 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 	*/
 	for !p.peekTokenIs(token.SEMICOLON) && precedence < p.peekPrecedence() {
 
-		//we took for infixParse function  for p.peekToken.Type
+		//we took for infixParse function  for `p.peekToken.Type`
 		// and if we found infixfn
-		infixfn := p.infixParseFns[p.peekToken.Type]
+		infixfn := GetinfixParseFns(p)
 
 		if infixfn == nil {
 			return leftExp
@@ -121,4 +121,18 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 	}
 
 	return leftExp
+}
+
+func GetprefixParseFns(p *Parser) (prefix prefixParseFn) {
+
+	prefix = p.prefixParseFns[p.curToken.Type]
+
+	return prefix
+}
+
+func GetinfixParseFns(p *Parser) (infixfn infixParseFn) {
+
+	infixfn = p.infixParseFns[p.peekToken.Type]
+
+	return infixfn
 }
