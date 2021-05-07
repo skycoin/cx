@@ -473,6 +473,9 @@ func EncodeSizeSerializedCXProgram(obj *SerializedCXProgram) uint64 {
 	// obj.Memory
 	i0 += 4 + uint64(len(obj.Memory))
 
+	// obj.DataSegmentMemory
+	i0 += 4 + uint64(len(obj.DataSegmentMemory))
+
 	return i0
 }
 
@@ -1054,6 +1057,17 @@ func EncodeSerializedCXProgramToBuffer(buf []byte, obj *SerializedCXProgram) err
 
 	// obj.Memory copy
 	e.CopyBytes(obj.Memory)
+
+	// obj.DataSegmentMemory length check
+	if uint64(len(obj.DataSegmentMemory)) > math.MaxUint32 {
+		return errors.New("obj.DataSegmentMemory length exceeds math.MaxUint32")
+	}
+
+	// obj.DataSegmentMemory length
+	e.Uint32(uint32(len(obj.DataSegmentMemory)))
+
+	// obj.DataSegmentMemory copy
+	e.CopyBytes(obj.DataSegmentMemory)
 
 	return nil
 }
@@ -2501,6 +2515,27 @@ func DecodeSerializedCXProgram(buf []byte, obj *SerializedCXProgram) (uint64, er
 			obj.Memory = make([]byte, length)
 
 			copy(obj.Memory[:], d.Buffer[:length])
+			d.Buffer = d.Buffer[length:]
+		}
+	}
+
+	{
+		// obj.DataSegmentMemory
+
+		ul, err := d.Uint32()
+		if err != nil {
+			return 0, err
+		}
+
+		length := int(ul)
+		if length < 0 || length > len(d.Buffer) {
+			return 0, encoder.ErrBufferUnderflow
+		}
+
+		if length != 0 {
+			obj.DataSegmentMemory = make([]byte, length)
+
+			copy(obj.DataSegmentMemory[:], d.Buffer[:length])
 			d.Buffer = d.Buffer[length:]
 		}
 	}

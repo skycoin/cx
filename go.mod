@@ -10,6 +10,7 @@ require (
 	github.com/google/go-cmp v0.5.5
 	github.com/jinzhu/copier v0.2.5
 	github.com/mjibson/go-dsp v0.0.0-20180508042940-11479a337f12
+	github.com/pierrec/lz4 v2.6.0+incompatible
 	github.com/prashantv/gostub v1.0.0
 	github.com/sirupsen/logrus v1.8.0
 	github.com/skycoin/cx-evolves v0.0.0-20210422070949-64c6ff70d91e

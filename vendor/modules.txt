@@ -118,6 +118,10 @@ github.com/marten-seemann/qtls-go1-15
 github.com/mjibson/go-dsp/wav
 # github.com/phpdave11/gofpdf v1.4.2
 github.com/phpdave11/gofpdf
+# github.com/pierrec/lz4 v2.6.0+incompatible
+## explicit
+github.com/pierrec/lz4
+github.com/pierrec/lz4/internal/xxh32
 # github.com/pkg/errors v0.9.1
 github.com/pkg/errors
 # github.com/prashantv/gostub v1.0.0
