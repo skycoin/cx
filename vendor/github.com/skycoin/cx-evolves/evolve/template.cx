@@ -1,0 +1,10 @@
+package main
+
+// The function to be evolved. It's empty because the evolutionary process will take care of everything.
+// If we wanted though, we could add some expressions to help CX (something like an assisted evolutionary algorithm or semi-supervised learning).
+// It can be named any way we want.
+func polynomialFitting(n1 f64, n2 f64) (out f64) {}
+
+func main()() {
+
+}
