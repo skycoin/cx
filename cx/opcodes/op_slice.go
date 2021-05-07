@@ -78,6 +78,7 @@ func opSliceAppend(inputs []ast.CXValue, outputs []ast.CXValue) {
 
 func opGetSliceElement(inputs []ast.CXValue, outputs []ast.CXValue) {
 	// inp0, out0 := inputs[0].Arg, outputs[0].Arg
+	panic("check")
 }
 
 //TODO: Rename opSliceResize
