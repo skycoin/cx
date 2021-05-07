@@ -1104,7 +1104,6 @@ func (cxprogram *CXProgram) PassThree() {
 			// new refactored expressions
 			var newExpr = []*CXExpression{}
 			for _, expr := range fn.Expressions {
-				newExpr = append(newExpr, expr)
 				for _, inp := range expr.Inputs {
 					// get the dereference operations here
 					// add getsliceElement to expr
@@ -1134,6 +1133,8 @@ func (cxprogram *CXProgram) PassThree() {
 
 					}
 				}
+
+				newExpr = append(newExpr, expr)
 
 			}
 			fn.Expressions = newExpr
