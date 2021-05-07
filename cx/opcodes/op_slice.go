@@ -76,6 +76,10 @@ func opSliceAppend(inputs []ast.CXValue, outputs []ast.CXValue) {
 	outputs[0].SetSlice(outputSliceOffset)
 }
 
+func opGetSliceElement(inputs []ast.CXValue, outputs []ast.CXValue) {
+	// inp0, out0 := inputs[0].Arg, outputs[0].Arg
+}
+
 //TODO: Rename opSliceResize
 //TODO: Rework
 func opResize(inputs []ast.CXValue, outputs []ast.CXValue) {
