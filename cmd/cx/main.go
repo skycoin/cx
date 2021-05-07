@@ -157,6 +157,8 @@ func Run(args []string) {
 
 	if run := parseProgram(options, fileNames, sourceCode); run {
 
+		actions.AST.PassThree()
+
 		if checkAST(args) {
 			printProgramAST(options, cxArgs, sourceCode)
 			return
