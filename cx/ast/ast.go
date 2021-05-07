@@ -7,6 +7,7 @@ import (
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/globals"
 	"github.com/skycoin/cx/cx/helper"
+	constants2 "github.com/skycoin/cx/cxparser/constants"
 )
 
 /*
@@ -15,7 +16,7 @@ import (
 type CXEXPR_TYPE int
 
 const (
-	CXEXPR_UNUSED         CXEXPR_TYPE = iota
+	CXEXPR_UNUSED CXEXPR_TYPE = iota
 	CXEXPR_METHOD_CALL
 	CXEXPR_STRUCT_LITERAL
 	CXEXPR_ARRAY_LITERAL
@@ -161,7 +162,6 @@ type CXExpression struct {
 
 	ExpressionType CXEXPR_TYPE
 }
-
 
 // IsMethodCall checks if expression type is method call
 func (cxe CXExpression) IsMethodCall() bool {
@@ -1081,4 +1081,63 @@ func (arg *CXArgument) AddOutput(out *CXArgument) *CXArgument {
 // human-readable format.
 func (cxprogram *CXProgram) PrintProgram() {
 	fmt.Println(ToString(cxprogram))
+}
+
+/*
+PassThree breaks complex expressions into atomic operations
+*/
+func (cxprogram *CXProgram) PassThree() {
+	for _, pkg := range cxprogram.Packages {
+		if constants2.IsCorePackage(pkg.Name) {
+			continue
+		}
+
+		for _, fn := range pkg.Functions {
+			if fn.Name == constants.SYS_INIT_FUNC {
+				continue
+			}
+			_, err := pkg.SelectFunction(fn.Name)
+			if err != nil {
+				panic(err)
+			}
+
+			// new refactored expressions
+			var newExpr = []*CXExpression{}
+			for _, expr := range fn.Expressions {
+				newExpr = append(newExpr, expr)
+				for _, inp := range expr.Inputs {
+					// get the dereference operations here
+					// add getsliceElement to expr
+					for _, op := range inp.DereferenceOperations {
+						if op == constants.DEREF_SLICE {
+							ex := MakeExpression(Natives[constants.OP_GET_SLICE_ELEMENT], expr.FileName, expr.FileLine)
+							ex.Inputs = expr.Inputs
+							ex.Outputs = expr.Outputs
+
+							newExpr = append(newExpr, ex)
+						}
+
+					}
+				}
+
+				for _, out := range expr.Outputs {
+					// get the dereference operations here
+					// add getsliceElement to expr
+					for _, op := range out.DereferenceOperations {
+						if op == constants.DEREF_SLICE {
+							ex := MakeExpression(Natives[constants.OP_GET_SLICE_ELEMENT], expr.FileName, expr.FileLine)
+							ex.Inputs = expr.Inputs
+							ex.Outputs = expr.Outputs
+
+							newExpr = append(newExpr, ex)
+						}
+
+					}
+				}
+
+			}
+			fn.Expressions = newExpr
+		}
+
+	}
 }
