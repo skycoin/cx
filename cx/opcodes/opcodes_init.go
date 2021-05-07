@@ -70,6 +70,7 @@ func RegisterOpcodes() {
 	RegisterOpCode(constants.OP_PANIC, "panic", opPanic, In(ast.ConstCxArg_UND_TYPE, ast.ConstCxArg_UND_TYPE, ast.ConstCxArg_STR), nil)
 
 	RegisterOpCode(constants.OP_APPEND, "append", opSliceAppend, In(ast.Slice(constants.TYPE_UNDEFINED), ast.Slice(constants.TYPE_UNDEFINED)), Out(ast.Slice(constants.TYPE_UNDEFINED)))
+	RegisterOpCode(constants.OP_GET_SLICE_ELEMENT, "get.slice.element", opGetSliceElement, In(ast.Slice(constants.TYPE_UNDEFINED)), Out(ast.Slice(constants.TYPE_UNDEFINED)))
 
 	RegisterOpCode(constants.OP_BOOL_OR, "bool.or", opBoolOr, In(ast.ConstCxArg_BOOL, ast.ConstCxArg_BOOL), Out(ast.ConstCxArg_BOOL))
 	RegisterOpCode(constants.OP_BOOL_AND, "bool.and", opBoolAnd, In(ast.ConstCxArg_BOOL, ast.ConstCxArg_BOOL), Out(ast.ConstCxArg_BOOL))
