@@ -49,7 +49,7 @@ github.com/shurcooL/sanitized_anchor_name
 # github.com/sirupsen/logrus v1.8.0
 ## explicit
 github.com/sirupsen/logrus
-# github.com/skycoin/cx-evolves v0.0.0-20210511104007-ee5b600a575a
+# github.com/skycoin/cx-evolves v0.0.0-20210512040418-602c8ac2b46e
 ## explicit
 github.com/skycoin/cx-evolves/generator
 # github.com/skycoin/encodertest v0.0.0-20190217072920-14c2e31898b9
