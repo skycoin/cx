@@ -272,6 +272,7 @@ func getNonCollectionValue(fp int, arg, elt *CXArgument, typ string) string {
 	}
 }
 
+// TODO: printing pinter types and struct types
 // ReadSliceElements ...
 func ReadSliceElements(sliceData []byte, size int, typ string) string {
 	switch typ {
