@@ -6,9 +6,8 @@ import (
 	"github.com/skycoin/cx/cx/helper"
 )
 
-//TODO: Rename opSliceLen
 //TODO: Rework
-func opLen(inputs []ast.CXValue, outputs []ast.CXValue) {
+func opSliceLen(inputs []ast.CXValue, outputs []ast.CXValue) {
 	elt := ast.GetAssignmentElement(inputs[0].Arg)
 
 	var sliceLen int32
@@ -39,7 +38,6 @@ func opLen(inputs []ast.CXValue, outputs []ast.CXValue) {
 	outputs[0].Set_i32(sliceLen)
 }
 
-//TODO: Rename OpSliceAppend
 //TODO: Rework
 func opSliceAppend(inputs []ast.CXValue, outputs []ast.CXValue) {
 	inp0, inp1, out0 := inputs[0].Arg, inputs[1].Arg, outputs[0].Arg
@@ -76,9 +74,8 @@ func opSliceAppend(inputs []ast.CXValue, outputs []ast.CXValue) {
 	outputs[0].SetSlice(outputSliceOffset)
 }
 
-//TODO: Rename opSliceResize
 //TODO: Rework
-func opResize(inputs []ast.CXValue, outputs []ast.CXValue) {
+func opSliceResize(inputs []ast.CXValue, outputs []ast.CXValue) {
 	inp0, out0 := inputs[0].Arg, outputs[0].Arg
 	fp := inputs[0].FramePointer
 
@@ -92,9 +89,8 @@ func opResize(inputs []ast.CXValue, outputs []ast.CXValue) {
 	outputs[0].SetSlice(outputSliceOffset)
 }
 
-//TODO: Rename opSliceInsertElement
 //TODO: Rework
-func opInsert(inputs []ast.CXValue, outputs []ast.CXValue) {
+func opSliceInsertElement(inputs []ast.CXValue, outputs []ast.CXValue) {
 	inp0, inp2, out0 := inputs[0].Arg, inputs[2].Arg, outputs[0].Arg
 	fp := inputs[0].FramePointer
 
@@ -118,9 +114,8 @@ func opInsert(inputs []ast.CXValue, outputs []ast.CXValue) {
 	outputs[0].SetSlice(outputSliceOffset)
 }
 
-//TODO: Rename opSliceRemoveElement
 //TODO: Rework
-func opRemove(inputs []ast.CXValue, outputs []ast.CXValue) {
+func opSliceRemoveElement(inputs []ast.CXValue, outputs []ast.CXValue) {
 	inp0, out0 := inputs[0].Arg, outputs[0].Arg
 	fp := inputs[0].FramePointer
 
@@ -134,8 +129,7 @@ func opRemove(inputs []ast.CXValue, outputs []ast.CXValue) {
 	outputs[0].SetSlice(outputSliceOffset)
 }
 
-//TODO: Rename opSliceCopy
-func opCopy(inputs []ast.CXValue, outputs []ast.CXValue) {
+func opSliceCopy(inputs []ast.CXValue, outputs []ast.CXValue) {
 	dstInput := inputs[0].Arg
 	srcInput := inputs[1].Arg
 	fp := inputs[0].FramePointer

@@ -38,6 +38,7 @@ github.com/fogleman/gg v1.2.1-0.20190220221249-0403632d5b90/go.mod h1:R/bRT+9gY/
 github.com/fogleman/gg v1.3.0 h1:/7zJX8F6AaYQc57WQCyN9cAIz+4bCJGO9B+dyW29am8=
 github.com/fogleman/gg v1.3.0/go.mod h1:R/bRT+9gY/C5z7JzPU0zXsXHKM4/ayA+zqcVNZzPa1k=
 github.com/francoispqt/gojay v1.2.13/go.mod h1:ehT5mTG4ua4581f1++1WLG0vPdaA9HaiDsoyrBGkyDY=
+github.com/frankban/quicktest v1.12.1/go.mod h1:qLE0fzW0VuyUAJgPU19zByoIr0HtCHN/r/VLSOOIySU=
 github.com/fsnotify/fsnotify v1.4.7/go.mod h1:jwhsz4b93w/PPRr/qN1Yymfu8t87LnFCMoQvtojpjFo=
 github.com/fsnotify/fsnotify v1.4.9/go.mod h1:znqG4EE+3YCdAaPaxE2ZRY/06pZUdp0tY4IgpuI1SZQ=
 github.com/ghodss/yaml v1.0.0/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
@@ -201,8 +202,11 @@ github.com/shurcooL/webdavfs v0.0.0-20170829043945-18c3829fa133/go.mod h1:hKmq5k
 github.com/sirupsen/logrus v1.8.0 h1:nfhvjKcUMhBMVqbKHJlk5RPrrfYr/NMo3692g0dwfWU=
 github.com/sirupsen/logrus v1.8.0/go.mod h1:4GuYW9TZmE769R5STWrRakJc4UqQ3+QQ95fyz7ENv1A=
 github.com/skycoin/cx v0.7.6-0.20210417120210-c4beff307b5f/go.mod h1:hr0tS0TbCTeza5uDApGLfrd4v9Rzy+iYJsbS8OxjluM=
+github.com/skycoin/cx v0.7.6-0.20210503060553-8adf7a664643/go.mod h1:GCeO3WmU3Zlk2hpKYQGkXwes0PGHPgcEQD6EtMHEB20=
 github.com/skycoin/cx-evolves v0.0.0-20210422070949-64c6ff70d91e h1:ZInKZgUHQYKbnFP26QIla+tAvQ8Mlbt/y5XDyFZU6Lc=
 github.com/skycoin/cx-evolves v0.0.0-20210422070949-64c6ff70d91e/go.mod h1:iH0daCgutlw8pjMLcmmHNJ+5iZ1HanEdEGxnYORv5Cc=
+github.com/skycoin/cx-evolves v0.0.0-20210512170432-7af35fcf0611 h1:KMoZJqlK0weOgQp0dvWxdtYd1tT9p8HiNwoqD0yDMYI=
+github.com/skycoin/cx-evolves v0.0.0-20210512170432-7af35fcf0611/go.mod h1:dsv+H5US7C+5DPD3d0kYbzh14qVKAd7PhpEHn/PMo2M=
 github.com/skycoin/encodertest v0.0.0-20190217072920-14c2e31898b9 h1:DElGw1Fhj4amuW1KM5q8Xowosb3RiOQce0lDJw0Qv0Y=
 github.com/skycoin/encodertest v0.0.0-20190217072920-14c2e31898b9/go.mod h1:OQz8NXVJUWEw7PWYASZ/1BIw5GXgVMTGvrCGDlZa9+k=
 github.com/skycoin/gltext v0.0.0-20200425002731-afdd8ff94e14 h1:A3h5e2AIp7vQTrJGeM/t+/gHs54R0VJ1Gtdb5jFvqyQ=
