@@ -13,7 +13,7 @@ require (
 	github.com/pierrec/lz4 v2.6.0+incompatible
 	github.com/prashantv/gostub v1.0.0
 	github.com/sirupsen/logrus v1.8.0
-	github.com/skycoin/cx-evolves v0.0.0-20210422070949-64c6ff70d91e
+	github.com/skycoin/cx-evolves v0.0.0-20210512170432-7af35fcf0611
 	github.com/skycoin/encodertest v0.0.0-20190217072920-14c2e31898b9
 	github.com/skycoin/gltext v0.0.0-20200425002731-afdd8ff94e14
 	github.com/skycoin/skycoin v0.27.1
