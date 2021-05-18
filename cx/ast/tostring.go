@@ -223,6 +223,9 @@ func getNonCollectionValue(fp int, arg, elt *CXArgument, typ string) string {
 	if arg.IsPointer {
 		return fmt.Sprintf("%v", ReadPtr(fp, elt))
 	}
+	if arg.IsSlice {
+		return fmt.Sprintf("%v", ReadSlice(fp, elt))
+	}
 	switch typ {
 	case "bool":
 		return fmt.Sprintf("%v", ReadBool(fp, elt))
@@ -269,6 +272,38 @@ func getNonCollectionValue(fp int, arg, elt *CXArgument, typ string) string {
 	}
 }
 
+// TODO: printing pinter types and struct types
+// ReadSliceElements ...
+func ReadSliceElements(sliceData []byte, size int, typ string) string {
+	switch typ {
+	case "bool":
+		return fmt.Sprintf("%v", helper.Deserialize_bool(sliceData[:constants.BOOL_SIZE]))
+	case "str":
+		return fmt.Sprintf("%v", string(sliceData[:constants.STR_SIZE]))
+	case "i8":
+		return fmt.Sprintf("%v", helper.Deserialize_i8(sliceData[:constants.I8_SIZE]))
+	case "i16":
+		return fmt.Sprintf("%v", helper.Deserialize_i16(sliceData[:constants.I16_SIZE]))
+	case "i32":
+		return fmt.Sprintf("%v", helper.Deserialize_i32(sliceData[:constants.I32_SIZE]))
+	case "i64":
+		return fmt.Sprintf("%v", helper.Deserialize_i64(sliceData[:constants.I64_SIZE]))
+	case "ui8":
+		return fmt.Sprintf("%v", helper.Deserialize_ui8(sliceData[:constants.I8_SIZE]))
+	case "ui16":
+		return fmt.Sprintf("%v", helper.Deserialize_ui16(sliceData[:constants.I16_SIZE]))
+	case "ui32":
+		return fmt.Sprintf("%v", helper.Deserialize_ui32(sliceData[:constants.I32_SIZE]))
+	case "ui64":
+		return fmt.Sprintf("%v", helper.Deserialize_ui64(sliceData[:constants.I64_SIZE]))
+	case "f32":
+		return fmt.Sprintf("%v", helper.Deserialize_f32(sliceData[:constants.F32_SIZE]))
+	case "f64":
+		return fmt.Sprintf("%v", helper.Deserialize_f64(sliceData[:constants.F64_SIZE]))
+	}
+	return ""
+}
+
 // GetPrintableValue ...
 func GetPrintableValue(fp int, arg *CXArgument) string {
 	var typ string
@@ -285,14 +320,36 @@ func GetPrintableValue(fp int, arg *CXArgument) string {
 		var val string
 		if len(elt.Lengths) == 1 {
 			val = "["
-			for c := 0; c < elt.Lengths[0]; c++ {
-				if c == elt.Lengths[0]-1 {
-					val += getNonCollectionValue(fp+c*elt.Size, arg, elt, typ)
-				} else {
-					val += getNonCollectionValue(fp+c*elt.Size, arg, elt, typ) + ", "
+
+			if arg.IsSlice {
+				// for slices
+				sliceOffset := GetSliceOffset(fp, arg)
+
+				sliceData := GetSlice(sliceOffset, 4)
+				if len(sliceData) != 0 {
+					sliceLen := int(helper.Deserialize_i32(sliceData[:4]))
+					for c := 0; c < sliceLen; c++ {
+						if c == sliceLen-1 {
+							val += ReadSliceElements(sliceData[4+c*elt.Size:], elt.Size, typ)
+						} else {
+							val += ReadSliceElements(sliceData[4+c*elt.Size:], elt.Size, typ) + ", "
+						}
+
+					}
 				}
 
+			} else {
+				// for Arrays
+				for c := 0; c < elt.Lengths[0]; c++ {
+					if c == elt.Lengths[0]-1 {
+						val += getNonCollectionValue(fp+c*elt.Size, arg, elt, typ)
+					} else {
+						val += getNonCollectionValue(fp+c*elt.Size, arg, elt, typ) + ", "
+					}
+
+				}
 			}
+
 			val += "]"
 		} else {
 			// 5, 4, 1
