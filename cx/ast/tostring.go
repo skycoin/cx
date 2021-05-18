@@ -346,9 +346,9 @@ func GetPrintableValue(fp int, arg *CXArgument) string {
 					sliceLen := int(helper.Deserialize_i32(sliceData[:4]))
 					for c := 0; c < sliceLen; c++ {
 						if c == sliceLen-1 {
-							val += ReadSliceElements(fp+constants.SLICE_HEADER_SIZE+c*elt.Size, arg, elt, sliceData[4+c*elt.Size:], elt.Size, typ)
+							val += ReadSliceElements(int(sliceOffset)+constants.SLICE_HEADER_SIZE+constants.OBJECT_HEADER_SIZE+c*elt.Size, arg, elt, sliceData[4+c*elt.Size:], elt.Size, typ)
 						} else {
-							val += ReadSliceElements(fp+constants.SLICE_HEADER_SIZE+c*elt.Size, arg, elt, sliceData[4+c*elt.Size:], elt.Size, typ) + ", "
+							val += ReadSliceElements(int(sliceOffset)+constants.SLICE_HEADER_SIZE+constants.OBJECT_HEADER_SIZE+c*elt.Size, arg, elt, sliceData[4+c*elt.Size:], elt.Size, typ) + ", "
 						}
 
 					}
