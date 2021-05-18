@@ -272,9 +272,8 @@ func getNonCollectionValue(fp int, arg, elt *CXArgument, typ string) string {
 	}
 }
 
-// TODO: printing pinter types and struct types
 // ReadSliceElements ...
-func ReadSliceElements(sliceData []byte, size int, typ string) string {
+func ReadSliceElements(fp int, arg, elt *CXArgument, sliceData []byte, size int, typ string) string {
 	switch typ {
 	case "bool":
 		return fmt.Sprintf("%v", helper.Deserialize_bool(sliceData[:constants.BOOL_SIZE]))
@@ -300,8 +299,25 @@ func ReadSliceElements(sliceData []byte, size int, typ string) string {
 		return fmt.Sprintf("%v", helper.Deserialize_f32(sliceData[:constants.F32_SIZE]))
 	case "f64":
 		return fmt.Sprintf("%v", helper.Deserialize_f64(sliceData[:constants.F64_SIZE]))
+	default:
+		// then it's a struct
+		var val string
+		val = "{"
+		// for _, fld := range elt.CustomType.Fields {
+		lFlds := len(elt.CustomType.Fields)
+		off := 0
+		for c := 0; c < lFlds; c++ {
+			fld := elt.CustomType.Fields[c]
+			if c == lFlds-1 {
+				val += fmt.Sprintf("%s: %s", fld.ArgDetails.Name, GetPrintableValue(fp+arg.Offset+off, fld))
+			} else {
+				val += fmt.Sprintf("%s: %s, ", fld.ArgDetails.Name, GetPrintableValue(fp+arg.Offset+off, fld))
+			}
+			off += fld.TotalSize
+		}
+		val += "}"
+		return val
 	}
-	return ""
 }
 
 // GetPrintableValue ...
@@ -330,9 +346,9 @@ func GetPrintableValue(fp int, arg *CXArgument) string {
 					sliceLen := int(helper.Deserialize_i32(sliceData[:4]))
 					for c := 0; c < sliceLen; c++ {
 						if c == sliceLen-1 {
-							val += ReadSliceElements(sliceData[4+c*elt.Size:], elt.Size, typ)
+							val += ReadSliceElements(int(sliceOffset)+constants.SLICE_HEADER_SIZE+constants.OBJECT_HEADER_SIZE+c*elt.Size, arg, elt, sliceData[4+c*elt.Size:], elt.Size, typ)
 						} else {
-							val += ReadSliceElements(sliceData[4+c*elt.Size:], elt.Size, typ) + ", "
+							val += ReadSliceElements(int(sliceOffset)+constants.SLICE_HEADER_SIZE+constants.OBJECT_HEADER_SIZE+c*elt.Size, arg, elt, sliceData[4+c*elt.Size:], elt.Size, typ) + ", "
 						}
 
 					}
