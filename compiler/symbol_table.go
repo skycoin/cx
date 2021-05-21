@@ -74,10 +74,39 @@ func (s *symbolTable) Resolve(name string) (Symbol, bool) {
 			return obj, ok
 		}
 
-		free := s, defineFree(obj)
+		free := s.defineFree(obj)
 
-		return fee, ok
+		return free, ok
 	}
 
 	return obj, ok
+}
+
+func (s *symbolScope) defineFree(original Symbol) Symbol {
+
+	s.FreeSymbols = append(s.FreeSymbols, original)
+
+	symbol := Symbol{Name: original.Name, Index: len(s.FreeSymbols) - 1}
+
+	symbol.Scope = FreeScope
+
+	s.store[original.Name] = symbol
+
+	return symbol
+}
+
+func (s *symbolTable) DefineFunctionName(name string) Symbol {
+
+	symbol := Symbol{Name: name, Index: 0, Scope: FunctionScope}
+
+	s.store[name] = symbol
+
+	return symbol
+}
+
+func (s *symbolTable) DefineBuiltin(index int, name string) Symbol {
+
+	symbol := Symbol{Name: name, Index: index, Scope: BuildinScope}
+	s.store[name] = symbol
+	return symbol
 }
