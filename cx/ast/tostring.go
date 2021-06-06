@@ -341,7 +341,7 @@ func GetPrintableValue(fp int, arg *CXArgument) string {
 				// for slices
 				sliceOffset := GetSliceOffset(fp, arg)
 
-				sliceData := GetSlice(sliceOffset, 4)
+				sliceData := GetSlice(sliceOffset, elt.Size)
 				if len(sliceData) != 0 {
 					sliceLen := int(helper.Deserialize_i32(sliceData[:4]))
 					for c := 0; c < sliceLen; c++ {
