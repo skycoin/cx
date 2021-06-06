@@ -1,112 +1,91 @@
 package compiler
 
-type symbolScope string
+type SymbolScope string
 
 const (
-	LocalScope    symbolScope = "Local"
-	GlobalScope   symbolScope = "GLOBAL"
-	BuildinScope  symbolScope = "BUILTIN"
-	FreeScope     symbolScope = "FREE"
-	FunctionScope symbolScope = "FUNCTION"
+	LocalScope    SymbolScope = "LOCAL"
+	GlobalScope   SymbolScope = "GLOBAL"
+	BuiltinScope  SymbolScope = "BUILTIN"
+	FreeScope     SymbolScope = "FREE"
+	FunctionScope SymbolScope = "FUNCTION"
 )
 
 type Symbol struct {
 	Name  string
-	Scope symbolScope
-	INDEX int
+	Scope SymbolScope
+	Index int
 }
 
-type symbolTable struct {
-	Outer          *symbolTable
+type SymbolTable struct {
+	Outer *SymbolTable
+
 	store          map[string]Symbol
-	numDefinations int
-	FreeSymbols    []Symbol
+	numDefinitions int
+
+	FreeSymbols []Symbol
 }
 
 func NewEnclosedSymbolTable(outer *SymbolTable) *SymbolTable {
-
 	s := NewSymbolTable()
-
 	s.Outer = outer
-
 	return s
 }
 
-func NewSymbolTable() *symbolTable {
-
-	store := make(map[string]Symbol)
+func NewSymbolTable() *SymbolTable {
+	s := make(map[string]Symbol)
 	free := []Symbol{}
-
-	symbolTable := symbolTable{store: store, FreeSymbols: free}
-
-	return &symbolTable
+	return &SymbolTable{store: s, FreeSymbols: free}
 }
 
-func (s *symbolTable) Define(name string) Symbol {
-
-	symbol := Symbol{Name: name, Index: s.numDefinations}
-
+func (s *SymbolTable) Define(name string) Symbol {
+	symbol := Symbol{Name: name, Index: s.numDefinitions}
 	if s.Outer == nil {
 		symbol.Scope = GlobalScope
 	} else {
-
 		symbol.Scope = LocalScope
 	}
 
 	s.store[name] = symbol
-	s.numDefinations++
+	s.numDefinitions++
 	return symbol
 }
 
-func (s *symbolTable) Resolve(name string) (Symbol, bool) {
-
+func (s *SymbolTable) Resolve(name string) (Symbol, bool) {
 	obj, ok := s.store[name]
-
 	if !ok && s.Outer != nil {
-
 		obj, ok = s.Outer.Resolve(name)
-
 		if !ok {
 			return obj, ok
 		}
 
-		if obj.Scope == GlobalScope || obj.Scope == BuildinScope {
+		if obj.Scope == GlobalScope || obj.Scope == BuiltinScope {
 			return obj, ok
 		}
 
 		free := s.defineFree(obj)
-
-		return free, ok
+		return free, true
 	}
-
 	return obj, ok
 }
 
-func (s *symbolScope) defineFree(original Symbol) Symbol {
+func (s *SymbolTable) DefineBuiltin(index int, name string) Symbol {
+	symbol := Symbol{Name: name, Index: index, Scope: BuiltinScope}
+	s.store[name] = symbol
+	return symbol
+}
 
+func (s *SymbolTable) DefineFunctionName(name string) Symbol {
+	symbol := Symbol{Name: name, Index: 0, Scope: FunctionScope}
+	s.store[name] = symbol
+	return symbol
+}
+
+func (s *SymbolTable) defineFree(original Symbol) Symbol {
 	s.FreeSymbols = append(s.FreeSymbols, original)
 
 	symbol := Symbol{Name: original.Name, Index: len(s.FreeSymbols) - 1}
-
 	symbol.Scope = FreeScope
 
 	s.store[original.Name] = symbol
-
-	return symbol
-}
-
-func (s *symbolTable) DefineFunctionName(name string) Symbol {
-
-	symbol := Symbol{Name: name, Index: 0, Scope: FunctionScope}
-
-	s.store[name] = symbol
-
-	return symbol
-}
-
-func (s *symbolTable) DefineBuiltin(index int, name string) Symbol {
-
-	symbol := Symbol{Name: name, Index: index, Scope: BuildinScope}
-	s.store[name] = symbol
 	return symbol
 }
