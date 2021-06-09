@@ -14,6 +14,10 @@ func NewWithGlobalsStore(bytecode *compiler.Bytecode, s []object.Object) *VM {
 	return vm
 }
 
+/*
+executeBinaryOperation executes  Binary Operation on virtual machine/
+
+*/
 func (vm *VM) executeBinaryOperation(op code.Opcode) error {
 	right := vm.pop()
 	left := vm.pop()

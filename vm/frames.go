@@ -6,6 +6,16 @@ import (
 )
 
 /*
+
+what the current function being executed and
+which instruction to executed next after this function fully executed.
+
+
+
+
+*/
+
+/*
 	Frame represents frame of function on stack of frames.
 */
 type Frame struct {
