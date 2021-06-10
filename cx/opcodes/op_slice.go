@@ -70,10 +70,10 @@ func opSliceAppend(inputs []ast.CXValue, outputs []ast.CXValue) {
 		if inp.Type == constants.TYPE_STR || inp.Type == constants.TYPE_AFF {
 			var obj [4]byte
 			ast.WriteMemI32(obj[:], 0, int32(ast.GetStrOffset(input.Offset, inp.ArgDetails.Name)))
-			ast.SliceAppendWrite(outputSliceOffset+int32(inp.Size*i), obj[:], inputSliceLen)
+			ast.SliceAppendWrite(outputSliceOffset, obj[:], inputSliceLen+int32(i))
 		} else {
 			obj := input.Get_bytes()
-			ast.SliceAppendWrite(outputSliceOffset+int32(inp.Size*i), obj, inputSliceLen)
+			ast.SliceAppendWrite(outputSliceOffset, obj, inputSliceLen+int32(i))
 		}
 	}
 
