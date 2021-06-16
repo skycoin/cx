@@ -104,7 +104,7 @@ yystate2:
 	}
 
 yystate3:
-	// c = l.Next()
+	c = l.Next()
 	yyrule = 5
 	l.Mark()
 	goto yyrule5
@@ -123,7 +123,7 @@ yystate4:
 	}
 
 yystate5:
-	// c = l.Next()
+	c = l.Next()
 	yyrule = 7
 	l.Mark()
 	goto yyrule7
@@ -138,7 +138,7 @@ yystate6:
 	}
 
 yystate7:
-	// c = l.Next()
+	c = l.Next()
 	yyrule = 3
 	l.Mark()
 	goto yyrule3
@@ -157,7 +157,7 @@ yystate8:
 	}
 
 yystate9:
-	// c = l.Next()
+	c = l.Next()
 	yyrule = 6
 	l.Mark()
 	goto yyrule6
@@ -209,7 +209,7 @@ yystate13:
 	}
 
 yystate14:
-	// c = l.Next()
+	c = l.Next()
 	yyrule = 9
 	l.Mark()
 	goto yyrule9
@@ -237,13 +237,13 @@ yystate16:
 	}
 
 yystate17:
-	// c = l.Next()
+	c = l.Next()
 	yyrule = 1
 	l.Mark()
 	goto yyrule1
 
 yystate18:
-	// c = l.Next()
+	c = l.Next()
 	yyrule = 2
 	l.Mark()
 	goto yyrule2
@@ -304,7 +304,7 @@ yystate21:
 	}
 
 yystate22:
-	// c = l.Next()
+	c = l.Next()
 	yyrule = 11
 	l.Mark()
 	goto yyrule11
@@ -363,7 +363,7 @@ yystate27:
 	}
 
 yystate28:
-	// c = l.Next()
+	c = l.Next()
 	yyrule = 12
 	l.Mark()
 	goto yyrule12
