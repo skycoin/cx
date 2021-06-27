@@ -254,7 +254,7 @@ func TokenName(token int) string {
 	case OR_OP:
 		return "  OROP"
 	case PACKAGE:
-		return "PACKAG"
+		return "PACKAGE"
 	case PERIOD:
 		return "PERIOD"
 	case PLUSEQ:
