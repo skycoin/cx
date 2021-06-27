@@ -69,8 +69,8 @@ func parseFlags(options *cxCmdFlags, args []string) {
 	commandLine.BoolVar(&options.printVersion, "v", options.printVersion, "alias for -version")
 	commandLine.BoolVar(&options.printEnv, "env", options.printEnv, "Print CX environment information")
 	commandLine.BoolVar(&options.printAST, "ast", options.printAST, "Print CX Program AST")
-	commandLine.BoolVar(&options.tokenizeMode, "tokenize", options.tokenizeMode, "generate a 'out.cx.txt' text file with parsed tokens")
-	commandLine.BoolVar(&options.tokenizeMode, "t", options.tokenizeMode, "alias for -tokenize")
+	commandLine.BoolVar(&options.tokenizeMode, "lexer", options.tokenizeMode, "generate a 'out.cx.txt' text file with parsed tokens")
+	commandLine.BoolVar(&options.tokenizeMode, "l", options.tokenizeMode, "alias for -tokenize")
 	commandLine.StringVar(&options.compileOutput, "co", options.compileOutput, "alias for -compile-output")
 
 	commandLine.BoolVar(&options.replMode, "repl", options.replMode, "Loads source files into memory and starts a read-eval-print loop")
