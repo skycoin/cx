@@ -21,6 +21,13 @@ func (yylex *Lexer) Lex(lval *yySymType) int {
 	return lval.yys
 }
 
+func (yylex *Lexer) PrintLex(lval *yySymType) (int, int) {
+	yylex.next()
+	lval.scancopy(yylex.tok)
+	actions.LineNo = lval.line
+	return lval.yys, lval.line
+}
+
 func (yylex *Lexer) Next() int {
 	yylex.next()
 	//fmt.Println(TokenName(yylex.tok.yys))

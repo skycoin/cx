@@ -6,9 +6,8 @@ import (
 	"github.com/skycoin/cx/cx/helper"
 )
 
-//TODO: Rename opSliceLen
 //TODO: Rework
-func opLen(inputs []ast.CXValue, outputs []ast.CXValue) {
+func opSliceLen(inputs []ast.CXValue, outputs []ast.CXValue) {
 	elt := ast.GetAssignmentElement(inputs[0].Arg)
 
 	var sliceLen int32
@@ -39,10 +38,11 @@ func opLen(inputs []ast.CXValue, outputs []ast.CXValue) {
 	outputs[0].Set_i32(sliceLen)
 }
 
-//TODO: Rename OpSliceAppend
 //TODO: Rework
 func opSliceAppend(inputs []ast.CXValue, outputs []ast.CXValue) {
 	inp0, inp1, out0 := inputs[0].Arg, inputs[1].Arg, outputs[0].Arg
+	sliceInputs := inputs[1:]
+	sliceInputsLen := int32(len(sliceInputs))
 
 	eltInp0 := ast.GetAssignmentElement(inp0)
 	eltOut0 := ast.GetAssignmentElement(out0)
@@ -57,18 +57,24 @@ func opSliceAppend(inputs []ast.CXValue, outputs []ast.CXValue) {
 	}
 
 	// Preparing slice in case more memory is needed for the new element.
-	outputSliceOffset := ast.SliceAppendResize(inputs[0].FramePointer, out0, inp0, inp1.Size)
+	outputSliceOffset := ast.SliceAppendResize(inputs[0].FramePointer, out0, inp0, inp1.Size, sliceInputsLen)
 
 	// We need to update the address of the output and input, as the final offsets
 	// could be on the heap and they could have been moved by the GC.
 
-	if inp1.Type == constants.TYPE_STR || inp1.Type == constants.TYPE_AFF {
-		var obj [4]byte
-		ast.WriteMemI32(obj[:], 0, int32(ast.GetStrOffset(inputs[1].Offset, inp1.ArgDetails.Name)))
-		ast.SliceAppendWrite(outputSliceOffset, obj[:], inputSliceLen)
-	} else {
-		obj := inputs[1].Get_bytes()
-		ast.SliceAppendWrite(outputSliceOffset, obj, inputSliceLen)
+	for i, input := range sliceInputs {
+		inp := input.Arg
+		if inp0.Type != inp.Type {
+			panic(constants.CX_RUNTIME_INVALID_ARGUMENT)
+		}
+		if inp.Type == constants.TYPE_STR || inp.Type == constants.TYPE_AFF {
+			var obj [4]byte
+			ast.WriteMemI32(obj[:], 0, int32(ast.GetStrOffset(input.Offset, inp.ArgDetails.Name)))
+			ast.SliceAppendWrite(outputSliceOffset, obj[:], inputSliceLen+int32(i))
+		} else {
+			obj := input.Get_bytes()
+			ast.SliceAppendWrite(outputSliceOffset, obj, inputSliceLen+int32(i))
+		}
 	}
 
 	//inputs[0].Used = int8(inputs[0].Type) // TODO: Remove hacked type check
@@ -76,9 +82,8 @@ func opSliceAppend(inputs []ast.CXValue, outputs []ast.CXValue) {
 	outputs[0].SetSlice(outputSliceOffset)
 }
 
-//TODO: Rename opSliceResize
 //TODO: Rework
-func opResize(inputs []ast.CXValue, outputs []ast.CXValue) {
+func opSliceResize(inputs []ast.CXValue, outputs []ast.CXValue) {
 	inp0, out0 := inputs[0].Arg, outputs[0].Arg
 	fp := inputs[0].FramePointer
 
@@ -92,9 +97,8 @@ func opResize(inputs []ast.CXValue, outputs []ast.CXValue) {
 	outputs[0].SetSlice(outputSliceOffset)
 }
 
-//TODO: Rename opSliceInsertElement
 //TODO: Rework
-func opInsert(inputs []ast.CXValue, outputs []ast.CXValue) {
+func opSliceInsertElement(inputs []ast.CXValue, outputs []ast.CXValue) {
 	inp0, inp2, out0 := inputs[0].Arg, inputs[2].Arg, outputs[0].Arg
 	fp := inputs[0].FramePointer
 
@@ -118,9 +122,8 @@ func opInsert(inputs []ast.CXValue, outputs []ast.CXValue) {
 	outputs[0].SetSlice(outputSliceOffset)
 }
 
-//TODO: Rename opSliceRemoveElement
 //TODO: Rework
-func opRemove(inputs []ast.CXValue, outputs []ast.CXValue) {
+func opSliceRemoveElement(inputs []ast.CXValue, outputs []ast.CXValue) {
 	inp0, out0 := inputs[0].Arg, outputs[0].Arg
 	fp := inputs[0].FramePointer
 
@@ -134,8 +137,7 @@ func opRemove(inputs []ast.CXValue, outputs []ast.CXValue) {
 	outputs[0].SetSlice(outputSliceOffset)
 }
 
-//TODO: Rename opSliceCopy
-func opCopy(inputs []ast.CXValue, outputs []ast.CXValue) {
+func opSliceCopy(inputs []ast.CXValue, outputs []ast.CXValue) {
 	dstInput := inputs[0].Arg
 	srcInput := inputs[1].Arg
 	fp := inputs[0].FramePointer

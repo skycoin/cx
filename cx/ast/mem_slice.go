@@ -139,7 +139,7 @@ func SliceCopy(fp int, outputSliceOffset int32, inp *CXArgument, count int32, si
 }
 
 // SliceAppendResize prepares a slice to be able to store a new object of length `sizeofElement`. It checks if the slice needs to be relocated in memory, and if it is needed it relocates it and a new `outputSliceOffset` is calculated for the new slice.
-func SliceAppendResize(fp int, out *CXArgument, inp *CXArgument, sizeofElement int) int32 {
+func SliceAppendResize(fp int, out *CXArgument, inp *CXArgument, sizeofElement int, appendLen int32) int32 {
 	inputSliceOffset := GetSliceOffset(fp, inp)
 	var inputSliceLen int32
 	if inputSliceOffset != 0 {
@@ -147,7 +147,7 @@ func SliceAppendResize(fp int, out *CXArgument, inp *CXArgument, sizeofElement i
 	}
 
 	// TODO: Are we limited then to only one element for now? (because of that +1)
-	outputSliceOffset := int32(SliceResize(fp, out, inp, inputSliceLen+1, sizeofElement))
+	outputSliceOffset := int32(SliceResize(fp, out, inp, inputSliceLen+appendLen, sizeofElement))
 	return outputSliceOffset
 }
 

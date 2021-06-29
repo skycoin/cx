@@ -10,10 +10,16 @@ func Tokenize(r io.Reader, w io.Writer) {
 	var sym yySymType
 
 	lex := NewLexer(r)
-	token := lex.Lex(&sym)
+	token, line := lex.PrintLex(&sym)
+	newLine := 0
+	fmt.Fprintln(w, "#LINESTART", line)
 	for token > 0 {
 		fmt.Fprintln(w, TokenName(token), TokenValue(token, &sym))
-		token = lex.Lex(&sym)
+		token, newLine = lex.PrintLex(&sym)
+		if newLine > line {
+			fmt.Fprintln(w, "#LINESTART", newLine)
+			line = newLine
+		}
 	}
 }
 
@@ -254,7 +260,7 @@ func TokenName(token int) string {
 	case OR_OP:
 		return "  OROP"
 	case PACKAGE:
-		return "PACKAG"
+		return "PACKAGE"
 	case PERIOD:
 		return "PERIOD"
 	case PLUSEQ:
