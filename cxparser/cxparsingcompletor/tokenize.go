@@ -4,20 +4,23 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+	"strings"
 )
 
-func Tokenize(r io.Reader, w io.Writer) {
+func Tokenize(r io.Reader, w io.Writer, lines []string) {
 	var sym yySymType
 
 	lex := NewLexer(r)
 	token, line := lex.PrintLex(&sym)
 	newLine := 0
 	fmt.Fprintln(w, "#LINESTART", line)
+	fmt.Fprintln(w, "#expression:", strings.TrimSpace(lines[line]))
 	for token > 0 {
 		fmt.Fprintln(w, TokenName(token), TokenValue(token, &sym))
 		token, newLine = lex.PrintLex(&sym)
 		if newLine > line {
 			fmt.Fprintln(w, "#LINESTART", newLine)
+			fmt.Fprintln(w, "#expression:", strings.TrimSpace(lines[newLine-1]))
 			line = newLine
 		}
 	}
