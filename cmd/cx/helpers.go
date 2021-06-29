@@ -2,10 +2,12 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/user"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/skycoin/cx/cx/opcodes"
 
@@ -100,6 +102,7 @@ func printTokenize(options cxCmdFlags, fileNames []string) {
 	var r *os.File
 	var w *os.File
 	var err error
+	var lines []string
 
 	if len(fileNames) == 0 {
 		r = os.Stdin
@@ -114,6 +117,15 @@ func printTokenize(options cxCmdFlags, fileNames []string) {
 			return
 		}
 		defer r.Close()
+
+		bytesRead, err := ioutil.ReadFile(sourceFilename)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "ProgramError reading:", sourceFilename, err)
+			return
+		}
+
+		file_content := string(bytesRead)
+		lines = strings.Split(file_content, "\n")
 	}
 
 	if options.compileOutput == "" {
@@ -128,7 +140,7 @@ func printTokenize(options cxCmdFlags, fileNames []string) {
 		defer w.Close()
 	}
 
-	cxgo.Tokenize(r, w)
+	cxgo.Tokenize(r, w, lines)
 }
 
 func printProgramAST(options cxCmdFlags, cxArgs []string, sourceCode []*os.File) {
