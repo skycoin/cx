@@ -103,11 +103,12 @@ func printTokenize(options cxCmdFlags, fileNames []string) {
 	var w *os.File
 	var err error
 	var lines []string
+	var sourceFilename string
 
 	if len(fileNames) == 0 {
 		r = os.Stdin
 	} else {
-		sourceFilename := fileNames[0]
+		sourceFilename = fileNames[0]
 		if len(fileNames) > 1 {
 			fmt.Fprintln(os.Stderr, "Multiple source files detected. Ignoring all except", sourceFilename)
 		}
@@ -140,7 +141,7 @@ func printTokenize(options cxCmdFlags, fileNames []string) {
 		defer w.Close()
 	}
 
-	cxgo.Tokenize(r, w, lines)
+	cxgo.Tokenize(r, w, lines, sourceFilename)
 }
 
 func printProgramAST(options cxCmdFlags, cxArgs []string, sourceCode []*os.File) {
