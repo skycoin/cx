@@ -24,7 +24,7 @@ func Tokenize(r io.Reader, w io.Writer, lines []string, sourceFileName string) {
 		}
 
 		if TokenName(token) == "SCOLON" || (newLine > line && printLine && tmpOutput != "") {
-			fmt.Fprintf(w, "%s, line %d\n", sourceFileName, newLine)
+			fmt.Fprintf(w, "#file: %s, line: %d\n", sourceFileName, newLine)
 			fmt.Fprintln(w, "#expression:", strings.TrimSpace(lines[newLine-1]))
 			fmt.Fprintln(w, strings.TrimSpace(tmpOutput))
 			fmt.Fprintln(w, TokenName(token), TokenValue(token, &sym))
