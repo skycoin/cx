@@ -7,21 +7,33 @@ import (
 	"strings"
 )
 
-func Tokenize(r io.Reader, w io.Writer, lines []string) {
+func Tokenize(r io.Reader, w io.Writer, lines []string, sourceFileName string) {
 	var sym yySymType
 
 	lex := NewLexer(r)
-	token, line := lex.PrintLex(&sym)
-	newLine := 0
-	fmt.Fprintln(w, "#LINESTART", line)
-	fmt.Fprintln(w, "#expression:", strings.TrimSpace(lines[line]))
+	var token int = 1
+	var line, newLine int
+	var tmpOutput string
+	var printLine bool = false
+
 	for token > 0 {
-		fmt.Fprintln(w, TokenName(token), TokenValue(token, &sym))
 		token, newLine = lex.PrintLex(&sym)
-		if newLine > line {
-			fmt.Fprintln(w, "#LINESTART", newLine)
+
+		if strings.TrimSpace(TokenName(token)) == "TYPE" {
+			printLine = true
+		}
+
+		if TokenName(token) == "SCOLON" || (newLine > line && printLine && tmpOutput != "") {
+			fmt.Fprintf(w, "%s, line %d\n", sourceFileName, newLine)
 			fmt.Fprintln(w, "#expression:", strings.TrimSpace(lines[newLine-1]))
+			fmt.Fprintln(w, strings.TrimSpace(tmpOutput))
+			fmt.Fprintln(w, TokenName(token), TokenValue(token, &sym))
+
+			tmpOutput = ""
 			line = newLine
+			printLine = false
+		} else {
+			tmpOutput += fmt.Sprintln(TokenName(token), TokenValue(token, &sym))
 		}
 	}
 }
