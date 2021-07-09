@@ -7,21 +7,53 @@ import (
 	"strings"
 )
 
-func Tokenize(r io.Reader, w io.Writer, lines []string) {
+func Tokenize(r io.Reader, w io.Writer, lines []string, sourceFileName string) {
 	var sym yySymType
 
 	lex := NewLexer(r)
-	token, line := lex.PrintLex(&sym)
-	newLine := 0
-	fmt.Fprintln(w, "#LINESTART", line)
-	fmt.Fprintln(w, "#expression:", strings.TrimSpace(lines[line]))
+	var token int = 1
+	var line, newLine int
+	var tmpOutput, packageName, funcName string
+	var printLine, parseFunc, parsePackage bool
+
 	for token > 0 {
-		fmt.Fprintln(w, TokenName(token), TokenValue(token, &sym))
 		token, newLine = lex.PrintLex(&sym)
-		if newLine > line {
-			fmt.Fprintln(w, "#LINESTART", newLine)
+
+		if parseFunc {
+			funcName = TokenValue(token, &sym).(string)
+			parseFunc = false
+		}
+
+		if parsePackage {
+			packageName = TokenValue(token, &sym).(string)
+			parsePackage = false
+		}
+
+		if strings.TrimSpace(TokenName(token)) == "TYPE" {
+			printLine = true
+		}
+
+		if strings.TrimSpace(TokenName(token)) == "FUNC" {
+			printLine = true
+			parseFunc = true
+		}
+
+		if strings.TrimSpace(TokenName(token)) == "PACKAGE" {
+			parsePackage = true
+		}
+
+		if TokenName(token) == "SCOLON" || (newLine > line && printLine && tmpOutput != "") {
+			fmt.Fprintf(w, "#file: %s, line: %d\n", sourceFileName, newLine)
+			fmt.Fprintf(w, "#package: %s, #function: %s\n", packageName, funcName)
 			fmt.Fprintln(w, "#expression:", strings.TrimSpace(lines[newLine-1]))
+			fmt.Fprintln(w, strings.TrimSpace(tmpOutput))
+			fmt.Fprintln(w, TokenName(token), TokenValue(token, &sym))
+
+			tmpOutput = ""
 			line = newLine
+			printLine = false
+		} else {
+			tmpOutput += fmt.Sprintln(TokenName(token), TokenValue(token, &sym))
 		}
 	}
 }
