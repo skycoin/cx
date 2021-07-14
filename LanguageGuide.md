@@ -58,8 +58,7 @@
   * [`glfw` Package Functions](#glfw-package-functions)
   * [`gltext` Package Functions](#gltext-package-functions)
 
-# Syntax
-[[Back to the Table of Contents] ↑](#table-of-contents)
+# [Syntax](#table-of-contents)
 
 In this section, we're going to have a look at how a CX program looks
 like. Basically, the following sections are not going to discuss about
