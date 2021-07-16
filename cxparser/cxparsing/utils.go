@@ -9,6 +9,7 @@ import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	globals2 "github.com/skycoin/cx/cx/globals"
+	"github.com/skycoin/cx/cx/types"
 	"github.com/skycoin/cx/cxparser/actions"
 	constants2 "github.com/skycoin/cx/cxparser/constants"
 	cxpartialparsing "github.com/skycoin/cx/cxparser/cxpartialparsing"
@@ -255,7 +256,7 @@ func Preliminarystage(srcStrs, srcNames []string) int {
 					if _, err := prePkg.GetGlobal(match[len(match)-1]); err != nil {
 						// then it hasn't been added
 						arg := ast.MakeArgument(match[len(match)-1], "", 0)
-						arg.Offset = -1
+						arg.Offset = types.InvalidPointer
 						arg.ArgDetails.Package = prePkg
 						prePkg.AddGlobal(arg)
 					}

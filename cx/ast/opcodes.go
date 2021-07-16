@@ -2,6 +2,7 @@ package ast
 
 import (
 	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/types"
 )
 
 var (
@@ -26,7 +27,7 @@ type OpcodeHandler func(inputs []CXValue, outputs []CXValue)
 //TODO: RENAME THIS. The nameing is very bad
 const (
 	OPERATOR_COUNT         = constants.END_OF_OPERATORS - constants.START_OF_OPERATORS + 1
-	OPERATOR_HANDLER_COUNT = constants.TYPE_COUNT * OPERATOR_COUNT
+	OPERATOR_HANDLER_COUNT = types.COUNT * OPERATOR_COUNT
 )
 
 //Todo: Rename Natives

@@ -1,5 +1,7 @@
 // https://github.com/skycoin/cx/issues/53
 
+import "cx"
+
 package main
 
 type Too struct {
@@ -8,12 +10,15 @@ type Too struct {
 	b i32
 }
 
+var TOO_SIZE i32 = 4 + cx.POINTER_SIZE + 4
+
 func getAddr(addr *i32) (out i32) {
 	out = str.i32(sprintf("%v", addr))
 }
 
 func testAddr(addr *i32, taddr i32, message str) () {
 	var iaddr i32 = getAddr(addr)
+    //printf("IADDR %d, TADDR %d, MESSAGE %s\n", iaddr, taddr, message)
 	test(iaddr, taddr, message)
 }
 
@@ -23,10 +28,10 @@ func fooA(a i32, t Too, b i32) {
 	var xtb i32 = getAddr(&t.b)
 	var xb i32 = getAddr(&b)
 
-	test(xa, 60, "fooA : xa")
+	test(xa, 3 * TOO_SIZE + cx.POINTER_SIZE + 56, "fooA : xa")
 	test(xta - xa, 4, "fooA : xta - xa")
-	test(xtb - xa, 12, "fooA : xtb - xa")
-	test(xb - xa, 16, "fooA : xb - xa")
+	test(xtb - xa, 8 + cx.POINTER_SIZE, "fooA : xtb - xa")
+	test(xb - xa, 4 + TOO_SIZE, "fooA : xb - xa")
 }
 
 func fooB(a i32, at [2]Too, b i32) {
@@ -35,10 +40,10 @@ func fooB(a i32, at [2]Too, b i32) {
 	var xat1a i32 = getAddr(&at[1].a)
 	var xb i32 = getAddr(&b)
 
-	test(xa, 60, "fooB : xa")
+	test(xa, 3 * TOO_SIZE + cx.POINTER_SIZE + 56, "fooB : xa")
 	test(xat0a - xa, 4, "fooB : xat0a - xa")
-	test(xat1a - xa, 16, "fooB : xat1a - xa")
-	test(xb - xa, 28, "fooB : xb - xa")
+	test(xat1a - xa, 4 + TOO_SIZE, "fooB : xat1a - xa")
+	test(xb - xa, 4 + 2 * TOO_SIZE, "fooB : xb - xa")
 }
 
 func fooC(a i32, st []Too, b i32) {
@@ -47,29 +52,29 @@ func fooC(a i32, st []Too, b i32) {
 	var xst1a i32 = getAddr(&(st[1].a))
 	var xb i32 = getAddr(&b)
 
-	test(xa, 60, "fooC : xa")
-	test(xst1a - xst0a, 12, "fooC : xst1a - xst0a")
-	test(xb - xa, 8, "fooC : xb - xa")
+	test(xa, 3 * TOO_SIZE + cx.POINTER_SIZE + 56, "fooC : xa")
+	test(xst1a - xst0a, TOO_SIZE, "fooC : xst1a - xst0a")
+	test(xb - xa, 4 + cx.POINTER_SIZE, "fooC : xb - xa")
 }
 
 func main()() {
-	var t Too // 12
-	testAddr(&t.a, 0, "main : &t.a")
-	testAddr(&t.b, 8, "main : &t.b")
-	fooA(111, t, 222)
-	var a i32 = 333 // 12 + 4 = 16
-	testAddr(&a, 12, "main : &a")
-	var at [2]Too // 16 + 2 * 12 = 44
-	testAddr(&(at[0].a), 16, "main : &(at[0].a)")
-	testAddr(&(at[1].a), 28, "main : &(at[1].a)")
-	fooB(444, at, 555)
-	var st []Too // 44 + 4 = 48
+	var t Too // 16|20
+    testAddr(&t.a, 4, "main : &t.a") // 16|20
+	testAddr(&t.b, 8 + cx.POINTER_SIZE, "main : &t.b") // 20|24
+	fooA(111, t, 222) // 20|24
+	var a i32 = 333 // 24|28
+	testAddr(&a, 8 + TOO_SIZE, "main : &a") // 28|32
+   	var at [2]Too // 52|64
+	testAddr(&(at[0].a), 16 + TOO_SIZE, "main : &(at[0].a)") // 56|68
+	testAddr(&(at[1].a), 16 + TOO_SIZE * 2, "main : &(at[1].a)") // 64|76
+ 	fooB(444, at, 555)
+	var st []Too // 68|84
+   	st = append(st, t)
 	st = append(st, t)
-	st = append(st, t)
-	var xst0a i32 = getAddr(&(st[0].a)) // 48 + 4 = 52
-	var xst1a i32 = getAddr(&(st[1].a)) // 52 + 4 = 56
-	test(xst1a - xst0a, 12, "main : xst1a - xst0a")
+	var xst0a i32 = getAddr(&(st[0].a)) // 72|88
+	var xst1a i32 = getAddr(&(st[1].a)) // 76|92
+    test(xst1a - xst0a, TOO_SIZE, "main : xst1a - xst0a") // 80|96
 	fooC(666, st, 777)
-	var b i32 = 888 // 56 + 4 = 60
-	testAddr(&b, 56, "main : &b")
+	var b i32 = 888 // 84|100
+    testAddr(&b, 3 * TOO_SIZE + cx.POINTER_SIZE + 40, "main : &b")
 }

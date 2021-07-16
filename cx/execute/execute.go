@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
-	"github.com/skycoin/skycoin/src/cipher/encoder"
+    "github.com/skycoin/cx/cx/types"
 	"math/rand"
 	"time"
 )
@@ -25,13 +25,13 @@ func ToCall(cxprogram *ast.CXProgram) *ast.CXExpression {
 	// panic("")
 }
 
-func RunCxAst(cxprogram *ast.CXProgram, untilEnd bool, nCalls *int, untilCall int) error {
+func RunCxAst(cxprogram *ast.CXProgram, untilEnd bool, nCalls *int, untilCall types.Pointer) error {
 	defer ast.RuntimeError()
 	var err error
 
 	var inputs []ast.CXValue
 	var outputs []ast.CXValue
-	for !cxprogram.Terminated && (untilEnd || *nCalls != 0) && cxprogram.CallCounter > untilCall {
+	for !cxprogram.Terminated && (untilEnd || *nCalls != 0) && (!untilCall.IsValid() || cxprogram.CallCounter > untilCall) {
 		call := &cxprogram.CallStack[cxprogram.CallCounter]
 
 		// checking if enough memory in stack
@@ -153,29 +153,22 @@ func RunCompiled(cxprogram *ast.CXProgram, nCalls int, args []string) error {
 
 				// feeding os.Args
 				if osPkg, err := ast.PROGRAM.SelectPackage(constants.OS_PKG); err == nil {
-					argsOffset := 0
+					argsOffset := types.Pointer(0)
 					if osGbl, err := osPkg.GetGlobal(constants.OS_ARGS); err == nil {
 						for _, arg := range args {
-							argBytes := encoder.Serialize(arg)
-							argOffset := ast.AllocateSeq(len(argBytes) + constants.OBJECT_HEADER_SIZE)
+							argOffset := types.AllocWrite_obj_data(cxprogram.Memory, []byte(arg))
 
-							var header = make([]byte, constants.OBJECT_HEADER_SIZE)
-							ast.WriteMemI32(header, 5, int32(encoder.Size(arg)+constants.OBJECT_HEADER_SIZE))
-							obj := append(header, argBytes...)
-
-							ast.WriteMemory(argOffset, obj)
-
-							var argOffsetBytes [4]byte
-							ast.WriteMemI32(argOffsetBytes[:], 0, int32(argOffset))
+							var argOffsetBytes [types.POINTER_SIZE]byte
+							types.Write_ptr(argOffsetBytes[:], 0, argOffset)
 							argsOffset = ast.WriteToSlice(argsOffset, argOffsetBytes[:])
 						}
-						ast.WriteI32(ast.GetFinalOffset(0, osGbl), int32(argsOffset))
+						types.Write_ptr(ast.PROGRAM.Memory, ast.GetFinalOffset(0, osGbl), argsOffset)
 					}
 				}
 				cxprogram.Terminated = false
 			}
 
-			if err = RunCxAst(cxprogram, untilEnd, &nCalls, -1); err != nil {
+			if err = RunCxAst(cxprogram, untilEnd, &nCalls, types.InvalidPointer); err != nil {
 				return err
 			}
 

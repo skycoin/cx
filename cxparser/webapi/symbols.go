@@ -71,8 +71,8 @@ func displayCXFunction(pkg *ast.CXPackage, f *ast.CXFunction) ExportedSymbol {
 	return ExportedSymbol{
 		Name:      f.Name,
 		Signature: ast.SignatureStringOfFunction(pkg, f),
-		Type:      constants.TYPE_FUNC,
-		TypeName:  constants.TypeNames[constants.TYPE_FUNC],
+		Type:      types.FUNC,
+		TypeName:  constants.TypeNames[types.FUNC],
 	}
 }
 
@@ -80,7 +80,7 @@ func displayCXStruct(s *ast.CXStruct) ExportedSymbol {
 	return ExportedSymbol{
 		Name:      s.Name,
 		Signature: ast.SignatureStringOfStruct(s),
-		Type:      constants.TYPE_CUSTOM,
+		Type:      types.CUSTOM,
 		TypeName:  "struct",
 	}
 }

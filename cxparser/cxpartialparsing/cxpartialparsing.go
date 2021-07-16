@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/types"
 	"github.com/skycoin/cx/cxparser/actions"
 )
 
@@ -1712,7 +1713,7 @@ yynewstate:
 		{
 			if pkg, err := Program.GetCurrentPackage(); err == nil {
 				arg := ast.MakeArgument("", actions.CurrentFile, actions.LineNo)
-				arg.AddType(constants.TypeNames[constants.TYPE_UNDEFINED])
+				arg.AddType(types.UNDEFINED)
 				arg.ArgDetails.Name = yyS[yypt-0].tok
 				arg.ArgDetails.Package = pkg
 				yyVAL.argument = arg
@@ -1731,7 +1732,7 @@ yynewstate:
 		}
 	case 33:
 		{
-			arg := actions.DeclarationSpecifiersBasic(yyS[yypt-0].i)
+			arg := actions.DeclarationSpecifiersBasic(types.Code(yyS[yypt-0].i))
 			yyVAL.arguments = []*ast.CXArgument{arg}
 		}
 	case 34:
@@ -1741,7 +1742,7 @@ yynewstate:
 		}
 	case 35:
 		{
-			arg := actions.DeclarationSpecifiersBasic(yyS[yypt-0].i)
+			arg := actions.DeclarationSpecifiersBasic(types.Code(yyS[yypt-0].i))
 			yyVAL.arguments = append(yyS[yypt-2].arguments, arg)
 		}
 	case 36:
@@ -1754,22 +1755,22 @@ yynewstate:
 		}
 	case 38:
 		{
-			arg := ast.MakeArgument("", actions.CurrentFile, actions.LineNo).AddType("func")
+			arg := ast.MakeArgument("", actions.CurrentFile, actions.LineNo).AddType(types.FUNC)
 			arg.Inputs = yyS[yypt-1].arguments
 			arg.Outputs = yyS[yypt-0].arguments
-			yyVAL.argument = actions.DeclarationSpecifiers(arg, []int{0}, constants.DECL_FUNC)
+			yyVAL.argument = actions.DeclarationSpecifiers(arg, []types.Pointer{0}, constants.DECL_FUNC)
 		}
 	case 39:
 		{
-			yyVAL.argument = actions.DeclarationSpecifiers(yyS[yypt-0].argument, []int{0}, constants.DECL_POINTER)
+			yyVAL.argument = actions.DeclarationSpecifiers(yyS[yypt-0].argument, []types.Pointer{0}, constants.DECL_POINTER)
 		}
 	case 40:
 		{
-			yyVAL.argument = actions.DeclarationSpecifiers(yyS[yypt-0].argument, []int{0}, constants.DECL_SLICE)
+			yyVAL.argument = actions.DeclarationSpecifiers(yyS[yypt-0].argument, []types.Pointer{0}, constants.DECL_SLICE)
 		}
 	case 41:
 		{
-			yyVAL.argument = actions.DeclarationSpecifiersBasic(yyS[yypt-0].i)
+			yyVAL.argument = actions.DeclarationSpecifiersBasic(types.Code(yyS[yypt-0].i))
 		}
 	case 42:
 		{
@@ -1777,13 +1778,13 @@ yynewstate:
 		}
 	case 43:
 		{
-			basic := actions.DeclarationSpecifiersBasic(yyS[yypt-0].i)
-			yyVAL.argument = actions.DeclarationSpecifiers(basic, yyS[yypt-1].ints, constants.DECL_ARRAY)
+			basic := actions.DeclarationSpecifiersBasic(types.Code(yyS[yypt-0].i))
+			yyVAL.argument = actions.DeclarationSpecifiers(basic, types.Cast_sint_to_sptr(yyS[yypt-1].ints), constants.DECL_ARRAY)
 		}
 	case 44:
 		{
 			strct := actions.DeclarationSpecifiersStruct(yyS[yypt-0].tok, "", false, actions.CurrentFile, actions.LineNo)
-			yyVAL.argument = actions.DeclarationSpecifiers(strct, yyS[yypt-1].ints, constants.DECL_ARRAY)
+			yyVAL.argument = actions.DeclarationSpecifiers(strct, types.Cast_sint_to_sptr(yyS[yypt-1].ints), constants.DECL_ARRAY)
 		}
 	case 45:
 		{
@@ -1791,59 +1792,59 @@ yynewstate:
 		}
 	case 46:
 		{
-			yyVAL.argument = actions.DeclarationSpecifiersStruct(yyS[yypt-0].tok, constants.TypeNames[yyS[yypt-2].i], true, CurrentFileName, lineNo)
+			yyVAL.argument = actions.DeclarationSpecifiersStruct(yyS[yypt-0].tok, types.Code(yyS[yypt-2].i).Name(), true, CurrentFileName, lineNo)
 		}
 	case 47:
 		{
-			yyVAL.i = constants.TYPE_AFF
+			yyVAL.i = int(types.AFF)
 		}
 	case 48:
 		{
-			yyVAL.i = constants.TYPE_BOOL
+			yyVAL.i = int(types.BOOL)
 		}
 	case 49:
 		{
-			yyVAL.i = constants.TYPE_STR
+			yyVAL.i = int(types.STR)
 		}
 	case 50:
 		{
-			yyVAL.i = constants.TYPE_F32
+			yyVAL.i = int(types.F32)
 		}
 	case 51:
 		{
-			yyVAL.i = constants.TYPE_F64
+			yyVAL.i = int(types.F64)
 		}
 	case 52:
 		{
-			yyVAL.i = constants.TYPE_I8
+			yyVAL.i = int(types.I8)
 		}
 	case 53:
 		{
-			yyVAL.i = constants.TYPE_I16
+			yyVAL.i = int(types.I16)
 		}
 	case 54:
 		{
-			yyVAL.i = constants.TYPE_I32
+			yyVAL.i = int(types.I32)
 		}
 	case 55:
 		{
-			yyVAL.i = constants.TYPE_I64
+			yyVAL.i = int(types.I64)
 		}
 	case 56:
 		{
-			yyVAL.i = constants.TYPE_UI8
+			yyVAL.i = int(types.UI8)
 		}
 	case 57:
 		{
-			yyVAL.i = constants.TYPE_UI16
+			yyVAL.i = int(types.UI16)
 		}
 	case 58:
 		{
-			yyVAL.i = constants.TYPE_UI32
+			yyVAL.i = int(types.UI32)
 		}
 	case 59:
 		{
-			yyVAL.i = constants.TYPE_UI64
+			yyVAL.i = int(types.UI64)
 		}
 	case 66:
 		{

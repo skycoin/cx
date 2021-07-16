@@ -9,6 +9,7 @@ import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	globals2 "github.com/skycoin/cx/cx/globals"
+	"github.com/skycoin/cx/cx/types"
 	"github.com/skycoin/cx/cxparser/globals"
 )
 
@@ -48,12 +49,12 @@ func DeclareGlobalInPackage(pkg *ast.CXPackage,
 		if glbl.Offset < 0 || glbl.Size == 0 || glbl.TotalSize == 0 {
 			// then it was only added a reference to the symbol
 			var offExpr []*ast.CXExpression
-			if declaration_specifiers.IsSlice {
+			if declaration_specifiers.IsSlice { // TODO:PTR move branch in WritePrimary
 				offExpr = WritePrimary(declaration_specifiers.Type,
-					make([]byte, declaration_specifiers.Size), true)
+					make([]byte, types.POINTER_SIZE), true)
 			} else {
 				offExpr = WritePrimary(declaration_specifiers.Type,
-					make([]byte, declaration_specifiers.TotalSize), true)
+					make([]byte, declaration_specifiers.TotalSize), false)
 			}
 
 			glbl.Offset = offExpr[0].Outputs[0].Offset
@@ -113,10 +114,10 @@ func DeclareGlobalInPackage(pkg *ast.CXPackage,
 	} else {
 		// then it hasn't been defined
 		var offExpr []*ast.CXExpression
-		if declaration_specifiers.IsSlice {
-			offExpr = WritePrimary(declaration_specifiers.Type, make([]byte, declaration_specifiers.Size), true)
+		if declaration_specifiers.IsSlice { // TODO:PTR move branch in WritePrimary
+			offExpr = WritePrimary(declaration_specifiers.Type, make([]byte, types.POINTER_SIZE), true)
 		} else {
-			offExpr = WritePrimary(declaration_specifiers.Type, make([]byte, declaration_specifiers.TotalSize), true)
+			offExpr = WritePrimary(declaration_specifiers.Type, make([]byte, declaration_specifiers.TotalSize), false)
 		}
 
 		// Checking if something is supposed to be initialized
@@ -163,7 +164,7 @@ func DeclareGlobalInPackage(pkg *ast.CXPackage,
 				globals.SysInitExprs = append(globals.SysInitExprs, initializer...)
 			}
 		} else {
-			// offExpr := WritePrimary(declaration_specifiers.Type, make([]byte, declaration_specifiers.Size), true)
+			// offExpr := WritePrimary(declaration_specifiers.Type, make([]byte, declaration_specifiers.Size), false)
 			// exprOut := expr[0].ProgramOutput[0]
 
 			declaration_specifiers.ArgDetails.Name = declarator.ArgDetails.Name
@@ -375,14 +376,14 @@ func DeclareLocal(declarator *ast.CXArgument, declarationSpecifiers *ast.CXArgum
 //
 // Returns the new type build from `declSpec` and `opTyp`.
 //
-func DeclarationSpecifiers(declSpec *ast.CXArgument, arrayLengths []int, opTyp int) *ast.CXArgument {
+func DeclarationSpecifiers(declSpec *ast.CXArgument, arrayLengths []types.Pointer, opTyp int) *ast.CXArgument {
 	switch opTyp {
 	case constants.DECL_POINTER:
 		declSpec.DeclarationSpecifiers = append(declSpec.DeclarationSpecifiers, constants.DECL_POINTER)
 		// if !declSpec.IsPointer {
 		declSpec.IsPointer = true
-		declSpec.Size = constants.TYPE_POINTER_SIZE
-		declSpec.TotalSize = constants.TYPE_POINTER_SIZE
+		declSpec.Size = types.POINTER_SIZE
+		declSpec.TotalSize = types.POINTER_SIZE
 		declSpec.IndirectionLevels++
 		// }
 		// else {
@@ -395,8 +396,8 @@ func DeclarationSpecifiers(declSpec *ast.CXArgument, arrayLengths []int, opTyp i
 
 		// declSpec.IndirectionLevels++
 
-		// pointer.Size = constants.TYPE_POINTER_SIZE
-		// pointer.TotalSize = constants.TYPE_POINTER_SIZE
+		// pointer.Size = types.POINTER_SIZE
+		// pointer.TotalSize = types.POINTER_SIZE
 		// }
 
 		return declSpec
@@ -424,11 +425,11 @@ func DeclarationSpecifiers(declSpec *ast.CXArgument, arrayLengths []int, opTyp i
 		// arg.IsArray = true
 		arg.PassBy = constants.PASSBY_REFERENCE
 
-		arg.Lengths = append([]int{0}, arg.Lengths...)
+		arg.Lengths = append([]types.Pointer{0}, arg.Lengths...)
 		// arg.Lengths = arrayLengths
 		// arg.TotalSize = arg.Size
 		// arg.Size = cxcore.TYPE_POINTER_SIZE
-		arg.TotalSize = constants.TYPE_POINTER_SIZE
+		arg.TotalSize = types.POINTER_SIZE
 
 		return arg
 	case constants.DECL_BASIC:
@@ -447,19 +448,15 @@ func DeclarationSpecifiers(declSpec *ast.CXArgument, arrayLengths []int, opTyp i
 
 // DeclarationSpecifiersBasic() returns a type specifier created from one of the builtin types.
 //
-func DeclarationSpecifiersBasic(typ int) *ast.CXArgument {
+func DeclarationSpecifiersBasic(typeCode types.Code) *ast.CXArgument {
 	arg := ast.MakeArgument("", CurrentFile, LineNo)
-	arg.AddType(constants.TypeNames[typ])
-	arg.Type = typ
-
-	arg.Size = constants.GetArgSize(typ)
-
-	if typ == constants.TYPE_AFF {
+	arg.AddType(typeCode)
+	if typeCode == types.AFF {
 		// equivalent to slice of strings
-		return DeclarationSpecifiers(arg, []int{0}, constants.DECL_SLICE)
+		return DeclarationSpecifiers(arg, []types.Pointer{0}, constants.DECL_SLICE)
 	}
 
-	return DeclarationSpecifiers(arg, []int{0}, constants.DECL_BASIC)
+	return DeclarationSpecifiers(arg, []types.Pointer{0}, constants.DECL_BASIC)
 }
 
 // DeclarationSpecifiersStruct() declares a struct
@@ -484,7 +481,7 @@ func DeclarationSpecifiersStruct(ident string, pkgName string,
 		}
 
 		arg := ast.MakeArgument("", currentFile, lineNo)
-		arg.Type = constants.TYPE_CUSTOM
+		arg.Type = types.CUSTOM
 		arg.CustomType = strct
 		arg.Size = strct.Size
 		arg.TotalSize = strct.Size
@@ -502,7 +499,7 @@ func DeclarationSpecifiersStruct(ident string, pkgName string,
 		}
 
 		arg := ast.MakeArgument("", currentFile, lineNo)
-		arg.Type = constants.TYPE_CUSTOM
+		arg.Type = types.CUSTOM
 		arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_STRUCT)
 		arg.CustomType = strct
 		arg.Size = strct.Size

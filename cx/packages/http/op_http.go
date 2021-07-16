@@ -12,7 +12,7 @@ import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/execute"
-	"github.com/skycoin/cx/cx/helper"
+	"github.com/skycoin/cx/cx/types"
 
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 
@@ -36,7 +36,7 @@ func opHTTPHandle(inputs []ast.CXValue, outputs []ast.CXValue) {
 		panic(err)
 	}
 
-	http.HandleFunc(ast.ReadStr(fp, urlstring), func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc(types.Read_str(ast.PROGRAM.Memory, ast.GetFinalOffset(fp, urlstring)), func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html")
 
 		callFP := fp + ast.PROGRAM.CallStack[ast.PROGRAM.CallCounter].Operator.Size
@@ -63,7 +63,7 @@ func opHTTPHandle(inputs []ast.CXValue, outputs []ast.CXValue) {
 
 		//PROGRAM.Callback(handlerFn, [][]byte{i1, i2})
 		execute.Callback(ast.PROGRAM, handlerFn, [][]byte{i1, i2})
-		fmt.Fprint(w, ast.ReadStr(callFP, handlerFn.Inputs[0]))
+		fmt.Fprint(w, types.Read_str(ast.PROGRAM.Memory, ast.GetFinalOffset(callFP, handlerFn.Inputs[0])))
 	})
 }
 
@@ -113,14 +113,14 @@ func opHTTPNewRequest(inputs []ast.CXValue, outputs []ast.CXValue) {
 	fp := inputs[0].FramePointer
 
 	//this is an alternative for following 3 lines of code that fail due to URL
-	method := ast.ReadStr(fp, stringmethod)
-	urlString := ast.ReadStr(fp, stringurl)
-	body := ast.ReadStr(fp, stringbody)
+	method := types.Read_str(ast.PROGRAM.Memory, ast.GetFinalOffset(fp, stringmethod))
+	urlString := types.Read_str(ast.PROGRAM.Memory, ast.GetFinalOffset(fp, stringurl))
+	body := types.Read_str(ast.PROGRAM.Memory, ast.GetFinalOffset(fp, stringbody))
 
 	//above is an alternative for following 3 lines of code that fail due to URL
 	req, err := http.NewRequest(method, urlString, bytes.NewBuffer([]byte(body)))
 	if err != nil {
-		ast.WriteString(fp, err.Error(), errorstring)
+		types.Write_str(ast.PROGRAM.Memory, ast.GetFinalOffset(fp, errorstring), err.Error())
 	}
 
 	var netClient = &http.Client{
@@ -128,7 +128,7 @@ func opHTTPNewRequest(inputs []ast.CXValue, outputs []ast.CXValue) {
 	}
 	resp, err := netClient.Do(req)
 	if err != nil {
-		ast.WriteString(fp, err.Error(), errorstring)
+		types.Write_str(ast.PROGRAM.Memory, ast.GetFinalOffset(fp, errorstring), err.Error())
 	}
 	resp1 := *resp // dereference to exclude pointer issue
 
@@ -143,10 +143,10 @@ func opHTTPNewRequest(inputs []ast.CXValue, outputs []ast.CXValue) {
 	// TODO: Used `Response.Status` for now, to avoid getting an error.
 	// This will be rewritten as the whole operator is unfinished.
 	byts := encoder.Serialize(resp1.Status)
-	ast.WriteObject(out1Offset, byts)
+	types.Write_obj(ast.PROGRAM.Memory, out1Offset, byts)
 }
 
-func writeHTTPRequest(fp int, param *ast.CXArgument, request *http.Request) {
+func writeHTTPRequest(fp types.Pointer, param *ast.CXArgument, request *http.Request) {
 	req := ast.CXArgument{}
 	err := copier.Copy(&req, param)
 	if err != nil {
@@ -211,47 +211,39 @@ func writeHTTPRequest(fp int, param *ast.CXArgument, request *http.Request) {
 		panic(err)
 	}
 
-	accessMethod := []*ast.CXArgument{methodFld}
-	accessBody := []*ast.CXArgument{bodyFld}
-	accessURL := []*ast.CXArgument{urlFld}
-	accessURLScheme := []*ast.CXArgument{&derefURLFld, schemeFld}
-	accessURLHost := []*ast.CXArgument{&derefURLFld, hostFld}
-	accessURLPath := []*ast.CXArgument{&derefURLFld, pathFld}
-	accessURLRawPath := []*ast.CXArgument{&derefURLFld, rawPathFld}
-	accessURLForceQuery := []*ast.CXArgument{&derefURLFld, forceQueryFld}
-
 	// Creating empty `http.Request` object on heap.
-	reqOff := ast.WriteObjectData(make([]byte, requestType.Size))
-	reqOffByts := encoder.SerializeAtomic(int32(reqOff))
-	ast.WriteMemory(ast.GetFinalOffset(fp, &req), reqOffByts)
+	types.AllocWrite_obj_data(ast.PROGRAM.Memory, make([]byte, requestType.Size))
 
 	req.DereferenceOperations = append(req.DereferenceOperations, constants.DEREF_POINTER)
 
 	// Creating empty `http.URL` object on heap.
-	req.Fields = accessURL
-	urlOff := ast.WriteObjectData(make([]byte, urlType.Size))
-	urlOffByts := encoder.SerializeAtomic(int32(urlOff))
-	ast.WriteMemory(ast.GetFinalOffset(fp, &req), urlOffByts)
+	req.Fields = []*ast.CXArgument{urlFld}
+	types.AllocWrite_obj_data(ast.PROGRAM.Memory, make([]byte, urlType.Size))
 
-	req.Fields = accessMethod
-	ast.WriteString(fp, request.Method, &req)
+	req.Fields = []*ast.CXArgument{methodFld}
+	types.Write_str(ast.PROGRAM.Memory, ast.GetFinalOffset(fp, &req), request.Method)
 
-	req.Fields = accessBody
+	req.Fields = []*ast.CXArgument{bodyFld}
 	body, err := ioutil.ReadAll(request.Body)
 	if err != nil {
 		panic(err)
 	}
-	ast.WriteString(fp, string(body), &req)
-	req.Fields = accessURLScheme
-	ast.WriteString(fp, request.URL.Scheme, &req)
-	req.Fields = accessURLHost
-	ast.WriteString(fp, request.URL.Host, &req)
-	req.Fields = accessURLPath
-	ast.WriteString(fp, request.URL.Path, &req)
-	req.Fields = accessURLRawPath
-	ast.WriteString(fp, request.URL.RawPath, &req)
-	req.Fields = accessURLForceQuery
-	ast.WriteMemory(ast.GetFinalOffset(fp, &req), helper.FromBool(request.URL.ForceQuery))
+	types.Write_str(ast.PROGRAM.Memory, ast.GetFinalOffset(fp, &req), string(body))
+	req.Fields = []*ast.CXArgument{&derefURLFld, schemeFld}
+
+	types.Write_str(ast.PROGRAM.Memory, ast.GetFinalOffset(fp, &req), request.URL.Scheme)
+	req.Fields = []*ast.CXArgument{&derefURLFld, hostFld}
+
+	types.Write_str(ast.PROGRAM.Memory, ast.GetFinalOffset(fp, &req), request.URL.Host)
+	req.Fields = []*ast.CXArgument{&derefURLFld, pathFld}
+
+	types.Write_str(ast.PROGRAM.Memory, ast.GetFinalOffset(fp, &req), request.URL.Path)
+	req.Fields = []*ast.CXArgument{&derefURLFld, rawPathFld}
+
+	types.Write_str(ast.PROGRAM.Memory, ast.GetFinalOffset(fp, &req), request.URL.RawPath)
+	req.Fields = []*ast.CXArgument{&derefURLFld, forceQueryFld}
+
+	types.Write_bool(ast.PROGRAM.Memory, ast.GetFinalOffset(fp, &req),request.URL.ForceQuery)
 }
 
 func opHTTPDo(inputs []ast.CXValue, outputs []ast.CXValue) {
@@ -320,36 +312,34 @@ func opHTTPDo(inputs []ast.CXValue, outputs []ast.CXValue) {
 		panic(err)
 	}
 
-	accessMethod := []*ast.CXArgument{methodFld}
-	accessURLScheme := []*ast.CXArgument{&derefURLFld, schemeFld}
-	accessURLHost := []*ast.CXArgument{&derefURLFld, hostFld}
-	accessURLPath := []*ast.CXArgument{&derefURLFld, pathFld}
-	accessURLRawPath := []*ast.CXArgument{&derefURLFld, rawPathFld}
-	accessURLForceQuery := []*ast.CXArgument{&derefURLFld, forceQueryFld}
-
 	request := http.Request{}
 	url := url.URL{}
 	request.URL = &url
 
-	req.Fields = accessMethod
-	request.Method = ast.ReadStr(fp, &req)
-	req.Fields = accessURLScheme
-	url.Scheme = ast.ReadStr(fp, &req)
-	req.Fields = accessURLHost
-	url.Host = ast.ReadStr(fp, &req)
-	req.Fields = accessURLPath
-	url.Path = ast.ReadStr(fp, &req)
-	req.Fields = accessURLRawPath
-	url.RawPath = ast.ReadStr(fp, &req)
-	req.Fields = accessURLForceQuery
-	url.ForceQuery = ast.ReadBool(fp, &req)
+	req.Fields = []*ast.CXArgument{methodFld}
+	request.Method = types.Read_str(ast.PROGRAM.Memory, ast.GetFinalOffset(fp, &req))
+
+	req.Fields = []*ast.CXArgument{&derefURLFld, schemeFld}
+	url.Scheme = types.Read_str(ast.PROGRAM.Memory, ast.GetFinalOffset(fp, &req))
+
+	req.Fields = []*ast.CXArgument{&derefURLFld, hostFld}
+	url.Host = types.Read_str(ast.PROGRAM.Memory, ast.GetFinalOffset(fp, &req))
+
+	req.Fields = []*ast.CXArgument{&derefURLFld, pathFld}
+	url.Path = types.Read_str(ast.PROGRAM.Memory, ast.GetFinalOffset(fp, &req))
+
+	req.Fields = []*ast.CXArgument{&derefURLFld, rawPathFld}
+	url.RawPath = types.Read_str(ast.PROGRAM.Memory, ast.GetFinalOffset(fp, &req))
+
+	req.Fields = []*ast.CXArgument{&derefURLFld, forceQueryFld}
+	url.ForceQuery = types.Read_bool(ast.PROGRAM.Memory, ast.GetFinalOffset(fp, &req))
 
 	var netClient = &http.Client{
 		Timeout: time.Second * 30,
 	}
 	response, err := netClient.Do(&request)
 	if err != nil {
-		ast.WriteString(fp, err.Error(), errorstring)
+		types.Write_str(ast.PROGRAM.Memory, ast.GetFinalOffset(fp, errorstring), err.Error())
 		return
 	}
 
@@ -393,32 +383,31 @@ func opHTTPDo(inputs []ast.CXValue, outputs []ast.CXValue) {
 		panic(err)
 	}
 
-	accessStatus := []*ast.CXArgument{statusFld}
-	accessStatusCode := []*ast.CXArgument{statusCodeFld}
-	accessProto := []*ast.CXArgument{protoFld}
-	accessProtoMajor := []*ast.CXArgument{protoMajorFld}
-	accessProtoMinor := []*ast.CXArgument{protoMinorFld}
-	accessContentLength := []*ast.CXArgument{contentLengthFld}
-	accessBody := []*ast.CXArgument{bodyFld}
 
-	resp.Fields = accessStatus
-	ast.WriteString(fp, response.Status, &resp)
-	resp.Fields = accessStatusCode
-	ast.WriteMemory(ast.GetFinalOffset(fp, &resp), helper.FromI32(int32(response.StatusCode)))
-	resp.Fields = accessProto
-	ast.WriteString(fp, response.Proto, &resp)
-	resp.Fields = accessProtoMajor
-	ast.WriteMemory(ast.GetFinalOffset(fp, &resp), helper.FromI32(int32(response.ProtoMajor)))
-	resp.Fields = accessProtoMinor
-	ast.WriteMemory(ast.GetFinalOffset(fp, &resp), helper.FromI32(int32(response.ProtoMinor)))
-	resp.Fields = accessContentLength
-	ast.WriteMemory(ast.GetFinalOffset(fp, &resp), helper.FromI64(int64(response.ContentLength)))
-	resp.Fields = accessBody
+	resp.Fields = []*ast.CXArgument{statusFld}
+	types.Write_str(ast.PROGRAM.Memory, ast.GetFinalOffset(fp, &resp), response.Status)
+
+	resp.Fields = []*ast.CXArgument{statusCodeFld}
+	types.Write_i32(ast.PROGRAM.Memory, ast.GetFinalOffset(fp, &resp), int32(response.StatusCode))
+
+	resp.Fields = []*ast.CXArgument{protoFld}
+	types.Write_str(ast.PROGRAM.Memory, ast.GetFinalOffset(fp, &resp), response.Proto)
+
+	resp.Fields = []*ast.CXArgument{protoMajorFld}
+	types.Write_i32(ast.PROGRAM.Memory, ast.GetFinalOffset(fp, &resp), int32(response.ProtoMajor))
+
+	resp.Fields = []*ast.CXArgument{protoMinorFld}
+	types.Write_i32(ast.PROGRAM.Memory, ast.GetFinalOffset(fp, &resp), int32(response.ProtoMinor))
+
+	resp.Fields = []*ast.CXArgument{contentLengthFld}
+	types.Write_i64(ast.PROGRAM.Memory, ast.GetFinalOffset(fp, &resp), response.ContentLength)
+
+	resp.Fields = []*ast.CXArgument{bodyFld}
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		panic(err)
 	}
-	ast.WriteString(fp, string(body), &resp)
+	types.Write_str(ast.PROGRAM.Memory, ast.GetFinalOffset(fp, &resp), string(body))
 }
 
 /*

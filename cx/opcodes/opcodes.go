@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/skycoin/cx/cx/ast"
-	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/globals"
+	"github.com/skycoin/cx/cx/types"
 )
 
 // RegisterPackage registers a package on the CX standard library. This does not create a `CXPackage` structure,
@@ -51,7 +51,7 @@ func RegisterFunction(name string, handler ast.OpcodeHandler, inputs []*ast.CXAr
 }
 
 // RegisterOperator ...
-func RegisterOperator(name string, handler ast.OpcodeHandler, inputs []*ast.CXArgument, outputs []*ast.CXArgument, atomicType int, operator int) {
+func RegisterOperator(name string, handler ast.OpcodeHandler, inputs []*ast.CXArgument, outputs []*ast.CXArgument, atomicType types.Code, operator int) {
 	RegisterOpCode(globals.OpCodeSystemCounter, name, handler, inputs, outputs)
 	native := ast.Natives[globals.OpCodeSystemCounter]
 	ast.Operators[ast.GetTypedOperatorOffset(atomicType, operator)] = native
@@ -65,7 +65,7 @@ func MakeNativeFunction(opCode int, inputs []*ast.CXArgument, outputs []*ast.CXA
 		OpCode:    opCode,
 	}
 
-	offset := 0
+	offset := types.Pointer(0)
 	for _, inp := range inputs {
 		inp.Offset = offset
 		offset += ast.GetSize(inp)
@@ -78,80 +78,6 @@ func MakeNativeFunction(opCode int, inputs []*ast.CXArgument, outputs []*ast.CXA
 	}
 
 	return fn
-}
-
-/*
-// Debug helper function used to find opcodes when they are not registered
-func dumpOpCodes(opCode int) {
-	var keys []int
-	for k := range ast.OpNames {
-		keys = append(keys, k)
-	}
-	sort.Ints(keys)
-	for _, k := range keys {
-		fmt.Printf("%5d : %s\n", k, ast.OpNames[k])
-	}
-
-	fmt.Printf("opCode : %d\n", opCode)
-}*/
-
-// Pointer takes an already defined `CXArgument` and turns it into a pointer.
-func Pointer(arg *ast.CXArgument) *ast.CXArgument {
-	arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_POINTER)
-	arg.IsPointer = true
-	arg.Size = constants.TYPE_POINTER_SIZE
-	arg.TotalSize = constants.TYPE_POINTER_SIZE
-
-	return arg
-}
-
-// Struct helper for creating a struct parameter. It creates a
-// `CXArgument` named `argName`, that represents a structure instane of
-// `strctName`, from package `pkgName`.
-func Struct(pkgName, strctName, argName string) *ast.CXArgument {
-	pkg, err := ast.PROGRAM.GetPackage(pkgName)
-	if err != nil {
-		panic(err)
-	}
-
-	strct, err := pkg.GetStruct(strctName)
-	if err != nil {
-		panic(err)
-	}
-
-	arg := ast.MakeArgument(argName, "", -1).AddType(constants.TypeNames[constants.TYPE_CUSTOM])
-	arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_STRUCT)
-	arg.Size = strct.Size
-	arg.TotalSize = strct.Size
-	arg.CustomType = strct
-
-	return arg
-}
-
-// Slice Helper function for creating parameters for standard library operators.
-// The current standard library only uses basic types and slices. If more options are needed, modify this function
-func Slice(typCode int) *ast.CXArgument {
-	arg := Param(typCode)
-	arg.IsSlice = true
-	arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_SLICE)
-	return arg
-}
-
-// Func Helper function for creating function parameters for standard library operators.
-// The current standard library only uses basic types and slices. If more options are needed, modify this function
-func Func(pkg *ast.CXPackage, inputs []*ast.CXArgument, outputs []*ast.CXArgument) *ast.CXArgument {
-	arg := Param(constants.TYPE_FUNC)
-	arg.ArgDetails.Package = pkg
-	arg.Inputs = inputs
-	arg.Outputs = outputs
-	return arg
-}
-
-// Param ...
-func Param(typCode int) *ast.CXArgument {
-	arg := ast.MakeArgument("", "", -1).AddType(constants.TypeNames[typCode])
-	arg.IsLocalDeclaration = true
-	return arg
 }
 
 func opDebugPrintStack([]ast.CXValue, []ast.CXValue) {

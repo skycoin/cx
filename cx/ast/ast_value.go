@@ -1,254 +1,199 @@
 package ast
 
 import (
-	"github.com/skycoin/cx/cx/constants"
-	"github.com/skycoin/cx/cx/helper"
-	"github.com/skycoin/skycoin/src/cipher/encoder"
+	"github.com/skycoin/cx/cx/types"
 )
 
 type CXValue struct {
-	Arg    *CXArgument
-	Expr   *CXExpression
-	Type   int
-	memory []byte
-	Offset int
-	//size int. //unused field
-	FramePointer int
+	Arg          *CXArgument // TODO:PTR remove Arg
+	Expr         *CXExpression
+	Type         types.Code
+	Offset       types.Pointer
+	FramePointer types.Pointer // TODO:PTR remove FramePointer
 }
 
-// GetPointerOffset ...
-func GetPointerOffset(pointer int32) int32 {
-	return helper.Deserialize_i32(PROGRAM.Memory[pointer : pointer+constants.TYPE_POINTER_SIZE])
+func (value *CXValue) Get_bool() bool {
+	return types.Read_bool(PROGRAM.Memory, value.Offset)
 }
 
+func (value *CXValue) Get_i8() int8 {
+	return types.Read_i8(PROGRAM.Memory, value.Offset)
+}
+
+func (value *CXValue) Get_i16() int16 {
+	return types.Read_i16(PROGRAM.Memory, value.Offset)
+}
+
+func (value *CXValue) Get_i32() int32 {
+	return types.Read_i32(PROGRAM.Memory, value.Offset)
+}
+
+func (value *CXValue) Get_i64() int64 {
+	return types.Read_i64(PROGRAM.Memory, value.Offset)
+}
+
+func (value *CXValue) Get_ui8() uint8 {
+	return types.Read_ui8(PROGRAM.Memory, value.Offset)
+}
+
+func (value *CXValue) Get_ui16() uint16 {
+	return types.Read_ui16(PROGRAM.Memory, value.Offset)
+}
+
+func (value *CXValue) Get_ui32() uint32 {
+	return types.Read_ui32(PROGRAM.Memory, value.Offset)
+}
+
+func (value *CXValue) Get_ui64() uint64 {
+	return types.Read_ui64(PROGRAM.Memory, value.Offset)
+}
+
+func (value *CXValue) Get_f32() float32 {
+	return types.Read_f32(PROGRAM.Memory, value.Offset)
+}
+
+func (value *CXValue) Get_f64() float64 {
+	return types.Read_f64(PROGRAM.Memory, value.Offset)
+}
+
+func (value *CXValue) Get_ptr() types.Pointer {
+	return types.Read_ptr(PROGRAM.Memory, value.Offset)
+}
+
+func (value *CXValue) Get_bytes() []byte {
+	return types.GetSlice_byte(PROGRAM.Memory, value.Offset, GetSize(value.Arg))
+}
+
+func (value *CXValue) Get_str() string {
+	return types.Read_str(PROGRAM.Memory, value.Offset)
+}
 
 func (value *CXValue) GetSlice_i8() []int8 {
-	////value.Used = TYPE_SLICE
-	//value.Used = int8(value.Type) // TODO: type checking for slice is not working
-	if mem := GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
-		return helper.ReadDataI8(mem)
+	if mem := GetSliceData(types.Read_ptr(PROGRAM.Memory, value.Offset), GetSize(value.Arg)); mem != nil {
+		return types.ReadSlice_i8(mem, 0)
 	}
 	return nil
 }
 
 func (value *CXValue) GetSlice_i16() []int16 {
-	////value.Used = TYPE_SLICE
-	//value.Used = int8(value.Type) // TODO: type checking for slice is not working
-	if mem := GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
-		return helper.ReadDataI16(mem)
+	if mem := GetSliceData(types.Read_ptr(PROGRAM.Memory, value.Offset), GetSize(value.Arg)); mem != nil {
+		return types.ReadSlice_i16(mem, 0)
 	}
 	return nil
 }
 
 func (value *CXValue) GetSlice_i32() []int32 {
-	////value.Used = TYPE_SLICE
-	//value.Used = int8(value.Type) // TODO: type checking for slice is not working
-	if mem := GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
-		return helper.ReadDataI32(mem)
+	if mem := GetSliceData(types.Read_ptr(PROGRAM.Memory, value.Offset), GetSize(value.Arg)); mem != nil {
+		return types.ReadSlice_i32(mem, 0)
 	}
 	return nil
 }
 
 func (value *CXValue) GetSlice_i64() []int64 {
-	////value.Used = TYPE_SLICE
-	//value.Used = int8(value.Type) // TODO: type checking for slice is not working
-	if mem := GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
-		return helper.ReadDataI64(mem)
+	if mem := GetSliceData(types.Read_ptr(PROGRAM.Memory, value.Offset), GetSize(value.Arg)); mem != nil {
+		return types.ReadSlice_i64(mem, 0)
 	}
 	return nil
 }
 
 func (value *CXValue) GetSlice_ui8() []uint8 {
-	////value.Used = TYPE_SLICE
-	//value.Used = int8(value.Type) // TODO: type checking for slice is not working
-	if mem := GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
-		return helper.ReadDataUI8(mem)
+	if mem := GetSliceData(types.Read_ptr(PROGRAM.Memory, value.Offset), GetSize(value.Arg)); mem != nil {
+		return types.ReadSlice_ui8(mem, 0)
 	}
 	return nil
 }
 
 func (value *CXValue) GetSlice_ui16() []uint16 {
-	////value.Used = TYPE_SLICE
-	//value.Used = int8(value.Type) // TODO: type checking for slice is not working
-	if mem := GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
-		return helper.ReadDataUI16(mem)
+	if mem := GetSliceData(types.Read_ptr(PROGRAM.Memory, value.Offset), GetSize(value.Arg)); mem != nil {
+		return types.ReadSlice_ui16(mem, 0)
 	}
 	return nil
 }
 
 func (value *CXValue) GetSlice_ui32() []uint32 {
-	////value.Used = TYPE_SLICE
-	//value.Used = int8(value.Type) // TODO: type checking for slice is not working
-	if mem := GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
-		return helper.ReadDataUI32(mem)
+	if mem := GetSliceData(types.Read_ptr(PROGRAM.Memory, value.Offset), GetSize(value.Arg)); mem != nil {
+		return types.ReadSlice_ui32(mem, 0)
 	}
 	return nil
 }
 
 func (value *CXValue) GetSlice_ui64() []uint64 {
-	////value.Used = TYPE_SLICE
-	//value.Used = int8(value.Type) // TODO: type checking for slice is not working
-	if mem := GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
-		return helper.ReadDataUI64(mem)
+	if mem := GetSliceData(types.Read_ptr(PROGRAM.Memory, value.Offset), GetSize(value.Arg)); mem != nil {
+		return types.ReadSlice_ui64(mem, 0)
 	}
 	return nil
 }
 
 func (value *CXValue) GetSlice_f32() []float32 {
-	////value.Used = TYPE_SLICE
-	//value.Used = int8(value.Type) // TODO: type checking for slice is not working
-	if mem := GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
-		return helper.ReadDataF32(mem)
+	if mem := GetSliceData(types.Read_ptr(PROGRAM.Memory, value.Offset), GetSize(value.Arg)); mem != nil {
+		return types.ReadSlice_f32(mem, 0)
 	}
 	return nil
 }
 
 func (value *CXValue) GetSlice_f64() []float64 {
-	////value.Used = TYPE_SLICE
-	//value.Used = int8(value.Type) // TODO: type checking for slice is not working
-	if mem := GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size); mem != nil {
-		return helper.ReadDataF64(mem)
+	if mem := GetSliceData(types.Read_ptr(PROGRAM.Memory, value.Offset), GetSize(value.Arg)); mem != nil {
+		return types.ReadSlice_f64(mem, 0)
 	}
 	return nil
 }
 
-func (value *CXValue) SetSlice(data int32) {
-	//value.Used = int8(value.Type) // TODO: type checking for slice is not working
-	WriteI32(value.Offset, data)
-}
-
-func (value *CXValue) Get_bytes() []byte {
-	////value.Used = TYPE_SLICE
-	//value.Used = int8(value.Type) // TODO: type checking for slice is not working
-	return ReadMemory(value.Offset, value.Arg)
-}
-
-func (value *CXValue) Set_bytes(data []byte) () {
-	//value.Used = constants.TYPE_CUSTOM
-	WriteMemory(value.Offset, data)
-}
-
 func (value *CXValue) GetSlice_bytes() []byte {
-	//value.Used = int8(value.Type) // TODO: type checking for slice is not working
-	return GetSliceData(GetPointerOffset(int32(value.Offset)), GetAssignmentElement(value.Arg).Size)
-}
-
-func (value *CXValue) Get_i8() int8 {
-	//value.Used = constants.TYPE_I8
-	return helper.Deserialize_i8(value.memory)
-}
-
-func (value *CXValue) Set_i8(data int8) {
-	//value.Used = constants.TYPE_I8
-	WriteI8(value.Offset, data)
-}
-
-func (value *CXValue) Get_i16() int16 {
-	//value.Used = constants.TYPE_I16
-	return helper.Deserialize_i16(value.memory)
-}
-
-func (value *CXValue) Set_i16(data int16) {
-	//value.Used = constants.TYPE_I16
-	WriteI16(value.Offset, data)
-}
-
-func (value *CXValue) Get_i32() int32 {
-	//value.Used = constants.TYPE_I32
-	return helper.Deserialize_i32(value.memory)
-}
-
-func (value *CXValue) Set_i32(data int32) {
-	//value.Used = constants.TYPE_I32
-	WriteI32(value.Offset, data)
-}
-
-func (value *CXValue) Get_i64() int64 {
-	//value.Used = constants.TYPE_I64
-	return helper.Deserialize_i64(value.memory)
-}
-
-func (value *CXValue) Set_i64(data int64) {
-	//value.Used = constants.TYPE_I64
-	WriteI64(value.Offset, data)
-}
-
-func (value *CXValue) Get_ui8() uint8 {
-	//value.Used = constants.TYPE_UI8
-	return helper.Deserialize_ui8(value.memory)
-}
-
-func (value *CXValue) Set_ui8(data uint8) {
-	//value.Used = constants.TYPE_UI8
-	WriteUI8(value.Offset, data)
-}
-
-func (value *CXValue) Get_ui16() uint16 {
-	//value.Used = constants.TYPE_UI16
-	return helper.Deserialize_ui16(value.memory)
-}
-
-func (value *CXValue) Set_ui16(data uint16) {
-	//value.Used = constants.TYPE_UI16
-	WriteUI16(value.Offset, data)
-}
-
-func (value *CXValue) Get_ui32() uint32 {
-	//value.Used = constants.TYPE_UI32
-	return helper.Deserialize_ui32(value.memory)
-}
-
-func (value *CXValue) Set_ui32(data uint32) {
-	//value.Used = constants.TYPE_UI32
-	WriteUI32(value.Offset, data)
-}
-
-func (value *CXValue) Get_ui64() uint64 {
-	//value.Used = constants.TYPE_UI64
-	return helper.Deserialize_ui64(value.memory)
-}
-
-func (value *CXValue) Set_ui64(data uint64) {
-	//value.Used = constants.TYPE_UI64
-	WriteUI64(value.Offset, data)
-}
-
-func (value *CXValue) Get_f32() float32 {
-	//value.Used = constants.TYPE_F32
-	return helper.Deserialize_f32(value.memory)
-}
-
-func (value *CXValue) Set_f32(data float32) {
-	//value.Used = constants.TYPE_F32
-	WriteF32(value.Offset, data)
-}
-
-func (value *CXValue) Get_f64() float64 {
-	//value.Used = constants.TYPE_F64
-	return helper.Deserialize_f64(value.memory)
-}
-
-func (value *CXValue) Set_f64(data float64) {
-	//value.Used = constants.TYPE_F64
-	WriteF64(value.Offset, data)
-}
-
-func (value *CXValue) Get_bool() bool {
-	//value.Used = constants.TYPE_BOOL
-	return helper.Deserialize_bool(value.memory)
+	return GetSliceData(types.Read_ptr(PROGRAM.Memory, value.Offset), GetSize(value.Arg))
 }
 
 func (value *CXValue) Set_bool(data bool) {
-	//value.Used = constants.TYPE_BOOL
-	WriteBool(value.Offset, data)
+	types.Write_bool(PROGRAM.Memory, value.Offset, data)
 }
 
-func (value *CXValue) Get_str() string {
-	//value.Used = constants.TYPE_STR
-	return ReadStrFromOffset(value.Offset, value.Arg)
+func (value *CXValue) Set_i8(data int8) {
+	types.Write_i8(PROGRAM.Memory, value.Offset, data)
+}
+
+func (value *CXValue) Set_i16(data int16) {
+	types.Write_i16(PROGRAM.Memory, value.Offset, data)
+}
+
+func (value *CXValue) Set_i32(data int32) {
+	types.Write_i32(PROGRAM.Memory, value.Offset, data)
+}
+
+func (value *CXValue) Set_i64(data int64) {
+	types.Write_i64(PROGRAM.Memory, value.Offset, data)
+}
+
+func (value *CXValue) Set_ui8(data uint8) {
+	types.Write_ui8(PROGRAM.Memory, value.Offset, data)
+}
+
+func (value *CXValue) Set_ui16(data uint16) {
+	types.Write_ui16(PROGRAM.Memory, value.Offset, data)
+}
+
+func (value *CXValue) Set_ui32(data uint32) {
+	types.Write_ui32(PROGRAM.Memory, value.Offset, data)
+}
+
+func (value *CXValue) Set_ui64(data uint64) {
+	types.Write_ui64(PROGRAM.Memory, value.Offset, data)
+}
+
+func (value *CXValue) Set_f32(data float32) {
+	types.Write_f32(PROGRAM.Memory, value.Offset, data)
+}
+
+func (value *CXValue) Set_f64(data float64) {
+	types.Write_f64(PROGRAM.Memory, value.Offset, data)
+}
+
+func (value *CXValue) Set_ptr(data types.Pointer) {
+	types.Write_ptr(PROGRAM.Memory, value.Offset, data)
+}
+
+func (value *CXValue) Set_bytes(data []byte) {
+	types.WriteSlice_byte(PROGRAM.Memory, value.Offset, data)
 }
 
 func (value *CXValue) Set_str(data string) {
-	//value.Used = constants.TYPE_STR
-	WriteObject(value.Offset, encoder.Serialize(data))
+	types.Write_str(PROGRAM.Memory, value.Offset, data)
 }

@@ -35,14 +35,14 @@ func TestASTAPI_Expressions(t *testing.T) {
 	})
 
 	t.Run("add input to function", func(t *testing.T) {
-		err := astapi.AddNativeInputToFunction(cxprogram, "main", "TestFunction", "inputOne", cxconstants.TYPE_I32)
+		err := astapi.AddNativeInputToFunction(cxprogram, "main", "TestFunction", "inputOne", cxtypes.I32)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}
 	})
 
 	t.Run("add output to function", func(t *testing.T) {
-		err := astapi.AddNativeOutputToFunction(cxprogram, "main", "TestFunction", "outputOne", cxconstants.TYPE_I16)
+		err := astapi.AddNativeOutputToFunction(cxprogram, "main", "TestFunction", "outputOne", cxtypes.I16)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}

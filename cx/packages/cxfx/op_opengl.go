@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/util"
+	"github.com/skycoin/cx/cx/types"
 	"image"
 	"image/draw"
 	"image/gif"
@@ -111,7 +112,7 @@ const (
 	E      = 3
 )
 
-func unpack(file *os.File, width int, line []byte) bool {
+func unpack(file *os.File, width types.Pointer, line []byte) bool {
 	if width < MINLEN || width > MAXLEN {
 		return unpack_(file, width, line)
 	}
@@ -127,19 +128,19 @@ func unpack(file *os.File, width int, line []byte) bool {
 	}
 
 	var b [1]byte
-	for i := 0; i < 4; i++ {
-		for j := 0; j < width; {
+	for i := types.Pointer(0); i < 4; i++ {
+		for j := types.Pointer(0); j < width; {
 			file.Read(b[:])
-			var count int = int(b[0])
+			count := types.Pointer(b[0])
 			if count > 128 {
 				count &= 127
 				file.Read(b[:])
 				var value int = int(b[0])
-				for c := 0; c < count; c++ {
+				for c := types.Pointer(0); c < count; c++ {
 					line[j+c+i] = byte(value)
 				}
 			} else {
-				for c := 0; c < count; c++ {
+				for c := types.Pointer(0); c < count; c++ {
 					offset := j + c + i
 					file.Read(line[offset : offset+1])
 				}
@@ -149,7 +150,7 @@ func unpack(file *os.File, width int, line []byte) bool {
 	return true
 }
 
-func unpack_(file *os.File, width int, line []byte) bool {
+func unpack_(file *os.File, width types.Pointer, line []byte) bool {
 	var rshift uint
 	var repeat [4]byte
 	for width > 0 {
@@ -171,10 +172,10 @@ func unpack_(file *os.File, width int, line []byte) bool {
 	return true
 }
 
-func decodeHdr(file *os.File) (data []byte, iwidth int32, iheight int32) {
+func decodeHdr(file *os.File) (data []byte, i32Width int32, i32Height int32) {
 	data = nil
-	iwidth = 0
-	iheight = 0
+	i32Width = 0
+	i32Height = 0
 
 	var format int
 	scanner := bufio.NewScanner(file)
@@ -216,28 +217,31 @@ func decodeHdr(file *os.File) (data []byte, iwidth int32, iheight int32) {
 
 	file.Seek(pos, 0)
 
-	var width int
-	var height int
-	if n, err := fmt.Fscanf(file, "-Y %d +X %d\n", &width, &height); n != 2 || err != nil {
+	var iwidth int
+	var iheight int
+	if n, err := fmt.Fscanf(file, "-Y %d +X %d\n", &iwidth, &iheight); n != 2 || err != nil {
 		fmt.Printf("Failed to scan width and height : err '%s'\n", err)
 		return
 	}
 
-	iwidth = int32(width)
-	iheight = int32(height)
+	i32Width = int32(iwidth)
+	i32Height = int32(iheight)
+
+	width := types.Cast_int_to_ptr(iwidth)
+	height := types.Cast_int_to_ptr(iheight)
 
 	//var colors []float32 = make([]float32, width*height*3)
 	var line []byte = make([]byte, width*4)
 	data = make([]byte, width*height*3*4)
 
-	for y := int(0); y < height; y++ {
+	for y := types.Pointer(0); y < height; y++ {
 		if unpack(file, width, line) == false {
 			fmt.Printf("Failed to unpack line %d\n", y)
 			return
 		}
 
 		yoffset := y /*(height - y - 1)*/ * width * 3 * 4
-		for x := 0; x < width; x++ {
+		for x := types.Pointer(0); x < width; x++ {
 			loffset := x * 4
 			exponent := math.Pow(2.0, float64(int(line[loffset+3])-128))
 			xoffset := yoffset + x*3*4
@@ -245,9 +249,9 @@ func decodeHdr(file *os.File) (data []byte, iwidth int32, iheight int32) {
 			g := float32(exponent * float64(line[loffset+1]) / 256.0)
 			b := float32(exponent * float64(line[loffset+2]) / 256.0)
 
-			ast.WriteMemF32(data, xoffset, r)
-			ast.WriteMemF32(data, xoffset+4, g)
-			ast.WriteMemF32(data, xoffset+8, b)
+			types.Write_f32(data, xoffset, r)
+			types.Write_f32(data, xoffset+4, g)
+			types.Write_f32(data, xoffset+8, b)
 		}
 	}
 	return
@@ -431,23 +435,21 @@ func opGlGIFFrameToTexture(inputs []ast.CXValue, outputs []ast.CXValue) {
 
 func opGlAppend(inputs []ast.CXValue, outputs []ast.CXValue) {
 	outputSlicePointer := outputs[0].Offset
-	outputSliceOffset := ast.GetPointerOffset(int32(outputSlicePointer))
-
-    //inputs[0].Used = int8(inputs[0].Type)
+	outputSliceOffset := types.Read_ptr(ast.PROGRAM.Memory, outputSlicePointer)
 
     inputSliceOffset := ast.GetSliceOffset(inputs[0].FramePointer, inputs[0].Arg)
-	var inputSliceLen int32
+	var inputSliceLen types.Pointer
 	if inputSliceOffset != 0 {
 		inputSliceLen = ast.GetSliceLen(inputSliceOffset)
 	}
 
 	obj := inputs[1].Get_bytes()
 
-	objLen := int32(len(obj))
-	outputSliceOffset = int32(ast.SliceResizeEx(outputSliceOffset, inputSliceLen+objLen, 1))
+	objLen := types.Cast_int_to_ptr(len(obj))
+	outputSliceOffset = ast.SliceResizeEx(outputSliceOffset, inputSliceLen+objLen, 1)
 	ast.SliceCopyEx(outputSliceOffset, inputSliceOffset, inputSliceLen+objLen, 1)
 	ast.SliceAppendWriteByte(outputSliceOffset, obj, inputSliceLen)
-	outputs[0].SetSlice(outputSliceOffset)
+	outputs[0].Set_ptr(outputSliceOffset)
 }
 
 // gl_1_0

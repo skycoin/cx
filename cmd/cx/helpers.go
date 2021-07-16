@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/skycoin/cx/cx/opcodes"
+	"github.com/skycoin/cx/cx/types"
 
 	repl "github.com/skycoin/cx/cmd/cxrepl"
 	"github.com/skycoin/cx/cx/ast"
@@ -165,7 +166,7 @@ func printProgramAST(options cxCmdFlags, cxArgs []string, sourceCode []*os.File)
 // Used for the -heap-initial, -heap-max and -stack-size flags.
 // This function parses, for example, "1M" to 1048576 (the corresponding number of bytes)
 // Possible suffixes are: G or g (gigabytes), M or m (megabytes), K or k (kilobytes)
-func parseMemoryString(s string) int {
+func parseMemoryString(s string) types.Pointer {
 	suffix := s[len(s)-1]
 	_, notSuffix := strconv.ParseFloat(string(suffix), 64)
 
@@ -175,29 +176,29 @@ func parseMemoryString(s string) int {
 
 		if err != nil {
 			// malformed size
-			return -1
+			return types.InvalidPointer
 		}
 
-		return int(num)
+		return types.Cast_i64_to_ptr(num)
 	} else {
 		// then we have a suffix
 		num, err := strconv.ParseFloat(s[:len(s)-1], 64)
 
 		if err != nil {
 			// malformed size
-			return -1
+			return types.InvalidPointer
 		}
 
 		// The user can use suffixes to give as input gigabytes, megabytes or kilobytes.
 		switch suffix {
 		case 'G', 'g':
-			return int(num * 1073741824)
+			return types.Cast_f64_to_ptr(num * 1073741824)
 		case 'M', 'm':
-			return int(num * 1048576)
+			return types.Cast_f64_to_ptr(num * 1048576)
 		case 'K', 'k':
-			return int(num * 1024)
+			return types.Cast_f64_to_ptr(num * 1024)
 		default:
-			return -1
+			return types.InvalidPointer
 		}
 	}
 }
