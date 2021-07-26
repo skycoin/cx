@@ -2,6 +2,15 @@
 * [Lexer](https://en.wikipedia.org/wiki/Lexical_analysis) - takes a text [or sequence of characters] as an input and breaks it up into a list of tokens.
 * [AST](https://en.wikipedia.org/wiki/Abstract_syntax_tree) - An abstract syntax tree (AST) is a way of representing the syntax of a programming language as a hierarchical tree-like structure. The AST contains a final parsed output that can be executed.
 * [Type Signature](https://en.wikipedia.org/wiki/Type_signature) - A function signature (or type signature, or method signature) defines input and output of functions or methods. A signature can include: parameters and their types. a return value and type.
+---
+
+# Stages
+* Stage 1: Parse packages and package imports.
+* Stage 2: Parse structs, type aliases and enums.
+* Stage 3: Parse global variables.
+* Stage 4: Parse function type signatures.
+* Stage 5: Set global variable construct functions.
+* Stage 6: Parse function bodies.
 
 # CX Compiler specification
 
