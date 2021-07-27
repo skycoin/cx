@@ -137,7 +137,7 @@ Output:
 `GlobalVariable -> { PackageName: "main", Name: "a", Type: i32, LineNo: 12, FileName: "main.cx", Offset: -1 }`.
 
 **Actions called**
- - `actions.DeclareGlobal`
+ - [`actions.DeclareGlobal`](https://github.com/skycoin/cx/blob/develop/cxparser/actions/declarations.go#L24)
 
 ### Stage 4: Parse Function Type Signatures
 
@@ -170,8 +170,8 @@ Output:
 `Function -> {PackageName: "main", Name: "main", InputParams: {}, ReturnParams: {i32}, ParentStruct: nil, LineNo: 14, FileName: "main.cx"}`
 
 **Actions called**
- - `actions.FunctionDeclaration`
- - `actions.FunctionHeader`
+ - [`actions.FunctionDeclaration`](https://github.com/skycoin/cx/blob/develop/cxparser/actions/functions.go#L117)
+ - [`actions.FunctionHeader`](https://github.com/skycoin/cx/blob/develop/cxparser/actions/functions.go#L21)
 
 ### Stage 5: Initialize Global Variables
 
