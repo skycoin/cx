@@ -16,8 +16,7 @@
 * Stage 6: Parse function bodies.
 
 ---
-
-The cx compiler is broken down into several stages and each stages output is an input to the next stage.
+## Sample Program
 
 A sample CX program looks like this:
 
@@ -45,11 +44,12 @@ A sample CX program looks like this:
 This is a simple program that prints age of Entry.
 We are going to reference this example throught the specification document.
 
+The cx compiler is broken down into several stages and each stages output is an input to the next stage.
+
 ### Stage 1: Parse Package Imports and Load Source Files
 
 At this stage:
-- The text file containing the program is is loaded into `[]byte` as `SourceCode`
-- import paths are identified
+- The source files for each package are loaded into memory. The individual source files are loaded into `SourceFile` structs. All source files for each package are loaded into a `Package` struct
 - All package imports in the text file are loaded into `[]byte`
 - package names are parsed from the input program and all import paths
 
