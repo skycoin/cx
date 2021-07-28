@@ -7,15 +7,6 @@
 * [Actions](https://github.com/skycoin/cx/tree/develop/cxparser/actions) - Actions package contains functions that are used to construct the AST. These functions are called stages of the parser.
 ---
 
-## Compiler Stages
-* Stage 1: Parse packages and package imports.
-* Stage 2: Parse structs, type aliases and enums.
-* Stage 3: Parse global variables.
-* Stage 4: Parse function type signatures.
-* Stage 5: Set global variable construct functions.
-* Stage 6: Parse function bodies.
-
----
 ## Sample Program
 
 A sample CX program looks like this:
@@ -43,6 +34,15 @@ A sample CX program looks like this:
 
 This is a simple program that prints age of Entry.
 We are going to reference this example throught the specification document.
+
+## Compiler Stages
+* Stage 1: Parse packages and package imports.
+* Stage 2: Parse structs, type aliases and enums.
+* Stage 3: Parse global variables.
+* Stage 4: Parse function type signatures.
+* Stage 5: Set global variable construct functions.
+* Stage 6: Parse function bodies.
+
 
 The cx compiler is broken down into several stages and each stages output is an input to the next stage.
 
