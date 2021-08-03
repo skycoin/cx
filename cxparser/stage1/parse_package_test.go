@@ -14,8 +14,8 @@ import "package1"
 	"package1/test2.cx": `
 package package1
 
-import package2
-import package3
+import "package2"
+import "package3"
 `,
 	"package2/test3.cx": `
 package package2
