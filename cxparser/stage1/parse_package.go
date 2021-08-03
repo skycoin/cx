@@ -153,8 +153,8 @@ func ParsePackages(sourceCode []*os.File, sourceFiles []string) ([]*Package, err
 
 					// TODO: check if it's not a standard library package.
 					// TODO: read all files in a given package
-					// Checking if `pkgName` already exists
 
+					// check if packages already exist
 					for _, pkgPackage := range pkgPackages {
 						exists := false
 						for _, pkg := range packages {
@@ -172,8 +172,6 @@ func ParsePackages(sourceCode []*os.File, sourceFiles []string) ([]*Package, err
 			}
 		}
 	}
-
-	// call ParsePackage for files in package dirs
 
 	//
 	return packages, nil
