@@ -11,6 +11,8 @@ import (
 	"strings"
 )
 
+var mainPackageDir string
+
 type SourceFile struct {
 	FileName   string
 	SourceCode []byte
@@ -90,9 +92,10 @@ func ParsePackages(sourceCode []*os.File, sourceFiles []string) ([]*Package, err
 
 				if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
 					// check if package exists
+					pkgName := match[len(match)-1]
 					var exists bool
 					for _, pkg := range packages {
-						if pkg.Name == match[len(match)-1] {
+						if pkg.Name == pkgName {
 							exists = true
 							// currentPackage = pkg
 							break
@@ -104,6 +107,14 @@ func ParsePackages(sourceCode []*os.File, sourceFiles []string) ([]*Package, err
 							PackageDir: srcName,
 						}
 						packages = append(packages, &pkg)
+						if mainPackageDir == "" && pkgName == "main" {
+							absPath, err := filepath.Abs(srcName)
+							if err != nil {
+								return nil, err
+							} else {
+								mainPackageDir = filepath.Dir(absPath)
+							}
+						}
 						// currentPackage = &pkg
 					}
 
@@ -121,8 +132,9 @@ func ParsePackages(sourceCode []*os.File, sourceFiles []string) ([]*Package, err
 
 				if match := reImpName.FindStringSubmatch(string(line)); match != nil {
 					pkgName := match[len(match)-1]
-					pkgPath := filepath.Join(filepath.Dir(srcName), pkgName)
+					pkgPath := filepath.Join(mainPackageDir, pkgName)
 					cxFiles, err := FindCxFiles(pkgPath, ".cx")
+					// panic(pkgPath)
 					if err != nil {
 						return nil, err
 					}
@@ -152,11 +164,8 @@ func ParsePackages(sourceCode []*os.File, sourceFiles []string) ([]*Package, err
 							}
 						}
 						if !exists {
-							pkg := Package{
-								Name:       pkgName,
-								PackageDir: srcName,
-							}
-							packages = append(packages, &pkg)
+
+							packages = append(packages, pkgPackage)
 						}
 					}
 				}
