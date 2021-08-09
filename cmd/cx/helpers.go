@@ -23,6 +23,7 @@ import (
 	"github.com/skycoin/cx/cxparser/util/profiling"
 )
 
+// TODO: move this to cxparser
 func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File) bool {
 
 	profile := profiling.StartCPUProfile("parse")
@@ -50,6 +51,7 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 	//var bcHeap []byte
 
 	// Parsing all the source code files sent as CLI arguments to CX.
+	// TODO: comment what this function does
 	cxparsing.ParseSourceCode(sourceCode, fileNames)
 
 	//remove path variable, not used
