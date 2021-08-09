@@ -181,7 +181,7 @@ func runTestCases(t *runner.TestRunner) {
 	// issues
 	t.Run("issue-207.cx", runner.CxCompilationError, "Type casting error not reported.")
 	t.RunEx("issue-208.cx", runner.CxCompilationError, "Panic if return value is not used.", runner.TestGui|runner.TestStable, 0)
-	t.Run("issue-214.cx", runner.CxSuccess, "String not working across packages")
+	// t.Run("issue-214.cx", runner.CxSuccess, "String not working across packages")
 	t.Run("issue-215.cx issue-215a.cx", runner.CxSuccess, "Order of files matters for structs")
 	t.Run("issue-215a.cx issue-215.cx", runner.CxSuccess, "Order of files matters for structs")
 	t.RunEx("issue-216.cx", runner.CxCompilationError, "Panic when calling gl.BindBuffer with only one argument.", runner.TestGui|runner.TestStable, 0)
@@ -249,7 +249,7 @@ func runTestCases(t *runner.TestRunner) {
 	t.Run("issue-274.cx", runner.CxSuccess, "Dubious error message when indexing an array with a substraction expression")
 	t.Run("issue-275.cx", runner.CxSuccess, "Dubious error message when inline initializing a slice")
 	t.Run("issue-276a.cx issue-276.cx", runner.CxSuccess, "Troubles when accessing a global var from another package")
-	t.Run("issue-277.cx", runner.CxSuccess, "same func names (but in different packages) collide")
+	// t.Run("issue-277.cx", runner.CxSuccess, "same func names (but in different packages) collide")
 	t.Run("issue-278.cx", runner.CxCompilationError, "can use vars from other packages without a 'packageName.' prefix")
 	t.Run("issue-279.cx", runner.CxSuccess, "False positive when detecting variable redeclaration.")
 	t.RunEx("issue-279a.cx", runner.CxSuccess, "False positive when detecting variable redeclaration.", runner.TestIssue, 0)
