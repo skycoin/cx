@@ -455,6 +455,8 @@ func ioReadDir(root string) ([]string, error) {
 	return files, nil
 }
 
+// TODO: move to parse.go
+// TODO: move out of ast
 // ParseArgsForCX parses the arguments and returns:
 //  - []arguments
 //  - []file pointers	open files
