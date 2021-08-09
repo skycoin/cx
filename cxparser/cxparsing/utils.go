@@ -31,9 +31,6 @@ func Preliminarystage(srcStrs, srcNames []string) int {
 	// for parsing packages
 	rePkg := regexp.MustCompile("package")
 	rePkgName := regexp.MustCompile(`(^|[\s])package\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
-	// for parsing structs
-	reStrct := regexp.MustCompile("type")
-	reStrctName := regexp.MustCompile(`(^|[\s])type\s+([_a-zA-Z][_a-zA-Z0-9]*)?\s`)
 
 	reGlbl := regexp.MustCompile("var")
 	reGlblName := regexp.MustCompile(`(^|[\s])var\s([_a-zA-Z][_a-zA-Z0-9]*)`)
@@ -49,82 +46,14 @@ func Preliminarystage(srcStrs, srcNames []string) int {
 	// package imports
 	// globals
 
-	ParsePackages(srcStrs, srcNames)
-
 	profiling.StartProfile("1. packages/structs")
 	// 1. Identify all the packages and structs
 	for srcI, srcStr := range srcStrs {
 		srcName := srcNames[srcI]
 		profiling.StartProfile(srcName)
+		prePkg, _ = ParsePackages(srcStr, srcName)
+		ParseStructs(srcStr, srcName, prePkg)
 
-		reader := strings.NewReader(srcStr)
-		scanner := bufio.NewScanner(reader)
-		var commentedCode bool
-		var lineno = 0
-		for scanner.Scan() {
-			line := scanner.Bytes()
-			lineno++
-
-			// Identify whether we are in a comment or not.
-			commentLoc := reComment.FindIndex(line)
-			multiCommentOpenLoc := reMultiCommentOpen.FindIndex(line)
-			multiCommentCloseLoc := reMultiCommentClose.FindIndex(line)
-			if commentedCode && multiCommentCloseLoc != nil {
-				commentedCode = false
-			}
-			if commentedCode {
-				continue
-			}
-			if multiCommentOpenLoc != nil && !commentedCode && multiCommentCloseLoc == nil {
-				commentedCode = true
-				continue
-			}
-
-			// At this point we know that we are *not* in a comment
-
-			// 1a. Identify all the packages
-			if loc := rePkg.FindIndex(line); loc != nil {
-				if (commentLoc != nil && commentLoc[0] < loc[0]) ||
-					(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
-					(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
-					// then it's commented out
-					continue
-				}
-
-				if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
-					if pkg, err := cxpartialparsing.Program.GetPackage(match[len(match)-1]); err != nil {
-						// then it hasn't been added
-						pkgName := match[len(match)-1]
-						newPkg := ast.MakePackage(pkgName)
-						cxpartialparsing.Program.AddPackage(newPkg)
-						prePkg = newPkg
-					} else {
-						prePkg = pkg
-					}
-				}
-			}
-
-			// 1b. Identify all the structs
-			if loc := reStrct.FindIndex(line); loc != nil {
-				if (commentLoc != nil && commentLoc[0] < loc[0]) ||
-					(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
-					(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
-					// then it's commented out
-					continue
-				}
-
-				if match := reStrctName.FindStringSubmatch(string(line)); match != nil {
-					if prePkg == nil {
-						println(ast.CompilationError(srcName, lineno),
-							"No package defined")
-					} else if _, err := cxpartialparsing.Program.GetStruct(match[len(match)-1], prePkg.Name); err != nil {
-						// then it hasn't been added
-						strct := ast.MakeStruct(match[len(match)-1])
-						prePkg.AddStruct(strct)
-					}
-				}
-			}
-		}
 		profiling.StopProfile(srcName)
 	} // for range srcStrs
 	profiling.StopProfile("1. packages/structs")
@@ -314,8 +243,6 @@ func ParsePackages(srcStr, srcName string) (*ast.CXPackage, int) {
 
 	profiling.StartProfile("1. packages/structs")
 	// 1. Identify all the packages and structs
-	for srcI, srcStr := range srcStrs {
-		srcName := srcNames[srcI]
 	profiling.StartProfile(srcName)
 
 	reader := strings.NewReader(srcStr)
@@ -358,7 +285,78 @@ func ParsePackages(srcStr, srcName string) (*ast.CXPackage, int) {
 					pkgName := match[len(match)-1]
 					newPkg := ast.MakePackage(pkgName)
 					cxpartialparsing.Program.AddPackage(newPkg)
-					}
+					prePkg = newPkg
+					return prePkg, parseErrors
+				} else {
+					return pkg, parseErrors
+				}
+			}
+		}
+	}
+	profiling.StopProfile(srcName)
+	profiling.StopProfile("1. packages/structs")
+	return prePkg, parseErrors
+}
+
+// ParseStructs - stage2
+func ParseStructs(srcStr, srcName string, prePkg *ast.CXPackage) int {
+	parseErrors := 0
+
+	// for parsing comments
+	reMultiCommentOpen := regexp.MustCompile(`/\*`)
+	reMultiCommentClose := regexp.MustCompile(`\*/`)
+	reComment := regexp.MustCompile("//")
+
+	// for parsing structs
+	reStrct := regexp.MustCompile("type")
+	reStrctName := regexp.MustCompile(`(^|[\s])type\s+([_a-zA-Z][_a-zA-Z0-9]*)?\s`)
+
+	profiling.StartProfile("1. packages/structs")
+	// 1. Identify all the packages and structs
+	profiling.StartProfile(srcName)
+
+	reader := strings.NewReader(srcStr)
+	scanner := bufio.NewScanner(reader)
+	var commentedCode bool
+	var lineno = 0
+	for scanner.Scan() {
+		line := scanner.Bytes()
+		lineno++
+
+		// Identify whether we are in a comment or not.
+		commentLoc := reComment.FindIndex(line)
+		multiCommentOpenLoc := reMultiCommentOpen.FindIndex(line)
+		multiCommentCloseLoc := reMultiCommentClose.FindIndex(line)
+		if commentedCode && multiCommentCloseLoc != nil {
+			commentedCode = false
+		}
+		if commentedCode {
+			continue
+		}
+		if multiCommentOpenLoc != nil && !commentedCode && multiCommentCloseLoc == nil {
+			commentedCode = true
+			continue
+		}
+
+		// At this point we know that we are *not* in a comment
+
+		// 1b. Identify all the structs
+		if loc := reStrct.FindIndex(line); loc != nil {
+			if (commentLoc != nil && commentLoc[0] < loc[0]) ||
+				(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
+				(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
+				// then it's commented out
+				continue
+			}
+
+			if match := reStrctName.FindStringSubmatch(string(line)); match != nil {
+				if prePkg == nil {
+					println(ast.CompilationError(srcName, lineno),
+						"No package defined")
+				} else if _, err := cxpartialparsing.Program.GetStruct(match[len(match)-1], prePkg.Name); err != nil {
+					// then it hasn't been added
+					strct := ast.MakeStruct(match[len(match)-1])
+					prePkg.AddStruct(strct)
 				}
 			}
 		}
