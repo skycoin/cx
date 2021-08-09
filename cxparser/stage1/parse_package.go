@@ -18,6 +18,7 @@ type SourceFile struct {
 	SourceCode []byte
 }
 
+// TODO: changes to SourcePackage
 type Package struct {
 	Name        string
 	PackageDir  string
