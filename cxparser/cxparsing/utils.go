@@ -299,7 +299,8 @@ func Preliminarystage(srcStrs, srcNames []string) int {
 }
 
 // ParsePackages - stage1
-func ParsePackages(srcStrs, srcNames []string) int {
+func ParsePackages(srcStr, srcName string) (*ast.CXPackage, int) {
+	var prePkg *ast.CXPackage
 	parseErrors := 0
 
 	// for parsing comments
@@ -315,48 +316,48 @@ func ParsePackages(srcStrs, srcNames []string) int {
 	// 1. Identify all the packages and structs
 	for srcI, srcStr := range srcStrs {
 		srcName := srcNames[srcI]
-		profiling.StartProfile(srcName)
+	profiling.StartProfile(srcName)
 
-		reader := strings.NewReader(srcStr)
-		scanner := bufio.NewScanner(reader)
-		var commentedCode bool
-		var lineno = 0
-		for scanner.Scan() {
-			line := scanner.Bytes()
-			lineno++
+	reader := strings.NewReader(srcStr)
+	scanner := bufio.NewScanner(reader)
+	var commentedCode bool
+	var lineno = 0
+	for scanner.Scan() {
+		line := scanner.Bytes()
+		lineno++
 
-			// Identify whether we are in a comment or not.
-			commentLoc := reComment.FindIndex(line)
-			multiCommentOpenLoc := reMultiCommentOpen.FindIndex(line)
-			multiCommentCloseLoc := reMultiCommentClose.FindIndex(line)
-			if commentedCode && multiCommentCloseLoc != nil {
-				commentedCode = false
-			}
-			if commentedCode {
+		// Identify whether we are in a comment or not.
+		commentLoc := reComment.FindIndex(line)
+		multiCommentOpenLoc := reMultiCommentOpen.FindIndex(line)
+		multiCommentCloseLoc := reMultiCommentClose.FindIndex(line)
+		if commentedCode && multiCommentCloseLoc != nil {
+			commentedCode = false
+		}
+		if commentedCode {
+			continue
+		}
+		if multiCommentOpenLoc != nil && !commentedCode && multiCommentCloseLoc == nil {
+			commentedCode = true
+			continue
+		}
+
+		// At this point we know that we are *not* in a comment
+
+		// 1a. Identify all the packages
+		if loc := rePkg.FindIndex(line); loc != nil {
+			if (commentLoc != nil && commentLoc[0] < loc[0]) ||
+				(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
+				(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
+				// then it's commented out
 				continue
 			}
-			if multiCommentOpenLoc != nil && !commentedCode && multiCommentCloseLoc == nil {
-				commentedCode = true
-				continue
-			}
 
-			// At this point we know that we are *not* in a comment
-
-			// 1a. Identify all the packages
-			if loc := rePkg.FindIndex(line); loc != nil {
-				if (commentLoc != nil && commentLoc[0] < loc[0]) ||
-					(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
-					(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
-					// then it's commented out
-					continue
-				}
-
-				if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
-					if _, err := cxpartialparsing.Program.GetPackage(match[len(match)-1]); err != nil {
-						// then it hasn't been added
-						pkgName := match[len(match)-1]
-						newPkg := ast.MakePackage(pkgName)
-						cxpartialparsing.Program.AddPackage(newPkg)
+			if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
+				if pkg, err := cxpartialparsing.Program.GetPackage(match[len(match)-1]); err != nil {
+					// then it hasn't been added
+					pkgName := match[len(match)-1]
+					newPkg := ast.MakePackage(pkgName)
+					cxpartialparsing.Program.AddPackage(newPkg)
 					}
 				}
 			}
