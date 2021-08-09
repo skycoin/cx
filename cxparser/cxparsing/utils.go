@@ -18,6 +18,8 @@ import (
 
 // preliminarystage performs a first pass for the CX cxgo. Globals, packages and
 // custom types are added to `cxpartialparsing.Program`.
+// takes source strings in one package
+// TODO: takes SourcePackage
 func Preliminarystage(srcStrs, srcNames []string) int {
 	var prePkg *ast.CXPackage
 	parseErrors := 0
@@ -26,8 +28,10 @@ func Preliminarystage(srcStrs, srcNames []string) int {
 	reMultiCommentClose := regexp.MustCompile(`\*/`)
 	reComment := regexp.MustCompile("//")
 
+	// for parsing packages
 	rePkg := regexp.MustCompile("package")
 	rePkgName := regexp.MustCompile(`(^|[\s])package\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
+	// for parsing structs
 	reStrct := regexp.MustCompile("type")
 	reStrctName := regexp.MustCompile(`(^|[\s])type\s+([_a-zA-Z][_a-zA-Z0-9]*)?\s`)
 
@@ -39,6 +43,11 @@ func Preliminarystage(srcStrs, srcNames []string) int {
 
 	reImp := regexp.MustCompile("import")
 	reImpName := regexp.MustCompile(`(^|[\s])import\s+"([_a-zA-Z][_a-zA-Z0-9/-]*)"`)
+
+	// packages
+	// structs
+	// package imports
+	// globals
 
 	profiling.StartProfile("1. packages/structs")
 	// 1. Identify all the packages and structs
@@ -83,7 +92,8 @@ func Preliminarystage(srcStrs, srcNames []string) int {
 				if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
 					if pkg, err := cxpartialparsing.Program.GetPackage(match[len(match)-1]); err != nil {
 						// then it hasn't been added
-						newPkg := ast.MakePackage(match[len(match)-1])
+						pkgName := match[len(match)-1]
+						newPkg := ast.MakePackage(pkgName)
 						cxpartialparsing.Program.AddPackage(newPkg)
 						prePkg = newPkg
 					} else {
@@ -151,6 +161,7 @@ func Preliminarystage(srcStrs, srcNames []string) int {
 				// continue
 			}
 
+			// TODO: move this out to its own function
 			// Identify all the package imports.
 			if loc := reImp.FindIndex(line); loc != nil {
 				if (commentLoc != nil && commentLoc[0] < loc[0]) ||
