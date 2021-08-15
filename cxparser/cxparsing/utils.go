@@ -16,35 +16,13 @@ import (
 	"github.com/skycoin/cx/cxparser/util/profiling"
 )
 
-// preliminarystage performs a first pass for the CX cxgo. Globals, packages and
+// Preliminarystage performs a first pass for the CX cxgo. Globals, packages and
 // custom types are added to `cxpartialparsing.Program`.
 // takes source strings in one package
 // TODO: takes SourcePackage
 func Preliminarystage(srcStrs, srcNames []string) int {
 	var prePkg *ast.CXPackage
 	parseErrors := 0
-
-	// reMultiCommentOpen := regexp.MustCompile(`/\*`)
-	// reMultiCommentClose := regexp.MustCompile(`\*/`)
-	// reComment := regexp.MustCompile("//")
-
-	// // for parsing packages
-	// rePkg := regexp.MustCompile("package")
-	// rePkgName := regexp.MustCompile(`(^|[\s])package\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
-
-	// reGlbl := regexp.MustCompile("var")
-	// reGlblName := regexp.MustCompile(`(^|[\s])var\s([_a-zA-Z][_a-zA-Z0-9]*)`)
-
-	// reBodyOpen := regexp.MustCompile("{")
-	// reBodyClose := regexp.MustCompile("}")
-
-	// reImp := regexp.MustCompile("import")
-	// reImpName := regexp.MustCompile(`(^|[\s])import\s+"([_a-zA-Z][_a-zA-Z0-9/-]*)"`)
-
-	// packages
-	// structs
-	// package imports
-	// globals
 
 	profiling.StartProfile("1. packages/structs")
 	// 1. Identify all the packages and structs
@@ -59,7 +37,12 @@ func Preliminarystage(srcStrs, srcNames []string) int {
 	profiling.StopProfile("1. packages/structs")
 
 	profiling.StartProfile("2. globals")
-	// 2. Identify all global variables
+
+	// 1. Identify package imports
+	for i, source := range srcStrs {
+		ParsePackageImports(source, srcNames[i], prePkg)
+	}
+	// 3. Identify all global variables
 	//    We also identify packages again, so we know to what
 	//    package we're going to add the variable declaration to.
 	for i, source := range srcStrs {
@@ -243,8 +226,6 @@ func ParseGlobalVariables(source, srcName string, prePkg *ast.CXPackage) {
 	reBodyOpen := regexp.MustCompile("{")
 	reBodyClose := regexp.MustCompile("}")
 
-	reImp := regexp.MustCompile("import")
-	reImpName := regexp.MustCompile(`(^|[\s])import\s+"([_a-zA-Z][_a-zA-Z0-9/-]*)"`)
 	profiling.StartProfile(srcName)
 	// inBlock needs to be 0 to guarantee that we're in the global scope
 	var inBlock int
@@ -273,47 +254,6 @@ func ParseGlobalVariables(source, srcName string, prePkg *ast.CXPackage) {
 			commentedCode = true
 			// continue
 		}
-
-		// TODO: move this out to its own function
-		// Identify all the package imports.
-		if loc := reImp.FindIndex(line); loc != nil {
-			if (commentLoc != nil && commentLoc[0] < loc[0]) ||
-				(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
-				(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
-				// then it's commented out
-				continue
-			}
-
-			if match := reImpName.FindStringSubmatch(string(line)); match != nil {
-				pkgName := match[len(match)-1]
-				// Checking if `pkgName` already exists and if it's not a standard library package.
-				if _, err := cxpartialparsing.Program.GetPackage(pkgName); err != nil && !constants2.IsCorePackage(pkgName) {
-					// _, sourceCode, srcNames := ParseArgsForCX([]string{fmt.Sprintf("%s%s", SRCPATH, pkgName)}, false)
-					_, sourceCode, fileNames := ast.ParseArgsForCX([]string{filepath.Join(globals2.SRCPATH, pkgName)}, false)
-					ParseSourceCode(sourceCode, fileNames)
-				}
-			}
-		}
-
-		// // we search for packages at the same time, so we can know to what package to add the global
-		// if loc := rePkg.FindIndex(line); loc != nil {
-		// 	if (commentLoc != nil && commentLoc[0] < loc[0]) ||
-		// 		(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
-		// 		(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
-		// 		// then it's commented out
-		// 		continue
-		// 	}
-
-		// 	if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
-		// 		if pkg, err := cxpartialparsing.Program.GetPackage(match[len(match)-1]); err != nil {
-		// 			// then it hasn't been added
-		// 			prePkg = ast.MakePackage(match[len(match)-1])
-		// 			cxpartialparsing.Program.AddPackage(prePkg)
-		// 		} else {
-		// 			prePkg = pkg
-		// 		}
-		// 	}
-		// }
 
 		if locs := reBodyOpen.FindAllIndex(line, -1); locs != nil {
 			for _, loc := range locs {
@@ -385,6 +325,67 @@ func ParseGlobalVariables(source, srcName string, prePkg *ast.CXPackage) {
 				}
 			}
 		}
+	}
+	profiling.StopProfile(srcName)
+}
+
+func ParsePackageImports(source, srcName string, prePkg *ast.CXPackage) {
+
+	reMultiCommentOpen := regexp.MustCompile(`/\*`)
+	reMultiCommentClose := regexp.MustCompile(`\*/`)
+	reComment := regexp.MustCompile("//")
+
+	reImp := regexp.MustCompile("import")
+	reImpName := regexp.MustCompile(`(^|[\s])import\s+"([_a-zA-Z][_a-zA-Z0-9/-]*)"`)
+	profiling.StartProfile(srcName)
+
+	var commentedCode bool
+
+	scanner := bufio.NewScanner(strings.NewReader(source))
+	for scanner.Scan() {
+		line := scanner.Bytes()
+
+		// we need to ignore function bodies
+		// it'll also ignore struct declaration's bodies, but this doesn't matter
+		commentLoc := reComment.FindIndex(line)
+
+		multiCommentOpenLoc := reMultiCommentOpen.FindIndex(line)
+		multiCommentCloseLoc := reMultiCommentClose.FindIndex(line)
+
+		if commentedCode && multiCommentCloseLoc != nil {
+			commentedCode = false
+		}
+
+		if commentedCode {
+			continue
+		}
+
+		if multiCommentOpenLoc != nil && !commentedCode && multiCommentCloseLoc == nil {
+			commentedCode = true
+			// continue
+		}
+
+		// TODO: move this out to its own function
+		// Identify all the package imports.
+		if loc := reImp.FindIndex(line); loc != nil {
+			if (commentLoc != nil && commentLoc[0] < loc[0]) ||
+				(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
+				(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
+				// then it's commented out
+				continue
+			}
+
+			if match := reImpName.FindStringSubmatch(string(line)); match != nil {
+				pkgName := match[len(match)-1]
+				// Checking if `pkgName` already exists and if it's not a standard library package.
+				if _, err := cxpartialparsing.Program.GetPackage(pkgName); err != nil && !constants2.IsCorePackage(pkgName) {
+					// _, sourceCode, srcNames := ParseArgsForCX([]string{fmt.Sprintf("%s%s", SRCPATH, pkgName)}, false)
+					_, sourceCode, fileNames := ast.ParseArgsForCX([]string{filepath.Join(globals2.SRCPATH, pkgName)}, false)
+					ParseSourceCode(sourceCode, fileNames)
+				}
+			}
+		}
+
 	}
 	profiling.StopProfile(srcName)
 }
