@@ -1013,8 +1013,9 @@ func CopyArgFields(sym *ast.CXArgument, arg *ast.CXArgument) {
 	// below (as in the `arg.IsSlice` check), but the process differs in the
 	// case of a slice struct field.
 	elt := ast.GetAssignmentElement(sym)
-	if !arg.IsSlice && arg.CustomType != nil && elt.IsSlice {
-		// elt.DereferenceOperations = []int{4, 4}
+
+
+	if (!arg.IsSlice || hasDerefOp(sym, constants.DEREF_ARRAY)) && arg.CustomType != nil && elt.IsSlice && elt != sym {
 		for i, deref := range elt.DereferenceOperations {
 			// The cxgo when reading `foo[5]` in postfix.go does not know if `foo`
 			// is a slice or an array. At this point we now know it's a slice and we need
@@ -1023,7 +1024,8 @@ func CopyArgFields(sym *ast.CXArgument, arg *ast.CXArgument) {
 				elt.DereferenceOperations[i] = constants.DEREF_SLICE
 			}
 		}
-		if elt.DereferenceOperations[0] == constants.DEREF_POINTER {
+
+		if len(elt.DereferenceOperations) > 0 && elt.DereferenceOperations[0] == constants.DEREF_POINTER {
 			elt.DereferenceOperations = elt.DereferenceOperations[1:]
 		}
 	}
