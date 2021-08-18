@@ -88,6 +88,7 @@ func WritePrimary(typeCode types.Code, byts []byte, isSlice bool) []*ast.CXExpre
 			}
 		}
 		AST.DataSegmentSize += size
+		AST.HeapStartsAt = AST.DataSegmentSize + AST.DataSegmentStartsAt
 
 		expr := ast.MakeExpression(nil, CurrentFile, LineNo)
 		expr.Package = pkg

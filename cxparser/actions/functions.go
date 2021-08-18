@@ -130,8 +130,6 @@ func FunctionDeclaration(fn *ast.CXFunction, inputs, outputs []*ast.CXArgument, 
 	//TODO: Why would the heap starting position always be incrasing?
 	//TODO: HeapStartsAt only increases, with every write?
 	//DataOffset only increases
-	AST.HeapStartsAt = AST.DataSegmentSize + AST.DataSegmentStartsAt //Why would declaring a function set heap?
-	//AST.HeapStartsAt = constants.STACK_SIZE
 
 	ProcessGoTos(fn, exprs)
 
@@ -1013,7 +1011,6 @@ func CopyArgFields(sym *ast.CXArgument, arg *ast.CXArgument) {
 	// below (as in the `arg.IsSlice` check), but the process differs in the
 	// case of a slice struct field.
 	elt := ast.GetAssignmentElement(sym)
-
 
 	if (!arg.IsSlice || hasDerefOp(sym, constants.DEREF_ARRAY)) && arg.CustomType != nil && elt.IsSlice && elt != sym {
 		for i, deref := range elt.DereferenceOperations {
