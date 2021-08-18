@@ -9,7 +9,7 @@ language, with a very strict type system and a syntax
 similar to Golang's. CX provides a new programming paradigm based on
 the concept of affordances.
 
-## Table of Contents
+[Table of Contents](#Table-ofContents) 
 
    * [CX Programming Language](#cx-programming-language-1)
    * [Installation](#installation)

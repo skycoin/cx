@@ -58,16 +58,14 @@
   * [`glfw` Package Functions](#glfw-package-functions)
   * [`gltext` Package Functions](#gltext-package-functions)
 
-# Syntax
-[[Back to the Table of Contents] ↑](#table-of-contents)
+# [Syntax](#table-of-contents)
 
 In this section, we're going to have a look at how a CX program looks
 like. Basically, the following sections are not going to discuss about
 the logic behind the various CX constructs, i.e. how they
 behave; we're only going to see how they look like.
 
-## Comments
-[[Back to the Table of Contents] ↑](#table-of-contents)
+## [Comments](#table-of-contents)
 
 Some of the code snippets that follow have comments in them, i.e.,
 blocks of text that are not actually "run" by the CX compiler or
@@ -92,8 +90,7 @@ str.print("Hello world!")
 */
 ```
 
-## Declarations
-[[Back to the Table of Contents] ↑](#table-of-contents)
+## [Declarations](#table-of-contents)
 
 A declaration refers to a *named* element in a program's
 structure, which are described using other constructs, such as
@@ -101,8 +98,7 @@ expressions and other statements. For example: a function can be
 referred by its name and it's constructed by expressions and local
 variable declarations.
 
-### Allowed Names
-[[Back to the Table of Contents] ↑](#table-of-contents)
+### [Allowed Names](#table-of-contents)
 
 Any name that satisfies the PCRE regular expression
 `[_a-zA-Z][_a-zA-Z0-9]*` is allowed as an identifier for a declared
@@ -111,8 +107,7 @@ element. In other words, an identifier can start with an underscore
 or more underscores or lowercase or uppercase letters, and any number
 from 0 to 9.
 
-### Strict Type System
-[[Back to the Table of Contents] ↑](#table-of-contents)
+### [Strict Type System](#table-of-contents)
 
 One of CX's goals is to provide a very strict type system. The purpose
 of this is to reduce runtime errors as much as possible. In order to
@@ -138,8 +133,7 @@ handling the desired type. So, retaking the previous example, you'd
 need to parse one of them to match the other's type, either
 `i32.i64(5) + 5L` or `5 + i64.i32(5L)`.
 
-### Primitive Types
-[[Back to the Table of Contents] ↑](#table-of-contents)
+### [Primitive Types](#table-of-contents)
 
 There are seven primitive types in CX: *bool*, *str*, *byte*, *i32*,
 *i64*, *f32*, and *f64*. Those represent Booleans (*true*
@@ -147,8 +141,7 @@ or *false*), character strings, bytes, 32-bit integers, 64-bit
 integers, single precision and double precision floating-point
 numbers, respectively.
 
-### Global variables
-[[Back to the Table of Contents] ↑](#table-of-contents)
+### [Global variables](#table-of-contents)
 
 Global variables are different from local variables regarding
 scope. Global variables are available to any function defined in a
@@ -181,8 +174,7 @@ functions are printing the values of the two global variables
 defined. They are going to print the same values, as they are
 referring to the same variables.
 
-### Local variables
-[[Back to the Table of Contents] ↑](#table-of-contents)
+### [Local variables](#table-of-contents)
 
 In contrast to global variables, local variables are constrained to
 the function where they are declared. This means that is not possible
@@ -211,8 +203,7 @@ de-activate CX's compile-time type checking, and the program above
 could make it to the runtime, CX would not print 5 when running
 `foo()`, as that function is unaware of that variable.
 
-### Arrays
-[[Back to the Table of Contents] ↑](#table-of-contents)
+### [Arrays](#table-of-contents)
 
 Arrays (or vectors) and multi-dimensional arrays (or matrices) can be
 declared using a syntax similar to C's.
@@ -244,8 +235,7 @@ later section. Lastly, we see an example of a 2x2 matrix of type
 Lastly, we can see how we can initialize an array using the bracket
 notation, e.g. `arr1[0] = 10`.
 
-### Slices
-[[Back to the Table of Contents] ↑](#table-of-contents)
+### [Slices](#table-of-contents)
 
 Golang-like slices exist in CX (dynamic arrays). Slices are declared
 similarly to arrays, with the only difference that the size is
@@ -289,8 +279,7 @@ func main () {
 As this behavior is more related to the logic behind slices, it is
 further explained in the *Runtime->Data Structures->Slices* section.
 
-### Literals
-[[Back to the Table of Contents] ↑](#table-of-contents)
+### [Literals](#table-of-contents)
 
 A literal is any data structure that is not being referenced by any
 variable yet. For example: `1`, `true`, `[]i32{1, 2, 3}`, `Point{x:
@@ -323,8 +312,7 @@ y: 20}`), array (`[5]i32{1, 2, 3, 4, 5}`), and slice (`[]i32{100, 200, 300}`)
 literals, in that order. These literals exist to simplify the creation
 of such data structures.
 
-### Functions
-[[Back to the Table of Contents] ↑](#table-of-contents)
+### [Functions](#table-of-contents)
 
 Functions in CX are similar in syntax to functions in Go. The only
 exception is that named outputs are enforced at the moment (this will
@@ -371,8 +359,7 @@ func main () {
 In this case, `foo` is declared to receive one input parameter, and
 `bar` is declared to return one output parameter.
 
-### Custom Types
-[[Back to the Table of Contents] ↑](#table-of-contents)
+### [Custom Types](#table-of-contents)
 
 If primitive types are not enough, you can define your own custom
 types by combining the primitive types and other constructs like
@@ -401,8 +388,7 @@ declaring the custom type, you can start declaring variables of that
 type anywhere in the package where it was declared in. The code in
 `foo` shows how you can create and use an instance of that structure.
 
-### Methods
-[[Back to the Table of Contents] ↑](#table-of-contents)
+### [Methods](#table-of-contents)
 
 A variation of functions that are associated to custom types are
 *methods*.
@@ -458,8 +444,7 @@ type *Point* and another for the type *Line*. In the case of
 the case of `Line.print` we print the coordinates of the two points
 that define the *Line* instance.
 
-### Packages
-[[Back to the Table of Contents] ↑](#table-of-contents)
+### [Packages](#table-of-contents)
 
 In the previous examples we have always been using a single package:
 `main`. If your program grows too large it's convenient to divide your
@@ -502,15 +487,13 @@ single output parameter.
 We can then see how the `main` package `import`s both the `foo` and
 `bar` packages, to later call each of these functions.
 
-## Statements
-[[Back to the Table of Contents] ↑](#table-of-contents)
+## [Statements](#table-of-contents)
 
 Statements are different to declarations, as they don't create any
 named elements in a program. They are used to control the flow of a
 program.
 
-### If and if/else
-[[Back to the Table of Contents] ↑](#table-of-contents)
+### [If and if/else](#table-of-contents)
 
 The most basic statement is the *if* statement, which is going to
 execute a block of code only if a condition is true.
@@ -557,8 +540,7 @@ Lastly, the example above shows how to write an *if/else* statement in CX.
 As a note about its syntax, the predicates or conditions don't need to
 be enclosed in parentheses, just like in Go.
 
-### Else if
-[[Back to the Table of Contents] ↑](#table-of-contents)
+### [Else if](#table-of-contents)
 
 Instead of simply adding one alternative path, you can string together a series
 of *else if* blocks, which check for as many different conditions as you like.
@@ -584,8 +566,7 @@ func main () {
 }
 ```
 
-### For loop
-[[Back to the Table of Contents] ↑](#table-of-contents)
+### [For loop](#table-of-contents)
 
 CX's only looping statement is the *for* loop. Similar to Go, the
 *for* loop in CX can be used as the *while* statement in other
@@ -669,8 +650,7 @@ func main () {
 Lastly, the for loop can also completely omit the initialization part,
 as seen above.
 
-### Goto
-[[Back to the Table of Contents] ↑](#table-of-contents)
+### [Goto](#table-of-contents)
 
 `goto` can be used to immediately jump the execution of a program to
 the corresponding labeled expression.
@@ -691,8 +671,7 @@ In the example above, we see how a `goto` statement forces CX to
 ignore executing the expression labeled as `label1`, and instead jumps
 to the `label2` expression.
 
-## Expressions
-[[Back to the Table of Contents] ↑](#table-of-contents)
+## [Expressions](#table-of-contents)
 
 Expressions are basically function calls. But the term expression also
 takes into consideration the variables that are receiving the
@@ -715,8 +694,7 @@ For example, the expression `i32.print(foo()[0])` in the code above
 consists of two function calls, and the array returned by the call
 to `foo` is "dereferenced" to its *0th* element.
 
-## Assignments and Initializations
-[[Back to the Table of Contents] ↑](#table-of-contents)
+## [Assignments and Initializations](#table-of-contents)
 
 As in many other C-like languages, assignments are done using the
 equal (`=`) sign.
@@ -749,8 +727,7 @@ in CX. The `:=` token can be used to tell CX to infer a variable's
 type. This way, CX declares and initializes at the same time, as seen
 in the example above.
 
-## Affordances
-[[Back to the Table of Contents] ↑](#table-of-contents)
+## [Affordances](#table-of-contents)
 
 The affordance system in CX uses a special operator: `->`.  This
 operator takes a series of statements that have the form of function
@@ -804,16 +781,14 @@ targetExpr:
 }
 ```
 
-# Runtime
-[[Back to the Table of Contents] ↑](#table-of-contents)
+# [Runtime](#table-of-contents)
 
 The previous section presents the language features from a syntax
 perspective. In this section we'll cover what's the logic behind these
 features: how they interact with other elements in your program, and
 what are the intrinsic capabilities of each of these features.
 
-## Packages
-[[Back to the Table of Contents] ↑](#table-of-contents)
+## [Packages](#table-of-contents)
 
 Packages are CX's mechanism for better organizing your code. Although
 it is theoretically possible to store a big project in a single
@@ -826,16 +801,14 @@ throw any error if you don't follow this way of laying out your source
 files. In fact, you can declare different packages in a single source
 code file.
 
-## Data Structures
-[[Back to the Table of Contents] ↑](#table-of-contents)
+## [Data Structures](#table-of-contents)
 
 Data structures are particular arrangements of bytes that the language
 interprets and stores in special ways. The most basic data structures
 represent basic data, such as numbers and character strings, but these
 basic types can be used to construct more complex data types.
 
-### Literals
-[[Back to the Table of Contents] ↑](#table-of-contents)
+### [Literals](#table-of-contents)
 
 A literal is any data structure that is not being referenced by any
 variable yet. For example: `1`, `true`, `[]i32{1, 2, 3}`, `Point{x:
@@ -914,8 +887,7 @@ than *i32*, you can use different suffixes: `B`, `L` and `D`, for
 *byte*, *i64* (long) and *f64*, respectively. So, assuming `foo` is of
 type *i64*, you can do this assignment: `foo = 34L`.
 
-### Variables
-[[Back to the Table of Contents] ↑](#table-of-contents)
+### [Variables](#table-of-contents)
 
 When CX compiles a program, it knows how many bytes need to be
 reserved in the stack for each of the functions. CX can know this
@@ -995,8 +967,7 @@ structures, such as slices or character strings, these are initialized
 to a nil pointer, which is represented by 4 zeroed bytes. This nil
 pointer is located in the heap memory segment, instead of the stack.
 
-### Primitive types
-[[Back to the Table of Contents] ↑](#table-of-contents)
+### [Primitive types](#table-of-contents)
 
 There are seven primitive types in CX: *bool*, *str*, *byte*, *i32*,
 *i64*, *f32*, and *f64*. These types can be used to construct other
@@ -1039,8 +1010,7 @@ that `foo` was first assigned a memory address located in the data
 memory segment, and then it was assigned an address located in the
 heap.
 
-### Arrays
-[[Back to the Table of Contents] ↑](#table-of-contents)
+### [Arrays](#table-of-contents)
 
 Arrays, as in other programming languages, are used to create
 collections of data structures. These data structures can be primitive
@@ -1079,8 +1049,7 @@ elements and you need to be sending that arrays millions of times to
 another function, it's going to impact your program's performance a
 lot. A way to avoid this is to either use pointers to arrays or slices.
 
-### Slices
-[[Back to the Table of Contents] ↑](#table-of-contents)
+### [Slices](#table-of-contents)
 
 Dynamic arrays don't exist in CX. This means that the following
 code is not a valid CX program:
@@ -1186,8 +1155,7 @@ func main () {
 The example above shows the behavior of the slice in the previous
 example, but using arrays.
 
-### Structures
-[[Back to the Table of Contents] ↑](#table-of-contents)
+### [Structures](#table-of-contents)
 
 Structures are CX's mechanism for creating custom types, as in many other
 C-like languages. Structures are basically a grouping of other
@@ -1249,8 +1217,7 @@ case of the next struct instance, the first eight bytes represent an
 *i64* field so, although both struct instances contain the same number
 of fields and of the same type, the byte layout changes.
 
-### Pointers
-[[Back to the Table of Contents] ↑](#table-of-contents)
+### [Pointers](#table-of-contents)
 
 Sometimes it's useful to pass variables to functions by reference
 instead of by value.
@@ -1361,8 +1328,7 @@ using the `&` operator. `foo` also changed, and it now accepts a
 pointer to a 32-bit integer, i.e. `*i32`. After running the example,
 you'll notice that, this time, `foo` is now changing `num`'s value.
 
-### Escape Analysis
-[[Back to the Table of Contents] ↑](#table-of-contents)
+### [Escape Analysis](#table-of-contents)
 
 Consider the following example:
 
@@ -1475,15 +1441,13 @@ following 20 bytes after `main`'s stack frame. Yet, when we call
 `5` is not the one created in `foo`, though, but a copy of it that was
 allocated in the heap.
 
-## Control Flow
-[[Back to the Table of Contents] ↑](#table-of-contents)
+## [Control Flow](#table-of-contents)
 
 Once we have the appropriate data structures for our program, we'll
 now need to process them. In order to do so, we need to have access to
 some control flow structures.
 
-### Functions
-[[Back to the Table of Contents] ↑](#table-of-contents)
+### [Functions](#table-of-contents)
 
 Functions are used to encapsulate routines that we plan to be
 frequently calling. In addition to encapsulating a series of
@@ -1535,8 +1499,7 @@ func main () {
 }
 ```
 
-### Methods
-[[Back to the Table of Contents] ↑](#table-of-contents)
+### [Methods](#table-of-contents)
 
 Methods are useful when we want to associate a particular function to
 a particular custom type (associating functions to primitive types is
@@ -1609,8 +1572,7 @@ The example above shows us how we can create two versions of the
 function `draw`, and the behavior of each depends on the custom type
 that we're using to call it.
 
-### If and if/else
-[[Back to the Table of Contents] ↑](#table-of-contents)
+### [If and if/else](#table-of-contents)
 
 *if* and *if/else* statements are used to execute a block of
  instructions only if certain condition is true or false. Behind the
@@ -1706,8 +1668,7 @@ messages are going to be displayed to the user. These messages
 represent the state of the player or the monster, depending on their
 hit points (HP).
 
-### For loop
-[[Back to the Table of Contents] ↑](#table-of-contents)
+### [For loop](#table-of-contents)
 
 The *for* loop is the only looping mechanism in CX. Just like *if* and
 *if/else* statements are constructed using `jmp` statements, *for*
@@ -1874,8 +1835,7 @@ func main () {
 Lastly, we can see how we use a *for* loop to create something similar
 to a REPL for the program that we have been building in the last few sections.
 
-### Go-to
-[[Back to the Table of Contents] ↑](#table-of-contents)
+### [Go-to](#table-of-contents)
 
 The last control flow mechanism is *go-to*, which is achieved through
 the `goto` statement.
@@ -1919,13 +1879,11 @@ The program above creates an infinite loop by using `goto`s. The loop
 will keep asking the user to input commands, and will jump to certain
 expression depending on the command.
 
-## Affordances
-[[Back to the Table of Contents] ↑](#table-of-contents)
+## [Affordances](#table-of-contents)
 
 ![CX Affordances](documentation/images/affordances.png)
 
-# Native Functions
-[[Back to the Table of Contents] ↑](#table-of-contents)
+# [Native Functions](#table-of-contents)
 
 ## Type-inferenced Functions
 
@@ -2054,8 +2012,7 @@ func main () {
 }
 ```
 
-### `mod`
-[[Back to the Table of Contents] ↑](#table-of-contents)
+### [`mod`](#table-of-contents)
 
 Note: the preceding function only works with arguments of type *byte*,
 *i32* or *i64*.
@@ -2071,8 +2028,7 @@ func main () {
 }
 ```
 
-### `len`
-[[Back to the Table of Contents] ↑](#table-of-contents)
+### [`len`](#table-of-contents)
 
 Note: the preceding function only works with arguments of type *str*,
 *arrays* or *slices*.
@@ -2097,8 +2053,7 @@ func main () {
 }
 ```
 
-### `printf`
-[[Back to the Table of Contents] ↑](#table-of-contents)
+### [`printf`](#table-of-contents)
 
 Note: the preceding function requires a format *str* as its first
 argument, followed by any number of arguments of type *str*, *i32*,
@@ -2126,8 +2081,7 @@ func main () {
 }
 ```
 
-### `sprintf`
-[[Back to the Table of Contents] ↑](#table-of-contents)
+### [`sprintf`](#table-of-contents)
 
 Note: the preceding function requires a format *str* as its first
 argument, followed by any number of arguments of type *str*, *i32*,
@@ -2152,8 +2106,7 @@ func main () {
 }
 ```
 
-## Slice Functions
-[[Back to the Table of Contents] ↑](#table-of-contents)
+## [Slice Functions](#table-of-contents)
 
 ### `append`
 
@@ -2176,8 +2129,7 @@ func main () {
 }
 ```
 
-## Input/Output Functions
-[[Back to the Table of Contents] ↑](#table-of-contents)
+## [Input/Output Functions](#table-of-contents)
 
 The following functions are used to handle input from the user and to
 print output to a terminal.
@@ -2232,8 +2184,7 @@ func main () {
 }
 ```
 
-## Parse Functions
-[[Back to the Table of Contents] ↑](#table-of-contents)
+## [Parse Functions](#table-of-contents)
 
 All parse functions follow the same pattern: `XXX.YYY` where *XXX* is
 the receiving type and *YYY* is the target type. You can read these
@@ -2378,8 +2329,7 @@ func main () {
 }
 ```
 
-## Unit Testing
-[[Back to the Table of Contents] ↑](#table-of-contents)
+## [Unit Testing](#table-of-contents)
 
 The `assert` function is used to test the value of an expression
 against another value. This function is useful to test that a
@@ -2415,8 +2365,7 @@ func main () {
 }
 ```
 
-## `bool` Type Functions
-[[Back to the Table of Contents] ↑](#table-of-contents)
+## [`bool` Type Functions](#table-of-contents)
 
 ### `bool.print`
 ### `bool.eq`
@@ -2439,8 +2388,7 @@ func main () {
 }
 ```
 
-## `str` Type Functions
-[[Back to the Table of Contents] ↑](#table-of-contents)
+## [`str` Type Functions](#table-of-contents)
 
 ### `str.print`
 ### `str.concat`
@@ -2455,8 +2403,7 @@ func main () {
 }
 ```
 
-## `i32` Type Functions
-[[Back to the Table of Contents] ↑](#table-of-contents)
+## [`i32` Type Functions](#table-of-contents)
 
 The following functions are of general purpose and are restricted to
 work with data structures of type *i32* where it makes sense.
@@ -2574,8 +2521,7 @@ func main () {
 }
 ```
 
-## `i64` Type Functions
-[[Back to the Table of Contents] ↑](#table-of-contents)
+## [`i64` Type Functions](#table-of-contents)
 
 The following functions are of general purpose and are restricted to
 work with data structures of type *i64* where it makes sense.
@@ -2693,8 +2639,7 @@ func main () {
 }
 ```
 
-## `f32` Type Functions
-[[Back to the Table of Contents] ↑](#table-of-contents)
+## [`f32` Type Functions](#table-of-contents)
 
 The following functions are of general purpose and are restricted to
 work with data structures of type *f32* where it makes sense.
@@ -2790,8 +2735,7 @@ func main () {
 }
 ```
 
-## `f64` Type Functions
-[[Back to the Table of Contents] ↑](#table-of-contents)
+## [`f64` Type Functions](#table-of-contents)
 
 The following functions are of general purpose and are restricted to
 work with data structures of type *f64* where it makes sense.
@@ -2887,8 +2831,7 @@ func main () {
 }
 ```
 
-## `time` Package Functions
-[[Back to the Table of Contents] ↑](#table-of-contents)
+## [`time` Package Functions](#table-of-contents)
 
 The functions in the `time` package deal with real-time in your
 programs. They are used to measure and stop time. Note that in order
@@ -2949,8 +2892,7 @@ func main () {
 }
 ```
 
-## `gl` Package Functions
-[[Back to the Table of Contents] ↑](#table-of-contents)
+## [`gl` Package Functions](#table-of-contents)
 
 "OpenGL is the premier environment for developing portable,
 interactive 2D and 3D graphics applications. Since its introduction in
@@ -3044,8 +2986,7 @@ deployment." This description was extracted from OpenGL's website
 ### `gl.Viewport`
 ### `gl.getUniformLocation`
 
-## `glfw` Package Functions
-[[Back to the Table of Contents] ↑](#table-of-contents)
+## [`glfw` Package Functions](#table-of-contents)
 
 "GLFW is an Open Source, multi-platform library for OpenGL, OpenGL ES
 and Vulkan development on the desktop. It provides a simple API for
@@ -3071,8 +3012,7 @@ This description was extracted from GLFW's website (https://www.glfw.org/).
 ### `glfw.SwapInterval`
 ### `glfw.WindowHint`
 
-## `gltext` Package Functions
-[[Back to the Table of Contents] ↑](#table-of-contents)
+## [`gltext` Package Functions](#table-of-contents)
 
 "The gltext package offers a simple set of text rendering utilities
 for OpenGL programs. It deals with TrueType and Bitmap (raster)
