@@ -22,8 +22,8 @@ func GetSize(arg *CXArgument) types.Pointer {
 		}
 	}
 
-	for decl := range arg.DeclarationSpecifiers {
-		if decl == constants.DECL_POINTER {
+	for _, decl := range arg.DeclarationSpecifiers {
+		if decl == constants.DECL_POINTER || decl == constants.DECL_SLICE || decl == constants.DECL_ARRAY {
 			return arg.TotalSize
 		}
 	}
@@ -45,6 +45,17 @@ func GetDerefSize(arg *CXArgument, index int, derefPointer bool, derefArray bool
 	}
 	if derefPointer {
 		return arg.TotalSize
+	}
+	return arg.Size
+}
+
+// GetDerefSizeSlice ...
+func GetDerefSizeSlice(arg *CXArgument) types.Pointer {
+	if len(arg.Lengths) > 1 && (len(arg.Lengths)-len(arg.Indexes)) > 1 {
+		return types.POINTER_SIZE
+	}
+	if arg.CustomType != nil {
+		return arg.CustomType.Size //TODO: WTF is a custom type?
 	}
 	return arg.Size
 }
