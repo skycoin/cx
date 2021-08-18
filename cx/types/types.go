@@ -33,8 +33,6 @@ const (
 )
 
 const (
-	UNUSED_SIZE = InvalidPointer
-
 	BOOL_SIZE = Pointer(1)
 
 	I8_SIZE  = Pointer(1)
@@ -158,6 +156,16 @@ func panicIf(condition bool, error int) {
 
 func (pointer Pointer) IsValid() bool {
 	return pointer != InvalidPointer
+}
+
+func (pointer *Pointer) Add(value Pointer) bool {
+	if pointer.IsValid() && value.IsValid() {
+		*pointer += value
+		return true
+	}
+
+	*pointer = InvalidPointer
+	return false
 }
 
 func Cast_sint_to_sptr(value []int) []Pointer {
