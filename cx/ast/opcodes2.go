@@ -26,7 +26,7 @@ func IsComparisonOperator(opCode int) bool {
 }
 
 func IsStringOperator(opCode int) bool {
-	return opCode == constants.OP_ADD || opCode == constants.OP_EQUAL || opCode == constants.OP_UNEQUAL
+	return IsComparisonOperator(opCode) || opCode == constants.OP_ADD
 }
 
 func GetTypedOperatorOffset(typeCode types.Code, opCode int) int {
@@ -36,4 +36,3 @@ func GetTypedOperatorOffset(typeCode types.Code, opCode int) int {
 func GetTypedOperator(typeCode types.Code, opCode int) *CXFunction {
 	return Operators[GetTypedOperatorOffset(typeCode, opCode)]
 }
-

@@ -461,6 +461,10 @@ func RegisterOpcodes() {
 
 	RegisterOperator("str.eq", opStrEq, In(ast.ConstCxArg_STR, ast.ConstCxArg_STR), Out(ast.ConstCxArg_BOOL), types.STR, constants.OP_EQUAL)
 	RegisterOperator("str.uneq", opStrUneq, In(ast.ConstCxArg_STR, ast.ConstCxArg_STR), Out(ast.ConstCxArg_BOOL), types.STR, constants.OP_UNEQUAL)
+	RegisterOperator("str.gt", opStrGt, In(ast.ConstCxArg_STR, ast.ConstCxArg_STR), Out(ast.ConstCxArg_BOOL), types.STR, constants.OP_GT)
+	RegisterOperator("str.gteq", opStrGteq, In(ast.ConstCxArg_STR, ast.ConstCxArg_STR), Out(ast.ConstCxArg_BOOL), types.STR, constants.OP_GTEQ)
+	RegisterOperator("str.lt", opStrLt, In(ast.ConstCxArg_STR, ast.ConstCxArg_STR), Out(ast.ConstCxArg_BOOL), types.STR, constants.OP_LT)
+	RegisterOperator("str.lteq", opStrLteq, In(ast.ConstCxArg_STR, ast.ConstCxArg_STR), Out(ast.ConstCxArg_BOOL), types.STR, constants.OP_LTEQ)
 	RegisterOperator("str.concat", opStrConcat, In(ast.ConstCxArg_STR, ast.ConstCxArg_STR), Out(ast.ConstCxArg_STR), types.STR, constants.OP_ADD)
 	RegisterFunction("str.i8", opStrToI8, In(ast.ConstCxArg_STR), Out(ast.ConstCXArg_I8))
 	RegisterFunction("str.i16", opStrToI16, In(ast.ConstCxArg_STR), Out(ast.ConstCxArg_I16))
