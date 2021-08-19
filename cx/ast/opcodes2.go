@@ -25,6 +25,10 @@ func IsComparisonOperator(opCode int) bool {
 	return opCode > constants.START_OF_COMPARISON_OPERATORS && opCode < constants.END_OF_COMPARISON_OPERATORS
 }
 
+func IsStringOperator(opCode int) bool {
+	return opCode == constants.OP_ADD || opCode == constants.OP_EQUAL || opCode == constants.OP_UNEQUAL
+}
+
 func GetTypedOperatorOffset(typeCode types.Code, opCode int) int {
 	return int(typeCode)*OPERATOR_COUNT + opCode - constants.START_OF_OPERATORS - 1
 }

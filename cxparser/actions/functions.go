@@ -91,12 +91,41 @@ func isParseOp(expr *ast.CXExpression) bool {
 	return false
 }
 
+// isAllArgsAtomicTypes checks if all the input arguments in an expressions are of atomic type.
+func isAllArgsAtomicTypes(expr *ast.CXExpression) bool {
+	for _, inp := range expr.Inputs {
+		if !inp.Type.IsAtomic() {
+			return false
+		}
+	}
+	return true
+}
+
+// isAllArgsStringTypes checks if all the input arguments in an expressions are of string type.
+func isAllArgsStringTypes(expr *ast.CXExpression) bool {
+	for _, inp := range expr.Inputs {
+		if inp.Type != types.STR {
+			return false
+		}
+	}
+	return true
+}
+
 // CheckUndValidTypes checks if an expression with a generic operator (operators that
 // accept `cxcore.TYPE_UNDEFINED` arguments) is receiving arguments of valid types. For example,
 // the expression `sa + sb` is not valid if they are struct instances.
 func CheckUndValidTypes(expr *ast.CXExpression) {
-	if expr.Operator != nil && ast.IsOperator(expr.Operator.OpCode) && !IsAllArgsBasicTypes(expr) {
-		println(ast.CompilationError(CurrentFile, LineNo), fmt.Sprintf("invalid argument types for '%s' operator", ast.OpNames[expr.Operator.OpCode]))
+	if expr.Operator != nil {
+		if ast.IsOperator(expr.Operator.OpCode) && !isAllArgsAtomicTypes(expr) {
+			isStrArgs := isAllArgsStringTypes(expr)
+			if ast.IsStringOperator(expr.Operator.OpCode) {
+				if !isStrArgs {
+					println(ast.CompilationError(CurrentFile, LineNo), fmt.Sprintf("invalid argument types for '%s' operator", ast.OpNames[expr.Operator.OpCode]))
+				}
+			} else if isStrArgs {
+				println(ast.CompilationError(CurrentFile, LineNo), fmt.Sprintf("invalid operator '%s' for str types", ast.OpNames[expr.Operator.OpCode]))
+			}
+		}
 	}
 }
 
