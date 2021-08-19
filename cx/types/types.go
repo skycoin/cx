@@ -48,10 +48,7 @@ const (
 	F32_SIZE = Pointer(4)
 	F64_SIZE = Pointer(8)
 
-	ARRAY_SIZE = POINTER_SIZE
-	SLICE_SIZE = POINTER_SIZE
-
-	STR_SIZE = POINTER_SIZE
+	STR_SIZE = POINTER_SIZE // TODO: Remove, only use in op_aff.go
 )
 
 type Code int
@@ -76,7 +73,6 @@ const (
 
 	POINTER
 	STR
-
 	ARRAY
 	SLICE
 	STRUCT
@@ -89,25 +85,6 @@ const (
 
 	COUNT
 )
-
-func (t Code) Name() string {
-	return definitions[t].name
-}
-
-func (t Code) Size() Pointer {
-	//	panicIf(!definitions[t].size.IsValid(), CX_RUNTIME_INVALID_ARGUMENT)
-	return definitions[t].size
-}
-
-func (t Code) IsPrimitive() bool {
-	return definitions[t].isPrimitive
-}
-
-type Type struct {
-	name        string
-	size        Pointer
-	isPrimitive bool
-}
 
 var definitions []Type = []Type{
 	{"UNUSED", InvalidPointer, false},
@@ -129,13 +106,34 @@ var definitions []Type = []Type{
 
 	{"ptr", POINTER_SIZE, false},
 	{"str", STR_SIZE, true}, // TODO:PTR check why str needs to be a primitive type or we need to have both isPrimitive && isAtomic.
-	{"array", ARRAY_SIZE, false},
-	{"slice", SLICE_SIZE, false},
+	{"array", InvalidPointer, false},
+	{"slice", POINTER_SIZE, false},
 	{"struct", InvalidPointer, false},
+
 	{"func", InvalidPointer, false},
 	{"aff", InvalidPointer, false},
+
 	{"und", InvalidPointer, false},
 	{"ident", POINTER_SIZE, false}, // TODO:PTR use InvalidPointer to track addressing issues.
+}
+
+func (t Code) Name() string {
+	return definitions[t].name
+}
+
+func (t Code) Size() Pointer {
+	//	panicIf(!definitions[t].size.IsValid(), CX_RUNTIME_INVALID_ARGUMENT)
+	return definitions[t].size
+}
+
+func (t Code) IsPrimitive() bool {
+	return definitions[t].isPrimitive
+}
+
+type Type struct {
+	name        string
+	size        Pointer
+	isPrimitive bool
 }
 
 type AllocatorHandler func(Pointer) Pointer
