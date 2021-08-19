@@ -80,7 +80,7 @@ func displayCXStruct(s *ast.CXStruct) ExportedSymbol {
 	return ExportedSymbol{
 		Name:      s.Name,
 		Signature: ast.SignatureStringOfStruct(s),
-		Type:      types.CUSTOM,
+		Type:      types.STRUCT,
 		TypeName:  "struct",
 	}
 }

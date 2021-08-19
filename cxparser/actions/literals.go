@@ -60,7 +60,7 @@ func SliceLiteralExpression(typeCode types.Code, exprs []*ast.CXExpression) []*a
 				out := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), expr.FileName, expr.FileLine)
 				outArg := getOutputType(expr)
 				out.AddType(outArg.Type)
-				out.CustomType = outArg.CustomType
+				out.StructType = outArg.StructType
 				out.Size = outArg.Size
 				out.TotalSize = ast.GetSize(outArg)
 				out.PreviouslyDeclared = true
@@ -127,11 +127,11 @@ func PrimaryStructLiteral(ident string, strctFlds []*ast.CXExpression) []*ast.CX
 				expr.Outputs[0].ArgDetails.Package = pkg
 				// expr.ProgramOutput[0].Program = AST
 
-				if expr.Outputs[0].CustomType == nil {
-					expr.Outputs[0].CustomType = strct
+				if expr.Outputs[0].StructType == nil {
+					expr.Outputs[0].StructType = strct
 				}
-				// expr.ProgramOutput[0].CustomType = strct
-				fld.CustomType = strct
+				// expr.ProgramOutput[0].StructType = strct
+				fld.StructType = strct
 
 				expr.Outputs[0].Size = strct.Size
 				expr.Outputs[0].TotalSize = strct.Size
@@ -164,7 +164,7 @@ func PrimaryStructLiteralExternal(impName string, ident string, strctFlds []*ast
 					expr.Outputs[0].ArgDetails.Package = pkg
 					// expr.ProgramOutput[0].Program = AST
 
-					expr.Outputs[0].CustomType = strct
+					expr.Outputs[0].StructType = strct
 					expr.Outputs[0].Size = strct.Size
 					expr.Outputs[0].TotalSize = strct.Size
 					expr.Outputs[0].ArgDetails.Name = ident

@@ -235,7 +235,7 @@ function_header:
 				panic("method has multiple receivers")
 			}
 
-			fnName := $3[0].CustomType.Name + "." + $5
+			fnName := $3[0].StructType.Name + "." + $5
 
 			if pkg, err := Program.GetCurrentPackage(); err == nil {
 				fn := ast.MakeFunction(fnName, CurrentFileName, lineNo)

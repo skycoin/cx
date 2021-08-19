@@ -484,18 +484,18 @@ func (cxprogram *CXProgram) PrintAllObjects() {
 
 			var byts []byte
 
-			if ptr.CustomType != nil {
+			if ptr.StructType != nil {
 				// then it's a pointer to a struct
 				// use CustomStruct to match the fields against the bytes
 				// for _, fld := range ptr.Fields {
 
 				// }
 
-				byts = types.Get_obj_data(cxprogram.Memory, heapOffset, ptr.CustomType.Size)
+				byts = types.Get_obj_data(cxprogram.Memory, heapOffset, ptr.StructType.Size)
 			}
 
 			// var currLengths []int
-			// var currCustom *CXStruct
+			// var currStruct *CXStruct
 
 			// for c := len(ptr.DeclarationSpecifiers) - 1; c >= 0; c-- {
 			// 	// we need to go backwards in here
@@ -507,7 +507,7 @@ func (cxprogram *CXProgram) PrintAllObjects() {
 			// 		currLengths = ptr.Lengths
 			// 	case DECL_SLICE:
 			// 	case DECL_STRUCT:
-			// 		currCustom = ptr.CustomType
+			// 		currStruct = ptr.StructType
 			// 	case DECL_BASIC:
 			// 	}
 			// }
@@ -516,13 +516,13 @@ func (cxprogram *CXProgram) PrintAllObjects() {
 			// 	fmt.Println("ARRAY")
 			// }
 
-			// if ptr.CustomType != nil {
+			// if ptr.StructType != nil {
 			// 	fmt.Println("STRUCT")
 			// }
 
 			fmt.Println("declarat", ptr.DeclarationSpecifiers)
 
-			fmt.Println("obj", ptr.ArgDetails.Name, ptr.CustomType, cxprogram.Memory[heapOffset:heapOffset+op.Size], byts)
+			fmt.Println("obj", ptr.ArgDetails.Name, ptr.StructType, cxprogram.Memory[heapOffset:heapOffset+op.Size], byts)
 		}
 
 		fp += op.Size

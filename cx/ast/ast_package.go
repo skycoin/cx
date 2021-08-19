@@ -51,7 +51,7 @@ func (pkg *CXPackage) GetFunctions() ([]*CXFunction, error) {
 // GetMethod ...
 func (pkg *CXPackage) GetMethod(fnName string, receiverType string) (*CXFunction, error) {
 	for _, fn := range pkg.Functions {
-		if fn.Name == fnName && len(fn.Inputs) > 0 && fn.Inputs[0].CustomType != nil && fn.Inputs[0].CustomType.Name == receiverType {
+		if fn.Name == fnName && len(fn.Inputs) > 0 && fn.Inputs[0].StructType != nil && fn.Inputs[0].StructType.Name == receiverType {
 			return fn, nil
 		}
 	}

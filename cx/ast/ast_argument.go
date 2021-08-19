@@ -49,11 +49,11 @@ func Struct(pkgName, strctName, argName string) *CXArgument {
 		panic(err)
 	}
 
-	arg := MakeArgument(argName, "", -1).AddType(types.CUSTOM)
+	arg := MakeArgument(argName, "", -1).AddType(types.STRUCT)
 	arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_STRUCT)
 	arg.Size = strct.Size
 	arg.TotalSize = strct.Size
-	arg.CustomType = strct
+	arg.StructType = strct
 
 	return arg
 }

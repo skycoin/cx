@@ -46,7 +46,7 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 	/*
 		We need to traverse the elements by hierarchy first add all the
 		packages and structs at the same time then add globals, as these
-		can be of a custom type (and it could be imported) the signatures
+		can be of a struct type (and it could be imported) the signatures
 		of functions and methods are added in the cxpartialparsing.y pass
 	*/
 	parseErrors := 0

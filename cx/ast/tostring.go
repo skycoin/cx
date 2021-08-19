@@ -255,11 +255,11 @@ func getNonCollectionValue(fp types.Pointer, arg, elt *CXArgument, typ string) s
 		// then it's a struct
 		var val string
 		val = "{"
-		// for _, fld := range elt.CustomType.Fields {
-		lFlds := len(elt.CustomType.Fields)
+		// for _, fld := range elt.StructType.Fields {
+		lFlds := len(elt.StructType.Fields)
 		off := types.Pointer(0)
 		for c := 0; c < lFlds; c++ {
-			fld := elt.CustomType.Fields[c]
+			fld := elt.StructType.Fields[c]
 			if c == lFlds-1 {
 				val += fmt.Sprintf("%s: %s", fld.ArgDetails.Name, GetPrintableValue(fp+arg.Offset+off, fld))
 			} else {
@@ -303,11 +303,11 @@ func ReadSliceElements(fp types.Pointer, arg, elt *CXArgument, sliceData []byte,
 		// then it's a struct
 		var val string
 		val = "{"
-		// for _, fld := range elt.CustomType.Fields {
-		lFlds := len(elt.CustomType.Fields)
+		// for _, fld := range elt.StructType.Fields {
+		lFlds := len(elt.StructType.Fields)
 		off := types.Pointer(0)
 		for c := 0; c < lFlds; c++ {
-			fld := elt.CustomType.Fields[c]
+			fld := elt.StructType.Fields[c]
 			if c == lFlds-1 {
 				val += fmt.Sprintf("%s: %s", fld.ArgDetails.Name, GetPrintableValue(fp+arg.Offset+off, fld))
 			} else {
@@ -324,9 +324,8 @@ func ReadSliceElements(fp types.Pointer, arg, elt *CXArgument, sliceData []byte,
 func GetPrintableValue(fp types.Pointer, arg *CXArgument) string {
 	var typ string
 	elt := GetAssignmentElement(arg)
-	if elt.CustomType != nil {
-		// then it's custom type
-		typ = elt.CustomType.Name
+	if elt.StructType != nil {
+		typ = elt.StructType.Name
 	} else {
 		// then it's native type
 		typ = elt.Type.Name()
@@ -675,9 +674,8 @@ func GetFormattedType(arg *CXArgument) string {
 		case constants.DECL_INDEXING:
 		default:
 			// base type
-			if elt.CustomType != nil {
-				// then it's custom type
-				typ += elt.CustomType.Name
+			if elt.StructType != nil {
+				typ += elt.StructType.Name
 			} else {
 				// then it's basic type
 				typ += elt.Type.Name()

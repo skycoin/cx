@@ -130,7 +130,7 @@ type serializedArgument struct {
 	NameOffset       int64
 	NameSize         int64
 	Type             int64
-	StructTypeOffset int64 //WTF IS A CUSTOM TYPE!?
+	StructTypeOffset int64
 	Size             int64
 	TotalSize        int64
 

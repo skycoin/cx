@@ -18,7 +18,7 @@ import (
 )
 
 // preliminarystage performs a first pass for the CX cxgo. Globals, packages and
-// custom types are added to `cxpartialparsing.Program`.
+// struct types are added to `cxpartialparsing.Program`.
 func Preliminarystage(srcStrs, srcNames []string) int {
 	var prePkg *ast.CXPackage
 	parseErrors := 0

@@ -1,5 +1,5 @@
 // Affordances Tutorial 02
-// Basic filtering in custom type arrays
+// Basic filtering in struct type arrays
 package main
 
 type Unit struct {

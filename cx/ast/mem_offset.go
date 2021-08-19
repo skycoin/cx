@@ -28,8 +28,8 @@ func GetSize(arg *CXArgument) types.Pointer {
 		}
 	}
 
-	if arg.CustomType != nil {
-		return arg.CustomType.Size
+	if arg.StructType != nil {
+		return arg.StructType.Size
 	}
 
 	return arg.TotalSize
@@ -40,8 +40,8 @@ func GetDerefSize(arg *CXArgument, index int, derefPointer bool, derefArray bool
 	if !derefArray && len(arg.Lengths) > 1 && ((index + 1) < len(arg.Lengths)) {
 		return types.POINTER_SIZE
 	}
-	if arg.CustomType != nil {
-		return arg.CustomType.Size //TODO: WTF is a custom type?
+	if arg.StructType != nil {
+		return arg.StructType.Size
 	}
 	if derefPointer {
 		return arg.TotalSize
@@ -54,8 +54,8 @@ func GetDerefSizeSlice(arg *CXArgument) types.Pointer {
 	if len(arg.Lengths) > 1 && (len(arg.Lengths)-len(arg.Indexes)) > 1 {
 		return types.POINTER_SIZE
 	}
-	if arg.CustomType != nil {
-		return arg.CustomType.Size //TODO: WTF is a custom type?
+	if arg.StructType != nil {
+		return arg.StructType.Size
 	}
 	return arg.Size
 }
@@ -107,7 +107,7 @@ func CalculateDereferences(arg *CXArgument, finalOffset types.Pointer, fp types.
 			finalOffset += constants.SLICE_HEADER_SIZE
 
 			//TODO: delete
-			sizeToUse := GetDerefSize(arg, idxCounter, derefPointer, false) //TODO: is always arg.Size unless arg.CustomType != nil
+			sizeToUse := GetDerefSize(arg, idxCounter, derefPointer, false) //TODO: is always arg.Size unless arg.StructType != nil
 			derefPointer = false
 
 			indexOffset := GetFinalOffset(fp, arg.Indexes[idxCounter])
@@ -130,7 +130,7 @@ func CalculateDereferences(arg *CXArgument, finalOffset types.Pointer, fp types.
 			}
 
 			//TODO: Delete
-			sizeToUse := GetDerefSize(arg, idxCounter, derefPointer, true) //TODO: is always arg.Size unless arg.CustomType != nil
+			sizeToUse := GetDerefSize(arg, idxCounter, derefPointer, true) //TODO: is always arg.Size unless arg.StructType != nil
 			derefPointer = false
 			baseOffset = finalOffset
 			sizeofElement = subSize * sizeToUse

@@ -22,7 +22,7 @@ func PostfixExpressionArray(prevExprs []*ast.CXExpression, postExprs []*ast.CXEx
 		out := ast.MakeArgument(genName, prevExpr.FileName, prevExpr.FileLine-1).AddType(prevExpr.Operator.Outputs[0].Type)
 
 		out.DeclarationSpecifiers = prevExpr.Operator.Outputs[0].DeclarationSpecifiers
-		out.CustomType = prevExpr.Operator.Outputs[0].CustomType
+		out.StructType = prevExpr.Operator.Outputs[0].StructType
 		out.Size = prevExpr.Operator.Outputs[0].Size
 		out.TotalSize = prevExpr.Operator.Outputs[0].TotalSize
 		out.Lengths = prevExpr.Operator.Outputs[0].Lengths
@@ -34,7 +34,7 @@ func PostfixExpressionArray(prevExprs []*ast.CXExpression, postExprs []*ast.CXEx
 		inp := ast.MakeArgument(genName, prevExpr.FileName, prevExpr.FileLine).AddType(prevExpr.Operator.Outputs[0].Type)
 
 		inp.DeclarationSpecifiers = prevExpr.Operator.Outputs[0].DeclarationSpecifiers
-		inp.CustomType = prevExpr.Operator.Outputs[0].CustomType
+		inp.StructType = prevExpr.Operator.Outputs[0].StructType
 		inp.Size = prevExpr.Operator.Outputs[0].Size
 		inp.TotalSize = prevExpr.Operator.Outputs[0].TotalSize
 		inp.Lengths = prevExpr.Operator.Outputs[0].Lengths
@@ -133,7 +133,7 @@ func PostfixExpressionEmptyFunCall(prevExprs []*ast.CXExpression) []*ast.CXExpre
 		// inp := cxcore.MakeArgument(expr.ProgramOutput[0].Name, CurrentFile, LineNo)
 		// inp.Package = expr.Package
 		// inp.Type = expr.ProgramOutput[0].Type
-		// inp.CustomType = expr.ProgramOutput[0].CustomType
+		// inp.StructType = expr.ProgramOutput[0].StructType
 		// expr.ProgramInput = append(expr.ProgramInput, inp)
 
 	} else if prevExprs[len(prevExprs)-1].Operator == nil {
@@ -214,7 +214,7 @@ func PostfixExpressionField(prevExprs []*ast.CXExpression, ident string) []*ast.
 		// we associate the result of the function call to the aux variable
 		out := ast.MakeArgument(symName, lastExpr.FileName, lastExpr.FileLine).AddType(opOut.Type)
 		out.DeclarationSpecifiers = opOut.DeclarationSpecifiers
-		out.CustomType = opOut.CustomType
+		out.StructType = opOut.StructType
 		out.Size = opOut.Size
 		out.TotalSize = opOut.TotalSize
 		// out.IsArray = opOut.IsArray
@@ -230,7 +230,7 @@ func PostfixExpressionField(prevExprs []*ast.CXExpression, ident string) []*ast.
 		// that will take place after this if statement
 		inp := ast.MakeArgument(symName, lastExpr.FileName, lastExpr.FileLine).AddType(opOut.Type)
 		inp.DeclarationSpecifiers = opOut.DeclarationSpecifiers
-		inp.CustomType = opOut.CustomType
+		inp.StructType = opOut.StructType
 		inp.Size = opOut.Size
 		inp.TotalSize = opOut.TotalSize
 		inp.ArgDetails.Package = lastExpr.Package
@@ -298,7 +298,7 @@ func PostfixExpressionField(prevExprs []*ast.CXExpression, ident string) []*ast.
 			// prevExprs[len(prevExprs)-1].ProgramOutput[0] = glbl
 			prevExprs[len(prevExprs)-1].Outputs[0].ArgDetails.Name = glbl.ArgDetails.Name
 			prevExprs[len(prevExprs)-1].Outputs[0].Type = glbl.Type
-			prevExprs[len(prevExprs)-1].Outputs[0].CustomType = glbl.CustomType
+			prevExprs[len(prevExprs)-1].Outputs[0].StructType = glbl.StructType
 			prevExprs[len(prevExprs)-1].Outputs[0].Size = glbl.Size
 			prevExprs[len(prevExprs)-1].Outputs[0].TotalSize = glbl.TotalSize
 			prevExprs[len(prevExprs)-1].Outputs[0].IsPointer = glbl.IsPointer
@@ -311,7 +311,7 @@ func PostfixExpressionField(prevExprs []*ast.CXExpression, ident string) []*ast.
 			prevExprs[len(prevExprs)-1].Outputs = nil
 			prevExprs[len(prevExprs)-1].Operator = fn
 		} else if strct, err := AST.GetStruct(ident, imp.Name); err == nil {
-			prevExprs[len(prevExprs)-1].Outputs[0].CustomType = strct
+			prevExprs[len(prevExprs)-1].Outputs[0].StructType = strct
 		} else {
 			// panic(err)
 			fmt.Println(err)

@@ -468,7 +468,7 @@ func DeclarationSpecifiersStruct(ident string, pkgName string,
 	}
 
 	if isExternal {
-		// custom type in an imported package
+		// struct type in an imported package
 		imp, err := pkg.GetImport(pkgName)
 		if err != nil {
 			panic(err)
@@ -481,8 +481,8 @@ func DeclarationSpecifiersStruct(ident string, pkgName string,
 		}
 
 		arg := ast.MakeArgument("", currentFile, lineNo)
-		arg.Type = types.CUSTOM
-		arg.CustomType = strct
+		arg.Type = types.STRUCT
+		arg.StructType = strct
 		arg.Size = strct.Size
 		arg.TotalSize = strct.Size
 
@@ -491,7 +491,7 @@ func DeclarationSpecifiersStruct(ident string, pkgName string,
 
 		return arg
 	} else {
-		// custom type in the current package
+		// struct type in the current package
 		strct, err := AST.GetStruct(ident, pkg.Name)
 		if err != nil {
 			println(ast.CompilationError(currentFile, lineNo), err.Error())
@@ -499,9 +499,9 @@ func DeclarationSpecifiersStruct(ident string, pkgName string,
 		}
 
 		arg := ast.MakeArgument("", currentFile, lineNo)
-		arg.Type = types.CUSTOM
+		arg.Type = types.STRUCT
 		arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_STRUCT)
-		arg.CustomType = strct
+		arg.StructType = strct
 		arg.Size = strct.Size
 		arg.TotalSize = strct.Size
 		arg.ArgDetails.Package = pkg
