@@ -4,8 +4,8 @@ package cxfx
 
 import (
 	"github.com/skycoin/cx/cx/ast"
-	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/opcodes"
+	"github.com/skycoin/cx/cx/types"
 )
 
 func RegisterPackage() {
@@ -23,9 +23,9 @@ func RegisterPackage() {
 	opcodes.RegisterFunction("gl.CxReleaseTexture", opCxReleaseTexture, opcodes.In(ast.ConstCxArg_STR), nil)
 	opcodes.RegisterFunction("gl.CxTextureGetPixel", opCxTextureGetPixel, opcodes.In(ast.ConstCxArg_STR, ast.ConstCxArg_I32, ast.ConstCxArg_I32), opcodes.Out(ast.ConstCxArg_F32, ast.ConstCxArg_F32, ast.ConstCxArg_F32, ast.ConstCxArg_F32))
 
-	opcodes.RegisterFunction("gl.AppendF32", opGlAppend, opcodes.In(ast.Slice(constants.TYPE_UI8), ast.ConstCxArg_F32), opcodes.Out(ast.Slice(constants.TYPE_UI8)))
-	opcodes.RegisterFunction("gl.AppendUI16", opGlAppend, opcodes.In(ast.Slice(constants.TYPE_UI8), ast.ConstCxArg_UI16), opcodes.Out(ast.Slice(constants.TYPE_UI8)))
-	opcodes.RegisterFunction("gl.AppendUI32", opGlAppend, opcodes.In(ast.Slice(constants.TYPE_UI8), ast.ConstCxArg_UI32), opcodes.Out(ast.Slice(constants.TYPE_UI8)))
+	opcodes.RegisterFunction("gl.AppendF32", opGlAppend, opcodes.In(ast.Slice(types.UI8), ast.ConstCxArg_F32), opcodes.Out(ast.Slice(types.UI8)))
+	opcodes.RegisterFunction("gl.AppendUI16", opGlAppend, opcodes.In(ast.Slice(types.UI8), ast.ConstCxArg_UI16), opcodes.Out(ast.Slice(types.UI8)))
+	opcodes.RegisterFunction("gl.AppendUI32", opGlAppend, opcodes.In(ast.Slice(types.UI8), ast.ConstCxArg_UI32), opcodes.Out(ast.Slice(types.UI8)))
 
 	// gl_0.0
 	opcodes.RegisterFunction("gl.MatrixMode", opGlMatrixMode, opcodes.In(ast.ConstCxArg_I32), nil)
@@ -56,7 +56,7 @@ func RegisterPackage() {
 	opcodes.RegisterFunction("gl.Hint", opGlHint, opcodes.In(ast.ConstCxArg_I32, ast.ConstCxArg_I32), nil)
 	opcodes.RegisterFunction("gl.Scissor", opGlScissor, opcodes.In(ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_I32), nil)
 	opcodes.RegisterFunction("gl.TexParameteri", opGlTexParameteri, opcodes.In(ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_I32), nil)
-	opcodes.RegisterFunction("gl.TexImage2D", opGlTexImage2D, opcodes.In(ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.Slice(constants.TYPE_UI32)), nil)
+	opcodes.RegisterFunction("gl.TexImage2D", opGlTexImage2D, opcodes.In(ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.Slice(types.UI32)), nil)
 	opcodes.RegisterFunction("gl.Clear", opGlClear, opcodes.In(ast.ConstCxArg_I32), nil)
 	opcodes.RegisterFunction("gl.ClearColor", opGlClearColor, opcodes.In(ast.ConstCxArg_F32, ast.ConstCxArg_F32, ast.ConstCxArg_F32, ast.ConstCxArg_F32), nil)
 	opcodes.RegisterFunction("gl.ClearStencil", opGlClearStencil, opcodes.In(ast.ConstCxArg_I32), nil)
@@ -92,11 +92,11 @@ func RegisterPackage() {
 	opcodes.RegisterFunction("gl.BindBuffer", opGlBindBuffer, opcodes.In(ast.ConstCxArg_I32, ast.ConstCxArg_I32), nil)
 	opcodes.RegisterFunction("gl.DeleteBuffers", opGlDeleteBuffers, opcodes.In(ast.ConstCxArg_I32, ast.ConstCxArg_I32), nil)
 	opcodes.RegisterFunction("gl.GenBuffers", opGlGenBuffers, opcodes.In(ast.ConstCxArg_I32, ast.ConstCxArg_I32), opcodes.Out(ast.ConstCxArg_I32))
-	opcodes.RegisterFunction("gl.BufferData", opGlBufferData, opcodes.In(ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.Slice(constants.TYPE_UI8), ast.ConstCxArg_I32), nil)
-	opcodes.RegisterFunction("gl.BufferSubData", opGlBufferSubData, opcodes.In(ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.Slice(constants.TYPE_UI8)), nil)
+	opcodes.RegisterFunction("gl.BufferData", opGlBufferData, opcodes.In(ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.Slice(types.UI8), ast.ConstCxArg_I32), nil)
+	opcodes.RegisterFunction("gl.BufferSubData", opGlBufferSubData, opcodes.In(ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.Slice(types.UI8)), nil)
 
 	//gl_2_0
-	opcodes.RegisterFunction("gl.DrawBuffers", opGlDrawBuffers, opcodes.In(ast.ConstCxArg_I32, ast.Slice(constants.TYPE_UI32)), nil)
+	opcodes.RegisterFunction("gl.DrawBuffers", opGlDrawBuffers, opcodes.In(ast.ConstCxArg_I32, ast.Slice(types.UI32)), nil)
 	opcodes.RegisterFunction("gl.StencilOpSeparate", opGlStencilOpSeparate, opcodes.In(ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_I32), nil)
 	opcodes.RegisterFunction("gl.StencilFuncSeparate", opGlStencilFuncSeparate, opcodes.In(ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_I32), nil)
 	opcodes.RegisterFunction("gl.StencilMaskSeparate", opGlStencilMaskSeparate, opcodes.In(ast.ConstCxArg_I32, ast.ConstCxArg_I32), nil)
@@ -126,20 +126,20 @@ func RegisterPackage() {
 	opcodes.RegisterFunction("gl.Uniform2i", opGlUniform2i, opcodes.In(ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_I32), nil)
 	opcodes.RegisterFunction("gl.Uniform3i", opGlUniform3i, opcodes.In(ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_I32), nil)
 	opcodes.RegisterFunction("gl.Uniform4i", opGlUniform4i, opcodes.In(ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_I32), nil)
-	opcodes.RegisterFunction("gl.Uniform1fv", opGlUniform1fv, opcodes.In(ast.ConstCxArg_I32, ast.ConstCxArg_F32, ast.Slice(constants.TYPE_F32)), nil)
-	opcodes.RegisterFunction("gl.Uniform2fv", opGlUniform2fv, opcodes.In(ast.ConstCxArg_I32, ast.ConstCxArg_F32, ast.Slice(constants.TYPE_F32)), nil)
-	opcodes.RegisterFunction("gl.Uniform3fv", opGlUniform3fv, opcodes.In(ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.Slice(constants.TYPE_F32)), nil)
-	opcodes.RegisterFunction("gl.Uniform4fv", opGlUniform4fv, opcodes.In(ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.Slice(constants.TYPE_F32)), nil)
-	opcodes.RegisterFunction("gl.Uniform1iv", opGlUniform1iv, opcodes.In(ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.Slice(constants.TYPE_I32)), nil)
-	opcodes.RegisterFunction("gl.Uniform2iv", opGlUniform2iv, opcodes.In(ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.Slice(constants.TYPE_I32)), nil)
-	opcodes.RegisterFunction("gl.Uniform3iv", opGlUniform3iv, opcodes.In(ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.Slice(constants.TYPE_I32)), nil)
-	opcodes.RegisterFunction("gl.Uniform4iv", opGlUniform4iv, opcodes.In(ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.Slice(constants.TYPE_I32)), nil)
-	opcodes.RegisterFunction("gl.UniformMatrix2fv", opGlUniformMatrix2fv, opcodes.In(ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_BOOL, ast.Slice(constants.TYPE_F32)), nil)
-	opcodes.RegisterFunction("gl.UniformMatrix3fv", opGlUniformMatrix3fv, opcodes.In(ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_BOOL, ast.Slice(constants.TYPE_F32)), nil)
-	opcodes.RegisterFunction("gl.UniformMatrix4fv", opGlUniformMatrix4fv, opcodes.In(ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_BOOL, ast.Slice(constants.TYPE_F32)), nil)
+	opcodes.RegisterFunction("gl.Uniform1fv", opGlUniform1fv, opcodes.In(ast.ConstCxArg_I32, ast.ConstCxArg_F32, ast.Slice(types.F32)), nil)
+	opcodes.RegisterFunction("gl.Uniform2fv", opGlUniform2fv, opcodes.In(ast.ConstCxArg_I32, ast.ConstCxArg_F32, ast.Slice(types.F32)), nil)
+	opcodes.RegisterFunction("gl.Uniform3fv", opGlUniform3fv, opcodes.In(ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.Slice(types.F32)), nil)
+	opcodes.RegisterFunction("gl.Uniform4fv", opGlUniform4fv, opcodes.In(ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.Slice(types.F32)), nil)
+	opcodes.RegisterFunction("gl.Uniform1iv", opGlUniform1iv, opcodes.In(ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.Slice(types.I32)), nil)
+	opcodes.RegisterFunction("gl.Uniform2iv", opGlUniform2iv, opcodes.In(ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.Slice(types.I32)), nil)
+	opcodes.RegisterFunction("gl.Uniform3iv", opGlUniform3iv, opcodes.In(ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.Slice(types.I32)), nil)
+	opcodes.RegisterFunction("gl.Uniform4iv", opGlUniform4iv, opcodes.In(ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.Slice(types.I32)), nil)
+	opcodes.RegisterFunction("gl.UniformMatrix2fv", opGlUniformMatrix2fv, opcodes.In(ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_BOOL, ast.Slice(types.F32)), nil)
+	opcodes.RegisterFunction("gl.UniformMatrix3fv", opGlUniformMatrix3fv, opcodes.In(ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_BOOL, ast.Slice(types.F32)), nil)
+	opcodes.RegisterFunction("gl.UniformMatrix4fv", opGlUniformMatrix4fv, opcodes.In(ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_BOOL, ast.Slice(types.F32)), nil)
 	opcodes.RegisterFunction("gl.UniformV4F", opGlUniformV4F, opcodes.In(ast.ConstCxArg_I32, ast.ConstCxArg_UND_TYPE), nil)
 	opcodes.RegisterFunction("gl.UniformM44F", opGlUniformM44F, opcodes.In(ast.ConstCxArg_I32, ast.ConstCxArg_BOOL, ast.ConstCxArg_UND_TYPE), nil)
-	opcodes.RegisterFunction("gl.UniformM44FV", opGlUniformM44FV, opcodes.In(ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_BOOL, ast.Slice(constants.TYPE_UNDEFINED)), nil)
+	opcodes.RegisterFunction("gl.UniformM44FV", opGlUniformM44FV, opcodes.In(ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_BOOL, ast.Slice(types.UNDEFINED)), nil)
 	opcodes.RegisterFunction("gl.VertexAttribPointer", opGlVertexAttribPointer, opcodes.In(ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_BOOL, ast.ConstCxArg_I32), nil)
 	opcodes.RegisterFunction("gl.VertexAttribPointerI32", opGlVertexAttribPointerI32, opcodes.In(ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_BOOL, ast.ConstCxArg_I32, ast.ConstCxArg_I32), nil)
 
@@ -189,9 +189,9 @@ func RegisterPackage() {
 	opcodes.RegisterFunction("glfw.SetFramebufferSizeCallback", opGlfwSetFramebufferSizeCallback, opcodes.In(ast.ConstCxArg_STR, ast.ConstCxArg_STR, ast.ConstCxArg_STR), nil)
 	opcodes.RegisterFunction("glfw.SetWindowPosCallback", opGlfwSetWindowPosCallback, opcodes.In(ast.ConstCxArg_STR, ast.ConstCxArg_STR, ast.ConstCxArg_STR), nil)
 	opcodes.RegisterFunction("glfw.SetWindowSizeCallback", opGlfwSetWindowSizeCallback, opcodes.In(ast.ConstCxArg_STR, ast.ConstCxArg_STR, ast.ConstCxArg_STR), nil)
-	opcodes.RegisterFunction("glfw.SetKeyCallback", opGlfwSetKeyCallback, opcodes.In(ast.ConstCxArg_STR, ast.ConstCxArg_STR), nil)                          // TODO : to deprecate
+	opcodes.RegisterFunction("glfw.SetKeyCallback", opGlfwSetKeyCallback, opcodes.In(ast.ConstCxArg_STR, ast.ConstCxArg_STR), nil)                 // TODO : to deprecate
 	opcodes.RegisterFunction("glfw.SetMouseButtonCallback", opGlfwSetMouseButtonCallback, opcodes.In(ast.ConstCxArg_STR, ast.ConstCxArg_STR), nil) // TODO : to deprecate
-	opcodes.RegisterFunction("glfw.SetCursorPosCallback", opGlfwSetCursorPosCallback, opcodes.In(ast.ConstCxArg_STR, ast.ConstCxArg_STR), nil)       // TODO : to deprecate
+	opcodes.RegisterFunction("glfw.SetCursorPosCallback", opGlfwSetCursorPosCallback, opcodes.In(ast.ConstCxArg_STR, ast.ConstCxArg_STR), nil)     // TODO : to deprecate
 	opcodes.RegisterFunction("glfw.GetCursorPos", opGlfwGetCursorPos, opcodes.In(ast.ConstCxArg_STR), opcodes.Out(ast.ConstCxArg_F64, ast.ConstCxArg_F64))
 	opcodes.RegisterFunction("glfw.SetInputMode", opGlfwSetInputMode, opcodes.In(ast.ConstCxArg_STR, ast.ConstCxArg_I32, ast.ConstCxArg_I32), nil)
 	opcodes.RegisterFunction("glfw.SetWindowPos", opGlfwSetWindowPos, opcodes.In(ast.ConstCxArg_STR, ast.ConstCxArg_I32, ast.ConstCxArg_I32), nil)
@@ -213,29 +213,29 @@ func RegisterPackage() {
 	opcodes.RegisterFunction("gltext.GlyphInfo", opGltextGlyphInfo, opcodes.In(ast.ConstCxArg_STR, ast.ConstCxArg_I32), opcodes.Out(ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_I32))
 
 	// goal
-	opcodes.RegisterFunction("al.LoadWav", opAlLoadWav, opcodes.In(ast.ConstCxArg_STR), opcodes.Out(ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_I64, ast.Slice(constants.TYPE_UI8)))
+	opcodes.RegisterFunction("al.LoadWav", opAlLoadWav, opcodes.In(ast.ConstCxArg_STR), opcodes.Out(ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_I64, ast.Slice(types.UI8)))
 
 	// openal
 	opcodes.RegisterFunction("al.CloseDevice", opAlCloseDevice, nil, nil)
 	opcodes.RegisterFunction("al.DeleteBuffers", opAlDeleteBuffers, opcodes.In(ast.ConstCxArg_I32), nil)
-	opcodes.RegisterFunction("al.DeleteSources", opAlDeleteSources, opcodes.In(ast.Slice(constants.TYPE_I32)), nil)
+	opcodes.RegisterFunction("al.DeleteSources", opAlDeleteSources, opcodes.In(ast.Slice(types.I32)), nil)
 	opcodes.RegisterFunction("al.DeviceError", opAlDeviceError, nil, opcodes.Out(ast.ConstCxArg_I32))
 	opcodes.RegisterFunction("al.Error", opAlError, nil, opcodes.Out(ast.ConstCxArg_I32))
 	opcodes.RegisterFunction("al.Extensions", opAlExtensions, nil, opcodes.Out(ast.ConstCxArg_STR))
 	opcodes.RegisterFunction("al.OpenDevice", opAlOpenDevice, nil, nil)
-	opcodes.RegisterFunction("al.PauseSources", opAlPauseSources, opcodes.In(ast.Slice(constants.TYPE_I32)), nil)
-	opcodes.RegisterFunction("al.PlaySources", opAlPlaySources, opcodes.In(ast.Slice(constants.TYPE_I32)), nil)
+	opcodes.RegisterFunction("al.PauseSources", opAlPauseSources, opcodes.In(ast.Slice(types.I32)), nil)
+	opcodes.RegisterFunction("al.PlaySources", opAlPlaySources, opcodes.In(ast.Slice(types.I32)), nil)
 	opcodes.RegisterFunction("al.Renderer", opAlRenderer, nil, opcodes.Out(ast.ConstCxArg_STR))
-	opcodes.RegisterFunction("al.RewindSources", opAlRewindSources, opcodes.In(ast.Slice(constants.TYPE_I32)), nil)
-	opcodes.RegisterFunction("al.StopSources", opAlStopSources, opcodes.In(ast.Slice(constants.TYPE_I32)), nil)
+	opcodes.RegisterFunction("al.RewindSources", opAlRewindSources, opcodes.In(ast.Slice(types.I32)), nil)
+	opcodes.RegisterFunction("al.StopSources", opAlStopSources, opcodes.In(ast.Slice(types.I32)), nil)
 	opcodes.RegisterFunction("al.Vendor", opAlVendor, nil, opcodes.Out(ast.ConstCxArg_STR))
 	opcodes.RegisterFunction("al.Version", opAlVersion, nil, opcodes.Out(ast.ConstCxArg_STR))
-	opcodes.RegisterFunction("al.GenBuffers", opAlGenBuffers, opcodes.In(ast.ConstCxArg_I32), opcodes.Out(ast.Slice(constants.TYPE_I32)))
+	opcodes.RegisterFunction("al.GenBuffers", opAlGenBuffers, opcodes.In(ast.ConstCxArg_I32), opcodes.Out(ast.Slice(types.I32)))
 	opcodes.RegisterFunction("al.BufferData", opAlBufferData, opcodes.In(ast.ConstCxArg_I32, ast.ConstCxArg_I32, ast.ConstCxArg_UND_TYPE, ast.ConstCxArg_I32), nil)
-	opcodes.RegisterFunction("al.GenSources", opAlGenSources, opcodes.In(ast.ConstCxArg_I32), opcodes.Out(ast.Slice(constants.TYPE_I32)))
+	opcodes.RegisterFunction("al.GenSources", opAlGenSources, opcodes.In(ast.ConstCxArg_I32), opcodes.Out(ast.Slice(types.I32)))
 	opcodes.RegisterFunction("al.SourceBuffersProcessed", opAlSourceBuffersProcessed, opcodes.In(ast.ConstCxArg_I32), opcodes.Out(ast.ConstCxArg_I32))
 	opcodes.RegisterFunction("al.SourceBuffersQueued", opAlSourceBuffersQueued, opcodes.In(ast.ConstCxArg_I32), opcodes.Out(ast.ConstCxArg_I32))
-	opcodes.RegisterFunction("al.SourceQueueBuffers", opAlSourceQueueBuffers, opcodes.In(ast.ConstCxArg_I32, ast.Slice(constants.TYPE_I32)), nil)
+	opcodes.RegisterFunction("al.SourceQueueBuffers", opAlSourceQueueBuffers, opcodes.In(ast.ConstCxArg_I32, ast.Slice(types.I32)), nil)
 	opcodes.RegisterFunction("al.SourceState", opAlSourceState, opcodes.In(ast.ConstCxArg_I32), opcodes.Out(ast.ConstCxArg_I32))
-	opcodes.RegisterFunction("al.SourceUnqueueBuffers", opAlSourceUnqueueBuffers, opcodes.In(ast.ConstCxArg_I32, ast.Slice(constants.TYPE_I32)), nil)
+	opcodes.RegisterFunction("al.SourceUnqueueBuffers", opAlSourceUnqueueBuffers, opcodes.In(ast.ConstCxArg_I32, ast.Slice(types.I32)), nil)
 }

@@ -5,7 +5,7 @@ package cxfx
 import (
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/skycoin/cx/cx/ast"
-	"github.com/skycoin/cx/cx/helper"
+	"github.com/skycoin/cx/cx/types"
 )
 
 var windows map[string]*glfw.Window = make(map[string]*glfw.Window, 0)
@@ -229,7 +229,10 @@ func opGlfwSetShouldClose(inputs []ast.CXValue, outputs []ast.CXValue) {
 func getWindowName(w *glfw.Window) []byte {
 	for key, win := range windows {
 		if w == win {
-			return helper.FromI32(int32(ast.WriteStringData(key)))
+			var windowHeapPtr = types.AllocWrite_obj_data(ast.PROGRAM.Memory, []byte(key))
+			var windowName [types.POINTER_SIZE]byte
+			types.Write_ptr(windowName[:], 0, windowHeapPtr)
+			return windowName[:]
 		}
 	}
 

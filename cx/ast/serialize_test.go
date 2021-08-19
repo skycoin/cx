@@ -223,12 +223,12 @@ func generateSampleProgramFromCXEvolves(t *testing.T, withLiteral bool) *cxast.C
 		t.Errorf("want no error, got %v", err)
 	}
 
-	err = astapi.AddNativeInputToFunction(cxProgram, "main", "TestFunction", "inputOne", cxconstants.TYPE_I32)
+	err = astapi.AddNativeInputToFunction(cxProgram, "main", "TestFunction", "inputOne", cxtypes.I32)
 	if err != nil {
 		t.Errorf("want no error, got %v", err)
 	}
 
-	err = astapi.AddNativeOutputToFunction(cxProgram, "main", "TestFunction", "outputOne", cxconstants.TYPE_I32)
+	err = astapi.AddNativeOutputToFunction(cxProgram, "main", "TestFunction", "outputOne", cxtypes.I32)
 	if err != nil {
 		t.Errorf("want no error, got %v", err)
 	}
@@ -243,7 +243,7 @@ func generateSampleProgramFromCXEvolves(t *testing.T, withLiteral bool) *cxast.C
 		buf := new(bytes.Buffer)
 		var num int32 = 5
 		binary.Write(buf, binary.LittleEndian, num)
-		err = astapi.AddLiteralInputToExpression(cxProgram, "main", "TestFunction", buf.Bytes(), cxconstants.TYPE_I32, 2)
+		err = astapi.AddLiteralInputToExpression(cxProgram, "main", "TestFunction", buf.Bytes(), cxtypes.I32, 2)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}

@@ -6,7 +6,7 @@ import (
 
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/globals"
-	"github.com/skycoin/cx/cx/helper"
+    "github.com/skycoin/cx/cx/types"
 )
 
 /*
@@ -59,18 +59,18 @@ type CXProgram struct {
 	Memory        []byte        // Used when running the program
 
 	//TODO: Add StackStartsAt
-	StackSize    int // This field stores the size of a CX program's stack
-	StackPointer int // At what byte the current stack frame is
+	StackSize    types.Pointer // This field stores the size of a CX program's stack
+	StackPointer types.Pointer // At what byte the current stack frame is
 
-	DataSegmentSize     int // This field stores the size of a CX program's data segment size
-	DataSegmentStartsAt int // Offset at which the data segment starts in a CX program's memory
+	DataSegmentSize     types.Pointer // This field stores the size of a CX program's data segment size
+	DataSegmentStartsAt types.Pointer // Offset at which the data segment starts in a CX program's memory
 
-	HeapSize     int // This field stores the size of a CX program's heap
-	HeapStartsAt int // Offset at which the heap starts in a CX program's memory (normally the stack size)
-	HeapPointer  int // At what offset a CX program can insert a new object to the heap
+	HeapSize     types.Pointer // This field stores the size of a CX program's heap
+	HeapStartsAt types.Pointer // Offset at which the heap starts in a CX program's memory (normally the stack size)
+	HeapPointer  types.Pointer // At what offset a CX program can insert a new object to the heap
 
-	CallStack   []CXCall // Collection of function calls
-	CallCounter int      // What function call is the currently being executed in the CallStack
+	CallStack   []CXCall      // Collection of function calls
+	CallCounter types.Pointer // What function call is the currently being executed in the CallStack
 	Terminated  bool     // Utility field for the runtime. Indicates if a CX program has already finished or not.
 	Version     string   // CX version used to build this CX program.
 
@@ -102,7 +102,7 @@ type CXStruct struct {
 	// Metadata
 	Name    string     // Name of the struct
 	Package *CXPackage // The package this struct belongs to
-	Size    int        // The size in memory that this struct takes.
+	Size    types.Pointer        // The size in memory that this struct takes.
 
 	// Contents
 	Fields []*CXArgument // The fields of the struct
@@ -124,7 +124,7 @@ type CXFunction struct {
 	//TODO: Better Comment for this
 	Length int // number of expressions, pre-computed for performance
 	//TODO: Better Comment for this
-	Size int // automatic memory size
+	Size types.Pointer // automatic memory size
 
 	// Debugging
 	FileName string
@@ -474,13 +474,13 @@ func GetCurrentCxProgram() (*CXProgram, error) {
 // PrintAllObjects prints all objects in a program
 //
 func (cxprogram *CXProgram) PrintAllObjects() {
-	fp := 0
+	fp := types.Pointer(0)
 
-	for c := 0; c <= cxprogram.CallCounter; c++ {
+	for c := types.Pointer(0); c <= cxprogram.CallCounter; c++ {
 		op := cxprogram.CallStack[c].Operator
 
 		for _, ptr := range op.ListOfPointers {
-			heapOffset := helper.Deserialize_i32(cxprogram.Memory[fp+ptr.Offset : fp+ptr.Offset+constants.TYPE_POINTER_SIZE])
+			heapOffset := types.Read_ptr(cxprogram.Memory, fp+ptr.Offset)
 
 			var byts []byte
 
@@ -491,7 +491,7 @@ func (cxprogram *CXProgram) PrintAllObjects() {
 
 				// }
 
-				byts = cxprogram.Memory[int(heapOffset)+constants.OBJECT_HEADER_SIZE : int(heapOffset)+constants.OBJECT_HEADER_SIZE+ptr.CustomType.Size]
+				byts = types.Get_obj_data(cxprogram.Memory, heapOffset, ptr.CustomType.Size)
 			}
 
 			// var currLengths []int
@@ -522,7 +522,7 @@ func (cxprogram *CXProgram) PrintAllObjects() {
 
 			fmt.Println("declarat", ptr.DeclarationSpecifiers)
 
-			fmt.Println("obj", ptr.ArgDetails.Name, ptr.CustomType, cxprogram.Memory[heapOffset:int(heapOffset)+op.Size], byts)
+			fmt.Println("obj", ptr.ArgDetails.Name, ptr.CustomType, cxprogram.Memory[heapOffset:heapOffset+op.Size], byts)
 		}
 
 		fp += op.Size
@@ -998,7 +998,7 @@ func MakeArgument(name string, fileName string, fileLine int) *CXArgument {
 }
 
 // MakeField ...
-func MakeField(name string, typ int, fileName string, fileLine int) *CXArgument {
+func MakeField(name string, typeCode types.Code, fileName string, fileLine int) *CXArgument {
 	return &CXArgument{
 		ArgDetails: &CXArgumentDebug{
 			Name:     name,
@@ -1006,20 +1006,20 @@ func MakeField(name string, typ int, fileName string, fileLine int) *CXArgument 
 			FileLine: fileLine,
 		},
 
-		Type: typ,
+		Type: typeCode,
 	}
 }
 
 // MakeGlobal ...
-func MakeGlobal(name string, typ int, fileName string, fileLine int) *CXArgument {
-	size := constants.GetArgSize(typ)
+func MakeGlobal(name string, typeCode types.Code, fileName string, fileLine int) *CXArgument {
+	size := typeCode.Size()
 	global := &CXArgument{
 		ArgDetails: &CXArgumentDebug{
 			Name:     name,
 			FileName: fileName,
 			FileLine: fileLine,
 		},
-		Type:   typ,
+		Type:   typeCode,
 		Size:   size,
 		Offset: globals.HeapOffset,
 	}
@@ -1044,17 +1044,12 @@ func (arg *CXArgument) AddPackage(pkg *CXPackage) *CXArgument {
 }
 
 // AddType ...
-func (arg *CXArgument) AddType(typ string) *CXArgument {
-	if typCode, found := constants.TypeCodes[typ]; found {
-		arg.Type = typCode
-		size := constants.GetArgSize(typCode)
-		arg.Size = size
-		arg.TotalSize = size
-		arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_BASIC)
-	} else {
-		arg.Type = constants.TYPE_UNDEFINED
-	}
-
+func (arg *CXArgument) AddType(typeCode types.Code) *CXArgument {
+	arg.Type = typeCode
+	size := typeCode.Size()
+	arg.Size = size
+	arg.TotalSize = size
+	arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_BASIC)
 	return arg
 }
 

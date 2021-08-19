@@ -5,6 +5,7 @@
 		"github.com/skycoin/skycoin/src/cipher/encoder"
 		"github.com/skycoin/cx/cx/ast"
 		"github.com/skycoin/cx/cx/constants"
+        "github.com/skycoin/cx/cx/types"
 		"github.com/skycoin/cx/cxparser/actions"
 	)
 
@@ -342,7 +343,7 @@ direct_declarator:
                 {
 			if pkg, err := actions.AST.GetCurrentPackage(); err == nil {
 				arg := ast.MakeArgument("", actions.CurrentFile, actions.LineNo)
-                                arg.AddType(constants.TypeNames[constants.TYPE_UNDEFINED])
+                arg.AddType(types.UNDEFINED)
 				arg.ArgDetails.Name = $1
 				arg.ArgDetails.Package = pkg
 				$$ = arg
@@ -361,7 +362,7 @@ id_list:	IDENTIFIER
 		}
 	|	type_specifier
 		{
-			arg := actions.DeclarationSpecifiersBasic($1)
+			arg := actions.DeclarationSpecifiersBasic(types.Code($1))
 			$$ = []*ast.CXArgument{arg}
 		}
 	|	id_list COMMA IDENTIFIER
@@ -371,7 +372,7 @@ id_list:	IDENTIFIER
 		}
 	|	id_list COMMA type_specifier
 		{
-			arg := actions.DeclarationSpecifiersBasic($3)
+			arg := actions.DeclarationSpecifiersBasic(types.Code($3))
 			$$ = append($1, arg)
 		}
 	;
@@ -396,26 +397,26 @@ types_list:
 declaration_specifiers:
                 FUNC types_list types_list
 		{
-			arg := ast.MakeArgument("", actions.CurrentFile, actions.LineNo).AddType("func")
+			arg := ast.MakeArgument("", actions.CurrentFile, actions.LineNo).AddType(types.FUNC)
 			arg.Inputs = $2
 			arg.Outputs = $3
-			$$ = actions.DeclarationSpecifiers(arg, []int{0}, constants.DECL_FUNC)
+			$$ = actions.DeclarationSpecifiers(arg, []types.Pointer{0}, constants.DECL_FUNC)
 		}
         |       MUL_OP declaration_specifiers
                 {
-			$$ = actions.DeclarationSpecifiers($2, []int{0}, constants.DECL_POINTER)
+			$$ = actions.DeclarationSpecifiers($2, []types.Pointer{0}, constants.DECL_POINTER)
                 }
         // |       LBRACK INT_LITERAL RBRACK declaration_specifiers
         //         {
-	// 		$$ = actions.DeclarationSpecifiers($4, int($2), constants.DECL_ARRAY)
+	// 		$$ = actions.DeclarationSpecifiers($4, types.Cast_sint_to_sptr($2), constants.DECL_ARRAY)
         //         }
         |       LBRACK RBRACK declaration_specifiers
                 {
-			$$ = actions.DeclarationSpecifiers($3, []int{0}, constants.DECL_SLICE)
+			$$ = actions.DeclarationSpecifiers($3, []types.Pointer{0}, constants.DECL_SLICE)
                 }
         |       type_specifier
                 {
-			$$ = actions.DeclarationSpecifiersBasic($1)
+			$$ = actions.DeclarationSpecifiersBasic(types.Code($1))
                 }
         |       IDENTIFIER
                 {
@@ -423,13 +424,13 @@ declaration_specifiers:
                 }
         |       indexing_literal type_specifier
                 {
-			basic := actions.DeclarationSpecifiersBasic($2)
-			$$ = actions.DeclarationSpecifiers(basic, $1, constants.DECL_ARRAY)
+			basic := actions.DeclarationSpecifiersBasic(types.Code($2))
+			$$ = actions.DeclarationSpecifiers(basic, types.Cast_sint_to_sptr($1), constants.DECL_ARRAY)
                 }
         |       indexing_literal IDENTIFIER
                 {
 			strct := actions.DeclarationSpecifiersStruct($2, "", false, actions.CurrentFile, actions.LineNo)
-			$$ = actions.DeclarationSpecifiers(strct, $1, constants.DECL_ARRAY)
+			$$ = actions.DeclarationSpecifiers(strct, types.Cast_sint_to_sptr($1), constants.DECL_ARRAY)
                 }
         |       IDENTIFIER PERIOD IDENTIFIER
                 {
@@ -437,7 +438,7 @@ declaration_specifiers:
                 }
 	|       type_specifier PERIOD IDENTIFIER
                 {
-			$$ = actions.DeclarationSpecifiersStruct($3, constants.TypeNames[$1], true, actions.CurrentFile, actions.LineNo)
+			$$ = actions.DeclarationSpecifiersStruct($3, types.Code($1).Name(), true, actions.CurrentFile, actions.LineNo)
                 }
         /* |       package_identifier */
         /*         { */
@@ -451,31 +452,31 @@ declaration_specifiers:
 
 type_specifier:
                 AFF
-                { $$ = constants.TYPE_AFF }
+                { $$ = int(types.AFF) }
         |       BOOL
-                { $$ = constants.TYPE_BOOL }
+                { $$ = int(types.BOOL) }
         |       STR
-                { $$ = constants.TYPE_STR }
+                { $$ = int(types.STR) }
         |       F32
-                { $$ = constants.TYPE_F32 }
+                { $$ = int(types.F32) }
         |       F64
-                { $$ = constants.TYPE_F64 }
+                { $$ = int(types.F64) }
         |       I8
-                { $$ = constants.TYPE_I8 }
+                { $$ = int(types.I8) }
         |       I16
-                { $$ = constants.TYPE_I16 }
+                { $$ = int(types.I16) }
         |       I32
-                { $$ = constants.TYPE_I32 }
+                { $$ = int(types.I32) }
         |       I64
-                { $$ = constants.TYPE_I64 }
+                { $$ = int(types.I64) }
         |       UI8
-                { $$ = constants.TYPE_UI8 }
+                { $$ = int(types.UI8) }
         |       UI16
-                { $$ = constants.TYPE_UI16 }
+                { $$ = int(types.UI16) }
         |       UI32
-                { $$ = constants.TYPE_UI32 }
+                { $$ = int(types.UI32) }
         |       UI64
-                { $$ = constants.TYPE_UI64 }
+                { $$ = int(types.UI64) }
                 ;
 
 
@@ -547,7 +548,7 @@ array_literal_expression:
                 }
         |       indexing_literal type_specifier LBRACE array_literal_expression_list RBRACE
                 {
-			$$ = actions.ArrayLiteralExpression($1, $2, $4)
+			$$ = actions.ArrayLiteralExpression(types.Cast_sint_to_sptr($1), types.Code($2), $4)
                 }
         |       indexing_literal type_specifier LBRACE RBRACE
                 {
@@ -586,7 +587,7 @@ slice_literal_expression:
                 }
         |       LBRACK RBRACK type_specifier LBRACE slice_literal_expression_list RBRACE
                 {
-			$$ = actions.SliceLiteralExpression($3, $5)
+			$$ = actions.SliceLiteralExpression(types.Code($3), $5)
                 }
         |       LBRACK RBRACK type_specifier LBRACE RBRACE
                 {
@@ -617,7 +618,7 @@ infer_action_arg:
                 }
 	|	type_specifier PERIOD IDENTIFIER
 		{
-			$$ = constants.TypeNames[$1] + "." + $3
+			$$ = types.Code($1).Name() + "." + $3
 		}
         ;
 
@@ -658,18 +659,18 @@ infer_actions:
 
 infer_clauses:
                 {
-			$$ = actions.SliceLiteralExpression(constants.TYPE_AFF, nil)
+			$$ = actions.SliceLiteralExpression(types.AFF, nil)
                 }
         |       infer_actions
                 {
 			var exprs []*ast.CXExpression
 			for _, str := range $1 {
-				expr := actions.WritePrimary(constants.TYPE_AFF, encoder.Serialize(str), false)
+				expr := actions.WritePrimary(types.AFF, encoder.Serialize(str), false)
 				expr[len(expr) - 1].ExpressionType = ast.CXEXPR_ARRAY_LITERAL
 				exprs = append(exprs, expr...)
 			}
 			
-			$$ = actions.SliceLiteralExpression(constants.TYPE_AFF, exprs)
+			$$ = actions.SliceLiteralExpression(types.AFF, exprs)
                 }
                 ;
 
@@ -699,52 +700,52 @@ primary_expression:
                 }
         |       STRING_LITERAL
                 {
-			$$ = actions.WritePrimary(constants.TYPE_STR, encoder.Serialize($1), false)
+			$$ = actions.WritePrimary(types.STR, types.Make_obj([]byte($1)), false)
                 }
         |       BOOLEAN_LITERAL
                 {
-			exprs := actions.WritePrimary(constants.TYPE_BOOL, encoder.Serialize($1), false)
+			exprs := actions.WritePrimary(types.BOOL, encoder.Serialize($1), false)
 			$$ = exprs
                 }
         |       BYTE_LITERAL
                 {
-			$$ = actions.WritePrimary(constants.TYPE_I8, encoder.Serialize($1), false)
+			$$ = actions.WritePrimary(types.I8, encoder.Serialize($1), false)
                 }
         |       SHORT_LITERAL
                 {
-			$$ = actions.WritePrimary(constants.TYPE_I16, encoder.Serialize($1), false)
+			$$ = actions.WritePrimary(types.I16, encoder.Serialize($1), false)
                 }
         |       INT_LITERAL
                 {
-			$$ = actions.WritePrimary(constants.TYPE_I32, encoder.Serialize($1), false)
+			$$ = actions.WritePrimary(types.I32, encoder.Serialize($1), false)
                 }
         |       LONG_LITERAL
                 {
-			$$ = actions.WritePrimary(constants.TYPE_I64, encoder.Serialize($1), false)
+			$$ = actions.WritePrimary(types.I64, encoder.Serialize($1), false)
                 }
         |       UNSIGNED_BYTE_LITERAL
                 {
-			$$ = actions.WritePrimary(constants.TYPE_UI8, encoder.Serialize($1), false)
+			$$ = actions.WritePrimary(types.UI8, encoder.Serialize($1), false)
                 }
         |       UNSIGNED_SHORT_LITERAL
                 {
-			$$ = actions.WritePrimary(constants.TYPE_UI16, encoder.Serialize($1), false)
+			$$ = actions.WritePrimary(types.UI16, encoder.Serialize($1), false)
                 }
         |       UNSIGNED_INT_LITERAL
                 {
-			$$ = actions.WritePrimary(constants.TYPE_UI32, encoder.Serialize($1), false)
+			$$ = actions.WritePrimary(types.UI32, encoder.Serialize($1), false)
                 }
         |       UNSIGNED_LONG_LITERAL
                 {
-			$$ = actions.WritePrimary(constants.TYPE_UI64, encoder.Serialize($1), false)
+			$$ = actions.WritePrimary(types.UI64, encoder.Serialize($1), false)
                 }
         |       FLOAT_LITERAL
                 {
-			$$ = actions.WritePrimary(constants.TYPE_F32, encoder.Serialize($1), false)
+			$$ = actions.WritePrimary(types.F32, encoder.Serialize($1), false)
                 }
         |       DOUBLE_LITERAL
                 {
-			$$ = actions.WritePrimary(constants.TYPE_F64, encoder.Serialize($1), false)
+			$$ = actions.WritePrimary(types.F64, encoder.Serialize($1), false)
                 }
         |       LPAREN expression RPAREN
                 { $$ = $2 }
@@ -760,7 +761,7 @@ primary_expression:
 
 after_period:   type_specifier
                 {
-			$$ = constants.TypeNames[$1]
+			$$ = types.Code($1).Name()
                 }
         |       IDENTIFIER
         ;
@@ -773,7 +774,7 @@ postfix_expression:
                 }
         |       type_specifier PERIOD after_period
                 {
-			$$ = actions.PostfixExpressionNative(int($1), $3)
+			$$ = actions.PostfixExpressionNative(types.Code($1), $3)
                 }
 	|       postfix_expression LPAREN RPAREN
                 {

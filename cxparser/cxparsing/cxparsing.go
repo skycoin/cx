@@ -8,6 +8,7 @@ import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	globals2 "github.com/skycoin/cx/cx/globals"
+	"github.com/skycoin/cx/cx/types"
 
 	"github.com/skycoin/cx/cxparser/actions"
 	cxpartialparsing "github.com/skycoin/cx/cxparser/cxpartialparsing"
@@ -68,12 +69,12 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 	*/
 	if osPkg, err := actions.AST.GetPackage(constants.OS_PKG); err == nil {
 		if _, err := osPkg.GetGlobal(constants.OS_ARGS); err != nil {
-			arg0 := ast.MakeArgument(constants.OS_ARGS, "", -1).AddType(constants.TypeNames[constants.TYPE_UNDEFINED])
+			arg0 := ast.MakeArgument(constants.OS_ARGS, "", -1).AddType(types.UNDEFINED)
 			arg0.ArgDetails.Package = osPkg
 
-			arg1 := ast.MakeArgument(constants.OS_ARGS, "", -1).AddType(constants.TypeNames[constants.TYPE_STR])
-			arg1 = actions.DeclarationSpecifiers(arg1, []int{0}, constants.DECL_BASIC)
-			arg1 = actions.DeclarationSpecifiers(arg1, []int{0}, constants.DECL_SLICE)
+			arg1 := ast.MakeArgument(constants.OS_ARGS, "", -1).AddType(types.STR)
+			arg1 = actions.DeclarationSpecifiers(arg1, []types.Pointer{0}, constants.DECL_BASIC)
+			arg1 = actions.DeclarationSpecifiers(arg1, []types.Pointer{0}, constants.DECL_SLICE)
 			actions.DeclareGlobalInPackage(osPkg, arg0, arg1, nil, false)
 		}
 	}

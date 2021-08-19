@@ -1,5 +1,9 @@
 package constants
 
+import (
+    "github.com/skycoin/cx/cx/types"
+)
+
 // var COREPATH = ""
 
 const STACK_OVERFLOW_ERROR = "stack overflow"
@@ -20,44 +24,19 @@ const LITERAL_PLACEHOLDER = "*lit"
 const ID_FN = "identity"
 const INIT_FN = "initDef"
 
-const BOOL_SIZE = 1
-const I8_SIZE = 1
-const I16_SIZE = 2
-const I32_SIZE = 4
-const I64_SIZE = 8
-const F32_SIZE = 4
-const F64_SIZE = 8
-const STR_SIZE = 4
 
-const MARK_SIZE = 1
-const OBJECT_HEADER_SIZE = 9
-const OBJECT_GC_HEADER_SIZE = 5
-const FORWARDING_ADDRESS_SIZE = 4
-const OBJECT_SIZE = 4
+const CALLSTACK_SIZE types.Pointer = 1000
 
-const CALLSTACK_SIZE = 1000
-
-var STACK_SIZE = 1048576     // 1 Mb
-var INIT_HEAP_SIZE = 2097152 // 2 Mb
-var MAX_HEAP_SIZE = 67108864 // 64 Mb
+var STACK_SIZE types.Pointer = 1048576     // 1 Mb
+var INIT_HEAP_SIZE types.Pointer = 2097152 // 2 Mb
+var MAX_HEAP_SIZE types.Pointer = 67108864 // 64 Mb
 var MIN_HEAP_FREE_RATIO float32 = 0.4
 var MAX_HEAP_FREE_RATIO float32 = 0.7
 
-const NULL_HEAP_ADDRESS_OFFSET = 4
-const NULL_HEAP_ADDRESS = 0
-const STR_HEADER_SIZE = 4
-const TYPE_POINTER_SIZE = 4
-const SLICE_HEADER_SIZE = 8
 
-const MAX_UINT32 = ^uint32(0)
-const MIN_UINT32 = 0
-const MAX_INT32 = int(MAX_UINT32 >> 1)
-const MIN_INT32 = -MAX_INT32 - 1
-
-var BASIC_TYPES []string = []string{
-	"bool", "str", "i8", "i16", "i32", "i64", "ui8", "ui16", "ui32", "ui64", "f32", "f64",
-	"[]bool", "[]str", "[]i8", "[]i16", "[]i32", "[]i64", "[]ui8", "[]ui16", "[]ui32", "[]ui64", "[]f32", "[]f64",
-}
+const NULL_HEAP_ADDRESS_OFFSET = types.POINTER_SIZE
+const NULL_HEAP_ADDRESS = types.Pointer(0)
+const SLICE_HEADER_SIZE = 2*types.POINTER_SIZE
 
 //VERY WEIRD
 //gives error, "cx" not found, even if it exists when changed
@@ -110,6 +89,7 @@ const (
 	CX_RUNTIME_INVALID_ARGUMENT
 	CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE
 	CX_RUNTIME_NOT_IMPLEMENTED
+	CX_RUNTIME_INVALID_CAST
 )
 
 var ErrorStrings map[int]string = map[int]string{
@@ -124,6 +104,7 @@ var ErrorStrings map[int]string = map[int]string{
 	CX_RUNTIME_INVALID_ARGUMENT:         "CX_RUNTIME_INVALID_ARGUMENT",
 	CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE: "CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE",
 	CX_RUNTIME_NOT_IMPLEMENTED:          "CX_RUNTIME_NOT_IMPLEMENTED",
+	CX_RUNTIME_INVALID_CAST:             "CX_RUNTIME_INVALID_CAST",
 }
 
 const (
@@ -221,95 +202,4 @@ const (
 	DEREF_SLICE          // 5
 )
 
-const (
-	TPYE_UNUSED = iota //reserve zero value, if this value appears, program should crash; should be assert
-	TYPE_UNDEFINED
-	TYPE_AFF
-	TYPE_BOOL
-	TYPE_STR
-	TYPE_F32
-	TYPE_F64
-	TYPE_I8
-	TYPE_I16
-	TYPE_I32
-	TYPE_I64
-	TYPE_UI8
-	TYPE_UI16
-	TYPE_UI32
-	TYPE_UI64
-	TYPE_FUNC
 
-	TYPE_CUSTOM
-	TYPE_POINTER
-	TYPE_ARRAY
-	TYPE_SLICE
-	TYPE_IDENTIFIER
-	TYPE_COUNT
-)
-
-var TypeCounter int
-var TypeCodes map[string]int = map[string]int{
-	"unused": TPYE_UNUSED, //if this appears, should be error; program should crash
-	"ident":  TYPE_IDENTIFIER,
-	"aff":    TYPE_AFF,
-	"bool":   TYPE_BOOL,
-	"str":    TYPE_STR,
-	"f32":    TYPE_F32,
-	"f64":    TYPE_F64,
-	"i8":     TYPE_I8,
-	"i16":    TYPE_I16,
-	"i32":    TYPE_I32,
-	"i64":    TYPE_I64,
-	"ui8":    TYPE_UI8,
-	"ui16":   TYPE_UI16,
-	"ui32":   TYPE_UI32,
-	"ui64":   TYPE_UI64,
-	"und":    TYPE_UNDEFINED,
-	"func":   TYPE_FUNC,
-}
-
-var TypeNames map[int]string = map[int]string{
-	TPYE_UNUSED:     "UNUSED", //if this appears, should trigger asset; is error
-	TYPE_IDENTIFIER: "ident",
-	TYPE_AFF:        "aff",
-	TYPE_BOOL:       "bool",
-	TYPE_STR:        "str",
-	TYPE_F32:        "f32",
-	TYPE_F64:        "f64",
-	TYPE_I8:         "i8",
-	TYPE_I16:        "i16",
-	TYPE_I32:        "i32",
-	TYPE_I64:        "i64",
-	TYPE_UI8:        "ui8",
-	TYPE_UI16:       "ui16",
-	TYPE_UI32:       "ui32",
-	TYPE_UI64:       "ui64",
-	TYPE_FUNC:       "func",
-	TYPE_UNDEFINED:  "und",
-}
-
-// memory locations
-const (
-	MEM_UNUSED = iota //if this value appears, program should crash; should be assert
-	MEM_STACK
-	MEM_HEAP
-	MEM_DATA
-)
-
-// GetArgSize ...
-func GetArgSize(typ int) int {
-	switch typ {
-	case TYPE_BOOL, TYPE_I8, TYPE_UI8:
-		return 1
-	case TYPE_I16, TYPE_UI16:
-		return 2
-	case TYPE_STR, TYPE_I32, TYPE_UI32, TYPE_F32, TYPE_AFF:
-		return 4
-	case TYPE_I64, TYPE_UI64, TYPE_F64:
-		return 8
-	default:
-		return 4
-		//return -1 // should be panic
-		//panic(CX_INTERNAL_ERROR)
-	}
-}

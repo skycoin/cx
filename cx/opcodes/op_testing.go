@@ -2,8 +2,10 @@ package opcodes
 
 import (
 	"fmt"
+
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/types"
 )
 
 var assertSuccess = true
@@ -16,8 +18,7 @@ func AssertFailed() bool {
 //TODO: Rework
 func assert(inputs []ast.CXValue, outputs []ast.CXValue) (same bool) {
 	var byts1, byts2 []byte
-
-	if inputs[0].Arg.Type == constants.TYPE_STR {
+	if inputs[0].Arg.Type == types.STR {
 		byts1 = []byte(inputs[0].Get_str())
 		byts2 = []byte(inputs[1].Get_str())
 	} else {
@@ -47,8 +48,8 @@ func assert(inputs []ast.CXValue, outputs []ast.CXValue) (same bool) {
 	message := inputs[2].Get_str()
 
 	if !same {
-	    call := ast.PROGRAM.GetCurrentCall()
-    	expr := call.Operator.Expressions[call.Line]
+		call := ast.PROGRAM.GetCurrentCall()
+		expr := call.Operator.Expressions[call.Line]
 		if message != "" {
 			fmt.Printf("%s: %d: result was not equal to the expected value; %s\n", expr.FileName, expr.FileLine, message)
 		} else {
@@ -62,7 +63,7 @@ func assert(inputs []ast.CXValue, outputs []ast.CXValue) (same bool) {
 
 func opAssertValue(inputs []ast.CXValue, outputs []ast.CXValue) {
 	same := assert(inputs, outputs)
-    outputs[0].Set_bool(same)
+	outputs[0].Set_bool(same)
 }
 
 func opTest(inputs []ast.CXValue, outputs []ast.CXValue) {
@@ -77,10 +78,10 @@ func opPanic(inputs []ast.CXValue, outputs []ast.CXValue) {
 
 // panicIf/panicIfNot implementation
 func panicIf(inputs []ast.CXValue, outputs []ast.CXValue, condition bool) {
-    str := inputs[1].Get_str()
+	str := inputs[1].Get_str()
 	if inputs[0].Get_bool() == condition {
-	    call := ast.PROGRAM.GetCurrentCall()
-    	expr := call.Operator.Expressions[call.Line]
+		call := ast.PROGRAM.GetCurrentCall()
+		expr := call.Operator.Expressions[call.Line]
 		fmt.Printf("%s : %d, %s\n", expr.FileName, expr.FileLine, str)
 		panic(constants.CX_ASSERT)
 	}
@@ -97,5 +98,5 @@ func opPanicIfNot(inputs []ast.CXValue, outputs []ast.CXValue) {
 }
 
 func opStrError(inputs []ast.CXValue, outputs []ast.CXValue) {
-    outputs[0].Set_str(ast.ErrorString(int(inputs[0].Get_i32())))
+	outputs[0].Set_str(ast.ErrorString(int(inputs[0].Get_i32())))
 }

@@ -2,6 +2,7 @@ package ast
 
 import (
 	"fmt"
+	"github.com/skycoin/cx/cx/types"
 )
 
 func stackValueHeader(fileName string, fileLine int) string {
@@ -16,7 +17,7 @@ func (cxprogram *CXProgram) PrintStack() {
 	// we're going backwards in the stack
 	fp := cxprogram.StackPointer
 
-	for c := cxprogram.CallCounter; c >= 0; c-- {
+	for c := cxprogram.CallCounter; c != types.InvalidPointer; c-- {
 		op := cxprogram.CallStack[c].Operator
 		fp -= op.Size
 

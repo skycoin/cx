@@ -24,7 +24,7 @@ import (
 //         0.- Function: TestFunction (inputOne i32) (outputOne i16)
 //             0.- Expression: z i16 = add(x i16)
 //
-// We use AddNativeInputToExpression(cxprogram, "main", "TestFunction", "y", cxconstants.TYPE_I16, 0).
+// We use AddNativeInputToExpression(cxprogram, "main", "TestFunction", "y", cxtypes.I16, 0).
 // The Result will be:
 // 0.- Package: main
 //     Functions
@@ -111,7 +111,7 @@ func RemoveInputFromExpression(cxprogram *cxast.CXProgram, functionName string, 
 //         0.- Function: TestFunction (inputOne i32) (outputOne i16)
 //             0.- Expression: add(x i16, y i16)
 //
-// We use AddNativeOutputToExpression(cxprogram, "main", "TestFunction", "z", cxconstants.TYPE_I16, 0).
+// We use AddNativeOutputToExpression(cxprogram, "main", "TestFunction", "z", cxtypes.I16, 0).
 // The Result will be:
 // 0.- Package: main
 //     Functions
@@ -279,7 +279,7 @@ func MakeOutputExpressionAPointer(cxprogram *cxast.CXProgram, functionName strin
 //                 0.- Function: TestFunction (inputOne i32) (outputOne i16)
 //                         0.- Expression: add(x i16)
 //
-// We use GetAccessibleArgsForFunctionByType(cxprogram, "main", "TestFunction", cxconstants.TYPE_I16).
+// We use GetAccessibleArgsForFunctionByType(cxprogram, "main", "TestFunction", cxtypes.I16).
 // We then get a result of
 // 1. testGlobal i16 arg in the form of cxast.CXArgument.
 // 2. x i16 arg in th eform of cxast.CXArgument.

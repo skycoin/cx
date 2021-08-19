@@ -3,5 +3,5 @@ package main
 func main()() {
 	var s []i32
 	s = resize(s, -1)
-	test(false, true, "runtime must throw CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE")
+	test(false, true, "runtime must throw CX_RUNTIME_INVALID_CAST")
 }

@@ -2,11 +2,12 @@ package globals
 
 import (
 	"os"
+    "github.com/skycoin/cx/cx/types"
 )
 
 // Var
 var (
-	HeapOffset    int
+	HeapOffset types.Pointer
 )
 
 //Path is only used by os module and only to get working directory

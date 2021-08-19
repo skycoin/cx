@@ -3,7 +3,7 @@ package opcodes
 import (
 	"fmt"
 	"github.com/skycoin/cx/cx/ast"
-	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/types"
 	"strconv"
 )
 
@@ -35,6 +35,7 @@ func buildString(inputs []ast.CXValue, outputs []ast.CXValue) []byte {
 				continue
 			}
 		}
+		
 		if ch == '%' {
 			if specifiersCounter+1 == len(inputs) {
 				res = append(res, []byte(fmt.Sprintf("%%!%c(MISSING)", nextCh))...)
@@ -48,33 +49,32 @@ func buildString(inputs []ast.CXValue, outputs []ast.CXValue) []byte {
 				res = append(res, []byte(CheckForEscapedChars(inp.Get_str()))...)
 			case 'd':
 				switch inp.Type {
-				case constants.TYPE_I8:
+				case types.I8:
 					res = append(res, []byte(strconv.FormatInt(int64(inp.Get_i8()), 10))...)
-				case constants.TYPE_I16:
+				case types.I16:
 					res = append(res, []byte(strconv.FormatInt(int64(inp.Get_i16()), 10))...)
-				case constants.TYPE_I32:
+				case types.I32:
 					res = append(res, []byte(strconv.FormatInt(int64(inp.Get_i32()), 10))...)
-				case constants.TYPE_I64:
+				case types.I64:
 					res = append(res, []byte(strconv.FormatInt(inp.Get_i64(), 10))...)
-				case constants.TYPE_UI8:
+				case types.UI8:
 					res = append(res, []byte(strconv.FormatUint(uint64(inp.Get_ui8()), 10))...)
-				case constants.TYPE_UI16:
+				case types.UI16:
 					res = append(res, []byte(strconv.FormatUint(uint64(inp.Get_ui16()), 10))...)
-				case constants.TYPE_UI32:
+				case types.UI32:
 					res = append(res, []byte(strconv.FormatUint(uint64(inp.Get_ui32()), 10))...)
-				case constants.TYPE_UI64:
+				case types.UI64:
 					res = append(res, []byte(strconv.FormatUint(inp.Get_ui64(), 10))...)
 				}
 			case 'f':
 				switch inp.Type {
-				case constants.TYPE_F32:
+				case types.F32:
 					res = append(res, []byte(strconv.FormatFloat(float64(inp.Get_f32()), 'f', 7, 32))...)
-				case constants.TYPE_F64:
+				case types.F64:
 					res = append(res, []byte(strconv.FormatFloat(inp.Get_f64(), 'f', 16, 64))...)
 				}
 			case 'v':
 				res = append(res, []byte(ast.GetPrintableValue(inp.FramePointer, inp.Arg))...)
-                //inp.Used = int8(inp.Type) // TODO: Remove hacked type check
             case 'b':
                 res = append(res, []byte(strconv.FormatBool(inp.Get_bool()))...)
 			}
@@ -99,7 +99,7 @@ func buildString(inputs []ast.CXValue, outputs []ast.CXValue) []byte {
 				typ = elt.CustomType.Name
 			} else {
 				// then it's native type
-				typ = constants.TypeNames[elt.Type]
+				typ = elt.Type.Name()
 			}
 
 			if c == lInps-1 {

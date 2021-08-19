@@ -2,9 +2,17 @@ package ast
 
 import (
 	"github.com/skycoin/cx/cx/constants"
-	"github.com/skycoin/cx/cx/helper"
+    "github.com/skycoin/cx/cx/types"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
+
+
+func deserializeRaw(byts []byte, offset types.Pointer, size types.Pointer, item interface{}) {
+	_, err := encoder.DeserializeRaw(byts[offset:offset+size], item)
+	if err != nil {
+		panic(err)
+	}
+}
 
 func serializeString(name string, s *SerializedCXProgram) (int64, int64) {
 	if name == "" {
@@ -55,6 +63,23 @@ func serializeBoolean(val bool) int64 {
 		return 1
 	}
 	return 0
+}
+
+func serializePointers(pointers []types.Pointer, s *SerializedCXProgram) (int64, int64) {
+	if len(pointers) == 0 {
+		return int64(-1), int64(-1)
+	}
+	off := len(s.Integers)
+	l := len(pointers)
+
+	ints := make([]int64, l)
+	for i, pointer := range pointers {
+		ints[i] = int64(pointer)
+	}
+
+	s.Integers = append(s.Integers, ints...)
+
+	return int64(off), int64(l)
 }
 
 func serializeIntegers(ints []int, s *SerializedCXProgram) (int64, int64) {
@@ -117,7 +142,7 @@ func serializeArgument(arg *CXArgument, s *SerializedCXProgram) int {
 	s.Arguments[argOff].PassBy = int64(arg.PassBy)
 	s.Arguments[argOff].DoesEscape = serializeBoolean(arg.DoesEscape)
 
-	s.Arguments[argOff].LengthsOffset, s.Arguments[argOff].LengthsSize = serializeIntegers(arg.Lengths, s)
+	s.Arguments[argOff].LengthsOffset, s.Arguments[argOff].LengthsSize = serializePointers(arg.Lengths, s)
 	s.Arguments[argOff].IndexesOffset, s.Arguments[argOff].IndexesSize = serializeSliceOfArguments(arg.Indexes, s)
 	s.Arguments[argOff].FieldsOffset, s.Arguments[argOff].FieldsSize = serializeSliceOfArguments(arg.Fields, s)
 	s.Arguments[argOff].InputsOffset, s.Arguments[argOff].InputsSize = serializeSliceOfArguments(arg.Inputs, s)
@@ -596,7 +621,7 @@ func SerializeDebugInfo(prgrm *CXProgram, includeMemory, useCompression bool) Se
 	var s SerializedCXProgram
 
 	bytes := SerializeCXProgram(prgrm, includeMemory, useCompression)
-	helper.DeserializeRaw(bytes[:idxSize], &s.Index)
+	deserializeRaw(bytes, 0, types.Cast_ui64_to_ptr(idxSize), &s.Index)
 
 	data := &SerializedDataSize{
 		Program:     len(bytes[s.Index.ProgramOffset:s.Index.CallsOffset]),
@@ -620,7 +645,7 @@ func deserializeString(off int64, size int64, s *SerializedCXProgram) string {
 	}
 
 	var name string
-	helper.DeserializeRaw(s.Strings[off:off+size], &name)
+	deserializeRaw(s.Strings, types.Cast_i64_to_ptr(off), types.Cast_i64_to_ptr(size), &name)
 
 	return name
 }
@@ -724,7 +749,7 @@ func deserializePackages(s *SerializedCXProgram, prgrm *CXProgram) {
 func deserializeStruct(sStrct *serializedStruct, strct *CXStruct, s *SerializedCXProgram, prgrm *CXProgram) {
 	strct.Name = deserializeString(sStrct.NameOffset, sStrct.NameSize, s)
 	strct.Fields = deserializeArguments(sStrct.FieldsOffset, sStrct.FieldsSize, s, prgrm)
-	strct.Size = int(sStrct.Size)
+	strct.Size = types.Cast_i64_to_ptr(sStrct.Size)
 	strct.Package = prgrm.Packages[sStrct.PackageOffset]
 }
 
@@ -766,13 +791,13 @@ func deserializeArgument(sArg *serializedArgument, s *SerializedCXProgram, prgrm
 	var arg CXArgument
 	arg.ArgDetails = &CXArgumentDebug{}
 	arg.ArgDetails.Name = deserializeString(sArg.NameOffset, sArg.NameSize, s)
-	arg.Type = int(sArg.Type)
+	arg.Type = types.Code(sArg.Type)
 
 	//arg.CustomType = getStructType(sArg, s, prgrm)
 
-	arg.Size = int(sArg.Size)
-	arg.TotalSize = int(sArg.TotalSize)
-	arg.Offset = int(sArg.Offset)
+	arg.Size = types.Cast_i64_to_ptr(sArg.Size)
+	arg.TotalSize = types.Cast_i64_to_ptr(sArg.TotalSize)
+	arg.Offset = types.Cast_i64_to_ptr(sArg.Offset)
 	arg.IndirectionLevels = int(sArg.IndirectionLevels)
 	arg.DereferenceLevels = int(sArg.DereferenceLevels)
 	arg.PassBy = int(sArg.PassBy)
@@ -789,7 +814,7 @@ func deserializeArgument(sArg *serializedArgument, s *SerializedCXProgram, prgrm
 	arg.PreviouslyDeclared = deserializeBool(sArg.PreviouslyDeclared)
 	arg.DoesEscape = deserializeBool(sArg.DoesEscape)
 
-	arg.Lengths = deserializeIntegers(sArg.LengthsOffset, sArg.LengthsSize, s)
+	arg.Lengths = deserializePointers(sArg.LengthsOffset, sArg.LengthsSize, s)
 	arg.Indexes = deserializeArguments(sArg.IndexesOffset, sArg.IndexesSize, s, prgrm)
 	arg.Fields = deserializeArguments(sArg.FieldsOffset, sArg.FieldsSize, s, prgrm)
 	arg.Inputs = deserializeArguments(sArg.InputsOffset, sArg.InputsSize, s, prgrm)
@@ -895,7 +920,7 @@ func deserializeFunction(sFn *serializedFunction, fn *CXFunction, s *SerializedC
 	fn.Outputs = deserializeArguments(sFn.OutputsOffset, sFn.OutputsSize, s, prgrm)
 	fn.ListOfPointers = deserializeArguments(sFn.ListOfPointersOffset, sFn.ListOfPointersSize, s, prgrm)
 	fn.Expressions = deserializeExpressions(sFn.ExpressionsOffset, sFn.ExpressionsSize, s, prgrm)
-	fn.Size = int(sFn.Size)
+	fn.Size = types.Cast_i64_to_ptr(sFn.Size)
 	fn.Length = int(sFn.Length)
 
 	if sFn.CurrentExpressionOffset > 0 {
@@ -907,6 +932,19 @@ func deserializeFunction(sFn *serializedFunction, fn *CXFunction, s *SerializedC
 
 func deserializeBool(val int64) bool {
 	return val == 1
+}
+
+func deserializePointers(off int64, size int64, s *SerializedCXProgram) []types.Pointer {
+	if size < 1 {
+		return nil
+	}
+	ints := s.Integers[off : off+size]
+	res := make([]types.Pointer, len(ints))
+	for i, in := range ints {
+		res[i] = types.Cast_i64_to_ptr(in)
+	}
+
+	return res
 }
 
 func deserializeIntegers(off int64, size int64, s *SerializedCXProgram) []int {
@@ -927,12 +965,12 @@ func initDeserialization(prgrm *CXProgram, s *SerializedCXProgram) {
 	prgrm.Memory = s.Memory
 	prgrm.Packages = make([]*CXPackage, len(s.Packages))
 	prgrm.CallStack = make([]CXCall, constants.CALLSTACK_SIZE)
-	prgrm.HeapStartsAt = int(s.Program.HeapStartsAt)
-	prgrm.HeapPointer = int(s.Program.HeapPointer)
-	prgrm.StackSize = int(s.Program.StackSize)
-	prgrm.DataSegmentSize = int(s.Program.DataSegmentSize)
-	prgrm.DataSegmentStartsAt = int(s.Program.DataSegmentStartsAt)
-	prgrm.HeapSize = int(s.Program.HeapSize)
+	prgrm.HeapStartsAt = types.Cast_i64_to_ptr(s.Program.HeapStartsAt)
+	prgrm.HeapPointer = types.Cast_i64_to_ptr(s.Program.HeapPointer)
+	prgrm.StackSize = types.Cast_i64_to_ptr(s.Program.StackSize)
+	prgrm.DataSegmentSize = types.Cast_i64_to_ptr(s.Program.DataSegmentSize)
+	prgrm.DataSegmentStartsAt = types.Cast_i64_to_ptr(s.Program.DataSegmentStartsAt)
+	prgrm.HeapSize = types.Cast_i64_to_ptr(s.Program.HeapSize)
 	prgrm.Version = deserializeString(s.Program.VersionOffset, s.Program.VersionSize, s)
 
 	// This means reinstantiate memory and add DataSegmentMemory
@@ -958,7 +996,7 @@ func Deserialize(b []byte, useCompression bool) (prgrm *CXProgram) {
 		UncompressBytesLZ4(&b)
 	}
 
-	helper.DeserializeRaw(b, &s)
+	deserializeRaw(b, 0, types.Cast_int_to_ptr(len(b)), &s)
 	initDeserialization(prgrm, &s)
 
 	return prgrm
@@ -966,19 +1004,25 @@ func Deserialize(b []byte, useCompression bool) (prgrm *CXProgram) {
 
 // CopyProgramState copies the program state from `prgrm1` to `prgrm2`.
 func CopyProgramState(sPrgrm1, sPrgrm2 *[]byte) {
-	idxSize := encoder.Size(serializedCXProgramIndex{})
+	idxSize := types.Cast_ui64_to_ptr(encoder.Size(serializedCXProgramIndex{}))
 
 	var index1 serializedCXProgramIndex
 	var index2 serializedCXProgramIndex
 
-	helper.DeserializeRaw((*sPrgrm1)[:idxSize], &index1)
-	helper.DeserializeRaw((*sPrgrm2)[:idxSize], &index2)
+	deserializeRaw((*sPrgrm1), 0, idxSize, &index1)
+	deserializeRaw((*sPrgrm2), 0, idxSize, &index2)
 
 	var prgrm1Info serializedProgram
-	helper.DeserializeRaw((*sPrgrm1)[index1.ProgramOffset:index1.CallsOffset], &prgrm1Info)
+	deserializeRaw((*sPrgrm1),
+		types.Cast_i64_to_ptr(index1.ProgramOffset),
+		types.Cast_i64_to_ptr(index1.CallsOffset-index1.ProgramOffset),
+		 &prgrm1Info)
 
 	var prgrm2Info serializedProgram
-	helper.DeserializeRaw((*sPrgrm2)[index2.ProgramOffset:index2.CallsOffset], &prgrm2Info)
+	deserializeRaw((*sPrgrm2),
+		types.Cast_i64_to_ptr(index2.ProgramOffset),
+		types.Cast_i64_to_ptr(index2.CallsOffset-index2.ProgramOffset),
+		 &prgrm2Info)
 
 	// the stack segment should be 0 for prgrm1, but just in case
 	var prgrmState []byte
@@ -993,24 +1037,30 @@ func CopyProgramState(sPrgrm1, sPrgrm2 *[]byte) {
 
 // GetSerializedStackSize returns the stack size of a serialized CX program starts.
 func GetSerializedStackSize(sPrgrm []byte) int {
-	idxSize := encoder.Size(serializedCXProgramIndex{})
+	idxSize := types.Cast_ui64_to_ptr(encoder.Size(serializedCXProgramIndex{}))
 	var index serializedCXProgramIndex
-	helper.DeserializeRaw(sPrgrm[:idxSize], &index)
+	deserializeRaw(sPrgrm, 0, idxSize, &index)
 
 	var prgrmInfo serializedProgram
-	helper.DeserializeRaw(sPrgrm[index.ProgramOffset:index.CallsOffset], &prgrmInfo)
+	deserializeRaw(sPrgrm,
+		types.Cast_i64_to_ptr(index.ProgramOffset),
+		types.Cast_i64_to_ptr(index.CallsOffset-index.ProgramOffset),
+		&prgrmInfo)
 
 	return int(prgrmInfo.StackSize)
 }
 
 // GetSerializedDataSize returns the size of the data segment of a serialized CX program.
 func GetSerializedDataSize(sPrgrm []byte) int {
-	idxSize := encoder.Size(serializedCXProgramIndex{})
+	idxSize := types.Cast_ui64_to_ptr(encoder.Size(serializedCXProgramIndex{}))
 	var index serializedCXProgramIndex
-	helper.DeserializeRaw(sPrgrm[:idxSize], &index)
+	deserializeRaw(sPrgrm, 0, idxSize, &index)
 
 	var prgrmInfo serializedProgram
-	helper.DeserializeRaw(sPrgrm[index.ProgramOffset:index.CallsOffset], &prgrmInfo)
+	deserializeRaw(sPrgrm,
+		types.Cast_i64_to_ptr(index.ProgramOffset),
+		types.Cast_i64_to_ptr(index.CallsOffset-index.ProgramOffset),
+		&prgrmInfo)
 
 	return int(prgrmInfo.HeapStartsAt - prgrmInfo.StackSize)
 }

@@ -1,31 +1,31 @@
 package ast
 
-import "github.com/skycoin/cx/cx/constants"
+import "github.com/skycoin/cx/cx/types"
 
 //Integer Types, CxArg Constants
-var ConstCXArg_I8 = NewCXArgument(constants.TYPE_I8)
-var ConstCxArg_I16 = NewCXArgument(constants.TYPE_I16)
-var ConstCxArg_I32 = NewCXArgument(constants.TYPE_I32)
-var ConstCxArg_I64 = NewCXArgument(constants.TYPE_I64)
+var ConstCXArg_I8 = Param(types.I8)
+var ConstCxArg_I16 = Param(types.I16)
+var ConstCxArg_I32 = Param(types.I32)
+var ConstCxArg_I64 = Param(types.I64)
 
 //Unsigned Integer Types, CxArg Constants
-var ConstCxArg_UI8 = NewCXArgument(constants.TYPE_UI8)
-var ConstCxArg_UI16 = NewCXArgument(constants.TYPE_UI16)
-var ConstCxArg_UI32 = NewCXArgument(constants.TYPE_UI32)
-var ConstCxArg_UI64 = NewCXArgument(constants.TYPE_UI64)
+var ConstCxArg_UI8 = Param(types.UI8)
+var ConstCxArg_UI16 = Param(types.UI16)
+var ConstCxArg_UI32 = Param(types.UI32)
+var ConstCxArg_UI64 = Param(types.UI64)
 
 //Floating point, f32, f64, CxArg Constants
-var ConstCxArg_F32 = NewCXArgument(constants.TYPE_F32)
-var ConstCxArg_F64 = NewCXArgument(constants.TYPE_F64)
+var ConstCxArg_F32 = Param(types.F32)
+var ConstCxArg_F64 = Param(types.F64)
 
 // ConstCxArg_BOOL Default bool parameter
-var ConstCxArg_BOOL = NewCXArgument(constants.TYPE_BOOL)
+var ConstCxArg_BOOL = Param(types.BOOL)
 
 // ConstCxArg_STR Default str parameter
-var ConstCxArg_STR = NewCXArgument(constants.TYPE_STR)
+var ConstCxArg_STR = Param(types.STR)
 
 // ConstCxArg_UND_TYPE Default und parameter
-var ConstCxArg_UND_TYPE = NewCXArgument(constants.TYPE_UNDEFINED)
+var ConstCxArg_UND_TYPE = Param(types.UNDEFINED)
 
 // ConstCxArg_Affordance Default aff parameter
-var ConstCxArg_Affordance = NewCXArgument(constants.TYPE_AFF)
+var ConstCxArg_Affordance = Param(types.AFF)

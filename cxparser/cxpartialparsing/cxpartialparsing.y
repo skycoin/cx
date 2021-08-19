@@ -4,6 +4,7 @@
 		"bytes"
 	    "github.com/skycoin/cx/cx/ast"
 	    "github.com/skycoin/cx/cx/constants"
+	    "github.com/skycoin/cx/cx/types"
 		"github.com/skycoin/cx/cxparser/actions"
 	)
 
@@ -306,7 +307,7 @@ direct_declarator:
                 {
 			if pkg, err := Program.GetCurrentPackage(); err == nil {
 				arg := ast.MakeArgument("", actions.CurrentFile, actions.LineNo)
-				arg.AddType(constants.TypeNames[constants.TYPE_UNDEFINED])
+				arg.AddType(types.UNDEFINED)
 				arg.ArgDetails.Name = $1
 				arg.ArgDetails.Package = pkg
 				$$ = arg
@@ -325,7 +326,7 @@ id_list:	IDENTIFIER
 		}
 	|	type_specifier
 		{
-			arg := actions.DeclarationSpecifiersBasic($1)			 
+			arg := actions.DeclarationSpecifiersBasic(types.Code($1))			 
 			$$ = []*ast.CXArgument{arg}
 		}
 	|	id_list COMMA IDENTIFIER
@@ -335,7 +336,7 @@ id_list:	IDENTIFIER
 		}
 	|	id_list COMMA type_specifier
 		{
-			arg := actions.DeclarationSpecifiersBasic($3)
+			arg := actions.DeclarationSpecifiersBasic(types.Code($3))
 			$$ = append($1, arg)
 		}
 	;
@@ -354,14 +355,14 @@ types_list:
 declaration_specifiers:
 		FUNC types_list types_list
 		{
-			arg := ast.MakeArgument("", actions.CurrentFile, actions.LineNo).AddType("func")
+			arg := ast.MakeArgument("", actions.CurrentFile, actions.LineNo).AddType(types.FUNC)
 			arg.Inputs = $2
 			arg.Outputs = $3
-			$$ = actions.DeclarationSpecifiers(arg, []int{0}, constants.DECL_FUNC)
+			$$ = actions.DeclarationSpecifiers(arg, []types.Pointer{0}, constants.DECL_FUNC)
 		}
         |       MUL_OP declaration_specifiers
                 {
-			$$ = actions.DeclarationSpecifiers($2, []int{0}, constants.DECL_POINTER)
+			$$ = actions.DeclarationSpecifiers($2, []types.Pointer{0}, constants.DECL_POINTER)
                 }
         // |       indexing_literal declaration_specifiers
         //         {
@@ -369,11 +370,11 @@ declaration_specifiers:
         //         }
         |       LBRACK RBRACK declaration_specifiers
                 {
-			$$ = actions.DeclarationSpecifiers($3, []int{0}, constants.DECL_SLICE)
+			$$ = actions.DeclarationSpecifiers($3, []types.Pointer{0}, constants.DECL_SLICE)
                 }
         |       type_specifier
                 {
-			$$ = actions.DeclarationSpecifiersBasic($1)
+			$$ = actions.DeclarationSpecifiersBasic(types.Code($1))
                 }
         |       IDENTIFIER
                 {
@@ -381,13 +382,13 @@ declaration_specifiers:
                 }
         |       indexing_literal type_specifier
                 {
-			basic := actions.DeclarationSpecifiersBasic($2)
-			$$ = actions.DeclarationSpecifiers(basic, $1, constants.DECL_ARRAY)
+			basic := actions.DeclarationSpecifiersBasic(types.Code($2))
+			$$ = actions.DeclarationSpecifiers(basic, types.Cast_sint_to_sptr($1), constants.DECL_ARRAY)
                 }
         |       indexing_literal IDENTIFIER
                 {
 			strct := actions.DeclarationSpecifiersStruct($2, "", false, actions.CurrentFile, actions.LineNo)
-			$$ = actions.DeclarationSpecifiers(strct, $1, constants.DECL_ARRAY)
+			$$ = actions.DeclarationSpecifiers(strct, types.Cast_sint_to_sptr($1), constants.DECL_ARRAY)
                 }
         |       IDENTIFIER PERIOD IDENTIFIER
                 {
@@ -395,7 +396,7 @@ declaration_specifiers:
                 }
 	|       type_specifier PERIOD IDENTIFIER
 		{
-			$$ = actions.DeclarationSpecifiersStruct($3, constants.TypeNames[$1], true, CurrentFileName, lineNo)
+			$$ = actions.DeclarationSpecifiersStruct($3, types.Code($1).Name(), true, CurrentFileName, lineNo)
 		}
 		/* type_specifier declaration_specifiers */
 	/* |       type_specifier */
@@ -405,31 +406,31 @@ declaration_specifiers:
 
 type_specifier:
                 AFF
-                { $$ = constants.TYPE_AFF }
+                { $$ = int(types.AFF) }
         |       BOOL
-                { $$ = constants.TYPE_BOOL }
+                { $$ = int(types.BOOL) }
         |       STR
-                { $$ = constants.TYPE_STR }
+                { $$ = int(types.STR) }
         |       F32
-                { $$ = constants.TYPE_F32 }
+                { $$ = int(types.F32) }
         |       F64
-                { $$ = constants.TYPE_F64 }
+                { $$ = int(types.F64) }
         |       I8
-                { $$ = constants.TYPE_I8 }
+                { $$ = int(types.I8) }
         |       I16
-                { $$ = constants.TYPE_I16 }
+                { $$ = int(types.I16) }
         |       I32
-                { $$ = constants.TYPE_I32 }
+                { $$ = int(types.I32) }
         |       I64
-                { $$ = constants.TYPE_I64 }
+                { $$ = int(types.I64) }
         |       UI8
-                { $$ = constants.TYPE_UI8 }
+                { $$ = int(types.UI8) }
         |       UI16
-                { $$ = constants.TYPE_UI16 }
+                { $$ = int(types.UI16) }
         |       UI32
-                { $$ = constants.TYPE_UI32 }
+                { $$ = int(types.UI32) }
         |       UI64
-                { $$ = constants.TYPE_UI64 }
+                { $$ = int(types.UI64) }
 	/* |       struct_or_union_specifier */
         /*         { */
         /*             $$ = "struct" */

@@ -5,6 +5,7 @@ import (
 
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/types"
 )
 
 // assignStructLiteralFields converts a struct literal to a series of struct field assignments.
@@ -38,7 +39,7 @@ func StructLiteralAssignment(to []*ast.CXExpression, from []*ast.CXExpression) [
 		// otherwise we'd be trying to assign the fields to a nil value.
 		fOut := lastFrom.Outputs[0]
 		auxName := MakeGenSym(constants.LOCAL_PREFIX)
-		aux := ast.MakeArgument(auxName, lastFrom.FileName, lastFrom.FileLine).AddType(constants.TypeNames[fOut.Type])
+		aux := ast.MakeArgument(auxName, lastFrom.FileName, lastFrom.FileLine).AddType(fOut.Type)
 		aux.DeclarationSpecifiers = append(aux.DeclarationSpecifiers, constants.DECL_POINTER)
 		aux.CustomType = fOut.CustomType
 		aux.Size = fOut.Size
@@ -82,7 +83,7 @@ func ShortAssignment(expr *ast.CXExpression, to []*ast.CXExpression, from []*ast
 	if from[idx].Operator == nil {
 		expr.AddInput(from[idx].Outputs[0])
 	} else {
-		sym := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(constants.TypeNames[from[idx].Inputs[0].Type])
+		sym := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(from[idx].Inputs[0].Type)
 		sym.ArgDetails.Package = pkg
 		sym.PreviouslyDeclared = true
 		from[idx].AddOutput(sym)
@@ -103,7 +104,7 @@ func ShortAssignment(expr *ast.CXExpression, to []*ast.CXExpression, from []*ast
 // arguments. In these cases, the output type depends on its input arguments' type. In the rest of
 // the cases, we can simply use the function's return type.
 func getOutputType(expr *ast.CXExpression) *ast.CXArgument {
-	if expr.Operator.Outputs[0].Type != constants.TYPE_UNDEFINED {
+	if expr.Operator.Outputs[0].Type != types.UNDEFINED {
 		return expr.Operator.Outputs[0]
 	}
 
@@ -137,11 +138,11 @@ func Assignment(to []*ast.CXExpression, assignOp string, from []*ast.CXExpressio
 
 		if from[idx].Operator == nil {
 			// then it's a literal
-			sym = ast.MakeArgument(to[0].Outputs[0].ArgDetails.Name, CurrentFile, LineNo).AddType(constants.TypeNames[from[idx].Outputs[0].Type])
+			sym = ast.MakeArgument(to[0].Outputs[0].ArgDetails.Name, CurrentFile, LineNo).AddType(from[idx].Outputs[0].Type)
 		} else {
 			outTypeArg := getOutputType(from[idx])
 
-			sym = ast.MakeArgument(to[0].Outputs[0].ArgDetails.Name, CurrentFile, LineNo).AddType(constants.TypeNames[outTypeArg.Type])
+			sym = ast.MakeArgument(to[0].Outputs[0].ArgDetails.Name, CurrentFile, LineNo).AddType(outTypeArg.Type)
 
 			if from[idx].IsArrayLiteral() {
 				sym.Size = from[idx].Inputs[0].Size
@@ -150,7 +151,7 @@ func Assignment(to []*ast.CXExpression, assignOp string, from []*ast.CXExpressio
 			}
 			if outTypeArg.IsSlice {
 				// if from[idx].Operator.ProgramOutput[0].IsSlice {
-				sym.Lengths = append([]int{0}, sym.Lengths...)
+				sym.Lengths = append([]types.Pointer{0}, sym.Lengths...)
 				sym.DeclarationSpecifiers = append(sym.DeclarationSpecifiers, constants.DECL_SLICE)
 			}
 
@@ -204,6 +205,7 @@ func Assignment(to []*ast.CXExpression, assignOp string, from []*ast.CXExpressio
 	if from[idx].Operator == nil {
 		from[idx].Operator = ast.Natives[constants.OP_IDENTITY]
 		to[0].Outputs[0].Size = from[idx].Outputs[0].Size
+		to[0].Outputs[0].TotalSize = from[idx].Outputs[0].TotalSize
 		to[0].Outputs[0].Type = from[idx].Outputs[0].Type
 		to[0].Outputs[0].Lengths = from[idx].Outputs[0].Lengths
 		to[0].Outputs[0].PassBy = from[idx].Outputs[0].PassBy

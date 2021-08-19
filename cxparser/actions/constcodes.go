@@ -2,7 +2,7 @@ package actions
 
 import (
 	"github.com/skycoin/cx/cx/constants"
-	"github.com/skycoin/cx/cx/helper"
+	"github.com/skycoin/cx/cx/types"
 )
 
 // constant codes
@@ -24,7 +24,6 @@ const (
 
 // For the cxgo. These shouldn't be used in the runtime for performance reasons
 var (
-	ConstNames = map[int]string{}     //not used anywhere
 	ConstCodes = map[string]int{}     //Todo: Used only once in actions/postfix.go
 	Constants  = map[int]CXConstant{} //Todo: Only used once in actions/postfix.go
 )
@@ -43,18 +42,20 @@ func init() {
 	AddConstI32(CONST_CX_RUNTIME_INVALID_ARGUMENT, "cx.RUNTIME_INVALID_ARGUMENT", constants.CX_RUNTIME_INVALID_ARGUMENT)
 	AddConstI32(CONST_CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE, "cx.RUNTIME_SLICE_INDEX_OUT_OF_RANGE", constants.CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)
 	AddConstI32(CONST_CX_RUNTIME_NOT_IMPLEMENTED, "cx.RUNTIME_NOT_INPLEMENTED", constants.CX_RUNTIME_NOT_IMPLEMENTED)
+	AddConstI32(types.Cast_ptr_to_int(types.POINTER_SIZE), "cx.POINTER_SIZE", types.Cast_ptr_to_i32(types.POINTER_SIZE))
 }
 
 // AddConstCode ...
-func AddConstCode(code int, name string, typ int, value []byte) {
-	ConstNames[code] = name
+func AddConstCode(code int, name string, typeCode types.Code, value []byte) {
 	ConstCodes[name] = code
-	Constants[code] = CXConstant{Type: typ, Value: value}
+	Constants[code] = CXConstant{Type: typeCode, Value: value}
 }
 
 // AddConstI32 ...
 func AddConstI32(code int, name string, value int32) {
-	AddConstCode(code, name, constants.TYPE_I32, helper.FromI32(value))
+	var memory [4]byte
+	types.Write_i32(memory[:], 0, value)
+	AddConstCode(code, name, types.I32, memory[:])
 }
 
 // CXConstant ...
@@ -62,5 +63,5 @@ type CXConstant struct {
 	// native constants. only used for pre-packaged constants (e.g. math package's PI)
 	// these fields are used to feed WritePrimary
 	Value []byte
-	Type  int
+	Type  types.Code
 }

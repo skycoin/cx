@@ -9,6 +9,7 @@ import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/globals"
+	"github.com/skycoin/cx/cx/types"
 )
 
 // FunctionHeader takes a function name ('ident') and either creates the
@@ -77,7 +78,7 @@ func FunctionAddParameters(fn *ast.CXFunction, inputs, outputs []*ast.CXArgument
 	}
 
 	for _, out := range fn.Outputs {
-		if out.IsPointer && out.Type != constants.TYPE_STR && out.Type != constants.TYPE_AFF {
+		if out.IsPointer && out.Type != types.STR && out.Type != types.AFF {
 			out.DoesEscape = true
 		}
 	}
@@ -99,7 +100,7 @@ func CheckUndValidTypes(expr *ast.CXExpression) {
 	}
 }
 
-func FunctionProcessParameters(symbols *[]map[string]*ast.CXArgument, symbolsScope *map[string]bool, offset *int, fn *ast.CXFunction, params []*ast.CXArgument) {
+func FunctionProcessParameters(symbols *[]map[string]*ast.CXArgument, symbolsScope *map[string]bool, offset *types.Pointer, fn *ast.CXFunction, params []*ast.CXArgument) {
 	for _, param := range params {
 		ProcessLocalDeclaration(symbols, symbolsScope, param)
 
@@ -125,12 +126,10 @@ func FunctionDeclaration(fn *ast.CXFunction, inputs, outputs []*ast.CXArgument, 
 	FunctionAddParameters(fn, inputs, outputs)
 
 	// getting offset to use by statements (excluding inputs, outputs and receiver)
-	var offset int
+	var offset types.Pointer
 	//TODO: Why would the heap starting position always be incrasing?
 	//TODO: HeapStartsAt only increases, with every write?
 	//DataOffset only increases
-	AST.HeapStartsAt = AST.DataSegmentSize + AST.DataSegmentStartsAt //Why would declaring a function set heap?
-	//AST.HeapStartsAt = constants.STACK_SIZE
 
 	ProcessGoTos(fn, exprs)
 
@@ -171,13 +170,19 @@ func FunctionDeclaration(fn *ast.CXFunction, inputs, outputs []*ast.CXArgument, 
 		//}
 		// process short declaration
 		if len(expr.Outputs) > 0 && len(expr.Inputs) > 0 && expr.Outputs[0].IsShortAssignmentDeclaration && !expr.IsStructLiteral() && !isParseOp(expr) {
+			var arg *ast.CXArgument
 			if expr.IsMethodCall() {
-				fn.Expressions[i-1].Outputs[0].Type = fn.Expressions[i].Operator.Outputs[0].Type
-				fn.Expressions[i].Outputs[0].Type = fn.Expressions[i].Operator.Outputs[0].Type
+				arg = fn.Expressions[i].Operator.Outputs[0]
 			} else {
-				fn.Expressions[i-1].Outputs[0].Type = fn.Expressions[i].Inputs[0].Type
-				fn.Expressions[i].Outputs[0].Type = fn.Expressions[i].Inputs[0].Type
+				arg = fn.Expressions[i].Inputs[0]
 			}
+			fn.Expressions[i-1].Outputs[0].Type = arg.Type
+			fn.Expressions[i-1].Outputs[0].Size = arg.Size
+			fn.Expressions[i-1].Outputs[0].TotalSize = arg.TotalSize
+
+			fn.Expressions[i].Outputs[0].Type = arg.Type
+			fn.Expressions[i].Outputs[0].Size = arg.Size
+			fn.Expressions[i].Outputs[0].TotalSize = arg.TotalSize
 		}
 
 		processTestExpression(expr)
@@ -225,9 +230,9 @@ func FunctionCall(exprs []*ast.CXExpression, args []*ast.CXExpression) []*ast.CX
 			if len(inpExpr.Outputs) < 1 {
 				var out *ast.CXArgument
 
-				if inpExpr.Operator.Outputs[0].Type == constants.TYPE_UNDEFINED {
+				if inpExpr.Operator.Outputs[0].Type == types.UNDEFINED {
 					// if undefined type, then adopt argument's type
-					out = ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, inpExpr.FileLine).AddType(constants.TypeNames[inpExpr.Inputs[0].Type])
+					out = ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, inpExpr.FileLine).AddType(inpExpr.Inputs[0].Type)
 					out.CustomType = inpExpr.Inputs[0].CustomType
 
 					out.Size = inpExpr.Inputs[0].Size
@@ -236,7 +241,7 @@ func FunctionCall(exprs []*ast.CXExpression, args []*ast.CXExpression) []*ast.CX
 					out.Type = inpExpr.Inputs[0].Type
 					out.PreviouslyDeclared = true
 				} else {
-					out = ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, inpExpr.FileLine).AddType(constants.TypeNames[inpExpr.Operator.Outputs[0].Type])
+					out = ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, inpExpr.FileLine).AddType(inpExpr.Operator.Outputs[0].Type)
 					out.DeclarationSpecifiers = inpExpr.Operator.Outputs[0].DeclarationSpecifiers
 
 					out.CustomType = inpExpr.Operator.Outputs[0].CustomType
@@ -275,12 +280,12 @@ func checkSameNativeType(expr *ast.CXExpression) error {
 	if len(expr.Inputs) < 1 {
 		return errors.New("cannot perform arithmetic without operands")
 	}
-	var typ int = expr.Inputs[0].Type
+	typeCode := expr.Inputs[0].Type
 	for _, inp := range expr.Inputs {
-		if inp.Type != typ {
+		if inp.Type != typeCode {
 			return errors.New("operands are not of the same type")
 		}
-		typ = inp.Type
+		typeCode = inp.Type
 	}
 	return nil
 }
@@ -293,7 +298,7 @@ func ProcessOperatorExpression(expr *ast.CXExpression) {
 	}
 	if expr.IsUndType() {
 		for _, out := range expr.Outputs {
-			size := 1
+			size := types.Pointer(1)
 			if !ast.IsComparisonOperator(expr.Operator.OpCode) {
 				size = ast.GetSize(ast.GetAssignmentElement(expr.Inputs[0]))
 			}
@@ -345,7 +350,7 @@ func checkIndexType(idx *ast.CXArgument) {
 // ProcessExpressionArguments performs a series of checks and processes to an expresion's inputs and outputs.
 // Some of these checks are: checking if a an input has not been declared, assign a relative offset to the argument,
 // and calculate the correct size of the argument.
-func ProcessExpressionArguments(symbols *[]map[string]*ast.CXArgument, symbolsScope *map[string]bool, offset *int, fn *ast.CXFunction, args []*ast.CXArgument, expr *ast.CXExpression, isInput bool) {
+func ProcessExpressionArguments(symbols *[]map[string]*ast.CXArgument, symbolsScope *map[string]bool, offset *types.Pointer, fn *ast.CXFunction, args []*ast.CXArgument, expr *ast.CXExpression, isInput bool) {
 	for _, arg := range args {
 		ProcessLocalDeclaration(symbols, symbolsScope, arg)
 
@@ -502,7 +507,7 @@ func checkMatchParamTypes(expr *ast.CXExpression, expected, received []*ast.CXAr
 			}
 		}
 
-		if expectedType != receivedType && inp.Type != constants.TYPE_UNDEFINED {
+		if expectedType != receivedType && inp.Type != types.UNDEFINED {
 			var opName string
 			if expr.Operator.IsBuiltin {
 				opName = ast.OpNames[expr.Operator.OpCode]
@@ -541,7 +546,7 @@ func CheckTypes(expr *ast.CXExpression) {
 
 		// checking if number of inputs is less than the required number of inputs
 		if len(expr.Inputs) != len(expr.Operator.Inputs) {
-			if !(len(expr.Operator.Inputs) > 0 && expr.Operator.Inputs[len(expr.Operator.Inputs)-1].Type != constants.TYPE_UNDEFINED) {
+			if !(len(expr.Operator.Inputs) > 0 && expr.Operator.Inputs[len(expr.Operator.Inputs)-1].Type != types.UNDEFINED) {
 				// if the last input is of type cxcore.TYPE_UNDEFINED then it might be a variadic function, such as printf
 			} else {
 				// then we need to be strict in the number of inputs
@@ -588,7 +593,7 @@ func CheckTypes(expr *ast.CXExpression) {
 				expectedType = ast.GetAssignmentElement(expr.Outputs[i]).CustomType.Name
 			} else {
 				// then it's native type
-				expectedType = constants.TypeNames[ast.GetAssignmentElement(expr.Outputs[i]).Type]
+				expectedType = ast.GetAssignmentElement(expr.Outputs[i]).Type.Name()
 			}
 
 			if ast.GetAssignmentElement(expr.Inputs[i]).CustomType != nil {
@@ -596,7 +601,7 @@ func CheckTypes(expr *ast.CXExpression) {
 				receivedType = ast.GetAssignmentElement(expr.Inputs[i]).CustomType.Name
 			} else {
 				// then it's native type
-				receivedType = constants.TypeNames[ast.GetAssignmentElement(expr.Inputs[i]).Type]
+				receivedType = ast.GetAssignmentElement(expr.Inputs[i]).Type.Name()
 			}
 
 			// if cxcore.GetAssignmentElement(expr.ProgramOutput[i]).Type != cxcore.GetAssignmentElement(inp).Type {
@@ -627,8 +632,8 @@ func ProcessStringAssignment(expr *ast.CXExpression) {
 				out = ast.GetAssignmentElement(out)
 				inp := ast.GetAssignmentElement(expr.Inputs[i])
 
-				if (out.Type == constants.TYPE_STR || out.Type == constants.TYPE_AFF) && out.ArgDetails.Name != "" &&
-					(inp.Type == constants.TYPE_STR || inp.Type == constants.TYPE_AFF) && inp.ArgDetails.Name != "" {
+				if (out.Type == types.STR || out.Type == types.AFF) && out.ArgDetails.Name != "" &&
+					(inp.Type == types.STR || inp.Type == types.AFF) && inp.ArgDetails.Name != "" {
 					out.PassBy = constants.PASSBY_VALUE
 				}
 			}
@@ -643,7 +648,7 @@ func ProcessReferenceAssignment(expr *ast.CXExpression) {
 		elt := ast.GetAssignmentElement(out)
 		if elt.PassBy == constants.PASSBY_REFERENCE &&
 			!hasDeclSpec(elt, constants.DECL_POINTER) &&
-			elt.Type != constants.TYPE_STR && !elt.IsSlice {
+			elt.Type != types.STR && !elt.IsSlice {
 			println(ast.CompilationError(CurrentFile, LineNo), "invalid reference assignment", elt.ArgDetails.Name)
 		}
 	}
@@ -720,14 +725,14 @@ func lookupSymbol(pkgName, ident string, symbols *[]map[string]*ast.CXArgument) 
 	}
 	// Then we found a function by that name. Let's create a `cxcore.CXArgument` of
 	// type `func` with that name.
-	fnArg := ast.MakeArgument(ident, fn.FileName, fn.FileLine).AddType(constants.TypeNames[constants.TYPE_FUNC])
+	fnArg := ast.MakeArgument(ident, fn.FileName, fn.FileLine).AddType(types.FUNC)
 	fnArg.ArgDetails.Package = pkg
 
 	return fnArg, nil
 }
 
 // UpdateSymbolsTable adds `sym` to the innermost scope (last element of slice) in `symbols`.
-func UpdateSymbolsTable(symbols *[]map[string]*ast.CXArgument, sym *ast.CXArgument, offset *int, shouldExist bool) {
+func UpdateSymbolsTable(symbols *[]map[string]*ast.CXArgument, sym *ast.CXArgument, offset *types.Pointer, shouldExist bool) {
 	if sym.ArgDetails.Name != "" {
 		if !sym.IsLocalDeclaration {
 			GetGlobalSymbol(symbols, sym.ArgDetails.Package, sym.ArgDetails.Name)
@@ -760,7 +765,7 @@ func UpdateSymbolsTable(symbols *[]map[string]*ast.CXArgument, sym *ast.CXArgume
 	}
 }
 
-func ProcessMethodCall(expr *ast.CXExpression, symbols *[]map[string]*ast.CXArgument, offset *int, shouldExist bool) {
+func ProcessMethodCall(expr *ast.CXExpression, symbols *[]map[string]*ast.CXArgument, offset *types.Pointer, shouldExist bool) {
 	if expr.IsMethodCall() {
 		var inp *ast.CXArgument
 		var out *ast.CXArgument
@@ -828,7 +833,7 @@ func ProcessMethodCall(expr *ast.CXExpression, symbols *[]map[string]*ast.CXArgu
 					strct := argOut.CustomType
 
 					if strct == nil {
-						println(ast.CompilationError(argOut.ArgDetails.FileName, argOut.ArgDetails.FileLine), fmt.Sprintf("illegal method call or field access on identifier '%s' of primitive type '%s'", argOut.ArgDetails.Name, constants.TypeNames[argOut.Type]))
+						println(ast.CompilationError(argOut.ArgDetails.FileName, argOut.ArgDetails.FileLine), fmt.Sprintf("illegal method call or field access on identifier '%s' of primitive type '%s'", argOut.ArgDetails.Name, argOut.Type.Name()))
 						os.Exit(constants.CX_COMPILATION_ERROR)
 					}
 
@@ -861,7 +866,7 @@ func ProcessMethodCall(expr *ast.CXExpression, symbols *[]map[string]*ast.CXArgu
 				strct := argOut.CustomType
 
 				if strct == nil {
-					println(ast.CompilationError(argOut.ArgDetails.FileName, argOut.ArgDetails.FileLine), fmt.Sprintf("illegal method call or field access on identifier '%s' of primitive type '%s'", argOut.ArgDetails.Name, constants.TypeNames[argOut.Type]))
+					println(ast.CompilationError(argOut.ArgDetails.FileName, argOut.ArgDetails.FileLine), fmt.Sprintf("illegal method call or field access on identifier '%s' of primitive type '%s'", argOut.ArgDetails.Name, argOut.Type.Name()))
 					os.Exit(constants.CX_COMPILATION_ERROR)
 				}
 
@@ -887,7 +892,7 @@ func ProcessMethodCall(expr *ast.CXExpression, symbols *[]map[string]*ast.CXArgu
 	}
 }
 
-func GiveOffset(symbols *[]map[string]*ast.CXArgument, sym *ast.CXArgument, offset *int, shouldExist bool) {
+func GiveOffset(symbols *[]map[string]*ast.CXArgument, sym *ast.CXArgument, offset *types.Pointer, shouldExist bool) {
 	if sym.ArgDetails.Name != "" {
 		if !sym.IsLocalDeclaration {
 			GetGlobalSymbol(symbols, sym.ArgDetails.Package, sym.ArgDetails.Name)
@@ -998,7 +1003,7 @@ func CopyArgFields(sym *ast.CXArgument, arg *ast.CXArgument) {
 	sym.DoesEscape = arg.DoesEscape
 	sym.Size = arg.Size
 
-	if arg.Type == constants.TYPE_STR {
+	if arg.Type == types.STR {
 		sym.IsPointer = true
 	}
 
@@ -1006,8 +1011,8 @@ func CopyArgFields(sym *ast.CXArgument, arg *ast.CXArgument) {
 	// below (as in the `arg.IsSlice` check), but the process differs in the
 	// case of a slice struct field.
 	elt := ast.GetAssignmentElement(sym)
-	if !arg.IsSlice && arg.CustomType != nil && elt.IsSlice {
-		// elt.DereferenceOperations = []int{4, 4}
+
+	if (!arg.IsSlice || hasDerefOp(sym, constants.DEREF_ARRAY)) && arg.CustomType != nil && elt.IsSlice && elt != sym {
 		for i, deref := range elt.DereferenceOperations {
 			// The cxgo when reading `foo[5]` in postfix.go does not know if `foo`
 			// is a slice or an array. At this point we now know it's a slice and we need
@@ -1016,7 +1021,8 @@ func CopyArgFields(sym *ast.CXArgument, arg *ast.CXArgument) {
 				elt.DereferenceOperations[i] = constants.DEREF_SLICE
 			}
 		}
-		if elt.DereferenceOperations[0] == constants.DEREF_POINTER {
+
+		if len(elt.DereferenceOperations) > 0 && elt.DereferenceOperations[0] == constants.DEREF_POINTER {
 			elt.DereferenceOperations = elt.DereferenceOperations[1:]
 		}
 	}
@@ -1123,10 +1129,10 @@ func ProcessSymbolFields(sym *ast.CXArgument, arg *ast.CXArgument) {
 					nameFld.PassBy = fld.PassBy
 					nameFld.IsSlice = fld.IsSlice
 
-					if fld.Type == constants.TYPE_STR || fld.Type == constants.TYPE_AFF {
+					if fld.Type == types.STR || fld.Type == types.AFF {
 						nameFld.PassBy = constants.PASSBY_REFERENCE
-						// nameFld.Size = cxcore.TYPE_POINTER_SIZE
-						// nameFld.TotalSize = cxcore.TYPE_POINTER_SIZE
+						// nameFld.Size = cxcore.POINTER_SIZE
+						// nameFld.TotalSize = cxcore.POINTER_SIZE
 					}
 
 					if fld.CustomType != nil {
@@ -1142,7 +1148,7 @@ func ProcessSymbolFields(sym *ast.CXArgument, arg *ast.CXArgument) {
 }
 
 func SetFinalSize(symbols *[]map[string]*ast.CXArgument, sym *ast.CXArgument) {
-	var finalSize int = sym.TotalSize
+	finalSize := sym.TotalSize
 
 	arg, err := lookupSymbol(sym.ArgDetails.Package.Name, sym.ArgDetails.Name, symbols)
 	if err == nil {
@@ -1167,7 +1173,7 @@ func GetGlobalSymbol(symbols *[]map[string]*ast.CXArgument, symPkg *ast.CXPackag
 	}
 }
 
-func PreFinalSize(finalSize *int, sym *ast.CXArgument, arg *ast.CXArgument) {
+func PreFinalSize(finalSize *types.Pointer, sym *ast.CXArgument, arg *ast.CXArgument) {
 	idxCounter := 0
 	elt := ast.GetAssignmentElement(sym)
 	for _, op := range elt.DereferenceOperations {
@@ -1180,8 +1186,7 @@ func PreFinalSize(finalSize *int, sym *ast.CXArgument, arg *ast.CXArgument) {
 			idxCounter++
 		case constants.DEREF_POINTER:
 			if len(arg.DeclarationSpecifiers) > 0 {
-				var subSize int
-				subSize = 1
+				subSize := types.Pointer(1)
 				for _, decl := range arg.DeclarationSpecifiers {
 					switch decl {
 					case constants.DECL_ARRAY:
@@ -1189,9 +1194,9 @@ func PreFinalSize(finalSize *int, sym *ast.CXArgument, arg *ast.CXArgument) {
 							subSize *= len
 						}
 					// case cxcore.DECL_SLICE:
-					// 	subSize = TYPE_POINTER_SIZE
+					// 	subSize = POINTER_SIZE
 					case constants.DECL_BASIC:
-						subSize = constants.GetArgSize(sym.Type)
+						subSize = sym.Type.Size()
 					case constants.DECL_STRUCT:
 						subSize = arg.CustomType.Size
 					}
