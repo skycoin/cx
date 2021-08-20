@@ -156,9 +156,6 @@ func FunctionDeclaration(fn *ast.CXFunction, inputs, outputs []*ast.CXArgument, 
 
 	// getting offset to use by statements (excluding inputs, outputs and receiver)
 	var offset types.Pointer
-	//TODO: Why would the heap starting position always be incrasing?
-	//TODO: HeapStartsAt only increases, with every write?
-	//DataOffset only increases
 
 	ProcessGoTos(fn, exprs)
 
