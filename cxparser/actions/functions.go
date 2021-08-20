@@ -1174,33 +1174,8 @@ func ProcessSymbolFields(sym *ast.CXArgument, arg *ast.CXArgument) {
 	}
 }
 
-func SetFinalSize(symbols *[]map[string]*ast.CXArgument, sym *ast.CXArgument) {
+func preFinalSize(sym *ast.CXArgument, arg *ast.CXArgument) types.Pointer {
 	finalSize := sym.TotalSize
-
-	arg, err := lookupSymbol(sym.ArgDetails.Package.Name, sym.ArgDetails.Name, symbols)
-	if err == nil {
-		PreFinalSize(&finalSize, sym, arg)
-		for _, fld := range sym.Fields {
-			finalSize = fld.TotalSize
-			PreFinalSize(&finalSize, fld, arg)
-		}
-	}
-
-	sym.TotalSize = finalSize
-}
-
-// GetGlobalSymbol tries to retrieve `ident` from `symPkg`'s globals if `ident` is not found in the local scope.
-func GetGlobalSymbol(symbols *[]map[string]*ast.CXArgument, symPkg *ast.CXPackage, ident string) {
-	_, err := lookupSymbol(symPkg.Name, ident, symbols)
-	if err != nil {
-		if glbl, err := symPkg.GetGlobal(ident); err == nil {
-			lastIdx := len(*symbols) - 1
-			(*symbols)[lastIdx][symPkg.Name+"."+ident] = glbl
-		}
-	}
-}
-
-func PreFinalSize(finalSize *types.Pointer, sym *ast.CXArgument, arg *ast.CXArgument) {
 	idxCounter := 0
 	elt := ast.GetAssignmentElement(sym)
 	for _, op := range elt.DereferenceOperations {
@@ -1209,7 +1184,7 @@ func PreFinalSize(finalSize *types.Pointer, sym *ast.CXArgument, arg *ast.CXArgu
 		}
 		switch op {
 		case constants.DEREF_ARRAY:
-			*finalSize /= elt.Lengths[idxCounter]
+			finalSize /= elt.Lengths[idxCounter]
 			idxCounter++
 		case constants.DEREF_POINTER:
 			if len(arg.DeclarationSpecifiers) > 0 {
@@ -1229,8 +1204,37 @@ func PreFinalSize(finalSize *types.Pointer, sym *ast.CXArgument, arg *ast.CXArgu
 					}
 				}
 
-				*finalSize = subSize
+				finalSize = subSize
 			}
+		}
+	}
+
+	return finalSize
+}
+
+func SetFinalSize(symbols *[]map[string]*ast.CXArgument, sym *ast.CXArgument) {
+	finalSize := sym.TotalSize
+
+	arg, err := lookupSymbol(sym.ArgDetails.Package.Name, sym.ArgDetails.Name, symbols)
+	if err == nil {
+		fieldCount := len(sym.Fields)
+		if fieldCount > 0 {
+			finalSize = preFinalSize(sym.Fields[fieldCount-1], arg)
+		} else {
+			finalSize = preFinalSize(sym, arg)
+		}
+	}
+
+	sym.TotalSize = finalSize
+}
+
+// GetGlobalSymbol tries to retrieve `ident` from `symPkg`'s globals if `ident` is not found in the local scope.
+func GetGlobalSymbol(symbols *[]map[string]*ast.CXArgument, symPkg *ast.CXPackage, ident string) {
+	_, err := lookupSymbol(symPkg.Name, ident, symbols)
+	if err != nil {
+		if glbl, err := symPkg.GetGlobal(ident); err == nil {
+			lastIdx := len(*symbols) - 1
+			(*symbols)[lastIdx][symPkg.Name+"."+ident] = glbl
 		}
 	}
 }
