@@ -97,7 +97,7 @@ func (cxprogram *CXProgram) PrintStack() {
 
 // TODO: Deprecate
 func ExprOpName(expr *CXExpression) string {
-	if expr.Operator.IsBuiltin {
+	if expr.Operator.IsBuiltin() {
 		return OpNames[expr.Operator.OpCode]
 	}
 	return expr.Operator.Name

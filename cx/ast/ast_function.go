@@ -10,11 +10,14 @@ import (
 //
 func MakeFunction(name string, fileName string, fileLine int) *CXFunction {
 	return &CXFunction{
-		Name:      name,
-		FileName:  fileName,
-		FileLine:  fileLine,
-		IsBuiltin: false,
+		Name:     name,
+		FileName: fileName,
+		FileLine: fileLine,
 	}
+}
+
+func (fn *CXFunction) IsBuiltin() bool {
+	return fn.OpCode > 0
 }
 
 // ----------------------------------------------------------------

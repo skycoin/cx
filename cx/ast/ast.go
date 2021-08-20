@@ -115,7 +115,6 @@ type CXFunction struct {
 	// Metadata
 	Name      string     // Name of the function
 	Package   *CXPackage // The package it's a member of
-	IsBuiltin bool       // True if the function is native to CX, e.g. int32.add()
 	OpCode    int        // opcode if IsBuiltin = true
 	// Contents
 	Inputs      []*CXArgument   // Input parameters to the function

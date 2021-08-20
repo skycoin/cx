@@ -74,7 +74,7 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 				prgrm.Memory[newFP+expr.Outputs[0].Offset+c] = 0
 			}
 			call.Line++
-		} else if expr.Operator.IsBuiltin {
+		} else if expr.Operator.IsBuiltin() {
 			//TODO: SLICES ARE NON ATOMIC
 
 			fp := call.FramePointer

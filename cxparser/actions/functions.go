@@ -535,7 +535,7 @@ func checkMatchParamTypes(expr *ast.CXExpression, expected, received []*ast.CXAr
 
 		if expectedType != receivedType && inp.Type != types.UNDEFINED {
 			var opName string
-			if expr.Operator.IsBuiltin {
+			if expr.Operator.IsBuiltin() {
 				opName = ast.OpNames[expr.Operator.OpCode]
 			} else {
 				opName = expr.Operator.Name
@@ -610,7 +610,7 @@ func CheckTypes(expr *ast.CXExpression) {
 		}
 	}
 
-	if expr.Operator != nil && expr.Operator.IsBuiltin && expr.Operator.OpCode == constants.OP_IDENTITY {
+	if expr.Operator != nil && expr.Operator.IsBuiltin() && expr.Operator.OpCode == constants.OP_IDENTITY {
 		for i := range expr.Inputs {
 			var expectedType string
 			var receivedType string
@@ -711,7 +711,7 @@ func ProcessSliceAssignment(expr *ast.CXExpression) {
 			out.PassBy = constants.PASSBY_VALUE
 		}
 	}
-	if expr.Operator != nil && !expr.Operator.IsBuiltin {
+	if expr.Operator != nil && !expr.Operator.IsBuiltin() {
 		// then it's a function call
 		for _, inp := range expr.Inputs {
 			assignElt := ast.GetAssignmentElement(inp)

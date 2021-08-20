@@ -61,7 +61,6 @@ func RegisterOperator(name string, handler ast.OpcodeHandler, inputs []*ast.CXAr
 // MakeNativeFunction ...
 func MakeNativeFunction(opCode int, inputs []*ast.CXArgument, outputs []*ast.CXArgument) *ast.CXFunction {
 	fn := &ast.CXFunction{
-		IsBuiltin: true,
 		OpCode:    opCode,
 	}
 

@@ -192,7 +192,7 @@ func serializeExpression(expr *CXExpression, s *SerializedCXProgram) int {
 		sExpr.OperatorOffset = sNil
 		sExpr.IsNative = serializeBoolean(false)
 		sExpr.OpCode = int64(-1)
-	} else if expr.Operator.IsBuiltin {
+	} else if expr.Operator.IsBuiltin() {
 		sExpr.OperatorOffset = sNil
 		sExpr.IsNative = serializeBoolean(true)
 		sExpr.OpCode = int64(expr.Operator.OpCode)
