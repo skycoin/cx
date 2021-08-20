@@ -199,26 +199,3 @@ func (cxprogram *CXProgram) GetFunction(functionNameToFind string, pkgName strin
 	}
 	return nil, fmt.Errorf("function '%s' not found in package '%s'", functionNameToFind, pkgName)
 }
-
-
-
-// GetCurrentCall returns the current CXCall
-//TODO: What does this do?
-//TODO: Only used in OP_JMP
-func (cxprogram *CXProgram) GetCurrentCall() *CXCall {
-	return &cxprogram.CallStack[cxprogram.CallCounter]
-}
-
-/*
-// GetCurrentOpCode returns the current OpCode
-func (cxprogram *CXProgram) GetCurrentOpCode() int {
-	return cxprogram.GetCurrentExpression2().Operator.OpCode
-}
-*/
-
-/*
-//not used
-func (cxprogram *CXProgram) GetFramePointer() int {
-	return cxprogram.GetCurrentCall().FramePointer
-}
-*/

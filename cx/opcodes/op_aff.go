@@ -607,8 +607,7 @@ func opAffOn(inputs []ast.CXValue, outputs []ast.CXValue) {
 	prevFn := prevPkg.CurrentFunction
 	prevExpr := prevFn.CurrentExpression
 
-	call := ast.PROGRAM.GetCurrentCall()
-	expr := call.Operator.Expressions[call.Line]
+	expr := inputs[0].Expr
 	fp := inputs[0].FramePointer
 
 	var tgtPkg = ast.CXPackage(*prevPkg)
@@ -647,8 +646,7 @@ func opAffOf(inputs []ast.CXValue, outputs []ast.CXValue) {
 	prevFn := prevPkg.CurrentFunction
 	prevExpr := prevFn.CurrentExpression
 
-	call := ast.PROGRAM.GetCurrentCall()
-	expr := call.Operator.Expressions[call.Line]
+	expr := inputs[0].Expr
 	fp := inputs[0].FramePointer
 
 	var tgtPkg = ast.CXPackage(*expr.Package)
@@ -745,8 +743,7 @@ func readArgAff(aff string, tgtFn *ast.CXFunction) *ast.CXArgument {
 func opAffInform(inputs []ast.CXValue, outputs []ast.CXValue) {
 	inp1, inp2, inp3 := inputs[0].Arg, inputs[1].Arg, inputs[2].Arg
 
-	call := ast.PROGRAM.GetCurrentCall()
-	expr := call.Operator.Expressions[call.Line]
+	expr := inputs[0].Expr
 	fp := inputs[0].FramePointer
 
 	prevPkg := ast.PROGRAM.CurrentPackage
@@ -848,8 +845,7 @@ func opAffInform(inputs []ast.CXValue, outputs []ast.CXValue) {
 func opAffRequest(inputs []ast.CXValue, outputs []ast.CXValue) {
 	inp1, inp2, inp3 := inputs[0].Arg, inputs[1].Arg, inputs[2].Arg
 
-	call := ast.PROGRAM.GetCurrentCall()
-	expr := call.Operator.Expressions[call.Line]
+	expr := inputs[0].Expr
 	fp := inputs[0].FramePointer
 
 	prevPkg := ast.PROGRAM.CurrentPackage
@@ -971,8 +967,7 @@ func opAffRequest(inputs []ast.CXValue, outputs []ast.CXValue) {
 func opAffQuery(inputs []ast.CXValue, outputs []ast.CXValue) {
 	inp1, out1 := inputs[0].Arg, outputs[0].Arg
 
-	call := ast.PROGRAM.GetCurrentCall()
-	expr := call.Operator.Expressions[call.Line]
+	expr := inputs[0].Expr
 	fp := inputs[0].FramePointer
 
 	out1Offset := ast.GetFinalOffset(fp, out1)

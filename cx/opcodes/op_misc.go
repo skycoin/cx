@@ -29,43 +29,23 @@ func opIdentity(inputs []ast.CXValue, outputs []ast.CXValue) {
 }
 
 func opGoto(inputs []ast.CXValue, outputs []ast.CXValue) {
-	call := ast.PROGRAM.GetCurrentCall()
-	expr := call.Operator.Expressions[call.Line]
-	call.Line = call.Line + expr.ThenLines
+	ast.PROGRAM.ConditionalJump(true)
 }
 
 func opJmp(inputs []ast.CXValue, outputs []ast.CXValue) {
-	call := ast.PROGRAM.GetCurrentCall()
-	expr := inputs[0].Expr
-
-	if inputs[0].Get_bool() {
-		call.Line = call.Line + expr.ThenLines
-	} else {
-		call.Line = call.Line + expr.ElseLines
-	}
+	ast.PROGRAM.ConditionalJump(inputs[0].Get_bool())
 }
 
 func opAbsJmp(inputs []ast.CXValue, outputs []ast.CXValue) {
-	call := ast.PROGRAM.GetCurrentCall()
-	expr := inputs[0].Expr
-
-	if inputs[0].Get_bool() {
-		call.Line = expr.ThenLines
-	} else {
-		call.Line = expr.ElseLines
-	}
+	ast.PROGRAM.ConditionalAbsoluteJump(inputs[0].Get_bool())
 }
 
 func opBreak(inputs []ast.CXValue, outputs []ast.CXValue) {
-	call := ast.PROGRAM.GetCurrentCall()
-	expr := call.Operator.Expressions[call.Line]
-	call.Line = call.Line + expr.ThenLines
+	ast.PROGRAM.ConditionalJump(true)
 }
 
 func opContinue(inputs []ast.CXValue, outputs []ast.CXValue) {
-	call := ast.PROGRAM.GetCurrentCall()
-	expr := call.Operator.Expressions[call.Line]
-	call.Line = call.Line + expr.ThenLines
+	ast.PROGRAM.ConditionalJump(true)
 }
 
 func opNop(inputs []ast.CXValue, outputs []ast.CXValue) {

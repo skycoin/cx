@@ -228,97 +228,33 @@ func opI32Min(inputs []ast.CXValue, outputs []ast.CXValue) {
 }
 
 func opI32JmpEq(inputs []ast.CXValue, outputs []ast.CXValue) {
-	call := ast.PROGRAM.GetCurrentCall()
-	expr := inputs[0].Expr
-
-	res := inputs[0].Get_i32() == inputs[1].Get_i32()
-	if res {
-		call.Line = call.Line + expr.ThenLines
-	} else {
-		call.Line = call.Line + expr.ElseLines
-	}
+	ast.PROGRAM.ConditionalJump(inputs[0].Get_i32() == inputs[1].Get_i32())
 }
 
 func opI32JmpUnEq(inputs []ast.CXValue, outputs []ast.CXValue) {
-	call := ast.PROGRAM.GetCurrentCall()
-	expr := inputs[0].Expr
-
-	res := inputs[0].Get_i32() != inputs[1].Get_i32()
-	if res {
-		call.Line = call.Line + expr.ThenLines
-	} else {
-		call.Line = call.Line + expr.ElseLines
-	}
+	ast.PROGRAM.ConditionalJump(inputs[0].Get_i32() != inputs[1].Get_i32())
 }
 
 func opI32JmpGt(inputs []ast.CXValue, outputs []ast.CXValue) {
-	call := ast.PROGRAM.GetCurrentCall()
-	expr := inputs[0].Expr
-
-	res := inputs[0].Get_i32() > inputs[1].Get_i32()
-	if res {
-		call.Line = call.Line + expr.ThenLines
-	} else {
-		call.Line = call.Line + expr.ElseLines
-	}
+	ast.PROGRAM.ConditionalJump(inputs[0].Get_i32() > inputs[1].Get_i32())
 }
 
 func opI32JmpGtEq(inputs []ast.CXValue, outputs []ast.CXValue) {
-	call := ast.PROGRAM.GetCurrentCall()
-	expr := inputs[0].Expr
-
-	res := inputs[0].Get_i32() >= inputs[1].Get_i32()
-	if res {
-		call.Line = call.Line + expr.ThenLines
-	} else {
-		call.Line = call.Line + expr.ElseLines
-	}
+	ast.PROGRAM.ConditionalJump(inputs[0].Get_i32() >= inputs[1].Get_i32())
 }
 
 func opI32JmpLt(inputs []ast.CXValue, outputs []ast.CXValue) {
-	call := ast.PROGRAM.GetCurrentCall()
-	expr := inputs[0].Expr
-
-	res := inputs[0].Get_i32() < inputs[1].Get_i32()
-	if res {
-		call.Line = call.Line + expr.ThenLines
-	} else {
-		call.Line = call.Line + expr.ElseLines
-	}
+	ast.PROGRAM.ConditionalJump(inputs[0].Get_i32() < inputs[1].Get_i32())
 }
 
 func opI32JmpLtEq(inputs []ast.CXValue, outputs []ast.CXValue) {
-	call := ast.PROGRAM.GetCurrentCall()
-	expr := inputs[0].Expr
-
-	res := inputs[0].Get_i32() <= inputs[1].Get_i32()
-	if res {
-		call.Line = call.Line + expr.ThenLines
-	} else {
-		call.Line = call.Line + expr.ElseLines
-	}
+	ast.PROGRAM.ConditionalJump(inputs[0].Get_i32() <= inputs[1].Get_i32())
 }
 
 func opI32JmpZero(inputs []ast.CXValue, outputs []ast.CXValue) {
-	call := ast.PROGRAM.GetCurrentCall()
-	expr := inputs[0].Expr
-
-	res := inputs[0].Get_i32() == 0
-	if res {
-		call.Line = call.Line + expr.ThenLines
-	} else {
-		call.Line = call.Line + expr.ElseLines
-	}
+	ast.PROGRAM.ConditionalJump(inputs[0].Get_i32() == 0)
 }
 
 func opI32JmpNotZero(inputs []ast.CXValue, outputs []ast.CXValue) {
-	call := ast.PROGRAM.GetCurrentCall()
-	expr := inputs[0].Expr
-
-	res := inputs[0].Get_i32() != 0
-	if res {
-		call.Line = call.Line + expr.ThenLines
-	} else {
-		call.Line = call.Line + expr.ElseLines
-	}
+	ast.PROGRAM.ConditionalJump(inputs[0].Get_i32() != 0)
 }

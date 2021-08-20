@@ -48,8 +48,7 @@ func assert(inputs []ast.CXValue, outputs []ast.CXValue) (same bool) {
 	message := inputs[2].Get_str()
 
 	if !same {
-		call := ast.PROGRAM.GetCurrentCall()
-		expr := call.Operator.Expressions[call.Line]
+		expr := inputs[0].Expr
 		if message != "" {
 			fmt.Printf("%s: %d: result was not equal to the expected value; %s\n", expr.FileName, expr.FileLine, message)
 		} else {
@@ -80,8 +79,7 @@ func opPanic(inputs []ast.CXValue, outputs []ast.CXValue) {
 func panicIf(inputs []ast.CXValue, outputs []ast.CXValue, condition bool) {
 	str := inputs[1].Get_str()
 	if inputs[0].Get_bool() == condition {
-		call := ast.PROGRAM.GetCurrentCall()
-		expr := call.Operator.Expressions[call.Line]
+		expr := inputs[0].Expr
 		fmt.Printf("%s : %d, %s\n", expr.FileName, expr.FileLine, str)
 		panic(constants.CX_ASSERT)
 	}

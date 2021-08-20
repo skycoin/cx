@@ -6,7 +6,7 @@ import (
 
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/globals"
-    "github.com/skycoin/cx/cx/types"
+	"github.com/skycoin/cx/cx/types"
 )
 
 /*
@@ -71,8 +71,8 @@ type CXProgram struct {
 
 	CallStack   []CXCall      // Collection of function calls
 	CallCounter types.Pointer // What function call is the currently being executed in the CallStack
-	Terminated  bool     // Utility field for the runtime. Indicates if a CX program has already finished or not.
-	Version     string   // CX version used to build this CX program.
+	Terminated  bool          // Utility field for the runtime. Indicates if a CX program has already finished or not.
+	Version     string        // CX version used to build this CX program.
 
 	// Used by the REPL and cxgo
 	CurrentPackage *CXPackage // Represents the currently active package in the REPL or when parsing a CX file.
@@ -100,9 +100,9 @@ type CXPackage struct {
 //
 type CXStruct struct {
 	// Metadata
-	Name    string     // Name of the struct
-	Package *CXPackage // The package this struct belongs to
-	Size    types.Pointer        // The size in memory that this struct takes.
+	Name    string        // Name of the struct
+	Package *CXPackage    // The package this struct belongs to
+	Size    types.Pointer // The size in memory that this struct takes.
 
 	// Contents
 	Fields []*CXArgument // The fields of the struct
@@ -113,9 +113,9 @@ type CXStruct struct {
 //TODO: Rename OpCode to "AtomicOPCode" and is Atomic if set
 type CXFunction struct {
 	// Metadata
-	Name      string     // Name of the function
-	Package   *CXPackage // The package it's a member of
-	OpCode    int        // opcode if IsBuiltin = true
+	Name    string     // Name of the function
+	Package *CXPackage // The package it's a member of
+	OpCode  int        // opcode if IsBuiltin = true
 	// Contents
 	Inputs      []*CXArgument   // Input parameters to the function
 	Outputs     []*CXArgument   // Output parameters from the function
@@ -466,6 +466,30 @@ func GetCurrentCxProgram() (*CXProgram, error) {
 	return PROGRAM, nil
 }
 */
+
+func (cxprogram *CXProgram) ConditionalJump(condition bool) {
+	call := &cxprogram.CallStack[cxprogram.CallCounter]
+	expr := call.Operator.Expressions[call.Line]
+
+	offset := expr.ElseLines
+	if condition {
+		offset = expr.ThenLines
+	}
+
+	call.Line += offset
+}
+
+func (cxprogram *CXProgram) ConditionalAbsoluteJump(condition bool) {
+	call := &cxprogram.CallStack[cxprogram.CallCounter]
+	expr := call.Operator.Expressions[call.Line]
+
+	offset := expr.ElseLines
+	if condition {
+		offset = expr.ThenLines
+	}
+
+	call.Line = offset
+}
 
 // ----------------------------------------------------------------
 //                             `CXProgram` Debugging
