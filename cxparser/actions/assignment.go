@@ -19,8 +19,6 @@ func assignStructLiteralFields(to []*ast.CXExpression, from []*ast.CXExpression,
 			f.Outputs[0].Indexes = to[0].Outputs[0].Indexes
 			f.Outputs[0].DereferenceOperations = append(f.Outputs[0].DereferenceOperations, constants.DEREF_ARRAY)
 		}
-
-		f.Outputs[0].DereferenceOperations = append(f.Outputs[0].DereferenceOperations, constants.DEREF_FIELD)
 	}
 
 	return from
