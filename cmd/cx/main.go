@@ -155,7 +155,7 @@ func Run(args []string) {
 	// Load op code tables
 	parsingcompletor.InitCXCore()
 
-	if run := parseProgram(options, fileNames, sourceCode); run {
+	if run := parseProgram(fileNames, sourceCode); run {
 
 		if checkAST(args) {
 			printProgramAST(options, cxArgs, sourceCode)
