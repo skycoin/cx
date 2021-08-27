@@ -17,7 +17,7 @@ func DebugHeap() {
 	for _, pkg := range PROGRAM.Packages {
 		for _, glbl := range pkg.Globals {
 			if glbl.IsPointer || glbl.IsSlice {
-				heapOffset := helper.Deserialize_i32(PROGRAM.Memory[glbl.Offset : glbl.Offset+constants.TYPE_POINTER_SIZE])
+				heapOffset := helper.Deserialize_i32(PROGRAM.Memory[glbl.Offset : glbl.Offset+constants.POINTER_SIZE])
 
 				symsToAddrs[heapOffset] = append(symsToAddrs[heapOffset], glbl.Name)
 			}
@@ -53,7 +53,7 @@ func DebugHeap() {
 				offset += fp
 			}
 
-			heapOffset := helper.Deserialize_i32(PROGRAM.Memory[offset : offset+constants.TYPE_POINTER_SIZE])
+			heapOffset := helper.Deserialize_i32(PROGRAM.Memory[offset : offset+constants.POINTER_SIZE])
 
 			symsToAddrs[heapOffset] = append(symsToAddrs[heapOffset], symName)
 		}

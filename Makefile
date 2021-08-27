@@ -6,6 +6,8 @@ export GO111MODULE=on
 .PHONY: dep
 
 PWD := $(shell pwd)
+PTR := ptr32
+##PTR := ptr64
 
 UNAME_S := $(shell uname -s)
 
@@ -65,11 +67,15 @@ ifeq ($(UNAME_S), Linux)
 endif
 
 build: ## Build CX from sources
-	$(GO_OPTS) go build -tags="cipher cxfx cxos http regexp" -o ./bin/cx github.com/skycoin/cx/cmd/cx
+	$(GO_OPTS) go build -tags="$(PTR) cipher cxfx cxos http regexp" -o ./bin/cx github.com/skycoin/cx/cmd/cx
+	chmod +x ./bin/cx
+
+build-debug: ## Build CX from sources
+	$(GO_OPTS) go build -gcflags="all=-N -l" -tags="$(PTR) cipher cxfx cxos http regexp" -o ./bin/cx github.com/skycoin/cx/cmd/cx
 	chmod +x ./bin/cx
 
 build-core: ## Build CX with CXFX support. Done via satisfying 'cxfx' build tag.
-	$(GO_OPTS) go build -tags="base" -o ./bin/cx github.com/skycoin/cx/cmd/cx
+	$(GO_OPTS) go build -tags="$(PTR) base" -o ./bin/cx github.com/skycoin/cx/cmd/cx
 	chmod +x ./bin/cx
 
 clean: ## Removes binaries.

@@ -2,6 +2,7 @@ package ast
 
 import (
 	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/types"
 )
 
 // GetOpCodeCount returns an op code that is available for usage on the CX standard library.
@@ -24,11 +25,11 @@ func IsComparisonOperator(opCode int) bool {
 	return opCode > constants.START_OF_COMPARISON_OPERATORS && opCode < constants.END_OF_COMPARISON_OPERATORS
 }
 
-func GetTypedOperatorOffset(typeCode int, opCode int) int {
-	return typeCode*OPERATOR_COUNT + opCode - constants.START_OF_OPERATORS - 1
+func GetTypedOperatorOffset(typeCode types.Code, opCode int) int {
+	return int(typeCode)*OPERATOR_COUNT + opCode - constants.START_OF_OPERATORS - 1
 }
 
-func GetTypedOperator(typeCode int, opCode int) *CXFunction {
+func GetTypedOperator(typeCode types.Code, opCode int) *CXFunction {
 	return Operators[GetTypedOperatorOffset(typeCode, opCode)]
 }
 

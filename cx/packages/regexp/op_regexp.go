@@ -5,13 +5,13 @@ package regexp
 import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/types"
 	"regexp"
 
 	"github.com/jinzhu/copier"
 )
 
 var regexps map[string]*regexp.Regexp = make(map[string]*regexp.Regexp, 0)
-
 
 // regexpCompile is a helper function for `opRegexpMustCompile` and
 // `opRegexpCompile`. `regexpCompile` compiles a `regexp.Regexp` structure
@@ -53,8 +53,7 @@ func regexpCompile(inputs []ast.CXValue, outputs []ast.CXValue) error {
 	// internally.
 	accessExp := []*ast.CXArgument{expFld}
 	reg.Fields = accessExp
-	ast.WriteString(outputs[0].FramePointer, exp, &reg)
-    //outputs[0].Used = int8(outputs[0].Type) // TODO: Remove hacked type check
+	types.Write_str(ast.PROGRAM.Memory, ast.GetFinalOffset(outputs[0].FramePointer, &reg), exp)
 	// Storing `Regexp` instance.
 	regexps[exp], err = regexp.Compile(exp)
 
@@ -79,11 +78,11 @@ func opRegexpCompile(inputs []ast.CXValue, outputs []ast.CXValue) {
 	err := regexpCompile(inputs, outputs)
 
 	// Writing error message to `out1`.
-    var errStr string
+	var errStr string
 	if err != nil {
-        errStr = err.Error()
+		errStr = err.Error()
 	}
-    outputs[1].Set_str(errStr)
+	outputs[1].Set_str(errStr)
 }
 
 // opRegexpCompile is a wrapper for golang's `regexp`'s `MustCompile`.
@@ -116,9 +115,8 @@ func opRegexpFind(inputs []ast.CXValue, outputs []ast.CXValue) {
 	// Getting corresponding `Regexp` instance.
 	accessExp := []*ast.CXArgument{expFld}
 	reg.Fields = accessExp
-	exp := ast.ReadStr(inputs[0].FramePointer, &reg)
+	exp := types.Read_str(ast.PROGRAM.Memory, ast.GetFinalOffset(inputs[0].FramePointer, &reg))
 	r := regexps[exp]
 
-    //inputs[0].Used = int8(inputs[0].Type) // TODO: Remove hacked type check.
-    outputs[0].Set_str(string(r.Find([]byte(inputs[1].Get_str()))))
+	outputs[0].Set_str(string(r.Find([]byte(inputs[1].Get_str()))))
 }

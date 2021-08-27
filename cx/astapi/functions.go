@@ -83,7 +83,7 @@ func RemoveFunctionFromPackage(cxprogram *cxast.CXProgram, packageName, function
 //     Functions
 //         0.- Function: TestFunction()()
 //
-// We use AddNativeInputToFunction(cxprogram, "main", "TestFunction", "inputOne", cxconstants.TYPE_I32).
+// We use AddNativeInputToFunction(cxprogram, "main", "TestFunction", "inputOne", cxtypes.I32).
 // The Result will be:
 // 0.- Package: main
 //     Functions
@@ -156,7 +156,7 @@ func RemoveFunctionInput(cxprogram *cxast.CXProgram, functionName, inputName str
 //     Functions
 //         0.- Function: TestFunction()()
 //
-// We use AddNativeOutputToFunction(cxprogram, "main", "TestFunction", "outputOne", cxconstants.TYPE_I32).
+// We use AddNativeOutputToFunction(cxprogram, "main", "TestFunction", "outputOne", cxtypes.I32).
 // The Result will be:
 // 0.- Package: main
 //     Functions

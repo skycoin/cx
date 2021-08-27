@@ -2,13 +2,15 @@ package ast
 
 import (
 	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/types"
+	//"fmt"
 )
 
 // CXCall ...
 type CXCall struct {
-	Operator     *CXFunction // What CX function will be called when running this CXCall in the runtime
-	Line         int         // What line in the CX function is currently being executed
-	FramePointer int         // Where in the stack is this function call's local variables stored
+	Operator     *CXFunction   // What CX function will be called when running this CXCall in the runtime
+	Line         int           // What line in the CX function is currently being executed
+	FramePointer types.Pointer // Where in the stack is this function call's local variables stored
 }
 
 //function is only called once and by affordances
@@ -21,7 +23,7 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 		*/
 		// going back to the previous call
 		prgrm.CallCounter--
-		if prgrm.CallCounter < 0 {
+		if !prgrm.CallCounter.IsValid() {
 			// then the program finished
 			prgrm.Terminated = true
 		} else {
@@ -40,11 +42,9 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 				if i >= lenOuts {
 					continue
 				}
-				WriteMemory(
-					GetFinalOffset(returnFP, expr.Outputs[i]),
-					ReadMemory(
-						GetFinalOffset(fp, out),
-						out))
+
+				types.WriteSlice_byte(PROGRAM.Memory, GetFinalOffset(returnFP, expr.Outputs[i]),
+					types.GetSlice_byte(PROGRAM.Memory, GetFinalOffset(fp, out), GetSize(out)))
 			}
 
 			// return the stack pointer to its previous state
@@ -70,7 +70,7 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 			newCall := &prgrm.CallStack[prgrm.CallCounter]
 			newFP := newCall.FramePointer
 			size := GetSize(expr.Outputs[0])
-			for c := 0; c < size; c++ {
+			for c := types.Pointer(0); c < size; c++ {
 				prgrm.Memory[newFP+expr.Outputs[0].Offset+c] = 0
 			}
 			call.Line++
@@ -103,12 +103,10 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 				offset := GetFinalOffset(fp, input)
 				value := &inputValues[inputIndex]
 				value.Arg = input
-				//value.Used = -1
 				value.Offset = offset
 				value.Type = input.Type
 				value.FramePointer = fp
 				value.Expr = expr
-				value.memory = PROGRAM.Memory[offset : offset+GetSize(input)]
 				argIndex++
 			}
 
@@ -117,7 +115,6 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 				offset := GetFinalOffset(fp, output)
 				value := &outputValues[outputIndex]
 				value.Arg = output
-				//value.Used = -1
 				value.Offset = offset
 				value.Type = output.Type
 				value.FramePointer = fp
@@ -126,32 +123,6 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 			}
 
 			OpcodeHandlers[expr.Operator.OpCode](inputValues, outputValues)
-
-			//inputValues[inputIndex].Used
-			//WTF is ".Used"
-			/*
-				for inputIndex := 0; inputIndex < inputCount; inputIndex++ { // TODO: remove in release builds
-					if inputValues[inputIndex].Used != int8(inputs[inputIndex].Type) { // TODO: remove cast
-						panic(fmt.Sprintf("Input value not used for opcode: '%s', param #%d. Expected type %d, '%s', used type %d, '%s'.",
-							OpNames[expr.Operator.OpCode],
-							inputIndex+1,
-							inputs[inputIndex].Type, constants.TypeNames[inputs[inputIndex].Type],
-							inputValues[inputIndex].Used, constants.TypeNames[int(inputValues[inputIndex].Used)]))
-					}
-				}
-			*/
-
-			/*
-				for outputIndex := 0; outputIndex < outputCount; outputIndex++ { // TODO: remove in release builds
-					if outputValues[outputIndex].Used != int8(outputs[outputIndex].Type) { // TODO: remove cast
-						panic(fmt.Sprintf("Output value not used for opcode: '%s', param #%d. Expected type %d, '%s', used type %d '%s'.",
-							OpNames[expr.Operator.OpCode],
-							outputIndex+1,
-							outputs[outputIndex].Type, constants.TypeNames[outputs[outputIndex].Type],
-							outputValues[outputIndex].Used, constants.TypeNames[int(outputValues[outputIndex].Used)]))
-					}
-				}
-			*/
 
 			call.Line++
 		} else { //NON-ATOMIC OPERATOR
@@ -185,7 +156,7 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 			newFP := newCall.FramePointer
 
 			// wiping next stack frame (removing garbage)
-			for c := 0; c < expr.Operator.Size; c++ {
+			for c := types.Pointer(0); c < expr.Operator.Size; c++ {
 				prgrm.Memory[newFP+c] = 0
 			}
 
@@ -203,10 +174,10 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 					// or a field of a struct (&struct.fld) we no longer need to add
 					// the OBJECT_HEADER_SIZE to the offset
 					if inp.IsInnerReference {
-						finalOffset -= constants.OBJECT_HEADER_SIZE
+						finalOffset -= types.OBJECT_HEADER_SIZE
 					}
-					var finalOffsetB [4]byte
-					WriteMemI32(finalOffsetB[:], 0, int32(finalOffset))
+					var finalOffsetB [types.POINTER_SIZE]byte
+					types.Write_ptr(finalOffsetB[:], 0, finalOffset)
 					byts = finalOffsetB[:]
 				} else {
 					size := GetSize(inp)
@@ -214,7 +185,8 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 				}
 
 				// writing inputs to new stack frame
-				WriteMemory(
+				types.WriteSlice_byte(
+					prgrm.Memory,
 					GetFinalOffset(newFP, newCall.Operator.Inputs[i]),
 					// newFP + newCall.Operator.ProgramInput[i].Offset,
 					// GetFinalOffset(prgrm.Memory, newFP, newCall.Operator.ProgramInput[i], MEM_WRITE),

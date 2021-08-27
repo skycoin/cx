@@ -6,6 +6,7 @@ import (
 
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/types"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
@@ -27,7 +28,7 @@ func IterationExpressions(init []*ast.CXExpression, cond []*ast.CXExpression, in
 	upExpr := ast.MakeExpression(jmpFn, CurrentFile, LineNo)
 	upExpr.Package = pkg
 
-	trueArg := WritePrimary(constants.TYPE_BOOL, encoder.Serialize(true), false)
+	trueArg := WritePrimary(types.BOOL, encoder.Serialize(true), false)
 
 	upLines := (len(statements) + len(incr) + len(cond) + 2) * -1
 	downLines := 0
@@ -40,7 +41,7 @@ func IterationExpressions(init []*ast.CXExpression, cond []*ast.CXExpression, in
 	downExpr.Package = pkg
 
 	if len(cond[len(cond)-1].Outputs) < 1 {
-		predicate := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(constants.TypeNames[cond[len(cond)-1].Operator.Outputs[0].Type])
+		predicate := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(cond[len(cond)-1].Operator.Outputs[0].Type)
 		predicate.ArgDetails.Package = pkg
 		predicate.PreviouslyDeclared = true
 		cond[len(cond)-1].AddOutput(predicate)
@@ -92,7 +93,7 @@ func trueJmpExpressions(opcode int) []*ast.CXExpression {
 
 	expr := ast.MakeExpression(ast.Natives[opcode], CurrentFile, LineNo)
 
-	trueArg := WritePrimary(constants.TYPE_BOOL, encoder.Serialize(true), false)
+	trueArg := WritePrimary(types.BOOL, encoder.Serialize(true), false)
 	expr.AddInput(trueArg[0].Outputs[0])
 
 	expr.Package = pkg
@@ -132,11 +133,11 @@ func SelectionExpressions(condExprs []*ast.CXExpression, thenExprs []*ast.CXExpr
 		if condExprs[len(condExprs)-1].IsMethodCall() {
 			// we'll change this once we have access to method's types in
 			// ProcessMethodCall
-			predicate.AddType(constants.TypeNames[constants.TYPE_BOOL])
+			predicate.AddType(types.BOOL)
 			condExprs[len(condExprs)-1].Inputs = append(condExprs[len(condExprs)-1].Outputs, condExprs[len(condExprs)-1].Inputs...)
 			condExprs[len(condExprs)-1].Outputs = nil
 		} else {
-			predicate.AddType(constants.TypeNames[condExprs[len(condExprs)-1].Operator.Outputs[0].Type])
+			predicate.AddType(condExprs[len(condExprs)-1].Operator.Outputs[0].Type)
 		}
 		predicate.PreviouslyDeclared = true
 		condExprs[len(condExprs)-1].Outputs = append(condExprs[len(condExprs)-1].Outputs, predicate)
@@ -154,7 +155,7 @@ func SelectionExpressions(condExprs []*ast.CXExpression, thenExprs []*ast.CXExpr
 	skipExpr := ast.MakeExpression(jmpFn, CurrentFile, LineNo)
 	skipExpr.Package = pkg
 
-	trueArg := WritePrimary(constants.TYPE_BOOL, encoder.Serialize(true), false)
+	trueArg := WritePrimary(types.BOOL, encoder.Serialize(true), false)
 	skipLines := len(elseExprs)
 
 	skipExpr.AddInput(trueArg[0].Outputs[0])
@@ -174,7 +175,7 @@ func SelectionExpressions(condExprs []*ast.CXExpression, thenExprs []*ast.CXExpr
 }
 
 // resolveTypeForUnd tries to determine the type that will be returned from an expression
-func resolveTypeForUnd(expr *ast.CXExpression) int {
+func resolveTypeForUnd(expr *ast.CXExpression) types.Code {
 	if len(expr.Inputs) > 0 {
 		// it's a literal
 		return expr.Inputs[0].Type
@@ -212,7 +213,7 @@ func OperatorExpression(leftExprs []*ast.CXExpression, rightExprs []*ast.CXExpre
 	}
 
 	if len(leftExprs[len(leftExprs)-1].Outputs) < 1 {
-		name := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(constants.TypeNames[resolveTypeForUnd(leftExprs[len(leftExprs)-1])])
+		name := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(resolveTypeForUnd(leftExprs[len(leftExprs)-1]))
 		name.Size = leftExprs[len(leftExprs)-1].Operator.Outputs[0].Size
 		name.TotalSize = ast.GetSize(leftExprs[len(leftExprs)-1].Operator.Outputs[0])
 		name.Type = leftExprs[len(leftExprs)-1].Operator.Outputs[0].Type
@@ -223,7 +224,7 @@ func OperatorExpression(leftExprs []*ast.CXExpression, rightExprs []*ast.CXExpre
 	}
 
 	if len(rightExprs[len(rightExprs)-1].Outputs) < 1 {
-		name := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(constants.TypeNames[resolveTypeForUnd(rightExprs[len(rightExprs)-1])])
+		name := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(resolveTypeForUnd(rightExprs[len(rightExprs)-1]))
 
 		name.Size = rightExprs[len(rightExprs)-1].Operator.Outputs[0].Size
 		name.TotalSize = ast.GetSize(rightExprs[len(rightExprs)-1].Operator.Outputs[0])
@@ -342,7 +343,7 @@ func AssociateReturnExpressions(idx int, retExprs []*ast.CXExpression) []*ast.CX
 	outParam := fn.Outputs[idx]
 
 	out := ast.MakeArgument(outParam.ArgDetails.Name, CurrentFile, LineNo)
-	out.AddType(constants.TypeNames[outParam.Type])
+	out.AddType(outParam.Type)
 	out.CustomType = outParam.CustomType
 	out.PreviouslyDeclared = true
 
@@ -407,7 +408,7 @@ func AddJmpToReturnExpressions(exprs ReturnExpressions) []*ast.CXExpression {
 
 	// simulating a label so it gets executed without evaluating a predicate
 	expr.Label = MakeGenSym(constants.LABEL_PREFIX)
-	expr.ThenLines = constants.MAX_INT32
+	expr.ThenLines = types.MAX_INT32
 	expr.Package = pkg
 
 	retExprs = append(retExprs, expr)

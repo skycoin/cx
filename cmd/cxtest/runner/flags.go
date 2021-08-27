@@ -46,4 +46,5 @@ const (
 	CxRuntimeInvalidArgument
 	CxRuntimeSliceIndexOutOfRange
 	CxRuntimeNotImplemented
+	CxRuntimeInvalidCast
 )

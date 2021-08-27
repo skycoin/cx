@@ -11,7 +11,7 @@ import (
 	constants2 "github.com/skycoin/cx/cxparser/constants"
 
 	"github.com/skycoin/cx/cx/constants"
-	"github.com/skycoin/cx/cx/helper"
+	"github.com/skycoin/cx/cx/types"
 	"github.com/skycoin/cx/cx/util"
 )
 
@@ -219,45 +219,45 @@ func SignatureStringOfFunction(pkg *CXPackage, f *CXFunction) string {
 		f.Name, ins.String(), outs.String())
 }
 
-func getNonCollectionValue(fp int, arg, elt *CXArgument, typ string) string {
+func getNonCollectionValue(fp types.Pointer, arg, elt *CXArgument, typ string) string {
 	if arg.IsPointer {
-		return fmt.Sprintf("%v", ReadPtr(fp, elt))
+		return fmt.Sprintf("%v", types.Read_ptr(PROGRAM.Memory, GetFinalOffset(fp, elt)))
 	}
 	if arg.IsSlice {
-		return fmt.Sprintf("%v", ReadSlice(fp, elt))
+		return fmt.Sprintf("%v", types.GetSlice_byte(PROGRAM.Memory, GetFinalOffset(fp, elt), GetSize(elt)))
 	}
 	switch typ {
 	case "bool":
-		return fmt.Sprintf("%v", ReadBool(fp, elt))
+		return fmt.Sprintf("%v", types.Read_bool(PROGRAM.Memory, GetFinalOffset(fp, elt)))
 	case "str":
-		return fmt.Sprintf("%v", ReadStr(fp, elt))
+		return fmt.Sprintf("%v", types.Read_str(PROGRAM.Memory, GetFinalOffset(fp, elt)))
 	case "i8":
-		return fmt.Sprintf("%v", ReadI8(fp, elt))
+		return fmt.Sprintf("%v", types.Read_i8(PROGRAM.Memory, GetFinalOffset(fp, elt)))
 	case "i16":
-		return fmt.Sprintf("%v", ReadI16(fp, elt))
+		return fmt.Sprintf("%v", types.Read_i16(PROGRAM.Memory, GetFinalOffset(fp, elt)))
 	case "i32":
-		return fmt.Sprintf("%v", ReadI32(fp, elt))
+		return fmt.Sprintf("%v", types.Read_i32(PROGRAM.Memory, GetFinalOffset(fp, elt)))
 	case "i64":
-		return fmt.Sprintf("%v", ReadI64(fp, elt))
+		return fmt.Sprintf("%v", types.Read_i64(PROGRAM.Memory, GetFinalOffset(fp, elt)))
 	case "ui8":
-		return fmt.Sprintf("%v", ReadUI8(fp, elt))
+		return fmt.Sprintf("%v", types.Read_ui8(PROGRAM.Memory, GetFinalOffset(fp, elt)))
 	case "ui16":
-		return fmt.Sprintf("%v", ReadUI16(fp, elt))
+		return fmt.Sprintf("%v", types.Read_ui16(PROGRAM.Memory, GetFinalOffset(fp, elt)))
 	case "ui32":
-		return fmt.Sprintf("%v", ReadUI32(fp, elt))
+		return fmt.Sprintf("%v", types.Read_ui32(PROGRAM.Memory, GetFinalOffset(fp, elt)))
 	case "ui64":
-		return fmt.Sprintf("%v", ReadUI64(fp, elt))
+		return fmt.Sprintf("%v", types.Read_ui64(PROGRAM.Memory, GetFinalOffset(fp, elt)))
 	case "f32":
-		return fmt.Sprintf("%v", ReadF32(fp, elt))
+		return fmt.Sprintf("%v", types.Read_f32(PROGRAM.Memory, GetFinalOffset(fp, elt)))
 	case "f64":
-		return fmt.Sprintf("%v", ReadF64(fp, elt))
+		return fmt.Sprintf("%v", types.Read_f64(PROGRAM.Memory, GetFinalOffset(fp, elt)))
 	default:
 		// then it's a struct
 		var val string
 		val = "{"
 		// for _, fld := range elt.CustomType.Fields {
 		lFlds := len(elt.CustomType.Fields)
-		off := 0
+		off := types.Pointer(0)
 		for c := 0; c < lFlds; c++ {
 			fld := elt.CustomType.Fields[c]
 			if c == lFlds-1 {
@@ -273,39 +273,39 @@ func getNonCollectionValue(fp int, arg, elt *CXArgument, typ string) string {
 }
 
 // ReadSliceElements ...
-func ReadSliceElements(fp int, arg, elt *CXArgument, sliceData []byte, size int, typ string) string {
+func ReadSliceElements(fp types.Pointer, arg, elt *CXArgument, sliceData []byte, size types.Pointer, typ string) string {
 	switch typ {
 	case "bool":
-		return fmt.Sprintf("%v", helper.Deserialize_bool(sliceData[:constants.BOOL_SIZE]))
+		return fmt.Sprintf("%v", types.Read_bool(sliceData, 0))
 	case "str":
-		return fmt.Sprintf("%v", string(sliceData[:constants.STR_SIZE]))
+		return fmt.Sprintf("%v", types.Read_str(PROGRAM.Memory, types.Read_ptr(sliceData, 0)))
 	case "i8":
-		return fmt.Sprintf("%v", helper.Deserialize_i8(sliceData[:constants.I8_SIZE]))
+		return fmt.Sprintf("%v", types.Read_i8(sliceData, 0))
 	case "i16":
-		return fmt.Sprintf("%v", helper.Deserialize_i16(sliceData[:constants.I16_SIZE]))
+		return fmt.Sprintf("%v", types.Read_i16(sliceData, 0))
 	case "i32":
-		return fmt.Sprintf("%v", helper.Deserialize_i32(sliceData[:constants.I32_SIZE]))
+		return fmt.Sprintf("%v", types.Read_i32(sliceData, 0))
 	case "i64":
-		return fmt.Sprintf("%v", helper.Deserialize_i64(sliceData[:constants.I64_SIZE]))
+		return fmt.Sprintf("%v", types.Read_i64(sliceData, 0))
 	case "ui8":
-		return fmt.Sprintf("%v", helper.Deserialize_ui8(sliceData[:constants.I8_SIZE]))
+		return fmt.Sprintf("%v", types.Read_ui8(sliceData, 0))
 	case "ui16":
-		return fmt.Sprintf("%v", helper.Deserialize_ui16(sliceData[:constants.I16_SIZE]))
+		return fmt.Sprintf("%v", types.Read_ui16(sliceData, 0))
 	case "ui32":
-		return fmt.Sprintf("%v", helper.Deserialize_ui32(sliceData[:constants.I32_SIZE]))
+		return fmt.Sprintf("%v", types.Read_ui32(sliceData, 0))
 	case "ui64":
-		return fmt.Sprintf("%v", helper.Deserialize_ui64(sliceData[:constants.I64_SIZE]))
+		return fmt.Sprintf("%v", types.Read_ui64(sliceData, 0))
 	case "f32":
-		return fmt.Sprintf("%v", helper.Deserialize_f32(sliceData[:constants.F32_SIZE]))
+		return fmt.Sprintf("%v", types.Read_f32(sliceData, 0))
 	case "f64":
-		return fmt.Sprintf("%v", helper.Deserialize_f64(sliceData[:constants.F64_SIZE]))
+		return fmt.Sprintf("%v", types.Read_f64(sliceData, 0))
 	default:
 		// then it's a struct
 		var val string
 		val = "{"
 		// for _, fld := range elt.CustomType.Fields {
 		lFlds := len(elt.CustomType.Fields)
-		off := 0
+		off := types.Pointer(0)
 		for c := 0; c < lFlds; c++ {
 			fld := elt.CustomType.Fields[c]
 			if c == lFlds-1 {
@@ -321,7 +321,7 @@ func ReadSliceElements(fp int, arg, elt *CXArgument, sliceData []byte, size int,
 }
 
 // GetPrintableValue ...
-func GetPrintableValue(fp int, arg *CXArgument) string {
+func GetPrintableValue(fp types.Pointer, arg *CXArgument) string {
 	var typ string
 	elt := GetAssignmentElement(arg)
 	if elt.CustomType != nil {
@@ -329,7 +329,7 @@ func GetPrintableValue(fp int, arg *CXArgument) string {
 		typ = elt.CustomType.Name
 	} else {
 		// then it's native type
-		typ = constants.TypeNames[elt.Type]
+		typ = elt.Type.Name()
 	}
 
 	if len(elt.Lengths) > 0 {
@@ -343,12 +343,12 @@ func GetPrintableValue(fp int, arg *CXArgument) string {
 
 				sliceData := GetSlice(sliceOffset, elt.Size)
 				if len(sliceData) != 0 {
-					sliceLen := int(helper.Deserialize_i32(sliceData[:4]))
-					for c := 0; c < sliceLen; c++ {
+					sliceLen := types.Read_ptr(sliceData, 0)
+					for c := types.Pointer(0); c < sliceLen; c++ {
 						if c == sliceLen-1 {
-							val += ReadSliceElements(int(sliceOffset)+constants.SLICE_HEADER_SIZE+constants.OBJECT_HEADER_SIZE+c*elt.Size, arg, elt, sliceData[4+c*elt.Size:], elt.Size, typ)
+							val += ReadSliceElements(sliceOffset+constants.SLICE_HEADER_SIZE+types.OBJECT_HEADER_SIZE+c*elt.Size, arg, elt, sliceData[types.POINTER_SIZE+c*elt.Size:], elt.Size, typ)
 						} else {
-							val += ReadSliceElements(int(sliceOffset)+constants.SLICE_HEADER_SIZE+constants.OBJECT_HEADER_SIZE+c*elt.Size, arg, elt, sliceData[4+c*elt.Size:], elt.Size, typ) + ", "
+							val += ReadSliceElements(sliceOffset+constants.SLICE_HEADER_SIZE+types.OBJECT_HEADER_SIZE+c*elt.Size, arg, elt, sliceData[types.POINTER_SIZE+c*elt.Size:], elt.Size, typ) + ", "
 						}
 
 					}
@@ -356,7 +356,7 @@ func GetPrintableValue(fp int, arg *CXArgument) string {
 
 			} else {
 				// for Arrays
-				for c := 0; c < elt.Lengths[0]; c++ {
+				for c := types.Pointer(0); c < elt.Lengths[0]; c++ {
 					if c == elt.Lengths[0]-1 {
 						val += getNonCollectionValue(fp+c*elt.Size, arg, elt, typ)
 					} else {
@@ -371,12 +371,12 @@ func GetPrintableValue(fp int, arg *CXArgument) string {
 			// 5, 4, 1
 			val = ""
 
-			finalSize := 1
+			finalSize := types.Pointer(1)
 			for _, l := range elt.Lengths {
 				finalSize *= l
 			}
 
-			lens := make([]int, len(elt.Lengths))
+			lens := make([]types.Pointer, len(elt.Lengths))
 			copy(lens, elt.Lengths)
 
 			for c := 0; c < len(lens); c++ {
@@ -391,7 +391,7 @@ func GetPrintableValue(fp int, arg *CXArgument) string {
 
 			// adding first element because of formatting reasons
 			val += getNonCollectionValue(fp, arg, elt, typ)
-			for c := 1; c < finalSize; c++ {
+			for c := types.Pointer(1); c < finalSize; c++ {
 				closeCount := 0
 				for _, l := range lens {
 					if c%l == 0 && c != 0 {
@@ -558,10 +558,10 @@ func IsPointer(sym *CXArgument) bool {
 	if (sym.IsPointer || sym.IsSlice) && sym.ArgDetails.Name != "" && len(sym.Fields) == 0 {
 		return true
 	}
-	if sym.Type == constants.TYPE_STR && sym.ArgDetails.Name != "" && len(sym.Fields) == 0 {
+	if sym.Type == types.STR && sym.ArgDetails.Name != "" && len(sym.Fields) == 0 {
 		return true
 	}
-	// if (sym.Type == TYPE_STR && sym.Name != "") {
+	// if (sym.Type == types.STR && sym.Name != "") {
 	// 	return true
 	// }
 	// If `sym` is a structure instance, we need to check if the last field
@@ -604,7 +604,7 @@ func getFormattedDerefs(arg *CXArgument, includePkg bool) string {
 		idxValue := ""
 		if idx.Offset > PROGRAM.StackSize {
 			// Then it's a literal.
-			idxI32 := helper.Deserialize_i32(PROGRAM.Memory[idx.Offset : idx.Offset+constants.TYPE_POINTER_SIZE])
+			idxI32 := types.Read_ptr(PROGRAM.Memory, idx.Offset)
 			idxValue = fmt.Sprintf("%d", idxI32)
 		} else {
 			// Then let's just print the variable name.
@@ -682,10 +682,10 @@ func GetFormattedType(arg *CXArgument) string {
 				typ += elt.CustomType.Name
 			} else {
 				// then it's basic type
-				typ += constants.TypeNames[elt.Type]
+				typ += elt.Type.Name()
 
 				// If it's a function, let's add the inputs and outputs.
-				if elt.Type == constants.TYPE_FUNC {
+				if elt.Type == types.FUNC {
 					if elt.IsLocalDeclaration {
 						// Then it's a local variable, which can be assigned to a
 						// lambda function, for example.

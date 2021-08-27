@@ -29,28 +29,28 @@ func TestASTAPI_Functions(t *testing.T) {
 	})
 
 	t.Run("add first input to function", func(t *testing.T) {
-		err := astapi.AddNativeInputToFunction(cxprogram, "main", "TestFunction", "inputOne", cxconstants.TYPE_I32)
+		err := astapi.AddNativeInputToFunction(cxprogram, "main", "TestFunction", "inputOne", cxtypes.I32)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}
 	})
 
 	t.Run("add second input to function", func(t *testing.T) {
-		err := astapi.AddNativeInputToFunction(cxprogram, "main", "TestFunction", "inputTwo", cxconstants.TYPE_I32)
+		err := astapi.AddNativeInputToFunction(cxprogram, "main", "TestFunction", "inputTwo", cxtypes.I32)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}
 	})
 
 	t.Run("add first output to function", func(t *testing.T) {
-		err := astapi.AddNativeOutputToFunction(cxprogram, "main", "TestFunction", "outputOne", cxconstants.TYPE_I16)
+		err := astapi.AddNativeOutputToFunction(cxprogram, "main", "TestFunction", "outputOne", cxtypes.I16)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}
 	})
 
 	t.Run("add second output to function", func(t *testing.T) {
-		err := astapi.AddNativeOutputToFunction(cxprogram, "main", "TestFunction", "outputTwo", cxconstants.TYPE_I16)
+		err := astapi.AddNativeOutputToFunction(cxprogram, "main", "TestFunction", "outputTwo", cxtypes.I16)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}

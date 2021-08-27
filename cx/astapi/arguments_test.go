@@ -37,14 +37,14 @@ func TestASTAPI_Arguments(t *testing.T) {
 	})
 
 	t.Run("add input to function", func(t *testing.T) {
-		err := astapi.AddNativeInputToFunction(cxprogram, "main", "TestFunction", "inputOne", cxconstants.TYPE_I32)
+		err := astapi.AddNativeInputToFunction(cxprogram, "main", "TestFunction", "inputOne", cxtypes.I32)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}
 	})
 
 	t.Run("add output to function", func(t *testing.T) {
-		err := astapi.AddNativeOutputToFunction(cxprogram, "main", "TestFunction", "outputOne", cxconstants.TYPE_I16)
+		err := astapi.AddNativeOutputToFunction(cxprogram, "main", "TestFunction", "outputOne", cxtypes.I16)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}
@@ -61,21 +61,21 @@ func TestASTAPI_Arguments(t *testing.T) {
 		buf := new(bytes.Buffer)
 		var num int32 = 5
 		binary.Write(buf, binary.LittleEndian, num)
-		err := astapi.AddLiteralInputToExpression(cxprogram, "main", "TestFunction", buf.Bytes(), cxconstants.TYPE_I16, 0)
+		err := astapi.AddLiteralInputToExpression(cxprogram, "main", "TestFunction", buf.Bytes(), cxtypes.I16, 0)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}
 	})
 
 	t.Run("add second input to expression", func(t *testing.T) {
-		err := astapi.AddNativeInputToExpression(cxprogram, "main", "TestFunction", "y", cxconstants.TYPE_I16, 0)
+		err := astapi.AddNativeInputToExpression(cxprogram, "main", "TestFunction", "y", cxtypes.I16, 0)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}
 	})
 
 	t.Run("add output to expression", func(t *testing.T) {
-		err := astapi.AddNativeOutputToExpression(cxprogram, "main", "TestFunction", "z", cxconstants.TYPE_I16, 0)
+		err := astapi.AddNativeOutputToExpression(cxprogram, "main", "TestFunction", "z", cxtypes.I16, 0)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}
@@ -122,12 +122,12 @@ func TestASTAPI_Arguments(t *testing.T) {
 	})
 
 	t.Run("add global", func(t *testing.T) {
-		arg := cxast.MakeGlobal("testGlobal", cxconstants.TYPE_I16, "", -1)
+		arg := cxast.MakeGlobal("testGlobal", cxtypes.I16, "", -1)
 		cxprogram.Packages[0].AddGlobal(arg)
 	})
 
 	t.Run("get accessible i16 args", func(t *testing.T) {
-		args, err := astapi.GetAccessibleArgsForFunctionByType(cxprogram, "main", "TestFunction", cxconstants.TYPE_I16)
+		args, err := astapi.GetAccessibleArgsForFunctionByType(cxprogram, "main", "TestFunction", cxtypes.I16)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}

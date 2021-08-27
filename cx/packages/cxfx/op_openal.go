@@ -6,6 +6,7 @@ import (
 	"bufio"
 	"github.com/mjibson/go-dsp/wav"
 	"github.com/skycoin/cx/cx/ast"
+	"github.com/skycoin/cx/cx/types"
 	"github.com/skycoin/cx/cx/util"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 
@@ -42,10 +43,10 @@ func opAlLoadWav(inputs []ast.CXValue, outputs []ast.CXValue) {
 	outputs[7].Set_i64(int64(wav.Duration))
 
 	outputSlicePointer := outputs[8].Offset
-	outputSliceOffset := ast.GetPointerOffset(int32(outputSlicePointer))
-	outputSliceOffset = int32(ast.SliceResizeEx(outputSliceOffset, int32(len(data)), 1))
+	outputSliceOffset := types.Read_ptr(ast.PROGRAM.Memory, outputSlicePointer)
+	outputSliceOffset = ast.SliceResizeEx(outputSliceOffset, types.Cast_int_to_ptr(len(data)), 1)
 	copy(ast.GetSliceData(outputSliceOffset, 1), data)
-	outputs[8].SetSlice(outputSliceOffset)
+	outputs[8].Set_ptr(outputSliceOffset)
 }
 
 func toBytes(in interface{}) []byte { // REFACTOR : ??

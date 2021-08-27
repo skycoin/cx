@@ -9,6 +9,7 @@ import (
 	repl "github.com/skycoin/cx/cmd/cxrepl"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/types"
 	"github.com/skycoin/cx/cx/execute"
 	"github.com/skycoin/cx/cxparser/actions"
 	parsingcompletor "github.com/skycoin/cx/cxparser/cxparsingcompletor"
@@ -24,6 +25,7 @@ func main() {
 
 func Run(args []string) {
 
+	types.Allocator = ast.AllocateSeq
 	runtime.LockOSThread()
 
 	runtime.GOMAXPROCS(2)

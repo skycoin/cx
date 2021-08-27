@@ -7,6 +7,7 @@ import __yyfmt__ "fmt"
 import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/types"
 	"github.com/skycoin/cx/cxparser/actions"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 	"strconv"
@@ -1719,7 +1720,7 @@ yynewstate:
 		{
 			if pkg, err := actions.AST.GetCurrentPackage(); err == nil {
 				arg := ast.MakeArgument("", actions.CurrentFile, actions.LineNo)
-				arg.AddType(constants.TypeNames[constants.TYPE_UNDEFINED])
+				arg.AddType(types.UNDEFINED)
 				arg.ArgDetails.Name = yyS[yypt-0].tok
 				arg.ArgDetails.Package = pkg
 				yyVAL.argument = arg
@@ -1738,7 +1739,7 @@ yynewstate:
 		}
 	case 34:
 		{
-			arg := actions.DeclarationSpecifiersBasic(yyS[yypt-0].i)
+			arg := actions.DeclarationSpecifiersBasic(types.Code(yyS[yypt-0].i))
 			yyVAL.arguments = []*ast.CXArgument{arg}
 		}
 	case 35:
@@ -1748,7 +1749,7 @@ yynewstate:
 		}
 	case 36:
 		{
-			arg := actions.DeclarationSpecifiersBasic(yyS[yypt-0].i)
+			arg := actions.DeclarationSpecifiersBasic(types.Code(yyS[yypt-0].i))
 			yyVAL.arguments = append(yyS[yypt-2].arguments, arg)
 		}
 	case 37:
@@ -1763,22 +1764,22 @@ yynewstate:
 		}
 	case 39:
 		{
-			arg := ast.MakeArgument("", actions.CurrentFile, actions.LineNo).AddType("func")
+			arg := ast.MakeArgument("", actions.CurrentFile, actions.LineNo).AddType(types.FUNC)
 			arg.Inputs = yyS[yypt-1].arguments
 			arg.Outputs = yyS[yypt-0].arguments
-			yyVAL.argument = actions.DeclarationSpecifiers(arg, []int{0}, constants.DECL_FUNC)
+			yyVAL.argument = actions.DeclarationSpecifiers(arg, []types.Pointer{0}, constants.DECL_FUNC)
 		}
 	case 40:
 		{
-			yyVAL.argument = actions.DeclarationSpecifiers(yyS[yypt-0].argument, []int{0}, constants.DECL_POINTER)
+			yyVAL.argument = actions.DeclarationSpecifiers(yyS[yypt-0].argument, []types.Pointer{0}, constants.DECL_POINTER)
 		}
 	case 41:
 		{
-			yyVAL.argument = actions.DeclarationSpecifiers(yyS[yypt-0].argument, []int{0}, constants.DECL_SLICE)
+			yyVAL.argument = actions.DeclarationSpecifiers(yyS[yypt-0].argument, []types.Pointer{0}, constants.DECL_SLICE)
 		}
 	case 42:
 		{
-			yyVAL.argument = actions.DeclarationSpecifiersBasic(yyS[yypt-0].i)
+			yyVAL.argument = actions.DeclarationSpecifiersBasic(types.Code(yyS[yypt-0].i))
 		}
 	case 43:
 		{
@@ -1786,13 +1787,13 @@ yynewstate:
 		}
 	case 44:
 		{
-			basic := actions.DeclarationSpecifiersBasic(yyS[yypt-0].i)
-			yyVAL.argument = actions.DeclarationSpecifiers(basic, yyS[yypt-1].ints, constants.DECL_ARRAY)
+			basic := actions.DeclarationSpecifiersBasic(types.Code(yyS[yypt-0].i))
+			yyVAL.argument = actions.DeclarationSpecifiers(basic, types.Cast_sint_to_sptr(yyS[yypt-1].ints), constants.DECL_ARRAY)
 		}
 	case 45:
 		{
 			strct := actions.DeclarationSpecifiersStruct(yyS[yypt-0].tok, "", false, actions.CurrentFile, actions.LineNo)
-			yyVAL.argument = actions.DeclarationSpecifiers(strct, yyS[yypt-1].ints, constants.DECL_ARRAY)
+			yyVAL.argument = actions.DeclarationSpecifiers(strct, types.Cast_sint_to_sptr(yyS[yypt-1].ints), constants.DECL_ARRAY)
 		}
 	case 46:
 		{
@@ -1800,59 +1801,59 @@ yynewstate:
 		}
 	case 47:
 		{
-			yyVAL.argument = actions.DeclarationSpecifiersStruct(yyS[yypt-0].tok, constants.TypeNames[yyS[yypt-2].i], true, actions.CurrentFile, actions.LineNo)
+			yyVAL.argument = actions.DeclarationSpecifiersStruct(yyS[yypt-0].tok, types.Code(yyS[yypt-2].i).Name(), true, actions.CurrentFile, actions.LineNo)
 		}
 	case 48:
 		{
-			yyVAL.i = constants.TYPE_AFF
+			yyVAL.i = int(types.AFF)
 		}
 	case 49:
 		{
-			yyVAL.i = constants.TYPE_BOOL
+			yyVAL.i = int(types.BOOL)
 		}
 	case 50:
 		{
-			yyVAL.i = constants.TYPE_STR
+			yyVAL.i = int(types.STR)
 		}
 	case 51:
 		{
-			yyVAL.i = constants.TYPE_F32
+			yyVAL.i = int(types.F32)
 		}
 	case 52:
 		{
-			yyVAL.i = constants.TYPE_F64
+			yyVAL.i = int(types.F64)
 		}
 	case 53:
 		{
-			yyVAL.i = constants.TYPE_I8
+			yyVAL.i = int(types.I8)
 		}
 	case 54:
 		{
-			yyVAL.i = constants.TYPE_I16
+			yyVAL.i = int(types.I16)
 		}
 	case 55:
 		{
-			yyVAL.i = constants.TYPE_I32
+			yyVAL.i = int(types.I32)
 		}
 	case 56:
 		{
-			yyVAL.i = constants.TYPE_I64
+			yyVAL.i = int(types.I64)
 		}
 	case 57:
 		{
-			yyVAL.i = constants.TYPE_UI8
+			yyVAL.i = int(types.UI8)
 		}
 	case 58:
 		{
-			yyVAL.i = constants.TYPE_UI16
+			yyVAL.i = int(types.UI16)
 		}
 	case 59:
 		{
-			yyVAL.i = constants.TYPE_UI32
+			yyVAL.i = int(types.UI32)
 		}
 	case 60:
 		{
-			yyVAL.i = constants.TYPE_UI64
+			yyVAL.i = int(types.UI64)
 		}
 	case 61:
 		{
@@ -1910,7 +1911,7 @@ yynewstate:
 		}
 	case 72:
 		{
-			yyVAL.expressions = actions.ArrayLiteralExpression(yyS[yypt-4].ints, yyS[yypt-3].i, yyS[yypt-1].expressions)
+			yyVAL.expressions = actions.ArrayLiteralExpression(types.Cast_sint_to_sptr(yyS[yypt-4].ints), types.Code(yyS[yypt-3].i), yyS[yypt-1].expressions)
 		}
 	case 73:
 		{
@@ -1937,7 +1938,7 @@ yynewstate:
 		}
 	case 78:
 		{
-			yyVAL.expressions = actions.SliceLiteralExpression(yyS[yypt-3].i, yyS[yypt-1].expressions)
+			yyVAL.expressions = actions.SliceLiteralExpression(types.Code(yyS[yypt-3].i), yyS[yypt-1].expressions)
 		}
 	case 79:
 		{
@@ -1965,7 +1966,7 @@ yynewstate:
 		}
 	case 83:
 		{
-			yyVAL.string = constants.TypeNames[yyS[yypt-2].i] + "." + yyS[yypt-0].tok
+			yyVAL.string = types.Code(yyS[yypt-2].i).Name() + "." + yyS[yypt-0].tok
 		}
 	case 84:
 		{
@@ -1997,18 +1998,18 @@ yynewstate:
 		}
 	case 90:
 		{
-			yyVAL.expressions = actions.SliceLiteralExpression(constants.TYPE_AFF, nil)
+			yyVAL.expressions = actions.SliceLiteralExpression(types.AFF, nil)
 		}
 	case 91:
 		{
 			var exprs []*ast.CXExpression
 			for _, str := range yyS[yypt-0].stringA {
-				expr := actions.WritePrimary(constants.TYPE_AFF, encoder.Serialize(str), false)
+				expr := actions.WritePrimary(types.AFF, encoder.Serialize(str), false)
 				expr[len(expr)-1].ExpressionType = ast.CXEXPR_ARRAY_LITERAL
 				exprs = append(exprs, expr...)
 			}
 
-			yyVAL.expressions = actions.SliceLiteralExpression(constants.TYPE_AFF, exprs)
+			yyVAL.expressions = actions.SliceLiteralExpression(types.AFF, exprs)
 		}
 	case 92:
 		{
@@ -2032,52 +2033,52 @@ yynewstate:
 		}
 	case 97:
 		{
-			yyVAL.expressions = actions.WritePrimary(constants.TYPE_STR, encoder.Serialize(yyS[yypt-0].tok), false)
+			yyVAL.expressions = actions.WritePrimary(types.STR, types.Make_obj([]byte(yyS[yypt-0].tok)), false)
 		}
 	case 98:
 		{
-			exprs := actions.WritePrimary(constants.TYPE_BOOL, encoder.Serialize(yyS[yypt-0].bool), false)
+			exprs := actions.WritePrimary(types.BOOL, encoder.Serialize(yyS[yypt-0].bool), false)
 			yyVAL.expressions = exprs
 		}
 	case 99:
 		{
-			yyVAL.expressions = actions.WritePrimary(constants.TYPE_I8, encoder.Serialize(yyS[yypt-0].i8), false)
+			yyVAL.expressions = actions.WritePrimary(types.I8, encoder.Serialize(yyS[yypt-0].i8), false)
 		}
 	case 100:
 		{
-			yyVAL.expressions = actions.WritePrimary(constants.TYPE_I16, encoder.Serialize(yyS[yypt-0].i16), false)
+			yyVAL.expressions = actions.WritePrimary(types.I16, encoder.Serialize(yyS[yypt-0].i16), false)
 		}
 	case 101:
 		{
-			yyVAL.expressions = actions.WritePrimary(constants.TYPE_I32, encoder.Serialize(yyS[yypt-0].i32), false)
+			yyVAL.expressions = actions.WritePrimary(types.I32, encoder.Serialize(yyS[yypt-0].i32), false)
 		}
 	case 102:
 		{
-			yyVAL.expressions = actions.WritePrimary(constants.TYPE_I64, encoder.Serialize(yyS[yypt-0].i64), false)
+			yyVAL.expressions = actions.WritePrimary(types.I64, encoder.Serialize(yyS[yypt-0].i64), false)
 		}
 	case 103:
 		{
-			yyVAL.expressions = actions.WritePrimary(constants.TYPE_UI8, encoder.Serialize(yyS[yypt-0].ui8), false)
+			yyVAL.expressions = actions.WritePrimary(types.UI8, encoder.Serialize(yyS[yypt-0].ui8), false)
 		}
 	case 104:
 		{
-			yyVAL.expressions = actions.WritePrimary(constants.TYPE_UI16, encoder.Serialize(yyS[yypt-0].ui16), false)
+			yyVAL.expressions = actions.WritePrimary(types.UI16, encoder.Serialize(yyS[yypt-0].ui16), false)
 		}
 	case 105:
 		{
-			yyVAL.expressions = actions.WritePrimary(constants.TYPE_UI32, encoder.Serialize(yyS[yypt-0].ui32), false)
+			yyVAL.expressions = actions.WritePrimary(types.UI32, encoder.Serialize(yyS[yypt-0].ui32), false)
 		}
 	case 106:
 		{
-			yyVAL.expressions = actions.WritePrimary(constants.TYPE_UI64, encoder.Serialize(yyS[yypt-0].ui64), false)
+			yyVAL.expressions = actions.WritePrimary(types.UI64, encoder.Serialize(yyS[yypt-0].ui64), false)
 		}
 	case 107:
 		{
-			yyVAL.expressions = actions.WritePrimary(constants.TYPE_F32, encoder.Serialize(yyS[yypt-0].f32), false)
+			yyVAL.expressions = actions.WritePrimary(types.F32, encoder.Serialize(yyS[yypt-0].f32), false)
 		}
 	case 108:
 		{
-			yyVAL.expressions = actions.WritePrimary(constants.TYPE_F64, encoder.Serialize(yyS[yypt-0].f64), false)
+			yyVAL.expressions = actions.WritePrimary(types.F64, encoder.Serialize(yyS[yypt-0].f64), false)
 		}
 	case 109:
 		{
@@ -2093,7 +2094,7 @@ yynewstate:
 		}
 	case 112:
 		{
-			yyVAL.tok = constants.TypeNames[yyS[yypt-0].i]
+			yyVAL.tok = types.Code(yyS[yypt-0].i).Name()
 		}
 	case 115:
 		{
@@ -2101,7 +2102,7 @@ yynewstate:
 		}
 	case 116:
 		{
-			yyVAL.expressions = actions.PostfixExpressionNative(int(yyS[yypt-2].i), yyS[yypt-0].tok)
+			yyVAL.expressions = actions.PostfixExpressionNative(types.Code(yyS[yypt-2].i), yyS[yypt-0].tok)
 		}
 	case 117:
 		{
