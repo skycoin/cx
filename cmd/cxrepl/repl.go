@@ -16,7 +16,7 @@ import (
 	"github.com/skycoin/cx/cx/execute"
 
 	"github.com/skycoin/cx/cxparser/actions"
-	cxparsering "github.com/skycoin/cx/cxparser/cxparsing"
+	"github.com/skycoin/cx/cxparser/cxparsing"
 	cxparsingcompletor "github.com/skycoin/cx/cxparser/cxparsingcompletor"
 	cxpartialparsing "github.com/skycoin/cx/cxparser/cxpartialparsing"
 )
@@ -54,7 +54,7 @@ func unsafeEval(code string) (out string) {
 	lexer = cxparsingcompletor.NewLexer(bytes.NewBufferString(code))
 	cxparsingcompletor.Parse(lexer)
 	//yyParse(lexer)
-	err := cxparsering.AddInitFunction(actions.AST)
+	err := cxparsing.AddInitFunction(actions.AST)
 	if err != nil {
 		return fmt.Sprintf("%s", err)
 	}

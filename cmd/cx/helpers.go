@@ -16,7 +16,7 @@ import (
 	"github.com/skycoin/cx/cx/globals"
 	"github.com/skycoin/cx/cx/util"
 	"github.com/skycoin/cx/cxparser/actions"
-	cxparsering "github.com/skycoin/cx/cxparser/cxparsing"
+	"github.com/skycoin/cx/cxparser/cxparsing"
 	cxgo "github.com/skycoin/cx/cxparser/cxparsingcompletor"
 	"github.com/skycoin/cx/cxparser/util/profiling"
 )
@@ -24,7 +24,7 @@ import (
 func parseProgram(fileNames []string, sourceCode []*os.File) bool {
 	// Setting what function to start in if using the REPL.
 	repl.ReplTargetFn = constants.MAIN_FUNC
-	return cxparsering.ParseProgram(fileNames, sourceCode)
+	return cxparsing.ParseProgram(fileNames, sourceCode)
 }
 
 // optionTokenize checks if the user wants to use CX to generate the lexer tokens
