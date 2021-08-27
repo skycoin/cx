@@ -1,4 +1,4 @@
-package cxparsering
+package cxparsing
 
 import (
 	"os"
