@@ -17,6 +17,12 @@ import (
 	"github.com/skycoin/cx/cxparser/util/profiling"
 )
 
+/**
+- take input source code
+- parse packages, structs, package imports, globals
+
+*/
+
 // Preliminarystage performs a first pass for the CX cxgo. Globals, packages and
 // custom types are added to `cxpartialparsing.Program`.
 // takes source strings in one package
@@ -37,21 +43,24 @@ func Preliminarystage(srcStrs, srcNames []string) int {
 	} // for range srcStrs
 	profiling.StopProfile("1. packages/structs")
 
-	profiling.StartProfile("2. globals")
+	profiling.StartProfile("2. imports")
 
 	// 1. Identify package imports
 	for i, source := range srcStrs {
 		ParsePackageImports(source, srcNames[i], prePkg)
 	}
+	profiling.StopProfile("2. imports")
+
+	profiling.StartProfile("3. globals")
 	// 3. Identify all global variables
 	//    We also identify packages again, so we know to what
 	//    package we're going to add the variable declaration to.
 	for i, source := range srcStrs {
 		ParseGlobalVariables(source, srcNames[i], prePkg)
 	}
-	profiling.StopProfile("2. globals")
+	profiling.StopProfile("3. globals")
 
-	profiling.StartProfile("3. cxpartialparsing")
+	profiling.StartProfile("4. cxpartialparsing")
 
 	for i, source := range srcStrs {
 		profiling.StartProfile(srcNames[i])
@@ -66,7 +75,7 @@ func Preliminarystage(srcStrs, srcNames []string) int {
 		profiling.StopProfile(srcNames[i])
 	}
 
-	profiling.StopProfile("3. cxpartialparsing")
+	profiling.StopProfile("4. cxpartialparsing")
 	return parseErrors
 }
 
