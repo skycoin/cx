@@ -81,8 +81,8 @@ func parseFlags(options *cxCmdFlags, args []string) {
 	commandLine.StringVar(&options.maxHeap, "hm", options.maxHeap, "alias for -max-heap")
 	commandLine.StringVar(&options.stackSize, "stack-size", options.stackSize, "Set the stack size for the CX virtual machine. The value is in bytes, but the suffixes 'G', 'M' or 'K' can be used to express gigabytes, megabytes or kilobytes, respectively. Lowercase suffixes are allowed.")
 	commandLine.StringVar(&options.stackSize, "ss", options.stackSize, "alias for -stack-size")
-	commandLine.Float64Var(&options.minHeapFreeRatio, "--min-heap-free", options.minHeapFreeRatio, "Minimum heap space percentage that should be free after calling the garbage collector. Value must be in the range of 0.0 and 1.0.")
-	commandLine.Float64Var(&options.maxHeapFreeRatio, "--max-heap-free", options.maxHeapFreeRatio, "Maximum heap space percentage that should be free after calling the garbage collector. Value must be in the range of 0.0 and 1.0.")
+	commandLine.Float64Var(&options.minHeapFreeRatio, "min-heap-free", options.minHeapFreeRatio, "Minimum heap space percentage that should be free after calling the garbage collector. Value must be in the range of 0.0 and 1.0.")
+	commandLine.Float64Var(&options.maxHeapFreeRatio, "max-heap-free", options.maxHeapFreeRatio, "Maximum heap space percentage that should be free after calling the garbage collector. Value must be in the range of 0.0 and 1.0.")
 	commandLine.StringVar(&options.cxpath, "cxpath", options.cxpath, "Used for dynamically setting the value of the environment variable CXPATH")
 
 	// Debug flags
