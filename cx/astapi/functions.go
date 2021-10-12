@@ -2,7 +2,7 @@ package astapi
 
 import (
 	cxast "github.com/skycoin/cx/cx/ast"
-	cxconstants "github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/types"
 )
 
 // AddEmptyFunctionToPackage adds an empty function to a package in cx program.
@@ -90,7 +90,7 @@ func RemoveFunctionFromPackage(cxprogram *cxast.CXProgram, packageName, function
 //         0.- Function: TestFunction(inputOne i32) ()
 //
 // Note the new inputOne i32 input to the TestFunction.
-func AddNativeInputToFunction(cxprogram *cxast.CXProgram, packageName, functionName, inputName string, inputType int) error {
+func AddNativeInputToFunction(cxprogram *cxast.CXProgram, packageName, functionName, inputName string, inputType types.Code) error {
 	pkg, err := FindPackage(cxprogram, packageName)
 	if err != nil {
 		return err
@@ -101,7 +101,7 @@ func AddNativeInputToFunction(cxprogram *cxast.CXProgram, packageName, functionN
 		return err
 	}
 
-	arg := cxast.MakeField(inputName, inputType, "", -1).AddType(cxconstants.TypeNames[inputType])
+	arg := cxast.MakeField(inputName, inputType, "", -1).AddType(types.Code(inputType))
 	arg.ArgDetails.Package = pkg
 	fn.AddInput(arg)
 
@@ -163,7 +163,7 @@ func RemoveFunctionInput(cxprogram *cxast.CXProgram, functionName, inputName str
 //         0.- Function: TestFunction() (outputOne i32)
 //
 // Note the new outputOne i32 output of the TestFunction.
-func AddNativeOutputToFunction(cxprogram *cxast.CXProgram, packageName, functionName, outputName string, outputType int) error {
+func AddNativeOutputToFunction(cxprogram *cxast.CXProgram, packageName, functionName, outputName string, outputType types.Code) error {
 	pkg, err := FindPackage(cxprogram, packageName)
 	if err != nil {
 		return err
@@ -173,7 +173,7 @@ func AddNativeOutputToFunction(cxprogram *cxast.CXProgram, packageName, function
 	if err != nil {
 		return err
 	}
-	arg := cxast.MakeField(outputName, outputType, "", -1).AddType(cxconstants.TypeNames[outputType])
+	arg := cxast.MakeField(outputName, outputType, "", -1).AddType(types.Code(outputType))
 	arg.ArgDetails.Package = pkg
 	fn.AddOutput(arg)
 

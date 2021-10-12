@@ -1,8 +1,6 @@
 package types
 
-import (
-	//"fmt"
-)
+//"fmt"
 
 const MARK_SIZE = Pointer(1)
 const FORWARDING_ADDRESS_SIZE = POINTER_SIZE
@@ -11,14 +9,13 @@ const OBJECT_GC_HEADER_SIZE = MARK_SIZE + FORWARDING_ADDRESS_SIZE
 const OBJECT_SIZE = POINTER_SIZE
 const OBJECT_HEADER_SIZE = OBJECT_GC_HEADER_SIZE + OBJECT_SIZE
 
-
 func Get_obj_header(memory []byte, offset Pointer) []byte {
 	return memory[offset : offset+OBJECT_HEADER_SIZE]
 }
 
 func Get_obj_data(memory []byte, offset Pointer, size Pointer) []byte {
-	offset+=OBJECT_HEADER_SIZE
-	return memory[offset: offset+size]
+	offset += OBJECT_HEADER_SIZE
+	return memory[offset : offset+size]
 }
 
 func Compute_obj_size(data []byte) Pointer {
@@ -47,7 +44,7 @@ func Write_obj_forwarding_address(memory []byte, offset Pointer, address Pointer
 
 func Make_obj(data []byte) []byte {
 	size := Compute_obj_size(data)
-	obj := make([]byte, size)	
+	obj := make([]byte, size)
 	//fmt.Printf("MAKE_OBJ SIZE %d, LEN_DATA %d, LEN_OBJ %d\n", size, len(data), len(obj))
 	Write_obj_data(obj, 0, data)
 	return obj

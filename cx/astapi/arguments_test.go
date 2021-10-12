@@ -8,6 +8,7 @@ import (
 	cxast "github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/astapi"
 	cxconstants "github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/types"
 	parsingcompletor "github.com/skycoin/cx/cxparser/cxparsingcompletor"
 )
 
@@ -37,14 +38,14 @@ func TestASTAPI_Arguments(t *testing.T) {
 	})
 
 	t.Run("add input to function", func(t *testing.T) {
-		err := astapi.AddNativeInputToFunction(cxprogram, "main", "TestFunction", "inputOne", cxtypes.I32)
+		err := astapi.AddNativeInputToFunction(cxprogram, "main", "TestFunction", "inputOne", types.I32)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}
 	})
 
 	t.Run("add output to function", func(t *testing.T) {
-		err := astapi.AddNativeOutputToFunction(cxprogram, "main", "TestFunction", "outputOne", cxtypes.I16)
+		err := astapi.AddNativeOutputToFunction(cxprogram, "main", "TestFunction", "outputOne", types.I16)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}
@@ -61,21 +62,21 @@ func TestASTAPI_Arguments(t *testing.T) {
 		buf := new(bytes.Buffer)
 		var num int32 = 5
 		binary.Write(buf, binary.LittleEndian, num)
-		err := astapi.AddLiteralInputToExpression(cxprogram, "main", "TestFunction", buf.Bytes(), cxtypes.I16, 0)
+		err := astapi.AddLiteralInputToExpression(cxprogram, "main", "TestFunction", buf.Bytes(), types.I16, 0)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}
 	})
 
 	t.Run("add second input to expression", func(t *testing.T) {
-		err := astapi.AddNativeInputToExpression(cxprogram, "main", "TestFunction", "y", cxtypes.I16, 0)
+		err := astapi.AddNativeInputToExpression(cxprogram, "main", "TestFunction", "y", types.I16, 0)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}
 	})
 
 	t.Run("add output to expression", func(t *testing.T) {
-		err := astapi.AddNativeOutputToExpression(cxprogram, "main", "TestFunction", "z", cxtypes.I16, 0)
+		err := astapi.AddNativeOutputToExpression(cxprogram, "main", "TestFunction", "z", types.I16, 0)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}
@@ -122,18 +123,18 @@ func TestASTAPI_Arguments(t *testing.T) {
 	})
 
 	t.Run("add global", func(t *testing.T) {
-		arg := cxast.MakeGlobal("testGlobal", cxtypes.I16, "", -1)
+		arg := cxast.MakeGlobal("testGlobal", types.I16, "", -1)
 		cxprogram.Packages[0].AddGlobal(arg)
 	})
 
 	t.Run("get accessible i16 args", func(t *testing.T) {
-		args, err := astapi.GetAccessibleArgsForFunctionByType(cxprogram, "main", "TestFunction", cxtypes.I16)
+		args, err := astapi.GetAccessibleArgsForFunctionByType(cxprogram, "main", "TestFunction", types.I16)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}
 
 		for _, arg := range args {
-			t.Logf("Arg (name,type)=(%v,%v)\n", arg.ArgDetails.Name, cxconstants.TypeNames[arg.Type])
+			t.Logf("Arg (name,type)=(%v,%v)\n", arg.ArgDetails.Name, types.Code(arg.Type))
 		}
 	})
 }

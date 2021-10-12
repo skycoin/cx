@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/skycoin/cx/cx/types"
+
 	"github.com/jinzhu/copier"
 	cxast "github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/astapi"
@@ -88,7 +90,7 @@ func getRandFn(fnSet []*cxast.CXFunction) *cxast.CXFunction {
 	return fnSet[rand.Intn(len(fnSet))]
 }
 
-func calcFnSize(fn *cxast.CXFunction) (size int) {
+func calcFnSize(fn *cxast.CXFunction) (size types.Pointer) {
 	for _, arg := range fn.Inputs {
 		size += arg.TotalSize
 	}
@@ -168,8 +170,8 @@ func addNewExpression(expr *cxast.CXExpression, expressionType int) *cxast.CXArg
 
 	// Add expression's output
 	argOutName := strconv.Itoa(len(expr.Function.Expressions))
-	argOut := cxast.MakeField(argOutName, cxconstants.TYPE_BOOL, "", -1)
-	argOut.AddType(cxconstants.TypeNames[cxconstants.TYPE_BOOL])
+	argOut := cxast.MakeField(argOutName, types.BOOL, "", -1)
+	argOut.AddType(types.Code(types.BOOL))
 	argOut.ArgDetails.Package = expr.Function.Package
 	exp.AddOutput(argOut)
 	expr.Function.AddExpression(exp)
@@ -179,7 +181,7 @@ func addNewExpression(expr *cxast.CXExpression, expressionType int) *cxast.CXArg
 	return argOut
 }
 
-func findArgOptions(expr *cxast.CXExpression, argTypeToFind int) ([]int, []int) {
+func findArgOptions(expr *cxast.CXExpression, argTypeToFind types.Code) ([]int, []int) {
 	var optionsFromInputs []int
 	var optionsFromExpressions []int
 
@@ -272,12 +274,12 @@ func GenerateSampleProgram(t *testing.T, withLiteral bool) *cxast.CXProgram {
 		t.Errorf("want no error, got %v", err)
 	}
 
-	err = astapi.AddNativeInputToFunction(cxProgram, "main", "TestFunction", "inputOne", cxconstants.TYPE_I32)
+	err = astapi.AddNativeInputToFunction(cxProgram, "main", "TestFunction", "inputOne", types.Code(types.I32))
 	if err != nil {
 		t.Errorf("want no error, got %v", err)
 	}
 
-	err = astapi.AddNativeOutputToFunction(cxProgram, "main", "TestFunction", "outputOne", cxconstants.TYPE_I32)
+	err = astapi.AddNativeOutputToFunction(cxProgram, "main", "TestFunction", "outputOne", types.Code(types.I32))
 	if err != nil {
 		t.Errorf("want no error, got %v", err)
 	}
@@ -292,7 +294,7 @@ func GenerateSampleProgram(t *testing.T, withLiteral bool) *cxast.CXProgram {
 		buf := new(bytes.Buffer)
 		var num int32 = 5
 		binary.Write(buf, binary.LittleEndian, num)
-		err = astapi.AddLiteralInputToExpression(cxProgram, "main", "TestFunction", buf.Bytes(), cxconstants.TYPE_I32, 2)
+		err = astapi.AddLiteralInputToExpression(cxProgram, "main", "TestFunction", buf.Bytes(), types.I32, 2)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}

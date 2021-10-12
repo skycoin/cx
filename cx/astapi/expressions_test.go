@@ -6,6 +6,7 @@ import (
 	cxast "github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/astapi"
 	cxconstants "github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/types"
 	parsingcompletor "github.com/skycoin/cx/cxparser/cxparsingcompletor"
 )
 
@@ -35,14 +36,14 @@ func TestASTAPI_Expressions(t *testing.T) {
 	})
 
 	t.Run("add input to function", func(t *testing.T) {
-		err := astapi.AddNativeInputToFunction(cxprogram, "main", "TestFunction", "inputOne", cxtypes.I32)
+		err := astapi.AddNativeInputToFunction(cxprogram, "main", "TestFunction", "inputOne", types.I32)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}
 	})
 
 	t.Run("add output to function", func(t *testing.T) {
-		err := astapi.AddNativeOutputToFunction(cxprogram, "main", "TestFunction", "outputOne", cxtypes.I16)
+		err := astapi.AddNativeOutputToFunction(cxprogram, "main", "TestFunction", "outputOne", types.I16)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}

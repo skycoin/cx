@@ -8,11 +8,11 @@ import (
 	"testing"
 	"time"
 
-	cxevolvesgenerator "github.com/skycoin/cx-evolves/generator"
 	"github.com/skycoin/cx/cx/ast"
 	cxast "github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/astapi"
-	cxconstants "github.com/skycoin/cx/cx/constants"
+	cxgenerator "github.com/skycoin/cx/cx/generator"
+	"github.com/skycoin/cx/cx/types"
 	cxparsingcompletor "github.com/skycoin/cx/cxparser/cxparsingcompletor"
 )
 
@@ -223,27 +223,27 @@ func generateSampleProgramFromCXEvolves(t *testing.T, withLiteral bool) *cxast.C
 		t.Errorf("want no error, got %v", err)
 	}
 
-	err = astapi.AddNativeInputToFunction(cxProgram, "main", "TestFunction", "inputOne", cxtypes.I32)
+	err = astapi.AddNativeInputToFunction(cxProgram, "main", "TestFunction", "inputOne", types.I32)
 	if err != nil {
 		t.Errorf("want no error, got %v", err)
 	}
 
-	err = astapi.AddNativeOutputToFunction(cxProgram, "main", "TestFunction", "outputOne", cxtypes.I32)
+	err = astapi.AddNativeOutputToFunction(cxProgram, "main", "TestFunction", "outputOne", types.I32)
 	if err != nil {
 		t.Errorf("want no error, got %v", err)
 	}
 	functionSetNames := []string{"i32.add", "i32.mul", "i32.sub", "i32.eq", "i32.uneq", "i32.gt", "i32.gteq", "i32.lt", "i32.lteq", "bool.not", "bool.or", "bool.and", "bool.uneq", "bool.eq", "i32.neg", "i32.abs", "i32.bitand", "i32.bitor", "i32.bitxor", "i32.bitclear", "i32.bitshl", "i32.bitshr", "i32.max", "i32.min", "i32.rand"}
-	fns := cxevolvesgenerator.GetFunctionSet(functionSetNames)
+	fns := cxgenerator.GetFunctionSet(functionSetNames)
 
 	fn, _ := cxProgram.GetFunction("TestFunction", "main")
 	pkg, _ := cxProgram.GetPackage("main")
-	cxevolvesgenerator.GenerateRandomExpressions(fn, pkg, fns, 30)
+	cxgenerator.GenerateRandomExpressions(fn, pkg, fns, 30)
 
 	if withLiteral {
 		buf := new(bytes.Buffer)
 		var num int32 = 5
 		binary.Write(buf, binary.LittleEndian, num)
-		err = astapi.AddLiteralInputToExpression(cxProgram, "main", "TestFunction", buf.Bytes(), cxtypes.I32, 2)
+		err = astapi.AddLiteralInputToExpression(cxProgram, "main", "TestFunction", buf.Bytes(), types.I32, 2)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}

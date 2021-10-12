@@ -1,8 +1,6 @@
 package types
 
-import (
-	//"fmt"
-)
+//"fmt"
 
 func AllocWrite_str_data(memory []byte, str string) Pointer {
 	return AllocWrite_obj_data(memory, []byte(str))
