@@ -5,7 +5,7 @@ import (
 
 	cxast "github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/astapi"
-	cxconstants "github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/types"
 )
 
 func TestASTAPI_Functions(t *testing.T) {
@@ -29,28 +29,28 @@ func TestASTAPI_Functions(t *testing.T) {
 	})
 
 	t.Run("add first input to function", func(t *testing.T) {
-		err := astapi.AddNativeInputToFunction(cxprogram, "main", "TestFunction", "inputOne", cxtypes.I32)
+		err := astapi.AddNativeInputToFunction(cxprogram, "main", "TestFunction", "inputOne", types.I32)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}
 	})
 
 	t.Run("add second input to function", func(t *testing.T) {
-		err := astapi.AddNativeInputToFunction(cxprogram, "main", "TestFunction", "inputTwo", cxtypes.I32)
+		err := astapi.AddNativeInputToFunction(cxprogram, "main", "TestFunction", "inputTwo", types.I32)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}
 	})
 
 	t.Run("add first output to function", func(t *testing.T) {
-		err := astapi.AddNativeOutputToFunction(cxprogram, "main", "TestFunction", "outputOne", cxtypes.I16)
+		err := astapi.AddNativeOutputToFunction(cxprogram, "main", "TestFunction", "outputOne", types.I16)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}
 	})
 
 	t.Run("add second output to function", func(t *testing.T) {
-		err := astapi.AddNativeOutputToFunction(cxprogram, "main", "TestFunction", "outputTwo", cxtypes.I16)
+		err := astapi.AddNativeOutputToFunction(cxprogram, "main", "TestFunction", "outputTwo", types.I16)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}

@@ -2,7 +2,7 @@ package astapi
 
 import (
 	cxast "github.com/skycoin/cx/cx/ast"
-	cxconstants "github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/types"
 	cxparseractions "github.com/skycoin/cx/cxparser/actions"
 )
 
@@ -32,7 +32,7 @@ import (
 //             0.- Expression: z i16 = add(x i16, y i16)
 //
 // Note the y i16 added as an input to the expression in line 0.
-func AddNativeInputToExpression(cxprogram *cxast.CXProgram, packageName, functionName, inputName string, inputType, lineNumber int) error {
+func AddNativeInputToExpression(cxprogram *cxast.CXProgram, packageName, functionName, inputName string, inputType types.Code, lineNumber int) error {
 	pkg, err := FindPackage(cxprogram, packageName)
 	if err != nil {
 		return err
@@ -48,7 +48,7 @@ func AddNativeInputToExpression(cxprogram *cxast.CXProgram, packageName, functio
 		return err
 	}
 
-	arg := cxast.MakeField(inputName, inputType, "", -1).AddType(cxconstants.TypeNames[inputType])
+	arg := cxast.MakeField(inputName, inputType, "", -1).AddType(types.Code(inputType))
 	arg.ArgDetails.Package = pkg
 	expr.AddInput(arg)
 
@@ -119,7 +119,7 @@ func RemoveInputFromExpression(cxprogram *cxast.CXProgram, functionName string, 
 //             0.- Expression: z i16 = add(x i16, y i16)
 //
 // Note the z i16 added as an output of the expression in line 0.
-func AddNativeOutputToExpression(cxprogram *cxast.CXProgram, packageName, functionName, outputName string, outputType, lineNumber int) error {
+func AddNativeOutputToExpression(cxprogram *cxast.CXProgram, packageName, functionName, outputName string, outputType types.Code, lineNumber int) error {
 	pkg, err := FindPackage(cxprogram, packageName)
 	if err != nil {
 		return err
@@ -135,7 +135,7 @@ func AddNativeOutputToExpression(cxprogram *cxast.CXProgram, packageName, functi
 		return err
 	}
 
-	arg := cxast.MakeField(outputName, outputType, "", -1).AddType(cxconstants.TypeNames[outputType])
+	arg := cxast.MakeField(outputName, outputType, "", -1).AddType(types.Code(outputType))
 	arg.ArgDetails.Package = pkg
 	expr.AddOutput(arg)
 
@@ -283,7 +283,7 @@ func MakeOutputExpressionAPointer(cxprogram *cxast.CXProgram, functionName strin
 // We then get a result of
 // 1. testGlobal i16 arg in the form of cxast.CXArgument.
 // 2. x i16 arg in th eform of cxast.CXArgument.
-func GetAccessibleArgsForFunctionByType(cxprogram *cxast.CXProgram, packageLocationName, functionName string, argType int) ([]*cxast.CXArgument, error) {
+func GetAccessibleArgsForFunctionByType(cxprogram *cxast.CXProgram, packageLocationName, functionName string, argType types.Code) ([]*cxast.CXArgument, error) {
 	var argsList []*cxast.CXArgument
 
 	// Get all globals
@@ -341,7 +341,7 @@ func GetAccessibleArgsForFunctionByType(cxprogram *cxast.CXProgram, packageLocat
 	return argsList, nil
 }
 
-func AddLiteralInputToExpression(cxprogram *cxast.CXProgram, packageName, functionName string, bytes []byte, argType, lineNumber int) error {
+func AddLiteralInputToExpression(cxprogram *cxast.CXProgram, packageName, functionName string, bytes []byte, argType types.Code, lineNumber int) error {
 	pkg, err := FindPackage(cxprogram, packageName)
 	if err != nil {
 		return err

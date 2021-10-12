@@ -4,25 +4,25 @@ import (
 	"fmt"
 
 	"github.com/skycoin/cx/cx/ast"
-	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/types"
 )
 
 func ArgOfType(arg *ast.CXArgument, t int) {
-	if arg.Type != t {
+	if arg.Type != types.Code(t) {
 		panic(fmt.Sprintf("Argument %s, expected type %s, got %s",
-			arg.ArgDetails.Name, constants.TypeNames[t], constants.TypeNames[arg.Type]))
+			arg.ArgDetails.Name, types.Code(t).Name(), arg.Type.Name()))
 	}
 }
 
 func ArgAtomic(arg *ast.CXArgument) {
 	if arg.IsStruct || arg.IsPointer || arg.IsSlice {
-		panic(fmt.Sprintf("Argument %s of type %s is not atomic", arg.ArgDetails.Name, constants.TypeNames[arg.Type]))
+		panic(fmt.Sprintf("Argument %s of type %s is not atomic", arg.ArgDetails.Name, arg.Type.Name()))
 	}
 }
 
 func ArgNotAtomic(arg *ast.CXArgument) {
 	if !arg.IsStruct && !arg.IsPointer && !arg.IsSlice {
-		panic(fmt.Sprintf("Argument %s of type %s is atomic", arg.ArgDetails.Name, constants.TypeNames[arg.Type]))
+		panic(fmt.Sprintf("Argument %s of type %s is atomic", arg.ArgDetails.Name, arg.Type.Name()))
 	}
 }
 
