@@ -2,15 +2,17 @@ package execute
 
 import (
 	"fmt"
-	"github.com/skycoin/cx/cx/ast"
-	"github.com/skycoin/cx/cx/constants"
-    "github.com/skycoin/cx/cx/types"
 	"math/rand"
 	"time"
+
+	"github.com/skycoin/cx/cx/ast"
+	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/types"
 )
 
 // Only called in this file
 // TODO: What does this do? Is it named poorly?
+// RENAME AND REFACTOR
 func ToCall(cxprogram *ast.CXProgram) *ast.CXExpression {
 	for c := cxprogram.CallCounter - 1; c >= 0; c-- {
 		if cxprogram.CallStack[c].Line+1 >= len(cxprogram.CallStack[c].Operator.Expressions) {
@@ -25,13 +27,13 @@ func ToCall(cxprogram *ast.CXProgram) *ast.CXExpression {
 	// panic("")
 }
 
-func RunCxAst(cxprogram *ast.CXProgram, untilEnd bool, nCalls *int, untilCall types.Pointer) error {
+func RunCxAst(cxprogram *ast.CXProgram, untilEnd bool, maxOps int, untilCall types.Pointer) error {
 	defer ast.RuntimeError()
-	var err error
 
 	var inputs []ast.CXValue
 	var outputs []ast.CXValue
-	for !cxprogram.Terminated && (untilEnd || *nCalls != 0) && (!untilCall.IsValid() || cxprogram.CallCounter > untilCall) {
+	var opCount int = 0
+	for !cxprogram.Terminated && (untilEnd || (opCount < maxOps)) && (!untilCall.IsValid() || cxprogram.CallCounter > untilCall) {
 		call := &cxprogram.CallStack[cxprogram.CallCounter]
 
 		// checking if enough memory in stack
@@ -49,7 +51,7 @@ func RunCxAst(cxprogram *ast.CXProgram, untilEnd bool, nCalls *int, untilCall ty
 				cxprogram.CallStack[0].Operator = nil
 				cxprogram.CallCounter = 0
 				fmt.Println("in:terminated")
-				return err
+				return nil
 			}
 
 			if call.Line >= call.Operator.Length && cxprogram.CallCounter != 0 {
@@ -75,15 +77,15 @@ func RunCxAst(cxprogram *ast.CXProgram, untilEnd bool, nCalls *int, untilCall ty
 					cxprogram.CallStack[0].Operator = nil
 					cxprogram.CallCounter = 0
 					fmt.Println("in:terminated")
-					return err
+					return nil
 				}
 			}
 
 			fmt.Printf("in:%s, expr#:%d, calling:%s()\n", inName, call.Line+1, toCallName)
-			*nCalls--
+			opCount++
 		}
 
-		err = call.Ccall(cxprogram, &inputs, &outputs)
+		err := call.Ccall(cxprogram, &inputs, &outputs)
 		if err != nil {
 			return err
 		}
@@ -93,103 +95,106 @@ func RunCxAst(cxprogram *ast.CXProgram, untilEnd bool, nCalls *int, untilCall ty
 }
 
 // RunCompiled ...
-func RunCompiled(cxprogram *ast.CXProgram, nCalls int, args []string) error {
+func RunCompiled(cxprogram *ast.CXProgram, maxOps int, args []string) error {
 	_, err := cxprogram.SetCurrentCxProgram()
 	if err != nil {
 		panic(err)
 	}
+
 	cxprogram.EnsureMinimumHeapSize()
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	var untilEnd bool
-	if nCalls == 0 {
+	if maxOps == 0 {
 		untilEnd = true
 	}
+
 	mod, err := cxprogram.SelectPackage(constants.MAIN_PKG)
-	if err == nil {
-		// initializing program resources
-		// cxprogram.Stacks = append(cxprogram.Stacks, MakeStack(1024))
+	if err != nil {
+		return err
+	}
+	// initializing program resources
+	// cxprogram.Stacks = append(cxprogram.Stacks, MakeStack(1024))
 
-		var inputs []ast.CXValue
-		var outputs []ast.CXValue
-		if cxprogram.CallStack[0].Operator == nil {
-			// then the program is just starting and we need to run the SYS_INIT_FUNC
-			if fn, err := mod.SelectFunction(constants.SYS_INIT_FUNC); err == nil {
-				// *init function
-				mainCall := MakeCall(fn)
-				cxprogram.CallStack[0] = mainCall
-				cxprogram.StackPointer = fn.Size
-
-				for !cxprogram.Terminated {
-					call := &cxprogram.CallStack[cxprogram.CallCounter]
-					err = call.Ccall(cxprogram, &inputs, &outputs)
-					if err != nil {
-						return err
-					}
-				}
-				// we reset call state
-				cxprogram.Terminated = false
-				cxprogram.CallCounter = 0
-				cxprogram.CallStack[0].Operator = nil
-			} else {
-				return err
-			}
-		}
-
-		if fn, err := mod.SelectFunction(constants.MAIN_FUNC); err == nil {
-			if len(fn.Expressions) < 1 {
-				return nil
-			}
-
-			if cxprogram.CallStack[0].Operator == nil {
-				// main function
-				mainCall := MakeCall(fn)
-				mainCall.FramePointer = cxprogram.StackPointer
-				// initializing program resources
-				cxprogram.CallStack[0] = mainCall
-
-				// cxprogram.Stacks = append(cxprogram.Stacks, MakeStack(1024))
-				cxprogram.StackPointer += fn.Size
-
-				// feeding os.Args
-				if osPkg, err := ast.PROGRAM.SelectPackage(constants.OS_PKG); err == nil {
-					argsOffset := types.Pointer(0)
-					if osGbl, err := osPkg.GetGlobal(constants.OS_ARGS); err == nil {
-						for _, arg := range args {
-							argOffset := types.AllocWrite_obj_data(cxprogram.Memory, []byte(arg))
-
-							var argOffsetBytes [types.POINTER_SIZE]byte
-							types.Write_ptr(argOffsetBytes[:], 0, argOffset)
-							argsOffset = ast.WriteToSlice(argsOffset, argOffsetBytes[:])
-						}
-						types.Write_ptr(ast.PROGRAM.Memory, ast.GetFinalOffset(0, osGbl), argsOffset)
-					}
-				}
-				cxprogram.Terminated = false
-			}
-
-			if err = RunCxAst(cxprogram, untilEnd, &nCalls, types.InvalidPointer); err != nil {
-				return err
-			}
-
-			if cxprogram.Terminated {
-				cxprogram.Terminated = false
-				cxprogram.CallCounter = 0
-				cxprogram.CallStack[0].Operator = nil
-			}
-
-			// debugging memory
-			// if len(cxprogram.Memory) < 2000 {
-			// 	fmt.Println("cxprogram.Memory", cxprogram.Memory)
-			// }
-
+	var inputs []ast.CXValue
+	var outputs []ast.CXValue
+	if cxprogram.CallStack[0].Operator == nil {
+		// then the program is just starting and we need to run the SYS_INIT_FUNC
+		fn, err := mod.SelectFunction(constants.SYS_INIT_FUNC)
+		if err != nil {
 			return err
 		}
-		return err
 
+		// *init function
+		mainCall := MakeCall(fn)
+		cxprogram.CallStack[0] = mainCall
+		cxprogram.StackPointer = fn.Size
+
+		for !cxprogram.Terminated {
+			call := &cxprogram.CallStack[cxprogram.CallCounter]
+			err = call.Ccall(cxprogram, &inputs, &outputs)
+			if err != nil {
+				return err
+			}
+		}
+		// we reset call state
+		cxprogram.Terminated = false
+		cxprogram.CallCounter = 0
+		cxprogram.CallStack[0].Operator = nil
 	}
-	return err
 
+	fn, err := mod.SelectFunction(constants.MAIN_FUNC)
+	if err != nil {
+		return err
+	}
+
+	if len(fn.Expressions) < 1 {
+		return nil
+	}
+
+	if cxprogram.CallStack[0].Operator == nil {
+		// main function
+		mainCall := MakeCall(fn)
+		mainCall.FramePointer = cxprogram.StackPointer
+		// initializing program resources
+		cxprogram.CallStack[0] = mainCall
+
+		// cxprogram.Stacks = append(cxprogram.Stacks, MakeStack(1024))
+		cxprogram.StackPointer += fn.Size
+
+		// feeding os.Args
+		if osPkg, err := ast.PROGRAM.SelectPackage(constants.OS_PKG); err == nil {
+			argsOffset := types.Pointer(0)
+			if osGbl, err := osPkg.GetGlobal(constants.OS_ARGS); err == nil {
+				for _, arg := range args {
+					argOffset := types.AllocWrite_obj_data(cxprogram.Memory, []byte(arg))
+
+					var argOffsetBytes [types.POINTER_SIZE]byte
+					types.Write_ptr(argOffsetBytes[:], 0, argOffset)
+					argsOffset = ast.WriteToSlice(argsOffset, argOffsetBytes[:])
+				}
+				types.Write_ptr(ast.PROGRAM.Memory, ast.GetFinalOffset(0, osGbl), argsOffset)
+			}
+		}
+		cxprogram.Terminated = false
+	}
+
+	if err = RunCxAst(cxprogram, untilEnd, maxOps, types.InvalidPointer); err != nil {
+		return err
+	}
+
+	if cxprogram.Terminated {
+		cxprogram.Terminated = false
+		cxprogram.CallCounter = 0
+		cxprogram.CallStack[0].Operator = nil
+	}
+
+	// debugging memory
+	// if len(cxprogram.Memory) < 2000 {
+	// 	fmt.Println("cxprogram.Memory", cxprogram.Memory)
+	// }
+
+	return nil
 }
 
 func MakeCall(op *ast.CXFunction) ast.CXCall {
@@ -201,4 +206,3 @@ func MakeCall(op *ast.CXFunction) ast.CXCall {
 		// Program:       prgrm,
 	}
 }
-
