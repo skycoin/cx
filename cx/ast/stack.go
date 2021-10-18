@@ -2,6 +2,7 @@ package ast
 
 import (
 	"fmt"
+
 	"github.com/skycoin/cx/cx/types"
 )
 
@@ -97,7 +98,7 @@ func (cxprogram *CXProgram) PrintStack() {
 
 // TODO: Deprecate
 func ExprOpName(expr *CXExpression) string {
-	if expr.Operator.IsBuiltin {
+	if expr.Operator.IsBuiltIn() {
 		return OpNames[expr.Operator.OpCode]
 	}
 	return expr.Operator.Name

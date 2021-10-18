@@ -17,7 +17,7 @@ type CXCall struct {
 //is a function on CXCal, not PROGRAM
 func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutputs *[]CXValue) error {
 	// CX is still single-threaded, so only one stack
-	if call.Line >= call.Operator.Length {
+	if call.Line >= call.Operator.LineCount {
 		/*
 		   popping the stack
 		*/
@@ -74,7 +74,7 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 				prgrm.Memory[newFP+expr.Outputs[0].Offset+c] = 0
 			}
 			call.Line++
-		} else if expr.Operator.IsBuiltin {
+		} else if expr.Operator.IsBuiltIn() {
 			//TODO: SLICES ARE NON ATOMIC
 
 			fp := call.FramePointer

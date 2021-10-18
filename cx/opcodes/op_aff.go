@@ -201,7 +201,7 @@ func QueryExpressions(fn *ast.CXFunction, expr *ast.CXExpression, exprOffsetB []
 
 		// var opNameB []byte
 		opNameOffset := types.Pointer(0)
-		if ex.Operator.IsBuiltin {
+		if ex.Operator.IsBuiltIn() {
 			// opNameB = encoder.Serialize(OpNames[ex.Operator.OpCode])
 			opNameOffset = types.AllocWrite_str_data(ast.PROGRAM.Memory, ast.OpNames[ex.Operator.OpCode])
 		} else {
@@ -293,7 +293,7 @@ func QueryFunction(fn *ast.CXFunction, expr *ast.CXExpression, fnOffsetB []byte,
 
 		// var opNameB []byte
 		opNameOffset := types.Pointer(0)
-		if f.IsBuiltin {
+		if f.IsBuiltIn() {
 			// opNameB = encoder.Serialize(OpNames[f.OpCode])
 			opNameOffset = types.AllocWrite_str_data(ast.PROGRAM.Memory, ast.OpNames[f.OpCode])
 		} else {
@@ -337,7 +337,7 @@ func QueryCaller(fn *ast.CXFunction, expr *ast.CXExpression, callerOffsetB []byt
 
 	// var opNameB []byte
 	opNameOffset := types.Pointer(0)
-	if call.Operator.IsBuiltin {
+	if call.Operator.IsBuiltIn() {
 		// opNameB = encoder.Serialize(OpNames[call.Operator.OpCode])
 		opNameOffset = types.AllocWrite_str_data(ast.PROGRAM.Memory, ast.OpNames[call.Operator.OpCode])
 	} else {
@@ -378,7 +378,7 @@ func QueryProgram(fn *ast.CXFunction, expr *ast.CXExpression, prgrmOffsetB []byt
 
 		// var opNameB []byte
 		opNameOffset := types.Pointer(0)
-		if call.Operator.IsBuiltin {
+		if call.Operator.IsBuiltIn() {
 			// opNameB = encoder.Serialize(OpNames[call.Operator.OpCode])
 			opNameOffset = types.AllocWrite_str_data(ast.PROGRAM.Memory, ast.OpNames[call.Operator.OpCode])
 		} else {

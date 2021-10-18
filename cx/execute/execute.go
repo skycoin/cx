@@ -10,10 +10,7 @@ import (
 	"github.com/skycoin/cx/cx/types"
 )
 
-// Only called in this file
-// TODO: What does this do? Is it named poorly?
-// RENAME AND REFACTOR
-func ToCall(cxprogram *ast.CXProgram) *ast.CXExpression {
+func getLastLine(cxprogram *ast.CXProgram) *ast.CXExpression {
 	for c := cxprogram.CallCounter - 1; c >= 0; c-- {
 		if cxprogram.CallStack[c].Line+1 >= len(cxprogram.CallStack[c].Operator.Expressions) {
 			// then it'll also return from this function call; continue
@@ -46,7 +43,7 @@ func RunCxAst(cxprogram *ast.CXProgram, untilEnd bool, maxOps int, untilCall typ
 			var toCallName string
 			var toCall *ast.CXExpression
 
-			if call.Line >= call.Operator.Length && cxprogram.CallCounter == 0 {
+			if call.Line >= call.Operator.LineCount && cxprogram.CallCounter == 0 {
 				cxprogram.Terminated = true
 				cxprogram.CallStack[0].Operator = nil
 				cxprogram.CallCounter = 0
@@ -54,8 +51,8 @@ func RunCxAst(cxprogram *ast.CXProgram, untilEnd bool, maxOps int, untilCall typ
 				return nil
 			}
 
-			if call.Line >= call.Operator.Length && cxprogram.CallCounter != 0 {
-				toCall = ToCall(cxprogram)
+			if call.Line >= call.Operator.LineCount && cxprogram.CallCounter != 0 {
+				toCall = getLastLine(cxprogram)
 				// toCall = cxprogram.CallStack[cxprogram.CallCounter-1].Operator.Expressions[cxprogram.CallStack[cxprogram.CallCounter-1].Line + 1]
 				inName = cxprogram.CallStack[cxprogram.CallCounter-1].Operator.Name
 			} else {
@@ -66,7 +63,7 @@ func RunCxAst(cxprogram *ast.CXProgram, untilEnd bool, maxOps int, untilCall typ
 			if toCall.Operator == nil {
 				// then it's a declaration
 				toCallName = "declaration"
-			} else if toCall.Operator.IsBuiltin {
+			} else if toCall.Operator.IsBuiltIn() {
 				toCallName = ast.OpNames[toCall.Operator.OpCode]
 			} else {
 				if toCall.Operator.Name != "" {

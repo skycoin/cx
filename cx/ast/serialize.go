@@ -2,10 +2,9 @@ package ast
 
 import (
 	"github.com/skycoin/cx/cx/constants"
-    "github.com/skycoin/cx/cx/types"
+	"github.com/skycoin/cx/cx/types"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
-
 
 func deserializeRaw(byts []byte, offset types.Pointer, size types.Pointer, item interface{}) {
 	_, err := encoder.DeserializeRaw(byts[offset:offset+size], item)
@@ -192,7 +191,7 @@ func serializeExpression(expr *CXExpression, s *SerializedCXProgram) int {
 		sExpr.OperatorOffset = sNil
 		sExpr.IsNative = serializeBoolean(false)
 		sExpr.OpCode = int64(-1)
-	} else if expr.Operator.IsBuiltin {
+	} else if expr.Operator.IsBuiltIn() {
 		sExpr.OperatorOffset = sNil
 		sExpr.IsNative = serializeBoolean(true)
 		sExpr.OpCode = int64(expr.Operator.OpCode)
@@ -399,7 +398,7 @@ func serializeFunctionIntegers(fn *CXFunction, s *SerializedCXProgram) {
 	if off, found := s.FunctionsMap[fnName]; found {
 		sFn := &s.Functions[off]
 		sFn.Size = int64(fn.Size)
-		sFn.Length = int64(fn.Length)
+		sFn.Length = int64(fn.LineCount)
 	} else {
 		panic("function reference not found")
 	}
@@ -921,7 +920,7 @@ func deserializeFunction(sFn *serializedFunction, fn *CXFunction, s *SerializedC
 	fn.ListOfPointers = deserializeArguments(sFn.ListOfPointersOffset, sFn.ListOfPointersSize, s, prgrm)
 	fn.Expressions = deserializeExpressions(sFn.ExpressionsOffset, sFn.ExpressionsSize, s, prgrm)
 	fn.Size = types.Cast_i64_to_ptr(sFn.Size)
-	fn.Length = int(sFn.Length)
+	fn.LineCount = int(sFn.Length)
 
 	if sFn.CurrentExpressionOffset > 0 {
 		fn.CurrentExpression = fn.Expressions[sFn.CurrentExpressionOffset]
@@ -1016,13 +1015,13 @@ func CopyProgramState(sPrgrm1, sPrgrm2 *[]byte) {
 	deserializeRaw((*sPrgrm1),
 		types.Cast_i64_to_ptr(index1.ProgramOffset),
 		types.Cast_i64_to_ptr(index1.CallsOffset-index1.ProgramOffset),
-		 &prgrm1Info)
+		&prgrm1Info)
 
 	var prgrm2Info serializedProgram
 	deserializeRaw((*sPrgrm2),
 		types.Cast_i64_to_ptr(index2.ProgramOffset),
 		types.Cast_i64_to_ptr(index2.CallsOffset-index2.ProgramOffset),
-		 &prgrm2Info)
+		&prgrm2Info)
 
 	// the stack segment should be 0 for prgrm1, but just in case
 	var prgrmState []byte

@@ -10,10 +10,9 @@ import (
 //
 func MakeFunction(name string, fileName string, fileLine int) *CXFunction {
 	return &CXFunction{
-		Name:      name,
-		FileName:  fileName,
-		FileLine:  fileLine,
-		IsBuiltin: false,
+		Name:     name,
+		FileName: fileName,
+		FileLine: fileLine,
 	}
 }
 
@@ -144,7 +143,7 @@ func (fn *CXFunction) AddExpression(expr *CXExpression) *CXFunction {
 	expr.Function = fn
 	fn.Expressions = append(fn.Expressions, expr)
 	fn.CurrentExpression = expr
-	fn.Length++
+	fn.LineCount++
 	return fn
 }
 
@@ -161,7 +160,7 @@ func (fn *CXFunction) AddExpressionByLineNumber(expr *CXExpression, line int) *C
 	}
 
 	fn.CurrentExpression = expr
-	fn.Length++
+	fn.LineCount++
 	return fn
 }
 

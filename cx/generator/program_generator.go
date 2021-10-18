@@ -65,7 +65,7 @@ func GenerateRandomExpressions(inputFn *cxast.CXFunction, inputPkg *cxast.CXPack
 		}
 	}
 	inputFn.Size = calcFnSize(inputFn)
-	inputFn.Length = numExprs
+	inputFn.LineCount = numExprs
 }
 
 func IsJumpOperator(opCode int) bool {

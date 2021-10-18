@@ -223,7 +223,7 @@ func Assignment(to []*ast.CXExpression, assignOp string, from []*ast.CXExpressio
 
 		return append(to[:len(to)-1], from...)
 	} else {
-		if from[idx].Operator.IsBuiltin {
+		if from[idx].Operator.IsBuiltIn() {
 			// only assigning as if the operator had only one output defined
 
 			if from[idx].Operator.OpCode != constants.OP_IDENTITY {
