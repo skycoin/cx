@@ -60,8 +60,8 @@ func CallAffPredicate(fn *ast.CXFunction, predValue []byte) byte {
 	newCall := &ast.PROGRAM.CallStack[ast.PROGRAM.CallCounter]
 	newCall.Operator = fn
 	newCall.Line = 0
-	newCall.FramePointer = ast.PROGRAM.StackPointer
-	ast.PROGRAM.StackPointer += newCall.Operator.Size
+	newCall.FramePointer = ast.PROGRAM.Stack.Pointer
+	ast.PROGRAM.Stack.Pointer += newCall.Operator.Size
 
 	newFP := newCall.FramePointer
 
@@ -203,7 +203,7 @@ func QueryExpressions(fn *ast.CXFunction, expr *ast.CXExpression, exprOffsetB []
 		opNameOffset := types.Pointer(0)
 		if ex.Operator.IsBuiltIn() {
 			// opNameB = encoder.Serialize(OpNames[ex.Operator.OpCode])
-			opNameOffset = types.AllocWrite_str_data(ast.PROGRAM.Memory, ast.OpNames[ex.Operator.OpCode])
+			opNameOffset = types.AllocWrite_str_data(ast.PROGRAM.Memory, ast.OpNames[ex.Operator.AtomicOPCode])
 		} else {
 			// opNameB = encoder.Serialize(ex.Operator.Name)
 			opNameOffset = types.AllocWrite_str_data(ast.PROGRAM.Memory, ex.Operator.Name)
@@ -295,7 +295,7 @@ func QueryFunction(fn *ast.CXFunction, expr *ast.CXExpression, fnOffsetB []byte,
 		opNameOffset := types.Pointer(0)
 		if f.IsBuiltIn() {
 			// opNameB = encoder.Serialize(OpNames[f.OpCode])
-			opNameOffset = types.AllocWrite_str_data(ast.PROGRAM.Memory, ast.OpNames[f.OpCode])
+			opNameOffset = types.AllocWrite_str_data(ast.PROGRAM.Memory, ast.OpNames[f.AtomicOPCode])
 		} else {
 			// opNameB = encoder.Serialize(f.Name)
 			opNameOffset = types.AllocWrite_str_data(ast.PROGRAM.Memory, f.Name)
@@ -339,7 +339,7 @@ func QueryCaller(fn *ast.CXFunction, expr *ast.CXExpression, callerOffsetB []byt
 	opNameOffset := types.Pointer(0)
 	if call.Operator.IsBuiltIn() {
 		// opNameB = encoder.Serialize(OpNames[call.Operator.OpCode])
-		opNameOffset = types.AllocWrite_str_data(ast.PROGRAM.Memory, ast.OpNames[call.Operator.OpCode])
+		opNameOffset = types.AllocWrite_str_data(ast.PROGRAM.Memory, ast.OpNames[call.Operator.AtomicOPCode])
 	} else {
 		// opNameB = encoder.Serialize(call.Operator.Package.Name + "." + call.Operator.Name)
 		opNameOffset = types.AllocWrite_str_data(ast.PROGRAM.Memory, call.Operator.Package.Name+"."+call.Operator.Name)
@@ -369,7 +369,7 @@ func QueryProgram(fn *ast.CXFunction, expr *ast.CXExpression, prgrmOffsetB []byt
 	// Callcounter
 	types.Write_ptr(ast.PROGRAM.Memory, prgrmOffset+types.OBJECT_HEADER_SIZE, ast.PROGRAM.CallCounter)
 	// HeapUsed
-	types.Write_ptr(ast.PROGRAM.Memory, prgrmOffset+types.OBJECT_HEADER_SIZE+types.I32_SIZE, ast.PROGRAM.HeapPointer)
+	types.Write_ptr(ast.PROGRAM.Memory, prgrmOffset+types.OBJECT_HEADER_SIZE+types.I32_SIZE, ast.PROGRAM.Heap.Pointer)
 
 	// Caller
 	if ast.PROGRAM.CallCounter != 0 {
@@ -380,7 +380,7 @@ func QueryProgram(fn *ast.CXFunction, expr *ast.CXExpression, prgrmOffsetB []byt
 		opNameOffset := types.Pointer(0)
 		if call.Operator.IsBuiltIn() {
 			// opNameB = encoder.Serialize(OpNames[call.Operator.OpCode])
-			opNameOffset = types.AllocWrite_str_data(ast.PROGRAM.Memory, ast.OpNames[call.Operator.OpCode])
+			opNameOffset = types.AllocWrite_str_data(ast.PROGRAM.Memory, ast.OpNames[call.Operator.AtomicOPCode])
 		} else {
 			// opNameB = encoder.Serialize(call.Operator.Package.Name + "." + call.Operator.Name)
 			opNameOffset = types.AllocWrite_str_data(ast.PROGRAM.Memory, call.Operator.Package.Name+"."+call.Operator.Name)

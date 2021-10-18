@@ -34,7 +34,7 @@ func RunCxAst(cxprogram *ast.CXProgram, untilEnd bool, maxOps int, untilCall typ
 		call := &cxprogram.CallStack[cxprogram.CallCounter]
 
 		// checking if enough memory in stack
-		if cxprogram.StackPointer > constants.STACK_SIZE {
+		if cxprogram.Stack.Pointer > constants.STACK_SIZE {
 			panic(constants.STACK_OVERFLOW_ERROR)
 		}
 
@@ -64,7 +64,7 @@ func RunCxAst(cxprogram *ast.CXProgram, untilEnd bool, maxOps int, untilCall typ
 				// then it's a declaration
 				toCallName = "declaration"
 			} else if toCall.Operator.IsBuiltIn() {
-				toCallName = ast.OpNames[toCall.Operator.OpCode]
+				toCallName = ast.OpNames[toCall.Operator.AtomicOPCode]
 			} else {
 				if toCall.Operator.Name != "" {
 					toCallName = toCall.Operator.Package.Name + "." + toCall.Operator.Name
@@ -125,7 +125,7 @@ func RunCompiled(cxprogram *ast.CXProgram, maxOps int, args []string) error {
 		// *init function
 		mainCall := MakeCall(fn)
 		cxprogram.CallStack[0] = mainCall
-		cxprogram.StackPointer = fn.Size
+		cxprogram.Stack.Pointer = fn.Size
 
 		for !cxprogram.Terminated {
 			call := &cxprogram.CallStack[cxprogram.CallCounter]
@@ -152,12 +152,12 @@ func RunCompiled(cxprogram *ast.CXProgram, maxOps int, args []string) error {
 	if cxprogram.CallStack[0].Operator == nil {
 		// main function
 		mainCall := MakeCall(fn)
-		mainCall.FramePointer = cxprogram.StackPointer
+		mainCall.FramePointer = cxprogram.Stack.Pointer
 		// initializing program resources
 		cxprogram.CallStack[0] = mainCall
 
 		// cxprogram.Stacks = append(cxprogram.Stacks, MakeStack(1024))
-		cxprogram.StackPointer += fn.Size
+		cxprogram.Stack.Pointer += fn.Size
 
 		// feeding os.Args
 		if osPkg, err := ast.PROGRAM.SelectPackage(constants.OS_PKG); err == nil {

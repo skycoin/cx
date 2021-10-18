@@ -2,11 +2,12 @@ package ast
 
 import (
 	"fmt"
-	"github.com/skycoin/cx/cx/constants"
-	"github.com/skycoin/cx/cx/globals"
 	"os"
 	"runtime/debug"
 	"strconv"
+
+	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/globals"
 )
 
 // ErrorHeader ...
@@ -66,7 +67,7 @@ func RuntimeError() {
 			call := PROGRAM.CallStack[PROGRAM.CallCounter]
 			if PROGRAM.CallCounter > 0 {
 				PROGRAM.CallCounter--
-				PROGRAM.StackPointer = call.FramePointer
+				PROGRAM.Stack.Pointer = call.FramePointer
 				RuntimeErrorInfo(r, true, constants.CX_RUNTIME_STACK_OVERFLOW_ERROR)
 			} else {
 				// error at entry point
@@ -79,4 +80,3 @@ func RuntimeError() {
 		}
 	}
 }
-

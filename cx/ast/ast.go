@@ -41,14 +41,14 @@ func (cxet CXEXPR_TYPE) String() string {
 // variables and data structures.
 //
 
-//TODO: URGENT, no "DataSegmentStart", no "DataSegmentSize"
-//TODO: StackSegmentStruct?
-//TODO: DataSegmentStruct?
-//TODO: HEAPSegmentStruct?
 type CXProgram struct {
 	// Metadata
 	//Remove Path //moved to cx/globals
 	//Path string // Path to the CX project in the filesystem
+
+	Stack StackSegmentStruct
+	Data  DataSegmentStruct
+	Heap  HeapSegmentStruct
 
 	// Contents
 	Packages []*CXPackage // Packages in a CX program; use map, so dont have to iterate for lookup
@@ -58,17 +58,6 @@ type CXProgram struct {
 	ProgramOutput []*CXArgument // outputs to the OS
 	Memory        []byte        // Used when running the program
 
-	//TODO: Add StackStartsAt
-	StackSize    types.Pointer // This field stores the size of a CX program's stack
-	StackPointer types.Pointer // At what byte the current stack frame is
-
-	DataSegmentSize     types.Pointer // This field stores the size of a CX program's data segment size
-	DataSegmentStartsAt types.Pointer // Offset at which the data segment starts in a CX program's memory
-
-	HeapSize     types.Pointer // This field stores the size of a CX program's heap
-	HeapStartsAt types.Pointer // Offset at which the heap starts in a CX program's memory (normally the stack size)
-	HeapPointer  types.Pointer // At what offset a CX program can insert a new object to the heap
-
 	CallStack   []CXCall      // Collection of function calls
 	CallCounter types.Pointer // What function call is the currently being executed in the CallStack
 	Terminated  bool          // Utility field for the runtime. Indicates if a CX program has already finished or not.
@@ -77,6 +66,23 @@ type CXProgram struct {
 	// Used by the REPL and cxgo
 	CurrentPackage *CXPackage // Represents the currently active package in the REPL or when parsing a CX file.
 	ProgramError   error
+}
+
+type StackSegmentStruct struct {
+	//TODO: Add StackStartsAt
+	Size    types.Pointer // This field stores the size of a CX program's stack
+	Pointer types.Pointer // At what byte the current stack frame is
+}
+
+type DataSegmentStruct struct {
+	Size     types.Pointer // This field stores the size of a CX program's data segment size
+	StartsAt types.Pointer // Offset at which the data segment starts in a CX program's memory
+}
+
+type HeapSegmentStruct struct {
+	Size     types.Pointer // This field stores the size of a CX program's heap
+	StartsAt types.Pointer // Offset at which the heap starts in a CX program's memory (normally the stack size)
+	Pointer  types.Pointer // At what offset a CX program can insert a new object to the heap
 }
 
 // CXPackage is used to represent a CX package.
@@ -109,12 +115,11 @@ type CXStruct struct {
 }
 
 // CXFunction is used to represent a CX function.
-//TODO: Rename OpCode to "AtomicOPCode" and is Atomic if set
 type CXFunction struct {
 	// Metadata
-	Name    string     // Name of the function
-	Package *CXPackage // The package it's a member of
-	OpCode  int        // opcode if IsBuiltIn = true
+	Name         string     // Name of the function
+	Package      *CXPackage // The package it's a member of
+	AtomicOPCode int
 
 	// Contents
 	Inputs      []*CXArgument   // Input parameters to the function
@@ -141,7 +146,11 @@ type CXFunction struct {
 // IsBuiltIn determines if opcode is not 0
 // True if the function is native to CX, e.g. int32.add()
 func (cxf CXFunction) IsBuiltIn() bool {
-	return cxf.OpCode != 0
+	return cxf.AtomicOPCode != 0
+}
+
+func (cxf CXFunction) IsAtomic() bool {
+	return cxf.AtomicOPCode != 0
 }
 
 // CXExpression is used represent a CX expression.
@@ -186,17 +195,17 @@ func (cxe CXExpression) IsArrayLiteral() bool {
 
 // IsBreak checks if expression type is break
 func (cxe CXExpression) IsBreak() bool {
-	return cxe.Operator != nil && cxe.Operator.OpCode == constants.OP_BREAK
+	return cxe.Operator != nil && cxe.Operator.AtomicOPCode == constants.OP_BREAK
 }
 
 // IsContinue checks if expression type is continue
 func (cxe CXExpression) IsContinue() bool {
-	return cxe.Operator != nil && cxe.Operator.OpCode == constants.OP_CONTINUE
+	return cxe.Operator != nil && cxe.Operator.AtomicOPCode == constants.OP_CONTINUE
 }
 
 // IsUndType checks if expression type is und type
 func (cxe CXExpression) IsUndType() bool {
-	return cxe.Operator != nil && IsOperator(cxe.Operator.OpCode)
+	return cxe.Operator != nil && IsOperator(cxe.Operator.AtomicOPCode)
 }
 
 // IsScopeNew checks if expression type is scope new
@@ -397,13 +406,19 @@ grep -rn "PassBy" .
 func MakeProgram() *CXProgram {
 	minHeapSize := minHeapSize()
 	newPrgrm := &CXProgram{
-		Packages:            make([]*CXPackage, 0),
-		CallStack:           make([]CXCall, constants.CALLSTACK_SIZE),
-		Memory:              make([]byte, constants.STACK_SIZE+minHeapSize),
-		StackSize:           constants.STACK_SIZE,
-		DataSegmentStartsAt: constants.STACK_SIZE,
-		HeapSize:            minHeapSize,
-		HeapPointer:         constants.NULL_HEAP_ADDRESS_OFFSET, // We can start adding objects to the heap after the NULL (nil) bytes.
+		Packages:  make([]*CXPackage, 0),
+		CallStack: make([]CXCall, constants.CALLSTACK_SIZE),
+		Memory:    make([]byte, constants.STACK_SIZE+minHeapSize),
+		Stack: StackSegmentStruct{
+			Size: constants.STACK_SIZE,
+		},
+		Data: DataSegmentStruct{
+			StartsAt: constants.STACK_SIZE,
+		},
+		Heap: HeapSegmentStruct{
+			Size:    minHeapSize,
+			Pointer: constants.NULL_HEAP_ADDRESS_OFFSET, // We can start adding objects to the heap after the NULL (nil) bytes.
+		},
 	}
 	return newPrgrm
 }

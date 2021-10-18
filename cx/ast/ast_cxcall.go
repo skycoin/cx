@@ -48,7 +48,7 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 			}
 
 			// return the stack pointer to its previous state
-			prgrm.StackPointer = call.FramePointer
+			prgrm.Stack.Pointer = call.FramePointer
 			// we'll now execute the next command
 			prgrm.CallStack[prgrm.CallCounter].Line++
 			// calling the actual command
@@ -78,10 +78,10 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 			//TODO: SLICES ARE NON ATOMIC
 
 			fp := call.FramePointer
-			if IsOperator(expr.Operator.OpCode) {
+			if IsOperator(expr.Operator.AtomicOPCode) {
 				// TODO: resolve this at compile time
 				atomicType := GetType(expr.Inputs[0])
-				expr.Operator = GetTypedOperator(atomicType, expr.Operator.OpCode)
+				expr.Operator = GetTypedOperator(atomicType, expr.Operator.AtomicOPCode)
 			}
 			inputs := expr.Inputs
 			inputCount := len(inputs)
@@ -122,7 +122,7 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 				argIndex++
 			}
 
-			OpcodeHandlers[expr.Operator.OpCode](inputValues, outputValues)
+			OpcodeHandlers[expr.Operator.AtomicOPCode](inputValues, outputValues)
 
 			call.Line++
 		} else { //NON-ATOMIC OPERATOR
@@ -142,13 +142,13 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 			// setting the new call
 			newCall.Operator = expr.Operator
 			newCall.Line = 0
-			newCall.FramePointer = prgrm.StackPointer
+			newCall.FramePointer = prgrm.Stack.Pointer
 			// the stack pointer is moved to create room for the next call
 			// prgrm.MemoryPointer += fn.Size
-			prgrm.StackPointer += newCall.Operator.Size
+			prgrm.Stack.Pointer += newCall.Operator.Size
 
 			// checking if enough memory in stack
-			if prgrm.StackPointer > constants.STACK_SIZE {
+			if prgrm.Stack.Pointer > constants.STACK_SIZE {
 				panic(constants.STACK_OVERFLOW_ERROR)
 			}
 

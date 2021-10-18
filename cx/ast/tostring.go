@@ -123,7 +123,7 @@ func buildStrFunctions(pkg *CXPackage, ast1 *string) {
 			if expr.Operator != nil {
 				if expr.Operator.IsBuiltIn() {
 
-					opName1 = OpNames[expr.Operator.OpCode]
+					opName1 = OpNames[expr.Operator.AtomicOPCode]
 				} else {
 					opName1 = expr.Operator.Name
 				}
@@ -546,7 +546,7 @@ func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCod
 func IsPointer(sym *CXArgument) bool {
 	// There's no need to add global variables in `fn.ListOfPointers` as we can access them easily through `CXPackage.Globals`
 	// TODO: We could still pre-compute a list of candidates for globals.
-	if sym.Offset >= PROGRAM.StackSize && sym.ArgDetails.Name != "" {
+	if sym.Offset >= PROGRAM.Stack.Size && sym.ArgDetails.Name != "" {
 		return false
 	}
 	// NOTE: Strings are considered as `IsPointer`s by the runtime.
@@ -600,7 +600,7 @@ func getFormattedDerefs(arg *CXArgument, includePkg bool) string {
 		// Checking if the value is in data segment.
 		// If this is the case, we can safely display it.
 		idxValue := ""
-		if idx.Offset > PROGRAM.StackSize {
+		if idx.Offset > PROGRAM.Stack.Size {
 			// Then it's a literal.
 			idxI32 := types.Read_ptr(PROGRAM.Memory, idx.Offset)
 			idxValue = fmt.Sprintf("%d", idxI32)

@@ -194,7 +194,7 @@ func serializeExpression(expr *CXExpression, s *SerializedCXProgram) int {
 	} else if expr.Operator.IsBuiltIn() {
 		sExpr.OperatorOffset = sNil
 		sExpr.IsNative = serializeBoolean(true)
-		sExpr.OpCode = int64(expr.Operator.OpCode)
+		sExpr.OpCode = int64(expr.Operator.AtomicOPCode)
 	} else {
 		sExpr.IsNative = serializeBoolean(false)
 		sExpr.OpCode = sNil
@@ -422,7 +422,7 @@ func initSerialization(prgrm *CXProgram, s *SerializedCXProgram, includeDataMemo
 	if useCompression {
 		s.Memory = prgrm.Memory
 	} else if includeDataMemory && len(prgrm.Memory) != 0 {
-		s.DataSegmentMemory = prgrm.Memory[prgrm.DataSegmentStartsAt : prgrm.DataSegmentStartsAt+prgrm.DataSegmentSize]
+		s.DataSegmentMemory = prgrm.Memory[prgrm.Data.StartsAt : prgrm.Data.StartsAt+prgrm.Data.Size]
 	}
 
 	var numStrcts int
@@ -462,13 +462,13 @@ func serializeProgram(prgrm *CXProgram, s *SerializedCXProgram) {
 	sPrgrm.MemoryOffset = int64(0)
 	sPrgrm.MemorySize = int64(len(PROGRAM.Memory))
 
-	sPrgrm.HeapPointer = int64(prgrm.HeapPointer)
-	sPrgrm.StackPointer = int64(prgrm.StackPointer)
-	sPrgrm.StackSize = int64(prgrm.StackSize)
-	sPrgrm.DataSegmentSize = int64(prgrm.DataSegmentSize)
-	sPrgrm.DataSegmentStartsAt = int64(prgrm.DataSegmentStartsAt)
-	sPrgrm.HeapSize = int64(prgrm.HeapSize)
-	sPrgrm.HeapStartsAt = int64(prgrm.HeapStartsAt)
+	sPrgrm.HeapPointer = int64(prgrm.Heap.Pointer)
+	sPrgrm.StackPointer = int64(prgrm.Stack.Pointer)
+	sPrgrm.StackSize = int64(prgrm.Stack.Size)
+	sPrgrm.DataSegmentSize = int64(prgrm.Data.Size)
+	sPrgrm.DataSegmentStartsAt = int64(prgrm.Data.StartsAt)
+	sPrgrm.HeapSize = int64(prgrm.Heap.Size)
+	sPrgrm.HeapStartsAt = int64(prgrm.Heap.StartsAt)
 
 	sPrgrm.Terminated = serializeBoolean(prgrm.Terminated)
 	sPrgrm.VersionOffset, sPrgrm.VersionSize = serializeString(prgrm.Version, s)
@@ -964,12 +964,12 @@ func initDeserialization(prgrm *CXProgram, s *SerializedCXProgram) {
 	prgrm.Memory = s.Memory
 	prgrm.Packages = make([]*CXPackage, len(s.Packages))
 	prgrm.CallStack = make([]CXCall, constants.CALLSTACK_SIZE)
-	prgrm.HeapStartsAt = types.Cast_i64_to_ptr(s.Program.HeapStartsAt)
-	prgrm.HeapPointer = types.Cast_i64_to_ptr(s.Program.HeapPointer)
-	prgrm.StackSize = types.Cast_i64_to_ptr(s.Program.StackSize)
-	prgrm.DataSegmentSize = types.Cast_i64_to_ptr(s.Program.DataSegmentSize)
-	prgrm.DataSegmentStartsAt = types.Cast_i64_to_ptr(s.Program.DataSegmentStartsAt)
-	prgrm.HeapSize = types.Cast_i64_to_ptr(s.Program.HeapSize)
+	prgrm.Heap.StartsAt = types.Cast_i64_to_ptr(s.Program.HeapStartsAt)
+	prgrm.Heap.Pointer = types.Cast_i64_to_ptr(s.Program.HeapPointer)
+	prgrm.Stack.Size = types.Cast_i64_to_ptr(s.Program.StackSize)
+	prgrm.Data.Size = types.Cast_i64_to_ptr(s.Program.DataSegmentSize)
+	prgrm.Data.StartsAt = types.Cast_i64_to_ptr(s.Program.DataSegmentStartsAt)
+	prgrm.Heap.Size = types.Cast_i64_to_ptr(s.Program.HeapSize)
 	prgrm.Version = deserializeString(s.Program.VersionOffset, s.Program.VersionSize, s)
 
 	// This means reinstantiate memory and add DataSegmentMemory
@@ -977,7 +977,7 @@ func initDeserialization(prgrm *CXProgram, s *SerializedCXProgram) {
 		minHeapSize := minHeapSize()
 		prgrm.Memory = make([]byte, constants.STACK_SIZE+minHeapSize)
 		y := 0
-		for i := prgrm.DataSegmentStartsAt; i < prgrm.DataSegmentStartsAt+prgrm.DataSegmentSize; i++ {
+		for i := prgrm.Data.StartsAt; i < prgrm.Data.StartsAt+prgrm.Data.Size; i++ {
 			prgrm.Memory[i] = s.DataSegmentMemory[y]
 			y++
 		}

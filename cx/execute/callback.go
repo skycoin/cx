@@ -22,8 +22,8 @@ func Callback(cxprogram *ast.CXProgram, fn *ast.CXFunction, inputs [][]byte) (ou
 	newCall := &cxprogram.CallStack[cxprogram.CallCounter]
 	newCall.Operator = fn
 	newCall.Line = 0
-	newCall.FramePointer = cxprogram.StackPointer
-	cxprogram.StackPointer += newCall.Operator.Size
+	newCall.FramePointer = cxprogram.Stack.Pointer
+	cxprogram.Stack.Pointer += newCall.Operator.Size
 	newFP := newCall.FramePointer
 
 	// wiping next mem frame (removing garbage)

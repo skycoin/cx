@@ -5,8 +5,6 @@ import (
 	"github.com/skycoin/cx/cx/types"
 )
 
-
-
 // ResizeMemory ...
 func ResizeMemory(prgrm *CXProgram, newMemSize types.Pointer, isExpand bool) {
 	// We can't expand memory to a value greater than `memLimit`.
@@ -14,7 +12,7 @@ func ResizeMemory(prgrm *CXProgram, newMemSize types.Pointer, isExpand bool) {
 		newMemSize = constants.MAX_HEAP_SIZE
 	}
 
-	if newMemSize == prgrm.HeapSize {
+	if newMemSize == prgrm.Heap.Size {
 		// Then we're at the limit; we can't expand anymore.
 		// We can only hope that the free memory is enough for the CX program to continue running.
 		return
@@ -22,28 +20,28 @@ func ResizeMemory(prgrm *CXProgram, newMemSize types.Pointer, isExpand bool) {
 
 	if isExpand {
 		// Adding bytes to reach a heap equal to `newMemSize`.
-		prgrm.Memory = append(prgrm.Memory, make([]byte, newMemSize-prgrm.HeapSize)...)
-		prgrm.HeapSize = newMemSize
+		prgrm.Memory = append(prgrm.Memory, make([]byte, newMemSize-prgrm.Heap.Size)...)
+		prgrm.Heap.Size = newMemSize
 	} else {
 		// Removing bytes to reach a heap equal to `newMemSize`.
-		prgrm.Memory = append([]byte(nil), prgrm.Memory[:prgrm.HeapStartsAt+newMemSize]...)
-		prgrm.HeapSize = newMemSize
+		prgrm.Memory = append([]byte(nil), prgrm.Memory[:prgrm.Heap.StartsAt+newMemSize]...)
+		prgrm.Heap.Size = newMemSize
 	}
 }
 
 // AllocateSeq allocates memory in the heap
 func AllocateSeq(size types.Pointer) (offset types.Pointer) {
 	// Current object trying to be allocated would use this address.
-	addr := PROGRAM.HeapPointer
+	addr := PROGRAM.Heap.Pointer
 	// Next object to be allocated will use this address.
 	newFree := addr + size
 
 	// Checking if we can allocate the entirety of the object in the current heap.
-	if newFree > PROGRAM.HeapSize {
+	if newFree > PROGRAM.Heap.Size {
 		// It does not fit, so calling garbage collector.
 		MarkAndCompact(PROGRAM)
 		// Heap pointer got moved by GC and recalculate these variables based on the new pointer.
-		addr = PROGRAM.HeapPointer
+		addr = PROGRAM.Heap.Pointer
 		newFree = addr + size
 
 		// If the new heap pointer exceeds `MAX_HEAP_SIZE`, there's nothing left to do.
@@ -58,7 +56,7 @@ func AllocateSeq(size types.Pointer) (offset types.Pointer) {
 		// too frequently.
 
 		// Calculating free heap memory percentage.
-		usedPerc := float32(newFree) / float32(PROGRAM.HeapSize)
+		usedPerc := float32(newFree) / float32(PROGRAM.Heap.Size)
 		freeMemPerc := 1.0 - usedPerc
 
 		// Then we have less than MIN_HEAP_FREE_RATIO memory left. Expand!
@@ -81,12 +79,10 @@ func AllocateSeq(size types.Pointer) (offset types.Pointer) {
 		}
 	}
 
-	PROGRAM.HeapPointer = newFree
+	PROGRAM.Heap.Pointer = newFree
 
 	// Returning absolute memory address (not relative to where heap starts at).
 	// Above this point we were performing all operations taking into
 	// consideration only heap offsets.
-	return addr + PROGRAM.HeapStartsAt
+	return addr + PROGRAM.Heap.StartsAt
 }
-
-

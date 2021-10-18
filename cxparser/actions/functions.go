@@ -85,7 +85,7 @@ func FunctionAddParameters(fn *ast.CXFunction, inputs, outputs []*ast.CXArgument
 }
 
 func isParseOp(expr *ast.CXExpression) bool {
-	if expr.Operator != nil && expr.Operator.OpCode > constants.START_PARSE_OPS && expr.Operator.OpCode < constants.END_PARSE_OPS {
+	if expr.Operator != nil && expr.Operator.AtomicOPCode > constants.START_PARSE_OPS && expr.Operator.AtomicOPCode < constants.END_PARSE_OPS {
 		return true
 	}
 	return false
@@ -95,8 +95,8 @@ func isParseOp(expr *ast.CXExpression) bool {
 // accept `cxcore.TYPE_UNDEFINED` arguments) is receiving arguments of valid types. For example,
 // the expression `sa + sb` is not valid if they are struct instances.
 func CheckUndValidTypes(expr *ast.CXExpression) {
-	if expr.Operator != nil && ast.IsOperator(expr.Operator.OpCode) && !IsAllArgsBasicTypes(expr) {
-		println(ast.CompilationError(CurrentFile, LineNo), fmt.Sprintf("invalid argument types for '%s' operator", ast.OpNames[expr.Operator.OpCode]))
+	if expr.Operator != nil && ast.IsOperator(expr.Operator.AtomicOPCode) && !IsAllArgsBasicTypes(expr) {
+		println(ast.CompilationError(CurrentFile, LineNo), fmt.Sprintf("invalid argument types for '%s' operator", ast.OpNames[expr.Operator.AtomicOPCode]))
 	}
 }
 
@@ -291,7 +291,7 @@ func checkSameNativeType(expr *ast.CXExpression) error {
 }
 
 func ProcessOperatorExpression(expr *ast.CXExpression) {
-	if expr.Operator != nil && ast.IsOperator(expr.Operator.OpCode) {
+	if expr.Operator != nil && ast.IsOperator(expr.Operator.AtomicOPCode) {
 		if err := checkSameNativeType(expr); err != nil {
 			println(ast.CompilationError(CurrentFile, LineNo), err.Error())
 		}
@@ -299,7 +299,7 @@ func ProcessOperatorExpression(expr *ast.CXExpression) {
 	if expr.IsUndType() {
 		for _, out := range expr.Outputs {
 			size := types.Pointer(1)
-			if !ast.IsComparisonOperator(expr.Operator.OpCode) {
+			if !ast.IsComparisonOperator(expr.Operator.AtomicOPCode) {
 				size = ast.GetSize(ast.GetAssignmentElement(expr.Inputs[0]))
 			}
 			out.Size = size
@@ -328,12 +328,12 @@ func ProcessPointerStructs(expr *ast.CXExpression) {
 // `checkSameNativeType` because these test functions' third input parameter is always a `str`.
 func processTestExpression(expr *ast.CXExpression) {
 	if expr.Operator != nil {
-		opCode := expr.Operator.OpCode
+		opCode := expr.Operator.AtomicOPCode
 		if opCode == constants.OP_ASSERT || opCode == constants.OP_TEST || opCode == constants.OP_PANIC {
 			inp1Type := ast.GetFormattedType(expr.Inputs[0])
 			inp2Type := ast.GetFormattedType(expr.Inputs[1])
 			if inp1Type != inp2Type {
-				println(ast.CompilationError(CurrentFile, LineNo), fmt.Sprintf("first and second input arguments' types are not equal in '%s' call ('%s' != '%s')", ast.OpNames[expr.Operator.OpCode], inp1Type, inp2Type))
+				println(ast.CompilationError(CurrentFile, LineNo), fmt.Sprintf("first and second input arguments' types are not equal in '%s' call ('%s' != '%s')", ast.OpNames[expr.Operator.AtomicOPCode], inp1Type, inp2Type))
 			}
 		}
 	}
@@ -424,7 +424,7 @@ func isPointerAdded(fn *ast.CXFunction, sym *ast.CXArgument) (found bool) {
 // `fn.ListOfPointers` so the CX runtime does not have to determine this.
 func AddPointer(fn *ast.CXFunction, sym *ast.CXArgument) {
 	// Ignore if it's a global variable.
-	if sym.Offset > AST.StackSize {
+	if sym.Offset > AST.Stack.Size {
 		return
 	}
 	// We first need to check if we're going to add `sym` with fields.
@@ -510,7 +510,7 @@ func checkMatchParamTypes(expr *ast.CXExpression, expected, received []*ast.CXAr
 		if expectedType != receivedType && inp.Type != types.UNDEFINED {
 			var opName string
 			if expr.Operator.IsBuiltIn() {
-				opName = ast.OpNames[expr.Operator.OpCode]
+				opName = ast.OpNames[expr.Operator.AtomicOPCode]
 			} else {
 				opName = expr.Operator.Name
 			}
@@ -527,7 +527,7 @@ func checkMatchParamTypes(expr *ast.CXExpression, expected, received []*ast.CXAr
 		// FIXME: There are some expressions added by the cxgo where temporary variables are used.
 		// These temporary variables' types are not properly being set. That's why we use !cxcore.IsTempVar to
 		// exclude these cases for now.
-		if expr.Operator.OpCode == constants.OP_IDENTITY && !IsTempVar(expr.Outputs[0].ArgDetails.Name) {
+		if expr.Operator.AtomicOPCode == constants.OP_IDENTITY && !IsTempVar(expr.Outputs[0].ArgDetails.Name) {
 			inpType := ast.GetFormattedType(expr.Inputs[0])
 			outType := ast.GetFormattedType(expr.Outputs[0])
 
@@ -584,7 +584,7 @@ func CheckTypes(expr *ast.CXExpression) {
 		}
 	}
 
-	if expr.Operator != nil && expr.Operator.IsBuiltIn() && expr.Operator.OpCode == constants.OP_IDENTITY {
+	if expr.Operator != nil && expr.Operator.IsBuiltIn() && expr.Operator.AtomicOPCode == constants.OP_IDENTITY {
 		for i := range expr.Inputs {
 			var expectedType string
 			var receivedType string
@@ -907,7 +907,7 @@ func GiveOffset(symbols *[]map[string]*ast.CXArgument, sym *ast.CXArgument, offs
 }
 
 func ProcessTempVariable(expr *ast.CXExpression) {
-	if expr.Operator != nil && (expr.Operator == ast.Natives[constants.OP_IDENTITY] || ast.IsArithmeticOperator(expr.Operator.OpCode)) && len(expr.Outputs) > 0 && len(expr.Inputs) > 0 {
+	if expr.Operator != nil && (expr.Operator == ast.Natives[constants.OP_IDENTITY] || ast.IsArithmeticOperator(expr.Operator.AtomicOPCode)) && len(expr.Outputs) > 0 && len(expr.Inputs) > 0 {
 		name := expr.Outputs[0].ArgDetails.Name
 		arg := expr.Outputs[0]
 		if IsTempVar(name) {

@@ -226,9 +226,9 @@ func Assignment(to []*ast.CXExpression, assignOp string, from []*ast.CXExpressio
 		if from[idx].Operator.IsBuiltIn() {
 			// only assigning as if the operator had only one output defined
 
-			if from[idx].Operator.OpCode != constants.OP_IDENTITY {
+			if from[idx].Operator.AtomicOPCode != constants.OP_IDENTITY {
 				// it's a short variable declaration
-				to[0].Outputs[0].Size = ast.Natives[from[idx].Operator.OpCode].Outputs[0].Size
+				to[0].Outputs[0].Size = ast.Natives[from[idx].Operator.AtomicOPCode].Outputs[0].Size
 				to[0].Outputs[0].Type = from[idx].Operator.Outputs[0].Type
 				to[0].Outputs[0].Lengths = from[idx].Operator.Outputs[0].Lengths
 			}
