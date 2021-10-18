@@ -114,7 +114,7 @@ type CXFunction struct {
 	// Metadata
 	Name    string     // Name of the function
 	Package *CXPackage // The package it's a member of
-	OpCode  int        // opcode if IsBuiltin = true
+	OpCode  int        // opcode if IsBuiltIn = true
 
 	// Contents
 	Inputs      []*CXArgument   // Input parameters to the function
