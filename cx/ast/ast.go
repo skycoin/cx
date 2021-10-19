@@ -28,19 +28,11 @@ func (cxet CXEXPR_TYPE) String() string {
 	return [...]string{"Unused", "MethodCall", "StructLiteral", "ArrayLiteral", "ScopeNew", "ScopeDel"}[int(cxet)]
 }
 
-/*
- * The CXProgram struct contains a full program.
- *
- * It is the root data structures for all code, variable and data structures
- * declarations.
- */
-
 // CXProgram is used to represent a full CX program.
 //
 // It is the root data structure for the declarations of all functions,
 // variables and data structures.
 //
-
 type CXProgram struct {
 	// Metadata
 	//Remove Path //moved to cx/globals
@@ -86,7 +78,6 @@ type HeapSegmentStruct struct {
 }
 
 // CXPackage is used to represent a CX package.
-//
 type CXPackage struct {
 	// Metadata
 	Name string // Name of the package
@@ -103,7 +94,6 @@ type CXPackage struct {
 }
 
 // CXStruct is used to represent a CX struct.
-//
 type CXStruct struct {
 	// Metadata
 	Name    string        // Name of the struct
