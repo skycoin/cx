@@ -54,9 +54,9 @@ type CXProgram struct {
 	Packages []*CXPackage // Packages in a CX program; use map, so dont have to iterate for lookup
 
 	// Runtime information
-	ProgramInput  []*CXArgument // OS input arguments
-	ProgramOutput []*CXArgument // outputs to the OS
-	Memory        []byte        // Used when running the program
+	ProgramInput []*CXArgument // OS input arguments
+	//ProgramOutput []*CXArgument // outputs to the OS
+	Memory []byte // Used when running the program
 
 	CallStack   []CXCall      // Collection of function calls
 	CallCounter types.Pointer // What function call is the currently being executed in the CallStack
