@@ -4,22 +4,22 @@ import (
 	"unicode"
 
 	"github.com/skycoin/cx/cx/ast"
-	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/types"
 )
 
 // ProgramMetaResp is a program meta data response.
 type ProgramMetaResp struct {
-	UsedHeapMemory int `json:"used_heap_memory"`
-	FreeHeapMemory int `json:"free_heap_memory"`
-	StackSize      int `json:"stack_size"`
-	CallStackSize  int `json:"call_stack_size"`
+	UsedHeapMemory types.Pointer `json:"used_heap_memory"`
+	FreeHeapMemory types.Pointer `json:"free_heap_memory"`
+	StackSize      types.Pointer `json:"stack_size"`
+	CallStackSize  int           `json:"call_stack_size"`
 }
 
 func extractProgramMeta(pg *ast.CXProgram) ProgramMetaResp {
 	return ProgramMetaResp{
-		UsedHeapMemory: pg.HeapPointer - pg.HeapStartsAt,
-		FreeHeapMemory: pg.HeapSize - pg.HeapStartsAt,
-		StackSize:      pg.StackSize,
+		UsedHeapMemory: pg.Heap.Pointer - pg.Heap.StartsAt,
+		FreeHeapMemory: pg.Heap.Size - pg.Heap.StartsAt,
+		StackSize:      pg.Stack.Size,
 		CallStackSize:  len(pg.CallStack),
 	}
 }
@@ -28,7 +28,7 @@ func extractProgramMeta(pg *ast.CXProgram) ProgramMetaResp {
 type ExportedSymbol struct {
 	Name      string      `json:"name"`
 	Signature interface{} `json:"signature,omitempty"`
-	Type      int         `json:"type"`
+	Type      types.Code  `json:"type"`
 	TypeName  string      `json:"type_name"`
 }
 
@@ -72,7 +72,7 @@ func displayCXFunction(pkg *ast.CXPackage, f *ast.CXFunction) ExportedSymbol {
 		Name:      f.Name,
 		Signature: ast.SignatureStringOfFunction(pkg, f),
 		Type:      types.FUNC,
-		TypeName:  constants.TypeNames[types.FUNC],
+		TypeName:  types.FUNC.Name(),
 	}
 }
 
@@ -90,7 +90,7 @@ func displayCXGlobal(a *ast.CXArgument) ExportedSymbol {
 		Name:      a.ArgDetails.Name,
 		Signature: nil,
 		Type:      a.Type,
-		TypeName:  constants.TypeNames[a.Type],
+		TypeName:  a.Type.Name(),
 	}
 }
 
