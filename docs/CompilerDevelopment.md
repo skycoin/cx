@@ -89,7 +89,7 @@ The atomic unit of data in a program is the [CXArgument](https://github.com/skyc
 * IsArrayFirst - is this both a pointer and an array, and if so, is the array first? Mutually exclusive with IsDereferenceFirst
 * IsReference - is this variable of pointer type? (`TYPE_FUNC`, `TYPE_SLICE`, `TYPE_POINTER`)
 * IsDereferenceFirst - is this both an array and a pointer, and if so, is the pointer first? Mutually exclusive with IsArrayFirst.
-* IsRest - if this is a package global, is this CXArgument representing the actual global variable from that package?
+* IsInnerArg - if this is a package global, is this CXArgument representing the actual global variable from that package?
 * IsLocalDeclaration - is this CXArgument bounded in lifetime by scope (as opposed to being a global variable)?
 * IsShortDeclaration - is this CXArgument the result of a `CASSIGN` operation (`:=`)?
 * IsInnerReference - is this CXArgument a reference to the field or element of another CXArgument? (`&array[0]` or `&struct.field`)

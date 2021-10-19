@@ -1,7 +1,7 @@
 package ast
 
 import (
-    "github.com/skycoin/cx/cx/types"
+	"github.com/skycoin/cx/cx/types"
 )
 
 // CXArgument is used to define local variables, global variables,
@@ -86,7 +86,7 @@ type CXArgument struct {
 	IsPointer                    bool
 	IsReference                  bool
 	IsStruct                     bool
-	IsRest                       bool // pkg.var <- var is rest
+	IsInnerArg                   bool // pkg.var <- var is rest
 	IsLocalDeclaration           bool
 	IsShortAssignmentDeclaration bool // variables defined with :=
 	IsInnerReference             bool // for example: &slice[0] or &struct.field

@@ -228,19 +228,19 @@ Binary file ./bin/cx matches
 */
 
 /*
-grep -rn "IsRest" .
-./cxparser/actions/postfix.go:226:		out.IsRest = true
-./cxparser/actions/postfix.go:238:		inp.IsRest = true
-./cxparser/actions/postfix.go:254:	if left.IsRest {
-./cxparser/actions/postfix.go:255:		// right.IsRest = true
-./cxparser/actions/postfix.go:264:	left.IsRest = true
+grep -rn "IsInnerArg" .
+./cxparser/actions/postfix.go:226:		out.IsInnerArg = true
+./cxparser/actions/postfix.go:238:		inp.IsInnerArg = true
+./cxparser/actions/postfix.go:254:	if left.IsInnerArg {
+./cxparser/actions/postfix.go:255:		// right.IsInnerArg = true
+./cxparser/actions/postfix.go:264:	left.IsInnerArg = true
 Binary file ./bin/cx matches
-./docs/CompilerDevelopment.md:79:* IsRest - if this is a package global, is this CXArgument representing the actual global variable from that package?
-./cx/serialize.go:166:	IsRest             int32
-./cx/serialize.go:335:	s.Arguments[argOff].IsRest = serializeBoolean(arg.IsRest)
-./cx/serialize.go:1049:	arg.IsRest = dsBool(sArg.IsRest)
-./cx/ast.go:252:	IsRest                bool // pkg.var <- var is rest
-./cx/ast.go:1517:	IsRest                bool // pkg.var <- var is rest
+./docs/CompilerDevelopment.md:79:* IsInnerArg - if this is a package global, is this CXArgument representing the actual global variable from that package?
+./cx/serialize.go:166:	IsInnerArg             int32
+./cx/serialize.go:335:	s.Arguments[argOff].IsInnerArg = serializeBoolean(arg.IsInnerArg)
+./cx/serialize.go:1049:	arg.IsInnerArg = dsBool(sArg.IsInnerArg)
+./cx/ast.go:252:	IsInnerArg                bool // pkg.var <- var is rest
+./cx/ast.go:1517:	IsInnerArg                bool // pkg.var <- var is rest
 ./vendor/golang.org/x/sys/windows/security_windows.go:841:// IsRestricted reports whether the access token t is a restricted token.
 ./vendor/golang.org/x/sys/windows/security_windows.go:842:func (t Token) IsRestricted() (isRestricted bool, err error) {
 */
@@ -267,7 +267,7 @@ type CXArgumentStruct struct {
 type CXArgumentPointer struct {
 }
 
-//TODO: Comment or delete "IsRest"
+//TODO: Comment or delete "IsInnerArg"
 
 /*
 	FileName              string
@@ -345,7 +345,7 @@ All "Is" can be removed
 	IsReference           bool
 	IsDereferenceFirst    bool // and then array
 	IsStruct              bool
-	IsRest                bool // pkg.var <- var is rest
+	IsInnerArg                bool // pkg.var <- var is rest
 	IsLocalDeclaration    bool
 	IsShortAssignmentDeclaration    bool
 	IsInnerReference      bool // for example: &slice[0] or &struct.field
@@ -951,7 +951,7 @@ All "Is" can be removed
 	IsReference           bool
 	IsDereferenceFirst    bool // and then array
 	IsStruct              bool
-	IsRest                bool // pkg.var <- var is rest
+	IsInnerArg                bool // pkg.var <- var is rest
 	IsLocalDeclaration    bool
 	IsShortDeclaration    bool
 	IsInnerReference      bool // for example: &slice[0] or &struct.field

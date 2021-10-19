@@ -222,7 +222,7 @@ func PostfixExpressionField(prevExprs []*ast.CXExpression, ident string) []*ast.
 		out.Lengths = opOut.Lengths
 		out.ArgDetails.Package = lastExpr.Package
 		out.PreviouslyDeclared = true
-		out.IsRest = true
+		out.IsInnerArg = true
 
 		lastExpr.Outputs = append(lastExpr.Outputs, out)
 
@@ -234,7 +234,7 @@ func PostfixExpressionField(prevExprs []*ast.CXExpression, ident string) []*ast.
 		inp.Size = opOut.Size
 		inp.TotalSize = opOut.TotalSize
 		inp.ArgDetails.Package = lastExpr.Package
-		inp.IsRest = true
+		inp.IsInnerArg = true
 
 		expr := ast.MakeExpression(nil, lastExpr.FileName, lastExpr.FileLine)
 		expr.Package = lastExpr.Package
@@ -250,8 +250,8 @@ func PostfixExpressionField(prevExprs []*ast.CXExpression, ident string) []*ast.
 	// If the left already is a rest (e.g. "var" in "pkg.var"), then
 	// it can't be a package name and we propagate the property to
 	//  the right side.
-	if left.IsRest {
-		// right.IsRest = true
+	if left.IsInnerArg {
+		// right.IsInnerArg = true
 		// left.DereferenceOperations = append(left.DereferenceOperations, cxcore.DEREF_FIELD)
 		left.IsStruct = true
 		fld := ast.MakeArgument(ident, CurrentFile, LineNo)
@@ -260,7 +260,7 @@ func PostfixExpressionField(prevExprs []*ast.CXExpression, ident string) []*ast.
 		return prevExprs
 	}
 
-	left.IsRest = true
+	left.IsInnerArg = true
 	// then left is a first (e.g first.rest) and right is a rest
 	// let's check if left is a package
 	pkg, err := AST.GetCurrentPackage()
