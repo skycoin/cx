@@ -293,6 +293,47 @@ func (arg *CXArgument) GetType() types.Code {
 	return arg.Type
 }
 
+// ----------------------------------------------------------------
+//                     `CXArgument` Member handling
+
+// AddPackage assigns CX package `pkg` to CX argument `arg`.
+func (arg *CXArgument) AddPackage(pkg *CXPackage) *CXArgument {
+	// pkg, err := PROGRAM.GetPackage(pkgName)
+	// if err != nil {
+	// 	panic(err)
+	// }
+	arg.ArgDetails.Package = pkg
+	return arg
+}
+
+// AddType ...
+func (arg *CXArgument) AddType(typeCode types.Code) *CXArgument {
+	arg.Type = typeCode
+	size := typeCode.Size()
+	arg.Size = size
+	arg.TotalSize = size
+	arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_BASIC)
+	return arg
+}
+
+// AddInput adds input parameters to `arg` in case arg is of type `TYPE_FUNC`.
+func (arg *CXArgument) AddInput(inp *CXArgument) *CXArgument {
+	arg.Inputs = append(arg.Inputs, inp)
+	if inp.ArgDetails.Package == nil {
+		inp.ArgDetails.Package = arg.ArgDetails.Package
+	}
+	return arg
+}
+
+// AddOutput adds output parameters to `arg` in case arg is of type `TYPE_FUNC`.
+func (arg *CXArgument) AddOutput(out *CXArgument) *CXArgument {
+	arg.Outputs = append(arg.Outputs, out)
+	if out.ArgDetails.Package == nil {
+		out.ArgDetails.Package = arg.ArgDetails.Package
+	}
+	return arg
+}
+
 // Pointer takes an already defined `CXArgument` and turns it into a pointer.
 //Only used once, deprecate
 //TODO: only used by HTTP, create a better module system
@@ -394,45 +435,4 @@ func MakeGlobal(name string, typeCode types.Code, fileName string, fileLine int)
 	}
 	globals.HeapOffset += size
 	return global
-}
-
-// ----------------------------------------------------------------
-//                     `CXArgument` Member handling
-
-// AddPackage assigns CX package `pkg` to CX argument `arg`.
-func (arg *CXArgument) AddPackage(pkg *CXPackage) *CXArgument {
-	// pkg, err := PROGRAM.GetPackage(pkgName)
-	// if err != nil {
-	// 	panic(err)
-	// }
-	arg.ArgDetails.Package = pkg
-	return arg
-}
-
-// AddType ...
-func (arg *CXArgument) AddType(typeCode types.Code) *CXArgument {
-	arg.Type = typeCode
-	size := typeCode.Size()
-	arg.Size = size
-	arg.TotalSize = size
-	arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_BASIC)
-	return arg
-}
-
-// AddInput adds input parameters to `arg` in case arg is of type `TYPE_FUNC`.
-func (arg *CXArgument) AddInput(inp *CXArgument) *CXArgument {
-	arg.Inputs = append(arg.Inputs, inp)
-	if inp.ArgDetails.Package == nil {
-		inp.ArgDetails.Package = arg.ArgDetails.Package
-	}
-	return arg
-}
-
-// AddOutput adds output parameters to `arg` in case arg is of type `TYPE_FUNC`.
-func (arg *CXArgument) AddOutput(out *CXArgument) *CXArgument {
-	arg.Outputs = append(arg.Outputs, out)
-	if out.ArgDetails.Package == nil {
-		out.ArgDetails.Package = arg.ArgDetails.Package
-	}
-	return arg
 }
