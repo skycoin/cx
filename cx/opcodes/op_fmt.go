@@ -2,9 +2,10 @@ package opcodes
 
 import (
 	"fmt"
+	"strconv"
+
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/types"
-	"strconv"
 )
 
 func buildString(inputs []ast.CXValue, outputs []ast.CXValue) []byte {
@@ -14,7 +15,7 @@ func buildString(inputs []ast.CXValue, outputs []ast.CXValue) []byte {
 	var specifiersCounter int
 	var lenStr = int(len(fmtStr))
 
-    for c := 0; c < len(fmtStr); c++ {
+	for c := 0; c < len(fmtStr); c++ {
 		var nextCh byte
 		ch := fmtStr[c]
 		if c < lenStr-1 {
@@ -35,7 +36,7 @@ func buildString(inputs []ast.CXValue, outputs []ast.CXValue) []byte {
 				continue
 			}
 		}
-		
+
 		if ch == '%' {
 			if specifiersCounter+1 == len(inputs) {
 				res = append(res, []byte(fmt.Sprintf("%%!%c(MISSING)", nextCh))...)
@@ -75,8 +76,8 @@ func buildString(inputs []ast.CXValue, outputs []ast.CXValue) []byte {
 				}
 			case 'v':
 				res = append(res, []byte(ast.GetPrintableValue(inp.FramePointer, inp.Arg))...)
-            case 'b':
-                res = append(res, []byte(strconv.FormatBool(inp.Get_bool()))...)
+			case 'b':
+				res = append(res, []byte(strconv.FormatBool(inp.Get_bool()))...)
 			}
 			c++
 			specifiersCounter++
@@ -91,7 +92,7 @@ func buildString(inputs []ast.CXValue, outputs []ast.CXValue) []byte {
 		lInps := len(inputs[specifiersCounter+1:])
 		for c := 0; c < lInps; c++ {
 			inp := &inputs[specifiersCounter+1+c]
-			elt := ast.GetAssignmentElement(inp.Arg)
+			elt := inp.Arg.GetAssignmentElement()
 			typ := ""
 			_ = typ
 			if elt.CustomType != nil {
@@ -119,7 +120,7 @@ func buildString(inputs []ast.CXValue, outputs []ast.CXValue) []byte {
 }
 
 func opSprintf(inputs []ast.CXValue, outputs []ast.CXValue) {
-    outputs[0].Set_str(string(buildString(inputs, outputs)))
+	outputs[0].Set_str(string(buildString(inputs, outputs)))
 }
 
 func opPrintf(inputs []ast.CXValue, outputs []ast.CXValue) {
@@ -158,4 +159,3 @@ func CheckForEscapedChars(str string) []byte {
 
 	return res
 }
-

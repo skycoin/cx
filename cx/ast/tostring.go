@@ -192,7 +192,7 @@ func BuildStrPackages(prgrm *CXProgram, ast *string) {
 // `buf`.
 func getFormattedParam(params []*CXArgument, pkg *CXPackage, buf *bytes.Buffer) {
 	for i, param := range params {
-		elt := GetAssignmentElement(param)
+		elt := param.GetAssignmentElement()
 
 		// Checking if this argument comes from an imported package.
 		externalPkg := false
@@ -323,7 +323,7 @@ func ReadSliceElements(fp types.Pointer, arg, elt *CXArgument, sliceData []byte,
 // GetPrintableValue ...
 func GetPrintableValue(fp types.Pointer, arg *CXArgument) string {
 	var typ string
-	elt := GetAssignmentElement(arg)
+	elt := arg.GetAssignmentElement()
 	if elt.CustomType != nil {
 		// then it's custom type
 		typ = elt.CustomType.Name
@@ -655,7 +655,7 @@ func formatParameters(params []*CXArgument) string {
 // GetFormattedType builds a string with the CXGO type representation of `arg`.
 func GetFormattedType(arg *CXArgument) string {
 	typ := ""
-	elt := GetAssignmentElement(arg)
+	elt := arg.GetAssignmentElement()
 
 	// this is used to know what arg.Lengths index to use
 	// used for cases like [5]*[3]i32, where we jump to another decl spec

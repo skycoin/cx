@@ -135,7 +135,7 @@ func queryParam(fn *ast.CXFunction, args []*ast.CXArgument, exprLbl string, argO
 	for i, arg := range args {
 
 		var typOffset types.Pointer
-		elt := ast.GetAssignmentElement(arg)
+		elt := arg.GetAssignmentElement()
 		if elt.CustomType != nil {
 			// then it's custom type
 			// typOffset = WriteObjectRetOff(encoder.Serialize(elt.CustomType.Package.Name + "." + elt.CustomType.Name))

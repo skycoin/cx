@@ -280,7 +280,7 @@ func UnaryExpression(op string, prevExprs []*ast.CXExpression) []*ast.CXExpressi
 	// Some properties need to be read from the base argument
 	// due to how we calculate dereferences at the moment.
 	baseOut := prevExprs[len(prevExprs)-1].Outputs[0]
-	exprOut := ast.GetAssignmentElement(prevExprs[len(prevExprs)-1].Outputs[0])
+	exprOut := prevExprs[len(prevExprs)-1].Outputs[0].GetAssignmentElement()
 	switch op {
 	case "*":
 		exprOut.DereferenceLevels++

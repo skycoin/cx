@@ -300,7 +300,7 @@ func ProcessOperatorExpression(expr *ast.CXExpression) {
 		for _, out := range expr.Outputs {
 			size := types.Pointer(1)
 			if !ast.IsComparisonOperator(expr.Operator.AtomicOPCode) {
-				size = ast.GetSize(ast.GetAssignmentElement(expr.Inputs[0]))
+				size = ast.GetSize(expr.Inputs[0].GetAssignmentElement())
 			}
 			out.Size = size
 			out.TotalSize = size
@@ -534,7 +534,7 @@ func checkMatchParamTypes(expr *ast.CXExpression, expected, received []*ast.CXAr
 			// We use `isInputs` to only print the error once.
 			// Otherwise we'd print the error twice: once for the input and again for the output
 			if inpType != outType && isInputs {
-				println(ast.CompilationError(received[i].ArgDetails.FileName, received[i].ArgDetails.FileLine), fmt.Sprintf("cannot assign value of type '%s' to identifier '%s' of type '%s'", inpType, ast.GetAssignmentElement(expr.Outputs[0]).ArgDetails.Name, outType))
+				println(ast.CompilationError(received[i].ArgDetails.FileName, received[i].ArgDetails.FileLine), fmt.Sprintf("cannot assign value of type '%s' to identifier '%s' of type '%s'", inpType, expr.Outputs[0].GetAssignmentElement().ArgDetails.Name, outType))
 			}
 		}
 	}
@@ -588,20 +588,20 @@ func CheckTypes(expr *ast.CXExpression) {
 		for i := range expr.Inputs {
 			var expectedType string
 			var receivedType string
-			if ast.GetAssignmentElement(expr.Outputs[i]).CustomType != nil {
+			if expr.Outputs[i].GetAssignmentElement().CustomType != nil {
 				// then it's custom type
-				expectedType = ast.GetAssignmentElement(expr.Outputs[i]).CustomType.Name
+				expectedType = expr.Outputs[i].GetAssignmentElement().CustomType.Name
 			} else {
 				// then it's native type
-				expectedType = ast.GetAssignmentElement(expr.Outputs[i]).Type.Name()
+				expectedType = expr.Outputs[i].GetAssignmentElement().Type.Name()
 			}
 
-			if ast.GetAssignmentElement(expr.Inputs[i]).CustomType != nil {
+			if expr.Inputs[i].GetAssignmentElement().CustomType != nil {
 				// then it's custom type
-				receivedType = ast.GetAssignmentElement(expr.Inputs[i]).CustomType.Name
+				receivedType = expr.Inputs[i].GetAssignmentElement().CustomType.Name
 			} else {
 				// then it's native type
-				receivedType = ast.GetAssignmentElement(expr.Inputs[i]).Type.Name()
+				receivedType = expr.Inputs[i].GetAssignmentElement().Type.Name()
 			}
 
 			// if cxcore.GetAssignmentElement(expr.ProgramOutput[i]).Type != cxcore.GetAssignmentElement(inp).Type {
@@ -609,7 +609,7 @@ func CheckTypes(expr *ast.CXExpression) {
 				if expr.IsStructLiteral() {
 					println(ast.CompilationError(expr.Outputs[i].ArgDetails.FileName, expr.Outputs[i].ArgDetails.FileLine), fmt.Sprintf("field '%s' in struct literal of type '%s' expected argument of type '%s'; '%s' was provided", expr.Outputs[i].Fields[0].ArgDetails.Name, expr.Outputs[i].CustomType.Name, expectedType, receivedType))
 				} else {
-					println(ast.CompilationError(expr.Outputs[i].ArgDetails.FileName, expr.Outputs[i].ArgDetails.FileLine), fmt.Sprintf("trying to assign argument of type '%s' to symbol '%s' of type '%s'", receivedType, ast.GetAssignmentElement(expr.Outputs[i]).ArgDetails.Name, expectedType))
+					println(ast.CompilationError(expr.Outputs[i].ArgDetails.FileName, expr.Outputs[i].ArgDetails.FileLine), fmt.Sprintf("trying to assign argument of type '%s' to symbol '%s' of type '%s'", receivedType, expr.Outputs[i].GetAssignmentElement().ArgDetails.Name, expectedType))
 				}
 			}
 		}
@@ -629,8 +629,8 @@ func ProcessStringAssignment(expr *ast.CXExpression) {
 	if expr.Operator == ast.Natives[constants.OP_IDENTITY] {
 		for i, out := range expr.Outputs {
 			if len(expr.Inputs) > i {
-				out = ast.GetAssignmentElement(out)
-				inp := ast.GetAssignmentElement(expr.Inputs[i])
+				out = out.GetAssignmentElement()
+				inp := expr.Inputs[i].GetAssignmentElement()
 
 				if (out.Type == types.STR || out.Type == types.AFF) && out.ArgDetails.Name != "" &&
 					(inp.Type == types.STR || inp.Type == types.AFF) && inp.ArgDetails.Name != "" {
@@ -645,7 +645,7 @@ func ProcessStringAssignment(expr *ast.CXExpression) {
 // For example: `var foo i32; var bar i32; bar = &foo` is not valid.
 func ProcessReferenceAssignment(expr *ast.CXExpression) {
 	for _, out := range expr.Outputs {
-		elt := ast.GetAssignmentElement(out)
+		elt := out.GetAssignmentElement()
 		if elt.PassBy == constants.PASSBY_REFERENCE &&
 			!hasDeclSpec(elt, constants.DECL_POINTER) &&
 			elt.Type != types.STR && !elt.IsSlice {
@@ -680,8 +680,8 @@ func ProcessSliceAssignment(expr *ast.CXExpression) {
 		var inp *ast.CXArgument
 		var out *ast.CXArgument
 
-		inp = ast.GetAssignmentElement(expr.Inputs[0])
-		out = ast.GetAssignmentElement(expr.Outputs[0])
+		inp = expr.Inputs[0].GetAssignmentElement()
+		out = expr.Outputs[0].GetAssignmentElement()
 
 		if inp.IsSlice && out.IsSlice && len(inp.Indexes) == 0 && len(out.Indexes) == 0 {
 			out.PassBy = constants.PASSBY_VALUE
@@ -690,7 +690,7 @@ func ProcessSliceAssignment(expr *ast.CXExpression) {
 	if expr.Operator != nil && !expr.Operator.IsBuiltIn() {
 		// then it's a function call
 		for _, inp := range expr.Inputs {
-			assignElt := ast.GetAssignmentElement(inp)
+			assignElt := inp.GetAssignmentElement()
 
 			// we want to pass by value if we're sending the slice as a whole (no indexing)
 			// unless it's a pointer to the slice
@@ -928,7 +928,7 @@ func CopyArgFields(sym *ast.CXArgument, arg *ast.CXArgument) {
 	if sym.ArgDetails.FileLine != arg.ArgDetails.FileLine {
 		// FIXME Maybe we can unify this later.
 		if len(sym.Fields) > 0 {
-			elt := ast.GetAssignmentElement(sym)
+			elt := sym.GetAssignmentElement()
 
 			declSpec := []int{}
 			for c := 0; c < len(elt.DeclarationSpecifiers); c++ {
@@ -1010,7 +1010,7 @@ func CopyArgFields(sym *ast.CXArgument, arg *ast.CXArgument) {
 	// Checking if it's a slice struct field. We'll do the same process as
 	// below (as in the `arg.IsSlice` check), but the process differs in the
 	// case of a slice struct field.
-	elt := ast.GetAssignmentElement(sym)
+	elt := sym.GetAssignmentElement()
 
 	if (!arg.IsSlice || hasDerefOp(sym, constants.DEREF_ARRAY)) && arg.CustomType != nil && elt.IsSlice && elt != sym {
 		for i, deref := range elt.DereferenceOperations {
@@ -1175,7 +1175,7 @@ func GetGlobalSymbol(symbols *[]map[string]*ast.CXArgument, symPkg *ast.CXPackag
 
 func PreFinalSize(finalSize *types.Pointer, sym *ast.CXArgument, arg *ast.CXArgument) {
 	idxCounter := 0
-	elt := ast.GetAssignmentElement(sym)
+	elt := sym.GetAssignmentElement()
 	for _, op := range elt.DereferenceOperations {
 		if elt.IsSlice {
 			continue

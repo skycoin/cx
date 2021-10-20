@@ -80,7 +80,7 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 			fp := call.FramePointer
 			if IsOperator(expr.Operator.AtomicOPCode) {
 				// TODO: resolve this at compile time
-				atomicType := GetType(expr.Inputs[0])
+				atomicType := expr.Inputs[0].GetType()
 				expr.Operator = GetTypedOperator(atomicType, expr.Operator.AtomicOPCode)
 			}
 			inputs := expr.Inputs
