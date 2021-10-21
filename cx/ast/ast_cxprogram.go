@@ -9,25 +9,6 @@ import (
 	"github.com/skycoin/cx/cx/types"
 )
 
-/*
- * CXEXPR_TYPE enum contains CX expressions types for CXExpression struct
- */
-type CXEXPR_TYPE int
-
-const (
-	CXEXPR_UNUSED CXEXPR_TYPE = iota
-	CXEXPR_METHOD_CALL
-	CXEXPR_STRUCT_LITERAL
-	CXEXPR_ARRAY_LITERAL
-	CXEXPR_SCOPE_NEW
-	CXEXPR_SCOPE_DEL
-)
-
-// String returns alias for constants defined for cx edpression type
-func (cxet CXEXPR_TYPE) String() string {
-	return [...]string{"Unused", "MethodCall", "StructLiteral", "ArrayLiteral", "ScopeNew", "ScopeDel"}[int(cxet)]
-}
-
 // CXProgram is used to represent a full CX program.
 //
 // It is the root data structure for the declarations of all functions,
