@@ -2,6 +2,25 @@ package ast
 
 import "github.com/skycoin/cx/cx/constants"
 
+/*
+ * CXEXPR_TYPE enum contains CX expressions types for CXExpression struct
+ */
+type CXEXPR_TYPE int
+
+const (
+	CXEXPR_UNUSED CXEXPR_TYPE = iota
+	CXEXPR_METHOD_CALL
+	CXEXPR_STRUCT_LITERAL
+	CXEXPR_ARRAY_LITERAL
+	CXEXPR_SCOPE_NEW
+	CXEXPR_SCOPE_DEL
+)
+
+// String returns alias for constants defined for cx edpression type
+func (cxet CXEXPR_TYPE) String() string {
+	return [...]string{"Unused", "MethodCall", "StructLiteral", "ArrayLiteral", "ScopeNew", "ScopeDel"}[int(cxet)]
+}
+
 // CXExpression is used represent a CX expression.
 //
 // All statements in CX are expressions, including for loops and other control

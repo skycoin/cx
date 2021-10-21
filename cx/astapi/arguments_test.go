@@ -124,7 +124,7 @@ func TestASTAPI_Arguments(t *testing.T) {
 
 	t.Run("add global", func(t *testing.T) {
 		arg := cxast.MakeGlobal("testGlobal", types.I16, "", -1)
-		cxprogram.Packages[0].AddGlobal(arg)
+		cxprogram.Packages["main"].AddGlobal(arg)
 	})
 
 	t.Run("get accessible i16 args", func(t *testing.T) {

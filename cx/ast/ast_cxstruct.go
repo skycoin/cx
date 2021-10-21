@@ -2,7 +2,9 @@ package ast
 
 import (
 	"fmt"
+	"os"
 
+	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/types"
 )
 
@@ -42,28 +44,22 @@ func MakeStruct(name string) *CXStruct {
 
 // AddField ...
 func (strct *CXStruct) AddField(fld *CXArgument) *CXStruct {
-	found := false
 	for _, fl := range strct.Fields {
 		if fl.ArgDetails.Name == fld.ArgDetails.Name {
-			found = true
-			break
+			fmt.Printf("%s : duplicate field", CompilationError(fl.ArgDetails.FileName, fl.ArgDetails.FileLine))
+			os.Exit(constants.CX_COMPILATION_ERROR)
 		}
 	}
 
-	// FIXME: Shouldn't it be a compilation error if we define a new field
-	// 	  with the same name as another field?
-	if !found {
-		numFlds := len(strct.Fields)
-		strct.Fields = append(strct.Fields, fld)
-		if numFlds != 0 {
-			// Pre-compiling the offset of the field.
-			lastFld := strct.Fields[numFlds-1]
-			fld.Offset = lastFld.Offset + lastFld.TotalSize
-		}
-		strct.Size += GetSize(fld)
-	} else {
-		panic("duplicate field")
+	numFlds := len(strct.Fields)
+	strct.Fields = append(strct.Fields, fld)
+	if numFlds != 0 {
+		// Pre-compiling the offset of the field.
+		lastFld := strct.Fields[numFlds-1]
+		fld.Offset = lastFld.Offset + lastFld.TotalSize
 	}
+	strct.Size += GetSize(fld)
+
 	return strct
 }
 

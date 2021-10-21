@@ -14,9 +14,9 @@ type serializedCXProgramIndex struct {
 }
 
 type serializedProgram struct {
-	PackagesOffset       int64
-	PackagesSize         int64
-	CurrentPackageOffset int64
+	PackagesOffset     int64
+	PackagesSize       int64
+	CurrentPackageName string
 
 	InputsOffset int64
 	InputsSize   int64
@@ -55,18 +55,18 @@ type serializedCall struct {
 }
 
 type serializedPackage struct {
-	NameOffset            int64
-	NameSize              int64
-	ImportsOffset         int64
-	ImportsSize           int64
-	StructsOffset         int64
-	StructsSize           int64
-	GlobalsOffset         int64
-	GlobalsSize           int64
-	FunctionsOffset       int64
-	FunctionsSize         int64
-	CurrentFunctionOffset int64
-	CurrentStructOffset   int64
+	NameOffset          int64
+	NameSize            int64
+	ImportsOffset       int64
+	ImportsSize         int64
+	StructsOffset       int64
+	StructsSize         int64
+	GlobalsOffset       int64
+	GlobalsSize         int64
+	FunctionsOffset     int64
+	FunctionsSize       int64
+	CurrentFunctionName string
+	CurrentStructName   string
 }
 
 type serializedStruct struct {
@@ -77,7 +77,7 @@ type serializedStruct struct {
 
 	Size int64
 
-	PackageOffset int64
+	PackageName string
 }
 
 type serializedFunction struct {
@@ -100,7 +100,7 @@ type serializedFunction struct {
 	// OpCode                          int64
 
 	CurrentExpressionOffset int64
-	PackageOffset           int64
+	PackageName             string
 }
 
 type serializedExpression struct {
@@ -123,7 +123,7 @@ type serializedExpression struct {
 	ExpressionType int64
 
 	FunctionOffset int64
-	PackageOffset  int64
+	PackageName    string
 }
 
 type serializedArgument struct {
@@ -167,7 +167,7 @@ type serializedArgument struct {
 	OutputsOffset int64
 	OutputsSize   int64
 
-	PackageOffset int64
+	PackageName string
 }
 
 type SerializedCXProgram struct {

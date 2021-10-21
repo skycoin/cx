@@ -62,10 +62,11 @@ func MakeFunction(name string, fileName string, fileLine int) *CXFunction {
 
 // GetExpressions is not used
 func (fn *CXFunction) GetExpressions() ([]*CXExpression, error) {
-	if fn.Expressions != nil {
-		return fn.Expressions, nil
+	if fn.Expressions == nil {
+		return nil, fmt.Errorf("function '%s' has no expressions", fn.Name)
 	}
-	return nil, fmt.Errorf("function '%s' has no expressions", fn.Name)
+
+	return fn.Expressions, nil
 
 }
 
@@ -74,6 +75,7 @@ func (fn *CXFunction) GetExpressionByLabel(lbl string) (*CXExpression, error) {
 	if fn.Expressions == nil {
 		return nil, fmt.Errorf("function '%s' has no expressions", fn.Name)
 	}
+
 	for _, expr := range fn.Expressions {
 		if expr.Label == lbl {
 			return expr, nil
@@ -84,26 +86,24 @@ func (fn *CXFunction) GetExpressionByLabel(lbl string) (*CXExpression, error) {
 
 // GetExpressionByLine ...
 func (fn *CXFunction) GetExpressionByLine(line int) (*CXExpression, error) {
-	if fn.Expressions != nil {
-		if line <= len(fn.Expressions) {
-			return fn.Expressions[line], nil
-		}
-		return nil, fmt.Errorf("expression line number '%d' exceeds number of expressions in function '%s'", line, fn.Name)
-
+	if fn.Expressions == nil {
+		return nil, fmt.Errorf("function '%s' has no expressions", fn.Name)
 	}
-	return nil, fmt.Errorf("function '%s' has no expressions", fn.Name)
 
+	if line > len(fn.Expressions) {
+		return nil, fmt.Errorf("expression line number '%d' exceeds number of expressions in function '%s'", line, fn.Name)
+	}
+
+	return fn.Expressions[line], nil
 }
 
 // GetCurrentExpression ...
 func (fn *CXFunction) GetCurrentExpression() (*CXExpression, error) {
-	if fn.CurrentExpression != nil {
-		return fn.CurrentExpression, nil
-	} else if fn.Expressions != nil {
-		return fn.Expressions[0], nil
-	} else {
+	if fn.CurrentExpression == nil {
 		return nil, errors.New("current expression is nil")
 	}
+
+	return fn.CurrentExpression, nil
 }
 
 // ----------------------------------------------------------------
