@@ -111,7 +111,7 @@ func EncodeSizeSerializedCXProgram(obj *SerializedCXProgram) uint64 {
 
 	// obj.Packages
 	i0 += 4
-	{
+	for _, x1 := range obj.Packages {
 		i1 := uint64(0)
 
 		// x1.NameOffset
@@ -144,13 +144,13 @@ func EncodeSizeSerializedCXProgram(obj *SerializedCXProgram) uint64 {
 		// x1.FunctionsSize
 		i1 += 8
 
-		// x1.CurrentFunctionOffset
-		i1 += 8
+		// x1.CurrentFunctionName
+		i1 += 4 + uint64(len(x1.CurrentFunctionName))
 
-		// x1.CurrentStructOffset
-		i1 += 8
+		// x1.CurrentStructName
+		i1 += 4 + uint64(len(x1.CurrentStructName))
 
-		i0 += uint64(len(obj.Packages)) * i1
+		i0 += i1
 	}
 
 	// obj.PackagesMap
@@ -645,11 +645,21 @@ func EncodeSerializedCXProgramToBuffer(buf []byte, obj *SerializedCXProgram) err
 		// x.FunctionsSize
 		e.Int64(x.FunctionsSize)
 
-		// x.CurrentFunctionOffset
-		e.Int64(x.CurrentFunctionOffset)
+		// x.CurrentFunctionName length check
+		if uint64(len(x.CurrentFunctionName)) > math.MaxUint32 {
+			return errors.New("x.CurrentFunctionName length exceeds math.MaxUint32")
+		}
 
-		// x.CurrentStructOffset
-		e.Int64(x.CurrentStructOffset)
+		// x.CurrentFunctionName
+		e.ByteSlice([]byte(x.CurrentFunctionName))
+
+		// x.CurrentStructName length check
+		if uint64(len(x.CurrentStructName)) > math.MaxUint32 {
+			return errors.New("x.CurrentStructName length exceeds math.MaxUint32")
+		}
+
+		// x.CurrentStructName
+		e.ByteSlice([]byte(x.CurrentStructName))
 
 	}
 
@@ -1509,23 +1519,38 @@ func DecodeSerializedCXProgram(buf []byte, obj *SerializedCXProgram) (uint64, er
 				}
 
 				{
-					// obj.Packages[z1].CurrentFunctionOffset
-					i, err := d.Int64()
+					// obj.Packages[z1].CurrentFunctionName
+
+					ul, err := d.Uint32()
 					if err != nil {
 						return 0, err
 					}
-					obj.Packages[z1].CurrentFunctionOffset = i
+
+					length := int(ul)
+					if length < 0 || length > len(d.Buffer) {
+						return 0, encoder.ErrBufferUnderflow
+					}
+
+					obj.Packages[z1].CurrentFunctionName = string(d.Buffer[:length])
+					d.Buffer = d.Buffer[length:]
 				}
 
 				{
-					// obj.Packages[z1].CurrentStructOffset
-					i, err := d.Int64()
+					// obj.Packages[z1].CurrentStructName
+
+					ul, err := d.Uint32()
 					if err != nil {
 						return 0, err
 					}
-					obj.Packages[z1].CurrentStructOffset = i
-				}
 
+					length := int(ul)
+					if length < 0 || length > len(d.Buffer) {
+						return 0, encoder.ErrBufferUnderflow
+					}
+
+					obj.Packages[z1].CurrentStructName = string(d.Buffer[:length])
+					d.Buffer = d.Buffer[length:]
+				}
 			}
 		}
 	}

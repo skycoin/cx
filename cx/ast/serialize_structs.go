@@ -55,18 +55,18 @@ type serializedCall struct {
 }
 
 type serializedPackage struct {
-	NameOffset            int64
-	NameSize              int64
-	ImportsOffset         int64
-	ImportsSize           int64
-	StructsOffset         int64
-	StructsSize           int64
-	GlobalsOffset         int64
-	GlobalsSize           int64
-	FunctionsOffset       int64
-	FunctionsSize         int64
-	CurrentFunctionOffset int64
-	CurrentStructOffset   int64
+	NameOffset          int64
+	NameSize            int64
+	ImportsOffset       int64
+	ImportsSize         int64
+	StructsOffset       int64
+	StructsSize         int64
+	GlobalsOffset       int64
+	GlobalsSize         int64
+	FunctionsOffset     int64
+	FunctionsSize       int64
+	CurrentFunctionName string
+	CurrentStructName   string
 }
 
 type serializedStruct struct {

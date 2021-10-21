@@ -71,13 +71,16 @@ func buildStrStructs(pkg *CXPackage, ast *string) {
 		*ast += "\tStructs\n"
 	}
 
-	for j, strct := range pkg.Structs {
-		*ast += fmt.Sprintf("\t\t%d.- Struct: %s\n", j, strct.Name)
+	count := 0
+	for _, strct := range pkg.Structs {
+		*ast += fmt.Sprintf("\t\t%d.- Struct: %s\n", count, strct.Name)
 
 		for k, fld := range strct.Fields {
 			*ast += fmt.Sprintf("\t\t\t%d.- Field: %s %s\n",
 				k, fld.ArgDetails.Name, GetFormattedType(fld))
 		}
+
+		count++
 	}
 }
 

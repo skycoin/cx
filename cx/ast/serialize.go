@@ -358,12 +358,12 @@ func serializePackageIntegers(pkg *CXPackage, s *SerializedCXProgram) {
 
 		if pkg.CurrentFunction == nil {
 			// package has no functions
-			sPkg.CurrentFunctionOffset = int64(-1)
+			sPkg.CurrentFunctionName = ""
 		} else {
 			currFnName := pkg.CurrentFunction.Package.Name + "." + pkg.CurrentFunction.Name
 
-			if fnOff, found := s.FunctionsMap[currFnName]; found {
-				sPkg.CurrentFunctionOffset = int64(fnOff)
+			if _, found := s.FunctionsMap[currFnName]; found {
+				sPkg.CurrentFunctionName = currFnName
 			} else {
 				panic("function reference not found")
 			}
@@ -371,12 +371,12 @@ func serializePackageIntegers(pkg *CXPackage, s *SerializedCXProgram) {
 
 		if pkg.CurrentStruct == nil {
 			// package has no structs
-			sPkg.CurrentStructOffset = int64(-1)
+			sPkg.CurrentStructName = ""
 		} else {
 			currStrctName := pkg.CurrentStruct.Package.Name + "." + pkg.CurrentStruct.Name
 
-			if strctOff, found := s.StructsMap[currStrctName]; found {
-				sPkg.CurrentStructOffset = int64(strctOff)
+			if _, found := s.StructsMap[currStrctName]; found {
+				sPkg.CurrentStructName = currStrctName
 			} else {
 				panic("struct reference not found")
 			}
@@ -669,22 +669,22 @@ func deserializePackages(s *SerializedCXProgram, prgrm *CXProgram) {
 		}
 
 		if sPkg.FunctionsSize > 0 {
-			prgrm.Packages[pkg.Name].Functions = make([]*CXFunction, sPkg.FunctionsSize)
+			prgrm.Packages[pkg.Name].Functions = make(map[string]*CXFunction, sPkg.FunctionsSize)
 
-			for j, sFn := range s.Functions[sPkg.FunctionsOffset : sPkg.FunctionsOffset+sPkg.FunctionsSize] {
+			for _, sFn := range s.Functions[sPkg.FunctionsOffset : sPkg.FunctionsOffset+sPkg.FunctionsSize] {
 				var fn CXFunction
 				fn.Name = deserializeString(sFn.NameOffset, sFn.NameSize, s)
-				prgrm.Packages[pkg.Name].Functions[j] = &fn
+				prgrm.Packages[pkg.Name].Functions[fn.Name] = &fn
 			}
 		}
 
 		if sPkg.StructsSize > 0 {
-			prgrm.Packages[pkg.Name].Structs = make([]*CXStruct, sPkg.StructsSize)
+			prgrm.Packages[pkg.Name].Structs = make(map[string]*CXStruct, sPkg.StructsSize)
 
-			for j, sStrct := range s.Structs[sPkg.StructsOffset : sPkg.StructsOffset+sPkg.StructsSize] {
+			for _, sStrct := range s.Structs[sPkg.StructsOffset : sPkg.StructsOffset+sPkg.StructsSize] {
 				var strct CXStruct
 				strct.Name = deserializeString(sStrct.NameOffset, sStrct.NameSize, s)
-				prgrm.Packages[pkg.Name].Structs[j] = &strct
+				prgrm.Packages[pkg.Name].Structs[strct.Name] = &strct
 			}
 		}
 
@@ -692,14 +692,14 @@ func deserializePackages(s *SerializedCXProgram, prgrm *CXProgram) {
 			prgrm.Packages[pkg.Name].Globals = make([]*CXArgument, sPkg.GlobalsSize)
 		}
 
-		// // CurrentFunction
-		// if sPkg.FunctionsSize > 0 {
-		// 	prgrm.Packages[i].CurrentFunction = prgrm.Packages[i].Functions[sPkg.CurrentFunctionOffset-fnCounter]
-		// }
+		// CurrentFunction
+		if sPkg.FunctionsSize > 0 {
+			prgrm.Packages[pkg.Name].CurrentFunction = prgrm.Packages[pkg.Name].Functions[sPkg.CurrentFunctionName]
+		}
 
 		// CurrentStruct
 		if sPkg.StructsSize > 0 {
-			prgrm.Packages[pkg.Name].CurrentStruct = prgrm.Packages[pkg.Name].Structs[sPkg.CurrentStructOffset-strctCounter]
+			prgrm.Packages[pkg.Name].CurrentStruct = prgrm.Packages[pkg.Name].Structs[sPkg.CurrentStructName]
 		}
 
 		fnCounter += sPkg.FunctionsSize
@@ -723,15 +723,17 @@ func deserializePackages(s *SerializedCXProgram, prgrm *CXProgram) {
 
 		// structs
 		if sPkg.StructsSize > 0 {
-			for j, sStrct := range s.Structs[sPkg.StructsOffset : sPkg.StructsOffset+sPkg.StructsSize] {
-				deserializeStruct(&sStrct, prgrm.Packages[pkg.Name].Structs[j], s, prgrm)
+			for _, sStrct := range s.Structs[sPkg.StructsOffset : sPkg.StructsOffset+sPkg.StructsSize] {
+				strctName := deserializeString(sStrct.NameOffset, sStrct.NameSize, s)
+				deserializeStruct(&sStrct, prgrm.Packages[pkg.Name].Structs[strctName], s, prgrm)
 			}
 		}
 
 		// functions
 		if sPkg.FunctionsSize > 0 {
-			for j, sFn := range s.Functions[sPkg.FunctionsOffset : sPkg.FunctionsOffset+sPkg.FunctionsSize] {
-				deserializeFunction(&sFn, prgrm.Packages[pkg.Name].Functions[j], s, prgrm)
+			for _, sFn := range s.Functions[sPkg.FunctionsOffset : sPkg.FunctionsOffset+sPkg.FunctionsSize] {
+				fnName := deserializeString(sFn.NameOffset, sFn.NameSize, s)
+				deserializeFunction(&sFn, prgrm.Packages[pkg.Name].Functions[fnName], s, prgrm)
 			}
 		}
 	}
