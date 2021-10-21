@@ -11,10 +11,10 @@ type CXPackage struct {
 	Name string // Name of the package
 
 	// Contents
-	Imports   []*CXPackage  // imported packages
-	Functions []*CXFunction // declared functions in this package
-	Structs   []*CXStruct   // declared structs in this package
-	Globals   []*CXArgument // declared global variables in this package
+	Imports   map[string]*CXPackage // imported packages
+	Functions []*CXFunction         // declared functions in this package
+	Structs   []*CXStruct           // declared structs in this package
+	Globals   []*CXArgument         // declared global variables in this package
 
 	// Used by the REPL and cxgo
 	CurrentFunction *CXFunction
@@ -46,12 +46,11 @@ func (pkg *CXPackage) GetFunction(fnName string) (*CXFunction, error) {
 
 // GetImport ...
 func (pkg *CXPackage) GetImport(impName string) (*CXPackage, error) {
-	for _, imp := range pkg.Imports {
-		if imp.Name == impName {
-			return imp, nil
-		}
+	if pkg.Imports[impName] == nil {
+		return nil, fmt.Errorf("package '%s' not imported", impName)
 	}
-	return nil, fmt.Errorf("package '%s' not imported", impName)
+
+	return pkg.Imports[impName], nil
 }
 
 /*
@@ -162,7 +161,7 @@ func MakePackage(name string) *CXPackage {
 	return &CXPackage{
 		Name:      name,
 		Globals:   make([]*CXArgument, 0, 10),
-		Imports:   make([]*CXPackage, 0),
+		Imports:   make(map[string]*CXPackage, 0),
 		Structs:   make([]*CXStruct, 0),
 		Functions: make([]*CXFunction, 0, 10),
 	}
@@ -185,15 +184,8 @@ func (pkg *CXPackage) GetCurrentStruct() (*CXStruct, error) {
 
 // AddImport ...
 func (pkg *CXPackage) AddImport(imp *CXPackage) *CXPackage {
-	found := false
-	for _, im := range pkg.Imports {
-		if im.Name == imp.Name {
-			found = true
-			break
-		}
-	}
-	if !found {
-		pkg.Imports = append(pkg.Imports, imp)
+	if pkg.Imports[imp.Name] == nil {
+		pkg.Imports[imp.Name] = imp
 	}
 
 	return pkg
@@ -201,16 +193,8 @@ func (pkg *CXPackage) AddImport(imp *CXPackage) *CXPackage {
 
 // RemoveImport ...
 func (pkg *CXPackage) RemoveImport(impName string) {
-	lenImps := len(pkg.Imports)
-	for i, imp := range pkg.Imports {
-		if imp.Name == impName {
-			if i == lenImps-1 {
-				pkg.Imports = pkg.Imports[:len(pkg.Imports)-1]
-			} else {
-				pkg.Imports = append(pkg.Imports[:i], pkg.Imports[i+1:]...)
-			}
-			break
-		}
+	if pkg.Imports[impName] != nil {
+		delete(pkg.Imports, impName)
 	}
 }
 

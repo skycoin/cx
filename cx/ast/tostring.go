@@ -45,8 +45,10 @@ func buildStrImports(pkg *CXPackage, ast *string) {
 		*ast += "\tImports\n"
 	}
 
-	for j, imp := range pkg.Imports {
-		*ast += fmt.Sprintf("\t\t%d.- Import: %s\n", j, imp.Name)
+	count := 0
+	for _, imp := range pkg.Imports {
+		*ast += fmt.Sprintf("\t\t%d.- Import: %s\n", count, imp.Name)
+		count++
 	}
 }
 

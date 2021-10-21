@@ -308,12 +308,15 @@ func serializePackageImports(pkg *CXPackage, s *SerializedCXProgram) {
 		return
 	}
 	imps := make([]int64, l)
-	for i, imp := range pkg.Imports {
+	count := 0
+	for _, imp := range pkg.Imports {
 		if idx, found := s.PackagesMap[imp.Name]; found {
-			imps[i] = int64(idx)
+			imps[count] = int64(idx)
 		} else {
 			panic("import package reference not found")
 		}
+
+		count++
 	}
 
 	s.Packages[s.PackagesMap[pkg.Name]].ImportsOffset = int64(len(s.Integers))
@@ -662,7 +665,7 @@ func deserializePackages(s *SerializedCXProgram, prgrm *CXProgram) {
 		prgrm.Packages[pkg.Name] = &pkg
 
 		if sPkg.ImportsSize > 0 {
-			prgrm.Packages[pkg.Name].Imports = make([]*CXPackage, sPkg.ImportsSize)
+			prgrm.Packages[pkg.Name].Imports = make(map[string]*CXPackage, sPkg.ImportsSize)
 		}
 
 		if sPkg.FunctionsSize > 0 {
@@ -707,8 +710,9 @@ func deserializePackages(s *SerializedCXProgram, prgrm *CXProgram) {
 			// getting indexes of imports
 			idxs := deserializeIntegers(sPkg.ImportsOffset, sPkg.ImportsSize, s)
 
-			for j, idx := range idxs {
-				prgrm.Packages[pkg.Name].Imports[j] = deserializePackageImport(&s.Packages[idx], s, prgrm)
+			for _, idx := range idxs {
+				impPkg := deserializePackageImport(&s.Packages[idx], s, prgrm)
+				prgrm.Packages[pkg.Name].Imports[impPkg.Name] = impPkg
 			}
 		}
 
