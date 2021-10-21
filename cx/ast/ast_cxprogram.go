@@ -217,20 +217,11 @@ func (cxprogram *CXProgram) PrintProgram() {
 
 // Only two users, both in cx/execute.go
 func (cxprogram *CXProgram) SelectPackage(name string) (*CXPackage, error) {
-
-	var found *CXPackage
-	for _, mod := range cxprogram.Packages {
-		if mod.Name == name {
-			cxprogram.CurrentPackage = mod
-			found = mod
-		}
-	}
-
-	if found == nil {
+	if cxprogram.Packages[name] == nil {
 		return nil, fmt.Errorf("Package '%s' does not exist", name)
 	}
 
-	return found, nil
+	return cxprogram.Packages[name], nil
 }
 
 // GetCurrentPackage ...
