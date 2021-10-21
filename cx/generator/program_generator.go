@@ -36,7 +36,7 @@ func GenerateRandomExpressions(inputFn *cxast.CXFunction, inputPkg *cxast.CXPack
 		}
 
 		// if operator is jmp, add then and else lines
-		if IsJumpOperator(op.OpCode) {
+		if IsJumpOperator(op.AtomicOPCode) {
 			lineNumOptions := numExprs - len(expr.Function.Expressions)
 			if lineNumOptions < 0 {
 				lineNumOptions = (lineNumOptions * -1) - 2
@@ -65,7 +65,7 @@ func GenerateRandomExpressions(inputFn *cxast.CXFunction, inputPkg *cxast.CXPack
 		}
 	}
 	inputFn.Size = calcFnSize(inputFn)
-	inputFn.Length = numExprs
+	inputFn.LineCount = numExprs
 }
 
 func IsJumpOperator(opCode int) bool {
@@ -118,7 +118,7 @@ func getRandInp(expr *cxast.CXExpression) *cxast.CXArgument {
 	lengthOfOptions := len(optionsFromInputs) + len(optionsFromExpressions)
 
 	// if no options available or if operator is jump, add new i32_LT expression.
-	if lengthOfOptions == 0 || expr.Operator.OpCode == cxconstants.OP_JMP {
+	if lengthOfOptions == 0 || expr.Operator.AtomicOPCode == cxconstants.OP_JMP {
 		// TODO: improve process when there's OP_JMP
 		return addNewExpression(expr, cxast.OpCodes["i32.lt"])
 	}

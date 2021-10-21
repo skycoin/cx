@@ -18,7 +18,7 @@ func IsValidSliceIndex(offset types.Pointer, index types.Pointer, sizeofElement 
 
 // GetSliceOffset ...
 func GetSliceOffset(fp types.Pointer, arg *CXArgument) types.Pointer {
-	element := GetAssignmentElement(arg)
+	element := arg.GetAssignmentElement()
 	if element.IsSlice {
 		return types.Read_ptr(PROGRAM.Memory, GetFinalOffset(fp, arg))
 	}

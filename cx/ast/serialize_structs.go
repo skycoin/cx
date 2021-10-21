@@ -148,7 +148,7 @@ type serializedArgument struct {
 	IsReference int64
 
 	IsStruct           int64
-	IsRest             int64
+	IsInnerArg         int64
 	IsLocalDeclaration int64
 	IsShortDeclaration int64
 	PreviouslyDeclared int64

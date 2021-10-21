@@ -1,10 +1,11 @@
 package execute
 
 import (
+	"os"
+
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
-    "github.com/skycoin/cx/cx/types"
-	"os"
+	"github.com/skycoin/cx/cx/types"
 )
 
 //TODO: Define Function Pointers and deprecate Callback
@@ -21,8 +22,8 @@ func Callback(cxprogram *ast.CXProgram, fn *ast.CXFunction, inputs [][]byte) (ou
 	newCall := &cxprogram.CallStack[cxprogram.CallCounter]
 	newCall.Operator = fn
 	newCall.Line = 0
-	newCall.FramePointer = cxprogram.StackPointer
-	cxprogram.StackPointer += newCall.Operator.Size
+	newCall.FramePointer = cxprogram.Stack.Pointer
+	cxprogram.Stack.Pointer += newCall.Operator.Size
 	newFP := newCall.FramePointer
 
 	// wiping next mem frame (removing garbage)
@@ -34,10 +35,10 @@ func Callback(cxprogram *ast.CXProgram, fn *ast.CXFunction, inputs [][]byte) (ou
 		types.WriteSlice_byte(cxprogram.Memory, ast.GetFinalOffset(newFP, newCall.Operator.Inputs[i]), inp)
 	}
 
-	var nCalls = 0
+	var maxOps = 0
 
-	//err := cxprogram.Run(true, &nCalls, previousCall)
-	err := RunCxAst(cxprogram, true, &nCalls, previousCall)
+	//err := cxprogram.Run(true, maxOps, previousCall)
+	err := RunCxAst(cxprogram, true, maxOps, previousCall)
 	if err != nil {
 		os.Exit(constants.CX_INTERNAL_ERROR)
 	}

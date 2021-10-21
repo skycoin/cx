@@ -1,8 +1,8 @@
 package ast
 
 import (
-    "github.com/skycoin/cx/cx/constants"
-    "github.com/skycoin/cx/cx/types"
+	"github.com/skycoin/cx/cx/constants"
+	"github.com/skycoin/cx/cx/types"
 )
 
 // minHeapSize determines what's the minimum heap size that a CX program
@@ -25,10 +25,9 @@ func minHeapSize() types.Pointer {
 // EnsureHeap ensures that `prgrm` has `minHeapSize()`
 // bytes allocated after the data segment.
 func (cxprogram *CXProgram) EnsureMinimumHeapSize() {
-	currHeapSize := types.Cast_int_to_ptr(len(cxprogram.Memory)) - cxprogram.HeapStartsAt
+	currHeapSize := types.Cast_int_to_ptr(len(cxprogram.Memory)) - cxprogram.Heap.StartsAt
 	minHeapSize := minHeapSize()
 	if currHeapSize < minHeapSize {
 		cxprogram.Memory = append(cxprogram.Memory, make([]byte, minHeapSize-currHeapSize)...)
 	}
 }
-

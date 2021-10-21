@@ -2,6 +2,7 @@ package ast
 
 import (
 	"fmt"
+
 	"github.com/skycoin/cx/cx/types"
 )
 
@@ -15,7 +16,7 @@ func (cxprogram *CXProgram) PrintStack() {
 	fmt.Println("===Callstack===")
 
 	// we're going backwards in the stack
-	fp := cxprogram.StackPointer
+	fp := cxprogram.Stack.Pointer
 
 	for c := cxprogram.CallCounter; c != types.InvalidPointer; c-- {
 		op := cxprogram.CallStack[c].Operator
@@ -97,8 +98,8 @@ func (cxprogram *CXProgram) PrintStack() {
 
 // TODO: Deprecate
 func ExprOpName(expr *CXExpression) string {
-	if expr.Operator.IsBuiltin {
-		return OpNames[expr.Operator.OpCode]
+	if expr.Operator.IsBuiltIn() {
+		return OpNames[expr.Operator.AtomicOPCode]
 	}
 	return expr.Operator.Name
 

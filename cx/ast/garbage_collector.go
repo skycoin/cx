@@ -2,7 +2,7 @@ package ast
 
 import (
 	"github.com/skycoin/cx/cx/constants"
-    "github.com/skycoin/cx/cx/types"
+	"github.com/skycoin/cx/cx/types"
 )
 
 // MarkAndCompact ...
@@ -17,7 +17,7 @@ func MarkAndCompact(prgrm *CXProgram) {
 			if (glbl.IsPointer || glbl.IsSlice || glbl.Type == types.STR) && glbl.CustomType == nil {
 				// Getting the offset to the object in the heap
 				heapOffset := types.Read_ptr(prgrm.Memory, glbl.Offset)
-				if heapOffset < prgrm.HeapStartsAt {
+				if heapOffset < prgrm.Heap.StartsAt {
 					continue
 				}
 				MarkObjectsTree(prgrm, glbl.Offset, glbl.Type, glbl.DeclarationSpecifiers[1:])
@@ -28,8 +28,8 @@ func MarkAndCompact(prgrm *CXProgram) {
 				for _, fld := range glbl.CustomType.Fields {
 					offset := glbl.Offset + fld.Offset
 					// Getting the offset to the object in the heap
-                    heapOffset := types.Read_ptr(prgrm.Memory, offset)
-                    if heapOffset < prgrm.HeapStartsAt {
+					heapOffset := types.Read_ptr(prgrm.Memory, offset)
+					if heapOffset < prgrm.Heap.StartsAt {
 						continue
 					}
 
@@ -67,8 +67,8 @@ func MarkAndCompact(prgrm *CXProgram) {
 				// If `ptr` has fields, we need to navigate the heap and mark its fields too.
 				if ptr.CustomType != nil {
 					// Getting the offset to the object in the heap
-                    heapOffset := types.Read_ptr(prgrm.Memory, offset)
-                    if heapOffset >= prgrm.HeapStartsAt {
+					heapOffset := types.Read_ptr(prgrm.Memory, offset)
+					if heapOffset >= prgrm.Heap.StartsAt {
 						for _, fld := range ptr.CustomType.Fields {
 							MarkObjectsTree(prgrm, heapOffset+types.OBJECT_HEADER_SIZE+fld.Offset, fld.Type, fld.DeclarationSpecifiers[1:])
 						}
@@ -90,20 +90,20 @@ func MarkAndCompact(prgrm *CXProgram) {
 	}
 
 	// Relocation of live objects.
-	for c := prgrm.HeapStartsAt + constants.NULL_HEAP_ADDRESS_OFFSET; c < prgrm.HeapStartsAt+prgrm.HeapPointer; {
+	for c := prgrm.Heap.StartsAt + constants.NULL_HEAP_ADDRESS_OFFSET; c < prgrm.Heap.StartsAt+prgrm.Heap.Pointer; {
 		objSize := types.Read_obj_size(prgrm.Memory, c)
 
 		if prgrm.Memory[c] == 1 {
 			forwardingAddress := types.Read_obj_forwarding_address(prgrm.Memory, c)
 
 			// We update the pointers that are pointing to the just moved object.
-			updatePointers(prgrm, forwardingAddress, prgrm.HeapStartsAt+faddr)
+			updatePointers(prgrm, forwardingAddress, prgrm.Heap.StartsAt+faddr)
 
 			// setting the mark back to 0
 			prgrm.Memory[c] = 0
 			// then it's alive and we'll relocate the object
 			for i := types.Pointer(0); i < objSize; i++ {
-				prgrm.Memory[faddr+prgrm.HeapStartsAt+i] = prgrm.Memory[c+i]
+				prgrm.Memory[faddr+prgrm.Heap.StartsAt+i] = prgrm.Memory[c+i]
 			}
 
 			faddr += objSize
@@ -112,7 +112,7 @@ func MarkAndCompact(prgrm *CXProgram) {
 		c += objSize
 	}
 
-	prgrm.HeapPointer = faddr
+	prgrm.Heap.Pointer = faddr
 }
 
 // updateDisplaceReference performs the actual addition or subtraction of `plusOff` to the address being pointed by the element at `atOffset`.
@@ -157,7 +157,7 @@ func doDisplaceReferences(prgrm *CXProgram, updated *map[types.Pointer]types.Poi
 	updateDisplaceReference(prgrm, updated, atOffset, plusOff)
 
 	// It can't be a tree of objects.
-	if numDeclSpecs == 0 || heapOffset <= prgrm.HeapStartsAt+condPlusOff {
+	if numDeclSpecs == 0 || heapOffset <= prgrm.Heap.StartsAt+condPlusOff {
 		return
 	}
 
@@ -176,7 +176,7 @@ func doDisplaceReferences(prgrm *CXProgram, updated *map[types.Pointer]types.Poi
 
 			for c := types.Pointer(0); c < sliceLen; c++ {
 				cHeapOffset := types.Read_ptr(prgrm.Memory, heapOffset+condPlusOff+offsetToElements+c*types.POINTER_SIZE)
-				if cHeapOffset <= prgrm.HeapStartsAt+condPlusOff {
+				if cHeapOffset <= prgrm.Heap.StartsAt+condPlusOff {
 					// Then it's pointing to null or data segment
 					continue
 				}
@@ -201,7 +201,7 @@ func DisplaceReferences(prgrm *CXProgram, off types.Pointer, numPkgs int) {
 		// execution.
 		for _, glbl := range pkg.Globals {
 			if glbl.IsPointer || glbl.IsSlice {
-				doDisplaceReferences(prgrm, &updated, glbl.Offset, off, glbl.Type, glbl.DeclarationSpecifiers[1:])// TODO:PTR remove hardcoded offsets
+				doDisplaceReferences(prgrm, &updated, glbl.Offset, off, glbl.Type, glbl.DeclarationSpecifiers[1:]) // TODO:PTR remove hardcoded offsets
 			}
 
 			// If it's a struct instance we need to displace each of its fields.
@@ -222,7 +222,7 @@ func Mark(prgrm *CXProgram, heapOffset types.Pointer) {
 	types.Write_obj_mark(prgrm.Memory, heapOffset, 1)
 
 	// Setting forwarding address. This address is used to know where the object used to live on the heap. With it we can know what symbols were pointing to that dead object and then update their address.
-    types.Write_obj_forwarding_address(prgrm.Memory, heapOffset, heapOffset)
+	types.Write_obj_forwarding_address(prgrm.Memory, heapOffset, heapOffset)
 }
 
 // MarkObjectsTree traverses and marks a possible tree of heap objects (slices of slices, slices of pointers, etc.).
@@ -239,7 +239,7 @@ func MarkObjectsTree(prgrm *CXProgram, offset types.Pointer, baseType types.Code
 	heapOffset := types.Read_ptr(prgrm.Memory, offset)
 
 	// Then it's a pointer to an object in the stack and it should not be marked.
-	if heapOffset <= prgrm.HeapStartsAt {
+	if heapOffset <= prgrm.Heap.StartsAt {
 		return
 	}
 
@@ -264,7 +264,7 @@ func MarkObjectsTree(prgrm *CXProgram, offset types.Pointer, baseType types.Code
 			for c := types.Pointer(0); c < sliceLen; c++ {
 				offsetToElements := types.OBJECT_HEADER_SIZE + constants.SLICE_HEADER_SIZE
 				cHeapOffset := types.Read_ptr(prgrm.Memory, heapOffset+offsetToElements+c*types.POINTER_SIZE)
-				if cHeapOffset <= prgrm.HeapStartsAt {
+				if cHeapOffset <= prgrm.Heap.StartsAt {
 					// Then it's pointing to null or data segment
 					continue
 				}
@@ -277,7 +277,7 @@ func MarkObjectsTree(prgrm *CXProgram, offset types.Pointer, baseType types.Code
 
 // updatePointer changes the address of the pointer located at `atOffset` to `newAddress`.
 func updatePointer(prgrm *CXProgram, atOffset types.Pointer, toAddress types.Pointer) {
-    types.Write_ptr(prgrm.Memory, atOffset, toAddress)
+	types.Write_ptr(prgrm.Memory, atOffset, toAddress)
 }
 
 // updatePointerTree changes the address of the pointer located at `atOffset` to `newAddress` and checks if it is the
@@ -294,7 +294,7 @@ func updatePointerTree(prgrm *CXProgram, atOffset types.Pointer, oldAddr, newAdd
 	}
 
 	// It can't be a tree of objects.
-	if numDeclSpecs == 0 || heapOffset <= prgrm.HeapStartsAt {
+	if numDeclSpecs == 0 || heapOffset <= prgrm.Heap.StartsAt {
 		return
 	}
 
@@ -312,7 +312,7 @@ func updatePointerTree(prgrm *CXProgram, atOffset types.Pointer, oldAddr, newAdd
 
 			for c := types.Pointer(0); c < sliceLen; c++ {
 				cHeapOffset := types.Read_ptr(prgrm.Memory, heapOffset+offsetToElements+c*types.POINTER_SIZE)
-				if cHeapOffset <= prgrm.HeapStartsAt {
+				if cHeapOffset <= prgrm.Heap.StartsAt {
 					// Then it's pointing to null or data segment
 					continue
 				}
@@ -320,7 +320,7 @@ func updatePointerTree(prgrm *CXProgram, atOffset types.Pointer, oldAddr, newAdd
 				// Then it's not pointing to the object moved by the GC or it's pointing to
 				// an object in the stack segment or nil.
 				if cHeapOffset == oldAddr {
-					updatePointerTree(prgrm, heapOffset+offsetToElements+c*types.POINTER_SIZE, oldAddr, newAddr, baseType, declSpecs[1:])// TODO:PTR remove hardcode
+					updatePointerTree(prgrm, heapOffset+offsetToElements+c*types.POINTER_SIZE, oldAddr, newAddr, baseType, declSpecs[1:]) // TODO:PTR remove hardcode
 				}
 			}
 		}
@@ -343,7 +343,7 @@ func updatePointers(prgrm *CXProgram, oldAddr, newAddr types.Pointer) {
 			if (glbl.IsPointer || glbl.IsSlice || glbl.Type == types.STR) && glbl.CustomType == nil {
 				// Getting the offset to the object in the heap
 				heapOffset := types.Read_ptr(prgrm.Memory, glbl.Offset)
-				if heapOffset < prgrm.HeapStartsAt {
+				if heapOffset < prgrm.Heap.StartsAt {
 					continue
 				}
 
@@ -358,9 +358,9 @@ func updatePointers(prgrm *CXProgram, oldAddr, newAddr types.Pointer) {
 					}
 					offset := glbl.Offset + fld.Offset
 
-                    // Getting the offset to the object in the heap
+					// Getting the offset to the object in the heap
 					heapOffset := types.Read_ptr(prgrm.Memory, offset)
-					if heapOffset < prgrm.HeapStartsAt {
+					if heapOffset < prgrm.Heap.StartsAt {
 						continue
 					}
 
@@ -395,13 +395,13 @@ func updatePointers(prgrm *CXProgram, oldAddr, newAddr types.Pointer) {
 			// Checking if we need to mark `ptr`.
 			if ptrIsPointer {
 				// Getting the offset to the object in the heap
-			    heapOffset := types.Read_ptr(prgrm.Memory, offset)
-			    if heapOffset > prgrm.HeapStartsAt {
+				heapOffset := types.Read_ptr(prgrm.Memory, offset)
+				if heapOffset > prgrm.Heap.StartsAt {
 					updatePointerTree(prgrm, offset, oldAddr, newAddr, ptr.Type, ptr.DeclarationSpecifiers[1:])
 
 					// If `ptr` has fields, we need to navigate the heap and mark its fields too.
 					if ptr.CustomType != nil {
-						if heapOffset >= prgrm.HeapStartsAt {
+						if heapOffset >= prgrm.Heap.StartsAt {
 							for _, fld := range ptr.CustomType.Fields {
 								updatePointerTree(prgrm, heapOffset+types.OBJECT_HEADER_SIZE+fld.Offset, oldAddr, newAddr, fld.Type, fld.DeclarationSpecifiers[1:])
 							}
@@ -417,7 +417,7 @@ func updatePointers(prgrm *CXProgram, oldAddr, newAddr types.Pointer) {
 
 				// Getting the offset to the object in the heap
 				heapOffset := types.Read_ptr(prgrm.Memory, offset+fld.Offset)
-				if heapOffset > prgrm.HeapStartsAt {
+				if heapOffset > prgrm.Heap.StartsAt {
 					updatePointerTree(prgrm, offset+fld.Offset, oldAddr, newAddr, fld.Type, fld.DeclarationSpecifiers[1:])
 				}
 			}

@@ -3,17 +3,57 @@ package ast
 import (
 	"errors"
 	"fmt"
+
+	"github.com/skycoin/cx/cx/types"
 )
+
+// CXFunction is used to represent a CX function.
+type CXFunction struct {
+	// Metadata
+	Name         string     // Name of the function
+	Package      *CXPackage // The package it's a member of
+	AtomicOPCode int
+
+	// Contents
+	Inputs      []*CXArgument   // Input parameters to the function
+	Outputs     []*CXArgument   // Output parameters from the function
+	Expressions []*CXExpression // Expressions, including control flow statements, in the function
+
+	//TODO: Better Comment for this
+	LineCount int // number of expressions, pre-computed for performance
+
+	//TODO: Better Comment for this
+	Size types.Pointer // automatic memory size
+
+	// Debugging
+	FileName string
+	FileLine int
+
+	// Used by the GC
+	ListOfPointers []*CXArgument // Root pointers for the GC algorithm
+
+	// Used by the REPL and parser
+	CurrentExpression *CXExpression
+}
+
+// IsBuiltIn determines if opcode is not 0
+// True if the function is native to CX, e.g. int32.add()
+func (cxf CXFunction) IsBuiltIn() bool {
+	return cxf.AtomicOPCode != 0
+}
+
+func (cxf CXFunction) IsAtomic() bool {
+	return cxf.AtomicOPCode != 0
+}
 
 // MakeFunction creates an empty function.
 // Later, parameters and contents can be added.
 //
 func MakeFunction(name string, fileName string, fileLine int) *CXFunction {
 	return &CXFunction{
-		Name:      name,
-		FileName:  fileName,
-		FileLine:  fileLine,
-		IsBuiltin: false,
+		Name:     name,
+		FileName: fileName,
+		FileLine: fileLine,
 	}
 }
 
@@ -144,7 +184,7 @@ func (fn *CXFunction) AddExpression(expr *CXExpression) *CXFunction {
 	expr.Function = fn
 	fn.Expressions = append(fn.Expressions, expr)
 	fn.CurrentExpression = expr
-	fn.Length++
+	fn.LineCount++
 	return fn
 }
 
@@ -161,7 +201,7 @@ func (fn *CXFunction) AddExpressionByLineNumber(expr *CXExpression, line int) *C
 	}
 
 	fn.CurrentExpression = expr
-	fn.Length++
+	fn.LineCount++
 	return fn
 }
 
@@ -189,4 +229,34 @@ func MakeExpression(op *CXFunction, fileName string, fileLine int) *CXExpression
 		Operator: op,
 		FileLine: fileLine,
 		FileName: fileName}
+}
+
+// SelectExpression ...
+func (fn *CXFunction) SelectExpression(line int) (*CXExpression, error) {
+	// prgrmStep := &CXProgramStep{
+	// 	Action: func(cxt *CXProgram) {
+	// 		if mod, err := cxt.GetCurrentPackage(); err == nil {
+	// 			if fn, err := mod.GetCurrentFunction(); err == nil {
+	// 				fn.SelectExpression(line)
+	// 			}
+	// 		}
+	// 	},
+	// }
+	// saveProgramStep(prgrmStep, fn.Context)
+	if len(fn.Expressions) == 0 {
+		return nil, errors.New("There are no expressions in this function")
+	}
+
+	if line >= len(fn.Expressions) {
+		line = len(fn.Expressions) - 1
+	}
+
+	if line < 0 {
+		line = 0
+	}
+
+	expr := fn.Expressions[line]
+	fn.CurrentExpression = expr
+
+	return expr, nil
 }

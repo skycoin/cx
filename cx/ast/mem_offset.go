@@ -64,7 +64,7 @@ func GetFinalOffset(fp types.Pointer, arg *CXArgument) types.Pointer {
 	finalOffset := arg.Offset
 
 	//Todo: find way to eliminate this check
-	if finalOffset < PROGRAM.StackSize {
+	if finalOffset < PROGRAM.Stack.Size {
 		// Then it's in the stack, not in data or heap and we need to consider the frame pointer.
 		finalOffset += fp
 	}
@@ -145,7 +145,7 @@ func CalculateDereferences(arg *CXArgument, finalOffset types.Pointer, fp types.
 	}
 
 	// if finalOffset >= PROGRAM.HeapStartsAt {
-	if finalOffset.IsValid() && finalOffset >= PROGRAM.HeapStartsAt && isPointer {
+	if finalOffset.IsValid() && finalOffset >= PROGRAM.Heap.StartsAt && isPointer {
 		// then it's an object
 		finalOffset += types.OBJECT_HEADER_SIZE
 		if arg.IsSlice {

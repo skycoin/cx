@@ -371,7 +371,7 @@ func EncodeSizeSerializedCXProgram(obj *SerializedCXProgram) uint64 {
 		// x1.IsStruct
 		i1 += 8
 
-		// x1.IsRest
+		// x1.IsInnerArg
 		i1 += 8
 
 		// x1.IsLocalDeclaration
@@ -920,8 +920,8 @@ func EncodeSerializedCXProgramToBuffer(buf []byte, obj *SerializedCXProgram) err
 		// x.IsStruct
 		e.Int64(x.IsStruct)
 
-		// x.IsRest
-		e.Int64(x.IsRest)
+		// x.IsInnerArg
+		e.Int64(x.IsInnerArg)
 
 		// x.IsLocalDeclaration
 		e.Int64(x.IsLocalDeclaration)
@@ -2187,12 +2187,12 @@ func DecodeSerializedCXProgram(buf []byte, obj *SerializedCXProgram) (uint64, er
 				}
 
 				{
-					// obj.Arguments[z1].IsRest
+					// obj.Arguments[z1].IsInnerArg
 					i, err := d.Int64()
 					if err != nil {
 						return 0, err
 					}
-					obj.Arguments[z1].IsRest = i
+					obj.Arguments[z1].IsInnerArg = i
 				}
 
 				{

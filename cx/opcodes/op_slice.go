@@ -8,7 +8,7 @@ import (
 
 //TODO: Rework
 func opSliceLen(inputs []ast.CXValue, outputs []ast.CXValue) {
-	elt := ast.GetAssignmentElement(inputs[0].Arg)
+	elt := inputs[0].Arg.GetAssignmentElement()
 
 	var sliceLen types.Pointer
 	if elt.IsSlice || elt.Type == types.AFF { //TODO: FIX
@@ -34,8 +34,8 @@ func opSliceAppend(inputs []ast.CXValue, outputs []ast.CXValue) {
 	sliceInputs := inputs[1:]
 	sliceInputsLen := types.Cast_int_to_ptr(len(sliceInputs))
 
-	eltInp0 := ast.GetAssignmentElement(inp0)
-	eltOut0 := ast.GetAssignmentElement(out0)
+	eltInp0 := inp0.GetAssignmentElement()
+	eltOut0 := out0.GetAssignmentElement()
 
 	if inp0.Type != inp1.Type || inp0.Type != out0.Type || !eltInp0.IsSlice || !eltOut0.IsSlice {
 		panic(constants.CX_RUNTIME_INVALID_ARGUMENT)
@@ -75,11 +75,11 @@ func opSliceResize(inputs []ast.CXValue, outputs []ast.CXValue) {
 	inp0, out0 := inputs[0].Arg, outputs[0].Arg
 	fp := inputs[0].FramePointer
 
-	if inp0.Type != out0.Type || !ast.GetAssignmentElement(inp0).IsSlice || !ast.GetAssignmentElement(out0).IsSlice {
+	if inp0.Type != out0.Type || !inp0.GetAssignmentElement().IsSlice || !out0.GetAssignmentElement().IsSlice {
 		panic(constants.CX_RUNTIME_INVALID_ARGUMENT)
 	}
 
-	eltInp0 := ast.GetAssignmentElement(inp0)
+	eltInp0 := inp0.GetAssignmentElement()
 
 	outputSliceOffset := ast.SliceResize(fp, out0, inp0, types.Cast_i32_to_ptr(inputs[1].Get_i32()), eltInp0.Size)
 
@@ -91,7 +91,7 @@ func opSliceInsertElement(inputs []ast.CXValue, outputs []ast.CXValue) {
 	inp0, inp2, out0 := inputs[0].Arg, inputs[2].Arg, outputs[0].Arg
 	fp := inputs[0].FramePointer
 
-	if inp0.Type != inp2.Type || inp0.Type != out0.Type || !ast.GetAssignmentElement(inp0).IsSlice || !ast.GetAssignmentElement(out0).IsSlice {
+	if inp0.Type != inp2.Type || inp0.Type != out0.Type || !inp0.GetAssignmentElement().IsSlice || !out0.GetAssignmentElement().IsSlice {
 		panic(constants.CX_RUNTIME_INVALID_ARGUMENT)
 	}
 
@@ -114,11 +114,11 @@ func opSliceRemoveElement(inputs []ast.CXValue, outputs []ast.CXValue) {
 	inp0, out0 := inputs[0].Arg, outputs[0].Arg
 	fp := inputs[0].FramePointer
 
-	if inp0.Type != out0.Type || !ast.GetAssignmentElement(inp0).IsSlice || !ast.GetAssignmentElement(out0).IsSlice {
+	if inp0.Type != out0.Type || !inp0.GetAssignmentElement().IsSlice || !out0.GetAssignmentElement().IsSlice {
 		panic(constants.CX_RUNTIME_INVALID_ARGUMENT)
 	}
 
-	outputSliceOffset := ast.SliceRemove(fp, out0, inp0, types.Cast_i32_to_ptr(inputs[1].Get_i32()), ast.GetAssignmentElement(inp0).Size)
+	outputSliceOffset := ast.SliceRemove(fp, out0, inp0, types.Cast_i32_to_ptr(inputs[1].Get_i32()), inp0.GetAssignmentElement().Size)
 
 	outputs[0].Set_ptr(outputSliceOffset)
 }
@@ -131,8 +131,8 @@ func opSliceCopy(inputs []ast.CXValue, outputs []ast.CXValue) {
 	dstOffset := ast.GetSliceOffset(fp, dstInput)
 	srcOffset := ast.GetSliceOffset(fp, srcInput)
 
-	dstElem := ast.GetAssignmentElement(dstInput)
-	srcElem := ast.GetAssignmentElement(srcInput)
+	dstElem := dstInput.GetAssignmentElement()
+	srcElem := srcInput.GetAssignmentElement()
 
 	if dstInput.Type != srcInput.Type || !dstElem.IsSlice || !srcElem.IsSlice || dstElem.Size != srcElem.Size {
 		panic(constants.CX_RUNTIME_INVALID_ARGUMENT)

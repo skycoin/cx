@@ -72,8 +72,8 @@ func TestSerialize_CipherEncoder(t *testing.T) {
 			}
 
 			if tc.includeDataMemory {
-				wantDataSegmentMemory := tc.program.Memory[tc.program.DataSegmentStartsAt : tc.program.DataSegmentStartsAt+tc.program.DataSegmentSize]
-				gotDataSegmentMemory := deserializedCXProgram.Memory[deserializedCXProgram.DataSegmentStartsAt : deserializedCXProgram.DataSegmentStartsAt+deserializedCXProgram.DataSegmentSize]
+				wantDataSegmentMemory := tc.program.Memory[tc.program.Data.StartsAt : tc.program.Data.StartsAt+tc.program.Data.Size]
+				gotDataSegmentMemory := deserializedCXProgram.Memory[deserializedCXProgram.Data.StartsAt : deserializedCXProgram.Data.StartsAt+deserializedCXProgram.Data.Size]
 				if !reflect.DeepEqual(wantDataSegmentMemory, gotDataSegmentMemory) {
 					t.Errorf("want %v, got %v", wantDataSegmentMemory, gotDataSegmentMemory)
 				}
@@ -129,8 +129,8 @@ func TestSerialize_SkyEncoder(t *testing.T) {
 			}
 
 			if tc.includeDataMemory {
-				wantDataSegmentMemory := tc.program.Memory[tc.program.DataSegmentStartsAt : tc.program.DataSegmentStartsAt+tc.program.DataSegmentSize]
-				gotDataSegmentMemory := deserializedCXProgram.Memory[deserializedCXProgram.DataSegmentStartsAt : deserializedCXProgram.DataSegmentStartsAt+deserializedCXProgram.DataSegmentSize]
+				wantDataSegmentMemory := tc.program.Memory[tc.program.Data.StartsAt : tc.program.Data.StartsAt+tc.program.Data.Size]
+				gotDataSegmentMemory := deserializedCXProgram.Memory[deserializedCXProgram.Data.StartsAt : deserializedCXProgram.Data.StartsAt+deserializedCXProgram.Data.Size]
 				if !reflect.DeepEqual(wantDataSegmentMemory, gotDataSegmentMemory) {
 					t.Errorf("want %v, got %v", wantDataSegmentMemory, gotDataSegmentMemory)
 				}

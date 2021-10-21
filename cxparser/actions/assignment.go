@@ -32,7 +32,7 @@ func StructLiteralAssignment(to []*ast.CXExpression, from []*ast.CXExpression) [
 	lastFrom := from[len(from)-1]
 	// If the last expression in `from` is declared as pointer
 	// then it means the whole struct literal needs to be passed by reference.
-	if !hasDeclSpec(ast.GetAssignmentElement(lastFrom.Outputs[0]), constants.DECL_POINTER) {
+	if !hasDeclSpec(lastFrom.Outputs[0].GetAssignmentElement(), constants.DECL_POINTER) {
 		return assignStructLiteralFields(to, from, to[0].Outputs[0].ArgDetails.Name)
 	} else {
 		// And we also need an auxiliary variable to point to,
@@ -223,12 +223,12 @@ func Assignment(to []*ast.CXExpression, assignOp string, from []*ast.CXExpressio
 
 		return append(to[:len(to)-1], from...)
 	} else {
-		if from[idx].Operator.IsBuiltin {
+		if from[idx].Operator.IsBuiltIn() {
 			// only assigning as if the operator had only one output defined
 
-			if from[idx].Operator.OpCode != constants.OP_IDENTITY {
+			if from[idx].Operator.AtomicOPCode != constants.OP_IDENTITY {
 				// it's a short variable declaration
-				to[0].Outputs[0].Size = ast.Natives[from[idx].Operator.OpCode].Outputs[0].Size
+				to[0].Outputs[0].Size = ast.Natives[from[idx].Operator.AtomicOPCode].Outputs[0].Size
 				to[0].Outputs[0].Type = from[idx].Operator.Outputs[0].Type
 				to[0].Outputs[0].Lengths = from[idx].Operator.Outputs[0].Lengths
 			}

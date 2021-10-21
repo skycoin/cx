@@ -15,7 +15,7 @@ func SetCorrectArithmeticOp(expr *ast.CXExpression) {
 		return
 	}
 
-	code := expr.Operator.OpCode
+	code := expr.Operator.AtomicOPCode
 	if code > constants.START_OF_OPERATORS && code < constants.END_OF_OPERATORS {
 		// TODO: argument type are not fully resolved here, should be move elsewhere.
 		//expr.Operator = cxcore.GetTypedOperator(cxcore.GetType(expr.ProgramInput[0]), code)
@@ -55,7 +55,7 @@ func WritePrimary(typeCode types.Code, byts []byte, isSlice bool) []*ast.CXExpre
 
 		arg.Size = typeCode.Size()
 		arg.TotalSize = size
-		arg.Offset = AST.DataSegmentSize + AST.DataSegmentStartsAt
+		arg.Offset = AST.Data.Size + AST.Data.StartsAt
 
 		if arg.Type == types.STR || arg.Type == types.AFF {
 			arg.PassBy = constants.PASSBY_REFERENCE
@@ -73,22 +73,22 @@ func WritePrimary(typeCode types.Code, byts []byte, isSlice bool) []*ast.CXExpre
 		// After compilation, we calculate how many bytes we need to add to have a heap segment
 		// equal to `minHeapSize()` that is allocated after the data segment.
 		memSize := types.Cast_int_to_ptr(len(AST.Memory))
-		if (size + AST.DataSegmentSize + AST.DataSegmentStartsAt) > memSize {
+		if (size + AST.Data.Size + AST.Data.StartsAt) > memSize {
 			var i types.Pointer
 			// First we need to fill the remaining free bytes in
 			// the current `AST.Memory` slice.
-			for i = types.Pointer(0); i < memSize-AST.DataSegmentSize+AST.DataSegmentStartsAt; i++ {
-				AST.Memory[AST.DataSegmentSize+AST.DataSegmentStartsAt+i] = byts[i]
+			for i = types.Pointer(0); i < memSize-AST.Data.Size+AST.Data.StartsAt; i++ {
+				AST.Memory[AST.Data.Size+AST.Data.StartsAt+i] = byts[i]
 			}
 			// Then we append the bytes that didn't fit.
 			AST.Memory = append(AST.Memory, byts[i:]...)
 		} else {
 			for i, byt := range byts {
-				AST.Memory[AST.DataSegmentSize+AST.DataSegmentStartsAt+types.Cast_int_to_ptr(i)] = byt
+				AST.Memory[AST.Data.Size+AST.Data.StartsAt+types.Cast_int_to_ptr(i)] = byt
 			}
 		}
-		AST.DataSegmentSize += size
-		AST.HeapStartsAt = AST.DataSegmentSize + AST.DataSegmentStartsAt
+		AST.Data.Size += size
+		AST.Heap.StartsAt = AST.Data.Size + AST.Data.StartsAt
 
 		expr := ast.MakeExpression(nil, CurrentFile, LineNo)
 		expr.Package = pkg
