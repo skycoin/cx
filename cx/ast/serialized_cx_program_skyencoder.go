@@ -49,8 +49,8 @@ func EncodeSizeSerializedCXProgram(obj *SerializedCXProgram) uint64 {
 	// obj.Program.PackagesSize
 	i0 += 8
 
-	// obj.Program.CurrentPackageOffset
-	i0 += 8
+	// obj.Program.CurrentPackageName
+	i0 += 4 + uint64(len(obj.Program.CurrentPackageName))
 
 	// obj.Program.InputsOffset
 	i0 += 8
@@ -169,7 +169,7 @@ func EncodeSizeSerializedCXProgram(obj *SerializedCXProgram) uint64 {
 
 	// obj.Structs
 	i0 += 4
-	{
+	for _, x1 := range obj.Structs {
 		i1 := uint64(0)
 
 		// x1.NameOffset
@@ -187,10 +187,10 @@ func EncodeSizeSerializedCXProgram(obj *SerializedCXProgram) uint64 {
 		// x1.Size
 		i1 += 8
 
-		// x1.PackageOffset
-		i1 += 8
+		// x1.PackageName
+		i1 += 4 + uint64(len(x1.PackageName))
 
-		i0 += uint64(len(obj.Structs)) * i1
+		i0 += i1
 	}
 
 	// obj.StructsMap
@@ -209,7 +209,7 @@ func EncodeSizeSerializedCXProgram(obj *SerializedCXProgram) uint64 {
 
 	// obj.Functions
 	i0 += 4
-	{
+	for _, x1 := range obj.Functions {
 		i1 := uint64(0)
 
 		// x1.NameOffset
@@ -251,10 +251,10 @@ func EncodeSizeSerializedCXProgram(obj *SerializedCXProgram) uint64 {
 		// x1.CurrentExpressionOffset
 		i1 += 8
 
-		// x1.PackageOffset
-		i1 += 8
+		// x1.PackageName
+		i1 += 4 + uint64(len(x1.PackageName))
 
-		i0 += uint64(len(obj.Functions)) * i1
+		i0 += i1
 	}
 
 	// obj.FunctionsMap
@@ -273,7 +273,7 @@ func EncodeSizeSerializedCXProgram(obj *SerializedCXProgram) uint64 {
 
 	// obj.Expressions
 	i0 += 4
-	{
+	for _, x1 := range obj.Expressions {
 		i1 := uint64(0)
 
 		// x1.OperatorOffset
@@ -315,15 +315,15 @@ func EncodeSizeSerializedCXProgram(obj *SerializedCXProgram) uint64 {
 		// x1.FunctionOffset
 		i1 += 8
 
-		// x1.PackageOffset
-		i1 += 8
+		// x1.PackageName
+		i1 += 4 + uint64(len(x1.PackageName))
 
-		i0 += uint64(len(obj.Expressions)) * i1
+		i0 += i1
 	}
 
 	// obj.Arguments
 	i0 += 4
-	{
+	for _, x1 := range obj.Arguments {
 		i1 := uint64(0)
 
 		// x1.NameOffset
@@ -419,10 +419,10 @@ func EncodeSizeSerializedCXProgram(obj *SerializedCXProgram) uint64 {
 		// x1.OutputsSize
 		i1 += 8
 
-		// x1.PackageOffset
-		i1 += 8
+		// x1.PackageName
+		i1 += 4 + uint64(len(x1.PackageName))
 
-		i0 += uint64(len(obj.Arguments)) * i1
+		i0 += i1
 	}
 
 	// obj.Calls
@@ -539,8 +539,13 @@ func EncodeSerializedCXProgramToBuffer(buf []byte, obj *SerializedCXProgram) err
 	// obj.Program.PackagesSize
 	e.Int64(obj.Program.PackagesSize)
 
-	// obj.Program.CurrentPackageOffset
-	e.Int64(obj.Program.CurrentPackageOffset)
+	// obj.Program.CurrentPackageName length check
+	if uint64(len(obj.Program.CurrentPackageName)) > math.MaxUint32 {
+		return errors.New("obj.Program.CurrentPackageName length exceeds math.MaxUint32")
+	}
+
+	// obj.Program.CurrentPackageName
+	e.ByteSlice([]byte(obj.Program.CurrentPackageName))
 
 	// obj.Program.InputsOffset
 	e.Int64(obj.Program.InputsOffset)
@@ -699,8 +704,13 @@ func EncodeSerializedCXProgramToBuffer(buf []byte, obj *SerializedCXProgram) err
 		// x.Size
 		e.Int64(x.Size)
 
-		// x.PackageOffset
-		e.Int64(x.PackageOffset)
+		// x.PackageName length check
+		if uint64(len(x.PackageName)) > math.MaxUint32 {
+			return errors.New("x.PackageName length exceeds math.MaxUint32")
+		}
+
+		// x.PackageName
+		e.ByteSlice([]byte(x.PackageName))
 
 	}
 
@@ -779,8 +789,13 @@ func EncodeSerializedCXProgramToBuffer(buf []byte, obj *SerializedCXProgram) err
 		// x.CurrentExpressionOffset
 		e.Int64(x.CurrentExpressionOffset)
 
-		// x.PackageOffset
-		e.Int64(x.PackageOffset)
+		// x.PackageName length check
+		if uint64(len(x.PackageName)) > math.MaxUint32 {
+			return errors.New("x.PackageName length exceeds math.MaxUint32")
+		}
+
+		// x.PackageName
+		e.ByteSlice([]byte(x.PackageName))
 
 	}
 
@@ -859,8 +874,13 @@ func EncodeSerializedCXProgramToBuffer(buf []byte, obj *SerializedCXProgram) err
 		// x.FunctionOffset
 		e.Int64(x.FunctionOffset)
 
-		// x.PackageOffset
-		e.Int64(x.PackageOffset)
+		// x.PackageName length check
+		if uint64(len(x.PackageName)) > math.MaxUint32 {
+			return errors.New("x.PackageName length exceeds math.MaxUint32")
+		}
+
+		// x.PackageName
+		e.ByteSlice([]byte(x.PackageName))
 
 	}
 
@@ -968,8 +988,13 @@ func EncodeSerializedCXProgramToBuffer(buf []byte, obj *SerializedCXProgram) err
 		// x.OutputsSize
 		e.Int64(x.OutputsSize)
 
-		// x.PackageOffset
-		e.Int64(x.PackageOffset)
+		// x.PackageName length check
+		if uint64(len(x.PackageName)) > math.MaxUint32 {
+			return errors.New("x.PackageName length exceeds math.MaxUint32")
+		}
+
+		// x.PackageName
+		e.ByteSlice([]byte(x.PackageName))
 
 	}
 
@@ -1189,12 +1214,20 @@ func DecodeSerializedCXProgram(buf []byte, obj *SerializedCXProgram) (uint64, er
 	}
 
 	{
-		// obj.Program.CurrentPackageOffset
-		i, err := d.Int64()
+		// obj.Program.CurrentPackageName
+
+		ul, err := d.Uint32()
 		if err != nil {
 			return 0, err
 		}
-		obj.Program.CurrentPackageOffset = i
+
+		length := int(ul)
+		if length < 0 || length > len(d.Buffer) {
+			return 0, encoder.ErrBufferUnderflow
+		}
+
+		obj.Program.CurrentPackageName = string(d.Buffer[:length])
+		d.Buffer = d.Buffer[length:]
 	}
 
 	{
@@ -1616,14 +1649,21 @@ func DecodeSerializedCXProgram(buf []byte, obj *SerializedCXProgram) (uint64, er
 				}
 
 				{
-					// obj.Structs[z1].PackageOffset
-					i, err := d.Int64()
+					// obj.Structs[z1].PackageName
+
+					ul, err := d.Uint32()
 					if err != nil {
 						return 0, err
 					}
-					obj.Structs[z1].PackageOffset = i
-				}
 
+					length := int(ul)
+					if length < 0 || length > len(d.Buffer) {
+						return 0, encoder.ErrBufferUnderflow
+					}
+
+					obj.Structs[z1].PackageName = string(d.Buffer[:length])
+					d.Buffer = d.Buffer[length:]
+				}
 			}
 		}
 	}
@@ -1819,14 +1859,21 @@ func DecodeSerializedCXProgram(buf []byte, obj *SerializedCXProgram) (uint64, er
 				}
 
 				{
-					// obj.Functions[z1].PackageOffset
-					i, err := d.Int64()
+					// obj.Functions[z1].PackageName
+
+					ul, err := d.Uint32()
 					if err != nil {
 						return 0, err
 					}
-					obj.Functions[z1].PackageOffset = i
-				}
 
+					length := int(ul)
+					if length < 0 || length > len(d.Buffer) {
+						return 0, encoder.ErrBufferUnderflow
+					}
+
+					obj.Functions[z1].PackageName = string(d.Buffer[:length])
+					d.Buffer = d.Buffer[length:]
+				}
 			}
 		}
 	}
@@ -2022,14 +2069,21 @@ func DecodeSerializedCXProgram(buf []byte, obj *SerializedCXProgram) (uint64, er
 				}
 
 				{
-					// obj.Expressions[z1].PackageOffset
-					i, err := d.Int64()
+					// obj.Expressions[z1].PackageName
+
+					ul, err := d.Uint32()
 					if err != nil {
 						return 0, err
 					}
-					obj.Expressions[z1].PackageOffset = i
-				}
 
+					length := int(ul)
+					if length < 0 || length > len(d.Buffer) {
+						return 0, encoder.ErrBufferUnderflow
+					}
+
+					obj.Expressions[z1].PackageName = string(d.Buffer[:length])
+					d.Buffer = d.Buffer[length:]
+				}
 			}
 		}
 	}
@@ -2331,14 +2385,21 @@ func DecodeSerializedCXProgram(buf []byte, obj *SerializedCXProgram) (uint64, er
 				}
 
 				{
-					// obj.Arguments[z1].PackageOffset
-					i, err := d.Int64()
+					// obj.Arguments[z1].PackageName
+
+					ul, err := d.Uint32()
 					if err != nil {
 						return 0, err
 					}
-					obj.Arguments[z1].PackageOffset = i
-				}
 
+					length := int(ul)
+					if length < 0 || length > len(d.Buffer) {
+						return 0, encoder.ErrBufferUnderflow
+					}
+
+					obj.Arguments[z1].PackageName = string(d.Buffer[:length])
+					d.Buffer = d.Buffer[length:]
+				}
 			}
 		}
 	}

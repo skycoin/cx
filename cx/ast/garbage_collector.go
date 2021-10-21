@@ -193,8 +193,11 @@ func DisplaceReferences(prgrm *CXProgram, off types.Pointer, numPkgs int) {
 	// We're going to keep a record of all the references that were already updated.
 	updated := make(map[types.Pointer]types.Pointer)
 
-	for c := 0; c < numPkgs; c++ {
-		pkg := prgrm.Packages[c]
+	count := 0
+	for _, pkg := range prgrm.Packages {
+		if count > numPkgs {
+			break
+		}
 
 		// In a CX chain we're only interested on considering global variables,
 		// as any other object should be destroyed, as the program finished its
@@ -213,6 +216,8 @@ func DisplaceReferences(prgrm *CXProgram, off types.Pointer, numPkgs int) {
 				}
 			}
 		}
+
+		count++
 	}
 }
 

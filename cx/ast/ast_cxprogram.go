@@ -24,7 +24,7 @@ type CXProgram struct {
 	Heap  HeapSegmentStruct
 
 	// Contents
-	Packages []*CXPackage // Packages in a CX program; use map, so dont have to iterate for lookup
+	Packages map[string]*CXPackage // Packages in a CX program; use map, so dont have to iterate for lookup
 
 	// Runtime information
 	ProgramInput []*CXArgument // OS input arguments
@@ -62,7 +62,7 @@ type HeapSegmentStruct struct {
 func MakeProgram() *CXProgram {
 	minHeapSize := minHeapSize()
 	newPrgrm := &CXProgram{
-		Packages:  make([]*CXPackage, 0),
+		Packages:  make(map[string]*CXPackage, 0),
 		CallStack: make([]CXCall, constants.CALLSTACK_SIZE),
 		Memory:    make([]byte, constants.STACK_SIZE+minHeapSize),
 		Stack: StackSegmentStruct{
@@ -84,40 +84,39 @@ func MakeProgram() *CXProgram {
 
 // AddPackage ...
 func (cxprogram *CXProgram) AddPackage(mod *CXPackage) {
-	found := false
-	for _, md := range cxprogram.Packages {
-		if md.Name == mod.Name {
-			cxprogram.CurrentPackage = md
-			found = true
-			break
-		}
+	if cxprogram.Packages[mod.Name] != nil {
+		return
 	}
-	if !found {
-		cxprogram.Packages = append(cxprogram.Packages, mod)
-		cxprogram.CurrentPackage = mod
-	}
+
+	cxprogram.Packages[mod.Name] = mod
+	cxprogram.CurrentPackage = mod
 }
 
 // RemovePackage ...
 func (cxprogram *CXProgram) RemovePackage(modName string) {
-	lenMods := len(cxprogram.Packages)
-	for i, mod := range cxprogram.Packages {
-		if mod.Name == modName {
-			if i == lenMods-1 {
-				cxprogram.Packages = cxprogram.Packages[:len(cxprogram.Packages)-1]
-			} else {
-				cxprogram.Packages = append(cxprogram.Packages[:i], cxprogram.Packages[i+1:]...)
-			}
-			// This means that we're removing the package set to be the CurrentPackage.
-			// If it is removed from the program's list of packages, cxprogram.CurrentPackage
-			// would be pointing to a package meant to be collected by the GC.
-			// We fix this by pointing to the last package in the program's list of packages.
-			if mod == cxprogram.CurrentPackage {
-				cxprogram.CurrentPackage = cxprogram.Packages[len(cxprogram.Packages)-1]
-			}
+	// If doesnt exist, return
+	if cxprogram.Packages[modName] == nil {
+		return
+	}
+
+	// Check if it is the current pkg so when it
+	// is deleted, it will be replaced with new pkg
+	isCurrentPkg := cxprogram.Packages[modName] == cxprogram.CurrentPackage
+
+	// Delete package
+	delete(cxprogram.Packages, modName)
+
+	// This means that we're removing the package set to be the CurrentPackage.
+	// If it is removed from the program's map of packages, cxprogram.CurrentPackage
+	// would be pointing to a package meant to be collected by the GC.
+	// We fix this by pointing to random package in the program's map of packages.
+	if isCurrentPkg {
+		for _, pkg := range cxprogram.Packages {
+			cxprogram.CurrentPackage = pkg
 			break
 		}
 	}
+
 }
 
 // ----------------------------------------------------------------
