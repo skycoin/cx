@@ -24,7 +24,7 @@ type CXProgram struct {
 	Heap  HeapSegmentStruct
 
 	// Contents
-	Packages map[string]*CXPackage // Packages in a CX program; use map, so dont have to iterate for lookup
+	Packages map[string]*CXPackage // Packages in a CX program
 
 	// Runtime information
 	ProgramInput []*CXArgument // OS input arguments
