@@ -91,6 +91,52 @@ func RunCxAst(cxprogram *ast.CXProgram, untilEnd bool, maxOps int, untilCall typ
 	return nil
 }
 
+func runSysInitFunc(cxprogram *ast.CXProgram, mod *ast.CXPackage) error {
+	var inputs []ast.CXValue
+	var outputs []ast.CXValue
+
+	fn, err := mod.SelectFunction(constants.SYS_INIT_FUNC)
+	if err != nil {
+		return err
+	}
+
+	// *init function
+	mainCall := MakeCall(fn)
+	cxprogram.CallStack[0] = mainCall
+	cxprogram.Stack.Pointer = fn.Size
+
+	for !cxprogram.Terminated {
+		call := &cxprogram.CallStack[cxprogram.CallCounter]
+		err = call.Ccall(cxprogram, &inputs, &outputs)
+		if err != nil {
+			return err
+		}
+	}
+	// we reset call state
+	cxprogram.Terminated = false
+	cxprogram.CallCounter = 0
+	cxprogram.CallStack[0].Operator = nil
+
+	return nil
+}
+
+func feedOSArgs(cxprogram *ast.CXProgram, args []string) error {
+	if osPkg, err := ast.PROGRAM.SelectPackage(constants.OS_PKG); err == nil {
+		argsOffset := types.Pointer(0)
+		if osGbl, err := osPkg.GetGlobal(constants.OS_ARGS); err == nil {
+			for _, arg := range args {
+				argOffset := types.AllocWrite_obj_data(cxprogram.Memory, []byte(arg))
+
+				var argOffsetBytes [types.POINTER_SIZE]byte
+				types.Write_ptr(argOffsetBytes[:], 0, argOffset)
+				argsOffset = ast.WriteToSlice(argsOffset, argOffsetBytes[:])
+			}
+			types.Write_ptr(ast.PROGRAM.Memory, ast.GetFinalOffset(0, osGbl), argsOffset)
+		}
+	}
+	return nil
+}
+
 // RunCompiled ...
 func RunCompiled(cxprogram *ast.CXProgram, maxOps int, args []string) error {
 	_, err := cxprogram.SetCurrentCxProgram()
@@ -106,50 +152,30 @@ func RunCompiled(cxprogram *ast.CXProgram, maxOps int, args []string) error {
 		untilEnd = true
 	}
 
-	mod, err := cxprogram.SelectPackage(constants.MAIN_PKG)
-	if err != nil {
-		return err
-	}
 	// initializing program resources
 	// cxprogram.Stacks = append(cxprogram.Stacks, MakeStack(1024))
 
-	var inputs []ast.CXValue
-	var outputs []ast.CXValue
 	if cxprogram.CallStack[0].Operator == nil {
-		// then the program is just starting and we need to run the SYS_INIT_FUNC
-		fn, err := mod.SelectFunction(constants.SYS_INIT_FUNC)
+		mod, err := cxprogram.SelectPackage(constants.MAIN_PKG)
 		if err != nil {
 			return err
 		}
 
-		// *init function
-		mainCall := MakeCall(fn)
-		cxprogram.CallStack[0] = mainCall
-		cxprogram.Stack.Pointer = fn.Size
-
-		for !cxprogram.Terminated {
-			call := &cxprogram.CallStack[cxprogram.CallCounter]
-			err = call.Ccall(cxprogram, &inputs, &outputs)
-			if err != nil {
-				return err
-			}
+		// then the program is just starting and we need to run the SYS_INIT_FUNC
+		err = runSysInitFunc(cxprogram, mod)
+		if err != nil {
+			return err
 		}
-		// we reset call state
-		cxprogram.Terminated = false
-		cxprogram.CallCounter = 0
-		cxprogram.CallStack[0].Operator = nil
-	}
 
-	fn, err := mod.SelectFunction(constants.MAIN_FUNC)
-	if err != nil {
-		return err
-	}
+		fn, err := mod.SelectFunction(constants.MAIN_FUNC)
+		if err != nil {
+			return err
+		}
 
-	if len(fn.Expressions) < 1 {
-		return nil
-	}
+		if len(fn.Expressions) < 1 {
+			return nil
+		}
 
-	if cxprogram.CallStack[0].Operator == nil {
 		// main function
 		mainCall := MakeCall(fn)
 		mainCall.FramePointer = cxprogram.Stack.Pointer
@@ -160,19 +186,11 @@ func RunCompiled(cxprogram *ast.CXProgram, maxOps int, args []string) error {
 		cxprogram.Stack.Pointer += fn.Size
 
 		// feeding os.Args
-		if osPkg, err := ast.PROGRAM.SelectPackage(constants.OS_PKG); err == nil {
-			argsOffset := types.Pointer(0)
-			if osGbl, err := osPkg.GetGlobal(constants.OS_ARGS); err == nil {
-				for _, arg := range args {
-					argOffset := types.AllocWrite_obj_data(cxprogram.Memory, []byte(arg))
-
-					var argOffsetBytes [types.POINTER_SIZE]byte
-					types.Write_ptr(argOffsetBytes[:], 0, argOffset)
-					argsOffset = ast.WriteToSlice(argsOffset, argOffsetBytes[:])
-				}
-				types.Write_ptr(ast.PROGRAM.Memory, ast.GetFinalOffset(0, osGbl), argsOffset)
-			}
+		err = feedOSArgs(cxprogram, args)
+		if err != nil {
+			return err
 		}
+
 		cxprogram.Terminated = false
 	}
 
