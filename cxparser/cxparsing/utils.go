@@ -2,6 +2,8 @@ package cxparsering
 
 import (
 	"bufio"
+	"bytes"
+	"io"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -16,6 +18,204 @@ import (
 	"github.com/skycoin/cx/cxparser/globals"
 	"github.com/skycoin/cx/cxparser/util/profiling"
 )
+
+// PackageMeta contains the meta data for a package
+type PackageMeta struct {
+	packageName     string
+	InputsProcessed bool //starts false
+	Parsed          bool //starts false
+	Parents         []*PackageMeta
+	Imports         []*PackageMeta
+	FileNames       []string
+	SourceCodes     []string
+}
+
+// ParseList contains a list of packages parsed
+var ParseList []*PackageMeta
+
+// ParseIndex is the index of the package being parsed
+var ParseIndex int = 0
+var packageIndex = 0
+
+// Parse parses a program
+// example Parse([`package main ...`])
+
+///two fiunctions
+// 1. is load files, in package, to string
+// 2. extract imports from  package; return list of packages in files/stgrings
+// 3. parse package step
+
+// ExtractImportedPackages takes in files, returns packages imported
+func ExtractImportedPackages(pkgMeta PackageMeta) {
+	importedPkgs := GetPackageImports(pkgMeta.packageName)
+	for _, importedPkgName := range importedPkgs {
+		for _, parsedPkg := range ParseList {
+			if parsedPkg.packageName == importedPkgName {
+				// package already exists
+				// check if the existing pkg has imported this package
+				// if not, add it
+				if packageExists(pkgMeta.packageName, parsedPkg.Imports) != nil {
+					panic("import cycle")
+				}
+				// then no need to create a new one
+				pkgMeta.Imports = append(pkgMeta.Imports, parsedPkg)
+			}
+		}
+
+		// parse files in package
+		_, sourceCode, fileNames := ast.ParseArgsForCX([]string{filepath.Join(globals2.SRCPATH, importedPkgName)}, false)
+		sourceCodeStrings := make([]string, len(sourceCode))
+		for i, source := range sourceCode {
+			tmp := bytes.NewBuffer(nil)
+			io.Copy(tmp, source)
+			sourceCodeStrings[i] = tmp.String()
+		}
+
+		importedPkgMeta := PackageMeta{
+			packageName: importedPkgName,
+			FileNames:   fileNames,
+			SourceCodes: sourceCodeStrings,
+		}
+
+		pkgMeta.Imports = append(pkgMeta.Imports, &importedPkgMeta)
+		ParseList = append(ParseList, &importedPkgMeta)
+		PreParse(sourceCodeStrings, fileNames)
+	}
+}
+
+func packageExists(pkgName string, pkgList []*PackageMeta) *PackageMeta {
+	for _, pkg := range pkgList {
+		if pkg.packageName == pkgName {
+			return pkg
+		}
+	}
+	return nil
+}
+
+// PreParse extracts all imports/dependency tree and load the files in to memory
+func PreParse(srcStrs, srcNames []string) {
+	for _, sourceCode := range srcStrs {
+		pkgName := GetPackageName(sourceCode)
+		if pkgFound := packageExists(pkgName, ParseList); pkgFound != nil {
+			ExtractImportedPackages(*pkgFound)
+		}
+		pkgMeta := PackageMeta{
+			packageName: pkgName,
+			FileNames:   srcNames,
+			SourceCodes: srcStrs,
+		}
+		ParseList = append(ParseList, &pkgMeta)
+		ExtractImportedPackages(pkgMeta)
+	}
+}
+
+// GetPackageName returns the package with the given name
+func GetPackageName(sourceCode string) string {
+	// for parsing comments
+	reMultiCommentOpen := regexp.MustCompile(`/\*`)
+	reMultiCommentClose := regexp.MustCompile(`\*/`)
+	reComment := regexp.MustCompile("//")
+
+	// for parsing packages
+	rePkg := regexp.MustCompile("package")
+	rePkgName := regexp.MustCompile(`(^|[\s])package\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
+
+	reader := strings.NewReader(sourceCode)
+	scanner := bufio.NewScanner(reader)
+	var commentedCode bool
+	var lineno = 0
+	for scanner.Scan() {
+		line := scanner.Bytes()
+		lineno++
+
+		// Identify whether we are in a comment or not.
+		commentLoc := reComment.FindIndex(line)
+		multiCommentOpenLoc := reMultiCommentOpen.FindIndex(line)
+		multiCommentCloseLoc := reMultiCommentClose.FindIndex(line)
+		if commentedCode && multiCommentCloseLoc != nil {
+			commentedCode = false
+		}
+		if commentedCode {
+			continue
+		}
+		if multiCommentOpenLoc != nil && !commentedCode && multiCommentCloseLoc == nil {
+			commentedCode = true
+			continue
+		}
+
+		// At this point we know that we are *not* in a comment
+
+		// 1a. Identify all the packages
+		if loc := rePkg.FindIndex(line); loc != nil {
+			if (commentLoc != nil && commentLoc[0] < loc[0]) ||
+				(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
+				(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
+				// then it's commented out
+				continue
+			}
+
+			if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
+				pkgName := match[len(match)-1]
+				return pkgName
+			}
+		}
+	}
+	return ""
+}
+
+// GetPackageImports returns imported packages in a given source code
+func GetPackageImports(sourceCode string) []string {
+	var importedPkgs []string
+	reMultiCommentOpen := regexp.MustCompile(`/\*`)
+	reMultiCommentClose := regexp.MustCompile(`\*/`)
+	reComment := regexp.MustCompile("//")
+
+	reImp := regexp.MustCompile("import")
+	reImpName := regexp.MustCompile(`(^|[\s])import\s+"([_a-zA-Z][_a-zA-Z0-9/-]*)"`)
+
+	var commentedCode bool
+
+	scanner := bufio.NewScanner(strings.NewReader(sourceCode))
+	for scanner.Scan() {
+		line := scanner.Bytes()
+
+		// it'll also ignore struct declaration's bodies, but this doesn't matter
+		commentLoc := reComment.FindIndex(line)
+
+		multiCommentOpenLoc := reMultiCommentOpen.FindIndex(line)
+		multiCommentCloseLoc := reMultiCommentClose.FindIndex(line)
+
+		if commentedCode && multiCommentCloseLoc != nil {
+			commentedCode = false
+		}
+		if commentedCode {
+			continue
+		}
+
+		if multiCommentOpenLoc != nil && !commentedCode && multiCommentCloseLoc == nil {
+			commentedCode = true
+			// continue
+		}
+
+		// TODO: move this out to its own function
+		// Identify all the package imports.
+		if loc := reImp.FindIndex(line); loc != nil {
+			if (commentLoc != nil && commentLoc[0] < loc[0]) ||
+				(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
+				(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
+				// then it's commented out
+				continue
+			}
+
+			if match := reImpName.FindStringSubmatch(string(line)); match != nil {
+				pkgName := match[len(match)-1]
+				importedPkgs = append(importedPkgs, pkgName)
+			}
+		}
+
+	}
+	return importedPkgs
+}
 
 // preliminarystage performs a first pass for the CX cxgo. Globals, packages and
 // custom types are added to `cxpartialparsing.Program`.
