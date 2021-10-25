@@ -122,7 +122,7 @@ type CXArgument struct {
 	IsPointer                    bool
 	IsReference                  bool
 	IsStruct                     bool
-	IsInnerArg                   bool // pkg.var <- var is rest
+	IsInnerArg                   bool // ex. pkg.var <- var is the inner arg
 	IsLocalDeclaration           bool
 	IsShortAssignmentDeclaration bool // variables defined with :=
 	IsInnerReference             bool // for example: &slice[0] or &struct.field
