@@ -1043,7 +1043,7 @@ func opAffQuery(inputs []ast.CXValue, outputs []ast.CXValue) {
 
 					predInp := fn.Inputs[0]
 
-					if predInp.Type == types.CUSTOM {
+					if predInp.Type == types.STRUCT {
 						if predInp.CustomType != nil {
 							switch predInp.CustomType.Name {
 							case "Argument":

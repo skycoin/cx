@@ -79,7 +79,7 @@ const (
 
 	ARRAY
 	SLICE
-	CUSTOM
+	STRUCT
 
 	FUNC
 	AFF
