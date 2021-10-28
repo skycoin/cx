@@ -294,7 +294,7 @@ func GetAccessibleArgsForFunctionByType(cxprogram *cxast.CXProgram, packageLocat
 
 	for _, global := range pkg.Globals {
 		if global.IsStruct {
-			for _, field := range global.CustomType.Fields {
+			for _, field := range global.StructType.Fields {
 				if field.Type == argType {
 					argsList = append(argsList, field)
 				}
@@ -307,7 +307,7 @@ func GetAccessibleArgsForFunctionByType(cxprogram *cxast.CXProgram, packageLocat
 	for _, imp := range pkg.Imports {
 		for _, global := range imp.Globals {
 			if global.IsStruct {
-				for _, field := range global.CustomType.Fields {
+				for _, field := range global.StructType.Fields {
 					if field.Type == argType {
 						argsList = append(argsList, field)
 					}
@@ -327,7 +327,7 @@ func GetAccessibleArgsForFunctionByType(cxprogram *cxast.CXProgram, packageLocat
 	for _, expr := range fn.Expressions {
 		for _, arg := range expr.Inputs {
 			if arg.IsStruct {
-				for _, field := range arg.CustomType.Fields {
+				for _, field := range arg.StructType.Fields {
 					if field.Type == argType {
 						argsList = append(argsList, field)
 					}

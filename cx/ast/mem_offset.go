@@ -40,8 +40,8 @@ func GetSize(arg *CXArgument) types.Pointer {
 		}
 	}
 
-	if arg.CustomType != nil {
-		return arg.CustomType.Size
+	if arg.StructType != nil {
+		return arg.StructType.Size
 	}
 
 	return arg.TotalSize
@@ -52,8 +52,8 @@ func GetDerefSize(arg *CXArgument, index int, derefPointer bool, derefArray bool
 	if !derefArray && len(arg.Lengths) > 1 && ((index + 1) < len(arg.Lengths)) {
 		return types.POINTER_SIZE
 	}
-	if arg.CustomType != nil {
-		return arg.CustomType.Size //TODO: WTF is a custom type?
+	if arg.StructType != nil {
+		return arg.StructType.Size //TODO: WTF is a custom type?
 	}
 	if derefPointer {
 		return arg.TotalSize
@@ -66,8 +66,8 @@ func GetDerefSizeSlice(arg *CXArgument) types.Pointer {
 	if len(arg.Lengths) > 1 && (len(arg.Lengths)-len(arg.Indexes)) > 1 {
 		return types.POINTER_SIZE
 	}
-	if arg.CustomType != nil {
-		return arg.CustomType.Size //TODO: WTF is a custom type?
+	if arg.StructType != nil {
+		return arg.StructType.Size //TODO: WTF is a custom type?
 	}
 	return arg.Size
 }
@@ -106,7 +106,7 @@ func CalculateDereference_Slice(drfsStruct *DereferenceStruct) {
 	drfsStruct.finalOffset += constants.SLICE_HEADER_SIZE
 
 	//TODO: delete
-	sizeToUse := GetDerefSize(drfsStruct.arg, drfsStruct.idxCounter, drfsStruct.derefPointer, false) //TODO: is always arg.Size unless arg.CustomType != nil
+	sizeToUse := GetDerefSize(drfsStruct.arg, drfsStruct.idxCounter, drfsStruct.derefPointer, false) //TODO: is always arg.Size unless arg.StructType != nil
 	drfsStruct.derefPointer = false
 
 	indexOffset := GetFinalOffset(drfsStruct.fp, drfsStruct.arg.Indexes[drfsStruct.idxCounter])
@@ -127,7 +127,7 @@ func CalculateDereference_Array(drfsStruct *DereferenceStruct) {
 	}
 
 	//TODO: Delete
-	sizeToUse := GetDerefSize(drfsStruct.arg, drfsStruct.idxCounter, drfsStruct.derefPointer, true) //TODO: is always arg.Size unless arg.CustomType != nil
+	sizeToUse := GetDerefSize(drfsStruct.arg, drfsStruct.idxCounter, drfsStruct.derefPointer, true) //TODO: is always arg.Size unless arg.StructType != nil
 	drfsStruct.derefPointer = false
 	drfsStruct.baseOffset = drfsStruct.finalOffset
 	drfsStruct.sizeofElement = subSize * sizeToUse

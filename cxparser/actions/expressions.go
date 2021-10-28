@@ -344,7 +344,7 @@ func AssociateReturnExpressions(idx int, retExprs []*ast.CXExpression) []*ast.CX
 
 	out := ast.MakeArgument(outParam.ArgDetails.Name, CurrentFile, LineNo)
 	out.AddType(outParam.Type)
-	out.CustomType = outParam.CustomType
+	out.StructType = outParam.StructType
 	out.PreviouslyDeclared = true
 
 	if lastExpr.Operator == nil {

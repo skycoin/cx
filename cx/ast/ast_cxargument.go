@@ -364,7 +364,7 @@ func Struct(pkgName, strctName, argName string) *CXArgument {
 	arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_STRUCT)
 	arg.Size = strct.Size
 	arg.TotalSize = strct.Size
-	arg.CustomType = strct
+	arg.StructType = strct
 
 	return arg
 }

@@ -1665,7 +1665,7 @@ yynewstate:
 				panic("method has multiple receivers")
 			}
 
-			fnName := yyS[yypt-2].arguments[0].CustomType.Name + "." + yyS[yypt-0].tok
+			fnName := yyS[yypt-2].arguments[0].StructType.Name + "." + yyS[yypt-0].tok
 
 			if pkg, err := Program.GetCurrentPackage(); err == nil {
 				fn := ast.MakeFunction(fnName, CurrentFileName, lineNo)

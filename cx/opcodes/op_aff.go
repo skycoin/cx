@@ -136,10 +136,10 @@ func queryParam(fn *ast.CXFunction, args []*ast.CXArgument, exprLbl string, argO
 
 		var typOffset types.Pointer
 		elt := arg.GetAssignmentElement()
-		if elt.CustomType != nil {
+		if elt.StructType != nil {
 			// then it's custom type
-			// typOffset = WriteObjectRetOff(encoder.Serialize(elt.CustomType.Package.Name + "." + elt.CustomType.Name))
-			typOffset = types.AllocWrite_str_data(ast.PROGRAM.Memory, elt.CustomType.Package.Name+"."+elt.CustomType.Name)
+			// typOffset = WriteObjectRetOff(encoder.Serialize(elt.StructType.Package.Name + "." + elt.StructType.Name))
+			typOffset = types.AllocWrite_str_data(ast.PROGRAM.Memory, elt.StructType.Package.Name+"."+elt.StructType.Name)
 		} else {
 			// then it's native type
 			// typOffset = WriteObjectRetOff(encoder.Serialize(TypeNames[elt.Type]))
@@ -234,10 +234,10 @@ func getSignatureSlice(params []*ast.CXArgument) types.Pointer {
 	for _, param := range params {
 
 		var typOffset types.Pointer
-		if param.CustomType != nil {
+		if param.StructType != nil {
 			// then it's custom type
-			// typOffset = WriteObjectRetOff(encoder.Serialize(param.CustomType.Package.Name + "." + param.CustomType.Name))
-			typOffset = types.AllocWrite_str_data(ast.PROGRAM.Memory, param.CustomType.Package.Name+"."+param.CustomType.Name)
+			// typOffset = WriteObjectRetOff(encoder.Serialize(param.StructType.Package.Name + "." + param.StructType.Name))
+			typOffset = types.AllocWrite_str_data(ast.PROGRAM.Memory, param.StructType.Package.Name+"."+param.StructType.Name)
 		} else {
 			// then it's native type
 			// typOffset = WriteObjectRetOff(encoder.Serialize(TypeNames[param.Type]))
@@ -1044,8 +1044,8 @@ func opAffQuery(inputs []ast.CXValue, outputs []ast.CXValue) {
 					predInp := fn.Inputs[0]
 
 					if predInp.Type == types.STRUCT {
-						if predInp.CustomType != nil {
-							switch predInp.CustomType.Name {
+						if predInp.StructType != nil {
+							switch predInp.StructType.Name {
 							case "Argument":
 								QueryArgument(fn, expr, argOffsetB[:], &affOffset)
 							case "Expression":
