@@ -5,6 +5,18 @@ import (
 	"github.com/skycoin/cx/cx/types"
 )
 
+type DereferenceStruct struct {
+	isPointer     bool
+	baseOffset    types.Pointer
+	sizeofElement types.Pointer
+	derefPointer  bool
+	idxCounter    int
+
+	arg         *CXArgument
+	finalOffset types.Pointer
+	fp          types.Pointer
+}
+
 // GetSize ...
 func GetSize(arg *CXArgument) types.Pointer {
 	if len(arg.Fields) > 0 {
@@ -85,76 +97,84 @@ func GetFinalOffset(fp types.Pointer, arg *CXArgument) types.Pointer {
 	return finalOffset
 }
 
+func CalculateDereference_Slice(drfsStruct *DereferenceStruct) {
+	drfsStruct.isPointer = false
+	drfsStruct.finalOffset = types.Read_ptr(PROGRAM.Memory, drfsStruct.finalOffset)
+	drfsStruct.baseOffset = drfsStruct.finalOffset
+
+	drfsStruct.finalOffset += types.OBJECT_HEADER_SIZE
+	drfsStruct.finalOffset += constants.SLICE_HEADER_SIZE
+
+	//TODO: delete
+	sizeToUse := GetDerefSize(drfsStruct.arg, drfsStruct.idxCounter, drfsStruct.derefPointer, false) //TODO: is always arg.Size unless arg.CustomType != nil
+	drfsStruct.derefPointer = false
+
+	indexOffset := GetFinalOffset(drfsStruct.fp, drfsStruct.arg.Indexes[drfsStruct.idxCounter])
+	indexValue := types.Read_i32(PROGRAM.Memory, indexOffset)
+
+	drfsStruct.finalOffset += types.Cast_i32_to_ptr(indexValue) * sizeToUse // TODO:PTR Use ptr/Read_ptr, array/slice indexing only works with i32.
+	if !IsValidSliceIndex(drfsStruct.baseOffset, drfsStruct.finalOffset, sizeToUse) {
+		panic(constants.CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)
+	}
+
+	drfsStruct.idxCounter++
+}
+
+func CalculateDereference_Array(drfsStruct *DereferenceStruct) {
+	var subSize = types.Pointer(1)
+	for _, len := range drfsStruct.arg.Lengths[drfsStruct.idxCounter+1:] {
+		subSize *= len
+	}
+
+	//TODO: Delete
+	sizeToUse := GetDerefSize(drfsStruct.arg, drfsStruct.idxCounter, drfsStruct.derefPointer, true) //TODO: is always arg.Size unless arg.CustomType != nil
+	drfsStruct.derefPointer = false
+	drfsStruct.baseOffset = drfsStruct.finalOffset
+	drfsStruct.sizeofElement = subSize * sizeToUse
+
+	drfsStruct.finalOffset += types.Cast_i32_to_ptr(types.Read_i32(PROGRAM.Memory, GetFinalOffset(drfsStruct.fp, drfsStruct.arg.Indexes[drfsStruct.idxCounter]))) * drfsStruct.sizeofElement // TODO:PTR Use Read_ptr
+	drfsStruct.idxCounter++
+}
+
+func CalculateDereference_Pointer(drfsStruct *DereferenceStruct) {
+	drfsStruct.isPointer = true
+	drfsStruct.finalOffset = types.Read_ptr(PROGRAM.Memory, drfsStruct.finalOffset)
+	drfsStruct.derefPointer = true
+}
+
 func CalculateDereferences(arg *CXArgument, finalOffset types.Pointer, fp types.Pointer) types.Pointer {
-	var isPointer bool
+	drfsStruct := &DereferenceStruct{
+		idxCounter:  0,
+		arg:         arg,
+		finalOffset: finalOffset,
+		fp:          fp,
+	}
 
-	var baseOffset types.Pointer
-	var sizeofElement types.Pointer
-	var derefPointer bool
-	idxCounter := 0
-	for _, op := range arg.DereferenceOperations {
+	for _, op := range drfsStruct.arg.DereferenceOperations {
+		if len(drfsStruct.arg.Indexes) == 0 && op != constants.DEREF_POINTER {
+			continue
+		}
+
 		switch op {
-		case constants.DEREF_SLICE: //TODO: Move to CalculateDereference_slice
-			if len(arg.Indexes) == 0 {
-				continue
-			}
-
-			isPointer = false
-			finalOffset = types.Read_ptr(PROGRAM.Memory, finalOffset)
-			baseOffset = finalOffset
-
-			finalOffset += types.OBJECT_HEADER_SIZE
-			finalOffset += constants.SLICE_HEADER_SIZE
-
-			//TODO: delete
-			sizeToUse := GetDerefSize(arg, idxCounter, derefPointer, false) //TODO: is always arg.Size unless arg.CustomType != nil
-			derefPointer = false
-
-			indexOffset := GetFinalOffset(fp, arg.Indexes[idxCounter])
-			indexValue := types.Read_i32(PROGRAM.Memory, indexOffset)
-
-			finalOffset += types.Cast_i32_to_ptr(indexValue) * sizeToUse // TODO:PTR Use ptr/Read_ptr, array/slice indexing only works with i32.
-			if !IsValidSliceIndex(baseOffset, finalOffset, sizeToUse) {
-				panic(constants.CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)
-			}
-
-			idxCounter++
-
-		case constants.DEREF_ARRAY: //TODO: Move to CalculateDereference_array
-			if len(arg.Indexes) == 0 {
-				continue
-			}
-			var subSize = types.Pointer(1)
-			for _, len := range arg.Lengths[idxCounter+1:] {
-				subSize *= len
-			}
-
-			//TODO: Delete
-			sizeToUse := GetDerefSize(arg, idxCounter, derefPointer, true) //TODO: is always arg.Size unless arg.CustomType != nil
-			derefPointer = false
-			baseOffset = finalOffset
-			sizeofElement = subSize * sizeToUse
-
-			finalOffset += types.Cast_i32_to_ptr(types.Read_i32(PROGRAM.Memory, GetFinalOffset(fp, arg.Indexes[idxCounter]))) * sizeofElement // TODO:PTR Use Read_ptr
-			idxCounter++
-		case constants.DEREF_POINTER: //TODO: Move to CalculateDereference_ptr
-			isPointer = true
-			finalOffset = types.Read_ptr(PROGRAM.Memory, finalOffset)
-			derefPointer = true
+		case constants.DEREF_SLICE:
+			CalculateDereference_Slice(drfsStruct)
+		case constants.DEREF_ARRAY:
+			CalculateDereference_Array(drfsStruct)
+		case constants.DEREF_POINTER:
+			CalculateDereference_Pointer(drfsStruct)
 		}
 	}
 
-	// if finalOffset >= PROGRAM.HeapStartsAt {
-	if finalOffset.IsValid() && finalOffset >= PROGRAM.Heap.StartsAt && isPointer {
+	if drfsStruct.finalOffset.IsValid() && drfsStruct.finalOffset >= PROGRAM.Heap.StartsAt && drfsStruct.isPointer {
 		// then it's an object
-		finalOffset += types.OBJECT_HEADER_SIZE
-		if arg.IsSlice {
-			finalOffset += constants.SLICE_HEADER_SIZE
-			if !IsValidSliceIndex(baseOffset, finalOffset, sizeofElement) {
+		drfsStruct.finalOffset += types.OBJECT_HEADER_SIZE
+		if drfsStruct.arg.IsSlice {
+			drfsStruct.finalOffset += constants.SLICE_HEADER_SIZE
+			if !IsValidSliceIndex(drfsStruct.baseOffset, drfsStruct.finalOffset, drfsStruct.sizeofElement) {
 				panic(constants.CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)
 			}
 		}
 	}
 
-	return finalOffset
+	return drfsStruct.finalOffset
 }
