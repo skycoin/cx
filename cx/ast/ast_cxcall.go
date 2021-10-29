@@ -26,34 +26,36 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 		if !prgrm.CallCounter.IsValid() {
 			// then the program finished
 			prgrm.Terminated = true
-		} else {
-			// copying the outputs to the previous stack frame
-			returnAddr := &prgrm.CallStack[prgrm.CallCounter]
-			returnOp := returnAddr.Operator
-			returnLine := returnAddr.Line
-			returnFP := returnAddr.FramePointer
-			fp := call.FramePointer
+			return nil
+		}
 
-			expr := returnOp.Expressions[returnLine]
+		// copying the outputs to the previous stack frame
+		returnAddr := &prgrm.CallStack[prgrm.CallCounter]
+		returnOp := returnAddr.Operator
+		returnLine := returnAddr.Line
+		returnFP := returnAddr.FramePointer
+		fp := call.FramePointer
 
-			lenOuts := len(expr.Outputs)
-			for i, out := range call.Operator.Outputs {
-				// Continuing if there is no receiving variable available.
-				if i >= lenOuts {
-					continue
-				}
+		expr := returnOp.Expressions[returnLine]
 
-				types.WriteSlice_byte(PROGRAM.Memory, GetFinalOffset(returnFP, expr.Outputs[i]),
-					types.GetSlice_byte(PROGRAM.Memory, GetFinalOffset(fp, out), GetSize(out)))
+		lenOuts := len(expr.Outputs)
+		for i, out := range call.Operator.Outputs {
+			// Continuing if there is no receiving variable available.
+			if i >= lenOuts {
+				continue
 			}
 
-			// return the stack pointer to its previous state
-			prgrm.Stack.Pointer = call.FramePointer
-			// we'll now execute the next command
-			prgrm.CallStack[prgrm.CallCounter].Line++
-			// calling the actual command
-			// prgrm.CallStack[prgrm.CallCounter].Ccall(prgrm)
+			types.WriteSlice_byte(PROGRAM.Memory, GetFinalOffset(returnFP, expr.Outputs[i]),
+				types.GetSlice_byte(PROGRAM.Memory, GetFinalOffset(fp, out), GetSize(out)))
 		}
+
+		// return the stack pointer to its previous state
+		prgrm.Stack.Pointer = call.FramePointer
+		// we'll now execute the next command
+		prgrm.CallStack[prgrm.CallCounter].Line++
+		// calling the actual command
+		// prgrm.CallStack[prgrm.CallCounter].Ccall(prgrm)
+
 	} else {
 		/*
 		   continue with call operator's execution
@@ -127,8 +129,6 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 			call.Line++
 		} else { //NON-ATOMIC OPERATOR
 			//TODO: Is this only called for user defined functions?
-
-			//panic("BULLSHIT")
 			/*
 			   It was not a native, so we need to create another call
 			   with the current expression's operator
@@ -138,6 +138,7 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 			if prgrm.CallCounter >= constants.CALLSTACK_SIZE {
 				panic(constants.STACK_OVERFLOW_ERROR)
 			}
+
 			newCall := &prgrm.CallStack[prgrm.CallCounter]
 			// setting the new call
 			newCall.Operator = expr.Operator

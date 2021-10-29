@@ -41,7 +41,7 @@ func StructLiteralAssignment(to []*ast.CXExpression, from []*ast.CXExpression) [
 		auxName := MakeGenSym(constants.LOCAL_PREFIX)
 		aux := ast.MakeArgument(auxName, lastFrom.FileName, lastFrom.FileLine).AddType(fOut.Type)
 		aux.DeclarationSpecifiers = append(aux.DeclarationSpecifiers, constants.DECL_POINTER)
-		aux.CustomType = fOut.CustomType
+		aux.StructType = fOut.StructType
 		aux.Size = fOut.Size
 		aux.TotalSize = fOut.TotalSize
 		aux.PreviouslyDeclared = true

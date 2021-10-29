@@ -108,10 +108,10 @@ func serializeArgument(arg *CXArgument, s *SerializedCXProgram) int {
 
 	s.Arguments[argOff].Type = int64(arg.Type)
 
-	if arg.CustomType == nil {
+	if arg.StructType == nil {
 		s.Arguments[argOff].StructTypeOffset = sNil
 	} else {
-		strctName := arg.CustomType.Package.Name + "." + arg.CustomType.Name
+		strctName := arg.StructType.Package.Name + "." + arg.StructType.Name
 		if strctOff, found := s.StructsMap[strctName]; found {
 			s.Arguments[argOff].StructTypeOffset = int64(strctOff)
 		} else {
@@ -789,7 +789,7 @@ func deserializeArgument(sArg *serializedArgument, s *SerializedCXProgram, prgrm
 	arg.ArgDetails.Name = deserializeString(sArg.NameOffset, sArg.NameSize, s)
 	arg.Type = types.Code(sArg.Type)
 
-	//arg.CustomType = getStructType(sArg, s, prgrm)
+	//arg.StructType = getStructType(sArg, s, prgrm)
 
 	arg.Size = types.Cast_i64_to_ptr(sArg.Size)
 	arg.TotalSize = types.Cast_i64_to_ptr(sArg.TotalSize)

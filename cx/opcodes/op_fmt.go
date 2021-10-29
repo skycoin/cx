@@ -95,9 +95,9 @@ func buildString(inputs []ast.CXValue, outputs []ast.CXValue) []byte {
 			elt := inp.Arg.GetAssignmentElement()
 			typ := ""
 			_ = typ
-			if elt.CustomType != nil {
+			if elt.StructType != nil {
 				// then it's custom type
-				typ = elt.CustomType.Name
+				typ = elt.StructType.Name
 			} else {
 				// then it's native type
 				typ = elt.Type.Name()

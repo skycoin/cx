@@ -59,7 +59,7 @@ func (pkg *CXPackage) GetFunctions() ([]*CXFunction, error) {
 // GetMethod ...
 func (pkg *CXPackage) GetMethod(fnName string, receiverType string) (*CXFunction, error) {
 
-	if fn := pkg.Functions[fnName]; fn != nil && len(fn.Inputs) > 0 && fn.Inputs[0].CustomType != nil && fn.Inputs[0].CustomType.Name == receiverType {
+	if fn := pkg.Functions[fnName]; fn != nil && len(fn.Inputs) > 0 && fn.Inputs[0].StructType != nil && fn.Inputs[0].StructType.Name == receiverType {
 		return fn, nil
 	}
 

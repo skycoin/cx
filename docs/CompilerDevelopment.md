@@ -83,7 +83,7 @@ The atomic unit of data in a program is the [CXArgument](https://github.com/skyc
 * DereferenceLevels - How many dereference operations are performed to get this CXArgument?
 * PassBy - an int constant representing how the variable is passed - pass by value, or pass by reference.
 * FileLine - an int used for crash behavior, storing which file line this CXArgument originates from.
-* CustomType - a CXStruct representing the custom type this variable might be (if struct).
+* StructType - a CXStruct representing the custom type this variable might be (if struct).
 * Package - the CXPackage this CXArgument resides in.
 * IsSlice, IsArray, IsPointer, IsStruct - name says it all.
 * IsArrayFirst - is this both a pointer and an array, and if so, is the array first? Mutually exclusive with IsDereferenceFirst

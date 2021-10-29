@@ -25,7 +25,7 @@ func FunctionHeader(ident string, receiver []*ast.CXArgument, isMethod bool) *as
 			panic("method has multiple receivers")
 		}
 		if pkg, err := AST.GetCurrentPackage(); err == nil {
-			fnName := receiver[0].CustomType.Name + "." + ident
+			fnName := receiver[0].StructType.Name + "." + ident
 
 			if fn, err := AST.GetFunction(fnName, pkg.Name); err == nil {
 				fn.AddInput(receiver[0])
@@ -233,7 +233,7 @@ func FunctionCall(exprs []*ast.CXExpression, args []*ast.CXExpression) []*ast.CX
 				if inpExpr.Operator.Outputs[0].Type == types.UNDEFINED {
 					// if undefined type, then adopt argument's type
 					out = ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, inpExpr.FileLine).AddType(inpExpr.Inputs[0].Type)
-					out.CustomType = inpExpr.Inputs[0].CustomType
+					out.StructType = inpExpr.Inputs[0].StructType
 
 					out.Size = inpExpr.Inputs[0].Size
 					out.TotalSize = ast.GetSize(inpExpr.Inputs[0])
@@ -244,10 +244,10 @@ func FunctionCall(exprs []*ast.CXExpression, args []*ast.CXExpression) []*ast.CX
 					out = ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, inpExpr.FileLine).AddType(inpExpr.Operator.Outputs[0].Type)
 					out.DeclarationSpecifiers = inpExpr.Operator.Outputs[0].DeclarationSpecifiers
 
-					out.CustomType = inpExpr.Operator.Outputs[0].CustomType
+					out.StructType = inpExpr.Operator.Outputs[0].StructType
 
-					if inpExpr.Operator.Outputs[0].CustomType != nil {
-						if strct, err := inpExpr.Package.GetStruct(inpExpr.Operator.Outputs[0].CustomType.Name); err == nil {
+					if inpExpr.Operator.Outputs[0].StructType != nil {
+						if strct, err := inpExpr.Package.GetStruct(inpExpr.Operator.Outputs[0].StructType.Name); err == nil {
 							out.Size = strct.Size
 							out.TotalSize = strct.Size
 						}
@@ -588,17 +588,17 @@ func CheckTypes(expr *ast.CXExpression) {
 		for i := range expr.Inputs {
 			var expectedType string
 			var receivedType string
-			if expr.Outputs[i].GetAssignmentElement().CustomType != nil {
+			if expr.Outputs[i].GetAssignmentElement().StructType != nil {
 				// then it's custom type
-				expectedType = expr.Outputs[i].GetAssignmentElement().CustomType.Name
+				expectedType = expr.Outputs[i].GetAssignmentElement().StructType.Name
 			} else {
 				// then it's native type
 				expectedType = expr.Outputs[i].GetAssignmentElement().Type.Name()
 			}
 
-			if expr.Inputs[i].GetAssignmentElement().CustomType != nil {
+			if expr.Inputs[i].GetAssignmentElement().StructType != nil {
 				// then it's custom type
-				receivedType = expr.Inputs[i].GetAssignmentElement().CustomType.Name
+				receivedType = expr.Inputs[i].GetAssignmentElement().StructType.Name
 			} else {
 				// then it's native type
 				receivedType = expr.Inputs[i].GetAssignmentElement().Type.Name()
@@ -607,7 +607,7 @@ func CheckTypes(expr *ast.CXExpression) {
 			// if cxcore.GetAssignmentElement(expr.ProgramOutput[i]).Type != cxcore.GetAssignmentElement(inp).Type {
 			if receivedType != expectedType {
 				if expr.IsStructLiteral() {
-					println(ast.CompilationError(expr.Outputs[i].ArgDetails.FileName, expr.Outputs[i].ArgDetails.FileLine), fmt.Sprintf("field '%s' in struct literal of type '%s' expected argument of type '%s'; '%s' was provided", expr.Outputs[i].Fields[0].ArgDetails.Name, expr.Outputs[i].CustomType.Name, expectedType, receivedType))
+					println(ast.CompilationError(expr.Outputs[i].ArgDetails.FileName, expr.Outputs[i].ArgDetails.FileLine), fmt.Sprintf("field '%s' in struct literal of type '%s' expected argument of type '%s'; '%s' was provided", expr.Outputs[i].Fields[0].ArgDetails.Name, expr.Outputs[i].StructType.Name, expectedType, receivedType))
 				} else {
 					println(ast.CompilationError(expr.Outputs[i].ArgDetails.FileName, expr.Outputs[i].ArgDetails.FileLine), fmt.Sprintf("trying to assign argument of type '%s' to symbol '%s' of type '%s'", receivedType, expr.Outputs[i].GetAssignmentElement().ArgDetails.Name, expectedType))
 				}
@@ -790,7 +790,7 @@ func ProcessMethodCall(expr *ast.CXExpression, symbols *[]map[string]*ast.CXArgu
 				}
 				// then we found an output
 				if len(out.Fields) > 0 {
-					strct := argOut.CustomType
+					strct := argOut.StructType
 
 					if fn, err := strct.Package.GetMethod(strct.Name+"."+out.Fields[len(out.Fields)-1].ArgDetails.Name, strct.Name); err == nil {
 						expr.Operator = fn
@@ -807,12 +807,12 @@ func ProcessMethodCall(expr *ast.CXExpression, symbols *[]map[string]*ast.CXArgu
 			} else {
 				// then we found an input
 				if len(inp.Fields) > 0 {
-					strct := argInp.CustomType
+					strct := argInp.StructType
 
 					for _, fld := range inp.Fields {
 						if inFld, err := strct.GetField(fld.ArgDetails.Name); err == nil {
-							if inFld.CustomType != nil {
-								strct = inFld.CustomType
+							if inFld.StructType != nil {
+								strct = inFld.StructType
 							}
 						}
 					}
@@ -830,7 +830,7 @@ func ProcessMethodCall(expr *ast.CXExpression, symbols *[]map[string]*ast.CXArgu
 						panic("")
 					}
 
-					strct := argOut.CustomType
+					strct := argOut.StructType
 
 					if strct == nil {
 						println(ast.CompilationError(argOut.ArgDetails.FileName, argOut.ArgDetails.FileLine), fmt.Sprintf("illegal method call or field access on identifier '%s' of primitive type '%s'", argOut.ArgDetails.Name, argOut.Type.Name()))
@@ -863,7 +863,7 @@ func ProcessMethodCall(expr *ast.CXExpression, symbols *[]map[string]*ast.CXArgu
 
 			// then we found an output
 			if len(out.Fields) > 0 {
-				strct := argOut.CustomType
+				strct := argOut.StructType
 
 				if strct == nil {
 					println(ast.CompilationError(argOut.ArgDetails.FileName, argOut.ArgDetails.FileLine), fmt.Sprintf("illegal method call or field access on identifier '%s' of primitive type '%s'", argOut.ArgDetails.Name, argOut.Type.Name()))
@@ -990,7 +990,7 @@ func CopyArgFields(sym *ast.CXArgument, arg *ast.CXArgument) {
 	}
 
 	sym.IsSlice = arg.IsSlice
-	sym.CustomType = arg.CustomType
+	sym.StructType = arg.StructType
 
 	// FIXME: In other processes like ProcessSymbolFields the symbol is assigned with lengths.
 	// If we already have some lengths, we skip this. This needs to be fixed in the redesign of the cxgo.
@@ -1012,7 +1012,7 @@ func CopyArgFields(sym *ast.CXArgument, arg *ast.CXArgument) {
 	// case of a slice struct field.
 	elt := sym.GetAssignmentElement()
 
-	if (!arg.IsSlice || hasDerefOp(sym, constants.DEREF_ARRAY)) && arg.CustomType != nil && elt.IsSlice && elt != sym {
+	if (!arg.IsSlice || hasDerefOp(sym, constants.DEREF_ARRAY)) && arg.StructType != nil && elt.IsSlice && elt != sym {
 		for i, deref := range elt.DereferenceOperations {
 			// The cxgo when reading `foo[5]` in postfix.go does not know if `foo`
 			// is a slice or an array. At this point we now know it's a slice and we need
@@ -1063,20 +1063,20 @@ func CopyArgFields(sym *ast.CXArgument, arg *ast.CXArgument) {
 
 func ProcessSymbolFields(sym *ast.CXArgument, arg *ast.CXArgument) {
 	if len(sym.Fields) > 0 {
-		if arg.CustomType == nil || len(arg.CustomType.Fields) == 0 {
+		if arg.StructType == nil || len(arg.StructType.Fields) == 0 {
 			println(ast.CompilationError(sym.ArgDetails.FileName, sym.ArgDetails.FileLine), fmt.Sprintf("'%s' has no fields", sym.ArgDetails.Name))
 			return
 		}
 
-		// checking if fields do exist in their CustomType
-		// and assigning that CustomType to the sym.Field
-		strct := arg.CustomType
+		// checking if fields do exist in their StructType
+		// and assigning that StructType to the sym.Field
+		strct := arg.StructType
 
 		for _, fld := range sym.Fields {
 			if inFld, err := strct.GetField(fld.ArgDetails.Name); err == nil {
-				if inFld.CustomType != nil {
-					fld.CustomType = strct
-					strct = inFld.CustomType
+				if inFld.StructType != nil {
+					fld.StructType = strct
+					strct = inFld.StructType
 				}
 			} else {
 				methodName := sym.Fields[len(sym.Fields)-1].ArgDetails.Name
@@ -1091,12 +1091,12 @@ func ProcessSymbolFields(sym *ast.CXArgument, arg *ast.CXArgument) {
 			}
 		}
 
-		strct = arg.CustomType
+		strct = arg.StructType
 		// then we copy all the type struct fields
 		// to the respective sym.Fields
 		for _, nameFld := range sym.Fields {
-			if nameFld.CustomType != nil {
-				strct = nameFld.CustomType
+			if nameFld.StructType != nil {
+				strct = nameFld.StructType
 			}
 
 			for _, fld := range strct.Fields {
@@ -1107,7 +1107,7 @@ func ProcessSymbolFields(sym *ast.CXArgument, arg *ast.CXArgument) {
 					nameFld.TotalSize = fld.TotalSize
 					nameFld.DereferenceLevels = sym.DereferenceLevels
 					nameFld.IsPointer = fld.IsPointer
-					nameFld.CustomType = fld.CustomType
+					nameFld.StructType = fld.StructType
 
 					sym.Lengths = fld.Lengths
 
@@ -1135,8 +1135,8 @@ func ProcessSymbolFields(sym *ast.CXArgument, arg *ast.CXArgument) {
 						// nameFld.TotalSize = cxcore.POINTER_SIZE
 					}
 
-					if fld.CustomType != nil {
-						strct = fld.CustomType
+					if fld.StructType != nil {
+						strct = fld.StructType
 					}
 					break
 				}
@@ -1198,7 +1198,7 @@ func PreFinalSize(finalSize *types.Pointer, sym *ast.CXArgument, arg *ast.CXArgu
 					case constants.DECL_BASIC:
 						subSize = sym.Type.Size()
 					case constants.DECL_STRUCT:
-						subSize = arg.CustomType.Size
+						subSize = arg.StructType.Size
 					}
 				}
 

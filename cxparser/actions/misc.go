@@ -218,7 +218,7 @@ func AffordanceStructs(pkg *ast.CXPackage, currentFile string, lineNo int) {
 	prgrmFldFreeHeap := ast.MakeField("HeapUsed", types.I64, "", 0)
 	prgrmFldFreeHeap.TotalSize = types.I64.Size()
 
-	// prgrmFldCaller := cxcore.MakeField("Caller", cxcore.TYPE_CUSTOM, "", 0)
+	// prgrmFldCaller := cxcore.MakeField("Caller", cxcore.TYPE_STRUCT, "", 0)
 	prgrmFldCaller := DeclarationSpecifiersStruct(callStrct.Name, callStrct.Package.Name, false, currentFile, lineNo)
 	prgrmFldCaller.ArgDetails.Name = "Caller"
 

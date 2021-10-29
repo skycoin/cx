@@ -481,8 +481,8 @@ func DeclarationSpecifiersStruct(ident string, pkgName string,
 		}
 
 		arg := ast.MakeArgument("", currentFile, lineNo)
-		arg.Type = types.CUSTOM
-		arg.CustomType = strct
+		arg.Type = types.STRUCT
+		arg.StructType = strct
 		arg.Size = strct.Size
 		arg.TotalSize = strct.Size
 
@@ -499,9 +499,9 @@ func DeclarationSpecifiersStruct(ident string, pkgName string,
 		}
 
 		arg := ast.MakeArgument("", currentFile, lineNo)
-		arg.Type = types.CUSTOM
+		arg.Type = types.STRUCT
 		arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_STRUCT)
-		arg.CustomType = strct
+		arg.StructType = strct
 		arg.Size = strct.Size
 		arg.TotalSize = strct.Size
 		arg.ArgDetails.Package = pkg
