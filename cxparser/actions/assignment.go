@@ -207,6 +207,7 @@ func Assignment(to []*ast.CXExpression, assignOp string, from []*ast.CXExpressio
 		to[0].Outputs[0].Size = from[idx].Outputs[0].Size
 		to[0].Outputs[0].TotalSize = from[idx].Outputs[0].TotalSize
 		to[0].Outputs[0].Type = from[idx].Outputs[0].Type
+		to[0].Outputs[0].PointerTargetType = from[idx].Outputs[0].PointerTargetType
 		to[0].Outputs[0].Lengths = from[idx].Outputs[0].Lengths
 		to[0].Outputs[0].PassBy = from[idx].Outputs[0].PassBy
 		to[0].Outputs[0].DoesEscape = from[idx].Outputs[0].DoesEscape
@@ -230,6 +231,7 @@ func Assignment(to []*ast.CXExpression, assignOp string, from []*ast.CXExpressio
 				// it's a short variable declaration
 				to[0].Outputs[0].Size = ast.Natives[from[idx].Operator.AtomicOPCode].Outputs[0].Size
 				to[0].Outputs[0].Type = from[idx].Operator.Outputs[0].Type
+				to[0].Outputs[0].PointerTargetType = from[idx].Operator.Outputs[0].PointerTargetType
 				to[0].Outputs[0].Lengths = from[idx].Operator.Outputs[0].Lengths
 			}
 
@@ -242,6 +244,7 @@ func Assignment(to []*ast.CXExpression, assignOp string, from []*ast.CXExpressio
 
 			to[0].Outputs[0].Size = from[idx].Operator.Outputs[0].Size
 			to[0].Outputs[0].Type = from[idx].Operator.Outputs[0].Type
+			to[0].Outputs[0].PointerTargetType = from[idx].Operator.Outputs[0].PointerTargetType
 			to[0].Outputs[0].Lengths = from[idx].Operator.Outputs[0].Lengths
 			to[0].Outputs[0].DoesEscape = from[idx].Operator.Outputs[0].DoesEscape
 			to[0].Outputs[0].PassBy = from[idx].Operator.Outputs[0].PassBy

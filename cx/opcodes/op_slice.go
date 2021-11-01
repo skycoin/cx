@@ -19,7 +19,7 @@ func opSliceLen(inputs []ast.CXValue, outputs []ast.CXValue) {
 			panic(constants.CX_RUNTIME_ERROR)
 		}
 		// TODO: Had to add elt.Lengths to avoid doing this for arrays, but not entirely sure why
-	} else if elt.Type == types.STR && elt.Lengths == nil {
+	} else if (elt.PointerTargetType == types.STR || elt.Type == types.STR) && elt.Lengths == nil {
 		sliceLen = types.Read_str_size(ast.PROGRAM.Memory, inputs[0].Offset)
 	} else {
 		sliceLen = elt.Lengths[len(elt.Indexes)]
@@ -37,7 +37,22 @@ func opSliceAppend(inputs []ast.CXValue, outputs []ast.CXValue) {
 	eltInp0 := inp0.GetAssignmentElement()
 	eltOut0 := out0.GetAssignmentElement()
 
-	if inp0.Type != inp1.Type || inp0.Type != out0.Type || !eltInp0.IsSlice || !eltOut0.IsSlice {
+	inp0Type := inp0.Type
+	inp1Type := inp1.Type
+	out0Type := out0.Type
+	if inp0.PointerTargetType == types.STR {
+		inp0Type = types.STR
+	}
+
+	if inp1.PointerTargetType == types.STR {
+		inp1Type = types.STR
+	}
+
+	if out0.PointerTargetType == types.STR {
+		out0Type = types.STR
+	}
+
+	if inp0Type != inp1Type || inp0Type != out0Type || !eltInp0.IsSlice || !eltOut0.IsSlice {
 		panic(constants.CX_RUNTIME_INVALID_ARGUMENT)
 	}
 
@@ -55,10 +70,15 @@ func opSliceAppend(inputs []ast.CXValue, outputs []ast.CXValue) {
 
 	for i, input := range sliceInputs {
 		inp := input.Arg
-		if inp0.Type != inp.Type {
+		inpType := inp.Type
+		if inp.PointerTargetType == types.STR {
+			inpType = types.STR
+		}
+
+		if inp0Type != inpType {
 			panic(constants.CX_RUNTIME_INVALID_ARGUMENT)
 		}
-		if inp.Type == types.STR || inp.Type == types.AFF {
+		if inpType == types.STR || inpType == types.AFF {
 			var obj [types.POINTER_SIZE]byte
 			types.Write_ptr(obj[:], 0, types.Read_ptr(ast.PROGRAM.Memory, input.Offset))
 			ast.SliceAppendWrite(outputSliceOffset, obj[:], inputSliceLen+types.Cast_int_to_ptr(i))
@@ -91,13 +111,29 @@ func opSliceInsertElement(inputs []ast.CXValue, outputs []ast.CXValue) {
 	inp0, inp2, out0 := inputs[0].Arg, inputs[2].Arg, outputs[0].Arg
 	fp := inputs[0].FramePointer
 
-	if inp0.Type != inp2.Type || inp0.Type != out0.Type || !inp0.GetAssignmentElement().IsSlice || !out0.GetAssignmentElement().IsSlice {
+	inp0Type := inp0.Type
+	if inp0.PointerTargetType == types.STR {
+		inp0Type = types.STR
+	}
+
+	inp2Type := inp2.Type
+	if inp2.PointerTargetType == types.STR {
+		inp2Type = types.STR
+	}
+
+	out0Type := out0.Type
+	if out0.PointerTargetType == types.STR {
+		out0Type = types.STR
+	}
+
+	if inp0Type != inp2Type || inp0Type != out0Type || !inp0.GetAssignmentElement().IsSlice || !out0.GetAssignmentElement().IsSlice {
 		panic(constants.CX_RUNTIME_INVALID_ARGUMENT)
 	}
 
 	index := types.Cast_i32_to_ptr(inputs[1].Get_i32())
+
 	var outputSliceOffset types.Pointer
-	if inp2.Type == types.STR || inp2.Type == types.AFF {
+	if inp2Type == types.STR || inp2Type == types.AFF {
 		var obj [types.POINTER_SIZE]byte
 		types.Write_ptr(obj[:], 0, types.Read_ptr(ast.PROGRAM.Memory, inputs[2].Offset))
 		outputSliceOffset = ast.SliceInsert(fp, out0, inp0, index, obj[:])

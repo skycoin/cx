@@ -251,7 +251,11 @@ func PrimaryIdentifier(ident string) []*ast.CXExpression {
 // IsAllArgsBasicTypes checks if all the input arguments in an expressions are of basic type.
 func IsAllArgsBasicTypes(expr *ast.CXExpression) bool {
 	for _, inp := range expr.Inputs {
-		if !inp.Type.IsPrimitive() {
+		inpType := inp.Type
+		if inp.PointerTargetType == types.STR {
+			inpType = types.STR
+		}
+		if !inpType.IsPrimitive() {
 			return false
 		}
 	}

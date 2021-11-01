@@ -217,6 +217,7 @@ func OperatorExpression(leftExprs []*ast.CXExpression, rightExprs []*ast.CXExpre
 		name.Size = leftExprs[len(leftExprs)-1].Operator.Outputs[0].Size
 		name.TotalSize = ast.GetSize(leftExprs[len(leftExprs)-1].Operator.Outputs[0])
 		name.Type = leftExprs[len(leftExprs)-1].Operator.Outputs[0].Type
+		name.PointerTargetType = leftExprs[len(leftExprs)-1].Operator.Outputs[0].PointerTargetType
 		name.ArgDetails.Package = pkg
 		name.PreviouslyDeclared = true
 
@@ -229,6 +230,7 @@ func OperatorExpression(leftExprs []*ast.CXExpression, rightExprs []*ast.CXExpre
 		name.Size = rightExprs[len(rightExprs)-1].Operator.Outputs[0].Size
 		name.TotalSize = ast.GetSize(rightExprs[len(rightExprs)-1].Operator.Outputs[0])
 		name.Type = rightExprs[len(rightExprs)-1].Operator.Outputs[0].Type
+		name.PointerTargetType = rightExprs[len(rightExprs)-1].Operator.Outputs[0].PointerTargetType
 		name.ArgDetails.Package = pkg
 		name.PreviouslyDeclared = true
 

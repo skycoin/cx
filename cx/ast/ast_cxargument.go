@@ -53,6 +53,7 @@ type CXArgument struct {
 	// sizes are all equal to 0 (these 0s are not used for any
 	// computation).
 	Lengths []types.Pointer
+
 	// DereferenceOperations is a slice of integers where each
 	// integer corresponds a `DEREF_*` constant (for example
 	// `DEREF_ARRAY`, `DEREF_POINTER`.). A dereference is a
@@ -61,6 +62,7 @@ type CXArgument struct {
 	// to find the desired value (the referenced
 	// value).
 	DereferenceOperations []int
+
 	// DeclarationSpecifiers is a slice of integers where each
 	// integer corresponds a `DECL_*` constant (for example
 	// `DECL_ARRAY`, `DECL_POINTER`.). Declarations are used to
@@ -68,40 +70,50 @@ type CXArgument struct {
 	// slices of pointers to struct instances of type
 	// `Point`).
 	DeclarationSpecifiers []int
+
 	// Indexes stores what indexes we want to access from the
 	// `CXArgument`. A non-nil `Indexes` means that the
 	// `CXArgument` is an index or a slice. The elements of
 	// `Indexes` can be any `CXArgument` (for example, literals
 	// and variables).
 	Indexes []*CXArgument
+
 	// Fields stores what fields are being accessed from the
 	// `CXArgument` and in what order. Whenever a `DEREF_FIELD` in
 	// `DereferenceOperations` is found, we consume a field from
 	// `Field` to determine the new offset to the desired
 	// value.
 	Fields []*CXArgument
+
 	// Inputs defines the input parameters of a first-class
 	// function. The `CXArgument` is of type `TYPE_FUNC` if
 	// `ProgramInput` is non-nil.
 	Inputs []*CXArgument
+
 	// Outputs defines the output parameters of a first-class
 	// function. The `CXArgument` is of type `TYPE_FUNC` if
 	// `ProgramOutput` is non-nil.
 	Outputs []*CXArgument
+
 	// Type defines what's the basic or primitev type of the
 	// `CXArgument`. `Type` can be equal to any of the `TYPE_*`
 	// constants (e.g. `TYPE_STR`, `TYPE_I32`).
 	Type types.Code
+
+	PointerTargetType types.Code
+
 	// Size determines the size of the basic type. For example, if
 	// the `CXArgument` is of type `TYPE_STRUCT` (i.e. a
 	// user-defined type or struct) and the size of the struct
 	// representing the custom type is 10 bytes, then `Size == 10`.
 	Size types.Pointer
+
 	// TotalSize represents how many bytes are referenced by the
 	// `CXArgument` in total. For example, if the `CXArgument`
 	// defines an array of 5 struct instances of size 10 bytes,
 	// then `TotalSize == 50`.
 	TotalSize types.Pointer
+
 	// Offset defines a relative memory offset (used in
 	// conjunction with the frame pointer), in the case of local
 	// variables, or it could define an absolute memory offset, in
@@ -109,6 +121,7 @@ type CXArgument struct {
 	// the CX virtual machine to find the bytes that represent the
 	// value of the `CXArgument`.
 	Offset types.Pointer
+
 	// IndirectionLevels
 	IndirectionLevels int
 	DereferenceLevels int
@@ -119,7 +132,7 @@ type CXArgument struct {
 	StructType *CXStruct
 	IsSlice    bool
 	// IsArray                      bool
-	IsPointer                    bool
+	IsPOINTER                    bool
 	IsReference                  bool
 	IsStruct                     bool
 	IsInnerArg                   bool // ex. pkg.var <- var is the inner arg
@@ -128,6 +141,11 @@ type CXArgument struct {
 	IsInnerReference             bool // for example: &slice[0] or &struct.field
 	PreviouslyDeclared           bool
 	DoesEscape                   bool
+}
+
+func (arg CXArgument) IsPointer() bool {
+	return arg.IsPOINTER
+	// return arg.Type == types.POINTER
 }
 
 /*
@@ -290,6 +308,10 @@ func (arg *CXArgument) GetType() types.Code {
 	if fieldCount > 0 {
 		return arg.Fields[fieldCount-1].GetType()
 	}
+
+	if arg.PointerTargetType == types.STR {
+		return types.STR
+	}
 	return arg.Type
 }
 
@@ -339,7 +361,9 @@ func (arg *CXArgument) AddOutput(out *CXArgument) *CXArgument {
 //TODO: only used by HTTP, create a better module system
 func Pointer(arg *CXArgument) *CXArgument {
 	arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_POINTER)
-	arg.IsPointer = true
+	arg.IsPOINTER = true
+	arg.PointerTargetType = arg.Type
+	arg.Type = types.POINTER
 	arg.Size = types.POINTER_SIZE
 	arg.TotalSize = types.POINTER_SIZE
 

@@ -14,13 +14,18 @@ func MarkAndCompact(prgrm *CXProgram) {
 	// global variables
 	for _, pkg := range prgrm.Packages {
 		for _, glbl := range pkg.Globals {
-			if (glbl.IsPointer || glbl.IsSlice || glbl.Type == types.STR) && glbl.StructType == nil {
+			if (glbl.IsPointer() || glbl.IsSlice || glbl.Type == types.STR) && glbl.StructType == nil {
 				// Getting the offset to the object in the heap
 				heapOffset := types.Read_ptr(prgrm.Memory, glbl.Offset)
 				if heapOffset < prgrm.Heap.StartsAt {
 					continue
 				}
-				MarkObjectsTree(prgrm, glbl.Offset, glbl.Type, glbl.DeclarationSpecifiers[1:])
+
+				glblType := glbl.Type
+				if glbl.PointerTargetType == types.STR {
+					glblType = types.STR
+				}
+				MarkObjectsTree(prgrm, glbl.Offset, glblType, glbl.DeclarationSpecifiers[1:])
 			}
 
 			// If `ptr` has fields, we need to navigate the heap and mark its fields too.
@@ -33,8 +38,12 @@ func MarkAndCompact(prgrm *CXProgram) {
 						continue
 					}
 
-					if fld.IsPointer || fld.IsSlice || fld.Type == types.STR {
-						MarkObjectsTree(prgrm, offset, fld.Type, fld.DeclarationSpecifiers[1:])
+					if fld.IsPointer() || fld.IsSlice || fld.Type == types.STR {
+						fldType := fld.Type
+						if fld.PointerTargetType == types.STR {
+							fldType = types.STR
+						}
+						MarkObjectsTree(prgrm, offset, fldType, fld.DeclarationSpecifiers[1:])
 					}
 				}
 			}
@@ -203,14 +212,14 @@ func DisplaceReferences(prgrm *CXProgram, off types.Pointer, numPkgs int) {
 		// as any other object should be destroyed, as the program finished its
 		// execution.
 		for _, glbl := range pkg.Globals {
-			if glbl.IsPointer || glbl.IsSlice {
+			if glbl.IsPointer() || glbl.IsSlice {
 				doDisplaceReferences(prgrm, &updated, glbl.Offset, off, glbl.Type, glbl.DeclarationSpecifiers[1:]) // TODO:PTR remove hardcoded offsets
 			}
 
 			// If it's a struct instance we need to displace each of its fields.
 			if glbl.StructType != nil {
 				for _, fld := range glbl.StructType.Fields {
-					if fld.IsPointer || fld.IsSlice {
+					if fld.IsPointer() || fld.IsSlice {
 						doDisplaceReferences(prgrm, &updated, glbl.Offset+fld.Offset, off, fld.Type, fld.DeclarationSpecifiers[1:])
 					}
 				}
@@ -345,14 +354,18 @@ func updatePointers(prgrm *CXProgram, oldAddr, newAddr types.Pointer) {
 	// for a bit more of clarity.
 	for _, pkg := range prgrm.Packages {
 		for _, glbl := range pkg.Globals {
-			if (glbl.IsPointer || glbl.IsSlice || glbl.Type == types.STR) && glbl.StructType == nil {
+			if (glbl.IsPointer() || glbl.IsSlice || glbl.Type == types.STR) && glbl.StructType == nil {
 				// Getting the offset to the object in the heap
 				heapOffset := types.Read_ptr(prgrm.Memory, glbl.Offset)
 				if heapOffset < prgrm.Heap.StartsAt {
 					continue
 				}
 
-				updatePointerTree(prgrm, glbl.Offset, oldAddr, newAddr, glbl.Type, glbl.DeclarationSpecifiers[1:]) // TODO:PTR remove hardcoded 1 value
+				glblType := glbl.Type
+				if glbl.PointerTargetType == types.STR {
+					glblType = types.STR
+				}
+				updatePointerTree(prgrm, glbl.Offset, oldAddr, newAddr, glblType, glbl.DeclarationSpecifiers[1:]) // TODO:PTR remove hardcoded 1 value
 			}
 
 			// If `ptr` has fields, we need to navigate the heap and mark its fields too.
@@ -369,8 +382,12 @@ func updatePointers(prgrm *CXProgram, oldAddr, newAddr types.Pointer) {
 						continue
 					}
 
-					if fld.IsPointer || fld.IsSlice || fld.Type == types.STR {
-						updatePointerTree(prgrm, offset, oldAddr, newAddr, fld.Type, fld.DeclarationSpecifiers[1:])
+					if fld.IsPointer() || fld.IsSlice || fld.Type == types.STR {
+						fldType := fld.Type
+						if fld.PointerTargetType == types.STR {
+							fldType = types.STR
+						}
+						updatePointerTree(prgrm, offset, oldAddr, newAddr, fldType, fld.DeclarationSpecifiers[1:])
 					}
 				}
 			}

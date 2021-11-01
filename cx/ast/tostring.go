@@ -225,7 +225,7 @@ func SignatureStringOfFunction(pkg *CXPackage, f *CXFunction) string {
 }
 
 func getNonCollectionValue(fp types.Pointer, arg, elt *CXArgument, typ string) string {
-	if arg.IsPointer {
+	if arg.IsPointer() {
 		return fmt.Sprintf("%v", types.Read_ptr(PROGRAM.Memory, GetFinalOffset(fp, elt)))
 	}
 	if arg.IsSlice {
@@ -558,12 +558,12 @@ func IsPointer(sym *CXArgument) bool {
 	// if (sym.IsPointer || sym.IsSlice) && sym.ArgDetails.Name != "" {
 	// 	return true
 	// }
-	if (sym.IsPointer || sym.IsSlice) && sym.ArgDetails.Name != "" && len(sym.Fields) == 0 {
+	if (sym.IsPointer() || sym.IsSlice) && sym.ArgDetails.Name != "" && len(sym.Fields) == 0 {
 		return true
 	}
-	if sym.Type == types.STR && sym.ArgDetails.Name != "" && len(sym.Fields) == 0 {
-		return true
-	}
+	// if sym.Type == types.STR && sym.ArgDetails.Name != "" && len(sym.Fields) == 0 {
+	// 	return true
+	// }
 	// if (sym.Type == types.STR && sym.Name != "") {
 	// 	return true
 	// }
@@ -684,8 +684,12 @@ func GetFormattedType(arg *CXArgument) string {
 				// then it's custom type
 				typ += elt.StructType.Name
 			} else {
-				// then it's basic type
-				typ += elt.Type.Name()
+				if elt.PointerTargetType == types.STR {
+					typ += elt.PointerTargetType.Name()
+				} else {
+					// then it's basic type
+					typ += elt.Type.Name()
+				}
 
 				// If it's a function, let's add the inputs and outputs.
 				if elt.Type == types.FUNC {
