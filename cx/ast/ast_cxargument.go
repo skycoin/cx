@@ -132,7 +132,6 @@ type CXArgument struct {
 	StructType *CXStruct
 	IsSlice    bool
 	// IsArray                      bool
-	IsPOINTER                    bool
 	IsReference                  bool
 	IsStruct                     bool
 	IsInnerArg                   bool // ex. pkg.var <- var is the inner arg
@@ -144,8 +143,7 @@ type CXArgument struct {
 }
 
 func (arg CXArgument) IsPointer() bool {
-	return arg.IsPOINTER
-	// return arg.Type == types.POINTER
+	return arg.Type == types.POINTER
 }
 
 /*
@@ -361,7 +359,6 @@ func (arg *CXArgument) AddOutput(out *CXArgument) *CXArgument {
 //TODO: only used by HTTP, create a better module system
 func Pointer(arg *CXArgument) *CXArgument {
 	arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_POINTER)
-	arg.IsPOINTER = true
 	arg.PointerTargetType = arg.Type
 	arg.Type = types.POINTER
 	arg.Size = types.POINTER_SIZE

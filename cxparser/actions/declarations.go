@@ -381,12 +381,11 @@ func DeclarationSpecifiers(declSpec *ast.CXArgument, arrayLengths []types.Pointe
 	case constants.DECL_POINTER:
 		declSpec.DeclarationSpecifiers = append(declSpec.DeclarationSpecifiers, constants.DECL_POINTER)
 
-		declSpec.IsPOINTER = true
 		declSpec.Size = types.POINTER_SIZE
 		declSpec.TotalSize = types.POINTER_SIZE
 		declSpec.IndirectionLevels++
 
-		if declSpec.Type == types.STR {
+		if declSpec.Type == types.STR || declSpec.StructType != nil {
 			declSpec.PointerTargetType = declSpec.Type
 			declSpec.Type = types.POINTER
 		}

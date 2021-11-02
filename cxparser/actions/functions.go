@@ -948,7 +948,8 @@ func ProcessTempVariable(expr *ast.CXExpression) {
 
 func CopyArgFields(sym *ast.CXArgument, arg *ast.CXArgument) {
 	sym.Offset = arg.Offset
-	sym.IsPOINTER = arg.IsPOINTER
+	sym.Type = arg.Type
+
 	sym.IndirectionLevels = arg.IndirectionLevels
 
 	if sym.ArgDetails.FileLine != arg.ArgDetails.FileLine {
@@ -1032,7 +1033,6 @@ func CopyArgFields(sym *ast.CXArgument, arg *ast.CXArgument) {
 	if arg.Type == types.STR {
 		sym.PointerTargetType = types.STR
 		sym.Type = types.POINTER
-		sym.IsPOINTER = true
 	}
 
 	// Checking if it's a slice struct field. We'll do the same process as
@@ -1072,12 +1072,21 @@ func CopyArgFields(sym *ast.CXArgument, arg *ast.CXArgument) {
 	}
 
 	if len(sym.Fields) > 0 {
-		sym.Type = sym.Fields[len(sym.Fields)-1].Type
-		sym.PointerTargetType = sym.Fields[len(sym.Fields)-1].PointerTargetType
+		if sym.Type == types.POINTER && arg.StructType != nil {
+			sym.PointerTargetType = sym.Fields[len(sym.Fields)-1].Type
+		} else {
+			sym.Type = sym.Fields[len(sym.Fields)-1].Type
+			sym.PointerTargetType = sym.Fields[len(sym.Fields)-1].PointerTargetType
+		}
+
 		sym.IsSlice = sym.Fields[len(sym.Fields)-1].IsSlice
 	} else {
-		sym.Type = arg.Type
-		sym.PointerTargetType = arg.PointerTargetType
+		if sym.Type == types.POINTER && arg.StructType != nil {
+			sym.PointerTargetType = arg.Type
+		} else {
+			sym.Type = arg.Type
+			sym.PointerTargetType = arg.PointerTargetType
+		}
 	}
 
 	if sym.IsReference && !arg.IsStruct {
@@ -1137,7 +1146,6 @@ func ProcessSymbolFields(sym *ast.CXArgument, arg *ast.CXArgument) {
 					nameFld.Size = fld.Size
 					nameFld.TotalSize = fld.TotalSize
 					nameFld.DereferenceLevels = sym.DereferenceLevels
-					nameFld.IsPOINTER = fld.IsPOINTER
 					nameFld.PointerTargetType = fld.PointerTargetType
 					nameFld.StructType = fld.StructType
 

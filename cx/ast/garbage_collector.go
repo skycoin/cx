@@ -22,8 +22,8 @@ func MarkAndCompact(prgrm *CXProgram) {
 				}
 
 				glblType := glbl.Type
-				if glbl.PointerTargetType == types.STR {
-					glblType = types.STR
+				if glbl.Type == types.POINTER {
+					glblType = glbl.PointerTargetType
 				}
 				MarkObjectsTree(prgrm, glbl.Offset, glblType, glbl.DeclarationSpecifiers[1:])
 			}
@@ -40,8 +40,8 @@ func MarkAndCompact(prgrm *CXProgram) {
 
 					if fld.IsPointer() || fld.IsSlice || fld.Type == types.STR {
 						fldType := fld.Type
-						if fld.PointerTargetType == types.STR {
-							fldType = types.STR
+						if fld.Type == types.POINTER {
+							fldType = fld.PointerTargetType
 						}
 						MarkObjectsTree(prgrm, offset, fldType, fld.DeclarationSpecifiers[1:])
 					}
@@ -362,8 +362,8 @@ func updatePointers(prgrm *CXProgram, oldAddr, newAddr types.Pointer) {
 				}
 
 				glblType := glbl.Type
-				if glbl.PointerTargetType == types.STR {
-					glblType = types.STR
+				if glbl.Type == types.POINTER {
+					glblType = glbl.PointerTargetType
 				}
 				updatePointerTree(prgrm, glbl.Offset, oldAddr, newAddr, glblType, glbl.DeclarationSpecifiers[1:]) // TODO:PTR remove hardcoded 1 value
 			}
@@ -384,8 +384,8 @@ func updatePointers(prgrm *CXProgram, oldAddr, newAddr types.Pointer) {
 
 					if fld.IsPointer() || fld.IsSlice || fld.Type == types.STR {
 						fldType := fld.Type
-						if fld.PointerTargetType == types.STR {
-							fldType = types.STR
+						if fld.Type == types.POINTER {
+							fldType = fld.PointerTargetType
 						}
 						updatePointerTree(prgrm, offset, oldAddr, newAddr, fldType, fld.DeclarationSpecifiers[1:])
 					}
