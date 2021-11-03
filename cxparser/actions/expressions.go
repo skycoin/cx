@@ -289,7 +289,7 @@ func UnaryExpression(op string, prevExprs []*ast.CXExpression) []*ast.CXExpressi
 		exprOut.DereferenceOperations = append(exprOut.DereferenceOperations, constants.DEREF_POINTER)
 
 		exprOut.DeclarationSpecifiers = append(exprOut.DeclarationSpecifiers, constants.DECL_DEREF)
-		exprOut.IsReference = false
+		// exprOut.IsReference = false
 	case "&":
 		baseOut.PassBy = constants.PASSBY_REFERENCE
 		exprOut.DeclarationSpecifiers = append(exprOut.DeclarationSpecifiers, constants.DECL_POINTER)

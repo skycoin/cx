@@ -410,7 +410,7 @@ func DeclarationSpecifiers(declSpec *ast.CXArgument, arrayLengths []types.Pointe
 		arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_SLICE)
 
 		arg.IsSlice = true
-		arg.IsReference = true
+		// arg.IsReference = true
 		// arg.IsArray = true
 		arg.PassBy = constants.PASSBY_REFERENCE
 

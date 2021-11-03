@@ -218,7 +218,7 @@ func PostfixExpressionField(prevExprs []*ast.CXExpression, ident string) []*ast.
 		out.Size = opOut.Size
 		out.TotalSize = opOut.TotalSize
 		// out.IsArray = opOut.IsArray
-		out.IsReference = opOut.IsReference
+		// out.IsReference = opOut.IsReference
 		out.Lengths = opOut.Lengths
 		out.ArgDetails.Package = lastExpr.Package
 		out.PreviouslyDeclared = true

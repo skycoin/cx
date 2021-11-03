@@ -1080,7 +1080,7 @@ func CopyArgFields(sym *ast.CXArgument, arg *ast.CXArgument) {
 		sym.PointerTargetType = arg.PointerTargetType
 	}
 
-	if sym.IsReference && !arg.IsStruct {
+	if !arg.IsStruct {
 		sym.TotalSize = arg.TotalSize
 	} else {
 		if len(sym.Fields) > 0 {
