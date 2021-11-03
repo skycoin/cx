@@ -107,8 +107,8 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 				value.Arg = input
 				value.Offset = offset
 				value.Type = input.Type
-				if input.PointerTargetType == types.STR {
-					value.Type = types.STR
+				if input.Type == types.POINTER {
+					value.Type = input.PointerTargetType
 				}
 				value.FramePointer = fp
 				value.Expr = expr
@@ -122,8 +122,8 @@ func (call *CXCall) Ccall(prgrm *CXProgram, globalInputs *[]CXValue, globalOutpu
 				value.Arg = output
 				value.Offset = offset
 				value.Type = output.Type
-				if output.PointerTargetType == types.STR {
-					value.Type = types.STR
+				if output.Type == types.POINTER {
+					value.Type = output.PointerTargetType
 				}
 				value.FramePointer = fp
 				value.Expr = expr

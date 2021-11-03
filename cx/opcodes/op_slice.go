@@ -40,16 +40,16 @@ func opSliceAppend(inputs []ast.CXValue, outputs []ast.CXValue) {
 	inp0Type := inp0.Type
 	inp1Type := inp1.Type
 	out0Type := out0.Type
-	if inp0.PointerTargetType == types.STR {
-		inp0Type = types.STR
+	if inp0.Type == types.POINTER {
+		inp0Type = inp0.PointerTargetType
 	}
 
-	if inp1.PointerTargetType == types.STR {
-		inp1Type = types.STR
+	if inp1.Type == types.POINTER {
+		inp1Type = inp1.PointerTargetType
 	}
 
-	if out0.PointerTargetType == types.STR {
-		out0Type = types.STR
+	if out0.Type == types.POINTER {
+		out0Type = out0.PointerTargetType
 	}
 
 	if inp0Type != inp1Type || inp0Type != out0Type || !eltInp0.IsSlice || !eltOut0.IsSlice {
@@ -71,8 +71,8 @@ func opSliceAppend(inputs []ast.CXValue, outputs []ast.CXValue) {
 	for i, input := range sliceInputs {
 		inp := input.Arg
 		inpType := inp.Type
-		if inp.PointerTargetType == types.STR {
-			inpType = types.STR
+		if inp.Type == types.POINTER {
+			inpType = inp.PointerTargetType
 		}
 
 		if inp0Type != inpType {
@@ -112,18 +112,18 @@ func opSliceInsertElement(inputs []ast.CXValue, outputs []ast.CXValue) {
 	fp := inputs[0].FramePointer
 
 	inp0Type := inp0.Type
-	if inp0.PointerTargetType == types.STR {
-		inp0Type = types.STR
+	if inp0.Type == types.POINTER {
+		inp0Type = inp0.PointerTargetType
 	}
 
 	inp2Type := inp2.Type
-	if inp2.PointerTargetType == types.STR {
-		inp2Type = types.STR
+	if inp2.Type == types.POINTER {
+		inp2Type = inp2.PointerTargetType
 	}
 
 	out0Type := out0.Type
-	if out0.PointerTargetType == types.STR {
-		out0Type = types.STR
+	if out0.Type == types.POINTER {
+		out0Type = out0.PointerTargetType
 	}
 
 	if inp0Type != inp2Type || inp0Type != out0Type || !inp0.GetAssignmentElement().IsSlice || !out0.GetAssignmentElement().IsSlice {

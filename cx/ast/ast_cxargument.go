@@ -307,8 +307,8 @@ func (arg *CXArgument) GetType() types.Code {
 		return arg.Fields[fieldCount-1].GetType()
 	}
 
-	if arg.PointerTargetType == types.STR {
-		return types.STR
+	if arg.Type == types.POINTER {
+		return arg.PointerTargetType
 	}
 	return arg.Type
 }

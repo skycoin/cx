@@ -286,15 +286,15 @@ func checkSameNativeType(expr *ast.CXExpression) error {
 	}
 
 	typeCode := expr.Inputs[0].Type
-	if expr.Inputs[0].PointerTargetType == types.STR {
-		typeCode = types.STR
+	if expr.Inputs[0].Type == types.POINTER {
+		typeCode = expr.Inputs[0].PointerTargetType
 	}
 
 	for _, inp := range expr.Inputs {
 		inpType := inp.Type
 
-		if inp.PointerTargetType == types.STR {
-			inpType = types.STR
+		if inp.Type == types.POINTER {
+			inpType = inp.PointerTargetType
 		}
 
 		if inpType != typeCode {
@@ -612,7 +612,7 @@ func CheckTypes(expr *ast.CXExpression) {
 				// then it's native type
 				expectedType = expr.Outputs[i].GetAssignmentElement().Type.Name()
 
-				if expr.Outputs[i].GetAssignmentElement().PointerTargetType == types.STR {
+				if expr.Outputs[i].GetAssignmentElement().Type == types.POINTER {
 					expectedType = expr.Outputs[i].GetAssignmentElement().PointerTargetType.Name()
 				}
 			}
@@ -624,7 +624,7 @@ func CheckTypes(expr *ast.CXExpression) {
 				// then it's native type
 				receivedType = expr.Inputs[i].GetAssignmentElement().Type.Name()
 
-				if expr.Inputs[i].GetAssignmentElement().PointerTargetType == types.STR {
+				if expr.Inputs[i].GetAssignmentElement().Type == types.POINTER {
 					receivedType = expr.Inputs[i].GetAssignmentElement().PointerTargetType.Name()
 				}
 			}

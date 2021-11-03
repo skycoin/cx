@@ -684,7 +684,7 @@ func GetFormattedType(arg *CXArgument) string {
 				// then it's custom type
 				typ += elt.StructType.Name
 			} else {
-				if elt.PointerTargetType == types.STR {
+				if elt.Type == types.POINTER {
 					typ += elt.PointerTargetType.Name()
 				} else {
 					// then it's basic type
