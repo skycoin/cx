@@ -1030,11 +1030,6 @@ func CopyArgFields(sym *ast.CXArgument, arg *ast.CXArgument) {
 	sym.DoesEscape = arg.DoesEscape
 	sym.Size = arg.Size
 
-	if arg.Type == types.STR {
-		sym.PointerTargetType = types.STR
-		sym.Type = types.POINTER
-	}
-
 	// Checking if it's a slice struct field. We'll do the same process as
 	// below (as in the `arg.IsSlice` check), but the process differs in the
 	// case of a slice struct field.
@@ -1081,12 +1076,8 @@ func CopyArgFields(sym *ast.CXArgument, arg *ast.CXArgument) {
 
 		sym.IsSlice = sym.Fields[len(sym.Fields)-1].IsSlice
 	} else {
-		if sym.Type == types.POINTER && arg.StructType != nil {
-			sym.PointerTargetType = arg.Type
-		} else {
-			sym.Type = arg.Type
-			sym.PointerTargetType = arg.PointerTargetType
-		}
+		sym.Type = arg.Type
+		sym.PointerTargetType = arg.PointerTargetType
 	}
 
 	if sym.IsReference && !arg.IsStruct {
