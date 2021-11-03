@@ -130,7 +130,7 @@ func serializeArgument(arg *CXArgument, s *SerializedCXProgram) int {
 
 	s.Arguments[argOff].IsSlice = serializeBoolean(arg.IsSlice)
 	// s.Arguments[argOff].IsPointer = serializeBoolean(arg.IsPointer)
-	s.Arguments[argOff].IsReference = serializeBoolean(arg.IsReference)
+	// s.Arguments[argOff].IsReference = serializeBoolean(arg.IsReference)
 
 	s.Arguments[argOff].IsStruct = serializeBoolean(arg.IsStruct)
 	s.Arguments[argOff].IsInnerArg = serializeBoolean(arg.IsInnerArg)
@@ -802,7 +802,7 @@ func deserializeArgument(sArg *serializedArgument, s *SerializedCXProgram, prgrm
 
 	arg.IsSlice = deserializeBool(sArg.IsSlice)
 	// arg.IsPointer = deserializeBool(sArg.IsPointer)
-	arg.IsReference = deserializeBool(sArg.IsReference)
+	// arg.IsReference = deserializeBool(sArg.IsReference)
 	arg.IsStruct = deserializeBool(sArg.IsStruct)
 	arg.IsInnerArg = deserializeBool(sArg.IsInnerArg)
 	arg.IsLocalDeclaration = deserializeBool(sArg.IsLocalDeclaration)

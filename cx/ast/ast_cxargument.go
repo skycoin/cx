@@ -132,7 +132,7 @@ type CXArgument struct {
 	StructType *CXStruct
 	IsSlice    bool
 	// IsArray                      bool
-	IsReference                  bool
+	// IsReference                  bool
 	IsStruct                     bool
 	IsInnerArg                   bool // ex. pkg.var <- var is the inner arg
 	IsLocalDeclaration           bool
