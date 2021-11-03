@@ -69,7 +69,7 @@ func MarkAndCompact(prgrm *CXProgram) {
 			offset := ptr.Offset
 			offset += fp
 
-			ptrIsPointer := IsPointer(ptr)
+			ptrIsPointer := ptr.IsPointer()
 
 			// Checking if we need to mark `ptr`.
 			if ptrIsPointer {
@@ -89,7 +89,7 @@ func MarkAndCompact(prgrm *CXProgram) {
 
 			// Checking if the field being accessed needs to be marked.
 			// If the root (`ptr`) is a pointer, this step is unnecessary.
-			if len(ptr.Fields) > 0 && !ptrIsPointer && IsPointer(ptr.Fields[len(ptr.Fields)-1]) {
+			if len(ptr.Fields) > 0 && !ptrIsPointer && ptr.Fields[len(ptr.Fields)-1].IsPointer() {
 				fld := ptr.Fields[len(ptr.Fields)-1]
 				MarkObjectsTree(prgrm, offset+fld.Offset, fld.Type, fld.DeclarationSpecifiers[1:])
 			}
@@ -371,7 +371,7 @@ func updatePointers(prgrm *CXProgram, oldAddr, newAddr types.Pointer) {
 			// If `ptr` has fields, we need to navigate the heap and mark its fields too.
 			if glbl.StructType != nil {
 				for _, fld := range glbl.StructType.Fields {
-					if !IsPointer(fld) {
+					if !fld.IsPointer() {
 						continue
 					}
 					offset := glbl.Offset + fld.Offset
@@ -412,7 +412,7 @@ func updatePointers(prgrm *CXProgram, oldAddr, newAddr types.Pointer) {
 			offset := ptr.Offset
 			offset += fp
 
-			ptrIsPointer := IsPointer(ptr)
+			ptrIsPointer := ptr.IsPointer()
 
 			// Checking if we need to mark `ptr`.
 			if ptrIsPointer {
@@ -434,7 +434,7 @@ func updatePointers(prgrm *CXProgram, oldAddr, newAddr types.Pointer) {
 
 			// Checking if the field being accessed needs to be marked.
 			// If the root (`ptr`) is a pointer, this step is unnecessary.
-			if len(ptr.Fields) > 0 && !ptrIsPointer && IsPointer(ptr.Fields[len(ptr.Fields)-1]) {
+			if len(ptr.Fields) > 0 && !ptrIsPointer && ptr.Fields[len(ptr.Fields)-1].IsPointer() {
 				fld := ptr.Fields[len(ptr.Fields)-1]
 
 				// Getting the offset to the object in the heap
