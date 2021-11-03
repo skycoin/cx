@@ -454,14 +454,14 @@ func AddPointer(fn *ast.CXFunction, sym *ast.CXArgument) {
 	// added to the list.
 	if len(sym.Fields) > 0 {
 		fld := sym.Fields[len(sym.Fields)-1]
-		if ast.IsPointer(fld) && !isPointerAdded(fn, sym) {
+		if fld.IsPointer() && !isPointerAdded(fn, sym) {
 			fn.ListOfPointers = append(fn.ListOfPointers, sym)
 		}
 	}
 	// Root symbol:
 	// Checking if it is a pointer candidate and if it was already
 	// added to the list.
-	if ast.IsPointer(sym) && !isPointerAdded(fn, sym) {
+	if sym.IsPointer() && !isPointerAdded(fn, sym) {
 		if len(sym.Fields) > 0 {
 			tmp := ast.CXArgument{}
 			copier.Copy(&tmp, sym)
