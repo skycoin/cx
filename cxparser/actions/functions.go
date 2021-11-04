@@ -78,7 +78,7 @@ func FunctionAddParameters(fn *ast.CXFunction, inputs, outputs []*ast.CXArgument
 	}
 
 	for _, out := range fn.Outputs {
-		if out.IsPointer && out.Type != types.STR && out.Type != types.AFF {
+		if out.IsPointer() && out.PointerTargetType != types.STR && out.Type != types.AFF {
 			out.DoesEscape = true
 		}
 	}
@@ -177,10 +177,12 @@ func FunctionDeclaration(fn *ast.CXFunction, inputs, outputs []*ast.CXArgument, 
 				arg = fn.Expressions[i].Inputs[0]
 			}
 			fn.Expressions[i-1].Outputs[0].Type = arg.Type
+			fn.Expressions[i-1].Outputs[0].PointerTargetType = arg.PointerTargetType
 			fn.Expressions[i-1].Outputs[0].Size = arg.Size
 			fn.Expressions[i-1].Outputs[0].TotalSize = arg.TotalSize
 
 			fn.Expressions[i].Outputs[0].Type = arg.Type
+			fn.Expressions[i].Outputs[0].PointerTargetType = arg.PointerTargetType
 			fn.Expressions[i].Outputs[0].Size = arg.Size
 			fn.Expressions[i].Outputs[0].TotalSize = arg.TotalSize
 		}
@@ -239,6 +241,7 @@ func FunctionCall(exprs []*ast.CXExpression, args []*ast.CXExpression) []*ast.CX
 					out.TotalSize = ast.GetSize(inpExpr.Inputs[0])
 
 					out.Type = inpExpr.Inputs[0].Type
+					out.PointerTargetType = inpExpr.Inputs[0].PointerTargetType
 					out.PreviouslyDeclared = true
 				} else {
 					out = ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, inpExpr.FileLine).AddType(inpExpr.Operator.Outputs[0].Type)
@@ -257,6 +260,7 @@ func FunctionCall(exprs []*ast.CXExpression, args []*ast.CXExpression) []*ast.CX
 					}
 
 					out.Type = inpExpr.Operator.Outputs[0].Type
+					out.PointerTargetType = inpExpr.Operator.Outputs[0].PointerTargetType
 					out.PreviouslyDeclared = true
 				}
 
@@ -280,13 +284,26 @@ func checkSameNativeType(expr *ast.CXExpression) error {
 	if len(expr.Inputs) < 1 {
 		return errors.New("cannot perform arithmetic without operands")
 	}
+
 	typeCode := expr.Inputs[0].Type
+	if expr.Inputs[0].Type == types.POINTER {
+		typeCode = expr.Inputs[0].PointerTargetType
+	}
+
 	for _, inp := range expr.Inputs {
-		if inp.Type != typeCode {
+		inpType := inp.Type
+
+		if inp.Type == types.POINTER {
+			inpType = inp.PointerTargetType
+		}
+
+		if inpType != typeCode {
 			return errors.New("operands are not of the same type")
 		}
-		typeCode = inp.Type
+
+		typeCode = inpType
 	}
+
 	return nil
 }
 
@@ -311,12 +328,12 @@ func ProcessOperatorExpression(expr *ast.CXExpression) {
 func ProcessPointerStructs(expr *ast.CXExpression) {
 	for _, arg := range append(expr.Inputs, expr.Outputs...) {
 		for _, fld := range arg.Fields {
-			if fld.IsPointer && fld.DereferenceLevels == 0 {
+			if fld.IsPointer() && fld.DereferenceLevels == 0 {
 				fld.DereferenceLevels++
 				fld.DereferenceOperations = append(fld.DereferenceOperations, constants.DEREF_POINTER)
 			}
 		}
-		if arg.IsStruct && arg.IsPointer && len(arg.Fields) > 0 && arg.DereferenceLevels == 0 {
+		if arg.IsStruct && arg.IsPointer() && len(arg.Fields) > 0 && arg.DereferenceLevels == 0 {
 			arg.DereferenceLevels++
 			arg.DereferenceOperations = append(arg.DereferenceOperations, constants.DEREF_POINTER)
 		}
@@ -437,14 +454,14 @@ func AddPointer(fn *ast.CXFunction, sym *ast.CXArgument) {
 	// added to the list.
 	if len(sym.Fields) > 0 {
 		fld := sym.Fields[len(sym.Fields)-1]
-		if ast.IsPointer(fld) && !isPointerAdded(fn, sym) {
+		if fld.IsPointer() && !isPointerAdded(fn, sym) {
 			fn.ListOfPointers = append(fn.ListOfPointers, sym)
 		}
 	}
 	// Root symbol:
 	// Checking if it is a pointer candidate and if it was already
 	// added to the list.
-	if ast.IsPointer(sym) && !isPointerAdded(fn, sym) {
+	if sym.IsPointer() && !isPointerAdded(fn, sym) {
 		if len(sym.Fields) > 0 {
 			tmp := ast.CXArgument{}
 			copier.Copy(&tmp, sym)
@@ -498,7 +515,7 @@ func checkMatchParamTypes(expr *ast.CXExpression, expected, received []*ast.CXAr
 		expectedType := ast.GetFormattedType(expected[i])
 		receivedType := ast.GetFormattedType(received[i])
 
-		if expr.IsMethodCall() && expected[i].IsPointer && i == 0 {
+		if expr.IsMethodCall() && expected[i].IsPointer() && i == 0 {
 			// if method receiver is pointer, remove *
 			if expectedType[0] == '*' {
 				// we need to check if it's not an `str`
@@ -594,6 +611,10 @@ func CheckTypes(expr *ast.CXExpression) {
 			} else {
 				// then it's native type
 				expectedType = expr.Outputs[i].GetAssignmentElement().Type.Name()
+
+				if expr.Outputs[i].GetAssignmentElement().Type == types.POINTER {
+					expectedType = expr.Outputs[i].GetAssignmentElement().PointerTargetType.Name()
+				}
 			}
 
 			if expr.Inputs[i].GetAssignmentElement().StructType != nil {
@@ -602,6 +623,10 @@ func CheckTypes(expr *ast.CXExpression) {
 			} else {
 				// then it's native type
 				receivedType = expr.Inputs[i].GetAssignmentElement().Type.Name()
+
+				if expr.Inputs[i].GetAssignmentElement().Type == types.POINTER {
+					receivedType = expr.Inputs[i].GetAssignmentElement().PointerTargetType.Name()
+				}
 			}
 
 			// if cxcore.GetAssignmentElement(expr.ProgramOutput[i]).Type != cxcore.GetAssignmentElement(inp).Type {
@@ -648,7 +673,7 @@ func ProcessReferenceAssignment(expr *ast.CXExpression) {
 		elt := out.GetAssignmentElement()
 		if elt.PassBy == constants.PASSBY_REFERENCE &&
 			!hasDeclSpec(elt, constants.DECL_POINTER) &&
-			elt.Type != types.STR && !elt.IsSlice {
+			elt.PointerTargetType != types.STR && elt.Type != types.STR && !elt.IsSlice {
 			println(ast.CompilationError(CurrentFile, LineNo), "invalid reference assignment", elt.ArgDetails.Name)
 		}
 	}
@@ -886,7 +911,7 @@ func ProcessMethodCall(expr *ast.CXExpression, symbols *[]map[string]*ast.CXArgu
 		}
 
 		// checking if receiver is sent as pointer or not
-		if expr.Operator.Inputs[0].IsPointer {
+		if expr.Operator.Inputs[0].IsPointer() {
 			expr.Inputs[0].PassBy = constants.PASSBY_REFERENCE
 		}
 	}
@@ -913,6 +938,7 @@ func ProcessTempVariable(expr *ast.CXExpression) {
 		if IsTempVar(name) {
 			// then it's a temporary variable and it needs to adopt its input's type
 			arg.Type = expr.Inputs[0].Type
+			arg.PointerTargetType = expr.Inputs[0].PointerTargetType
 			arg.Size = expr.Inputs[0].Size
 			arg.TotalSize = expr.Inputs[0].TotalSize
 			arg.PreviouslyDeclared = true
@@ -922,7 +948,8 @@ func ProcessTempVariable(expr *ast.CXExpression) {
 
 func CopyArgFields(sym *ast.CXArgument, arg *ast.CXArgument) {
 	sym.Offset = arg.Offset
-	sym.IsPointer = arg.IsPointer
+	sym.Type = arg.Type
+
 	sym.IndirectionLevels = arg.IndirectionLevels
 
 	if sym.ArgDetails.FileLine != arg.ArgDetails.FileLine {
@@ -1003,10 +1030,6 @@ func CopyArgFields(sym *ast.CXArgument, arg *ast.CXArgument) {
 	sym.DoesEscape = arg.DoesEscape
 	sym.Size = arg.Size
 
-	if arg.Type == types.STR {
-		sym.IsPointer = true
-	}
-
 	// Checking if it's a slice struct field. We'll do the same process as
 	// below (as in the `arg.IsSlice` check), but the process differs in the
 	// case of a slice struct field.
@@ -1044,13 +1067,20 @@ func CopyArgFields(sym *ast.CXArgument, arg *ast.CXArgument) {
 	}
 
 	if len(sym.Fields) > 0 {
-		sym.Type = sym.Fields[len(sym.Fields)-1].Type
+		if sym.Type == types.POINTER && arg.StructType != nil {
+			sym.PointerTargetType = sym.Fields[len(sym.Fields)-1].Type
+		} else {
+			sym.Type = sym.Fields[len(sym.Fields)-1].Type
+			sym.PointerTargetType = sym.Fields[len(sym.Fields)-1].PointerTargetType
+		}
+
 		sym.IsSlice = sym.Fields[len(sym.Fields)-1].IsSlice
 	} else {
 		sym.Type = arg.Type
+		sym.PointerTargetType = arg.PointerTargetType
 	}
 
-	if sym.IsReference && !arg.IsStruct {
+	if !arg.IsStruct {
 		sym.TotalSize = arg.TotalSize
 	} else {
 		if len(sym.Fields) > 0 {
@@ -1084,6 +1114,7 @@ func ProcessSymbolFields(sym *ast.CXArgument, arg *ast.CXArgument) {
 
 				if method, methodErr := strct.Package.GetMethod(receiverType+"."+methodName, receiverType); methodErr == nil {
 					fld.Type = method.Outputs[0].Type
+					fld.PointerTargetType = method.Outputs[0].PointerTargetType
 				} else {
 					println(ast.CompilationError(fld.ArgDetails.FileName, fld.ArgDetails.FileLine), err.Error())
 				}
@@ -1106,7 +1137,7 @@ func ProcessSymbolFields(sym *ast.CXArgument, arg *ast.CXArgument) {
 					nameFld.Size = fld.Size
 					nameFld.TotalSize = fld.TotalSize
 					nameFld.DereferenceLevels = sym.DereferenceLevels
-					nameFld.IsPointer = fld.IsPointer
+					nameFld.PointerTargetType = fld.PointerTargetType
 					nameFld.StructType = fld.StructType
 
 					sym.Lengths = fld.Lengths

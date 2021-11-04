@@ -18,7 +18,7 @@ func AssertFailed() bool {
 //TODO: Rework
 func assert(inputs []ast.CXValue, outputs []ast.CXValue) (same bool) {
 	var byts1, byts2 []byte
-	if inputs[0].Arg.Type == types.STR {
+	if inputs[0].Arg.Type == types.STR || inputs[0].Arg.PointerTargetType == types.STR {
 		byts1 = []byte(inputs[0].Get_str())
 		byts2 = []byte(inputs[1].Get_str())
 	} else {

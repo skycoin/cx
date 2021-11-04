@@ -60,6 +60,7 @@ func SliceLiteralExpression(typeCode types.Code, exprs []*ast.CXExpression) []*a
 				out := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), expr.FileName, expr.FileLine)
 				outArg := getOutputType(expr)
 				out.AddType(outArg.Type)
+				out.PointerTargetType = outArg.PointerTargetType
 				out.StructType = outArg.StructType
 				out.Size = outArg.Size
 				out.TotalSize = ast.GetSize(outArg)
@@ -121,7 +122,7 @@ func PrimaryStructLiteral(ident string, strctFlds []*ast.CXExpression) []*ast.CX
 
 				fld := ast.MakeArgument(name, CurrentFile, LineNo)
 				fld.Type = expr.Outputs[0].Type
-
+				fld.PointerTargetType = expr.Outputs[0].PointerTargetType
 				expr.ExpressionType = ast.CXEXPR_STRUCT_LITERAL
 
 				expr.Outputs[0].ArgDetails.Package = pkg

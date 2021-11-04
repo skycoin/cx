@@ -380,26 +380,15 @@ func DeclarationSpecifiers(declSpec *ast.CXArgument, arrayLengths []types.Pointe
 	switch opTyp {
 	case constants.DECL_POINTER:
 		declSpec.DeclarationSpecifiers = append(declSpec.DeclarationSpecifiers, constants.DECL_POINTER)
-		// if !declSpec.IsPointer {
-		declSpec.IsPointer = true
+
 		declSpec.Size = types.POINTER_SIZE
 		declSpec.TotalSize = types.POINTER_SIZE
 		declSpec.IndirectionLevels++
-		// }
-		// else {
-		// pointer := declSpec
 
-		// for c := declSpec.IndirectionLevels; c > 1; c-- {
-		// 	pointer.IndirectionLevels = c
-		// 	pointer.IsPointer = true
-		// }
-
-		// declSpec.IndirectionLevels++
-
-		// pointer.Size = types.POINTER_SIZE
-		// pointer.TotalSize = types.POINTER_SIZE
-		// }
-
+		if declSpec.Type == types.STR || declSpec.StructType != nil {
+			declSpec.PointerTargetType = declSpec.Type
+			declSpec.Type = types.POINTER
+		}
 		return declSpec
 	case constants.DECL_ARRAY:
 		for range arrayLengths {
@@ -421,7 +410,7 @@ func DeclarationSpecifiers(declSpec *ast.CXArgument, arrayLengths []types.Pointe
 		arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_SLICE)
 
 		arg.IsSlice = true
-		arg.IsReference = true
+		// arg.IsReference = true
 		// arg.IsArray = true
 		arg.PassBy = constants.PASSBY_REFERENCE
 

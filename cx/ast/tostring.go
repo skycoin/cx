@@ -225,7 +225,7 @@ func SignatureStringOfFunction(pkg *CXPackage, f *CXFunction) string {
 }
 
 func getNonCollectionValue(fp types.Pointer, arg, elt *CXArgument, typ string) string {
-	if arg.IsPointer {
+	if arg.IsPointer() {
 		return fmt.Sprintf("%v", types.Read_ptr(PROGRAM.Memory, GetFinalOffset(fp, elt)))
 	}
 	if arg.IsSlice {
@@ -545,36 +545,6 @@ func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCod
 	return cxArgs, sourceCode, fileNames
 }
 
-// IsPointer checks if `sym` is a candidate for the garbage collector to check.
-// For example, if `sym` is a slice, the garbage collector will need to check
-// if the slice on the heap needs to be relocated.
-func IsPointer(sym *CXArgument) bool {
-	// There's no need to add global variables in `fn.ListOfPointers` as we can access them easily through `CXPackage.Globals`
-	// TODO: We could still pre-compute a list of candidates for globals.
-	if sym.Offset >= PROGRAM.Stack.Size && sym.ArgDetails.Name != "" {
-		return false
-	}
-	// NOTE: Strings are considered as `IsPointer`s by the runtime.
-	// if (sym.IsPointer || sym.IsSlice) && sym.ArgDetails.Name != "" {
-	// 	return true
-	// }
-	if (sym.IsPointer || sym.IsSlice) && sym.ArgDetails.Name != "" && len(sym.Fields) == 0 {
-		return true
-	}
-	if sym.Type == types.STR && sym.ArgDetails.Name != "" && len(sym.Fields) == 0 {
-		return true
-	}
-	// if (sym.Type == types.STR && sym.Name != "") {
-	// 	return true
-	// }
-	// If `sym` is a structure instance, we need to check if the last field
-	// being access is a pointer candidate
-	// if len(sym.Fields) > 0 {
-	// 	return isPointer(sym.Fields[len(sym.Fields)-1])
-	// }
-	return false
-}
-
 // getFormattedDerefs is an auxiliary function for `GetFormattedName`. This
 // function formats indexing and pointer dereferences associated to `arg`.
 func getFormattedDerefs(arg *CXArgument, includePkg bool) string {
@@ -684,8 +654,12 @@ func GetFormattedType(arg *CXArgument) string {
 				// then it's custom type
 				typ += elt.StructType.Name
 			} else {
-				// then it's basic type
-				typ += elt.Type.Name()
+				if elt.Type == types.POINTER {
+					typ += elt.PointerTargetType.Name()
+				} else {
+					// then it's basic type
+					typ += elt.Type.Name()
+				}
 
 				// If it's a function, let's add the inputs and outputs.
 				if elt.Type == types.FUNC {

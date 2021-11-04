@@ -218,7 +218,7 @@ func PostfixExpressionField(prevExprs []*ast.CXExpression, ident string) []*ast.
 		out.Size = opOut.Size
 		out.TotalSize = opOut.TotalSize
 		// out.IsArray = opOut.IsArray
-		out.IsReference = opOut.IsReference
+		// out.IsReference = opOut.IsReference
 		out.Lengths = opOut.Lengths
 		out.ArgDetails.Package = lastExpr.Package
 		out.PreviouslyDeclared = true
@@ -301,7 +301,7 @@ func PostfixExpressionField(prevExprs []*ast.CXExpression, ident string) []*ast.
 			prevExprs[len(prevExprs)-1].Outputs[0].StructType = glbl.StructType
 			prevExprs[len(prevExprs)-1].Outputs[0].Size = glbl.Size
 			prevExprs[len(prevExprs)-1].Outputs[0].TotalSize = glbl.TotalSize
-			prevExprs[len(prevExprs)-1].Outputs[0].IsPointer = glbl.IsPointer
+			prevExprs[len(prevExprs)-1].Outputs[0].PointerTargetType = glbl.PointerTargetType
 			prevExprs[len(prevExprs)-1].Outputs[0].IsSlice = glbl.IsSlice
 			prevExprs[len(prevExprs)-1].Outputs[0].IsStruct = glbl.IsStruct
 			prevExprs[len(prevExprs)-1].Outputs[0].ArgDetails.Package = glbl.ArgDetails.Package
