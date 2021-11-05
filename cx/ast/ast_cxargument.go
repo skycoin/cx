@@ -122,17 +122,13 @@ type CXArgument struct {
 	// value of the `CXArgument`.
 	Offset types.Pointer
 
-	// IndirectionLevels
-	IndirectionLevels int
 	DereferenceLevels int
 	PassBy            int // pass by value or reference
 
 	ArgDetails *CXArgumentDebug
 
-	StructType *CXStruct
-	IsSlice    bool
-	// IsArray                      bool
-	// IsReference                  bool
+	StructType                   *CXStruct
+	IsSlice                      bool
 	IsStruct                     bool
 	IsInnerArg                   bool // ex. pkg.var <- var is the inner arg
 	IsLocalDeclaration           bool
@@ -195,51 +191,11 @@ grep -rn "DereferenceLevels" .
 */
 
 /*
-Note: IndirectionLevels does not appear to be used at all
-
- grep -rn "IndirectionLevels" .
-./cxparser/actions/functions.go:951:	sym.IndirectionLevels = arg.IndirectionLevels
-./cxparser/actions/declarations.go:379:			declSpec.IndirectionLevels++
-./cxparser/actions/declarations.go:383:			for c := declSpec.IndirectionLevels - 1; c > 0; c-- {
-./cxparser/actions/declarations.go:384:				pointer.IndirectionLevels = c
-./cxparser/actions/declarations.go:388:			declSpec.IndirectionLevels++
-./CompilerDevelopment.md:69:* IndirectionLevels - how many discrete levels of indirection to this specific CXArgument?
-Binary file ./bin/cx matches
-./cx/serialize.go:148:	IndirectionLevels           int32
-./cx/serialize.go:299:	s.Arguments[argOff].IndirectionLevels = int32(arg.IndirectionLevels)
-./cx/serialize.go:1007:	arg.IndirectionLevels = int(sArg.IndirectionLevels)
-./cx/cxargument.go:21:	IndirectionLevels     int
-*/
-
-/*
-IsDereferenceFirst - is this both an array and a pointer, and if so,
-is the pointer first? Mutually exclusive with IsArrayFirst.
-
-grep -rn "IsDereferenceFirst" .
-./cxparser/actions/postfix.go:60:	if !elt.IsDereferenceFirst {
-./cxparser/actions/expressions.go:331:			exprOut.IsDereferenceFirst = true
-./CompilerDevelopment.md:76:* IsArrayFirst - is this both a pointer and an array, and if so, is the array first? Mutually exclusive with IsDereferenceFirst
-./CompilerDevelopment.md:78:* IsDereferenceFirst - is this both an array and a pointer, and if so, is the pointer first? Mutually exclusive with IsArrayFirst.
-Binary file ./bin/cx matches
-./cx/serialize.go:161:	IsDereferenceFirst int32
-./cx/serialize.go:314:	s.Arguments[argOff].IsDereferenceFirst = serializeBoolean(arg.IsDereferenceFirst)
-./cx/serialize.go:1019:	arg.IsDereferenceFirst = dsBool(sArg.IsDereferenceFirst)
-./cx/cxargument.go:32:	IsDereferenceFirst    bool // and then array
-./cx/cxargument.go:43:IsDereferenceFirst - is this both an array and a pointer, and if so,
-
-*/
-
-/*
 All "Is" can be removed
 - because there is a constants for type (int) for defining the types
 - could look in definition, specifier
 - but use int lookup
 	IsSlice               bool
-	IsArray               bool
-	IsArrayFirst          bool // and then dereference
-	IsPointer             bool
-	IsReference           bool
-	IsDereferenceFirst    bool // and then array
 	IsStruct              bool
 	IsInnerArg                bool // pkg.var <- var is rest
 	IsLocalDeclaration    bool
