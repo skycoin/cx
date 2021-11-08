@@ -85,10 +85,7 @@ The atomic unit of data in a program is the [CXArgument](https://github.com/skyc
 * FileLine - an int used for crash behavior, storing which file line this CXArgument originates from.
 * StructType - a CXStruct representing the custom type this variable might be (if struct).
 * Package - the CXPackage this CXArgument resides in.
-* IsSlice, IsArray, IsPointer, IsStruct - name says it all.
-* IsArrayFirst - is this both a pointer and an array, and if so, is the array first? Mutually exclusive with IsDereferenceFirst
-* IsReference - is this variable of pointer type? (`TYPE_FUNC`, `TYPE_SLICE`, `TYPE_POINTER`)
-* IsDereferenceFirst - is this both an array and a pointer, and if so, is the pointer first? Mutually exclusive with IsArrayFirst.
+* IsSlice, IsStruct - name says it all.
 * IsInnerArg - if this is a package global, is this CXArgument representing the actual global variable from that package?
 * IsLocalDeclaration - is this CXArgument bounded in lifetime by scope (as opposed to being a global variable)?
 * IsShortDeclaration - is this CXArgument the result of a `CASSIGN` operation (`:=`)?
