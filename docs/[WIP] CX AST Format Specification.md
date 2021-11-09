@@ -49,15 +49,15 @@ Note that in CXArgument, its line and filename fields are removed so for error h
 CXOperation have the following fields:
 * Index - an int32 which determines its index in the array of CXAtomicOperator, CXArgument, or CXLine.
 * Type - Determines which type or which array it is located.
-The types are:
-0-reserved
-1-CXAtomicOperator
-2-CXArgument
-3-CXLine
-4-CXStructDef
-5-CXFunctionDef
-6-CXModuleDef
-7-CXGlobalDef/CXModuleGlobalDef
+* The types are:
+  * 0-reserved
+  * 1-CXAtomicOperator
+  * 2-CXArgument
+  * 3-CXLine
+  * 4-CXStructDef
+  * 5-CXFunctionDef
+  * 6-CXModuleDef
+  * 7-CXGlobalDef/CXModuleGlobalDef
 
 ## CXFunction
 [CXFunctions](https://github.com/skycoin/cx/blob/develop/cx/cxfunction.go) are the operators in CX, whether they be custom operations, internal library operations, opcodes, or functions defined in CX. The Inputs and Outputs of the CXFunction differ from the CXExpression Inputs and Outputs because the ones the CXFunction have are parameters, not arguments. So CXExpressions store CXArguments that represent the actual input and output data during evaluation, while CXFunctions store inputs and outputs corresponding to: what kind of data types they accept; what kind of named parameters to declare; or otherwise, just type.
