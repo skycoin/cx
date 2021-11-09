@@ -383,7 +383,7 @@ func DeclarationSpecifiers(declSpec *ast.CXArgument, arrayLengths []types.Pointe
 
 		declSpec.Size = types.POINTER_SIZE
 		declSpec.TotalSize = types.POINTER_SIZE
-		declSpec.IndirectionLevels++
+		// declSpec.IndirectionLevels++
 
 		if declSpec.Type == types.STR || declSpec.StructType != nil {
 			declSpec.PointerTargetType = declSpec.Type

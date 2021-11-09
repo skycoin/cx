@@ -1,6 +1,18 @@
+# CX Parser Specification
+CX Parser Specification defines the cx parser.
+(found in [cxparser_spec.md](https://github.com/skycoin/cx/docs/cxparser_spec.md))
+
+# CX Parser Stages
+A description about the parsing stages.
+(found in [parserstages.md](https://github.com/skycoin/cx/docs/parserstages.md))
+
+# Hello world CX Sample
+A sample cx program.
+(found in [hello-world.md](https://github.com/skycoin/cx/docs/hello-world.md))
+
 # CX Lexer
 CX in house `lexer` generates a chain of tokens which is used by yacc for parsing.
-(found in)[lex.go] (https://github.com/skycoin/cx/cxparser/cxpartialparsing/lex.go )
+(found in [lex.go](https://github.com/skycoin/cx/cxparser/cxpartialparsing/lex.go))
 
 
 Parser stages 
@@ -11,7 +23,7 @@ stage 0
 prilimalary stage of using regex 
 
 Preliminarystage()
-The compiler creates an AST first by using regular expression parsing (found in [utils.go](https://github.com/PratikDhanave/cx/blob/develop/cxparser/cxparsing/utils.go#L21) which structures the AST to include all package declarations, import chains, struct declarations, and globals, skipping over comments. 
+The compiler creates an AST first by using regular expression parsing (found in [utils.go](https://github.com/PratikDhanave/cx/blob/develop/cxparser/cxparsing/utils.go#L21)) which structures the AST to include all package declarations, import chains, struct declarations, and globals, skipping over comments. 
 This preliminary stage of parsing aids further stages since the structure of a CX repository and the names of custom types are already known. 
 
 Step I

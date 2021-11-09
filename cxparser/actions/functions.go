@@ -950,7 +950,7 @@ func CopyArgFields(sym *ast.CXArgument, arg *ast.CXArgument) {
 	sym.Offset = arg.Offset
 	sym.Type = arg.Type
 
-	sym.IndirectionLevels = arg.IndirectionLevels
+	// sym.IndirectionLevels = arg.IndirectionLevels
 
 	if sym.ArgDetails.FileLine != arg.ArgDetails.FileLine {
 		// FIXME Maybe we can unify this later.
