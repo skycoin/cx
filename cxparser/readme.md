@@ -1,18 +1,18 @@
 # CX Parser Specification
 CX Parser Specification defines the cx parser.
-(found in)[cxparser_spec.md] (https://github.com/skycoin/cx/docs/cxparser_spec.md)
+(found in [cxparser_spec.md](https://github.com/skycoin/cx/docs/cxparser_spec.md)
 
 # CX Parser Stages
 A description about the parsing stages.
-(found in)[parserstages.md] (https://github.com/skycoin/cx/docs/parserstages.md)
+(found in [parserstages.md](https://github.com/skycoin/cx/docs/parserstages.md)
 
 # Hello world CX Sample
 A sample cx program.
-(found in)[hello-world.md] (https://github.com/skycoin/cx/docs/hello-world.md)
+(found in [hello-world.md](https://github.com/skycoin/cx/docs/hello-world.md)
 
 # CX Lexer
 CX in house `lexer` generates a chain of tokens which is used by yacc for parsing.
-(found in)[lex.go] (https://github.com/skycoin/cx/cxparser/cxpartialparsing/lex.go)
+(found in [lex.go](https://github.com/skycoin/cx/cxparser/cxpartialparsing/lex.go)
 
 
 Parser stages 
