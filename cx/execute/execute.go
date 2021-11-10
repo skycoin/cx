@@ -82,7 +82,7 @@ func RunCxAst(cxprogram *ast.CXProgram, untilEnd bool, maxOps int, untilCall typ
 			opCount++
 		}
 
-		err := call.Ccall(cxprogram, &inputs, &outputs)
+		err := call.Call(cxprogram, &inputs, &outputs)
 		if err != nil {
 			return err
 		}
@@ -107,7 +107,7 @@ func runSysInitFunc(cxprogram *ast.CXProgram, mod *ast.CXPackage) error {
 
 	for !cxprogram.Terminated {
 		call := &cxprogram.CallStack[cxprogram.CallCounter]
-		err = call.Ccall(cxprogram, &inputs, &outputs)
+		err = call.Call(cxprogram, &inputs, &outputs)
 		if err != nil {
 			return err
 		}

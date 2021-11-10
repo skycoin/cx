@@ -81,7 +81,7 @@ func CallAffPredicate(fn *ast.CXFunction, predValue []byte) byte {
 	prevCC := ast.PROGRAM.CallCounter
 	for {
 		call := &ast.PROGRAM.CallStack[ast.PROGRAM.CallCounter]
-		err := call.Ccall(ast.PROGRAM, &inputs, &outputs)
+		err := call.Call(ast.PROGRAM, &inputs, &outputs)
 		if err != nil {
 			panic(err)
 		}
