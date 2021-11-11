@@ -9,11 +9,10 @@ import (
 	"github.com/skycoin/cx/cx/types"
 	"github.com/skycoin/cx/cx/util"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
-
 	//"golang.org/x/mobile/exp/audio/al"
 )
 
-func opAlLoadWav(inputs []ast.CXValue, outputs []ast.CXValue) {
+func opAlLoadWav(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	file, err := util.CXOpenFile(inputs[0].Get_str())
 	defer file.Close()
 	if err != nil {
@@ -43,7 +42,7 @@ func opAlLoadWav(inputs []ast.CXValue, outputs []ast.CXValue) {
 	outputs[7].Set_i64(int64(wav.Duration))
 
 	outputSlicePointer := outputs[8].Offset
-	outputSliceOffset := types.Read_ptr(ast.PROGRAM.Memory, outputSlicePointer)
+	outputSliceOffset := types.Read_ptr(prgrm.Memory, outputSlicePointer)
 	outputSliceOffset = ast.SliceResizeEx(outputSliceOffset, types.Cast_int_to_ptr(len(data)), 1)
 	copy(ast.GetSliceData(outputSliceOffset, 1), data)
 	outputs[8].Set_ptr(outputSliceOffset)
@@ -55,4 +54,3 @@ func toBytes(in interface{}) []byte { // REFACTOR : ??
 	}
 	return nil
 }
-

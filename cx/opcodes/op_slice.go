@@ -7,12 +7,12 @@ import (
 )
 
 //TODO: Rework
-func opSliceLen(inputs []ast.CXValue, outputs []ast.CXValue) {
+func opSliceLen(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	elt := inputs[0].Arg.GetAssignmentElement()
 
 	var sliceLen types.Pointer
 	if elt.IsSlice || elt.Type == types.AFF { //TODO: FIX
-		sliceOffset := types.Read_ptr(ast.PROGRAM.Memory, inputs[0].Offset)
+		sliceOffset := types.Read_ptr(prgrm.Memory, inputs[0].Offset)
 		if sliceOffset > 0 && sliceOffset.IsValid() {
 			sliceLen = ast.GetSliceLen(sliceOffset)
 		} else if sliceOffset < 0 {
@@ -20,7 +20,7 @@ func opSliceLen(inputs []ast.CXValue, outputs []ast.CXValue) {
 		}
 		// TODO: Had to add elt.Lengths to avoid doing this for arrays, but not entirely sure why
 	} else if (elt.PointerTargetType == types.STR || elt.Type == types.STR) && elt.Lengths == nil {
-		sliceLen = types.Read_str_size(ast.PROGRAM.Memory, inputs[0].Offset)
+		sliceLen = types.Read_str_size(prgrm.Memory, inputs[0].Offset)
 	} else {
 		sliceLen = elt.Lengths[len(elt.Indexes)]
 	}
@@ -29,7 +29,7 @@ func opSliceLen(inputs []ast.CXValue, outputs []ast.CXValue) {
 }
 
 //TODO: Rework
-func opSliceAppend(inputs []ast.CXValue, outputs []ast.CXValue) {
+func opSliceAppend(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	inp0, inp1, out0 := inputs[0].Arg, inputs[1].Arg, outputs[0].Arg
 	sliceInputs := inputs[1:]
 	sliceInputsLen := types.Cast_int_to_ptr(len(sliceInputs))
@@ -57,7 +57,7 @@ func opSliceAppend(inputs []ast.CXValue, outputs []ast.CXValue) {
 	}
 
 	var inputSliceLen types.Pointer
-	inputSliceOffset := types.Read_ptr(ast.PROGRAM.Memory, inputs[0].Offset)
+	inputSliceOffset := types.Read_ptr(prgrm.Memory, inputs[0].Offset)
 	if inputSliceOffset != 0 && inputSliceOffset.IsValid() {
 		inputSliceLen = ast.GetSliceLen(inputSliceOffset)
 	}
@@ -80,7 +80,7 @@ func opSliceAppend(inputs []ast.CXValue, outputs []ast.CXValue) {
 		}
 		if inpType == types.STR || inpType == types.AFF {
 			var obj [types.POINTER_SIZE]byte
-			types.Write_ptr(obj[:], 0, types.Read_ptr(ast.PROGRAM.Memory, input.Offset))
+			types.Write_ptr(obj[:], 0, types.Read_ptr(prgrm.Memory, input.Offset))
 			ast.SliceAppendWrite(outputSliceOffset, obj[:], inputSliceLen+types.Cast_int_to_ptr(i))
 		} else {
 			obj := inputs[1].Get_bytes()
@@ -91,7 +91,7 @@ func opSliceAppend(inputs []ast.CXValue, outputs []ast.CXValue) {
 }
 
 //TODO: Rework
-func opSliceResize(inputs []ast.CXValue, outputs []ast.CXValue) {
+func opSliceResize(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	inp0, out0 := inputs[0].Arg, outputs[0].Arg
 	fp := inputs[0].FramePointer
 
@@ -107,7 +107,7 @@ func opSliceResize(inputs []ast.CXValue, outputs []ast.CXValue) {
 }
 
 //TODO: Rework
-func opSliceInsertElement(inputs []ast.CXValue, outputs []ast.CXValue) {
+func opSliceInsertElement(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	inp0, inp2, out0 := inputs[0].Arg, inputs[2].Arg, outputs[0].Arg
 	fp := inputs[0].FramePointer
 
@@ -135,7 +135,7 @@ func opSliceInsertElement(inputs []ast.CXValue, outputs []ast.CXValue) {
 	var outputSliceOffset types.Pointer
 	if inp2Type == types.STR || inp2Type == types.AFF {
 		var obj [types.POINTER_SIZE]byte
-		types.Write_ptr(obj[:], 0, types.Read_ptr(ast.PROGRAM.Memory, inputs[2].Offset))
+		types.Write_ptr(obj[:], 0, types.Read_ptr(prgrm.Memory, inputs[2].Offset))
 		outputSliceOffset = ast.SliceInsert(fp, out0, inp0, index, obj[:])
 	} else {
 		obj := inputs[2].Get_bytes()
@@ -146,7 +146,7 @@ func opSliceInsertElement(inputs []ast.CXValue, outputs []ast.CXValue) {
 }
 
 //TODO: Rework
-func opSliceRemoveElement(inputs []ast.CXValue, outputs []ast.CXValue) {
+func opSliceRemoveElement(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	inp0, out0 := inputs[0].Arg, outputs[0].Arg
 	fp := inputs[0].FramePointer
 
@@ -159,7 +159,7 @@ func opSliceRemoveElement(inputs []ast.CXValue, outputs []ast.CXValue) {
 	outputs[0].Set_ptr(outputSliceOffset)
 }
 
-func opSliceCopy(inputs []ast.CXValue, outputs []ast.CXValue) {
+func opSliceCopy(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	dstInput := inputs[0].Arg
 	srcInput := inputs[1].Arg
 	fp := inputs[0].FramePointer

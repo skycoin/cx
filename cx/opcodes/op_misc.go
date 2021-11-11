@@ -6,7 +6,7 @@ import (
 	"github.com/skycoin/cx/cx/types"
 )
 
-func opIdentity(inputs []ast.CXValue, outputs []ast.CXValue) {
+func opIdentity(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	out1 := outputs[0].Arg
 	var elt *ast.CXArgument
 	if len(out1.Fields) > 0 {
@@ -17,7 +17,7 @@ func opIdentity(inputs []ast.CXValue, outputs []ast.CXValue) {
 
 	//TODO: Delete
 	if elt.DoesEscape {
-		outputs[0].Set_ptr(types.AllocWrite_obj_data(ast.PROGRAM.Memory, inputs[0].Get_bytes()))
+		outputs[0].Set_ptr(types.AllocWrite_obj_data(prgrm.Memory, inputs[0].Get_bytes()))
 	} else {
 		switch elt.PassBy {
 		case constants.PASSBY_VALUE:
@@ -28,14 +28,14 @@ func opIdentity(inputs []ast.CXValue, outputs []ast.CXValue) {
 	}
 }
 
-func opGoto(inputs []ast.CXValue, outputs []ast.CXValue) {
-	call := ast.PROGRAM.GetCurrentCall()
+func opGoto(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
+	call := prgrm.GetCurrentCall()
 	expr := call.Operator.Expressions[call.Line]
 	call.Line = call.Line + expr.ThenLines
 }
 
-func opJmp(inputs []ast.CXValue, outputs []ast.CXValue) {
-	call := ast.PROGRAM.GetCurrentCall()
+func opJmp(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
+	call := prgrm.GetCurrentCall()
 	expr := inputs[0].Expr
 
 	if inputs[0].Get_bool() {
@@ -45,8 +45,8 @@ func opJmp(inputs []ast.CXValue, outputs []ast.CXValue) {
 	}
 }
 
-func opAbsJmp(inputs []ast.CXValue, outputs []ast.CXValue) {
-	call := ast.PROGRAM.GetCurrentCall()
+func opAbsJmp(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
+	call := prgrm.GetCurrentCall()
 	expr := inputs[0].Expr
 
 	if inputs[0].Get_bool() {
@@ -56,19 +56,19 @@ func opAbsJmp(inputs []ast.CXValue, outputs []ast.CXValue) {
 	}
 }
 
-func opBreak(inputs []ast.CXValue, outputs []ast.CXValue) {
-	call := ast.PROGRAM.GetCurrentCall()
+func opBreak(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
+	call := prgrm.GetCurrentCall()
 	expr := call.Operator.Expressions[call.Line]
 	call.Line = call.Line + expr.ThenLines
 }
 
-func opContinue(inputs []ast.CXValue, outputs []ast.CXValue) {
-	call := ast.PROGRAM.GetCurrentCall()
+func opContinue(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
+	call := prgrm.GetCurrentCall()
 	expr := call.Operator.Expressions[call.Line]
 	call.Line = call.Line + expr.ThenLines
 }
 
-func opNop(inputs []ast.CXValue, outputs []ast.CXValue) {
+func opNop(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	// No Operation
 	// Do Nothing
 }

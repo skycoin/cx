@@ -113,7 +113,7 @@ func processBuiltInOperators(expr *CXExpression, globalInputs *[]CXValue, global
 		argIndex++
 	}
 
-	OpcodeHandlers[expr.Operator.AtomicOPCode](inputValues, outputValues)
+	OpcodeHandlers[expr.Operator.AtomicOPCode](PROGRAM, inputValues, outputValues)
 
 	return nil
 }

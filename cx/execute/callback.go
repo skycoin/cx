@@ -49,7 +49,7 @@ func Callback(cxprogram *ast.CXProgram, fn *ast.CXFunction, inputs [][]byte) (ou
 	for _, out := range fn.Outputs {
 		// Making a copy of the bytes, so if we modify the bytes being held by `outputs`
 		// we don't modify the program memory.
-		mem := types.GetSlice_byte(ast.PROGRAM.Memory, ast.GetFinalOffset(newFP, out), ast.GetSize(out))
+		mem := types.GetSlice_byte(cxprogram.Memory, ast.GetFinalOffset(newFP, out), ast.GetSize(out))
 		cop := make([]byte, len(mem))
 		copy(cop, mem)
 		outputs = append(outputs, cop)

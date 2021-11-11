@@ -8,7 +8,7 @@ import (
 	"github.com/skycoin/cx/cx/types"
 )
 
-func buildString(inputs []ast.CXValue, outputs []ast.CXValue) []byte {
+func buildString(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) []byte {
 	fmtStr := inputs[0].Get_str()
 
 	var res []byte
@@ -119,12 +119,12 @@ func buildString(inputs []ast.CXValue, outputs []ast.CXValue) []byte {
 	return res
 }
 
-func opSprintf(inputs []ast.CXValue, outputs []ast.CXValue) {
-	outputs[0].Set_str(string(buildString(inputs, outputs)))
+func opSprintf(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
+	outputs[0].Set_str(string(buildString(prgrm, inputs, outputs)))
 }
 
-func opPrintf(inputs []ast.CXValue, outputs []ast.CXValue) {
-	fmt.Print(string(buildString(inputs, outputs)))
+func opPrintf(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
+	fmt.Print(string(buildString(prgrm, inputs, outputs)))
 }
 
 //Only used in op_fmt.go, once
