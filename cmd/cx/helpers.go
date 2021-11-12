@@ -74,7 +74,7 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 	// Adding *init function that initializes all the global variables.
 	err := cxparsering.AddInitFunction(actions.AST)
 	if err != nil {
-		return false //why return false, instead of panicing
+		panic(fmt.Sprintf("Error initializing function: %v", err))
 	}
 
 	actions.LineNo = 0
