@@ -64,7 +64,7 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 
 	// Checking if a main package exists. If not, create and add it to `AST`.
 	if _, err := actions.AST.GetFunction(constants.MAIN_FUNC, constants.MAIN_PKG); err != nil {
-		panic("error")
+		panic(fmt.Sprintf("error getting function: %v", err))
 	}
 	initMainPkg(actions.AST)
 
@@ -74,7 +74,7 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 	// Adding *init function that initializes all the global variables.
 	err := cxparsering.AddInitFunction(actions.AST)
 	if err != nil {
-		panic(fmt.Sprintf("Error initializing function: %v", err))
+		panic(fmt.Sprintf("error initializing function: %v", err))
 	}
 
 	actions.LineNo = 0
