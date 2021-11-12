@@ -2,12 +2,13 @@ package opcodes
 
 import (
 	"context"
-	"github.com/skycoin/cx/cx/ast"
-	"github.com/skycoin/cx/cx/types"
 	"log"
 	"net"
 	"net/rpc"
 	"time"
+
+	"github.com/skycoin/cx/cx/ast"
+	"github.com/skycoin/cx/cx/types"
 )
 
 //todo need to find a way to support Listener and connection interface
@@ -29,9 +30,9 @@ func init() {
 	ast.PROGRAM.AddPackage(netPkg)
 }
 
-func opTCPDial(inputs []ast.CXValue, outputs []ast.CXValue) {
+func opTCPDial(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	network, address, errorstring := inputs[0].Arg, inputs[1].Arg, outputs[0].Arg
-    fp := inputs[0].FramePointer
+	fp := inputs[0].FramePointer
 
 	log.Println("network", network)
 	log.Println("address", address)
@@ -40,24 +41,24 @@ func opTCPDial(inputs []ast.CXValue, outputs []ast.CXValue) {
 	conn, err = net.Dial("tcp", "localhost:9000")
 
 	if err != nil {
-		types.Write_str(ast.PROGRAM.Memory, ast.GetFinalOffset(fp, errorstring), err.Error())
+		types.Write_str(prgrm.Memory, ast.GetFinalOffset(fp, errorstring), err.Error())
 	}
 
 	conn.Close()
 }
 
-func opTCPClose(inputs []ast.CXValue, outputs []ast.CXValue) {
+func opTCPClose(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	ln.Close()
 }
 
-func opTCPAccept(inputs []ast.CXValue, outputs []ast.CXValue) {
+func opTCPAccept(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	conn, _ = ln.Accept()
 	conn.Close()
 }
 
-func opTCPListen(inputs []ast.CXValue, outputs []ast.CXValue) {
+func opTCPListen(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	network, address, errorstring := inputs[0].Arg, inputs[1].Arg, outputs[0].Arg
-    fp := inputs[0].FramePointer
+	fp := inputs[0].FramePointer
 
 	log.Println("network", network)
 	log.Println("address", address)
@@ -73,6 +74,6 @@ func opTCPListen(inputs []ast.CXValue, outputs []ast.CXValue) {
 	ln.Close()
 
 	if err != nil {
-		types.Write_str(ast.PROGRAM.Memory, ast.GetFinalOffset(fp, errorstring), err.Error())
+		types.Write_str(prgrm.Memory, ast.GetFinalOffset(fp, errorstring), err.Error())
 	}
 }

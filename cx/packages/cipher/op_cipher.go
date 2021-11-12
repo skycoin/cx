@@ -8,7 +8,7 @@ import (
 )
 
 // opCipherGenerateKeyPair generates a PubKey and a SecKey.
-func opCipherGenerateKeyPair(inputs []ast.CXValue, outputs []ast.CXValue) {
+func opCipherGenerateKeyPair(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	pubKey, secKey := cipher.GenerateKeyPair()
 
 	bPubKey := make([]byte, len(pubKey))
@@ -22,6 +22,6 @@ func opCipherGenerateKeyPair(inputs []ast.CXValue, outputs []ast.CXValue) {
 		bSecKey[i] = byt
 	}
 
-    outputs[0].Set_bytes(bPubKey)
-    outputs[1].Set_bytes(bSecKey)
+	outputs[0].Set_bytes(bPubKey)
+	outputs[1].Set_bytes(bSecKey)
 }

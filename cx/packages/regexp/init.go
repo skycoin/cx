@@ -4,11 +4,11 @@ package regexp
 
 import (
 	"github.com/skycoin/cx/cx/ast"
-    "github.com/skycoin/cx/cx/types"
-    . "github.com/skycoin/cx/cx/opcodes"
+	. "github.com/skycoin/cx/cx/opcodes"
+	"github.com/skycoin/cx/cx/types"
 )
 
- func RegisterPackage() {
+func RegisterPackage() {
 	regexpPkg := ast.MakePackage("regexp")
 	regexpStrct := ast.MakeStruct("Regexp")
 
@@ -17,7 +17,6 @@ import (
 	regexpPkg.AddStruct(regexpStrct)
 
 	ast.PROGRAM.AddPackage(regexpPkg)
-
 
 	RegisterFunction("regexp.Compile", opRegexpCompile, In(ast.ConstCxArg_STR), Out(ast.Struct("regexp", "Regexp", "r"), ast.ConstCxArg_STR))
 	RegisterFunction("regexp.MustCompile", opRegexpMustCompile, In(ast.ConstCxArg_STR), Out(ast.Struct("regexp", "Regexp", "r")))

@@ -82,7 +82,7 @@ func RunCxAst(cxprogram *ast.CXProgram, untilEnd bool, maxOps int, untilCall typ
 			opCount++
 		}
 
-		err := call.Ccall(cxprogram, &inputs, &outputs)
+		err := call.Call(cxprogram, &inputs, &outputs)
 		if err != nil {
 			return err
 		}
@@ -107,7 +107,7 @@ func runSysInitFunc(cxprogram *ast.CXProgram, mod *ast.CXPackage) error {
 
 	for !cxprogram.Terminated {
 		call := &cxprogram.CallStack[cxprogram.CallCounter]
-		err = call.Ccall(cxprogram, &inputs, &outputs)
+		err = call.Call(cxprogram, &inputs, &outputs)
 		if err != nil {
 			return err
 		}
@@ -121,7 +121,7 @@ func runSysInitFunc(cxprogram *ast.CXProgram, mod *ast.CXPackage) error {
 }
 
 func feedOSArgs(cxprogram *ast.CXProgram, args []string) error {
-	if osPkg, err := ast.PROGRAM.SelectPackage(constants.OS_PKG); err == nil {
+	if osPkg, err := cxprogram.SelectPackage(constants.OS_PKG); err == nil {
 		argsOffset := types.Pointer(0)
 		if osGbl, err := osPkg.GetGlobal(constants.OS_ARGS); err == nil {
 			for _, arg := range args {
@@ -131,7 +131,7 @@ func feedOSArgs(cxprogram *ast.CXProgram, args []string) error {
 				types.Write_ptr(argOffsetBytes[:], 0, argOffset)
 				argsOffset = ast.WriteToSlice(argsOffset, argOffsetBytes[:])
 			}
-			types.Write_ptr(ast.PROGRAM.Memory, ast.GetFinalOffset(0, osGbl), argsOffset)
+			types.Write_ptr(cxprogram.Memory, ast.GetFinalOffset(0, osGbl), argsOffset)
 		}
 	}
 	return nil

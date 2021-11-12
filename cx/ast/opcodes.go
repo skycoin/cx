@@ -14,12 +14,12 @@ var (
 )
 
 var (
-	OpcodeHandlers    []OpcodeHandler
+	OpcodeHandlers []OpcodeHandler
 )
 
 // OpcodeHandler ...
 //TODO: make special op-code handler for 2 input, 1 output atomics
-type OpcodeHandler func(inputs []CXValue, outputs []CXValue)
+type OpcodeHandler func(prgrm *CXProgram, inputs []CXValue, outputs []CXValue)
 
 //TODO: Do atomic opcode handlers (not slices, not arrays)
 //type AtomicOpcodeHandler func(input1 CXValue, input2 CXValue, output CXValue)
@@ -37,4 +37,3 @@ var (
 	Natives   = map[int]*CXFunction{}
 	Operators []*CXFunction
 )
-

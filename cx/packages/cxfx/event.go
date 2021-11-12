@@ -53,9 +53,9 @@ type CXCallback struct {
 	functionName    string
 }
 
-func (cb *CXCallback) init(inputs []ast.CXValue, outputs []ast.CXValue, packageName string) {
+func (cb *CXCallback) init(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue, packageName string) {
 	cb.windowName = inputs[0].Get_str()
-	var windowHeapPtr = types.AllocWrite_obj_data(ast.PROGRAM.Memory, []byte(cb.windowName))
+	var windowHeapPtr = types.AllocWrite_obj_data(prgrm.Memory, []byte(cb.windowName))
 	var windowName [types.POINTER_SIZE]byte
 	types.Write_ptr(windowName[:], 0, windowHeapPtr)
 	cb.windowNameBytes = windowName[:]
@@ -63,12 +63,12 @@ func (cb *CXCallback) init(inputs []ast.CXValue, outputs []ast.CXValue, packageN
 	cb.packageName = packageName
 }
 
-func (cb *CXCallback) Init(inputs []ast.CXValue, outputs []ast.CXValue) {
-	cb.init(inputs, outputs, inputs[0].Expr.Package.Name)
+func (cb *CXCallback) Init(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
+	cb.init(prgrm, inputs, outputs, inputs[0].Expr.Package.Name)
 }
 
-func (cb *CXCallback) InitEx(inputs []ast.CXValue, outputs []ast.CXValue) {
-	cb.init(inputs, outputs, inputs[2].Get_str())
+func (cb *CXCallback) InitEx(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
+	cb.init(prgrm, inputs, outputs, inputs[2].Get_str())
 }
 
 func (cb *CXCallback) Call(inputs [][]byte) {

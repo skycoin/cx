@@ -4,11 +4,12 @@ package cxos
 
 import (
 	"fmt"
-	"github.com/skycoin/cx/cx/ast"
-	"github.com/skycoin/cx/cx/util"
 	"os"
 	"runtime"
 	"runtime/pprof"
+
+	"github.com/skycoin/cx/cx/ast"
+	"github.com/skycoin/cx/cx/util"
 )
 
 var openProfiles map[string]*os.File = make(map[string]*os.File, 0)
@@ -34,12 +35,12 @@ func stopCPUProfile(f *os.File) {
 	defer pprof.StopCPUProfile()
 }
 
-func opStartProfile(inputs []ast.CXValue, outputs []ast.CXValue) {
+func opStartProfile(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	profilePath := inputs[0].Get_str()
 	openProfiles[profilePath] = startCPUProfile(profilePath, int(inputs[1].Get_i32()))
 }
 
-func opStopProfile(inputs []ast.CXValue, outputs []ast.CXValue) {
+func opStopProfile(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	profilePath := inputs[0].Get_str()
 	stopCPUProfile(openProfiles[profilePath])
 }

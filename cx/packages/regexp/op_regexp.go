@@ -16,7 +16,7 @@ var regexps map[string]*regexp.Regexp = make(map[string]*regexp.Regexp, 0)
 // regexpCompile is a helper function for `opRegexpMustCompile` and
 // `opRegexpCompile`. `regexpCompile` compiles a `regexp.Regexp` structure
 // and adds it to global `regexps`. It also writes CX structure `regexp.Regexp`.
-func regexpCompile(inputs []ast.CXValue, outputs []ast.CXValue) error {
+func regexpCompile(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) error {
 	// Extracting regular expression to work with, contained in `inp0`.
 	exp := inputs[0].Get_str()
 
@@ -28,7 +28,7 @@ func regexpCompile(inputs []ast.CXValue, outputs []ast.CXValue) error {
 	}
 
 	// Extracting CX `regexp` package.
-	regexpPkg, err := ast.PROGRAM.GetPackage("regexp")
+	regexpPkg, err := prgrm.GetPackage("regexp")
 	if err != nil {
 		panic(err)
 	}
@@ -53,7 +53,7 @@ func regexpCompile(inputs []ast.CXValue, outputs []ast.CXValue) error {
 	// internally.
 	accessExp := []*ast.CXArgument{expFld}
 	reg.Fields = accessExp
-	types.Write_str(ast.PROGRAM.Memory, ast.GetFinalOffset(outputs[0].FramePointer, &reg), exp)
+	types.Write_str(prgrm.Memory, ast.GetFinalOffset(outputs[0].FramePointer, &reg), exp)
 	// Storing `Regexp` instance.
 	regexps[exp], err = regexp.Compile(exp)
 
@@ -61,8 +61,8 @@ func regexpCompile(inputs []ast.CXValue, outputs []ast.CXValue) error {
 }
 
 // opRegexpMustCompile is a wrapper for golang's `regexp`'s `MustCompile`.
-func opRegexpMustCompile(inputs []ast.CXValue, outputs []ast.CXValue) {
-	err := regexpCompile(inputs, outputs)
+func opRegexpMustCompile(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
+	err := regexpCompile(prgrm, inputs, outputs)
 
 	if err != nil {
 		println(err.Error())
@@ -72,10 +72,10 @@ func opRegexpMustCompile(inputs []ast.CXValue, outputs []ast.CXValue) {
 }
 
 // opRegexpCompile is a wrapper for golang's `regexp`'s `MustCompile`.
-func opRegexpCompile(inputs []ast.CXValue, outputs []ast.CXValue) {
+func opRegexpCompile(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	// We're only interested in `out1`, which represents the
 	// returned error.
-	err := regexpCompile(inputs, outputs)
+	err := regexpCompile(prgrm, inputs, outputs)
 
 	// Writing error message to `out1`.
 	var errStr string
@@ -86,7 +86,7 @@ func opRegexpCompile(inputs []ast.CXValue, outputs []ast.CXValue) {
 }
 
 // opRegexpCompile is a wrapper for golang's `regexp`'s `MustCompile`.
-func opRegexpFind(inputs []ast.CXValue, outputs []ast.CXValue) {
+func opRegexpFind(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	// Output structure `Regexp`.
 	reg := ast.CXArgument{}
 	err := copier.Copy(&reg, inputs[0].Arg)
@@ -95,7 +95,7 @@ func opRegexpFind(inputs []ast.CXValue, outputs []ast.CXValue) {
 	}
 
 	// Extracting CX `regexp` package.
-	regexpPkg, err := ast.PROGRAM.GetPackage("regexp")
+	regexpPkg, err := prgrm.GetPackage("regexp")
 	if err != nil {
 		panic(err)
 	}
@@ -115,7 +115,7 @@ func opRegexpFind(inputs []ast.CXValue, outputs []ast.CXValue) {
 	// Getting corresponding `Regexp` instance.
 	accessExp := []*ast.CXArgument{expFld}
 	reg.Fields = accessExp
-	exp := types.Read_str(ast.PROGRAM.Memory, ast.GetFinalOffset(inputs[0].FramePointer, &reg))
+	exp := types.Read_str(prgrm.Memory, ast.GetFinalOffset(inputs[0].FramePointer, &reg))
 	r := regexps[exp]
 
 	outputs[0].Set_str(string(r.Find([]byte(inputs[1].Get_str()))))

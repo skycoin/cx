@@ -16,7 +16,7 @@ func AssertFailed() bool {
 }
 
 //TODO: Rework
-func assert(inputs []ast.CXValue, outputs []ast.CXValue) (same bool) {
+func assert(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) (same bool) {
 	var byts1, byts2 []byte
 	if inputs[0].Arg.Type == types.STR || inputs[0].Arg.PointerTargetType == types.STR {
 		byts1 = []byte(inputs[0].Get_str())
@@ -48,7 +48,7 @@ func assert(inputs []ast.CXValue, outputs []ast.CXValue) (same bool) {
 	message := inputs[2].Get_str()
 
 	if !same {
-		call := ast.PROGRAM.GetCurrentCall()
+		call := prgrm.GetCurrentCall()
 		expr := call.Operator.Expressions[call.Line]
 		if message != "" {
 			fmt.Printf("%s: %d: result was not equal to the expected value; %s\n", expr.FileName, expr.FileLine, message)
@@ -61,26 +61,26 @@ func assert(inputs []ast.CXValue, outputs []ast.CXValue) (same bool) {
 	return same
 }
 
-func opAssertValue(inputs []ast.CXValue, outputs []ast.CXValue) {
-	same := assert(inputs, outputs)
+func opAssertValue(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
+	same := assert(prgrm, inputs, outputs)
 	outputs[0].Set_bool(same)
 }
 
-func opTest(inputs []ast.CXValue, outputs []ast.CXValue) {
-	assert(inputs, outputs)
+func opTest(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
+	assert(prgrm, inputs, outputs)
 }
 
-func opPanic(inputs []ast.CXValue, outputs []ast.CXValue) {
-	if !assert(inputs, outputs) {
+func opPanic(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
+	if !assert(prgrm, inputs, outputs) {
 		panic(constants.CX_ASSERT)
 	}
 }
 
 // panicIf/panicIfNot implementation
-func panicIf(inputs []ast.CXValue, outputs []ast.CXValue, condition bool) {
+func panicIf(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue, condition bool) {
 	str := inputs[1].Get_str()
 	if inputs[0].Get_bool() == condition {
-		call := ast.PROGRAM.GetCurrentCall()
+		call := prgrm.GetCurrentCall()
 		expr := call.Operator.Expressions[call.Line]
 		fmt.Printf("%s : %d, %s\n", expr.FileName, expr.FileLine, str)
 		panic(constants.CX_ASSERT)
@@ -88,15 +88,15 @@ func panicIf(inputs []ast.CXValue, outputs []ast.CXValue, condition bool) {
 }
 
 // panic with CX_ASSERT exit code if condition is true
-func opPanicIf(inputs []ast.CXValue, outputs []ast.CXValue) {
-	panicIf(inputs, outputs, true)
+func opPanicIf(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
+	panicIf(prgrm, inputs, outputs, true)
 }
 
 // panic with CX_ASSERT exit code if condition is false
-func opPanicIfNot(inputs []ast.CXValue, outputs []ast.CXValue) {
-	panicIf(inputs, outputs, false)
+func opPanicIfNot(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
+	panicIf(prgrm, inputs, outputs, false)
 }
 
-func opStrError(inputs []ast.CXValue, outputs []ast.CXValue) {
+func opStrError(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	outputs[0].Set_str(ast.ErrorString(int(inputs[0].Get_i32())))
 }

@@ -79,6 +79,6 @@ func MakeNativeFunction(opCode int, inputs []*ast.CXArgument, outputs []*ast.CXA
 	return fn
 }
 
-func opDebugPrintStack([]ast.CXValue, []ast.CXValue) {
-	ast.PROGRAM.PrintStack()
+func opDebugPrintStack(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
+	prgrm.PrintStack()
 }
