@@ -5,11 +5,11 @@ import (
 	"runtime"
 
 	"github.com/skycoin/cx/cx/opcodes"
+	"github.com/skycoin/cx/cx/types"
 
 	repl "github.com/skycoin/cx/cmd/cxrepl"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
-	"github.com/skycoin/cx/cx/types"
 	"github.com/skycoin/cx/cx/execute"
 	"github.com/skycoin/cx/cxparser/actions"
 	parsingcompletor "github.com/skycoin/cx/cxparser/cxparsingcompletor"

@@ -9,7 +9,7 @@ import (
 	"github.com/skycoin/cx/cx/types"
 )
 
-func RegisterPackage() {
+func RegisterPackage(prgrm *ast.CXProgram) {
 	cipherPkg := ast.MakePackage("cipher")
 	pubkeyStrct := ast.MakeStruct("PubKey")
 	seckeyStrct := ast.MakeStruct("SecKey")
@@ -34,8 +34,8 @@ func RegisterPackage() {
 	cipherPkg.AddStruct(pubkeyStrct)
 	cipherPkg.AddStruct(seckeyStrct)
 
-	ast.PROGRAM.AddPackage(cipherPkg)
+	prgrm.AddPackage(cipherPkg)
 
 	opcodes.RegisterFunction("cipher.GenerateKeyPair", opCipherGenerateKeyPair, nil,
-		opcodes.Out(ast.Struct("cipher", "PubKey", "pubKey"), ast.Struct("cipher", "SecKey", "sec")))
+		opcodes.Out(ast.Struct(prgrm, "cipher", "PubKey", "pubKey"), ast.Struct(prgrm, "cipher", "SecKey", "sec")))
 }

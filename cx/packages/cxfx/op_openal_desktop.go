@@ -31,28 +31,28 @@ func opAlCloseDevice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.C
 }
 
 func opAlDeleteBuffers(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	buffers := toBuffers(inputs[0].GetSlice_i32())
+	buffers := toBuffers(inputs[0].GetSlice_i32(prgrm))
 	al.DeleteBuffers(buffers...)
 }
 
 func opAlDeleteSources(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	sources := toSources(inputs[0].GetSlice_i32())
+	sources := toSources(inputs[0].GetSlice_i32(prgrm))
 	al.DeleteSources(sources...)
 }
 
 func opAlDeviceError(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	err := al.DeviceError()
-	outputs[0].Set_i32(err)
+	outputs[0].Set_i32(prgrm, err)
 }
 
 func opAlError(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	err := al.Error()
-	outputs[0].Set_i32(err)
+	outputs[0].Set_i32(prgrm, err)
 }
 
 func opAlExtensions(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	extensions := al.Extensions()
-	outputs[0].Set_str(extensions)
+	outputs[0].Set_str(prgrm, extensions)
 }
 
 func opAlOpenDevice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
@@ -62,95 +62,95 @@ func opAlOpenDevice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CX
 }
 
 func opAlPauseSources(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	sources := toSources(inputs[0].GetSlice_i32())
+	sources := toSources(inputs[0].GetSlice_i32(prgrm))
 	al.PauseSources(sources...)
 }
 
 func opAlPlaySources(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	sources := toSources(inputs[0].GetSlice_i32())
+	sources := toSources(inputs[0].GetSlice_i32(prgrm))
 	al.PlaySources(sources...)
 }
 
 func opAlRenderer(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	renderer := al.Renderer()
-	outputs[0].Set_str(renderer)
+	outputs[0].Set_str(prgrm, renderer)
 }
 
 func opAlRewindSources(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	sources := toSources(inputs[0].GetSlice_i32())
+	sources := toSources(inputs[0].GetSlice_i32(prgrm))
 	al.RewindSources(sources...)
 }
 
 func opAlStopSources(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	sources := toSources(inputs[0].GetSlice_i32())
+	sources := toSources(inputs[0].GetSlice_i32(prgrm))
 	al.StopSources(sources...)
 }
 
 func opAlVendor(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	vendor := al.Vendor()
-	outputs[0].Set_str(vendor)
+	outputs[0].Set_str(prgrm, vendor)
 }
 
 func opAlVersion(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	version := al.Version()
-	outputs[0].Set_str(version)
+	outputs[0].Set_str(prgrm, version)
 }
 
 func opAlGenBuffers(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	buffers := al.GenBuffers(int(inputs[0].Get_i32()))
+	buffers := al.GenBuffers(int(inputs[0].Get_i32(prgrm)))
 	outputSlicePointer := outputs[0].Offset
 	outputSliceOffset := types.Read_ptr(prgrm.Memory, outputSlicePointer)
 	for _, b := range buffers { // REFACTOR append with copy ?
 		var obj [4]byte
 		types.Write_i32(obj[:], 0, int32(b))
-		outputSliceOffset = ast.WriteToSlice(outputSliceOffset, obj[:])
+		outputSliceOffset = ast.WriteToSlice(prgrm, outputSliceOffset, obj[:])
 	}
-	outputs[0].Set_ptr(outputSliceOffset)
+	outputs[0].Set_ptr(prgrm, outputSliceOffset)
 }
 
 func opAlBufferData(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	buffer := al.Buffer(inputs[0].Get_i32())
-	format := inputs[1].Get_i32()
-	data := toBytes(inputs[2].GetSlice_ui8())
-	frequency := inputs[3].Get_i32()
+	buffer := al.Buffer(inputs[0].Get_i32(prgrm))
+	format := inputs[1].Get_i32(prgrm)
+	data := toBytes(inputs[2].GetSlice_ui8(prgrm))
+	frequency := inputs[3].Get_i32(prgrm)
 	buffer.BufferData(uint32(format), data, frequency)
 }
 
 func opAlGenSources(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	sources := al.GenSources(int(inputs[0].Get_i32()))
+	sources := al.GenSources(int(inputs[0].Get_i32(prgrm)))
 	outputSlicePointer := outputs[0].Offset
 	outputSliceOffset := types.Read_ptr(prgrm.Memory, outputSlicePointer)
 	for _, s := range sources { // REFACTOR append with copy ?
 		var obj [4]byte
 		types.Write_i32(obj[:], 0, int32(s))
-		outputSliceOffset = ast.WriteToSlice(outputSliceOffset, obj[:])
+		outputSliceOffset = ast.WriteToSlice(prgrm, outputSliceOffset, obj[:])
 	}
-	outputs[0].Set_ptr(outputSliceOffset)
+	outputs[0].Set_ptr(prgrm, outputSliceOffset)
 }
 
 func opAlSourceBuffersProcessed(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	source := al.Source(inputs[0].Get_i32())
-	outputs[0].Set_i32(source.BuffersProcessed())
+	source := al.Source(inputs[0].Get_i32(prgrm))
+	outputs[0].Set_i32(prgrm, source.BuffersProcessed())
 }
 
 func opAlSourceBuffersQueued(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	source := al.Source(inputs[0].Get_i32())
-	outputs[0].Set_i32(source.BuffersQueued())
+	source := al.Source(inputs[0].Get_i32(prgrm))
+	outputs[0].Set_i32(prgrm, source.BuffersQueued())
 }
 
 func opAlSourceQueueBuffers(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	source := al.Source(inputs[0].Get_i32())
-	buffers := toBuffers(inputs[1].GetSlice_i32())
+	source := al.Source(inputs[0].Get_i32(prgrm))
+	buffers := toBuffers(inputs[1].GetSlice_i32(prgrm))
 	source.QueueBuffers(buffers...)
 }
 
 func opAlSourceState(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	source := al.Source(inputs[0].Get_i32())
-	outputs[0].Set_i32(source.State())
+	source := al.Source(inputs[0].Get_i32(prgrm))
+	outputs[0].Set_i32(prgrm, source.State())
 }
 
 func opAlSourceUnqueueBuffers(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	source := al.Source(inputs[0].Get_i32())
-	buffers := toBuffers(inputs[1].GetSlice_i32())
+	source := al.Source(inputs[0].Get_i32(prgrm))
+	buffers := toBuffers(inputs[1].GetSlice_i32(prgrm))
 	source.UnqueueBuffers(buffers...)
 }

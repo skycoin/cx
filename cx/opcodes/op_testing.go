@@ -19,11 +19,11 @@ func AssertFailed() bool {
 func assert(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) (same bool) {
 	var byts1, byts2 []byte
 	if inputs[0].Arg.Type == types.STR || inputs[0].Arg.PointerTargetType == types.STR {
-		byts1 = []byte(inputs[0].Get_str())
-		byts2 = []byte(inputs[1].Get_str())
+		byts1 = []byte(inputs[0].Get_str(prgrm))
+		byts2 = []byte(inputs[1].Get_str(prgrm))
 	} else {
-		byts1 = inputs[0].Get_bytes()
-		byts2 = inputs[1].Get_bytes()
+		byts1 = inputs[0].Get_bytes(prgrm)
+		byts2 = inputs[1].Get_bytes(prgrm)
 	}
 
 	same = true
@@ -45,7 +45,7 @@ func assert(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) (
 		}
 	}
 
-	message := inputs[2].Get_str()
+	message := inputs[2].Get_str(prgrm)
 
 	if !same {
 		call := prgrm.GetCurrentCall()
@@ -63,7 +63,7 @@ func assert(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) (
 
 func opAssertValue(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	same := assert(prgrm, inputs, outputs)
-	outputs[0].Set_bool(same)
+	outputs[0].Set_bool(prgrm, same)
 }
 
 func opTest(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
@@ -78,8 +78,8 @@ func opPanic(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) 
 
 // panicIf/panicIfNot implementation
 func panicIf(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue, condition bool) {
-	str := inputs[1].Get_str()
-	if inputs[0].Get_bool() == condition {
+	str := inputs[1].Get_str(prgrm)
+	if inputs[0].Get_bool(prgrm) == condition {
 		call := prgrm.GetCurrentCall()
 		expr := call.Operator.Expressions[call.Line]
 		fmt.Printf("%s : %d, %s\n", expr.FileName, expr.FileLine, str)
@@ -98,5 +98,5 @@ func opPanicIfNot(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVa
 }
 
 func opStrError(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outputs[0].Set_str(ast.ErrorString(int(inputs[0].Get_i32())))
+	outputs[0].Set_str(prgrm, ast.ErrorString(int(inputs[0].Get_i32(prgrm))))
 }

@@ -72,11 +72,11 @@ func GetDerefSizeSlice(arg *CXArgument) types.Pointer {
 	return arg.Size
 }
 
-func GetFinalOffset(fp types.Pointer, arg *CXArgument) types.Pointer {
+func GetFinalOffset(prgrm *CXProgram, fp types.Pointer, arg *CXArgument) types.Pointer {
 	finalOffset := arg.Offset
 
 	//Todo: find way to eliminate this check
-	if finalOffset < PROGRAM.Stack.Size {
+	if finalOffset < prgrm.Stack.Size {
 		// Then it's in the stack, not in data or heap and we need to consider the frame pointer.
 		finalOffset += fp
 	}
@@ -87,19 +87,19 @@ func GetFinalOffset(fp types.Pointer, arg *CXArgument) types.Pointer {
 	//Q: How can CalculateDereferences change offset?
 	//Why is finalOffset fed in as a pointer?
 
-	finalOffset = CalculateDereferences(arg, finalOffset, fp)
+	finalOffset = CalculateDereferences(prgrm, arg, finalOffset, fp)
 	for _, fld := range arg.Fields {
 		// elt = fld
 		finalOffset += fld.Offset
-		finalOffset = CalculateDereferences(fld, finalOffset, fp)
+		finalOffset = CalculateDereferences(prgrm, fld, finalOffset, fp)
 	}
 
 	return finalOffset
 }
 
-func CalculateDereference_Slice(drfsStruct *DereferenceStruct) {
+func CalculateDereference_Slice(prgrm *CXProgram, drfsStruct *DereferenceStruct) {
 	drfsStruct.isPointer = false
-	drfsStruct.finalOffset = types.Read_ptr(PROGRAM.Memory, drfsStruct.finalOffset)
+	drfsStruct.finalOffset = types.Read_ptr(prgrm.Memory, drfsStruct.finalOffset)
 	drfsStruct.baseOffset = drfsStruct.finalOffset
 
 	drfsStruct.finalOffset += types.OBJECT_HEADER_SIZE
@@ -109,18 +109,18 @@ func CalculateDereference_Slice(drfsStruct *DereferenceStruct) {
 	sizeToUse := GetDerefSize(drfsStruct.arg, drfsStruct.idxCounter, drfsStruct.derefPointer, false) //TODO: is always arg.Size unless arg.StructType != nil
 	drfsStruct.derefPointer = false
 
-	indexOffset := GetFinalOffset(drfsStruct.fp, drfsStruct.arg.Indexes[drfsStruct.idxCounter])
-	indexValue := types.Read_i32(PROGRAM.Memory, indexOffset)
+	indexOffset := GetFinalOffset(prgrm, drfsStruct.fp, drfsStruct.arg.Indexes[drfsStruct.idxCounter])
+	indexValue := types.Read_i32(prgrm.Memory, indexOffset)
 
 	drfsStruct.finalOffset += types.Cast_i32_to_ptr(indexValue) * sizeToUse // TODO:PTR Use ptr/Read_ptr, array/slice indexing only works with i32.
-	if !IsValidSliceIndex(drfsStruct.baseOffset, drfsStruct.finalOffset, sizeToUse) {
+	if !IsValidSliceIndex(prgrm, drfsStruct.baseOffset, drfsStruct.finalOffset, sizeToUse) {
 		panic(constants.CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)
 	}
 
 	drfsStruct.idxCounter++
 }
 
-func CalculateDereference_Array(drfsStruct *DereferenceStruct) {
+func CalculateDereference_Array(prgrm *CXProgram, drfsStruct *DereferenceStruct) {
 	var subSize = types.Pointer(1)
 	for _, len := range drfsStruct.arg.Lengths[drfsStruct.idxCounter+1:] {
 		subSize *= len
@@ -132,17 +132,17 @@ func CalculateDereference_Array(drfsStruct *DereferenceStruct) {
 	drfsStruct.baseOffset = drfsStruct.finalOffset
 	drfsStruct.sizeofElement = subSize * sizeToUse
 
-	drfsStruct.finalOffset += types.Cast_i32_to_ptr(types.Read_i32(PROGRAM.Memory, GetFinalOffset(drfsStruct.fp, drfsStruct.arg.Indexes[drfsStruct.idxCounter]))) * drfsStruct.sizeofElement // TODO:PTR Use Read_ptr
+	drfsStruct.finalOffset += types.Cast_i32_to_ptr(types.Read_i32(prgrm.Memory, GetFinalOffset(prgrm, drfsStruct.fp, drfsStruct.arg.Indexes[drfsStruct.idxCounter]))) * drfsStruct.sizeofElement // TODO:PTR Use Read_ptr
 	drfsStruct.idxCounter++
 }
 
-func CalculateDereference_Pointer(drfsStruct *DereferenceStruct) {
+func CalculateDereference_Pointer(prgrm *CXProgram, drfsStruct *DereferenceStruct) {
 	drfsStruct.isPointer = true
-	drfsStruct.finalOffset = types.Read_ptr(PROGRAM.Memory, drfsStruct.finalOffset)
+	drfsStruct.finalOffset = types.Read_ptr(prgrm.Memory, drfsStruct.finalOffset)
 	drfsStruct.derefPointer = true
 }
 
-func CalculateDereferences(arg *CXArgument, finalOffset types.Pointer, fp types.Pointer) types.Pointer {
+func CalculateDereferences(prgrm *CXProgram, arg *CXArgument, finalOffset types.Pointer, fp types.Pointer) types.Pointer {
 	drfsStruct := &DereferenceStruct{
 		idxCounter:  0,
 		arg:         arg,
@@ -157,20 +157,20 @@ func CalculateDereferences(arg *CXArgument, finalOffset types.Pointer, fp types.
 
 		switch op {
 		case constants.DEREF_SLICE:
-			CalculateDereference_Slice(drfsStruct)
+			CalculateDereference_Slice(prgrm, drfsStruct)
 		case constants.DEREF_ARRAY:
-			CalculateDereference_Array(drfsStruct)
+			CalculateDereference_Array(prgrm, drfsStruct)
 		case constants.DEREF_POINTER:
-			CalculateDereference_Pointer(drfsStruct)
+			CalculateDereference_Pointer(prgrm, drfsStruct)
 		}
 	}
 
-	if drfsStruct.finalOffset.IsValid() && drfsStruct.finalOffset >= PROGRAM.Heap.StartsAt && drfsStruct.isPointer {
+	if drfsStruct.finalOffset.IsValid() && drfsStruct.finalOffset >= prgrm.Heap.StartsAt && drfsStruct.isPointer {
 		// then it's an object
 		drfsStruct.finalOffset += types.OBJECT_HEADER_SIZE
 		if drfsStruct.arg.IsSlice {
 			drfsStruct.finalOffset += constants.SLICE_HEADER_SIZE
-			if !IsValidSliceIndex(drfsStruct.baseOffset, drfsStruct.finalOffset, drfsStruct.sizeofElement) {
+			if !IsValidSliceIndex(prgrm, drfsStruct.baseOffset, drfsStruct.finalOffset, drfsStruct.sizeofElement) {
 				panic(constants.CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)
 			}
 		}

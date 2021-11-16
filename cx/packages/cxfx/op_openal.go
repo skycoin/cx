@@ -13,7 +13,7 @@ import (
 )
 
 func opAlLoadWav(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	file, err := util.CXOpenFile(inputs[0].Get_str())
+	file, err := util.CXOpenFile(inputs[0].Get_str(prgrm))
 	defer file.Close()
 	if err != nil {
 		panic(err)
@@ -32,20 +32,20 @@ func opAlLoadWav(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVal
 
 	data := encoder.Serialize(samples)
 
-	outputs[0].Set_i32(int32(wav.Header.AudioFormat))
-	outputs[1].Set_i32(int32(wav.Header.NumChannels))
-	outputs[2].Set_i32(int32(wav.Header.SampleRate))
-	outputs[3].Set_i32(int32(wav.Header.ByteRate))
-	outputs[4].Set_i32(int32(wav.Header.BlockAlign))
-	outputs[5].Set_i32(int32(wav.Header.BitsPerSample))
-	outputs[6].Set_i32(int32(wav.Samples))
-	outputs[7].Set_i64(int64(wav.Duration))
+	outputs[0].Set_i32(prgrm, int32(wav.Header.AudioFormat))
+	outputs[1].Set_i32(prgrm, int32(wav.Header.NumChannels))
+	outputs[2].Set_i32(prgrm, int32(wav.Header.SampleRate))
+	outputs[3].Set_i32(prgrm, int32(wav.Header.ByteRate))
+	outputs[4].Set_i32(prgrm, int32(wav.Header.BlockAlign))
+	outputs[5].Set_i32(prgrm, int32(wav.Header.BitsPerSample))
+	outputs[6].Set_i32(prgrm, int32(wav.Samples))
+	outputs[7].Set_i64(prgrm, int64(wav.Duration))
 
 	outputSlicePointer := outputs[8].Offset
 	outputSliceOffset := types.Read_ptr(prgrm.Memory, outputSlicePointer)
-	outputSliceOffset = ast.SliceResizeEx(outputSliceOffset, types.Cast_int_to_ptr(len(data)), 1)
-	copy(ast.GetSliceData(outputSliceOffset, 1), data)
-	outputs[8].Set_ptr(outputSliceOffset)
+	outputSliceOffset = ast.SliceResizeEx(prgrm, outputSliceOffset, types.Cast_int_to_ptr(len(data)), 1)
+	copy(ast.GetSliceData(prgrm, outputSliceOffset, 1), data)
+	outputs[8].Set_ptr(prgrm, outputSliceOffset)
 }
 
 func toBytes(in interface{}) []byte { // REFACTOR : ??

@@ -58,11 +58,11 @@ func opGlDestroy(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVal
 }
 
 func opGlStrs(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	getCString(inputs[0].Get_str(), inputs[1].Get_str())
+	getCString(inputs[0].Get_str(prgrm), inputs[1].Get_str(prgrm))
 }
 
 func opGlFree(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	freeCString(inputs[0].Get_str())
+	freeCString(inputs[0].Get_str(prgrm))
 }
 
 // cxgl_1_0
@@ -509,15 +509,15 @@ func cxglGenVertexArrays(n int32, arrays *uint32) {
 
 // gl_0_0
 func opGlMatrixMode(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	gl.MatrixMode(uint32(inputs[0].Get_i32()))
+	gl.MatrixMode(uint32(inputs[0].Get_i32(prgrm)))
 }
 
 func opGlRotatef(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	gl.Rotatef(inputs[0].Get_f32(), inputs[1].Get_f32(), inputs[2].Get_f32(), inputs[3].Get_f32())
+	gl.Rotatef(inputs[0].Get_f32(prgrm), inputs[1].Get_f32(prgrm), inputs[2].Get_f32(prgrm), inputs[3].Get_f32(prgrm))
 }
 
 func opGlTranslatef(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	gl.Translatef(inputs[0].Get_f32(), inputs[1].Get_f32(), inputs[2].Get_f32())
+	gl.Translatef(inputs[0].Get_f32(prgrm), inputs[1].Get_f32(prgrm), inputs[2].Get_f32(prgrm))
 }
 
 func opGlLoadIdentity(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
@@ -533,19 +533,19 @@ func opGlPopMatrix(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXV
 }
 
 func opGlEnableClientState(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	gl.EnableClientState(uint32(inputs[0].Get_i32()))
+	gl.EnableClientState(uint32(inputs[0].Get_i32(prgrm)))
 }
 
 func opGlColor3f(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	gl.Color3f(inputs[0].Get_f32(), inputs[1].Get_f32(), inputs[2].Get_f32())
+	gl.Color3f(inputs[0].Get_f32(prgrm), inputs[1].Get_f32(prgrm), inputs[2].Get_f32(prgrm))
 }
 
 func opGlColor4f(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	gl.Color4f(inputs[0].Get_f32(), inputs[1].Get_f32(), inputs[2].Get_f32(), inputs[3].Get_f32())
+	gl.Color4f(inputs[0].Get_f32(prgrm), inputs[1].Get_f32(prgrm), inputs[2].Get_f32(prgrm), inputs[3].Get_f32(prgrm))
 }
 
 func opGlBegin(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	gl.Begin(uint32(inputs[0].Get_i32()))
+	gl.Begin(uint32(inputs[0].Get_i32(prgrm)))
 }
 
 func opGlEnd(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
@@ -553,15 +553,15 @@ func opGlEnd(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) 
 }
 
 func opGlNormal3f(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	gl.Normal3f(inputs[0].Get_f32(), inputs[1].Get_f32(), inputs[2].Get_f32())
+	gl.Normal3f(inputs[0].Get_f32(prgrm), inputs[1].Get_f32(prgrm), inputs[2].Get_f32(prgrm))
 }
 
 func opGlVertex2f(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	gl.Vertex2f(inputs[0].Get_f32(), inputs[1].Get_f32())
+	gl.Vertex2f(inputs[0].Get_f32(prgrm), inputs[1].Get_f32(prgrm))
 }
 
 func opGlVertex3f(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	gl.Vertex3f(inputs[0].Get_f32(), inputs[1].Get_f32(), inputs[2].Get_f32())
+	gl.Vertex3f(inputs[0].Get_f32(prgrm), inputs[1].Get_f32(prgrm), inputs[2].Get_f32(prgrm))
 }
 
 func opGlLightfv(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
@@ -570,25 +570,25 @@ func opGlLightfv(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVal
 }
 
 func opGlFrustum(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	gl.Frustum(inputs[0].Get_f64(), inputs[1].Get_f64(), inputs[2].Get_f64(), inputs[3].Get_f64(), inputs[4].Get_f64(), inputs[5].Get_f64())
+	gl.Frustum(inputs[0].Get_f64(prgrm), inputs[1].Get_f64(prgrm), inputs[2].Get_f64(prgrm), inputs[3].Get_f64(prgrm), inputs[4].Get_f64(prgrm), inputs[5].Get_f64(prgrm))
 }
 
 func opGlTexEnvi(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	gl.TexEnvi(uint32(inputs[0].Get_i32()), uint32(inputs[1].Get_i32()), inputs[2].Get_i32())
+	gl.TexEnvi(uint32(inputs[0].Get_i32(prgrm)), uint32(inputs[1].Get_i32(prgrm)), inputs[2].Get_i32(prgrm))
 }
 
 func opGlOrtho(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	gl.Ortho(inputs[0].Get_f64(), inputs[1].Get_f64(), inputs[2].Get_f64(), inputs[3].Get_f64(), inputs[4].Get_f64(), inputs[5].Get_f64())
+	gl.Ortho(inputs[0].Get_f64(prgrm), inputs[1].Get_f64(prgrm), inputs[2].Get_f64(prgrm), inputs[3].Get_f64(prgrm), inputs[4].Get_f64(prgrm), inputs[5].Get_f64(prgrm))
 }
 
 func opGlScalef(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	gl.Scalef(inputs[0].Get_f32(), inputs[1].Get_f32(), inputs[2].Get_f32())
+	gl.Scalef(inputs[0].Get_f32(prgrm), inputs[1].Get_f32(prgrm), inputs[2].Get_f32(prgrm))
 }
 
 func opGlTexCoord2d(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	gl.TexCoord2d(inputs[0].Get_f64(), inputs[1].Get_f64())
+	gl.TexCoord2d(inputs[0].Get_f64(prgrm), inputs[1].Get_f64(prgrm))
 }
 
 func opGlTexCoord2f(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	gl.TexCoord2f(inputs[0].Get_f32(), inputs[1].Get_f32())
+	gl.TexCoord2f(inputs[0].Get_f32(prgrm), inputs[1].Get_f32(prgrm))
 }

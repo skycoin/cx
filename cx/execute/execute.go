@@ -25,7 +25,7 @@ func getLastLine(cxprogram *ast.CXProgram) *ast.CXExpression {
 }
 
 func RunCxAst(cxprogram *ast.CXProgram, untilEnd bool, maxOps int, untilCall types.Pointer) error {
-	defer ast.RuntimeError()
+	defer ast.RuntimeError(cxprogram)
 
 	var inputs []ast.CXValue
 	var outputs []ast.CXValue
@@ -129,9 +129,9 @@ func feedOSArgs(cxprogram *ast.CXProgram, args []string) error {
 
 				var argOffsetBytes [types.POINTER_SIZE]byte
 				types.Write_ptr(argOffsetBytes[:], 0, argOffset)
-				argsOffset = ast.WriteToSlice(argsOffset, argOffsetBytes[:])
+				argsOffset = ast.WriteToSlice(cxprogram, argsOffset, argOffsetBytes[:])
 			}
-			types.Write_ptr(cxprogram.Memory, ast.GetFinalOffset(0, osGbl), argsOffset)
+			types.Write_ptr(cxprogram.Memory, ast.GetFinalOffset(cxprogram, 0, osGbl), argsOffset)
 		}
 	}
 	return nil

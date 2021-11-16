@@ -1,6 +1,7 @@
 package init
 
 import (
+	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/packages/cipher"
 	"github.com/skycoin/cx/cx/packages/cxfx"
 	"github.com/skycoin/cx/cx/packages/cxos"
@@ -10,9 +11,9 @@ import (
 )
 
 func RegisterPackages() {
-	cipher.RegisterPackage()
+	cipher.RegisterPackage(ast.PROGRAM)
 	cxfx.RegisterPackage()
 	cxos.RegisterPackage()
 	// http.RegisterPackage()
-	regexp.RegisterPackage()
+	regexp.RegisterPackage(ast.PROGRAM)
 }

@@ -20,5 +20,5 @@ func OpReadStdin(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVal
 	// text = strings.Trim(text, " \n")
 	text = strings.Replace(text, "\n", "", -1)
 	text = strings.Replace(text, "\r", "", -1)
-	outputs[0].Set_str(text)
+	outputs[0].Set_str(prgrm, text)
 }

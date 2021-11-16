@@ -70,7 +70,7 @@ func extractExportedSymbols(pkg *ast.CXPackage) ExportedSymbolsResp {
 func displayCXFunction(pkg *ast.CXPackage, f *ast.CXFunction) ExportedSymbol {
 	return ExportedSymbol{
 		Name:      f.Name,
-		Signature: ast.SignatureStringOfFunction(pkg, f),
+		Signature: ast.SignatureStringOfFunction(ast.PROGRAM, pkg, f),
 		Type:      types.FUNC,
 		TypeName:  types.FUNC.Name(),
 	}
@@ -79,7 +79,7 @@ func displayCXFunction(pkg *ast.CXPackage, f *ast.CXFunction) ExportedSymbol {
 func displayCXStruct(s *ast.CXStruct) ExportedSymbol {
 	return ExportedSymbol{
 		Name:      s.Name,
-		Signature: ast.SignatureStringOfStruct(s),
+		Signature: ast.SignatureStringOfStruct(ast.PROGRAM, s),
 		Type:      types.STRUCT,
 		TypeName:  "struct",
 	}

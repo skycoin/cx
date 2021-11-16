@@ -463,7 +463,7 @@ func serializeProgram(prgrm *CXProgram, s *SerializedCXProgram) {
 	sPrgrm.CallCounter = int64(prgrm.CallCounter)
 
 	sPrgrm.MemoryOffset = int64(0)
-	sPrgrm.MemorySize = int64(len(PROGRAM.Memory))
+	sPrgrm.MemorySize = int64(len(prgrm.Memory))
 
 	sPrgrm.HeapPointer = int64(prgrm.Heap.Pointer)
 	sPrgrm.StackPointer = int64(prgrm.Stack.Pointer)
