@@ -39,7 +39,7 @@ type ExportedSymbolsResp struct {
 	Globals   []ExportedSymbol `json:"globals"`
 }
 
-func extractExportedSymbols(pkg *ast.CXPackage) ExportedSymbolsResp {
+func extractExportedSymbols(prgrm *ast.CXProgram, pkg *ast.CXPackage) ExportedSymbolsResp {
 	resp := ExportedSymbolsResp{
 		Functions: make([]ExportedSymbol, 0, len(pkg.Functions)),
 		Structs:   make([]ExportedSymbol, 0, len(pkg.Structs)),
@@ -48,13 +48,13 @@ func extractExportedSymbols(pkg *ast.CXPackage) ExportedSymbolsResp {
 
 	for _, f := range pkg.Functions {
 		if isExported(f.Name) {
-			resp.Functions = append(resp.Functions, displayCXFunction(pkg, f))
+			resp.Functions = append(resp.Functions, displayCXFunction(prgrm, pkg, f))
 		}
 	}
 
 	for _, s := range pkg.Structs {
 		if isExported(s.Name) {
-			resp.Structs = append(resp.Structs, displayCXStruct(s))
+			resp.Structs = append(resp.Structs, displayCXStruct(prgrm, s))
 		}
 	}
 
@@ -67,19 +67,19 @@ func extractExportedSymbols(pkg *ast.CXPackage) ExportedSymbolsResp {
 	return resp
 }
 
-func displayCXFunction(pkg *ast.CXPackage, f *ast.CXFunction) ExportedSymbol {
+func displayCXFunction(prgrm *ast.CXProgram, pkg *ast.CXPackage, f *ast.CXFunction) ExportedSymbol {
 	return ExportedSymbol{
 		Name:      f.Name,
-		Signature: ast.SignatureStringOfFunction(ast.PROGRAM, pkg, f),
+		Signature: ast.SignatureStringOfFunction(prgrm, pkg, f),
 		Type:      types.FUNC,
 		TypeName:  types.FUNC.Name(),
 	}
 }
 
-func displayCXStruct(s *ast.CXStruct) ExportedSymbol {
+func displayCXStruct(prgrm *ast.CXProgram, s *ast.CXStruct) ExportedSymbol {
 	return ExportedSymbol{
 		Name:      s.Name,
-		Signature: ast.SignatureStringOfStruct(ast.PROGRAM, s),
+		Signature: ast.SignatureStringOfStruct(prgrm, s),
 		Type:      types.STRUCT,
 		TypeName:  "struct",
 	}
