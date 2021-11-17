@@ -14,10 +14,10 @@ func DebugHeap() {
 	symsToAddrs := make(map[int32][]string)
 
 	// Processing global variables. Adding the address they are pointing to.
-	for _, pkg := range PROGRAM.Packages {
+	for _, pkg := range prgrm.Packages {
 		for _, glbl := range pkg.Globals {
 			if glbl.IsPointer || glbl.IsSlice {
-				heapOffset := helper.Deserialize_i32(PROGRAM.Memory[glbl.Offset : glbl.Offset+constants.POINTER_SIZE])
+				heapOffset := helper.Deserialize_i32(prgrm.Memory[glbl.Offset : glbl.Offset+constants.POINTER_SIZE])
 
 				symsToAddrs[heapOffset] = append(symsToAddrs[heapOffset], glbl.Name)
 			}
@@ -27,8 +27,8 @@ func DebugHeap() {
 	// Processing local variables in every active function call in the `CallStack`.
 	// Adding the address they are pointing to.
 	var fp int
-	for c := 0; c <= PROGRAM.CallCounter; c++ {
-		op := PROGRAM.CallStack[c].Operator
+	for c := 0; c <= prgrm.CallCounter; c++ {
+		op := prgrm.CallStack[c].Operator
 
 		// TODO: Some standard library functions "manually" add a function
 		// call (callbacks) to `PRGRM.CallStack`. These functions do not have an
@@ -49,11 +49,11 @@ func DebugHeap() {
 				symName += "." + fld.Name
 			}
 
-			if ptr.Offset < PROGRAM.StackSize {
+			if ptr.Offset < prgrm.StackSize {
 				offset += fp
 			}
 
-			heapOffset := helper.Deserialize_i32(PROGRAM.Memory[offset : offset+constants.POINTER_SIZE])
+			heapOffset := helper.Deserialize_i32(prgrm.Memory[offset : offset+constants.POINTER_SIZE])
 
 			symsToAddrs[heapOffset] = append(symsToAddrs[heapOffset], symName)
 		}
@@ -76,8 +76,8 @@ func DebugHeap() {
 
 	w = tabwriter.NewWriter(os.Stdout, 0, 0, 2, '.', 0)
 
-	for c := PROGRAM.HeapStartsAt + constants.NULL_HEAP_ADDRESS_OFFSET; c < PROGRAM.HeapStartsAt+PROGRAM.HeapPointer; {
-		objSize := helper.Deserialize_i32(PROGRAM.Memory[c+constants.MARK_SIZE+constants.FORWARDING_ADDRESS_SIZE : c+constants.MARK_SIZE+constants.FORWARDING_ADDRESS_SIZE+constants.OBJECT_SIZE])
+	for c := prgrm.HeapStartsAt + constants.NULL_HEAP_ADDRESS_OFFSET; c < prgrm.HeapStartsAt+prgrm.HeapPointer; {
+		objSize := helper.Deserialize_i32(prgrm.Memory[c+constants.MARK_SIZE+constants.FORWARDING_ADDRESS_SIZE : c+constants.MARK_SIZE+constants.FORWARDING_ADDRESS_SIZE+constants.OBJECT_SIZE])
 
 		// Setting a limit size for the object to be printed if the object is too large.
 		// We don't want to print obscenely large objects to standard output.
@@ -89,7 +89,7 @@ func DebugHeap() {
 		var addrB [4]byte
 		cxcore.WriteMemI32(addrB[:], 0, int32(c))
 
-		fmt.Fprintln(w, "Addr:\t", addrB, "\tMark:\t", PROGRAM.Memory[c:c+constants.MARK_SIZE], "\tFwd:\t", PROGRAM.Memory[c+constants.MARK_SIZE:c+constants.MARK_SIZE+constants.FORWARDING_ADDRESS_SIZE], "\tSize:\t", objSize, "\tObj:\t", PROGRAM.Memory[c+constants.OBJECT_HEADER_SIZE:c+int(printObjSize)], "\tPtrs:", symsToAddrs[int32(c)])
+		fmt.Fprintln(w, "Addr:\t", addrB, "\tMark:\t", prgrm.Memory[c:c+constants.MARK_SIZE], "\tFwd:\t", prgrm.Memory[c+constants.MARK_SIZE:c+constants.MARK_SIZE+constants.FORWARDING_ADDRESS_SIZE], "\tSize:\t", objSize, "\tObj:\t", prgrm.Memory[c+constants.OBJECT_HEADER_SIZE:c+int(printObjSize)], "\tPtrs:", symsToAddrs[int32(c)])
 
 		c += int(objSize)
 	}
@@ -99,4 +99,3 @@ func DebugHeap() {
 	w.Flush()
 }
 */
-
