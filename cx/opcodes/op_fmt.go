@@ -9,7 +9,7 @@ import (
 )
 
 func buildString(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) []byte {
-	fmtStr := inputs[0].Get_str()
+	fmtStr := inputs[0].Get_str(prgrm)
 
 	var res []byte
 	var specifiersCounter int
@@ -47,37 +47,37 @@ func buildString(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVal
 			inp := &inputs[specifiersCounter+1]
 			switch nextCh {
 			case 's':
-				res = append(res, []byte(CheckForEscapedChars(inp.Get_str()))...)
+				res = append(res, []byte(CheckForEscapedChars(inp.Get_str(prgrm)))...)
 			case 'd':
 				switch inp.Type {
 				case types.I8:
-					res = append(res, []byte(strconv.FormatInt(int64(inp.Get_i8()), 10))...)
+					res = append(res, []byte(strconv.FormatInt(int64(inp.Get_i8(prgrm)), 10))...)
 				case types.I16:
-					res = append(res, []byte(strconv.FormatInt(int64(inp.Get_i16()), 10))...)
+					res = append(res, []byte(strconv.FormatInt(int64(inp.Get_i16(prgrm)), 10))...)
 				case types.I32:
-					res = append(res, []byte(strconv.FormatInt(int64(inp.Get_i32()), 10))...)
+					res = append(res, []byte(strconv.FormatInt(int64(inp.Get_i32(prgrm)), 10))...)
 				case types.I64:
-					res = append(res, []byte(strconv.FormatInt(inp.Get_i64(), 10))...)
+					res = append(res, []byte(strconv.FormatInt(inp.Get_i64(prgrm), 10))...)
 				case types.UI8:
-					res = append(res, []byte(strconv.FormatUint(uint64(inp.Get_ui8()), 10))...)
+					res = append(res, []byte(strconv.FormatUint(uint64(inp.Get_ui8(prgrm)), 10))...)
 				case types.UI16:
-					res = append(res, []byte(strconv.FormatUint(uint64(inp.Get_ui16()), 10))...)
+					res = append(res, []byte(strconv.FormatUint(uint64(inp.Get_ui16(prgrm)), 10))...)
 				case types.UI32:
-					res = append(res, []byte(strconv.FormatUint(uint64(inp.Get_ui32()), 10))...)
+					res = append(res, []byte(strconv.FormatUint(uint64(inp.Get_ui32(prgrm)), 10))...)
 				case types.UI64:
-					res = append(res, []byte(strconv.FormatUint(inp.Get_ui64(), 10))...)
+					res = append(res, []byte(strconv.FormatUint(inp.Get_ui64(prgrm), 10))...)
 				}
 			case 'f':
 				switch inp.Type {
 				case types.F32:
-					res = append(res, []byte(strconv.FormatFloat(float64(inp.Get_f32()), 'f', 7, 32))...)
+					res = append(res, []byte(strconv.FormatFloat(float64(inp.Get_f32(prgrm)), 'f', 7, 32))...)
 				case types.F64:
-					res = append(res, []byte(strconv.FormatFloat(inp.Get_f64(), 'f', 16, 64))...)
+					res = append(res, []byte(strconv.FormatFloat(inp.Get_f64(prgrm), 'f', 16, 64))...)
 				}
 			case 'v':
-				res = append(res, []byte(ast.GetPrintableValue(inp.FramePointer, inp.Arg))...)
+				res = append(res, []byte(ast.GetPrintableValue(prgrm, inp.FramePointer, inp.Arg))...)
 			case 'b':
-				res = append(res, []byte(strconv.FormatBool(inp.Get_bool()))...)
+				res = append(res, []byte(strconv.FormatBool(inp.Get_bool(prgrm)))...)
 			}
 			c++
 			specifiersCounter++
@@ -104,9 +104,9 @@ func buildString(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVal
 			}
 
 			if c == lInps-1 {
-				extra += fmt.Sprintf("%s=%s", typ, ast.GetPrintableValue(inp.FramePointer, elt))
+				extra += fmt.Sprintf("%s=%s", typ, ast.GetPrintableValue(prgrm, inp.FramePointer, elt))
 			} else {
-				extra += fmt.Sprintf("%s=%s, ", typ, ast.GetPrintableValue(inp.FramePointer, elt))
+				extra += fmt.Sprintf("%s=%s, ", typ, ast.GetPrintableValue(prgrm, inp.FramePointer, elt))
 			}
 
 		}
@@ -120,7 +120,7 @@ func buildString(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVal
 }
 
 func opSprintf(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outputs[0].Set_str(string(buildString(prgrm, inputs, outputs)))
+	outputs[0].Set_str(prgrm, string(buildString(prgrm, inputs, outputs)))
 }
 
 func opPrintf(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {

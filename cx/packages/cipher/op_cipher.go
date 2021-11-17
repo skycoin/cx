@@ -22,6 +22,6 @@ func opCipherGenerateKeyPair(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs
 		bSecKey[i] = byt
 	}
 
-	outputs[0].Set_bytes(bPubKey)
-	outputs[1].Set_bytes(bSecKey)
+	outputs[0].Set_bytes(prgrm, bPubKey)
+	outputs[1].Set_bytes(prgrm, bSecKey)
 }

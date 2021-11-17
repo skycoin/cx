@@ -179,7 +179,7 @@ func doDisplaceReferences(prgrm *CXProgram, updated *map[types.Pointer]types.Poi
 			(numDeclSpecs == 1 && baseType == types.STR) {
 			// Then we need to iterate each of the slice objects
 			// and check if we need to update their address.
-			sliceLen := GetSliceLen(heapOffset + condPlusOff)
+			sliceLen := GetSliceLen(prgrm, heapOffset+condPlusOff)
 
 			offsetToElements := types.OBJECT_HEADER_SIZE + constants.SLICE_HEADER_SIZE
 
@@ -273,7 +273,7 @@ func MarkObjectsTree(prgrm *CXProgram, offset types.Pointer, baseType types.Code
 				declSpecs[1] == constants.DECL_POINTER)) ||
 			(numDeclSpecs == 1 && baseType == types.STR) {
 			// Then we need to iterate each of the slice objects and mark them as alive
-			sliceLen := GetSliceLen(heapOffset)
+			sliceLen := GetSliceLen(prgrm, heapOffset)
 
 			for c := types.Pointer(0); c < sliceLen; c++ {
 				offsetToElements := types.OBJECT_HEADER_SIZE + constants.SLICE_HEADER_SIZE
@@ -321,7 +321,7 @@ func updatePointerTree(prgrm *CXProgram, atOffset types.Pointer, oldAddr, newAdd
 			(numDeclSpecs == 1 && baseType == types.STR) {
 			// Then we need to iterate each of the slice objects
 			// and check if we need to update their address.
-			sliceLen := GetSliceLen(heapOffset)
+			sliceLen := GetSliceLen(prgrm, heapOffset)
 			offsetToElements := types.OBJECT_HEADER_SIZE + constants.SLICE_HEADER_SIZE
 
 			for c := types.Pointer(0); c < sliceLen; c++ {

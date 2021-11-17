@@ -8,7 +8,7 @@ import (
 	"github.com/skycoin/cx/cx/types"
 )
 
-func RegisterPackage() {
+func RegisterPackage(prgrm *ast.CXProgram) {
 	regexpPkg := ast.MakePackage("regexp")
 	regexpStrct := ast.MakeStruct("Regexp")
 
@@ -16,9 +16,9 @@ func RegisterPackage() {
 
 	regexpPkg.AddStruct(regexpStrct)
 
-	ast.PROGRAM.AddPackage(regexpPkg)
+	prgrm.AddPackage(regexpPkg)
 
-	RegisterFunction("regexp.Compile", opRegexpCompile, In(ast.ConstCxArg_STR), Out(ast.Struct("regexp", "Regexp", "r"), ast.ConstCxArg_STR))
-	RegisterFunction("regexp.MustCompile", opRegexpMustCompile, In(ast.ConstCxArg_STR), Out(ast.Struct("regexp", "Regexp", "r")))
-	RegisterFunction("regexp.Regexp.Find", opRegexpFind, In(ast.Struct("regexp", "Regexp", "r"), ast.ConstCxArg_STR), Out(ast.ConstCxArg_STR))
+	RegisterFunction("regexp.Compile", opRegexpCompile, In(ast.ConstCxArg_STR), Out(ast.Struct(prgrm, "regexp", "Regexp", "r"), ast.ConstCxArg_STR))
+	RegisterFunction("regexp.MustCompile", opRegexpMustCompile, In(ast.ConstCxArg_STR), Out(ast.Struct(prgrm, "regexp", "Regexp", "r")))
+	RegisterFunction("regexp.Regexp.Find", opRegexpFind, In(ast.Struct(prgrm, "regexp", "Regexp", "r"), ast.ConstCxArg_STR), Out(ast.ConstCxArg_STR))
 }

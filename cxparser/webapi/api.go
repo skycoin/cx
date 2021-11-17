@@ -2,9 +2,10 @@ package webapi
 
 import (
 	"fmt"
-	"github.com/skycoin/cx/cx/ast"
 	"net/http"
 	"strings"
+
+	"github.com/skycoin/cx/cx/ast"
 )
 
 // API represents an HTTP API.
@@ -64,7 +65,7 @@ func ExportedSymbolsOfPackage(pg *ast.CXProgram, pkgName string) http.HandlerFun
 				continue
 			}
 
-			resp := extractExportedSymbols(pkg)
+			resp := extractExportedSymbols(pg, pkg)
 			//httputil.WriteJSON(w, req, http.StatusOK, resp)
 			WriteJSON(w, req, http.StatusOK, resp)
 			return

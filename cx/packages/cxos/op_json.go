@@ -46,7 +46,7 @@ var freeJsons []int32
 func opJsonOpen(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	handle := int32(-1)
 
-	file, err := util.CXOpenFile(inputs[0].Get_str())
+	file, err := util.CXOpenFile(inputs[0].Get_str(prgrm))
 	if err == nil {
 		freeCount := len(freeJsons)
 		if freeCount > 0 {
@@ -71,13 +71,13 @@ func opJsonOpen(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 		jsons[handle] = jsonFile
 	}
 
-	outputs[0].Set_i32(int32(handle))
+	outputs[0].Set_i32(prgrm, int32(handle))
 }
 
 // Close json cxgo (and all underlying resources) idendified by it's i32 handle.
 func opJsonClose(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
-	handle := inputs[0].Get_i32()
+	handle := inputs[0].Get_i32(prgrm)
 	if jsonFile := validJsonFile(handle); jsonFile != nil {
 		if err := jsonFile.file.Close(); err != nil {
 			panic(err)
@@ -88,7 +88,7 @@ func opJsonClose(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVal
 		success = true
 	}
 
-	outputs[0].Set_bool(success)
+	outputs[0].Set_bool(prgrm, success)
 }
 
 // More return true if there is another element in the current array or object being parsed.
@@ -96,13 +96,13 @@ func opJsonTokenMore(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.C
 	more := false
 	success := false
 
-	if jsonFile := validJsonFile(inputs[0].Get_i32()); jsonFile != nil {
+	if jsonFile := validJsonFile(inputs[0].Get_i32(prgrm)); jsonFile != nil {
 		more = jsonFile.decoder.More()
 		success = true
 	}
 
-	outputs[0].Set_bool(more)
-	outputs[1].Set_bool(success)
+	outputs[0].Set_bool(prgrm, more)
+	outputs[1].Set_bool(prgrm, success)
 }
 
 // Token parses the next token.
@@ -110,7 +110,7 @@ func opJsonTokenNext(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.C
 	tokenType := int32(JSON_TOKEN_INVALID)
 	success := false
 
-	if jsonFile := validJsonFile(inputs[0].Get_i32()); jsonFile != nil {
+	if jsonFile := validJsonFile(inputs[0].Get_i32(prgrm)); jsonFile != nil {
 		token, err := jsonFile.decoder.Token()
 		if err == io.EOF {
 			tokenType = JSON_TOKEN_NULL
@@ -148,8 +148,8 @@ func opJsonTokenNext(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.C
 		jsonFile.tokenType = tokenType
 	}
 
-	outputs[0].Set_i32(tokenType)
-	outputs[1].Set_bool(success)
+	outputs[0].Set_i32(prgrm, tokenType)
+	outputs[1].Set_bool(prgrm, success)
 }
 
 // Type returns the type of the current token.
@@ -157,13 +157,13 @@ func opJsonTokenType(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.C
 	tokenType := int32(JSON_TOKEN_INVALID)
 	success := false
 
-	if jsonFile := validJsonFile(inputs[0].Get_i32()); jsonFile != nil {
+	if jsonFile := validJsonFile(inputs[0].Get_i32(prgrm)); jsonFile != nil {
 		tokenType = jsonFile.tokenType
 		success = true
 	}
 
-	outputs[0].Set_i32(tokenType)
-	outputs[1].Set_bool(success)
+	outputs[0].Set_i32(prgrm, tokenType)
+	outputs[1].Set_bool(prgrm, success)
 }
 
 // Delim returns current token as an int32 delimiter.
@@ -171,15 +171,15 @@ func opJsonTokenDelim(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.
 	tokenDelim := int32(JSON_TOKEN_INVALID)
 	success := false
 
-	if jsonFile := validJsonFile(inputs[0].Get_i32()); jsonFile != nil {
+	if jsonFile := validJsonFile(inputs[0].Get_i32(prgrm)); jsonFile != nil {
 		if jsonFile.tokenType == JSON_TOKEN_DELIM {
 			tokenDelim = int32(jsonFile.tokenDelim)
 			success = true
 		}
 	}
 
-	outputs[0].Set_i32(tokenDelim)
-	outputs[1].Set_bool(success)
+	outputs[0].Set_i32(prgrm, tokenDelim)
+	outputs[1].Set_bool(prgrm, success)
 }
 
 // Bool returns current token as a bool value.
@@ -187,15 +187,15 @@ func opJsonTokenBool(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.C
 	tokenBool := false
 	success := false
 
-	if jsonFile := validJsonFile(inputs[0].Get_i32()); jsonFile != nil {
+	if jsonFile := validJsonFile(inputs[0].Get_i32(prgrm)); jsonFile != nil {
 		if jsonFile.tokenType == JSON_TOKEN_BOOL {
 			tokenBool = jsonFile.tokenBool
 			success = true
 		}
 	}
 
-	outputs[0].Set_bool(tokenBool)
-	outputs[1].Set_bool(success)
+	outputs[0].Set_bool(prgrm, tokenBool)
+	outputs[1].Set_bool(prgrm, success)
 }
 
 // Float64 returns current token as float64 value.
@@ -203,7 +203,7 @@ func opJsonTokenF64(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CX
 	var tokenF64 float64
 	success := false
 
-	if jsonFile := validJsonFile(inputs[0].Get_i32()); jsonFile != nil {
+	if jsonFile := validJsonFile(inputs[0].Get_i32(prgrm)); jsonFile != nil {
 		if jsonFile.tokenType == JSON_TOKEN_F64 {
 			tokenF64 = jsonFile.tokenF64
 			success = true
@@ -215,8 +215,8 @@ func opJsonTokenF64(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CX
 		}
 	}
 
-	outputs[0].Set_f64(tokenF64)
-	outputs[1].Set_bool(success)
+	outputs[0].Set_f64(prgrm, tokenF64)
+	outputs[1].Set_bool(prgrm, success)
 }
 
 // Int64 returns current token as int64 value.
@@ -224,7 +224,7 @@ func opJsonTokenI64(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CX
 	var tokenI64 int64
 	success := false
 
-	if jsonFile := validJsonFile(inputs[0].Get_i32()); jsonFile != nil {
+	if jsonFile := validJsonFile(inputs[0].Get_i32(prgrm)); jsonFile != nil {
 		if jsonFile.tokenType == JSON_TOKEN_NUMBER {
 			var err error
 			if tokenI64, err = jsonFile.tokenNumber.Int64(); err == nil {
@@ -233,8 +233,8 @@ func opJsonTokenI64(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CX
 		}
 	}
 
-	outputs[0].Set_i64(tokenI64)
-	outputs[1].Set_bool(success)
+	outputs[0].Set_i64(prgrm, tokenI64)
+	outputs[1].Set_bool(prgrm, success)
 }
 
 // Str returns current token as string value.
@@ -242,15 +242,15 @@ func opJsonTokenStr(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CX
 	var tokenStr string
 	success := false
 
-	if jsonFile := validJsonFile(inputs[0].Get_i32()); jsonFile != nil {
+	if jsonFile := validJsonFile(inputs[0].Get_i32(prgrm)); jsonFile != nil {
 		if jsonFile.tokenType == JSON_TOKEN_STR {
 			tokenStr = jsonFile.tokenStr
 			success = true
 		}
 	}
 
-	outputs[0].Set_str(tokenStr)
-	outputs[1].Set_bool(success)
+	outputs[0].Set_str(prgrm, tokenStr)
+	outputs[1].Set_bool(prgrm, success)
 }
 
 // helper function used to validate json handle from i32

@@ -28,11 +28,11 @@ var ofMessages = map[string]string{
 
 // GetInferActions ...
 func GetInferActions(prgrm *ast.CXProgram, inp *ast.CXArgument, fp types.Pointer) []string {
-	inpOffset := ast.GetFinalOffset(fp, inp)
+	inpOffset := ast.GetFinalOffset(prgrm, fp, inp)
 
 	off := types.Read_ptr(prgrm.Memory, inpOffset)
 
-	l := types.Read_ptr(ast.GetSliceHeader(ast.GetSliceOffset(fp, inp)), types.POINTER_SIZE)
+	l := types.Read_ptr(ast.GetSliceHeader(prgrm, ast.GetSliceOffset(prgrm, fp, inp)), types.POINTER_SIZE)
 
 	result := make([]string, l)
 
@@ -73,7 +73,7 @@ func CallAffPredicate(prgrm *ast.CXProgram, fn *ast.CXFunction, predValue []byte
 	// sending value to predicate function
 	types.WriteSlice_byte(
 		prgrm.Memory,
-		ast.GetFinalOffset(newFP, newCall.Operator.Inputs[0]),
+		ast.GetFinalOffset(prgrm, newFP, newCall.Operator.Inputs[0]),
 		predValue)
 
 	var inputs []ast.CXValue
@@ -92,7 +92,7 @@ func CallAffPredicate(prgrm *ast.CXProgram, fn *ast.CXFunction, predValue []byte
 
 	prevCall.Line--
 
-	return types.GetSlice_byte(prgrm.Memory, ast.GetFinalOffset(
+	return types.GetSlice_byte(prgrm.Memory, ast.GetFinalOffset(prgrm,
 		newCall.FramePointer,
 		newCall.Operator.Outputs[0]),
 		ast.GetSize(newCall.Operator.Outputs[0]))[0]
@@ -163,7 +163,7 @@ func queryParam(prgrm *ast.CXProgram, fn *ast.CXFunction, args []*ast.CXArgument
 		res := CallAffPredicate(prgrm, fn, prgrm.Memory[argOffset+types.OBJECT_HEADER_SIZE:argOffset+types.OBJECT_HEADER_SIZE+types.STR_SIZE+types.I32_SIZE+types.STR_SIZE])
 
 		if res == 1 {
-			*affOffset = ast.WriteToSlice(*affOffset, argOffsetB)
+			*affOffset = ast.WriteToSlice(prgrm, *affOffset, argOffsetB)
 
 			// affNameB := encoder.Serialize(fmt.Sprintf("%s.%d", exprLbl, i))
 			// affNameOffset := AllocateSeq(len(affNameB))
@@ -172,7 +172,7 @@ func queryParam(prgrm *ast.CXProgram, fn *ast.CXFunction, args []*ast.CXArgument
 
 			var affNameOffsetBytes [4]byte
 			types.Write_ptr(affNameOffsetBytes[:], 0, affNameOffset)
-			*affOffset = ast.WriteToSlice(*affOffset, affNameOffsetBytes[:])
+			*affOffset = ast.WriteToSlice(prgrm, *affOffset, affNameOffsetBytes[:])
 		}
 	}
 }
@@ -216,7 +216,7 @@ func QueryExpressions(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpr
 		res := CallAffPredicate(prgrm, fn, opNameOffsetB[:])
 
 		if res == 1 {
-			*affOffset = ast.WriteToSlice(*affOffset, exprOffsetB)
+			*affOffset = ast.WriteToSlice(prgrm, *affOffset, exprOffsetB)
 
 			// lblNameB := encoder.Serialize(ex.Label)
 			// lblNameOffset := AllocateSeq(len(lblNameB))
@@ -224,7 +224,7 @@ func QueryExpressions(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpr
 			// WriteMemory(lblNameOffset, lblNameB)
 			var lblNameOffsetB [4]byte
 			types.Write_ptr(lblNameOffsetB[:], 0, lblNameOffset)
-			*affOffset = ast.WriteToSlice(*affOffset, lblNameOffsetB[:])
+			*affOffset = ast.WriteToSlice(prgrm, *affOffset, lblNameOffsetB[:])
 		}
 	}
 }
@@ -246,7 +246,7 @@ func getSignatureSlice(prgrm *ast.CXProgram, params []*ast.CXArgument) types.Poi
 
 		var typOffsetB [types.POINTER_SIZE]byte
 		types.Write_ptr(typOffsetB[:], 0, typOffset)
-		sliceOffset = ast.WriteToSlice(sliceOffset, typOffsetB[:])
+		sliceOffset = ast.WriteToSlice(prgrm, sliceOffset, typOffsetB[:])
 	}
 
 	return sliceOffset
@@ -270,8 +270,8 @@ func queryStructsInPackage(prgrm *ast.CXProgram, fn *ast.CXFunction, strctOffset
 		res := CallAffPredicate(prgrm, fn, val)
 
 		if res == 1 {
-			*affOffset = ast.WriteToSlice(*affOffset, strctOffsetB)
-			*affOffset = ast.WriteToSlice(*affOffset, strctNameOffsetB[:])
+			*affOffset = ast.WriteToSlice(prgrm, *affOffset, strctOffsetB)
+			*affOffset = ast.WriteToSlice(prgrm, *affOffset, strctNameOffsetB[:])
 		}
 	}
 }
@@ -320,8 +320,8 @@ func QueryFunction(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpress
 		res := CallAffPredicate(prgrm, fn, val)
 
 		if res == 1 {
-			*affOffset = ast.WriteToSlice(*affOffset, fnOffsetB)
-			*affOffset = ast.WriteToSlice(*affOffset, opNameOffsetB[:])
+			*affOffset = ast.WriteToSlice(prgrm, *affOffset, fnOffsetB)
+			*affOffset = ast.WriteToSlice(prgrm, *affOffset, opNameOffsetB[:])
 		}
 	}
 }
@@ -359,7 +359,7 @@ func QueryCaller(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpressio
 	res := CallAffPredicate(prgrm, fn, prgrm.Memory[callOffset+types.OBJECT_HEADER_SIZE:callOffset+types.OBJECT_HEADER_SIZE+types.STR_SIZE+types.I32_SIZE])
 
 	if res == 1 {
-		*affOffset = ast.WriteToSlice(*affOffset, callerOffsetB)
+		*affOffset = ast.WriteToSlice(prgrm, *affOffset, callerOffsetB)
 	}
 }
 
@@ -405,8 +405,8 @@ func QueryProgram(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpressi
 	res := CallAffPredicate(prgrm, fn, prgrm.Memory[prgrmOffset+types.OBJECT_HEADER_SIZE:prgrmOffset+types.OBJECT_HEADER_SIZE+types.I32_SIZE+types.I64_SIZE+types.STR_SIZE+types.I32_SIZE])
 
 	if res == 1 {
-		*affOffset = ast.WriteToSlice(*affOffset, prgrmOffsetB)
-		*affOffset = ast.WriteToSlice(*affOffset, prgrmOffsetB)
+		*affOffset = ast.WriteToSlice(prgrm, *affOffset, prgrmOffsetB)
+		*affOffset = ast.WriteToSlice(prgrm, *affOffset, prgrmOffsetB)
 	}
 }
 
@@ -767,7 +767,7 @@ func opAffInform(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVal
 	getTarget(prgrm, inp3, fp, &tgtElt, &tgtArgType, &tgtArgIndex, &tgtPkg, &tgtFn, &tgtExpr)
 
 	elts := GetInferActions(prgrm, inp1, fp)
-	eltIdx := types.Read_ptr(prgrm.Memory, ast.GetFinalOffset(fp, inp2))
+	eltIdx := types.Read_ptr(prgrm.Memory, ast.GetFinalOffset(prgrm, fp, inp2))
 	eltType := elts[eltIdx*2]
 	elt := elts[eltIdx*2+1]
 
@@ -872,7 +872,7 @@ func opAffRequest(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVa
 	// var affs []string
 
 	elts := GetInferActions(prgrm, inp1, fp)
-	eltIdx := types.Read_ptr(prgrm.Memory, ast.GetFinalOffset(fp, inp2))
+	eltIdx := types.Read_ptr(prgrm.Memory, ast.GetFinalOffset(prgrm, fp, inp2))
 	eltType := elts[eltIdx*2]
 	elt := elts[eltIdx*2+1]
 
@@ -890,7 +890,7 @@ func opAffRequest(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVa
 		case "strct":
 
 		case "prgrm":
-			fmt.Println(ast.GetPrintableValue(fp, readArgAff(elt, &tgtFn)))
+			fmt.Println(ast.GetPrintableValue(prgrm, fp, readArgAff(elt, &tgtFn)))
 		}
 	case "expr":
 		if expr, err := tgtFn.GetExpressionByLabel(elt); err == nil {
@@ -955,9 +955,9 @@ func opAffRequest(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVa
 		switch tgtElt {
 		case "arg":
 			if tgtArgType == "inp" {
-				fmt.Println(ast.GetPrintableValue(fp, tgtExpr.Inputs[tgtArgIndex]))
+				fmt.Println(ast.GetPrintableValue(prgrm, fp, tgtExpr.Inputs[tgtArgIndex]))
 			} else {
-				fmt.Println(ast.GetPrintableValue(fp, tgtExpr.Outputs[tgtArgIndex]))
+				fmt.Println(ast.GetPrintableValue(prgrm, fp, tgtExpr.Outputs[tgtArgIndex]))
 			}
 		case "prgrm":
 			// affs = append(affs, "Run program")
@@ -977,7 +977,7 @@ func opAffQuery(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 	expr := call.Operator.Expressions[call.Line]
 	fp := inputs[0].FramePointer
 
-	out1Offset := ast.GetFinalOffset(fp, out1)
+	out1Offset := ast.GetFinalOffset(prgrm, fp, out1)
 
 	var affOffset types.Pointer
 

@@ -38,8 +38,8 @@ func popStack(prgrm *CXProgram, call *CXCall) error {
 			continue
 		}
 
-		types.WriteSlice_byte(prgrm.Memory, GetFinalOffset(returnFP, expr.Outputs[i]),
-			types.GetSlice_byte(prgrm.Memory, GetFinalOffset(fp, out), GetSize(out)))
+		types.WriteSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, returnFP, expr.Outputs[i]),
+			types.GetSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, fp, out), GetSize(out)))
 	}
 
 	// return the stack pointer to its previous state
@@ -62,7 +62,7 @@ func wipeDeclarationMemory(prgrm *CXProgram, expr *CXExpression) error {
 	return nil
 }
 
-func processBuiltInOperators(expr *CXExpression, globalInputs *[]CXValue, globalOutputs *[]CXValue, fp types.Pointer) error {
+func processBuiltInOperators(prgrm *CXProgram, expr *CXExpression, globalInputs *[]CXValue, globalOutputs *[]CXValue, fp types.Pointer) error {
 	if IsOperator(expr.Operator.AtomicOPCode) {
 		// TODO: resolve this at compile time
 		atomicType := expr.Inputs[0].GetType()
@@ -85,7 +85,7 @@ func processBuiltInOperators(expr *CXExpression, globalInputs *[]CXValue, global
 	argIndex := 0
 	for inputIndex := 0; inputIndex < inputCount; inputIndex++ {
 		input := inputs[inputIndex]
-		offset := GetFinalOffset(fp, input)
+		offset := GetFinalOffset(prgrm, fp, input)
 		value := &inputValues[inputIndex]
 		value.Arg = input
 		value.Offset = offset
@@ -100,7 +100,7 @@ func processBuiltInOperators(expr *CXExpression, globalInputs *[]CXValue, global
 
 	for outputIndex := 0; outputIndex < outputCount; outputIndex++ {
 		output := outputs[outputIndex]
-		offset := GetFinalOffset(fp, output)
+		offset := GetFinalOffset(prgrm, fp, output)
 		value := &outputValues[outputIndex]
 		value.Arg = output
 		value.Offset = offset
@@ -113,7 +113,7 @@ func processBuiltInOperators(expr *CXExpression, globalInputs *[]CXValue, global
 		argIndex++
 	}
 
-	OpcodeHandlers[expr.Operator.AtomicOPCode](PROGRAM, inputValues, outputValues)
+	OpcodeHandlers[expr.Operator.AtomicOPCode](prgrm, inputValues, outputValues)
 
 	return nil
 }
@@ -154,7 +154,7 @@ func processNonAtomicOperators(prgrm *CXProgram, expr *CXExpression, fp types.Po
 	for i, inp := range expr.Inputs {
 		var byts []byte
 		// finalOffset := inp.Offset
-		finalOffset := GetFinalOffset(fp, inp)
+		finalOffset := GetFinalOffset(prgrm, fp, inp)
 		// finalOffset := fp + inp.Offset
 
 		// if inp.Indexes != nil {
@@ -178,7 +178,7 @@ func processNonAtomicOperators(prgrm *CXProgram, expr *CXExpression, fp types.Po
 		// writing inputs to new stack frame
 		types.WriteSlice_byte(
 			prgrm.Memory,
-			GetFinalOffset(newFP, newCall.Operator.Inputs[i]),
+			GetFinalOffset(prgrm, newFP, newCall.Operator.Inputs[i]),
 			// newFP + newCall.Operator.ProgramInput[i].Offset,
 			// GetFinalOffset(prgrm.Memory, newFP, newCall.Operator.ProgramInput[i], MEM_WRITE),
 			byts)
@@ -222,7 +222,7 @@ func (call *CXCall) Call(prgrm *CXProgram, globalInputs *[]CXValue, globalOutput
 		call.Line++
 	} else if expr.Operator.IsBuiltIn() {
 		//TODO: SLICES ARE NON ATOMIC
-		err := processBuiltInOperators(expr, globalInputs, globalOutputs, fp)
+		err := processBuiltInOperators(prgrm, expr, globalInputs, globalOutputs, fp)
 		if err != nil {
 			return err
 		}

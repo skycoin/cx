@@ -54,12 +54,12 @@ type CXCallback struct {
 }
 
 func (cb *CXCallback) init(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue, packageName string) {
-	cb.windowName = inputs[0].Get_str()
+	cb.windowName = inputs[0].Get_str(prgrm)
 	var windowHeapPtr = types.AllocWrite_obj_data(prgrm.Memory, []byte(cb.windowName))
 	var windowName [types.POINTER_SIZE]byte
 	types.Write_ptr(windowName[:], 0, windowHeapPtr)
 	cb.windowNameBytes = windowName[:]
-	cb.functionName = inputs[1].Get_str()
+	cb.functionName = inputs[1].Get_str(prgrm)
 	cb.packageName = packageName
 }
 
@@ -68,7 +68,7 @@ func (cb *CXCallback) Init(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs [
 }
 
 func (cb *CXCallback) InitEx(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	cb.init(prgrm, inputs, outputs, inputs[2].Get_str())
+	cb.init(prgrm, inputs, outputs, inputs[2].Get_str(prgrm))
 }
 
 func (cb *CXCallback) Call(inputs [][]byte) {

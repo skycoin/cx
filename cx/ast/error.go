@@ -38,8 +38,8 @@ func errorCode(r interface{}) int {
 	}
 }
 
-func RuntimeErrorInfo(r interface{}, printStack bool, defaultError int) {
-	call := PROGRAM.CallStack[PROGRAM.CallCounter]
+func RuntimeErrorInfo(prgrm *CXProgram, r interface{}, printStack bool, defaultError int) {
+	call := prgrm.CallStack[prgrm.CallCounter]
 	expr := call.Operator.Expressions[call.Line]
 	code := errorCode(r)
 	if code == constants.CX_RUNTIME_ERROR {
@@ -49,7 +49,7 @@ func RuntimeErrorInfo(r interface{}, printStack bool, defaultError int) {
 	fmt.Printf("%s, %s, %v", ErrorHeader(expr.FileName, expr.FileLine), ErrorString(code), r)
 
 	if printStack {
-		PROGRAM.PrintStack()
+		prgrm.PrintStack()
 	}
 
 	if globals.DBG_GOLANG_STACK_TRACE {
@@ -60,23 +60,23 @@ func RuntimeErrorInfo(r interface{}, printStack bool, defaultError int) {
 }
 
 // RuntimeError ...
-func RuntimeError() {
+func RuntimeError(prgrm *CXProgram) {
 	if r := recover(); r != nil {
 		switch r {
 		case constants.STACK_OVERFLOW_ERROR:
-			call := PROGRAM.CallStack[PROGRAM.CallCounter]
-			if PROGRAM.CallCounter > 0 {
-				PROGRAM.CallCounter--
-				PROGRAM.Stack.Pointer = call.FramePointer
-				RuntimeErrorInfo(r, true, constants.CX_RUNTIME_STACK_OVERFLOW_ERROR)
+			call := prgrm.CallStack[prgrm.CallCounter]
+			if prgrm.CallCounter > 0 {
+				prgrm.CallCounter--
+				prgrm.Stack.Pointer = call.FramePointer
+				RuntimeErrorInfo(prgrm, r, true, constants.CX_RUNTIME_STACK_OVERFLOW_ERROR)
 			} else {
 				// error at entry point
-				RuntimeErrorInfo(r, false, constants.CX_RUNTIME_STACK_OVERFLOW_ERROR)
+				RuntimeErrorInfo(prgrm, r, false, constants.CX_RUNTIME_STACK_OVERFLOW_ERROR)
 			}
 		case constants.HEAP_EXHAUSTED_ERROR:
-			RuntimeErrorInfo(r, true, constants.CX_RUNTIME_HEAP_EXHAUSTED_ERROR)
+			RuntimeErrorInfo(prgrm, r, true, constants.CX_RUNTIME_HEAP_EXHAUSTED_ERROR)
 		default:
-			RuntimeErrorInfo(r, true, constants.CX_RUNTIME_ERROR)
+			RuntimeErrorInfo(prgrm, r, true, constants.CX_RUNTIME_ERROR)
 		}
 	}
 }

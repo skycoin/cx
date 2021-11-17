@@ -32,7 +32,7 @@ func Callback(cxprogram *ast.CXProgram, fn *ast.CXFunction, inputs [][]byte) (ou
 	}
 
 	for i, inp := range inputs {
-		types.WriteSlice_byte(cxprogram.Memory, ast.GetFinalOffset(newFP, newCall.Operator.Inputs[i]), inp)
+		types.WriteSlice_byte(cxprogram.Memory, ast.GetFinalOffset(cxprogram, newFP, newCall.Operator.Inputs[i]), inp)
 	}
 
 	var maxOps = 0
@@ -49,7 +49,7 @@ func Callback(cxprogram *ast.CXProgram, fn *ast.CXFunction, inputs [][]byte) (ou
 	for _, out := range fn.Outputs {
 		// Making a copy of the bytes, so if we modify the bytes being held by `outputs`
 		// we don't modify the program memory.
-		mem := types.GetSlice_byte(cxprogram.Memory, ast.GetFinalOffset(newFP, out), ast.GetSize(out))
+		mem := types.GetSlice_byte(cxprogram.Memory, ast.GetFinalOffset(cxprogram, newFP, out), ast.GetSize(out))
 		cop := make([]byte, len(mem))
 		copy(cop, mem)
 		outputs = append(outputs, cop)

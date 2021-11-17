@@ -187,7 +187,7 @@ func FunctionDeclaration(fn *ast.CXFunction, inputs, outputs []*ast.CXArgument, 
 			fn.Expressions[i].Outputs[0].TotalSize = arg.TotalSize
 		}
 
-		processTestExpression(expr)
+		processTestExpression(ast.PROGRAM, expr)
 
 		CheckTypes(expr)
 		CheckUndValidTypes(expr)
@@ -343,12 +343,12 @@ func ProcessPointerStructs(expr *ast.CXExpression) {
 // ProcessAssertExpression checks for the special case of test calls. `assert`, `test`, `panic` are operators where
 // their first input's type needs to be the same as its second input's type. This can't be handled by
 // `checkSameNativeType` because these test functions' third input parameter is always a `str`.
-func processTestExpression(expr *ast.CXExpression) {
+func processTestExpression(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 	if expr.Operator != nil {
 		opCode := expr.Operator.AtomicOPCode
 		if opCode == constants.OP_ASSERT || opCode == constants.OP_TEST || opCode == constants.OP_PANIC {
-			inp1Type := ast.GetFormattedType(expr.Inputs[0])
-			inp2Type := ast.GetFormattedType(expr.Inputs[1])
+			inp1Type := ast.GetFormattedType(prgrm, expr.Inputs[0])
+			inp2Type := ast.GetFormattedType(prgrm, expr.Inputs[1])
 			if inp1Type != inp2Type {
 				println(ast.CompilationError(CurrentFile, LineNo), fmt.Sprintf("first and second input arguments' types are not equal in '%s' call ('%s' != '%s')", ast.OpNames[expr.Operator.AtomicOPCode], inp1Type, inp2Type))
 			}
@@ -357,8 +357,8 @@ func processTestExpression(expr *ast.CXExpression) {
 }
 
 // checkIndexType throws an error if the type of `idx` is not `i32` or `i64`.
-func checkIndexType(idx *ast.CXArgument) {
-	typ := ast.GetFormattedType(idx)
+func checkIndexType(prgrm *ast.CXProgram, idx *ast.CXArgument) {
+	typ := ast.GetFormattedType(prgrm, idx)
 	if typ != "i32" && typ != "i64" {
 		println(ast.CompilationError(idx.ArgDetails.FileName, idx.ArgDetails.FileLine), fmt.Sprintf("wrong index type; expected either 'i32' or 'i64', got '%s'", typ))
 	}
@@ -396,7 +396,7 @@ func ProcessExpressionArguments(symbols *[]map[string]*ast.CXArgument, symbolsSc
 		for _, idx := range arg.Indexes {
 			UpdateSymbolsTable(symbols, idx, offset, true)
 			GiveOffset(symbols, idx, offset, true)
-			checkIndexType(idx)
+			checkIndexType(ast.PROGRAM, idx)
 		}
 		for _, fld := range arg.Fields {
 			for _, idx := range fld.Indexes {
@@ -510,10 +510,10 @@ func ProcessGoTos(fn *ast.CXFunction, exprs []*ast.CXExpression) {
 	}
 }
 
-func checkMatchParamTypes(expr *ast.CXExpression, expected, received []*ast.CXArgument, isInputs bool) {
+func checkMatchParamTypes(prgrm *ast.CXProgram, expr *ast.CXExpression, expected, received []*ast.CXArgument, isInputs bool) {
 	for i, inp := range expected {
-		expectedType := ast.GetFormattedType(expected[i])
-		receivedType := ast.GetFormattedType(received[i])
+		expectedType := ast.GetFormattedType(prgrm, expected[i])
+		receivedType := ast.GetFormattedType(prgrm, received[i])
 
 		if expr.IsMethodCall() && expected[i].IsPointer() && i == 0 {
 			// if method receiver is pointer, remove *
@@ -545,8 +545,8 @@ func checkMatchParamTypes(expr *ast.CXExpression, expected, received []*ast.CXAr
 		// These temporary variables' types are not properly being set. That's why we use !cxcore.IsTempVar to
 		// exclude these cases for now.
 		if expr.Operator.AtomicOPCode == constants.OP_IDENTITY && !IsTempVar(expr.Outputs[0].ArgDetails.Name) {
-			inpType := ast.GetFormattedType(expr.Inputs[0])
-			outType := ast.GetFormattedType(expr.Outputs[0])
+			inpType := ast.GetFormattedType(prgrm, expr.Inputs[0])
+			outType := ast.GetFormattedType(prgrm, expr.Outputs[0])
 
 			// We use `isInputs` to only print the error once.
 			// Otherwise we'd print the error twice: once for the input and again for the output
@@ -643,10 +643,10 @@ func CheckTypes(expr *ast.CXExpression) {
 	// then it's a function call and not a declaration
 	if expr.Operator != nil {
 		// checking inputs matching operator's inputs
-		checkMatchParamTypes(expr, expr.Operator.Inputs, expr.Inputs, true)
+		checkMatchParamTypes(ast.PROGRAM, expr, expr.Operator.Inputs, expr.Inputs, true)
 
 		// checking outputs matching operator's outputs
-		checkMatchParamTypes(expr, expr.Operator.Outputs, expr.Outputs, false)
+		checkMatchParamTypes(ast.PROGRAM, expr, expr.Operator.Outputs, expr.Outputs, false)
 	}
 }
 

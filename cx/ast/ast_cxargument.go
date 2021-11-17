@@ -274,10 +274,6 @@ func (arg *CXArgument) GetType() types.Code {
 
 // AddPackage assigns CX package `pkg` to CX argument `arg`.
 func (arg *CXArgument) AddPackage(pkg *CXPackage) *CXArgument {
-	// pkg, err := PROGRAM.GetPackage(pkgName)
-	// if err != nil {
-	// 	panic(err)
-	// }
 	arg.ArgDetails.Package = pkg
 	return arg
 }
@@ -326,8 +322,8 @@ func Pointer(arg *CXArgument) *CXArgument {
 // Struct helper for creating a struct parameter. It creates a
 // `CXArgument` named `argName`, that represents a structure instane of
 // `strctName`, from package `pkgName`.
-func Struct(pkgName, strctName, argName string) *CXArgument {
-	pkg, err := PROGRAM.GetPackage(pkgName)
+func Struct(prgrm *CXProgram, pkgName, strctName, argName string) *CXArgument {
+	pkg, err := prgrm.GetPackage(pkgName)
 	if err != nil {
 		panic(err)
 	}

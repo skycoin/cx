@@ -36,11 +36,11 @@ func stopCPUProfile(f *os.File) {
 }
 
 func opStartProfile(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	profilePath := inputs[0].Get_str()
-	openProfiles[profilePath] = startCPUProfile(profilePath, int(inputs[1].Get_i32()))
+	profilePath := inputs[0].Get_str(prgrm)
+	openProfiles[profilePath] = startCPUProfile(profilePath, int(inputs[1].Get_i32(prgrm)))
 }
 
 func opStopProfile(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	profilePath := inputs[0].Get_str()
+	profilePath := inputs[0].Get_str(prgrm)
 	stopCPUProfile(openProfiles[profilePath])
 }

@@ -54,19 +54,19 @@ func buildStrImports(pkg *CXPackage, ast *string) {
 
 // buildStrGlobals is an auxiliary function for `toString`. It builds
 // string representation of all the global variables of `pkg`.
-func buildStrGlobals(pkg *CXPackage, ast *string) {
+func buildStrGlobals(prgrm *CXProgram, pkg *CXPackage, ast *string) {
 	if len(pkg.Globals) > 0 {
 		*ast += "\tGlobals\n"
 	}
 
 	for j, v := range pkg.Globals {
-		*ast += fmt.Sprintf("\t\t%d.- Global: %s %s\n", j, v.ArgDetails.Name, GetFormattedType(v))
+		*ast += fmt.Sprintf("\t\t%d.- Global: %s %s\n", j, v.ArgDetails.Name, GetFormattedType(prgrm, v))
 	}
 }
 
 // buildStrStructs is an auxiliary function for `toString`. It builds
 // string representation of all the structures defined in `pkg`.
-func buildStrStructs(pkg *CXPackage, ast *string) {
+func buildStrStructs(prgrm *CXProgram, pkg *CXPackage, ast *string) {
 	if len(pkg.Structs) > 0 {
 		*ast += "\tStructs\n"
 	}
@@ -77,7 +77,7 @@ func buildStrStructs(pkg *CXPackage, ast *string) {
 
 		for k, fld := range strct.Fields {
 			*ast += fmt.Sprintf("\t\t\t%d.- Field: %s %s\n",
-				k, fld.ArgDetails.Name, GetFormattedType(fld))
+				k, fld.ArgDetails.Name, GetFormattedType(prgrm, fld))
 		}
 
 		count++
@@ -86,7 +86,7 @@ func buildStrStructs(pkg *CXPackage, ast *string) {
 
 // buildStrFunctions is an auxiliary function for `toString`. It builds
 // string representation of all the functions defined in `pkg`.
-func buildStrFunctions(pkg *CXPackage, ast1 *string) {
+func buildStrFunctions(prgrm *CXProgram, pkg *CXPackage, ast1 *string) {
 	if len(pkg.Functions) > 0 {
 		*ast1 += "\tFunctions\n"
 	}
@@ -105,8 +105,8 @@ func buildStrFunctions(pkg *CXPackage, ast1 *string) {
 
 		var inps bytes.Buffer
 		var outs bytes.Buffer
-		getFormattedParam(fn.Inputs, pkg, &inps)
-		getFormattedParam(fn.Outputs, pkg, &outs)
+		getFormattedParam(prgrm, fn.Inputs, pkg, &inps)
+		getFormattedParam(prgrm, fn.Outputs, pkg, &outs)
 
 		*ast1 += fmt.Sprintf("\t\t%d.- Function: %s (%s) (%s)\n",
 			j, fn.Name, inps.String(), outs.String())
@@ -134,8 +134,8 @@ func buildStrFunctions(pkg *CXPackage, ast1 *string) {
 				}
 			}
 
-			getFormattedParam(expr.Inputs, pkg, &inps)
-			getFormattedParam(expr.Outputs, pkg, &outs)
+			getFormattedParam(prgrm, expr.Inputs, pkg, &inps)
+			getFormattedParam(prgrm, expr.Outputs, pkg, &outs)
 
 			if expr.Operator != nil {
 				assignOp := ""
@@ -160,7 +160,7 @@ func buildStrFunctions(pkg *CXPackage, ast1 *string) {
 						k,
 						lbl,
 						expr.Outputs[0].ArgDetails.Name,
-						GetFormattedType(out))
+						GetFormattedType(prgrm, out))
 				}
 			}
 		}
@@ -183,9 +183,9 @@ func BuildStrPackages(prgrm *CXProgram, ast *string) {
 		*ast += fmt.Sprintf("%d.- Package: %s\n", i, pkg.Name)
 
 		buildStrImports(pkg, ast)
-		buildStrGlobals(pkg, ast)
-		buildStrStructs(pkg, ast)
-		buildStrFunctions(pkg, ast)
+		buildStrGlobals(prgrm, pkg, ast)
+		buildStrStructs(prgrm, pkg, ast)
+		buildStrFunctions(prgrm, pkg, ast)
 
 		i++
 	}
@@ -195,7 +195,7 @@ func BuildStrPackages(prgrm *CXProgram, ast *string) {
 // name of a `CXExpression`'s input and output parameters (`CXArgument`s). Examples
 // of these formattings are "pkg.foo[0]", "&*foo.field1". The result is written to
 // `buf`.
-func getFormattedParam(params []*CXArgument, pkg *CXPackage, buf *bytes.Buffer) {
+func getFormattedParam(prgrm *CXProgram, params []*CXArgument, pkg *CXPackage, buf *bytes.Buffer) {
 	for i, param := range params {
 		elt := param.GetAssignmentElement()
 
@@ -206,56 +206,56 @@ func getFormattedParam(params []*CXArgument, pkg *CXPackage, buf *bytes.Buffer) 
 		}
 
 		if i == len(params)-1 {
-			buf.WriteString(fmt.Sprintf("%s %s", GetFormattedName(param, externalPkg), GetFormattedType(elt)))
+			buf.WriteString(fmt.Sprintf("%s %s", GetFormattedName(prgrm, param, externalPkg), GetFormattedType(prgrm, elt)))
 		} else {
-			buf.WriteString(fmt.Sprintf("%s %s, ", GetFormattedName(param, externalPkg), GetFormattedType(elt)))
+			buf.WriteString(fmt.Sprintf("%s %s, ", GetFormattedName(prgrm, param, externalPkg), GetFormattedType(prgrm, elt)))
 		}
 	}
 }
 
 // SignatureStringOfFunction returns the signature string of a function.
-func SignatureStringOfFunction(pkg *CXPackage, f *CXFunction) string {
+func SignatureStringOfFunction(prgrm *CXProgram, pkg *CXPackage, f *CXFunction) string {
 	var ins bytes.Buffer
 	var outs bytes.Buffer
-	getFormattedParam(f.Inputs, pkg, &ins)
-	getFormattedParam(f.Outputs, pkg, &outs)
+	getFormattedParam(prgrm, f.Inputs, pkg, &ins)
+	getFormattedParam(prgrm, f.Outputs, pkg, &outs)
 
 	return fmt.Sprintf("func %s(%s) (%s)",
 		f.Name, ins.String(), outs.String())
 }
 
-func getNonCollectionValue(fp types.Pointer, arg, elt *CXArgument, typ string) string {
+func getNonCollectionValue(prgrm *CXProgram, fp types.Pointer, arg, elt *CXArgument, typ string) string {
 	if arg.IsPointer() {
-		return fmt.Sprintf("%v", types.Read_ptr(PROGRAM.Memory, GetFinalOffset(fp, elt)))
+		return fmt.Sprintf("%v", types.Read_ptr(prgrm.Memory, GetFinalOffset(prgrm, fp, elt)))
 	}
 	if arg.IsSlice {
-		return fmt.Sprintf("%v", types.GetSlice_byte(PROGRAM.Memory, GetFinalOffset(fp, elt), GetSize(elt)))
+		return fmt.Sprintf("%v", types.GetSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, fp, elt), GetSize(elt)))
 	}
 	switch typ {
 	case "bool":
-		return fmt.Sprintf("%v", types.Read_bool(PROGRAM.Memory, GetFinalOffset(fp, elt)))
+		return fmt.Sprintf("%v", types.Read_bool(prgrm.Memory, GetFinalOffset(prgrm, fp, elt)))
 	case "str":
-		return fmt.Sprintf("%v", types.Read_str(PROGRAM.Memory, GetFinalOffset(fp, elt)))
+		return fmt.Sprintf("%v", types.Read_str(prgrm.Memory, GetFinalOffset(prgrm, fp, elt)))
 	case "i8":
-		return fmt.Sprintf("%v", types.Read_i8(PROGRAM.Memory, GetFinalOffset(fp, elt)))
+		return fmt.Sprintf("%v", types.Read_i8(prgrm.Memory, GetFinalOffset(prgrm, fp, elt)))
 	case "i16":
-		return fmt.Sprintf("%v", types.Read_i16(PROGRAM.Memory, GetFinalOffset(fp, elt)))
+		return fmt.Sprintf("%v", types.Read_i16(prgrm.Memory, GetFinalOffset(prgrm, fp, elt)))
 	case "i32":
-		return fmt.Sprintf("%v", types.Read_i32(PROGRAM.Memory, GetFinalOffset(fp, elt)))
+		return fmt.Sprintf("%v", types.Read_i32(prgrm.Memory, GetFinalOffset(prgrm, fp, elt)))
 	case "i64":
-		return fmt.Sprintf("%v", types.Read_i64(PROGRAM.Memory, GetFinalOffset(fp, elt)))
+		return fmt.Sprintf("%v", types.Read_i64(prgrm.Memory, GetFinalOffset(prgrm, fp, elt)))
 	case "ui8":
-		return fmt.Sprintf("%v", types.Read_ui8(PROGRAM.Memory, GetFinalOffset(fp, elt)))
+		return fmt.Sprintf("%v", types.Read_ui8(prgrm.Memory, GetFinalOffset(prgrm, fp, elt)))
 	case "ui16":
-		return fmt.Sprintf("%v", types.Read_ui16(PROGRAM.Memory, GetFinalOffset(fp, elt)))
+		return fmt.Sprintf("%v", types.Read_ui16(prgrm.Memory, GetFinalOffset(prgrm, fp, elt)))
 	case "ui32":
-		return fmt.Sprintf("%v", types.Read_ui32(PROGRAM.Memory, GetFinalOffset(fp, elt)))
+		return fmt.Sprintf("%v", types.Read_ui32(prgrm.Memory, GetFinalOffset(prgrm, fp, elt)))
 	case "ui64":
-		return fmt.Sprintf("%v", types.Read_ui64(PROGRAM.Memory, GetFinalOffset(fp, elt)))
+		return fmt.Sprintf("%v", types.Read_ui64(prgrm.Memory, GetFinalOffset(prgrm, fp, elt)))
 	case "f32":
-		return fmt.Sprintf("%v", types.Read_f32(PROGRAM.Memory, GetFinalOffset(fp, elt)))
+		return fmt.Sprintf("%v", types.Read_f32(prgrm.Memory, GetFinalOffset(prgrm, fp, elt)))
 	case "f64":
-		return fmt.Sprintf("%v", types.Read_f64(PROGRAM.Memory, GetFinalOffset(fp, elt)))
+		return fmt.Sprintf("%v", types.Read_f64(prgrm.Memory, GetFinalOffset(prgrm, fp, elt)))
 	default:
 		// then it's a struct
 		var val string
@@ -266,9 +266,9 @@ func getNonCollectionValue(fp types.Pointer, arg, elt *CXArgument, typ string) s
 		for c := 0; c < lFlds; c++ {
 			fld := elt.StructType.Fields[c]
 			if c == lFlds-1 {
-				val += fmt.Sprintf("%s: %s", fld.ArgDetails.Name, GetPrintableValue(fp+arg.Offset+off, fld))
+				val += fmt.Sprintf("%s: %s", fld.ArgDetails.Name, GetPrintableValue(prgrm, fp+arg.Offset+off, fld))
 			} else {
-				val += fmt.Sprintf("%s: %s, ", fld.ArgDetails.Name, GetPrintableValue(fp+arg.Offset+off, fld))
+				val += fmt.Sprintf("%s: %s, ", fld.ArgDetails.Name, GetPrintableValue(prgrm, fp+arg.Offset+off, fld))
 			}
 			off += fld.TotalSize
 		}
@@ -278,12 +278,12 @@ func getNonCollectionValue(fp types.Pointer, arg, elt *CXArgument, typ string) s
 }
 
 // ReadSliceElements ...
-func ReadSliceElements(fp types.Pointer, arg, elt *CXArgument, sliceData []byte, size types.Pointer, typ string) string {
+func ReadSliceElements(prgrm *CXProgram, fp types.Pointer, arg, elt *CXArgument, sliceData []byte, size types.Pointer, typ string) string {
 	switch typ {
 	case "bool":
 		return fmt.Sprintf("%v", types.Read_bool(sliceData, 0))
 	case "str":
-		return fmt.Sprintf("%v", types.Read_str(PROGRAM.Memory, types.Read_ptr(sliceData, 0)))
+		return fmt.Sprintf("%v", types.Read_str(prgrm.Memory, types.Read_ptr(sliceData, 0)))
 	case "i8":
 		return fmt.Sprintf("%v", types.Read_i8(sliceData, 0))
 	case "i16":
@@ -314,9 +314,9 @@ func ReadSliceElements(fp types.Pointer, arg, elt *CXArgument, sliceData []byte,
 		for c := 0; c < lFlds; c++ {
 			fld := elt.StructType.Fields[c]
 			if c == lFlds-1 {
-				val += fmt.Sprintf("%s: %s", fld.ArgDetails.Name, GetPrintableValue(fp+arg.Offset+off, fld))
+				val += fmt.Sprintf("%s: %s", fld.ArgDetails.Name, GetPrintableValue(prgrm, fp+arg.Offset+off, fld))
 			} else {
-				val += fmt.Sprintf("%s: %s, ", fld.ArgDetails.Name, GetPrintableValue(fp+arg.Offset+off, fld))
+				val += fmt.Sprintf("%s: %s, ", fld.ArgDetails.Name, GetPrintableValue(prgrm, fp+arg.Offset+off, fld))
 			}
 			off += fld.TotalSize
 		}
@@ -326,7 +326,7 @@ func ReadSliceElements(fp types.Pointer, arg, elt *CXArgument, sliceData []byte,
 }
 
 // GetPrintableValue ...
-func GetPrintableValue(fp types.Pointer, arg *CXArgument) string {
+func GetPrintableValue(prgrm *CXProgram, fp types.Pointer, arg *CXArgument) string {
 	var typ string
 	elt := arg.GetAssignmentElement()
 	if elt.StructType != nil {
@@ -344,16 +344,16 @@ func GetPrintableValue(fp types.Pointer, arg *CXArgument) string {
 
 			if arg.IsSlice {
 				// for slices
-				sliceOffset := GetSliceOffset(fp, arg)
+				sliceOffset := GetSliceOffset(prgrm, fp, arg)
 
-				sliceData := GetSlice(sliceOffset, elt.Size)
+				sliceData := GetSlice(prgrm, sliceOffset, elt.Size)
 				if len(sliceData) != 0 {
 					sliceLen := types.Read_ptr(sliceData, 0)
 					for c := types.Pointer(0); c < sliceLen; c++ {
 						if c == sliceLen-1 {
-							val += ReadSliceElements(sliceOffset+constants.SLICE_HEADER_SIZE+types.OBJECT_HEADER_SIZE+c*elt.Size, arg, elt, sliceData[types.POINTER_SIZE+c*elt.Size:], elt.Size, typ)
+							val += ReadSliceElements(prgrm, sliceOffset+constants.SLICE_HEADER_SIZE+types.OBJECT_HEADER_SIZE+c*elt.Size, arg, elt, sliceData[types.POINTER_SIZE+c*elt.Size:], elt.Size, typ)
 						} else {
-							val += ReadSliceElements(sliceOffset+constants.SLICE_HEADER_SIZE+types.OBJECT_HEADER_SIZE+c*elt.Size, arg, elt, sliceData[types.POINTER_SIZE+c*elt.Size:], elt.Size, typ) + ", "
+							val += ReadSliceElements(prgrm, sliceOffset+constants.SLICE_HEADER_SIZE+types.OBJECT_HEADER_SIZE+c*elt.Size, arg, elt, sliceData[types.POINTER_SIZE+c*elt.Size:], elt.Size, typ) + ", "
 						}
 
 					}
@@ -363,9 +363,9 @@ func GetPrintableValue(fp types.Pointer, arg *CXArgument) string {
 				// for Arrays
 				for c := types.Pointer(0); c < elt.Lengths[0]; c++ {
 					if c == elt.Lengths[0]-1 {
-						val += getNonCollectionValue(fp+c*elt.Size, arg, elt, typ)
+						val += getNonCollectionValue(prgrm, fp+c*elt.Size, arg, elt, typ)
 					} else {
-						val += getNonCollectionValue(fp+c*elt.Size, arg, elt, typ) + ", "
+						val += getNonCollectionValue(prgrm, fp+c*elt.Size, arg, elt, typ) + ", "
 					}
 
 				}
@@ -395,7 +395,7 @@ func GetPrintableValue(fp types.Pointer, arg *CXArgument) string {
 			}
 
 			// adding first element because of formatting reasons
-			val += getNonCollectionValue(fp, arg, elt, typ)
+			val += getNonCollectionValue(prgrm, fp, arg, elt, typ)
 			for c := types.Pointer(1); c < finalSize; c++ {
 				closeCount := 0
 				for _, l := range lens {
@@ -414,9 +414,9 @@ func GetPrintableValue(fp types.Pointer, arg *CXArgument) string {
 						val += "["
 					}
 
-					val += getNonCollectionValue(fp+c*elt.Size, arg, elt, typ)
+					val += getNonCollectionValue(prgrm, fp+c*elt.Size, arg, elt, typ)
 				} else {
-					val += " " + getNonCollectionValue(fp+c*elt.Size, arg, elt, typ)
+					val += " " + getNonCollectionValue(prgrm, fp+c*elt.Size, arg, elt, typ)
 				}
 			}
 			for range lens {
@@ -427,7 +427,7 @@ func GetPrintableValue(fp types.Pointer, arg *CXArgument) string {
 		return val
 	}
 
-	return getNonCollectionValue(fp, arg, elt, typ)
+	return getNonCollectionValue(prgrm, fp, arg, elt, typ)
 }
 
 // filePathWalkDir scans all the files in a directory. It will automatically
@@ -547,7 +547,7 @@ func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCod
 
 // getFormattedDerefs is an auxiliary function for `GetFormattedName`. This
 // function formats indexing and pointer dereferences associated to `arg`.
-func getFormattedDerefs(arg *CXArgument, includePkg bool) string {
+func getFormattedDerefs(prgrm *CXProgram, arg *CXArgument, includePkg bool) string {
 	name := ""
 	// Checking if we should include `arg`'s package name.
 	if includePkg {
@@ -575,9 +575,9 @@ func getFormattedDerefs(arg *CXArgument, includePkg bool) string {
 		// Checking if the value is in data segment.
 		// If this is the case, we can safely display it.
 		idxValue := ""
-		if idx.Offset > PROGRAM.Stack.Size {
+		if idx.Offset > prgrm.Stack.Size {
 			// Then it's a literal.
-			idxI32 := types.Read_ptr(PROGRAM.Memory, idx.Offset)
+			idxI32 := types.Read_ptr(prgrm.Memory, idx.Offset)
 			idxValue = fmt.Sprintf("%d", idxI32)
 		} else {
 			// Then let's just print the variable name.
@@ -594,13 +594,13 @@ func getFormattedDerefs(arg *CXArgument, includePkg bool) string {
 // depicts how an argument is being accessed. Example outputs: "foo[3]",
 // "**bar", "foo.bar[0]". If `includePkg` is `true`, the argument name will
 // include the package name that contains it, such as in "pkg.foo".
-func GetFormattedName(arg *CXArgument, includePkg bool) string {
+func GetFormattedName(prgrm *CXProgram, arg *CXArgument, includePkg bool) string {
 	// Getting formatted name which does not include fields.
-	name := getFormattedDerefs(arg, includePkg)
+	name := getFormattedDerefs(prgrm, arg, includePkg)
 
 	// Adding as suffixes all the fields.
 	for _, fld := range arg.Fields {
-		name = fmt.Sprintf("%s.%s", name, getFormattedDerefs(fld, includePkg))
+		name = fmt.Sprintf("%s.%s", name, getFormattedDerefs(prgrm, fld, includePkg))
 	}
 
 	// Checking if we're referencing `arg`.
@@ -614,10 +614,10 @@ func GetFormattedName(arg *CXArgument, includePkg bool) string {
 // formatParameters returns a string containing a list of the formatted types of
 // each of `params`, enclosed in parethesis. This function is used only when
 // formatting functions as first-class objects.
-func formatParameters(params []*CXArgument) string {
+func formatParameters(prgrm *CXProgram, params []*CXArgument) string {
 	types := "("
 	for i, param := range params {
-		types += GetFormattedType(param)
+		types += GetFormattedType(prgrm, param)
 		if i != len(params)-1 {
 			types += ", "
 		}
@@ -628,7 +628,7 @@ func formatParameters(params []*CXArgument) string {
 }
 
 // GetFormattedType builds a string with the CXGO type representation of `arg`.
-func GetFormattedType(arg *CXArgument) string {
+func GetFormattedType(prgrm *CXProgram, arg *CXArgument) string {
 	typ := ""
 	elt := arg.GetAssignmentElement()
 
@@ -666,11 +666,11 @@ func GetFormattedType(arg *CXArgument) string {
 					if elt.IsLocalDeclaration {
 						// Then it's a local variable, which can be assigned to a
 						// lambda function, for example.
-						typ += formatParameters(elt.Inputs)
-						typ += formatParameters(elt.Outputs)
+						typ += formatParameters(prgrm, elt.Inputs)
+						typ += formatParameters(prgrm, elt.Outputs)
 					} else {
 						// Then it refers to a named function defined in a package.
-						pkg, err := PROGRAM.GetPackage(arg.ArgDetails.Package.Name)
+						pkg, err := prgrm.GetPackage(arg.ArgDetails.Package.Name)
 						if err != nil {
 							println(CompilationError(elt.ArgDetails.FileName, elt.ArgDetails.FileLine), err.Error())
 							os.Exit(constants.CX_COMPILATION_ERROR)
@@ -681,8 +681,8 @@ func GetFormattedType(arg *CXArgument) string {
 							// println(CompilationError(elt.FileName, elt.FileLine), err.ProgramError())
 							// os.Exit(CX_COMPILATION_ERROR)
 							// Adding list of inputs and outputs types.
-							typ += formatParameters(fn.Inputs)
-							typ += formatParameters(fn.Outputs)
+							typ += formatParameters(prgrm, fn.Inputs)
+							typ += formatParameters(prgrm, fn.Outputs)
 						}
 					}
 				}
@@ -694,10 +694,10 @@ func GetFormattedType(arg *CXArgument) string {
 }
 
 // SignatureStringOfStruct returns the signature string of a struct.
-func SignatureStringOfStruct(s *CXStruct) string {
+func SignatureStringOfStruct(prgrm *CXProgram, s *CXStruct) string {
 	fields := ""
 	for _, f := range s.Fields {
-		fields += fmt.Sprintf(" %s %s;", f.ArgDetails.Name, GetFormattedType(f))
+		fields += fmt.Sprintf(" %s %s;", f.ArgDetails.Name, GetFormattedType(prgrm, f))
 	}
 
 	return fmt.Sprintf("%s struct {%s }", s.Name, fields)

@@ -17,13 +17,13 @@ func opIdentity(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 
 	//TODO: Delete
 	if elt.DoesEscape {
-		outputs[0].Set_ptr(types.AllocWrite_obj_data(prgrm.Memory, inputs[0].Get_bytes()))
+		outputs[0].Set_ptr(prgrm, types.AllocWrite_obj_data(prgrm.Memory, inputs[0].Get_bytes(prgrm)))
 	} else {
 		switch elt.PassBy {
 		case constants.PASSBY_VALUE:
-			outputs[0].Set_bytes(inputs[0].Get_bytes())
+			outputs[0].Set_bytes(prgrm, inputs[0].Get_bytes(prgrm))
 		case constants.PASSBY_REFERENCE:
-			outputs[0].Set_ptr(inputs[0].Offset)
+			outputs[0].Set_ptr(prgrm, inputs[0].Offset)
 		}
 	}
 }
@@ -38,7 +38,7 @@ func opJmp(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	call := prgrm.GetCurrentCall()
 	expr := inputs[0].Expr
 
-	if inputs[0].Get_bool() {
+	if inputs[0].Get_bool(prgrm) {
 		call.Line = call.Line + expr.ThenLines
 	} else {
 		call.Line = call.Line + expr.ElseLines
@@ -49,7 +49,7 @@ func opAbsJmp(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue)
 	call := prgrm.GetCurrentCall()
 	expr := inputs[0].Expr
 
-	if inputs[0].Get_bool() {
+	if inputs[0].Get_bool(prgrm) {
 		call.Line = expr.ThenLines
 	} else {
 		call.Line = expr.ElseLines

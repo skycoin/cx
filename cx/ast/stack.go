@@ -28,14 +28,14 @@ func (cxprogram *CXProgram) PrintStack() {
 
 		for _, inp := range op.Inputs {
 			fmt.Println("ProgramInput")
-			fmt.Printf("\t%s : %s() : %s\n", stackValueHeader(inp.ArgDetails.FileName, inp.ArgDetails.FileLine), op.Name, GetPrintableValue(fp, inp))
+			fmt.Printf("\t%s : %s() : %s\n", stackValueHeader(inp.ArgDetails.FileName, inp.ArgDetails.FileLine), op.Name, GetPrintableValue(cxprogram, fp, inp))
 
 			dupNames = append(dupNames, inp.ArgDetails.Package.Name+inp.ArgDetails.Name)
 		}
 
 		for _, out := range op.Outputs {
 			fmt.Println("ProgramOutput")
-			fmt.Printf("\t%s : %s() : %s\n", stackValueHeader(out.ArgDetails.FileName, out.ArgDetails.FileLine), op.Name, GetPrintableValue(fp, out))
+			fmt.Printf("\t%s : %s() : %s\n", stackValueHeader(out.ArgDetails.FileName, out.ArgDetails.FileLine), op.Name, GetPrintableValue(cxprogram, fp, out))
 
 			dupNames = append(dupNames, out.ArgDetails.Package.Name+out.ArgDetails.Name)
 		}
@@ -61,7 +61,7 @@ func (cxprogram *CXProgram) PrintStack() {
 				// fmt.Println("\t", inp.Name, "\t", ":", "\t", GetPrintableValue(fp, inp))
 				// exprs += fmt.Sprintln("\t", stackValueHeader(inp.FileName, inp.FileLine), "\t", ":", "\t", GetPrintableValue(fp, inp))
 
-				exprs += fmt.Sprintf("\t%s : %s() : %s\n", stackValueHeader(inp.ArgDetails.FileName, inp.ArgDetails.FileLine), ExprOpName(expr), GetPrintableValue(fp, inp))
+				exprs += fmt.Sprintf("\t%s : %s() : %s\n", stackValueHeader(inp.ArgDetails.FileName, inp.ArgDetails.FileLine), ExprOpName(expr), GetPrintableValue(cxprogram, fp, inp))
 
 				dupNames = append(dupNames, inp.ArgDetails.Package.Name+inp.ArgDetails.Name)
 			}
@@ -84,7 +84,7 @@ func (cxprogram *CXProgram) PrintStack() {
 				// fmt.Println("\t", out.Name, "\t", ":", "\t", GetPrintableValue(fp, out))
 				// exprs += fmt.Sprintln("\t", stackValueHeader(out.FileName, out.FileLine), ":", GetPrintableValue(fp, out))
 
-				exprs += fmt.Sprintf("\t%s : %s() : %s\n", stackValueHeader(out.ArgDetails.FileName, out.ArgDetails.FileLine), ExprOpName(expr), GetPrintableValue(fp, out))
+				exprs += fmt.Sprintf("\t%s : %s() : %s\n", stackValueHeader(out.ArgDetails.FileName, out.ArgDetails.FileLine), ExprOpName(expr), GetPrintableValue(cxprogram, fp, out))
 
 				dupNames = append(dupNames, out.ArgDetails.Package.Name+out.ArgDetails.Name)
 			}
