@@ -19,6 +19,9 @@ type CXFunction struct {
 	Outputs     []*CXArgument   // Output parameters from the function
 	Expressions []*CXExpression // Expressions, including control flow statements, in the function
 
+	// To be used for new CX AST format
+	Operations []*CXOperation
+
 	//TODO: Better Comment for this
 	LineCount int // number of expressions, pre-computed for performance
 
