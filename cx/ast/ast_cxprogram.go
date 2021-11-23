@@ -38,6 +38,11 @@ type CXProgram struct {
 	// Used by the REPL and cxgo
 	CurrentPackage *CXPackage // Represents the currently active package in the REPL or when parsing a CX file.
 	ProgramError   error
+
+	// For new CX AST arrays
+	AtomicOps []CXAtomicOperator
+	CXArgs    []CXArgument
+	CXLines   []CXLine
 }
 
 type StackSegmentStruct struct {
