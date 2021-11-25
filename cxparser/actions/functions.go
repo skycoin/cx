@@ -559,7 +559,7 @@ func checkMatchParamTypes(prgrm *ast.CXProgram, expr *ast.CXExpression, expected
 
 func CheckTypes(expr *ast.CXExpression) {
 	if expr.Operator != nil {
-		opName := ast.ExprOpName(expr)
+		opName := expr.GetOperatorName()
 
 		// checking if number of inputs is less than the required number of inputs
 		if len(expr.Inputs) != len(expr.Operator.Inputs) {

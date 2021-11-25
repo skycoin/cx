@@ -99,6 +99,14 @@ func (expr *CXExpression) GetInputs() ([]*CXArgument, error) {
 }
 */
 
+func (expr *CXExpression) GetOperatorName() string {
+	if expr.Operator.IsBuiltIn() {
+		return OpNames[expr.Operator.AtomicOPCode]
+	}
+	return expr.Operator.Name
+
+}
+
 // ----------------------------------------------------------------
 //                     `CXExpression` Member handling
 

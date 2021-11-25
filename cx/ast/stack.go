@@ -61,7 +61,7 @@ func (cxprogram *CXProgram) PrintStack() {
 				// fmt.Println("\t", inp.Name, "\t", ":", "\t", GetPrintableValue(fp, inp))
 				// exprs += fmt.Sprintln("\t", stackValueHeader(inp.FileName, inp.FileLine), "\t", ":", "\t", GetPrintableValue(fp, inp))
 
-				exprs += fmt.Sprintf("\t%s : %s() : %s\n", stackValueHeader(inp.ArgDetails.FileName, inp.ArgDetails.FileLine), ExprOpName(expr), GetPrintableValue(cxprogram, fp, inp))
+				exprs += fmt.Sprintf("\t%s : %s() : %s\n", stackValueHeader(inp.ArgDetails.FileName, inp.ArgDetails.FileLine), expr.GetOperatorName(), GetPrintableValue(cxprogram, fp, inp))
 
 				dupNames = append(dupNames, inp.ArgDetails.Package.Name+inp.ArgDetails.Name)
 			}
@@ -84,7 +84,7 @@ func (cxprogram *CXProgram) PrintStack() {
 				// fmt.Println("\t", out.Name, "\t", ":", "\t", GetPrintableValue(fp, out))
 				// exprs += fmt.Sprintln("\t", stackValueHeader(out.FileName, out.FileLine), ":", GetPrintableValue(fp, out))
 
-				exprs += fmt.Sprintf("\t%s : %s() : %s\n", stackValueHeader(out.ArgDetails.FileName, out.ArgDetails.FileLine), ExprOpName(expr), GetPrintableValue(cxprogram, fp, out))
+				exprs += fmt.Sprintf("\t%s : %s() : %s\n", stackValueHeader(out.ArgDetails.FileName, out.ArgDetails.FileLine), expr.GetOperatorName(), GetPrintableValue(cxprogram, fp, out))
 
 				dupNames = append(dupNames, out.ArgDetails.Package.Name+out.ArgDetails.Name)
 			}
@@ -94,13 +94,4 @@ func (cxprogram *CXProgram) PrintStack() {
 			fmt.Println("Expressions\n", exprs)
 		}
 	}
-}
-
-// TODO: Deprecate
-func ExprOpName(expr *CXExpression) string {
-	if expr.Operator.IsBuiltIn() {
-		return OpNames[expr.Operator.AtomicOPCode]
-	}
-	return expr.Operator.Name
-
 }
