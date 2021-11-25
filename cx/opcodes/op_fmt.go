@@ -96,7 +96,7 @@ func buildString(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVal
 			typ := ""
 			_ = typ
 			if elt.StructType != nil {
-				// then it's custom type
+				// then it's struct type
 				typ = elt.StructType.Name
 			} else {
 				// then it's native type

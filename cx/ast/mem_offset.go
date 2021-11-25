@@ -53,7 +53,7 @@ func GetDerefSize(arg *CXArgument, index int, derefPointer bool, derefArray bool
 		return types.POINTER_SIZE
 	}
 	if arg.StructType != nil {
-		return arg.StructType.Size //TODO: WTF is a custom type?
+		return arg.StructType.Size
 	}
 	if derefPointer {
 		return arg.TotalSize
@@ -67,7 +67,7 @@ func GetDerefSizeSlice(arg *CXArgument) types.Pointer {
 		return types.POINTER_SIZE
 	}
 	if arg.StructType != nil {
-		return arg.StructType.Size //TODO: WTF is a custom type?
+		return arg.StructType.Size
 	}
 	return arg.Size
 }

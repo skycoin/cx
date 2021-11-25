@@ -105,7 +105,7 @@ type CXArgument struct {
 	// Size determines the size of the basic type. For example, if
 	// the `CXArgument` is of type `TYPE_STRUCT` (i.e. a
 	// user-defined type or struct) and the size of the struct
-	// representing the custom type is 10 bytes, then `Size == 10`.
+	// representing the struct type is 10 bytes, then `Size == 10`.
 	Size types.Pointer
 
 	// TotalSize represents how many bytes are referenced by the

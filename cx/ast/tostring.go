@@ -330,7 +330,7 @@ func GetPrintableValue(prgrm *CXProgram, fp types.Pointer, arg *CXArgument) stri
 	var typ string
 	elt := arg.GetAssignmentElement()
 	if elt.StructType != nil {
-		// then it's custom type
+		// then it's struct type
 		typ = elt.StructType.Name
 	} else {
 		// then it's native type
@@ -651,7 +651,7 @@ func GetFormattedType(prgrm *CXProgram, arg *CXArgument) string {
 		default:
 			// base type
 			if elt.StructType != nil {
-				// then it's custom type
+				// then it's struct type
 				typ += elt.StructType.Name
 			} else {
 				if elt.Type == types.POINTER {
