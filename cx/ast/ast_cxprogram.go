@@ -46,9 +46,9 @@ type CXProgram struct {
 }
 
 type StackSegmentStruct struct {
-	//TODO: Add StackStartsAt
-	Size    types.Pointer // This field stores the size of a CX program's stack
-	Pointer types.Pointer // At what byte the current stack frame is
+	Size     types.Pointer // This field stores the size of a CX program's stack
+	StartsAt types.Pointer // Offset at which the stack segment starts in a CX program's memory
+	Pointer  types.Pointer // At what byte the current stack frame is
 }
 
 type DataSegmentStruct struct {
