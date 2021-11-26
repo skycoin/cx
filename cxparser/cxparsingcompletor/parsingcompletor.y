@@ -113,6 +113,8 @@ build-parser: ## Generate lexer and parser for CX grammar
                         /* Pointers */
                         ADDR
 
+                        yyDefault
+
 %type   <i32>           int_value
 
 %type   <tok>           after_period
@@ -234,18 +236,18 @@ selector:
 global_declaration:
                 VAR declarator declaration_specifiers SEMICOLON
                 {
-			actions.DeclareGlobal($2, $3, nil, false)
+			actions.DeclareGlobal(actions.AST,$2, $3, nil, false)
                 }
         |       VAR declarator declaration_specifiers ASSIGN initializer SEMICOLON
                 {
-			actions.DeclareGlobal($2, $3, $5, true)
+			actions.DeclareGlobal(actions.AST,$2, $3, $5, true)
                 }
                 ;
 
 struct_declaration:
                 TYPE IDENTIFIER STRUCT struct_fields
                 {
-		        actions.DeclareStruct($2, $4)
+		        actions.DeclareStruct(actions.AST,$2, $4)
                 }
                 ;
 
@@ -269,7 +271,7 @@ fields:         parameter_declaration SEMICOLON
 package_declaration:
                 PACKAGE IDENTIFIER SEMICOLON
                 {
-			actions.DeclarePackage($2)
+			actions.DeclarePackage(actions.AST,$2)
                 }
                 ;
 
@@ -283,12 +285,12 @@ import_declaration:
 function_header:
                 FUNC IDENTIFIER
                 {
-			yylval.line = 0
-			$$ = actions.FunctionHeader($2, nil, false)
+			// yylval.line = 0
+			$$ = actions.FunctionHeader(actions.AST,$2, nil, false)
                 }
         |       FUNC LPAREN parameter_type_list RPAREN IDENTIFIER
                 {
-			$$ = actions.FunctionHeader($5, $3, true)
+			$$ = actions.FunctionHeader(actions.AST,$5, $3, true)
                 }
         ;
 
@@ -302,11 +304,11 @@ function_parameters:
 function_declaration:
                 function_header function_parameters compound_statement
                 {
-			actions.FunctionDeclaration($1, $2, nil, $3)
+			actions.FunctionDeclaration(actions.AST,$1, $2, nil, $3)
                 }
         |       function_header function_parameters function_parameters compound_statement
                 {
-			actions.FunctionDeclaration($1, $2, $3, $4)
+			actions.FunctionDeclaration(actions.AST,$1, $2, $3, $4)
                 }
         ;
 
@@ -357,7 +359,7 @@ direct_declarator:
 
 id_list:	IDENTIFIER
 		{
-			arg := actions.DeclarationSpecifiersStruct($1, "", false, actions.CurrentFile, actions.LineNo)
+			arg := actions.DeclarationSpecifiersStruct(actions.AST,$1, "", false, actions.CurrentFile, actions.LineNo)
 			$$ = []*ast.CXArgument{arg}
 		}
 	|	type_specifier
@@ -367,7 +369,7 @@ id_list:	IDENTIFIER
 		}
 	|	id_list COMMA IDENTIFIER
 		{
-			arg := actions.DeclarationSpecifiersStruct($3, "", false, actions.CurrentFile, actions.LineNo)
+			arg := actions.DeclarationSpecifiersStruct(actions.AST,$3, "", false, actions.CurrentFile, actions.LineNo)
 			$$ = append($1, arg)
 		}
 	|	id_list COMMA type_specifier
@@ -420,7 +422,7 @@ declaration_specifiers:
                 }
         |       IDENTIFIER
                 {
-			$$ = actions.DeclarationSpecifiersStruct($1, "", false, actions.CurrentFile, actions.LineNo)
+			$$ = actions.DeclarationSpecifiersStruct(actions.AST,$1, "", false, actions.CurrentFile, actions.LineNo)
                 }
         |       indexing_literal type_specifier
                 {
@@ -429,20 +431,20 @@ declaration_specifiers:
                 }
         |       indexing_literal IDENTIFIER
                 {
-			strct := actions.DeclarationSpecifiersStruct($2, "", false, actions.CurrentFile, actions.LineNo)
+			strct := actions.DeclarationSpecifiersStruct(actions.AST,$2, "", false, actions.CurrentFile, actions.LineNo)
 			$$ = actions.DeclarationSpecifiers(strct, types.Cast_sint_to_sptr($1), constants.DECL_ARRAY)
                 }
         |       IDENTIFIER PERIOD IDENTIFIER
                 {
-			$$ = actions.DeclarationSpecifiersStruct($3, $1, true, actions.CurrentFile, actions.LineNo)
+			$$ = actions.DeclarationSpecifiersStruct(actions.AST,$3, $1, true, actions.CurrentFile, actions.LineNo)
                 }
 	|       type_specifier PERIOD IDENTIFIER
                 {
-			$$ = actions.DeclarationSpecifiersStruct($3, types.Code($1).Name(), true, actions.CurrentFile, actions.LineNo)
+			$$ = actions.DeclarationSpecifiersStruct(actions.AST,$3, types.Code($1).Name(), true, actions.CurrentFile, actions.LineNo)
                 }
         /* |       package_identifier */
         /*         { */
-	/* 		$$ = actions.DeclarationSpecifiersStruct($1[1], $1[0], true) */
+	/* 		$$ = actions.DeclarationSpecifiersStruct(actions.AST,$1[1], $1[0], true) */
         /*         } */
 		/* type_specifier declaration_specifiers */
 	/* |       type_specifier */
@@ -486,17 +488,17 @@ struct_literal_fields:
         |       IDENTIFIER COLON constant_expression
                 {
 			if $3[0].IsStructLiteral() {
-				$$ = actions.StructLiteralAssignment([]*ast.CXExpression{actions.StructLiteralFields($1)}, $3)
+				$$ = actions.StructLiteralAssignment([]*ast.CXExpression{actions.StructLiteralFields(actions.AST,$1)}, $3)
 			} else {
-				$$ = actions.Assignment([]*ast.CXExpression{actions.StructLiteralFields($1)}, "=", $3)
+				$$ = actions.Assignment(actions.AST,[]*ast.CXExpression{actions.StructLiteralFields(actions.AST,$1)}, "=", $3)
 			}
                 }
         |       struct_literal_fields COMMA IDENTIFIER COLON constant_expression
                 {
 			if $5[0].IsStructLiteral() {
-				$$ = append($1, actions.StructLiteralAssignment([]*ast.CXExpression{actions.StructLiteralFields($3)}, $5)...)
+				$$ = append($1, actions.StructLiteralAssignment([]*ast.CXExpression{actions.StructLiteralFields(actions.AST,$3)}, $5)...)
 			} else {
-				$$ = append($1, actions.Assignment([]*ast.CXExpression{actions.StructLiteralFields($3)}, "=", $5)...)
+				$$ = append($1, actions.Assignment(actions.AST,[]*ast.CXExpression{actions.StructLiteralFields(actions.AST,$3)}, "=", $5)...)
 			}
                 }
                 ;
@@ -548,7 +550,7 @@ array_literal_expression:
                 }
         |       indexing_literal type_specifier LBRACE array_literal_expression_list RBRACE
                 {
-			$$ = actions.ArrayLiteralExpression(types.Cast_sint_to_sptr($1), types.Code($2), $4)
+			$$ = actions.ArrayLiteralExpression(actions.AST,types.Cast_sint_to_sptr($1), types.Code($2), $4)
                 }
         |       indexing_literal type_specifier LBRACE RBRACE
                 {
@@ -587,7 +589,7 @@ slice_literal_expression:
                 }
         |       LBRACK RBRACK type_specifier LBRACE slice_literal_expression_list RBRACE
                 {
-			$$ = actions.SliceLiteralExpression(types.Code($3), $5)
+			$$ = actions.SliceLiteralExpression(actions.AST,types.Code($3), $5)
                 }
         |       LBRACK RBRACK type_specifier LBRACE RBRACE
                 {
@@ -659,18 +661,18 @@ infer_actions:
 
 infer_clauses:
                 {
-			$$ = actions.SliceLiteralExpression(types.AFF, nil)
+			$$ = actions.SliceLiteralExpression(actions.AST,types.AFF, nil)
                 }
         |       infer_actions
                 {
 			var exprs []*ast.CXExpression
 			for _, str := range $1 {
-				expr := actions.WritePrimary(types.AFF, encoder.Serialize(str), false)
+				expr := actions.WritePrimary(actions.AST,types.AFF, encoder.Serialize(str), false)
 				expr[len(expr) - 1].ExpressionType = ast.CXEXPR_ARRAY_LITERAL
 				exprs = append(exprs, expr...)
 			}
 			
-			$$ = actions.SliceLiteralExpression(types.AFF, exprs)
+			$$ = actions.SliceLiteralExpression(actions.AST,types.AFF, exprs)
                 }
                 ;
 
@@ -688,7 +690,7 @@ int_value:
 primary_expression:
                 IDENTIFIER
                 {
-			$$ = actions.PrimaryIdentifier($1)
+			$$ = actions.PrimaryIdentifier(actions.AST,$1)
                 }
 	|	FUNC LPAREN RPAREN
 		{
@@ -700,52 +702,52 @@ primary_expression:
                 }
         |       STRING_LITERAL
                 {
-			$$ = actions.WritePrimary(types.STR, types.Make_obj([]byte($1)), false)
+			$$ = actions.WritePrimary(actions.AST,types.STR, types.Make_obj([]byte($1)), false)
                 }
         |       BOOLEAN_LITERAL
                 {
-			exprs := actions.WritePrimary(types.BOOL, encoder.Serialize($1), false)
+			exprs := actions.WritePrimary(actions.AST,types.BOOL, encoder.Serialize($1), false)
 			$$ = exprs
                 }
         |       BYTE_LITERAL
                 {
-			$$ = actions.WritePrimary(types.I8, encoder.Serialize($1), false)
+			$$ = actions.WritePrimary(actions.AST,types.I8, encoder.Serialize($1), false)
                 }
         |       SHORT_LITERAL
                 {
-			$$ = actions.WritePrimary(types.I16, encoder.Serialize($1), false)
+			$$ = actions.WritePrimary(actions.AST,types.I16, encoder.Serialize($1), false)
                 }
         |       INT_LITERAL
                 {
-			$$ = actions.WritePrimary(types.I32, encoder.Serialize($1), false)
+			$$ = actions.WritePrimary(actions.AST,types.I32, encoder.Serialize($1), false)
                 }
         |       LONG_LITERAL
                 {
-			$$ = actions.WritePrimary(types.I64, encoder.Serialize($1), false)
+			$$ = actions.WritePrimary(actions.AST,types.I64, encoder.Serialize($1), false)
                 }
         |       UNSIGNED_BYTE_LITERAL
                 {
-			$$ = actions.WritePrimary(types.UI8, encoder.Serialize($1), false)
+			$$ = actions.WritePrimary(actions.AST,types.UI8, encoder.Serialize($1), false)
                 }
         |       UNSIGNED_SHORT_LITERAL
                 {
-			$$ = actions.WritePrimary(types.UI16, encoder.Serialize($1), false)
+			$$ = actions.WritePrimary(actions.AST,types.UI16, encoder.Serialize($1), false)
                 }
         |       UNSIGNED_INT_LITERAL
                 {
-			$$ = actions.WritePrimary(types.UI32, encoder.Serialize($1), false)
+			$$ = actions.WritePrimary(actions.AST,types.UI32, encoder.Serialize($1), false)
                 }
         |       UNSIGNED_LONG_LITERAL
                 {
-			$$ = actions.WritePrimary(types.UI64, encoder.Serialize($1), false)
+			$$ = actions.WritePrimary(actions.AST,types.UI64, encoder.Serialize($1), false)
                 }
         |       FLOAT_LITERAL
                 {
-			$$ = actions.WritePrimary(types.F32, encoder.Serialize($1), false)
+			$$ = actions.WritePrimary(actions.AST,types.F32, encoder.Serialize($1), false)
                 }
         |       DOUBLE_LITERAL
                 {
-			$$ = actions.WritePrimary(types.F64, encoder.Serialize($1), false)
+			$$ = actions.WritePrimary(actions.AST,types.F64, encoder.Serialize($1), false)
                 }
         |       LPAREN expression RPAREN
                 { $$ = $2 }
@@ -774,27 +776,27 @@ postfix_expression:
                 }
         |       type_specifier PERIOD after_period
                 {
-			$$ = actions.PostfixExpressionNative(types.Code($1), $3)
+			$$ = actions.PostfixExpressionNative(actions.AST,types.Code($1), $3)
                 }
 	|       postfix_expression LPAREN RPAREN
                 {
-			$$ = actions.PostfixExpressionEmptyFunCall($1)
+			$$ = actions.PostfixExpressionEmptyFunCall(actions.AST,$1)
                 }
 	|       postfix_expression LPAREN argument_expression_list RPAREN
                 {
-			$$ = actions.PostfixExpressionFunCall($1, $3)
+			$$ = actions.PostfixExpressionFunCall(actions.AST,$1, $3)
                 }
 	|       postfix_expression INC_OP
                 {
-			$$ = actions.PostfixExpressionIncDec($1, true)
+			$$ = actions.PostfixExpressionIncDec(actions.AST,$1, true)
                 }
         |       postfix_expression DEC_OP
                 {
-			$$ = actions.PostfixExpressionIncDec($1, false)
+			$$ = actions.PostfixExpressionIncDec(actions.AST,$1, false)
                 }
         |       postfix_expression PERIOD IDENTIFIER
                 {
-			$$ = actions.PostfixExpressionField($1, $3)
+			$$ = actions.PostfixExpressionField(actions.AST,$1, $3)
                 }
                 ;
 
@@ -820,7 +822,7 @@ unary_expression:
                 }
 	|       unary_operator unary_expression
                 {
-			$$ = actions.UnaryExpression($1, $2)
+			$$ = actions.UnaryExpression(actions.AST,$1, $2)
                 }
                 ;
 
@@ -836,15 +838,15 @@ multiplicative_expression:
                 unary_expression
         |       multiplicative_expression MUL_OP unary_expression
                 {
-			$$ = actions.OperatorExpression($1, $3, constants.OP_MUL)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_MUL)
                 }
         |       multiplicative_expression DIV_OP unary_expression
                 {
-			$$ = actions.OperatorExpression($1, $3, constants.OP_DIV)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_DIV)
                 }
         |       multiplicative_expression MOD_OP unary_expression
                 {
-			$$ = actions.OperatorExpression($1, $3, constants.OP_MOD)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_MOD)
                 }
                 ;
 
@@ -852,11 +854,11 @@ additive_expression:
                 multiplicative_expression
         |       additive_expression ADD_OP multiplicative_expression
                 {
-			$$ = actions.OperatorExpression($1, $3, constants.OP_ADD)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_ADD)
                 }
 	|       additive_expression SUB_OP multiplicative_expression
                 {
-			$$ = actions.OperatorExpression($1, $3, constants.OP_SUB)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_SUB)
                 }
                 ;
 
@@ -864,15 +866,15 @@ shift_expression:
                 additive_expression
         |       shift_expression LEFT_OP additive_expression
                 {
-			$$ = actions.OperatorExpression($1, $3, constants.OP_BITSHL)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_BITSHL)
                 }
         |       shift_expression RIGHT_OP additive_expression
                 {
-			$$ = actions.OperatorExpression($1, $3, constants.OP_BITSHR)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_BITSHR)
                 }
         |       shift_expression BITCLEAR_OP additive_expression
                 {
-			$$ = actions.OperatorExpression($1, $3, constants.OP_BITCLEAR)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_BITCLEAR)
                 }
                 ;
 
@@ -880,34 +882,34 @@ relational_expression:
                 shift_expression
         |       relational_expression EQ_OP shift_expression
                 {
-			$$ = actions.OperatorExpression($1, $3, constants.OP_EQUAL)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_EQUAL)
                 }
         |       relational_expression NE_OP shift_expression
                 {
-			$$ = actions.OperatorExpression($1, $3, constants.OP_UNEQUAL)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_UNEQUAL)
                 }
         |       relational_expression LT_OP shift_expression
                 {
-			$$ = actions.OperatorExpression($1, $3, constants.OP_LT)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_LT)
                 }
         |       relational_expression GT_OP shift_expression
                 {
-			$$ = actions.OperatorExpression($1, $3, constants.OP_GT)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_GT)
                 }
         |       relational_expression LTEQ_OP shift_expression
                 {
-			$$ = actions.OperatorExpression($1, $3, constants.OP_LTEQ)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_LTEQ)
                 }
         |       relational_expression GTEQ_OP shift_expression
                 {
-			$$ = actions.OperatorExpression($1, $3, constants.OP_GTEQ)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_GTEQ)
                 }
                 ;
 
 and_expression: relational_expression
         |       and_expression REF_OP relational_expression
                 {
-			$$ = actions.OperatorExpression($1, $3, constants.OP_BITAND)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_BITAND)
                 }
                 ;
 
@@ -915,7 +917,7 @@ exclusive_or_expression:
                 and_expression
         |       exclusive_or_expression BITXOR_OP and_expression
                 {
-			$$ = actions.OperatorExpression($1, $3, constants.OP_BITXOR)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_BITXOR)
                 }
                 ;
 
@@ -923,7 +925,7 @@ inclusive_or_expression:
                 exclusive_or_expression
         |       inclusive_or_expression BITOR_OP exclusive_or_expression
                 {
-			$$ = actions.OperatorExpression($1, $3, constants.OP_BITOR)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_BITOR)
                 }
                 ;
 
@@ -931,7 +933,7 @@ logical_and_expression:
                 inclusive_or_expression
 	|       logical_and_expression AND_OP inclusive_or_expression
                 {
-			$$ = actions.OperatorExpression($1, $3, constants.OP_BOOL_AND)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_BOOL_AND)
                 }
                 ;
 
@@ -939,7 +941,7 @@ logical_or_expression:
                 logical_and_expression
 	|       logical_or_expression OR_OP logical_and_expression
                 {
-			$$ = actions.OperatorExpression($1, $3, constants.OP_BOOL_OR)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_BOOL_OR)
                 }
                 ;
 
@@ -952,15 +954,15 @@ struct_literal_expression:
 		conditional_expression
 	|       IDENTIFIER LBRACE struct_literal_fields RBRACE
                 {
-			$$ = actions.PrimaryStructLiteral($1, $3)
+			$$ = actions.PrimaryStructLiteral(actions.AST,$1, $3)
                 }
 	|       unary_operator IDENTIFIER LBRACE struct_literal_fields RBRACE
                 {
-			$$ = actions.UnaryExpression($1, actions.PrimaryStructLiteral($2, $4))
+			$$ = actions.UnaryExpression(actions.AST,$1, actions.PrimaryStructLiteral(actions.AST,$2, $4))
                 }
         |       postfix_expression PERIOD IDENTIFIER LBRACE struct_literal_fields RBRACE
                 {
-			$$ = actions.PrimaryStructLiteralExternal($1[0].Outputs[0].ArgDetails.Name, $3, $5)
+			$$ = actions.PrimaryStructLiteralExternal(actions.AST,$1[0].Outputs[0].ArgDetails.Name, $3, $5)
                 }
                 ;
 
@@ -995,7 +997,7 @@ assignment_expression:
 					}
 					$$ = actions.StructLiteralAssignment($1, $3)
 				} else {
-					$$ = actions.Assignment($1, $2, $3)
+					$$ = actions.Assignment(actions.AST,$1, $2, $3)
 				}
 			}
                 }
@@ -1031,11 +1033,11 @@ constant_expression:
 declaration:
                 VAR declarator declaration_specifiers SEMICOLON
                 {
-			$$ = actions.DeclareLocal($2, $3, nil, false)
+			$$ = actions.DeclareLocal(actions.AST,$2, $3, nil, false)
                 }
         |       VAR declarator declaration_specifiers ASSIGN initializer SEMICOLON
                 {
-			$$ = actions.DeclareLocal($2, $3, $5, true)
+			$$ = actions.DeclareLocal(actions.AST,$2, $3, $5, true)
                 }
                 ;
 
@@ -1117,33 +1119,33 @@ expression_statement:
 selection_statement:
                 IF conditional_expression LBRACE block_item_list RBRACE elseif_list else_statement SEMICOLON
                 {
-			$$ = actions.SelectionStatement($2, $4, $6, $7, actions.SEL_ELSEIFELSE)
+			$$ = actions.SelectionStatement(actions.AST,$2, $4, $6, $7, actions.SEL_ELSEIFELSE)
                 }
         |       IF conditional_expression LBRACE block_item_list RBRACE else_statement SEMICOLON
                 {
-			$$ = actions.SelectionExpressions($2, $4, $6)
+			$$ = actions.SelectionExpressions(actions.AST,$2, $4, $6)
                 }
         |       IF conditional_expression LBRACE RBRACE else_statement SEMICOLON
                 {
-			$$ = actions.SelectionExpressions($2, nil, $5)
+			$$ = actions.SelectionExpressions(actions.AST,$2, nil, $5)
                 }
         |       IF conditional_expression LBRACE block_item_list RBRACE elseif_list SEMICOLON
                 {
-			$$ = actions.SelectionStatement($2, $4, $6, nil, actions.SEL_ELSEIF)
+			$$ = actions.SelectionStatement(actions.AST,$2, $4, $6, nil, actions.SEL_ELSEIF)
                 }
         |       IF conditional_expression LBRACE RBRACE elseif_list SEMICOLON
                 {
 			//
-			$$ = actions.SelectionStatement($2, nil, $5, nil, actions.SEL_ELSEIF)
+			$$ = actions.SelectionStatement(actions.AST,$2, nil, $5, nil, actions.SEL_ELSEIF)
                 }
         |       IF conditional_expression LBRACE RBRACE elseif_list else_statement SEMICOLON
                 {
 			//
-			$$ = actions.SelectionStatement($2, nil, $5, $6, actions.SEL_ELSEIFELSE)
+			$$ = actions.SelectionStatement(actions.AST,$2, nil, $5, $6, actions.SEL_ELSEIFELSE)
                 }
         |       IF conditional_expression compound_statement
                 {
-			$$ = actions.SelectionExpressions($2, $3, nil)
+			$$ = actions.SelectionExpressions(actions.AST,$2, $3, nil)
                 }
 	|       SWITCH LPAREN expression RPAREN statement
                 { $$ = nil }
@@ -1189,28 +1191,28 @@ else_statement:
 iteration_statement:
                 FOR expression compound_statement
                 {
-			$$ = actions.IterationExpressions(nil, $2, nil, $3)
+			$$ = actions.IterationExpressions(actions.AST,nil, $2, nil, $3)
                 }
         |       FOR expression_statement expression_statement compound_statement
                 {			
-			$$ = actions.IterationExpressions($2, $3, nil, $4)
+			$$ = actions.IterationExpressions(actions.AST,$2, $3, nil, $4)
                 }
         |       FOR expression_statement expression_statement expression compound_statement
                 {
-			$$ = actions.IterationExpressions($2, $3, $4, $5)
+			$$ = actions.IterationExpressions(actions.AST,$2, $3, $4, $5)
                 }
                 ;
 
 return_expression:
 		struct_literal_expression
 		{
-			retExprs := actions.ReturnExpressions{Expressions: actions.AssociateReturnExpressions(0, $1)}
+			retExprs := actions.ReturnExpressions{Expressions: actions.AssociateReturnExpressions(actions.AST,0, $1)}
 			retExprs.Size++
 			$$ = retExprs
 		}
 	|	return_expression COMMA struct_literal_expression
 		{
-			$1.Expressions = append($1.Expressions, actions.AssociateReturnExpressions($1.Size, $3)...)
+			$1.Expressions = append($1.Expressions, actions.AssociateReturnExpressions(actions.AST,$1.Size, $3)...)
 			$1.Size++
 			$$ = $1
 		}
@@ -1229,19 +1231,19 @@ jump_statement: GOTO IDENTIFIER SEMICOLON
                 }
 	|       CONTINUE SEMICOLON
 		{
-			$$ = actions.ContinueExpressions()
+			$$ = actions.ContinueExpressions(actions.AST,)
 		}
 	|       BREAK SEMICOLON
 		{
-			$$ = actions.BreakExpressions()
+			$$ = actions.BreakExpressions(actions.AST,)
 		}
 	|       RETURN SEMICOLON
                 {
-			$$ = actions.AddJmpToReturnExpressions(actions.ReturnExpressions{})
+			$$ = actions.AddJmpToReturnExpressions(actions.AST,actions.ReturnExpressions{})
                 }
 	|       RETURN return_expression SEMICOLON
                 {
-			$$ = actions.AddJmpToReturnExpressions($2)
+			$$ = actions.AddJmpToReturnExpressions(actions.AST,$2)
                 }
                 ;
 %%

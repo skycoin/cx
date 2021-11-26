@@ -6,9 +6,9 @@ import (
 	"github.com/skycoin/cx/cx/types"
 )
 
-func SelectProgram(prgrm *ast.CXProgram) {
-	AST = prgrm
-}
+// func SelectProgram(prgrm *ast.CXProgram) {
+// 	AST = prgrm
+// }
 
 func SetCorrectArithmeticOp(expr *ast.CXExpression) {
 	if expr.Operator == nil || len(expr.Outputs) < 1 {
@@ -44,9 +44,9 @@ func hasDerefOp(arg *ast.CXArgument, spec int) bool {
 	return found
 }
 
-// This function writes those bytes to AST.Data
-func WritePrimary(typeCode types.Code, byts []byte, isSlice bool) []*ast.CXExpression {
-	if pkg, err := AST.GetCurrentPackage(); err == nil {
+// This function writes those bytes to prgrm.Data
+func WritePrimary(prgrm *ast.CXProgram, typeCode types.Code, byts []byte, isSlice bool) []*ast.CXExpression {
+	if pkg, err := prgrm.GetCurrentPackage(); err == nil {
 		arg := ast.MakeArgument("", CurrentFile, LineNo)
 		arg.AddType(typeCode)
 		arg.ArgDetails.Package = pkg
@@ -55,7 +55,7 @@ func WritePrimary(typeCode types.Code, byts []byte, isSlice bool) []*ast.CXExpre
 
 		arg.Size = typeCode.Size()
 		arg.TotalSize = size
-		arg.Offset = AST.Data.Size + AST.Data.StartsAt
+		arg.Offset = prgrm.Data.Size + prgrm.Data.StartsAt
 
 		if arg.Type == types.STR || arg.Type == types.AFF {
 			arg.PassBy = constants.PASSBY_REFERENCE
@@ -69,26 +69,26 @@ func WritePrimary(typeCode types.Code, byts []byte, isSlice bool) []*ast.CXExpre
 		// A CX program allocates min(INIT_HEAP_SIZE, MAX_HEAP_SIZE) bytes
 		// after the stack segment. These bytes are used to allocate the data segment
 		// at compile time. If the data segment is bigger than min(INIT_HEAP_SIZE, MAX_HEAP_SIZE),
-		// we'll start appending the bytes to AST.Memory.
+		// we'll start appending the bytes to prgrm.Memory.
 		// After compilation, we calculate how many bytes we need to add to have a heap segment
 		// equal to `minHeapSize()` that is allocated after the data segment.
-		memSize := types.Cast_int_to_ptr(len(AST.Memory))
-		if (size + AST.Data.Size + AST.Data.StartsAt) > memSize {
+		memSize := types.Cast_int_to_ptr(len(prgrm.Memory))
+		if (size + prgrm.Data.Size + prgrm.Data.StartsAt) > memSize {
 			var i types.Pointer
 			// First we need to fill the remaining free bytes in
-			// the current `AST.Memory` slice.
-			for i = types.Pointer(0); i < memSize-AST.Data.Size+AST.Data.StartsAt; i++ {
-				AST.Memory[AST.Data.Size+AST.Data.StartsAt+i] = byts[i]
+			// the current `prgrm.Memory` slice.
+			for i = types.Pointer(0); i < memSize-prgrm.Data.Size+prgrm.Data.StartsAt; i++ {
+				prgrm.Memory[prgrm.Data.Size+prgrm.Data.StartsAt+i] = byts[i]
 			}
 			// Then we append the bytes that didn't fit.
-			AST.Memory = append(AST.Memory, byts[i:]...)
+			prgrm.Memory = append(prgrm.Memory, byts[i:]...)
 		} else {
 			for i, byt := range byts {
-				AST.Memory[AST.Data.Size+AST.Data.StartsAt+types.Cast_int_to_ptr(i)] = byt
+				prgrm.Memory[prgrm.Data.Size+prgrm.Data.StartsAt+types.Cast_int_to_ptr(i)] = byt
 			}
 		}
-		AST.Data.Size += size
-		AST.Heap.StartsAt = AST.Data.Size + AST.Data.StartsAt
+		prgrm.Data.Size += size
+		prgrm.Heap.StartsAt = prgrm.Data.Size + prgrm.Data.StartsAt
 
 		expr := ast.MakeExpression(nil, CurrentFile, LineNo)
 		expr.Package = pkg
@@ -107,8 +107,8 @@ func TotalLength(lengths []types.Pointer) types.Pointer {
 	return total
 }
 
-func StructLiteralFields(ident string) *ast.CXExpression {
-	if pkg, err := AST.GetCurrentPackage(); err == nil {
+func StructLiteralFields(prgrm *ast.CXProgram, ident string) *ast.CXExpression {
+	if pkg, err := prgrm.GetCurrentPackage(); err == nil {
 		arg := ast.MakeArgument("", CurrentFile, LineNo)
 		arg.AddType(types.IDENTIFIER)
 		arg.ArgDetails.Name = ident
@@ -124,7 +124,7 @@ func StructLiteralFields(ident string) *ast.CXExpression {
 	}
 }
 
-func AffordanceStructs(pkg *ast.CXPackage, currentFile string, lineNo int) {
+func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile string, lineNo int) {
 	// Argument type
 	argStrct := ast.MakeStruct("Argument")
 	// argStrct.Size = cxcore.GetArgSize(cxcore.TYPE_STR) + cxcore.GetArgSize(cxcore.TYPE_STR)
@@ -219,7 +219,7 @@ func AffordanceStructs(pkg *ast.CXPackage, currentFile string, lineNo int) {
 	prgrmFldFreeHeap.TotalSize = types.I64.Size()
 
 	// prgrmFldCaller := cxcore.MakeField("Caller", cxcore.TYPE_STRUCT, "", 0)
-	prgrmFldCaller := DeclarationSpecifiersStruct(callStrct.Name, callStrct.Package.Name, false, currentFile, lineNo)
+	prgrmFldCaller := DeclarationSpecifiersStruct(prgrm, callStrct.Name, callStrct.Package.Name, false, currentFile, lineNo)
 	prgrmFldCaller.ArgDetails.Name = "Caller"
 
 	prgrmStrct.AddField(prgrmFldCallCounter)
@@ -229,8 +229,8 @@ func AffordanceStructs(pkg *ast.CXPackage, currentFile string, lineNo int) {
 	pkg.AddStruct(prgrmStrct)
 }
 
-func PrimaryIdentifier(ident string) []*ast.CXExpression {
-	if pkg, err := AST.GetCurrentPackage(); err == nil {
+func PrimaryIdentifier(prgrm *ast.CXProgram, ident string) []*ast.CXExpression {
+	if pkg, err := prgrm.GetCurrentPackage(); err == nil {
 		arg := ast.MakeArgument(ident, CurrentFile, LineNo) // fix: line numbers in errors sometimes report +1 or -1. Issue #195
 		arg.AddType(types.IDENTIFIER)
 		// arg.Typ = "ident"

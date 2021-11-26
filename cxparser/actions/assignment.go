@@ -112,7 +112,7 @@ func getOutputType(expr *ast.CXExpression) *ast.CXArgument {
 }
 
 // Assignment handles assignment statements with different operators, like =, :=, +=, *=.
-func Assignment(to []*ast.CXExpression, assignOp string, from []*ast.CXExpression) []*ast.CXExpression {
+func Assignment(prgrm *ast.CXProgram, to []*ast.CXExpression, assignOp string, from []*ast.CXExpression) []*ast.CXExpression {
 	idx := len(from) - 1
 
 	// Checking if we're trying to assign stuff from a function call
@@ -122,7 +122,7 @@ func Assignment(to []*ast.CXExpression, assignOp string, from []*ast.CXExpressio
 		os.Exit(constants.CX_COMPILATION_ERROR)
 	}
 
-	pkg, err := AST.GetCurrentPackage()
+	pkg, err := prgrm.GetCurrentPackage()
 	if err != nil {
 		panic(err)
 	}
@@ -211,7 +211,7 @@ func Assignment(to []*ast.CXExpression, assignOp string, from []*ast.CXExpressio
 		to[0].Outputs[0].Lengths = from[idx].Outputs[0].Lengths
 		to[0].Outputs[0].PassBy = from[idx].Outputs[0].PassBy
 		to[0].Outputs[0].DoesEscape = from[idx].Outputs[0].DoesEscape
-		// to[0].ProgramOutput[0].Program = AST
+		// to[0].ProgramOutput[0].Program = prgrm
 
 		if from[idx].IsMethodCall() {
 			from[idx].Inputs = append(from[idx].Outputs, from[idx].Inputs...)
@@ -220,7 +220,7 @@ func Assignment(to []*ast.CXExpression, assignOp string, from []*ast.CXExpressio
 		}
 
 		from[idx].Outputs = to[len(to)-1].Outputs
-		// from[idx].Program = AST
+		// from[idx].Program = prgrm
 
 		return append(to[:len(to)-1], from...)
 	} else {
@@ -237,7 +237,7 @@ func Assignment(to []*ast.CXExpression, assignOp string, from []*ast.CXExpressio
 
 			to[0].Outputs[0].DoesEscape = from[idx].Operator.Outputs[0].DoesEscape
 			to[0].Outputs[0].PassBy = from[idx].Operator.Outputs[0].PassBy
-			// to[0].ProgramOutput[0].Program = AST
+			// to[0].ProgramOutput[0].Program = prgrm
 		} else {
 			// we'll delegate multiple-value returns to the 'expression' grammar rule
 			// only assigning as if the operator had only one output defined
@@ -248,7 +248,7 @@ func Assignment(to []*ast.CXExpression, assignOp string, from []*ast.CXExpressio
 			to[0].Outputs[0].Lengths = from[idx].Operator.Outputs[0].Lengths
 			to[0].Outputs[0].DoesEscape = from[idx].Operator.Outputs[0].DoesEscape
 			to[0].Outputs[0].PassBy = from[idx].Operator.Outputs[0].PassBy
-			// to[0].ProgramOutput[0].Program = AST
+			// to[0].ProgramOutput[0].Program = prgrm
 		}
 
 		from[idx].Outputs = to[len(to)-1].Outputs

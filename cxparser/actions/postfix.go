@@ -103,7 +103,7 @@ func PostfixExpressionArray(prevExprs []*ast.CXExpression, postExprs []*ast.CXEx
 	return prevExprs
 }
 
-func PostfixExpressionNative(typeCode types.Code, opStrCode string) []*ast.CXExpression {
+func PostfixExpressionNative(prgrm *ast.CXProgram, typeCode types.Code, opStrCode string) []*ast.CXExpression {
 	// these will always be native functions
 	opCode, ok := ast.OpCodes[typeCode.Name()+"."+opStrCode]
 	if !ok {
@@ -114,7 +114,7 @@ func PostfixExpressionNative(typeCode types.Code, opStrCode string) []*ast.CXExp
 	}
 
 	expr := ast.MakeExpression(ast.Natives[opCode], CurrentFile, LineNo)
-	pkg, err := AST.GetCurrentPackage()
+	pkg, err := prgrm.GetCurrentPackage()
 	if err != nil {
 		panic(err)
 	}
@@ -123,7 +123,7 @@ func PostfixExpressionNative(typeCode types.Code, opStrCode string) []*ast.CXExp
 	return []*ast.CXExpression{expr}
 }
 
-func PostfixExpressionEmptyFunCall(prevExprs []*ast.CXExpression) []*ast.CXExpression {
+func PostfixExpressionEmptyFunCall(prgrm *ast.CXProgram, prevExprs []*ast.CXExpression) []*ast.CXExpression {
 	if prevExprs[len(prevExprs)-1].Outputs != nil && len(prevExprs[len(prevExprs)-1].Outputs[0].Fields) > 0 {
 		// then it's a method call or function in field
 		// prevExprs[len(prevExprs) - 1].IsMethodCall = true
@@ -138,7 +138,7 @@ func PostfixExpressionEmptyFunCall(prevExprs []*ast.CXExpression) []*ast.CXExpre
 
 	} else if prevExprs[len(prevExprs)-1].Operator == nil {
 		if opCode, ok := ast.OpCodes[prevExprs[len(prevExprs)-1].Outputs[0].ArgDetails.Name]; ok {
-			if pkg, err := AST.GetCurrentPackage(); err == nil {
+			if pkg, err := prgrm.GetCurrentPackage(); err == nil {
 				prevExprs[0].Package = pkg
 			}
 			prevExprs[0].Outputs = nil
@@ -148,17 +148,17 @@ func PostfixExpressionEmptyFunCall(prevExprs []*ast.CXExpression) []*ast.CXExpre
 		prevExprs[0].Inputs = nil
 	}
 
-	return FunctionCall(prevExprs, nil)
+	return FunctionCall(prgrm, prevExprs, nil)
 }
 
-func PostfixExpressionFunCall(prevExprs []*ast.CXExpression, args []*ast.CXExpression) []*ast.CXExpression {
+func PostfixExpressionFunCall(prgrm *ast.CXProgram, prevExprs []*ast.CXExpression, args []*ast.CXExpression) []*ast.CXExpression {
 	if prevExprs[len(prevExprs)-1].Outputs != nil && len(prevExprs[len(prevExprs)-1].Outputs[0].Fields) > 0 {
 		// then it's a method
 		// prevExprs[len(prevExprs) - 1].IsMethodCall = true
 
 	} else if prevExprs[len(prevExprs)-1].Operator == nil {
 		if opCode, ok := ast.OpCodes[prevExprs[len(prevExprs)-1].Outputs[0].ArgDetails.Name]; ok {
-			if pkg, err := AST.GetCurrentPackage(); err == nil {
+			if pkg, err := prgrm.GetCurrentPackage(); err == nil {
 				prevExprs[0].Package = pkg
 			}
 			prevExprs[0].Outputs = nil
@@ -168,11 +168,11 @@ func PostfixExpressionFunCall(prevExprs []*ast.CXExpression, args []*ast.CXExpre
 		prevExprs[0].Inputs = nil
 	}
 
-	return FunctionCall(prevExprs, args)
+	return FunctionCall(prgrm, prevExprs, args)
 }
 
-func PostfixExpressionIncDec(prevExprs []*ast.CXExpression, isInc bool) []*ast.CXExpression {
-	pkg, err := AST.GetCurrentPackage()
+func PostfixExpressionIncDec(prgrm *ast.CXProgram, prevExprs []*ast.CXExpression, isInc bool) []*ast.CXExpression {
+	pkg, err := prgrm.GetCurrentPackage()
 	if err != nil {
 		panic(err)
 	}
@@ -186,7 +186,7 @@ func PostfixExpressionIncDec(prevExprs []*ast.CXExpression, isInc bool) []*ast.C
 
 	var valB [4]byte
 	types.Write_i32(valB[:], 0, 1)
-	val := WritePrimary(types.I32, valB[:], false)
+	val := WritePrimary(prgrm, types.I32, valB[:], false)
 
 	expr.Package = pkg
 
@@ -201,7 +201,7 @@ func PostfixExpressionIncDec(prevExprs []*ast.CXExpression, isInc bool) []*ast.C
 
 // PostfixExpressionField handles the dot notation that can follow an identifier.
 // Examples are: `foo.bar`, `foo().bar`, `pkg.foo`
-func PostfixExpressionField(prevExprs []*ast.CXExpression, ident string) []*ast.CXExpression {
+func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []*ast.CXExpression, ident string) []*ast.CXExpression {
 	lastExpr := prevExprs[len(prevExprs)-1]
 
 	// Then it's a function call, e.g. foo().fld
@@ -263,7 +263,7 @@ func PostfixExpressionField(prevExprs []*ast.CXExpression, ident string) []*ast.
 	left.IsInnerArg = true
 	// then left is a first (e.g first.rest) and right is a rest
 	// let's check if left is a package
-	pkg, err := AST.GetCurrentPackage()
+	pkg, err := prgrm.GetCurrentPackage()
 	if err != nil {
 		panic(err)
 	}
@@ -279,7 +279,7 @@ func PostfixExpressionField(prevExprs []*ast.CXExpression, ident string) []*ast.
 			//Is used for constant declaration? But only for core packages?
 			if code, ok := ConstCodes[left.ArgDetails.Name+"."+ident]; ok {
 				constant := Constants[code]
-				val := WritePrimary(constant.Type, constant.Value, false)
+				val := WritePrimary(prgrm, constant.Type, constant.Value, false)
 				prevExprs[len(prevExprs)-1].Outputs[0] = val[0].Outputs[0]
 				return prevExprs
 			} else if _, ok := ast.OpCodes[left.ArgDetails.Name+"."+ident]; ok {
@@ -310,7 +310,7 @@ func PostfixExpressionField(prevExprs []*ast.CXExpression, ident string) []*ast.
 			// not sure about this next line
 			prevExprs[len(prevExprs)-1].Outputs = nil
 			prevExprs[len(prevExprs)-1].Operator = fn
-		} else if strct, err := AST.GetStruct(ident, imp.Name); err == nil {
+		} else if strct, err := prgrm.GetStruct(ident, imp.Name); err == nil {
 			prevExprs[len(prevExprs)-1].Outputs[0].StructType = strct
 		} else {
 			// panic(err)

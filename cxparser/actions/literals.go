@@ -8,10 +8,10 @@ import (
 )
 
 // SliceLiteralExpression handles literal expressions by converting it to a series of `append` expressions.
-func SliceLiteralExpression(typeCode types.Code, exprs []*ast.CXExpression) []*ast.CXExpression {
+func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []*ast.CXExpression) []*ast.CXExpression {
 	var result []*ast.CXExpression
 
-	pkg, err := AST.GetCurrentPackage()
+	pkg, err := prgrm.GetCurrentPackage()
 	if err != nil {
 		panic(err)
 	}
@@ -112,11 +112,11 @@ func SliceLiteralExpression(typeCode types.Code, exprs []*ast.CXExpression) []*a
 	return result
 }
 
-func PrimaryStructLiteral(ident string, strctFlds []*ast.CXExpression) []*ast.CXExpression {
+func PrimaryStructLiteral(prgrm *ast.CXProgram, ident string, strctFlds []*ast.CXExpression) []*ast.CXExpression {
 	var result []*ast.CXExpression
 
-	if pkg, err := AST.GetCurrentPackage(); err == nil {
-		if strct, err := AST.GetStruct(ident, pkg.Name); err == nil {
+	if pkg, err := prgrm.GetCurrentPackage(); err == nil {
+		if strct, err := prgrm.GetStruct(ident, pkg.Name); err == nil {
 			for _, expr := range strctFlds {
 				name := expr.Outputs[0].ArgDetails.Name
 
@@ -126,7 +126,7 @@ func PrimaryStructLiteral(ident string, strctFlds []*ast.CXExpression) []*ast.CX
 				expr.ExpressionType = ast.CXEXPR_STRUCT_LITERAL
 
 				expr.Outputs[0].ArgDetails.Package = pkg
-				// expr.ProgramOutput[0].Program = AST
+				// expr.ProgramOutput[0].Program = prgrm
 
 				if expr.Outputs[0].StructType == nil {
 					expr.Outputs[0].StructType = strct
@@ -150,11 +150,11 @@ func PrimaryStructLiteral(ident string, strctFlds []*ast.CXExpression) []*ast.CX
 	return result
 }
 
-func PrimaryStructLiteralExternal(impName string, ident string, strctFlds []*ast.CXExpression) []*ast.CXExpression {
+func PrimaryStructLiteralExternal(prgrm *ast.CXProgram, impName string, ident string, strctFlds []*ast.CXExpression) []*ast.CXExpression {
 	var result []*ast.CXExpression
-	if pkg, err := AST.GetCurrentPackage(); err == nil {
+	if pkg, err := prgrm.GetCurrentPackage(); err == nil {
 		if _, err := pkg.GetImport(impName); err == nil {
-			if strct, err := AST.GetStruct(ident, impName); err == nil {
+			if strct, err := prgrm.GetStruct(ident, impName); err == nil {
 				for _, expr := range strctFlds {
 					fld := ast.MakeArgument("", CurrentFile, LineNo)
 					fld.AddType(types.IDENTIFIER)
@@ -163,7 +163,7 @@ func PrimaryStructLiteralExternal(impName string, ident string, strctFlds []*ast
 					expr.ExpressionType = ast.CXEXPR_STRUCT_LITERAL
 
 					expr.Outputs[0].ArgDetails.Package = pkg
-					// expr.ProgramOutput[0].Program = AST
+					// expr.ProgramOutput[0].Program = prgrm
 
 					expr.Outputs[0].StructType = strct
 					expr.Outputs[0].Size = strct.Size
@@ -185,10 +185,10 @@ func PrimaryStructLiteralExternal(impName string, ident string, strctFlds []*ast
 	return result
 }
 
-func ArrayLiteralExpression(arrSizes []types.Pointer, typeCode types.Code, exprs []*ast.CXExpression) []*ast.CXExpression {
+func ArrayLiteralExpression(prgrm *ast.CXProgram, arrSizes []types.Pointer, typeCode types.Code, exprs []*ast.CXExpression) []*ast.CXExpression {
 	var result []*ast.CXExpression
 
-	pkg, err := AST.GetCurrentPackage()
+	pkg, err := prgrm.GetCurrentPackage()
 	if err != nil {
 		panic(err)
 	}
@@ -221,7 +221,7 @@ func ArrayLiteralExpression(arrSizes []types.Pointer, typeCode types.Code, exprs
 				sym.PassBy = constants.PASSBY_REFERENCE
 			}
 
-			idxExpr := WritePrimary(types.I32, encoder.Serialize(int32(endPointsCounter)), false)
+			idxExpr := WritePrimary(prgrm, types.I32, encoder.Serialize(int32(endPointsCounter)), false)
 			endPointsCounter++
 
 			sym.Indexes = append(sym.Indexes, idxExpr[0].Outputs[0])

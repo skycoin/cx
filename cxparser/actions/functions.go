@@ -19,15 +19,15 @@ import (
 // If the function is a method (isMethod = true), then it adds the object that
 // it's called on as the first argument.
 //
-func FunctionHeader(ident string, receiver []*ast.CXArgument, isMethod bool) *ast.CXFunction {
+func FunctionHeader(prgrm *ast.CXProgram, ident string, receiver []*ast.CXArgument, isMethod bool) *ast.CXFunction {
 	if isMethod {
 		if len(receiver) > 1 {
 			panic("method has multiple receivers")
 		}
-		if pkg, err := AST.GetCurrentPackage(); err == nil {
+		if pkg, err := prgrm.GetCurrentPackage(); err == nil {
 			fnName := receiver[0].StructType.Name + "." + ident
 
-			if fn, err := AST.GetFunction(fnName, pkg.Name); err == nil {
+			if fn, err := prgrm.GetFunction(fnName, pkg.Name); err == nil {
 				fn.AddInput(receiver[0])
 				pkg.CurrentFunction = fn
 				return fn
@@ -41,8 +41,8 @@ func FunctionHeader(ident string, receiver []*ast.CXArgument, isMethod bool) *as
 			panic(err)
 		}
 	} else {
-		if pkg, err := AST.GetCurrentPackage(); err == nil {
-			if fn, err := AST.GetFunction(ident, pkg.Name); err == nil {
+		if pkg, err := prgrm.GetCurrentPackage(); err == nil {
+			if fn, err := prgrm.GetFunction(ident, pkg.Name); err == nil {
 				pkg.CurrentFunction = fn
 				return fn
 			} else {
@@ -100,22 +100,22 @@ func CheckUndValidTypes(expr *ast.CXExpression) {
 	}
 }
 
-func FunctionProcessParameters(symbols *[]map[string]*ast.CXArgument, symbolsScope *map[string]bool, offset *types.Pointer, fn *ast.CXFunction, params []*ast.CXArgument) {
+func FunctionProcessParameters(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXArgument, symbolsScope *map[string]bool, offset *types.Pointer, fn *ast.CXFunction, params []*ast.CXArgument) {
 	for _, param := range params {
 		ProcessLocalDeclaration(symbols, symbolsScope, param)
 
-		UpdateSymbolsTable(symbols, param, offset, false)
-		GiveOffset(symbols, param, offset, false)
-		SetFinalSize(symbols, param)
+		UpdateSymbolsTable(prgrm, symbols, param, offset, false)
+		GiveOffset(prgrm, symbols, param, offset, false)
+		SetFinalSize(prgrm, symbols, param)
 
-		AddPointer(fn, param)
+		AddPointer(prgrm, fn, param)
 
 		// as these are declarations, they should not have any dereference operations
 		param.DereferenceOperations = nil
 	}
 }
 
-func FunctionDeclaration(fn *ast.CXFunction, inputs, outputs []*ast.CXArgument, exprs []*ast.CXExpression) {
+func FunctionDeclaration(prgrm *ast.CXProgram, fn *ast.CXFunction, inputs, outputs []*ast.CXArgument, exprs []*ast.CXExpression) {
 
 	//var exprs []*cxcore.CXExpression = globals.SysInitExprs
 
@@ -145,17 +145,17 @@ func FunctionDeclaration(fn *ast.CXFunction, inputs, outputs []*ast.CXArgument, 
 	// local being function constrained variables, and global being global variables
 	var symbolsScope map[string]bool = make(map[string]bool)
 
-	FunctionProcessParameters(symbols, &symbolsScope, &offset, fn, fn.Inputs)
-	FunctionProcessParameters(symbols, &symbolsScope, &offset, fn, fn.Outputs)
+	FunctionProcessParameters(prgrm, symbols, &symbolsScope, &offset, fn, fn.Inputs)
+	FunctionProcessParameters(prgrm, symbols, &symbolsScope, &offset, fn, fn.Outputs)
 
 	for i, expr := range fn.Expressions {
 		if expr.IsScopeNew() {
 			*symbols = append(*symbols, make(map[string]*ast.CXArgument))
 		}
 
-		ProcessMethodCall(expr, symbols, &offset, true)
-		ProcessExpressionArguments(symbols, &symbolsScope, &offset, fn, expr.Inputs, expr, true)
-		ProcessExpressionArguments(symbols, &symbolsScope, &offset, fn, expr.Outputs, expr, false)
+		ProcessMethodCall(prgrm, expr, symbols, &offset, true)
+		ProcessExpressionArguments(prgrm, symbols, &symbolsScope, &offset, fn, expr.Inputs, expr, true)
+		ProcessExpressionArguments(prgrm, symbols, &symbolsScope, &offset, fn, expr.Outputs, expr, false)
 
 		ProcessPointerStructs(expr)
 
@@ -200,14 +200,14 @@ func FunctionDeclaration(fn *ast.CXFunction, inputs, outputs []*ast.CXArgument, 
 	fn.Size = offset
 }
 
-func FunctionCall(exprs []*ast.CXExpression, args []*ast.CXExpression) []*ast.CXExpression {
+func FunctionCall(prgrm *ast.CXProgram, exprs []*ast.CXExpression, args []*ast.CXExpression) []*ast.CXExpression {
 	expr := exprs[len(exprs)-1]
 
 	if expr.Operator == nil {
 		opName := expr.Outputs[0].ArgDetails.Name
 		opPkg := expr.Outputs[0].ArgDetails.Package
 
-		if op, err := AST.GetFunction(opName, opPkg.Name); err == nil {
+		if op, err := prgrm.GetFunction(opName, opPkg.Name); err == nil {
 			expr.Operator = op
 		} else if expr.Outputs[0].Fields == nil {
 			// then it's not a possible method call
@@ -367,7 +367,7 @@ func checkIndexType(prgrm *ast.CXProgram, idx *ast.CXArgument) {
 // ProcessExpressionArguments performs a series of checks and processes to an expresion's inputs and outputs.
 // Some of these checks are: checking if a an input has not been declared, assign a relative offset to the argument,
 // and calculate the correct size of the argument.
-func ProcessExpressionArguments(symbols *[]map[string]*ast.CXArgument, symbolsScope *map[string]bool, offset *types.Pointer, fn *ast.CXFunction, args []*ast.CXArgument, expr *ast.CXExpression, isInput bool) {
+func ProcessExpressionArguments(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXArgument, symbolsScope *map[string]bool, offset *types.Pointer, fn *ast.CXFunction, args []*ast.CXArgument, expr *ast.CXExpression, isInput bool) {
 	for _, arg := range args {
 		ProcessLocalDeclaration(symbols, symbolsScope, arg)
 
@@ -380,34 +380,34 @@ func ProcessExpressionArguments(symbols *[]map[string]*ast.CXArgument, symbolsSc
 		}
 
 		if arg.PreviouslyDeclared {
-			UpdateSymbolsTable(symbols, arg, offset, false)
+			UpdateSymbolsTable(prgrm, symbols, arg, offset, false)
 		} else {
-			UpdateSymbolsTable(symbols, arg, offset, true)
+			UpdateSymbolsTable(prgrm, symbols, arg, offset, true)
 		}
 
 		if isInput {
-			GiveOffset(symbols, arg, offset, true)
+			GiveOffset(prgrm, symbols, arg, offset, true)
 		} else {
-			GiveOffset(symbols, arg, offset, false)
+			GiveOffset(prgrm, symbols, arg, offset, false)
 		}
 
 		ProcessSlice(arg)
 
 		for _, idx := range arg.Indexes {
-			UpdateSymbolsTable(symbols, idx, offset, true)
-			GiveOffset(symbols, idx, offset, true)
+			UpdateSymbolsTable(prgrm, symbols, idx, offset, true)
+			GiveOffset(prgrm, symbols, idx, offset, true)
 			checkIndexType(ast.PROGRAM, idx)
 		}
 		for _, fld := range arg.Fields {
 			for _, idx := range fld.Indexes {
-				UpdateSymbolsTable(symbols, idx, offset, true)
-				GiveOffset(symbols, idx, offset, true)
+				UpdateSymbolsTable(prgrm, symbols, idx, offset, true)
+				GiveOffset(prgrm, symbols, idx, offset, true)
 			}
 		}
 
-		SetFinalSize(symbols, arg)
+		SetFinalSize(prgrm, symbols, arg)
 
-		AddPointer(fn, arg)
+		AddPointer(prgrm, fn, arg)
 	}
 }
 
@@ -439,9 +439,9 @@ func isPointerAdded(fn *ast.CXFunction, sym *ast.CXArgument) (found bool) {
 // AddPointer checks if `sym` or its last field, if a struct, behaves like a
 // pointer (slice, pointer, string). If this is the case, `sym` is added to
 // `fn.ListOfPointers` so the CX runtime does not have to determine this.
-func AddPointer(fn *ast.CXFunction, sym *ast.CXArgument) {
+func AddPointer(prgrm *ast.CXProgram, fn *ast.CXFunction, sym *ast.CXArgument) {
 	// Ignore if it's a global variable.
-	if sym.Offset > AST.Stack.Size {
+	if sym.Offset > prgrm.Stack.Size {
 		return
 	}
 	// We first need to check if we're going to add `sym` with fields.
@@ -727,7 +727,7 @@ func ProcessSliceAssignment(expr *ast.CXExpression) {
 }
 
 // lookupSymbol searches for `ident` in `symbols`, starting from the innermost scope.
-func lookupSymbol(pkgName, ident string, symbols *[]map[string]*ast.CXArgument) (*ast.CXArgument, error) {
+func lookupSymbol(prgrm *ast.CXProgram, pkgName, ident string, symbols *[]map[string]*ast.CXArgument) (*ast.CXArgument, error) {
 	fullName := pkgName + "." + ident
 	for c := len(*symbols) - 1; c >= 0; c-- {
 		if sym, found := (*symbols)[c][fullName]; found {
@@ -736,7 +736,7 @@ func lookupSymbol(pkgName, ident string, symbols *[]map[string]*ast.CXArgument) 
 	}
 
 	// Checking if `ident` refers to a function.
-	pkg, err := AST.GetPackage(pkgName)
+	pkg, err := prgrm.GetPackage(pkgName)
 	if err != nil {
 		return nil, err
 	}
@@ -757,17 +757,17 @@ func lookupSymbol(pkgName, ident string, symbols *[]map[string]*ast.CXArgument) 
 }
 
 // UpdateSymbolsTable adds `sym` to the innermost scope (last element of slice) in `symbols`.
-func UpdateSymbolsTable(symbols *[]map[string]*ast.CXArgument, sym *ast.CXArgument, offset *types.Pointer, shouldExist bool) {
+func UpdateSymbolsTable(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXArgument, sym *ast.CXArgument, offset *types.Pointer, shouldExist bool) {
 	if sym.ArgDetails.Name != "" {
 		if !sym.IsLocalDeclaration {
-			GetGlobalSymbol(symbols, sym.ArgDetails.Package, sym.ArgDetails.Name)
+			GetGlobalSymbol(prgrm, symbols, sym.ArgDetails.Package, sym.ArgDetails.Name)
 		}
 
 		lastIdx := len(*symbols) - 1
 		fullName := sym.ArgDetails.Package.Name + "." + sym.ArgDetails.Name
 
 		// outerSym, err := lookupSymbol(sym.Package.Name, sym.Name, symbols)
-		_, err := lookupSymbol(sym.ArgDetails.Package.Name, sym.ArgDetails.Name, symbols)
+		_, err := lookupSymbol(prgrm, sym.ArgDetails.Package.Name, sym.ArgDetails.Name, symbols)
 		_, found := (*symbols)[lastIdx][fullName]
 
 		// then it wasn't found in any scope
@@ -790,7 +790,7 @@ func UpdateSymbolsTable(symbols *[]map[string]*ast.CXArgument, sym *ast.CXArgume
 	}
 }
 
-func ProcessMethodCall(expr *ast.CXExpression, symbols *[]map[string]*ast.CXArgument, offset *types.Pointer, shouldExist bool) {
+func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]map[string]*ast.CXArgument, offset *types.Pointer, shouldExist bool) {
 	if expr.IsMethodCall() {
 		var inp *ast.CXArgument
 		var out *ast.CXArgument
@@ -804,11 +804,11 @@ func ProcessMethodCall(expr *ast.CXExpression, symbols *[]map[string]*ast.CXArgu
 
 		if inp != nil {
 			// if argInp, found := (*symbols)[lastIdx][inp.Package.Name+"."+inp.Name]; !found {
-			if argInp, err := lookupSymbol(inp.ArgDetails.Package.Name, inp.ArgDetails.Name, symbols); err != nil {
+			if argInp, err := lookupSymbol(prgrm, inp.ArgDetails.Package.Name, inp.ArgDetails.Name, symbols); err != nil {
 				if out == nil {
 					panic("")
 				}
-				argOut, err := lookupSymbol(out.ArgDetails.Package.Name, out.ArgDetails.Name, symbols)
+				argOut, err := lookupSymbol(prgrm, out.ArgDetails.Package.Name, out.ArgDetails.Name, symbols)
 				if err != nil {
 					println(ast.CompilationError(out.ArgDetails.FileName, out.ArgDetails.FileLine), fmt.Sprintf("identifier '%s' does not exist", out.ArgDetails.Name))
 					os.Exit(constants.CX_COMPILATION_ERROR)
@@ -850,7 +850,7 @@ func ProcessMethodCall(expr *ast.CXExpression, symbols *[]map[string]*ast.CXArgu
 
 					inp.Fields = inp.Fields[:len(inp.Fields)-1]
 				} else if len(out.Fields) > 0 {
-					argOut, err := lookupSymbol(out.ArgDetails.Package.Name, out.ArgDetails.Name, symbols)
+					argOut, err := lookupSymbol(prgrm, out.ArgDetails.Package.Name, out.ArgDetails.Name, symbols)
 					if err != nil {
 						panic("")
 					}
@@ -880,7 +880,7 @@ func ProcessMethodCall(expr *ast.CXExpression, symbols *[]map[string]*ast.CXArgu
 				panic("")
 			}
 
-			argOut, err := lookupSymbol(out.ArgDetails.Package.Name, out.ArgDetails.Name, symbols)
+			argOut, err := lookupSymbol(prgrm, out.ArgDetails.Package.Name, out.ArgDetails.Name, symbols)
 			if err != nil {
 				println(ast.CompilationError(out.ArgDetails.FileName, out.ArgDetails.FileLine), fmt.Sprintf("identifier '%s' does not exist", out.ArgDetails.Name))
 				os.Exit(constants.CX_COMPILATION_ERROR)
@@ -917,13 +917,13 @@ func ProcessMethodCall(expr *ast.CXExpression, symbols *[]map[string]*ast.CXArgu
 	}
 }
 
-func GiveOffset(symbols *[]map[string]*ast.CXArgument, sym *ast.CXArgument, offset *types.Pointer, shouldExist bool) {
+func GiveOffset(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXArgument, sym *ast.CXArgument, offset *types.Pointer, shouldExist bool) {
 	if sym.ArgDetails.Name != "" {
 		if !sym.IsLocalDeclaration {
-			GetGlobalSymbol(symbols, sym.ArgDetails.Package, sym.ArgDetails.Name)
+			GetGlobalSymbol(prgrm, symbols, sym.ArgDetails.Package, sym.ArgDetails.Name)
 		}
 
-		arg, err := lookupSymbol(sym.ArgDetails.Package.Name, sym.ArgDetails.Name, symbols)
+		arg, err := lookupSymbol(prgrm, sym.ArgDetails.Package.Name, sym.ArgDetails.Name, symbols)
 		if err == nil {
 			ProcessSymbolFields(sym, arg)
 			CopyArgFields(sym, arg)
@@ -1178,10 +1178,10 @@ func ProcessSymbolFields(sym *ast.CXArgument, arg *ast.CXArgument) {
 	}
 }
 
-func SetFinalSize(symbols *[]map[string]*ast.CXArgument, sym *ast.CXArgument) {
+func SetFinalSize(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXArgument, sym *ast.CXArgument) {
 	finalSize := sym.TotalSize
 
-	arg, err := lookupSymbol(sym.ArgDetails.Package.Name, sym.ArgDetails.Name, symbols)
+	arg, err := lookupSymbol(prgrm, sym.ArgDetails.Package.Name, sym.ArgDetails.Name, symbols)
 	if err == nil {
 		PreFinalSize(&finalSize, sym, arg)
 		for _, fld := range sym.Fields {
@@ -1194,8 +1194,8 @@ func SetFinalSize(symbols *[]map[string]*ast.CXArgument, sym *ast.CXArgument) {
 }
 
 // GetGlobalSymbol tries to retrieve `ident` from `symPkg`'s globals if `ident` is not found in the local scope.
-func GetGlobalSymbol(symbols *[]map[string]*ast.CXArgument, symPkg *ast.CXPackage, ident string) {
-	_, err := lookupSymbol(symPkg.Name, ident, symbols)
+func GetGlobalSymbol(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXArgument, symPkg *ast.CXPackage, ident string) {
+	_, err := lookupSymbol(prgrm, symPkg.Name, ident, symbols)
 	if err != nil {
 		if glbl, err := symPkg.GetGlobal(ident); err == nil {
 			lastIdx := len(*symbols) - 1

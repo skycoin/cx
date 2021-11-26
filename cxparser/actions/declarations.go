@@ -22,14 +22,14 @@ import (
 // FIXME: This function should be merged with DeclareGlobalInPackage.
 //        Just use pkg=nil to indicate that CurrentPackage should be used.
 //
-func DeclareGlobal(declarator *ast.CXArgument, declarationSpecifiers *ast.CXArgument,
+func DeclareGlobal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationSpecifiers *ast.CXArgument,
 	initializer []*ast.CXExpression, doesInitialize bool) {
-	pkg, err := AST.GetCurrentPackage()
+	pkg, err := prgrm.GetCurrentPackage()
 	if err != nil {
 		panic(err)
 	}
 
-	DeclareGlobalInPackage(pkg, declarator, declarationSpecifiers, initializer, doesInitialize)
+	DeclareGlobalInPackage(prgrm, pkg, declarator, declarationSpecifiers, initializer, doesInitialize)
 }
 
 // DeclareGlobalInPackage creates a global variable in a specified package
@@ -37,7 +37,7 @@ func DeclareGlobal(declarator *ast.CXArgument, declarationSpecifiers *ast.CXArgu
 // If `doesInitialize` is true, then `initializer` is used to initialize the
 // new variable.
 //
-func DeclareGlobalInPackage(pkg *ast.CXPackage,
+func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 	declarator *ast.CXArgument, declaration_specifiers *ast.CXArgument,
 	initializer []*ast.CXExpression, doesInitialize bool) {
 	declaration_specifiers.ArgDetails.Package = pkg
@@ -50,10 +50,10 @@ func DeclareGlobalInPackage(pkg *ast.CXPackage,
 			// then it was only added a reference to the symbol
 			var offExpr []*ast.CXExpression
 			if declaration_specifiers.IsSlice { // TODO:PTR move branch in WritePrimary
-				offExpr = WritePrimary(declaration_specifiers.Type,
+				offExpr = WritePrimary(prgrm, declaration_specifiers.Type,
 					make([]byte, types.POINTER_SIZE), true)
 			} else {
-				offExpr = WritePrimary(declaration_specifiers.Type,
+				offExpr = WritePrimary(prgrm, declaration_specifiers.Type,
 					make([]byte, declaration_specifiers.TotalSize), false)
 			}
 
@@ -115,9 +115,9 @@ func DeclareGlobalInPackage(pkg *ast.CXPackage,
 		// then it hasn't been defined
 		var offExpr []*ast.CXExpression
 		if declaration_specifiers.IsSlice { // TODO:PTR move branch in WritePrimary
-			offExpr = WritePrimary(declaration_specifiers.Type, make([]byte, types.POINTER_SIZE), true)
+			offExpr = WritePrimary(prgrm, declaration_specifiers.Type, make([]byte, types.POINTER_SIZE), true)
 		} else {
-			offExpr = WritePrimary(declaration_specifiers.Type, make([]byte, declaration_specifiers.TotalSize), false)
+			offExpr = WritePrimary(prgrm, declaration_specifiers.Type, make([]byte, declaration_specifiers.TotalSize), false)
 		}
 
 		// Checking if something is supposed to be initialized
@@ -182,16 +182,16 @@ func DeclareGlobalInPackage(pkg *ast.CXPackage,
 // DeclareStruct takes a name of a struct and a slice of fields representing
 // the members and adds the struct to the package.
 //
-func DeclareStruct(ident string, strctFlds []*ast.CXArgument) {
+func DeclareStruct(prgrm *ast.CXProgram, ident string, strctFlds []*ast.CXArgument) {
 	// Make sure we are inside a package.
-	pkg, err := AST.GetCurrentPackage()
+	pkg, err := prgrm.GetCurrentPackage()
 	if err != nil {
 		// FIXME: Should give a relevant error message
 		panic(err)
 	}
 
 	// Make sure a struct with the same name is not yet defined.
-	strct, err := AST.GetStruct(ident, pkg.Name)
+	strct, err := prgrm.GetStruct(ident, pkg.Name)
 	if err != nil {
 		// FIXME: Should give a relevant error message
 		panic(err)
@@ -210,21 +210,21 @@ func DeclareStruct(ident string, strctFlds []*ast.CXArgument) {
 
 // DeclarePackage() switches the current package in the program.
 //
-func DeclarePackage(ident string) {
+func DeclarePackage(prgrm *ast.CXProgram, ident string) {
 	// Add a new package to the program if it's not previously defined.
-	if _, err := AST.GetPackage(ident); err != nil {
+	if _, err := prgrm.GetPackage(ident); err != nil {
 		pkg := ast.MakePackage(ident)
-		AST.AddPackage(pkg)
+		prgrm.AddPackage(pkg)
 	}
 
-	AST.SelectPackage(ident)
+	prgrm.SelectPackage(ident)
 }
 
 // DeclareImport()
 //
-func DeclareImport(name string, currentFile string, lineNo int) {
+func DeclareImport(prgrm *ast.CXProgram, name string, currentFile string, lineNo int) {
 	// Make sure we are inside a package
-	pkg, err := AST.GetCurrentPackage()
+	pkg, err := prgrm.GetCurrentPackage()
 	if err != nil {
 		// FIXME: Should give a relevant error message
 		panic(err)
@@ -257,7 +257,7 @@ func DeclareImport(name string, currentFile string, lineNo int) {
 
 	// If the package is already defined in the program, just add it to
 	// the importing package.
-	if imp, err := AST.GetPackage(ident); err == nil {
+	if imp, err := prgrm.GetPackage(ident); err == nil {
 		pkg.AddImport(imp)
 		return
 	}
@@ -268,11 +268,11 @@ func DeclareImport(name string, currentFile string, lineNo int) {
 	if constants2.IsCorePackage(ident) {
 		imp := ast.MakePackage(ident)
 		pkg.AddImport(imp)
-		AST.AddPackage(imp)
-		AST.CurrentPackage = pkg
+		prgrm.AddPackage(imp)
+		prgrm.CurrentPackage = pkg
 
 		if ident == "aff" {
-			AffordanceStructs(imp, currentFile, lineNo)
+			AffordanceStructs(prgrm, imp, currentFile, lineNo)
 		}
 	} else {
 		// This should never happen.
@@ -287,7 +287,7 @@ func DeclareImport(name string, currentFile string, lineNo int) {
 //
 // Returns a list of expressions that contains the initialization, if any.
 //
-func DeclareLocal(declarator *ast.CXArgument, declarationSpecifiers *ast.CXArgument,
+func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationSpecifiers *ast.CXArgument,
 	initializer []*ast.CXExpression, doesInitialize bool) []*ast.CXExpression {
 	if globals2.FoundCompileErrors {
 		return nil
@@ -295,7 +295,7 @@ func DeclareLocal(declarator *ast.CXArgument, declarationSpecifiers *ast.CXArgum
 
 	declarationSpecifiers.IsLocalDeclaration = true
 
-	pkg, err := AST.GetCurrentPackage()
+	pkg, err := prgrm.GetCurrentPackage()
 	if err != nil {
 		panic(err)
 	}
@@ -449,9 +449,9 @@ func DeclarationSpecifiersBasic(typeCode types.Code) *ast.CXArgument {
 }
 
 // DeclarationSpecifiersStruct() declares a struct
-func DeclarationSpecifiersStruct(ident string, pkgName string,
+func DeclarationSpecifiersStruct(prgrm *ast.CXProgram, ident string, pkgName string,
 	isExternal bool, currentFile string, lineNo int) *ast.CXArgument {
-	pkg, err := AST.GetCurrentPackage()
+	pkg, err := prgrm.GetCurrentPackage()
 	if err != nil {
 		panic(err)
 	}
@@ -463,7 +463,7 @@ func DeclarationSpecifiersStruct(ident string, pkgName string,
 			panic(err)
 		}
 
-		strct, err := AST.GetStruct(ident, imp.Name)
+		strct, err := prgrm.GetStruct(ident, imp.Name)
 		if err != nil {
 			println(ast.CompilationError(currentFile, lineNo), err.Error())
 			return nil
@@ -481,7 +481,7 @@ func DeclarationSpecifiersStruct(ident string, pkgName string,
 		return arg
 	} else {
 		// custom type in the current package
-		strct, err := AST.GetStruct(ident, pkg.Name)
+		strct, err := prgrm.GetStruct(ident, pkg.Name)
 		if err != nil {
 			println(ast.CompilationError(currentFile, lineNo), err.Error())
 			return nil

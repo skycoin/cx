@@ -17,10 +17,10 @@ type ReturnExpressions struct {
 	Expressions []*ast.CXExpression
 }
 
-func IterationExpressions(init []*ast.CXExpression, cond []*ast.CXExpression, incr []*ast.CXExpression, statements []*ast.CXExpression) []*ast.CXExpression {
+func IterationExpressions(prgrm *ast.CXProgram, init []*ast.CXExpression, cond []*ast.CXExpression, incr []*ast.CXExpression, statements []*ast.CXExpression) []*ast.CXExpression {
 	jmpFn := ast.Natives[constants.OP_JMP]
 
-	pkg, err := AST.GetCurrentPackage()
+	pkg, err := prgrm.GetCurrentPackage()
 	if err != nil {
 		panic(err)
 	}
@@ -28,7 +28,7 @@ func IterationExpressions(init []*ast.CXExpression, cond []*ast.CXExpression, in
 	upExpr := ast.MakeExpression(jmpFn, CurrentFile, LineNo)
 	upExpr.Package = pkg
 
-	trueArg := WritePrimary(types.BOOL, encoder.Serialize(true), false)
+	trueArg := WritePrimary(prgrm, types.BOOL, encoder.Serialize(true), false)
 
 	upLines := (len(statements) + len(incr) + len(cond) + 2) * -1
 	downLines := 0
@@ -85,15 +85,15 @@ func IterationExpressions(init []*ast.CXExpression, cond []*ast.CXExpression, in
 	return exprs
 }
 
-func trueJmpExpressions(opcode int) []*ast.CXExpression {
-	pkg, err := AST.GetCurrentPackage()
+func trueJmpExpressions(prgrm *ast.CXProgram, opcode int) []*ast.CXExpression {
+	pkg, err := prgrm.GetCurrentPackage()
 	if err != nil {
 		panic(err)
 	}
 
 	expr := ast.MakeExpression(ast.Natives[opcode], CurrentFile, LineNo)
 
-	trueArg := WritePrimary(types.BOOL, encoder.Serialize(true), false)
+	trueArg := WritePrimary(prgrm, types.BOOL, encoder.Serialize(true), false)
 	expr.AddInput(trueArg[0].Outputs[0])
 
 	expr.Package = pkg
@@ -101,22 +101,22 @@ func trueJmpExpressions(opcode int) []*ast.CXExpression {
 	return []*ast.CXExpression{expr}
 }
 
-func BreakExpressions() []*ast.CXExpression {
-	exprs := trueJmpExpressions(constants.OP_BREAK)
+func BreakExpressions(prgrm *ast.CXProgram) []*ast.CXExpression {
+	exprs := trueJmpExpressions(prgrm, constants.OP_BREAK)
 	return exprs
 }
 
-func ContinueExpressions() []*ast.CXExpression {
-	exprs := trueJmpExpressions(constants.OP_CONTINUE)
+func ContinueExpressions(prgrm *ast.CXProgram) []*ast.CXExpression {
+	exprs := trueJmpExpressions(prgrm, constants.OP_CONTINUE)
 	return exprs
 }
 
-func SelectionExpressions(condExprs []*ast.CXExpression, thenExprs []*ast.CXExpression, elseExprs []*ast.CXExpression) []*ast.CXExpression {
+func SelectionExpressions(prgrm *ast.CXProgram, condExprs []*ast.CXExpression, thenExprs []*ast.CXExpression, elseExprs []*ast.CXExpression) []*ast.CXExpression {
 	DefineNewScope(thenExprs)
 	DefineNewScope(elseExprs)
 
 	jmpFn := ast.Natives[constants.OP_JMP]
-	pkg, err := AST.GetCurrentPackage()
+	pkg, err := prgrm.GetCurrentPackage()
 	if err != nil {
 		panic(err)
 	}
@@ -155,7 +155,7 @@ func SelectionExpressions(condExprs []*ast.CXExpression, thenExprs []*ast.CXExpr
 	skipExpr := ast.MakeExpression(jmpFn, CurrentFile, LineNo)
 	skipExpr.Package = pkg
 
-	trueArg := WritePrimary(types.BOOL, encoder.Serialize(true), false)
+	trueArg := WritePrimary(prgrm, types.BOOL, encoder.Serialize(true), false)
 	skipLines := len(elseExprs)
 
 	skipExpr.AddInput(trueArg[0].Outputs[0])
@@ -206,8 +206,8 @@ func IsTempVar(name string) bool {
 	return false
 }
 
-func OperatorExpression(leftExprs []*ast.CXExpression, rightExprs []*ast.CXExpression, opcode int) (out []*ast.CXExpression) {
-	pkg, err := AST.GetCurrentPackage()
+func OperatorExpression(prgrm *ast.CXProgram, leftExprs []*ast.CXExpression, rightExprs []*ast.CXExpression, opcode int) (out []*ast.CXExpression) {
+	pkg, err := prgrm.GetCurrentPackage()
 	if err != nil {
 		panic(err)
 	}
@@ -272,7 +272,7 @@ func OperatorExpression(leftExprs []*ast.CXExpression, rightExprs []*ast.CXExpre
 	return
 }
 
-func UnaryExpression(op string, prevExprs []*ast.CXExpression) []*ast.CXExpression {
+func UnaryExpression(prgrm *ast.CXProgram, op string, prevExprs []*ast.CXExpression) []*ast.CXExpression {
 	if len(prevExprs[len(prevExprs)-1].Outputs) == 0 {
 		println(ast.CompilationError(CurrentFile, LineNo), "invalid indirection")
 		// needs to be stopped immediately
@@ -300,7 +300,7 @@ func UnaryExpression(op string, prevExprs []*ast.CXExpression) []*ast.CXExpressi
 			baseOut.IsInnerReference = true
 		}
 	case "!":
-		if pkg, err := AST.GetCurrentPackage(); err == nil {
+		if pkg, err := prgrm.GetCurrentPackage(); err == nil {
 			expr := ast.MakeExpression(ast.Natives[constants.OP_BOOL_NOT], CurrentFile, LineNo)
 			expr.Package = pkg
 
@@ -311,7 +311,7 @@ func UnaryExpression(op string, prevExprs []*ast.CXExpression) []*ast.CXExpressi
 			panic(err)
 		}
 	case "-":
-		if pkg, err := AST.GetCurrentPackage(); err == nil {
+		if pkg, err := prgrm.GetCurrentPackage(); err == nil {
 			expr := ast.MakeExpression(ast.Natives[constants.OP_NEG], CurrentFile, LineNo)
 			expr.Package = pkg
 			expr.AddInput(exprOut)
@@ -325,12 +325,12 @@ func UnaryExpression(op string, prevExprs []*ast.CXExpression) []*ast.CXExpressi
 
 // AssociateReturnExpressions associates the output of `retExprs` to the
 // `idx`th output parameter of the current function.
-func AssociateReturnExpressions(idx int, retExprs []*ast.CXExpression) []*ast.CXExpression {
+func AssociateReturnExpressions(prgrm *ast.CXProgram, idx int, retExprs []*ast.CXExpression) []*ast.CXExpression {
 	var pkg *ast.CXPackage
 	var fn *ast.CXFunction
 	var err error
 
-	pkg, err = AST.GetCurrentPackage()
+	pkg, err = prgrm.GetCurrentPackage()
 	if err != nil {
 		panic(err)
 	}
@@ -371,12 +371,12 @@ func AssociateReturnExpressions(idx int, retExprs []*ast.CXExpression) []*ast.CX
 }
 
 // AddJmpToReturnExpressions adds an jump expression that makes a function stop its execution
-func AddJmpToReturnExpressions(exprs ReturnExpressions) []*ast.CXExpression {
+func AddJmpToReturnExpressions(prgrm *ast.CXProgram, exprs ReturnExpressions) []*ast.CXExpression {
 	var pkg *ast.CXPackage
 	var fn *ast.CXFunction
 	var err error
 
-	pkg, err = AST.GetCurrentPackage()
+	pkg, err = prgrm.GetCurrentPackage()
 	if err != nil {
 		panic(err)
 	}

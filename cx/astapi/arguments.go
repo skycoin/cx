@@ -358,7 +358,7 @@ func AddLiteralInputToExpression(cxprogram *cxast.CXProgram, packageName, functi
 	}
 
 	cxparseractions.AST = cxprogram
-	litArg := cxparseractions.WritePrimary(argType, bytes, false)
+	litArg := cxparseractions.WritePrimary(cxprogram, argType, bytes, false)
 	arg := litArg[0].Outputs[0]
 	arg.ArgDetails.Package = pkg
 	expr.AddInput(arg)

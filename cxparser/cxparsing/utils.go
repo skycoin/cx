@@ -296,7 +296,7 @@ func AddInitFunction(prgrm *ast.CXProgram) error {
 	mainPkg.AddFunction(initFn)
 
 	//Init Expressions
-	actions.FunctionDeclaration(initFn, nil, nil, globals.SysInitExprs)
+	actions.FunctionDeclaration(prgrm, initFn, nil, nil, globals.SysInitExprs)
 
 	if _, err := mainPkg.SelectFunction(constants.MAIN_FUNC); err != nil {
 		return err
