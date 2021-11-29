@@ -150,7 +150,6 @@ func printProgramAST(options cxCmdFlags, cxArgs []string, sourceCode []*os.File)
 	defer profiling.StopProfile("run")
 
 	if options.replMode || len(sourceCode) == 0 {
-		actions.AST.SetCurrentCxProgram()
 		repl.Repl()
 		return
 	}

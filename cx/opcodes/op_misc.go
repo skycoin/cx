@@ -17,7 +17,7 @@ func opIdentity(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 
 	//TODO: Delete
 	if elt.DoesEscape {
-		outputs[0].Set_ptr(prgrm, types.AllocWrite_obj_data(prgrm.Memory, inputs[0].Get_bytes(prgrm)))
+		outputs[0].Set_ptr(prgrm, types.AllocWrite_obj_data(prgrm, prgrm.Memory, inputs[0].Get_bytes(prgrm)))
 	} else {
 		switch elt.PassBy {
 		case constants.PASSBY_VALUE:

@@ -77,7 +77,7 @@ func SliceResizeEx(prgrm *CXProgram, outputSliceOffset types.Pointer, count type
 			newCap *= 2
 		}
 		var outputObjectSize = types.OBJECT_HEADER_SIZE + constants.SLICE_HEADER_SIZE + newCap*sizeofElement
-		outputSliceOffset = AllocateSeq(outputObjectSize)
+		outputSliceOffset = AllocateSeq(prgrm, outputObjectSize)
 		types.Write_ptr(types.Get_obj_header(prgrm.Memory, outputSliceOffset), types.OBJECT_GC_HEADER_SIZE, outputObjectSize)
 
 		outputSliceHeader = GetSliceHeader(prgrm, outputSliceOffset)

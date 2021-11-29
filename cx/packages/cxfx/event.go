@@ -55,7 +55,7 @@ type CXCallback struct {
 
 func (cb *CXCallback) init(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue, packageName string) {
 	cb.windowName = inputs[0].Get_str(prgrm)
-	var windowHeapPtr = types.AllocWrite_obj_data(prgrm.Memory, []byte(cb.windowName))
+	var windowHeapPtr = types.AllocWrite_obj_data(prgrm, prgrm.Memory, []byte(cb.windowName))
 	var windowName [types.POINTER_SIZE]byte
 	types.Write_ptr(windowName[:], 0, windowHeapPtr)
 	cb.windowNameBytes = windowName[:]

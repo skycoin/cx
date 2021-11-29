@@ -195,5 +195,5 @@ func (value *CXValue) Set_bytes(prgrm *CXProgram, data []byte) {
 }
 
 func (value *CXValue) Set_str(prgrm *CXProgram, data string) {
-	types.Write_str(prgrm.Memory, value.Offset, data)
+	types.Write_str(prgrm, prgrm.Memory, value.Offset, data)
 }

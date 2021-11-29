@@ -126,29 +126,6 @@ func (cxprogram *CXProgram) RemovePackage(modName string) {
 // ----------------------------------------------------------------
 //                             `CXProgram` Selectors
 
-// SetCurrentCxProgram sets `PROGRAM` to the the receiver `prgrm`. This is a utility function used mainly
-// by CX chains. `PROGRAM` is used in multiple parts of the CX runtime as a convenience; instead of having
-// to pass around a parameter of type CXProgram, the CX program currently being run is accessible through
-// `PROGRAM`.
-
-//Very strange
-//Beware whenever this function is called
-func (cxprogram *CXProgram) SetCurrentCxProgram() (*CXProgram, error) {
-	PROGRAM = cxprogram
-	return PROGRAM, nil
-}
-
-// GetCurrentCxProgram returns the CX program assigned to global variable `PROGRAM`.
-// This function is mainly used for CX chains.
-/*
-func GetCurrentCxProgram() (*CXProgram, error) {
-	if PROGRAM == nil {
-		return nil, fmt.Errorf("a CX program has not been loaded")
-	}
-	return PROGRAM, nil
-}
-*/
-
 // ----------------------------------------------------------------
 //                             `CXProgram` Getters
 

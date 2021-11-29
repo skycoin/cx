@@ -229,7 +229,7 @@ func opGlfwSetShouldClose(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []
 func getWindowName(prgrm *ast.CXProgram, w *glfw.Window) []byte {
 	for key, win := range windows {
 		if w == win {
-			var windowHeapPtr = types.AllocWrite_obj_data(prgrm.Memory, []byte(key))
+			var windowHeapPtr = types.AllocWrite_obj_data(prgrm, prgrm.Memory, []byte(key))
 			var windowName [types.POINTER_SIZE]byte
 			types.Write_ptr(windowName[:], 0, windowHeapPtr)
 			return windowName[:]

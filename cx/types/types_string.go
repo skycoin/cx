@@ -2,8 +2,8 @@ package types
 
 //"fmt"
 
-func AllocWrite_str_data(memory []byte, str string) Pointer {
-	return AllocWrite_obj_data(memory, []byte(str))
+func AllocWrite_str_data(prgrm interface{}, memory []byte, str string) Pointer {
+	return AllocWrite_obj_data(prgrm, memory, []byte(str))
 }
 
 func Write_str_data(memory []byte, offset Pointer, value string) {
@@ -15,8 +15,8 @@ func Read_str_data(memory []byte, offset Pointer) string {
 	return string(str)
 }
 
-func Write_str(memory []byte, offset Pointer, str string) {
-	Write_obj(memory, offset, []byte(str))
+func Write_str(prgrm interface{}, memory []byte, offset Pointer, str string) {
+	Write_obj(prgrm, memory, offset, []byte(str))
 }
 
 func Read_str(memory []byte, offset Pointer) string {

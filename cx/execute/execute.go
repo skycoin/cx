@@ -125,7 +125,7 @@ func feedOSArgs(cxprogram *ast.CXProgram, args []string) error {
 		argsOffset := types.Pointer(0)
 		if osGbl, err := osPkg.GetGlobal(constants.OS_ARGS); err == nil {
 			for _, arg := range args {
-				argOffset := types.AllocWrite_obj_data(cxprogram.Memory, []byte(arg))
+				argOffset := types.AllocWrite_obj_data(cxprogram, cxprogram.Memory, []byte(arg))
 
 				var argOffsetBytes [types.POINTER_SIZE]byte
 				types.Write_ptr(argOffsetBytes[:], 0, argOffset)
@@ -139,11 +139,6 @@ func feedOSArgs(cxprogram *ast.CXProgram, args []string) error {
 
 // RunCompiled ...
 func RunCompiled(cxprogram *ast.CXProgram, maxOps int, args []string) error {
-	_, err := cxprogram.SetCurrentCxProgram()
-	if err != nil {
-		panic(err)
-	}
-
 	cxprogram.EnsureMinimumHeapSize()
 	rand.Seed(time.Now().UTC().UnixNano())
 
@@ -194,7 +189,7 @@ func RunCompiled(cxprogram *ast.CXProgram, maxOps int, args []string) error {
 		cxprogram.Terminated = false
 	}
 
-	if err = RunCxAst(cxprogram, untilEnd, maxOps, types.InvalidPointer); err != nil {
+	if err := RunCxAst(cxprogram, untilEnd, maxOps, types.InvalidPointer); err != nil {
 		return err
 	}
 

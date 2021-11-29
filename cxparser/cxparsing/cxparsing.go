@@ -54,9 +54,6 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 		parseErrors = Preliminarystage(sourceCodeStrings, fileNames)
 	}
 
-	//package level program
-	actions.AST.SetCurrentCxProgram()
-
 	actions.AST = cxpartialparsing.Program
 
 	if globals2.FoundCompileErrors || parseErrors > 0 {
