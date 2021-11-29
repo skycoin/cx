@@ -187,9 +187,9 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fn *ast.CXFunction, inputs, outpu
 			fn.Expressions[i].Outputs[0].TotalSize = arg.TotalSize
 		}
 
-		processTestExpression(ast.PROGRAM, expr)
+		processTestExpression(prgrm, expr)
 
-		CheckTypes(expr)
+		CheckTypes(prgrm, expr)
 		CheckUndValidTypes(expr)
 
 		if expr.IsScopeDel() {
@@ -396,7 +396,7 @@ func ProcessExpressionArguments(prgrm *ast.CXProgram, symbols *[]map[string]*ast
 		for _, idx := range arg.Indexes {
 			UpdateSymbolsTable(prgrm, symbols, idx, offset, true)
 			GiveOffset(prgrm, symbols, idx, offset, true)
-			checkIndexType(ast.PROGRAM, idx)
+			checkIndexType(prgrm, idx)
 		}
 		for _, fld := range arg.Fields {
 			for _, idx := range fld.Indexes {
@@ -557,7 +557,7 @@ func checkMatchParamTypes(prgrm *ast.CXProgram, expr *ast.CXExpression, expected
 	}
 }
 
-func CheckTypes(expr *ast.CXExpression) {
+func CheckTypes(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 	if expr.Operator != nil {
 		opName := expr.GetOperatorName()
 
@@ -643,10 +643,10 @@ func CheckTypes(expr *ast.CXExpression) {
 	// then it's a function call and not a declaration
 	if expr.Operator != nil {
 		// checking inputs matching operator's inputs
-		checkMatchParamTypes(ast.PROGRAM, expr, expr.Operator.Inputs, expr.Inputs, true)
+		checkMatchParamTypes(prgrm, expr, expr.Operator.Inputs, expr.Inputs, true)
 
 		// checking outputs matching operator's outputs
-		checkMatchParamTypes(ast.PROGRAM, expr, expr.Operator.Outputs, expr.Outputs, false)
+		checkMatchParamTypes(prgrm, expr, expr.Operator.Outputs, expr.Outputs, false)
 	}
 }
 
