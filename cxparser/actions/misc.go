@@ -49,7 +49,7 @@ func WritePrimary(prgrm *ast.CXProgram, typeCode types.Code, byts []byte, isSlic
 	if pkg, err := prgrm.GetCurrentPackage(); err == nil {
 		arg := ast.MakeArgument("", CurrentFile, LineNo)
 		arg.AddType(typeCode)
-		arg.ArgDetails.Package = pkg
+		arg.Package = pkg
 
 		size := types.Cast_int_to_ptr(len(byts))
 
@@ -111,8 +111,8 @@ func StructLiteralFields(prgrm *ast.CXProgram, ident string) *ast.CXExpression {
 	if pkg, err := prgrm.GetCurrentPackage(); err == nil {
 		arg := ast.MakeArgument("", CurrentFile, LineNo)
 		arg.AddType(types.IDENTIFIER)
-		arg.ArgDetails.Name = ident
-		arg.ArgDetails.Package = pkg
+		arg.Name = ident
+		arg.Package = pkg
 
 		expr := ast.MakeExpression(nil, CurrentFile, LineNo)
 		expr.Outputs = []*ast.CXArgument{arg}
@@ -220,7 +220,7 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 
 	// prgrmFldCaller := cxcore.MakeField("Caller", cxcore.TYPE_STRUCT, "", 0)
 	prgrmFldCaller := DeclarationSpecifiersStruct(prgrm, callStrct.Name, callStrct.Package.Name, false, currentFile, lineNo)
-	prgrmFldCaller.ArgDetails.Name = "Caller"
+	prgrmFldCaller.Name = "Caller"
 
 	prgrmStrct.AddField(prgrmFldCallCounter)
 	prgrmStrct.AddField(prgrmFldFreeHeap)
@@ -234,8 +234,8 @@ func PrimaryIdentifier(prgrm *ast.CXProgram, ident string) []*ast.CXExpression {
 		arg := ast.MakeArgument(ident, CurrentFile, LineNo) // fix: line numbers in errors sometimes report +1 or -1. Issue #195
 		arg.AddType(types.IDENTIFIER)
 		// arg.Typ = "ident"
-		arg.ArgDetails.Name = ident
-		arg.ArgDetails.Package = pkg
+		arg.Name = ident
+		arg.Package = pkg
 
 		// expr := &cxcore.CXExpression{ProgramOutput: []*cxcore.CXArgument{arg}}
 		expr := ast.MakeExpression(nil, CurrentFile, LineNo)

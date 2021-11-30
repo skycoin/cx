@@ -28,7 +28,7 @@ func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []*
 	slcVar.TotalSize = types.POINTER_SIZE
 
 	slcVarExpr.Outputs = append(slcVarExpr.Outputs, slcVar)
-	slcVar.ArgDetails.Package = pkg
+	slcVar.Package = pkg
 	slcVar.PreviouslyDeclared = true
 
 	result = append(result, slcVarExpr)
@@ -37,9 +37,9 @@ func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []*
 	for _, expr := range exprs {
 		if expr.IsArrayLiteral() {
 			symInp := ast.MakeArgument(symName, CurrentFile, LineNo).AddType(typeCode)
-			symInp.ArgDetails.Package = pkg
+			symInp.Package = pkg
 			symOut := ast.MakeArgument(symName, CurrentFile, LineNo).AddType(typeCode)
-			symOut.ArgDetails.Package = pkg
+			symOut.Package = pkg
 
 			endPointsCounter++
 
@@ -91,12 +91,12 @@ func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []*
 
 	symOutput := ast.MakeArgument(symNameOutput, CurrentFile, LineNo).AddType(typeCode)
 	symOutput.IsSlice = true
-	symOutput.ArgDetails.Package = pkg
+	symOutput.Package = pkg
 	symOutput.PreviouslyDeclared = true
 
 	symInput := ast.MakeArgument(symName, CurrentFile, LineNo).AddType(typeCode)
 	symInput.IsSlice = true
-	symInput.ArgDetails.Package = pkg
+	symInput.Package = pkg
 
 	symInput.TotalSize = types.POINTER_SIZE
 	symOutput.TotalSize = types.POINTER_SIZE
@@ -118,14 +118,14 @@ func PrimaryStructLiteral(prgrm *ast.CXProgram, ident string, strctFlds []*ast.C
 	if pkg, err := prgrm.GetCurrentPackage(); err == nil {
 		if strct, err := prgrm.GetStruct(ident, pkg.Name); err == nil {
 			for _, expr := range strctFlds {
-				name := expr.Outputs[0].ArgDetails.Name
+				name := expr.Outputs[0].Name
 
 				fld := ast.MakeArgument(name, CurrentFile, LineNo)
 				fld.Type = expr.Outputs[0].Type
 				fld.PointerTargetType = expr.Outputs[0].PointerTargetType
 				expr.ExpressionType = ast.CXEXPR_STRUCT_LITERAL
 
-				expr.Outputs[0].ArgDetails.Package = pkg
+				expr.Outputs[0].Package = pkg
 				// expr.ProgramOutput[0].Program = prgrm
 
 				if expr.Outputs[0].StructType == nil {
@@ -136,7 +136,7 @@ func PrimaryStructLiteral(prgrm *ast.CXProgram, ident string, strctFlds []*ast.C
 
 				expr.Outputs[0].Size = strct.Size
 				expr.Outputs[0].TotalSize = strct.Size
-				expr.Outputs[0].ArgDetails.Name = ident
+				expr.Outputs[0].Name = ident
 				expr.Outputs[0].Fields = append(expr.Outputs[0].Fields, fld)
 				result = append(result, expr)
 			}
@@ -158,17 +158,17 @@ func PrimaryStructLiteralExternal(prgrm *ast.CXProgram, impName string, ident st
 				for _, expr := range strctFlds {
 					fld := ast.MakeArgument("", CurrentFile, LineNo)
 					fld.AddType(types.IDENTIFIER)
-					fld.ArgDetails.Name = expr.Outputs[0].ArgDetails.Name
+					fld.Name = expr.Outputs[0].Name
 
 					expr.ExpressionType = ast.CXEXPR_STRUCT_LITERAL
 
-					expr.Outputs[0].ArgDetails.Package = pkg
+					expr.Outputs[0].Package = pkg
 					// expr.ProgramOutput[0].Program = prgrm
 
 					expr.Outputs[0].StructType = strct
 					expr.Outputs[0].Size = strct.Size
 					expr.Outputs[0].TotalSize = strct.Size
-					expr.Outputs[0].ArgDetails.Name = ident
+					expr.Outputs[0].Name = ident
 					expr.Outputs[0].Fields = append(expr.Outputs[0].Fields, fld)
 					result = append(result, expr)
 				}
@@ -203,7 +203,7 @@ func ArrayLiteralExpression(prgrm *ast.CXProgram, arrSizes []types.Pointer, type
 	arrVar.TotalSize = arrVar.Size * TotalLength(arrVar.Lengths)
 
 	arrVarExpr.Outputs = append(arrVarExpr.Outputs, arrVar)
-	arrVar.ArgDetails.Package = pkg
+	arrVar.Package = pkg
 	arrVar.PreviouslyDeclared = true
 
 	result = append(result, arrVarExpr)
@@ -214,7 +214,7 @@ func ArrayLiteralExpression(prgrm *ast.CXProgram, arrSizes []types.Pointer, type
 			expr.ExpressionType = ast.CXEXPR_UNUSED
 
 			sym := ast.MakeArgument(symName, CurrentFile, LineNo).AddType(typeCode)
-			sym.ArgDetails.Package = pkg
+			sym.Package = pkg
 			sym.PreviouslyDeclared = true
 
 			if sym.Type == types.STR || sym.Type == types.AFF {
@@ -257,14 +257,14 @@ func ArrayLiteralExpression(prgrm *ast.CXProgram, arrSizes []types.Pointer, type
 	symOutput := ast.MakeArgument(symNameOutput, CurrentFile, LineNo).AddType(typeCode)
 	// symOutput.Lengths = append(symOutput.Lengths, arrSizes[len(arrSizes)-1])
 	symOutput.Lengths = arrSizes
-	symOutput.ArgDetails.Package = pkg
+	symOutput.Package = pkg
 	symOutput.PreviouslyDeclared = true
 	symOutput.TotalSize = symOutput.Size * TotalLength(symOutput.Lengths)
 
 	symInput := ast.MakeArgument(symName, CurrentFile, LineNo).AddType(typeCode)
 	// symInput.Lengths = append(symInput.Lengths, arrSizes[len(arrSizes)-1])
 	symInput.Lengths = arrSizes
-	symInput.ArgDetails.Package = pkg
+	symInput.Package = pkg
 	symInput.PreviouslyDeclared = true
 	symInput.TotalSize = symInput.Size * TotalLength(symInput.Lengths)
 

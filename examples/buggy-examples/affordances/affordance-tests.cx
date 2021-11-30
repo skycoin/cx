@@ -3,7 +3,7 @@ import "aff"
 
 func predArg (arg aff.Argument) (res bool) {
 	// accept any argument
-	str.print(arg.ArgDetails.Name)
+	str.print(arg.Name)
 	res = true
 }
 

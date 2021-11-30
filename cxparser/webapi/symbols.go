@@ -59,7 +59,7 @@ func extractExportedSymbols(prgrm *ast.CXProgram, pkg *ast.CXPackage) ExportedSy
 	}
 
 	for _, g := range pkg.Globals {
-		if isExported(g.ArgDetails.Name) {
+		if isExported(g.Name) {
 			resp.Globals = append(resp.Globals, displayCXGlobal(g))
 		}
 	}
@@ -87,7 +87,7 @@ func displayCXStruct(prgrm *ast.CXProgram, s *ast.CXStruct) ExportedSymbol {
 
 func displayCXGlobal(a *ast.CXArgument) ExportedSymbol {
 	return ExportedSymbol{
-		Name:      a.ArgDetails.Name,
+		Name:      a.Name,
 		Signature: nil,
 		Type:      a.Type,
 		TypeName:  a.Type.Name(),

@@ -114,8 +114,8 @@ func (expr *CXExpression) GetOperatorName() string {
 func (expr *CXExpression) AddInput(param *CXArgument) *CXExpression {
 	// param.Package = expr.Package
 	expr.Inputs = append(expr.Inputs, param)
-	if param.ArgDetails.Package == nil {
-		param.ArgDetails.Package = expr.Package
+	if param.Package == nil {
+		param.Package = expr.Package
 	}
 	return expr
 }
@@ -131,8 +131,8 @@ func (expr *CXExpression) RemoveInput() {
 func (expr *CXExpression) AddOutput(param *CXArgument) *CXExpression {
 	// param.Package = expr.Package
 	expr.Outputs = append(expr.Outputs, param)
-	if param.ArgDetails.Package == nil {
-		param.ArgDetails.Package = expr.Package
+	if param.Package == nil {
+		param.Package = expr.Package
 	}
 	return expr
 }

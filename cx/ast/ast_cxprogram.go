@@ -338,7 +338,7 @@ func (cxprogram *CXProgram) PrintAllObjects() {
 
 			fmt.Println("declarat", ptr.DeclarationSpecifiers)
 
-			fmt.Println("obj", ptr.ArgDetails.Name, ptr.StructType, cxprogram.Memory[heapOffset:heapOffset+op.Size], byts)
+			fmt.Println("obj", ptr.Name, ptr.StructType, cxprogram.Memory[heapOffset:heapOffset+op.Size], byts)
 		}
 
 		fp += op.Size

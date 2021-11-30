@@ -11,7 +11,7 @@
         /*
         This is a computer generated file
         - partialparsing.go is generated from partialparsing.y via 
-        - ./bin/goyacc -o cxparser/cxpartialparsing/partialparsing.go cxparser/cxpartialparsing/partialparsing.y
+        - ./bin/goyacc -o cxparser/cxpartialparsing/cxpartialparsing.go cxparser/cxpartialparsing/cxpartialparsing.y
         */
 
 	var Program *ast.CXProgram
@@ -289,8 +289,8 @@ parameter_list:
 parameter_declaration:
                 declarator declaration_specifiers
                 {
-			$2.ArgDetails.Name = $1.ArgDetails.Name
-			$2.ArgDetails.Package = $1.ArgDetails.Package
+			$2.Name = $1.Name
+			$2.Package = $1.Package
 			$2.IsLocalDeclaration = true
 			$$ = $2
                 }
@@ -310,8 +310,8 @@ direct_declarator:
 			if pkg, err := Program.GetCurrentPackage(); err == nil {
 				arg := ast.MakeArgument("", actions.CurrentFile, actions.LineNo)
 				arg.AddType(types.UNDEFINED)
-				arg.ArgDetails.Name = $1
-				arg.ArgDetails.Package = pkg
+				arg.Name = $1
+				arg.Package = pkg
 				$$ = arg
 			} else {
 				panic(err)

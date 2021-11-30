@@ -116,7 +116,7 @@ func (fn *CXFunction) GetCurrentExpression() (*CXExpression, error) {
 func (fn *CXFunction) AddInput(param *CXArgument) *CXFunction {
 	found := false
 	for _, inp := range fn.Inputs {
-		if inp.ArgDetails.Name == param.ArgDetails.Name {
+		if inp.Name == param.Name {
 			found = true
 			break
 		}
@@ -133,7 +133,7 @@ func (fn *CXFunction) RemoveInput(inpName string) {
 	if len(fn.Inputs) > 0 {
 		lenInps := len(fn.Inputs)
 		for i, inp := range fn.Inputs {
-			if inp.ArgDetails.Name == inpName {
+			if inp.Name == inpName {
 				if i == lenInps {
 					fn.Inputs = fn.Inputs[:len(fn.Inputs)-1]
 				} else {
@@ -149,7 +149,7 @@ func (fn *CXFunction) RemoveInput(inpName string) {
 func (fn *CXFunction) AddOutput(param *CXArgument) *CXFunction {
 	found := false
 	for _, out := range fn.Outputs {
-		if out.ArgDetails.Name == param.ArgDetails.Name {
+		if out.Name == param.Name {
 			found = true
 			break
 		}
@@ -158,7 +158,7 @@ func (fn *CXFunction) AddOutput(param *CXArgument) *CXFunction {
 		fn.Outputs = append(fn.Outputs, param)
 	}
 
-	param.ArgDetails.Package = fn.Package
+	param.Package = fn.Package
 
 	return fn
 }
@@ -168,7 +168,7 @@ func (fn *CXFunction) RemoveOutput(outName string) {
 	if len(fn.Outputs) > 0 {
 		lenOuts := len(fn.Outputs)
 		for i, out := range fn.Outputs {
-			if out.ArgDetails.Name == outName {
+			if out.Name == outName {
 				if i == lenOuts {
 					fn.Outputs = fn.Outputs[:len(fn.Outputs)-1]
 				} else {

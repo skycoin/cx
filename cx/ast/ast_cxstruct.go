@@ -25,7 +25,7 @@ type CXStruct struct {
 // GetField ...
 func (strct *CXStruct) GetField(name string) (*CXArgument, error) {
 	for _, fld := range strct.Fields {
-		if fld.ArgDetails.Name == name {
+		if fld.Name == name {
 			return fld, nil
 		}
 	}
@@ -45,7 +45,7 @@ func MakeStruct(name string) *CXStruct {
 // AddField ...
 func (strct *CXStruct) AddField(fld *CXArgument) *CXStruct {
 	for _, fl := range strct.Fields {
-		if fl.ArgDetails.Name == fld.ArgDetails.Name {
+		if fl.Name == fld.Name {
 			fmt.Printf("%s : duplicate field", CompilationError(fl.ArgDetails.FileName, fl.ArgDetails.FileLine))
 			os.Exit(constants.CX_COMPILATION_ERROR)
 		}
@@ -68,7 +68,7 @@ func (strct *CXStruct) RemoveField(fldName string) {
 	if len(strct.Fields) > 0 {
 		lenFlds := len(strct.Fields)
 		for i, fld := range strct.Fields {
-			if fld.ArgDetails.Name == fldName {
+			if fld.Name == fldName {
 				if i == lenFlds-1 {
 					strct.Fields = strct.Fields[:len(strct.Fields)-1]
 				} else {

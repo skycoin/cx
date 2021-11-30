@@ -67,7 +67,7 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 	if osPkg, err := actions.AST.GetPackage(constants.OS_PKG); err == nil {
 		if _, err := osPkg.GetGlobal(constants.OS_ARGS); err != nil {
 			arg0 := ast.MakeArgument(constants.OS_ARGS, "", -1).AddType(types.UNDEFINED)
-			arg0.ArgDetails.Package = osPkg
+			arg0.Package = osPkg
 
 			arg1 := ast.MakeArgument(constants.OS_ARGS, "", -1).AddType(types.STR)
 			arg1 = actions.DeclarationSpecifiers(arg1, []types.Pointer{0}, constants.DECL_BASIC)

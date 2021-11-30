@@ -40,10 +40,10 @@ func DeclareGlobal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declaration
 func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 	declarator *ast.CXArgument, declaration_specifiers *ast.CXArgument,
 	initializer []*ast.CXExpression, doesInitialize bool) {
-	declaration_specifiers.ArgDetails.Package = pkg
+	declaration_specifiers.Package = pkg
 
 	// Treat the name a bit different whether it's defined already or not.
-	if glbl, err := pkg.GetGlobal(declarator.ArgDetails.Name); err == nil {
+	if glbl, err := pkg.GetGlobal(declarator.Name); err == nil {
 		// The name is already defined.
 
 		if glbl.Offset < 0 || glbl.Size == 0 || glbl.TotalSize == 0 {
@@ -70,10 +70,10 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 			// then we just re-assign offsets
 			if initializer[len(initializer)-1].Operator == nil {
 				// then it's a literal
-				declaration_specifiers.ArgDetails.Name = glbl.ArgDetails.Name
+				declaration_specifiers.Name = glbl.Name
 				declaration_specifiers.Offset = glbl.Offset
 				declaration_specifiers.PassBy = glbl.PassBy
-				declaration_specifiers.ArgDetails.Package = glbl.ArgDetails.Package
+				declaration_specifiers.Package = glbl.Package
 
 				*glbl = *declaration_specifiers
 
@@ -81,16 +81,16 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 				initializer[len(initializer)-1].Outputs = nil
 				initializer[len(initializer)-1].AddOutput(glbl)
 				initializer[len(initializer)-1].Operator = ast.Natives[constants.OP_IDENTITY]
-				initializer[len(initializer)-1].Package = glbl.ArgDetails.Package
+				initializer[len(initializer)-1].Package = glbl.Package
 
 				//add intialization statements, to array
 				globals.SysInitExprs = append(globals.SysInitExprs, initializer...)
 			} else {
 				// then it's an expression
-				declaration_specifiers.ArgDetails.Name = glbl.ArgDetails.Name
+				declaration_specifiers.Name = glbl.Name
 				declaration_specifiers.Offset = glbl.Offset
 				declaration_specifiers.PassBy = glbl.PassBy
-				declaration_specifiers.ArgDetails.Package = glbl.ArgDetails.Package
+				declaration_specifiers.Package = glbl.Package
 
 				*glbl = *declaration_specifiers
 
@@ -105,10 +105,10 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 			}
 		} else {
 			// we keep the last value for now
-			declaration_specifiers.ArgDetails.Name = glbl.ArgDetails.Name
+			declaration_specifiers.Name = glbl.Name
 			declaration_specifiers.Offset = glbl.Offset
 			declaration_specifiers.PassBy = glbl.PassBy
-			declaration_specifiers.ArgDetails.Package = glbl.ArgDetails.Package
+			declaration_specifiers.Package = glbl.Package
 			*glbl = *declaration_specifiers
 		}
 	} else {
@@ -128,12 +128,12 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 			if initializer[len(initializer)-1].Operator == nil {
 				// then it's a literal
 
-				declaration_specifiers.ArgDetails.Name = declarator.ArgDetails.Name
+				declaration_specifiers.Name = declarator.Name
 				declaration_specifiers.ArgDetails.FileLine = declarator.ArgDetails.FileLine
 				declaration_specifiers.Offset = offExpr[0].Outputs[0].Offset
 				declaration_specifiers.Size = offExpr[0].Outputs[0].Size
 				declaration_specifiers.TotalSize = offExpr[0].Outputs[0].TotalSize
-				declaration_specifiers.ArgDetails.Package = pkg
+				declaration_specifiers.Package = pkg
 
 				initializer[len(initializer)-1].Operator = ast.Natives[constants.OP_IDENTITY]
 				initializer[len(initializer)-1].AddInput(initializer[len(initializer)-1].Outputs[0])
@@ -145,12 +145,12 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 				globals.SysInitExprs = append(globals.SysInitExprs, initializer...)
 			} else {
 				// then it's an expression
-				declaration_specifiers.ArgDetails.Name = declarator.ArgDetails.Name
+				declaration_specifiers.Name = declarator.Name
 				declaration_specifiers.ArgDetails.FileLine = declarator.ArgDetails.FileLine
 				declaration_specifiers.Offset = offExpr[0].Outputs[0].Offset
 				declaration_specifiers.Size = offExpr[0].Outputs[0].Size
 				declaration_specifiers.TotalSize = offExpr[0].Outputs[0].TotalSize
-				declaration_specifiers.ArgDetails.Package = pkg
+				declaration_specifiers.Package = pkg
 
 				if initializer[len(initializer)-1].IsStructLiteral() {
 					initializer = StructLiteralAssignment([]*ast.CXExpression{{Outputs: []*ast.CXArgument{declaration_specifiers}}}, initializer)
@@ -167,12 +167,12 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 			// offExpr := WritePrimary(declaration_specifiers.Type, make([]byte, declaration_specifiers.Size), false)
 			// exprOut := expr[0].ProgramOutput[0]
 
-			declaration_specifiers.ArgDetails.Name = declarator.ArgDetails.Name
+			declaration_specifiers.Name = declarator.Name
 			declaration_specifiers.ArgDetails.FileLine = declarator.ArgDetails.FileLine
 			declaration_specifiers.Offset = offExpr[0].Outputs[0].Offset
 			declaration_specifiers.Size = offExpr[0].Outputs[0].Size
 			declaration_specifiers.TotalSize = offExpr[0].Outputs[0].TotalSize
-			declaration_specifiers.ArgDetails.Package = pkg
+			declaration_specifiers.Package = pkg
 
 			pkg.AddGlobal(declaration_specifiers)
 		}
@@ -200,8 +200,8 @@ func DeclareStruct(prgrm *ast.CXProgram, ident string, strctFlds []*ast.CXArgume
 	strct.Fields = nil
 	strct.Size = 0
 	for _, fld := range strctFlds {
-		if _, err := strct.GetField(fld.ArgDetails.Name); err == nil {
-			println(ast.CompilationError(fld.ArgDetails.FileName, fld.ArgDetails.FileLine), "Multiply defined struct field:", fld.ArgDetails.Name)
+		if _, err := strct.GetField(fld.Name); err == nil {
+			println(ast.CompilationError(fld.ArgDetails.FileName, fld.ArgDetails.FileLine), "Multiply defined struct field:", fld.Name)
 		} else {
 			strct.AddField(fld)
 		}
@@ -306,9 +306,9 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 	decl := ast.MakeExpression(nil, declarator.ArgDetails.FileName, declarator.ArgDetails.FileLine)
 	decl.Package = pkg
 
-	declarationSpecifiers.ArgDetails.Name = declarator.ArgDetails.Name
+	declarationSpecifiers.Name = declarator.Name
 	declarationSpecifiers.ArgDetails.FileLine = declarator.ArgDetails.FileLine
-	declarationSpecifiers.ArgDetails.Package = pkg
+	declarationSpecifiers.Package = pkg
 	declarationSpecifiers.PreviouslyDeclared = true
 	decl.AddOutput(declarationSpecifiers)
 
@@ -356,9 +356,9 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 		expr := ast.MakeExpression(nil, declarator.ArgDetails.FileName, declarator.ArgDetails.FileLine)
 		expr.Package = pkg
 
-		declarationSpecifiers.ArgDetails.Name = declarator.ArgDetails.Name
+		declarationSpecifiers.Name = declarator.Name
 		declarationSpecifiers.ArgDetails.FileLine = declarator.ArgDetails.FileLine
-		declarationSpecifiers.ArgDetails.Package = pkg
+		declarationSpecifiers.Package = pkg
 		declarationSpecifiers.PreviouslyDeclared = true
 		expr.AddOutput(declarationSpecifiers)
 
@@ -475,7 +475,7 @@ func DeclarationSpecifiersStruct(prgrm *ast.CXProgram, ident string, pkgName str
 		arg.Size = strct.Size
 		arg.TotalSize = strct.Size
 
-		arg.ArgDetails.Package = pkg
+		arg.Package = pkg
 		arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_STRUCT)
 
 		return arg
@@ -493,7 +493,7 @@ func DeclarationSpecifiersStruct(prgrm *ast.CXProgram, ident string, pkgName str
 		arg.StructType = strct
 		arg.Size = strct.Size
 		arg.TotalSize = strct.Size
-		arg.ArgDetails.Package = pkg
+		arg.Package = pkg
 
 		return arg
 	}

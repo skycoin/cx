@@ -42,13 +42,13 @@ func IterationExpressions(prgrm *ast.CXProgram, init []*ast.CXExpression, cond [
 
 	if len(cond[len(cond)-1].Outputs) < 1 {
 		predicate := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(cond[len(cond)-1].Operator.Outputs[0].Type)
-		predicate.ArgDetails.Package = pkg
+		predicate.Package = pkg
 		predicate.PreviouslyDeclared = true
 		cond[len(cond)-1].AddOutput(predicate)
 		downExpr.AddInput(predicate)
 	} else {
 		predicate := cond[len(cond)-1].Outputs[0]
-		predicate.ArgDetails.Package = pkg
+		predicate.Package = pkg
 		predicate.PreviouslyDeclared = true
 		downExpr.AddInput(predicate)
 	}
@@ -218,7 +218,7 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []*ast.CXExpression, rig
 		name.TotalSize = ast.GetSize(leftExprs[len(leftExprs)-1].Operator.Outputs[0])
 		name.Type = leftExprs[len(leftExprs)-1].Operator.Outputs[0].Type
 		name.PointerTargetType = leftExprs[len(leftExprs)-1].Operator.Outputs[0].PointerTargetType
-		name.ArgDetails.Package = pkg
+		name.Package = pkg
 		name.PreviouslyDeclared = true
 
 		leftExprs[len(leftExprs)-1].Outputs = append(leftExprs[len(leftExprs)-1].Outputs, name)
@@ -231,7 +231,7 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []*ast.CXExpression, rig
 		name.TotalSize = ast.GetSize(rightExprs[len(rightExprs)-1].Operator.Outputs[0])
 		name.Type = rightExprs[len(rightExprs)-1].Operator.Outputs[0].Type
 		name.PointerTargetType = rightExprs[len(rightExprs)-1].Operator.Outputs[0].PointerTargetType
-		name.ArgDetails.Package = pkg
+		name.Package = pkg
 		name.PreviouslyDeclared = true
 
 		rightExprs[len(rightExprs)-1].Outputs = append(rightExprs[len(rightExprs)-1].Outputs, name)
@@ -245,7 +245,7 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []*ast.CXExpression, rig
 		// then it's a function call or an array access
 		expr.AddInput(leftExprs[len(leftExprs)-1].Outputs[0])
 
-		if IsTempVar(leftExprs[len(leftExprs)-1].Outputs[0].ArgDetails.Name) {
+		if IsTempVar(leftExprs[len(leftExprs)-1].Outputs[0].Name) {
 			out = append(out, leftExprs...)
 		} else {
 			out = append(out, leftExprs[:len(leftExprs)-1]...)
@@ -258,7 +258,7 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []*ast.CXExpression, rig
 		// then it's a function call or an array access
 		expr.AddInput(rightExprs[len(rightExprs)-1].Outputs[0])
 
-		if IsTempVar(rightExprs[len(rightExprs)-1].Outputs[0].ArgDetails.Name) {
+		if IsTempVar(rightExprs[len(rightExprs)-1].Outputs[0].Name) {
 			out = append(out, rightExprs...)
 		} else {
 			out = append(out, rightExprs[:len(rightExprs)-1]...)
@@ -344,7 +344,7 @@ func AssociateReturnExpressions(prgrm *ast.CXProgram, idx int, retExprs []*ast.C
 
 	outParam := fn.Outputs[idx]
 
-	out := ast.MakeArgument(outParam.ArgDetails.Name, CurrentFile, LineNo)
+	out := ast.MakeArgument(outParam.Name, CurrentFile, LineNo)
 	out.AddType(outParam.Type)
 	out.StructType = outParam.StructType
 	out.PreviouslyDeclared = true

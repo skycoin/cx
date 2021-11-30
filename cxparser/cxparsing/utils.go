@@ -257,7 +257,7 @@ func Preliminarystage(srcStrs, srcNames []string) int {
 						// then it hasn't been added
 						arg := ast.MakeArgument(match[len(match)-1], "", 0)
 						arg.Offset = types.InvalidPointer
-						arg.ArgDetails.Package = prePkg
+						arg.Package = prePkg
 						prePkg.AddGlobal(arg)
 					}
 				}

@@ -141,9 +141,9 @@ func getRandInp(expr *cxast.CXExpression) *cxast.CXArgument {
 
 	if !gotOptionsFromFunctionInputs {
 		determineExpressionOffset(&arg, expr, optionsFromExpressions[rndExprIdx])
-		arg.ArgDetails.Name = strconv.Itoa(optionsFromExpressions[rndExprIdx])
+		arg.Name = strconv.Itoa(optionsFromExpressions[rndExprIdx])
 	}
-	arg.ArgDetails.Package = expr.Function.Package
+	arg.Package = expr.Function.Package
 
 	return &arg
 }
@@ -172,7 +172,7 @@ func addNewExpression(expr *cxast.CXExpression, expressionType int) *cxast.CXArg
 	argOutName := strconv.Itoa(len(expr.Function.Expressions))
 	argOut := cxast.MakeField(argOutName, types.BOOL, "", -1)
 	argOut.AddType(types.Code(types.BOOL))
-	argOut.ArgDetails.Package = expr.Function.Package
+	argOut.Package = expr.Function.Package
 	exp.AddOutput(argOut)
 	expr.Function.AddExpression(exp)
 
@@ -187,7 +187,7 @@ func findArgOptions(expr *cxast.CXExpression, argTypeToFind types.Code) ([]int, 
 
 	// loop in inputs
 	for i, inp := range expr.Function.Inputs {
-		if inp.Type == argTypeToFind && inp.ArgDetails.Name != "" {
+		if inp.Type == argTypeToFind && inp.Name != "" {
 			// add index to options from inputs
 			optionsFromInputs = append(optionsFromInputs, i)
 		}
@@ -195,7 +195,7 @@ func findArgOptions(expr *cxast.CXExpression, argTypeToFind types.Code) ([]int, 
 
 	// loop in expression outputs
 	for i, exp := range expr.Function.Expressions {
-		if len(exp.Outputs) > 0 && exp.Outputs[0].Type == argTypeToFind && exp.Outputs[0].ArgDetails.Name != "" {
+		if len(exp.Outputs) > 0 && exp.Outputs[0].Type == argTypeToFind && exp.Outputs[0].Name != "" {
 			// add index to options from inputs
 			optionsFromExpressions = append(optionsFromExpressions, i)
 		}
@@ -221,8 +221,8 @@ func getRandOut(expr *cxast.CXExpression) *cxast.CXArgument {
 	}
 
 	determineExpressionOffset(&arg, expr, optionsFromExpressions[rndExprIdx])
-	arg.ArgDetails.Package = expr.Function.Package
-	arg.ArgDetails.Name = strconv.Itoa(optionsFromExpressions[rndExprIdx])
+	arg.Package = expr.Function.Package
+	arg.Name = strconv.Itoa(optionsFromExpressions[rndExprIdx])
 
 	return &arg
 }

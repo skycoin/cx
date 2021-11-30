@@ -149,7 +149,7 @@ func queryParam(prgrm *ast.CXProgram, fn *ast.CXFunction, args []*ast.CXArgument
 		// Name
 		// argNameB := encoder.Serialize(arg.Name)
 		// argNameOffset := int32(WriteObjectRetOff(argNameB))
-		argNameOffset := types.AllocWrite_str_data(prgrm, prgrm.Memory, arg.ArgDetails.Name)
+		argNameOffset := types.AllocWrite_str_data(prgrm, prgrm.Memory, arg.Name)
 
 		argOffset := ast.AllocateSeq(prgrm, types.OBJECT_HEADER_SIZE+types.STR_SIZE+types.I32_SIZE+types.STR_SIZE)
 		types.Write_ptr(prgrm.Memory, argOffset+types.OBJECT_HEADER_SIZE, argNameOffset)
@@ -991,7 +991,7 @@ func opAffQuery(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 		default:
 			switch cmd {
 			case "filter":
-				if fn, err := inp1.ArgDetails.Package.GetFunction(rule); err == nil {
+				if fn, err := inp1.Package.GetFunction(rule); err == nil {
 
 					// arg keyword
 					// argB := encoder.Serialize("arg")

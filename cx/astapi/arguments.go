@@ -49,7 +49,7 @@ func AddNativeInputToExpression(cxprogram *cxast.CXProgram, packageName, functio
 	}
 
 	arg := cxast.MakeField(inputName, inputType, "", -1).AddType(types.Code(inputType))
-	arg.ArgDetails.Package = pkg
+	arg.Package = pkg
 	expr.AddInput(arg)
 
 	return nil
@@ -136,7 +136,7 @@ func AddNativeOutputToExpression(cxprogram *cxast.CXProgram, packageName, functi
 	}
 
 	arg := cxast.MakeField(outputName, outputType, "", -1).AddType(types.Code(outputType))
-	arg.ArgDetails.Package = pkg
+	arg.Package = pkg
 	expr.AddOutput(arg)
 
 	return nil
@@ -360,7 +360,7 @@ func AddLiteralInputToExpression(cxprogram *cxast.CXProgram, packageName, functi
 	cxparseractions.AST = cxprogram
 	litArg := cxparseractions.WritePrimary(cxprogram, argType, bytes, false)
 	arg := litArg[0].Outputs[0]
-	arg.ArgDetails.Package = pkg
+	arg.Package = pkg
 	expr.AddInput(arg)
 
 	return nil

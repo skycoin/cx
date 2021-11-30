@@ -93,7 +93,7 @@ func (pkg *CXPackage) GetStruct(strctName string) (*CXStruct, error) {
 func (pkg *CXPackage) GetGlobal(defName string) (*CXArgument, error) {
 	var foundDef *CXArgument
 	for _, def := range pkg.Globals {
-		if def.ArgDetails.Name == defName {
+		if def.Name == defName {
 			foundDef = def
 			break
 		}
@@ -216,10 +216,10 @@ func (pkg *CXPackage) RemoveStruct(strctName string) {
 
 // AddGlobal ...
 func (pkg *CXPackage) AddGlobal(def *CXArgument) *CXPackage {
-	def.ArgDetails.Package = pkg
+	def.Package = pkg
 	found := false
 	for i, df := range pkg.Globals {
-		if df.ArgDetails.Name == def.ArgDetails.Name {
+		if df.Name == def.Name {
 			pkg.Globals[i] = def
 			found = true
 			break
@@ -236,7 +236,7 @@ func (pkg *CXPackage) AddGlobal(def *CXArgument) *CXPackage {
 func (pkg *CXPackage) RemoveGlobal(defName string) {
 	lenGlobals := len(pkg.Globals)
 	for i, def := range pkg.Globals {
-		if def.ArgDetails.Name == defName {
+		if def.Name == defName {
 			if i == lenGlobals-1 {
 				pkg.Globals = pkg.Globals[:len(pkg.Globals)-1]
 			} else {

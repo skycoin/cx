@@ -60,7 +60,7 @@ func buildStrGlobals(prgrm *CXProgram, pkg *CXPackage, ast *string) {
 	}
 
 	for j, v := range pkg.Globals {
-		*ast += fmt.Sprintf("\t\t%d.- Global: %s %s\n", j, v.ArgDetails.Name, GetFormattedType(prgrm, v))
+		*ast += fmt.Sprintf("\t\t%d.- Global: %s %s\n", j, v.Name, GetFormattedType(prgrm, v))
 	}
 }
 
@@ -77,7 +77,7 @@ func buildStrStructs(prgrm *CXProgram, pkg *CXPackage, ast *string) {
 
 		for k, fld := range strct.Fields {
 			*ast += fmt.Sprintf("\t\t\t%d.- Field: %s %s\n",
-				k, fld.ArgDetails.Name, GetFormattedType(prgrm, fld))
+				k, fld.Name, GetFormattedType(prgrm, fld))
 		}
 
 		count++
@@ -159,7 +159,7 @@ func buildStrFunctions(prgrm *CXProgram, pkg *CXPackage, ast1 *string) {
 					*ast1 += fmt.Sprintf("\t\t\t%d.- Declaration%s: %s %s\n",
 						k,
 						lbl,
-						expr.Outputs[0].ArgDetails.Name,
+						expr.Outputs[0].Name,
 						GetFormattedType(prgrm, out))
 				}
 			}
@@ -201,7 +201,7 @@ func getFormattedParam(prgrm *CXProgram, params []*CXArgument, pkg *CXPackage, b
 
 		// Checking if this argument comes from an imported package.
 		externalPkg := false
-		if pkg != param.ArgDetails.Package {
+		if pkg != param.Package {
 			externalPkg = true
 		}
 
@@ -266,9 +266,9 @@ func getNonCollectionValue(prgrm *CXProgram, fp types.Pointer, arg, elt *CXArgum
 		for c := 0; c < lFlds; c++ {
 			fld := elt.StructType.Fields[c]
 			if c == lFlds-1 {
-				val += fmt.Sprintf("%s: %s", fld.ArgDetails.Name, GetPrintableValue(prgrm, fp+arg.Offset+off, fld))
+				val += fmt.Sprintf("%s: %s", fld.Name, GetPrintableValue(prgrm, fp+arg.Offset+off, fld))
 			} else {
-				val += fmt.Sprintf("%s: %s, ", fld.ArgDetails.Name, GetPrintableValue(prgrm, fp+arg.Offset+off, fld))
+				val += fmt.Sprintf("%s: %s, ", fld.Name, GetPrintableValue(prgrm, fp+arg.Offset+off, fld))
 			}
 			off += fld.TotalSize
 		}
@@ -314,9 +314,9 @@ func ReadSliceElements(prgrm *CXProgram, fp types.Pointer, arg, elt *CXArgument,
 		for c := 0; c < lFlds; c++ {
 			fld := elt.StructType.Fields[c]
 			if c == lFlds-1 {
-				val += fmt.Sprintf("%s: %s", fld.ArgDetails.Name, GetPrintableValue(prgrm, fp+arg.Offset+off, fld))
+				val += fmt.Sprintf("%s: %s", fld.Name, GetPrintableValue(prgrm, fp+arg.Offset+off, fld))
 			} else {
-				val += fmt.Sprintf("%s: %s, ", fld.ArgDetails.Name, GetPrintableValue(prgrm, fp+arg.Offset+off, fld))
+				val += fmt.Sprintf("%s: %s, ", fld.Name, GetPrintableValue(prgrm, fp+arg.Offset+off, fld))
 			}
 			off += fld.TotalSize
 		}
@@ -551,13 +551,13 @@ func getFormattedDerefs(prgrm *CXProgram, arg *CXArgument, includePkg bool) stri
 	name := ""
 	// Checking if we should include `arg`'s package name.
 	if includePkg {
-		name = fmt.Sprintf("%s.%s", arg.ArgDetails.Package.Name, arg.ArgDetails.Name)
+		name = fmt.Sprintf("%s.%s", arg.Package.Name, arg.Name)
 	} else {
-		name = arg.ArgDetails.Name
+		name = arg.Name
 	}
 
 	// If it's a literal, just override the name with LITERAL_PLACEHOLDER.
-	if arg.ArgDetails.Name == "" {
+	if arg.Name == "" {
 		name = constants.LITERAL_PLACEHOLDER
 	}
 
@@ -581,7 +581,7 @@ func getFormattedDerefs(prgrm *CXProgram, arg *CXArgument, includePkg bool) stri
 			idxValue = fmt.Sprintf("%d", idxI32)
 		} else {
 			// Then let's just print the variable name.
-			idxValue = idx.ArgDetails.Name
+			idxValue = idx.Name
 		}
 
 		name = fmt.Sprintf("%s[%s]", name, idxValue)
@@ -670,13 +670,13 @@ func GetFormattedType(prgrm *CXProgram, arg *CXArgument) string {
 						typ += formatParameters(prgrm, elt.Outputs)
 					} else {
 						// Then it refers to a named function defined in a package.
-						pkg, err := prgrm.GetPackage(arg.ArgDetails.Package.Name)
+						pkg, err := prgrm.GetPackage(arg.Package.Name)
 						if err != nil {
 							println(CompilationError(elt.ArgDetails.FileName, elt.ArgDetails.FileLine), err.Error())
 							os.Exit(constants.CX_COMPILATION_ERROR)
 						}
 
-						fn, err := pkg.GetFunction(elt.ArgDetails.Name)
+						fn, err := pkg.GetFunction(elt.Name)
 						if err == nil {
 							// println(CompilationError(elt.FileName, elt.FileLine), err.ProgramError())
 							// os.Exit(CX_COMPILATION_ERROR)
@@ -697,7 +697,7 @@ func GetFormattedType(prgrm *CXProgram, arg *CXArgument) string {
 func SignatureStringOfStruct(prgrm *CXProgram, s *CXStruct) string {
 	fields := ""
 	for _, f := range s.Fields {
-		fields += fmt.Sprintf(" %s %s;", f.ArgDetails.Name, GetFormattedType(prgrm, f))
+		fields += fmt.Sprintf(" %s %s;", f.Name, GetFormattedType(prgrm, f))
 	}
 
 	return fmt.Sprintf("%s struct {%s }", s.Name, fields)
