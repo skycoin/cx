@@ -40,9 +40,9 @@ type CXProgram struct {
 	ProgramError   error
 
 	// For new CX AST arrays
-	AtomicOps []CXAtomicOperator
-	CXArgs    []CXArgument
-	CXLines   []CXLine
+	CXAtomicOps []*CXAtomicOperator
+	CXArgs      []*CXArgument
+	CXLines     []*CXLine
 }
 
 type StackSegmentStruct struct {
@@ -124,7 +124,49 @@ func (cxprogram *CXProgram) RemovePackage(modName string) {
 }
 
 // ----------------------------------------------------------------
-//                             `CXProgram` Selectors
+//            `CXProgram` CXLines, CXArgs, and CXAtomicOps Handling
+
+func (cxprogram *CXProgram) GetCXLine(index int) (*CXLine, error) {
+	if index > (len(cxprogram.CXLines) - 1) {
+		return nil, fmt.Errorf("error: CXLines[%d]: index out of bounds", index)
+	}
+
+	return cxprogram.CXLines[index], nil
+}
+
+func (cxprogram *CXProgram) GetCXArg(index int) (*CXArgument, error) {
+	if index > (len(cxprogram.CXArgs) - 1) {
+		return nil, fmt.Errorf("error: CXArgs[%d]: index out of bounds", index)
+	}
+
+	return cxprogram.CXArgs[index], nil
+}
+
+func (cxprogram *CXProgram) GetCXAtomicOp(index int) (*CXAtomicOperator, error) {
+	if index > (len(cxprogram.CXAtomicOps) - 1) {
+		return nil, fmt.Errorf("error: CXAtomicOps[%d]: index out of bounds", index)
+	}
+
+	return cxprogram.CXAtomicOps[index], nil
+}
+
+func (cxprogram *CXProgram) AddCXLine(CXLine *CXLine) int {
+	cxprogram.CXLines = append(cxprogram.CXLines, CXLine)
+
+	return len(cxprogram.CXLines) - 1
+}
+
+func (cxprogram *CXProgram) AddCXArg(CXArg *CXArgument) int {
+	cxprogram.CXArgs = append(cxprogram.CXArgs, CXArg)
+
+	return len(cxprogram.CXArgs) - 1
+}
+
+func (cxprogram *CXProgram) AddCXAtomicOp(CXAtomicOp *CXAtomicOperator) int {
+	cxprogram.CXAtomicOps = append(cxprogram.CXAtomicOps, CXAtomicOp)
+
+	return len(cxprogram.CXAtomicOps) - 1
+}
 
 // ----------------------------------------------------------------
 //                             `CXProgram` Getters
