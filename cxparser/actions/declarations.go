@@ -10,7 +10,6 @@ import (
 	"github.com/skycoin/cx/cx/constants"
 	globals2 "github.com/skycoin/cx/cx/globals"
 	"github.com/skycoin/cx/cx/types"
-	"github.com/skycoin/cx/cxparser/globals"
 )
 
 // DeclareGlobal creates a global variable in the current package.
@@ -84,7 +83,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 				initializer[len(initializer)-1].Package = glbl.Package
 
 				//add intialization statements, to array
-				globals.SysInitExprs = append(globals.SysInitExprs, initializer...)
+				prgrm.SysInitExprs = append(prgrm.SysInitExprs, initializer...)
 			} else {
 				// then it's an expression
 				declaration_specifiers.Name = glbl.Name
@@ -101,7 +100,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 					initializer[len(initializer)-1].AddOutput(glbl)
 				}
 				//add intialization statements, to array
-				globals.SysInitExprs = append(globals.SysInitExprs, initializer...)
+				prgrm.SysInitExprs = append(prgrm.SysInitExprs, initializer...)
 			}
 		} else {
 			// we keep the last value for now
@@ -142,7 +141,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 
 				pkg.AddGlobal(declaration_specifiers)
 				//add intialization statements, to array
-				globals.SysInitExprs = append(globals.SysInitExprs, initializer...)
+				prgrm.SysInitExprs = append(prgrm.SysInitExprs, initializer...)
 			} else {
 				// then it's an expression
 				declaration_specifiers.Name = declarator.Name
@@ -161,7 +160,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 
 				pkg.AddGlobal(declaration_specifiers)
 				//add intialization statements, to array
-				globals.SysInitExprs = append(globals.SysInitExprs, initializer...)
+				prgrm.SysInitExprs = append(prgrm.SysInitExprs, initializer...)
 			}
 		} else {
 			// offExpr := WritePrimary(declaration_specifiers.Type, make([]byte, declaration_specifiers.Size), false)

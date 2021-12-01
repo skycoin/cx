@@ -117,7 +117,7 @@ func FunctionProcessParameters(prgrm *ast.CXProgram, symbols *[]map[string]*ast.
 
 func FunctionDeclaration(prgrm *ast.CXProgram, fn *ast.CXFunction, inputs, outputs []*ast.CXArgument, exprs []*ast.CXExpression) {
 
-	//var exprs []*cxcore.CXExpression = globals.SysInitExprs
+	//var exprs []*cxcore.CXExpression = prgrm.SysInitExprs
 
 	if globals.FoundCompileErrors {
 		return

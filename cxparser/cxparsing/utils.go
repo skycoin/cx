@@ -13,7 +13,6 @@ import (
 	"github.com/skycoin/cx/cxparser/actions"
 	constants2 "github.com/skycoin/cx/cxparser/constants"
 	cxpartialparsing "github.com/skycoin/cx/cxparser/cxpartialparsing"
-	"github.com/skycoin/cx/cxparser/globals"
 	"github.com/skycoin/cx/cxparser/util/profiling"
 )
 
@@ -296,7 +295,7 @@ func AddInitFunction(prgrm *ast.CXProgram) error {
 	mainPkg.AddFunction(initFn)
 
 	//Init Expressions
-	actions.FunctionDeclaration(prgrm, initFn, nil, nil, globals.SysInitExprs)
+	actions.FunctionDeclaration(prgrm, initFn, nil, nil, prgrm.SysInitExprs)
 
 	if _, err := mainPkg.SelectFunction(constants.MAIN_FUNC); err != nil {
 		return err

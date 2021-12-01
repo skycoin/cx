@@ -43,6 +43,9 @@ type CXProgram struct {
 	CXAtomicOps []*CXAtomicOperator
 	CXArgs      []*CXArgument
 	CXLines     []*CXLine
+
+	// For Initializers
+	SysInitExprs []*CXExpression
 }
 
 type StackSegmentStruct struct {
