@@ -50,7 +50,13 @@ func AddNativeInputToExpression(cxprogram *cxast.CXProgram, packageName, functio
 
 	arg := cxast.MakeField(inputName, inputType, "", -1).AddType(types.Code(inputType))
 	arg.Package = pkg
-	expr.AddInput(arg)
+
+	cxAtomicOp, _, _, err := cxprogram.GetOperation(expr)
+	if err != nil {
+		panic(err)
+	}
+
+	cxAtomicOp.AddInput(arg)
 
 	return nil
 }
@@ -89,7 +95,12 @@ func RemoveInputFromExpression(cxprogram *cxast.CXProgram, functionName string, 
 		return err
 	}
 
-	expr.RemoveInput()
+	cxAtomicOp, _, _, err := cxprogram.GetOperation(expr)
+	if err != nil {
+		panic(err)
+	}
+
+	cxAtomicOp.RemoveInput()
 	return nil
 }
 
@@ -137,7 +148,13 @@ func AddNativeOutputToExpression(cxprogram *cxast.CXProgram, packageName, functi
 
 	arg := cxast.MakeField(outputName, outputType, "", -1).AddType(types.Code(outputType))
 	arg.Package = pkg
-	expr.AddOutput(arg)
+
+	cxAtomicOp, _, _, err := cxprogram.GetOperation(expr)
+	if err != nil {
+		panic(err)
+	}
+
+	cxAtomicOp.AddOutput(arg)
 
 	return nil
 }
@@ -176,7 +193,12 @@ func RemoveOutputFromExpression(cxprogram *cxast.CXProgram, functionName string,
 		return err
 	}
 
-	expr.RemoveOutput()
+	cxAtomicOp, _, _, err := cxprogram.GetOperation(expr)
+	if err != nil {
+		panic(err)
+	}
+
+	cxAtomicOp.RemoveOutput()
 	return nil
 }
 
@@ -216,7 +238,12 @@ func MakeInputExpressionAPointer(cxprogram *cxast.CXProgram, functionName string
 		return err
 	}
 
-	cxast.Pointer(expr.Inputs[inputNumber])
+	cxAtomicOp, _, _, err := cxprogram.GetOperation(expr)
+	if err != nil {
+		panic(err)
+	}
+
+	cxast.Pointer(cxAtomicOp.Inputs[inputNumber])
 	return nil
 }
 
@@ -256,7 +283,12 @@ func MakeOutputExpressionAPointer(cxprogram *cxast.CXProgram, functionName strin
 		return err
 	}
 
-	cxast.Pointer(expr.Outputs[outputNumber])
+	cxAtomicOp, _, _, err := cxprogram.GetOperation(expr)
+	if err != nil {
+		panic(err)
+	}
+
+	cxast.Pointer(cxAtomicOp.Outputs[outputNumber])
 	return nil
 }
 
@@ -325,7 +357,11 @@ func GetAccessibleArgsForFunctionByType(cxprogram *cxast.CXProgram, packageLocat
 
 	// Get all args from expression inputs
 	for _, expr := range fn.Expressions {
-		for _, arg := range expr.Inputs {
+		cxAtomicOp, _, _, err := cxprogram.GetOperation(expr)
+		if err != nil {
+			panic(err)
+		}
+		for _, arg := range cxAtomicOp.Inputs {
 			if arg.IsStruct {
 				for _, field := range arg.StructType.Fields {
 					if field.Type == argType {
@@ -359,9 +395,21 @@ func AddLiteralInputToExpression(cxprogram *cxast.CXProgram, packageName, functi
 
 	cxparseractions.AST = cxprogram
 	litArg := cxparseractions.WritePrimary(cxprogram, argType, bytes, false)
-	arg := litArg[0].Outputs[0]
+
+	cxAtomicOp1, _, _, err := cxprogram.GetOperation(litArg[0])
+	if err != nil {
+		panic(err)
+	}
+
+	arg := cxAtomicOp1.Outputs[0]
+
+	cxAtomicOp2, _, _, err := cxprogram.GetOperation(expr)
+	if err != nil {
+		panic(err)
+	}
+
 	arg.Package = pkg
-	expr.AddInput(arg)
+	cxAtomicOp2.AddInput(arg)
 
 	return nil
 }

@@ -19,9 +19,16 @@ func getLastLine(cxprogram *ast.CXProgram) *ast.CXExpression {
 		return cxprogram.CallStack[c].Operator.Expressions[cxprogram.CallStack[c].Line+1]
 		// cxprogram.CallStack[c].Operator.Expressions[cxprogram.CallStack[cxprogram.CallCounter-1].Line + 1]
 	}
-	// error
-	return &ast.CXExpression{Operator: ast.MakeFunction("", "", -1)}
-	// panic("")
+
+	cxAtomicOp := &ast.CXAtomicOperator{
+		Operator: ast.MakeFunction("", "", -1),
+	}
+
+	index := cxprogram.AddCXAtomicOp(cxAtomicOp)
+	return &ast.CXExpression{
+		Index: index,
+		Type:  ast.CX_ATOMIC_OPERATOR,
+	}
 }
 
 func RunCxAst(cxprogram *ast.CXProgram, untilEnd bool, maxOps int, untilCall types.Pointer) error {
@@ -60,14 +67,19 @@ func RunCxAst(cxprogram *ast.CXProgram, untilEnd bool, maxOps int, untilCall typ
 				inName = call.Operator.Name
 			}
 
-			if toCall.Operator == nil {
+			cxAtomicOp, _, _, err := cxprogram.GetOperation(toCall)
+			if err != nil {
+				panic(err)
+			}
+
+			if cxAtomicOp.Operator == nil {
 				// then it's a declaration
 				toCallName = "declaration"
-			} else if toCall.Operator.IsBuiltIn() {
-				toCallName = ast.OpNames[toCall.Operator.AtomicOPCode]
+			} else if cxAtomicOp.Operator.IsBuiltIn() {
+				toCallName = ast.OpNames[cxAtomicOp.Operator.AtomicOPCode]
 			} else {
-				if toCall.Operator.Name != "" {
-					toCallName = toCall.Operator.Package.Name + "." + toCall.Operator.Name
+				if cxAtomicOp.Operator.Name != "" {
+					toCallName = cxAtomicOp.Operator.Package.Name + "." + cxAtomicOp.Operator.Name
 				} else {
 					// then it's the end of the program got from nested function calls
 					cxprogram.Terminated = true

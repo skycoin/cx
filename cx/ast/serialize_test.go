@@ -237,7 +237,7 @@ func generateSampleProgramFromCXEvolves(t *testing.T, withLiteral bool) *cxast.C
 
 	fn, _ := cxProgram.GetFunction("TestFunction", "main")
 	pkg, _ := cxProgram.GetPackage("main")
-	cxgenerator.GenerateRandomExpressions(fn, pkg, fns, 30)
+	cxgenerator.GenerateRandomExpressions(cxProgram, fn, pkg, fns, 30)
 
 	if withLiteral {
 		buf := new(bytes.Buffer)

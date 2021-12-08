@@ -43,8 +43,12 @@ func (cxprogram *CXProgram) PrintStack() {
 		// fmt.Println("Expressions")
 		exprs := ""
 		for _, expr := range op.Expressions {
-			for _, inp := range expr.Inputs {
-				if inp.Name == "" || expr.Operator == nil {
+			cxAtomicOp, _, _, err := cxprogram.GetOperation(expr)
+			if err != nil {
+				panic(err)
+			}
+			for _, inp := range cxAtomicOp.Inputs {
+				if inp.Name == "" || cxAtomicOp.Operator == nil {
 					continue
 				}
 				var dup bool
@@ -61,13 +65,13 @@ func (cxprogram *CXProgram) PrintStack() {
 				// fmt.Println("\t", inp.Name, "\t", ":", "\t", GetPrintableValue(fp, inp))
 				// exprs += fmt.Sprintln("\t", stackValueHeader(inp.FileName, inp.FileLine), "\t", ":", "\t", GetPrintableValue(fp, inp))
 
-				exprs += fmt.Sprintf("\t%s : %s() : %s\n", stackValueHeader(inp.ArgDetails.FileName, inp.ArgDetails.FileLine), expr.GetOperatorName(), GetPrintableValue(cxprogram, fp, inp))
+				exprs += fmt.Sprintf("\t%s : %s() : %s\n", stackValueHeader(inp.ArgDetails.FileName, inp.ArgDetails.FileLine), cxAtomicOp.GetOperatorName(), GetPrintableValue(cxprogram, fp, inp))
 
 				dupNames = append(dupNames, inp.Package.Name+inp.Name)
 			}
 
-			for _, out := range expr.Outputs {
-				if out.Name == "" || expr.Operator == nil {
+			for _, out := range cxAtomicOp.Outputs {
+				if out.Name == "" || cxAtomicOp.Operator == nil {
 					continue
 				}
 				var dup bool
@@ -84,7 +88,7 @@ func (cxprogram *CXProgram) PrintStack() {
 				// fmt.Println("\t", out.Name, "\t", ":", "\t", GetPrintableValue(fp, out))
 				// exprs += fmt.Sprintln("\t", stackValueHeader(out.FileName, out.FileLine), ":", GetPrintableValue(fp, out))
 
-				exprs += fmt.Sprintf("\t%s : %s() : %s\n", stackValueHeader(out.ArgDetails.FileName, out.ArgDetails.FileLine), expr.GetOperatorName(), GetPrintableValue(cxprogram, fp, out))
+				exprs += fmt.Sprintf("\t%s : %s() : %s\n", stackValueHeader(out.ArgDetails.FileName, out.ArgDetails.FileLine), cxAtomicOp.GetOperatorName(), GetPrintableValue(cxprogram, fp, out))
 
 				dupNames = append(dupNames, out.Package.Name+out.Name)
 			}

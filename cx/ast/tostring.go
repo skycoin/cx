@@ -117,27 +117,32 @@ func buildStrFunctions(prgrm *CXProgram, pkg *CXPackage, ast1 *string) {
 			var opName1 string
 			var lbl string
 
+			cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+			if err != nil {
+				panic(err)
+			}
+
 			// Adding label in case a `goto` statement was used for the expression.
-			if expr.Label != "" {
-				lbl = " <<" + expr.Label + ">>"
+			if cxAtomicOp.Label != "" {
+				lbl = " <<" + cxAtomicOp.Label + ">>"
 			} else {
 				lbl = ""
 			}
 
 			// Determining operator's name.
-			if expr.Operator != nil {
-				if expr.Operator.IsBuiltIn() {
+			if cxAtomicOp.Operator != nil {
+				if cxAtomicOp.Operator.IsBuiltIn() {
 
-					opName1 = OpNames[expr.Operator.AtomicOPCode]
+					opName1 = OpNames[cxAtomicOp.Operator.AtomicOPCode]
 				} else {
-					opName1 = expr.Operator.Name
+					opName1 = cxAtomicOp.Operator.Name
 				}
 			}
 
-			getFormattedParam(prgrm, expr.Inputs, pkg, &inps)
-			getFormattedParam(prgrm, expr.Outputs, pkg, &outs)
+			getFormattedParam(prgrm, cxAtomicOp.Inputs, pkg, &inps)
+			getFormattedParam(prgrm, cxAtomicOp.Outputs, pkg, &outs)
 
-			if expr.Operator != nil {
+			if cxAtomicOp.Operator != nil {
 				assignOp := ""
 				if outs.Len() > 0 {
 					assignOp = " = "
@@ -153,13 +158,13 @@ func buildStrFunctions(prgrm *CXProgram, pkg *CXPackage, ast1 *string) {
 			} else {
 				// Then it's a variable declaration. These are represented
 				// by expressions without operators that only have outputs.
-				if len(expr.Outputs) > 0 {
-					out := expr.Outputs[len(expr.Outputs)-1]
+				if len(cxAtomicOp.Outputs) > 0 {
+					out := cxAtomicOp.Outputs[len(cxAtomicOp.Outputs)-1]
 
 					*ast1 += fmt.Sprintf("\t\t\t%d.- Declaration%s: %s %s\n",
 						k,
 						lbl,
-						expr.Outputs[0].Name,
+						cxAtomicOp.Outputs[0].Name,
 						GetFormattedType(prgrm, out))
 				}
 			}

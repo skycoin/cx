@@ -31,17 +31,28 @@ func opIdentity(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 func opGoto(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	call := prgrm.GetCurrentCall()
 	expr := call.Operator.Expressions[call.Line]
-	call.Line = call.Line + expr.ThenLines
+
+	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	if err != nil {
+		panic(err)
+	}
+
+	call.Line = call.Line + cxAtomicOp.ThenLines
 }
 
 func opJmp(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	call := prgrm.GetCurrentCall()
 	expr := inputs[0].Expr
 
+	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	if err != nil {
+		panic(err)
+	}
+
 	if inputs[0].Get_bool(prgrm) {
-		call.Line = call.Line + expr.ThenLines
+		call.Line = call.Line + cxAtomicOp.ThenLines
 	} else {
-		call.Line = call.Line + expr.ElseLines
+		call.Line = call.Line + cxAtomicOp.ElseLines
 	}
 }
 
@@ -49,23 +60,40 @@ func opAbsJmp(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue)
 	call := prgrm.GetCurrentCall()
 	expr := inputs[0].Expr
 
+	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	if err != nil {
+		panic(err)
+	}
+
 	if inputs[0].Get_bool(prgrm) {
-		call.Line = expr.ThenLines
+		call.Line = cxAtomicOp.ThenLines
 	} else {
-		call.Line = expr.ElseLines
+		call.Line = cxAtomicOp.ElseLines
 	}
 }
 
 func opBreak(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	call := prgrm.GetCurrentCall()
 	expr := call.Operator.Expressions[call.Line]
-	call.Line = call.Line + expr.ThenLines
+
+	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	if err != nil {
+		panic(err)
+	}
+
+	call.Line = call.Line + cxAtomicOp.ThenLines
 }
 
 func opContinue(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	call := prgrm.GetCurrentCall()
 	expr := call.Operator.Expressions[call.Line]
-	call.Line = call.Line + expr.ThenLines
+
+	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	if err != nil {
+		panic(err)
+	}
+
+	call.Line = call.Line + cxAtomicOp.ThenLines
 }
 
 func opNop(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {

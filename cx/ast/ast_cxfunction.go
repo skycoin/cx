@@ -19,9 +19,6 @@ type CXFunction struct {
 	Outputs     []*CXArgument   // Output parameters from the function
 	Expressions []*CXExpression // Expressions, including control flow statements, in the function
 
-	// To be used for new CX AST format
-	Operations []*CXOperation
-
 	//TODO: Better Comment for this
 	LineCount int // number of expressions, pre-computed for performance
 
@@ -74,13 +71,13 @@ func (fn *CXFunction) GetExpressions() ([]*CXExpression, error) {
 }
 
 // GetExpressionByLabel
-func (fn *CXFunction) GetExpressionByLabel(lbl string) (*CXExpression, error) {
+func (fn *CXFunction) GetExpressionByLabel(prgrm *CXProgram, lbl string) (*CXExpression, error) {
 	if fn.Expressions == nil {
 		return nil, fmt.Errorf("function '%s' has no expressions", fn.Name)
 	}
 
 	for _, expr := range fn.Expressions {
-		if expr.Label == lbl {
+		if expr.GetLabel(prgrm) == lbl {
 			return expr, nil
 		}
 	}
@@ -181,19 +178,52 @@ func (fn *CXFunction) RemoveOutput(outName string) {
 }
 
 // AddExpression ...
-func (fn *CXFunction) AddExpression(expr *CXExpression) *CXFunction {
-	// expr.Program = fn.Program
-	expr.Package = fn.Package
-	expr.Function = fn
+func (fn *CXFunction) AddExpression(prgrm *CXProgram, expr *CXExpression) *CXFunction {
+	// // expr.Program = fn.Program
+	// expr.Package = fn.Package
+	// expr.Function = fn
+	// fn.Expressions = append(fn.Expressions, expr)
+	// fn.CurrentExpression = expr
+	// fn.LineCount++
+	// return fn
+
+	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	if err != nil {
+		panic(err)
+	}
+
+	cxAtomicOp.Package = fn.Package
+	cxAtomicOp.Function = fn
+
 	fn.Expressions = append(fn.Expressions, expr)
+
 	fn.CurrentExpression = expr
 	fn.LineCount++
 	return fn
 }
 
-func (fn *CXFunction) AddExpressionByLineNumber(expr *CXExpression, line int) *CXFunction {
-	expr.Package = fn.Package
-	expr.Function = fn
+func (fn *CXFunction) AddExpressionByLineNumber(prgrm *CXProgram, expr *CXExpression, line int) *CXFunction {
+	// expr.Package = fn.Package
+	// expr.Function = fn
+
+	// lenExprs := len(fn.Expressions)
+	// if lenExprs == line {
+	// 	fn.Expressions = append(fn.Expressions, expr)
+	// } else {
+	// 	fn.Expressions = append(fn.Expressions[:line+1], fn.Expressions[line:]...)
+	// 	fn.Expressions[line] = expr
+	// }
+
+	// fn.CurrentExpression = expr
+	// fn.LineCount++
+	// return fn
+
+	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	if err != nil {
+		panic(err)
+	}
+	cxAtomicOp.Package = fn.Package
+	cxAtomicOp.Function = fn
 
 	lenExprs := len(fn.Expressions)
 	if lenExprs == line {
@@ -206,6 +236,7 @@ func (fn *CXFunction) AddExpressionByLineNumber(expr *CXExpression, line int) *C
 	fn.CurrentExpression = expr
 	fn.LineCount++
 	return fn
+
 }
 
 // RemoveExpression ...
@@ -227,9 +258,14 @@ func (fn *CXFunction) RemoveExpression(line int) {
 //                             `CXFunction` Selectors
 
 // MakeExpression ...
-func MakeExpression(op *CXFunction, fileName string, fileLine int) *CXExpression {
-	return &CXExpression{
+func MakeExpression(prgrm *CXProgram, op *CXFunction, fileName string, fileLine int) *CXExpression {
+	index := prgrm.AddCXAtomicOp(&CXAtomicOperator{
 		Operator: op,
+	})
+
+	return &CXExpression{
+		Index:    index,
+		Type:     CX_ATOMIC_OPERATOR,
 		FileLine: fileLine,
 		FileName: fileName}
 }

@@ -3,11 +3,12 @@
 package cxfx
 
 import (
+	"sync"
+	"time"
+
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/execute"
 	"github.com/skycoin/cx/cx/types"
-	"sync"
-	"time"
 )
 
 const (
@@ -64,7 +65,12 @@ func (cb *CXCallback) init(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs [
 }
 
 func (cb *CXCallback) Init(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	cb.init(prgrm, inputs, outputs, inputs[0].Expr.Package.Name)
+	cxAtomicOp, _, _, err := prgrm.GetOperation(inputs[0].Expr)
+	if err != nil {
+		panic(err)
+	}
+
+	cb.init(prgrm, inputs, outputs, cxAtomicOp.Package.Name)
 }
 
 func (cb *CXCallback) InitEx(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {

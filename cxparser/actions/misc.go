@@ -10,15 +10,20 @@ import (
 // 	AST = prgrm
 // }
 
-func SetCorrectArithmeticOp(expr *ast.CXExpression) {
-	if expr.Operator == nil || len(expr.Outputs) < 1 {
+func SetCorrectArithmeticOp(prgrm *ast.CXProgram, expr *ast.CXExpression) {
+	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	if err != nil {
+		panic(err)
+	}
+
+	if cxAtomicOp.Operator == nil || len(cxAtomicOp.Outputs) < 1 {
 		return
 	}
 
-	code := expr.Operator.AtomicOPCode
+	code := cxAtomicOp.Operator.AtomicOPCode
 	if code > constants.START_OF_OPERATORS && code < constants.END_OF_OPERATORS {
 		// TODO: argument type are not fully resolved here, should be move elsewhere.
-		//expr.Operator = cxcore.GetTypedOperator(cxcore.GetType(expr.ProgramInput[0]), code)
+		//cxAtomicOp.Operator = cxcore.GetTypedOperator(cxcore.GetType(cxAtomicOp.ProgramInput[0]), code)
 	}
 }
 
@@ -90,9 +95,14 @@ func WritePrimary(prgrm *ast.CXProgram, typeCode types.Code, byts []byte, isSlic
 		prgrm.Data.Size += size
 		prgrm.Heap.StartsAt = prgrm.Data.Size + prgrm.Data.StartsAt
 
-		expr := ast.MakeExpression(nil, CurrentFile, LineNo)
-		expr.Package = pkg
-		expr.Outputs = append(expr.Outputs, arg)
+		expr := ast.MakeExpression(prgrm, nil, CurrentFile, LineNo)
+		cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+		if err != nil {
+			panic(err)
+		}
+
+		cxAtomicOp.Package = pkg
+		cxAtomicOp.AddOutput(arg)
 		return []*ast.CXExpression{expr}
 	} else {
 		panic(err)
@@ -114,9 +124,13 @@ func StructLiteralFields(prgrm *ast.CXProgram, ident string) *ast.CXExpression {
 		arg.Name = ident
 		arg.Package = pkg
 
-		expr := ast.MakeExpression(nil, CurrentFile, LineNo)
-		expr.Outputs = []*ast.CXArgument{arg}
-		expr.Package = pkg
+		expr := ast.MakeExpression(prgrm, nil, CurrentFile, LineNo)
+		cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+		if err != nil {
+			panic(err)
+		}
+		cxAtomicOp.AddOutput(arg)
+		cxAtomicOp.Package = pkg
 
 		return expr
 	} else {
@@ -238,9 +252,13 @@ func PrimaryIdentifier(prgrm *ast.CXProgram, ident string) []*ast.CXExpression {
 		arg.Package = pkg
 
 		// expr := &cxcore.CXExpression{ProgramOutput: []*cxcore.CXArgument{arg}}
-		expr := ast.MakeExpression(nil, CurrentFile, LineNo)
-		expr.Outputs = []*ast.CXArgument{arg}
-		expr.Package = pkg
+		expr := ast.MakeExpression(prgrm, nil, CurrentFile, LineNo)
+		cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+		if err != nil {
+			panic(err)
+		}
+		cxAtomicOp.AddOutput(arg)
+		cxAtomicOp.Package = pkg
 
 		return []*ast.CXExpression{expr}
 	} else {
@@ -249,8 +267,13 @@ func PrimaryIdentifier(prgrm *ast.CXProgram, ident string) []*ast.CXExpression {
 }
 
 // IsAllArgsBasicTypes checks if all the input arguments in an expressions are of basic type.
-func IsAllArgsBasicTypes(expr *ast.CXExpression) bool {
-	for _, inp := range expr.Inputs {
+func IsAllArgsBasicTypes(prgrm *ast.CXProgram, expr *ast.CXExpression) bool {
+	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	if err != nil {
+		panic(err)
+	}
+
+	for _, inp := range cxAtomicOp.Inputs {
 		inpType := inp.Type
 		if inp.Type == types.POINTER {
 			inpType = inp.PointerTargetType

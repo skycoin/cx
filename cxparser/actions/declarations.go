@@ -56,8 +56,13 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 					make([]byte, declaration_specifiers.TotalSize), false)
 			}
 
-			glbl.Offset = offExpr[0].Outputs[0].Offset
-			glbl.PassBy = offExpr[0].Outputs[0].PassBy
+			offExprAtomicOp, _, _, err := prgrm.GetOperation(offExpr[0])
+			if err != nil {
+				panic(err)
+			}
+
+			glbl.Offset = offExprAtomicOp.Outputs[0].Offset
+			glbl.PassBy = offExprAtomicOp.Outputs[0].PassBy
 			// glbl.Package = offExpr[0].ProgramOutput[0].Package
 		}
 
@@ -66,8 +71,13 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 		// If `initializer` is `nil`, this means that an expression
 		// equivalent to nil was used, such as `[]i32{}`.
 		if doesInitialize && initializer != nil {
+			initializerAtomicOp, _, _, err := prgrm.GetOperation(initializer[len(initializer)-1])
+			if err != nil {
+				panic(err)
+			}
+
 			// then we just re-assign offsets
-			if initializer[len(initializer)-1].Operator == nil {
+			if initializerAtomicOp.Operator == nil {
 				// then it's a literal
 				declaration_specifiers.Name = glbl.Name
 				declaration_specifiers.Offset = glbl.Offset
@@ -76,11 +86,11 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 
 				*glbl = *declaration_specifiers
 
-				initializer[len(initializer)-1].AddInput(initializer[len(initializer)-1].Outputs[0])
-				initializer[len(initializer)-1].Outputs = nil
-				initializer[len(initializer)-1].AddOutput(glbl)
-				initializer[len(initializer)-1].Operator = ast.Natives[constants.OP_IDENTITY]
-				initializer[len(initializer)-1].Package = glbl.Package
+				initializerAtomicOp.AddInput(initializerAtomicOp.Outputs[0])
+				initializerAtomicOp.Outputs = nil
+				initializerAtomicOp.AddOutput(glbl)
+				initializerAtomicOp.Operator = ast.Natives[constants.OP_IDENTITY]
+				initializerAtomicOp.Package = glbl.Package
 
 				//add intialization statements, to array
 				prgrm.SysInitExprs = append(prgrm.SysInitExprs, initializer...)
@@ -94,10 +104,19 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 				*glbl = *declaration_specifiers
 
 				if initializer[len(initializer)-1].IsStructLiteral() {
-					initializer = StructLiteralAssignment([]*ast.CXExpression{{Outputs: []*ast.CXArgument{glbl}}}, initializer)
+					index := prgrm.AddCXAtomicOp(&ast.CXAtomicOperator{Outputs: []*ast.CXArgument{glbl}})
+					initializer = StructLiteralAssignment(prgrm,
+						[]*ast.CXExpression{
+							{
+								Index: index,
+								Type:  ast.CX_ATOMIC_OPERATOR,
+							},
+						},
+						initializer,
+					)
 				} else {
-					initializer[len(initializer)-1].Outputs = nil
-					initializer[len(initializer)-1].AddOutput(glbl)
+					initializerAtomicOp.Outputs = nil
+					initializerAtomicOp.AddOutput(glbl)
 				}
 				//add intialization statements, to array
 				prgrm.SysInitExprs = append(prgrm.SysInitExprs, initializer...)
@@ -124,20 +143,30 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 		// If `initializer` is `nil`, this means that an expression
 		// equivalent to nil was used, such as `[]i32{}`.
 		if doesInitialize && initializer != nil {
-			if initializer[len(initializer)-1].Operator == nil {
+			initializerAtomicOp, _, _, err := prgrm.GetOperation(initializer[len(initializer)-1])
+			if err != nil {
+				panic(err)
+			}
+
+			offExprAtomicOp, _, _, err := prgrm.GetOperation(offExpr[0])
+			if err != nil {
+				panic(err)
+			}
+
+			if initializerAtomicOp.Operator == nil {
 				// then it's a literal
 
 				declaration_specifiers.Name = declarator.Name
 				declaration_specifiers.ArgDetails.FileLine = declarator.ArgDetails.FileLine
-				declaration_specifiers.Offset = offExpr[0].Outputs[0].Offset
-				declaration_specifiers.Size = offExpr[0].Outputs[0].Size
-				declaration_specifiers.TotalSize = offExpr[0].Outputs[0].TotalSize
+				declaration_specifiers.Offset = offExprAtomicOp.Outputs[0].Offset
+				declaration_specifiers.Size = offExprAtomicOp.Outputs[0].Size
+				declaration_specifiers.TotalSize = offExprAtomicOp.Outputs[0].TotalSize
 				declaration_specifiers.Package = pkg
 
-				initializer[len(initializer)-1].Operator = ast.Natives[constants.OP_IDENTITY]
-				initializer[len(initializer)-1].AddInput(initializer[len(initializer)-1].Outputs[0])
-				initializer[len(initializer)-1].Outputs = nil
-				initializer[len(initializer)-1].AddOutput(declaration_specifiers)
+				initializerAtomicOp.Operator = ast.Natives[constants.OP_IDENTITY]
+				initializerAtomicOp.AddInput(initializerAtomicOp.Outputs[0])
+				initializerAtomicOp.Outputs = nil
+				initializerAtomicOp.AddOutput(declaration_specifiers)
 
 				pkg.AddGlobal(declaration_specifiers)
 				//add intialization statements, to array
@@ -146,16 +175,25 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 				// then it's an expression
 				declaration_specifiers.Name = declarator.Name
 				declaration_specifiers.ArgDetails.FileLine = declarator.ArgDetails.FileLine
-				declaration_specifiers.Offset = offExpr[0].Outputs[0].Offset
-				declaration_specifiers.Size = offExpr[0].Outputs[0].Size
-				declaration_specifiers.TotalSize = offExpr[0].Outputs[0].TotalSize
+				declaration_specifiers.Offset = offExprAtomicOp.Outputs[0].Offset
+				declaration_specifiers.Size = offExprAtomicOp.Outputs[0].Size
+				declaration_specifiers.TotalSize = offExprAtomicOp.Outputs[0].TotalSize
 				declaration_specifiers.Package = pkg
 
 				if initializer[len(initializer)-1].IsStructLiteral() {
-					initializer = StructLiteralAssignment([]*ast.CXExpression{{Outputs: []*ast.CXArgument{declaration_specifiers}}}, initializer)
+					index := prgrm.AddCXAtomicOp(&ast.CXAtomicOperator{Outputs: []*ast.CXArgument{declaration_specifiers}})
+					initializer = StructLiteralAssignment(prgrm,
+						[]*ast.CXExpression{
+							{
+								Index: index,
+								Type:  ast.CX_ATOMIC_OPERATOR,
+							},
+						},
+						initializer,
+					)
 				} else {
-					initializer[len(initializer)-1].Outputs = nil
-					initializer[len(initializer)-1].AddOutput(declaration_specifiers)
+					initializerAtomicOp.Outputs = nil
+					initializerAtomicOp.AddOutput(declaration_specifiers)
 				}
 
 				pkg.AddGlobal(declaration_specifiers)
@@ -166,11 +204,16 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 			// offExpr := WritePrimary(declaration_specifiers.Type, make([]byte, declaration_specifiers.Size), false)
 			// exprOut := expr[0].ProgramOutput[0]
 
+			offExprAtomicOp, _, _, err := prgrm.GetOperation(offExpr[0])
+			if err != nil {
+				panic(err)
+			}
+
 			declaration_specifiers.Name = declarator.Name
 			declaration_specifiers.ArgDetails.FileLine = declarator.ArgDetails.FileLine
-			declaration_specifiers.Offset = offExpr[0].Outputs[0].Offset
-			declaration_specifiers.Size = offExpr[0].Outputs[0].Size
-			declaration_specifiers.TotalSize = offExpr[0].Outputs[0].TotalSize
+			declaration_specifiers.Offset = offExprAtomicOp.Outputs[0].Offset
+			declaration_specifiers.Size = offExprAtomicOp.Outputs[0].Size
+			declaration_specifiers.TotalSize = offExprAtomicOp.Outputs[0].TotalSize
 			declaration_specifiers.Package = pkg
 
 			pkg.AddGlobal(declaration_specifiers)
@@ -302,64 +345,85 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 	// Declaration expression to handle the inline initialization.
 	// For example, `var foo i32 = 11` needs to be divided into two expressions:
 	// one that declares `foo`, and another that assigns 11 to `foo`
-	decl := ast.MakeExpression(nil, declarator.ArgDetails.FileName, declarator.ArgDetails.FileLine)
-	decl.Package = pkg
+	decl := ast.MakeExpression(prgrm, nil, declarator.ArgDetails.FileName, declarator.ArgDetails.FileLine)
+	cxAtomicOp, _, _, err := prgrm.GetOperation(decl)
+	if err != nil {
+		panic(err)
+	}
+	cxAtomicOp.Package = pkg
 
 	declarationSpecifiers.Name = declarator.Name
 	declarationSpecifiers.ArgDetails.FileLine = declarator.ArgDetails.FileLine
 	declarationSpecifiers.Package = pkg
 	declarationSpecifiers.PreviouslyDeclared = true
-	decl.AddOutput(declarationSpecifiers)
+	cxAtomicOp.AddOutput(declarationSpecifiers)
 
 	// Checking if something is supposed to be initialized
 	// and if `initializer` actually contains something.
 	// If `initializer` is `nil`, this means that an expression
 	// equivalent to nil was used, such as `[]i32{}`.
 	if doesInitialize && initializer != nil {
+		initializerAtomicOp, _, _, err := prgrm.GetOperation(initializer[len(initializer)-1])
+		if err != nil {
+			panic(err)
+		}
+
 		// THEN it's a literal, e.g. var foo i32 = 10;
 		// ELSE it's an expression with an operator
-		if initializer[len(initializer)-1].Operator == nil {
+		if initializerAtomicOp.Operator == nil {
 			// we need to create an expression that links the initializer expressions
 			// with the declared variable
-			expr := ast.MakeExpression(ast.Natives[constants.OP_IDENTITY], CurrentFile, LineNo)
-			expr.Package = pkg
+			expr := ast.MakeExpression(prgrm, ast.Natives[constants.OP_IDENTITY], CurrentFile, LineNo)
+			cxExprAtomicOp, _, _, err := prgrm.GetOperation(expr)
+			if err != nil {
+				panic(err)
+			}
+			cxExprAtomicOp.Package = pkg
 
-			initOut := initializer[len(initializer)-1].Outputs[0]
+			initOut := initializerAtomicOp.Outputs[0]
 			// CX checks the output of an expression to determine if it's being passed
 			// by value or by reference, so we copy this property from the initializer's
 			// output, in case of something like var foo *i32 = &bar
 			declarationSpecifiers.PassBy = initOut.PassBy
 
-			expr.AddOutput(declarationSpecifiers)
-			expr.AddInput(initOut)
+			cxExprAtomicOp.AddOutput(declarationSpecifiers)
+			cxExprAtomicOp.AddInput(initOut)
 
 			initializer[len(initializer)-1] = expr
 
 			return append([]*ast.CXExpression{decl}, initializer...)
 		} else {
 			expr := initializer[len(initializer)-1]
+			cxExprAtomicOp, _, _, err := prgrm.GetOperation(expr)
+			if err != nil {
+				panic(err)
+			}
 
 			// THEN the expression has outputs created from the result of
 			// handling a dot notation initializer, and it needs to be replaced
 			// ELSE we simply add it using `AddOutput`
-			if len(expr.Outputs) > 0 {
-				expr.Outputs = []*ast.CXArgument{declarationSpecifiers}
+			if len(cxExprAtomicOp.Outputs) > 0 {
+				cxExprAtomicOp.Outputs = []*ast.CXArgument{declarationSpecifiers}
 			} else {
-				expr.AddOutput(declarationSpecifiers)
+				cxExprAtomicOp.AddOutput(declarationSpecifiers)
 			}
 
 			return append([]*ast.CXExpression{decl}, initializer...)
 		}
 	} else {
 		// There is no initialization.
-		expr := ast.MakeExpression(nil, declarator.ArgDetails.FileName, declarator.ArgDetails.FileLine)
-		expr.Package = pkg
+		expr := ast.MakeExpression(prgrm, nil, declarator.ArgDetails.FileName, declarator.ArgDetails.FileLine)
+		cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+		if err != nil {
+			panic(err)
+		}
+		cxAtomicOp.Package = pkg
 
 		declarationSpecifiers.Name = declarator.Name
 		declarationSpecifiers.ArgDetails.FileLine = declarator.ArgDetails.FileLine
 		declarationSpecifiers.Package = pkg
 		declarationSpecifiers.PreviouslyDeclared = true
-		expr.AddOutput(declarationSpecifiers)
+		cxAtomicOp.AddOutput(declarationSpecifiers)
 
 		return []*ast.CXExpression{expr}
 	}

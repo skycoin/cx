@@ -12,7 +12,7 @@ const (
 	CX_LINE
 )
 
-type CXOperation struct {
-	Index int32
-	Type  CXOPERATION_TYPE
-}
+// type CXOperation struct {
+// 	Index int
+// 	Type  CXOPERATION_TYPE
+// }

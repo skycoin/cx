@@ -488,7 +488,7 @@ struct_literal_fields:
         |       IDENTIFIER COLON constant_expression
                 {
 			if $3[0].IsStructLiteral() {
-				$$ = actions.StructLiteralAssignment([]*ast.CXExpression{actions.StructLiteralFields(actions.AST,$1)}, $3)
+				$$ = actions.StructLiteralAssignment(actions.AST,[]*ast.CXExpression{actions.StructLiteralFields(actions.AST,$1)}, $3)
 			} else {
 				$$ = actions.Assignment(actions.AST,[]*ast.CXExpression{actions.StructLiteralFields(actions.AST,$1)}, "=", $3)
 			}
@@ -496,7 +496,7 @@ struct_literal_fields:
         |       struct_literal_fields COMMA IDENTIFIER COLON constant_expression
                 {
 			if $5[0].IsStructLiteral() {
-				$$ = append($1, actions.StructLiteralAssignment([]*ast.CXExpression{actions.StructLiteralFields(actions.AST,$3)}, $5)...)
+				$$ = append($1, actions.StructLiteralAssignment(actions.AST,[]*ast.CXExpression{actions.StructLiteralFields(actions.AST,$3)}, $5)...)
 			} else {
 				$$ = append($1, actions.Assignment(actions.AST,[]*ast.CXExpression{actions.StructLiteralFields(actions.AST,$3)}, "=", $5)...)
 			}
@@ -597,10 +597,20 @@ slice_literal_expression:
                 }
         |       LBRACK RBRACK slice_literal_expression
                 {
+                        lastExprAtomicOp, _, _, err := actions.AST.GetOperation($3[len($3) - 1])
+                        if err != nil {
+                                panic(err)
+                        }
+
 			for _, expr := range $3 {
-				if expr.Outputs[0].Name == $3[len($3) - 1].Inputs[0].Name {
-					expr.Outputs[0].Lengths = append(expr.Outputs[0].Lengths, 0)
-					expr.Outputs[0].DeclarationSpecifiers = append(expr.Outputs[0].DeclarationSpecifiers, constants.DECL_SLICE)
+                                exprAtomicOp, _, _, err := actions.AST.GetOperation(expr)
+                                if err != nil {
+                                        panic(err)
+                                }
+
+				if exprAtomicOp.Outputs[0].Name == lastExprAtomicOp.Inputs[0].Name {
+					exprAtomicOp.Outputs[0].Lengths = append(exprAtomicOp.Outputs[0].Lengths, 0)
+					exprAtomicOp.Outputs[0].DeclarationSpecifiers = append(exprAtomicOp.Outputs[0].DeclarationSpecifiers, constants.DECL_SLICE)
                                     }
 			}
 	
@@ -772,7 +782,7 @@ postfix_expression:
 		primary_expression
 	|       postfix_expression LBRACK expression RBRACK
                 {
-			$$ = actions.PostfixExpressionArray($1, $3)
+			$$ = actions.PostfixExpressionArray(actions.AST,$1, $3)
                 }
         |       type_specifier PERIOD after_period
                 {
@@ -962,7 +972,12 @@ struct_literal_expression:
                 }
         |       postfix_expression PERIOD IDENTIFIER LBRACE struct_literal_fields RBRACE
                 {
-			$$ = actions.PrimaryStructLiteralExternal(actions.AST,$1[0].Outputs[0].Name, $3, $5)
+                        cxAtomicOp, _, _, err := actions.AST.GetOperation($1[0])
+                        if err != nil {
+                                panic(err)
+                        }
+
+			$$ = actions.PrimaryStructLiteralExternal(actions.AST,cxAtomicOp.Outputs[0].Name, $3, $5)
                 }
                 ;
 
@@ -970,6 +985,7 @@ assignment_expression:
                 struct_literal_expression
 	|       unary_expression assignment_operator assignment_expression
                 {
+                       
 			if $3 == nil {
 				$$ = nil
 			}
@@ -980,22 +996,30 @@ assignment_expression:
 					}
 					if $2 == ":=" {
 						for _, from := range $3 {
-							from.Outputs[0].IsShortAssignmentDeclaration = true
-							from.Outputs[0].PreviouslyDeclared = true
+                                                        fromAtomicOp, _, _, err := actions.AST.GetOperation(from)
+                                                        if err != nil {
+                                                                panic(err)
+                                                        }
+							fromAtomicOp.Outputs[0].IsShortAssignmentDeclaration = true
+							fromAtomicOp.Outputs[0].PreviouslyDeclared = true
 						}
 					}
-					$$ = actions.ArrayLiteralAssignment($1, $3)
+					$$ = actions.ArrayLiteralAssignment(actions.AST,$1, $3)
 				} else if $3[len($3) - 1].IsStructLiteral() {
 					if $2 != "=" && $2 != ":=" {
 						panic("")
 					}
 					if $2 == ":=" {
 						for _, from := range $3 {
-							from.Outputs[0].IsShortAssignmentDeclaration = true
-							from.Outputs[0].PreviouslyDeclared = true
+                                                        fromAtomicOp, _, _, err := actions.AST.GetOperation(from)
+                                                        if err != nil {
+                                                                panic(err)
+                                                        }
+							fromAtomicOp.Outputs[0].IsShortAssignmentDeclaration = true
+							fromAtomicOp.Outputs[0].PreviouslyDeclared = true
 						}
 					}
-					$$ = actions.StructLiteralAssignment($1, $3)
+					$$ = actions.StructLiteralAssignment(actions.AST,$1, $3)
 				} else {
 					$$ = actions.Assignment(actions.AST,$1, $2, $3)
 				}
@@ -1020,9 +1044,19 @@ assignment_operator:
 
 expression:     assignment_expression
 	|       expression COMMA assignment_expression
-                {
-			$3[len($3) - 1].Outputs = append($1[len($1) - 1].Outputs, $3[len($3) - 1].Outputs...)
-			$$ = $3
+                {       
+                        lastOfThirdAtomicOp, _, _, err := actions.AST.GetOperation($3[len($3) - 1])
+                        if err != nil {
+                                panic(err)
+                        }
+
+                        lastOfFirstAtomicOp, _, _, err := actions.AST.GetOperation($1[len($1) - 1])
+                        if err != nil {
+                                panic(err)
+                        }
+
+			lastOfThirdAtomicOp.Outputs = append(lastOfFirstAtomicOp.Outputs, lastOfThirdAtomicOp.Outputs...)
+                        $$ = $3
                 }
                 ;
 
@@ -1064,7 +1098,12 @@ labeled_statement:
 			// UPDATE: I need to label all expressions. `goto` will jump to first occurrance anyway, so no problem
 			// I need this behavior for affordances
 			for _, expr := range $3 {
-				expr.Label = $1
+                                cxAtomicOp, _, _, err := actions.AST.GetOperation(expr)
+                                if err != nil {
+                                        panic(err)
+                                }
+
+				cxAtomicOp.Label = $1
 			}
 
 			$$ = $3
@@ -1100,9 +1139,20 @@ expression_statement:
                 SEMICOLON
                 { $$ = nil }
 	|       expression SEMICOLON
-                {
-			if len($1) > 0 && $1[len($1) - 1].Operator == nil && !$1[len($1) - 1].IsMethodCall() {
-				outs := $1[len($1) - 1].Outputs
+                {          
+                        var lastFirstAtomicOp *ast.CXAtomicOperator
+                        var err error
+
+                        if len($1) > 0 {
+                                lastFirstAtomicOp, _, _, err = actions.AST.GetOperation($1[len($1) - 1])
+                                if err != nil {
+                                        panic(err)
+                                }
+                        }
+                       
+
+			if len($1) > 0 && lastFirstAtomicOp.Operator == nil && !$1[len($1) - 1].IsMethodCall() {
+				outs := lastFirstAtomicOp.Outputs
 				if len(outs) > 0 {
 					println(ast.CompilationError(outs[0].ArgDetails.FileName, outs[0].ArgDetails.FileLine), "invalid expression")
 				} else {
@@ -1221,9 +1271,14 @@ return_expression:
 jump_statement: GOTO IDENTIFIER SEMICOLON
                 {
 			if pkg, err := actions.AST.GetCurrentPackage(); err == nil {
-				expr := ast.MakeExpression(ast.Natives[constants.OP_GOTO], actions.CurrentFile, actions.LineNo)
-				expr.Package = pkg
-				expr.Label = $2
+				expr := ast.MakeExpression(actions.AST,ast.Natives[constants.OP_GOTO], actions.CurrentFile, actions.LineNo)
+                                cxAtomicOp, _, _, err := actions.AST.GetOperation(expr)
+                                if err != nil {
+                                        panic(err)
+                                }
+
+				cxAtomicOp.Package = pkg
+				cxAtomicOp.Label = $2
 				$$ = []*ast.CXExpression{expr}
 			} else {
 				panic(err)

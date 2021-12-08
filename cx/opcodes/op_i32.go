@@ -231,11 +231,16 @@ func opI32JmpEq(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 	call := prgrm.GetCurrentCall()
 	expr := inputs[0].Expr
 
+	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	if err != nil {
+		panic(err)
+	}
+
 	res := inputs[0].Get_i32(prgrm) == inputs[1].Get_i32(prgrm)
 	if res {
-		call.Line = call.Line + expr.ThenLines
+		call.Line = call.Line + cxAtomicOp.ThenLines
 	} else {
-		call.Line = call.Line + expr.ElseLines
+		call.Line = call.Line + cxAtomicOp.ElseLines
 	}
 }
 
@@ -243,11 +248,16 @@ func opI32JmpUnEq(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVa
 	call := prgrm.GetCurrentCall()
 	expr := inputs[0].Expr
 
+	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	if err != nil {
+		panic(err)
+	}
+
 	res := inputs[0].Get_i32(prgrm) != inputs[1].Get_i32(prgrm)
 	if res {
-		call.Line = call.Line + expr.ThenLines
+		call.Line = call.Line + cxAtomicOp.ThenLines
 	} else {
-		call.Line = call.Line + expr.ElseLines
+		call.Line = call.Line + cxAtomicOp.ElseLines
 	}
 }
 
@@ -255,11 +265,16 @@ func opI32JmpGt(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 	call := prgrm.GetCurrentCall()
 	expr := inputs[0].Expr
 
+	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	if err != nil {
+		panic(err)
+	}
+
 	res := inputs[0].Get_i32(prgrm) > inputs[1].Get_i32(prgrm)
 	if res {
-		call.Line = call.Line + expr.ThenLines
+		call.Line = call.Line + cxAtomicOp.ThenLines
 	} else {
-		call.Line = call.Line + expr.ElseLines
+		call.Line = call.Line + cxAtomicOp.ElseLines
 	}
 }
 
@@ -267,11 +282,16 @@ func opI32JmpGtEq(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVa
 	call := prgrm.GetCurrentCall()
 	expr := inputs[0].Expr
 
+	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	if err != nil {
+		panic(err)
+	}
+
 	res := inputs[0].Get_i32(prgrm) >= inputs[1].Get_i32(prgrm)
 	if res {
-		call.Line = call.Line + expr.ThenLines
+		call.Line = call.Line + cxAtomicOp.ThenLines
 	} else {
-		call.Line = call.Line + expr.ElseLines
+		call.Line = call.Line + cxAtomicOp.ElseLines
 	}
 }
 
@@ -279,11 +299,16 @@ func opI32JmpLt(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 	call := prgrm.GetCurrentCall()
 	expr := inputs[0].Expr
 
+	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	if err != nil {
+		panic(err)
+	}
+
 	res := inputs[0].Get_i32(prgrm) < inputs[1].Get_i32(prgrm)
 	if res {
-		call.Line = call.Line + expr.ThenLines
+		call.Line = call.Line + cxAtomicOp.ThenLines
 	} else {
-		call.Line = call.Line + expr.ElseLines
+		call.Line = call.Line + cxAtomicOp.ElseLines
 	}
 }
 
@@ -291,11 +316,16 @@ func opI32JmpLtEq(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVa
 	call := prgrm.GetCurrentCall()
 	expr := inputs[0].Expr
 
+	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	if err != nil {
+		panic(err)
+	}
+
 	res := inputs[0].Get_i32(prgrm) <= inputs[1].Get_i32(prgrm)
 	if res {
-		call.Line = call.Line + expr.ThenLines
+		call.Line = call.Line + cxAtomicOp.ThenLines
 	} else {
-		call.Line = call.Line + expr.ElseLines
+		call.Line = call.Line + cxAtomicOp.ElseLines
 	}
 }
 
@@ -303,11 +333,16 @@ func opI32JmpZero(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVa
 	call := prgrm.GetCurrentCall()
 	expr := inputs[0].Expr
 
+	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	if err != nil {
+		panic(err)
+	}
+
 	res := inputs[0].Get_i32(prgrm) == 0
 	if res {
-		call.Line = call.Line + expr.ThenLines
+		call.Line = call.Line + cxAtomicOp.ThenLines
 	} else {
-		call.Line = call.Line + expr.ElseLines
+		call.Line = call.Line + cxAtomicOp.ElseLines
 	}
 }
 
@@ -315,10 +350,15 @@ func opI32JmpNotZero(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.C
 	call := prgrm.GetCurrentCall()
 	expr := inputs[0].Expr
 
+	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	if err != nil {
+		panic(err)
+	}
+
 	res := inputs[0].Get_i32(prgrm) != 0
 	if res {
-		call.Line = call.Line + expr.ThenLines
+		call.Line = call.Line + cxAtomicOp.ThenLines
 	} else {
-		call.Line = call.Line + expr.ElseLines
+		call.Line = call.Line + cxAtomicOp.ElseLines
 	}
 }

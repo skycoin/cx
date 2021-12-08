@@ -174,6 +174,23 @@ func (cxprogram *CXProgram) AddCXAtomicOp(CXAtomicOp *CXAtomicOperator) int {
 // ----------------------------------------------------------------
 //                             `CXProgram` Getters
 
+func (cxprogram *CXProgram) GetOperation(expr *CXExpression) (*CXAtomicOperator, *CXArgument, *CXLine, error) {
+	var cxAtomicOp *CXAtomicOperator
+	var err error
+	switch expr.Type {
+	case CX_ATOMIC_OPERATOR:
+		cxAtomicOp, err = cxprogram.GetCXAtomicOp(int(expr.Index))
+		if err != nil {
+			return &CXAtomicOperator{}, &CXArgument{}, &CXLine{}, err
+		}
+
+		return cxAtomicOp, &CXArgument{}, &CXLine{}, nil
+		// case CX_ARGUMENT, CX_LINE:
+	}
+
+	return &CXAtomicOperator{}, &CXArgument{}, &CXLine{}, fmt.Errorf("expression type is not found.")
+}
+
 // Only two users, both in cx/execute.go
 func (cxprogram *CXProgram) SelectPackage(name string) (*CXPackage, error) {
 	if cxprogram.Packages[name] == nil {
