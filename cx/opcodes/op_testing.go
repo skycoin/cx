@@ -49,11 +49,13 @@ func assert(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) (
 
 	if !same {
 		call := prgrm.GetCurrentCall()
-		expr := call.Operator.Expressions[call.Line]
+		// expr := call.Operator.Expressions[call.Line]
+		cxLine, _ := prgrm.GetPreviousCXLine(call.Operator.Expressions, call.Line)
+
 		if message != "" {
-			fmt.Printf("%s: %d: result was not equal to the expected value; %s\n", expr.FileName, expr.FileLine, message)
+			fmt.Printf("%s: %d: result was not equal to the expected value; %s\n", cxLine.FileName, cxLine.LineNumber, message)
 		} else {
-			fmt.Printf("%s: %d: result was not equal to the expected value\n", expr.FileName, expr.FileLine)
+			fmt.Printf("%s: %d: result was not equal to the expected value\n", cxLine.FileName, cxLine.LineNumber)
 		}
 	}
 
@@ -81,8 +83,10 @@ func panicIf(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue, 
 	str := inputs[1].Get_str(prgrm)
 	if inputs[0].Get_bool(prgrm) == condition {
 		call := prgrm.GetCurrentCall()
-		expr := call.Operator.Expressions[call.Line]
-		fmt.Printf("%s : %d, %s\n", expr.FileName, expr.FileLine, str)
+		// expr := call.Operator.Expressions[call.Line]
+		cxLine, _ := prgrm.GetPreviousCXLine(call.Operator.Expressions, call.Line)
+
+		fmt.Printf("%s : %d, %s\n", cxLine.FileName, cxLine.LineNumber, str)
 		panic(constants.CX_ASSERT)
 	}
 }

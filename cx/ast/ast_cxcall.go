@@ -30,6 +30,13 @@ func popStack(prgrm *CXProgram, call *CXCall) error {
 	fp := call.FramePointer
 
 	expr := returnOp.Expressions[returnLine]
+	// if expr.Type == CX_LINE {
+	// 	// return the stack pointer to its previous state
+	// 	prgrm.Stack.Pointer = fp
+	// 	// we'll now execute the next command
+	// 	prgrm.CallStack[prgrm.CallCounter].Line++
+	// 	return nil
+	// }
 
 	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
 	if err != nil {
@@ -228,6 +235,11 @@ func (call *CXCall) Call(prgrm *CXProgram, globalInputs *[]CXValue, globalOutput
 	fn := call.Operator
 	expr := fn.Expressions[call.Line]
 	fp := call.FramePointer
+
+	if expr.Type == CX_LINE {
+		call.Line++
+		return nil
+	}
 
 	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
 	if err != nil {

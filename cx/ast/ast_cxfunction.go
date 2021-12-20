@@ -187,13 +187,15 @@ func (fn *CXFunction) AddExpression(prgrm *CXProgram, expr *CXExpression) *CXFun
 	// fn.LineCount++
 	// return fn
 
-	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
-	if err != nil {
-		panic(err)
-	}
+	if expr.Type == CX_ATOMIC_OPERATOR {
+		cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+		if err != nil {
+			panic(err)
+		}
 
-	cxAtomicOp.Package = fn.Package
-	cxAtomicOp.Function = fn
+		cxAtomicOp.Package = fn.Package
+		cxAtomicOp.Function = fn
+	}
 
 	fn.Expressions = append(fn.Expressions, expr)
 
@@ -257,17 +259,32 @@ func (fn *CXFunction) RemoveExpression(line int) {
 // ----------------------------------------------------------------
 //                             `CXFunction` Selectors
 
-// MakeExpression ...
-func MakeExpression(prgrm *CXProgram, op *CXFunction, fileName string, fileLine int) *CXExpression {
+// MakeAtomicOperatorExpression ...
+func MakeAtomicOperatorExpression(prgrm *CXProgram, op *CXFunction, fileName string, fileLine int) *CXExpression {
 	index := prgrm.AddCXAtomicOp(&CXAtomicOperator{
 		Operator: op,
 	})
 
 	return &CXExpression{
-		Index:    index,
-		Type:     CX_ATOMIC_OPERATOR,
-		FileLine: fileLine,
-		FileName: fileName}
+		Index: index,
+		Type:  CX_ATOMIC_OPERATOR,
+		// FileLine: fileLine,
+		// FileName: fileName,
+	}
+}
+
+// MakeCXLineExpression ...
+func MakeCXLineExpression(prgrm *CXProgram, fileName string, lineNo int, lineStr string) *CXExpression {
+	index := prgrm.AddCXLine(&CXLine{
+		FileName:   fileName,
+		LineNumber: lineNo,
+		LineStr:    lineStr,
+	})
+
+	return &CXExpression{
+		Index: index,
+		Type:  CX_LINE,
+	}
 }
 
 // SelectExpression ...

@@ -40,13 +40,15 @@ func errorCode(r interface{}) int {
 
 func RuntimeErrorInfo(prgrm *CXProgram, r interface{}, printStack bool, defaultError int) {
 	call := prgrm.CallStack[prgrm.CallCounter]
-	expr := call.Operator.Expressions[call.Line]
+	// expr := call.Operator.Expressions[call.Line]
 	code := errorCode(r)
 	if code == constants.CX_RUNTIME_ERROR {
 		code = defaultError
 	}
 
-	fmt.Printf("%s, %s, %v", ErrorHeader(expr.FileName, expr.FileLine), ErrorString(code), r)
+	cxLine, _ := prgrm.GetPreviousCXLine(call.Operator.Expressions, call.Line)
+
+	fmt.Printf("%s, %s, %v", ErrorHeader(cxLine.FileName, cxLine.LineNumber), ErrorString(code), r)
 
 	if printStack {
 		prgrm.PrintStack()

@@ -56,7 +56,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 					make([]byte, declaration_specifiers.TotalSize), false)
 			}
 
-			offExprAtomicOp, _, _, err := prgrm.GetOperation(offExpr[0])
+			offExprAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(offExpr, 0)
 			if err != nil {
 				panic(err)
 			}
@@ -71,7 +71,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 		// If `initializer` is `nil`, this means that an expression
 		// equivalent to nil was used, such as `[]i32{}`.
 		if doesInitialize && initializer != nil {
-			initializerAtomicOp, _, _, err := prgrm.GetOperation(initializer[len(initializer)-1])
+			initializerAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(initializer, len(initializer)-1)
 			if err != nil {
 				panic(err)
 			}
@@ -143,12 +143,12 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 		// If `initializer` is `nil`, this means that an expression
 		// equivalent to nil was used, such as `[]i32{}`.
 		if doesInitialize && initializer != nil {
-			initializerAtomicOp, _, _, err := prgrm.GetOperation(initializer[len(initializer)-1])
+			initializerAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(initializer, len(initializer)-1)
 			if err != nil {
 				panic(err)
 			}
 
-			offExprAtomicOp, _, _, err := prgrm.GetOperation(offExpr[0])
+			offExprAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(offExpr, 0)
 			if err != nil {
 				panic(err)
 			}
@@ -204,7 +204,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 			// offExpr := WritePrimary(declaration_specifiers.Type, make([]byte, declaration_specifiers.Size), false)
 			// exprOut := expr[0].ProgramOutput[0]
 
-			offExprAtomicOp, _, _, err := prgrm.GetOperation(offExpr[0])
+			offExprAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(offExpr, 0)
 			if err != nil {
 				panic(err)
 			}
@@ -342,10 +342,11 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 		panic(err)
 	}
 
+	declCXLine := ast.MakeCXLineExpression(prgrm, declarator.ArgDetails.FileName, declarator.ArgDetails.FileLine, "")
 	// Declaration expression to handle the inline initialization.
 	// For example, `var foo i32 = 11` needs to be divided into two expressions:
 	// one that declares `foo`, and another that assigns 11 to `foo`
-	decl := ast.MakeExpression(prgrm, nil, declarator.ArgDetails.FileName, declarator.ArgDetails.FileLine)
+	decl := ast.MakeAtomicOperatorExpression(prgrm, nil, declarator.ArgDetails.FileName, declarator.ArgDetails.FileLine)
 	cxAtomicOp, _, _, err := prgrm.GetOperation(decl)
 	if err != nil {
 		panic(err)
@@ -363,7 +364,7 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 	// If `initializer` is `nil`, this means that an expression
 	// equivalent to nil was used, such as `[]i32{}`.
 	if doesInitialize && initializer != nil {
-		initializerAtomicOp, _, _, err := prgrm.GetOperation(initializer[len(initializer)-1])
+		initializerAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(initializer, len(initializer)-1)
 		if err != nil {
 			panic(err)
 		}
@@ -373,7 +374,7 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 		if initializerAtomicOp.Operator == nil {
 			// we need to create an expression that links the initializer expressions
 			// with the declared variable
-			expr := ast.MakeExpression(prgrm, ast.Natives[constants.OP_IDENTITY], CurrentFile, LineNo)
+			expr := ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_IDENTITY], CurrentFile, LineNo)
 			cxExprAtomicOp, _, _, err := prgrm.GetOperation(expr)
 			if err != nil {
 				panic(err)
@@ -391,7 +392,7 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 
 			initializer[len(initializer)-1] = expr
 
-			return append([]*ast.CXExpression{decl}, initializer...)
+			return append([]*ast.CXExpression{declCXLine, decl}, initializer...)
 		} else {
 			expr := initializer[len(initializer)-1]
 			cxExprAtomicOp, _, _, err := prgrm.GetOperation(expr)
@@ -408,11 +409,12 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 				cxExprAtomicOp.AddOutput(declarationSpecifiers)
 			}
 
-			return append([]*ast.CXExpression{decl}, initializer...)
+			return append([]*ast.CXExpression{declCXLine, decl}, initializer...)
 		}
 	} else {
+		exprCXLine := ast.MakeCXLineExpression(prgrm, declarator.ArgDetails.FileName, declarator.ArgDetails.FileLine, "")
 		// There is no initialization.
-		expr := ast.MakeExpression(prgrm, nil, declarator.ArgDetails.FileName, declarator.ArgDetails.FileLine)
+		expr := ast.MakeAtomicOperatorExpression(prgrm, nil, declarator.ArgDetails.FileName, declarator.ArgDetails.FileLine)
 		cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
 		if err != nil {
 			panic(err)
@@ -425,7 +427,7 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 		declarationSpecifiers.PreviouslyDeclared = true
 		cxAtomicOp.AddOutput(declarationSpecifiers)
 
-		return []*ast.CXExpression{expr}
+		return []*ast.CXExpression{exprCXLine, expr}
 	}
 }
 

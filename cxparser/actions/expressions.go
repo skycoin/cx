@@ -25,7 +25,8 @@ func IterationExpressions(prgrm *ast.CXProgram, init []*ast.CXExpression, cond [
 		panic(err)
 	}
 
-	upExpr := ast.MakeExpression(prgrm, jmpFn, CurrentFile, LineNo)
+	upExprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, "")
+	upExpr := ast.MakeAtomicOperatorExpression(prgrm, jmpFn, CurrentFile, LineNo)
 	upExprAtomicOp, _, _, err := prgrm.GetOperation(upExpr)
 	if err != nil {
 		panic(err)
@@ -33,26 +34,28 @@ func IterationExpressions(prgrm *ast.CXProgram, init []*ast.CXExpression, cond [
 	upExprAtomicOp.Package = pkg
 
 	trueArg := WritePrimary(prgrm, types.BOOL, encoder.Serialize(true), false)
-	trueArgAtomicOp, _, _, err := prgrm.GetOperation(trueArg[0])
+	trueArgAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(trueArg, 0)
 	if err != nil {
 		panic(err)
 	}
 
-	upLines := (len(statements) + len(incr) + len(cond) + 2) * -1
+	// -2 for the cx line expression addition for up and down expr
+	upLines := ((len(statements) + len(incr) + len(cond) + 2) * -1) - 2
 	downLines := 0
 
 	upExprAtomicOp.AddInput(trueArgAtomicOp.Outputs[0])
 	upExprAtomicOp.ThenLines = upLines
 	upExprAtomicOp.ElseLines = downLines
 
-	downExpr := ast.MakeExpression(prgrm, jmpFn, CurrentFile, LineNo)
+	downExprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, "")
+	downExpr := ast.MakeAtomicOperatorExpression(prgrm, jmpFn, CurrentFile, LineNo)
 	downExprAtomicOp, _, _, err := prgrm.GetOperation(downExpr)
 	if err != nil {
 		panic(err)
 	}
 	downExprAtomicOp.Package = pkg
 
-	lastCondAtomicOp, _, _, err := prgrm.GetOperation(cond[len(cond)-1])
+	lastCondAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(cond, len(cond)-1)
 	if err != nil {
 		panic(err)
 	}
@@ -71,7 +74,8 @@ func IterationExpressions(prgrm *ast.CXProgram, init []*ast.CXExpression, cond [
 	}
 
 	thenLines := 0
-	elseLines := len(incr) + len(statements) + 1
+	// + 1 for the cx line expression addition for the down expr jmp
+	elseLines := len(incr) + len(statements) + 1 + 1
 
 	// processing possible breaks
 	for i, stat := range statements {
@@ -102,10 +106,10 @@ func IterationExpressions(prgrm *ast.CXProgram, init []*ast.CXExpression, cond [
 
 	exprs := init
 	exprs = append(exprs, cond...)
-	exprs = append(exprs, downExpr)
+	exprs = append(exprs, downExprCXLine, downExpr)
 	exprs = append(exprs, statements...)
 	exprs = append(exprs, incr...)
-	exprs = append(exprs, upExpr)
+	exprs = append(exprs, upExprCXLine, upExpr)
 
 	DefineNewScope(exprs)
 
@@ -118,14 +122,15 @@ func trueJmpExpressions(prgrm *ast.CXProgram, opcode int) []*ast.CXExpression {
 		panic(err)
 	}
 
-	expr := ast.MakeExpression(prgrm, ast.Natives[opcode], CurrentFile, LineNo)
+	// exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, "")
+	expr := ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[opcode], CurrentFile, LineNo)
 	exprAtomicOp, _, _, err := prgrm.GetOperation(expr)
 	if err != nil {
 		panic(err)
 	}
 
 	trueArg := WritePrimary(prgrm, types.BOOL, encoder.Serialize(true), false)
-	trueArgAtomicOp, _, _, err := prgrm.GetOperation(trueArg[0])
+	trueArgAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(trueArg, 0)
 	if err != nil {
 		panic(err)
 	}
@@ -156,14 +161,16 @@ func SelectionExpressions(prgrm *ast.CXProgram, condExprs []*ast.CXExpression, t
 	if err != nil {
 		panic(err)
 	}
-	ifExpr := ast.MakeExpression(prgrm, jmpFn, CurrentFile, LineNo)
+
+	ifExprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, "")
+	ifExpr := ast.MakeAtomicOperatorExpression(prgrm, jmpFn, CurrentFile, LineNo)
 	ifExprAtomicOp, _, _, err := prgrm.GetOperation(ifExpr)
 	if err != nil {
 		panic(err)
 	}
 	ifExprAtomicOp.Package = pkg
 
-	lastCondExprsAtomicOp, _, _, err := prgrm.GetOperation(condExprs[len(condExprs)-1])
+	lastCondExprsAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(condExprs, len(condExprs)-1)
 	if err != nil {
 		panic(err)
 	}
@@ -192,12 +199,14 @@ func SelectionExpressions(prgrm *ast.CXProgram, condExprs []*ast.CXExpression, t
 	ifExprAtomicOp.AddInput(predicate)
 
 	thenLines := 0
-	elseLines := len(thenExprs) + 1
+	// + 1 for cx line expression addition
+	elseLines := len(thenExprs) + 1 + 1
 
 	ifExprAtomicOp.ThenLines = thenLines
 	ifExprAtomicOp.ElseLines = elseLines
 
-	skipExpr := ast.MakeExpression(prgrm, jmpFn, CurrentFile, LineNo)
+	skipExprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, "")
+	skipExpr := ast.MakeAtomicOperatorExpression(prgrm, jmpFn, CurrentFile, LineNo)
 	skipExprAtomicOp, _, _, err := prgrm.GetOperation(skipExpr)
 	if err != nil {
 		panic(err)
@@ -205,7 +214,7 @@ func SelectionExpressions(prgrm *ast.CXProgram, condExprs []*ast.CXExpression, t
 	skipExprAtomicOp.Package = pkg
 
 	trueArg := WritePrimary(prgrm, types.BOOL, encoder.Serialize(true), false)
-	trueArgAtomicOp, _, _, err := prgrm.GetOperation(trueArg[0])
+	trueArgAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(trueArg, 0)
 	if err != nil {
 		panic(err)
 	}
@@ -219,9 +228,9 @@ func SelectionExpressions(prgrm *ast.CXProgram, condExprs []*ast.CXExpression, t
 	if lastCondExprsAtomicOp.Operator != nil || condExprs[len(condExprs)-1].IsMethodCall() {
 		exprs = append(exprs, condExprs...)
 	}
-	exprs = append(exprs, ifExpr)
+	exprs = append(exprs, ifExprCXLine, ifExpr)
 	exprs = append(exprs, thenExprs...)
-	exprs = append(exprs, skipExpr)
+	exprs = append(exprs, skipExprCXLine, skipExpr)
 	exprs = append(exprs, elseExprs...)
 
 	return exprs
@@ -270,7 +279,7 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []*ast.CXExpression, rig
 		panic(err)
 	}
 
-	lastLeftExprsAtomicOp, _, _, err := prgrm.GetOperation(leftExprs[len(leftExprs)-1])
+	lastLeftExprsAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(leftExprs, len(leftExprs)-1)
 	if err != nil {
 		panic(err)
 	}
@@ -287,7 +296,7 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []*ast.CXExpression, rig
 		lastLeftExprsAtomicOp.Outputs = append(lastLeftExprsAtomicOp.Outputs, name)
 	}
 
-	lastRightExprsAtomicOp, _, _, err := prgrm.GetOperation(rightExprs[len(rightExprs)-1])
+	lastRightExprsAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(rightExprs, len(rightExprs)-1)
 	if err != nil {
 		panic(err)
 	}
@@ -305,7 +314,8 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []*ast.CXExpression, rig
 		lastRightExprsAtomicOp.Outputs = append(lastRightExprsAtomicOp.Outputs, name)
 	}
 
-	expr := ast.MakeExpression(prgrm, ast.Natives[opcode], CurrentFile, LineNo)
+	exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, "")
+	expr := ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[opcode], CurrentFile, LineNo)
 	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
 	if err != nil {
 		panic(err)
@@ -340,13 +350,13 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []*ast.CXExpression, rig
 		cxAtomicOp.Inputs = append(cxAtomicOp.Inputs, lastRightExprsAtomicOp.Outputs[0])
 	}
 
-	out = append(out, expr)
+	out = append(out, exprCXLine, expr)
 
 	return
 }
 
 func UnaryExpression(prgrm *ast.CXProgram, op string, prevExprs []*ast.CXExpression) []*ast.CXExpression {
-	lastPrevExprsAtomicOp, _, _, err := prgrm.GetOperation(prevExprs[len(prevExprs)-1])
+	lastPrevExprsAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(prevExprs, len(prevExprs)-1)
 	if err != nil {
 		panic(err)
 	}
@@ -379,7 +389,7 @@ func UnaryExpression(prgrm *ast.CXProgram, op string, prevExprs []*ast.CXExpress
 		}
 	case "!":
 		if pkg, err := prgrm.GetCurrentPackage(); err == nil {
-			expr := ast.MakeExpression(prgrm, ast.Natives[constants.OP_BOOL_NOT], CurrentFile, LineNo)
+			expr := ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_BOOL_NOT], CurrentFile, LineNo)
 			cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
 			if err != nil {
 				panic(err)
@@ -394,7 +404,7 @@ func UnaryExpression(prgrm *ast.CXProgram, op string, prevExprs []*ast.CXExpress
 		}
 	case "-":
 		if pkg, err := prgrm.GetCurrentPackage(); err == nil {
-			expr := ast.MakeExpression(prgrm, ast.Natives[constants.OP_NEG], CurrentFile, LineNo)
+			expr := ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_NEG], CurrentFile, LineNo)
 			cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
 			if err != nil {
 				panic(err)
@@ -449,7 +459,8 @@ func AssociateReturnExpressions(prgrm *ast.CXProgram, idx int, retExprs []*ast.C
 
 		return retExprs
 	} else if len(lastExprAtomicOp.Outputs) > 0 {
-		expr := ast.MakeExpression(prgrm, ast.Natives[constants.OP_IDENTITY], CurrentFile, LineNo)
+		exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, "")
+		expr := ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_IDENTITY], CurrentFile, LineNo)
 		cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
 		if err != nil {
 			panic(err)
@@ -457,7 +468,7 @@ func AssociateReturnExpressions(prgrm *ast.CXProgram, idx int, retExprs []*ast.C
 		cxAtomicOp.AddInput(lastExprAtomicOp.Outputs[0])
 		cxAtomicOp.AddOutput(out)
 
-		return append(retExprs, expr)
+		return append(retExprs, exprCXLine, expr)
 	} else {
 		lastExprAtomicOp.AddOutput(out)
 
@@ -484,7 +495,8 @@ func AddJmpToReturnExpressions(prgrm *ast.CXProgram, exprs ReturnExpressions) []
 	retExprs := exprs.Expressions
 
 	if len(fn.Outputs) != exprs.Size && exprs.Expressions != nil {
-		lastExpr := retExprs[len(retExprs)-1]
+		// lastExpr := retExprs[len(retExprs)-1]
+		lastExprCXLine, _ := prgrm.GetPreviousCXLine(retExprs, len(retExprs)-1)
 
 		var plural1 string
 		var plural2 string = "s"
@@ -497,11 +509,12 @@ func AddJmpToReturnExpressions(prgrm *ast.CXProgram, exprs ReturnExpressions) []
 			plural3 = "was"
 		}
 
-		println(ast.CompilationError(lastExpr.FileName, lastExpr.FileLine), fmt.Sprintf("function '%s' expects to return %d argument%s, but %d output argument%s %s provided", fn.Name, len(fn.Outputs), plural1, exprs.Size, plural2, plural3))
+		println(ast.CompilationError(lastExprCXLine.FileName, lastExprCXLine.LineNumber), fmt.Sprintf("function '%s' expects to return %d argument%s, but %d output argument%s %s provided", fn.Name, len(fn.Outputs), plural1, exprs.Size, plural2, plural3))
 	}
 
+	// exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, "")
 	// expression to jump to the end of the embedding function
-	expr := ast.MakeExpression(prgrm, ast.Natives[constants.OP_GOTO], CurrentFile, LineNo)
+	expr := ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_GOTO], CurrentFile, LineNo)
 	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
 	if err != nil {
 		panic(err)

@@ -67,6 +67,12 @@ func RunCxAst(cxprogram *ast.CXProgram, untilEnd bool, maxOps int, untilCall typ
 				inName = call.Operator.Name
 			}
 
+			if toCall.Type == ast.CX_LINE {
+				call.Line++
+				opCount++
+				continue
+			}
+
 			cxAtomicOp, _, _, err := cxprogram.GetOperation(toCall)
 			if err != nil {
 				panic(err)

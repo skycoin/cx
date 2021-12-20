@@ -27,7 +27,8 @@ import (
 //
 // Note the new expression add() added in TestFunction.
 func AddNativeExpressionToFunction(cxprogram *cxast.CXProgram, functionName string, expressionType int) error {
-	exp := cxast.MakeExpression(cxprogram, cxast.Natives[expressionType], "", -1)
+	expCXLine := cxast.MakeCXLineExpression(cxprogram, "", -1, "")
+	exp := cxast.MakeAtomicOperatorExpression(cxprogram, cxast.Natives[expressionType], "", -1)
 
 	cxAtomicOp, _, _, err := cxprogram.GetOperation(exp)
 	if err != nil {
@@ -40,6 +41,7 @@ func AddNativeExpressionToFunction(cxprogram *cxast.CXProgram, functionName stri
 		return err
 	}
 
+	fn.AddExpression(cxprogram, expCXLine)
 	fn.AddExpression(cxprogram, exp)
 	return nil
 }
@@ -103,7 +105,8 @@ func RemoveExpressionFromFunction(cxprogram *cxast.CXProgram, functionName strin
 //
 // Note the new expression sub() is added in line number 1.
 func AddNativeExpressionToFunctionByLineNumber(cxprogram *cxast.CXProgram, functionName string, expressionType, lineNumber int) error {
-	exp := cxast.MakeExpression(cxprogram, cxast.Natives[expressionType], "", -1)
+	expCXLine := cxast.MakeCXLineExpression(cxprogram, "", -1, "")
+	exp := cxast.MakeAtomicOperatorExpression(cxprogram, cxast.Natives[expressionType], "", -1)
 
 	cxAtomicOp, _, _, err := cxprogram.GetOperation(exp)
 	if err != nil {
@@ -116,6 +119,7 @@ func AddNativeExpressionToFunctionByLineNumber(cxprogram *cxast.CXProgram, funct
 		return err
 	}
 
-	fn.AddExpressionByLineNumber(cxprogram, exp, lineNumber)
+	fn.AddExpressionByLineNumber(cxprogram, expCXLine, lineNumber)
+	fn.AddExpressionByLineNumber(cxprogram, exp, lineNumber+1)
 	return nil
 }

@@ -487,19 +487,29 @@ struct_literal_fields:
                 { $$ = nil }
         |       IDENTIFIER COLON constant_expression
                 {
-			if $3[0].IsStructLiteral() {
-				$$ = actions.StructLiteralAssignment(actions.AST,[]*ast.CXExpression{actions.StructLiteralFields(actions.AST,$1)}, $3)
-			} else {
-				$$ = actions.Assignment(actions.AST,[]*ast.CXExpression{actions.StructLiteralFields(actions.AST,$1)}, "=", $3)
-			}
+                        for i:=0;i<len($3);i++{
+                                if $3[i].Type!=ast.CX_LINE{
+                                        if $3[i].IsStructLiteral() {
+                                                $$ = actions.StructLiteralAssignment(actions.AST,[]*ast.CXExpression{actions.StructLiteralFields(actions.AST,$1)}, $3)
+                                        } else {
+                                                $$ = actions.Assignment(actions.AST,[]*ast.CXExpression{actions.StructLiteralFields(actions.AST,$1)}, "=", $3)
+                                        }
+                                        break
+                                }
+                        }
                 }
         |       struct_literal_fields COMMA IDENTIFIER COLON constant_expression
                 {
-			if $5[0].IsStructLiteral() {
-				$$ = append($1, actions.StructLiteralAssignment(actions.AST,[]*ast.CXExpression{actions.StructLiteralFields(actions.AST,$3)}, $5)...)
-			} else {
-				$$ = append($1, actions.Assignment(actions.AST,[]*ast.CXExpression{actions.StructLiteralFields(actions.AST,$3)}, "=", $5)...)
-			}
+                        for i:=0;i<len($5);i++{
+                                if $5[i].Type!=ast.CX_LINE{
+                                        if $5[i].IsStructLiteral() {
+                                                $$ = append($1, actions.StructLiteralAssignment(actions.AST,[]*ast.CXExpression{actions.StructLiteralFields(actions.AST,$3)}, $5)...)
+                                        } else {
+                                                $$ = append($1, actions.Assignment(actions.AST,[]*ast.CXExpression{actions.StructLiteralFields(actions.AST,$3)}, "=", $5)...)
+                                        }
+                                        break
+                                }
+                        }
                 }
                 ;
 
@@ -597,12 +607,15 @@ slice_literal_expression:
                 }
         |       LBRACK RBRACK slice_literal_expression
                 {
-                        lastExprAtomicOp, _, _, err := actions.AST.GetOperation($3[len($3) - 1])
+                        lastExprAtomicOp, err := actions.AST.GetCXAtomicOpFromExpressions($3,len($3) - 1)
                         if err != nil {
                                 panic(err)
                         }
 
 			for _, expr := range $3 {
+                                if expr.Type==ast.CX_LINE{
+                                        continue
+                                }
                                 exprAtomicOp, _, _, err := actions.AST.GetOperation(expr)
                                 if err != nil {
                                         panic(err)
@@ -972,7 +985,7 @@ struct_literal_expression:
                 }
         |       postfix_expression PERIOD IDENTIFIER LBRACE struct_literal_fields RBRACE
                 {
-                        cxAtomicOp, _, _, err := actions.AST.GetOperation($1[0])
+                        cxAtomicOp, err := actions.AST.GetCXAtomicOpFromExpressions($1,0)
                         if err != nil {
                                 panic(err)
                         }
@@ -990,39 +1003,53 @@ assignment_expression:
 				$$ = nil
 			}
 			if $3 != nil {
-				if $3[0].IsArrayLiteral() {
-					if $2 != "=" && $2 != ":=" {
-						panic("")
-					}
-					if $2 == ":=" {
-						for _, from := range $3 {
-                                                        fromAtomicOp, _, _, err := actions.AST.GetOperation(from)
-                                                        if err != nil {
-                                                                panic(err)
+                                for i:=0;i<len($3);i++{
+                                        if $3[i].Type!=ast.CX_LINE{
+                                                if $3[i].IsArrayLiteral() {
+                                                        if $2 != "=" && $2 != ":=" {
+                                                                panic("")
                                                         }
-							fromAtomicOp.Outputs[0].IsShortAssignmentDeclaration = true
-							fromAtomicOp.Outputs[0].PreviouslyDeclared = true
-						}
-					}
-					$$ = actions.ArrayLiteralAssignment(actions.AST,$1, $3)
-				} else if $3[len($3) - 1].IsStructLiteral() {
-					if $2 != "=" && $2 != ":=" {
-						panic("")
-					}
-					if $2 == ":=" {
-						for _, from := range $3 {
-                                                        fromAtomicOp, _, _, err := actions.AST.GetOperation(from)
-                                                        if err != nil {
-                                                                panic(err)
+                                                        if $2 == ":=" {
+                                                                for _, from := range $3 {
+                                                                        if from.Type==ast.CX_LINE{
+                                                                                continue
+                                                                        }
+
+                                                                        fromAtomicOp, _, _, err := actions.AST.GetOperation(from)
+                                                                        if err != nil {
+                                                                                panic(err)
+                                                                        }
+                                                                        fromAtomicOp.Outputs[0].IsShortAssignmentDeclaration = true
+                                                                        fromAtomicOp.Outputs[0].PreviouslyDeclared = true
+                                                                }
                                                         }
-							fromAtomicOp.Outputs[0].IsShortAssignmentDeclaration = true
-							fromAtomicOp.Outputs[0].PreviouslyDeclared = true
-						}
-					}
-					$$ = actions.StructLiteralAssignment(actions.AST,$1, $3)
-				} else {
-					$$ = actions.Assignment(actions.AST,$1, $2, $3)
-				}
+                                                        $$ = actions.ArrayLiteralAssignment(actions.AST,$1, $3)
+                                                } else if $3[len($3) - 1].IsStructLiteral() {
+                                                        if $2 != "=" && $2 != ":=" {
+                                                                panic("")
+                                                        }
+                                                        if $2 == ":=" {
+                                                                for _, from := range $3 {
+                                                                        if from.Type==ast.CX_LINE{
+                                                                                continue
+                                                                        }
+
+                                                                        fromAtomicOp, _, _, err := actions.AST.GetOperation(from)
+                                                                        if err != nil {
+                                                                                panic(err)
+                                                                        }
+                                                                        fromAtomicOp.Outputs[0].IsShortAssignmentDeclaration = true
+                                                                        fromAtomicOp.Outputs[0].PreviouslyDeclared = true
+                                                                }
+                                                        }
+                                                        $$ = actions.StructLiteralAssignment(actions.AST,$1, $3)
+                                                } else {
+                                                        $$ = actions.Assignment(actions.AST,$1, $2, $3)
+                                                }
+
+                                                break
+                                        }
+                                }
 			}
                 }
                 ;
@@ -1045,12 +1072,12 @@ assignment_operator:
 expression:     assignment_expression
 	|       expression COMMA assignment_expression
                 {       
-                        lastOfThirdAtomicOp, _, _, err := actions.AST.GetOperation($3[len($3) - 1])
+                        lastOfThirdAtomicOp, err := actions.AST.GetCXAtomicOpFromExpressions($3,len($3) - 1)
                         if err != nil {
                                 panic(err)
                         }
 
-                        lastOfFirstAtomicOp, _, _, err := actions.AST.GetOperation($1[len($1) - 1])
+                        lastOfFirstAtomicOp,err := actions.AST.GetCXAtomicOpFromExpressions($1,len($1) - 1)
                         if err != nil {
                                 panic(err)
                         }
@@ -1144,7 +1171,7 @@ expression_statement:
                         var err error
 
                         if len($1) > 0 {
-                                lastFirstAtomicOp, _, _, err = actions.AST.GetOperation($1[len($1) - 1])
+                                lastFirstAtomicOp, err = actions.AST.GetCXAtomicOpFromExpressions($1,len($1) - 1)
                                 if err != nil {
                                         panic(err)
                                 }
@@ -1271,7 +1298,8 @@ return_expression:
 jump_statement: GOTO IDENTIFIER SEMICOLON
                 {
 			if pkg, err := actions.AST.GetCurrentPackage(); err == nil {
-				expr := ast.MakeExpression(actions.AST,ast.Natives[constants.OP_GOTO], actions.CurrentFile, actions.LineNo)
+                               // exprCXLine := ast.MakeCXLineExpression(actions.AST, actions.CurrentFile, actions.LineNo, "")
+				expr := ast.MakeAtomicOperatorExpression(actions.AST,ast.Natives[constants.OP_GOTO], actions.CurrentFile, actions.LineNo)
                                 cxAtomicOp, _, _, err := actions.AST.GetOperation(expr)
                                 if err != nil {
                                         panic(err)

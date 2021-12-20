@@ -28,8 +28,8 @@ func (cxet CXEXPR_TYPE) String() string {
 //
 type CXExpression struct {
 	// debugging
-	FileName string
-	FileLine int
+	// FileName string
+	// FileLine int
 
 	ExpressionType CXEXPR_TYPE
 

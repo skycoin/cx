@@ -185,10 +185,59 @@ func (cxprogram *CXProgram) GetOperation(expr *CXExpression) (*CXAtomicOperator,
 		}
 
 		return cxAtomicOp, &CXArgument{}, &CXLine{}, nil
-		// case CX_ARGUMENT, CX_LINE:
+	case CX_LINE:
+		cxLine, err := cxprogram.GetCXLine(expr.Index)
+		if err != nil {
+			return &CXAtomicOperator{}, &CXArgument{}, &CXLine{}, err
+		}
+
+		return &CXAtomicOperator{}, &CXArgument{}, cxLine, nil
+		// case CX_ARGUMENT:
 	}
 
 	return &CXAtomicOperator{}, &CXArgument{}, &CXLine{}, fmt.Errorf("expression type is not found.")
+}
+
+func (cxprogram *CXProgram) GetPreviousCXLine(exprs []*CXExpression, currIndex int) (*CXLine, error) {
+	for i := currIndex; i >= 0; i-- {
+		if exprs[i].Type == CX_LINE {
+			_, _, cxLine, err := cxprogram.GetOperation(exprs[i])
+			if err != nil {
+				return &CXLine{}, err
+			}
+
+			return cxLine, nil
+		}
+	}
+	return &CXLine{}, fmt.Errorf("CXLine not found.")
+}
+
+func (cxprogram *CXProgram) GetCXAtomicOpFromExpressions(exprs []*CXExpression, currIndex int) (*CXAtomicOperator, error) {
+	for i := currIndex; i < len(exprs); i++ {
+		if exprs[i].Type == CX_ATOMIC_OPERATOR {
+			cxAtomicOp, _, _, err := cxprogram.GetOperation(exprs[i])
+			if err != nil {
+				return &CXAtomicOperator{}, err
+			}
+
+			return cxAtomicOp, nil
+		}
+	}
+	return &CXAtomicOperator{}, fmt.Errorf("CXAtomicOperator not found.")
+}
+
+func (cxprogram *CXProgram) GetPreviousCXAtomicOpFromExpressions(exprs []*CXExpression, currIndex int) (*CXAtomicOperator, error) {
+	for i := currIndex; i >= 0; i-- {
+		if exprs[i].Type == CX_ATOMIC_OPERATOR {
+			cxAtomicOp, _, _, err := cxprogram.GetOperation(exprs[i])
+			if err != nil {
+				return &CXAtomicOperator{}, err
+			}
+
+			return cxAtomicOp, nil
+		}
+	}
+	return &CXAtomicOperator{}, fmt.Errorf("CXAtomicOperator not found.")
 }
 
 // Only two users, both in cx/execute.go

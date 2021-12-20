@@ -142,7 +142,13 @@ func buildStrFunctions(prgrm *CXProgram, pkg *CXPackage, ast1 *string) {
 			getFormattedParam(prgrm, cxAtomicOp.Inputs, pkg, &inps)
 			getFormattedParam(prgrm, cxAtomicOp.Outputs, pkg, &outs)
 
-			if cxAtomicOp.Operator != nil {
+			if expr.Type == CX_LINE {
+				cxLine, _ := prgrm.GetCXLine(expr.Index)
+				*ast1 += fmt.Sprintf("\t\t\t%d.- FileName: %s LineNum:%v\n",
+					k,
+					cxLine.FileName,
+					cxLine.LineNumber)
+			} else if cxAtomicOp.Operator != nil {
 				assignOp := ""
 				if outs.Len() > 0 {
 					assignOp = " = "

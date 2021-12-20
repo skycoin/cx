@@ -1,6 +1,9 @@
 package astapi
 
 import (
+	"errors"
+
+	"github.com/skycoin/cx/cx/ast"
 	cxast "github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/types"
 	cxparseractions "github.com/skycoin/cx/cxparser/actions"
@@ -238,6 +241,9 @@ func MakeInputExpressionAPointer(cxprogram *cxast.CXProgram, functionName string
 		return err
 	}
 
+	if expr.Type == ast.CX_LINE {
+		return errors.New("Expression is a CXLine")
+	}
 	cxAtomicOp, _, _, err := cxprogram.GetOperation(expr)
 	if err != nil {
 		panic(err)
@@ -283,6 +289,9 @@ func MakeOutputExpressionAPointer(cxprogram *cxast.CXProgram, functionName strin
 		return err
 	}
 
+	if expr.Type == ast.CX_LINE {
+		return errors.New("Expression is a CXLine")
+	}
 	cxAtomicOp, _, _, err := cxprogram.GetOperation(expr)
 	if err != nil {
 		panic(err)
@@ -396,7 +405,7 @@ func AddLiteralInputToExpression(cxprogram *cxast.CXProgram, packageName, functi
 	cxparseractions.AST = cxprogram
 	litArg := cxparseractions.WritePrimary(cxprogram, argType, bytes, false)
 
-	cxAtomicOp1, _, _, err := cxprogram.GetOperation(litArg[0])
+	cxAtomicOp1, err := cxprogram.GetCXAtomicOpFromExpressions(litArg, 0)
 	if err != nil {
 		panic(err)
 	}

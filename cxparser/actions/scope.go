@@ -25,8 +25,14 @@ const (
 
 func DefineNewScope(exprs []*ast.CXExpression) {
 	if len(exprs) > 1 {
-		// initialize new scope
-		exprs[0].ExpressionType = ast.CXEXPR_SCOPE_NEW
+		for i := 0; i < len(exprs); i++ {
+			if exprs[i].Type != ast.CX_LINE {
+				// initialize new scope
+				exprs[i].ExpressionType = ast.CXEXPR_SCOPE_NEW
+				break
+			}
+		}
+
 		// remove last scope
 		exprs[len(exprs)-1].ExpressionType = ast.CXEXPR_SCOPE_DEL
 	}

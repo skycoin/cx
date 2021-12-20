@@ -159,6 +159,9 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fn *ast.CXFunction, inputs, outpu
 	FunctionProcessParameters(prgrm, symbols, &symbolsScope, &offset, fn, fn.Outputs)
 
 	for i, expr := range fn.Expressions {
+		if expr.Type == ast.CX_LINE {
+			continue
+		}
 		exprAtomicOp, _, _, err := prgrm.GetOperation(expr)
 		if err != nil {
 			panic(err)
@@ -187,12 +190,12 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fn *ast.CXFunction, inputs, outpu
 		if len(exprAtomicOp.Outputs) > 0 && len(exprAtomicOp.Inputs) > 0 && exprAtomicOp.Outputs[0].IsShortAssignmentDeclaration && !expr.IsStructLiteral() && !isParseOp(prgrm, expr) {
 			var arg *ast.CXArgument
 
-			exprAtomicOp, _, _, err := prgrm.GetOperation(fn.Expressions[i])
+			exprAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(fn.Expressions, i)
 			if err != nil {
 				panic(err)
 			}
 
-			exprBeforeAtomicOp, _, _, err := prgrm.GetOperation(fn.Expressions[i-1])
+			exprBeforeAtomicOp, err := prgrm.GetPreviousCXAtomicOpFromExpressions(fn.Expressions, i-1)
 			if err != nil {
 				panic(err)
 			}
@@ -215,7 +218,7 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fn *ast.CXFunction, inputs, outpu
 
 		processTestExpression(prgrm, expr)
 
-		CheckTypes(prgrm, expr)
+		CheckTypes(prgrm, fn.Expressions, i)
 		CheckUndValidTypes(prgrm, expr)
 
 		if expr.IsScopeDel() {
@@ -254,11 +257,17 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []*ast.CXExpression, args []*ast.C
 	}
 
 	var nestedExprs []*ast.CXExpression
-	for _, inpExpr := range args {
+	for i, inpExpr := range args {
+		if inpExpr.Type == ast.CX_LINE {
+			continue
+		}
+
 		inpExprAtomicOp, _, _, err := prgrm.GetOperation(inpExpr)
 		if err != nil {
 			panic(err)
 		}
+
+		inpExprCXLine, _ := prgrm.GetPreviousCXLine(args, i)
 
 		if inpExprAtomicOp.Operator == nil {
 			// then it's a literal
@@ -270,7 +279,7 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []*ast.CXExpression, args []*ast.C
 
 				if inpExprAtomicOp.Operator.Outputs[0].Type == types.UNDEFINED {
 					// if undefined type, then adopt argument's type
-					out = ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, inpExpr.FileLine).AddType(inpExprAtomicOp.Inputs[0].Type)
+					out = ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, inpExprCXLine.LineNumber).AddType(inpExprAtomicOp.Inputs[0].Type)
 					out.StructType = inpExprAtomicOp.Inputs[0].StructType
 
 					out.Size = inpExprAtomicOp.Inputs[0].Size
@@ -280,7 +289,7 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []*ast.CXExpression, args []*ast.C
 					out.PointerTargetType = inpExprAtomicOp.Inputs[0].PointerTargetType
 					out.PreviouslyDeclared = true
 				} else {
-					out = ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, inpExpr.FileLine).AddType(inpExprAtomicOp.Operator.Outputs[0].Type)
+					out = ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, inpExprCXLine.LineNumber).AddType(inpExprAtomicOp.Operator.Outputs[0].Type)
 					out.DeclarationSpecifiers = inpExprAtomicOp.Operator.Outputs[0].DeclarationSpecifiers
 
 					out.StructType = inpExprAtomicOp.Operator.Outputs[0].StructType
@@ -633,11 +642,13 @@ func checkMatchParamTypes(prgrm *ast.CXProgram, expr *ast.CXExpression, expected
 	}
 }
 
-func CheckTypes(prgrm *ast.CXProgram, expr *ast.CXExpression) {
-	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+func CheckTypes(prgrm *ast.CXProgram, exprs []*ast.CXExpression, currIndex int) {
+	cxAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(exprs, currIndex)
 	if err != nil {
 		panic(err)
 	}
+
+	exprCXLine, _ := prgrm.GetPreviousCXLine(exprs, currIndex)
 
 	if cxAtomicOp.Operator != nil {
 		opName := cxAtomicOp.GetOperatorName()
@@ -659,7 +670,7 @@ func CheckTypes(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 					plural3 = "was"
 				}
 
-				println(ast.CompilationError(expr.FileName, expr.FileLine), fmt.Sprintf("operator '%s' expects %d input%s, but %d input argument%s %s provided", opName, len(cxAtomicOp.Operator.Inputs), plural1, len(cxAtomicOp.Inputs), plural2, plural3))
+				println(ast.CompilationError(exprCXLine.FileName, exprCXLine.LineNumber), fmt.Sprintf("operator '%s' expects %d input%s, but %d input argument%s %s provided", opName, len(cxAtomicOp.Operator.Inputs), plural1, len(cxAtomicOp.Inputs), plural2, plural3))
 				return
 			}
 		}
@@ -677,7 +688,7 @@ func CheckTypes(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 				plural3 = "was"
 			}
 
-			println(ast.CompilationError(expr.FileName, expr.FileLine), fmt.Sprintf("operator '%s' expects to return %d output%s, but %d receiving argument%s %s provided", opName, len(cxAtomicOp.Operator.Outputs), plural1, len(cxAtomicOp.Outputs), plural2, plural3))
+			println(ast.CompilationError(exprCXLine.FileName, exprCXLine.LineNumber), fmt.Sprintf("operator '%s' expects to return %d output%s, but %d receiving argument%s %s provided", opName, len(cxAtomicOp.Operator.Outputs), plural1, len(cxAtomicOp.Outputs), plural2, plural3))
 			os.Exit(constants.CX_COMPILATION_ERROR)
 		}
 	}
@@ -710,9 +721,9 @@ func CheckTypes(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 				}
 			}
 
-			// if cxcore.GetAssignmentElement(expr.ProgramOutput[i]).Type != cxcore.GetAssignmentElement(inp).Type {
+			// if cxcore.GetAssignmentElement(exprs[currIndex].ProgramOutput[i]).Type != cxcore.GetAssignmentElement(inp).Type {
 			if receivedType != expectedType {
-				if expr.IsStructLiteral() {
+				if exprs[currIndex].IsStructLiteral() {
 					println(ast.CompilationError(cxAtomicOp.Outputs[i].ArgDetails.FileName, cxAtomicOp.Outputs[i].ArgDetails.FileLine), fmt.Sprintf("field '%s' in struct literal of type '%s' expected argument of type '%s'; '%s' was provided", cxAtomicOp.Outputs[i].Fields[0].Name, cxAtomicOp.Outputs[i].StructType.Name, expectedType, receivedType))
 				} else {
 					println(ast.CompilationError(cxAtomicOp.Outputs[i].ArgDetails.FileName, cxAtomicOp.Outputs[i].ArgDetails.FileLine), fmt.Sprintf("trying to assign argument of type '%s' to symbol '%s' of type '%s'", receivedType, cxAtomicOp.Outputs[i].GetAssignmentElement().Name, expectedType))
@@ -724,10 +735,10 @@ func CheckTypes(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 	// then it's a function call and not a declaration
 	if cxAtomicOp.Operator != nil {
 		// checking inputs matching operator's inputs
-		checkMatchParamTypes(prgrm, expr, cxAtomicOp.Operator.Inputs, cxAtomicOp.Inputs, true)
+		checkMatchParamTypes(prgrm, exprs[currIndex], cxAtomicOp.Operator.Inputs, cxAtomicOp.Inputs, true)
 
 		// checking outputs matching operator's outputs
-		checkMatchParamTypes(prgrm, expr, cxAtomicOp.Operator.Outputs, cxAtomicOp.Outputs, false)
+		checkMatchParamTypes(prgrm, exprs[currIndex], cxAtomicOp.Operator.Outputs, cxAtomicOp.Outputs, false)
 	}
 }
 

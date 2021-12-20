@@ -743,6 +743,9 @@ func readArgAff(prgrm *ast.CXProgram, aff string, tgtFn *ast.CXFunction) *ast.CX
 		if ch == '.' {
 			exprLbl := aff[lIdx:rIdx]
 			for _, expr := range tgtFn.Expressions {
+				if expr.Type == ast.CX_LINE {
+					continue
+				}
 				cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
 				if err != nil {
 					panic(err)
