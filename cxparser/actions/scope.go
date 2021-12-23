@@ -24,7 +24,7 @@ const (
 )
 
 func DefineNewScope(exprs []*ast.CXExpression) {
-	if len(exprs) > 1 {
+	if len(exprs) > 2 {
 		for i := 0; i < len(exprs); i++ {
 			if exprs[i].Type != ast.CX_LINE {
 				// initialize new scope

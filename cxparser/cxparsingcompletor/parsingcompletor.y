@@ -1125,6 +1125,9 @@ labeled_statement:
 			// UPDATE: I need to label all expressions. `goto` will jump to first occurrance anyway, so no problem
 			// I need this behavior for affordances
 			for _, expr := range $3 {
+                                if expr.Type==ast.CX_LINE{
+                                        continue
+                                }
                                 cxAtomicOp, _, _, err := actions.AST.GetOperation(expr)
                                 if err != nil {
                                         panic(err)

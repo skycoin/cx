@@ -342,7 +342,7 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 		panic(err)
 	}
 
-	declCXLine := ast.MakeCXLineExpression(prgrm, declarator.ArgDetails.FileName, declarator.ArgDetails.FileLine, "")
+	declCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, "")
 	// Declaration expression to handle the inline initialization.
 	// For example, `var foo i32 = 11` needs to be divided into two expressions:
 	// one that declares `foo`, and another that assigns 11 to `foo`
@@ -372,6 +372,8 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 		// THEN it's a literal, e.g. var foo i32 = 10;
 		// ELSE it's an expression with an operator
 		if initializerAtomicOp.Operator == nil {
+
+			exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, "")
 			// we need to create an expression that links the initializer expressions
 			// with the declared variable
 			expr := ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_IDENTITY], CurrentFile, LineNo)
@@ -390,7 +392,8 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 			cxExprAtomicOp.AddOutput(declarationSpecifiers)
 			cxExprAtomicOp.AddInput(initOut)
 
-			initializer[len(initializer)-1] = expr
+			initializer[len(initializer)-1] = exprCXLine
+			initializer = append(initializer, expr)
 
 			return append([]*ast.CXExpression{declCXLine, decl}, initializer...)
 		} else {
@@ -412,7 +415,7 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 			return append([]*ast.CXExpression{declCXLine, decl}, initializer...)
 		}
 	} else {
-		exprCXLine := ast.MakeCXLineExpression(prgrm, declarator.ArgDetails.FileName, declarator.ArgDetails.FileLine, "")
+		exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, "")
 		// There is no initialization.
 		expr := ast.MakeAtomicOperatorExpression(prgrm, nil, declarator.ArgDetails.FileName, declarator.ArgDetails.FileLine)
 		cxAtomicOp, _, _, err := prgrm.GetOperation(expr)

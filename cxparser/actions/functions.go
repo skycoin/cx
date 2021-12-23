@@ -889,6 +889,9 @@ func UpdateSymbolsTable(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXArgum
 
 		// then it is a new declaration
 		if !shouldExist && !found {
+			// *symbols = append(*symbols, make(map[string]*ast.CXArgument))
+			// lastIdx = len(*symbols) - 1
+
 			// then it was declared in an outer scope
 			sym.Offset = *offset
 			(*symbols)[lastIdx][fullName] = sym
