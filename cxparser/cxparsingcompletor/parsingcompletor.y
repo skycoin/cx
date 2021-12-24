@@ -1300,20 +1300,22 @@ return_expression:
 
 jump_statement: GOTO IDENTIFIER SEMICOLON
                 {
-			if pkg, err := actions.AST.GetCurrentPackage(); err == nil {
-                               // exprCXLine := ast.MakeCXLineExpression(actions.AST, actions.CurrentFile, actions.LineNo, "")
-				expr := ast.MakeAtomicOperatorExpression(actions.AST,ast.Natives[constants.OP_GOTO], actions.CurrentFile, actions.LineNo)
-                                cxAtomicOp, _, _, err := actions.AST.GetOperation(expr)
-                                if err != nil {
-                                        panic(err)
-                                }
+			pkg, err := actions.AST.GetCurrentPackage()
+                        if err!=nil{
+                                panic(err)
+                        }
+                        
+                        exprCXLine := ast.MakeCXLineExpression(actions.AST, actions.CurrentFile, actions.LineNo, "")
+                        expr := ast.MakeAtomicOperatorExpression(actions.AST,ast.Natives[constants.OP_GOTO], actions.CurrentFile, actions.LineNo)
+                        cxAtomicOp, _, _, err := actions.AST.GetOperation(expr)
+                        if err != nil {
+                                panic(err)
+                        }
 
-				cxAtomicOp.Package = pkg
-				cxAtomicOp.Label = $2
-				$$ = []*ast.CXExpression{expr}
-			} else {
-				panic(err)
-			}
+                        cxAtomicOp.Package = pkg
+                        cxAtomicOp.Label = $2
+                        $$ = []*ast.CXExpression{exprCXLine,expr}
+			
                 }
 	|       CONTINUE SEMICOLON
 		{

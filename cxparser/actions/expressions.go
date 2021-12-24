@@ -122,7 +122,7 @@ func trueJmpExpressions(prgrm *ast.CXProgram, opcode int) []*ast.CXExpression {
 		panic(err)
 	}
 
-	// exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, "")
+	exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, "")
 	expr := ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[opcode], CurrentFile, LineNo)
 	exprAtomicOp, _, _, err := prgrm.GetOperation(expr)
 	if err != nil {
@@ -139,7 +139,7 @@ func trueJmpExpressions(prgrm *ast.CXProgram, opcode int) []*ast.CXExpression {
 
 	exprAtomicOp.Package = pkg
 
-	return []*ast.CXExpression{expr}
+	return []*ast.CXExpression{exprCXLine, expr}
 }
 
 func BreakExpressions(prgrm *ast.CXProgram) []*ast.CXExpression {
@@ -512,7 +512,7 @@ func AddJmpToReturnExpressions(prgrm *ast.CXProgram, exprs ReturnExpressions) []
 		println(ast.CompilationError(lastExprCXLine.FileName, lastExprCXLine.LineNumber), fmt.Sprintf("function '%s' expects to return %d argument%s, but %d output argument%s %s provided", fn.Name, len(fn.Outputs), plural1, exprs.Size, plural2, plural3))
 	}
 
-	// exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, "")
+	exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, "")
 	// expression to jump to the end of the embedding function
 	expr := ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_GOTO], CurrentFile, LineNo)
 	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
@@ -525,7 +525,7 @@ func AddJmpToReturnExpressions(prgrm *ast.CXProgram, exprs ReturnExpressions) []
 	cxAtomicOp.ThenLines = types.MAX_INT32
 	cxAtomicOp.Package = pkg
 
-	retExprs = append(retExprs, expr)
+	retExprs = append(retExprs, exprCXLine, expr)
 
 	return retExprs
 }
