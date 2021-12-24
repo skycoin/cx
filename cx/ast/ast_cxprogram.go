@@ -195,7 +195,7 @@ func (cxprogram *CXProgram) GetOperation(expr *CXExpression) (*CXAtomicOperator,
 		// case CX_ARGUMENT:
 	}
 
-	return &CXAtomicOperator{}, &CXArgument{}, &CXLine{}, fmt.Errorf("expression type is not found.")
+	return &CXAtomicOperator{}, &CXArgument{}, &CXLine{}, fmt.Errorf("operation type is not found.")
 }
 
 func (cxprogram *CXProgram) GetPreviousCXLine(exprs []*CXExpression, currIndex int) (*CXLine, error) {

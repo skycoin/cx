@@ -124,6 +124,15 @@ type serializedExpression struct {
 
 	FunctionOffset int64
 	PackageName    string
+
+	// For new cx ast
+	// CXOPERATION_TYPE
+	Type int64
+
+	// For CXLine
+	FileName   string
+	LineNumber int64
+	LineStr    string
 }
 
 type serializedArgument struct {
