@@ -95,7 +95,7 @@ func WritePrimary(prgrm *ast.CXProgram, typeCode types.Code, byts []byte, isSlic
 		prgrm.Data.Size += size
 		prgrm.Heap.StartsAt = prgrm.Data.Size + prgrm.Data.StartsAt
 
-		// exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, "")
+		// exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
 		expr := ast.MakeAtomicOperatorExpression(prgrm, nil, CurrentFile, LineNo)
 		cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
 		if err != nil {
@@ -252,7 +252,7 @@ func PrimaryIdentifier(prgrm *ast.CXProgram, ident string) []*ast.CXExpression {
 		arg.Name = ident
 		arg.Package = pkg
 
-		// exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, "")
+		// exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
 		// expr := &cxcore.CXExpression{ProgramOutput: []*cxcore.CXArgument{arg}}
 		expr := ast.MakeAtomicOperatorExpression(prgrm, nil, CurrentFile, LineNo)
 		cxAtomicOp, _, _, err := prgrm.GetOperation(expr)

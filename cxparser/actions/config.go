@@ -20,6 +20,7 @@ var AST *ast.CXProgram
 
 var CurrentFile string
 var LineNo int
+var LineStr string
 
 const (
 	SEL_RESERVED = iota

@@ -342,7 +342,7 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 		panic(err)
 	}
 
-	declCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, "")
+	declCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
 	// Declaration expression to handle the inline initialization.
 	// For example, `var foo i32 = 11` needs to be divided into two expressions:
 	// one that declares `foo`, and another that assigns 11 to `foo`
@@ -373,7 +373,7 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 		// ELSE it's an expression with an operator
 		if initializerAtomicOp.Operator == nil {
 
-			exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, "")
+			exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
 			// we need to create an expression that links the initializer expressions
 			// with the declared variable
 			expr := ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_IDENTITY], CurrentFile, LineNo)
@@ -415,7 +415,7 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 			return append([]*ast.CXExpression{declCXLine, decl}, initializer...)
 		}
 	} else {
-		exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, "")
+		exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
 		// There is no initialization.
 		expr := ast.MakeAtomicOperatorExpression(prgrm, nil, declarator.ArgDetails.FileName, declarator.ArgDetails.FileLine)
 		cxAtomicOp, _, _, err := prgrm.GetOperation(expr)

@@ -47,7 +47,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []*ast.CXExpression,
 		inp.IsSlice = prevExprAtomicOp.Operator.Outputs[0].IsSlice
 		inp.PreviouslyDeclared = true
 
-		useExprCXLine := ast.MakeCXLineExpression(prgrm, prevExprCXLine.FileName, prevExprCXLine.LineNumber, "")
+		useExprCXLine := ast.MakeCXLineExpression(prgrm, prevExprCXLine.FileName, prevExprCXLine.LineNumber, prevExprCXLine.LineStr)
 		useExpr := ast.MakeAtomicOperatorExpression(prgrm, nil, prevExprCXLine.FileName, prevExprCXLine.LineNumber)
 		useExprAtomicOp, _, _, err := prgrm.GetOperation(useExpr)
 		if err != nil {
@@ -133,7 +133,7 @@ func PostfixExpressionNative(prgrm *ast.CXProgram, typeCode types.Code, opStrCod
 		// panic(ok)
 	}
 
-	exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, "")
+	exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
 	expr := ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[opCode], CurrentFile, LineNo)
 	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
 	if err != nil {
@@ -223,7 +223,7 @@ func PostfixExpressionIncDec(prgrm *ast.CXProgram, prevExprs []*ast.CXExpression
 		panic(err)
 	}
 
-	exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, "")
+	exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
 	var expr *ast.CXExpression
 	if isInc {
 		expr = ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_ADD], CurrentFile, LineNo)
@@ -305,7 +305,7 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []*ast.CXExpression,
 		inp.Package = lastExprAtomicOp.Package
 		inp.IsInnerArg = true
 
-		exprCXLine := ast.MakeCXLineExpression(prgrm, lastExprCXLine.FileName, lastExprCXLine.LineNumber, "")
+		exprCXLine := ast.MakeCXLineExpression(prgrm, lastExprCXLine.FileName, lastExprCXLine.LineNumber, lastExprCXLine.LineStr)
 		expr := ast.MakeAtomicOperatorExpression(prgrm, nil, lastExprCXLine.FileName, lastExprCXLine.LineNumber)
 
 		exprAtomicOp, _, _, err := prgrm.GetOperation(expr)

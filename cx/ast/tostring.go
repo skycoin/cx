@@ -144,10 +144,10 @@ func buildStrFunctions(prgrm *CXProgram, pkg *CXPackage, ast1 *string) {
 
 			if expr.Type == CX_LINE {
 				cxLine, _ := prgrm.GetCXLine(expr.Index)
-				*ast1 += fmt.Sprintf("\t\t\t%d.- FileName: %s LineNum:%v\n",
+				*ast1 += fmt.Sprintf("\t\t\t%d.- Line: %v: %s\n",
 					k,
-					cxLine.FileName,
-					cxLine.LineNumber)
+					cxLine.LineNumber,
+					strings.TrimSpace(cxLine.LineStr))
 			} else if cxAtomicOp.Operator != nil {
 				assignOp := ""
 				if outs.Len() > 0 {

@@ -13,6 +13,7 @@ import (
 
 type Lexer struct {
 	l, c      int    //line and column numbers
+	lineStr   string // line string
 	b, r, e   int    //used for buffer mechanics
 	buf       []byte //buffer
 	scan      io.Reader
@@ -38,6 +39,7 @@ const readCountMax = 10
 func (s *Lexer) init(r io.Reader, errh func(l, c int, msg string)) {
 	s.scan = r
 	s.l, s.c, s.b, s.r, s.e = 0, 0, -1, 0, 0
+	s.lineStr = ""
 	s.buf = make([]byte, 1<<LexerBufferMin)
 	s.buf[0] = sentinel
 	s.ch = ' '
@@ -72,9 +74,18 @@ func (s *Lexer) rewind() {
 func (s *Lexer) nextch() {
 redo:
 	s.c += int(s.chw)
+
+	if s.ch != '\n' {
+		s.lineStr = s.lineStr + string(s.ch)
+		s.tok.lineStr = s.lineStr
+	}
+	s.tok.lineStr = s.lineStr
+
 	if s.ch == '\n' {
 		s.l++
 		s.c = 0
+
+		s.lineStr = ""
 	}
 
 	//first test for ASCII
@@ -170,11 +181,13 @@ redonext:
 	s.stop()
 	s.tok = &yySymType{}
 	s.tok.line = s.l + 1
+
 	for s.ch == ' ' || s.ch == '\t' || s.ch == '\n' && !nlsemi || s.ch == '\r' {
 		s.nextch()
 	}
 
 	s.start()
+
 	if isLetter(s.ch) || s.ch >= utf8.RuneSelf && s.atIdentChar(true) {
 		s.nextch()
 		s.ident()
@@ -424,10 +437,12 @@ redonext:
 		s.nextch()
 		goto redonext
 	}
+
 	if s.ch == -1 {
 
 		s.eof = true
 	}
+
 	//fmt.Printf("%s\n", TokenName(s.tok.yys))
 }
 

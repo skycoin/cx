@@ -73,7 +73,7 @@ func StructLiteralAssignment(prgrm *ast.CXProgram, to []*ast.CXExpression, from 
 		aux.PreviouslyDeclared = true
 		aux.Package = lastFromAtomicOp.Package
 
-		declExprCXLine := ast.MakeCXLineExpression(prgrm, lastFromCXLine.FileName, lastFromCXLine.LineNumber, "")
+		declExprCXLine := ast.MakeCXLineExpression(prgrm, lastFromCXLine.FileName, lastFromCXLine.LineNumber, lastFromCXLine.LineStr)
 		declExpr := ast.MakeAtomicOperatorExpression(prgrm, nil, lastFromCXLine.FileName, lastFromCXLine.LineNumber)
 		declExprAtomicOp, _, _, err := prgrm.GetOperation(declExpr)
 		if err != nil {
@@ -84,7 +84,7 @@ func StructLiteralAssignment(prgrm *ast.CXProgram, to []*ast.CXExpression, from 
 
 		from = assignStructLiteralFields(prgrm, to, from, auxName)
 
-		assignExprCXLine := ast.MakeCXLineExpression(prgrm, lastFromCXLine.FileName, lastFromCXLine.LineNumber, "")
+		assignExprCXLine := ast.MakeCXLineExpression(prgrm, lastFromCXLine.FileName, lastFromCXLine.LineNumber, lastFromCXLine.LineStr)
 		assignExpr := ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_IDENTITY], lastFromCXLine.FileName, lastFromCXLine.LineNumber)
 		assignExprAtomicOp, _, _, err := prgrm.GetOperation(assignExpr)
 		if err != nil {
@@ -206,7 +206,8 @@ func Assignment(prgrm *ast.CXProgram, to []*ast.CXExpression, assignOp string, f
 
 	var expr *ast.CXExpression
 
-	exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, "")
+	exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
+
 	switch assignOp {
 	case ":=":
 		expr = ast.MakeAtomicOperatorExpression(prgrm, nil, CurrentFile, LineNo)

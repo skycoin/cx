@@ -47,6 +47,7 @@ build-parser: ## Generate lexer and parser for CX grammar
 	ints    []int
 
 	line int
+        lineStr string
 
 	argument *ast.CXArgument
 	arguments []*ast.CXArgument
@@ -1305,7 +1306,7 @@ jump_statement: GOTO IDENTIFIER SEMICOLON
                                 panic(err)
                         }
                         
-                        exprCXLine := ast.MakeCXLineExpression(actions.AST, actions.CurrentFile, actions.LineNo, "")
+                        exprCXLine := ast.MakeCXLineExpression(actions.AST, actions.CurrentFile, actions.LineNo, actions.LineStr)
                         expr := ast.MakeAtomicOperatorExpression(actions.AST,ast.Natives[constants.OP_GOTO], actions.CurrentFile, actions.LineNo)
                         cxAtomicOp, _, _, err := actions.AST.GetOperation(expr)
                         if err != nil {
