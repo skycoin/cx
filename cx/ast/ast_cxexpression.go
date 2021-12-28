@@ -27,10 +27,6 @@ func (cxet CXEXPR_TYPE) String() string {
 // flow.
 //
 type CXExpression struct {
-	// debugging
-	// FileName string
-	// FileLine int
-
 	ExpressionType CXEXPR_TYPE
 
 	// For new CX AST Format

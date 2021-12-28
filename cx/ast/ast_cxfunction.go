@@ -179,14 +179,6 @@ func (fn *CXFunction) RemoveOutput(outName string) {
 
 // AddExpression ...
 func (fn *CXFunction) AddExpression(prgrm *CXProgram, expr *CXExpression) *CXFunction {
-	// // expr.Program = fn.Program
-	// expr.Package = fn.Package
-	// expr.Function = fn
-	// fn.Expressions = append(fn.Expressions, expr)
-	// fn.CurrentExpression = expr
-	// fn.LineCount++
-	// return fn
-
 	if expr.Type == CX_ATOMIC_OPERATOR {
 		cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
 		if err != nil {
@@ -205,21 +197,6 @@ func (fn *CXFunction) AddExpression(prgrm *CXProgram, expr *CXExpression) *CXFun
 }
 
 func (fn *CXFunction) AddExpressionByLineNumber(prgrm *CXProgram, expr *CXExpression, line int) *CXFunction {
-	// expr.Package = fn.Package
-	// expr.Function = fn
-
-	// lenExprs := len(fn.Expressions)
-	// if lenExprs == line {
-	// 	fn.Expressions = append(fn.Expressions, expr)
-	// } else {
-	// 	fn.Expressions = append(fn.Expressions[:line+1], fn.Expressions[line:]...)
-	// 	fn.Expressions[line] = expr
-	// }
-
-	// fn.CurrentExpression = expr
-	// fn.LineCount++
-	// return fn
-
 	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
 	if err != nil {
 		panic(err)
@@ -250,9 +227,6 @@ func (fn *CXFunction) RemoveExpression(line int) {
 		} else {
 			fn.Expressions = append(fn.Expressions[:line], fn.Expressions[line+1:]...)
 		}
-		// for i, expr := range fn.Expressions {
-		// 	expr.Index = i
-		// }
 	}
 }
 

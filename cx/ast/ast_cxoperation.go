@@ -11,8 +11,3 @@ const (
 	CX_ARGUMENT
 	CX_LINE
 )
-
-// type CXOperation struct {
-// 	Index int
-// 	Type  CXOPERATION_TYPE
-// }
