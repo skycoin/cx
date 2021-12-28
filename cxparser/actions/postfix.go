@@ -48,7 +48,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []*ast.CXExpression,
 		inp.PreviouslyDeclared = true
 
 		useExprCXLine := ast.MakeCXLineExpression(prgrm, prevExprCXLine.FileName, prevExprCXLine.LineNumber, prevExprCXLine.LineStr)
-		useExpr := ast.MakeAtomicOperatorExpression(prgrm, nil, prevExprCXLine.FileName, prevExprCXLine.LineNumber)
+		useExpr := ast.MakeAtomicOperatorExpression(prgrm, nil)
 		useExprAtomicOp, _, _, err := prgrm.GetOperation(useExpr)
 		if err != nil {
 			panic(err)
@@ -134,7 +134,7 @@ func PostfixExpressionNative(prgrm *ast.CXProgram, typeCode types.Code, opStrCod
 	}
 
 	exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
-	expr := ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[opCode], CurrentFile, LineNo)
+	expr := ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[opCode])
 	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
 	if err != nil {
 		panic(err)
@@ -226,9 +226,9 @@ func PostfixExpressionIncDec(prgrm *ast.CXProgram, prevExprs []*ast.CXExpression
 	exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
 	var expr *ast.CXExpression
 	if isInc {
-		expr = ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_ADD], CurrentFile, LineNo)
+		expr = ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_ADD])
 	} else {
-		expr = ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_SUB], CurrentFile, LineNo)
+		expr = ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_SUB])
 	}
 
 	var valB [4]byte
@@ -306,7 +306,7 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []*ast.CXExpression,
 		inp.IsInnerArg = true
 
 		exprCXLine := ast.MakeCXLineExpression(prgrm, lastExprCXLine.FileName, lastExprCXLine.LineNumber, lastExprCXLine.LineStr)
-		expr := ast.MakeAtomicOperatorExpression(prgrm, nil, lastExprCXLine.FileName, lastExprCXLine.LineNumber)
+		expr := ast.MakeAtomicOperatorExpression(prgrm, nil)
 
 		exprAtomicOp, _, _, err := prgrm.GetOperation(expr)
 		if err != nil {

@@ -74,7 +74,7 @@ func StructLiteralAssignment(prgrm *ast.CXProgram, to []*ast.CXExpression, from 
 		aux.Package = lastFromAtomicOp.Package
 
 		declExprCXLine := ast.MakeCXLineExpression(prgrm, lastFromCXLine.FileName, lastFromCXLine.LineNumber, lastFromCXLine.LineStr)
-		declExpr := ast.MakeAtomicOperatorExpression(prgrm, nil, lastFromCXLine.FileName, lastFromCXLine.LineNumber)
+		declExpr := ast.MakeAtomicOperatorExpression(prgrm, nil)
 		declExprAtomicOp, _, _, err := prgrm.GetOperation(declExpr)
 		if err != nil {
 			panic(err)
@@ -85,7 +85,7 @@ func StructLiteralAssignment(prgrm *ast.CXProgram, to []*ast.CXExpression, from 
 		from = assignStructLiteralFields(prgrm, to, from, auxName)
 
 		assignExprCXLine := ast.MakeCXLineExpression(prgrm, lastFromCXLine.FileName, lastFromCXLine.LineNumber, lastFromCXLine.LineStr)
-		assignExpr := ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_IDENTITY], lastFromCXLine.FileName, lastFromCXLine.LineNumber)
+		assignExpr := ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_IDENTITY])
 		assignExprAtomicOp, _, _, err := prgrm.GetOperation(assignExpr)
 		if err != nil {
 			panic(err)
@@ -210,7 +210,7 @@ func Assignment(prgrm *ast.CXProgram, to []*ast.CXExpression, assignOp string, f
 
 	switch assignOp {
 	case ":=":
-		expr = ast.MakeAtomicOperatorExpression(prgrm, nil, CurrentFile, LineNo)
+		expr = ast.MakeAtomicOperatorExpression(prgrm, nil)
 		cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
 		if err != nil {
 			panic(err)
@@ -262,34 +262,34 @@ func Assignment(prgrm *ast.CXProgram, to []*ast.CXExpression, assignOp string, f
 
 		to = append([]*ast.CXExpression{exprCXLine, expr}, to...)
 	case ">>=":
-		expr = ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_BITSHR], CurrentFile, LineNo)
+		expr = ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_BITSHR])
 		return ShortAssignment(prgrm, expr, exprCXLine, to, from, pkg, idx)
 	case "<<=":
-		expr = ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_BITSHL], CurrentFile, LineNo)
+		expr = ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_BITSHL])
 		return ShortAssignment(prgrm, expr, exprCXLine, to, from, pkg, idx)
 	case "+=":
-		expr = ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_ADD], CurrentFile, LineNo)
+		expr = ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_ADD])
 		return ShortAssignment(prgrm, expr, exprCXLine, to, from, pkg, idx)
 	case "-=":
-		expr = ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_SUB], CurrentFile, LineNo)
+		expr = ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_SUB])
 		return ShortAssignment(prgrm, expr, exprCXLine, to, from, pkg, idx)
 	case "*=":
-		expr = ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_MUL], CurrentFile, LineNo)
+		expr = ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_MUL])
 		return ShortAssignment(prgrm, expr, exprCXLine, to, from, pkg, idx)
 	case "/=":
-		expr = ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_DIV], CurrentFile, LineNo)
+		expr = ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_DIV])
 		return ShortAssignment(prgrm, expr, exprCXLine, to, from, pkg, idx)
 	case "%=":
-		expr = ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_MOD], CurrentFile, LineNo)
+		expr = ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_MOD])
 		return ShortAssignment(prgrm, expr, exprCXLine, to, from, pkg, idx)
 	case "&=":
-		expr = ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_BITAND], CurrentFile, LineNo)
+		expr = ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_BITAND])
 		return ShortAssignment(prgrm, expr, exprCXLine, to, from, pkg, idx)
 	case "^=":
-		expr = ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_BITXOR], CurrentFile, LineNo)
+		expr = ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_BITXOR])
 		return ShortAssignment(prgrm, expr, exprCXLine, to, from, pkg, idx)
 	case "|=":
-		expr = ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_BITOR], CurrentFile, LineNo)
+		expr = ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_BITOR])
 		return ShortAssignment(prgrm, expr, exprCXLine, to, from, pkg, idx)
 	}
 

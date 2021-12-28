@@ -30,7 +30,7 @@ func GenerateRandomExpressions(prgrm *cxast.CXProgram, inputFn *cxast.CXFunction
 		}
 
 		exprCXLine := cxast.MakeCXLineExpression(prgrm, "", -1, "")
-		expr := cxast.MakeAtomicOperatorExpression(prgrm, op, "", -1)
+		expr := cxast.MakeAtomicOperatorExpression(prgrm, op)
 		cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
 		if err != nil {
 			panic(err)
@@ -183,7 +183,7 @@ func addNewExpression(prgrm *cxast.CXProgram, expr *cxast.CXExpression, expressi
 	}
 
 	newExprCXLine := cxast.MakeCXLineExpression(prgrm, "", -1, "")
-	newExpr := cxast.MakeAtomicOperatorExpression(prgrm, cxast.Natives[expressionType], "", -1)
+	newExpr := cxast.MakeAtomicOperatorExpression(prgrm, cxast.Natives[expressionType])
 	newExprCXAtomicOp, _, _, err := prgrm.GetOperation(newExpr)
 	if err != nil {
 		panic(err)

@@ -260,7 +260,7 @@ func (fn *CXFunction) RemoveExpression(line int) {
 //                             `CXFunction` Selectors
 
 // MakeAtomicOperatorExpression ...
-func MakeAtomicOperatorExpression(prgrm *CXProgram, op *CXFunction, fileName string, fileLine int) *CXExpression {
+func MakeAtomicOperatorExpression(prgrm *CXProgram, op *CXFunction) *CXExpression {
 	index := prgrm.AddCXAtomicOp(&CXAtomicOperator{
 		Operator: op,
 	})
@@ -268,8 +268,6 @@ func MakeAtomicOperatorExpression(prgrm *CXProgram, op *CXFunction, fileName str
 	return &CXExpression{
 		Index: index,
 		Type:  CX_ATOMIC_OPERATOR,
-		// FileLine: fileLine,
-		// FileName: fileName,
 	}
 }
 

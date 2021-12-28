@@ -96,7 +96,7 @@ func WritePrimary(prgrm *ast.CXProgram, typeCode types.Code, byts []byte, isSlic
 		prgrm.Heap.StartsAt = prgrm.Data.Size + prgrm.Data.StartsAt
 
 		// exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
-		expr := ast.MakeAtomicOperatorExpression(prgrm, nil, CurrentFile, LineNo)
+		expr := ast.MakeAtomicOperatorExpression(prgrm, nil)
 		cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
 		if err != nil {
 			panic(err)
@@ -125,7 +125,7 @@ func StructLiteralFields(prgrm *ast.CXProgram, ident string) *ast.CXExpression {
 		arg.Name = ident
 		arg.Package = pkg
 
-		expr := ast.MakeAtomicOperatorExpression(prgrm, nil, CurrentFile, LineNo)
+		expr := ast.MakeAtomicOperatorExpression(prgrm, nil)
 		cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
 		if err != nil {
 			panic(err)
@@ -254,7 +254,7 @@ func PrimaryIdentifier(prgrm *ast.CXProgram, ident string) []*ast.CXExpression {
 
 		// exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
 		// expr := &cxcore.CXExpression{ProgramOutput: []*cxcore.CXArgument{arg}}
-		expr := ast.MakeAtomicOperatorExpression(prgrm, nil, CurrentFile, LineNo)
+		expr := ast.MakeAtomicOperatorExpression(prgrm, nil)
 		cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
 		if err != nil {
 			panic(err)

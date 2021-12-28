@@ -2451,7 +2451,7 @@ yydefault:
 			}
 
 			exprCXLine := ast.MakeCXLineExpression(actions.AST, actions.CurrentFile, actions.LineNo, actions.LineStr)
-			expr := ast.MakeAtomicOperatorExpression(actions.AST, ast.Natives[constants.OP_GOTO], actions.CurrentFile, actions.LineNo)
+			expr := ast.MakeAtomicOperatorExpression(actions.AST, ast.Natives[constants.OP_GOTO])
 			cxAtomicOp, _, _, err := actions.AST.GetOperation(expr)
 			if err != nil {
 				panic(err)
