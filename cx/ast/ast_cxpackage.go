@@ -46,16 +46,6 @@ func (pkg *CXPackage) GetImport(impName string) (*CXPackage, error) {
 	return pkg.Imports[impName], nil
 }
 
-/*
-func (pkg *CXPackage) GetFunctions() ([]*CXFunction, error) {
-	// going from map to slice
-	if pkg.Functions != nil {
-		return pkg.Functions, nil
-	}
-	return nil, fmt.Errorf("package '%s' has no functions", pkg.Name)
-}
-*/
-
 // GetMethod ...
 func (pkg *CXPackage) GetMethod(fnName string, receiverType string) (*CXFunction, error) {
 

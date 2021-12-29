@@ -173,13 +173,9 @@ func processNonAtomicOperators(prgrm *CXProgram, expr *CXExpression, fp types.Po
 
 	for i, inp := range cxAtomicOp.Inputs {
 		var byts []byte
-		// finalOffset := inp.Offset
-		finalOffset := GetFinalOffset(prgrm, fp, inp)
-		// finalOffset := fp + inp.Offset
 
-		// if inp.Indexes != nil {
-		// 	finalOffset = GetFinalOffset(&prgrm.Stacks[0], fp, inp)
-		// }
+		finalOffset := GetFinalOffset(prgrm, fp, inp)
+
 		if inp.PassBy == constants.PASSBY_REFERENCE {
 			// If we're referencing an inner element, like an element of a slice (&slc[0])
 			// or a field of a struct (&struct.fld) we no longer need to add
