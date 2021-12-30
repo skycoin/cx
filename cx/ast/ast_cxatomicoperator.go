@@ -30,7 +30,6 @@ func (op *CXAtomicOperator) GetOperatorName() string {
 
 // AddInput ...
 func (op *CXAtomicOperator) AddInput(param *CXArgument) *CXAtomicOperator {
-	// param.Package = op.Package
 	op.Inputs = append(op.Inputs, param)
 	if param.Package == nil {
 		param.Package = op.Package
@@ -47,7 +46,6 @@ func (op *CXAtomicOperator) RemoveInput() {
 
 // AddOutput ...
 func (op *CXAtomicOperator) AddOutput(param *CXArgument) *CXAtomicOperator {
-	// param.Package = op.Package
 	op.Outputs = append(op.Outputs, param)
 	if param.Package == nil {
 		param.Package = op.Package

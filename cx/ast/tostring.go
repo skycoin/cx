@@ -19,7 +19,7 @@ import (
 // string format.
 func ToString(cxprogram *CXProgram) string {
 	var ast3 string
-	ast3 += "Program\n" //why is top line "Program" ???
+	// ast3 += "Program\n" //why is top line "Program" ???
 
 	var currentFunction *CXFunction
 	var currentPackage *CXPackage
