@@ -27,7 +27,7 @@ func (cxet CXEXPR_TYPE) String() string {
 // flow.
 //
 type CXExpression struct {
-	// ExpressionType CXEXPR_TYPE
+	ExpressionType CXEXPR_TYPE
 
 	// For new CX AST Format
 	Index int
