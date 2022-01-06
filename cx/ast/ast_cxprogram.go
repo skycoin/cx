@@ -30,7 +30,7 @@ type CXProgram struct {
 	//ProgramOutput []*CXArgument // outputs to the OS
 	Memory []byte // Used when running the program
 
-	CallStack   []CXCall      // Collection of function calls
+	CallStack   []CXCall      // Collection of function calls. Call stack is not in CX Memory.
 	CallCounter types.Pointer // What function call is the currently being executed in the CallStack
 	Terminated  bool          // Utility field for the runtime. Indicates if a CX program has already finished or not.
 	Version     string        // CX version used to build this CX program.
@@ -43,6 +43,10 @@ type CXProgram struct {
 	CXAtomicOps []*CXAtomicOperator
 	CXArgs      []*CXArgument
 	CXLines     []*CXLine
+	// TODO: add these arrays
+	// CXPackages
+	// CXFunctions
+	// Then reference the package of function by CxFunction id
 
 	// For Initializers
 	SysInitExprs []*CXExpression

@@ -24,6 +24,7 @@ type serializedProgram struct {
 	OutputsOffset int64
 	OutputsSize   int64
 
+	// CallStack is not in cx memory.
 	CallStackOffset int64
 	CallStackSize   int64
 
@@ -38,6 +39,7 @@ type serializedProgram struct {
 	DataSegmentSize     int64
 	DataSegmentStartsAt int64
 
+	// TODO: fix this one
 	HeapPointer  int64 //HeapPointer is probably related to HeapStartsAt
 	HeapStartsAt int64
 	HeapSize     int64
