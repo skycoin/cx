@@ -11,7 +11,7 @@
         /*
         This is a computer generated file
         - partialparsing.go is generated from partialparsing.y via 
-        - ./bin/goyacc -o cxparser/cxpartialparsing/partialparsing.go cxparser/cxpartialparsing/partialparsing.y
+        - ./bin/goyacc -o cxparser/cxpartialparsing/cxpartialparsing.go cxparser/cxpartialparsing/cxpartialparsing.y
         */
 
 	var Program *ast.CXProgram
@@ -119,6 +119,8 @@
                         /* Pointers */
                         ADDR
 
+                        yyDefault
+
 %type   <i32>           int_value
 
 %type   <tok>           unary_operator
@@ -171,18 +173,18 @@ stepping:       TSTEP int_value int_value
 global_declaration:
                 VAR declarator declaration_specifiers SEMICOLON
                 {
-			actions.DeclareGlobal($2, $3, nil, false)
+			actions.DeclareGlobal(Program,$2, $3, nil, false)
                 }
         |       VAR declarator declaration_specifiers ASSIGN initializer SEMICOLON
                 {
-			actions.DeclareGlobal($2, $3, nil, false)
+			actions.DeclareGlobal(Program,$2, $3, nil, false)
                 }
                 ;
 
 struct_declaration:
                 TYPE IDENTIFIER STRUCT struct_fields
                 {
-			actions.DeclareStruct($2, $4)
+			actions.DeclareStruct(Program,$2, $4)
                 }
                 ;
 
@@ -206,14 +208,14 @@ fields:         parameter_declaration SEMICOLON
 package_declaration:
                 PACKAGE IDENTIFIER SEMICOLON
                 {
-			actions.DeclarePackage($2)
+			actions.DeclarePackage(Program,$2)
                 }
                 ;
 
 import_declaration:
                 IMPORT STRING_LITERAL SEMICOLON
                 {
-			actions.DeclareImport($2, CurrentFileName, lineNo)
+			actions.DeclareImport(Program,$2, CurrentFileName, lineNo)
                 }
                 ;
 
@@ -287,8 +289,8 @@ parameter_list:
 parameter_declaration:
                 declarator declaration_specifiers
                 {
-			$2.ArgDetails.Name = $1.ArgDetails.Name
-			$2.ArgDetails.Package = $1.ArgDetails.Package
+			$2.Name = $1.Name
+			$2.Package = $1.Package
 			$2.IsLocalDeclaration = true
 			$$ = $2
                 }
@@ -308,8 +310,8 @@ direct_declarator:
 			if pkg, err := Program.GetCurrentPackage(); err == nil {
 				arg := ast.MakeArgument("", actions.CurrentFile, actions.LineNo)
 				arg.AddType(types.UNDEFINED)
-				arg.ArgDetails.Name = $1
-				arg.ArgDetails.Package = pkg
+				arg.Name = $1
+				arg.Package = pkg
 				$$ = arg
 			} else {
 				panic(err)
@@ -321,7 +323,7 @@ direct_declarator:
 
 id_list:	IDENTIFIER
 		{
-			arg := actions.DeclarationSpecifiersStruct($1, "", false, actions.CurrentFile, actions.LineNo)
+			arg := actions.DeclarationSpecifiersStruct(Program,$1, "", false, actions.CurrentFile, actions.LineNo)
 			$$ = []*ast.CXArgument{arg}
 		}
 	|	type_specifier
@@ -331,7 +333,7 @@ id_list:	IDENTIFIER
 		}
 	|	id_list COMMA IDENTIFIER
 		{
-			arg := actions.DeclarationSpecifiersStruct($3, "", false, actions.CurrentFile, actions.LineNo)
+			arg := actions.DeclarationSpecifiersStruct(Program,$3, "", false, actions.CurrentFile, actions.LineNo)
 			$$ = append($1, arg)
 		}
 	|	id_list COMMA type_specifier
@@ -378,7 +380,7 @@ declaration_specifiers:
                 }
         |       IDENTIFIER
                 {
-			$$ = actions.DeclarationSpecifiersStruct($1, "", false, CurrentFileName, lineNo)
+			$$ = actions.DeclarationSpecifiersStruct(Program,$1, "", false, CurrentFileName, lineNo)
                 }
         |       indexing_literal type_specifier
                 {
@@ -387,16 +389,16 @@ declaration_specifiers:
                 }
         |       indexing_literal IDENTIFIER
                 {
-			strct := actions.DeclarationSpecifiersStruct($2, "", false, actions.CurrentFile, actions.LineNo)
+			strct := actions.DeclarationSpecifiersStruct(Program,$2, "", false, actions.CurrentFile, actions.LineNo)
 			$$ = actions.DeclarationSpecifiers(strct, types.Cast_sint_to_sptr($1), constants.DECL_ARRAY)
                 }
         |       IDENTIFIER PERIOD IDENTIFIER
                 {
-			$$ = actions.DeclarationSpecifiersStruct($3, $1, true, CurrentFileName, lineNo)
+			$$ = actions.DeclarationSpecifiersStruct(Program,$3, $1, true, CurrentFileName, lineNo)
                 }
 	|       type_specifier PERIOD IDENTIFIER
 		{
-			$$ = actions.DeclarationSpecifiersStruct($3, types.Code($1).Name(), true, CurrentFileName, lineNo)
+			$$ = actions.DeclarationSpecifiersStruct(Program,$3, types.Code($1).Name(), true, CurrentFileName, lineNo)
 		}
 		/* type_specifier declaration_specifiers */
 	/* |       type_specifier */

@@ -104,7 +104,7 @@ func serializeArgument(arg *CXArgument, s *SerializedCXProgram) int {
 
 	sNil := int64(-1)
 
-	s.Arguments[argOff].NameOffset, s.Arguments[argOff].NameSize = serializeString(arg.ArgDetails.Name, s)
+	s.Arguments[argOff].NameOffset, s.Arguments[argOff].NameSize = serializeString(arg.Name, s)
 
 	s.Arguments[argOff].Type = int64(arg.Type)
 
@@ -147,8 +147,8 @@ func serializeArgument(arg *CXArgument, s *SerializedCXProgram) int {
 	s.Arguments[argOff].InputsOffset, s.Arguments[argOff].InputsSize = serializeSliceOfArguments(arg.Inputs, s)
 	s.Arguments[argOff].OutputsOffset, s.Arguments[argOff].OutputsSize = serializeSliceOfArguments(arg.Outputs, s)
 
-	if _, found := s.PackagesMap[arg.ArgDetails.Package.Name]; found {
-		s.Arguments[argOff].PackageName = arg.ArgDetails.Package.Name
+	if _, found := s.PackagesMap[arg.Package.Name]; found {
+		s.Arguments[argOff].PackageName = arg.Package.Name
 	} else {
 		panic("package reference not found")
 	}
@@ -179,54 +179,74 @@ func serializeCalls(calls []CXCall, s *SerializedCXProgram) (int64, int64) {
 
 }
 
-func serializeExpression(expr *CXExpression, s *SerializedCXProgram) int {
+func serializeExpression(prgrm *CXProgram, expr *CXExpression, s *SerializedCXProgram) int {
 	s.Expressions = append(s.Expressions, serializedExpression{})
 	exprOff := len(s.Expressions) - 1
 	sExpr := &s.Expressions[exprOff]
 
 	sNil := int64(-1)
 
-	if expr.Operator == nil {
-		// then it's a declaration
-		sExpr.OperatorOffset = sNil
-		sExpr.IsNative = serializeBoolean(false)
-		sExpr.OpCode = int64(-1)
-	} else if expr.Operator.IsBuiltIn() {
-		sExpr.OperatorOffset = sNil
-		sExpr.IsNative = serializeBoolean(true)
-		sExpr.OpCode = int64(expr.Operator.AtomicOPCode)
-	} else {
-		sExpr.IsNative = serializeBoolean(false)
-		sExpr.OpCode = sNil
-
-		opName := expr.Operator.Package.Name + "." + expr.Operator.Name
-		if opOff, found := s.FunctionsMap[opName]; found {
-			sExpr.OperatorOffset = int64(opOff)
+	sExpr.Type = int64(expr.Type)
+	switch expr.Type {
+	case CX_LINE:
+		_, _, cxLine, err := prgrm.GetOperation(expr)
+		if err != nil {
+			panic(err)
 		}
+
+		sExpr.ExpressionType = int64(expr.ExpressionType)
+		sExpr.FileName = cxLine.FileName
+		sExpr.LineNumber = int64(cxLine.LineNumber)
+		sExpr.LineStr = cxLine.LineStr
+
+	case CX_ATOMIC_OPERATOR:
+		cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+		if err != nil {
+			panic(err)
+		}
+
+		if cxAtomicOp.Operator == nil {
+			// then it's a declaration
+			sExpr.OperatorOffset = sNil
+			sExpr.IsNative = serializeBoolean(false)
+			sExpr.OpCode = int64(-1)
+		} else if cxAtomicOp.Operator.IsBuiltIn() {
+			sExpr.OperatorOffset = sNil
+			sExpr.IsNative = serializeBoolean(true)
+			sExpr.OpCode = int64(cxAtomicOp.Operator.AtomicOPCode)
+		} else {
+			sExpr.IsNative = serializeBoolean(false)
+			sExpr.OpCode = sNil
+
+			opName := cxAtomicOp.Operator.Package.Name + "." + cxAtomicOp.Operator.Name
+			if opOff, found := s.FunctionsMap[opName]; found {
+				sExpr.OperatorOffset = int64(opOff)
+			}
+		}
+
+		sExpr.InputsOffset, sExpr.InputsSize = serializeSliceOfArguments(cxAtomicOp.Inputs, s)
+		sExpr.OutputsOffset, sExpr.OutputsSize = serializeSliceOfArguments(cxAtomicOp.Outputs, s)
+
+		sExpr.LabelOffset, sExpr.LabelSize = serializeString(cxAtomicOp.Label, s)
+		sExpr.ThenLines = int64(cxAtomicOp.ThenLines)
+		sExpr.ElseLines = int64(cxAtomicOp.ElseLines)
+
+		sExpr.ExpressionType = int64(expr.ExpressionType)
+
+		fnName := cxAtomicOp.Function.Package.Name + "." + cxAtomicOp.Function.Name
+		if fnOff, found := s.FunctionsMap[fnName]; found {
+			sExpr.FunctionOffset = int64(fnOff)
+		} else {
+			panic("function reference not found")
+		}
+
+		if _, found := s.PackagesMap[cxAtomicOp.Package.Name]; found {
+			sExpr.PackageName = cxAtomicOp.Package.Name
+		} else {
+			panic("package reference not found")
+		}
+
 	}
-
-	sExpr.InputsOffset, sExpr.InputsSize = serializeSliceOfArguments(expr.Inputs, s)
-	sExpr.OutputsOffset, sExpr.OutputsSize = serializeSliceOfArguments(expr.Outputs, s)
-
-	sExpr.LabelOffset, sExpr.LabelSize = serializeString(expr.Label, s)
-	sExpr.ThenLines = int64(expr.ThenLines)
-	sExpr.ElseLines = int64(expr.ElseLines)
-
-	sExpr.ExpressionType = int64(expr.ExpressionType)
-
-	fnName := expr.Function.Package.Name + "." + expr.Function.Name
-	if fnOff, found := s.FunctionsMap[fnName]; found {
-		sExpr.FunctionOffset = int64(fnOff)
-	} else {
-		panic("function reference not found")
-	}
-
-	if _, found := s.PackagesMap[expr.Package.Name]; found {
-		sExpr.PackageName = expr.Package.Name
-	} else {
-		panic("package reference not found")
-	}
-
 	return exprOff
 }
 
@@ -576,7 +596,7 @@ func serializeCXProgramElements(prgrm *CXProgram, s *SerializedCXProgram) {
 				} else {
 					exprs := make([]int, len(fn.Expressions))
 					for i, expr := range fn.Expressions {
-						exprIdx := serializeExpression(expr, s)
+						exprIdx := serializeExpression(prgrm, expr, s)
 						if fn.CurrentExpression == expr {
 							// sFn.CurrentExpressionOffset = int32(exprIdx)
 							sFn.CurrentExpressionOffset = int64(i)
@@ -786,7 +806,7 @@ func deserializeArguments(off int64, size int64, s *SerializedCXProgram, prgrm *
 func deserializeArgument(sArg *serializedArgument, s *SerializedCXProgram, prgrm *CXProgram) *CXArgument {
 	var arg CXArgument
 	arg.ArgDetails = &CXArgumentDebug{}
-	arg.ArgDetails.Name = deserializeString(sArg.NameOffset, sArg.NameSize, s)
+	arg.Name = deserializeString(sArg.NameOffset, sArg.NameSize, s)
 	arg.Type = types.Code(sArg.Type)
 
 	//arg.StructType = getStructType(sArg, s, prgrm)
@@ -816,7 +836,7 @@ func deserializeArgument(sArg *serializedArgument, s *SerializedCXProgram, prgrm
 	arg.Inputs = deserializeArguments(sArg.InputsOffset, sArg.InputsSize, s, prgrm)
 	arg.Outputs = deserializeArguments(sArg.OutputsOffset, sArg.OutputsSize, s, prgrm)
 
-	arg.ArgDetails.Package = prgrm.Packages[sArg.PackageName]
+	arg.Package = prgrm.Packages[sArg.PackageName]
 
 	return &arg
 }
@@ -888,24 +908,40 @@ func deserializeExpressions(off int64, size int64, s *SerializedCXProgram, prgrm
 func deserializeExpression(sExpr *serializedExpression, s *SerializedCXProgram, prgrm *CXProgram) *CXExpression {
 	var expr CXExpression
 
-	if deserializeBool(sExpr.IsNative) {
-		expr.Operator = Natives[int(sExpr.OpCode)]
-	} else {
-		expr.Operator = deserializeOperator(sExpr, s, prgrm)
-	}
-
-	expr.Inputs = deserializeArguments(sExpr.InputsOffset, sExpr.InputsSize, s, prgrm)
-	expr.Outputs = deserializeArguments(sExpr.OutputsOffset, sExpr.OutputsSize, s, prgrm)
-
-	expr.Label = deserializeString(sExpr.LabelOffset, sExpr.LabelSize, s)
-
-	expr.ThenLines = int(sExpr.ThenLines)
-	expr.ElseLines = int(sExpr.ElseLines)
-
 	expr.ExpressionType = CXEXPR_TYPE(sExpr.ExpressionType)
+	switch sExpr.Type {
+	case int64(CX_LINE):
+		cxLine := &CXLine{}
 
-	expr.Function = deserializeExpressionFunction(sExpr, s, prgrm)
-	expr.Package = prgrm.Packages[sExpr.PackageName]
+		cxLine.FileName = sExpr.FileName
+		cxLine.LineNumber = int(sExpr.LineNumber)
+		cxLine.LineStr = sExpr.LineStr
+		index := prgrm.AddCXLine(cxLine)
+		expr.Index = index
+		expr.Type = CX_LINE
+	case int64(CX_ATOMIC_OPERATOR):
+		cxAtomicOp := &CXAtomicOperator{}
+		if deserializeBool(sExpr.IsNative) {
+			cxAtomicOp.Operator = Natives[int(sExpr.OpCode)]
+		} else {
+			cxAtomicOp.Operator = deserializeOperator(sExpr, s, prgrm)
+		}
+
+		cxAtomicOp.Inputs = deserializeArguments(sExpr.InputsOffset, sExpr.InputsSize, s, prgrm)
+		cxAtomicOp.Outputs = deserializeArguments(sExpr.OutputsOffset, sExpr.OutputsSize, s, prgrm)
+
+		cxAtomicOp.Label = deserializeString(sExpr.LabelOffset, sExpr.LabelSize, s)
+
+		cxAtomicOp.ThenLines = int(sExpr.ThenLines)
+		cxAtomicOp.ElseLines = int(sExpr.ElseLines)
+
+		cxAtomicOp.Function = deserializeExpressionFunction(sExpr, s, prgrm)
+		cxAtomicOp.Package = prgrm.Packages[sExpr.PackageName]
+
+		index := prgrm.AddCXAtomicOp(cxAtomicOp)
+		expr.Index = index
+		expr.Type = CX_ATOMIC_OPERATOR
+	}
 
 	return &expr
 }

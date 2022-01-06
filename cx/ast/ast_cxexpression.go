@@ -27,23 +27,11 @@ func (cxet CXEXPR_TYPE) String() string {
 // flow.
 //
 type CXExpression struct {
-	// Contents
-	Inputs   []*CXArgument
-	Outputs  []*CXArgument
-	Label    string
-	Operator *CXFunction
-	Function *CXFunction
-	Package  *CXPackage
-
-	// debugging
-	FileName string
-	FileLine int
-
-	// used for jmp statements
-	ThenLines int
-	ElseLines int
-
 	ExpressionType CXEXPR_TYPE
+
+	// For new CX AST Format
+	Index int
+	Type  CXOPERATION_TYPE
 }
 
 // IsMethodCall checks if expression type is method call
@@ -62,18 +50,34 @@ func (cxe CXExpression) IsArrayLiteral() bool {
 }
 
 // IsBreak checks if expression type is break
-func (cxe CXExpression) IsBreak() bool {
-	return cxe.Operator != nil && cxe.Operator.AtomicOPCode == constants.OP_BREAK
+func (cxe CXExpression) IsBreak(prgrm *CXProgram) bool {
+	cxAtomicOp, _, _, err := prgrm.GetOperation(&cxe)
+	if err != nil {
+		panic(err)
+	}
+
+	return cxAtomicOp.Operator != nil && cxAtomicOp.Operator.AtomicOPCode == constants.OP_BREAK
 }
 
 // IsContinue checks if expression type is continue
-func (cxe CXExpression) IsContinue() bool {
-	return cxe.Operator != nil && cxe.Operator.AtomicOPCode == constants.OP_CONTINUE
+func (cxe CXExpression) IsContinue(prgrm *CXProgram) bool {
+	cxAtomicOp, _, _, err := prgrm.GetOperation(&cxe)
+	if err != nil {
+		panic(err)
+	}
+
+	return cxAtomicOp.Operator != nil && cxAtomicOp.Operator.AtomicOPCode == constants.OP_CONTINUE
 }
 
 // IsUndType checks if expression type is und type
-func (cxe CXExpression) IsUndType() bool {
-	return cxe.Operator != nil && IsOperator(cxe.Operator.AtomicOPCode)
+func (cxe CXExpression) IsUndType(prgrm *CXProgram) bool {
+	cxAtomicOp, _, _, err := prgrm.GetOperation(&cxe)
+	if err != nil {
+		panic(err)
+	}
+
+	return cxAtomicOp.Operator != nil && IsOperator(cxAtomicOp.Operator.AtomicOPCode)
+
 }
 
 // IsScopeNew checks if expression type is scope new
@@ -89,55 +93,11 @@ func (cxe CXExpression) IsScopeDel() bool {
 // ----------------------------------------------------------------
 //                             `CXExpression` Getters
 
-/*
-func (expr *CXExpression) GetInputs() ([]*CXArgument, error) {
-	if expr.Inputs != nil {
-		return expr.Inputs, nil
+func (cxe CXExpression) GetLabel(prgrm *CXProgram) string {
+	cxAtomicOp, _, _, err := prgrm.GetOperation(&cxe)
+	if err != nil {
+		panic(err)
 	}
-	return nil, errors.New("expression has no arguments")
 
-}
-*/
-
-// ----------------------------------------------------------------
-//                     `CXExpression` Member handling
-
-// AddInput ...
-func (expr *CXExpression) AddInput(param *CXArgument) *CXExpression {
-	// param.Package = expr.Package
-	expr.Inputs = append(expr.Inputs, param)
-	if param.ArgDetails.Package == nil {
-		param.ArgDetails.Package = expr.Package
-	}
-	return expr
-}
-
-// RemoveInput ...
-func (expr *CXExpression) RemoveInput() {
-	if len(expr.Inputs) > 0 {
-		expr.Inputs = expr.Inputs[:len(expr.Inputs)-1]
-	}
-}
-
-// AddOutput ...
-func (expr *CXExpression) AddOutput(param *CXArgument) *CXExpression {
-	// param.Package = expr.Package
-	expr.Outputs = append(expr.Outputs, param)
-	if param.ArgDetails.Package == nil {
-		param.ArgDetails.Package = expr.Package
-	}
-	return expr
-}
-
-// RemoveOutput ...
-func (expr *CXExpression) RemoveOutput() {
-	if len(expr.Outputs) > 0 {
-		expr.Outputs = expr.Outputs[:len(expr.Outputs)-1]
-	}
-}
-
-// AddLabel ...
-func (expr *CXExpression) AddLabel(lbl string) *CXExpression {
-	expr.Label = lbl
-	return expr
+	return cxAtomicOp.Label
 }

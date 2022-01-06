@@ -318,6 +318,18 @@ func EncodeSizeSerializedCXProgram(obj *SerializedCXProgram) uint64 {
 		// x1.PackageName
 		i1 += 4 + uint64(len(x1.PackageName))
 
+		// x1.Type
+		i1 += 8
+
+		// x1.FileName
+		i1 += 4 + uint64(len(x1.FileName))
+
+		// x1.LineNumber
+		i1 += 8
+
+		// x1.LineStr
+		i1 += 4 + uint64(len(x1.LineStr))
+
 		i0 += i1
 	}
 
@@ -891,6 +903,28 @@ func EncodeSerializedCXProgramToBuffer(buf []byte, obj *SerializedCXProgram) err
 
 		// x.PackageName
 		e.ByteSlice([]byte(x.PackageName))
+
+		// x.Type
+		e.Int64(x.Type)
+
+		// x.FileName length check
+		if uint64(len(x.FileName)) > math.MaxUint32 {
+			return errors.New("x.FileName length exceeds math.MaxUint32")
+		}
+
+		// x.FileName
+		e.ByteSlice([]byte(x.FileName))
+
+		// x.LineNumber
+		e.Int64(x.LineNumber)
+
+		// x.LineStr length check
+		if uint64(len(x.LineStr)) > math.MaxUint32 {
+			return errors.New("x.LineStr length exceeds math.MaxUint32")
+		}
+
+		// x.LineStr
+		e.ByteSlice([]byte(x.LineStr))
 
 	}
 
@@ -2107,6 +2141,58 @@ func DecodeSerializedCXProgram(buf []byte, obj *SerializedCXProgram) (uint64, er
 					}
 
 					obj.Expressions[z1].PackageName = string(d.Buffer[:length])
+					d.Buffer = d.Buffer[length:]
+				}
+
+				{
+					// obj.Expressions[z1].Type
+					i, err := d.Int64()
+					if err != nil {
+						return 0, err
+					}
+					obj.Expressions[z1].Type = i
+				}
+
+				{
+					// obj.Expressions[z1].FileName
+
+					ul, err := d.Uint32()
+					if err != nil {
+						return 0, err
+					}
+
+					length := int(ul)
+					if length < 0 || length > len(d.Buffer) {
+						return 0, encoder.ErrBufferUnderflow
+					}
+
+					obj.Expressions[z1].FileName = string(d.Buffer[:length])
+					d.Buffer = d.Buffer[length:]
+				}
+
+				{
+					// obj.Expressions[z1].LineNumber
+					i, err := d.Int64()
+					if err != nil {
+						return 0, err
+					}
+					obj.Expressions[z1].LineNumber = i
+				}
+
+				{
+					// obj.Expressions[z1].LineStr
+
+					ul, err := d.Uint32()
+					if err != nil {
+						return 0, err
+					}
+
+					length := int(ul)
+					if length < 0 || length > len(d.Buffer) {
+						return 0, encoder.ErrBufferUnderflow
+					}
+
+					obj.Expressions[z1].LineStr = string(d.Buffer[:length])
 					d.Buffer = d.Buffer[length:]
 				}
 			}

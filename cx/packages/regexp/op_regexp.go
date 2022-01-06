@@ -53,7 +53,7 @@ func regexpCompile(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXV
 	// internally.
 	accessExp := []*ast.CXArgument{expFld}
 	reg.Fields = accessExp
-	types.Write_str(prgrm.Memory, ast.GetFinalOffset(prgrm, outputs[0].FramePointer, &reg), exp)
+	types.Write_str(prgrm, prgrm.Memory, ast.GetFinalOffset(prgrm, outputs[0].FramePointer, &reg), exp)
 	// Storing `Regexp` instance.
 	regexps[exp], err = regexp.Compile(exp)
 

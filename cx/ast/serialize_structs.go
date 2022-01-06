@@ -24,6 +24,7 @@ type serializedProgram struct {
 	OutputsOffset int64
 	OutputsSize   int64
 
+	// CallStack is not in cx memory.
 	CallStackOffset int64
 	CallStackSize   int64
 
@@ -38,6 +39,7 @@ type serializedProgram struct {
 	DataSegmentSize     int64
 	DataSegmentStartsAt int64
 
+	// TODO: fix this one
 	HeapPointer  int64 //HeapPointer is probably related to HeapStartsAt
 	HeapStartsAt int64
 	HeapSize     int64
@@ -124,6 +126,15 @@ type serializedExpression struct {
 
 	FunctionOffset int64
 	PackageName    string
+
+	// For new cx ast
+	// CXOPERATION_TYPE
+	Type int64
+
+	// For CXLine
+	FileName   string
+	LineNumber int64
+	LineStr    string
 }
 
 type serializedArgument struct {

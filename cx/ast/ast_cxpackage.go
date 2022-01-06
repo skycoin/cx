@@ -46,16 +46,6 @@ func (pkg *CXPackage) GetImport(impName string) (*CXPackage, error) {
 	return pkg.Imports[impName], nil
 }
 
-/*
-func (pkg *CXPackage) GetFunctions() ([]*CXFunction, error) {
-	// going from map to slice
-	if pkg.Functions != nil {
-		return pkg.Functions, nil
-	}
-	return nil, fmt.Errorf("package '%s' has no functions", pkg.Name)
-}
-*/
-
 // GetMethod ...
 func (pkg *CXPackage) GetMethod(fnName string, receiverType string) (*CXFunction, error) {
 
@@ -93,7 +83,7 @@ func (pkg *CXPackage) GetStruct(strctName string) (*CXStruct, error) {
 func (pkg *CXPackage) GetGlobal(defName string) (*CXArgument, error) {
 	var foundDef *CXArgument
 	for _, def := range pkg.Globals {
-		if def.ArgDetails.Name == defName {
+		if def.Name == defName {
 			foundDef = def
 			break
 		}
@@ -216,10 +206,10 @@ func (pkg *CXPackage) RemoveStruct(strctName string) {
 
 // AddGlobal ...
 func (pkg *CXPackage) AddGlobal(def *CXArgument) *CXPackage {
-	def.ArgDetails.Package = pkg
+	def.Package = pkg
 	found := false
 	for i, df := range pkg.Globals {
-		if df.ArgDetails.Name == def.ArgDetails.Name {
+		if df.Name == def.Name {
 			pkg.Globals[i] = def
 			found = true
 			break
@@ -236,7 +226,7 @@ func (pkg *CXPackage) AddGlobal(def *CXArgument) *CXPackage {
 func (pkg *CXPackage) RemoveGlobal(defName string) {
 	lenGlobals := len(pkg.Globals)
 	for i, def := range pkg.Globals {
-		if def.ArgDetails.Name == defName {
+		if def.Name == defName {
 			if i == lenGlobals-1 {
 				pkg.Globals = pkg.Globals[:len(pkg.Globals)-1]
 			} else {

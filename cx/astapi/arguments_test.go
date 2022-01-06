@@ -62,21 +62,21 @@ func TestASTAPI_Arguments(t *testing.T) {
 		buf := new(bytes.Buffer)
 		var num int32 = 5
 		binary.Write(buf, binary.LittleEndian, num)
-		err := astapi.AddLiteralInputToExpression(cxprogram, "main", "TestFunction", buf.Bytes(), types.I16, 0)
+		err := astapi.AddLiteralInputToExpression(cxprogram, "main", "TestFunction", buf.Bytes(), types.I16, 1)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}
 	})
 
 	t.Run("add second input to expression", func(t *testing.T) {
-		err := astapi.AddNativeInputToExpression(cxprogram, "main", "TestFunction", "y", types.I16, 0)
+		err := astapi.AddNativeInputToExpression(cxprogram, "main", "TestFunction", "y", types.I16, 1)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}
 	})
 
 	t.Run("add output to expression", func(t *testing.T) {
-		err := astapi.AddNativeOutputToExpression(cxprogram, "main", "TestFunction", "z", types.I16, 0)
+		err := astapi.AddNativeOutputToExpression(cxprogram, "main", "TestFunction", "z", types.I16, 1)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}
@@ -87,14 +87,14 @@ func TestASTAPI_Arguments(t *testing.T) {
 	})
 
 	t.Run("make input of an expression a pointer", func(t *testing.T) {
-		err := astapi.MakeInputExpressionAPointer(cxprogram, "TestFunction", 0, 1)
+		err := astapi.MakeInputExpressionAPointer(cxprogram, "TestFunction", 1, 1)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}
 	})
 
 	t.Run("make output of an expression a pointer", func(t *testing.T) {
-		err := astapi.MakeOutputExpressionAPointer(cxprogram, "TestFunction", 0, 0)
+		err := astapi.MakeOutputExpressionAPointer(cxprogram, "TestFunction", 1, 0)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}
@@ -134,7 +134,7 @@ func TestASTAPI_Arguments(t *testing.T) {
 		}
 
 		for _, arg := range args {
-			t.Logf("Arg (name,type)=(%v,%v)\n", arg.ArgDetails.Name, types.Code(arg.Type))
+			t.Logf("Arg (name,type)=(%v,%v)\n", arg.Name, types.Code(arg.Type))
 		}
 	})
 }

@@ -138,7 +138,7 @@ var definitions []Type = []Type{
 	{"ident", POINTER_SIZE, false}, // TODO:PTR use InvalidPointer to track addressing issues.
 }
 
-type AllocatorHandler func(Pointer) Pointer
+type AllocatorHandler func(interface{}, Pointer) Pointer
 
 var Allocator AllocatorHandler
 

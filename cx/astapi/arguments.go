@@ -1,6 +1,9 @@
 package astapi
 
 import (
+	"errors"
+
+	"github.com/skycoin/cx/cx/ast"
 	cxast "github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/types"
 	cxparseractions "github.com/skycoin/cx/cxparser/actions"
@@ -49,8 +52,14 @@ func AddNativeInputToExpression(cxprogram *cxast.CXProgram, packageName, functio
 	}
 
 	arg := cxast.MakeField(inputName, inputType, "", -1).AddType(types.Code(inputType))
-	arg.ArgDetails.Package = pkg
-	expr.AddInput(arg)
+	arg.Package = pkg
+
+	cxAtomicOp, _, _, err := cxprogram.GetOperation(expr)
+	if err != nil {
+		panic(err)
+	}
+
+	cxAtomicOp.AddInput(arg)
 
 	return nil
 }
@@ -89,7 +98,12 @@ func RemoveInputFromExpression(cxprogram *cxast.CXProgram, functionName string, 
 		return err
 	}
 
-	expr.RemoveInput()
+	cxAtomicOp, _, _, err := cxprogram.GetOperation(expr)
+	if err != nil {
+		panic(err)
+	}
+
+	cxAtomicOp.RemoveInput()
 	return nil
 }
 
@@ -136,8 +150,14 @@ func AddNativeOutputToExpression(cxprogram *cxast.CXProgram, packageName, functi
 	}
 
 	arg := cxast.MakeField(outputName, outputType, "", -1).AddType(types.Code(outputType))
-	arg.ArgDetails.Package = pkg
-	expr.AddOutput(arg)
+	arg.Package = pkg
+
+	cxAtomicOp, _, _, err := cxprogram.GetOperation(expr)
+	if err != nil {
+		panic(err)
+	}
+
+	cxAtomicOp.AddOutput(arg)
 
 	return nil
 }
@@ -176,7 +196,12 @@ func RemoveOutputFromExpression(cxprogram *cxast.CXProgram, functionName string,
 		return err
 	}
 
-	expr.RemoveOutput()
+	cxAtomicOp, _, _, err := cxprogram.GetOperation(expr)
+	if err != nil {
+		panic(err)
+	}
+
+	cxAtomicOp.RemoveOutput()
 	return nil
 }
 
@@ -216,7 +241,15 @@ func MakeInputExpressionAPointer(cxprogram *cxast.CXProgram, functionName string
 		return err
 	}
 
-	cxast.Pointer(expr.Inputs[inputNumber])
+	if expr.Type == ast.CX_LINE {
+		return errors.New("Expression is a CXLine")
+	}
+	cxAtomicOp, _, _, err := cxprogram.GetOperation(expr)
+	if err != nil {
+		panic(err)
+	}
+
+	cxast.Pointer(cxAtomicOp.Inputs[inputNumber])
 	return nil
 }
 
@@ -256,7 +289,15 @@ func MakeOutputExpressionAPointer(cxprogram *cxast.CXProgram, functionName strin
 		return err
 	}
 
-	cxast.Pointer(expr.Outputs[outputNumber])
+	if expr.Type == ast.CX_LINE {
+		return errors.New("Expression is a CXLine")
+	}
+	cxAtomicOp, _, _, err := cxprogram.GetOperation(expr)
+	if err != nil {
+		panic(err)
+	}
+
+	cxast.Pointer(cxAtomicOp.Outputs[outputNumber])
 	return nil
 }
 
@@ -325,7 +366,11 @@ func GetAccessibleArgsForFunctionByType(cxprogram *cxast.CXProgram, packageLocat
 
 	// Get all args from expression inputs
 	for _, expr := range fn.Expressions {
-		for _, arg := range expr.Inputs {
+		cxAtomicOp, _, _, err := cxprogram.GetOperation(expr)
+		if err != nil {
+			panic(err)
+		}
+		for _, arg := range cxAtomicOp.Inputs {
 			if arg.IsStruct {
 				for _, field := range arg.StructType.Fields {
 					if field.Type == argType {
@@ -358,10 +403,22 @@ func AddLiteralInputToExpression(cxprogram *cxast.CXProgram, packageName, functi
 	}
 
 	cxparseractions.AST = cxprogram
-	litArg := cxparseractions.WritePrimary(argType, bytes, false)
-	arg := litArg[0].Outputs[0]
-	arg.ArgDetails.Package = pkg
-	expr.AddInput(arg)
+	litArg := cxparseractions.WritePrimary(cxprogram, argType, bytes, false)
+
+	cxAtomicOp1, err := cxprogram.GetCXAtomicOpFromExpressions(litArg, 0)
+	if err != nil {
+		panic(err)
+	}
+
+	arg := cxAtomicOp1.Outputs[0]
+
+	cxAtomicOp2, _, _, err := cxprogram.GetOperation(expr)
+	if err != nil {
+		panic(err)
+	}
+
+	arg.Package = pkg
+	cxAtomicOp2.AddInput(arg)
 
 	return nil
 }

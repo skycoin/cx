@@ -30,7 +30,7 @@ type CXProgram struct {
 	//ProgramOutput []*CXArgument // outputs to the OS
 	Memory []byte // Used when running the program
 
-	CallStack   []CXCall      // Collection of function calls
+	CallStack   []CXCall      // Collection of function calls. Call stack is not in CX Memory.
 	CallCounter types.Pointer // What function call is the currently being executed in the CallStack
 	Terminated  bool          // Utility field for the runtime. Indicates if a CX program has already finished or not.
 	Version     string        // CX version used to build this CX program.
@@ -38,12 +38,24 @@ type CXProgram struct {
 	// Used by the REPL and cxgo
 	CurrentPackage *CXPackage // Represents the currently active package in the REPL or when parsing a CX file.
 	ProgramError   error
+
+	// For new CX AST arrays
+	CXAtomicOps []*CXAtomicOperator
+	CXArgs      []*CXArgument
+	CXLines     []*CXLine
+	// TODO: add these arrays
+	// CXPackages
+	// CXFunctions
+	// Then reference the package of function by CxFunction id
+
+	// For Initializers
+	SysInitExprs []*CXExpression
 }
 
 type StackSegmentStruct struct {
-	//TODO: Add StackStartsAt
-	Size    types.Pointer // This field stores the size of a CX program's stack
-	Pointer types.Pointer // At what byte the current stack frame is
+	Size     types.Pointer // This field stores the size of a CX program's stack
+	StartsAt types.Pointer // Offset at which the stack segment starts in a CX program's memory
+	Pointer  types.Pointer // At what byte the current stack frame is
 }
 
 type DataSegmentStruct struct {
@@ -119,33 +131,118 @@ func (cxprogram *CXProgram) RemovePackage(modName string) {
 }
 
 // ----------------------------------------------------------------
-//                             `CXProgram` Selectors
+//            `CXProgram` CXLines, CXArgs, and CXAtomicOps Handling
 
-// SetCurrentCxProgram sets `PROGRAM` to the the receiver `prgrm`. This is a utility function used mainly
-// by CX chains. `PROGRAM` is used in multiple parts of the CX runtime as a convenience; instead of having
-// to pass around a parameter of type CXProgram, the CX program currently being run is accessible through
-// `PROGRAM`.
-
-//Very strange
-//Beware whenever this function is called
-func (cxprogram *CXProgram) SetCurrentCxProgram() (*CXProgram, error) {
-	PROGRAM = cxprogram
-	return PROGRAM, nil
-}
-
-// GetCurrentCxProgram returns the CX program assigned to global variable `PROGRAM`.
-// This function is mainly used for CX chains.
-/*
-func GetCurrentCxProgram() (*CXProgram, error) {
-	if PROGRAM == nil {
-		return nil, fmt.Errorf("a CX program has not been loaded")
+func (cxprogram *CXProgram) GetCXLine(index int) (*CXLine, error) {
+	if index > (len(cxprogram.CXLines) - 1) {
+		return nil, fmt.Errorf("error: CXLines[%d]: index out of bounds", index)
 	}
-	return PROGRAM, nil
+
+	return cxprogram.CXLines[index], nil
 }
-*/
+
+func (cxprogram *CXProgram) GetCXArg(index int) (*CXArgument, error) {
+	if index > (len(cxprogram.CXArgs) - 1) {
+		return nil, fmt.Errorf("error: CXArgs[%d]: index out of bounds", index)
+	}
+
+	return cxprogram.CXArgs[index], nil
+}
+
+func (cxprogram *CXProgram) GetCXAtomicOp(index int) (*CXAtomicOperator, error) {
+	if index > (len(cxprogram.CXAtomicOps) - 1) {
+		return nil, fmt.Errorf("error: CXAtomicOps[%d]: index out of bounds", index)
+	}
+
+	return cxprogram.CXAtomicOps[index], nil
+}
+
+func (cxprogram *CXProgram) AddCXLine(CXLine *CXLine) int {
+	cxprogram.CXLines = append(cxprogram.CXLines, CXLine)
+
+	return len(cxprogram.CXLines) - 1
+}
+
+func (cxprogram *CXProgram) AddCXArg(CXArg *CXArgument) int {
+	cxprogram.CXArgs = append(cxprogram.CXArgs, CXArg)
+
+	return len(cxprogram.CXArgs) - 1
+}
+
+func (cxprogram *CXProgram) AddCXAtomicOp(CXAtomicOp *CXAtomicOperator) int {
+	cxprogram.CXAtomicOps = append(cxprogram.CXAtomicOps, CXAtomicOp)
+
+	return len(cxprogram.CXAtomicOps) - 1
+}
 
 // ----------------------------------------------------------------
 //                             `CXProgram` Getters
+
+func (cxprogram *CXProgram) GetOperation(expr *CXExpression) (*CXAtomicOperator, *CXArgument, *CXLine, error) {
+	var cxAtomicOp *CXAtomicOperator
+	var err error
+	switch expr.Type {
+	case CX_ATOMIC_OPERATOR:
+		cxAtomicOp, err = cxprogram.GetCXAtomicOp(int(expr.Index))
+		if err != nil {
+			return &CXAtomicOperator{}, &CXArgument{}, &CXLine{}, err
+		}
+
+		return cxAtomicOp, &CXArgument{}, &CXLine{}, nil
+	case CX_LINE:
+		cxLine, err := cxprogram.GetCXLine(expr.Index)
+		if err != nil {
+			return &CXAtomicOperator{}, &CXArgument{}, &CXLine{}, err
+		}
+
+		return &CXAtomicOperator{}, &CXArgument{}, cxLine, nil
+		// case CX_ARGUMENT:
+	}
+
+	return &CXAtomicOperator{}, &CXArgument{}, &CXLine{}, fmt.Errorf("operation type is not found.")
+}
+
+func (cxprogram *CXProgram) GetPreviousCXLine(exprs []*CXExpression, currIndex int) (*CXLine, error) {
+	for i := currIndex; i >= 0; i-- {
+		if exprs[i].Type == CX_LINE {
+			_, _, cxLine, err := cxprogram.GetOperation(exprs[i])
+			if err != nil {
+				return &CXLine{}, err
+			}
+
+			return cxLine, nil
+		}
+	}
+	return &CXLine{}, fmt.Errorf("CXLine not found.")
+}
+
+func (cxprogram *CXProgram) GetCXAtomicOpFromExpressions(exprs []*CXExpression, currIndex int) (*CXAtomicOperator, error) {
+	for i := currIndex; i < len(exprs); i++ {
+		if exprs[i].Type == CX_ATOMIC_OPERATOR {
+			cxAtomicOp, _, _, err := cxprogram.GetOperation(exprs[i])
+			if err != nil {
+				return &CXAtomicOperator{}, err
+			}
+
+			return cxAtomicOp, nil
+		}
+	}
+	return &CXAtomicOperator{}, fmt.Errorf("CXAtomicOperator not found.")
+}
+
+func (cxprogram *CXProgram) GetPreviousCXAtomicOpFromExpressions(exprs []*CXExpression, currIndex int) (*CXAtomicOperator, error) {
+	for i := currIndex; i >= 0; i-- {
+		if exprs[i].Type == CX_ATOMIC_OPERATOR {
+			cxAtomicOp, _, _, err := cxprogram.GetOperation(exprs[i])
+			if err != nil {
+				return &CXAtomicOperator{}, err
+			}
+
+			return cxAtomicOp, nil
+		}
+	}
+	return &CXAtomicOperator{}, fmt.Errorf("CXAtomicOperator not found.")
+}
 
 // Only two users, both in cx/execute.go
 func (cxprogram *CXProgram) SelectPackage(name string) (*CXPackage, error) {
@@ -356,7 +453,7 @@ func (cxprogram *CXProgram) PrintAllObjects() {
 
 			fmt.Println("declarat", ptr.DeclarationSpecifiers)
 
-			fmt.Println("obj", ptr.ArgDetails.Name, ptr.StructType, cxprogram.Memory[heapOffset:heapOffset+op.Size], byts)
+			fmt.Println("obj", ptr.Name, ptr.StructType, cxprogram.Memory[heapOffset:heapOffset+op.Size], byts)
 		}
 
 		fp += op.Size

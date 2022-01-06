@@ -1,6 +1,8 @@
 package ast
 
 import (
+	"fmt"
+
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/types"
 )
@@ -30,18 +32,22 @@ func ResizeMemory(prgrm *CXProgram, newMemSize types.Pointer, isExpand bool) {
 }
 
 // AllocateSeq allocates memory in the heap
-func AllocateSeq(size types.Pointer) (offset types.Pointer) {
+func AllocateSeq(program interface{}, size types.Pointer) (offset types.Pointer) {
+	prgrm, ok := program.(*CXProgram)
+	if !ok {
+		panic(fmt.Sprintf("error getting cx program"))
+	}
 	// Current object trying to be allocated would use this address.
-	addr := PROGRAM.Heap.Pointer
+	addr := prgrm.Heap.Pointer
 	// Next object to be allocated will use this address.
 	newFree := addr + size
 
 	// Checking if we can allocate the entirety of the object in the current heap.
-	if newFree > PROGRAM.Heap.Size {
+	if newFree > prgrm.Heap.Size {
 		// It does not fit, so calling garbage collector.
-		MarkAndCompact(PROGRAM)
+		MarkAndCompact(prgrm)
 		// Heap pointer got moved by GC and recalculate these variables based on the new pointer.
-		addr = PROGRAM.Heap.Pointer
+		addr = prgrm.Heap.Pointer
 		newFree = addr + size
 
 		// If the new heap pointer exceeds `MAX_HEAP_SIZE`, there's nothing left to do.
@@ -56,14 +62,14 @@ func AllocateSeq(size types.Pointer) (offset types.Pointer) {
 		// too frequently.
 
 		// Calculating free heap memory percentage.
-		usedPerc := float32(newFree) / float32(PROGRAM.Heap.Size)
+		usedPerc := float32(newFree) / float32(prgrm.Heap.Size)
 		freeMemPerc := 1.0 - usedPerc
 
 		// Then we have less than MIN_HEAP_FREE_RATIO memory left. Expand!
 		if freeMemPerc < constants.MIN_HEAP_FREE_RATIO {
 			// Calculating new heap size in order to reach MIN_HEAP_FREE_RATIO.
 			newMemSize := types.Cast_f32_to_ptr(float32(newFree) / (1.0 - constants.MIN_HEAP_FREE_RATIO))
-			ResizeMemory(PROGRAM, newMemSize, true)
+			ResizeMemory(prgrm, newMemSize, true)
 		}
 
 		// Then we have more than MAX_HEAP_FREE_RATIO memory left. Shrink!
@@ -74,15 +80,15 @@ func AllocateSeq(size types.Pointer) (offset types.Pointer) {
 			// This check guarantees that the CX program has always at least INIT_HEAP_SIZE bytes to work with.
 			// A flag could be added later to remove this, as in some cases this mechanism could not be desired.
 			if newMemSize > constants.INIT_HEAP_SIZE {
-				ResizeMemory(PROGRAM, newMemSize, false)
+				ResizeMemory(prgrm, newMemSize, false)
 			}
 		}
 	}
 
-	PROGRAM.Heap.Pointer = newFree
+	prgrm.Heap.Pointer = newFree
 
 	// Returning absolute memory address (not relative to where heap starts at).
 	// Above this point we were performing all operations taking into
 	// consideration only heap offsets.
-	return addr + PROGRAM.Heap.StartsAt
+	return addr + prgrm.Heap.StartsAt
 }

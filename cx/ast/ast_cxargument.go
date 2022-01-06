@@ -20,16 +20,8 @@ type CXArgumentSlice struct {
 
 // CXArgumentDebug ...
 type CXArgumentDebug struct {
-	// Name defines the name of the `CXArgument`. Most of the
-	// time, this field will be non-nil as this defines the name
-	// of a variable or parameter in source code, but some
-	// exceptions exist, such as in the case of literals
-	// (e.g. `4`, `"Hello world!"`, `[3]i32{1, 2, 3}`.)
-	Name string
-
 	FileName string
 	FileLine int
-	Package  *CXPackage
 }
 
 // CXArgumentStruct ...
@@ -45,6 +37,15 @@ type CXArgumentPointer struct {
 // calls. All of the fields in this structure are determined at
 // compile time.
 type CXArgument struct {
+	// Name defines the name of the `CXArgument`. Most of the
+	// time, this field will be non-nil as this defines the name
+	// of a variable or parameter in source code, but some
+	// exceptions exist, such as in the case of literals
+	// (e.g. `4`, `"Hello world!"`, `[3]i32{1, 2, 3}`.)
+	Name string
+
+	Package *CXPackage
+
 	// Lengths is used if the `CXArgument` defines an array or a
 	// slice. The number of dimensions for the array/slice is
 	// equal to `len(Lengths)`, while the contents of `Lengths`
@@ -105,7 +106,7 @@ type CXArgument struct {
 	// Size determines the size of the basic type. For example, if
 	// the `CXArgument` is of type `TYPE_STRUCT` (i.e. a
 	// user-defined type or struct) and the size of the struct
-	// representing the custom type is 10 bytes, then `Size == 10`.
+	// representing the struct type is 10 bytes, then `Size == 10`.
 	Size types.Pointer
 
 	// TotalSize represents how many bytes are referenced by the
@@ -274,7 +275,7 @@ func (arg *CXArgument) GetType() types.Code {
 
 // AddPackage assigns CX package `pkg` to CX argument `arg`.
 func (arg *CXArgument) AddPackage(pkg *CXPackage) *CXArgument {
-	arg.ArgDetails.Package = pkg
+	arg.Package = pkg
 	return arg
 }
 
@@ -291,8 +292,8 @@ func (arg *CXArgument) AddType(typeCode types.Code) *CXArgument {
 // AddInput adds input parameters to `arg` in case arg is of type `TYPE_FUNC`.
 func (arg *CXArgument) AddInput(inp *CXArgument) *CXArgument {
 	arg.Inputs = append(arg.Inputs, inp)
-	if inp.ArgDetails.Package == nil {
-		inp.ArgDetails.Package = arg.ArgDetails.Package
+	if inp.Package == nil {
+		inp.Package = arg.Package
 	}
 	return arg
 }
@@ -300,8 +301,8 @@ func (arg *CXArgument) AddInput(inp *CXArgument) *CXArgument {
 // AddOutput adds output parameters to `arg` in case arg is of type `TYPE_FUNC`.
 func (arg *CXArgument) AddOutput(out *CXArgument) *CXArgument {
 	arg.Outputs = append(arg.Outputs, out)
-	if out.ArgDetails.Package == nil {
-		out.ArgDetails.Package = arg.ArgDetails.Package
+	if out.Package == nil {
+		out.Package = arg.Package
 	}
 	return arg
 }
@@ -355,7 +356,7 @@ func Slice(typeCode types.Code) *CXArgument {
 // The current standard library only uses basic types and slices. If more options are needed, modify this function
 func Func(pkg *CXPackage, inputs []*CXArgument, outputs []*CXArgument) *CXArgument {
 	arg := Param(types.FUNC)
-	arg.ArgDetails.Package = pkg
+	arg.Package = pkg
 	arg.Inputs = inputs
 	arg.Outputs = outputs
 	return arg
@@ -371,8 +372,8 @@ func Param(typeCode types.Code) *CXArgument {
 // MakeArgument ...
 func MakeArgument(name string, fileName string, fileLine int) *CXArgument {
 	return &CXArgument{
+		Name: name,
 		ArgDetails: &CXArgumentDebug{
-			Name:     name,
 			FileName: fileName,
 			FileLine: fileLine,
 		},
@@ -383,8 +384,8 @@ func MakeArgument(name string, fileName string, fileLine int) *CXArgument {
 // MakeField ...
 func MakeField(name string, typeCode types.Code, fileName string, fileLine int) *CXArgument {
 	return &CXArgument{
+		Name: name,
 		ArgDetails: &CXArgumentDebug{
-			Name:     name,
 			FileName: fileName,
 			FileLine: fileLine,
 		},
@@ -397,8 +398,8 @@ func MakeField(name string, typeCode types.Code, fileName string, fileLine int) 
 func MakeGlobal(name string, typeCode types.Code, fileName string, fileLine int) *CXArgument {
 	size := typeCode.Size()
 	global := &CXArgument{
+		Name: name,
 		ArgDetails: &CXArgumentDebug{
-			Name:     name,
 			FileName: fileName,
 			FileLine: fileLine,
 		},

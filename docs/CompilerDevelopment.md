@@ -126,7 +126,7 @@ CXExpressions have the following fields:
 * IsMethodCall, IsStructLiteral, IsArrayLiteral, IsUndType, IsBreak, IsContinue.
 
 CXExpression functions/methods (first one is function, rest are methods):
-* MakeExpression (op, fileName, fileLine) - creates CXExpression with Operator op, etc.
+* MakeAtomicOperatorExpression(op, fileName, fileLine) - creates CXExpression with Operator op, etc.
 * GetInputs() - returns Inputs if present, or an error if there are no inputs.
 * AddInput (param) - appends param to Inputs, & sets param.Package to Package if nil.
 * RemoveInput() - removes the last element in Inputs, if not length zero.

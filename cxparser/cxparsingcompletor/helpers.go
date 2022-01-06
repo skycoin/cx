@@ -18,6 +18,7 @@ func (yylex *Lexer) Lex(lval *yySymType) int {
 	yylex.next()
 	lval.scancopy(yylex.tok)
 	actions.LineNo = lval.line
+	actions.LineStr = lval.lineStr
 	return lval.yys
 }
 
@@ -25,6 +26,8 @@ func (yylex *Lexer) PrintLex(lval *yySymType) (int, int) {
 	yylex.next()
 	lval.scancopy(yylex.tok)
 	actions.LineNo = lval.line
+	actions.LineStr = lval.lineStr
+
 	return lval.yys, lval.line
 }
 
@@ -68,6 +71,7 @@ func (lval *yySymType) scancopy(tok *yySymType) {
 	lval.i8 = tok.i8
 	lval.ints = tok.ints
 	lval.line = tok.line
+	lval.lineStr = tok.lineStr
 	lval.string = tok.string
 	lval.stringA = tok.stringA
 	lval.tok = tok.tok
