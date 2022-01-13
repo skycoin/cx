@@ -484,7 +484,15 @@ func serializeProgram(prgrm *CXProgram, s *SerializedCXProgram) {
 		panic("package reference not found")
 	}
 
-	sPrgrm.InputsOffset, sPrgrm.InputsSize = serializeSliceOfArguments(prgrm.ProgramInput, s)
+	args := []*CXArgument{}
+	for _, argIdx := range prgrm.ProgramInput {
+		arg, err := prgrm.GetCXArg(argIdx)
+		if err != nil {
+			panic(err)
+		}
+		args = append(args, arg)
+	}
+	sPrgrm.InputsOffset, sPrgrm.InputsSize = serializeSliceOfArguments(args, s)
 	//sPrgrm.OutputsOffset, sPrgrm.OutputsSize = serializeSliceOfArguments(prgrm.ProgramOutput, s)
 
 	sPrgrm.CallStackOffset, sPrgrm.CallStackSize = serializeCalls(prgrm.CallStack[:prgrm.CallCounter], s)

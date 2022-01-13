@@ -32,6 +32,8 @@ type CXArgumentStruct struct {
 type CXArgumentPointer struct {
 }
 
+type CXArgumentIndex int
+
 // CXArgument is used to define local variables, global variables,
 // literals (strings, numbers), inputs and outputs to function
 // calls. All of the fields in this structure are determined at

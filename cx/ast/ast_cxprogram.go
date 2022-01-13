@@ -26,7 +26,7 @@ type CXProgram struct {
 	Packages map[string]CXPackageIndex // Packages in a CX program
 
 	// Runtime information
-	ProgramInput []*CXArgument // OS input arguments
+	ProgramInput []CXArgumentIndex // OS input arguments
 	//ProgramOutput []*CXArgument // outputs to the OS
 	Memory []byte // Used when running the program
 
@@ -156,8 +156,8 @@ func (cxprogram *CXProgram) GetCXLine(index int) (*CXLine, error) {
 	return &cxprogram.CXLines[index], nil
 }
 
-func (cxprogram *CXProgram) GetCXArg(index int) (*CXArgument, error) {
-	if index > (len(cxprogram.CXArgs) - 1) {
+func (cxprogram *CXProgram) GetCXArg(index CXArgumentIndex) (*CXArgument, error) {
+	if int(index) > (len(cxprogram.CXArgs) - 1) {
 		return nil, fmt.Errorf("error: CXArgs[%d]: index out of bounds", index)
 	}
 
