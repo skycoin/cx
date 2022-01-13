@@ -10,7 +10,8 @@ type CXPackageIndex int
 // CXPackage is used to represent a CX package.
 type CXPackage struct {
 	// Metadata
-	Name string // Name of the package
+	Name  string // Name of the package
+	Index int    // Index of package inside the CXPackage array
 
 	// Contents
 	Imports   map[string]*CXPackage  // imported packages
@@ -191,7 +192,7 @@ func (pkg *CXPackage) RemoveFunction(fnName string) {
 
 // AddStruct ...
 func (pkg *CXPackage) AddStruct(strct *CXStruct) *CXPackage {
-	strct.Package = pkg
+	strct.Package = CXPackageIndex(pkg.Index)
 	pkg.Structs[strct.Name] = strct
 	pkg.CurrentStruct = strct
 

@@ -137,9 +137,14 @@ func queryParam(prgrm *ast.CXProgram, fn *ast.CXFunction, args []*ast.CXArgument
 		var typOffset types.Pointer
 		elt := arg.GetAssignmentElement()
 		if elt.StructType != nil {
+			strctTypePkg, err := prgrm.GetPackageFromArray(elt.StructType.Package)
+			if err != nil {
+				panic(err)
+			}
+
 			// then it's struct type
 			// typOffset = WriteObjectRetOff(encoder.Serialize(elt.StructType.Package.Name + "." + elt.StructType.Name))
-			typOffset = types.AllocWrite_str_data(prgrm, prgrm.Memory, elt.StructType.Package.Name+"."+elt.StructType.Name)
+			typOffset = types.AllocWrite_str_data(prgrm, prgrm.Memory, strctTypePkg.Name+"."+elt.StructType.Name)
 		} else {
 			// then it's native type
 			// typOffset = WriteObjectRetOff(encoder.Serialize(TypeNames[elt.Type]))
@@ -255,9 +260,14 @@ func getSignatureSlice(prgrm *ast.CXProgram, params []*ast.CXArgument) types.Poi
 
 		var typOffset types.Pointer
 		if param.StructType != nil {
+			strctTypePkg, err := prgrm.GetPackageFromArray(param.StructType.Package)
+			if err != nil {
+				panic(err)
+			}
+
 			// then it's struct type
 			// typOffset = WriteObjectRetOff(encoder.Serialize(param.StructType.Package.Name + "." + param.StructType.Name))
-			typOffset = types.AllocWrite_str_data(prgrm, prgrm.Memory, param.StructType.Package.Name+"."+param.StructType.Name)
+			typOffset = types.AllocWrite_str_data(prgrm, prgrm.Memory, strctTypePkg.Name+"."+param.StructType.Name)
 		} else {
 			// then it's native type
 			// typOffset = WriteObjectRetOff(encoder.Serialize(TypeNames[param.Type]))

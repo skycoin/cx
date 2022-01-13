@@ -931,8 +931,12 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 				// then we found an output
 				if len(out.Fields) > 0 {
 					strct := argOut.StructType
+					strctPkg, err := prgrm.GetPackageFromArray(strct.Package)
+					if err != nil {
+						panic(err)
+					}
 
-					if fn, err := strct.Package.GetMethod(strct.Name+"."+out.Fields[len(out.Fields)-1].Name, strct.Name); err == nil {
+					if fn, err := strctPkg.GetMethod(strct.Name+"."+out.Fields[len(out.Fields)-1].Name, strct.Name); err == nil {
 						cxAtomicOp.Operator = fn
 					} else {
 						panic("")
@@ -957,7 +961,12 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 						}
 					}
 
-					if fn, err := strct.Package.GetMethod(strct.Name+"."+inp.Fields[len(inp.Fields)-1].Name, strct.Name); err == nil {
+					strctPkg, err := prgrm.GetPackageFromArray(strct.Package)
+					if err != nil {
+						panic(err)
+					}
+
+					if fn, err := strctPkg.GetMethod(strct.Name+"."+inp.Fields[len(inp.Fields)-1].Name, strct.Name); err == nil {
 						cxAtomicOp.Operator = fn
 					} else {
 						panic(err)
@@ -981,7 +990,12 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 
 					cxAtomicOp.Outputs = cxAtomicOp.Outputs[:len(cxAtomicOp.Outputs)-1]
 
-					if fn, err := strct.Package.GetMethod(strct.Name+"."+out.Fields[len(out.Fields)-1].Name, strct.Name); err == nil {
+					strctPkg, err := prgrm.GetPackageFromArray(strct.Package)
+					if err != nil {
+						panic(err)
+					}
+
+					if fn, err := strctPkg.GetMethod(strct.Name+"."+out.Fields[len(out.Fields)-1].Name, strct.Name); err == nil {
 						cxAtomicOp.Operator = fn
 					} else {
 						panic(err)
@@ -1010,7 +1024,12 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 					os.Exit(constants.CX_COMPILATION_ERROR)
 				}
 
-				if fn, err := strct.Package.GetMethod(strct.Name+"."+out.Fields[len(out.Fields)-1].Name, strct.Name); err == nil {
+				strctPkg, err := prgrm.GetPackageFromArray(strct.Package)
+				if err != nil {
+					panic(err)
+				}
+
+				if fn, err := strctPkg.GetMethod(strct.Name+"."+out.Fields[len(out.Fields)-1].Name, strct.Name); err == nil {
 					cxAtomicOp.Operator = fn
 				} else {
 					panic("")
@@ -1040,7 +1059,7 @@ func GiveOffset(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXArgument, sym
 
 		arg, err := lookupSymbol(prgrm, sym.Package.Name, sym.Name, symbols)
 		if err == nil {
-			ProcessSymbolFields(sym, arg)
+			ProcessSymbolFields(prgrm, sym, arg)
 			CopyArgFields(sym, arg)
 		}
 	}
@@ -1211,7 +1230,7 @@ func CopyArgFields(sym *ast.CXArgument, arg *ast.CXArgument) {
 	}
 }
 
-func ProcessSymbolFields(sym *ast.CXArgument, arg *ast.CXArgument) {
+func ProcessSymbolFields(prgrm *ast.CXProgram, sym *ast.CXArgument, arg *ast.CXArgument) {
 	if len(sym.Fields) > 0 {
 		if arg.StructType == nil || len(arg.StructType.Fields) == 0 {
 			println(ast.CompilationError(sym.ArgDetails.FileName, sym.ArgDetails.FileLine), fmt.Sprintf("'%s' has no fields", sym.Name))
@@ -1221,6 +1240,10 @@ func ProcessSymbolFields(sym *ast.CXArgument, arg *ast.CXArgument) {
 		// checking if fields do exist in their StructType
 		// and assigning that StructType to the sym.Field
 		strct := arg.StructType
+		strctPkg, err := prgrm.GetPackageFromArray(strct.Package)
+		if err != nil {
+			panic(err)
+		}
 
 		for _, fld := range sym.Fields {
 			if inFld, err := strct.GetField(fld.Name); err == nil {
@@ -1232,7 +1255,7 @@ func ProcessSymbolFields(sym *ast.CXArgument, arg *ast.CXArgument) {
 				methodName := sym.Fields[len(sym.Fields)-1].Name
 				receiverType := strct.Name
 
-				if method, methodErr := strct.Package.GetMethod(receiverType+"."+methodName, receiverType); methodErr == nil {
+				if method, methodErr := strctPkg.GetMethod(receiverType+"."+methodName, receiverType); methodErr == nil {
 					fld.Type = method.Outputs[0].Type
 					fld.PointerTargetType = method.Outputs[0].PointerTargetType
 				} else {

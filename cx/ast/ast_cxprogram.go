@@ -104,10 +104,12 @@ func (cxprogram *CXProgram) AddPackage(mod *CXPackage) {
 	cxprogram.CurrentPackage = CXPackageIndex(index)
 }
 
-func (cxprogram *CXProgram) AddPackageInArray(pkg *CXPackage) int {
+func (cxprogram *CXProgram) AddPackageInArray(pkg *CXPackage) CXPackageIndex {
+	// The index of pkg after it will be added in the array
+	pkg.Index = len(cxprogram.CXPackages)
 	cxprogram.CXPackages = append(cxprogram.CXPackages, *pkg)
 
-	return len(cxprogram.CXPackages) - 1
+	return CXPackageIndex(pkg.Index)
 }
 
 func (cxprogram *CXProgram) GetPackageFromArray(index CXPackageIndex) (*CXPackage, error) {
