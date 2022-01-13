@@ -272,6 +272,8 @@ func DeclareImport(prgrm *ast.CXProgram, name string, currentFile string, lineNo
 		panic(err)
 	}
 
+	pkgIdx := prgrm.GetCurrentPackageIndex()
+
 	// Checking if it's a package in the CX workspace by trying to find a
 	// slash (/) in the name.
 	// We start backwards and we stop if we find a slash.
@@ -311,7 +313,7 @@ func DeclareImport(prgrm *ast.CXProgram, name string, currentFile string, lineNo
 		imp := ast.MakePackage(ident)
 		pkg.AddImport(imp)
 		prgrm.AddPackage(imp)
-		prgrm.CurrentPackage = pkg
+		prgrm.CurrentPackage = pkgIdx
 
 		if ident == "aff" {
 			AffordanceStructs(prgrm, imp, currentFile, lineNo)

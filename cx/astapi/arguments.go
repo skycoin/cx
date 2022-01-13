@@ -391,7 +391,7 @@ func AddLiteralInputToExpression(cxprogram *cxast.CXProgram, packageName, functi
 	if err != nil {
 		return err
 	}
-	cxprogram.CurrentPackage = pkg
+	cxprogram.CurrentPackage = cxprogram.Packages[packageName]
 	fn, err := FindFunction(cxprogram, functionName)
 	if err != nil {
 		return err

@@ -23,7 +23,7 @@ type CXProgram struct {
 	Heap  HeapSegmentStruct
 
 	// Contents
-	Packages map[string]*CXPackage // Packages in a CX program
+	Packages map[string]CXPackageIndex // Packages in a CX program
 
 	// Runtime information
 	ProgramInput []*CXArgument // OS input arguments
@@ -36,16 +36,15 @@ type CXProgram struct {
 	Version     string        // CX version used to build this CX program.
 
 	// Used by the REPL and cxgo
-	CurrentPackage *CXPackage // Represents the currently active package in the REPL or when parsing a CX file.
+	CurrentPackage CXPackageIndex // Represents the currently active package in the REPL or when parsing a CX file.
 	ProgramError   error
 
 	// For new CX AST arrays
 	CXAtomicOps []*CXAtomicOperator
 	CXArgs      []*CXArgument
 	CXLines     []*CXLine
-	// TODO: add these arrays
-	// CXPackages
-	// CXFunctions
+	CXPackages  []CXPackage
+	CXFunctions []*CXFunction
 	// Then reference the package of function by CxFunction id
 
 	// For Initializers
@@ -73,7 +72,7 @@ type HeapSegmentStruct struct {
 func MakeProgram() *CXProgram {
 	minHeapSize := minHeapSize()
 	newPrgrm := &CXProgram{
-		Packages:  make(map[string]*CXPackage, 0),
+		Packages:  make(map[string]CXPackageIndex, 0),
 		CallStack: make([]CXCall, constants.CALLSTACK_SIZE),
 		Memory:    make([]byte, constants.STACK_SIZE+minHeapSize),
 		Stack: StackSegmentStruct{
@@ -95,20 +94,36 @@ func MakeProgram() *CXProgram {
 
 // AddPackage ...
 func (cxprogram *CXProgram) AddPackage(mod *CXPackage) {
-	if cxprogram.Packages[mod.Name] != nil {
-		return
+	// if cxprogram.Packages[mod.Name] != nil {
+	// 	return
+	// }
+
+	index := cxprogram.AddPackageInArray(mod)
+
+	cxprogram.Packages[mod.Name] = CXPackageIndex(index)
+	cxprogram.CurrentPackage = CXPackageIndex(index)
+}
+
+func (cxprogram *CXProgram) AddPackageInArray(pkg *CXPackage) int {
+	cxprogram.CXPackages = append(cxprogram.CXPackages, *pkg)
+
+	return len(cxprogram.CXPackages) - 1
+}
+
+func (cxprogram *CXProgram) GetPackageFromArray(index CXPackageIndex) (*CXPackage, error) {
+	if int(index) > (len(cxprogram.CXPackages) - 1) {
+		return nil, fmt.Errorf("error: CXPackages[%d]: index out of bounds", index)
 	}
 
-	cxprogram.Packages[mod.Name] = mod
-	cxprogram.CurrentPackage = mod
+	return &cxprogram.CXPackages[index], nil
 }
 
 // RemovePackage ...
 func (cxprogram *CXProgram) RemovePackage(modName string) {
 	// If doesnt exist, return
-	if cxprogram.Packages[modName] == nil {
-		return
-	}
+	// if cxprogram.Packages[modName] == nil {
+	// 	return
+	// }
 
 	// Check if it is the current pkg so when it
 	// is deleted, it will be replaced with new pkg
@@ -246,74 +261,99 @@ func (cxprogram *CXProgram) GetPreviousCXAtomicOpFromExpressions(exprs []*CXExpr
 
 // Only two users, both in cx/execute.go
 func (cxprogram *CXProgram) SelectPackage(name string) (*CXPackage, error) {
-	if cxprogram.Packages[name] == nil {
+	if _, ok := cxprogram.Packages[name]; !ok {
 		return nil, fmt.Errorf("Package '%s' does not exist", name)
 	}
 
 	cxprogram.CurrentPackage = cxprogram.Packages[name]
-	return cxprogram.Packages[name], nil
+
+	return cxprogram.GetPackageFromArray(cxprogram.Packages[name])
 }
 
 // GetCurrentPackage ...
 func (cxprogram *CXProgram) GetCurrentPackage() (*CXPackage, error) {
-	if cxprogram.CurrentPackage == nil {
-		return nil, errors.New("current package is nil")
-	}
-	return cxprogram.CurrentPackage, nil
+	// if ok:=cxprogram.CurrentPackage == nil {
+	// 	return nil, errors.New("current package is nil")
+	// }
+
+	return cxprogram.GetPackageFromArray(cxprogram.CurrentPackage)
+}
+
+func (cxprogram *CXProgram) GetCurrentPackageIndex() CXPackageIndex {
+	// if ok:=cxprogram.CurrentPackage == nil {
+	// 	return nil, errors.New("current package is nil")
+	// }
+
+	return cxprogram.CurrentPackage
 }
 
 // GetCurrentStruct ...
 func (cxprogram *CXProgram) GetCurrentStruct() (*CXStruct, error) {
-	if cxprogram.CurrentPackage == nil {
-		return nil, errors.New("current package is nil")
+	// if cxprogram.CurrentPackage == nil {
+	// 	return nil, errors.New("current package is nil")
+	// }
+
+	currentPackage, err := cxprogram.GetPackageFromArray(cxprogram.CurrentPackage)
+	if err != nil {
+		return &CXStruct{}, err
 	}
 
-	if cxprogram.CurrentPackage.CurrentStruct == nil {
+	if currentPackage.CurrentStruct == nil {
 		return nil, errors.New("current struct is nil")
 
 	}
 
-	return cxprogram.CurrentPackage.CurrentStruct, nil
+	return currentPackage.CurrentStruct, nil
 }
 
 // GetCurrentFunction ...
 func (cxprogram *CXProgram) GetCurrentFunction() (*CXFunction, error) {
-	if cxprogram.CurrentPackage == nil {
-		return nil, errors.New("current package is nil")
+	// if cxprogram.CurrentPackage == nil {
+	// 	return nil, errors.New("current package is nil")
+	// }
+
+	currentPackage, err := cxprogram.GetPackageFromArray(cxprogram.CurrentPackage)
+	if err != nil {
+		return &CXFunction{}, err
 	}
 
-	if cxprogram.CurrentPackage.CurrentFunction != nil {
+	if currentPackage.CurrentFunction != nil {
 		return nil, errors.New("current function is nil")
 	}
 
-	return cxprogram.CurrentPackage.CurrentFunction, nil
+	return currentPackage.CurrentFunction, nil
 
 }
 
 // GetCurrentExpression ...
 func (cxprogram *CXProgram) GetCurrentExpression() (*CXExpression, error) {
-	if cxprogram.CurrentPackage == nil {
-		return nil, errors.New("current package is nil")
+	// if cxprogram.CurrentPackage == nil {
+	// 	return nil, errors.New("current package is nil")
+	// }
+
+	currentPackage, err := cxprogram.GetPackageFromArray(cxprogram.CurrentPackage)
+	if err != nil {
+		return &CXExpression{}, err
 	}
 
-	if cxprogram.CurrentPackage.CurrentFunction == nil {
+	if currentPackage.CurrentFunction == nil {
 		return nil, errors.New("current function is nil")
 	}
 
-	if cxprogram.CurrentPackage.CurrentFunction.CurrentExpression == nil {
+	if currentPackage.CurrentFunction.CurrentExpression == nil {
 		return nil, errors.New("current expression is nil")
 	}
 
-	return cxprogram.CurrentPackage.CurrentFunction.CurrentExpression, nil
+	return currentPackage.CurrentFunction.CurrentExpression, nil
 }
 
 // GetPackage ...
 func (cxprogram *CXProgram) GetPackage(pkgName string) (*CXPackage, error) {
-	if cxprogram.Packages[pkgName] == nil {
+	if _, ok := cxprogram.Packages[pkgName]; !ok {
 		return nil, fmt.Errorf("package '%s' not found", pkgName)
 	}
 
-	return cxprogram.Packages[pkgName], nil
+	return cxprogram.GetPackageFromArray(cxprogram.Packages[pkgName])
 }
 
 // GetStruct ...

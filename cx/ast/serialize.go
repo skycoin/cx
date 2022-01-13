@@ -451,7 +451,12 @@ func initSerialization(prgrm *CXProgram, s *SerializedCXProgram, includeDataMemo
 	var numStrcts int
 	var numFns int
 
-	for _, pkg := range prgrm.Packages {
+	for _, pkgIdx := range prgrm.Packages {
+		pkg, err := prgrm.GetPackageFromArray(pkgIdx)
+		if err != nil {
+			panic(err)
+		}
+
 		numStrcts += len(pkg.Structs)
 		numFns += len(pkg.Functions)
 	}
@@ -469,8 +474,12 @@ func serializeProgram(prgrm *CXProgram, s *SerializedCXProgram) {
 	sPrgrm.PackagesOffset = int64(0)
 	sPrgrm.PackagesSize = int64(len(prgrm.Packages))
 
-	if _, found := s.PackagesMap[prgrm.CurrentPackage.Name]; found {
-		sPrgrm.CurrentPackageName = prgrm.CurrentPackage.Name
+	currPkg, err := prgrm.GetPackageFromArray(prgrm.CurrentPackage)
+	if err != nil {
+		panic(err)
+	}
+	if _, found := s.PackagesMap[currPkg.Name]; found {
+		sPrgrm.CurrentPackageName = currPkg.Name
 	} else {
 		panic("package reference not found")
 	}
@@ -504,18 +513,33 @@ func serializeCXProgramElements(prgrm *CXProgram, s *SerializedCXProgram) {
 	var strctCounter int64
 
 	// indexing packages and serializing their names
-	for _, pkg := range prgrm.Packages {
+	for _, pkgIdx := range prgrm.Packages {
+		pkg, err := prgrm.GetPackageFromArray(pkgIdx)
+		if err != nil {
+			panic(err)
+		}
+
 		indexPackage(pkg, s)
 		serializePackageName(pkg, s)
 	}
 	// we first needed to populate references to all packages
 	// now we add the imports' references
-	for _, pkg := range prgrm.Packages {
+	for _, pkgIdx := range prgrm.Packages {
+		pkg, err := prgrm.GetPackageFromArray(pkgIdx)
+		if err != nil {
+			panic(err)
+		}
+
 		serializePackageImports(pkg, s)
 	}
 
 	// structs
-	for _, pkg := range prgrm.Packages {
+	for _, pkgIdx := range prgrm.Packages {
+		pkg, err := prgrm.GetPackageFromArray(pkgIdx)
+		if err != nil {
+			panic(err)
+		}
+
 		for _, strct := range pkg.Structs {
 			indexStruct(strct, s)
 			serializeStructName(strct, s)
@@ -525,19 +549,34 @@ func serializeCXProgramElements(prgrm *CXProgram, s *SerializedCXProgram) {
 	}
 	// we first needed to populate references to all structs
 	// now we add fields
-	for _, pkg := range prgrm.Packages {
+	for _, pkgIdx := range prgrm.Packages {
+		pkg, err := prgrm.GetPackageFromArray(pkgIdx)
+		if err != nil {
+			panic(err)
+		}
+
 		for _, strct := range pkg.Structs {
 			serializeStructArguments(strct, s)
 		}
 	}
 
 	// globals
-	for _, pkg := range prgrm.Packages {
+	for _, pkgIdx := range prgrm.Packages {
+		pkg, err := prgrm.GetPackageFromArray(pkgIdx)
+		if err != nil {
+			panic(err)
+		}
+
 		serializePackageGlobals(pkg, s)
 	}
 
 	// functions
-	for _, pkg := range prgrm.Packages {
+	for _, pkgIdx := range prgrm.Packages {
+		pkg, err := prgrm.GetPackageFromArray(pkgIdx)
+		if err != nil {
+			panic(err)
+		}
+
 		for _, fn := range pkg.Functions {
 			indexFunction(fn, s)
 			serializeFunctionName(fn, s)
@@ -548,7 +587,12 @@ func serializeCXProgramElements(prgrm *CXProgram, s *SerializedCXProgram) {
 	}
 
 	// package elements' offsets and sizes
-	for _, pkg := range prgrm.Packages {
+	for _, pkgIdx := range prgrm.Packages {
+		pkg, err := prgrm.GetPackageFromArray(pkgIdx)
+		if err != nil {
+			panic(err)
+		}
+
 		if pkgOff, found := s.PackagesMap[pkg.Name]; found {
 			sPkg := &s.Packages[pkgOff]
 
@@ -578,12 +622,22 @@ func serializeCXProgramElements(prgrm *CXProgram, s *SerializedCXProgram) {
 
 	// package integers
 	// we needed the references to all functions and structs first
-	for _, pkg := range prgrm.Packages {
+	for _, pkgIdx := range prgrm.Packages {
+		pkg, err := prgrm.GetPackageFromArray(pkgIdx)
+		if err != nil {
+			panic(err)
+		}
+
 		serializePackageIntegers(pkg, s)
 	}
 
 	// expressions
-	for _, pkg := range prgrm.Packages {
+	for _, pkgIdx := range prgrm.Packages {
+		pkg, err := prgrm.GetPackageFromArray(pkgIdx)
+		if err != nil {
+			panic(err)
+		}
+
 		for _, fn := range pkg.Functions {
 			fnName := fn.Package.Name + "." + fn.Name
 			if fnOff, found := s.FunctionsMap[fnName]; found {
@@ -680,46 +734,48 @@ func deserializePackages(s *SerializedCXProgram, prgrm *CXProgram) {
 		// initializing packages with their names,
 		// empty functions, structs, imports and globals
 		// and current function and struct
-		pkg := CXPackage{}
+		pkg := &CXPackage{}
 		pkg.Name = deserializeString(sPkg.NameOffset, sPkg.NameSize, s)
-		prgrm.Packages[pkg.Name] = &pkg
+
+		newPkgIdx := prgrm.AddPackageInArray(pkg)
+		prgrm.Packages[pkg.Name] = CXPackageIndex(newPkgIdx)
 
 		if sPkg.ImportsSize > 0 {
-			prgrm.Packages[pkg.Name].Imports = make(map[string]*CXPackage, sPkg.ImportsSize)
+			pkg.Imports = make(map[string]*CXPackage, sPkg.ImportsSize)
 		}
 
 		if sPkg.FunctionsSize > 0 {
-			prgrm.Packages[pkg.Name].Functions = make(map[string]*CXFunction, sPkg.FunctionsSize)
+			pkg.Functions = make(map[string]*CXFunction, sPkg.FunctionsSize)
 
 			for _, sFn := range s.Functions[sPkg.FunctionsOffset : sPkg.FunctionsOffset+sPkg.FunctionsSize] {
 				var fn CXFunction
 				fn.Name = deserializeString(sFn.NameOffset, sFn.NameSize, s)
-				prgrm.Packages[pkg.Name].Functions[fn.Name] = &fn
+				pkg.Functions[fn.Name] = &fn
 			}
 		}
 
 		if sPkg.StructsSize > 0 {
-			prgrm.Packages[pkg.Name].Structs = make(map[string]*CXStruct, sPkg.StructsSize)
+			pkg.Structs = make(map[string]*CXStruct, sPkg.StructsSize)
 
 			for _, sStrct := range s.Structs[sPkg.StructsOffset : sPkg.StructsOffset+sPkg.StructsSize] {
 				var strct CXStruct
 				strct.Name = deserializeString(sStrct.NameOffset, sStrct.NameSize, s)
-				prgrm.Packages[pkg.Name].Structs[strct.Name] = &strct
+				pkg.Structs[strct.Name] = &strct
 			}
 		}
 
 		if sPkg.GlobalsSize > 0 {
-			prgrm.Packages[pkg.Name].Globals = make([]*CXArgument, sPkg.GlobalsSize)
+			pkg.Globals = make([]*CXArgument, sPkg.GlobalsSize)
 		}
 
 		// CurrentFunction
 		if sPkg.FunctionsSize > 0 {
-			prgrm.Packages[pkg.Name].CurrentFunction = prgrm.Packages[pkg.Name].Functions[sPkg.CurrentFunctionName]
+			pkg.CurrentFunction = pkg.Functions[sPkg.CurrentFunctionName]
 		}
 
 		// CurrentStruct
 		if sPkg.StructsSize > 0 {
-			prgrm.Packages[pkg.Name].CurrentStruct = prgrm.Packages[pkg.Name].Structs[sPkg.CurrentStructName]
+			pkg.CurrentStruct = pkg.Structs[sPkg.CurrentStructName]
 		}
 
 		fnCounter += sPkg.FunctionsSize
@@ -732,20 +788,20 @@ func deserializePackages(s *SerializedCXProgram, prgrm *CXProgram) {
 
 			for _, idx := range idxs {
 				impPkg := deserializePackageImport(&s.Packages[idx], s, prgrm)
-				prgrm.Packages[pkg.Name].Imports[impPkg.Name] = impPkg
+				pkg.Imports[impPkg.Name] = impPkg
 			}
 		}
 
 		// globals
 		if sPkg.GlobalsSize > 0 {
-			prgrm.Packages[pkg.Name].Globals = deserializeArguments(sPkg.GlobalsOffset, sPkg.GlobalsSize, s, prgrm)
+			pkg.Globals = deserializeArguments(sPkg.GlobalsOffset, sPkg.GlobalsSize, s, prgrm)
 		}
 
 		// structs
 		if sPkg.StructsSize > 0 {
 			for _, sStrct := range s.Structs[sPkg.StructsOffset : sPkg.StructsOffset+sPkg.StructsSize] {
 				strctName := deserializeString(sStrct.NameOffset, sStrct.NameSize, s)
-				deserializeStruct(&sStrct, prgrm.Packages[pkg.Name].Structs[strctName], s, prgrm)
+				deserializeStruct(&sStrct, pkg.Structs[strctName], s, prgrm)
 			}
 		}
 
@@ -753,7 +809,7 @@ func deserializePackages(s *SerializedCXProgram, prgrm *CXProgram) {
 		if sPkg.FunctionsSize > 0 {
 			for _, sFn := range s.Functions[sPkg.FunctionsOffset : sPkg.FunctionsOffset+sPkg.FunctionsSize] {
 				fnName := deserializeString(sFn.NameOffset, sFn.NameSize, s)
-				deserializeFunction(&sFn, prgrm.Packages[pkg.Name].Functions[fnName], s, prgrm)
+				deserializeFunction(&sFn, pkg.Functions[fnName], s, prgrm)
 			}
 		}
 	}
@@ -766,7 +822,12 @@ func deserializeStruct(sStrct *serializedStruct, strct *CXStruct, s *SerializedC
 	strct.Name = deserializeString(sStrct.NameOffset, sStrct.NameSize, s)
 	strct.Fields = deserializeArguments(sStrct.FieldsOffset, sStrct.FieldsSize, s, prgrm)
 	strct.Size = types.Cast_i64_to_ptr(sStrct.Size)
-	strct.Package = prgrm.Packages[sStrct.PackageName]
+
+	strctPkg, err := prgrm.GetPackageFromArray(prgrm.Packages[sStrct.PackageName])
+	if err != nil {
+		panic(err)
+	}
+	strct.Package = strctPkg
 }
 
 func deserializeArguments(off int64, size int64, s *SerializedCXProgram, prgrm *CXProgram) []*CXArgument {
@@ -836,7 +897,11 @@ func deserializeArgument(sArg *serializedArgument, s *SerializedCXProgram, prgrm
 	arg.Inputs = deserializeArguments(sArg.InputsOffset, sArg.InputsSize, s, prgrm)
 	arg.Outputs = deserializeArguments(sArg.OutputsOffset, sArg.OutputsSize, s, prgrm)
 
-	arg.Package = prgrm.Packages[sArg.PackageName]
+	argPkg, err := prgrm.GetPackageFromArray(prgrm.Packages[sArg.PackageName])
+	if err != nil {
+		panic(err)
+	}
+	arg.Package = argPkg
 
 	return &arg
 }
@@ -846,9 +911,14 @@ func deserializeOperator(sExpr *serializedExpression, s *SerializedCXProgram, pr
 		return nil
 	}
 
-	opPkg := prgrm.Packages[s.Functions[sExpr.OperatorOffset].PackageName]
+	opPkgIdx := prgrm.Packages[s.Functions[sExpr.OperatorOffset].PackageName]
 	sOp := s.Functions[sExpr.OperatorOffset]
 	opName := deserializeString(sOp.NameOffset, sOp.NameSize, s)
+
+	opPkg, err := prgrm.GetPackageFromArray(opPkgIdx)
+	if err != nil {
+		panic(err)
+	}
 
 	for _, fn := range opPkg.Functions {
 		if fn.Name == opName {
@@ -862,7 +932,12 @@ func deserializeOperator(sExpr *serializedExpression, s *SerializedCXProgram, pr
 func deserializePackageImport(sImp *serializedPackage, s *SerializedCXProgram, prgrm *CXProgram) *CXPackage {
 	impName := deserializeString(sImp.NameOffset, sImp.NameSize, s)
 
-	for _, pkg := range prgrm.Packages {
+	for _, pkgIdx := range prgrm.Packages {
+		pkg, err := prgrm.GetPackageFromArray(pkgIdx)
+		if err != nil {
+			panic(err)
+		}
+
 		if pkg.Name == impName {
 			return pkg
 		}
@@ -876,10 +951,14 @@ func deserializeExpressionFunction(sExpr *serializedExpression, s *SerializedCXP
 		return nil
 	}
 
-	fnPkg := prgrm.Packages[s.Functions[sExpr.FunctionOffset].PackageName]
+	fnPkgIdx := prgrm.Packages[s.Functions[sExpr.FunctionOffset].PackageName]
 	sFn := s.Functions[sExpr.FunctionOffset]
 	fnName := deserializeString(sFn.NameOffset, sFn.NameSize, s)
 
+	fnPkg, err := prgrm.GetPackageFromArray(fnPkgIdx)
+	if err != nil {
+		panic(err)
+	}
 	for _, fn := range fnPkg.Functions {
 		if fn.Name == fnName {
 			return fn
@@ -936,7 +1015,12 @@ func deserializeExpression(sExpr *serializedExpression, s *SerializedCXProgram, 
 		cxAtomicOp.ElseLines = int(sExpr.ElseLines)
 
 		cxAtomicOp.Function = deserializeExpressionFunction(sExpr, s, prgrm)
-		cxAtomicOp.Package = prgrm.Packages[sExpr.PackageName]
+
+		cxAtomicOpPkg, err := prgrm.GetPackageFromArray(prgrm.Packages[sExpr.PackageName])
+		if err != nil {
+			panic(err)
+		}
+		cxAtomicOp.Package = cxAtomicOpPkg
 
 		index := prgrm.AddCXAtomicOp(cxAtomicOp)
 		expr.Index = index
@@ -959,7 +1043,11 @@ func deserializeFunction(sFn *serializedFunction, fn *CXFunction, s *SerializedC
 		fn.CurrentExpression = fn.Expressions[sFn.CurrentExpressionOffset]
 	}
 
-	fn.Package = prgrm.Packages[sFn.PackageName]
+	fnPkg, err := prgrm.GetPackageFromArray(prgrm.Packages[sFn.PackageName])
+	if err != nil {
+		panic(err)
+	}
+	fn.Package = fnPkg
 }
 
 func deserializeBool(val int64) bool {
@@ -995,7 +1083,7 @@ func deserializeIntegers(off int64, size int64, s *SerializedCXProgram) []int {
 // initDeserialization initializes the CXProgram fields that represent a CX program. This should be refactored, as the names Deserialize and initDeserialization create some naming conflict.
 func initDeserialization(prgrm *CXProgram, s *SerializedCXProgram) {
 	prgrm.Memory = s.Memory
-	prgrm.Packages = make(map[string]*CXPackage, len(s.Packages))
+	prgrm.Packages = make(map[string]CXPackageIndex, len(s.Packages))
 	prgrm.CallStack = make([]CXCall, constants.CALLSTACK_SIZE)
 	prgrm.Heap.StartsAt = types.Cast_i64_to_ptr(s.Program.HeapStartsAt)
 	prgrm.Heap.Pointer = types.Cast_i64_to_ptr(s.Program.HeapPointer)

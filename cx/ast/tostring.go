@@ -186,7 +186,12 @@ func BuildStrPackages(prgrm *CXProgram, ast *string) {
 	// We need to declare the counter outside so we can
 	// ignore the increments from core or stdlib packages.
 	var i int
-	for _, pkg := range prgrm.Packages {
+	for _, pkgIdx := range prgrm.Packages {
+		pkg, err := prgrm.GetPackageFromArray(pkgIdx)
+		if err != nil {
+			panic(err)
+		}
+
 		if constants2.IsCorePackage(pkg.Name) {
 			continue
 		}

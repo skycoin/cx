@@ -20,7 +20,12 @@ import (
 // []string{"main", "secondpackage", "thirdpackage"}
 //
 func GetPackagesNameList(cxprogram *cxast.CXProgram) (list []string) {
-	for _, pkg := range cxprogram.Packages {
+	for _, pkgIdx := range cxprogram.Packages {
+		pkg, err := cxprogram.GetPackageFromArray(pkgIdx)
+		if err != nil {
+			panic(err)
+		}
+
 		list = append(list, pkg.Name)
 	}
 	return list

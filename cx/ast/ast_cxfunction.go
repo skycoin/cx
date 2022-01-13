@@ -7,6 +7,8 @@ import (
 	"github.com/skycoin/cx/cx/types"
 )
 
+type CXFunctionIndex int
+
 // CXFunction is used to represent a CX function.
 type CXFunction struct {
 	// Metadata

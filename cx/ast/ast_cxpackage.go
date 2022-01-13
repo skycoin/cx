@@ -5,6 +5,8 @@ import (
 	"fmt"
 )
 
+type CXPackageIndex int
+
 // CXPackage is used to represent a CX package.
 type CXPackage struct {
 	// Metadata

@@ -641,7 +641,12 @@ func getAffordances(prgrm *ast.CXProgram, inp1 *ast.CXArgument, fp types.Pointer
 func opAffOn(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	inp1, inp2 := inputs[0].Arg, inputs[1].Arg
 
-	prevPkg := prgrm.CurrentPackage
+	prevPkgIdx := prgrm.CurrentPackage
+	prevPkg, err := prgrm.GetPackageFromArray(prevPkgIdx)
+	if err != nil {
+		panic(err)
+	}
+
 	prevFn := prevPkg.CurrentFunction
 	prevExpr := prevFn.CurrentExpression
 
@@ -674,9 +679,9 @@ func opAffOn(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) 
 	getAffordances(prgrm, inp1, fp, tgtElt, tgtArgType, tgtArgIndex, &tgtPkg, &tgtFn, &tgtExpr, onMessages, &affs)
 
 	// returning to previous state
-	prgrm.CurrentPackage = prevPkg
-	prgrm.CurrentPackage.CurrentFunction = prevFn
-	prgrm.CurrentPackage.CurrentFunction.CurrentExpression = prevExpr
+	prgrm.CurrentPackage = prevPkgIdx
+	prevPkg.CurrentFunction = prevFn
+	prevPkg.CurrentFunction.CurrentExpression = prevExpr
 
 	for i, aff := range affs {
 		fmt.Printf("%d - %s\n", i, aff)
@@ -686,7 +691,12 @@ func opAffOn(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) 
 func opAffOf(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	inp1, inp2 := inputs[0].Arg, inputs[1].Arg
 
-	prevPkg := prgrm.CurrentPackage
+	prevPkgIdx := prgrm.CurrentPackage
+	prevPkg, err := prgrm.GetPackageFromArray(prevPkgIdx)
+	if err != nil {
+		panic(err)
+	}
+
 	prevFn := prevPkg.CurrentFunction
 	prevExpr := prevFn.CurrentExpression
 
@@ -715,9 +725,9 @@ func opAffOf(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) 
 	getAffordances(prgrm, inp1, fp, tgtElt, tgtArgType, tgtArgIndex, &tgtPkg, &tgtFn, &tgtExpr, ofMessages, &affs)
 
 	// returning to previous state
-	prgrm.CurrentPackage = prevPkg
-	prgrm.CurrentPackage.CurrentFunction = prevFn
-	prgrm.CurrentPackage.CurrentFunction.CurrentExpression = prevExpr
+	prgrm.CurrentPackage = prevPkgIdx
+	prevPkg.CurrentFunction = prevFn
+	prevPkg.CurrentFunction.CurrentExpression = prevExpr
 
 	for i, aff := range affs {
 		fmt.Printf("%d - %s\n", i, aff)
@@ -810,7 +820,12 @@ func opAffInform(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVal
 	expr := call.Operator.Expressions[call.Line]
 	fp := inputs[0].FramePointer
 
-	prevPkg := prgrm.CurrentPackage
+	prevPkgIdx := prgrm.CurrentPackage
+	prevPkg, err := prgrm.GetPackageFromArray(prevPkgIdx)
+	if err != nil {
+		panic(err)
+	}
+
 	prevFn := prevPkg.CurrentFunction
 	prevExpr := prevFn.CurrentExpression
 
@@ -912,9 +927,9 @@ func opAffInform(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVal
 	}
 
 	// returning to previous state
-	prgrm.CurrentPackage = prevPkg
-	prgrm.CurrentPackage.CurrentFunction = prevFn
-	prgrm.CurrentPackage.CurrentFunction.CurrentExpression = prevExpr
+	prgrm.CurrentPackage = prevPkgIdx
+	prevPkg.CurrentFunction = prevFn
+	prevPkg.CurrentFunction.CurrentExpression = prevExpr
 }
 
 func opAffRequest(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
@@ -924,7 +939,12 @@ func opAffRequest(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVa
 	expr := call.Operator.Expressions[call.Line]
 	fp := inputs[0].FramePointer
 
-	prevPkg := prgrm.CurrentPackage
+	prevPkgIdx := prgrm.CurrentPackage
+	prevPkg, err := prgrm.GetPackageFromArray(prevPkgIdx)
+	if err != nil {
+		panic(err)
+	}
+
 	prevFn := prevPkg.CurrentFunction
 	prevExpr := prevFn.CurrentExpression
 
@@ -1046,9 +1066,9 @@ func opAffRequest(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVa
 	}
 
 	// returning to previous state
-	prgrm.CurrentPackage = prevPkg
-	prgrm.CurrentPackage.CurrentFunction = prevFn
-	prgrm.CurrentPackage.CurrentFunction.CurrentExpression = prevExpr
+	prgrm.CurrentPackage = prevPkgIdx
+	prevPkg.CurrentFunction = prevFn
+	prevPkg.CurrentFunction.CurrentExpression = prevExpr
 }
 
 func opAffQuery(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
