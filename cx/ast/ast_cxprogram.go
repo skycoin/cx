@@ -41,8 +41,8 @@ type CXProgram struct {
 
 	// For new CX AST arrays
 	CXAtomicOps []*CXAtomicOperator
-	CXArgs      []*CXArgument
-	CXLines     []*CXLine
+	CXArgs      []CXArgument
+	CXLines     []CXLine
 	CXPackages  []CXPackage
 	CXFunctions []*CXFunction
 	// Then reference the package of function by CxFunction id
@@ -153,7 +153,7 @@ func (cxprogram *CXProgram) GetCXLine(index int) (*CXLine, error) {
 		return nil, fmt.Errorf("error: CXLines[%d]: index out of bounds", index)
 	}
 
-	return cxprogram.CXLines[index], nil
+	return &cxprogram.CXLines[index], nil
 }
 
 func (cxprogram *CXProgram) GetCXArg(index int) (*CXArgument, error) {
@@ -161,7 +161,7 @@ func (cxprogram *CXProgram) GetCXArg(index int) (*CXArgument, error) {
 		return nil, fmt.Errorf("error: CXArgs[%d]: index out of bounds", index)
 	}
 
-	return cxprogram.CXArgs[index], nil
+	return &cxprogram.CXArgs[index], nil
 }
 
 func (cxprogram *CXProgram) GetCXAtomicOp(index int) (*CXAtomicOperator, error) {
@@ -173,13 +173,13 @@ func (cxprogram *CXProgram) GetCXAtomicOp(index int) (*CXAtomicOperator, error) 
 }
 
 func (cxprogram *CXProgram) AddCXLine(CXLine *CXLine) int {
-	cxprogram.CXLines = append(cxprogram.CXLines, CXLine)
+	cxprogram.CXLines = append(cxprogram.CXLines, *CXLine)
 
 	return len(cxprogram.CXLines) - 1
 }
 
 func (cxprogram *CXProgram) AddCXArg(CXArg *CXArgument) int {
-	cxprogram.CXArgs = append(cxprogram.CXArgs, CXArg)
+	cxprogram.CXArgs = append(cxprogram.CXArgs, *CXArg)
 
 	return len(cxprogram.CXArgs) - 1
 }
