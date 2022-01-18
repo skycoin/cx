@@ -109,7 +109,21 @@ func stmt(){
 
 // new actions convert yacc code to golang code to handle token.
 
-we have add new approx 120 actions older actions can be used to parse token.
+we have add  approx new  120 actions older ast actions can be used to parse token.
+
+
+for example :
+
+this yacc code will form new ast actions
+
+function_parameters:
+                LPAREN RPAREN
+                { $$ = nil }
+        |       LPAREN parameter_type_list RPAREN
+                { $$ = $2 }
+                ;
+
+like ast.function_parameters()  
 
 
 statement - actions.statement()  // new actions 
