@@ -140,13 +140,13 @@ func ShortAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression, exprCXLine *a
 
 	cxAtomicOp.AddInput(toCXAtomicOp.Outputs[0])
 	cxAtomicOp.AddOutput(toCXAtomicOp.Outputs[0])
-	cxAtomicOp.Package = pkg
+	cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
 
 	if fromCXAtomicOp.Operator == nil {
 		cxAtomicOp.AddInput(fromCXAtomicOp.Outputs[0])
 	} else {
 		sym := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(fromCXAtomicOp.Inputs[0].Type)
-		sym.Package = pkg
+		sym.Package = ast.CXPackageIndex(pkg.Index)
 		sym.PreviouslyDeclared = true
 		fromCXAtomicOp.AddOutput(sym)
 		cxAtomicOp.AddInput(sym)
@@ -215,7 +215,7 @@ func Assignment(prgrm *ast.CXProgram, to []*ast.CXExpression, assignOp string, f
 		if err != nil {
 			panic(err)
 		}
-		cxAtomicOp.Package = pkg
+		cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
 
 		var sym *ast.CXArgument
 
@@ -241,7 +241,7 @@ func Assignment(prgrm *ast.CXProgram, to []*ast.CXExpression, assignOp string, f
 			sym.IsSlice = outTypeArg.IsSlice
 			// sym.IsSlice = from[idx].Operator.ProgramOutput[0].IsSlice
 		}
-		sym.Package = pkg
+		sym.Package = ast.CXPackageIndex(pkg.Index)
 		sym.PreviouslyDeclared = true
 		sym.IsShortAssignmentDeclaration = true
 

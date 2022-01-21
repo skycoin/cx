@@ -36,7 +36,7 @@ func GenerateRandomExpressions(prgrm *cxast.CXProgram, inputFn *cxast.CXFunction
 			panic(err)
 		}
 
-		cxAtomicOp.Package = inputPkg
+		cxAtomicOp.Package = cxast.CXPackageIndex(inputPkg.Index)
 		cxAtomicOp.Function = inputFn
 		for c := 0; c < len(op.Inputs); c++ {
 			cxAtomicOp.Inputs = append(cxAtomicOp.Inputs, getRandInp(prgrm, expr))

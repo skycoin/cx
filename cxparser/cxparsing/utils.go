@@ -84,7 +84,11 @@ func Preliminarystage(srcStrs, srcNames []string) int {
 					if pkg, err := cxpartialparsing.Program.GetPackage(match[len(match)-1]); err != nil {
 						// then it hasn't been added
 						newPkg := ast.MakePackage(match[len(match)-1])
-						cxpartialparsing.Program.AddPackage(newPkg)
+						pkgIdx := cxpartialparsing.Program.AddPackage(newPkg)
+						newPkg, err = cxpartialparsing.Program.GetPackageFromArray(pkgIdx)
+						if err != nil {
+							panic(err)
+						}
 						prePkg = newPkg
 					} else {
 						prePkg = pkg
@@ -184,7 +188,11 @@ func Preliminarystage(srcStrs, srcNames []string) int {
 					if pkg, err := cxpartialparsing.Program.GetPackage(match[len(match)-1]); err != nil {
 						// then it hasn't been added
 						prePkg = ast.MakePackage(match[len(match)-1])
-						cxpartialparsing.Program.AddPackage(prePkg)
+						pkgIdx := cxpartialparsing.Program.AddPackage(prePkg)
+						prePkg, err = cxpartialparsing.Program.GetPackageFromArray(pkgIdx)
+						if err != nil {
+							panic(err)
+						}
 					} else {
 						prePkg = pkg
 					}
@@ -256,7 +264,7 @@ func Preliminarystage(srcStrs, srcNames []string) int {
 						// then it hasn't been added
 						arg := ast.MakeArgument(match[len(match)-1], "", 0)
 						arg.Offset = types.InvalidPointer
-						arg.Package = prePkg
+						arg.Package = ast.CXPackageIndex(prePkg.Index)
 						prePkg.AddGlobal(arg)
 					}
 				}

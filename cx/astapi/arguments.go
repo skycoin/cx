@@ -52,7 +52,7 @@ func AddNativeInputToExpression(cxprogram *cxast.CXProgram, packageName, functio
 	}
 
 	arg := cxast.MakeField(inputName, inputType, "", -1).AddType(types.Code(inputType))
-	arg.Package = pkg
+	arg.Package = cxast.CXPackageIndex(pkg.Index)
 
 	cxAtomicOp, _, _, err := cxprogram.GetOperation(expr)
 	if err != nil {
@@ -150,7 +150,7 @@ func AddNativeOutputToExpression(cxprogram *cxast.CXProgram, packageName, functi
 	}
 
 	arg := cxast.MakeField(outputName, outputType, "", -1).AddType(types.Code(outputType))
-	arg.Package = pkg
+	arg.Package = cxast.CXPackageIndex(pkg.Index)
 
 	cxAtomicOp, _, _, err := cxprogram.GetOperation(expr)
 	if err != nil {
@@ -345,7 +345,11 @@ func GetAccessibleArgsForFunctionByType(cxprogram *cxast.CXProgram, packageLocat
 		}
 	}
 
-	for _, imp := range pkg.Imports {
+	for _, impIdx := range pkg.Imports {
+		imp, err := cxprogram.GetPackageFromArray(impIdx)
+		if err != nil {
+			panic(err)
+		}
 		for _, global := range imp.Globals {
 			if global.IsStruct {
 				for _, field := range global.StructType.Fields {
@@ -417,7 +421,7 @@ func AddLiteralInputToExpression(cxprogram *cxast.CXProgram, packageName, functi
 		panic(err)
 	}
 
-	arg.Package = pkg
+	arg.Package = cxast.CXPackageIndex(pkg.Index)
 	cxAtomicOp2.AddInput(arg)
 
 	return nil

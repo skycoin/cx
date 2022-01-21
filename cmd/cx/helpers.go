@@ -93,9 +93,9 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 // initMainPkg adds a `main` package with an empty `main` function to `prgrm`.
 func initMainPkg(prgrm *ast.CXProgram) {
 	mod := ast.MakePackage(constants.MAIN_PKG)
-	prgrm.AddPackage(mod)
 	fn := ast.MakeFunction(constants.MAIN_FUNC, actions.CurrentFile, actions.LineNo)
 	mod.AddFunction(fn)
+	prgrm.AddPackage(mod)
 }
 
 // optionTokenize checks if the user wants to use CX to generate the lexer tokens

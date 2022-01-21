@@ -348,7 +348,7 @@ direct_declarator:
 				arg := ast.MakeArgument("", actions.CurrentFile, actions.LineNo)
                 arg.AddType(types.UNDEFINED)
 				arg.Name = $1
-				arg.Package = pkg
+				arg.Package = ast.CXPackageIndex(pkg.Index)
 				$$ = arg
 			} else {
 				panic(err)
@@ -1313,7 +1313,7 @@ jump_statement: GOTO IDENTIFIER SEMICOLON
                                 panic(err)
                         }
 
-                        cxAtomicOp.Package = pkg
+                        cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
                         cxAtomicOp.Label = $2
                         $$ = []*ast.CXExpression{exprCXLine,expr}
 			

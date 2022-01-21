@@ -6,7 +6,7 @@ type CXAtomicOperator struct {
 	Operator *CXFunction
 
 	Function *CXFunction
-	Package  *CXPackage
+	Package  CXPackageIndex
 	Label    string
 
 	// used for jmp statements
@@ -31,7 +31,8 @@ func (op *CXAtomicOperator) GetOperatorName() string {
 // AddInput ...
 func (op *CXAtomicOperator) AddInput(param *CXArgument) *CXAtomicOperator {
 	op.Inputs = append(op.Inputs, param)
-	if param.Package == nil {
+
+	if param.Package == -1 {
 		param.Package = op.Package
 	}
 	return op
@@ -47,7 +48,7 @@ func (op *CXAtomicOperator) RemoveInput() {
 // AddOutput ...
 func (op *CXAtomicOperator) AddOutput(param *CXArgument) *CXAtomicOperator {
 	op.Outputs = append(op.Outputs, param)
-	if param.Package == nil {
+	if param.Package == -1 {
 		param.Package = op.Package
 	}
 	return op

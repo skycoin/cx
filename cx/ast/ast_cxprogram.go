@@ -72,9 +72,10 @@ type HeapSegmentStruct struct {
 func MakeProgram() *CXProgram {
 	minHeapSize := minHeapSize()
 	newPrgrm := &CXProgram{
-		Packages:  make(map[string]CXPackageIndex, 0),
-		CallStack: make([]CXCall, constants.CALLSTACK_SIZE),
-		Memory:    make([]byte, constants.STACK_SIZE+minHeapSize),
+		Packages:       make(map[string]CXPackageIndex, 0),
+		CurrentPackage: -1,
+		CallStack:      make([]CXCall, constants.CALLSTACK_SIZE),
+		Memory:         make([]byte, constants.STACK_SIZE+minHeapSize),
 		Stack: StackSegmentStruct{
 			Size: constants.STACK_SIZE,
 		},
@@ -93,7 +94,7 @@ func MakeProgram() *CXProgram {
 //                         `CXProgram` Package handling
 
 // AddPackage ...
-func (cxprogram *CXProgram) AddPackage(mod *CXPackage) {
+func (cxprogram *CXProgram) AddPackage(mod *CXPackage) CXPackageIndex {
 	// if cxprogram.Packages[mod.Name] != nil {
 	// 	return
 	// }
@@ -102,6 +103,8 @@ func (cxprogram *CXProgram) AddPackage(mod *CXPackage) {
 
 	cxprogram.Packages[mod.Name] = CXPackageIndex(index)
 	cxprogram.CurrentPackage = CXPackageIndex(index)
+
+	return index
 }
 
 func (cxprogram *CXProgram) AddPackageInArray(pkg *CXPackage) CXPackageIndex {
@@ -274,17 +277,17 @@ func (cxprogram *CXProgram) SelectPackage(name string) (*CXPackage, error) {
 
 // GetCurrentPackage ...
 func (cxprogram *CXProgram) GetCurrentPackage() (*CXPackage, error) {
-	// if ok:=cxprogram.CurrentPackage == nil {
-	// 	return nil, errors.New("current package is nil")
-	// }
+	if cxprogram.CurrentPackage == -1 {
+		return nil, errors.New("current package is nil")
+	}
 
 	return cxprogram.GetPackageFromArray(cxprogram.CurrentPackage)
 }
 
 func (cxprogram *CXProgram) GetCurrentPackageIndex() CXPackageIndex {
-	// if ok:=cxprogram.CurrentPackage == nil {
-	// 	return nil, errors.New("current package is nil")
-	// }
+	if cxprogram.CurrentPackage == -1 {
+		panic("current package is nil")
+	}
 
 	return cxprogram.CurrentPackage
 }
@@ -310,9 +313,9 @@ func (cxprogram *CXProgram) GetCurrentStruct() (*CXStruct, error) {
 
 // GetCurrentFunction ...
 func (cxprogram *CXProgram) GetCurrentFunction() (*CXFunction, error) {
-	// if cxprogram.CurrentPackage == nil {
-	// 	return nil, errors.New("current package is nil")
-	// }
+	if cxprogram.CurrentPackage == -1 {
+		return nil, errors.New("current package is nil")
+	}
 
 	currentPackage, err := cxprogram.GetPackageFromArray(cxprogram.CurrentPackage)
 	if err != nil {
@@ -329,9 +332,9 @@ func (cxprogram *CXProgram) GetCurrentFunction() (*CXFunction, error) {
 
 // GetCurrentExpression ...
 func (cxprogram *CXProgram) GetCurrentExpression() (*CXExpression, error) {
-	// if cxprogram.CurrentPackage == nil {
-	// 	return nil, errors.New("current package is nil")
-	// }
+	if cxprogram.CurrentPackage == -1 {
+		return nil, errors.New("current package is nil")
+	}
 
 	currentPackage, err := cxprogram.GetPackageFromArray(cxprogram.CurrentPackage)
 	if err != nil {
@@ -365,7 +368,7 @@ func (cxprogram *CXProgram) GetStruct(strctName string, pkgName string) (*CXStru
 		return nil, err
 	}
 
-	strct, err := pkg.GetStruct(strctName)
+	strct, err := pkg.GetStruct(cxprogram, strctName)
 	if err != nil {
 		return nil, err
 	}
@@ -380,7 +383,7 @@ func (cxprogram *CXProgram) GetFunction(fnName string, pkgName string) (*CXFunct
 		return nil, err
 	}
 
-	fn, err := pkg.GetFunction(fnName)
+	fn, err := pkg.GetFunction(cxprogram, fnName)
 	if err != nil {
 		return nil, err
 	}

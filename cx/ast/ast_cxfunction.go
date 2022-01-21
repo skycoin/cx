@@ -12,8 +12,8 @@ type CXFunctionIndex int
 // CXFunction is used to represent a CX function.
 type CXFunction struct {
 	// Metadata
-	Name         string     // Name of the function
-	Package      *CXPackage // The package it's a member of
+	Name         string         // Name of the function
+	Package      CXPackageIndex // The package it's a member of
 	AtomicOPCode int
 
 	// Contents

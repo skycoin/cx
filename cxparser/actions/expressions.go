@@ -31,7 +31,7 @@ func IterationExpressions(prgrm *ast.CXProgram, init []*ast.CXExpression, cond [
 	if err != nil {
 		panic(err)
 	}
-	upExprAtomicOp.Package = pkg
+	upExprAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
 
 	trueArg := WritePrimary(prgrm, types.BOOL, encoder.Serialize(true), false)
 	trueArgAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(trueArg, 0)
@@ -53,7 +53,7 @@ func IterationExpressions(prgrm *ast.CXProgram, init []*ast.CXExpression, cond [
 	if err != nil {
 		panic(err)
 	}
-	downExprAtomicOp.Package = pkg
+	downExprAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
 
 	lastCondAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(cond, len(cond)-1)
 	if err != nil {
@@ -62,13 +62,13 @@ func IterationExpressions(prgrm *ast.CXProgram, init []*ast.CXExpression, cond [
 
 	if len(lastCondAtomicOp.Outputs) < 1 {
 		predicate := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(lastCondAtomicOp.Operator.Outputs[0].Type)
-		predicate.Package = pkg
+		predicate.Package = ast.CXPackageIndex(pkg.Index)
 		predicate.PreviouslyDeclared = true
 		lastCondAtomicOp.AddOutput(predicate)
 		downExprAtomicOp.AddInput(predicate)
 	} else {
 		predicate := lastCondAtomicOp.Outputs[0]
-		predicate.Package = pkg
+		predicate.Package = ast.CXPackageIndex(pkg.Index)
 		predicate.PreviouslyDeclared = true
 		downExprAtomicOp.AddInput(predicate)
 	}
@@ -137,7 +137,7 @@ func trueJmpExpressions(prgrm *ast.CXProgram, opcode int) []*ast.CXExpression {
 
 	exprAtomicOp.AddInput(trueArgAtomicOp.Outputs[0])
 
-	exprAtomicOp.Package = pkg
+	exprAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
 
 	return []*ast.CXExpression{exprCXLine, expr}
 }
@@ -168,7 +168,7 @@ func SelectionExpressions(prgrm *ast.CXProgram, condExprs []*ast.CXExpression, t
 	if err != nil {
 		panic(err)
 	}
-	ifExprAtomicOp.Package = pkg
+	ifExprAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
 
 	lastCondExprsAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(condExprs, len(condExprs)-1)
 	if err != nil {
@@ -211,7 +211,7 @@ func SelectionExpressions(prgrm *ast.CXProgram, condExprs []*ast.CXExpression, t
 	if err != nil {
 		panic(err)
 	}
-	skipExprAtomicOp.Package = pkg
+	skipExprAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
 
 	trueArg := WritePrimary(prgrm, types.BOOL, encoder.Serialize(true), false)
 	trueArgAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(trueArg, 0)
@@ -290,7 +290,7 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []*ast.CXExpression, rig
 		name.TotalSize = ast.GetSize(lastLeftExprsAtomicOp.Operator.Outputs[0])
 		name.Type = lastLeftExprsAtomicOp.Operator.Outputs[0].Type
 		name.PointerTargetType = lastLeftExprsAtomicOp.Operator.Outputs[0].PointerTargetType
-		name.Package = pkg
+		name.Package = ast.CXPackageIndex(pkg.Index)
 		name.PreviouslyDeclared = true
 
 		lastLeftExprsAtomicOp.Outputs = append(lastLeftExprsAtomicOp.Outputs, name)
@@ -308,7 +308,7 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []*ast.CXExpression, rig
 		name.TotalSize = ast.GetSize(lastRightExprsAtomicOp.Operator.Outputs[0])
 		name.Type = lastRightExprsAtomicOp.Operator.Outputs[0].Type
 		name.PointerTargetType = lastRightExprsAtomicOp.Operator.Outputs[0].PointerTargetType
-		name.Package = pkg
+		name.Package = ast.CXPackageIndex(pkg.Index)
 		name.PreviouslyDeclared = true
 
 		lastRightExprsAtomicOp.Outputs = append(lastRightExprsAtomicOp.Outputs, name)
@@ -322,7 +322,7 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []*ast.CXExpression, rig
 	}
 
 	// we can't know the type until we compile the full function
-	cxAtomicOp.Package = pkg
+	cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
 
 	if len(lastLeftExprsAtomicOp.Outputs[0].Indexes) > 0 || lastLeftExprsAtomicOp.Operator != nil {
 		// then it's a function call or an array access
@@ -394,7 +394,7 @@ func UnaryExpression(prgrm *ast.CXProgram, op string, prevExprs []*ast.CXExpress
 			if err != nil {
 				panic(err)
 			}
-			cxAtomicOp.Package = pkg
+			cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
 
 			cxAtomicOp.AddInput(exprOut)
 
@@ -409,7 +409,7 @@ func UnaryExpression(prgrm *ast.CXProgram, op string, prevExprs []*ast.CXExpress
 			if err != nil {
 				panic(err)
 			}
-			cxAtomicOp.Package = pkg
+			cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
 			cxAtomicOp.AddInput(exprOut)
 			prevExprs[len(prevExprs)-1] = expr
 		} else {
@@ -523,7 +523,7 @@ func AddJmpToReturnExpressions(prgrm *ast.CXProgram, exprs ReturnExpressions) []
 	// simulating a label so it gets executed without evaluating a predicate
 	cxAtomicOp.Label = MakeGenSym(constants.LABEL_PREFIX)
 	cxAtomicOp.ThenLines = types.MAX_INT32
-	cxAtomicOp.Package = pkg
+	cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
 
 	retExprs = append(retExprs, exprCXLine, expr)
 

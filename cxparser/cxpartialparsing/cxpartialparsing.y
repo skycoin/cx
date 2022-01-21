@@ -241,9 +241,10 @@ function_header:
 
 			if pkg, err := Program.GetCurrentPackage(); err == nil {
 				fn := ast.MakeFunction(fnName, CurrentFileName, lineNo)
+                                fn.AddInput($3[0])
 				pkg.AddFunction(fn)
 
-                                fn.AddInput($3[0])
+                                
 
                                 $$ = fn
 			} else {
@@ -311,7 +312,7 @@ direct_declarator:
 				arg := ast.MakeArgument("", actions.CurrentFile, actions.LineNo)
 				arg.AddType(types.UNDEFINED)
 				arg.Name = $1
-				arg.Package = pkg
+				arg.Package = ast.CXPackageIndex(pkg.Index)
 				$$ = arg
 			} else {
 				panic(err)

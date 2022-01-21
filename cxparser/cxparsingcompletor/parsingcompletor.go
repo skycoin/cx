@@ -1373,7 +1373,7 @@ yydefault:
 				arg := ast.MakeArgument("", actions.CurrentFile, actions.LineNo)
 				arg.AddType(types.UNDEFINED)
 				arg.Name = yyDollar[1].tok
-				arg.Package = pkg
+				arg.Package = ast.CXPackageIndex(pkg.Index)
 				yyVAL.argument = arg
 			} else {
 				panic(err)
@@ -2457,7 +2457,7 @@ yydefault:
 				panic(err)
 			}
 
-			cxAtomicOp.Package = pkg
+			cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
 			cxAtomicOp.Label = yyDollar[2].tok
 			yyVAL.expressions = []*ast.CXExpression{exprCXLine, expr}
 

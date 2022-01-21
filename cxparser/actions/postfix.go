@@ -144,7 +144,7 @@ func PostfixExpressionNative(prgrm *ast.CXProgram, typeCode types.Code, opStrCod
 	if err != nil {
 		panic(err)
 	}
-	cxAtomicOp.Package = pkg
+	cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
 
 	return []*ast.CXExpression{exprCXLine, expr}
 }
@@ -175,7 +175,7 @@ func PostfixExpressionEmptyFunCall(prgrm *ast.CXProgram, prevExprs []*ast.CXExpr
 	} else if prevExprsAtomicOp.Operator == nil {
 		if opCode, ok := ast.OpCodes[prevExprsAtomicOp.Outputs[0].Name]; ok {
 			if pkg, err := prgrm.GetCurrentPackage(); err == nil {
-				firstPrevExprsAtomicOp.Package = pkg
+				firstPrevExprsAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
 			}
 			firstPrevExprsAtomicOp.Outputs = nil
 			firstPrevExprsAtomicOp.Operator = ast.Natives[opCode]
@@ -205,7 +205,7 @@ func PostfixExpressionFunCall(prgrm *ast.CXProgram, prevExprs []*ast.CXExpressio
 	} else if lastPrevExprsAtomicOp.Operator == nil {
 		if opCode, ok := ast.OpCodes[lastPrevExprsAtomicOp.Outputs[0].Name]; ok {
 			if pkg, err := prgrm.GetCurrentPackage(); err == nil {
-				firstPrevExprsAtomicOp.Package = pkg
+				firstPrevExprsAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
 			}
 			firstPrevExprsAtomicOp.Outputs = nil
 			firstPrevExprsAtomicOp.Operator = ast.Natives[opCode]
@@ -250,7 +250,7 @@ func PostfixExpressionIncDec(prgrm *ast.CXProgram, prevExprs []*ast.CXExpression
 		panic(err)
 	}
 
-	cxAtomicOp.Package = pkg
+	cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
 
 	cxAtomicOp.AddInput(lastPrevExprsAtomicOp.Outputs[0])
 	cxAtomicOp.AddInput(valAtomicOp.Outputs[0])
@@ -336,7 +336,12 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []*ast.CXExpression,
 		// left.DereferenceOperations = append(left.DereferenceOperations, cxcore.DEREF_FIELD)
 		left.IsStruct = true
 		fld := ast.MakeArgument(ident, CurrentFile, LineNo)
-		fld.AddType(types.IDENTIFIER).AddPackage(left.Package)
+		leftPkg, err := prgrm.GetPackageFromArray(left.Package)
+		if err != nil {
+			panic(err)
+		}
+
+		fld.AddType(types.IDENTIFIER).AddPackage(leftPkg)
 		left.Fields = append(left.Fields, fld)
 		return prevExprs
 	}
@@ -349,7 +354,7 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []*ast.CXExpression,
 		panic(err)
 	}
 
-	if imp, err := pkg.GetImport(left.Name); err == nil {
+	if imp, err := pkg.GetImport(prgrm, left.Name); err == nil {
 		// the external property will be propagated to the following arguments
 		// this way we avoid considering these arguments as module names
 
@@ -377,7 +382,7 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []*ast.CXExpression,
 			}
 		}
 
-		left.Package = imp
+		left.Package = ast.CXPackageIndex(imp.Index)
 
 		if glbl, err := imp.GetGlobal(ident); err == nil {
 			// then it's a global
@@ -391,7 +396,7 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []*ast.CXExpression,
 			lastExprAtomicOp.Outputs[0].IsSlice = glbl.IsSlice
 			lastExprAtomicOp.Outputs[0].IsStruct = glbl.IsStruct
 			lastExprAtomicOp.Outputs[0].Package = glbl.Package
-		} else if fn, err := imp.GetFunction(ident); err == nil {
+		} else if fn, err := imp.GetFunction(prgrm, ident); err == nil {
 			// then it's a function
 			// not sure about this next line
 			lastExprAtomicOp.Outputs = nil
@@ -415,7 +420,11 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []*ast.CXExpression,
 		left.IsStruct = true
 
 		fld := ast.MakeArgument(ident, CurrentFile, LineNo)
-		fld.AddType(types.IDENTIFIER).AddPackage(left.Package)
+		leftPkg, err := prgrm.GetPackageFromArray(left.Package)
+		if err != nil {
+			panic(err)
+		}
+		fld.AddType(types.IDENTIFIER).AddPackage(leftPkg)
 
 		left.Fields = append(left.Fields, fld)
 	}
