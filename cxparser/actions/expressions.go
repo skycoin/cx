@@ -431,7 +431,7 @@ func AssociateReturnExpressions(prgrm *ast.CXProgram, idx int, retExprs []*ast.C
 		panic(err)
 	}
 
-	fn, err = pkg.GetCurrentFunction()
+	fn, err = pkg.GetCurrentFunction(prgrm)
 	if err != nil {
 		panic(err)
 	}
@@ -487,7 +487,7 @@ func AddJmpToReturnExpressions(prgrm *ast.CXProgram, exprs ReturnExpressions) []
 		panic(err)
 	}
 
-	fn, err = pkg.GetCurrentFunction()
+	fn, err = pkg.GetCurrentFunction(prgrm)
 	if err != nil {
 		panic(err)
 	}

@@ -44,7 +44,7 @@ type CXProgram struct {
 	CXArgs      []CXArgument
 	CXLines     []CXLine
 	CXPackages  []CXPackage
-	CXFunctions []*CXFunction
+	CXFunctions []CXFunction
 	// Then reference the package of function by CxFunction id
 
 	// For Initializers
@@ -148,6 +148,24 @@ func (cxprogram *CXProgram) RemovePackage(modName string) {
 		}
 	}
 
+}
+
+// ----------------------------------------------------------------
+//                         `CXProgram` Function handling
+func (cxprogram *CXProgram) AddFunctionInArray(fn *CXFunction) CXFunctionIndex {
+	// The index of fn after it will be added in the array
+	fn.Index = len(cxprogram.CXFunctions)
+	cxprogram.CXFunctions = append(cxprogram.CXFunctions, *fn)
+
+	return CXFunctionIndex(fn.Index)
+}
+
+func (cxprogram *CXProgram) GetFunctionFromArray(index CXFunctionIndex) (*CXFunction, error) {
+	if int(index) > (len(cxprogram.CXFunctions) - 1) {
+		return nil, fmt.Errorf("error: CXFunctions[%d]: index out of bounds", index)
+	}
+
+	return &cxprogram.CXFunctions[index], nil
 }
 
 // ----------------------------------------------------------------
@@ -322,11 +340,11 @@ func (cxprogram *CXProgram) GetCurrentFunction() (*CXFunction, error) {
 		return &CXFunction{}, err
 	}
 
-	if currentPackage.CurrentFunction != nil {
+	if currentPackage.CurrentFunction != -1 {
 		return nil, errors.New("current function is nil")
 	}
 
-	return currentPackage.CurrentFunction, nil
+	return cxprogram.GetFunctionFromArray(currentPackage.CurrentFunction)
 
 }
 
@@ -341,15 +359,20 @@ func (cxprogram *CXProgram) GetCurrentExpression() (*CXExpression, error) {
 		return &CXExpression{}, err
 	}
 
-	if currentPackage.CurrentFunction == nil {
+	if currentPackage.CurrentFunction == -1 {
 		return nil, errors.New("current function is nil")
 	}
 
-	if currentPackage.CurrentFunction.CurrentExpression == nil {
+	currFn, err := cxprogram.GetFunctionFromArray(currentPackage.CurrentFunction)
+	if err != nil {
+		return nil, err
+	}
+
+	if currFn.CurrentExpression == nil {
 		return nil, errors.New("current expression is nil")
 	}
 
-	return currentPackage.CurrentFunction.CurrentExpression, nil
+	return currFn.CurrentExpression, nil
 }
 
 // GetPackage ...

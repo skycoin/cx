@@ -224,9 +224,13 @@ function_header:
                 {
 			if pkg, err := Program.GetCurrentPackage(); err == nil {
 				fn := ast.MakeFunction($2, CurrentFileName, lineNo)
-				pkg.AddFunction(fn)
+				_,fnIdx:=pkg.AddFunction(Program,fn)
+                                newFn,err:=Program.GetFunctionFromArray(fnIdx)
+                                if err!=nil{
+                                        panic(err)
+                                }
 
-                                $$ = fn
+                                $$ = newFn
 			} else {
 				panic(err)
 			}
@@ -242,11 +246,13 @@ function_header:
 			if pkg, err := Program.GetCurrentPackage(); err == nil {
 				fn := ast.MakeFunction(fnName, CurrentFileName, lineNo)
                                 fn.AddInput($3[0])
-				pkg.AddFunction(fn)
-
+				_,fnIdx:=pkg.AddFunction(Program,fn)
+                                newFn,err:=Program.GetFunctionFromArray(fnIdx)
+                                if err!=nil{
+                                        panic(err)
+                                }
                                 
-
-                                $$ = fn
+                                $$ = newFn
 			} else {
 				panic(err)
 			}

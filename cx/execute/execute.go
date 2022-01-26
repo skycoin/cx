@@ -118,7 +118,7 @@ func runSysInitFunc(cxprogram *ast.CXProgram, mod *ast.CXPackage) error {
 	var inputs []ast.CXValue
 	var outputs []ast.CXValue
 
-	fn, err := mod.SelectFunction(constants.SYS_INIT_FUNC)
+	fn, err := mod.SelectFunction(cxprogram, constants.SYS_INIT_FUNC)
 	if err != nil {
 		return err
 	}
@@ -185,7 +185,7 @@ func RunCompiled(cxprogram *ast.CXProgram, maxOps int, args []string) error {
 			return err
 		}
 
-		fn, err := mod.SelectFunction(constants.MAIN_FUNC)
+		fn, err := mod.SelectFunction(cxprogram, constants.MAIN_FUNC)
 		if err != nil {
 			return err
 		}

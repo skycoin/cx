@@ -94,7 +94,7 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 func initMainPkg(prgrm *ast.CXProgram) {
 	mod := ast.MakePackage(constants.MAIN_PKG)
 	fn := ast.MakeFunction(constants.MAIN_FUNC, actions.CurrentFile, actions.LineNo)
-	mod.AddFunction(fn)
+	mod.AddFunction(prgrm, fn)
 	prgrm.AddPackage(mod)
 }
 

@@ -32,7 +32,7 @@ func AddEmptyFunctionToPackage(cxprogram *cxast.CXProgram, packageName, function
 		return err
 	}
 
-	pkg.AddFunction(fn)
+	pkg.AddFunction(cxprogram, fn)
 
 	return nil
 }

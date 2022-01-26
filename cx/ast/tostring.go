@@ -31,7 +31,7 @@ func ToString(cxprogram *CXProgram) string {
 	}
 
 	currentFunction, _ = cxprogram.GetCurrentFunction()
-	currentPackage.CurrentFunction = currentFunction
+	currentPackage.CurrentFunction = CXFunctionIndex(currentFunction.Index)
 
 	BuildStrPackages(cxprogram, &ast3) //what does this do?
 
@@ -98,11 +98,16 @@ func buildStrFunctions(prgrm *CXProgram, pkg *CXPackage, ast1 *string) {
 	// We need to declare the counter outside so we can
 	// ignore the increment from the `*init` function.
 	var j int
-	for _, fn := range pkg.Functions {
+	for _, fnIdx := range pkg.Functions {
+		fn, err := prgrm.GetFunctionFromArray(fnIdx)
+		if err != nil {
+			panic(err)
+		}
+
 		if fn.Name == constants.SYS_INIT_FUNC {
 			continue
 		}
-		_, err := pkg.SelectFunction(fn.Name)
+		_, err = pkg.SelectFunction(prgrm, fn.Name)
 		if err != nil {
 			panic(err)
 		}

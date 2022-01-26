@@ -300,12 +300,16 @@ func AddInitFunction(prgrm *ast.CXProgram) error {
 	}
 
 	initFn := ast.MakeFunction(constants.SYS_INIT_FUNC, actions.CurrentFile, actions.LineNo)
-	mainPkg.AddFunction(initFn)
+	_, fnIdx := mainPkg.AddFunction(prgrm, initFn)
+	initFnFromArr, err := prgrm.GetFunctionFromArray(fnIdx)
+	if err != nil {
+		return err
+	}
 
 	//Init Expressions
-	actions.FunctionDeclaration(prgrm, initFn, nil, nil, prgrm.SysInitExprs)
+	actions.FunctionDeclaration(prgrm, initFnFromArr, nil, nil, prgrm.SysInitExprs)
 
-	if _, err := mainPkg.SelectFunction(constants.MAIN_FUNC); err != nil {
+	if _, err := mainPkg.SelectFunction(prgrm, constants.MAIN_FUNC); err != nil {
 		return err
 	}
 	return nil

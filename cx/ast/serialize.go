@@ -444,15 +444,19 @@ func serializePackageIntegers(prgrm *CXProgram, pkg *CXPackage, s *SerializedCXP
 	if pkgOff, found := s.PackagesMap[pkg.Name]; found {
 		sPkg := &s.Packages[pkgOff]
 
-		if pkg.CurrentFunction == nil {
+		if pkg.CurrentFunction == -1 {
 			// package has no functions
 			sPkg.CurrentFunctionName = ""
 		} else {
-			currFnPkg, err := prgrm.GetPackageFromArray(pkg.CurrentFunction.Package)
+			currFn, err := prgrm.GetFunctionFromArray(pkg.CurrentFunction)
 			if err != nil {
 				panic(err)
 			}
-			currFnName := currFnPkg.Name + "." + pkg.CurrentFunction.Name
+			currFnPkg, err := prgrm.GetPackageFromArray(currFn.Package)
+			if err != nil {
+				panic(err)
+			}
+			currFnName := currFnPkg.Name + "." + currFn.Name
 
 			if _, found := s.FunctionsMap[currFnName]; found {
 				sPkg.CurrentFunctionName = currFnName
@@ -670,7 +674,11 @@ func serializeCXProgramElements(prgrm *CXProgram, s *SerializedCXProgram) {
 			panic(err)
 		}
 
-		for _, fn := range pkg.Functions {
+		for _, fnIdx := range pkg.Functions {
+			fn, err := prgrm.GetFunctionFromArray(fnIdx)
+			if err != nil {
+				panic(err)
+			}
 			indexFunction(prgrm, fn, s)
 			serializeFunctionName(prgrm, fn, s)
 			serializeFunctionPackage(prgrm, fn, s)
@@ -731,7 +739,11 @@ func serializeCXProgramElements(prgrm *CXProgram, s *SerializedCXProgram) {
 			panic(err)
 		}
 
-		for _, fn := range pkg.Functions {
+		for _, fnIdx := range pkg.Functions {
+			fn, err := prgrm.GetFunctionFromArray(fnIdx)
+			if err != nil {
+				panic(err)
+			}
 			fnPkg, err := prgrm.GetPackageFromArray(fn.Package)
 			if err != nil {
 				panic(err)
@@ -839,12 +851,14 @@ func deserializePackages(s *SerializedCXProgram, prgrm *CXProgram) {
 		}
 
 		if sPkg.FunctionsSize > 0 {
-			pkg.Functions = make(map[string]*CXFunction, sPkg.FunctionsSize)
+			pkg.Functions = make(map[string]CXFunctionIndex, sPkg.FunctionsSize)
 
 			for _, sFn := range s.Functions[sPkg.FunctionsOffset : sPkg.FunctionsOffset+sPkg.FunctionsSize] {
 				var fn CXFunction
 				fn.Name = deserializeString(sFn.NameOffset, sFn.NameSize, s)
-				pkg.Functions[fn.Name] = &fn
+
+				fnIdx := prgrm.AddFunctionInArray(&fn)
+				pkg.Functions[fn.Name] = fnIdx
 			}
 		}
 
@@ -903,7 +917,11 @@ func deserializePackages(s *SerializedCXProgram, prgrm *CXProgram) {
 		if sPkg.FunctionsSize > 0 {
 			for _, sFn := range s.Functions[sPkg.FunctionsOffset : sPkg.FunctionsOffset+sPkg.FunctionsSize] {
 				fnName := deserializeString(sFn.NameOffset, sFn.NameSize, s)
-				deserializeFunction(&sFn, pkg.Functions[fnName], s, prgrm)
+				pkgFn, err := prgrm.GetFunctionFromArray(pkg.Functions[fnName])
+				if err != nil {
+					panic(err)
+				}
+				deserializeFunction(&sFn, pkgFn, s, prgrm)
 			}
 		}
 
@@ -1011,7 +1029,11 @@ func deserializeOperator(sExpr *serializedExpression, s *SerializedCXProgram, pr
 		panic(err)
 	}
 
-	for _, fn := range opPkg.Functions {
+	for _, fnIdx := range opPkg.Functions {
+		fn, err := prgrm.GetFunctionFromArray(fnIdx)
+		if err != nil {
+			panic(err)
+		}
 		if fn.Name == opName {
 			return fn
 		}
@@ -1050,7 +1072,11 @@ func deserializeExpressionFunction(sExpr *serializedExpression, s *SerializedCXP
 	if err != nil {
 		panic(err)
 	}
-	for _, fn := range fnPkg.Functions {
+	for _, fnIdx := range fnPkg.Functions {
+		fn, err := prgrm.GetFunctionFromArray(fnIdx)
+		if err != nil {
+			panic(err)
+		}
 		if fn.Name == fnName {
 			return fn
 		}

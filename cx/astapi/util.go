@@ -27,7 +27,12 @@ func FindFunction(cxprogram *cxast.CXProgram, functionName string) (*cxast.CXFun
 			panic(err)
 		}
 
-		for _, fn := range pkg.Functions {
+		for _, fnIdx := range pkg.Functions {
+			fn, err := cxprogram.GetFunctionFromArray(fnIdx)
+			if err != nil {
+				return nil, err
+			}
+
 			if fn.Name == functionName {
 				return fn, nil
 			}

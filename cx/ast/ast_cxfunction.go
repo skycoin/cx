@@ -12,6 +12,7 @@ type CXFunctionIndex int
 // CXFunction is used to represent a CX function.
 type CXFunction struct {
 	// Metadata
+	Index        int
 	Name         string         // Name of the function
 	Package      CXPackageIndex // The package it's a member of
 	AtomicOPCode int
@@ -54,6 +55,7 @@ func (cxf CXFunction) IsAtomic() bool {
 func MakeFunction(name string, fileName string, fileLine int) *CXFunction {
 	return &CXFunction{
 		Name:     name,
+		Index:    -1,
 		FileName: fileName,
 		FileLine: fileLine,
 	}

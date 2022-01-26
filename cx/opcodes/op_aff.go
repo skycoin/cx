@@ -339,7 +339,12 @@ func QueryFunction(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpress
 	if err != nil {
 		panic(err)
 	}
-	for _, f := range pkg.Functions {
+	for _, fIdx := range pkg.Functions {
+		f, err := prgrm.GetFunctionFromArray(fIdx)
+		if err != nil {
+			panic(err)
+		}
+
 		if f.Name == constants.SYS_INIT_FUNC {
 			continue
 		}
@@ -679,7 +684,11 @@ func opAffOn(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) 
 		panic(err)
 	}
 
-	prevFn := prevPkg.CurrentFunction
+	prevFnIdx := prevPkg.CurrentFunction
+	prevFn, err := prgrm.GetFunctionFromArray(prevFnIdx)
+	if err != nil {
+		panic(err)
+	}
 	prevExpr := prevFn.CurrentExpression
 
 	call := prgrm.GetCurrentCall()
@@ -712,8 +721,8 @@ func opAffOn(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) 
 
 	// returning to previous state
 	prgrm.CurrentPackage = prevPkgIdx
-	prevPkg.CurrentFunction = prevFn
-	prevPkg.CurrentFunction.CurrentExpression = prevExpr
+	prevPkg.CurrentFunction = prevFnIdx
+	prevFn.CurrentExpression = prevExpr
 
 	for i, aff := range affs {
 		fmt.Printf("%d - %s\n", i, aff)
@@ -729,7 +738,11 @@ func opAffOf(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) 
 		panic(err)
 	}
 
-	prevFn := prevPkg.CurrentFunction
+	prevFnIdx := prevPkg.CurrentFunction
+	prevFn, err := prgrm.GetFunctionFromArray(prevFnIdx)
+	if err != nil {
+		panic(err)
+	}
 	prevExpr := prevFn.CurrentExpression
 
 	call := prgrm.GetCurrentCall()
@@ -761,8 +774,8 @@ func opAffOf(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) 
 
 	// returning to previous state
 	prgrm.CurrentPackage = prevPkgIdx
-	prevPkg.CurrentFunction = prevFn
-	prevPkg.CurrentFunction.CurrentExpression = prevExpr
+	prevPkg.CurrentFunction = prevFnIdx
+	prevFn.CurrentExpression = prevExpr
 
 	for i, aff := range affs {
 		fmt.Printf("%d - %s\n", i, aff)
@@ -861,7 +874,11 @@ func opAffInform(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVal
 		panic(err)
 	}
 
-	prevFn := prevPkg.CurrentFunction
+	prevFnIdx := prevPkg.CurrentFunction
+	prevFn, err := prgrm.GetFunctionFromArray(prevFnIdx)
+	if err != nil {
+		panic(err)
+	}
 	prevExpr := prevFn.CurrentExpression
 
 	var tgtPkg = ast.CXPackage(*prevPkg)
@@ -963,8 +980,8 @@ func opAffInform(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVal
 
 	// returning to previous state
 	prgrm.CurrentPackage = prevPkgIdx
-	prevPkg.CurrentFunction = prevFn
-	prevPkg.CurrentFunction.CurrentExpression = prevExpr
+	prevPkg.CurrentFunction = prevFnIdx
+	prevFn.CurrentExpression = prevExpr
 }
 
 func opAffRequest(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
@@ -980,7 +997,11 @@ func opAffRequest(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVa
 		panic(err)
 	}
 
-	prevFn := prevPkg.CurrentFunction
+	prevFnIdx := prevPkg.CurrentFunction
+	prevFn, err := prgrm.GetFunctionFromArray(prevFnIdx)
+	if err != nil {
+		panic(err)
+	}
 	prevExpr := prevFn.CurrentExpression
 
 	var tgtPkg = ast.CXPackage(*prevPkg)
@@ -1102,8 +1123,8 @@ func opAffRequest(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVa
 
 	// returning to previous state
 	prgrm.CurrentPackage = prevPkgIdx
-	prevPkg.CurrentFunction = prevFn
-	prevPkg.CurrentFunction.CurrentExpression = prevExpr
+	prevPkg.CurrentFunction = prevFnIdx
+	prevFn.CurrentExpression = prevExpr
 }
 
 func opAffQuery(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
