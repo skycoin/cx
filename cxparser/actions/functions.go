@@ -8,7 +8,6 @@ import (
 	"github.com/jinzhu/copier"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
-	"github.com/skycoin/cx/cx/globals"
 	"github.com/skycoin/cx/cx/types"
 )
 
@@ -33,9 +32,9 @@ func FunctionHeader(prgrm *ast.CXProgram, ident string, receiver []*ast.CXArgume
 				return fn
 			} else {
 				fn := ast.MakeFunction(fnName, CurrentFile, LineNo)
-				fn.AddInput(receiver[0])
 				_, fnIdx := pkg.AddFunction(prgrm, fn)
 				newFn, err := prgrm.GetFunctionFromArray(fnIdx)
+				newFn.AddInput(receiver[0])
 				if err != nil {
 					panic(err)
 				}
@@ -135,12 +134,7 @@ func FunctionProcessParameters(prgrm *ast.CXProgram, symbols *[]map[string]*ast.
 }
 
 func FunctionDeclaration(prgrm *ast.CXProgram, fn *ast.CXFunction, inputs, outputs []*ast.CXArgument, exprs []*ast.CXExpression) {
-
 	//var exprs []*cxcore.CXExpression = prgrm.SysInitExprs
-
-	if globals.FoundCompileErrors {
-		return
-	}
 
 	FunctionAddParameters(fn, inputs, outputs)
 
@@ -598,7 +592,11 @@ func ProcessGoTos(prgrm *ast.CXProgram, fn *ast.CXFunction, exprs []*ast.CXExpre
 			panic(err)
 		}
 
-		if cxAtomicOp.Operator == ast.Natives[constants.OP_GOTO] {
+		opGotoFn := ast.Natives[constants.OP_IDENTITY]
+		if cxAtomicOp.Operator != nil {
+			opGotoFn.Index = cxAtomicOp.Operator.Index
+		}
+		if cxAtomicOp.Operator == opGotoFn {
 			// then it's a goto
 			for j, e := range exprs {
 				ecxAtomicOp, _, _, err := prgrm.GetOperation(e)
@@ -679,7 +677,7 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []*ast.CXExpression, currIndex int) 
 	exprCXLine, _ := prgrm.GetPreviousCXLine(exprs, currIndex)
 
 	if cxAtomicOp.Operator != nil {
-		opName := cxAtomicOp.GetOperatorName()
+		opName := cxAtomicOp.GetOperatorName(prgrm)
 
 		// checking if number of inputs is less than the required number of inputs
 		if len(cxAtomicOp.Inputs) != len(cxAtomicOp.Operator.Inputs) {
@@ -776,7 +774,11 @@ func ProcessStringAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 		panic(err)
 	}
 
-	if cxAtomicOp.Operator == ast.Natives[constants.OP_IDENTITY] {
+	opIdentFn := ast.Natives[constants.OP_IDENTITY]
+	if cxAtomicOp.Operator != nil {
+		opIdentFn.Index = cxAtomicOp.Operator.Index
+	}
+	if cxAtomicOp.Operator == opIdentFn {
 		for i, out := range cxAtomicOp.Outputs {
 			if len(cxAtomicOp.Inputs) > i {
 				out = out.GetAssignmentElement()
@@ -836,7 +838,11 @@ func ProcessSliceAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 		panic(err)
 	}
 
-	if cxAtomicOp.Operator == ast.Natives[constants.OP_IDENTITY] {
+	opIdentFn := ast.Natives[constants.OP_IDENTITY]
+	if cxAtomicOp.Operator != nil {
+		opIdentFn.Index = cxAtomicOp.Operator.Index
+	}
+	if cxAtomicOp.Operator == opIdentFn {
 		var inp *ast.CXArgument
 		var out *ast.CXArgument
 
@@ -1128,7 +1134,11 @@ func ProcessTempVariable(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 		panic(err)
 	}
 
-	if cxAtomicOp.Operator != nil && (cxAtomicOp.Operator == ast.Natives[constants.OP_IDENTITY] || ast.IsArithmeticOperator(cxAtomicOp.Operator.AtomicOPCode)) && len(cxAtomicOp.Outputs) > 0 && len(cxAtomicOp.Inputs) > 0 {
+	opIdentFn := ast.Natives[constants.OP_IDENTITY]
+	if cxAtomicOp.Operator != nil {
+		opIdentFn.Index = cxAtomicOp.Operator.Index
+	}
+	if cxAtomicOp.Operator != nil && (cxAtomicOp.Operator == opIdentFn || ast.IsArithmeticOperator(cxAtomicOp.Operator.AtomicOPCode)) && len(cxAtomicOp.Outputs) > 0 && len(cxAtomicOp.Inputs) > 0 {
 		name := cxAtomicOp.Outputs[0].Name
 		arg := cxAtomicOp.Outputs[0]
 		if IsTempVar(name) {

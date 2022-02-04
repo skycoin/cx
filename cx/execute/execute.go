@@ -21,7 +21,8 @@ func getLastLine(cxprogram *ast.CXProgram) *ast.CXExpression {
 	}
 
 	cxAtomicOp := &ast.CXAtomicOperator{
-		Operator: ast.MakeFunction("", "", -1),
+		// Operator: nil,
+		Function: -1,
 	}
 
 	index := cxprogram.AddCXAtomicOp(cxAtomicOp)
@@ -124,7 +125,7 @@ func runSysInitFunc(cxprogram *ast.CXProgram, mod *ast.CXPackage) error {
 	}
 
 	// *init function
-	mainCall := MakeCall(fn)
+	mainCall := MakeCall(cxprogram, fn)
 	cxprogram.CallStack[0] = mainCall
 	cxprogram.Stack.Pointer = fn.Size
 
@@ -195,7 +196,7 @@ func RunCompiled(cxprogram *ast.CXProgram, maxOps int, args []string) error {
 		}
 
 		// main function
-		mainCall := MakeCall(fn)
+		mainCall := MakeCall(cxprogram, fn)
 		mainCall.FramePointer = cxprogram.Stack.Pointer
 		// initializing program resources
 		cxprogram.CallStack[0] = mainCall
@@ -230,7 +231,7 @@ func RunCompiled(cxprogram *ast.CXProgram, maxOps int, args []string) error {
 	return nil
 }
 
-func MakeCall(op *ast.CXFunction) ast.CXCall {
+func MakeCall(prgrm *ast.CXProgram, op *ast.CXFunction) ast.CXCall {
 	return ast.CXCall{
 		Operator:     op,
 		Line:         0,

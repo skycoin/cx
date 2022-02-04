@@ -1171,7 +1171,7 @@ expression_statement:
                 { $$ = nil }
 	|       expression SEMICOLON
                 {          
-                        var lastFirstAtomicOp *ast.CXAtomicOperator
+                        lastFirstAtomicOp:=&ast.CXAtomicOperator{}
                         var err error
 
                         if len($1) > 0 {
@@ -1182,7 +1182,7 @@ expression_statement:
                         }
                        
 
-			if len($1) > 0 && lastFirstAtomicOp.Operator == nil && !$1[len($1) - 1].IsMethodCall() {
+			if len($1) > 0 && lastFirstAtomicOp.Operator == nil  && !$1[len($1) - 1].IsMethodCall() {
 				outs := lastFirstAtomicOp.Outputs
 				if len(outs) > 0 {
 					println(ast.CompilationError(outs[0].ArgDetails.FileName, outs[0].ArgDetails.FileLine), "invalid expression")

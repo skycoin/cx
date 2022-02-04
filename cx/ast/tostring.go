@@ -25,12 +25,14 @@ func ToString(cxprogram *CXProgram) string {
 	var currentPackage *CXPackage
 
 	currentPackage, err := cxprogram.GetCurrentPackage()
-
 	if err != nil {
 		panic("CXProgram.ToString(): error, currentPackage is nil")
 	}
 
-	currentFunction, _ = cxprogram.GetCurrentFunction()
+	currentFunction, err = cxprogram.GetCurrentFunction()
+	if err != nil {
+		panic(err)
+	}
 	currentPackage.CurrentFunction = CXFunctionIndex(currentFunction.Index)
 
 	BuildStrPackages(cxprogram, &ast3) //what does this do?

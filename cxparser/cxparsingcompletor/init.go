@@ -1,8 +1,8 @@
 package parsingcompletor
 
 import (
-	"github.com/skycoin/cx/cx/opcodes"
 	cxinit "github.com/skycoin/cx/cx/init"
+	"github.com/skycoin/cx/cx/opcodes"
 )
 
 var Initialized bool

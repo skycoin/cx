@@ -62,6 +62,7 @@ func RegisterOperator(name string, handler ast.OpcodeHandler, inputs []*ast.CXAr
 func MakeNativeFunction(opCode int, inputs []*ast.CXArgument, outputs []*ast.CXArgument) *ast.CXFunction {
 	fn := &ast.CXFunction{
 		AtomicOPCode: opCode,
+		Index:        -1,
 	}
 
 	offset := types.Pointer(0)

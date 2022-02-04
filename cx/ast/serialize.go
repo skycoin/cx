@@ -256,11 +256,16 @@ func serializeExpression(prgrm *CXProgram, expr *CXExpression, s *SerializedCXPr
 
 		sExpr.ExpressionType = int64(expr.ExpressionType)
 
-		fnPkg, err := prgrm.GetPackageFromArray(cxAtomicOp.Function.Package)
+		cxAtomicOpFunction, err := prgrm.GetFunctionFromArray(cxAtomicOp.Function)
 		if err != nil {
 			panic(err)
 		}
-		fnName := fnPkg.Name + "." + cxAtomicOp.Function.Name
+
+		fnPkg, err := prgrm.GetPackageFromArray(cxAtomicOpFunction.Package)
+		if err != nil {
+			panic(err)
+		}
+		fnName := fnPkg.Name + "." + cxAtomicOpFunction.Name
 		if fnOff, found := s.FunctionsMap[fnName]; found {
 			sExpr.FunctionOffset = int64(fnOff)
 		} else {
@@ -925,8 +930,7 @@ func deserializePackages(s *SerializedCXProgram, prgrm *CXProgram) {
 			}
 		}
 
-		newPkgIdx := prgrm.AddPackageInArray(pkg)
-		prgrm.Packages[pkg.Name] = CXPackageIndex(newPkgIdx)
+		prgrm.AddPackage(pkg)
 	}
 
 	// current package
@@ -1059,9 +1063,9 @@ func deserializePackageImport(sImp *serializedPackage, s *SerializedCXProgram, p
 	return nil
 }
 
-func deserializeExpressionFunction(sExpr *serializedExpression, s *SerializedCXProgram, prgrm *CXProgram) *CXFunction {
+func deserializeExpressionFunction(sExpr *serializedExpression, s *SerializedCXProgram, prgrm *CXProgram) CXFunctionIndex {
 	if sExpr.FunctionOffset < 0 {
-		return nil
+		return -1
 	}
 
 	fnPkgIdx := prgrm.Packages[s.Functions[sExpr.FunctionOffset].PackageName]
@@ -1078,11 +1082,11 @@ func deserializeExpressionFunction(sExpr *serializedExpression, s *SerializedCXP
 			panic(err)
 		}
 		if fn.Name == fnName {
-			return fn
+			return fnIdx
 		}
 	}
 
-	return nil
+	return -1
 }
 
 func deserializeExpressions(off int64, size int64, s *SerializedCXProgram, prgrm *CXProgram) []*CXExpression {

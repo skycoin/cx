@@ -245,13 +245,12 @@ function_header:
 
 			if pkg, err := Program.GetCurrentPackage(); err == nil {
 				fn := ast.MakeFunction(fnName, CurrentFileName, lineNo)
-                                fn.AddInput($3[0])
 				_,fnIdx:=pkg.AddFunction(Program,fn)
                                 newFn,err:=Program.GetFunctionFromArray(fnIdx)
                                 if err!=nil{
                                         panic(err)
                                 }
-                                
+                                newFn.AddInput($3[0])
                                 $$ = newFn
 			} else {
 				panic(err)

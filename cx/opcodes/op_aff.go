@@ -61,6 +61,7 @@ func CallAffPredicate(prgrm *ast.CXProgram, fn *ast.CXFunction, predValue []byte
 	newCall.Operator = fn
 	newCall.Line = 0
 	newCall.FramePointer = prgrm.Stack.Pointer
+
 	prgrm.Stack.Pointer += newCall.Operator.Size
 
 	newFP := newCall.FramePointer
@@ -91,7 +92,6 @@ func CallAffPredicate(prgrm *ast.CXProgram, fn *ast.CXFunction, predValue []byte
 	}
 
 	prevCall.Line--
-
 	return types.GetSlice_byte(prgrm.Memory, ast.GetFinalOffset(prgrm,
 		newCall.FramePointer,
 		newCall.Operator.Outputs[0]),
@@ -189,7 +189,12 @@ func QueryArgument(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpress
 		panic(err)
 	}
 
-	for _, ex := range cxAtomicOp.Function.Expressions {
+	cxAtomicOpFunction, err := prgrm.GetFunctionFromArray(cxAtomicOp.Function)
+	if err != nil {
+		panic(err)
+	}
+
+	for _, ex := range cxAtomicOpFunction.Expressions {
 		exCXAtomicOp, _, _, err := prgrm.GetOperation(ex)
 		if err != nil {
 			panic(err)
@@ -212,7 +217,12 @@ func QueryExpressions(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpr
 		panic(err)
 	}
 
-	for _, ex := range cxAtomicOp.Function.Expressions {
+	cxAtomicOpFunction, err := prgrm.GetFunctionFromArray(cxAtomicOp.Function)
+	if err != nil {
+		panic(err)
+	}
+
+	for _, ex := range cxAtomicOpFunction.Expressions {
 		exCXAtomicOp, _, _, err := prgrm.GetOperation(ex)
 		if err != nil {
 			panic(err)
@@ -692,6 +702,7 @@ func opAffOn(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) 
 	prevExpr := prevFn.CurrentExpression
 
 	call := prgrm.GetCurrentCall()
+
 	expr := call.Operator.Expressions[call.Line]
 	fp := inputs[0].FramePointer
 
@@ -701,7 +712,12 @@ func opAffOn(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) 
 	if err != nil {
 		panic(err)
 	}
-	var tgtFn = ast.CXFunction(*cxAtomicOp.Function)
+	cxAtomicOpFunction, err := prgrm.GetFunctionFromArray(cxAtomicOp.Function)
+	if err != nil {
+		panic(err)
+	}
+
+	var tgtFn = ast.CXFunction(*cxAtomicOpFunction)
 	var tgtExpr = ast.CXExpression(*prevExpr)
 
 	// processing the target
@@ -753,12 +769,18 @@ func opAffOf(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) 
 	if err != nil {
 		panic(err)
 	}
+
+	cxAtomicOpFunction, err := prgrm.GetFunctionFromArray(cxAtomicOp.Function)
+	if err != nil {
+		panic(err)
+	}
+
 	opPkg, err := prgrm.GetPackageFromArray(cxAtomicOp.Package)
 	if err != nil {
 		panic(err)
 	}
 	var tgtPkg = ast.CXPackage(*opPkg)
-	var tgtFn = ast.CXFunction(*cxAtomicOp.Function)
+	var tgtFn = ast.CXFunction(*cxAtomicOpFunction)
 	var tgtExpr = ast.CXExpression(*prevExpr)
 
 	// processing the target
@@ -888,7 +910,12 @@ func opAffInform(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVal
 		panic(err)
 	}
 
-	var tgtFn = ast.CXFunction(*cxAtomicOp.Function)
+	cxAtomicOpFunction, err := prgrm.GetFunctionFromArray(cxAtomicOp.Function)
+	if err != nil {
+		panic(err)
+	}
+
+	var tgtFn = ast.CXFunction(*cxAtomicOpFunction)
 	var tgtExpr = ast.CXExpression(*prevExpr)
 
 	// processing the target
@@ -1011,7 +1038,12 @@ func opAffRequest(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVa
 		panic(err)
 	}
 
-	var tgtFn = ast.CXFunction(*cxAtomicOp.Function)
+	cxAtomicOpFunction, err := prgrm.GetFunctionFromArray(cxAtomicOp.Function)
+	if err != nil {
+		panic(err)
+	}
+
+	var tgtFn = ast.CXFunction(*cxAtomicOpFunction)
 	var tgtExpr = ast.CXExpression(*prevExpr)
 
 	// processing the target

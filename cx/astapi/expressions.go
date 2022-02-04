@@ -34,6 +34,7 @@ func AddNativeExpressionToFunction(cxprogram *cxast.CXProgram, functionName stri
 	if err != nil {
 		panic(err)
 	}
+
 	cxAtomicOp.Operator.Name = cxast.OpNames[expressionType]
 
 	fn, err := FindFunction(cxprogram, functionName)

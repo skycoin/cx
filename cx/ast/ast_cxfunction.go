@@ -190,7 +190,7 @@ func (fn *CXFunction) AddExpression(prgrm *CXProgram, expr *CXExpression) *CXFun
 		}
 
 		cxAtomicOp.Package = fn.Package
-		cxAtomicOp.Function = fn
+		cxAtomicOp.Function = CXFunctionIndex(fn.Index)
 	}
 
 	fn.Expressions = append(fn.Expressions, expr)
@@ -206,7 +206,7 @@ func (fn *CXFunction) AddExpressionByLineNumber(prgrm *CXProgram, expr *CXExpres
 		panic(err)
 	}
 	cxAtomicOp.Package = fn.Package
-	cxAtomicOp.Function = fn
+	cxAtomicOp.Function = CXFunctionIndex(fn.Index)
 
 	lenExprs := len(fn.Expressions)
 	if lenExprs == line {
@@ -241,6 +241,7 @@ func (fn *CXFunction) RemoveExpression(line int) {
 func MakeAtomicOperatorExpression(prgrm *CXProgram, op *CXFunction) *CXExpression {
 	index := prgrm.AddCXAtomicOp(&CXAtomicOperator{
 		Operator: op,
+		// Function: -1,
 	})
 
 	return &CXExpression{

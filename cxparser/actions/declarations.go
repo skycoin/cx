@@ -104,7 +104,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 				*glbl = *declaration_specifiers
 
 				if initializer[len(initializer)-1].IsStructLiteral() {
-					index := prgrm.AddCXAtomicOp(&ast.CXAtomicOperator{Outputs: []*ast.CXArgument{glbl}})
+					index := prgrm.AddCXAtomicOp(&ast.CXAtomicOperator{Outputs: []*ast.CXArgument{glbl}, Function: -1})
 					initializer = StructLiteralAssignment(prgrm,
 						[]*ast.CXExpression{
 							{
@@ -181,7 +181,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 				declaration_specifiers.Package = ast.CXPackageIndex(pkg.Index)
 
 				if initializer[len(initializer)-1].IsStructLiteral() {
-					index := prgrm.AddCXAtomicOp(&ast.CXAtomicOperator{Outputs: []*ast.CXArgument{declaration_specifiers}})
+					index := prgrm.AddCXAtomicOp(&ast.CXAtomicOperator{Outputs: []*ast.CXArgument{declaration_specifiers}, Function: -1})
 					initializer = StructLiteralAssignment(prgrm,
 						[]*ast.CXExpression{
 							{

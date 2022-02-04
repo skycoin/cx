@@ -95,10 +95,6 @@ func MakeProgram() *CXProgram {
 
 // AddPackage ...
 func (cxprogram *CXProgram) AddPackage(mod *CXPackage) CXPackageIndex {
-	// if cxprogram.Packages[mod.Name] != nil {
-	// 	return
-	// }
-
 	index := cxprogram.AddPackageInArray(mod)
 
 	cxprogram.Packages[mod.Name] = CXPackageIndex(index)
@@ -161,6 +157,10 @@ func (cxprogram *CXProgram) AddFunctionInArray(fn *CXFunction) CXFunctionIndex {
 }
 
 func (cxprogram *CXProgram) GetFunctionFromArray(index CXFunctionIndex) (*CXFunction, error) {
+	if index == -1 {
+		return nil, nil
+	}
+
 	if int(index) > (len(cxprogram.CXFunctions) - 1) {
 		return nil, fmt.Errorf("error: CXFunctions[%d]: index out of bounds", index)
 	}
@@ -340,7 +340,7 @@ func (cxprogram *CXProgram) GetCurrentFunction() (*CXFunction, error) {
 		return &CXFunction{}, err
 	}
 
-	if currentPackage.CurrentFunction != -1 {
+	if currentPackage.CurrentFunction == -1 {
 		return nil, errors.New("current function is nil")
 	}
 
@@ -477,7 +477,6 @@ func (cxprogram *CXProgram) PrintAllObjects() {
 
 	for c := types.Pointer(0); c <= cxprogram.CallCounter; c++ {
 		op := cxprogram.CallStack[c].Operator
-
 		for _, ptr := range op.ListOfPointers {
 			heapOffset := types.Read_ptr(cxprogram.Memory, fp+ptr.Offset)
 

@@ -325,7 +325,7 @@ func Assignment(prgrm *ast.CXProgram, to []*ast.CXExpression, assignOp string, f
 
 			if fromCXAtomicOp.Operator.AtomicOPCode != constants.OP_IDENTITY {
 				// it's a short variable declaration
-				toCXAtomicOp.Outputs[0].Size = ast.Natives[fromCXAtomicOp.Operator.AtomicOPCode].Outputs[0].Size
+				toCXAtomicOp.Outputs[0].Size = fromCXAtomicOp.Operator.Outputs[0].Size
 				toCXAtomicOp.Outputs[0].Type = fromCXAtomicOp.Operator.Outputs[0].Type
 				toCXAtomicOp.Outputs[0].PointerTargetType = fromCXAtomicOp.Operator.Outputs[0].PointerTargetType
 				toCXAtomicOp.Outputs[0].Lengths = fromCXAtomicOp.Operator.Outputs[0].Lengths
