@@ -32,6 +32,8 @@ type CXArgumentStruct struct {
 type CXArgumentPointer struct {
 }
 
+type CXArgumentIndex int
+
 // CXArgument is used to define local variables, global variables,
 // literals (strings, numbers), inputs and outputs to function
 // calls. All of the fields in this structure are determined at
@@ -44,7 +46,7 @@ type CXArgument struct {
 	// (e.g. `4`, `"Hello world!"`, `[3]i32{1, 2, 3}`.)
 	Name string
 
-	Package *CXPackage
+	Package CXPackageIndex
 
 	// Lengths is used if the `CXArgument` defines an array or a
 	// slice. The number of dimensions for the array/slice is
@@ -275,7 +277,7 @@ func (arg *CXArgument) GetType() types.Code {
 
 // AddPackage assigns CX package `pkg` to CX argument `arg`.
 func (arg *CXArgument) AddPackage(pkg *CXPackage) *CXArgument {
-	arg.Package = pkg
+	arg.Package = CXPackageIndex(pkg.Index)
 	return arg
 }
 
@@ -292,7 +294,7 @@ func (arg *CXArgument) AddType(typeCode types.Code) *CXArgument {
 // AddInput adds input parameters to `arg` in case arg is of type `TYPE_FUNC`.
 func (arg *CXArgument) AddInput(inp *CXArgument) *CXArgument {
 	arg.Inputs = append(arg.Inputs, inp)
-	if inp.Package == nil {
+	if inp.Package == -1 {
 		inp.Package = arg.Package
 	}
 	return arg
@@ -301,7 +303,7 @@ func (arg *CXArgument) AddInput(inp *CXArgument) *CXArgument {
 // AddOutput adds output parameters to `arg` in case arg is of type `TYPE_FUNC`.
 func (arg *CXArgument) AddOutput(out *CXArgument) *CXArgument {
 	arg.Outputs = append(arg.Outputs, out)
-	if out.Package == nil {
+	if out.Package == -1 {
 		out.Package = arg.Package
 	}
 	return arg
@@ -329,7 +331,7 @@ func Struct(prgrm *CXProgram, pkgName, strctName, argName string) *CXArgument {
 		panic(err)
 	}
 
-	strct, err := pkg.GetStruct(strctName)
+	strct, err := pkg.GetStruct(prgrm, strctName)
 	if err != nil {
 		panic(err)
 	}
@@ -356,7 +358,7 @@ func Slice(typeCode types.Code) *CXArgument {
 // The current standard library only uses basic types and slices. If more options are needed, modify this function
 func Func(pkg *CXPackage, inputs []*CXArgument, outputs []*CXArgument) *CXArgument {
 	arg := Param(types.FUNC)
-	arg.Package = pkg
+	arg.Package = CXPackageIndex(pkg.Index)
 	arg.Inputs = inputs
 	arg.Outputs = outputs
 	return arg
@@ -372,7 +374,8 @@ func Param(typeCode types.Code) *CXArgument {
 // MakeArgument ...
 func MakeArgument(name string, fileName string, fileLine int) *CXArgument {
 	return &CXArgument{
-		Name: name,
+		Name:    name,
+		Package: -1,
 		ArgDetails: &CXArgumentDebug{
 			FileName: fileName,
 			FileLine: fileLine,
@@ -384,7 +387,8 @@ func MakeArgument(name string, fileName string, fileLine int) *CXArgument {
 // MakeField ...
 func MakeField(name string, typeCode types.Code, fileName string, fileLine int) *CXArgument {
 	return &CXArgument{
-		Name: name,
+		Name:    name,
+		Package: -1,
 		ArgDetails: &CXArgumentDebug{
 			FileName: fileName,
 			FileLine: fileLine,
@@ -398,7 +402,8 @@ func MakeField(name string, typeCode types.Code, fileName string, fileLine int) 
 func MakeGlobal(name string, typeCode types.Code, fileName string, fileLine int) *CXArgument {
 	size := typeCode.Size()
 	global := &CXArgument{
-		Name: name,
+		Name:    name,
+		Package: -1,
 		ArgDetails: &CXArgumentDebug{
 			FileName: fileName,
 			FileLine: fileLine,

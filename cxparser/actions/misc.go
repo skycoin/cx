@@ -54,7 +54,7 @@ func WritePrimary(prgrm *ast.CXProgram, typeCode types.Code, byts []byte, isSlic
 	if pkg, err := prgrm.GetCurrentPackage(); err == nil {
 		arg := ast.MakeArgument("", CurrentFile, LineNo)
 		arg.AddType(typeCode)
-		arg.Package = pkg
+		arg.Package = ast.CXPackageIndex(pkg.Index)
 
 		size := types.Cast_int_to_ptr(len(byts))
 
@@ -102,7 +102,7 @@ func WritePrimary(prgrm *ast.CXProgram, typeCode types.Code, byts []byte, isSlic
 			panic(err)
 		}
 
-		cxAtomicOp.Package = pkg
+		cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
 		cxAtomicOp.AddOutput(arg)
 		return []*ast.CXExpression{expr}
 	} else {
@@ -123,7 +123,7 @@ func StructLiteralFields(prgrm *ast.CXProgram, ident string) *ast.CXExpression {
 		arg := ast.MakeArgument("", CurrentFile, LineNo)
 		arg.AddType(types.IDENTIFIER)
 		arg.Name = ident
-		arg.Package = pkg
+		arg.Package = ast.CXPackageIndex(pkg.Index)
 
 		expr := ast.MakeAtomicOperatorExpression(prgrm, nil)
 		cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
@@ -131,7 +131,7 @@ func StructLiteralFields(prgrm *ast.CXProgram, ident string) *ast.CXExpression {
 			panic(err)
 		}
 		cxAtomicOp.AddOutput(arg)
-		cxAtomicOp.Package = pkg
+		cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
 
 		return expr
 	} else {
@@ -234,7 +234,11 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 	prgrmFldFreeHeap.TotalSize = types.I64.Size()
 
 	// prgrmFldCaller := cxcore.MakeField("Caller", cxcore.TYPE_STRUCT, "", 0)
-	prgrmFldCaller := DeclarationSpecifiersStruct(prgrm, callStrct.Name, callStrct.Package.Name, false, currentFile, lineNo)
+	strctPkg, err := prgrm.GetPackageFromArray(callStrct.Package)
+	if err != nil {
+		panic(err)
+	}
+	prgrmFldCaller := DeclarationSpecifiersStruct(prgrm, callStrct.Name, strctPkg.Name, false, currentFile, lineNo)
 	prgrmFldCaller.Name = "Caller"
 
 	prgrmStrct.AddField(prgrmFldCallCounter)
@@ -250,7 +254,7 @@ func PrimaryIdentifier(prgrm *ast.CXProgram, ident string) []*ast.CXExpression {
 		arg.AddType(types.IDENTIFIER)
 		// arg.Typ = "ident"
 		arg.Name = ident
-		arg.Package = pkg
+		arg.Package = ast.CXPackageIndex(pkg.Index)
 
 		// exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
 		// expr := &cxcore.CXExpression{ProgramOutput: []*cxcore.CXArgument{arg}}
@@ -260,7 +264,7 @@ func PrimaryIdentifier(prgrm *ast.CXProgram, ident string) []*ast.CXExpression {
 			panic(err)
 		}
 		cxAtomicOp.AddOutput(arg)
-		cxAtomicOp.Package = pkg
+		cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
 
 		return []*ast.CXExpression{expr}
 	} else {

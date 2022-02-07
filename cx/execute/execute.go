@@ -21,7 +21,8 @@ func getLastLine(cxprogram *ast.CXProgram) *ast.CXExpression {
 	}
 
 	cxAtomicOp := &ast.CXAtomicOperator{
-		Operator: ast.MakeFunction("", "", -1),
+		// Operator: nil,
+		Function: -1,
 	}
 
 	index := cxprogram.AddCXAtomicOp(cxAtomicOp)
@@ -85,7 +86,12 @@ func RunCxAst(cxprogram *ast.CXProgram, untilEnd bool, maxOps int, untilCall typ
 				toCallName = ast.OpNames[cxAtomicOp.Operator.AtomicOPCode]
 			} else {
 				if cxAtomicOp.Operator.Name != "" {
-					toCallName = cxAtomicOp.Operator.Package.Name + "." + cxAtomicOp.Operator.Name
+					opPkg, err := cxprogram.GetPackageFromArray(cxAtomicOp.Operator.Package)
+					if err != nil {
+						panic(err)
+					}
+
+					toCallName = opPkg.Name + "." + cxAtomicOp.Operator.Name
 				} else {
 					// then it's the end of the program got from nested function calls
 					cxprogram.Terminated = true
@@ -113,13 +119,13 @@ func runSysInitFunc(cxprogram *ast.CXProgram, mod *ast.CXPackage) error {
 	var inputs []ast.CXValue
 	var outputs []ast.CXValue
 
-	fn, err := mod.SelectFunction(constants.SYS_INIT_FUNC)
+	fn, err := mod.SelectFunction(cxprogram, constants.SYS_INIT_FUNC)
 	if err != nil {
 		return err
 	}
 
 	// *init function
-	mainCall := MakeCall(fn)
+	mainCall := MakeCall(cxprogram, fn)
 	cxprogram.CallStack[0] = mainCall
 	cxprogram.Stack.Pointer = fn.Size
 
@@ -180,7 +186,7 @@ func RunCompiled(cxprogram *ast.CXProgram, maxOps int, args []string) error {
 			return err
 		}
 
-		fn, err := mod.SelectFunction(constants.MAIN_FUNC)
+		fn, err := mod.SelectFunction(cxprogram, constants.MAIN_FUNC)
 		if err != nil {
 			return err
 		}
@@ -190,7 +196,7 @@ func RunCompiled(cxprogram *ast.CXProgram, maxOps int, args []string) error {
 		}
 
 		// main function
-		mainCall := MakeCall(fn)
+		mainCall := MakeCall(cxprogram, fn)
 		mainCall.FramePointer = cxprogram.Stack.Pointer
 		// initializing program resources
 		cxprogram.CallStack[0] = mainCall
@@ -225,7 +231,7 @@ func RunCompiled(cxprogram *ast.CXProgram, maxOps int, args []string) error {
 	return nil
 }
 
-func MakeCall(op *ast.CXFunction) ast.CXCall {
+func MakeCall(prgrm *ast.CXProgram, op *ast.CXFunction) ast.CXCall {
 	return ast.CXCall{
 		Operator:     op,
 		Line:         0,

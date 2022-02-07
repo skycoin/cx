@@ -39,7 +39,7 @@ func DeclareGlobal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declaration
 func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 	declarator *ast.CXArgument, declaration_specifiers *ast.CXArgument,
 	initializer []*ast.CXExpression, doesInitialize bool) {
-	declaration_specifiers.Package = pkg
+	declaration_specifiers.Package = ast.CXPackageIndex(pkg.Index)
 
 	// Treat the name a bit different whether it's defined already or not.
 	if glbl, err := pkg.GetGlobal(declarator.Name); err == nil {
@@ -104,7 +104,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 				*glbl = *declaration_specifiers
 
 				if initializer[len(initializer)-1].IsStructLiteral() {
-					index := prgrm.AddCXAtomicOp(&ast.CXAtomicOperator{Outputs: []*ast.CXArgument{glbl}})
+					index := prgrm.AddCXAtomicOp(&ast.CXAtomicOperator{Outputs: []*ast.CXArgument{glbl}, Function: -1})
 					initializer = StructLiteralAssignment(prgrm,
 						[]*ast.CXExpression{
 							{
@@ -161,7 +161,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 				declaration_specifiers.Offset = offExprAtomicOp.Outputs[0].Offset
 				declaration_specifiers.Size = offExprAtomicOp.Outputs[0].Size
 				declaration_specifiers.TotalSize = offExprAtomicOp.Outputs[0].TotalSize
-				declaration_specifiers.Package = pkg
+				declaration_specifiers.Package = ast.CXPackageIndex(pkg.Index)
 
 				initializerAtomicOp.Operator = ast.Natives[constants.OP_IDENTITY]
 				initializerAtomicOp.AddInput(initializerAtomicOp.Outputs[0])
@@ -178,10 +178,10 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 				declaration_specifiers.Offset = offExprAtomicOp.Outputs[0].Offset
 				declaration_specifiers.Size = offExprAtomicOp.Outputs[0].Size
 				declaration_specifiers.TotalSize = offExprAtomicOp.Outputs[0].TotalSize
-				declaration_specifiers.Package = pkg
+				declaration_specifiers.Package = ast.CXPackageIndex(pkg.Index)
 
 				if initializer[len(initializer)-1].IsStructLiteral() {
-					index := prgrm.AddCXAtomicOp(&ast.CXAtomicOperator{Outputs: []*ast.CXArgument{declaration_specifiers}})
+					index := prgrm.AddCXAtomicOp(&ast.CXAtomicOperator{Outputs: []*ast.CXArgument{declaration_specifiers}, Function: -1})
 					initializer = StructLiteralAssignment(prgrm,
 						[]*ast.CXExpression{
 							{
@@ -214,7 +214,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 			declaration_specifiers.Offset = offExprAtomicOp.Outputs[0].Offset
 			declaration_specifiers.Size = offExprAtomicOp.Outputs[0].Size
 			declaration_specifiers.TotalSize = offExprAtomicOp.Outputs[0].TotalSize
-			declaration_specifiers.Package = pkg
+			declaration_specifiers.Package = ast.CXPackageIndex(pkg.Index)
 
 			pkg.AddGlobal(declaration_specifiers)
 		}
@@ -293,14 +293,14 @@ func DeclareImport(prgrm *ast.CXProgram, name string, currentFile string, lineNo
 	}
 
 	// If the package is already imported, then there is nothing more to be done.
-	if _, err := pkg.GetImport(ident); err == nil {
+	if _, err := pkg.GetImport(prgrm, ident); err == nil {
 		return
 	}
 
 	// If the package is already defined in the program, just add it to
 	// the importing package.
 	if imp, err := prgrm.GetPackage(ident); err == nil {
-		pkg.AddImport(imp)
+		pkg.AddImport(prgrm, imp)
 		return
 	}
 
@@ -309,12 +309,17 @@ func DeclareImport(prgrm *ast.CXProgram, name string, currentFile string, lineNo
 	// something is panic-level wrong.
 	if constants2.IsCorePackage(ident) {
 		imp := ast.MakePackage(ident)
-		pkg.AddImport(imp)
-		prgrm.AddPackage(imp)
-		prgrm.CurrentPackage = pkg
+		impIdx := prgrm.AddPackage(imp)
+		newImp, err := prgrm.GetPackageFromArray(impIdx)
+		if err != nil {
+			panic(err)
+		}
+		pkg.AddImport(prgrm, newImp)
+
+		prgrm.CurrentPackage = ast.CXPackageIndex(pkg.Index)
 
 		if ident == "aff" {
-			AffordanceStructs(prgrm, imp, currentFile, lineNo)
+			AffordanceStructs(prgrm, newImp, currentFile, lineNo)
 		}
 	} else {
 		// This should never happen.
@@ -351,11 +356,11 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 	if err != nil {
 		panic(err)
 	}
-	cxAtomicOp.Package = pkg
+	cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
 
 	declarationSpecifiers.Name = declarator.Name
 	declarationSpecifiers.ArgDetails.FileLine = declarator.ArgDetails.FileLine
-	declarationSpecifiers.Package = pkg
+	declarationSpecifiers.Package = ast.CXPackageIndex(pkg.Index)
 	declarationSpecifiers.PreviouslyDeclared = true
 	cxAtomicOp.AddOutput(declarationSpecifiers)
 
@@ -381,7 +386,7 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 			if err != nil {
 				panic(err)
 			}
-			cxExprAtomicOp.Package = pkg
+			cxExprAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
 
 			initOut := initializerAtomicOp.Outputs[0]
 			// CX checks the output of an expression to determine if it's being passed
@@ -422,11 +427,11 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 		if err != nil {
 			panic(err)
 		}
-		cxAtomicOp.Package = pkg
+		cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
 
 		declarationSpecifiers.Name = declarator.Name
 		declarationSpecifiers.ArgDetails.FileLine = declarator.ArgDetails.FileLine
-		declarationSpecifiers.Package = pkg
+		declarationSpecifiers.Package = ast.CXPackageIndex(pkg.Index)
 		declarationSpecifiers.PreviouslyDeclared = true
 		cxAtomicOp.AddOutput(declarationSpecifiers)
 
@@ -526,7 +531,7 @@ func DeclarationSpecifiersStruct(prgrm *ast.CXProgram, ident string, pkgName str
 
 	if isExternal {
 		// custom type in an imported package
-		imp, err := pkg.GetImport(pkgName)
+		imp, err := pkg.GetImport(prgrm, pkgName)
 		if err != nil {
 			panic(err)
 		}
@@ -543,7 +548,7 @@ func DeclarationSpecifiersStruct(prgrm *ast.CXProgram, ident string, pkgName str
 		arg.Size = strct.Size
 		arg.TotalSize = strct.Size
 
-		arg.Package = pkg
+		arg.Package = ast.CXPackageIndex(pkg.Index)
 		arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_STRUCT)
 
 		return arg
@@ -561,7 +566,7 @@ func DeclarationSpecifiersStruct(prgrm *ast.CXProgram, ident string, pkgName str
 		arg.StructType = strct
 		arg.Size = strct.Size
 		arg.TotalSize = strct.Size
-		arg.Package = pkg
+		arg.Package = ast.CXPackageIndex(pkg.Index)
 
 		return arg
 	}

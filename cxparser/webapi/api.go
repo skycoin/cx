@@ -48,7 +48,12 @@ func ProgramMeta(pg *ast.CXProgram) http.HandlerFunc {
 func PackagesOfProgram(pg *ast.CXProgram) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		pkgNames := make([]string, 0, len(pg.Packages))
-		for _, pkg := range pg.Packages {
+		for _, pkgIdx := range pg.Packages {
+			pkg, err := pg.GetPackageFromArray(pkgIdx)
+			if err != nil {
+				panic(err)
+			}
+
 			pkgNames = append(pkgNames, pkg.Name)
 		}
 
@@ -60,7 +65,12 @@ func PackagesOfProgram(pg *ast.CXProgram) http.HandlerFunc {
 // ExportedSymbolsOfPackage returns exported symbols of a given package.
 func ExportedSymbolsOfPackage(pg *ast.CXProgram, pkgName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		for _, pkg := range pg.Packages {
+		for _, pkgIdx := range pg.Packages {
+			pkg, err := pg.GetPackageFromArray(pkgIdx)
+			if err != nil {
+				panic(err)
+			}
+
 			if pkg.Name != pkgName {
 				continue
 			}

@@ -7,7 +7,12 @@ import (
 )
 
 func FindPackage(cxprogram *cxast.CXProgram, packageName string) (*cxast.CXPackage, error) {
-	for _, pkg := range cxprogram.Packages {
+	for _, pkgIdx := range cxprogram.Packages {
+		pkg, err := cxprogram.GetPackageFromArray(pkgIdx)
+		if err != nil {
+			panic(err)
+		}
+
 		if pkg.Name == packageName {
 			return pkg, nil
 		}
@@ -16,8 +21,18 @@ func FindPackage(cxprogram *cxast.CXProgram, packageName string) (*cxast.CXPacka
 }
 
 func FindFunction(cxprogram *cxast.CXProgram, functionName string) (*cxast.CXFunction, error) {
-	for _, pkg := range cxprogram.Packages {
-		for _, fn := range pkg.Functions {
+	for _, pkgIdx := range cxprogram.Packages {
+		pkg, err := cxprogram.GetPackageFromArray(pkgIdx)
+		if err != nil {
+			panic(err)
+		}
+
+		for _, fnIdx := range pkg.Functions {
+			fn, err := cxprogram.GetFunctionFromArray(fnIdx)
+			if err != nil {
+				return nil, err
+			}
+
 			if fn.Name == functionName {
 				return fn, nil
 			}

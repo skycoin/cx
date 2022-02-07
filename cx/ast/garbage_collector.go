@@ -12,7 +12,12 @@ func MarkAndCompact(prgrm *CXProgram) {
 
 	// marking, setting forward addresses and updating references
 	// global variables
-	for _, pkg := range prgrm.Packages {
+	for _, pkgIdx := range prgrm.Packages {
+		pkg, err := prgrm.GetPackageFromArray(pkgIdx)
+		if err != nil {
+			panic(err)
+		}
+
 		for _, glbl := range pkg.Globals {
 			if (glbl.IsPointer() || glbl.IsSlice || glbl.Type == types.STR) && glbl.StructType == nil {
 				// Getting the offset to the object in the heap
@@ -203,7 +208,12 @@ func DisplaceReferences(prgrm *CXProgram, off types.Pointer, numPkgs int) {
 	updated := make(map[types.Pointer]types.Pointer)
 
 	count := 0
-	for _, pkg := range prgrm.Packages {
+	for _, pkgIdx := range prgrm.Packages {
+		pkg, err := prgrm.GetPackageFromArray(pkgIdx)
+		if err != nil {
+			panic(err)
+		}
+
 		if count > numPkgs {
 			break
 		}
@@ -352,7 +362,12 @@ func updatePointers(prgrm *CXProgram, oldAddr, newAddr types.Pointer) {
 	// TODO: `oldAddr` could be received as a slice of bytes that represent the old address of the object,
 	// as it needs to be converted to bytes later on anyways. However, I'm sticking to an int32
 	// for a bit more of clarity.
-	for _, pkg := range prgrm.Packages {
+	for _, pkgIdx := range prgrm.Packages {
+		pkg, err := prgrm.GetPackageFromArray(pkgIdx)
+		if err != nil {
+			panic(err)
+		}
+
 		for _, glbl := range pkg.Globals {
 			if (glbl.IsPointer() || glbl.IsSlice || glbl.Type == types.STR) && glbl.StructType == nil {
 				// Getting the offset to the object in the heap

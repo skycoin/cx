@@ -46,7 +46,11 @@ func extractExportedSymbols(prgrm *ast.CXProgram, pkg *ast.CXPackage) ExportedSy
 		Globals:   make([]ExportedSymbol, 0, len(pkg.Globals)),
 	}
 
-	for _, f := range pkg.Functions {
+	for _, fIdx := range pkg.Functions {
+		f, err := prgrm.GetFunctionFromArray(fIdx)
+		if err != nil {
+			panic(err)
+		}
 		if isExported(f.Name) {
 			resp.Functions = append(resp.Functions, displayCXFunction(prgrm, pkg, f))
 		}

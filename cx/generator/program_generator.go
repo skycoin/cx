@@ -36,15 +36,15 @@ func GenerateRandomExpressions(prgrm *cxast.CXProgram, inputFn *cxast.CXFunction
 			panic(err)
 		}
 
-		cxAtomicOp.Package = inputPkg
-		cxAtomicOp.Function = inputFn
+		cxAtomicOp.Package = cxast.CXPackageIndex(inputPkg.Index)
+		cxAtomicOp.Function = cxast.CXFunctionIndex(inputFn.Index)
 		for c := 0; c < len(op.Inputs); c++ {
 			cxAtomicOp.Inputs = append(cxAtomicOp.Inputs, getRandInp(prgrm, expr))
 		}
 
 		// if operator is jmp, add then and else lines
 		if IsJumpOperator(op.AtomicOPCode) {
-			lineNumOptions := numExprs - len(cxAtomicOp.Function.Expressions)
+			lineNumOptions := numExprs - len(inputFn.Expressions)
 			if lineNumOptions < 0 {
 				lineNumOptions = (lineNumOptions * -1) - 2
 			}
@@ -133,6 +133,11 @@ func getRandInp(prgrm *cxast.CXProgram, expr *cxast.CXExpression) *cxast.CXArgum
 		panic(err)
 	}
 
+	cxAtomicOpFunction, err := prgrm.GetFunctionFromArray(cxAtomicOp.Function)
+	if err != nil {
+		panic(err)
+	}
+
 	// Find available arg options.
 	optionsFromInputs, optionsFromExpressions := findArgOptions(prgrm, expr, cxAtomicOp.Operator.Inputs[0].Type)
 	lengthOfOptions := len(optionsFromInputs) + len(optionsFromExpressions)
@@ -147,10 +152,10 @@ func getRandInp(prgrm *cxast.CXProgram, expr *cxast.CXExpression) *cxast.CXArgum
 	gotOptionsFromFunctionInputs := rndExprIdx < len(optionsFromInputs)
 
 	if gotOptionsFromFunctionInputs {
-		argToCopy = cxAtomicOp.Function.Inputs[optionsFromInputs[rndExprIdx]]
+		argToCopy = cxAtomicOpFunction.Inputs[optionsFromInputs[rndExprIdx]]
 	} else {
 		rndExprIdx -= len(optionsFromInputs)
-		cxAtomicOp1, err := prgrm.GetCXAtomicOpFromExpressions(cxAtomicOp.Function.Expressions, optionsFromExpressions[rndExprIdx])
+		cxAtomicOp1, err := prgrm.GetCXAtomicOpFromExpressions(cxAtomicOpFunction.Expressions, optionsFromExpressions[rndExprIdx])
 		if err != nil {
 			panic(err)
 		}
@@ -168,7 +173,7 @@ func getRandInp(prgrm *cxast.CXProgram, expr *cxast.CXExpression) *cxast.CXArgum
 		determineExpressionOffset(prgrm, &arg, expr, optionsFromExpressions[rndExprIdx])
 		arg.Name = strconv.Itoa(optionsFromExpressions[rndExprIdx])
 	}
-	arg.Package = cxAtomicOp.Function.Package
+	arg.Package = cxAtomicOpFunction.Package
 
 	return &arg
 }
@@ -182,12 +187,18 @@ func addNewExpression(prgrm *cxast.CXProgram, expr *cxast.CXExpression, expressi
 		panic(err)
 	}
 
+	exprCXAtomicOpFunction, err := prgrm.GetFunctionFromArray(exprCXAtomicOp.Function)
+	if err != nil {
+		panic(err)
+	}
+
 	newExprCXLine := cxast.MakeCXLineExpression(prgrm, "", -1, "")
 	newExpr := cxast.MakeAtomicOperatorExpression(prgrm, cxast.Natives[expressionType])
 	newExprCXAtomicOp, _, _, err := prgrm.GetOperation(newExpr)
 	if err != nil {
 		panic(err)
 	}
+
 	newExprCXAtomicOp.Operator.Name = cxast.OpNames[expressionType]
 
 	// Add expression's inputs
@@ -195,10 +206,10 @@ func addNewExpression(prgrm *cxast.CXProgram, expr *cxast.CXExpression, expressi
 		optionsFromInputs, optionsFromExpressions := findArgOptions(prgrm, expr, newExprCXAtomicOp.Operator.Inputs[0].Type)
 		rndExprIdx = rand.Intn(len(optionsFromInputs) + len(optionsFromExpressions))
 		if rndExprIdx < len(optionsFromInputs) {
-			argToAdd = exprCXAtomicOp.Function.Inputs[optionsFromInputs[rndExprIdx]]
+			argToAdd = exprCXAtomicOpFunction.Inputs[optionsFromInputs[rndExprIdx]]
 		} else {
 			rndExprIdx -= len(optionsFromInputs)
-			argToAddCXAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(exprCXAtomicOp.Function.Expressions, optionsFromExpressions[rndExprIdx])
+			argToAddCXAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(exprCXAtomicOpFunction.Expressions, optionsFromExpressions[rndExprIdx])
 			if err != nil {
 				panic(err)
 			}
@@ -208,15 +219,15 @@ func addNewExpression(prgrm *cxast.CXProgram, expr *cxast.CXExpression, expressi
 	}
 
 	// Add expression's output
-	argOutName := strconv.Itoa(len(exprCXAtomicOp.Function.Expressions))
+	argOutName := strconv.Itoa(len(exprCXAtomicOpFunction.Expressions))
 	argOut := cxast.MakeField(argOutName, types.BOOL, "", -1)
 	argOut.AddType(types.Code(types.BOOL))
-	argOut.Package = exprCXAtomicOp.Function.Package
+	argOut.Package = exprCXAtomicOpFunction.Package
 	newExprCXAtomicOp.AddOutput(argOut)
-	exprCXAtomicOp.Function.AddExpression(prgrm, newExprCXLine)
-	exprCXAtomicOp.Function.AddExpression(prgrm, newExpr)
+	exprCXAtomicOpFunction.AddExpression(prgrm, newExprCXLine)
+	exprCXAtomicOpFunction.AddExpression(prgrm, newExpr)
 
-	determineExpressionOffset(prgrm, argOut, expr, len(exprCXAtomicOp.Function.Expressions))
+	determineExpressionOffset(prgrm, argOut, expr, len(exprCXAtomicOpFunction.Expressions))
 
 	return argOut
 }
@@ -230,8 +241,12 @@ func findArgOptions(prgrm *cxast.CXProgram, expr *cxast.CXExpression, argTypeToF
 		panic(err)
 	}
 
+	cxAtomicOpFunction, err := prgrm.GetFunctionFromArray(cxAtomicOp.Function)
+	if err != nil {
+		panic(err)
+	}
 	// loop in inputs
-	for i, inp := range cxAtomicOp.Function.Inputs {
+	for i, inp := range cxAtomicOpFunction.Inputs {
 		if inp.Type == argTypeToFind && inp.Name != "" {
 			// add index to options from inputs
 			optionsFromInputs = append(optionsFromInputs, i)
@@ -239,7 +254,7 @@ func findArgOptions(prgrm *cxast.CXProgram, expr *cxast.CXExpression, argTypeToF
 	}
 
 	// loop in expression outputs
-	for i, exp := range cxAtomicOp.Function.Expressions {
+	for i, exp := range cxAtomicOpFunction.Expressions {
 		expCXAtomicOp, _, _, err := prgrm.GetOperation(exp)
 		if err != nil {
 			panic(err)
@@ -262,7 +277,12 @@ func getRandOut(prgrm *cxast.CXProgram, expr *cxast.CXExpression) *cxast.CXArgum
 		panic(err)
 	}
 
-	for i, exp := range cxAtomicOp.Function.Expressions {
+	cxAtomicOpFunction, err := prgrm.GetFunctionFromArray(cxAtomicOp.Function)
+	if err != nil {
+		panic(err)
+	}
+
+	for i, exp := range cxAtomicOpFunction.Expressions {
 		if exp.Type == ast.CX_LINE {
 			continue
 		}
@@ -270,6 +290,7 @@ func getRandOut(prgrm *cxast.CXProgram, expr *cxast.CXExpression) *cxast.CXArgum
 		if err != nil {
 			panic(err)
 		}
+
 		if len(expCXAtomicOp.Operator.Outputs) > 0 && expCXAtomicOp.Operator.Outputs[0].Type == cxAtomicOp.Operator.Outputs[0].Type {
 			optionsFromExpressions = append(optionsFromExpressions, i)
 		}
@@ -277,7 +298,7 @@ func getRandOut(prgrm *cxast.CXProgram, expr *cxast.CXExpression) *cxast.CXArgum
 
 	rndExprIdx := rand.Intn(len(optionsFromExpressions))
 
-	copyCXAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(cxAtomicOp.Function.Expressions, optionsFromExpressions[rndExprIdx])
+	copyCXAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(cxAtomicOpFunction.Expressions, optionsFromExpressions[rndExprIdx])
 	if err != nil {
 		panic(err)
 	}
@@ -289,7 +310,7 @@ func getRandOut(prgrm *cxast.CXProgram, expr *cxast.CXExpression) *cxast.CXArgum
 	}
 
 	determineExpressionOffset(prgrm, &arg, expr, optionsFromExpressions[rndExprIdx])
-	arg.Package = cxAtomicOp.Function.Package
+	arg.Package = cxAtomicOpFunction.Package
 	arg.Name = strconv.Itoa(optionsFromExpressions[rndExprIdx])
 
 	return &arg
@@ -301,15 +322,20 @@ func determineExpressionOffset(prgrm *cxast.CXProgram, arg *cxast.CXArgument, ex
 		panic(err)
 	}
 
-	// Determining the offset where the expression should be writing to.
-	for c := 0; c < len(cxAtomicOp.Function.Inputs); c++ {
-		arg.Offset += cxAtomicOp.Function.Inputs[c].TotalSize
+	cxAtomicOpFunction, err := prgrm.GetFunctionFromArray(cxAtomicOp.Function)
+	if err != nil {
+		panic(err)
 	}
-	for c := 0; c < len(cxAtomicOp.Function.Outputs); c++ {
-		arg.Offset += cxAtomicOp.Function.Outputs[c].TotalSize
+
+	// Determining the offset where the expression should be writing to.
+	for c := 0; c < len(cxAtomicOpFunction.Inputs); c++ {
+		arg.Offset += cxAtomicOpFunction.Inputs[c].TotalSize
+	}
+	for c := 0; c < len(cxAtomicOpFunction.Outputs); c++ {
+		arg.Offset += cxAtomicOpFunction.Outputs[c].TotalSize
 	}
 	for c := 0; c < indexOfSelectedOption; c++ {
-		cxAtomicOp1, err := prgrm.GetCXAtomicOpFromExpressions(cxAtomicOp.Function.Expressions, c)
+		cxAtomicOp1, err := prgrm.GetCXAtomicOpFromExpressions(cxAtomicOpFunction.Expressions, c)
 		if err != nil {
 			panic(err)
 		}

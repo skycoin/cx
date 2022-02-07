@@ -70,7 +70,12 @@ func (cb *CXCallback) Init(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs [
 		panic(err)
 	}
 
-	cb.init(prgrm, inputs, outputs, cxAtomicOp.Package.Name)
+	pkg, err := prgrm.GetPackageFromArray(cxAtomicOp.Package)
+	if err != nil {
+		panic(err)
+	}
+
+	cb.init(prgrm, inputs, outputs, pkg.Name)
 }
 
 func (cb *CXCallback) InitEx(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {

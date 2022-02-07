@@ -348,7 +348,7 @@ direct_declarator:
 				arg := ast.MakeArgument("", actions.CurrentFile, actions.LineNo)
                 arg.AddType(types.UNDEFINED)
 				arg.Name = $1
-				arg.Package = pkg
+				arg.Package = ast.CXPackageIndex(pkg.Index)
 				$$ = arg
 			} else {
 				panic(err)
@@ -1171,7 +1171,7 @@ expression_statement:
                 { $$ = nil }
 	|       expression SEMICOLON
                 {          
-                        var lastFirstAtomicOp *ast.CXAtomicOperator
+                        lastFirstAtomicOp:=&ast.CXAtomicOperator{}
                         var err error
 
                         if len($1) > 0 {
@@ -1182,7 +1182,7 @@ expression_statement:
                         }
                        
 
-			if len($1) > 0 && lastFirstAtomicOp.Operator == nil && !$1[len($1) - 1].IsMethodCall() {
+			if len($1) > 0 && lastFirstAtomicOp.Operator == nil  && !$1[len($1) - 1].IsMethodCall() {
 				outs := lastFirstAtomicOp.Outputs
 				if len(outs) > 0 {
 					println(ast.CompilationError(outs[0].ArgDetails.FileName, outs[0].ArgDetails.FileLine), "invalid expression")
@@ -1313,7 +1313,7 @@ jump_statement: GOTO IDENTIFIER SEMICOLON
                                 panic(err)
                         }
 
-                        cxAtomicOp.Package = pkg
+                        cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
                         cxAtomicOp.Label = $2
                         $$ = []*ast.CXExpression{exprCXLine,expr}
 			

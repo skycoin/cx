@@ -25,13 +25,15 @@ func ToString(cxprogram *CXProgram) string {
 	var currentPackage *CXPackage
 
 	currentPackage, err := cxprogram.GetCurrentPackage()
-
 	if err != nil {
 		panic("CXProgram.ToString(): error, currentPackage is nil")
 	}
 
-	currentFunction, _ = cxprogram.GetCurrentFunction()
-	currentPackage.CurrentFunction = currentFunction
+	currentFunction, err = cxprogram.GetCurrentFunction()
+	if err != nil {
+		panic(err)
+	}
+	currentPackage.CurrentFunction = CXFunctionIndex(currentFunction.Index)
 
 	BuildStrPackages(cxprogram, &ast3) //what does this do?
 
@@ -40,14 +42,18 @@ func ToString(cxprogram *CXProgram) string {
 
 // buildStrImports is an auxiliary function for `toString`. It builds
 // string representation all the imported packages of `pkg`.
-func buildStrImports(pkg *CXPackage, ast *string) {
+func buildStrImports(prgrm *CXProgram, pkg *CXPackage, ast *string) {
 	if len(pkg.Imports) > 0 {
 		*ast += "\tImports\n"
 	}
 
 	count := 0
-	for _, imp := range pkg.Imports {
-		*ast += fmt.Sprintf("\t\t%d.- Import: %s\n", count, imp.Name)
+	for _, impIdx := range pkg.Imports {
+		impPkg, err := prgrm.GetPackageFromArray(impIdx)
+		if err != nil {
+			panic(err)
+		}
+		*ast += fmt.Sprintf("\t\t%d.- Import: %s\n", count, impPkg.Name)
 		count++
 	}
 }
@@ -94,11 +100,16 @@ func buildStrFunctions(prgrm *CXProgram, pkg *CXPackage, ast1 *string) {
 	// We need to declare the counter outside so we can
 	// ignore the increment from the `*init` function.
 	var j int
-	for _, fn := range pkg.Functions {
+	for _, fnIdx := range pkg.Functions {
+		fn, err := prgrm.GetFunctionFromArray(fnIdx)
+		if err != nil {
+			panic(err)
+		}
+
 		if fn.Name == constants.SYS_INIT_FUNC {
 			continue
 		}
-		_, err := pkg.SelectFunction(fn.Name)
+		_, err = pkg.SelectFunction(prgrm, fn.Name)
 		if err != nil {
 			panic(err)
 		}
@@ -186,14 +197,19 @@ func BuildStrPackages(prgrm *CXProgram, ast *string) {
 	// We need to declare the counter outside so we can
 	// ignore the increments from core or stdlib packages.
 	var i int
-	for _, pkg := range prgrm.Packages {
+	for _, pkgIdx := range prgrm.Packages {
+		pkg, err := prgrm.GetPackageFromArray(pkgIdx)
+		if err != nil {
+			panic(err)
+		}
+
 		if constants2.IsCorePackage(pkg.Name) {
 			continue
 		}
 
 		*ast += fmt.Sprintf("%d.- Package: %s\n", i, pkg.Name)
 
-		buildStrImports(pkg, ast)
+		buildStrImports(prgrm, pkg, ast)
 		buildStrGlobals(prgrm, pkg, ast)
 		buildStrStructs(prgrm, pkg, ast)
 		buildStrFunctions(prgrm, pkg, ast)
@@ -212,7 +228,7 @@ func getFormattedParam(prgrm *CXProgram, params []*CXArgument, pkg *CXPackage, b
 
 		// Checking if this argument comes from an imported package.
 		externalPkg := false
-		if pkg != param.Package {
+		if CXPackageIndex(pkg.Index) != param.Package {
 			externalPkg = true
 		}
 
@@ -560,9 +576,14 @@ func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCod
 // function formats indexing and pointer dereferences associated to `arg`.
 func getFormattedDerefs(prgrm *CXProgram, arg *CXArgument, includePkg bool) string {
 	name := ""
+
+	argPkg, err := prgrm.GetPackageFromArray(arg.Package)
+	if err != nil {
+		panic(err)
+	}
 	// Checking if we should include `arg`'s package name.
 	if includePkg {
-		name = fmt.Sprintf("%s.%s", arg.Package.Name, arg.Name)
+		name = fmt.Sprintf("%s.%s", argPkg.Name, arg.Name)
 	} else {
 		name = arg.Name
 	}
@@ -681,13 +702,13 @@ func GetFormattedType(prgrm *CXProgram, arg *CXArgument) string {
 						typ += formatParameters(prgrm, elt.Outputs)
 					} else {
 						// Then it refers to a named function defined in a package.
-						pkg, err := prgrm.GetPackage(arg.Package.Name)
+						pkg, err := prgrm.GetPackageFromArray(arg.Package)
 						if err != nil {
 							println(CompilationError(elt.ArgDetails.FileName, elt.ArgDetails.FileLine), err.Error())
 							os.Exit(constants.CX_COMPILATION_ERROR)
 						}
 
-						fn, err := pkg.GetFunction(elt.Name)
+						fn, err := pkg.GetFunction(prgrm, elt.Name)
 						if err == nil {
 							// println(CompilationError(elt.FileName, elt.FileLine), err.ProgramError())
 							// os.Exit(CX_COMPILATION_ERROR)

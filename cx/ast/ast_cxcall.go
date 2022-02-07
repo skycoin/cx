@@ -82,6 +82,7 @@ func processBuiltInOperators(prgrm *CXProgram, expr *CXExpression, globalInputs 
 		// TODO: resolve this at compile time
 		atomicType := cxAtomicOp.Inputs[0].GetType()
 		cxAtomicOp.Operator = GetTypedOperator(atomicType, cxAtomicOp.Operator.AtomicOPCode)
+
 	}
 	inputs := cxAtomicOp.Inputs
 	inputCount := len(inputs)
@@ -165,7 +166,6 @@ func processNonAtomicOperators(prgrm *CXProgram, expr *CXExpression, fp types.Po
 	}
 
 	newFP := newCall.FramePointer
-
 	// wiping next stack frame (removing garbage)
 	for c := types.Pointer(0); c < cxAtomicOp.Operator.Size; c++ {
 		prgrm.Memory[newFP+c] = 0

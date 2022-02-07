@@ -34,7 +34,7 @@ func regexpCompile(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXV
 	}
 
 	// Extracting `regexp`'s Regexp structure.
-	regexpType, err := regexpPkg.GetStruct("Regexp")
+	regexpType, err := regexpPkg.GetStruct(prgrm, "Regexp")
 	if err != nil {
 		panic(err)
 	}
@@ -101,7 +101,7 @@ func opRegexpFind(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVa
 	}
 
 	// Extracting `regexp`'s Regexp structure.
-	regexpType, err := regexpPkg.GetStruct("Regexp")
+	regexpType, err := regexpPkg.GetStruct(prgrm, "Regexp")
 	if err != nil {
 		panic(err)
 	}

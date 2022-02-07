@@ -61,6 +61,7 @@ func CallAffPredicate(prgrm *ast.CXProgram, fn *ast.CXFunction, predValue []byte
 	newCall.Operator = fn
 	newCall.Line = 0
 	newCall.FramePointer = prgrm.Stack.Pointer
+
 	prgrm.Stack.Pointer += newCall.Operator.Size
 
 	newFP := newCall.FramePointer
@@ -91,7 +92,6 @@ func CallAffPredicate(prgrm *ast.CXProgram, fn *ast.CXFunction, predValue []byte
 	}
 
 	prevCall.Line--
-
 	return types.GetSlice_byte(prgrm.Memory, ast.GetFinalOffset(prgrm,
 		newCall.FramePointer,
 		newCall.Operator.Outputs[0]),
@@ -137,9 +137,14 @@ func queryParam(prgrm *ast.CXProgram, fn *ast.CXFunction, args []*ast.CXArgument
 		var typOffset types.Pointer
 		elt := arg.GetAssignmentElement()
 		if elt.StructType != nil {
+			strctTypePkg, err := prgrm.GetPackageFromArray(elt.StructType.Package)
+			if err != nil {
+				panic(err)
+			}
+
 			// then it's struct type
 			// typOffset = WriteObjectRetOff(encoder.Serialize(elt.StructType.Package.Name + "." + elt.StructType.Name))
-			typOffset = types.AllocWrite_str_data(prgrm, prgrm.Memory, elt.StructType.Package.Name+"."+elt.StructType.Name)
+			typOffset = types.AllocWrite_str_data(prgrm, prgrm.Memory, strctTypePkg.Name+"."+elt.StructType.Name)
 		} else {
 			// then it's native type
 			// typOffset = WriteObjectRetOff(encoder.Serialize(TypeNames[elt.Type]))
@@ -184,7 +189,12 @@ func QueryArgument(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpress
 		panic(err)
 	}
 
-	for _, ex := range cxAtomicOp.Function.Expressions {
+	cxAtomicOpFunction, err := prgrm.GetFunctionFromArray(cxAtomicOp.Function)
+	if err != nil {
+		panic(err)
+	}
+
+	for _, ex := range cxAtomicOpFunction.Expressions {
 		exCXAtomicOp, _, _, err := prgrm.GetOperation(ex)
 		if err != nil {
 			panic(err)
@@ -207,7 +217,12 @@ func QueryExpressions(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpr
 		panic(err)
 	}
 
-	for _, ex := range cxAtomicOp.Function.Expressions {
+	cxAtomicOpFunction, err := prgrm.GetFunctionFromArray(cxAtomicOp.Function)
+	if err != nil {
+		panic(err)
+	}
+
+	for _, ex := range cxAtomicOpFunction.Expressions {
 		exCXAtomicOp, _, _, err := prgrm.GetOperation(ex)
 		if err != nil {
 			panic(err)
@@ -255,9 +270,14 @@ func getSignatureSlice(prgrm *ast.CXProgram, params []*ast.CXArgument) types.Poi
 
 		var typOffset types.Pointer
 		if param.StructType != nil {
+			strctTypePkg, err := prgrm.GetPackageFromArray(param.StructType.Package)
+			if err != nil {
+				panic(err)
+			}
+
 			// then it's struct type
 			// typOffset = WriteObjectRetOff(encoder.Serialize(param.StructType.Package.Name + "." + param.StructType.Name))
-			typOffset = types.AllocWrite_str_data(prgrm, prgrm.Memory, param.StructType.Package.Name+"."+param.StructType.Name)
+			typOffset = types.AllocWrite_str_data(prgrm, prgrm.Memory, strctTypePkg.Name+"."+param.StructType.Name)
 		} else {
 			// then it's native type
 			// typOffset = WriteObjectRetOff(encoder.Serialize(TypeNames[param.Type]))
@@ -303,8 +323,17 @@ func QueryStructure(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpres
 		panic(err)
 	}
 
-	queryStructsInPackage(prgrm, fn, strctOffsetB, affOffset, cxAtomicOp.Package)
-	for _, imp := range cxAtomicOp.Package.Imports {
+	pkg, err := prgrm.GetPackageFromArray(cxAtomicOp.Package)
+	if err != nil {
+		panic(err)
+	}
+
+	queryStructsInPackage(prgrm, fn, strctOffsetB, affOffset, pkg)
+	for _, impIdx := range pkg.Imports {
+		imp, err := prgrm.GetPackageFromArray(impIdx)
+		if err != nil {
+			panic(err)
+		}
 		queryStructsInPackage(prgrm, fn, strctOffsetB, affOffset, imp)
 	}
 }
@@ -316,7 +345,16 @@ func QueryFunction(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpress
 		panic(err)
 	}
 
-	for _, f := range cxAtomicOp.Package.Functions {
+	pkg, err := prgrm.GetPackageFromArray(cxAtomicOp.Package)
+	if err != nil {
+		panic(err)
+	}
+	for _, fIdx := range pkg.Functions {
+		f, err := prgrm.GetFunctionFromArray(fIdx)
+		if err != nil {
+			panic(err)
+		}
+
 		if f.Name == constants.SYS_INIT_FUNC {
 			continue
 		}
@@ -371,8 +409,12 @@ func QueryCaller(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpressio
 		// opNameB = encoder.Serialize(OpNames[call.Operator.OpCode])
 		opNameOffset = types.AllocWrite_str_data(prgrm, prgrm.Memory, ast.OpNames[call.Operator.AtomicOPCode])
 	} else {
+		opPkg, err := prgrm.GetPackageFromArray(call.Operator.Package)
+		if err != nil {
+			panic(err)
+		}
 		// opNameB = encoder.Serialize(call.Operator.Package.Name + "." + call.Operator.Name)
-		opNameOffset = types.AllocWrite_str_data(prgrm, prgrm.Memory, call.Operator.Package.Name+"."+call.Operator.Name)
+		opNameOffset = types.AllocWrite_str_data(prgrm, prgrm.Memory, opPkg.Name+"."+call.Operator.Name)
 	}
 
 	callOffset := ast.AllocateSeq(prgrm, types.OBJECT_HEADER_SIZE+types.STR_SIZE+types.I32_SIZE)
@@ -412,8 +454,13 @@ func QueryProgram(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpressi
 			// opNameB = encoder.Serialize(OpNames[call.Operator.OpCode])
 			opNameOffset = types.AllocWrite_str_data(prgrm, prgrm.Memory, ast.OpNames[call.Operator.AtomicOPCode])
 		} else {
+			opPkg, err := prgrm.GetPackageFromArray(call.Operator.Package)
+			if err != nil {
+				panic(err)
+			}
+
 			// opNameB = encoder.Serialize(call.Operator.Package.Name + "." + call.Operator.Name)
-			opNameOffset = types.AllocWrite_str_data(prgrm, prgrm.Memory, call.Operator.Package.Name+"."+call.Operator.Name)
+			opNameOffset = types.AllocWrite_str_data(prgrm, prgrm.Memory, opPkg.Name+"."+call.Operator.Name)
 		}
 
 		// callOffset := AllocateSeq(OBJECT_HEADER_SIZE + STR_SIZE + I32_SIZE)
@@ -469,7 +516,7 @@ func getTarget(prgrm *ast.CXProgram, inp2 *ast.CXArgument, fp types.Pointer, tgt
 					panic(err)
 				}
 			case "fn":
-				if fn, err := tgtPkg.GetFunction(aff); err == nil {
+				if fn, err := tgtPkg.GetFunction(prgrm, aff); err == nil {
 					*tgtFn = *fn
 				} else {
 					panic(err)
@@ -582,7 +629,7 @@ func getAffordances(prgrm *ast.CXProgram, inp1 *ast.CXArgument, fp types.Pointer
 					panic(err)
 				}
 			case "fn":
-				if fn, err := tgtPkg.GetFunction(elt); err == nil {
+				if fn, err := tgtPkg.GetFunction(prgrm, elt); err == nil {
 					_ = fn
 					switch tgtElt {
 					case "arg":
@@ -641,11 +688,21 @@ func getAffordances(prgrm *ast.CXProgram, inp1 *ast.CXArgument, fp types.Pointer
 func opAffOn(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	inp1, inp2 := inputs[0].Arg, inputs[1].Arg
 
-	prevPkg := prgrm.CurrentPackage
-	prevFn := prevPkg.CurrentFunction
+	prevPkgIdx := prgrm.CurrentPackage
+	prevPkg, err := prgrm.GetPackageFromArray(prevPkgIdx)
+	if err != nil {
+		panic(err)
+	}
+
+	prevFnIdx := prevPkg.CurrentFunction
+	prevFn, err := prgrm.GetFunctionFromArray(prevFnIdx)
+	if err != nil {
+		panic(err)
+	}
 	prevExpr := prevFn.CurrentExpression
 
 	call := prgrm.GetCurrentCall()
+
 	expr := call.Operator.Expressions[call.Line]
 	fp := inputs[0].FramePointer
 
@@ -655,7 +712,12 @@ func opAffOn(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) 
 	if err != nil {
 		panic(err)
 	}
-	var tgtFn = ast.CXFunction(*cxAtomicOp.Function)
+	cxAtomicOpFunction, err := prgrm.GetFunctionFromArray(cxAtomicOp.Function)
+	if err != nil {
+		panic(err)
+	}
+
+	var tgtFn = ast.CXFunction(*cxAtomicOpFunction)
 	var tgtExpr = ast.CXExpression(*prevExpr)
 
 	// processing the target
@@ -674,9 +736,9 @@ func opAffOn(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) 
 	getAffordances(prgrm, inp1, fp, tgtElt, tgtArgType, tgtArgIndex, &tgtPkg, &tgtFn, &tgtExpr, onMessages, &affs)
 
 	// returning to previous state
-	prgrm.CurrentPackage = prevPkg
-	prgrm.CurrentPackage.CurrentFunction = prevFn
-	prgrm.CurrentPackage.CurrentFunction.CurrentExpression = prevExpr
+	prgrm.CurrentPackage = prevPkgIdx
+	prevPkg.CurrentFunction = prevFnIdx
+	prevFn.CurrentExpression = prevExpr
 
 	for i, aff := range affs {
 		fmt.Printf("%d - %s\n", i, aff)
@@ -686,8 +748,17 @@ func opAffOn(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) 
 func opAffOf(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	inp1, inp2 := inputs[0].Arg, inputs[1].Arg
 
-	prevPkg := prgrm.CurrentPackage
-	prevFn := prevPkg.CurrentFunction
+	prevPkgIdx := prgrm.CurrentPackage
+	prevPkg, err := prgrm.GetPackageFromArray(prevPkgIdx)
+	if err != nil {
+		panic(err)
+	}
+
+	prevFnIdx := prevPkg.CurrentFunction
+	prevFn, err := prgrm.GetFunctionFromArray(prevFnIdx)
+	if err != nil {
+		panic(err)
+	}
 	prevExpr := prevFn.CurrentExpression
 
 	call := prgrm.GetCurrentCall()
@@ -699,8 +770,17 @@ func opAffOf(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) 
 		panic(err)
 	}
 
-	var tgtPkg = ast.CXPackage(*cxAtomicOp.Package)
-	var tgtFn = ast.CXFunction(*cxAtomicOp.Function)
+	cxAtomicOpFunction, err := prgrm.GetFunctionFromArray(cxAtomicOp.Function)
+	if err != nil {
+		panic(err)
+	}
+
+	opPkg, err := prgrm.GetPackageFromArray(cxAtomicOp.Package)
+	if err != nil {
+		panic(err)
+	}
+	var tgtPkg = ast.CXPackage(*opPkg)
+	var tgtFn = ast.CXFunction(*cxAtomicOpFunction)
 	var tgtExpr = ast.CXExpression(*prevExpr)
 
 	// processing the target
@@ -715,17 +795,17 @@ func opAffOf(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) 
 	getAffordances(prgrm, inp1, fp, tgtElt, tgtArgType, tgtArgIndex, &tgtPkg, &tgtFn, &tgtExpr, ofMessages, &affs)
 
 	// returning to previous state
-	prgrm.CurrentPackage = prevPkg
-	prgrm.CurrentPackage.CurrentFunction = prevFn
-	prgrm.CurrentPackage.CurrentFunction.CurrentExpression = prevExpr
+	prgrm.CurrentPackage = prevPkgIdx
+	prevPkg.CurrentFunction = prevFnIdx
+	prevFn.CurrentExpression = prevExpr
 
 	for i, aff := range affs {
 		fmt.Printf("%d - %s\n", i, aff)
 	}
 }
 
-func readStrctAff(aff string, tgtPkg *ast.CXPackage) *ast.CXStruct {
-	strct, err := tgtPkg.GetStruct(aff)
+func readStrctAff(prgrm *ast.CXProgram, aff string, tgtPkg *ast.CXPackage) *ast.CXStruct {
+	strct, err := tgtPkg.GetStruct(prgrm, aff)
 	if err != nil {
 		panic(err)
 	}
@@ -810,8 +890,17 @@ func opAffInform(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVal
 	expr := call.Operator.Expressions[call.Line]
 	fp := inputs[0].FramePointer
 
-	prevPkg := prgrm.CurrentPackage
-	prevFn := prevPkg.CurrentFunction
+	prevPkgIdx := prgrm.CurrentPackage
+	prevPkg, err := prgrm.GetPackageFromArray(prevPkgIdx)
+	if err != nil {
+		panic(err)
+	}
+
+	prevFnIdx := prevPkg.CurrentFunction
+	prevFn, err := prgrm.GetFunctionFromArray(prevFnIdx)
+	if err != nil {
+		panic(err)
+	}
 	prevExpr := prevFn.CurrentExpression
 
 	var tgtPkg = ast.CXPackage(*prevPkg)
@@ -821,7 +910,12 @@ func opAffInform(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVal
 		panic(err)
 	}
 
-	var tgtFn = ast.CXFunction(*cxAtomicOp.Function)
+	cxAtomicOpFunction, err := prgrm.GetFunctionFromArray(cxAtomicOp.Function)
+	if err != nil {
+		panic(err)
+	}
+
+	var tgtFn = ast.CXFunction(*cxAtomicOpFunction)
 	var tgtExpr = ast.CXExpression(*prevExpr)
 
 	// processing the target
@@ -870,7 +964,7 @@ func opAffInform(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVal
 			panic(err)
 		}
 	case "fn":
-		if fn, err := tgtPkg.GetFunction(elt); err == nil {
+		if fn, err := tgtPkg.GetFunction(prgrm, elt); err == nil {
 			_ = fn
 			switch tgtElt {
 			case "arg":
@@ -912,9 +1006,9 @@ func opAffInform(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVal
 	}
 
 	// returning to previous state
-	prgrm.CurrentPackage = prevPkg
-	prgrm.CurrentPackage.CurrentFunction = prevFn
-	prgrm.CurrentPackage.CurrentFunction.CurrentExpression = prevExpr
+	prgrm.CurrentPackage = prevPkgIdx
+	prevPkg.CurrentFunction = prevFnIdx
+	prevFn.CurrentExpression = prevExpr
 }
 
 func opAffRequest(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
@@ -924,8 +1018,17 @@ func opAffRequest(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVa
 	expr := call.Operator.Expressions[call.Line]
 	fp := inputs[0].FramePointer
 
-	prevPkg := prgrm.CurrentPackage
-	prevFn := prevPkg.CurrentFunction
+	prevPkgIdx := prgrm.CurrentPackage
+	prevPkg, err := prgrm.GetPackageFromArray(prevPkgIdx)
+	if err != nil {
+		panic(err)
+	}
+
+	prevFnIdx := prevPkg.CurrentFunction
+	prevFn, err := prgrm.GetFunctionFromArray(prevFnIdx)
+	if err != nil {
+		panic(err)
+	}
 	prevExpr := prevFn.CurrentExpression
 
 	var tgtPkg = ast.CXPackage(*prevPkg)
@@ -935,7 +1038,12 @@ func opAffRequest(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVa
 		panic(err)
 	}
 
-	var tgtFn = ast.CXFunction(*cxAtomicOp.Function)
+	cxAtomicOpFunction, err := prgrm.GetFunctionFromArray(cxAtomicOp.Function)
+	if err != nil {
+		panic(err)
+	}
+
+	var tgtFn = ast.CXFunction(*cxAtomicOpFunction)
 	var tgtExpr = ast.CXExpression(*prevExpr)
 
 	// processing the target
@@ -991,7 +1099,7 @@ func opAffRequest(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVa
 		fn := ast.Natives[ast.OpCodes[elt]]
 		if fn == nil {
 			var err error
-			fn, err = tgtPkg.GetFunction(elt)
+			fn, err = tgtPkg.GetFunction(prgrm, elt)
 			if err != nil {
 				panic(err)
 			}
@@ -1012,10 +1120,10 @@ func opAffRequest(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVa
 		case "arg":
 			if tgtArgType == "inp" {
 				// tgtExpr.ProgramInput[tgtArgIndex] = readArgAff(elt, &tgtFn)
-				readStrctAff(elt, &tgtPkg).AddField(tgtExprAtomicOp.Inputs[tgtArgIndex])
+				readStrctAff(prgrm, elt, &tgtPkg).AddField(tgtExprAtomicOp.Inputs[tgtArgIndex])
 			} else {
 				// tgtExpr.ProgramOutput[tgtArgIndex] = readArgAff(elt, &tgtFn)
-				readStrctAff(elt, &tgtPkg).AddField(tgtExprAtomicOp.Outputs[tgtArgIndex])
+				readStrctAff(prgrm, elt, &tgtPkg).AddField(tgtExprAtomicOp.Outputs[tgtArgIndex])
 			}
 		case "fn":
 
@@ -1046,9 +1154,9 @@ func opAffRequest(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVa
 	}
 
 	// returning to previous state
-	prgrm.CurrentPackage = prevPkg
-	prgrm.CurrentPackage.CurrentFunction = prevFn
-	prgrm.CurrentPackage.CurrentFunction.CurrentExpression = prevExpr
+	prgrm.CurrentPackage = prevPkgIdx
+	prevPkg.CurrentFunction = prevFnIdx
+	prevFn.CurrentExpression = prevExpr
 }
 
 func opAffQuery(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
@@ -1072,7 +1180,11 @@ func opAffQuery(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 		default:
 			switch cmd {
 			case "filter":
-				if fn, err := inp1.Package.GetFunction(rule); err == nil {
+				inp1Pkg, err := prgrm.GetPackageFromArray(inp1.Package)
+				if err != nil {
+					panic(err)
+				}
+				if fn, err := inp1Pkg.GetFunction(prgrm, rule); err == nil {
 
 					// arg keyword
 					// argB := encoder.Serialize("arg")

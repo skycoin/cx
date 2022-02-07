@@ -32,4 +32,3 @@ func GetTypedOperatorOffset(typeCode types.Code, opCode int) int {
 func GetTypedOperator(typeCode types.Code, opCode int) *CXFunction {
 	return Operators[GetTypedOperatorOffset(typeCode, opCode)]
 }
-

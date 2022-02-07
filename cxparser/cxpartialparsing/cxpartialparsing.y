@@ -224,9 +224,13 @@ function_header:
                 {
 			if pkg, err := Program.GetCurrentPackage(); err == nil {
 				fn := ast.MakeFunction($2, CurrentFileName, lineNo)
-				pkg.AddFunction(fn)
+				_,fnIdx:=pkg.AddFunction(Program,fn)
+                                newFn,err:=Program.GetFunctionFromArray(fnIdx)
+                                if err!=nil{
+                                        panic(err)
+                                }
 
-                                $$ = fn
+                                $$ = newFn
 			} else {
 				panic(err)
 			}
@@ -241,11 +245,13 @@ function_header:
 
 			if pkg, err := Program.GetCurrentPackage(); err == nil {
 				fn := ast.MakeFunction(fnName, CurrentFileName, lineNo)
-				pkg.AddFunction(fn)
-
-                                fn.AddInput($3[0])
-
-                                $$ = fn
+				_,fnIdx:=pkg.AddFunction(Program,fn)
+                                newFn,err:=Program.GetFunctionFromArray(fnIdx)
+                                if err!=nil{
+                                        panic(err)
+                                }
+                                newFn.AddInput($3[0])
+                                $$ = newFn
 			} else {
 				panic(err)
 			}
@@ -311,7 +317,7 @@ direct_declarator:
 				arg := ast.MakeArgument("", actions.CurrentFile, actions.LineNo)
 				arg.AddType(types.UNDEFINED)
 				arg.Name = $1
-				arg.Package = pkg
+				arg.Package = ast.CXPackageIndex(pkg.Index)
 				$$ = arg
 			} else {
 				panic(err)

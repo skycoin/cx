@@ -1373,7 +1373,7 @@ yydefault:
 				arg := ast.MakeArgument("", actions.CurrentFile, actions.LineNo)
 				arg.AddType(types.UNDEFINED)
 				arg.Name = yyDollar[1].tok
-				arg.Package = pkg
+				arg.Package = ast.CXPackageIndex(pkg.Index)
 				yyVAL.argument = arg
 			} else {
 				panic(err)
@@ -2292,7 +2292,7 @@ yydefault:
 		yyDollar = yyS[yypt-2 : yypt+1]
 //line cxparser/cxparsingcompletor/parsingcompletor.y:1173
 		{
-			var lastFirstAtomicOp *ast.CXAtomicOperator
+			lastFirstAtomicOp := &ast.CXAtomicOperator{}
 			var err error
 
 			if len(yyDollar[1].expressions) > 0 {
@@ -2457,7 +2457,7 @@ yydefault:
 				panic(err)
 			}
 
-			cxAtomicOp.Package = pkg
+			cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
 			cxAtomicOp.Label = yyDollar[2].tok
 			yyVAL.expressions = []*ast.CXExpression{exprCXLine, expr}
 

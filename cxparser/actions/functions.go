@@ -8,7 +8,6 @@ import (
 	"github.com/jinzhu/copier"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
-	"github.com/skycoin/cx/cx/globals"
 	"github.com/skycoin/cx/cx/types"
 )
 
@@ -29,13 +28,18 @@ func FunctionHeader(prgrm *ast.CXProgram, ident string, receiver []*ast.CXArgume
 
 			if fn, err := prgrm.GetFunction(fnName, pkg.Name); err == nil {
 				fn.AddInput(receiver[0])
-				pkg.CurrentFunction = fn
+				pkg.CurrentFunction = ast.CXFunctionIndex(fn.Index)
 				return fn
 			} else {
 				fn := ast.MakeFunction(fnName, CurrentFile, LineNo)
-				pkg.AddFunction(fn)
-				fn.AddInput(receiver[0])
-				return fn
+				_, fnIdx := pkg.AddFunction(prgrm, fn)
+				newFn, err := prgrm.GetFunctionFromArray(fnIdx)
+				newFn.AddInput(receiver[0])
+				if err != nil {
+					panic(err)
+				}
+
+				return newFn
 			}
 		} else {
 			panic(err)
@@ -43,12 +47,16 @@ func FunctionHeader(prgrm *ast.CXProgram, ident string, receiver []*ast.CXArgume
 	} else {
 		if pkg, err := prgrm.GetCurrentPackage(); err == nil {
 			if fn, err := prgrm.GetFunction(ident, pkg.Name); err == nil {
-				pkg.CurrentFunction = fn
+				pkg.CurrentFunction = ast.CXFunctionIndex(fn.Index)
 				return fn
 			} else {
 				fn := ast.MakeFunction(ident, CurrentFile, LineNo)
-				pkg.AddFunction(fn)
-				return fn
+				_, fnIdx := pkg.AddFunction(prgrm, fn)
+				newFn, err := prgrm.GetFunctionFromArray(fnIdx)
+				if err != nil {
+					panic(err)
+				}
+				return newFn
 			}
 		} else {
 			panic(err)
@@ -112,7 +120,7 @@ func CheckUndValidTypes(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 
 func FunctionProcessParameters(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXArgument, symbolsScope *map[string]bool, offset *types.Pointer, fn *ast.CXFunction, params []*ast.CXArgument) {
 	for _, param := range params {
-		ProcessLocalDeclaration(symbols, symbolsScope, param)
+		ProcessLocalDeclaration(prgrm, symbols, symbolsScope, param)
 
 		UpdateSymbolsTable(prgrm, symbols, param, offset, false)
 		GiveOffset(prgrm, symbols, param, offset, false)
@@ -126,12 +134,7 @@ func FunctionProcessParameters(prgrm *ast.CXProgram, symbols *[]map[string]*ast.
 }
 
 func FunctionDeclaration(prgrm *ast.CXProgram, fn *ast.CXFunction, inputs, outputs []*ast.CXArgument, exprs []*ast.CXExpression) {
-
 	//var exprs []*cxcore.CXExpression = prgrm.SysInitExprs
-
-	if globals.FoundCompileErrors {
-		return
-	}
 
 	FunctionAddParameters(fn, inputs, outputs)
 
@@ -239,7 +242,12 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []*ast.CXExpression, args []*ast.C
 
 	if cxAtomicOp.Operator == nil {
 		opName := cxAtomicOp.Outputs[0].Name
-		opPkg := cxAtomicOp.Outputs[0].Package
+		opPkgIdx := cxAtomicOp.Outputs[0].Package
+
+		opPkg, err := prgrm.GetPackageFromArray(opPkgIdx)
+		if err != nil {
+			panic(err)
+		}
 
 		if op, err := prgrm.GetFunction(opName, opPkg.Name); err == nil {
 			cxAtomicOp.Operator = op
@@ -295,7 +303,11 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []*ast.CXExpression, args []*ast.C
 					out.StructType = inpExprAtomicOp.Operator.Outputs[0].StructType
 
 					if inpExprAtomicOp.Operator.Outputs[0].StructType != nil {
-						if strct, err := inpExprAtomicOp.Package.GetStruct(inpExprAtomicOp.Operator.Outputs[0].StructType.Name); err == nil {
+						inpExprPkg, err := prgrm.GetPackageFromArray(inpExprAtomicOp.Package)
+						if err != nil {
+							panic(err)
+						}
+						if strct, err := inpExprPkg.GetStruct(prgrm, inpExprAtomicOp.Operator.Outputs[0].StructType.Name); err == nil {
 							out.Size = strct.Size
 							out.TotalSize = strct.Size
 						}
@@ -434,7 +446,7 @@ func checkIndexType(prgrm *ast.CXProgram, idx *ast.CXArgument) {
 // and calculate the correct size of the argument.
 func ProcessExpressionArguments(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXArgument, symbolsScope *map[string]bool, offset *types.Pointer, fn *ast.CXFunction, args []*ast.CXArgument, expr *ast.CXExpression, isInput bool) {
 	for _, arg := range args {
-		ProcessLocalDeclaration(symbols, symbolsScope, arg)
+		ProcessLocalDeclaration(prgrm, symbols, symbolsScope, arg)
 
 		if !isInput {
 			CheckRedeclared(prgrm, symbols, expr, arg)
@@ -549,18 +561,28 @@ func CheckRedeclared(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXArgument
 	if cxAtomicOp.Operator == nil && len(cxAtomicOp.Outputs) > 0 && len(cxAtomicOp.Inputs) == 0 {
 		lastIdx := len(*symbols) - 1
 
-		_, found := (*symbols)[lastIdx][sym.Package.Name+"."+sym.Name]
+		symPkg, err := prgrm.GetPackageFromArray(sym.Package)
+		if err != nil {
+			panic(err)
+		}
+
+		_, found := (*symbols)[lastIdx][symPkg.Name+"."+sym.Name]
 		if found {
 			println(ast.CompilationError(sym.ArgDetails.FileName, sym.ArgDetails.FileLine), fmt.Sprintf("'%s' redeclared", sym.Name))
 		}
 	}
 }
 
-func ProcessLocalDeclaration(symbols *[]map[string]*ast.CXArgument, symbolsScope *map[string]bool, arg *ast.CXArgument) {
-	if arg.IsLocalDeclaration {
-		(*symbolsScope)[arg.Package.Name+"."+arg.Name] = true
+func ProcessLocalDeclaration(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXArgument, symbolsScope *map[string]bool, arg *ast.CXArgument) {
+	argPkg, err := prgrm.GetPackageFromArray(arg.Package)
+	if err != nil {
+		panic(err)
 	}
-	arg.IsLocalDeclaration = (*symbolsScope)[arg.Package.Name+"."+arg.Name]
+
+	if arg.IsLocalDeclaration {
+		(*symbolsScope)[argPkg.Name+"."+arg.Name] = true
+	}
+	arg.IsLocalDeclaration = (*symbolsScope)[argPkg.Name+"."+arg.Name]
 }
 
 func ProcessGoTos(prgrm *ast.CXProgram, fn *ast.CXFunction, exprs []*ast.CXExpression) {
@@ -570,7 +592,11 @@ func ProcessGoTos(prgrm *ast.CXProgram, fn *ast.CXFunction, exprs []*ast.CXExpre
 			panic(err)
 		}
 
-		if cxAtomicOp.Operator == ast.Natives[constants.OP_GOTO] {
+		opGotoFn := ast.Natives[constants.OP_IDENTITY]
+		if cxAtomicOp.Operator != nil {
+			opGotoFn.Index = cxAtomicOp.Operator.Index
+		}
+		if cxAtomicOp.Operator == opGotoFn {
 			// then it's a goto
 			for j, e := range exprs {
 				ecxAtomicOp, _, _, err := prgrm.GetOperation(e)
@@ -651,7 +677,7 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []*ast.CXExpression, currIndex int) 
 	exprCXLine, _ := prgrm.GetPreviousCXLine(exprs, currIndex)
 
 	if cxAtomicOp.Operator != nil {
-		opName := cxAtomicOp.GetOperatorName()
+		opName := cxAtomicOp.GetOperatorName(prgrm)
 
 		// checking if number of inputs is less than the required number of inputs
 		if len(cxAtomicOp.Inputs) != len(cxAtomicOp.Operator.Inputs) {
@@ -748,7 +774,11 @@ func ProcessStringAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 		panic(err)
 	}
 
-	if cxAtomicOp.Operator == ast.Natives[constants.OP_IDENTITY] {
+	opIdentFn := ast.Natives[constants.OP_IDENTITY]
+	if cxAtomicOp.Operator != nil {
+		opIdentFn.Index = cxAtomicOp.Operator.Index
+	}
+	if cxAtomicOp.Operator == opIdentFn {
 		for i, out := range cxAtomicOp.Outputs {
 			if len(cxAtomicOp.Inputs) > i {
 				out = out.GetAssignmentElement()
@@ -808,7 +838,11 @@ func ProcessSliceAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 		panic(err)
 	}
 
-	if cxAtomicOp.Operator == ast.Natives[constants.OP_IDENTITY] {
+	opIdentFn := ast.Natives[constants.OP_IDENTITY]
+	if cxAtomicOp.Operator != nil {
+		opIdentFn.Index = cxAtomicOp.Operator.Index
+	}
+	if cxAtomicOp.Operator == opIdentFn {
 		var inp *ast.CXArgument
 		var out *ast.CXArgument
 
@@ -851,14 +885,14 @@ func lookupSymbol(prgrm *ast.CXProgram, pkgName, ident string, symbols *[]map[st
 	notFound := errors.New("identifier '" + ident + "' does not exist")
 
 	// We're not checking for that error
-	fn, err := pkg.GetFunction(ident)
+	fn, err := pkg.GetFunction(prgrm, ident)
 	if err != nil {
-		return nil, notFound
+		return nil, errors.New(err.Error() + ":" + notFound.Error() + fmt.Sprintf("--fullName=%s", fullName))
 	}
 	// Then we found a function by that name. Let's create a `cxcore.CXArgument` of
 	// type `func` with that name.
 	fnArg := ast.MakeArgument(ident, fn.FileName, fn.FileLine).AddType(types.FUNC)
-	fnArg.Package = pkg
+	fnArg.Package = ast.CXPackageIndex(pkg.Index)
 
 	return fnArg, nil
 }
@@ -866,15 +900,20 @@ func lookupSymbol(prgrm *ast.CXProgram, pkgName, ident string, symbols *[]map[st
 // UpdateSymbolsTable adds `sym` to the innermost scope (last element of slice) in `symbols`.
 func UpdateSymbolsTable(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXArgument, sym *ast.CXArgument, offset *types.Pointer, shouldExist bool) {
 	if sym.Name != "" {
+		symPkg, err := prgrm.GetPackageFromArray(sym.Package)
+		if err != nil {
+			panic(err)
+		}
+
 		if !sym.IsLocalDeclaration {
-			GetGlobalSymbol(prgrm, symbols, sym.Package, sym.Name)
+			GetGlobalSymbol(prgrm, symbols, symPkg, sym.Name)
 		}
 
 		lastIdx := len(*symbols) - 1
-		fullName := sym.Package.Name + "." + sym.Name
+		fullName := symPkg.Name + "." + sym.Name
 
 		// outerSym, err := lookupSymbol(sym.Package.Name, sym.Name, symbols)
-		_, err := lookupSymbol(prgrm, sym.Package.Name, sym.Name, symbols)
+		_, err = lookupSymbol(prgrm, symPkg.Name, sym.Name, symbols)
 		_, found := (*symbols)[lastIdx][fullName]
 
 		// then it wasn't found in any scope
@@ -918,12 +957,22 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 		}
 
 		if inp != nil {
+			inpPkg, err := prgrm.GetPackageFromArray(inp.Package)
+			if err != nil {
+				panic(err)
+			}
 			// if argInp, found := (*symbols)[lastIdx][inp.Package.Name+"."+inp.Name]; !found {
-			if argInp, err := lookupSymbol(prgrm, inp.Package.Name, inp.Name, symbols); err != nil {
+			if argInp, err := lookupSymbol(prgrm, inpPkg.Name, inp.Name, symbols); err != nil {
 				if out == nil {
 					panic("")
 				}
-				argOut, err := lookupSymbol(prgrm, out.Package.Name, out.Name, symbols)
+
+				outPkg, err := prgrm.GetPackageFromArray(out.Package)
+				if err != nil {
+					panic(err)
+				}
+
+				argOut, err := lookupSymbol(prgrm, outPkg.Name, out.Name, symbols)
 				if err != nil {
 					println(ast.CompilationError(out.ArgDetails.FileName, out.ArgDetails.FileLine), fmt.Sprintf("identifier '%s' does not exist", out.Name))
 					os.Exit(constants.CX_COMPILATION_ERROR)
@@ -931,8 +980,12 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 				// then we found an output
 				if len(out.Fields) > 0 {
 					strct := argOut.StructType
+					strctPkg, err := prgrm.GetPackageFromArray(strct.Package)
+					if err != nil {
+						panic(err)
+					}
 
-					if fn, err := strct.Package.GetMethod(strct.Name+"."+out.Fields[len(out.Fields)-1].Name, strct.Name); err == nil {
+					if fn, err := strctPkg.GetMethod(prgrm, strct.Name+"."+out.Fields[len(out.Fields)-1].Name, strct.Name); err == nil {
 						cxAtomicOp.Operator = fn
 					} else {
 						panic("")
@@ -957,7 +1010,12 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 						}
 					}
 
-					if fn, err := strct.Package.GetMethod(strct.Name+"."+inp.Fields[len(inp.Fields)-1].Name, strct.Name); err == nil {
+					strctPkg, err := prgrm.GetPackageFromArray(strct.Package)
+					if err != nil {
+						panic(err)
+					}
+
+					if fn, err := strctPkg.GetMethod(prgrm, strct.Name+"."+inp.Fields[len(inp.Fields)-1].Name, strct.Name); err == nil {
 						cxAtomicOp.Operator = fn
 					} else {
 						panic(err)
@@ -965,9 +1023,13 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 
 					inp.Fields = inp.Fields[:len(inp.Fields)-1]
 				} else if len(out.Fields) > 0 {
-					argOut, err := lookupSymbol(prgrm, out.Package.Name, out.Name, symbols)
+					outPkg, err := prgrm.GetPackageFromArray(out.Package)
 					if err != nil {
-						panic("")
+						panic(err)
+					}
+					argOut, err := lookupSymbol(prgrm, outPkg.Name, out.Name, symbols)
+					if err != nil {
+						panic(err)
 					}
 
 					strct := argOut.StructType
@@ -981,7 +1043,12 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 
 					cxAtomicOp.Outputs = cxAtomicOp.Outputs[:len(cxAtomicOp.Outputs)-1]
 
-					if fn, err := strct.Package.GetMethod(strct.Name+"."+out.Fields[len(out.Fields)-1].Name, strct.Name); err == nil {
+					strctPkg, err := prgrm.GetPackageFromArray(strct.Package)
+					if err != nil {
+						panic(err)
+					}
+
+					if fn, err := strctPkg.GetMethod(prgrm, strct.Name+"."+out.Fields[len(out.Fields)-1].Name, strct.Name); err == nil {
 						cxAtomicOp.Operator = fn
 					} else {
 						panic(err)
@@ -995,7 +1062,12 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 				panic("")
 			}
 
-			argOut, err := lookupSymbol(prgrm, out.Package.Name, out.Name, symbols)
+			outPkg, err := prgrm.GetPackageFromArray(out.Package)
+			if err != nil {
+				panic(err)
+			}
+
+			argOut, err := lookupSymbol(prgrm, outPkg.Name, out.Name, symbols)
 			if err != nil {
 				println(ast.CompilationError(out.ArgDetails.FileName, out.ArgDetails.FileLine), fmt.Sprintf("identifier '%s' does not exist", out.Name))
 				os.Exit(constants.CX_COMPILATION_ERROR)
@@ -1010,7 +1082,12 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 					os.Exit(constants.CX_COMPILATION_ERROR)
 				}
 
-				if fn, err := strct.Package.GetMethod(strct.Name+"."+out.Fields[len(out.Fields)-1].Name, strct.Name); err == nil {
+				strctPkg, err := prgrm.GetPackageFromArray(strct.Package)
+				if err != nil {
+					panic(err)
+				}
+
+				if fn, err := strctPkg.GetMethod(prgrm, strct.Name+"."+out.Fields[len(out.Fields)-1].Name, strct.Name); err == nil {
 					cxAtomicOp.Operator = fn
 				} else {
 					panic("")
@@ -1034,13 +1111,18 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 
 func GiveOffset(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXArgument, sym *ast.CXArgument, offset *types.Pointer, shouldExist bool) {
 	if sym.Name != "" {
-		if !sym.IsLocalDeclaration {
-			GetGlobalSymbol(prgrm, symbols, sym.Package, sym.Name)
+		symPkg, err := prgrm.GetPackageFromArray(sym.Package)
+		if err != nil {
+			panic(err)
 		}
 
-		arg, err := lookupSymbol(prgrm, sym.Package.Name, sym.Name, symbols)
+		if !sym.IsLocalDeclaration {
+			GetGlobalSymbol(prgrm, symbols, symPkg, sym.Name)
+		}
+
+		arg, err := lookupSymbol(prgrm, symPkg.Name, sym.Name, symbols)
 		if err == nil {
-			ProcessSymbolFields(sym, arg)
+			ProcessSymbolFields(prgrm, sym, arg)
 			CopyArgFields(sym, arg)
 		}
 	}
@@ -1052,7 +1134,11 @@ func ProcessTempVariable(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 		panic(err)
 	}
 
-	if cxAtomicOp.Operator != nil && (cxAtomicOp.Operator == ast.Natives[constants.OP_IDENTITY] || ast.IsArithmeticOperator(cxAtomicOp.Operator.AtomicOPCode)) && len(cxAtomicOp.Outputs) > 0 && len(cxAtomicOp.Inputs) > 0 {
+	opIdentFn := ast.Natives[constants.OP_IDENTITY]
+	if cxAtomicOp.Operator != nil {
+		opIdentFn.Index = cxAtomicOp.Operator.Index
+	}
+	if cxAtomicOp.Operator != nil && (cxAtomicOp.Operator == opIdentFn || ast.IsArithmeticOperator(cxAtomicOp.Operator.AtomicOPCode)) && len(cxAtomicOp.Outputs) > 0 && len(cxAtomicOp.Inputs) > 0 {
 		name := cxAtomicOp.Outputs[0].Name
 		arg := cxAtomicOp.Outputs[0]
 		if IsTempVar(name) {
@@ -1211,7 +1297,7 @@ func CopyArgFields(sym *ast.CXArgument, arg *ast.CXArgument) {
 	}
 }
 
-func ProcessSymbolFields(sym *ast.CXArgument, arg *ast.CXArgument) {
+func ProcessSymbolFields(prgrm *ast.CXProgram, sym *ast.CXArgument, arg *ast.CXArgument) {
 	if len(sym.Fields) > 0 {
 		if arg.StructType == nil || len(arg.StructType.Fields) == 0 {
 			println(ast.CompilationError(sym.ArgDetails.FileName, sym.ArgDetails.FileLine), fmt.Sprintf("'%s' has no fields", sym.Name))
@@ -1221,6 +1307,10 @@ func ProcessSymbolFields(sym *ast.CXArgument, arg *ast.CXArgument) {
 		// checking if fields do exist in their StructType
 		// and assigning that StructType to the sym.Field
 		strct := arg.StructType
+		strctPkg, err := prgrm.GetPackageFromArray(strct.Package)
+		if err != nil {
+			panic(err)
+		}
 
 		for _, fld := range sym.Fields {
 			if inFld, err := strct.GetField(fld.Name); err == nil {
@@ -1232,7 +1322,7 @@ func ProcessSymbolFields(sym *ast.CXArgument, arg *ast.CXArgument) {
 				methodName := sym.Fields[len(sym.Fields)-1].Name
 				receiverType := strct.Name
 
-				if method, methodErr := strct.Package.GetMethod(receiverType+"."+methodName, receiverType); methodErr == nil {
+				if method, methodErr := strctPkg.GetMethod(prgrm, receiverType+"."+methodName, receiverType); methodErr == nil {
 					fld.Type = method.Outputs[0].Type
 					fld.PointerTargetType = method.Outputs[0].PointerTargetType
 				} else {
@@ -1301,7 +1391,12 @@ func ProcessSymbolFields(sym *ast.CXArgument, arg *ast.CXArgument) {
 func SetFinalSize(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXArgument, sym *ast.CXArgument) {
 	finalSize := sym.TotalSize
 
-	arg, err := lookupSymbol(prgrm, sym.Package.Name, sym.Name, symbols)
+	symPkg, err := prgrm.GetPackageFromArray(sym.Package)
+	if err != nil {
+		panic(err)
+	}
+
+	arg, err := lookupSymbol(prgrm, symPkg.Name, sym.Name, symbols)
 	if err == nil {
 		PreFinalSize(&finalSize, sym, arg)
 		for _, fld := range sym.Fields {

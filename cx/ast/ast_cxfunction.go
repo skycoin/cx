@@ -7,11 +7,14 @@ import (
 	"github.com/skycoin/cx/cx/types"
 )
 
+type CXFunctionIndex int
+
 // CXFunction is used to represent a CX function.
 type CXFunction struct {
 	// Metadata
-	Name         string     // Name of the function
-	Package      *CXPackage // The package it's a member of
+	Index        int
+	Name         string         // Name of the function
+	Package      CXPackageIndex // The package it's a member of
 	AtomicOPCode int
 
 	// Contents
@@ -52,6 +55,7 @@ func (cxf CXFunction) IsAtomic() bool {
 func MakeFunction(name string, fileName string, fileLine int) *CXFunction {
 	return &CXFunction{
 		Name:     name,
+		Index:    -1,
 		FileName: fileName,
 		FileLine: fileLine,
 	}
@@ -186,7 +190,7 @@ func (fn *CXFunction) AddExpression(prgrm *CXProgram, expr *CXExpression) *CXFun
 		}
 
 		cxAtomicOp.Package = fn.Package
-		cxAtomicOp.Function = fn
+		cxAtomicOp.Function = CXFunctionIndex(fn.Index)
 	}
 
 	fn.Expressions = append(fn.Expressions, expr)
@@ -202,7 +206,7 @@ func (fn *CXFunction) AddExpressionByLineNumber(prgrm *CXProgram, expr *CXExpres
 		panic(err)
 	}
 	cxAtomicOp.Package = fn.Package
-	cxAtomicOp.Function = fn
+	cxAtomicOp.Function = CXFunctionIndex(fn.Index)
 
 	lenExprs := len(fn.Expressions)
 	if lenExprs == line {
@@ -237,6 +241,7 @@ func (fn *CXFunction) RemoveExpression(line int) {
 func MakeAtomicOperatorExpression(prgrm *CXProgram, op *CXFunction) *CXExpression {
 	index := prgrm.AddCXAtomicOp(&CXAtomicOperator{
 		Operator: op,
+		// Function: -1,
 	})
 
 	return &CXExpression{

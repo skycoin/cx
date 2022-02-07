@@ -56,7 +56,11 @@ func Preliminarystage(srcStrs, srcNames []string) int {
 					if pkg, err := cxpartialparsing.Program.GetPackage(match[len(match)-1]); err != nil {
 						// then it hasn't been added
 						newPkg := ast.MakePackage(match[len(match)-1])
-						cxpartialparsing.Program.AddPackage(newPkg)
+						pkgIdx := cxpartialparsing.Program.AddPackage(newPkg)
+						newPkg, err = cxpartialparsing.Program.GetPackageFromArray(pkgIdx)
+						if err != nil {
+							panic(err)
+						}
 						prePkg = newPkg
 					} else {
 						prePkg = pkg
@@ -117,7 +121,11 @@ func Preliminarystage(srcStrs, srcNames []string) int {
 					if pkg, err := cxpartialparsing.Program.GetPackage(match[len(match)-1]); err != nil {
 						// then it hasn't been added
 						prePkg = ast.MakePackage(match[len(match)-1])
-						cxpartialparsing.Program.AddPackage(prePkg)
+						pkgIdx := cxpartialparsing.Program.AddPackage(prePkg)
+						prePkg, err = cxpartialparsing.Program.GetPackageFromArray(pkgIdx)
+						if err != nil {
+							panic(err)
+						}
 					} else {
 						prePkg = pkg
 					}
@@ -155,7 +163,7 @@ func Preliminarystage(srcStrs, srcNames []string) int {
 						// then it hasn't been added
 						arg := ast.MakeArgument(match[len(match)-1], "", 0)
 						arg.Offset = types.InvalidPointer
-						arg.Package = prePkg
+						arg.Package = ast.CXPackageIndex(prePkg.Index)
 						prePkg.AddGlobal(arg)
 					}
 				}
@@ -191,12 +199,16 @@ func AddInitFunction(prgrm *ast.CXProgram) error {
 	}
 
 	initFn := ast.MakeFunction(constants.SYS_INIT_FUNC, actions.CurrentFile, actions.LineNo)
-	mainPkg.AddFunction(initFn)
+	_, fnIdx := mainPkg.AddFunction(prgrm, initFn)
+	initFnFromArr, err := prgrm.GetFunctionFromArray(fnIdx)
+	if err != nil {
+		return err
+	}
 
 	//Init Expressions
-	actions.FunctionDeclaration(prgrm, initFn, nil, nil, prgrm.SysInitExprs)
+	actions.FunctionDeclaration(prgrm, initFnFromArr, nil, nil, prgrm.SysInitExprs)
 
-	if _, err := mainPkg.SelectFunction(constants.MAIN_FUNC); err != nil {
+	if _, err := mainPkg.SelectFunction(prgrm, constants.MAIN_FUNC); err != nil {
 		return err
 	}
 	return nil
