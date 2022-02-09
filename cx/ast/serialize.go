@@ -374,7 +374,13 @@ func serializeFunctionName(prgrm *CXProgram, fn *CXFunction, s *SerializedCXProg
 func serializePackageGlobals(prgrm *CXProgram, pkg *CXPackage, s *SerializedCXProgram) {
 	if pkgOff, found := s.PackagesMap[pkg.Name]; found {
 		sPkg := &s.Packages[pkgOff]
-		sPkg.GlobalsOffset, sPkg.GlobalsSize = serializeSliceOfArguments(prgrm, pkg.Globals, s)
+
+		var glblArgs []*CXArgument
+		for _, glblIdx := range pkg.Globals {
+			glbl := prgrm.GetCXArg(glblIdx)
+			glblArgs = append(glblArgs, glbl)
+		}
+		sPkg.GlobalsOffset, sPkg.GlobalsSize = serializeSliceOfArguments(prgrm, glblArgs, s)
 	} else {
 		panic("package reference not found")
 	}
@@ -580,10 +586,7 @@ func serializeProgram(prgrm *CXProgram, s *SerializedCXProgram) {
 
 	args := []*CXArgument{}
 	for _, argIdx := range prgrm.ProgramInput {
-		arg, err := prgrm.GetCXArg(argIdx)
-		if err != nil {
-			panic(err)
-		}
+		arg := prgrm.GetCXArg(argIdx)
 		args = append(args, arg)
 	}
 	sPrgrm.InputsOffset, sPrgrm.InputsSize = serializeSliceOfArguments(prgrm, args, s)
@@ -878,7 +881,7 @@ func deserializePackages(s *SerializedCXProgram, prgrm *CXProgram) {
 		}
 
 		if sPkg.GlobalsSize > 0 {
-			pkg.Globals = make([]*CXArgument, sPkg.GlobalsSize)
+			pkg.Globals = make([]CXArgumentIndex, sPkg.GlobalsSize)
 		}
 
 		// CurrentFunction
@@ -907,7 +910,13 @@ func deserializePackages(s *SerializedCXProgram, prgrm *CXProgram) {
 
 		// globals
 		if sPkg.GlobalsSize > 0 {
-			pkg.Globals = deserializeArguments(sPkg.GlobalsOffset, sPkg.GlobalsSize, s, prgrm)
+			glblArgs := deserializeArguments(sPkg.GlobalsOffset, sPkg.GlobalsSize, s, prgrm)
+			var glblArgsIdxs []CXArgumentIndex
+			for _, glbl := range glblArgs {
+				glblIdx := prgrm.AddCXArg(glbl)
+				glblArgsIdxs = append(glblArgsIdxs, CXArgumentIndex(glblIdx))
+			}
+			pkg.Globals = glblArgsIdxs
 		}
 
 		// structs

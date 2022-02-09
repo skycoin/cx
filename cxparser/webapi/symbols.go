@@ -62,7 +62,8 @@ func extractExportedSymbols(prgrm *ast.CXProgram, pkg *ast.CXPackage) ExportedSy
 		}
 	}
 
-	for _, g := range pkg.Globals {
+	for _, gIdx := range pkg.Globals {
+		g := prgrm.GetCXArg(gIdx)
 		if isExported(g.Name) {
 			resp.Globals = append(resp.Globals, displayCXGlobal(g))
 		}

@@ -66,7 +66,7 @@ func buildStrGlobals(prgrm *CXProgram, pkg *CXPackage, ast *string) {
 	}
 
 	for j, v := range pkg.Globals {
-		*ast += fmt.Sprintf("\t\t%d.- Global: %s %s\n", j, v.Name, GetFormattedType(prgrm, v))
+		*ast += fmt.Sprintf("\t\t%d.- Global: %s %s\n", j, prgrm.GetCXArg(v).Name, GetFormattedType(prgrm, prgrm.GetCXArg(v)))
 	}
 }
 

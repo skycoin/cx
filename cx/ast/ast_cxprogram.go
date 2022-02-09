@@ -179,12 +179,12 @@ func (cxprogram *CXProgram) GetCXLine(index int) (*CXLine, error) {
 	return &cxprogram.CXLines[index], nil
 }
 
-func (cxprogram *CXProgram) GetCXArg(index CXArgumentIndex) (*CXArgument, error) {
+func (cxprogram *CXProgram) GetCXArg(index CXArgumentIndex) *CXArgument {
 	if int(index) > (len(cxprogram.CXArgs) - 1) {
-		return nil, fmt.Errorf("error: CXArgs[%d]: index out of bounds", index)
+		panic(fmt.Errorf("error: CXArgs[%d]: index out of bounds", index))
 	}
 
-	return &cxprogram.CXArgs[index], nil
+	return &cxprogram.CXArgs[index]
 }
 
 func (cxprogram *CXProgram) GetCXAtomicOp(index int) (*CXAtomicOperator, error) {

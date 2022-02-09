@@ -384,7 +384,7 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []*ast.CXExpression,
 
 		left.Package = ast.CXPackageIndex(imp.Index)
 
-		if glbl, err := imp.GetGlobal(ident); err == nil {
+		if glbl, err := imp.GetGlobal(prgrm, ident); err == nil {
 			// then it's a global
 			// prevExprs[len(prevExprs)-1].ProgramOutput[0] = glbl
 			lastExprAtomicOp.Outputs[0].Name = glbl.Name

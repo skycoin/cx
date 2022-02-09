@@ -17,7 +17,7 @@ type CXPackage struct {
 	Imports   map[string]CXPackageIndex  // imported packages
 	Functions map[string]CXFunctionIndex // declared functions in this package
 	Structs   map[string]*CXStruct       // declared structs in this package
-	Globals   []*CXArgument              // declared global variables in this package
+	Globals   []CXArgumentIndex          // declared global variables in this package
 
 	// Used by the REPL and cxgo
 	CurrentFunction CXFunctionIndex
@@ -112,9 +112,10 @@ func (pkg *CXPackage) GetStruct(prgrm *CXProgram, strctName string) (*CXStruct, 
 }
 
 // GetGlobal ...
-func (pkg *CXPackage) GetGlobal(defName string) (*CXArgument, error) {
+func (pkg *CXPackage) GetGlobal(prgrm *CXProgram, defName string) (*CXArgument, error) {
 	var foundDef *CXArgument
-	for _, def := range pkg.Globals {
+	for _, defIdx := range pkg.Globals {
+		def := prgrm.GetCXArg(defIdx)
 		if def.Name == defName {
 			foundDef = def
 			break
@@ -159,7 +160,7 @@ func (pkg *CXPackage) SelectFunction(prgrm *CXProgram, name string) (*CXFunction
 func MakePackage(name string) *CXPackage {
 	return &CXPackage{
 		Name:            name,
-		Globals:         make([]*CXArgument, 0, 10),
+		Globals:         make([]CXArgumentIndex, 0, 10),
 		Imports:         make(map[string]CXPackageIndex, 0),
 		Structs:         make(map[string]*CXStruct, 0),
 		Functions:       make(map[string]CXFunctionIndex, 0),
@@ -241,27 +242,30 @@ func (pkg *CXPackage) RemoveStruct(strctName string) {
 }
 
 // AddGlobal ...
-func (pkg *CXPackage) AddGlobal(def *CXArgument) *CXPackage {
+func (pkg *CXPackage) AddGlobal(prgrm *CXProgram, def *CXArgument) *CXPackage {
 	def.Package = CXPackageIndex(pkg.Index)
 	found := false
-	for i, df := range pkg.Globals {
+	for i, dfIdx := range pkg.Globals {
+		df := prgrm.GetCXArg(dfIdx)
 		if df.Name == def.Name {
-			pkg.Globals[i] = def
+			prgrm.CXArgs[pkg.Globals[i]] = *def
 			found = true
 			break
 		}
 	}
 	if !found {
-		pkg.Globals = append(pkg.Globals, def)
+		defIdx := prgrm.AddCXArg(def)
+		pkg.Globals = append(pkg.Globals, CXArgumentIndex(defIdx))
 	}
 
 	return pkg
 }
 
 // RemoveGlobal ...
-func (pkg *CXPackage) RemoveGlobal(defName string) {
+func (pkg *CXPackage) RemoveGlobal(prgrm *CXProgram, defName string) {
 	lenGlobals := len(pkg.Globals)
-	for i, def := range pkg.Globals {
+	for i, defIdx := range pkg.Globals {
+		def := prgrm.GetCXArg(defIdx)
 		if def.Name == defName {
 			if i == lenGlobals-1 {
 				pkg.Globals = pkg.Globals[:len(pkg.Globals)-1]

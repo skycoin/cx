@@ -1412,7 +1412,7 @@ func SetFinalSize(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXArgument, s
 func GetGlobalSymbol(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXArgument, symPkg *ast.CXPackage, ident string) {
 	_, err := lookupSymbol(prgrm, symPkg.Name, ident, symbols)
 	if err != nil {
-		if glbl, err := symPkg.GetGlobal(ident); err == nil {
+		if glbl, err := symPkg.GetGlobal(prgrm, ident); err == nil {
 			lastIdx := len(*symbols) - 1
 			(*symbols)[lastIdx][symPkg.Name+"."+ident] = glbl
 		}

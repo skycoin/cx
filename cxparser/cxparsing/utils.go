@@ -260,12 +260,12 @@ func Preliminarystage(srcStrs, srcNames []string) int {
 				}
 
 				if match := reGlblName.FindStringSubmatch(string(line)); match != nil {
-					if _, err := prePkg.GetGlobal(match[len(match)-1]); err != nil {
+					if _, err := prePkg.GetGlobal(actions.AST, match[len(match)-1]); err != nil {
 						// then it hasn't been added
 						arg := ast.MakeArgument(match[len(match)-1], "", 0)
 						arg.Offset = types.InvalidPointer
 						arg.Package = ast.CXPackageIndex(prePkg.Index)
-						prePkg.AddGlobal(arg)
+						prePkg.AddGlobal(actions.AST, arg)
 					}
 				}
 			}

@@ -42,7 +42,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 	declaration_specifiers.Package = ast.CXPackageIndex(pkg.Index)
 
 	// Treat the name a bit different whether it's defined already or not.
-	if glbl, err := pkg.GetGlobal(declarator.Name); err == nil {
+	if glbl, err := pkg.GetGlobal(prgrm, declarator.Name); err == nil {
 		// The name is already defined.
 
 		if glbl.Offset < 0 || glbl.Size == 0 || glbl.TotalSize == 0 {
@@ -168,7 +168,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 				initializerAtomicOp.Outputs = nil
 				initializerAtomicOp.AddOutput(declaration_specifiers)
 
-				pkg.AddGlobal(declaration_specifiers)
+				pkg.AddGlobal(prgrm, declaration_specifiers)
 				//add intialization statements, to array
 				prgrm.SysInitExprs = append(prgrm.SysInitExprs, initializer...)
 			} else {
@@ -196,7 +196,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 					initializerAtomicOp.AddOutput(declaration_specifiers)
 				}
 
-				pkg.AddGlobal(declaration_specifiers)
+				pkg.AddGlobal(prgrm, declaration_specifiers)
 				//add intialization statements, to array
 				prgrm.SysInitExprs = append(prgrm.SysInitExprs, initializer...)
 			}
@@ -216,7 +216,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 			declaration_specifiers.TotalSize = offExprAtomicOp.Outputs[0].TotalSize
 			declaration_specifiers.Package = ast.CXPackageIndex(pkg.Index)
 
-			pkg.AddGlobal(declaration_specifiers)
+			pkg.AddGlobal(prgrm, declaration_specifiers)
 		}
 	}
 }
