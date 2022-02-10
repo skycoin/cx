@@ -40,7 +40,7 @@ type CXProgram struct {
 	ProgramError   error
 
 	// For new CX AST arrays
-	CXAtomicOps []*CXAtomicOperator
+	CXAtomicOps []CXAtomicOperator
 	CXArgs      []CXArgument
 	CXLines     []CXLine
 	CXPackages  []CXPackage
@@ -192,7 +192,7 @@ func (cxprogram *CXProgram) GetCXAtomicOp(index int) (*CXAtomicOperator, error) 
 		return nil, fmt.Errorf("error: CXAtomicOps[%d]: index out of bounds", index)
 	}
 
-	return cxprogram.CXAtomicOps[index], nil
+	return &cxprogram.CXAtomicOps[index], nil
 }
 
 func (cxprogram *CXProgram) AddCXLine(CXLine *CXLine) int {
@@ -208,7 +208,7 @@ func (cxprogram *CXProgram) AddCXArg(CXArg *CXArgument) int {
 }
 
 func (cxprogram *CXProgram) AddCXAtomicOp(CXAtomicOp *CXAtomicOperator) int {
-	cxprogram.CXAtomicOps = append(cxprogram.CXAtomicOps, CXAtomicOp)
+	cxprogram.CXAtomicOps = append(cxprogram.CXAtomicOps, *CXAtomicOp)
 
 	return len(cxprogram.CXAtomicOps) - 1
 }
@@ -217,11 +217,9 @@ func (cxprogram *CXProgram) AddCXAtomicOp(CXAtomicOp *CXAtomicOperator) int {
 //                             `CXProgram` Getters
 
 func (cxprogram *CXProgram) GetOperation(expr *CXExpression) (*CXAtomicOperator, *CXArgument, *CXLine, error) {
-	var cxAtomicOp *CXAtomicOperator
-	var err error
 	switch expr.Type {
 	case CX_ATOMIC_OPERATOR:
-		cxAtomicOp, err = cxprogram.GetCXAtomicOp(int(expr.Index))
+		cxAtomicOp, err := cxprogram.GetCXAtomicOp(int(expr.Index))
 		if err != nil {
 			return &CXAtomicOperator{}, &CXArgument{}, &CXLine{}, err
 		}

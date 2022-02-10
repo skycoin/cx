@@ -625,7 +625,7 @@ slice_literal_expression:
 				if exprAtomicOp.Outputs[0].Name == lastExprAtomicOp.Inputs[0].Name {
 					exprAtomicOp.Outputs[0].Lengths = append(exprAtomicOp.Outputs[0].Lengths, 0)
 					exprAtomicOp.Outputs[0].DeclarationSpecifiers = append(exprAtomicOp.Outputs[0].DeclarationSpecifiers, constants.DECL_SLICE)
-                                    }
+                                }
 			}
 	
 			$3[len($3)-1].ExpressionType = ast.CXEXPR_ARRAY_LITERAL
@@ -1171,7 +1171,7 @@ expression_statement:
                 { $$ = nil }
 	|       expression SEMICOLON
                 {          
-                        lastFirstAtomicOp:=&ast.CXAtomicOperator{}
+                        var lastFirstAtomicOp *ast.CXAtomicOperator
                         var err error
 
                         if len($1) > 0 {

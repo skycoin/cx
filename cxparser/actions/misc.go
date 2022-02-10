@@ -132,7 +132,6 @@ func StructLiteralFields(prgrm *ast.CXProgram, ident string) *ast.CXExpression {
 		}
 		cxAtomicOp.AddOutput(arg)
 		cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
-
 		return expr
 	} else {
 		panic(err)
@@ -265,7 +264,6 @@ func PrimaryIdentifier(prgrm *ast.CXProgram, ident string) []*ast.CXExpression {
 		}
 		cxAtomicOp.AddOutput(arg)
 		cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
-
 		return []*ast.CXExpression{expr}
 	} else {
 		panic(err)

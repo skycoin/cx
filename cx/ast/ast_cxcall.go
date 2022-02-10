@@ -82,7 +82,6 @@ func processBuiltInOperators(prgrm *CXProgram, expr *CXExpression, globalInputs 
 		// TODO: resolve this at compile time
 		atomicType := cxAtomicOp.Inputs[0].GetType()
 		cxAtomicOp.Operator = GetTypedOperator(atomicType, cxAtomicOp.Operator.AtomicOPCode)
-
 	}
 	inputs := cxAtomicOp.Inputs
 	inputCount := len(inputs)

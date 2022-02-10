@@ -186,9 +186,6 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fn *ast.CXFunction, inputs, outpu
 		ProcessStringAssignment(prgrm, expr)
 		ProcessReferenceAssignment(prgrm, expr)
 
-		//if expr.Outputs[0].IsShortAssignmentDeclaration {
-		//	panic("ATWETEWTASGDFG")
-		//}
 		// process short declaration
 		if len(exprAtomicOp.Outputs) > 0 && len(exprAtomicOp.Inputs) > 0 && exprAtomicOp.Outputs[0].IsShortAssignmentDeclaration && !expr.IsStructLiteral() && !isParseOp(prgrm, expr) {
 			var arg *ast.CXArgument
@@ -331,7 +328,6 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []*ast.CXExpression, args []*ast.C
 			nestedExprs = append(nestedExprs, inpExpr)
 		}
 	}
-
 	return append(nestedExprs, exprs...)
 }
 

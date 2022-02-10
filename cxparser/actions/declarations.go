@@ -416,7 +416,6 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 			} else {
 				cxExprAtomicOp.AddOutput(declarationSpecifiers)
 			}
-
 			return append([]*ast.CXExpression{declCXLine, decl}, initializer...)
 		}
 	} else {

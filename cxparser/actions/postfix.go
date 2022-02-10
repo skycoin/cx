@@ -56,7 +56,6 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []*ast.CXExpression,
 
 		useExprAtomicOp.Package = prevExprAtomicOp.Package
 		useExprAtomicOp.AddOutput(inp)
-
 		prevExprs = append(prevExprs, useExprCXLine, useExpr)
 	}
 
@@ -145,7 +144,6 @@ func PostfixExpressionNative(prgrm *ast.CXProgram, typeCode types.Code, opStrCod
 		panic(err)
 	}
 	cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
-
 	return []*ast.CXExpression{exprCXLine, expr}
 }
 
@@ -315,7 +313,6 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []*ast.CXExpression,
 
 		exprAtomicOp.Package = lastExprAtomicOp.Package
 		exprAtomicOp.AddOutput(inp)
-
 		prevExprs = append(prevExprs, exprCXLine, expr)
 
 		lastExpr = prevExprs[len(prevExprs)-1]

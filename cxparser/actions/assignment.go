@@ -81,7 +81,6 @@ func StructLiteralAssignment(prgrm *ast.CXProgram, to []*ast.CXExpression, from 
 		}
 		declExprAtomicOp.Package = lastFromAtomicOp.Package
 		declExprAtomicOp.AddOutput(aux)
-
 		from = assignStructLiteralFields(prgrm, to, from, auxName)
 
 		assignExprCXLine := ast.MakeCXLineExpression(prgrm, lastFromCXLine.FileName, lastFromCXLine.LineNumber, lastFromCXLine.LineStr)
@@ -216,7 +215,6 @@ func Assignment(prgrm *ast.CXProgram, to []*ast.CXExpression, assignOp string, f
 			panic(err)
 		}
 		cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
-
 		var sym *ast.CXArgument
 
 		if fromCXAtomicOp.Operator == nil {
@@ -246,7 +244,6 @@ func Assignment(prgrm *ast.CXProgram, to []*ast.CXExpression, assignOp string, f
 		sym.IsShortAssignmentDeclaration = true
 
 		cxAtomicOp.AddOutput(sym)
-
 		for _, toExpr := range to {
 			if toExpr.Type == ast.CX_LINE {
 				continue
@@ -318,6 +315,9 @@ func Assignment(prgrm *ast.CXProgram, to []*ast.CXExpression, assignOp string, f
 		fromCXAtomicOp.Outputs = toLastExprAtomicOp.Outputs
 		// from[idx].Program = prgrm
 
+		// TODO: temporary bug fix, needs improvements
+		prgrm.CXAtomicOps[from[idx].Index] = *fromCXAtomicOp
+
 		return append(to[:len(to)-1], from...)
 	} else {
 		if fromCXAtomicOp.Operator.IsBuiltIn() {
@@ -348,8 +348,9 @@ func Assignment(prgrm *ast.CXProgram, to []*ast.CXExpression, assignOp string, f
 		}
 
 		fromCXAtomicOp.Outputs = toLastExprAtomicOp.Outputs
-		// from[idx].Program = toLastExprAtomicOp.Program
 
+		// TODO: temporary bug fix, needs improvements
+		prgrm.CXAtomicOps[from[idx].Index] = *fromCXAtomicOp
 		return append(to[:len(to)-1], from...)
 		// return append(to, from...)
 	}

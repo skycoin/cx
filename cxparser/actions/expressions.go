@@ -104,6 +104,9 @@ func IterationExpressions(prgrm *ast.CXProgram, init []*ast.CXExpression, cond [
 	downExprAtomicOp.ThenLines = thenLines
 	downExprAtomicOp.ElseLines = elseLines
 
+	// TODO: temporary bug fix, needs improvements
+	prgrm.CXAtomicOps[upExpr.Index] = *upExprAtomicOp
+
 	exprs := init
 	exprs = append(exprs, cond...)
 	exprs = append(exprs, downExprCXLine, downExpr)
@@ -136,7 +139,6 @@ func trueJmpExpressions(prgrm *ast.CXProgram, opcode int) []*ast.CXExpression {
 	}
 
 	exprAtomicOp.AddInput(trueArgAtomicOp.Outputs[0])
-
 	exprAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
 
 	return []*ast.CXExpression{exprCXLine, expr}
@@ -228,6 +230,10 @@ func SelectionExpressions(prgrm *ast.CXProgram, condExprs []*ast.CXExpression, t
 	if lastCondExprsAtomicOp.Operator != nil || condExprs[len(condExprs)-1].IsMethodCall() {
 		exprs = append(exprs, condExprs...)
 	}
+
+	// TODO: temporary bug fix, needs improvements
+	prgrm.CXAtomicOps[skipExpr.Index] = *skipExprAtomicOp
+
 	exprs = append(exprs, ifExprCXLine, ifExpr)
 	exprs = append(exprs, thenExprs...)
 	exprs = append(exprs, skipExprCXLine, skipExpr)
@@ -397,7 +403,6 @@ func UnaryExpression(prgrm *ast.CXProgram, op string, prevExprs []*ast.CXExpress
 			cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
 
 			cxAtomicOp.AddInput(exprOut)
-
 			prevExprs[len(prevExprs)-1] = expr
 		} else {
 			panic(err)
@@ -416,6 +421,7 @@ func UnaryExpression(prgrm *ast.CXProgram, op string, prevExprs []*ast.CXExpress
 			panic(err)
 		}
 	}
+
 	return prevExprs
 }
 
@@ -471,7 +477,6 @@ func AssociateReturnExpressions(prgrm *ast.CXProgram, idx int, retExprs []*ast.C
 		return append(retExprs, exprCXLine, expr)
 	} else {
 		lastExprAtomicOp.AddOutput(out)
-
 		return retExprs
 	}
 }

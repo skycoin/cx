@@ -2292,7 +2292,7 @@ yydefault:
 		yyDollar = yyS[yypt-2 : yypt+1]
 //line cxparser/cxparsingcompletor/parsingcompletor.y:1173
 		{
-			lastFirstAtomicOp := &ast.CXAtomicOperator{}
+			var lastFirstAtomicOp *ast.CXAtomicOperator
 			var err error
 
 			if len(yyDollar[1].expressions) > 0 {

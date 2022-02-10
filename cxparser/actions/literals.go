@@ -98,7 +98,6 @@ func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []*
 				symExprAtomicOp.Inputs = append(symExprAtomicOp.Inputs, symInp)
 				symExprAtomicOp.Inputs = append(symExprAtomicOp.Inputs, out)
 			}
-
 			result = append(result, symExprExprCXLine, symExpr)
 
 			symInp.TotalSize = types.POINTER_SIZE
@@ -309,7 +308,6 @@ func ArrayLiteralExpression(prgrm *ast.CXProgram, arrSizes []types.Pointer, type
 				// hack to get the correct lengths below
 				exprAtomicOp.Outputs = append(exprAtomicOp.Outputs, sym)
 			}
-
 			result = append(result, symExprCXLine, symExpr)
 
 			// sym.Lengths = append(expr.ProgramOutput[0].Lengths, arrSizes[len(arrSizes)-1])
@@ -345,7 +343,6 @@ func ArrayLiteralExpression(prgrm *ast.CXProgram, arrSizes []types.Pointer, type
 	symExprAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
 	symExprAtomicOp.Outputs = append(symExprAtomicOp.Outputs, symOutput)
 	symExprAtomicOp.Inputs = append(symExprAtomicOp.Inputs, symInput)
-
 	// symOutput.SynonymousTo = symInput.Name
 
 	// marking the output so multidimensional arrays identify the expressions
