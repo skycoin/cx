@@ -768,10 +768,6 @@ func serializeCXProgramElements(prgrm *CXProgram, s *SerializedCXProgram) {
 					exprs := make([]int, len(fn.Expressions))
 					for i, expr := range fn.Expressions {
 						exprIdx := serializeExpression(prgrm, expr, s)
-						if fn.CurrentExpression == expr {
-							// sFn.CurrentExpressionOffset = int32(exprIdx)
-							sFn.CurrentExpressionOffset = int64(i)
-						}
 						exprs[i] = exprIdx
 					}
 
@@ -1164,10 +1160,6 @@ func deserializeFunction(sFn *serializedFunction, fn *CXFunction, s *SerializedC
 	fn.Expressions = deserializeExpressions(sFn.ExpressionsOffset, sFn.ExpressionsSize, s, prgrm)
 	fn.Size = types.Cast_i64_to_ptr(sFn.Size)
 	fn.LineCount = int(sFn.Length)
-
-	if sFn.CurrentExpressionOffset > 0 {
-		fn.CurrentExpression = fn.Expressions[sFn.CurrentExpressionOffset]
-	}
 
 	fn.Package = prgrm.Packages[sFn.PackageName]
 }

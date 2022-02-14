@@ -346,33 +346,6 @@ func (cxprogram *CXProgram) GetCurrentFunction() (*CXFunction, error) {
 
 }
 
-// GetCurrentExpression ...
-func (cxprogram *CXProgram) GetCurrentExpression() (*CXExpression, error) {
-	if cxprogram.CurrentPackage == -1 {
-		return nil, errors.New("current package is nil")
-	}
-
-	currentPackage, err := cxprogram.GetPackageFromArray(cxprogram.CurrentPackage)
-	if err != nil {
-		return &CXExpression{}, err
-	}
-
-	if currentPackage.CurrentFunction == -1 {
-		return nil, errors.New("current function is nil")
-	}
-
-	currFn, err := cxprogram.GetFunctionFromArray(currentPackage.CurrentFunction)
-	if err != nil {
-		return nil, err
-	}
-
-	if currFn.CurrentExpression == nil {
-		return nil, errors.New("current expression is nil")
-	}
-
-	return currFn.CurrentExpression, nil
-}
-
 // GetPackage ...
 func (cxprogram *CXProgram) GetPackage(pkgName string) (*CXPackage, error) {
 	if _, ok := cxprogram.Packages[pkgName]; !ok {

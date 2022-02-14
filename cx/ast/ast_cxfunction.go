@@ -36,7 +36,7 @@ type CXFunction struct {
 	ListOfPointers []*CXArgument // Root pointers for the GC algorithm
 
 	// Used by the REPL and parser
-	CurrentExpression *CXExpression
+	// CurrentExpression *CXExpression
 }
 
 // IsBuiltIn determines if opcode is not 0
@@ -99,15 +99,6 @@ func (fn *CXFunction) GetExpressionByLine(line int) (*CXExpression, error) {
 	}
 
 	return fn.Expressions[line], nil
-}
-
-// GetCurrentExpression ...
-func (fn *CXFunction) GetCurrentExpression() (*CXExpression, error) {
-	if fn.CurrentExpression == nil {
-		return nil, errors.New("current expression is nil")
-	}
-
-	return fn.CurrentExpression, nil
 }
 
 // ----------------------------------------------------------------
@@ -194,8 +185,6 @@ func (fn *CXFunction) AddExpression(prgrm *CXProgram, expr *CXExpression) *CXFun
 	}
 
 	fn.Expressions = append(fn.Expressions, expr)
-
-	fn.CurrentExpression = expr
 	fn.LineCount++
 	return fn
 }
@@ -216,7 +205,6 @@ func (fn *CXFunction) AddExpressionByLineNumber(prgrm *CXProgram, expr *CXExpres
 		fn.Expressions[line] = expr
 	}
 
-	fn.CurrentExpression = expr
 	fn.LineCount++
 	return fn
 
@@ -289,7 +277,6 @@ func (fn *CXFunction) SelectExpression(line int) (*CXExpression, error) {
 	}
 
 	expr := fn.Expressions[line]
-	fn.CurrentExpression = expr
 
 	return expr, nil
 }

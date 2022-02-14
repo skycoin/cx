@@ -484,10 +484,10 @@ func RegisterOpcodes() {
 
 	RegisterFunction("aff.print", opAffPrint, In(ast.Slice(types.AFF)), nil)
 	RegisterFunction("aff.query", opAffQuery, In(ast.Slice(types.AFF)), Out(ast.Slice(types.AFF)))
-	RegisterFunction("aff.on", opAffOn, In(ast.Slice(types.AFF), ast.Slice(types.AFF)), nil)
-	RegisterFunction("aff.of", opAffOf, In(ast.Slice(types.AFF), ast.Slice(types.AFF)), nil)
-	RegisterFunction("aff.inform", opAffInform, In(ast.Slice(types.AFF), ast.ConstCxArg_I32, ast.Slice(types.AFF)), nil)
-	RegisterFunction("aff.request", opAffRequest, In(ast.Slice(types.AFF), ast.ConstCxArg_I32, ast.Slice(types.AFF)), nil)
+	// RegisterFunction("aff.on", opAffOn, In(ast.Slice(types.AFF), ast.Slice(types.AFF)), nil)
+	// RegisterFunction("aff.of", opAffOf, In(ast.Slice(types.AFF), ast.Slice(types.AFF)), nil)
+	// RegisterFunction("aff.inform", opAffInform, In(ast.Slice(types.AFF), ast.ConstCxArg_I32, ast.Slice(types.AFF)), nil)
+	// RegisterFunction("aff.request", opAffRequest, In(ast.Slice(types.AFF), ast.ConstCxArg_I32, ast.Slice(types.AFF)), nil)
 
 	RegisterFunction("tcp.Dial", opTCPDial, In(ast.ConstCxArg_STR, ast.ConstCxArg_STR), Out(ast.ConstCxArg_STR))
 	RegisterFunction("tcp.Listen", opTCPListen, In(ast.ConstCxArg_STR, ast.ConstCxArg_STR), Out(ast.ConstCxArg_STR))
