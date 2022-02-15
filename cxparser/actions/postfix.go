@@ -25,26 +25,27 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []*ast.CXExpression,
 	if prevExprAtomicOp.Operator != nil && len(prevExprAtomicOp.Outputs) == 0 {
 		genName := MakeGenSym(constants.LOCAL_PREFIX)
 
-		out := ast.MakeArgument(genName, prevExprCXLine.FileName, prevExprCXLine.LineNumber-1).AddType(prevExprAtomicOp.Operator.Outputs[0].Type)
+		prevExprAtomicOpOperatorOutput := prgrm.GetCXArgFromArray(prevExprAtomicOp.Operator.Outputs[0])
+		out := ast.MakeArgument(genName, prevExprCXLine.FileName, prevExprCXLine.LineNumber-1).AddType(prevExprAtomicOpOperatorOutput.Type)
 
-		out.DeclarationSpecifiers = prevExprAtomicOp.Operator.Outputs[0].DeclarationSpecifiers
-		out.StructType = prevExprAtomicOp.Operator.Outputs[0].StructType
-		out.Size = prevExprAtomicOp.Operator.Outputs[0].Size
-		out.TotalSize = prevExprAtomicOp.Operator.Outputs[0].TotalSize
-		out.Lengths = prevExprAtomicOp.Operator.Outputs[0].Lengths
-		out.IsSlice = prevExprAtomicOp.Operator.Outputs[0].IsSlice
+		out.DeclarationSpecifiers = prevExprAtomicOpOperatorOutput.DeclarationSpecifiers
+		out.StructType = prevExprAtomicOpOperatorOutput.StructType
+		out.Size = prevExprAtomicOpOperatorOutput.Size
+		out.TotalSize = prevExprAtomicOpOperatorOutput.TotalSize
+		out.Lengths = prevExprAtomicOpOperatorOutput.Lengths
+		out.IsSlice = prevExprAtomicOpOperatorOutput.IsSlice
 		out.PreviouslyDeclared = true
 
 		prevExprAtomicOp.AddOutput(out)
 
-		inp := ast.MakeArgument(genName, prevExprCXLine.FileName, prevExprCXLine.LineNumber).AddType(prevExprAtomicOp.Operator.Outputs[0].Type)
+		inp := ast.MakeArgument(genName, prevExprCXLine.FileName, prevExprCXLine.LineNumber).AddType(prevExprAtomicOpOperatorOutput.Type)
 
-		inp.DeclarationSpecifiers = prevExprAtomicOp.Operator.Outputs[0].DeclarationSpecifiers
-		inp.StructType = prevExprAtomicOp.Operator.Outputs[0].StructType
-		inp.Size = prevExprAtomicOp.Operator.Outputs[0].Size
-		inp.TotalSize = prevExprAtomicOp.Operator.Outputs[0].TotalSize
-		inp.Lengths = prevExprAtomicOp.Operator.Outputs[0].Lengths
-		inp.IsSlice = prevExprAtomicOp.Operator.Outputs[0].IsSlice
+		inp.DeclarationSpecifiers = prevExprAtomicOpOperatorOutput.DeclarationSpecifiers
+		inp.StructType = prevExprAtomicOpOperatorOutput.StructType
+		inp.Size = prevExprAtomicOpOperatorOutput.Size
+		inp.TotalSize = prevExprAtomicOpOperatorOutput.TotalSize
+		inp.Lengths = prevExprAtomicOpOperatorOutput.Lengths
+		inp.IsSlice = prevExprAtomicOpOperatorOutput.IsSlice
 		inp.PreviouslyDeclared = true
 
 		useExprCXLine := ast.MakeCXLineExpression(prgrm, prevExprCXLine.FileName, prevExprCXLine.LineNumber, prevExprCXLine.LineStr)
@@ -86,7 +87,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []*ast.CXExpression,
 			// expr.AddInput(postExprs[len(postExprs)-1].ProgramOutput[0])
 			fld.Indexes = append(fld.Indexes, postExprsAtomicOp.Outputs[0])
 		} else {
-			sym := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(postExprsAtomicOp.Operator.Outputs[0].Type)
+			sym := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(prgrm.GetCXArgFromArray(postExprsAtomicOp.Operator.Outputs[0]).Type)
 			sym.Package = postExprsAtomicOp.Package
 			sym.PreviouslyDeclared = true
 			postExprsAtomicOp.AddOutput(sym)
@@ -100,9 +101,9 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []*ast.CXExpression,
 		if len(postExprsAtomicOp.Outputs) < 1 {
 			// then it's an expression (e.g. i32.add(0, 0))
 			// we create a gensym for it
-			idxSym := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(postExprsAtomicOp.Operator.Outputs[0].Type)
-			idxSym.Size = postExprsAtomicOp.Operator.Outputs[0].Size
-			idxSym.TotalSize = ast.GetSize(postExprsAtomicOp.Operator.Outputs[0])
+			idxSym := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(prgrm.GetCXArgFromArray(postExprsAtomicOp.Operator.Outputs[0]).Type)
+			idxSym.Size = prgrm.GetCXArgFromArray(postExprsAtomicOp.Operator.Outputs[0]).Size
+			idxSym.TotalSize = ast.GetSize(prgrm.GetCXArgFromArray(postExprsAtomicOp.Operator.Outputs[0]))
 
 			idxSym.Package = postExprsAtomicOp.Package
 			idxSym.PreviouslyDeclared = true
@@ -275,7 +276,7 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []*ast.CXExpression,
 	// and we need to create some auxiliary variables to hold the result from
 	// the function call
 	if lastExprAtomicOp.Operator != nil {
-		opOut := lastExprAtomicOp.Operator.Outputs[0]
+		opOut := prgrm.GetCXArgFromArray(lastExprAtomicOp.Operator.Outputs[0])
 		symName := MakeGenSym(constants.LOCAL_PREFIX)
 
 		// we associate the result of the function call to the aux variable

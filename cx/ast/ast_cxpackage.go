@@ -76,7 +76,8 @@ func (pkg *CXPackage) GetMethod(prgrm *CXProgram, fnName string, receiverType st
 			return fn, err
 		}
 
-		if len(fn.Inputs) > 0 && fn.Inputs[0].StructType != nil && fn.Inputs[0].StructType.Name == receiverType {
+		fnInput := prgrm.GetCXArgFromArray(fn.Inputs[0])
+		if len(fn.Inputs) > 0 && fnInput.StructType != nil && fnInput.StructType.Name == receiverType {
 			return fn, nil
 		}
 	}

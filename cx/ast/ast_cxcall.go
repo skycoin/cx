@@ -37,7 +37,8 @@ func popStack(prgrm *CXProgram, call *CXCall) error {
 	}
 
 	lenOuts := len(cxAtomicOp.Outputs)
-	for i, out := range call.Operator.Outputs {
+	for i, outIdx := range call.Operator.Outputs {
+		out := prgrm.GetCXArgFromArray(outIdx)
 		// Continuing if there is no receiving variable available.
 		if i >= lenOuts {
 			continue
@@ -193,7 +194,7 @@ func processNonAtomicOperators(prgrm *CXProgram, expr *CXExpression, fp types.Po
 		// writing inputs to new stack frame
 		types.WriteSlice_byte(
 			prgrm.Memory,
-			GetFinalOffset(prgrm, newFP, newCall.Operator.Inputs[i]),
+			GetFinalOffset(prgrm, newFP, prgrm.GetCXArgFromArray(newCall.Operator.Inputs[i])),
 			// newFP + newCall.Operator.ProgramInput[i].Offset,
 			// GetFinalOffset(prgrm.Memory, newFP, newCall.Operator.ProgramInput[i], MEM_WRITE),
 			byts)

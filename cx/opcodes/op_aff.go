@@ -74,7 +74,7 @@ func CallAffPredicate(prgrm *ast.CXProgram, fn *ast.CXFunction, predValue []byte
 	// sending value to predicate function
 	types.WriteSlice_byte(
 		prgrm.Memory,
-		ast.GetFinalOffset(prgrm, newFP, newCall.Operator.Inputs[0]),
+		ast.GetFinalOffset(prgrm, newFP, prgrm.GetCXArgFromArray(newCall.Operator.Inputs[0])),
 		predValue)
 
 	var inputs []ast.CXValue
@@ -94,8 +94,8 @@ func CallAffPredicate(prgrm *ast.CXProgram, fn *ast.CXFunction, predValue []byte
 	prevCall.Line--
 	return types.GetSlice_byte(prgrm.Memory, ast.GetFinalOffset(prgrm,
 		newCall.FramePointer,
-		newCall.Operator.Outputs[0]),
-		ast.GetSize(newCall.Operator.Outputs[0]))[0]
+		prgrm.GetCXArgFromArray(newCall.Operator.Outputs[0])),
+		ast.GetSize(prgrm.GetCXArgFromArray(newCall.Operator.Outputs[0])))[0]
 }
 
 // This might not make sense, as we can use normal programming to create conditions on values
@@ -373,8 +373,8 @@ func QueryFunction(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpress
 		// WriteMemI32(opNameOffsetB[:], 0, int32(WriteObjectRetOff(opNameB)))
 		types.Write_ptr(opNameOffsetB[:], 0, opNameOffset)
 
-		inpSigOffset := getSignatureSlice(prgrm, f.Inputs)
-		outSigOffset := getSignatureSlice(prgrm, f.Outputs)
+		inpSigOffset := getSignatureSlice(prgrm, prgrm.ConvertIndexArgsToPointerArgs(f.Inputs))
+		outSigOffset := getSignatureSlice(prgrm, prgrm.ConvertIndexArgsToPointerArgs(f.Outputs))
 
 		fnOffset := ast.AllocateSeq(prgrm, types.OBJECT_HEADER_SIZE+types.STR_SIZE+types.POINTER_SIZE+types.POINTER_SIZE)
 		// Name
@@ -1234,7 +1234,7 @@ func opAffQuery(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 					var prgrmOffsetB [4]byte
 					types.Write_ptr(prgrmOffsetB[:], 0, prgrmOffset)
 
-					predInp := fn.Inputs[0]
+					predInp := prgrm.GetCXArgFromArray(fn.Inputs[0])
 
 					if predInp.Type == types.STRUCT {
 						if predInp.StructType != nil {

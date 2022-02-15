@@ -86,6 +86,7 @@ func MakeProgram() *CXProgram {
 			Size:    minHeapSize,
 			Pointer: constants.NULL_HEAP_ADDRESS_OFFSET, // We can start adding objects to the heap after the NULL (nil) bytes.
 		},
+		CXArgs: make([]CXArgument, 0),
 	}
 	return newPrgrm
 }
@@ -211,6 +212,46 @@ func (cxprogram *CXProgram) AddCXAtomicOp(CXAtomicOp *CXAtomicOperator) int {
 	cxprogram.CXAtomicOps = append(cxprogram.CXAtomicOps, *CXAtomicOp)
 
 	return len(cxprogram.CXAtomicOps) - 1
+}
+
+// ----------------------------------------------------------------
+//                         `CXProgram` CXArgument handling
+func (cxprogram *CXProgram) AddCXArgInArray(cxArg *CXArgument) CXArgumentIndex {
+	// The index of fn after it will be added in the array
+	cxArg.Index = len(cxprogram.CXArgs)
+	cxprogram.CXArgs = append(cxprogram.CXArgs, *cxArg)
+
+	return CXArgumentIndex(cxArg.Index)
+}
+
+func (cxprogram *CXProgram) GetCXArgFromArray(index CXArgumentIndex) *CXArgument {
+	if index == -1 {
+		return nil
+	}
+
+	if int(index) > (len(cxprogram.CXArgs) - 1) {
+		panic(fmt.Errorf("error: CXArgument[%d]: index out of bounds", index))
+	}
+
+	return &cxprogram.CXArgs[index]
+}
+
+func (cxprogram *CXProgram) ConvertIndexArgsToPointerArgs(idxs []CXArgumentIndex) []*CXArgument {
+	var cxArgs []*CXArgument
+	for _, idx := range idxs {
+		arg := cxprogram.GetCXArgFromArray(idx)
+		cxArgs = append(cxArgs, arg)
+	}
+	return cxArgs
+}
+
+func (cxprogram *CXProgram) AddPointerArgsToCXArgsArray(cxArgs []*CXArgument) []CXArgumentIndex {
+	var cxArgsIdxs []CXArgumentIndex
+	for _, cxArg := range cxArgs {
+		cxArgIdx := cxprogram.AddCXArgInArray(cxArg)
+		cxArgsIdxs = append(cxArgsIdxs, cxArgIdx)
+	}
+	return cxArgsIdxs
 }
 
 // ----------------------------------------------------------------

@@ -34,7 +34,9 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 	profiling.StartProfile("parse")
 	defer profiling.StopProfile("parse")
 
-	actions.AST = ast.MakeProgram()
+	if actions.AST == nil {
+		actions.AST = ast.MakeProgram()
+	}
 
 	//corePkgsPrgrm, err := cxcore.GetCurrentCxProgram()
 	var corePkgsPrgrm *ast.CXProgram = ast.PROGRAM

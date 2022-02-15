@@ -22,7 +22,7 @@ func GetOpCodeCount() int {
 */
 
 // RegisterOpCode ...
-func RegisterOpCode(code int, name string, handler ast.OpcodeHandler, inputs []*ast.CXArgument, outputs []*ast.CXArgument) {
+func RegisterOpCode(prgrm *ast.CXProgram, code int, name string, handler ast.OpcodeHandler, inputs []*ast.CXArgument, outputs []*ast.CXArgument) {
 	if code >= len(ast.OpcodeHandlers) {
 		ast.OpcodeHandlers = append(ast.OpcodeHandlers, make([]ast.OpcodeHandler, code+1)...)
 	}
@@ -41,25 +41,25 @@ func RegisterOpCode(code int, name string, handler ast.OpcodeHandler, inputs []*
 	if outputs == nil {
 		outputs = []*ast.CXArgument{}
 	}
-	ast.Natives[code] = MakeNativeFunction(code, inputs, outputs)
+	ast.Natives[code] = MakeNativeFunction(prgrm, code, inputs, outputs)
 }
 
 // RegisterFunction ...
-func RegisterFunction(name string, handler ast.OpcodeHandler, inputs []*ast.CXArgument, outputs []*ast.CXArgument) {
-	RegisterOpCode(globals.OpCodeSystemCounter, name, handler, inputs, outputs)
+func RegisterFunction(prgrm *ast.CXProgram, name string, handler ast.OpcodeHandler, inputs []*ast.CXArgument, outputs []*ast.CXArgument) {
+	RegisterOpCode(prgrm, globals.OpCodeSystemCounter, name, handler, inputs, outputs)
 	globals.OpCodeSystemCounter++
 }
 
 // RegisterOperator ...
-func RegisterOperator(name string, handler ast.OpcodeHandler, inputs []*ast.CXArgument, outputs []*ast.CXArgument, atomicType types.Code, operator int) {
-	RegisterOpCode(globals.OpCodeSystemCounter, name, handler, inputs, outputs)
+func RegisterOperator(prgrm *ast.CXProgram, name string, handler ast.OpcodeHandler, inputs []*ast.CXArgument, outputs []*ast.CXArgument, atomicType types.Code, operator int) {
+	RegisterOpCode(prgrm, globals.OpCodeSystemCounter, name, handler, inputs, outputs)
 	native := ast.Natives[globals.OpCodeSystemCounter]
 	ast.Operators[ast.GetTypedOperatorOffset(atomicType, operator)] = native
 	globals.OpCodeSystemCounter++
 }
 
 // MakeNativeFunction ...
-func MakeNativeFunction(opCode int, inputs []*ast.CXArgument, outputs []*ast.CXArgument) *ast.CXFunction {
+func MakeNativeFunction(prgrm *ast.CXProgram, opCode int, inputs []*ast.CXArgument, outputs []*ast.CXArgument) *ast.CXFunction {
 	fn := &ast.CXFunction{
 		AtomicOPCode: opCode,
 		Index:        -1,
@@ -69,12 +69,14 @@ func MakeNativeFunction(opCode int, inputs []*ast.CXArgument, outputs []*ast.CXA
 	for _, inp := range inputs {
 		inp.Offset = offset
 		offset.Add(ast.GetSize(inp))
-		fn.Inputs = append(fn.Inputs, inp)
+		inpIdx := prgrm.AddCXArgInArray(inp)
+		fn.Inputs = append(fn.Inputs, inpIdx)
 	}
 	for _, out := range outputs {
-		fn.Outputs = append(fn.Outputs, out)
+		outIdx := prgrm.AddCXArgInArray(out)
 		out.Offset = offset
 		offset.Add(ast.GetSize(out))
+		fn.Outputs = append(fn.Outputs, outIdx)
 	}
 
 	return fn

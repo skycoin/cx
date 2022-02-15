@@ -333,8 +333,8 @@ func serializeFunctionArguments(prgrm *CXProgram, fn *CXFunction, s *SerializedC
 	if fnOff, found := s.FunctionsMap[fnName]; found {
 		sFn := &s.Functions[fnOff]
 
-		sFn.InputsOffset, sFn.InputsSize = serializeSliceOfArguments(prgrm, fn.Inputs, s)
-		sFn.OutputsOffset, sFn.OutputsSize = serializeSliceOfArguments(prgrm, fn.Outputs, s)
+		sFn.InputsOffset, sFn.InputsSize = serializeSliceOfArguments(prgrm, prgrm.ConvertIndexArgsToPointerArgs(fn.Inputs), s)
+		sFn.OutputsOffset, sFn.OutputsSize = serializeSliceOfArguments(prgrm, prgrm.ConvertIndexArgsToPointerArgs(fn.Outputs), s)
 		sFn.ListOfPointersOffset, sFn.ListOfPointersSize = serializeSliceOfArguments(prgrm, fn.ListOfPointers, s)
 	} else {
 		panic("function reference not found")
@@ -1154,8 +1154,8 @@ func deserializeExpression(sExpr *serializedExpression, s *SerializedCXProgram, 
 
 func deserializeFunction(sFn *serializedFunction, fn *CXFunction, s *SerializedCXProgram, prgrm *CXProgram) {
 	fn.Name = deserializeString(sFn.NameOffset, sFn.NameSize, s)
-	fn.Inputs = deserializeArguments(sFn.InputsOffset, sFn.InputsSize, s, prgrm)
-	fn.Outputs = deserializeArguments(sFn.OutputsOffset, sFn.OutputsSize, s, prgrm)
+	fn.Inputs = prgrm.AddPointerArgsToCXArgsArray(deserializeArguments(sFn.InputsOffset, sFn.InputsSize, s, prgrm))
+	fn.Outputs = prgrm.AddPointerArgsToCXArgsArray(deserializeArguments(sFn.OutputsOffset, sFn.OutputsSize, s, prgrm))
 	fn.ListOfPointers = deserializeArguments(sFn.ListOfPointersOffset, sFn.ListOfPointersSize, s, prgrm)
 	fn.Expressions = deserializeExpressions(sFn.ExpressionsOffset, sFn.ExpressionsSize, s, prgrm)
 	fn.Size = types.Cast_i64_to_ptr(sFn.Size)

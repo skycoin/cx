@@ -103,7 +103,7 @@ func AddNativeInputToFunction(cxprogram *cxast.CXProgram, packageName, functionN
 
 	arg := cxast.MakeField(inputName, inputType, "", -1).AddType(types.Code(inputType))
 	arg.Package = cxast.CXPackageIndex(pkg.Index)
-	fn.AddInput(arg)
+	fn.AddInput(cxprogram, arg)
 
 	return nil
 }
@@ -135,7 +135,7 @@ func RemoveFunctionInput(cxprogram *cxast.CXProgram, functionName, inputName str
 		return err
 	}
 
-	fn.RemoveInput(inputName)
+	fn.RemoveInput(cxprogram, inputName)
 	return nil
 }
 
@@ -175,7 +175,7 @@ func AddNativeOutputToFunction(cxprogram *cxast.CXProgram, packageName, function
 	}
 	arg := cxast.MakeField(outputName, outputType, "", -1).AddType(types.Code(outputType))
 	arg.Package = cxast.CXPackageIndex(pkg.Index)
-	fn.AddOutput(arg)
+	fn.AddOutput(cxprogram, arg)
 
 	return nil
 }
@@ -207,6 +207,6 @@ func RemoveFunctionOutput(cxprogram *cxast.CXProgram, functionName, outputName s
 		return err
 	}
 
-	fn.RemoveOutput(outputName)
+	fn.RemoveOutput(cxprogram, outputName)
 	return nil
 }

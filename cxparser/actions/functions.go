@@ -27,14 +27,14 @@ func FunctionHeader(prgrm *ast.CXProgram, ident string, receiver []*ast.CXArgume
 			fnName := receiver[0].StructType.Name + "." + ident
 
 			if fn, err := prgrm.GetFunction(fnName, pkg.Name); err == nil {
-				fn.AddInput(receiver[0])
+				fn.AddInput(prgrm, receiver[0])
 				pkg.CurrentFunction = ast.CXFunctionIndex(fn.Index)
 				return fn
 			} else {
 				fn := ast.MakeFunction(fnName, CurrentFile, LineNo)
 				_, fnIdx := pkg.AddFunction(prgrm, fn)
 				newFn, err := prgrm.GetFunctionFromArray(fnIdx)
-				newFn.AddInput(receiver[0])
+				newFn.AddInput(prgrm, receiver[0])
 				if err != nil {
 					panic(err)
 				}
@@ -64,7 +64,7 @@ func FunctionHeader(prgrm *ast.CXProgram, ident string, receiver []*ast.CXArgume
 	}
 }
 
-func FunctionAddParameters(fn *ast.CXFunction, inputs, outputs []*ast.CXArgument) {
+func FunctionAddParameters(prgrm *ast.CXProgram, fn *ast.CXFunction, inputs, outputs []*ast.CXArgument) {
 	if len(fn.Inputs) != len(inputs) {
 		// it must be a method declaration
 		// so we save the first input
@@ -78,14 +78,15 @@ func FunctionAddParameters(fn *ast.CXFunction, inputs, outputs []*ast.CXArgument
 	fn.Outputs = nil
 
 	for _, inp := range inputs {
-		fn.AddInput(inp)
+		fn.AddInput(prgrm, inp)
 	}
 
 	for _, out := range outputs {
-		fn.AddOutput(out)
+		fn.AddOutput(prgrm, out)
 	}
 
-	for _, out := range fn.Outputs {
+	for _, outIdx := range fn.Outputs {
+		out := prgrm.GetCXArgFromArray(outIdx)
 		if out.IsPointer() && out.PointerTargetType != types.STR && out.Type != types.AFF {
 			out.DoesEscape = true
 		}
@@ -136,7 +137,7 @@ func FunctionProcessParameters(prgrm *ast.CXProgram, symbols *[]map[string]*ast.
 func FunctionDeclaration(prgrm *ast.CXProgram, fn *ast.CXFunction, inputs, outputs []*ast.CXArgument, exprs []*ast.CXExpression) {
 	//var exprs []*cxcore.CXExpression = prgrm.SysInitExprs
 
-	FunctionAddParameters(fn, inputs, outputs)
+	FunctionAddParameters(prgrm, fn, inputs, outputs)
 
 	// getting offset to use by statements (excluding inputs, outputs and receiver)
 	var offset types.Pointer
@@ -158,8 +159,8 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fn *ast.CXFunction, inputs, outpu
 	// local being function constrained variables, and global being global variables
 	var symbolsScope map[string]bool = make(map[string]bool)
 
-	FunctionProcessParameters(prgrm, symbols, &symbolsScope, &offset, fn, fn.Inputs)
-	FunctionProcessParameters(prgrm, symbols, &symbolsScope, &offset, fn, fn.Outputs)
+	FunctionProcessParameters(prgrm, symbols, &symbolsScope, &offset, fn, prgrm.ConvertIndexArgsToPointerArgs(fn.Inputs))
+	FunctionProcessParameters(prgrm, symbols, &symbolsScope, &offset, fn, prgrm.ConvertIndexArgsToPointerArgs(fn.Outputs))
 
 	for i, expr := range fn.Expressions {
 		if expr.Type == ast.CX_LINE {
@@ -201,7 +202,7 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fn *ast.CXFunction, inputs, outpu
 			}
 
 			if expr.IsMethodCall() {
-				arg = exprAtomicOp.Operator.Outputs[0]
+				arg = prgrm.GetCXArgFromArray(exprAtomicOp.Operator.Outputs[0])
 			} else {
 				arg = exprAtomicOp.Inputs[0]
 			}
@@ -282,7 +283,8 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []*ast.CXExpression, args []*ast.C
 			if len(inpExprAtomicOp.Outputs) < 1 {
 				var out *ast.CXArgument
 
-				if inpExprAtomicOp.Operator.Outputs[0].Type == types.UNDEFINED {
+				inpExprAtomicOpOperatorOutput := prgrm.GetCXArgFromArray(inpExprAtomicOp.Operator.Outputs[0])
+				if inpExprAtomicOpOperatorOutput.Type == types.UNDEFINED {
 					// if undefined type, then adopt argument's type
 					out = ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, inpExprCXLine.LineNumber).AddType(inpExprAtomicOp.Inputs[0].Type)
 					out.StructType = inpExprAtomicOp.Inputs[0].StructType
@@ -294,27 +296,27 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []*ast.CXExpression, args []*ast.C
 					out.PointerTargetType = inpExprAtomicOp.Inputs[0].PointerTargetType
 					out.PreviouslyDeclared = true
 				} else {
-					out = ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, inpExprCXLine.LineNumber).AddType(inpExprAtomicOp.Operator.Outputs[0].Type)
-					out.DeclarationSpecifiers = inpExprAtomicOp.Operator.Outputs[0].DeclarationSpecifiers
+					out = ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, inpExprCXLine.LineNumber).AddType(inpExprAtomicOpOperatorOutput.Type)
+					out.DeclarationSpecifiers = inpExprAtomicOpOperatorOutput.DeclarationSpecifiers
 
-					out.StructType = inpExprAtomicOp.Operator.Outputs[0].StructType
+					out.StructType = inpExprAtomicOpOperatorOutput.StructType
 
-					if inpExprAtomicOp.Operator.Outputs[0].StructType != nil {
+					if inpExprAtomicOpOperatorOutput.StructType != nil {
 						inpExprPkg, err := prgrm.GetPackageFromArray(inpExprAtomicOp.Package)
 						if err != nil {
 							panic(err)
 						}
-						if strct, err := inpExprPkg.GetStruct(prgrm, inpExprAtomicOp.Operator.Outputs[0].StructType.Name); err == nil {
+						if strct, err := inpExprPkg.GetStruct(prgrm, inpExprAtomicOpOperatorOutput.StructType.Name); err == nil {
 							out.Size = strct.Size
 							out.TotalSize = strct.Size
 						}
 					} else {
-						out.Size = inpExprAtomicOp.Operator.Outputs[0].Size
-						out.TotalSize = ast.GetSize(inpExprAtomicOp.Operator.Outputs[0])
+						out.Size = inpExprAtomicOpOperatorOutput.Size
+						out.TotalSize = ast.GetSize(inpExprAtomicOpOperatorOutput)
 					}
 
-					out.Type = inpExprAtomicOp.Operator.Outputs[0].Type
-					out.PointerTargetType = inpExprAtomicOp.Operator.Outputs[0].PointerTargetType
+					out.Type = inpExprAtomicOpOperatorOutput.Type
+					out.PointerTargetType = inpExprAtomicOpOperatorOutput.PointerTargetType
 					out.PreviouslyDeclared = true
 				}
 
@@ -677,7 +679,7 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []*ast.CXExpression, currIndex int) 
 
 		// checking if number of inputs is less than the required number of inputs
 		if len(cxAtomicOp.Inputs) != len(cxAtomicOp.Operator.Inputs) {
-			if !(len(cxAtomicOp.Operator.Inputs) > 0 && cxAtomicOp.Operator.Inputs[len(cxAtomicOp.Operator.Inputs)-1].Type != types.UNDEFINED) {
+			if !(len(cxAtomicOp.Operator.Inputs) > 0 && prgrm.GetCXArgFromArray(cxAtomicOp.Operator.Inputs[len(cxAtomicOp.Operator.Inputs)-1]).Type != types.UNDEFINED) {
 				// if the last input is of type cxcore.TYPE_UNDEFINED then it might be a variadic function, such as printf
 			} else {
 				// then we need to be strict in the number of inputs
@@ -757,10 +759,10 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []*ast.CXExpression, currIndex int) 
 	// then it's a function call and not a declaration
 	if cxAtomicOp.Operator != nil {
 		// checking inputs matching operator's inputs
-		checkMatchParamTypes(prgrm, exprs[currIndex], cxAtomicOp.Operator.Inputs, cxAtomicOp.Inputs, true)
+		checkMatchParamTypes(prgrm, exprs[currIndex], prgrm.ConvertIndexArgsToPointerArgs(cxAtomicOp.Operator.Inputs), cxAtomicOp.Inputs, true)
 
 		// checking outputs matching operator's outputs
-		checkMatchParamTypes(prgrm, exprs[currIndex], cxAtomicOp.Operator.Outputs, cxAtomicOp.Outputs, false)
+		checkMatchParamTypes(prgrm, exprs[currIndex], prgrm.ConvertIndexArgsToPointerArgs(cxAtomicOp.Operator.Outputs), cxAtomicOp.Outputs, false)
 	}
 }
 
@@ -1099,7 +1101,7 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 		}
 
 		// checking if receiver is sent as pointer or not
-		if cxAtomicOp.Operator.Inputs[0].IsPointer() {
+		if prgrm.GetCXArgFromArray(cxAtomicOp.Operator.Inputs[0]).IsPointer() {
 			cxAtomicOp.Inputs[0].PassBy = constants.PASSBY_REFERENCE
 		}
 	}
@@ -1319,8 +1321,8 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, sym *ast.CXArgument, arg *ast.CXA
 				receiverType := strct.Name
 
 				if method, methodErr := strctPkg.GetMethod(prgrm, receiverType+"."+methodName, receiverType); methodErr == nil {
-					fld.Type = method.Outputs[0].Type
-					fld.PointerTargetType = method.Outputs[0].PointerTargetType
+					fld.Type = prgrm.GetCXArgFromArray(method.Outputs[0]).Type
+					fld.PointerTargetType = prgrm.GetCXArgFromArray(method.Outputs[0]).PointerTargetType
 				} else {
 					println(ast.CompilationError(fld.ArgDetails.FileName, fld.ArgDetails.FileLine), err.Error())
 				}
