@@ -53,7 +53,7 @@ func (cxprogram *CXProgram) PrintStack() {
 		// fmt.Println("Expressions")
 		exprs := ""
 		for _, expr := range op.Expressions {
-			cxAtomicOp, _, _, err := cxprogram.GetOperation(expr)
+			cxAtomicOp, _, _, err := cxprogram.GetOperation(&expr)
 			if err != nil {
 				panic(err)
 			}

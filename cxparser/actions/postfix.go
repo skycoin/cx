@@ -12,7 +12,7 @@ import (
 
 // PostfixExpressionArray...
 //
-func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []*ast.CXExpression, postExprs []*ast.CXExpression) []*ast.CXExpression {
+func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, postExprs []ast.CXExpression) []ast.CXExpression {
 	var elt *ast.CXArgument
 
 	prevExprAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(prevExprs, len(prevExprs)-1)
@@ -57,7 +57,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []*ast.CXExpression,
 
 		useExprAtomicOp.Package = prevExprAtomicOp.Package
 		useExprAtomicOp.AddOutput(inp)
-		prevExprs = append(prevExprs, useExprCXLine, useExpr)
+		prevExprs = append(prevExprs, *useExprCXLine, *useExpr)
 	}
 
 	prevExpr2AtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(prevExprs, len(prevExprs)-1)
@@ -123,7 +123,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []*ast.CXExpression,
 	return prevExprs
 }
 
-func PostfixExpressionNative(prgrm *ast.CXProgram, typeCode types.Code, opStrCode string) []*ast.CXExpression {
+func PostfixExpressionNative(prgrm *ast.CXProgram, typeCode types.Code, opStrCode string) []ast.CXExpression {
 	// these will always be native functions
 	opCode, ok := ast.OpCodes[typeCode.Name()+"."+opStrCode]
 	if !ok {
@@ -145,10 +145,10 @@ func PostfixExpressionNative(prgrm *ast.CXProgram, typeCode types.Code, opStrCod
 		panic(err)
 	}
 	cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
-	return []*ast.CXExpression{exprCXLine, expr}
+	return []ast.CXExpression{*exprCXLine, *expr}
 }
 
-func PostfixExpressionEmptyFunCall(prgrm *ast.CXProgram, prevExprs []*ast.CXExpression) []*ast.CXExpression {
+func PostfixExpressionEmptyFunCall(prgrm *ast.CXProgram, prevExprs []ast.CXExpression) []ast.CXExpression {
 	prevExprsAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(prevExprs, len(prevExprs)-1)
 	if err != nil {
 		panic(err)
@@ -186,7 +186,7 @@ func PostfixExpressionEmptyFunCall(prgrm *ast.CXProgram, prevExprs []*ast.CXExpr
 	return FunctionCall(prgrm, prevExprs, nil)
 }
 
-func PostfixExpressionFunCall(prgrm *ast.CXProgram, prevExprs []*ast.CXExpression, args []*ast.CXExpression) []*ast.CXExpression {
+func PostfixExpressionFunCall(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, args []ast.CXExpression) []ast.CXExpression {
 	lastPrevExprsAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(prevExprs, len(prevExprs)-1)
 	if err != nil {
 		panic(err)
@@ -216,7 +216,7 @@ func PostfixExpressionFunCall(prgrm *ast.CXProgram, prevExprs []*ast.CXExpressio
 	return FunctionCall(prgrm, prevExprs, args)
 }
 
-func PostfixExpressionIncDec(prgrm *ast.CXProgram, prevExprs []*ast.CXExpression, isInc bool) []*ast.CXExpression {
+func PostfixExpressionIncDec(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, isInc bool) []ast.CXExpression {
 	pkg, err := prgrm.GetCurrentPackage()
 	if err != nil {
 		panic(err)
@@ -256,16 +256,16 @@ func PostfixExpressionIncDec(prgrm *ast.CXProgram, prevExprs []*ast.CXExpression
 	cxAtomicOp.AddOutput(lastPrevExprsAtomicOp.Outputs[0])
 
 	// exprs := append(prevExprs, expr)
-	exprs := append([]*ast.CXExpression{}, exprCXLine, expr)
+	exprs := append([]ast.CXExpression{}, *exprCXLine, *expr)
 	return exprs
 }
 
 // PostfixExpressionField handles the dot notation that can follow an identifier.
 // Examples are: `foo.bar`, `foo().bar`, `pkg.foo`
-func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []*ast.CXExpression, ident string) []*ast.CXExpression {
+func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, ident string) []ast.CXExpression {
 	lastExpr := prevExprs[len(prevExprs)-1]
 
-	lastExprAtomicOp, _, _, err := prgrm.GetOperation(lastExpr)
+	lastExprAtomicOp, _, _, err := prgrm.GetOperation(&lastExpr)
 	if err != nil {
 		panic(err)
 	}
@@ -314,11 +314,11 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []*ast.CXExpression,
 
 		exprAtomicOp.Package = lastExprAtomicOp.Package
 		exprAtomicOp.AddOutput(inp)
-		prevExprs = append(prevExprs, exprCXLine, expr)
+		prevExprs = append(prevExprs, *exprCXLine, *expr)
 
 		lastExpr = prevExprs[len(prevExprs)-1]
 
-		lastExprAtomicOp, _, _, err = prgrm.GetOperation(lastExpr)
+		lastExprAtomicOp, _, _, err = prgrm.GetOperation(&lastExpr)
 		if err != nil {
 			panic(err)
 		}

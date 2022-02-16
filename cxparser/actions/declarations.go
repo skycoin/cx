@@ -22,7 +22,7 @@ import (
 //        Just use pkg=nil to indicate that CurrentPackage should be used.
 //
 func DeclareGlobal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationSpecifiers *ast.CXArgument,
-	initializer []*ast.CXExpression, doesInitialize bool) {
+	initializer []ast.CXExpression, doesInitialize bool) {
 	pkg, err := prgrm.GetCurrentPackage()
 	if err != nil {
 		panic(err)
@@ -38,7 +38,7 @@ func DeclareGlobal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declaration
 //
 func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 	declarator *ast.CXArgument, declaration_specifiers *ast.CXArgument,
-	initializer []*ast.CXExpression, doesInitialize bool) {
+	initializer []ast.CXExpression, doesInitialize bool) {
 	declaration_specifiers.Package = ast.CXPackageIndex(pkg.Index)
 
 	// Treat the name a bit different whether it's defined already or not.
@@ -47,7 +47,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 
 		if glbl.Offset < 0 || glbl.Size == 0 || glbl.TotalSize == 0 {
 			// then it was only added a reference to the symbol
-			var offExpr []*ast.CXExpression
+			var offExpr []ast.CXExpression
 			if declaration_specifiers.IsSlice { // TODO:PTR move branch in WritePrimary
 				offExpr = WritePrimary(prgrm, declaration_specifiers.Type,
 					make([]byte, types.POINTER_SIZE), true)
@@ -106,7 +106,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 				if initializer[len(initializer)-1].IsStructLiteral() {
 					index := prgrm.AddCXAtomicOp(&ast.CXAtomicOperator{Outputs: []*ast.CXArgument{glbl}, Function: -1})
 					initializer = StructLiteralAssignment(prgrm,
-						[]*ast.CXExpression{
+						[]ast.CXExpression{
 							{
 								Index: index,
 								Type:  ast.CX_ATOMIC_OPERATOR,
@@ -131,7 +131,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 		}
 	} else {
 		// then it hasn't been defined
-		var offExpr []*ast.CXExpression
+		var offExpr []ast.CXExpression
 		if declaration_specifiers.IsSlice { // TODO:PTR move branch in WritePrimary
 			offExpr = WritePrimary(prgrm, declaration_specifiers.Type, make([]byte, types.POINTER_SIZE), true)
 		} else {
@@ -183,7 +183,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 				if initializer[len(initializer)-1].IsStructLiteral() {
 					index := prgrm.AddCXAtomicOp(&ast.CXAtomicOperator{Outputs: []*ast.CXArgument{declaration_specifiers}, Function: -1})
 					initializer = StructLiteralAssignment(prgrm,
-						[]*ast.CXExpression{
+						[]ast.CXExpression{
 							{
 								Index: index,
 								Type:  ast.CX_ATOMIC_OPERATOR,
@@ -335,7 +335,7 @@ func DeclareImport(prgrm *ast.CXProgram, name string, currentFile string, lineNo
 // Returns a list of expressions that contains the initialization, if any.
 //
 func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationSpecifiers *ast.CXArgument,
-	initializer []*ast.CXExpression, doesInitialize bool) []*ast.CXExpression {
+	initializer []ast.CXExpression, doesInitialize bool) []ast.CXExpression {
 	if globals2.FoundCompileErrors {
 		return nil
 	}
@@ -397,13 +397,13 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 			cxExprAtomicOp.AddOutput(declarationSpecifiers)
 			cxExprAtomicOp.AddInput(initOut)
 
-			initializer[len(initializer)-1] = exprCXLine
-			initializer = append(initializer, expr)
+			initializer[len(initializer)-1] = *exprCXLine
+			initializer = append(initializer, *expr)
 
-			return append([]*ast.CXExpression{declCXLine, decl}, initializer...)
+			return append([]ast.CXExpression{*declCXLine, *decl}, initializer...)
 		} else {
 			expr := initializer[len(initializer)-1]
-			cxExprAtomicOp, _, _, err := prgrm.GetOperation(expr)
+			cxExprAtomicOp, _, _, err := prgrm.GetOperation(&expr)
 			if err != nil {
 				panic(err)
 			}
@@ -416,7 +416,7 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 			} else {
 				cxExprAtomicOp.AddOutput(declarationSpecifiers)
 			}
-			return append([]*ast.CXExpression{declCXLine, decl}, initializer...)
+			return append([]ast.CXExpression{*declCXLine, *decl}, initializer...)
 		}
 	} else {
 		exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
@@ -434,7 +434,7 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 		declarationSpecifiers.PreviouslyDeclared = true
 		cxAtomicOp.AddOutput(declarationSpecifiers)
 
-		return []*ast.CXExpression{exprCXLine, expr}
+		return []ast.CXExpression{*exprCXLine, *expr}
 	}
 }
 

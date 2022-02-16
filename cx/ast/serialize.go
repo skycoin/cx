@@ -767,7 +767,7 @@ func serializeCXProgramElements(prgrm *CXProgram, s *SerializedCXProgram) {
 				} else {
 					exprs := make([]int, len(fn.Expressions))
 					for i, expr := range fn.Expressions {
-						exprIdx := serializeExpression(prgrm, expr, s)
+						exprIdx := serializeExpression(prgrm, &expr, s)
 						exprs[i] = exprIdx
 					}
 
@@ -1094,7 +1094,7 @@ func deserializeExpressionFunction(sExpr *serializedExpression, s *SerializedCXP
 	return -1
 }
 
-func deserializeExpressions(off int64, size int64, s *SerializedCXProgram, prgrm *CXProgram) []*CXExpression {
+func deserializeExpressions(off int64, size int64, s *SerializedCXProgram, prgrm *CXProgram) []CXExpression {
 	if size < 1 {
 		return nil
 	}
@@ -1103,14 +1103,14 @@ func deserializeExpressions(off int64, size int64, s *SerializedCXProgram, prgrm
 	idxs := deserializeIntegers(off, size, s)
 
 	// sExprs := s.Expressions[off : off + size]
-	exprs := make([]*CXExpression, size)
+	exprs := make([]CXExpression, size)
 	for i, idx := range idxs {
 		exprs[i] = deserializeExpression(&s.Expressions[idx], s, prgrm)
 	}
 	return exprs
 }
 
-func deserializeExpression(sExpr *serializedExpression, s *SerializedCXProgram, prgrm *CXProgram) *CXExpression {
+func deserializeExpression(sExpr *serializedExpression, s *SerializedCXProgram, prgrm *CXProgram) CXExpression {
 	var expr CXExpression
 
 	expr.ExpressionType = CXEXPR_TYPE(sExpr.ExpressionType)
@@ -1149,7 +1149,7 @@ func deserializeExpression(sExpr *serializedExpression, s *SerializedCXProgram, 
 		expr.Type = CX_ATOMIC_OPERATOR
 	}
 
-	return &expr
+	return expr
 }
 
 func deserializeFunction(sFn *serializedFunction, fn *CXFunction, s *SerializedCXProgram, prgrm *CXProgram) {

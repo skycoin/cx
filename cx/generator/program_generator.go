@@ -60,7 +60,7 @@ func GenerateRandomExpressions(prgrm *cxast.CXProgram, inputFn *cxast.CXFunction
 		// We need to add the expression at this point, so we
 		// can consider this expression's output as a
 		// possibility to assign stuff.
-		inputFn.Expressions = append(inputFn.Expressions, exprCXLine, expr)
+		inputFn.Expressions = append(inputFn.Expressions, *exprCXLine, *expr)
 
 		// Adding last expression, so output must be fn's output.
 		if i == numExprs-preExistingExpressions-1 {
@@ -110,7 +110,7 @@ func calcFnSize(prgrm *cxast.CXProgram, fn *cxast.CXFunction) (size types.Pointe
 		if expr.Type == ast.CX_LINE {
 			continue
 		}
-		cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+		cxAtomicOp, _, _, err := prgrm.GetOperation(&expr)
 		if err != nil {
 			panic(err)
 		}
@@ -258,7 +258,7 @@ func findArgOptions(prgrm *cxast.CXProgram, expr *cxast.CXExpression, argTypeToF
 
 	// loop in expression outputs
 	for i, exp := range cxAtomicOpFunction.Expressions {
-		expCXAtomicOp, _, _, err := prgrm.GetOperation(exp)
+		expCXAtomicOp, _, _, err := prgrm.GetOperation(&exp)
 		if err != nil {
 			panic(err)
 		}
@@ -289,7 +289,7 @@ func getRandOut(prgrm *cxast.CXProgram, expr *cxast.CXExpression) *cxast.CXArgum
 		if exp.Type == ast.CX_LINE {
 			continue
 		}
-		expCXAtomicOp, _, _, err := prgrm.GetOperation(exp)
+		expCXAtomicOp, _, _, err := prgrm.GetOperation(&exp)
 		if err != nil {
 			panic(err)
 		}

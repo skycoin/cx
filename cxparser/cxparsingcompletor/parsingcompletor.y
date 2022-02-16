@@ -53,14 +53,14 @@ build-parser: ## Generate lexer and parser for CX grammar
 	arguments []*ast.CXArgument
 
 	expression *ast.CXExpression
-	expressions []*ast.CXExpression
+	expressions []ast.CXExpression
 
 	SelectStatement actions.SelectStatement
 	SelectStatements []actions.SelectStatement
 
 	ReturnExpressions actions.ReturnExpressions
 
-	arrayArguments [][]*ast.CXExpression
+	arrayArguments [][]ast.CXExpression
 
     function *ast.CXFunction
 }
@@ -491,9 +491,9 @@ struct_literal_fields:
                         for i:=0;i<len($3);i++{
                                 if $3[i].Type!=ast.CX_LINE{
                                         if $3[i].IsStructLiteral() {
-                                                $$ = actions.StructLiteralAssignment(actions.AST,[]*ast.CXExpression{actions.StructLiteralFields(actions.AST,$1)}, $3)
+                                                $$ = actions.StructLiteralAssignment(actions.AST,[]ast.CXExpression{actions.StructLiteralFields(actions.AST,$1)}, $3)
                                         } else {
-                                                $$ = actions.Assignment(actions.AST,[]*ast.CXExpression{actions.StructLiteralFields(actions.AST,$1)}, "=", $3)
+                                                $$ = actions.Assignment(actions.AST,[]ast.CXExpression{actions.StructLiteralFields(actions.AST,$1)}, "=", $3)
                                         }
                                         break
                                 }
@@ -504,9 +504,9 @@ struct_literal_fields:
                         for i:=0;i<len($5);i++{
                                 if $5[i].Type!=ast.CX_LINE{
                                         if $5[i].IsStructLiteral() {
-                                                $$ = append($1, actions.StructLiteralAssignment(actions.AST,[]*ast.CXExpression{actions.StructLiteralFields(actions.AST,$3)}, $5)...)
+                                                $$ = append($1, actions.StructLiteralAssignment(actions.AST,[]ast.CXExpression{actions.StructLiteralFields(actions.AST,$3)}, $5)...)
                                         } else {
-                                                $$ = append($1, actions.Assignment(actions.AST,[]*ast.CXExpression{actions.StructLiteralFields(actions.AST,$3)}, "=", $5)...)
+                                                $$ = append($1, actions.Assignment(actions.AST,[]ast.CXExpression{actions.StructLiteralFields(actions.AST,$3)}, "=", $5)...)
                                         }
                                         break
                                 }
@@ -617,7 +617,7 @@ slice_literal_expression:
                                 if expr.Type==ast.CX_LINE{
                                         continue
                                 }
-                                exprAtomicOp, _, _, err := actions.AST.GetOperation(expr)
+                                exprAtomicOp, _, _, err := actions.AST.GetOperation(&expr)
                                 if err != nil {
                                         panic(err)
                                 }
@@ -689,7 +689,7 @@ infer_clauses:
                 }
         |       infer_actions
                 {
-			var exprs []*ast.CXExpression
+			var exprs []ast.CXExpression
 			for _, str := range $1 {
 				expr := actions.WritePrimary(actions.AST,types.AFF, encoder.Serialize(str), false)
 				expr[len(expr) - 1].ExpressionType = ast.CXEXPR_ARRAY_LITERAL
@@ -1016,7 +1016,7 @@ assignment_expression:
                                                                                 continue
                                                                         }
 
-                                                                        fromAtomicOp, _, _, err := actions.AST.GetOperation(from)
+                                                                        fromAtomicOp, _, _, err := actions.AST.GetOperation(&from)
                                                                         if err != nil {
                                                                                 panic(err)
                                                                         }
@@ -1035,7 +1035,7 @@ assignment_expression:
                                                                                 continue
                                                                         }
 
-                                                                        fromAtomicOp, _, _, err := actions.AST.GetOperation(from)
+                                                                        fromAtomicOp, _, _, err := actions.AST.GetOperation(&from)
                                                                         if err != nil {
                                                                                 panic(err)
                                                                         }
@@ -1129,7 +1129,7 @@ labeled_statement:
                                 if expr.Type==ast.CX_LINE{
                                         continue
                                 }
-                                cxAtomicOp, _, _, err := actions.AST.GetOperation(expr)
+                                cxAtomicOp, _, _, err := actions.AST.GetOperation(&expr)
                                 if err != nil {
                                         panic(err)
                                 }
@@ -1315,7 +1315,7 @@ jump_statement: GOTO IDENTIFIER SEMICOLON
 
                         cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
                         cxAtomicOp.Label = $2
-                        $$ = []*ast.CXExpression{exprCXLine,expr}
+                        $$ = []ast.CXExpression{*exprCXLine,*expr}
 			
                 }
 	|       CONTINUE SEMICOLON

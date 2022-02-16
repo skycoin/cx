@@ -372,7 +372,7 @@ func GetAccessibleArgsForFunctionByType(cxprogram *cxast.CXProgram, packageLocat
 
 	// Get all args from expression inputs
 	for _, expr := range fn.Expressions {
-		cxAtomicOp, _, _, err := cxprogram.GetOperation(expr)
+		cxAtomicOp, _, _, err := cxprogram.GetOperation(&expr)
 		if err != nil {
 			panic(err)
 		}

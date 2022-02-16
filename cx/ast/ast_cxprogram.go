@@ -48,7 +48,7 @@ type CXProgram struct {
 	// Then reference the package of function by CxFunction id
 
 	// For Initializers
-	SysInitExprs []*CXExpression
+	SysInitExprs []CXExpression
 }
 
 type StackSegmentStruct struct {
@@ -279,10 +279,10 @@ func (cxprogram *CXProgram) GetOperation(expr *CXExpression) (*CXAtomicOperator,
 	return &CXAtomicOperator{}, &CXArgument{}, &CXLine{}, fmt.Errorf("operation type is not found.")
 }
 
-func (cxprogram *CXProgram) GetPreviousCXLine(exprs []*CXExpression, currIndex int) (*CXLine, error) {
+func (cxprogram *CXProgram) GetPreviousCXLine(exprs []CXExpression, currIndex int) (*CXLine, error) {
 	for i := currIndex; i >= 0; i-- {
 		if exprs[i].Type == CX_LINE {
-			_, _, cxLine, err := cxprogram.GetOperation(exprs[i])
+			_, _, cxLine, err := cxprogram.GetOperation(&exprs[i])
 			if err != nil {
 				return &CXLine{}, err
 			}
@@ -293,10 +293,10 @@ func (cxprogram *CXProgram) GetPreviousCXLine(exprs []*CXExpression, currIndex i
 	return &CXLine{}, fmt.Errorf("CXLine not found.")
 }
 
-func (cxprogram *CXProgram) GetCXAtomicOpFromExpressions(exprs []*CXExpression, currIndex int) (*CXAtomicOperator, error) {
+func (cxprogram *CXProgram) GetCXAtomicOpFromExpressions(exprs []CXExpression, currIndex int) (*CXAtomicOperator, error) {
 	for i := currIndex; i < len(exprs); i++ {
 		if exprs[i].Type == CX_ATOMIC_OPERATOR {
-			cxAtomicOp, _, _, err := cxprogram.GetOperation(exprs[i])
+			cxAtomicOp, _, _, err := cxprogram.GetOperation(&exprs[i])
 			if err != nil {
 				return &CXAtomicOperator{}, err
 			}
@@ -307,10 +307,10 @@ func (cxprogram *CXProgram) GetCXAtomicOpFromExpressions(exprs []*CXExpression, 
 	return &CXAtomicOperator{}, fmt.Errorf("CXAtomicOperator not found.")
 }
 
-func (cxprogram *CXProgram) GetPreviousCXAtomicOpFromExpressions(exprs []*CXExpression, currIndex int) (*CXAtomicOperator, error) {
+func (cxprogram *CXProgram) GetPreviousCXAtomicOpFromExpressions(exprs []CXExpression, currIndex int) (*CXAtomicOperator, error) {
 	for i := currIndex; i >= 0; i-- {
 		if exprs[i].Type == CX_ATOMIC_OPERATOR {
-			cxAtomicOp, _, _, err := cxprogram.GetOperation(exprs[i])
+			cxAtomicOp, _, _, err := cxprogram.GetOperation(&exprs[i])
 			if err != nil {
 				return &CXAtomicOperator{}, err
 			}

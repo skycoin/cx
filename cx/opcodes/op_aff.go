@@ -195,7 +195,7 @@ func QueryArgument(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpress
 	}
 
 	for _, ex := range cxAtomicOpFunction.Expressions {
-		exCXAtomicOp, _, _, err := prgrm.GetOperation(ex)
+		exCXAtomicOp, _, _, err := prgrm.GetOperation(&ex)
 		if err != nil {
 			panic(err)
 		}
@@ -223,7 +223,7 @@ func QueryExpressions(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpr
 	}
 
 	for _, ex := range cxAtomicOpFunction.Expressions {
-		exCXAtomicOp, _, _, err := prgrm.GetOperation(ex)
+		exCXAtomicOp, _, _, err := prgrm.GetOperation(&ex)
 		if err != nil {
 			panic(err)
 		}
@@ -826,13 +826,13 @@ func readArgAff(prgrm *ast.CXProgram, aff string, tgtFn *ast.CXFunction) *ast.CX
 				if expr.Type == ast.CX_LINE {
 					continue
 				}
-				cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+				cxAtomicOp, _, _, err := prgrm.GetOperation(&expr)
 				if err != nil {
 					panic(err)
 				}
 
 				if exprLbl == cxAtomicOp.Label {
-					affExpr = expr
+					affExpr = &expr
 					rIdx++
 					break
 				}
@@ -1240,17 +1240,17 @@ func opAffQuery(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 						if predInp.StructType != nil {
 							switch predInp.StructType.Name {
 							case "Argument":
-								QueryArgument(prgrm, fn, expr, argOffsetB[:], &affOffset)
+								QueryArgument(prgrm, fn, &expr, argOffsetB[:], &affOffset)
 							case "Expression":
-								QueryExpressions(prgrm, fn, expr, exprOffsetB[:], &affOffset)
+								QueryExpressions(prgrm, fn, &expr, exprOffsetB[:], &affOffset)
 							case "Function":
-								QueryFunction(prgrm, fn, expr, fnOffsetB[:], &affOffset)
+								QueryFunction(prgrm, fn, &expr, fnOffsetB[:], &affOffset)
 							case "Structure":
-								QueryStructure(prgrm, fn, expr, strctOffsetB[:], &affOffset)
+								QueryStructure(prgrm, fn, &expr, strctOffsetB[:], &affOffset)
 							case "Caller":
-								QueryCaller(prgrm, fn, expr, callerOffsetB[:], &affOffset)
+								QueryCaller(prgrm, fn, &expr, callerOffsetB[:], &affOffset)
 							case "Program":
-								QueryProgram(prgrm, fn, expr, prgrmOffsetB[:], &affOffset)
+								QueryProgram(prgrm, fn, &expr, prgrmOffsetB[:], &affOffset)
 							}
 						}
 					}

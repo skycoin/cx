@@ -10,7 +10,7 @@ import (
 
 // assignStructLiteralFields converts a struct literal to a series of struct field assignments.
 // For example, `foo = Item{x: 10, y: 20}` is converted to: `foo.x = 10; foo.y = 20;`.
-func assignStructLiteralFields(prgrm *ast.CXProgram, to []*ast.CXExpression, from []*ast.CXExpression, name string) []*ast.CXExpression {
+func assignStructLiteralFields(prgrm *ast.CXProgram, to []ast.CXExpression, from []ast.CXExpression, name string) []ast.CXExpression {
 	toCXAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(to, 0)
 	if err != nil {
 		panic(err)
@@ -20,7 +20,7 @@ func assignStructLiteralFields(prgrm *ast.CXProgram, to []*ast.CXExpression, fro
 		if f.Type == ast.CX_LINE {
 			continue
 		}
-		cxAtomicOp, _, _, err := prgrm.GetOperation(f)
+		cxAtomicOp, _, _, err := prgrm.GetOperation(&f)
 		if err != nil {
 			panic(err)
 		}
@@ -41,10 +41,10 @@ func assignStructLiteralFields(prgrm *ast.CXProgram, to []*ast.CXExpression, fro
 
 // StructLiteralAssignment handles struct literals, e.g. `Item{x: 10, y: 20}`, and references to
 // struct literals, e.g. `&Item{x: 10, y: 20}` in assignment expressions.
-func StructLiteralAssignment(prgrm *ast.CXProgram, to []*ast.CXExpression, from []*ast.CXExpression) []*ast.CXExpression {
+func StructLiteralAssignment(prgrm *ast.CXProgram, to []ast.CXExpression, from []ast.CXExpression) []ast.CXExpression {
 	lastFrom := from[len(from)-1]
 
-	lastFromAtomicOp, _, _, err := prgrm.GetOperation(lastFrom)
+	lastFromAtomicOp, _, _, err := prgrm.GetOperation(&lastFrom)
 	if err != nil {
 		panic(err)
 	}
@@ -97,19 +97,19 @@ func StructLiteralAssignment(prgrm *ast.CXProgram, to []*ast.CXExpression, from 
 		assignExprAtomicOp.AddOutput(out)
 		assignExprAtomicOp.AddInput(aux)
 
-		from = append([]*ast.CXExpression{declExprCXLine, declExpr}, from...)
-		return append(from, assignExprCXLine, assignExpr)
+		from = append([]ast.CXExpression{*declExprCXLine, *declExpr}, from...)
+		return append(from, *assignExprCXLine, *assignExpr)
 	}
 }
 
-func ArrayLiteralAssignment(prgrm *ast.CXProgram, to []*ast.CXExpression, from []*ast.CXExpression) []*ast.CXExpression {
+func ArrayLiteralAssignment(prgrm *ast.CXProgram, to []ast.CXExpression, from []ast.CXExpression) []ast.CXExpression {
 	toCXAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(to, 0)
 	if err != nil {
 		panic(err)
 	}
 
 	for _, f := range from {
-		cxAtomicOp, _, _, err := prgrm.GetOperation(f)
+		cxAtomicOp, _, _, err := prgrm.GetOperation(&f)
 		if err != nil {
 			panic(err)
 		}
@@ -121,7 +121,7 @@ func ArrayLiteralAssignment(prgrm *ast.CXProgram, to []*ast.CXExpression, from [
 	return from
 }
 
-func ShortAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression, exprCXLine *ast.CXExpression, to []*ast.CXExpression, from []*ast.CXExpression, pkg *ast.CXPackage, idx int) []*ast.CXExpression {
+func ShortAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression, exprCXLine *ast.CXExpression, to []ast.CXExpression, from []ast.CXExpression, pkg *ast.CXPackage, idx int) []ast.CXExpression {
 	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
 	if err != nil {
 		panic(err)
@@ -153,9 +153,9 @@ func ShortAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression, exprCXLine *a
 
 	//must check if from expression is naked previously declared variable
 	if len(from) == 1 && fromCXAtomicOp.Operator == nil && len(fromCXAtomicOp.Outputs) > 0 && len(fromCXAtomicOp.Inputs) == 0 {
-		return []*ast.CXExpression{exprCXLine, expr}
+		return []ast.CXExpression{*exprCXLine, *expr}
 	} else {
-		return append(from, exprCXLine, expr)
+		return append(from, *exprCXLine, *expr)
 	}
 }
 
@@ -178,7 +178,7 @@ func getOutputType(prgrm *ast.CXProgram, expr *ast.CXExpression) *ast.CXArgument
 }
 
 // Assignment handles assignment statements with different operators, like =, :=, +=, *=.
-func Assignment(prgrm *ast.CXProgram, to []*ast.CXExpression, assignOp string, from []*ast.CXExpression) []*ast.CXExpression {
+func Assignment(prgrm *ast.CXProgram, to []ast.CXExpression, assignOp string, from []ast.CXExpression) []ast.CXExpression {
 	idx := len(from) - 1
 
 	toCXAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(to, 0)
@@ -221,7 +221,7 @@ func Assignment(prgrm *ast.CXProgram, to []*ast.CXExpression, assignOp string, f
 			// then it's a literal
 			sym = ast.MakeArgument(toCXAtomicOp.Outputs[0].Name, CurrentFile, LineNo).AddType(fromCXAtomicOp.Outputs[0].Type)
 		} else {
-			outTypeArg := getOutputType(prgrm, from[idx])
+			outTypeArg := getOutputType(prgrm, &from[idx])
 
 			sym = ast.MakeArgument(toCXAtomicOp.Outputs[0].Name, CurrentFile, LineNo).AddType(outTypeArg.Type)
 
@@ -248,7 +248,7 @@ func Assignment(prgrm *ast.CXProgram, to []*ast.CXExpression, assignOp string, f
 			if toExpr.Type == ast.CX_LINE {
 				continue
 			}
-			toExprAtomicOp, _, _, err := prgrm.GetOperation(toExpr)
+			toExprAtomicOp, _, _, err := prgrm.GetOperation(&toExpr)
 			if err != nil {
 				panic(err)
 			}
@@ -257,7 +257,7 @@ func Assignment(prgrm *ast.CXProgram, to []*ast.CXExpression, assignOp string, f
 			toExprAtomicOp.Outputs[0].IsShortAssignmentDeclaration = true
 		}
 
-		to = append([]*ast.CXExpression{exprCXLine, expr}, to...)
+		to = append([]ast.CXExpression{*exprCXLine, *expr}, to...)
 	case ">>=":
 		expr = ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_BITSHR])
 		return ShortAssignment(prgrm, expr, exprCXLine, to, from, pkg, idx)

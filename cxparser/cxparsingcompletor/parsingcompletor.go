@@ -60,14 +60,14 @@ type yySymType struct {
 	arguments []*ast.CXArgument
 
 	expression  *ast.CXExpression
-	expressions []*ast.CXExpression
+	expressions []ast.CXExpression
 
 	SelectStatement  actions.SelectStatement
 	SelectStatements []actions.SelectStatement
 
 	ReturnExpressions actions.ReturnExpressions
 
-	arrayArguments [][]*ast.CXExpression
+	arrayArguments [][]ast.CXExpression
 
 	function *ast.CXFunction
 }
@@ -1577,9 +1577,9 @@ yydefault:
 			for i := 0; i < len(yyDollar[3].expressions); i++ {
 				if yyDollar[3].expressions[i].Type != ast.CX_LINE {
 					if yyDollar[3].expressions[i].IsStructLiteral() {
-						yyVAL.expressions = actions.StructLiteralAssignment(actions.AST, []*ast.CXExpression{actions.StructLiteralFields(actions.AST, yyDollar[1].tok)}, yyDollar[3].expressions)
+						yyVAL.expressions = actions.StructLiteralAssignment(actions.AST, []ast.CXExpression{actions.StructLiteralFields(actions.AST, yyDollar[1].tok)}, yyDollar[3].expressions)
 					} else {
-						yyVAL.expressions = actions.Assignment(actions.AST, []*ast.CXExpression{actions.StructLiteralFields(actions.AST, yyDollar[1].tok)}, "=", yyDollar[3].expressions)
+						yyVAL.expressions = actions.Assignment(actions.AST, []ast.CXExpression{actions.StructLiteralFields(actions.AST, yyDollar[1].tok)}, "=", yyDollar[3].expressions)
 					}
 					break
 				}
@@ -1592,9 +1592,9 @@ yydefault:
 			for i := 0; i < len(yyDollar[5].expressions); i++ {
 				if yyDollar[5].expressions[i].Type != ast.CX_LINE {
 					if yyDollar[5].expressions[i].IsStructLiteral() {
-						yyVAL.expressions = append(yyDollar[1].expressions, actions.StructLiteralAssignment(actions.AST, []*ast.CXExpression{actions.StructLiteralFields(actions.AST, yyDollar[3].tok)}, yyDollar[5].expressions)...)
+						yyVAL.expressions = append(yyDollar[1].expressions, actions.StructLiteralAssignment(actions.AST, []ast.CXExpression{actions.StructLiteralFields(actions.AST, yyDollar[3].tok)}, yyDollar[5].expressions)...)
 					} else {
-						yyVAL.expressions = append(yyDollar[1].expressions, actions.Assignment(actions.AST, []*ast.CXExpression{actions.StructLiteralFields(actions.AST, yyDollar[3].tok)}, "=", yyDollar[5].expressions)...)
+						yyVAL.expressions = append(yyDollar[1].expressions, actions.Assignment(actions.AST, []ast.CXExpression{actions.StructLiteralFields(actions.AST, yyDollar[3].tok)}, "=", yyDollar[5].expressions)...)
 					}
 					break
 				}
@@ -1714,7 +1714,7 @@ yydefault:
 				if expr.Type == ast.CX_LINE {
 					continue
 				}
-				exprAtomicOp, _, _, err := actions.AST.GetOperation(expr)
+				exprAtomicOp, _, _, err := actions.AST.GetOperation(&expr)
 				if err != nil {
 					panic(err)
 				}
@@ -1796,7 +1796,7 @@ yydefault:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line cxparser/cxparsingcompletor/parsingcompletor.y:691
 		{
-			var exprs []*ast.CXExpression
+			var exprs []ast.CXExpression
 			for _, str := range yyDollar[1].stringA {
 				expr := actions.WritePrimary(actions.AST, types.AFF, encoder.Serialize(str), false)
 				expr[len(expr)-1].ExpressionType = ast.CXEXPR_ARRAY_LITERAL
@@ -2158,7 +2158,7 @@ yydefault:
 										continue
 									}
 
-									fromAtomicOp, _, _, err := actions.AST.GetOperation(from)
+									fromAtomicOp, _, _, err := actions.AST.GetOperation(&from)
 									if err != nil {
 										panic(err)
 									}
@@ -2177,7 +2177,7 @@ yydefault:
 										continue
 									}
 
-									fromAtomicOp, _, _, err := actions.AST.GetOperation(from)
+									fromAtomicOp, _, _, err := actions.AST.GetOperation(&from)
 									if err != nil {
 										panic(err)
 									}
@@ -2242,7 +2242,7 @@ yydefault:
 				if expr.Type == ast.CX_LINE {
 					continue
 				}
-				cxAtomicOp, _, _, err := actions.AST.GetOperation(expr)
+				cxAtomicOp, _, _, err := actions.AST.GetOperation(&expr)
 				if err != nil {
 					panic(err)
 				}
@@ -2459,7 +2459,7 @@ yydefault:
 
 			cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
 			cxAtomicOp.Label = yyDollar[2].tok
-			yyVAL.expressions = []*ast.CXExpression{exprCXLine, expr}
+			yyVAL.expressions = []ast.CXExpression{*exprCXLine, *expr}
 
 		}
 	case 226:

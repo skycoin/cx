@@ -10,7 +10,7 @@ import (
 	"github.com/skycoin/cx/cx/types"
 )
 
-func getLastLine(cxprogram *ast.CXProgram) *ast.CXExpression {
+func getLastLine(cxprogram *ast.CXProgram) ast.CXExpression {
 	for c := cxprogram.CallCounter - 1; c >= 0; c-- {
 		if cxprogram.CallStack[c].Line+1 >= len(cxprogram.CallStack[c].Operator.Expressions) {
 			// then it'll also return from this function call; continue
@@ -26,7 +26,7 @@ func getLastLine(cxprogram *ast.CXProgram) *ast.CXExpression {
 	}
 
 	index := cxprogram.AddCXAtomicOp(cxAtomicOp)
-	return &ast.CXExpression{
+	return ast.CXExpression{
 		Index: index,
 		Type:  ast.CX_ATOMIC_OPERATOR,
 	}
@@ -49,7 +49,7 @@ func RunCxAst(cxprogram *ast.CXProgram, untilEnd bool, maxOps int, untilCall typ
 		if !untilEnd {
 			var inName string
 			var toCallName string
-			var toCall *ast.CXExpression
+			var toCall ast.CXExpression
 
 			if call.Line >= call.Operator.LineCount && cxprogram.CallCounter == 0 {
 				cxprogram.Terminated = true
@@ -74,7 +74,7 @@ func RunCxAst(cxprogram *ast.CXProgram, untilEnd bool, maxOps int, untilCall typ
 				continue
 			}
 
-			cxAtomicOp, _, _, err := cxprogram.GetOperation(toCall)
+			cxAtomicOp, _, _, err := cxprogram.GetOperation(&toCall)
 			if err != nil {
 				panic(err)
 			}

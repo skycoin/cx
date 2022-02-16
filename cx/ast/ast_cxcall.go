@@ -31,7 +31,7 @@ func popStack(prgrm *CXProgram, call *CXCall) error {
 
 	expr := returnOp.Expressions[returnLine]
 
-	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	cxAtomicOp, _, _, err := prgrm.GetOperation(&expr)
 	if err != nil {
 		return err
 	}
@@ -230,7 +230,7 @@ func (call *CXCall) Call(prgrm *CXProgram, globalInputs *[]CXValue, globalOutput
 		return nil
 	}
 
-	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	cxAtomicOp, _, _, err := prgrm.GetOperation(&expr)
 	if err != nil {
 		return err
 	}
@@ -240,7 +240,7 @@ func (call *CXCall) Call(prgrm *CXProgram, globalInputs *[]CXValue, globalOutput
 	if cxAtomicOp.Operator == nil {
 		// then it's a declaration
 		// wiping this declaration's memory (removing garbage)
-		err := wipeDeclarationMemory(prgrm, expr)
+		err := wipeDeclarationMemory(prgrm, &expr)
 		if err != nil {
 			return err
 		}
@@ -248,7 +248,7 @@ func (call *CXCall) Call(prgrm *CXProgram, globalInputs *[]CXValue, globalOutput
 		call.Line++
 	} else if cxAtomicOp.Operator.IsBuiltIn() {
 		//TODO: SLICES ARE NON ATOMIC
-		err := processBuiltInOperators(prgrm, expr, globalInputs, globalOutputs, fp)
+		err := processBuiltInOperators(prgrm, &expr, globalInputs, globalOutputs, fp)
 		if err != nil {
 			return err
 		}
@@ -256,7 +256,7 @@ func (call *CXCall) Call(prgrm *CXProgram, globalInputs *[]CXValue, globalOutput
 		call.Line++
 	} else {
 		//NON-ATOMIC OPERATOR
-		err := processNonAtomicOperators(prgrm, expr, fp)
+		err := processNonAtomicOperators(prgrm, &expr, fp)
 		if err != nil {
 			return err
 		}

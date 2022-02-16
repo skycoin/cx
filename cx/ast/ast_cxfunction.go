@@ -20,7 +20,7 @@ type CXFunction struct {
 	// Contents
 	Inputs      []CXArgumentIndex // Input parameters to the function
 	Outputs     []CXArgumentIndex // Output parameters from the function
-	Expressions []*CXExpression   // Expressions, including control flow statements, in the function
+	Expressions []CXExpression    // Expressions, including control flow statements, in the function
 
 	//TODO: Better Comment for this
 	LineCount int // number of expressions, pre-computed for performance
@@ -62,7 +62,7 @@ func MakeFunction(name string, fileName string, fileLine int) *CXFunction {
 //                             `CXFunction` Getters
 
 // GetExpressions is not used
-func (fn *CXFunction) GetExpressions() ([]*CXExpression, error) {
+func (fn *CXFunction) GetExpressions() ([]CXExpression, error) {
 	if fn.Expressions == nil {
 		return nil, fmt.Errorf("function '%s' has no expressions", fn.Name)
 	}
@@ -79,7 +79,7 @@ func (fn *CXFunction) GetExpressionByLabel(prgrm *CXProgram, lbl string) (*CXExp
 
 	for _, expr := range fn.Expressions {
 		if expr.GetLabel(prgrm) == lbl {
-			return expr, nil
+			return &expr, nil
 		}
 	}
 	return nil, fmt.Errorf("expression '%s' not found in function '%s'", lbl, fn.Name)
@@ -95,7 +95,7 @@ func (fn *CXFunction) GetExpressionByLine(line int) (*CXExpression, error) {
 		return nil, fmt.Errorf("expression line number '%d' exceeds number of expressions in function '%s'", line, fn.Name)
 	}
 
-	return fn.Expressions[line], nil
+	return &fn.Expressions[line], nil
 }
 
 // ----------------------------------------------------------------
@@ -187,7 +187,7 @@ func (fn *CXFunction) AddExpression(prgrm *CXProgram, expr *CXExpression) *CXFun
 		cxAtomicOp.Function = CXFunctionIndex(fn.Index)
 	}
 
-	fn.Expressions = append(fn.Expressions, expr)
+	fn.Expressions = append(fn.Expressions, *expr)
 	fn.LineCount++
 	return fn
 }
@@ -202,10 +202,10 @@ func (fn *CXFunction) AddExpressionByLineNumber(prgrm *CXProgram, expr *CXExpres
 
 	lenExprs := len(fn.Expressions)
 	if lenExprs == line {
-		fn.Expressions = append(fn.Expressions, expr)
+		fn.Expressions = append(fn.Expressions, *expr)
 	} else {
 		fn.Expressions = append(fn.Expressions[:line+1], fn.Expressions[line:]...)
-		fn.Expressions[line] = expr
+		fn.Expressions[line] = *expr
 	}
 
 	fn.LineCount++
@@ -281,5 +281,5 @@ func (fn *CXFunction) SelectExpression(line int) (*CXExpression, error) {
 
 	expr := fn.Expressions[line]
 
-	return expr, nil
+	return &expr, nil
 }

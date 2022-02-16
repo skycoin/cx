@@ -128,7 +128,7 @@ func buildStrFunctions(prgrm *CXProgram, pkg *CXPackage, ast1 *string) {
 			var opName1 string
 			var lbl string
 
-			cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+			cxAtomicOp, _, _, err := prgrm.GetOperation(&expr)
 			if err != nil {
 				panic(err)
 			}

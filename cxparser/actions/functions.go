@@ -134,7 +134,7 @@ func FunctionProcessParameters(prgrm *ast.CXProgram, symbols *[]map[string]*ast.
 	}
 }
 
-func FunctionDeclaration(prgrm *ast.CXProgram, fn *ast.CXFunction, inputs, outputs []*ast.CXArgument, exprs []*ast.CXExpression) {
+func FunctionDeclaration(prgrm *ast.CXProgram, fn *ast.CXFunction, inputs, outputs []*ast.CXArgument, exprs []ast.CXExpression) {
 	//var exprs []*cxcore.CXExpression = prgrm.SysInitExprs
 
 	FunctionAddParameters(prgrm, fn, inputs, outputs)
@@ -166,7 +166,7 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fn *ast.CXFunction, inputs, outpu
 		if expr.Type == ast.CX_LINE {
 			continue
 		}
-		exprAtomicOp, _, _, err := prgrm.GetOperation(expr)
+		exprAtomicOp, _, _, err := prgrm.GetOperation(&expr)
 		if err != nil {
 			panic(err)
 		}
@@ -175,20 +175,20 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fn *ast.CXFunction, inputs, outpu
 			*symbols = append(*symbols, make(map[string]*ast.CXArgument))
 		}
 
-		ProcessMethodCall(prgrm, expr, symbols, &offset, true)
-		ProcessExpressionArguments(prgrm, symbols, &symbolsScope, &offset, fn, exprAtomicOp.Inputs, expr, true)
-		ProcessExpressionArguments(prgrm, symbols, &symbolsScope, &offset, fn, exprAtomicOp.Outputs, expr, false)
+		ProcessMethodCall(prgrm, &expr, symbols, &offset, true)
+		ProcessExpressionArguments(prgrm, symbols, &symbolsScope, &offset, fn, exprAtomicOp.Inputs, &expr, true)
+		ProcessExpressionArguments(prgrm, symbols, &symbolsScope, &offset, fn, exprAtomicOp.Outputs, &expr, false)
 
-		ProcessPointerStructs(prgrm, expr)
+		ProcessPointerStructs(prgrm, &expr)
 
-		SetCorrectArithmeticOp(prgrm, expr)
-		ProcessTempVariable(prgrm, expr)
-		ProcessSliceAssignment(prgrm, expr)
-		ProcessStringAssignment(prgrm, expr)
-		ProcessReferenceAssignment(prgrm, expr)
+		SetCorrectArithmeticOp(prgrm, &expr)
+		ProcessTempVariable(prgrm, &expr)
+		ProcessSliceAssignment(prgrm, &expr)
+		ProcessStringAssignment(prgrm, &expr)
+		ProcessReferenceAssignment(prgrm, &expr)
 
 		// process short declaration
-		if len(exprAtomicOp.Outputs) > 0 && len(exprAtomicOp.Inputs) > 0 && exprAtomicOp.Outputs[0].IsShortAssignmentDeclaration && !expr.IsStructLiteral() && !isParseOp(prgrm, expr) {
+		if len(exprAtomicOp.Outputs) > 0 && len(exprAtomicOp.Inputs) > 0 && exprAtomicOp.Outputs[0].IsShortAssignmentDeclaration && !expr.IsStructLiteral() && !isParseOp(prgrm, &expr) {
 			var arg *ast.CXArgument
 
 			exprAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(fn.Expressions, i)
@@ -217,10 +217,10 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fn *ast.CXFunction, inputs, outpu
 			exprAtomicOp.Outputs[0].TotalSize = arg.TotalSize
 		}
 
-		processTestExpression(prgrm, expr)
+		processTestExpression(prgrm, &expr)
 
 		CheckTypes(prgrm, fn.Expressions, i)
-		CheckUndValidTypes(prgrm, expr)
+		CheckUndValidTypes(prgrm, &expr)
 
 		if expr.IsScopeDel() {
 			*symbols = (*symbols)[:len(*symbols)-1]
@@ -230,10 +230,10 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fn *ast.CXFunction, inputs, outpu
 	fn.Size = offset
 }
 
-func FunctionCall(prgrm *ast.CXProgram, exprs []*ast.CXExpression, args []*ast.CXExpression) []*ast.CXExpression {
+func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXExpression) []ast.CXExpression {
 	expr := exprs[len(exprs)-1]
 
-	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	cxAtomicOp, _, _, err := prgrm.GetOperation(&expr)
 	if err != nil {
 		panic(err)
 	}
@@ -254,7 +254,7 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []*ast.CXExpression, args []*ast.C
 			println(ast.CompilationError(CurrentFile, LineNo), err.Error())
 			return nil
 		} else {
-			expr.ExpressionType = ast.CXEXPR_METHOD_CALL
+			exprs[len(exprs)-1].ExpressionType = ast.CXEXPR_METHOD_CALL
 		}
 
 		if len(cxAtomicOp.Outputs) > 0 && cxAtomicOp.Outputs[0].Fields == nil {
@@ -262,13 +262,13 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []*ast.CXExpression, args []*ast.C
 		}
 	}
 
-	var nestedExprs []*ast.CXExpression
+	var nestedExprs []ast.CXExpression
 	for i, inpExpr := range args {
 		if inpExpr.Type == ast.CX_LINE {
 			continue
 		}
 
-		inpExprAtomicOp, _, _, err := prgrm.GetOperation(inpExpr)
+		inpExprAtomicOp, _, _, err := prgrm.GetOperation(&inpExpr)
 		if err != nil {
 			panic(err)
 		}
@@ -583,9 +583,9 @@ func ProcessLocalDeclaration(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CX
 	arg.IsLocalDeclaration = (*symbolsScope)[argPkg.Name+"."+arg.Name]
 }
 
-func ProcessGoTos(prgrm *ast.CXProgram, fn *ast.CXFunction, exprs []*ast.CXExpression) {
+func ProcessGoTos(prgrm *ast.CXProgram, fn *ast.CXFunction, exprs []ast.CXExpression) {
 	for i, expr := range exprs {
-		cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+		cxAtomicOp, _, _, err := prgrm.GetOperation(&expr)
 		if err != nil {
 			panic(err)
 		}
@@ -597,7 +597,7 @@ func ProcessGoTos(prgrm *ast.CXProgram, fn *ast.CXFunction, exprs []*ast.CXExpre
 		if cxAtomicOp.Operator == opGotoFn {
 			// then it's a goto
 			for j, e := range exprs {
-				ecxAtomicOp, _, _, err := prgrm.GetOperation(e)
+				ecxAtomicOp, _, _, err := prgrm.GetOperation(&e)
 				if err != nil {
 					panic(err)
 				}
@@ -610,7 +610,7 @@ func ProcessGoTos(prgrm *ast.CXProgram, fn *ast.CXFunction, exprs []*ast.CXExpre
 			}
 		}
 
-		fn.AddExpression(prgrm, expr)
+		fn.AddExpression(prgrm, &expr)
 	}
 }
 
@@ -666,7 +666,7 @@ func checkMatchParamTypes(prgrm *ast.CXProgram, expr *ast.CXExpression, expected
 	}
 }
 
-func CheckTypes(prgrm *ast.CXProgram, exprs []*ast.CXExpression, currIndex int) {
+func CheckTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) {
 	cxAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(exprs, currIndex)
 	if err != nil {
 		panic(err)
@@ -759,10 +759,10 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []*ast.CXExpression, currIndex int) 
 	// then it's a function call and not a declaration
 	if cxAtomicOp.Operator != nil {
 		// checking inputs matching operator's inputs
-		checkMatchParamTypes(prgrm, exprs[currIndex], prgrm.ConvertIndexArgsToPointerArgs(cxAtomicOp.Operator.Inputs), cxAtomicOp.Inputs, true)
+		checkMatchParamTypes(prgrm, &exprs[currIndex], prgrm.ConvertIndexArgsToPointerArgs(cxAtomicOp.Operator.Inputs), cxAtomicOp.Inputs, true)
 
 		// checking outputs matching operator's outputs
-		checkMatchParamTypes(prgrm, exprs[currIndex], prgrm.ConvertIndexArgsToPointerArgs(cxAtomicOp.Operator.Outputs), cxAtomicOp.Outputs, false)
+		checkMatchParamTypes(prgrm, &exprs[currIndex], prgrm.ConvertIndexArgsToPointerArgs(cxAtomicOp.Operator.Outputs), cxAtomicOp.Outputs, false)
 	}
 }
 
