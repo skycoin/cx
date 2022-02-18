@@ -44,7 +44,8 @@ type CXArgument struct {
 	// of a variable or parameter in source code, but some
 	// exceptions exist, such as in the case of literals
 	// (e.g. `4`, `"Hello world!"`, `[3]i32{1, 2, 3}`.)
-	Name string
+	Name  string
+	Index int
 
 	Package CXPackageIndex
 

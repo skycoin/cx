@@ -18,9 +18,9 @@ type CXFunction struct {
 	AtomicOPCode int
 
 	// Contents
-	Inputs      []*CXArgument   // Input parameters to the function
-	Outputs     []*CXArgument   // Output parameters from the function
-	Expressions []*CXExpression // Expressions, including control flow statements, in the function
+	Inputs      []CXArgumentIndex // Input parameters to the function
+	Outputs     []CXArgumentIndex // Output parameters from the function
+	Expressions []CXExpression    // Expressions, including control flow statements, in the function
 
 	//TODO: Better Comment for this
 	LineCount int // number of expressions, pre-computed for performance
@@ -34,9 +34,6 @@ type CXFunction struct {
 
 	// Used by the GC
 	ListOfPointers []*CXArgument // Root pointers for the GC algorithm
-
-	// Used by the REPL and parser
-	CurrentExpression *CXExpression
 }
 
 // IsBuiltIn determines if opcode is not 0
@@ -65,7 +62,7 @@ func MakeFunction(name string, fileName string, fileLine int) *CXFunction {
 //                             `CXFunction` Getters
 
 // GetExpressions is not used
-func (fn *CXFunction) GetExpressions() ([]*CXExpression, error) {
+func (fn *CXFunction) GetExpressions() ([]CXExpression, error) {
 	if fn.Expressions == nil {
 		return nil, fmt.Errorf("function '%s' has no expressions", fn.Name)
 	}
@@ -82,7 +79,7 @@ func (fn *CXFunction) GetExpressionByLabel(prgrm *CXProgram, lbl string) (*CXExp
 
 	for _, expr := range fn.Expressions {
 		if expr.GetLabel(prgrm) == lbl {
-			return expr, nil
+			return &expr, nil
 		}
 	}
 	return nil, fmt.Errorf("expression '%s' not found in function '%s'", lbl, fn.Name)
@@ -98,42 +95,36 @@ func (fn *CXFunction) GetExpressionByLine(line int) (*CXExpression, error) {
 		return nil, fmt.Errorf("expression line number '%d' exceeds number of expressions in function '%s'", line, fn.Name)
 	}
 
-	return fn.Expressions[line], nil
-}
-
-// GetCurrentExpression ...
-func (fn *CXFunction) GetCurrentExpression() (*CXExpression, error) {
-	if fn.CurrentExpression == nil {
-		return nil, errors.New("current expression is nil")
-	}
-
-	return fn.CurrentExpression, nil
+	return &fn.Expressions[line], nil
 }
 
 // ----------------------------------------------------------------
 //                     `CXFunction` Member handling
 
 // AddInput ...
-func (fn *CXFunction) AddInput(param *CXArgument) *CXFunction {
+func (fn *CXFunction) AddInput(prgrm *CXProgram, param *CXArgument) *CXFunction {
 	found := false
-	for _, inp := range fn.Inputs {
+	for _, inpIdx := range fn.Inputs {
+		inp := prgrm.GetCXArgFromArray(inpIdx)
 		if inp.Name == param.Name {
 			found = true
 			break
 		}
 	}
 	if !found {
-		fn.Inputs = append(fn.Inputs, param)
+		paramIdx := prgrm.AddCXArgInArray(param)
+		fn.Inputs = append(fn.Inputs, paramIdx)
 	}
 
 	return fn
 }
 
 // RemoveInput ...
-func (fn *CXFunction) RemoveInput(inpName string) {
+func (fn *CXFunction) RemoveInput(prgrm *CXProgram, inpName string) {
 	if len(fn.Inputs) > 0 {
 		lenInps := len(fn.Inputs)
-		for i, inp := range fn.Inputs {
+		for i, inpIdx := range fn.Inputs {
+			inp := prgrm.GetCXArgFromArray(inpIdx)
 			if inp.Name == inpName {
 				if i == lenInps {
 					fn.Inputs = fn.Inputs[:len(fn.Inputs)-1]
@@ -147,16 +138,18 @@ func (fn *CXFunction) RemoveInput(inpName string) {
 }
 
 // AddOutput ...
-func (fn *CXFunction) AddOutput(param *CXArgument) *CXFunction {
+func (fn *CXFunction) AddOutput(prgrm *CXProgram, param *CXArgument) *CXFunction {
 	found := false
-	for _, out := range fn.Outputs {
+	for _, outIdx := range fn.Outputs {
+		out := prgrm.GetCXArgFromArray(outIdx)
 		if out.Name == param.Name {
 			found = true
 			break
 		}
 	}
 	if !found {
-		fn.Outputs = append(fn.Outputs, param)
+		paramIdx := prgrm.AddCXArgInArray(param)
+		fn.Outputs = append(fn.Outputs, paramIdx)
 	}
 
 	param.Package = fn.Package
@@ -165,10 +158,11 @@ func (fn *CXFunction) AddOutput(param *CXArgument) *CXFunction {
 }
 
 // RemoveOutput ...
-func (fn *CXFunction) RemoveOutput(outName string) {
+func (fn *CXFunction) RemoveOutput(prgrm *CXProgram, outName string) {
 	if len(fn.Outputs) > 0 {
 		lenOuts := len(fn.Outputs)
-		for i, out := range fn.Outputs {
+		for i, outIdx := range fn.Outputs {
+			out := prgrm.GetCXArgFromArray(outIdx)
 			if out.Name == outName {
 				if i == lenOuts {
 					fn.Outputs = fn.Outputs[:len(fn.Outputs)-1]
@@ -193,9 +187,7 @@ func (fn *CXFunction) AddExpression(prgrm *CXProgram, expr *CXExpression) *CXFun
 		cxAtomicOp.Function = CXFunctionIndex(fn.Index)
 	}
 
-	fn.Expressions = append(fn.Expressions, expr)
-
-	fn.CurrentExpression = expr
+	fn.Expressions = append(fn.Expressions, *expr)
 	fn.LineCount++
 	return fn
 }
@@ -210,13 +202,12 @@ func (fn *CXFunction) AddExpressionByLineNumber(prgrm *CXProgram, expr *CXExpres
 
 	lenExprs := len(fn.Expressions)
 	if lenExprs == line {
-		fn.Expressions = append(fn.Expressions, expr)
+		fn.Expressions = append(fn.Expressions, *expr)
 	} else {
 		fn.Expressions = append(fn.Expressions[:line+1], fn.Expressions[line:]...)
-		fn.Expressions[line] = expr
+		fn.Expressions[line] = *expr
 	}
 
-	fn.CurrentExpression = expr
 	fn.LineCount++
 	return fn
 
@@ -289,7 +280,6 @@ func (fn *CXFunction) SelectExpression(line int) (*CXExpression, error) {
 	}
 
 	expr := fn.Expressions[line]
-	fn.CurrentExpression = expr
 
-	return expr, nil
+	return &expr, nil
 }

@@ -18,7 +18,7 @@ func RegisterPackage(prgrm *ast.CXProgram) {
 
 	prgrm.AddPackage(regexpPkg)
 
-	RegisterFunction("regexp.Compile", opRegexpCompile, In(ast.ConstCxArg_STR), Out(ast.Struct(prgrm, "regexp", "Regexp", "r"), ast.ConstCxArg_STR))
-	RegisterFunction("regexp.MustCompile", opRegexpMustCompile, In(ast.ConstCxArg_STR), Out(ast.Struct(prgrm, "regexp", "Regexp", "r")))
-	RegisterFunction("regexp.Regexp.Find", opRegexpFind, In(ast.Struct(prgrm, "regexp", "Regexp", "r"), ast.ConstCxArg_STR), Out(ast.ConstCxArg_STR))
+	RegisterFunction(prgrm, "regexp.Compile", opRegexpCompile, In(ast.ConstCxArg_STR), Out(ast.Struct(prgrm, "regexp", "Regexp", "r"), ast.ConstCxArg_STR))
+	RegisterFunction(prgrm, "regexp.MustCompile", opRegexpMustCompile, In(ast.ConstCxArg_STR), Out(ast.Struct(prgrm, "regexp", "Regexp", "r")))
+	RegisterFunction(prgrm, "regexp.Regexp.Find", opRegexpFind, In(ast.Struct(prgrm, "regexp", "Regexp", "r"), ast.ConstCxArg_STR), Out(ast.ConstCxArg_STR))
 }

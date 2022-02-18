@@ -333,8 +333,8 @@ func serializeFunctionArguments(prgrm *CXProgram, fn *CXFunction, s *SerializedC
 	if fnOff, found := s.FunctionsMap[fnName]; found {
 		sFn := &s.Functions[fnOff]
 
-		sFn.InputsOffset, sFn.InputsSize = serializeSliceOfArguments(prgrm, fn.Inputs, s)
-		sFn.OutputsOffset, sFn.OutputsSize = serializeSliceOfArguments(prgrm, fn.Outputs, s)
+		sFn.InputsOffset, sFn.InputsSize = serializeSliceOfArguments(prgrm, prgrm.ConvertIndexArgsToPointerArgs(fn.Inputs), s)
+		sFn.OutputsOffset, sFn.OutputsSize = serializeSliceOfArguments(prgrm, prgrm.ConvertIndexArgsToPointerArgs(fn.Outputs), s)
 		sFn.ListOfPointersOffset, sFn.ListOfPointersSize = serializeSliceOfArguments(prgrm, fn.ListOfPointers, s)
 	} else {
 		panic("function reference not found")
@@ -374,7 +374,13 @@ func serializeFunctionName(prgrm *CXProgram, fn *CXFunction, s *SerializedCXProg
 func serializePackageGlobals(prgrm *CXProgram, pkg *CXPackage, s *SerializedCXProgram) {
 	if pkgOff, found := s.PackagesMap[pkg.Name]; found {
 		sPkg := &s.Packages[pkgOff]
-		sPkg.GlobalsOffset, sPkg.GlobalsSize = serializeSliceOfArguments(prgrm, pkg.Globals, s)
+
+		var glblArgs []*CXArgument
+		for _, glblIdx := range pkg.Globals {
+			glbl := prgrm.GetCXArg(glblIdx)
+			glblArgs = append(glblArgs, glbl)
+		}
+		sPkg.GlobalsOffset, sPkg.GlobalsSize = serializeSliceOfArguments(prgrm, glblArgs, s)
 	} else {
 		panic("package reference not found")
 	}
@@ -580,10 +586,7 @@ func serializeProgram(prgrm *CXProgram, s *SerializedCXProgram) {
 
 	args := []*CXArgument{}
 	for _, argIdx := range prgrm.ProgramInput {
-		arg, err := prgrm.GetCXArg(argIdx)
-		if err != nil {
-			panic(err)
-		}
+		arg := prgrm.GetCXArg(argIdx)
 		args = append(args, arg)
 	}
 	sPrgrm.InputsOffset, sPrgrm.InputsSize = serializeSliceOfArguments(prgrm, args, s)
@@ -764,11 +767,7 @@ func serializeCXProgramElements(prgrm *CXProgram, s *SerializedCXProgram) {
 				} else {
 					exprs := make([]int, len(fn.Expressions))
 					for i, expr := range fn.Expressions {
-						exprIdx := serializeExpression(prgrm, expr, s)
-						if fn.CurrentExpression == expr {
-							// sFn.CurrentExpressionOffset = int32(exprIdx)
-							sFn.CurrentExpressionOffset = int64(i)
-						}
+						exprIdx := serializeExpression(prgrm, &expr, s)
 						exprs[i] = exprIdx
 					}
 
@@ -878,7 +877,7 @@ func deserializePackages(s *SerializedCXProgram, prgrm *CXProgram) {
 		}
 
 		if sPkg.GlobalsSize > 0 {
-			pkg.Globals = make([]*CXArgument, sPkg.GlobalsSize)
+			pkg.Globals = make([]CXArgumentIndex, sPkg.GlobalsSize)
 		}
 
 		// CurrentFunction
@@ -907,7 +906,13 @@ func deserializePackages(s *SerializedCXProgram, prgrm *CXProgram) {
 
 		// globals
 		if sPkg.GlobalsSize > 0 {
-			pkg.Globals = deserializeArguments(sPkg.GlobalsOffset, sPkg.GlobalsSize, s, prgrm)
+			glblArgs := deserializeArguments(sPkg.GlobalsOffset, sPkg.GlobalsSize, s, prgrm)
+			var glblArgsIdxs []CXArgumentIndex
+			for _, glbl := range glblArgs {
+				glblIdx := prgrm.AddCXArg(glbl)
+				glblArgsIdxs = append(glblArgsIdxs, CXArgumentIndex(glblIdx))
+			}
+			pkg.Globals = glblArgsIdxs
 		}
 
 		// structs
@@ -1089,7 +1094,7 @@ func deserializeExpressionFunction(sExpr *serializedExpression, s *SerializedCXP
 	return -1
 }
 
-func deserializeExpressions(off int64, size int64, s *SerializedCXProgram, prgrm *CXProgram) []*CXExpression {
+func deserializeExpressions(off int64, size int64, s *SerializedCXProgram, prgrm *CXProgram) []CXExpression {
 	if size < 1 {
 		return nil
 	}
@@ -1098,14 +1103,14 @@ func deserializeExpressions(off int64, size int64, s *SerializedCXProgram, prgrm
 	idxs := deserializeIntegers(off, size, s)
 
 	// sExprs := s.Expressions[off : off + size]
-	exprs := make([]*CXExpression, size)
+	exprs := make([]CXExpression, size)
 	for i, idx := range idxs {
 		exprs[i] = deserializeExpression(&s.Expressions[idx], s, prgrm)
 	}
 	return exprs
 }
 
-func deserializeExpression(sExpr *serializedExpression, s *SerializedCXProgram, prgrm *CXProgram) *CXExpression {
+func deserializeExpression(sExpr *serializedExpression, s *SerializedCXProgram, prgrm *CXProgram) CXExpression {
 	var expr CXExpression
 
 	expr.ExpressionType = CXEXPR_TYPE(sExpr.ExpressionType)
@@ -1144,21 +1149,17 @@ func deserializeExpression(sExpr *serializedExpression, s *SerializedCXProgram, 
 		expr.Type = CX_ATOMIC_OPERATOR
 	}
 
-	return &expr
+	return expr
 }
 
 func deserializeFunction(sFn *serializedFunction, fn *CXFunction, s *SerializedCXProgram, prgrm *CXProgram) {
 	fn.Name = deserializeString(sFn.NameOffset, sFn.NameSize, s)
-	fn.Inputs = deserializeArguments(sFn.InputsOffset, sFn.InputsSize, s, prgrm)
-	fn.Outputs = deserializeArguments(sFn.OutputsOffset, sFn.OutputsSize, s, prgrm)
+	fn.Inputs = prgrm.AddPointerArgsToCXArgsArray(deserializeArguments(sFn.InputsOffset, sFn.InputsSize, s, prgrm))
+	fn.Outputs = prgrm.AddPointerArgsToCXArgsArray(deserializeArguments(sFn.OutputsOffset, sFn.OutputsSize, s, prgrm))
 	fn.ListOfPointers = deserializeArguments(sFn.ListOfPointersOffset, sFn.ListOfPointersSize, s, prgrm)
 	fn.Expressions = deserializeExpressions(sFn.ExpressionsOffset, sFn.ExpressionsSize, s, prgrm)
 	fn.Size = types.Cast_i64_to_ptr(sFn.Size)
 	fn.LineCount = int(sFn.Length)
-
-	if sFn.CurrentExpressionOffset > 0 {
-		fn.CurrentExpression = fn.Expressions[sFn.CurrentExpressionOffset]
-	}
 
 	fn.Package = prgrm.Packages[sFn.PackageName]
 }

@@ -10,10 +10,10 @@ import (
 	"github.com/skycoin/cx/cx/packages/regexp"
 )
 
-func RegisterPackages() {
-	cipher.RegisterPackage(ast.PROGRAM)
-	cxfx.RegisterPackage()
-	cxos.RegisterPackage()
+func RegisterPackages(prgrm *ast.CXProgram) {
+	cipher.RegisterPackage(prgrm)
+	cxfx.RegisterPackage(prgrm)
+	cxos.RegisterPackage(prgrm)
 	// http.RegisterPackage()
-	regexp.RegisterPackage(ast.PROGRAM)
+	regexp.RegisterPackage(prgrm)
 }

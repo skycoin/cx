@@ -23,7 +23,7 @@ const (
 	SCOPE_REM           // 2
 )
 
-func DefineNewScope(exprs []*ast.CXExpression) {
+func DefineNewScope(exprs []ast.CXExpression) {
 	if len(exprs) > 2 {
 		for i := 0; i < len(exprs); i++ {
 			if exprs[i].Type != ast.CX_LINE {

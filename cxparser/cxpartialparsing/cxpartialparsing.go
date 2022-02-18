@@ -38,10 +38,10 @@ func Parse(code string) int {
 func PreFunctionDeclaration(fn *ast.CXFunction, inputs []*ast.CXArgument, outputs []*ast.CXArgument) {
 	// adding inputs, outputs
 	for _, inp := range inputs {
-		fn.AddInput(inp)
+		fn.AddInput(actions.AST, inp)
 	}
 	for _, out := range outputs {
-		fn.AddOutput(out)
+		fn.AddOutput(actions.AST, out)
 	}
 }
 
@@ -1302,7 +1302,7 @@ yydefault:
 				if err != nil {
 					panic(err)
 				}
-				newFn.AddInput(yyDollar[3].arguments[0])
+				newFn.AddInput(Program, yyDollar[3].arguments[0])
 				yyVAL.function = newFn
 			} else {
 				panic(err)

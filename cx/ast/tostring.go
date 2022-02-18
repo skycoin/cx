@@ -66,7 +66,7 @@ func buildStrGlobals(prgrm *CXProgram, pkg *CXPackage, ast *string) {
 	}
 
 	for j, v := range pkg.Globals {
-		*ast += fmt.Sprintf("\t\t%d.- Global: %s %s\n", j, v.Name, GetFormattedType(prgrm, v))
+		*ast += fmt.Sprintf("\t\t%d.- Global: %s %s\n", j, prgrm.GetCXArg(v).Name, GetFormattedType(prgrm, prgrm.GetCXArg(v)))
 	}
 }
 
@@ -116,8 +116,8 @@ func buildStrFunctions(prgrm *CXProgram, pkg *CXPackage, ast1 *string) {
 
 		var inps bytes.Buffer
 		var outs bytes.Buffer
-		getFormattedParam(prgrm, fn.Inputs, pkg, &inps)
-		getFormattedParam(prgrm, fn.Outputs, pkg, &outs)
+		getFormattedParam(prgrm, prgrm.ConvertIndexArgsToPointerArgs(fn.Inputs), pkg, &inps)
+		getFormattedParam(prgrm, prgrm.ConvertIndexArgsToPointerArgs(fn.Outputs), pkg, &outs)
 
 		*ast1 += fmt.Sprintf("\t\t%d.- Function: %s (%s) (%s)\n",
 			j, fn.Name, inps.String(), outs.String())
@@ -128,7 +128,7 @@ func buildStrFunctions(prgrm *CXProgram, pkg *CXPackage, ast1 *string) {
 			var opName1 string
 			var lbl string
 
-			cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+			cxAtomicOp, _, _, err := prgrm.GetOperation(&expr)
 			if err != nil {
 				panic(err)
 			}
@@ -244,8 +244,8 @@ func getFormattedParam(prgrm *CXProgram, params []*CXArgument, pkg *CXPackage, b
 func SignatureStringOfFunction(prgrm *CXProgram, pkg *CXPackage, f *CXFunction) string {
 	var ins bytes.Buffer
 	var outs bytes.Buffer
-	getFormattedParam(prgrm, f.Inputs, pkg, &ins)
-	getFormattedParam(prgrm, f.Outputs, pkg, &outs)
+	getFormattedParam(prgrm, prgrm.ConvertIndexArgsToPointerArgs(f.Inputs), pkg, &ins)
+	getFormattedParam(prgrm, prgrm.ConvertIndexArgsToPointerArgs(f.Outputs), pkg, &outs)
 
 	return fmt.Sprintf("func %s(%s) (%s)",
 		f.Name, ins.String(), outs.String())
@@ -713,8 +713,8 @@ func GetFormattedType(prgrm *CXProgram, arg *CXArgument) string {
 							// println(CompilationError(elt.FileName, elt.FileLine), err.ProgramError())
 							// os.Exit(CX_COMPILATION_ERROR)
 							// Adding list of inputs and outputs types.
-							typ += formatParameters(prgrm, fn.Inputs)
-							typ += formatParameters(prgrm, fn.Outputs)
+							typ += formatParameters(prgrm, prgrm.ConvertIndexArgsToPointerArgs(fn.Inputs))
+							typ += formatParameters(prgrm, prgrm.ConvertIndexArgsToPointerArgs(fn.Outputs))
 						}
 					}
 				}

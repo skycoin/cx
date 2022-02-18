@@ -50,7 +50,7 @@ func hasDerefOp(arg *ast.CXArgument, spec int) bool {
 }
 
 // This function writes those bytes to prgrm.Data
-func WritePrimary(prgrm *ast.CXProgram, typeCode types.Code, byts []byte, isSlice bool) []*ast.CXExpression {
+func WritePrimary(prgrm *ast.CXProgram, typeCode types.Code, byts []byte, isSlice bool) []ast.CXExpression {
 	if pkg, err := prgrm.GetCurrentPackage(); err == nil {
 		arg := ast.MakeArgument("", CurrentFile, LineNo)
 		arg.AddType(typeCode)
@@ -104,7 +104,7 @@ func WritePrimary(prgrm *ast.CXProgram, typeCode types.Code, byts []byte, isSlic
 
 		cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
 		cxAtomicOp.AddOutput(arg)
-		return []*ast.CXExpression{expr}
+		return []ast.CXExpression{*expr}
 	} else {
 		panic(err)
 	}
@@ -118,7 +118,7 @@ func TotalLength(lengths []types.Pointer) types.Pointer {
 	return total
 }
 
-func StructLiteralFields(prgrm *ast.CXProgram, ident string) *ast.CXExpression {
+func StructLiteralFields(prgrm *ast.CXProgram, ident string) ast.CXExpression {
 	if pkg, err := prgrm.GetCurrentPackage(); err == nil {
 		arg := ast.MakeArgument("", CurrentFile, LineNo)
 		arg.AddType(types.IDENTIFIER)
@@ -132,8 +132,7 @@ func StructLiteralFields(prgrm *ast.CXProgram, ident string) *ast.CXExpression {
 		}
 		cxAtomicOp.AddOutput(arg)
 		cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
-
-		return expr
+		return *expr
 	} else {
 		panic(err)
 	}
@@ -248,7 +247,7 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 	pkg.AddStruct(prgrmStrct)
 }
 
-func PrimaryIdentifier(prgrm *ast.CXProgram, ident string) []*ast.CXExpression {
+func PrimaryIdentifier(prgrm *ast.CXProgram, ident string) []ast.CXExpression {
 	if pkg, err := prgrm.GetCurrentPackage(); err == nil {
 		arg := ast.MakeArgument(ident, CurrentFile, LineNo) // fix: line numbers in errors sometimes report +1 or -1. Issue #195
 		arg.AddType(types.IDENTIFIER)
@@ -265,8 +264,7 @@ func PrimaryIdentifier(prgrm *ast.CXProgram, ident string) []*ast.CXExpression {
 		}
 		cxAtomicOp.AddOutput(arg)
 		cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
-
-		return []*ast.CXExpression{expr}
+		return []ast.CXExpression{*expr}
 	} else {
 		panic(err)
 	}

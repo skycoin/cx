@@ -32,10 +32,10 @@
 	func PreFunctionDeclaration (fn *ast.CXFunction, inputs []*ast.CXArgument, outputs []*ast.CXArgument) {
 		// adding inputs, outputs
 		for _, inp := range inputs {
-			fn.AddInput(inp)
+			fn.AddInput(actions.AST,inp)
 		}
 		for _, out := range outputs {
-			fn.AddOutput(out)
+			fn.AddOutput(actions.AST,out)
 		}
 	}
 	
@@ -250,7 +250,7 @@ function_header:
                                 if err!=nil{
                                         panic(err)
                                 }
-                                newFn.AddInput($3[0])
+                                newFn.AddInput(Program,$3[0])
                                 $$ = newFn
 			} else {
 				panic(err)

@@ -14,10 +14,10 @@ import (
 // For example: `return foo() + bar()` is a set of 3 expressions and they represent a single return argument
 type ReturnExpressions struct {
 	Size        int
-	Expressions []*ast.CXExpression
+	Expressions []ast.CXExpression
 }
 
-func IterationExpressions(prgrm *ast.CXProgram, init []*ast.CXExpression, cond []*ast.CXExpression, incr []*ast.CXExpression, statements []*ast.CXExpression) []*ast.CXExpression {
+func IterationExpressions(prgrm *ast.CXProgram, init []ast.CXExpression, cond []ast.CXExpression, incr []ast.CXExpression, statements []ast.CXExpression) []ast.CXExpression {
 	jmpFn := ast.Natives[constants.OP_JMP]
 
 	pkg, err := prgrm.GetCurrentPackage()
@@ -61,7 +61,7 @@ func IterationExpressions(prgrm *ast.CXProgram, init []*ast.CXExpression, cond [
 	}
 
 	if len(lastCondAtomicOp.Outputs) < 1 {
-		predicate := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(lastCondAtomicOp.Operator.Outputs[0].Type)
+		predicate := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(prgrm.GetCXArgFromArray(lastCondAtomicOp.Operator.Outputs[0]).Type)
 		predicate.Package = ast.CXPackageIndex(pkg.Index)
 		predicate.PreviouslyDeclared = true
 		lastCondAtomicOp.AddOutput(predicate)
@@ -80,7 +80,7 @@ func IterationExpressions(prgrm *ast.CXProgram, init []*ast.CXExpression, cond [
 	// processing possible breaks
 	for i, stat := range statements {
 		if stat.IsBreak(prgrm) {
-			statAtomicOp, _, _, err := prgrm.GetOperation(stat)
+			statAtomicOp, _, _, err := prgrm.GetOperation(&stat)
 			if err != nil {
 				panic(err)
 			}
@@ -92,7 +92,7 @@ func IterationExpressions(prgrm *ast.CXProgram, init []*ast.CXExpression, cond [
 	// processing possible continues
 	for i, stat := range statements {
 		if stat.IsContinue(prgrm) {
-			statAtomicOp, _, _, err := prgrm.GetOperation(stat)
+			statAtomicOp, _, _, err := prgrm.GetOperation(&stat)
 			if err != nil {
 				panic(err)
 			}
@@ -104,19 +104,22 @@ func IterationExpressions(prgrm *ast.CXProgram, init []*ast.CXExpression, cond [
 	downExprAtomicOp.ThenLines = thenLines
 	downExprAtomicOp.ElseLines = elseLines
 
+	// TODO: temporary bug fix, needs improvements
+	prgrm.CXAtomicOps[upExpr.Index] = *upExprAtomicOp
+
 	exprs := init
 	exprs = append(exprs, cond...)
-	exprs = append(exprs, downExprCXLine, downExpr)
+	exprs = append(exprs, *downExprCXLine, *downExpr)
 	exprs = append(exprs, statements...)
 	exprs = append(exprs, incr...)
-	exprs = append(exprs, upExprCXLine, upExpr)
+	exprs = append(exprs, *upExprCXLine, *upExpr)
 
 	DefineNewScope(exprs)
 
 	return exprs
 }
 
-func trueJmpExpressions(prgrm *ast.CXProgram, opcode int) []*ast.CXExpression {
+func trueJmpExpressions(prgrm *ast.CXProgram, opcode int) []ast.CXExpression {
 	pkg, err := prgrm.GetCurrentPackage()
 	if err != nil {
 		panic(err)
@@ -136,23 +139,22 @@ func trueJmpExpressions(prgrm *ast.CXProgram, opcode int) []*ast.CXExpression {
 	}
 
 	exprAtomicOp.AddInput(trueArgAtomicOp.Outputs[0])
-
 	exprAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
 
-	return []*ast.CXExpression{exprCXLine, expr}
+	return []ast.CXExpression{*exprCXLine, *expr}
 }
 
-func BreakExpressions(prgrm *ast.CXProgram) []*ast.CXExpression {
+func BreakExpressions(prgrm *ast.CXProgram) []ast.CXExpression {
 	exprs := trueJmpExpressions(prgrm, constants.OP_BREAK)
 	return exprs
 }
 
-func ContinueExpressions(prgrm *ast.CXProgram) []*ast.CXExpression {
+func ContinueExpressions(prgrm *ast.CXProgram) []ast.CXExpression {
 	exprs := trueJmpExpressions(prgrm, constants.OP_CONTINUE)
 	return exprs
 }
 
-func SelectionExpressions(prgrm *ast.CXProgram, condExprs []*ast.CXExpression, thenExprs []*ast.CXExpression, elseExprs []*ast.CXExpression) []*ast.CXExpression {
+func SelectionExpressions(prgrm *ast.CXProgram, condExprs []ast.CXExpression, thenExprs []ast.CXExpression, elseExprs []ast.CXExpression) []ast.CXExpression {
 	DefineNewScope(thenExprs)
 	DefineNewScope(elseExprs)
 
@@ -189,7 +191,7 @@ func SelectionExpressions(prgrm *ast.CXProgram, condExprs []*ast.CXExpression, t
 			lastCondExprsAtomicOp.Inputs = append(lastCondExprsAtomicOp.Outputs, lastCondExprsAtomicOp.Inputs...)
 			lastCondExprsAtomicOp.Outputs = nil
 		} else {
-			predicate.AddType(lastCondExprsAtomicOp.Operator.Outputs[0].Type)
+			predicate.AddType(prgrm.GetCXArgFromArray(lastCondExprsAtomicOp.Operator.Outputs[0]).Type)
 		}
 		predicate.PreviouslyDeclared = true
 		lastCondExprsAtomicOp.Outputs = append(lastCondExprsAtomicOp.Outputs, predicate)
@@ -224,13 +226,17 @@ func SelectionExpressions(prgrm *ast.CXProgram, condExprs []*ast.CXExpression, t
 	skipExprAtomicOp.ThenLines = skipLines
 	skipExprAtomicOp.ElseLines = 0
 
-	var exprs []*ast.CXExpression
+	var exprs []ast.CXExpression
 	if lastCondExprsAtomicOp.Operator != nil || condExprs[len(condExprs)-1].IsMethodCall() {
 		exprs = append(exprs, condExprs...)
 	}
-	exprs = append(exprs, ifExprCXLine, ifExpr)
+
+	// TODO: temporary bug fix, needs improvements
+	prgrm.CXAtomicOps[skipExpr.Index] = *skipExprAtomicOp
+
+	exprs = append(exprs, *ifExprCXLine, *ifExpr)
 	exprs = append(exprs, thenExprs...)
-	exprs = append(exprs, skipExprCXLine, skipExpr)
+	exprs = append(exprs, *skipExprCXLine, *skipExpr)
 	exprs = append(exprs, elseExprs...)
 
 	return exprs
@@ -257,7 +263,7 @@ func resolveTypeForUnd(prgrm *ast.CXProgram, expr *ast.CXExpression) types.Code 
 	}
 	if len(cxAtomicOp.Operator.Outputs) > 0 {
 		// always return first output's type
-		return cxAtomicOp.Operator.Outputs[0].Type
+		return prgrm.GetCXArgFromArray(cxAtomicOp.Operator.Outputs[0]).Type
 	}
 
 	// error
@@ -273,7 +279,7 @@ func IsTempVar(name string) bool {
 	return false
 }
 
-func OperatorExpression(prgrm *ast.CXProgram, leftExprs []*ast.CXExpression, rightExprs []*ast.CXExpression, opcode int) (out []*ast.CXExpression) {
+func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, rightExprs []ast.CXExpression, opcode int) (out []ast.CXExpression) {
 	pkg, err := prgrm.GetCurrentPackage()
 	if err != nil {
 		panic(err)
@@ -285,11 +291,12 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []*ast.CXExpression, rig
 	}
 
 	if len(lastLeftExprsAtomicOp.Outputs) < 1 {
-		name := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(resolveTypeForUnd(prgrm, leftExprs[len(leftExprs)-1]))
-		name.Size = lastLeftExprsAtomicOp.Operator.Outputs[0].Size
-		name.TotalSize = ast.GetSize(lastLeftExprsAtomicOp.Operator.Outputs[0])
-		name.Type = lastLeftExprsAtomicOp.Operator.Outputs[0].Type
-		name.PointerTargetType = lastLeftExprsAtomicOp.Operator.Outputs[0].PointerTargetType
+		lastLeftExprsAtomicOpOperatorOutput := prgrm.GetCXArgFromArray(lastLeftExprsAtomicOp.Operator.Outputs[0])
+		name := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(resolveTypeForUnd(prgrm, &leftExprs[len(leftExprs)-1]))
+		name.Size = lastLeftExprsAtomicOpOperatorOutput.Size
+		name.TotalSize = ast.GetSize(lastLeftExprsAtomicOpOperatorOutput)
+		name.Type = lastLeftExprsAtomicOpOperatorOutput.Type
+		name.PointerTargetType = lastLeftExprsAtomicOpOperatorOutput.PointerTargetType
 		name.Package = ast.CXPackageIndex(pkg.Index)
 		name.PreviouslyDeclared = true
 
@@ -302,12 +309,13 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []*ast.CXExpression, rig
 	}
 
 	if len(lastRightExprsAtomicOp.Outputs) < 1 {
-		name := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(resolveTypeForUnd(prgrm, rightExprs[len(rightExprs)-1]))
+		name := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(resolveTypeForUnd(prgrm, &rightExprs[len(rightExprs)-1]))
 
-		name.Size = lastRightExprsAtomicOp.Operator.Outputs[0].Size
-		name.TotalSize = ast.GetSize(lastRightExprsAtomicOp.Operator.Outputs[0])
-		name.Type = lastRightExprsAtomicOp.Operator.Outputs[0].Type
-		name.PointerTargetType = lastRightExprsAtomicOp.Operator.Outputs[0].PointerTargetType
+		lastRightExprsAtomicOpOperatorOutput := prgrm.GetCXArgFromArray(lastRightExprsAtomicOp.Operator.Outputs[0])
+		name.Size = lastRightExprsAtomicOpOperatorOutput.Size
+		name.TotalSize = ast.GetSize(lastRightExprsAtomicOpOperatorOutput)
+		name.Type = lastRightExprsAtomicOpOperatorOutput.Type
+		name.PointerTargetType = lastRightExprsAtomicOpOperatorOutput.PointerTargetType
 		name.Package = ast.CXPackageIndex(pkg.Index)
 		name.PreviouslyDeclared = true
 
@@ -350,12 +358,12 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []*ast.CXExpression, rig
 		cxAtomicOp.Inputs = append(cxAtomicOp.Inputs, lastRightExprsAtomicOp.Outputs[0])
 	}
 
-	out = append(out, exprCXLine, expr)
+	out = append(out, *exprCXLine, *expr)
 
 	return
 }
 
-func UnaryExpression(prgrm *ast.CXProgram, op string, prevExprs []*ast.CXExpression) []*ast.CXExpression {
+func UnaryExpression(prgrm *ast.CXProgram, op string, prevExprs []ast.CXExpression) []ast.CXExpression {
 	lastPrevExprsAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(prevExprs, len(prevExprs)-1)
 	if err != nil {
 		panic(err)
@@ -397,8 +405,7 @@ func UnaryExpression(prgrm *ast.CXProgram, op string, prevExprs []*ast.CXExpress
 			cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
 
 			cxAtomicOp.AddInput(exprOut)
-
-			prevExprs[len(prevExprs)-1] = expr
+			prevExprs[len(prevExprs)-1] = *expr
 		} else {
 			panic(err)
 		}
@@ -411,17 +418,18 @@ func UnaryExpression(prgrm *ast.CXProgram, op string, prevExprs []*ast.CXExpress
 			}
 			cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
 			cxAtomicOp.AddInput(exprOut)
-			prevExprs[len(prevExprs)-1] = expr
+			prevExprs[len(prevExprs)-1] = *expr
 		} else {
 			panic(err)
 		}
 	}
+
 	return prevExprs
 }
 
 // AssociateReturnExpressions associates the output of `retExprs` to the
 // `idx`th output parameter of the current function.
-func AssociateReturnExpressions(prgrm *ast.CXProgram, idx int, retExprs []*ast.CXExpression) []*ast.CXExpression {
+func AssociateReturnExpressions(prgrm *ast.CXProgram, idx int, retExprs []ast.CXExpression) []ast.CXExpression {
 	var pkg *ast.CXPackage
 	var fn *ast.CXFunction
 	var err error
@@ -438,14 +446,14 @@ func AssociateReturnExpressions(prgrm *ast.CXProgram, idx int, retExprs []*ast.C
 
 	lastExpr := retExprs[len(retExprs)-1]
 
-	outParam := fn.Outputs[idx]
+	outParam := prgrm.GetCXArgFromArray(fn.Outputs[idx])
 
 	out := ast.MakeArgument(outParam.Name, CurrentFile, LineNo)
 	out.AddType(outParam.Type)
 	out.StructType = outParam.StructType
 	out.PreviouslyDeclared = true
 
-	lastExprAtomicOp, _, _, err := prgrm.GetOperation(lastExpr)
+	lastExprAtomicOp, _, _, err := prgrm.GetOperation(&lastExpr)
 	if err != nil {
 		panic(err)
 	}
@@ -468,16 +476,15 @@ func AssociateReturnExpressions(prgrm *ast.CXProgram, idx int, retExprs []*ast.C
 		cxAtomicOp.AddInput(lastExprAtomicOp.Outputs[0])
 		cxAtomicOp.AddOutput(out)
 
-		return append(retExprs, exprCXLine, expr)
+		return append(retExprs, *exprCXLine, *expr)
 	} else {
 		lastExprAtomicOp.AddOutput(out)
-
 		return retExprs
 	}
 }
 
 // AddJmpToReturnExpressions adds an jump expression that makes a function stop its execution
-func AddJmpToReturnExpressions(prgrm *ast.CXProgram, exprs ReturnExpressions) []*ast.CXExpression {
+func AddJmpToReturnExpressions(prgrm *ast.CXProgram, exprs ReturnExpressions) []ast.CXExpression {
 	var pkg *ast.CXPackage
 	var fn *ast.CXFunction
 	var err error
@@ -525,7 +532,7 @@ func AddJmpToReturnExpressions(prgrm *ast.CXProgram, exprs ReturnExpressions) []
 	cxAtomicOp.ThenLines = types.MAX_INT32
 	cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
 
-	retExprs = append(retExprs, exprCXLine, expr)
+	retExprs = append(retExprs, *exprCXLine, *expr)
 
 	return retExprs
 }

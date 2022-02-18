@@ -40,7 +40,7 @@ type CXProgram struct {
 	ProgramError   error
 
 	// For new CX AST arrays
-	CXAtomicOps []*CXAtomicOperator
+	CXAtomicOps []CXAtomicOperator
 	CXArgs      []CXArgument
 	CXLines     []CXLine
 	CXPackages  []CXPackage
@@ -48,7 +48,7 @@ type CXProgram struct {
 	// Then reference the package of function by CxFunction id
 
 	// For Initializers
-	SysInitExprs []*CXExpression
+	SysInitExprs []CXExpression
 }
 
 type StackSegmentStruct struct {
@@ -86,6 +86,7 @@ func MakeProgram() *CXProgram {
 			Size:    minHeapSize,
 			Pointer: constants.NULL_HEAP_ADDRESS_OFFSET, // We can start adding objects to the heap after the NULL (nil) bytes.
 		},
+		CXArgs: make([]CXArgument, 0),
 	}
 	return newPrgrm
 }
@@ -179,12 +180,12 @@ func (cxprogram *CXProgram) GetCXLine(index int) (*CXLine, error) {
 	return &cxprogram.CXLines[index], nil
 }
 
-func (cxprogram *CXProgram) GetCXArg(index CXArgumentIndex) (*CXArgument, error) {
+func (cxprogram *CXProgram) GetCXArg(index CXArgumentIndex) *CXArgument {
 	if int(index) > (len(cxprogram.CXArgs) - 1) {
-		return nil, fmt.Errorf("error: CXArgs[%d]: index out of bounds", index)
+		panic(fmt.Errorf("error: CXArgs[%d]: index out of bounds", index))
 	}
 
-	return &cxprogram.CXArgs[index], nil
+	return &cxprogram.CXArgs[index]
 }
 
 func (cxprogram *CXProgram) GetCXAtomicOp(index int) (*CXAtomicOperator, error) {
@@ -192,7 +193,7 @@ func (cxprogram *CXProgram) GetCXAtomicOp(index int) (*CXAtomicOperator, error) 
 		return nil, fmt.Errorf("error: CXAtomicOps[%d]: index out of bounds", index)
 	}
 
-	return cxprogram.CXAtomicOps[index], nil
+	return &cxprogram.CXAtomicOps[index], nil
 }
 
 func (cxprogram *CXProgram) AddCXLine(CXLine *CXLine) int {
@@ -208,20 +209,58 @@ func (cxprogram *CXProgram) AddCXArg(CXArg *CXArgument) int {
 }
 
 func (cxprogram *CXProgram) AddCXAtomicOp(CXAtomicOp *CXAtomicOperator) int {
-	cxprogram.CXAtomicOps = append(cxprogram.CXAtomicOps, CXAtomicOp)
+	cxprogram.CXAtomicOps = append(cxprogram.CXAtomicOps, *CXAtomicOp)
 
 	return len(cxprogram.CXAtomicOps) - 1
+}
+
+// ----------------------------------------------------------------
+//                         `CXProgram` CXArgument handling
+func (cxprogram *CXProgram) AddCXArgInArray(cxArg *CXArgument) CXArgumentIndex {
+	// The index of fn after it will be added in the array
+	cxArg.Index = len(cxprogram.CXArgs)
+	cxprogram.CXArgs = append(cxprogram.CXArgs, *cxArg)
+
+	return CXArgumentIndex(cxArg.Index)
+}
+
+func (cxprogram *CXProgram) GetCXArgFromArray(index CXArgumentIndex) *CXArgument {
+	if index == -1 {
+		return nil
+	}
+
+	if int(index) > (len(cxprogram.CXArgs) - 1) {
+		panic(fmt.Errorf("error: CXArgument[%d]: index out of bounds", index))
+	}
+
+	return &cxprogram.CXArgs[index]
+}
+
+func (cxprogram *CXProgram) ConvertIndexArgsToPointerArgs(idxs []CXArgumentIndex) []*CXArgument {
+	var cxArgs []*CXArgument
+	for _, idx := range idxs {
+		arg := cxprogram.GetCXArgFromArray(idx)
+		cxArgs = append(cxArgs, arg)
+	}
+	return cxArgs
+}
+
+func (cxprogram *CXProgram) AddPointerArgsToCXArgsArray(cxArgs []*CXArgument) []CXArgumentIndex {
+	var cxArgsIdxs []CXArgumentIndex
+	for _, cxArg := range cxArgs {
+		cxArgIdx := cxprogram.AddCXArgInArray(cxArg)
+		cxArgsIdxs = append(cxArgsIdxs, cxArgIdx)
+	}
+	return cxArgsIdxs
 }
 
 // ----------------------------------------------------------------
 //                             `CXProgram` Getters
 
 func (cxprogram *CXProgram) GetOperation(expr *CXExpression) (*CXAtomicOperator, *CXArgument, *CXLine, error) {
-	var cxAtomicOp *CXAtomicOperator
-	var err error
 	switch expr.Type {
 	case CX_ATOMIC_OPERATOR:
-		cxAtomicOp, err = cxprogram.GetCXAtomicOp(int(expr.Index))
+		cxAtomicOp, err := cxprogram.GetCXAtomicOp(int(expr.Index))
 		if err != nil {
 			return &CXAtomicOperator{}, &CXArgument{}, &CXLine{}, err
 		}
@@ -240,10 +279,10 @@ func (cxprogram *CXProgram) GetOperation(expr *CXExpression) (*CXAtomicOperator,
 	return &CXAtomicOperator{}, &CXArgument{}, &CXLine{}, fmt.Errorf("operation type is not found.")
 }
 
-func (cxprogram *CXProgram) GetPreviousCXLine(exprs []*CXExpression, currIndex int) (*CXLine, error) {
+func (cxprogram *CXProgram) GetPreviousCXLine(exprs []CXExpression, currIndex int) (*CXLine, error) {
 	for i := currIndex; i >= 0; i-- {
 		if exprs[i].Type == CX_LINE {
-			_, _, cxLine, err := cxprogram.GetOperation(exprs[i])
+			_, _, cxLine, err := cxprogram.GetOperation(&exprs[i])
 			if err != nil {
 				return &CXLine{}, err
 			}
@@ -254,10 +293,10 @@ func (cxprogram *CXProgram) GetPreviousCXLine(exprs []*CXExpression, currIndex i
 	return &CXLine{}, fmt.Errorf("CXLine not found.")
 }
 
-func (cxprogram *CXProgram) GetCXAtomicOpFromExpressions(exprs []*CXExpression, currIndex int) (*CXAtomicOperator, error) {
+func (cxprogram *CXProgram) GetCXAtomicOpFromExpressions(exprs []CXExpression, currIndex int) (*CXAtomicOperator, error) {
 	for i := currIndex; i < len(exprs); i++ {
 		if exprs[i].Type == CX_ATOMIC_OPERATOR {
-			cxAtomicOp, _, _, err := cxprogram.GetOperation(exprs[i])
+			cxAtomicOp, _, _, err := cxprogram.GetOperation(&exprs[i])
 			if err != nil {
 				return &CXAtomicOperator{}, err
 			}
@@ -268,10 +307,10 @@ func (cxprogram *CXProgram) GetCXAtomicOpFromExpressions(exprs []*CXExpression, 
 	return &CXAtomicOperator{}, fmt.Errorf("CXAtomicOperator not found.")
 }
 
-func (cxprogram *CXProgram) GetPreviousCXAtomicOpFromExpressions(exprs []*CXExpression, currIndex int) (*CXAtomicOperator, error) {
+func (cxprogram *CXProgram) GetPreviousCXAtomicOpFromExpressions(exprs []CXExpression, currIndex int) (*CXAtomicOperator, error) {
 	for i := currIndex; i >= 0; i-- {
 		if exprs[i].Type == CX_ATOMIC_OPERATOR {
-			cxAtomicOp, _, _, err := cxprogram.GetOperation(exprs[i])
+			cxAtomicOp, _, _, err := cxprogram.GetOperation(&exprs[i])
 			if err != nil {
 				return &CXAtomicOperator{}, err
 			}
@@ -346,33 +385,6 @@ func (cxprogram *CXProgram) GetCurrentFunction() (*CXFunction, error) {
 
 	return cxprogram.GetFunctionFromArray(currentPackage.CurrentFunction)
 
-}
-
-// GetCurrentExpression ...
-func (cxprogram *CXProgram) GetCurrentExpression() (*CXExpression, error) {
-	if cxprogram.CurrentPackage == -1 {
-		return nil, errors.New("current package is nil")
-	}
-
-	currentPackage, err := cxprogram.GetPackageFromArray(cxprogram.CurrentPackage)
-	if err != nil {
-		return &CXExpression{}, err
-	}
-
-	if currentPackage.CurrentFunction == -1 {
-		return nil, errors.New("current function is nil")
-	}
-
-	currFn, err := cxprogram.GetFunctionFromArray(currentPackage.CurrentFunction)
-	if err != nil {
-		return nil, err
-	}
-
-	if currFn.CurrentExpression == nil {
-		return nil, errors.New("current expression is nil")
-	}
-
-	return currFn.CurrentExpression, nil
 }
 
 // GetPackage ...

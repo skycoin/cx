@@ -36,6 +36,6 @@ func RegisterPackage(prgrm *ast.CXProgram) {
 
 	prgrm.AddPackage(cipherPkg)
 
-	opcodes.RegisterFunction("cipher.GenerateKeyPair", opCipherGenerateKeyPair, nil,
+	opcodes.RegisterFunction(prgrm, "cipher.GenerateKeyPair", opCipherGenerateKeyPair, nil,
 		opcodes.Out(ast.Struct(prgrm, "cipher", "PubKey", "pubKey"), ast.Struct(prgrm, "cipher", "SecKey", "sec")))
 }

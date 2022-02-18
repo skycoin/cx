@@ -74,7 +74,7 @@ func CallAffPredicate(prgrm *ast.CXProgram, fn *ast.CXFunction, predValue []byte
 	// sending value to predicate function
 	types.WriteSlice_byte(
 		prgrm.Memory,
-		ast.GetFinalOffset(prgrm, newFP, newCall.Operator.Inputs[0]),
+		ast.GetFinalOffset(prgrm, newFP, prgrm.GetCXArgFromArray(newCall.Operator.Inputs[0])),
 		predValue)
 
 	var inputs []ast.CXValue
@@ -94,8 +94,8 @@ func CallAffPredicate(prgrm *ast.CXProgram, fn *ast.CXFunction, predValue []byte
 	prevCall.Line--
 	return types.GetSlice_byte(prgrm.Memory, ast.GetFinalOffset(prgrm,
 		newCall.FramePointer,
-		newCall.Operator.Outputs[0]),
-		ast.GetSize(newCall.Operator.Outputs[0]))[0]
+		prgrm.GetCXArgFromArray(newCall.Operator.Outputs[0])),
+		ast.GetSize(prgrm.GetCXArgFromArray(newCall.Operator.Outputs[0])))[0]
 }
 
 // This might not make sense, as we can use normal programming to create conditions on values
@@ -195,7 +195,7 @@ func QueryArgument(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpress
 	}
 
 	for _, ex := range cxAtomicOpFunction.Expressions {
-		exCXAtomicOp, _, _, err := prgrm.GetOperation(ex)
+		exCXAtomicOp, _, _, err := prgrm.GetOperation(&ex)
 		if err != nil {
 			panic(err)
 		}
@@ -223,7 +223,7 @@ func QueryExpressions(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpr
 	}
 
 	for _, ex := range cxAtomicOpFunction.Expressions {
-		exCXAtomicOp, _, _, err := prgrm.GetOperation(ex)
+		exCXAtomicOp, _, _, err := prgrm.GetOperation(&ex)
 		if err != nil {
 			panic(err)
 		}
@@ -373,8 +373,8 @@ func QueryFunction(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpress
 		// WriteMemI32(opNameOffsetB[:], 0, int32(WriteObjectRetOff(opNameB)))
 		types.Write_ptr(opNameOffsetB[:], 0, opNameOffset)
 
-		inpSigOffset := getSignatureSlice(prgrm, f.Inputs)
-		outSigOffset := getSignatureSlice(prgrm, f.Outputs)
+		inpSigOffset := getSignatureSlice(prgrm, prgrm.ConvertIndexArgsToPointerArgs(f.Inputs))
+		outSigOffset := getSignatureSlice(prgrm, prgrm.ConvertIndexArgsToPointerArgs(f.Outputs))
 
 		fnOffset := ast.AllocateSeq(prgrm, types.OBJECT_HEADER_SIZE+types.STR_SIZE+types.POINTER_SIZE+types.POINTER_SIZE)
 		// Name
@@ -685,124 +685,124 @@ func getAffordances(prgrm *ast.CXProgram, inp1 *ast.CXArgument, fp types.Pointer
 	}
 }
 
-func opAffOn(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	inp1, inp2 := inputs[0].Arg, inputs[1].Arg
+// func opAffOn(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
+// 	inp1, inp2 := inputs[0].Arg, inputs[1].Arg
 
-	prevPkgIdx := prgrm.CurrentPackage
-	prevPkg, err := prgrm.GetPackageFromArray(prevPkgIdx)
-	if err != nil {
-		panic(err)
-	}
+// 	prevPkgIdx := prgrm.CurrentPackage
+// 	prevPkg, err := prgrm.GetPackageFromArray(prevPkgIdx)
+// 	if err != nil {
+// 		panic(err)
+// 	}
 
-	prevFnIdx := prevPkg.CurrentFunction
-	prevFn, err := prgrm.GetFunctionFromArray(prevFnIdx)
-	if err != nil {
-		panic(err)
-	}
-	prevExpr := prevFn.CurrentExpression
+// 	prevFnIdx := prevPkg.CurrentFunction
+// 	prevFn, err := prgrm.GetFunctionFromArray(prevFnIdx)
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	prevExpr := prevFn.CurrentExpression
 
-	call := prgrm.GetCurrentCall()
+// 	call := prgrm.GetCurrentCall()
 
-	expr := call.Operator.Expressions[call.Line]
-	fp := inputs[0].FramePointer
+// 	expr := call.Operator.Expressions[call.Line]
+// 	fp := inputs[0].FramePointer
 
-	var tgtPkg = ast.CXPackage(*prevPkg)
+// 	var tgtPkg = ast.CXPackage(*prevPkg)
 
-	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
-	if err != nil {
-		panic(err)
-	}
-	cxAtomicOpFunction, err := prgrm.GetFunctionFromArray(cxAtomicOp.Function)
-	if err != nil {
-		panic(err)
-	}
+// 	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	cxAtomicOpFunction, err := prgrm.GetFunctionFromArray(cxAtomicOp.Function)
+// 	if err != nil {
+// 		panic(err)
+// 	}
 
-	var tgtFn = ast.CXFunction(*cxAtomicOpFunction)
-	var tgtExpr = ast.CXExpression(*prevExpr)
+// 	var tgtFn = ast.CXFunction(*cxAtomicOpFunction)
+// 	var tgtExpr = ast.CXExpression(*prevExpr)
 
-	// processing the target
-	var tgtElt string
-	var tgtArgType string
-	var tgtArgIndex int
+// 	// processing the target
+// 	var tgtElt string
+// 	var tgtArgType string
+// 	var tgtArgIndex int
 
-	getTarget(prgrm, inp2, fp, &tgtElt, &tgtArgType, &tgtArgIndex, &tgtPkg, &tgtFn, &tgtExpr)
+// 	getTarget(prgrm, inp2, fp, &tgtElt, &tgtArgType, &tgtArgIndex, &tgtPkg, &tgtFn, &tgtExpr)
 
-	// var affPkg *CXPackage = prevPkg
-	// var affFn *CXFunction = prevFn
-	// var affExpr *CXExpression = prevExpr
+// 	// var affPkg *CXPackage = prevPkg
+// 	// var affFn *CXFunction = prevFn
+// 	// var affExpr *CXExpression = prevExpr
 
-	// processing the affordances
-	var affs []string
-	getAffordances(prgrm, inp1, fp, tgtElt, tgtArgType, tgtArgIndex, &tgtPkg, &tgtFn, &tgtExpr, onMessages, &affs)
+// 	// processing the affordances
+// 	var affs []string
+// 	getAffordances(prgrm, inp1, fp, tgtElt, tgtArgType, tgtArgIndex, &tgtPkg, &tgtFn, &tgtExpr, onMessages, &affs)
 
-	// returning to previous state
-	prgrm.CurrentPackage = prevPkgIdx
-	prevPkg.CurrentFunction = prevFnIdx
-	prevFn.CurrentExpression = prevExpr
+// 	// returning to previous state
+// 	prgrm.CurrentPackage = prevPkgIdx
+// 	prevPkg.CurrentFunction = prevFnIdx
+// 	prevFn.CurrentExpression = prevExpr
 
-	for i, aff := range affs {
-		fmt.Printf("%d - %s\n", i, aff)
-	}
-}
+// 	for i, aff := range affs {
+// 		fmt.Printf("%d - %s\n", i, aff)
+// 	}
+// }
 
-func opAffOf(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	inp1, inp2 := inputs[0].Arg, inputs[1].Arg
+// func opAffOf(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
+// 	inp1, inp2 := inputs[0].Arg, inputs[1].Arg
 
-	prevPkgIdx := prgrm.CurrentPackage
-	prevPkg, err := prgrm.GetPackageFromArray(prevPkgIdx)
-	if err != nil {
-		panic(err)
-	}
+// 	prevPkgIdx := prgrm.CurrentPackage
+// 	prevPkg, err := prgrm.GetPackageFromArray(prevPkgIdx)
+// 	if err != nil {
+// 		panic(err)
+// 	}
 
-	prevFnIdx := prevPkg.CurrentFunction
-	prevFn, err := prgrm.GetFunctionFromArray(prevFnIdx)
-	if err != nil {
-		panic(err)
-	}
-	prevExpr := prevFn.CurrentExpression
+// 	prevFnIdx := prevPkg.CurrentFunction
+// 	prevFn, err := prgrm.GetFunctionFromArray(prevFnIdx)
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	prevExpr := prevFn.CurrentExpression
 
-	call := prgrm.GetCurrentCall()
-	expr := call.Operator.Expressions[call.Line]
-	fp := inputs[0].FramePointer
+// 	call := prgrm.GetCurrentCall()
+// 	expr := call.Operator.Expressions[call.Line]
+// 	fp := inputs[0].FramePointer
 
-	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
-	if err != nil {
-		panic(err)
-	}
+// 	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+// 	if err != nil {
+// 		panic(err)
+// 	}
 
-	cxAtomicOpFunction, err := prgrm.GetFunctionFromArray(cxAtomicOp.Function)
-	if err != nil {
-		panic(err)
-	}
+// 	cxAtomicOpFunction, err := prgrm.GetFunctionFromArray(cxAtomicOp.Function)
+// 	if err != nil {
+// 		panic(err)
+// 	}
 
-	opPkg, err := prgrm.GetPackageFromArray(cxAtomicOp.Package)
-	if err != nil {
-		panic(err)
-	}
-	var tgtPkg = ast.CXPackage(*opPkg)
-	var tgtFn = ast.CXFunction(*cxAtomicOpFunction)
-	var tgtExpr = ast.CXExpression(*prevExpr)
+// 	opPkg, err := prgrm.GetPackageFromArray(cxAtomicOp.Package)
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	var tgtPkg = ast.CXPackage(*opPkg)
+// 	var tgtFn = ast.CXFunction(*cxAtomicOpFunction)
+// 	var tgtExpr = ast.CXExpression(*prevExpr)
 
-	// processing the target
-	var tgtElt string
-	var tgtArgType string
-	var tgtArgIndex int
+// 	// processing the target
+// 	var tgtElt string
+// 	var tgtArgType string
+// 	var tgtArgIndex int
 
-	getTarget(prgrm, inp2, fp, &tgtElt, &tgtArgType, &tgtArgIndex, &tgtPkg, &tgtFn, &tgtExpr)
+// 	getTarget(prgrm, inp2, fp, &tgtElt, &tgtArgType, &tgtArgIndex, &tgtPkg, &tgtFn, &tgtExpr)
 
-	// processing the affordances
-	var affs []string
-	getAffordances(prgrm, inp1, fp, tgtElt, tgtArgType, tgtArgIndex, &tgtPkg, &tgtFn, &tgtExpr, ofMessages, &affs)
+// 	// processing the affordances
+// 	var affs []string
+// 	getAffordances(prgrm, inp1, fp, tgtElt, tgtArgType, tgtArgIndex, &tgtPkg, &tgtFn, &tgtExpr, ofMessages, &affs)
 
-	// returning to previous state
-	prgrm.CurrentPackage = prevPkgIdx
-	prevPkg.CurrentFunction = prevFnIdx
-	prevFn.CurrentExpression = prevExpr
+// 	// returning to previous state
+// 	prgrm.CurrentPackage = prevPkgIdx
+// 	prevPkg.CurrentFunction = prevFnIdx
+// 	prevFn.CurrentExpression = prevExpr
 
-	for i, aff := range affs {
-		fmt.Printf("%d - %s\n", i, aff)
-	}
-}
+// 	for i, aff := range affs {
+// 		fmt.Printf("%d - %s\n", i, aff)
+// 	}
+// }
 
 func readStrctAff(prgrm *ast.CXProgram, aff string, tgtPkg *ast.CXPackage) *ast.CXStruct {
 	strct, err := tgtPkg.GetStruct(prgrm, aff)
@@ -826,13 +826,13 @@ func readArgAff(prgrm *ast.CXProgram, aff string, tgtFn *ast.CXFunction) *ast.CX
 				if expr.Type == ast.CX_LINE {
 					continue
 				}
-				cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+				cxAtomicOp, _, _, err := prgrm.GetOperation(&expr)
 				if err != nil {
 					panic(err)
 				}
 
 				if exprLbl == cxAtomicOp.Label {
-					affExpr = expr
+					affExpr = &expr
 					rIdx++
 					break
 				}
@@ -883,281 +883,281 @@ func readArgAff(prgrm *ast.CXProgram, aff string, tgtFn *ast.CXFunction) *ast.CX
 
 }
 
-func opAffInform(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	inp1, inp2, inp3 := inputs[0].Arg, inputs[1].Arg, inputs[2].Arg
+// func opAffInform(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
+// 	inp1, inp2, inp3 := inputs[0].Arg, inputs[1].Arg, inputs[2].Arg
 
-	call := prgrm.GetCurrentCall()
-	expr := call.Operator.Expressions[call.Line]
-	fp := inputs[0].FramePointer
+// 	call := prgrm.GetCurrentCall()
+// 	expr := call.Operator.Expressions[call.Line]
+// 	fp := inputs[0].FramePointer
 
-	prevPkgIdx := prgrm.CurrentPackage
-	prevPkg, err := prgrm.GetPackageFromArray(prevPkgIdx)
-	if err != nil {
-		panic(err)
-	}
+// 	prevPkgIdx := prgrm.CurrentPackage
+// 	prevPkg, err := prgrm.GetPackageFromArray(prevPkgIdx)
+// 	if err != nil {
+// 		panic(err)
+// 	}
 
-	prevFnIdx := prevPkg.CurrentFunction
-	prevFn, err := prgrm.GetFunctionFromArray(prevFnIdx)
-	if err != nil {
-		panic(err)
-	}
-	prevExpr := prevFn.CurrentExpression
+// 	prevFnIdx := prevPkg.CurrentFunction
+// 	prevFn, err := prgrm.GetFunctionFromArray(prevFnIdx)
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	prevExpr := prevFn.CurrentExpression
 
-	var tgtPkg = ast.CXPackage(*prevPkg)
+// 	var tgtPkg = ast.CXPackage(*prevPkg)
 
-	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
-	if err != nil {
-		panic(err)
-	}
+// 	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+// 	if err != nil {
+// 		panic(err)
+// 	}
 
-	cxAtomicOpFunction, err := prgrm.GetFunctionFromArray(cxAtomicOp.Function)
-	if err != nil {
-		panic(err)
-	}
+// 	cxAtomicOpFunction, err := prgrm.GetFunctionFromArray(cxAtomicOp.Function)
+// 	if err != nil {
+// 		panic(err)
+// 	}
 
-	var tgtFn = ast.CXFunction(*cxAtomicOpFunction)
-	var tgtExpr = ast.CXExpression(*prevExpr)
+// 	var tgtFn = ast.CXFunction(*cxAtomicOpFunction)
+// 	var tgtExpr = ast.CXExpression(*prevExpr)
 
-	// processing the target
-	var tgtElt string
-	var tgtArgType string
-	var tgtArgIndex int
+// 	// processing the target
+// 	var tgtElt string
+// 	var tgtArgType string
+// 	var tgtArgIndex int
 
-	getTarget(prgrm, inp3, fp, &tgtElt, &tgtArgType, &tgtArgIndex, &tgtPkg, &tgtFn, &tgtExpr)
+// 	getTarget(prgrm, inp3, fp, &tgtElt, &tgtArgType, &tgtArgIndex, &tgtPkg, &tgtFn, &tgtExpr)
 
-	tgtExprAtomicOp, _, _, err := prgrm.GetOperation(&tgtExpr)
-	if err != nil {
-		panic(err)
-	}
+// 	tgtExprAtomicOp, _, _, err := prgrm.GetOperation(&tgtExpr)
+// 	if err != nil {
+// 		panic(err)
+// 	}
 
-	elts := GetInferActions(prgrm, inp1, fp)
-	eltIdx := types.Read_ptr(prgrm.Memory, ast.GetFinalOffset(prgrm, fp, inp2))
-	eltType := elts[eltIdx*2]
-	elt := elts[eltIdx*2+1]
+// 	elts := GetInferActions(prgrm, inp1, fp)
+// 	eltIdx := types.Read_ptr(prgrm.Memory, ast.GetFinalOffset(prgrm, fp, inp2))
+// 	eltType := elts[eltIdx*2]
+// 	elt := elts[eltIdx*2+1]
 
-	switch eltType {
-	case "arg":
-		switch tgtElt {
-		case "arg":
-			if tgtArgType == "inp" {
-				tgtExprAtomicOp.Inputs[tgtArgIndex] = readArgAff(prgrm, elt, &tgtFn)
-			} else {
-				tgtExprAtomicOp.Outputs[tgtArgIndex] = readArgAff(prgrm, elt, &tgtFn)
-			}
-		case "strct":
+// 	switch eltType {
+// 	case "arg":
+// 		switch tgtElt {
+// 		case "arg":
+// 			if tgtArgType == "inp" {
+// 				tgtExprAtomicOp.Inputs[tgtArgIndex] = readArgAff(prgrm, elt, &tgtFn)
+// 			} else {
+// 				tgtExprAtomicOp.Outputs[tgtArgIndex] = readArgAff(prgrm, elt, &tgtFn)
+// 			}
+// 		case "strct":
 
-		case "prgrm":
+// 		case "prgrm":
 
-		}
-	case "expr":
-		if expr, err := tgtFn.GetExpressionByLabel(prgrm, elt); err == nil {
-			_ = expr
-			switch tgtElt {
-			case "arg":
+// 		}
+// 	case "expr":
+// 		if expr, err := tgtFn.GetExpressionByLabel(prgrm, elt); err == nil {
+// 			_ = expr
+// 			switch tgtElt {
+// 			case "arg":
 
-			case "fn":
+// 			case "fn":
 
-			case "prgrm":
+// 			case "prgrm":
 
-			}
-		} else {
-			panic(err)
-		}
-	case "fn":
-		if fn, err := tgtPkg.GetFunction(prgrm, elt); err == nil {
-			_ = fn
-			switch tgtElt {
-			case "arg":
+// 			}
+// 		} else {
+// 			panic(err)
+// 		}
+// 	case "fn":
+// 		if fn, err := tgtPkg.GetFunction(prgrm, elt); err == nil {
+// 			_ = fn
+// 			switch tgtElt {
+// 			case "arg":
 
-			case "expr":
+// 			case "expr":
 
-			case "Pkg":
+// 			case "Pkg":
 
-			case "prgrm":
+// 			case "prgrm":
 
-			}
-		} else {
-			panic(err)
-		}
-	case "strct":
-		switch tgtElt {
-		case "arg":
+// 			}
+// 		} else {
+// 			panic(err)
+// 		}
+// 	case "strct":
+// 		switch tgtElt {
+// 		case "arg":
 
-		case "fn":
+// 		case "fn":
 
-		case "Pkg":
+// 		case "Pkg":
 
-		}
-	case "Pkg":
-		if pkg, err := prgrm.GetPackage(elt); err == nil {
-			_ = pkg
-			switch tgtElt {
-			case "Pkg":
+// 		}
+// 	case "Pkg":
+// 		if pkg, err := prgrm.GetPackage(elt); err == nil {
+// 			_ = pkg
+// 			switch tgtElt {
+// 			case "Pkg":
 
-			}
-		} else {
-			panic(err)
-		}
-		// case "prgrm":
-		// 	switch tgtElt {
-		// 	case "prgrm":
-		// 		affs = append(affs, "Run program")
-		// 	}
-	}
+// 			}
+// 		} else {
+// 			panic(err)
+// 		}
+// 		// case "prgrm":
+// 		// 	switch tgtElt {
+// 		// 	case "prgrm":
+// 		// 		affs = append(affs, "Run program")
+// 		// 	}
+// 	}
 
-	// returning to previous state
-	prgrm.CurrentPackage = prevPkgIdx
-	prevPkg.CurrentFunction = prevFnIdx
-	prevFn.CurrentExpression = prevExpr
-}
+// 	// returning to previous state
+// 	prgrm.CurrentPackage = prevPkgIdx
+// 	prevPkg.CurrentFunction = prevFnIdx
+// 	prevFn.CurrentExpression = prevExpr
+// }
 
-func opAffRequest(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	inp1, inp2, inp3 := inputs[0].Arg, inputs[1].Arg, inputs[2].Arg
+// func opAffRequest(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
+// 	inp1, inp2, inp3 := inputs[0].Arg, inputs[1].Arg, inputs[2].Arg
 
-	call := prgrm.GetCurrentCall()
-	expr := call.Operator.Expressions[call.Line]
-	fp := inputs[0].FramePointer
+// 	call := prgrm.GetCurrentCall()
+// 	expr := call.Operator.Expressions[call.Line]
+// 	fp := inputs[0].FramePointer
 
-	prevPkgIdx := prgrm.CurrentPackage
-	prevPkg, err := prgrm.GetPackageFromArray(prevPkgIdx)
-	if err != nil {
-		panic(err)
-	}
+// 	prevPkgIdx := prgrm.CurrentPackage
+// 	prevPkg, err := prgrm.GetPackageFromArray(prevPkgIdx)
+// 	if err != nil {
+// 		panic(err)
+// 	}
 
-	prevFnIdx := prevPkg.CurrentFunction
-	prevFn, err := prgrm.GetFunctionFromArray(prevFnIdx)
-	if err != nil {
-		panic(err)
-	}
-	prevExpr := prevFn.CurrentExpression
+// 	prevFnIdx := prevPkg.CurrentFunction
+// 	prevFn, err := prgrm.GetFunctionFromArray(prevFnIdx)
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	prevExpr := prevFn.CurrentExpression
 
-	var tgtPkg = ast.CXPackage(*prevPkg)
+// 	var tgtPkg = ast.CXPackage(*prevPkg)
 
-	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
-	if err != nil {
-		panic(err)
-	}
+// 	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+// 	if err != nil {
+// 		panic(err)
+// 	}
 
-	cxAtomicOpFunction, err := prgrm.GetFunctionFromArray(cxAtomicOp.Function)
-	if err != nil {
-		panic(err)
-	}
+// 	cxAtomicOpFunction, err := prgrm.GetFunctionFromArray(cxAtomicOp.Function)
+// 	if err != nil {
+// 		panic(err)
+// 	}
 
-	var tgtFn = ast.CXFunction(*cxAtomicOpFunction)
-	var tgtExpr = ast.CXExpression(*prevExpr)
+// 	var tgtFn = ast.CXFunction(*cxAtomicOpFunction)
+// 	var tgtExpr = ast.CXExpression(*prevExpr)
 
-	// processing the target
-	var tgtElt string
-	var tgtArgType string
-	var tgtArgIndex int
+// 	// processing the target
+// 	var tgtElt string
+// 	var tgtArgType string
+// 	var tgtArgIndex int
 
-	getTarget(prgrm, inp3, fp, &tgtElt, &tgtArgType, &tgtArgIndex, &tgtPkg, &tgtFn, &tgtExpr)
+// 	getTarget(prgrm, inp3, fp, &tgtElt, &tgtArgType, &tgtArgIndex, &tgtPkg, &tgtFn, &tgtExpr)
 
-	tgtExprAtomicOp, _, _, err := prgrm.GetOperation(&tgtExpr)
-	if err != nil {
-		panic(err)
-	}
+// 	tgtExprAtomicOp, _, _, err := prgrm.GetOperation(&tgtExpr)
+// 	if err != nil {
+// 		panic(err)
+// 	}
 
-	// var affs []string
+// 	// var affs []string
 
-	elts := GetInferActions(prgrm, inp1, fp)
-	eltIdx := types.Read_ptr(prgrm.Memory, ast.GetFinalOffset(prgrm, fp, inp2))
-	eltType := elts[eltIdx*2]
-	elt := elts[eltIdx*2+1]
+// 	elts := GetInferActions(prgrm, inp1, fp)
+// 	eltIdx := types.Read_ptr(prgrm.Memory, ast.GetFinalOffset(prgrm, fp, inp2))
+// 	eltType := elts[eltIdx*2]
+// 	elt := elts[eltIdx*2+1]
 
-	switch eltType {
-	case "arg":
-		switch tgtElt {
-		case "arg":
-			if tgtArgType == "inp" {
-				// tgtExpr.ProgramInput[tgtArgIndex] = readArgAff(elt, &tgtFn)
-				*readArgAff(prgrm, elt, &tgtFn) = *tgtExprAtomicOp.Inputs[tgtArgIndex]
-			} else {
-				// tgtExpr.ProgramOutput[tgtArgIndex] = readArgAff(elt, &tgtFn)
-				*readArgAff(prgrm, elt, &tgtFn) = *tgtExprAtomicOp.Outputs[tgtArgIndex]
-			}
-		case "strct":
+// 	switch eltType {
+// 	case "arg":
+// 		switch tgtElt {
+// 		case "arg":
+// 			if tgtArgType == "inp" {
+// 				// tgtExpr.ProgramInput[tgtArgIndex] = readArgAff(elt, &tgtFn)
+// 				*readArgAff(prgrm, elt, &tgtFn) = *tgtExprAtomicOp.Inputs[tgtArgIndex]
+// 			} else {
+// 				// tgtExpr.ProgramOutput[tgtArgIndex] = readArgAff(elt, &tgtFn)
+// 				*readArgAff(prgrm, elt, &tgtFn) = *tgtExprAtomicOp.Outputs[tgtArgIndex]
+// 			}
+// 		case "strct":
 
-		case "prgrm":
-			fmt.Println(ast.GetPrintableValue(prgrm, fp, readArgAff(prgrm, elt, &tgtFn)))
-		}
-	case "expr":
-		if expr, err := tgtFn.GetExpressionByLabel(prgrm, elt); err == nil {
-			_ = expr
-			switch tgtElt {
-			case "arg":
+// 		case "prgrm":
+// 			fmt.Println(ast.GetPrintableValue(prgrm, fp, readArgAff(prgrm, elt, &tgtFn)))
+// 		}
+// 	case "expr":
+// 		if expr, err := tgtFn.GetExpressionByLabel(prgrm, elt); err == nil {
+// 			_ = expr
+// 			switch tgtElt {
+// 			case "arg":
 
-			case "fn":
+// 			case "fn":
 
-			case "prgrm":
+// 			case "prgrm":
 
-			}
-		} else {
-			panic(err)
-		}
-	case "fn":
-		fn := ast.Natives[ast.OpCodes[elt]]
-		if fn == nil {
-			var err error
-			fn, err = tgtPkg.GetFunction(prgrm, elt)
-			if err != nil {
-				panic(err)
-			}
-		}
-		_ = fn
-		switch tgtElt {
-		case "arg":
+// 			}
+// 		} else {
+// 			panic(err)
+// 		}
+// 	case "fn":
+// 		fn := ast.Natives[ast.OpCodes[elt]]
+// 		if fn == nil {
+// 			var err error
+// 			fn, err = tgtPkg.GetFunction(prgrm, elt)
+// 			if err != nil {
+// 				panic(err)
+// 			}
+// 		}
+// 		_ = fn
+// 		switch tgtElt {
+// 		case "arg":
 
-		case "expr":
+// 		case "expr":
 
-		case "Pkg":
+// 		case "Pkg":
 
-		case "prgrm":
+// 		case "prgrm":
 
-		}
-	case "strct":
-		switch tgtElt {
-		case "arg":
-			if tgtArgType == "inp" {
-				// tgtExpr.ProgramInput[tgtArgIndex] = readArgAff(elt, &tgtFn)
-				readStrctAff(prgrm, elt, &tgtPkg).AddField(tgtExprAtomicOp.Inputs[tgtArgIndex])
-			} else {
-				// tgtExpr.ProgramOutput[tgtArgIndex] = readArgAff(elt, &tgtFn)
-				readStrctAff(prgrm, elt, &tgtPkg).AddField(tgtExprAtomicOp.Outputs[tgtArgIndex])
-			}
-		case "fn":
+// 		}
+// 	case "strct":
+// 		switch tgtElt {
+// 		case "arg":
+// 			if tgtArgType == "inp" {
+// 				// tgtExpr.ProgramInput[tgtArgIndex] = readArgAff(elt, &tgtFn)
+// 				readStrctAff(prgrm, elt, &tgtPkg).AddField(tgtExprAtomicOp.Inputs[tgtArgIndex])
+// 			} else {
+// 				// tgtExpr.ProgramOutput[tgtArgIndex] = readArgAff(elt, &tgtFn)
+// 				readStrctAff(prgrm, elt, &tgtPkg).AddField(tgtExprAtomicOp.Outputs[tgtArgIndex])
+// 			}
+// 		case "fn":
 
-		case "Pkg":
+// 		case "Pkg":
 
-		}
-	case "Pkg":
-		if pkg, err := prgrm.GetPackage(elt); err == nil {
-			_ = pkg
-			switch tgtElt {
-			case "Pkg":
+// 		}
+// 	case "Pkg":
+// 		if pkg, err := prgrm.GetPackage(elt); err == nil {
+// 			_ = pkg
+// 			switch tgtElt {
+// 			case "Pkg":
 
-			}
-		} else {
-			panic(err)
-		}
-	case "prgrm":
-		switch tgtElt {
-		case "arg":
-			if tgtArgType == "inp" {
-				fmt.Println(ast.GetPrintableValue(prgrm, fp, tgtExprAtomicOp.Inputs[tgtArgIndex]))
-			} else {
-				fmt.Println(ast.GetPrintableValue(prgrm, fp, tgtExprAtomicOp.Outputs[tgtArgIndex]))
-			}
-		case "prgrm":
-			// affs = append(affs, "Run program")
-		}
-	}
+// 			}
+// 		} else {
+// 			panic(err)
+// 		}
+// 	case "prgrm":
+// 		switch tgtElt {
+// 		case "arg":
+// 			if tgtArgType == "inp" {
+// 				fmt.Println(ast.GetPrintableValue(prgrm, fp, tgtExprAtomicOp.Inputs[tgtArgIndex]))
+// 			} else {
+// 				fmt.Println(ast.GetPrintableValue(prgrm, fp, tgtExprAtomicOp.Outputs[tgtArgIndex]))
+// 			}
+// 		case "prgrm":
+// 			// affs = append(affs, "Run program")
+// 		}
+// 	}
 
-	// returning to previous state
-	prgrm.CurrentPackage = prevPkgIdx
-	prevPkg.CurrentFunction = prevFnIdx
-	prevFn.CurrentExpression = prevExpr
-}
+// 	// returning to previous state
+// 	prgrm.CurrentPackage = prevPkgIdx
+// 	prevPkg.CurrentFunction = prevFnIdx
+// 	prevFn.CurrentExpression = prevExpr
+// }
 
 func opAffQuery(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	inp1, out1 := inputs[0].Arg, outputs[0].Arg
@@ -1234,23 +1234,23 @@ func opAffQuery(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 					var prgrmOffsetB [4]byte
 					types.Write_ptr(prgrmOffsetB[:], 0, prgrmOffset)
 
-					predInp := fn.Inputs[0]
+					predInp := prgrm.GetCXArgFromArray(fn.Inputs[0])
 
 					if predInp.Type == types.STRUCT {
 						if predInp.StructType != nil {
 							switch predInp.StructType.Name {
 							case "Argument":
-								QueryArgument(prgrm, fn, expr, argOffsetB[:], &affOffset)
+								QueryArgument(prgrm, fn, &expr, argOffsetB[:], &affOffset)
 							case "Expression":
-								QueryExpressions(prgrm, fn, expr, exprOffsetB[:], &affOffset)
+								QueryExpressions(prgrm, fn, &expr, exprOffsetB[:], &affOffset)
 							case "Function":
-								QueryFunction(prgrm, fn, expr, fnOffsetB[:], &affOffset)
+								QueryFunction(prgrm, fn, &expr, fnOffsetB[:], &affOffset)
 							case "Structure":
-								QueryStructure(prgrm, fn, expr, strctOffsetB[:], &affOffset)
+								QueryStructure(prgrm, fn, &expr, strctOffsetB[:], &affOffset)
 							case "Caller":
-								QueryCaller(prgrm, fn, expr, callerOffsetB[:], &affOffset)
+								QueryCaller(prgrm, fn, &expr, callerOffsetB[:], &affOffset)
 							case "Program":
-								QueryProgram(prgrm, fn, expr, prgrmOffsetB[:], &affOffset)
+								QueryProgram(prgrm, fn, &expr, prgrmOffsetB[:], &affOffset)
 							}
 						}
 					}

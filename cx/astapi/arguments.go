@@ -333,7 +333,8 @@ func GetAccessibleArgsForFunctionByType(cxprogram *cxast.CXProgram, packageLocat
 		return nil, err
 	}
 
-	for _, global := range pkg.Globals {
+	for _, globalIdx := range pkg.Globals {
+		global := cxprogram.GetCXArg(globalIdx)
 		if global.IsStruct {
 			for _, field := range global.StructType.Fields {
 				if field.Type == argType {
@@ -350,7 +351,8 @@ func GetAccessibleArgsForFunctionByType(cxprogram *cxast.CXProgram, packageLocat
 		if err != nil {
 			panic(err)
 		}
-		for _, global := range imp.Globals {
+		for _, globalIdx := range imp.Globals {
+			global := cxprogram.GetCXArg(globalIdx)
 			if global.IsStruct {
 				for _, field := range global.StructType.Fields {
 					if field.Type == argType {
@@ -370,7 +372,7 @@ func GetAccessibleArgsForFunctionByType(cxprogram *cxast.CXProgram, packageLocat
 
 	// Get all args from expression inputs
 	for _, expr := range fn.Expressions {
-		cxAtomicOp, _, _, err := cxprogram.GetOperation(expr)
+		cxAtomicOp, _, _, err := cxprogram.GetOperation(&expr)
 		if err != nil {
 			panic(err)
 		}

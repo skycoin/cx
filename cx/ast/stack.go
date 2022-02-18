@@ -26,7 +26,8 @@ func (cxprogram *CXProgram) PrintStack() {
 
 		fmt.Printf(">>> %s()\n", op.Name)
 
-		for _, inp := range op.Inputs {
+		for _, inpIdx := range op.Inputs {
+			inp := cxprogram.GetCXArgFromArray(inpIdx)
 			fmt.Println("ProgramInput")
 			fmt.Printf("\t%s : %s() : %s\n", stackValueHeader(inp.ArgDetails.FileName, inp.ArgDetails.FileLine), op.Name, GetPrintableValue(cxprogram, fp, inp))
 
@@ -37,7 +38,8 @@ func (cxprogram *CXProgram) PrintStack() {
 			dupNames = append(dupNames, inpPkg.Name+inp.Name)
 		}
 
-		for _, out := range op.Outputs {
+		for _, outIdx := range op.Outputs {
+			out := cxprogram.GetCXArgFromArray(outIdx)
 			fmt.Println("ProgramOutput")
 			fmt.Printf("\t%s : %s() : %s\n", stackValueHeader(out.ArgDetails.FileName, out.ArgDetails.FileLine), op.Name, GetPrintableValue(cxprogram, fp, out))
 
@@ -51,7 +53,7 @@ func (cxprogram *CXProgram) PrintStack() {
 		// fmt.Println("Expressions")
 		exprs := ""
 		for _, expr := range op.Expressions {
-			cxAtomicOp, _, _, err := cxprogram.GetOperation(expr)
+			cxAtomicOp, _, _, err := cxprogram.GetOperation(&expr)
 			if err != nil {
 				panic(err)
 			}
