@@ -224,7 +224,7 @@ func BuildStrPackages(prgrm *CXProgram, ast *string) {
 // `buf`.
 func getFormattedParam(prgrm *CXProgram, params []*CXArgument, pkg *CXPackage, buf *bytes.Buffer) {
 	for i, param := range params {
-		elt := param.GetAssignmentElement()
+		elt := param.GetAssignmentElement(prgrm)
 
 		// Checking if this argument comes from an imported package.
 		externalPkg := false
@@ -256,7 +256,7 @@ func getNonCollectionValue(prgrm *CXProgram, fp types.Pointer, arg, elt *CXArgum
 		return fmt.Sprintf("%v", types.Read_ptr(prgrm.Memory, GetFinalOffset(prgrm, fp, elt)))
 	}
 	if arg.IsSlice {
-		return fmt.Sprintf("%v", types.GetSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, fp, elt), GetSize(elt)))
+		return fmt.Sprintf("%v", types.GetSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, fp, elt), GetSize(prgrm, elt)))
 	}
 	switch typ {
 	case "bool":
@@ -355,7 +355,7 @@ func ReadSliceElements(prgrm *CXProgram, fp types.Pointer, arg, elt *CXArgument,
 // GetPrintableValue ...
 func GetPrintableValue(prgrm *CXProgram, fp types.Pointer, arg *CXArgument) string {
 	var typ string
-	elt := arg.GetAssignmentElement()
+	elt := arg.GetAssignmentElement(prgrm)
 	if elt.StructType != nil {
 		// then it's struct type
 		typ = elt.StructType.Name
@@ -632,7 +632,8 @@ func GetFormattedName(prgrm *CXProgram, arg *CXArgument, includePkg bool) string
 	name := getFormattedDerefs(prgrm, arg, includePkg)
 
 	// Adding as suffixes all the fields.
-	for _, fld := range arg.Fields {
+	for _, fldIdx := range arg.Fields {
+		fld := prgrm.GetCXArgFromArray(fldIdx)
 		name = fmt.Sprintf("%s.%s", name, getFormattedDerefs(prgrm, fld, includePkg))
 	}
 
@@ -663,7 +664,7 @@ func formatParameters(prgrm *CXProgram, params []*CXArgument) string {
 // GetFormattedType builds a string with the CXGO type representation of `arg`.
 func GetFormattedType(prgrm *CXProgram, arg *CXArgument) string {
 	typ := ""
-	elt := arg.GetAssignmentElement()
+	elt := arg.GetAssignmentElement(prgrm)
 
 	// this is used to know what arg.Lengths index to use
 	// used for cases like [5]*[3]i32, where we jump to another decl spec

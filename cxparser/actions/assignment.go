@@ -58,7 +58,7 @@ func StructLiteralAssignment(prgrm *ast.CXProgram, to []ast.CXExpression, from [
 
 	// If the last expression in `from` is declared as pointer
 	// then it means the whole struct literal needs to be passed by reference.
-	if !hasDeclSpec(lastFromAtomicOp.Outputs[0].GetAssignmentElement(), constants.DECL_POINTER) {
+	if !hasDeclSpec(lastFromAtomicOp.Outputs[0].GetAssignmentElement(prgrm), constants.DECL_POINTER) {
 		return assignStructLiteralFields(prgrm, to, from, toCXAtomicOp.Outputs[0].Name)
 	} else {
 		// And we also need an auxiliary variable to point to,

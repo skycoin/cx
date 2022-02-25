@@ -51,7 +51,8 @@ func regexpCompile(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXV
 	// TODO: I don't know what would happen if the user uses the same regex
 	// in two parts of a CX program. They'll be using the same instance
 	// internally.
-	accessExp := []*ast.CXArgument{expFld}
+	expFldIdx := prgrm.AddCXArgInArray(expFld)
+	accessExp := []ast.CXArgumentIndex{expFldIdx}
 	reg.Fields = accessExp
 	types.Write_str(prgrm, prgrm.Memory, ast.GetFinalOffset(prgrm, outputs[0].FramePointer, &reg), exp)
 	// Storing `Regexp` instance.
@@ -113,7 +114,8 @@ func opRegexpFind(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVa
 	}
 
 	// Getting corresponding `Regexp` instance.
-	accessExp := []*ast.CXArgument{expFld}
+	expFldIdx := prgrm.AddCXArgInArray(expFld)
+	accessExp := []ast.CXArgumentIndex{expFldIdx}
 	reg.Fields = accessExp
 	exp := types.Read_str(prgrm.Memory, ast.GetFinalOffset(prgrm, inputs[0].FramePointer, &reg))
 	r := regexps[exp]

@@ -66,7 +66,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 	}
 
 	if len(prevExpr2AtomicOp.Outputs[0].Fields) > 0 {
-		elt = prevExpr2AtomicOp.Outputs[0].Fields[len(prevExpr2AtomicOp.Outputs[0].Fields)-1]
+		elt = prgrm.GetCXArgFromArray(prevExpr2AtomicOp.Outputs[0].Fields[len(prevExpr2AtomicOp.Outputs[0].Fields)-1])
 	} else {
 		elt = prevExpr2AtomicOp.Outputs[0]
 	}
@@ -81,8 +81,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 	}
 
 	if len(prevExpr2AtomicOp.Outputs[0].Fields) > 0 {
-		fld := prevExpr2AtomicOp.Outputs[0].Fields[len(prevExpr2AtomicOp.Outputs[0].Fields)-1]
-
+		fld := prgrm.GetCXArgFromArray(prevExpr2AtomicOp.Outputs[0].Fields[len(prevExpr2AtomicOp.Outputs[0].Fields)-1])
 		if postExprsAtomicOp.Operator == nil {
 			// expr.AddInput(postExprs[len(postExprs)-1].ProgramOutput[0])
 			indexIdx := prgrm.AddCXArgInArray(postExprsAtomicOp.Outputs[0])
@@ -105,7 +104,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 			// we create a gensym for it
 			idxSym := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(prgrm.GetCXArgFromArray(postExprsAtomicOp.Operator.Outputs[0]).Type)
 			idxSym.Size = prgrm.GetCXArgFromArray(postExprsAtomicOp.Operator.Outputs[0]).Size
-			idxSym.TotalSize = ast.GetSize(prgrm.GetCXArgFromArray(postExprsAtomicOp.Operator.Outputs[0]))
+			idxSym.TotalSize = ast.GetSize(prgrm, prgrm.GetCXArgFromArray(postExprsAtomicOp.Operator.Outputs[0]))
 
 			idxSym.Package = postExprsAtomicOp.Package
 			idxSym.PreviouslyDeclared = true
@@ -344,7 +343,8 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		}
 
 		fld.AddType(types.IDENTIFIER).AddPackage(leftPkg)
-		left.Fields = append(left.Fields, fld)
+		fldIdx := prgrm.AddCXArgInArray(fld)
+		left.Fields = append(left.Fields, fldIdx)
 		return prevExprs
 	}
 
@@ -428,7 +428,8 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		}
 		fld.AddType(types.IDENTIFIER).AddPackage(leftPkg)
 
-		left.Fields = append(left.Fields, fld)
+		fldIdx := prgrm.AddCXArgInArray(fld)
+		left.Fields = append(left.Fields, fldIdx)
 	}
 
 	return prevExprs

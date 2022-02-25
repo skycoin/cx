@@ -87,7 +87,7 @@ type CXArgument struct {
 	// `DereferenceOperations` is found, we consume a field from
 	// `Field` to determine the new offset to the desired
 	// value.
-	Fields []*CXArgument
+	Fields []CXArgumentIndex
 
 	// Inputs defines the input parameters of a first-class
 	// function. The `CXArgument` is of type `TYPE_FUNC` if
@@ -252,19 +252,19 @@ grep -rn "PassBy" .
 //                             `CXArgument` Getters
 
 // GetAssignmentElement ...
-func (arg *CXArgument) GetAssignmentElement() *CXArgument {
+func (arg *CXArgument) GetAssignmentElement(prgrm *CXProgram) *CXArgument {
 	if len(arg.Fields) > 0 {
-		return arg.Fields[len(arg.Fields)-1].GetAssignmentElement()
+		return prgrm.GetCXArgFromArray(arg.Fields[len(arg.Fields)-1]).GetAssignmentElement(prgrm)
 	}
 	return arg
 
 }
 
 // GetType ...
-func (arg *CXArgument) GetType() types.Code {
+func (arg *CXArgument) GetType(prgrm *CXProgram) types.Code {
 	fieldCount := len(arg.Fields)
 	if fieldCount > 0 {
-		return arg.Fields[fieldCount-1].GetType()
+		return prgrm.GetCXArgFromArray(arg.Fields[fieldCount-1]).GetType(prgrm)
 	}
 
 	if arg.Type == types.POINTER {

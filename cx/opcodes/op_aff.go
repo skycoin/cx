@@ -95,7 +95,7 @@ func CallAffPredicate(prgrm *ast.CXProgram, fn *ast.CXFunction, predValue []byte
 	return types.GetSlice_byte(prgrm.Memory, ast.GetFinalOffset(prgrm,
 		newCall.FramePointer,
 		prgrm.GetCXArgFromArray(newCall.Operator.Outputs[0])),
-		ast.GetSize(prgrm.GetCXArgFromArray(newCall.Operator.Outputs[0])))[0]
+		ast.GetSize(prgrm, prgrm.GetCXArgFromArray(newCall.Operator.Outputs[0])))[0]
 }
 
 // This might not make sense, as we can use normal programming to create conditions on values
@@ -135,7 +135,7 @@ func queryParam(prgrm *ast.CXProgram, fn *ast.CXFunction, args []*ast.CXArgument
 	for i, arg := range args {
 
 		var typOffset types.Pointer
-		elt := arg.GetAssignmentElement()
+		elt := arg.GetAssignmentElement(prgrm)
 		if elt.StructType != nil {
 			strctTypePkg, err := prgrm.GetPackageFromArray(elt.StructType.Package)
 			if err != nil {

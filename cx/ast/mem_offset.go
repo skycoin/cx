@@ -18,9 +18,9 @@ type DereferenceStruct struct {
 }
 
 // GetSize ...
-func GetSize(arg *CXArgument) types.Pointer {
+func GetSize(prgrm *CXProgram, arg *CXArgument) types.Pointer {
 	if len(arg.Fields) > 0 {
-		return GetSize(arg.Fields[len(arg.Fields)-1])
+		return GetSize(prgrm, prgrm.GetCXArgFromArray(arg.Fields[len(arg.Fields)-1]))
 	}
 
 	derefCount := len(arg.DereferenceOperations)
@@ -88,7 +88,8 @@ func GetFinalOffset(prgrm *CXProgram, fp types.Pointer, arg *CXArgument) types.P
 	//Why is finalOffset fed in as a pointer?
 
 	finalOffset = CalculateDereferences(prgrm, arg, finalOffset, fp)
-	for _, fld := range arg.Fields {
+	for _, fldIdx := range arg.Fields {
+		fld := prgrm.GetCXArgFromArray(fldIdx)
 		// elt = fld
 		finalOffset += fld.Offset
 		finalOffset = CalculateDereferences(prgrm, fld, finalOffset, fp)

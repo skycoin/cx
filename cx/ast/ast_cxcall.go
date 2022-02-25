@@ -45,7 +45,7 @@ func popStack(prgrm *CXProgram, call *CXCall) error {
 		}
 
 		types.WriteSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, returnFP, cxAtomicOp.Outputs[i]),
-			types.GetSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, fp, out), GetSize(out)))
+			types.GetSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, fp, out), GetSize(prgrm, out)))
 	}
 
 	// return the stack pointer to its previous state
@@ -65,7 +65,7 @@ func wipeDeclarationMemory(prgrm *CXProgram, expr *CXExpression) error {
 
 	newCall := &prgrm.CallStack[prgrm.CallCounter]
 	newFP := newCall.FramePointer
-	size := GetSize(cxAtomicOp.Outputs[0])
+	size := GetSize(prgrm, cxAtomicOp.Outputs[0])
 	for c := types.Pointer(0); c < size; c++ {
 		prgrm.Memory[newFP+cxAtomicOp.Outputs[0].Offset+c] = 0
 	}
@@ -81,7 +81,7 @@ func processBuiltInOperators(prgrm *CXProgram, expr *CXExpression, globalInputs 
 
 	if IsOperator(cxAtomicOp.Operator.AtomicOPCode) {
 		// TODO: resolve this at compile time
-		atomicType := cxAtomicOp.Inputs[0].GetType()
+		atomicType := cxAtomicOp.Inputs[0].GetType(prgrm)
 		cxAtomicOp.Operator = GetTypedOperator(atomicType, cxAtomicOp.Operator.AtomicOPCode)
 	}
 	inputs := cxAtomicOp.Inputs
@@ -187,7 +187,7 @@ func processNonAtomicOperators(prgrm *CXProgram, expr *CXExpression, fp types.Po
 			types.Write_ptr(finalOffsetB[:], 0, finalOffset)
 			byts = finalOffsetB[:]
 		} else {
-			size := GetSize(inp)
+			size := GetSize(prgrm, inp)
 			byts = prgrm.Memory[finalOffset : finalOffset+size]
 		}
 

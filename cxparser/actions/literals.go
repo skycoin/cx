@@ -85,7 +85,7 @@ func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []a
 				out.PointerTargetType = outArg.PointerTargetType
 				out.StructType = outArg.StructType
 				out.Size = outArg.Size
-				out.TotalSize = ast.GetSize(outArg)
+				out.TotalSize = ast.GetSize(prgrm, outArg)
 				out.PreviouslyDeclared = true
 
 				exprAtomicOp.Outputs = nil
@@ -171,7 +171,8 @@ func PrimaryStructLiteral(prgrm *ast.CXProgram, ident string, strctFlds []ast.CX
 				cxAtomicOp.Outputs[0].Size = strct.Size
 				cxAtomicOp.Outputs[0].TotalSize = strct.Size
 				cxAtomicOp.Outputs[0].Name = ident
-				cxAtomicOp.Outputs[0].Fields = append(cxAtomicOp.Outputs[0].Fields, fld)
+				fldIdx := prgrm.AddCXArgInArray(fld)
+				cxAtomicOp.Outputs[0].Fields = append(cxAtomicOp.Outputs[0].Fields, fldIdx)
 				result = append(result, expr)
 			}
 		} else {
@@ -211,7 +212,8 @@ func PrimaryStructLiteralExternal(prgrm *ast.CXProgram, impName string, ident st
 					cxAtomicOp.Outputs[0].Size = strct.Size
 					cxAtomicOp.Outputs[0].TotalSize = strct.Size
 					cxAtomicOp.Outputs[0].Name = ident
-					cxAtomicOp.Outputs[0].Fields = append(cxAtomicOp.Outputs[0].Fields, fld)
+					fldIdx := prgrm.AddCXArgInArray(fld)
+					cxAtomicOp.Outputs[0].Fields = append(cxAtomicOp.Outputs[0].Fields, fldIdx)
 					result = append(result, expr)
 				}
 			} else {

@@ -61,7 +61,7 @@ func (value *CXValue) Get_ptr(prgrm *CXProgram) types.Pointer {
 }
 
 func (value *CXValue) Get_bytes(prgrm *CXProgram) []byte {
-	return types.GetSlice_byte(prgrm.Memory, value.Offset, GetSize(value.Arg))
+	return types.GetSlice_byte(prgrm.Memory, value.Offset, GetSize(prgrm, value.Arg))
 }
 
 func (value *CXValue) Get_str(prgrm *CXProgram) string {
@@ -69,77 +69,77 @@ func (value *CXValue) Get_str(prgrm *CXProgram) string {
 }
 
 func (value *CXValue) GetSlice_i8(prgrm *CXProgram) []int8 {
-	if mem := GetSliceData(prgrm, types.Read_ptr(prgrm.Memory, value.Offset), value.Arg.GetAssignmentElement().Size); mem != nil {
+	if mem := GetSliceData(prgrm, types.Read_ptr(prgrm.Memory, value.Offset), value.Arg.GetAssignmentElement(prgrm).Size); mem != nil {
 		return types.ReadSlice_i8(mem, 0)
 	}
 	return nil
 }
 
 func (value *CXValue) GetSlice_i16(prgrm *CXProgram) []int16 {
-	if mem := GetSliceData(prgrm, types.Read_ptr(prgrm.Memory, value.Offset), value.Arg.GetAssignmentElement().Size); mem != nil {
+	if mem := GetSliceData(prgrm, types.Read_ptr(prgrm.Memory, value.Offset), value.Arg.GetAssignmentElement(prgrm).Size); mem != nil {
 		return types.ReadSlice_i16(mem, 0)
 	}
 	return nil
 }
 
 func (value *CXValue) GetSlice_i32(prgrm *CXProgram) []int32 {
-	if mem := GetSliceData(prgrm, types.Read_ptr(prgrm.Memory, value.Offset), value.Arg.GetAssignmentElement().Size); mem != nil {
+	if mem := GetSliceData(prgrm, types.Read_ptr(prgrm.Memory, value.Offset), value.Arg.GetAssignmentElement(prgrm).Size); mem != nil {
 		return types.ReadSlice_i32(mem, 0)
 	}
 	return nil
 }
 
 func (value *CXValue) GetSlice_i64(prgrm *CXProgram) []int64 {
-	if mem := GetSliceData(prgrm, types.Read_ptr(prgrm.Memory, value.Offset), value.Arg.GetAssignmentElement().Size); mem != nil {
+	if mem := GetSliceData(prgrm, types.Read_ptr(prgrm.Memory, value.Offset), value.Arg.GetAssignmentElement(prgrm).Size); mem != nil {
 		return types.ReadSlice_i64(mem, 0)
 	}
 	return nil
 }
 
 func (value *CXValue) GetSlice_ui8(prgrm *CXProgram) []uint8 {
-	if mem := GetSliceData(prgrm, types.Read_ptr(prgrm.Memory, value.Offset), value.Arg.GetAssignmentElement().Size); mem != nil {
+	if mem := GetSliceData(prgrm, types.Read_ptr(prgrm.Memory, value.Offset), value.Arg.GetAssignmentElement(prgrm).Size); mem != nil {
 		return types.ReadSlice_ui8(mem, 0)
 	}
 	return nil
 }
 
 func (value *CXValue) GetSlice_ui16(prgrm *CXProgram) []uint16 {
-	if mem := GetSliceData(prgrm, types.Read_ptr(prgrm.Memory, value.Offset), value.Arg.GetAssignmentElement().Size); mem != nil {
+	if mem := GetSliceData(prgrm, types.Read_ptr(prgrm.Memory, value.Offset), value.Arg.GetAssignmentElement(prgrm).Size); mem != nil {
 		return types.ReadSlice_ui16(mem, 0)
 	}
 	return nil
 }
 
 func (value *CXValue) GetSlice_ui32(prgrm *CXProgram) []uint32 {
-	if mem := GetSliceData(prgrm, types.Read_ptr(prgrm.Memory, value.Offset), value.Arg.GetAssignmentElement().Size); mem != nil {
+	if mem := GetSliceData(prgrm, types.Read_ptr(prgrm.Memory, value.Offset), value.Arg.GetAssignmentElement(prgrm).Size); mem != nil {
 		return types.ReadSlice_ui32(mem, 0)
 	}
 	return nil
 }
 
 func (value *CXValue) GetSlice_ui64(prgrm *CXProgram) []uint64 {
-	if mem := GetSliceData(prgrm, types.Read_ptr(prgrm.Memory, value.Offset), value.Arg.GetAssignmentElement().Size); mem != nil {
+	if mem := GetSliceData(prgrm, types.Read_ptr(prgrm.Memory, value.Offset), value.Arg.GetAssignmentElement(prgrm).Size); mem != nil {
 		return types.ReadSlice_ui64(mem, 0)
 	}
 	return nil
 }
 
 func (value *CXValue) GetSlice_f32(prgrm *CXProgram) []float32 {
-	if mem := GetSliceData(prgrm, types.Read_ptr(prgrm.Memory, value.Offset), value.Arg.GetAssignmentElement().Size); mem != nil {
+	if mem := GetSliceData(prgrm, types.Read_ptr(prgrm.Memory, value.Offset), value.Arg.GetAssignmentElement(prgrm).Size); mem != nil {
 		return types.ReadSlice_f32(mem, 0)
 	}
 	return nil
 }
 
 func (value *CXValue) GetSlice_f64(prgrm *CXProgram) []float64 {
-	if mem := GetSliceData(prgrm, types.Read_ptr(prgrm.Memory, value.Offset), value.Arg.GetAssignmentElement().Size); mem != nil {
+	if mem := GetSliceData(prgrm, types.Read_ptr(prgrm.Memory, value.Offset), value.Arg.GetAssignmentElement(prgrm).Size); mem != nil {
 		return types.ReadSlice_f64(mem, 0)
 	}
 	return nil
 }
 
 func (value *CXValue) GetSlice_bytes(prgrm *CXProgram) []byte {
-	return GetSliceData(prgrm, types.Read_ptr(prgrm.Memory, value.Offset), GetSize(value.Arg))
+	return GetSliceData(prgrm, types.Read_ptr(prgrm.Memory, value.Offset), GetSize(prgrm, value.Arg))
 }
 
 func (value *CXValue) Set_bool(prgrm *CXProgram, data bool) {

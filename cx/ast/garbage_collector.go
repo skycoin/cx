@@ -95,8 +95,8 @@ func MarkAndCompact(prgrm *CXProgram) {
 
 			// Checking if the field being accessed needs to be marked.
 			// If the root (`ptr`) is a pointer, this step is unnecessary.
-			if len(ptr.Fields) > 0 && !ptrIsPointer && ptr.Fields[len(ptr.Fields)-1].IsPointer() {
-				fld := ptr.Fields[len(ptr.Fields)-1]
+			if len(ptr.Fields) > 0 && !ptrIsPointer && prgrm.GetCXArgFromArray(ptr.Fields[len(ptr.Fields)-1]).IsPointer() {
+				fld := prgrm.GetCXArgFromArray(ptr.Fields[len(ptr.Fields)-1])
 				MarkObjectsTree(prgrm, offset+fld.Offset, fld.Type, fld.DeclarationSpecifiers[1:])
 			}
 		}
@@ -452,8 +452,8 @@ func updatePointers(prgrm *CXProgram, oldAddr, newAddr types.Pointer) {
 
 			// Checking if the field being accessed needs to be marked.
 			// If the root (`ptr`) is a pointer, this step is unnecessary.
-			if len(ptr.Fields) > 0 && !ptrIsPointer && ptr.Fields[len(ptr.Fields)-1].IsPointer() {
-				fld := ptr.Fields[len(ptr.Fields)-1]
+			if len(ptr.Fields) > 0 && !ptrIsPointer && prgrm.GetCXArgFromArray(ptr.Fields[len(ptr.Fields)-1]).IsPointer() {
+				fld := prgrm.GetCXArgFromArray(ptr.Fields[len(ptr.Fields)-1])
 
 				// Getting the offset to the object in the heap
 				heapOffset := types.Read_ptr(prgrm.Memory, offset+fld.Offset)

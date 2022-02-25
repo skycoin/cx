@@ -294,7 +294,7 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 		lastLeftExprsAtomicOpOperatorOutput := prgrm.GetCXArgFromArray(lastLeftExprsAtomicOp.Operator.Outputs[0])
 		name := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(resolveTypeForUnd(prgrm, &leftExprs[len(leftExprs)-1]))
 		name.Size = lastLeftExprsAtomicOpOperatorOutput.Size
-		name.TotalSize = ast.GetSize(lastLeftExprsAtomicOpOperatorOutput)
+		name.TotalSize = ast.GetSize(prgrm, lastLeftExprsAtomicOpOperatorOutput)
 		name.Type = lastLeftExprsAtomicOpOperatorOutput.Type
 		name.PointerTargetType = lastLeftExprsAtomicOpOperatorOutput.PointerTargetType
 		name.Package = ast.CXPackageIndex(pkg.Index)
@@ -313,7 +313,7 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 
 		lastRightExprsAtomicOpOperatorOutput := prgrm.GetCXArgFromArray(lastRightExprsAtomicOp.Operator.Outputs[0])
 		name.Size = lastRightExprsAtomicOpOperatorOutput.Size
-		name.TotalSize = ast.GetSize(lastRightExprsAtomicOpOperatorOutput)
+		name.TotalSize = ast.GetSize(prgrm, lastRightExprsAtomicOpOperatorOutput)
 		name.Type = lastRightExprsAtomicOpOperatorOutput.Type
 		name.PointerTargetType = lastRightExprsAtomicOpOperatorOutput.PointerTargetType
 		name.Package = ast.CXPackageIndex(pkg.Index)
@@ -378,7 +378,7 @@ func UnaryExpression(prgrm *ast.CXProgram, op string, prevExprs []ast.CXExpressi
 	// Some properties need to be read from the base argument
 	// due to how we calculate dereferences at the moment.
 	baseOut := lastPrevExprsAtomicOp.Outputs[0]
-	exprOut := lastPrevExprsAtomicOp.Outputs[0].GetAssignmentElement()
+	exprOut := lastPrevExprsAtomicOp.Outputs[0].GetAssignmentElement(prgrm)
 	switch op {
 	case "*":
 		exprOut.DereferenceLevels++
