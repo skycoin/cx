@@ -80,7 +80,7 @@ type CXArgument struct {
 	// `CXArgument` is an index or a slice. The elements of
 	// `Indexes` can be any `CXArgument` (for example, literals
 	// and variables).
-	Indexes []*CXArgument
+	Indexes []CXArgumentIndex
 
 	// Fields stores what fields are being accessed from the
 	// `CXArgument` and in what order. Whenever a `DEREF_FIELD` in

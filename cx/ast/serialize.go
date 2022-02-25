@@ -156,7 +156,7 @@ func serializeArgument(prgrm *CXProgram, arg *CXArgument, s *SerializedCXProgram
 	s.Arguments[argOff].DoesEscape = serializeBoolean(arg.DoesEscape)
 
 	s.Arguments[argOff].LengthsOffset, s.Arguments[argOff].LengthsSize = serializePointers(arg.Lengths, s)
-	s.Arguments[argOff].IndexesOffset, s.Arguments[argOff].IndexesSize = serializeSliceOfArguments(prgrm, arg.Indexes, s)
+	s.Arguments[argOff].IndexesOffset, s.Arguments[argOff].IndexesSize = serializeSliceOfArguments(prgrm, prgrm.ConvertIndexArgsToPointerArgs(arg.Indexes), s)
 	s.Arguments[argOff].FieldsOffset, s.Arguments[argOff].FieldsSize = serializeSliceOfArguments(prgrm, arg.Fields, s)
 	s.Arguments[argOff].InputsOffset, s.Arguments[argOff].InputsSize = serializeSliceOfArguments(prgrm, arg.Inputs, s)
 	s.Arguments[argOff].OutputsOffset, s.Arguments[argOff].OutputsSize = serializeSliceOfArguments(prgrm, arg.Outputs, s)
@@ -1012,7 +1012,7 @@ func deserializeArgument(sArg *serializedArgument, s *SerializedCXProgram, prgrm
 	arg.DoesEscape = deserializeBool(sArg.DoesEscape)
 
 	arg.Lengths = deserializePointers(sArg.LengthsOffset, sArg.LengthsSize, s)
-	arg.Indexes = deserializeArguments(sArg.IndexesOffset, sArg.IndexesSize, s, prgrm)
+	arg.Indexes = prgrm.AddPointerArgsToCXArgsArray(deserializeArguments(sArg.IndexesOffset, sArg.IndexesSize, s, prgrm))
 	arg.Fields = deserializeArguments(sArg.FieldsOffset, sArg.FieldsSize, s, prgrm)
 	arg.Inputs = deserializeArguments(sArg.InputsOffset, sArg.InputsSize, s, prgrm)
 	arg.Outputs = deserializeArguments(sArg.OutputsOffset, sArg.OutputsSize, s, prgrm)

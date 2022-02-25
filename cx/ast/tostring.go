@@ -603,7 +603,8 @@ func getFormattedDerefs(prgrm *CXProgram, arg *CXArgument, includePkg bool) stri
 	name = derefLevels + name
 
 	// Checking if we have indexing operations, e.g. foo[2][1]
-	for _, idx := range arg.Indexes {
+	for _, idxIdx := range arg.Indexes {
+		idx := prgrm.GetCXArgFromArray(idxIdx)
 		// Checking if the value is in data segment.
 		// If this is the case, we can safely display it.
 		idxValue := ""

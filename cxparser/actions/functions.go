@@ -468,13 +468,15 @@ func ProcessExpressionArguments(prgrm *ast.CXProgram, symbols *[]map[string]*ast
 
 		ProcessSlice(arg)
 
-		for _, idx := range arg.Indexes {
+		for _, idxIdx := range arg.Indexes {
+			idx := prgrm.GetCXArgFromArray(idxIdx)
 			UpdateSymbolsTable(prgrm, symbols, idx, offset, true)
 			GiveOffset(prgrm, symbols, idx, offset, true)
 			checkIndexType(prgrm, idx)
 		}
 		for _, fld := range arg.Fields {
-			for _, idx := range fld.Indexes {
+			for _, idxIdx := range fld.Indexes {
+				idx := prgrm.GetCXArgFromArray(idxIdx)
 				UpdateSymbolsTable(prgrm, symbols, idx, offset, true)
 				GiveOffset(prgrm, symbols, idx, offset, true)
 			}

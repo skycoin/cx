@@ -85,7 +85,8 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 
 		if postExprsAtomicOp.Operator == nil {
 			// expr.AddInput(postExprs[len(postExprs)-1].ProgramOutput[0])
-			fld.Indexes = append(fld.Indexes, postExprsAtomicOp.Outputs[0])
+			indexIdx := prgrm.AddCXArgInArray(postExprsAtomicOp.Outputs[0])
+			fld.Indexes = append(fld.Indexes, indexIdx)
 		} else {
 			sym := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(prgrm.GetCXArgFromArray(postExprsAtomicOp.Operator.Outputs[0]).Type)
 			sym.Package = postExprsAtomicOp.Package
@@ -94,7 +95,8 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 
 			prevExprs = append(postExprs, prevExprs...)
 
-			fld.Indexes = append(fld.Indexes, sym)
+			symIdx := prgrm.AddCXArgInArray(sym)
+			fld.Indexes = append(fld.Indexes, symIdx)
 			// expr.AddInput(sym)
 		}
 	} else {
@@ -109,14 +111,16 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 			idxSym.PreviouslyDeclared = true
 			postExprsAtomicOp.Outputs = append(postExprsAtomicOp.Outputs, idxSym)
 
-			prevExpr2AtomicOp.Outputs[0].Indexes = append(prevExpr2AtomicOp.Outputs[0].Indexes, idxSym)
+			idxSymIdx := prgrm.AddCXArgInArray(idxSym)
+			prevExpr2AtomicOp.Outputs[0].Indexes = append(prevExpr2AtomicOp.Outputs[0].Indexes, idxSymIdx)
 
 			// we push the index expression
 			prevExprs = append(postExprs, prevExprs...)
 		} else {
 			prevOuts := prevExpr2AtomicOp.Outputs
 			postOuts := postExprsAtomicOp.Outputs
-			prevOuts[0].Indexes = append(prevOuts[0].Indexes, postOuts[0])
+			postOutsIdx := prgrm.AddCXArgInArray(postOuts[0])
+			prevOuts[0].Indexes = append(prevOuts[0].Indexes, postOutsIdx)
 		}
 	}
 

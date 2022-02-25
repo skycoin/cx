@@ -284,8 +284,8 @@ func ArrayLiteralExpression(prgrm *ast.CXProgram, arrSizes []types.Pointer, type
 			if err != nil {
 				panic(err)
 			}
-
-			sym.Indexes = append(sym.Indexes, idxExprAtomicOp.Outputs[0])
+			indexIdx := prgrm.AddCXArgInArray(idxExprAtomicOp.Outputs[0])
+			sym.Indexes = append(sym.Indexes, indexIdx)
 			sym.DereferenceOperations = append(sym.DereferenceOperations, constants.DEREF_ARRAY)
 
 			symExprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
