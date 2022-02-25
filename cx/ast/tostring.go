@@ -700,8 +700,8 @@ func GetFormattedType(prgrm *CXProgram, arg *CXArgument) string {
 					if elt.IsLocalDeclaration {
 						// Then it's a local variable, which can be assigned to a
 						// lambda function, for example.
-						typ += formatParameters(prgrm, elt.Inputs)
-						typ += formatParameters(prgrm, elt.Outputs)
+						typ += formatParameters(prgrm, prgrm.ConvertIndexArgsToPointerArgs(elt.Inputs))
+						typ += formatParameters(prgrm, prgrm.ConvertIndexArgsToPointerArgs(elt.Outputs))
 					} else {
 						// Then it refers to a named function defined in a package.
 						pkg, err := prgrm.GetPackageFromArray(arg.Package)

@@ -1418,8 +1418,8 @@ yydefault:
 //line cxparser/cxpartialparsing/cxpartialparsing.y:365
 		{
 			arg := ast.MakeArgument("", actions.CurrentFile, actions.LineNo).AddType(types.FUNC)
-			arg.Inputs = yyDollar[2].arguments
-			arg.Outputs = yyDollar[3].arguments
+			arg.Inputs = Program.AddPointerArgsToCXArgsArray(yyDollar[2].arguments)
+			arg.Outputs = Program.AddPointerArgsToCXArgsArray(yyDollar[3].arguments)
 			yyVAL.argument = actions.DeclarationSpecifiers(arg, []types.Pointer{0}, constants.DECL_FUNC)
 		}
 	case 39:

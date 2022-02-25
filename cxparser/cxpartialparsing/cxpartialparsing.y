@@ -364,8 +364,8 @@ declaration_specifiers:
 		FUNC types_list types_list
 		{
 			arg := ast.MakeArgument("", actions.CurrentFile, actions.LineNo).AddType(types.FUNC)
-			arg.Inputs = $2
-			arg.Outputs = $3
+			arg.Inputs = Program.AddPointerArgsToCXArgsArray($2)
+			arg.Outputs = Program.AddPointerArgsToCXArgsArray($3)
 			$$ = actions.DeclarationSpecifiers(arg, []types.Pointer{0}, constants.DECL_FUNC)
 		}
         |       MUL_OP declaration_specifiers

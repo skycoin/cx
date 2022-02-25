@@ -92,12 +92,12 @@ type CXArgument struct {
 	// Inputs defines the input parameters of a first-class
 	// function. The `CXArgument` is of type `TYPE_FUNC` if
 	// `ProgramInput` is non-nil.
-	Inputs []*CXArgument
+	Inputs []CXArgumentIndex
 
 	// Outputs defines the output parameters of a first-class
 	// function. The `CXArgument` is of type `TYPE_FUNC` if
 	// `ProgramOutput` is non-nil.
-	Outputs []*CXArgument
+	Outputs []CXArgumentIndex
 
 	// Type defines what's the basic or primitev type of the
 	// `CXArgument`. `Type` can be equal to any of the `TYPE_*`
@@ -293,20 +293,26 @@ func (arg *CXArgument) AddType(typeCode types.Code) *CXArgument {
 }
 
 // AddInput adds input parameters to `arg` in case arg is of type `TYPE_FUNC`.
-func (arg *CXArgument) AddInput(inp *CXArgument) *CXArgument {
-	arg.Inputs = append(arg.Inputs, inp)
+func (arg *CXArgument) AddInput(prgrm *CXProgram, inp *CXArgument) *CXArgument {
 	if inp.Package == -1 {
 		inp.Package = arg.Package
 	}
+
+	inpIdx := prgrm.AddCXArgInArray(inp)
+	arg.Inputs = append(arg.Inputs, inpIdx)
+
 	return arg
 }
 
 // AddOutput adds output parameters to `arg` in case arg is of type `TYPE_FUNC`.
-func (arg *CXArgument) AddOutput(out *CXArgument) *CXArgument {
-	arg.Outputs = append(arg.Outputs, out)
+func (arg *CXArgument) AddOutput(prgrm *CXProgram, out *CXArgument) *CXArgument {
 	if out.Package == -1 {
 		out.Package = arg.Package
 	}
+
+	outIdx := prgrm.AddCXArgInArray(out)
+	arg.Outputs = append(arg.Outputs, outIdx)
+
 	return arg
 }
 
@@ -357,13 +363,13 @@ func Slice(typeCode types.Code) *CXArgument {
 
 // Func Helper function for creating function parameters for standard library operators.
 // The current standard library only uses basic types and slices. If more options are needed, modify this function
-func Func(pkg *CXPackage, inputs []*CXArgument, outputs []*CXArgument) *CXArgument {
-	arg := Param(types.FUNC)
-	arg.Package = CXPackageIndex(pkg.Index)
-	arg.Inputs = inputs
-	arg.Outputs = outputs
-	return arg
-}
+// func Func(pkg *CXPackage, inputs []*CXArgument, outputs []*CXArgument) *CXArgument {
+// 	arg := Param(types.FUNC)
+// 	arg.Package = CXPackageIndex(pkg.Index)
+// 	arg.Inputs = inputs
+// 	arg.Outputs = outputs
+// 	return arg
+// }
 
 // Param ...
 func Param(typeCode types.Code) *CXArgument {
