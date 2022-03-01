@@ -1,8 +1,8 @@
 package ast
 
 type CXAtomicOperator struct {
-	Inputs   []*CXArgument
-	Outputs  []*CXArgument
+	Inputs   []CXArgumentIndex
+	Outputs  []CXArgumentIndex
 	Operator *CXFunction
 
 	Function CXFunctionIndex
@@ -29,12 +29,12 @@ func (op *CXAtomicOperator) GetOperatorName(prgrm *CXProgram) string {
 //                     `CXAtomicOperator` Member handling
 
 // AddInput ...
-func (op *CXAtomicOperator) AddInput(param *CXArgument) *CXAtomicOperator {
-	op.Inputs = append(op.Inputs, param)
-
-	if param.Package == -1 {
-		param.Package = op.Package
+func (op *CXAtomicOperator) AddInput(prgrm *CXProgram, paramIdx CXArgumentIndex) *CXAtomicOperator {
+	if prgrm.GetCXArgFromArray(paramIdx).Package == -1 {
+		prgrm.GetCXArgFromArray(paramIdx).Package = op.Package
 	}
+	op.Inputs = append(op.Inputs, paramIdx)
+
 	return op
 }
 
@@ -46,11 +46,13 @@ func (op *CXAtomicOperator) RemoveInput() {
 }
 
 // AddOutput ...
-func (op *CXAtomicOperator) AddOutput(param *CXArgument) *CXAtomicOperator {
-	op.Outputs = append(op.Outputs, param)
-	if param.Package == -1 {
-		param.Package = op.Package
+func (op *CXAtomicOperator) AddOutput(prgrm *CXProgram, paramIdx CXArgumentIndex) *CXAtomicOperator {
+	if prgrm.GetCXArgFromArray(paramIdx).Package == -1 {
+		prgrm.GetCXArgFromArray(paramIdx).Package = op.Package
 	}
+
+	op.Outputs = append(op.Outputs, paramIdx)
+
 	return op
 }
 

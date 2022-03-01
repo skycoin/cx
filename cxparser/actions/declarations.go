@@ -45,6 +45,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 	if glbl, err := pkg.GetGlobal(prgrm, declarator.Name); err == nil {
 		// The name is already defined.
 
+		glblIdx := glbl.Index
 		if glbl.Offset < 0 || glbl.Size == 0 || glbl.TotalSize == 0 {
 			// then it was only added a reference to the symbol
 			var offExpr []ast.CXExpression
@@ -61,8 +62,8 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 				panic(err)
 			}
 
-			glbl.Offset = offExprAtomicOp.Outputs[0].Offset
-			glbl.PassBy = offExprAtomicOp.Outputs[0].PassBy
+			glbl.Offset = prgrm.GetCXArgFromArray(offExprAtomicOp.Outputs[0]).Offset
+			glbl.PassBy = prgrm.GetCXArgFromArray(offExprAtomicOp.Outputs[0]).PassBy
 			// glbl.Package = offExpr[0].ProgramOutput[0].Package
 		}
 
@@ -85,10 +86,11 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 				declaration_specifiers.Package = glbl.Package
 
 				*glbl = *declaration_specifiers
+				glbl.Index = glblIdx
 
-				initializerAtomicOp.AddInput(initializerAtomicOp.Outputs[0])
+				initializerAtomicOp.AddInput(prgrm, initializerAtomicOp.Outputs[0])
 				initializerAtomicOp.Outputs = nil
-				initializerAtomicOp.AddOutput(glbl)
+				initializerAtomicOp.AddOutput(prgrm, ast.CXArgumentIndex(glbl.Index))
 				initializerAtomicOp.Operator = ast.Natives[constants.OP_IDENTITY]
 				initializerAtomicOp.Package = glbl.Package
 
@@ -102,9 +104,10 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 				declaration_specifiers.Package = glbl.Package
 
 				*glbl = *declaration_specifiers
+				glbl.Index = glblIdx
 
 				if initializer[len(initializer)-1].IsStructLiteral() {
-					index := prgrm.AddCXAtomicOp(&ast.CXAtomicOperator{Outputs: []*ast.CXArgument{glbl}, Function: -1})
+					index := prgrm.AddCXAtomicOp(&ast.CXAtomicOperator{Outputs: []ast.CXArgumentIndex{ast.CXArgumentIndex(glblIdx)}, Function: -1})
 					initializer = StructLiteralAssignment(prgrm,
 						[]ast.CXExpression{
 							{
@@ -116,7 +119,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 					)
 				} else {
 					initializerAtomicOp.Outputs = nil
-					initializerAtomicOp.AddOutput(glbl)
+					initializerAtomicOp.AddOutput(prgrm, ast.CXArgumentIndex(glblIdx))
 				}
 				//add intialization statements, to array
 				prgrm.SysInitExprs = append(prgrm.SysInitExprs, initializer...)
@@ -128,6 +131,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 			declaration_specifiers.PassBy = glbl.PassBy
 			declaration_specifiers.Package = glbl.Package
 			*glbl = *declaration_specifiers
+			glbl.Index = glblIdx
 		}
 	} else {
 		// then it hasn't been defined
@@ -158,15 +162,16 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 
 				declaration_specifiers.Name = declarator.Name
 				declaration_specifiers.ArgDetails.FileLine = declarator.ArgDetails.FileLine
-				declaration_specifiers.Offset = offExprAtomicOp.Outputs[0].Offset
-				declaration_specifiers.Size = offExprAtomicOp.Outputs[0].Size
-				declaration_specifiers.TotalSize = offExprAtomicOp.Outputs[0].TotalSize
+				declaration_specifiers.Offset = prgrm.GetCXArgFromArray(offExprAtomicOp.Outputs[0]).Offset
+				declaration_specifiers.Size = prgrm.GetCXArgFromArray(offExprAtomicOp.Outputs[0]).Size
+				declaration_specifiers.TotalSize = prgrm.GetCXArgFromArray(offExprAtomicOp.Outputs[0]).TotalSize
 				declaration_specifiers.Package = ast.CXPackageIndex(pkg.Index)
 
 				initializerAtomicOp.Operator = ast.Natives[constants.OP_IDENTITY]
-				initializerAtomicOp.AddInput(initializerAtomicOp.Outputs[0])
+				initializerAtomicOp.AddInput(prgrm, initializerAtomicOp.Outputs[0])
 				initializerAtomicOp.Outputs = nil
-				initializerAtomicOp.AddOutput(declaration_specifiers)
+				declSpecIdx := prgrm.AddCXArgInArray(declaration_specifiers)
+				initializerAtomicOp.AddOutput(prgrm, declSpecIdx)
 
 				pkg.AddGlobal(prgrm, declaration_specifiers)
 				//add intialization statements, to array
@@ -175,13 +180,14 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 				// then it's an expression
 				declaration_specifiers.Name = declarator.Name
 				declaration_specifiers.ArgDetails.FileLine = declarator.ArgDetails.FileLine
-				declaration_specifiers.Offset = offExprAtomicOp.Outputs[0].Offset
-				declaration_specifiers.Size = offExprAtomicOp.Outputs[0].Size
-				declaration_specifiers.TotalSize = offExprAtomicOp.Outputs[0].TotalSize
+				declaration_specifiers.Offset = prgrm.GetCXArgFromArray(offExprAtomicOp.Outputs[0]).Offset
+				declaration_specifiers.Size = prgrm.GetCXArgFromArray(offExprAtomicOp.Outputs[0]).Size
+				declaration_specifiers.TotalSize = prgrm.GetCXArgFromArray(offExprAtomicOp.Outputs[0]).TotalSize
 				declaration_specifiers.Package = ast.CXPackageIndex(pkg.Index)
 
 				if initializer[len(initializer)-1].IsStructLiteral() {
-					index := prgrm.AddCXAtomicOp(&ast.CXAtomicOperator{Outputs: []*ast.CXArgument{declaration_specifiers}, Function: -1})
+					declSpecIdx := prgrm.AddCXArgInArray(declaration_specifiers)
+					index := prgrm.AddCXAtomicOp(&ast.CXAtomicOperator{Outputs: []ast.CXArgumentIndex{declSpecIdx}, Function: -1})
 					initializer = StructLiteralAssignment(prgrm,
 						[]ast.CXExpression{
 							{
@@ -193,7 +199,8 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 					)
 				} else {
 					initializerAtomicOp.Outputs = nil
-					initializerAtomicOp.AddOutput(declaration_specifiers)
+					declSpecIdx := prgrm.AddCXArgInArray(declaration_specifiers)
+					initializerAtomicOp.AddOutput(prgrm, declSpecIdx)
 				}
 
 				pkg.AddGlobal(prgrm, declaration_specifiers)
@@ -211,9 +218,9 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 
 			declaration_specifiers.Name = declarator.Name
 			declaration_specifiers.ArgDetails.FileLine = declarator.ArgDetails.FileLine
-			declaration_specifiers.Offset = offExprAtomicOp.Outputs[0].Offset
-			declaration_specifiers.Size = offExprAtomicOp.Outputs[0].Size
-			declaration_specifiers.TotalSize = offExprAtomicOp.Outputs[0].TotalSize
+			declaration_specifiers.Offset = prgrm.GetCXArgFromArray(offExprAtomicOp.Outputs[0]).Offset
+			declaration_specifiers.Size = prgrm.GetCXArgFromArray(offExprAtomicOp.Outputs[0]).Size
+			declaration_specifiers.TotalSize = prgrm.GetCXArgFromArray(offExprAtomicOp.Outputs[0]).TotalSize
 			declaration_specifiers.Package = ast.CXPackageIndex(pkg.Index)
 
 			pkg.AddGlobal(prgrm, declaration_specifiers)
@@ -362,7 +369,9 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 	declarationSpecifiers.ArgDetails.FileLine = declarator.ArgDetails.FileLine
 	declarationSpecifiers.Package = ast.CXPackageIndex(pkg.Index)
 	declarationSpecifiers.PreviouslyDeclared = true
-	cxAtomicOp.AddOutput(declarationSpecifiers)
+	declSpecIdx := prgrm.AddCXArgInArray(declarationSpecifiers)
+	declarationSpecifiers = prgrm.GetCXArgFromArray(declSpecIdx)
+	cxAtomicOp.AddOutput(prgrm, declSpecIdx)
 
 	// Checking if something is supposed to be initialized
 	// and if `initializer` actually contains something.
@@ -388,14 +397,15 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 			}
 			cxExprAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
 
-			initOut := initializerAtomicOp.Outputs[0]
+			initOut := prgrm.GetCXArgFromArray(initializerAtomicOp.Outputs[0])
+			initOutIdx := initializerAtomicOp.Outputs[0]
 			// CX checks the output of an expression to determine if it's being passed
 			// by value or by reference, so we copy this property from the initializer's
 			// output, in case of something like var foo *i32 = &bar
 			declarationSpecifiers.PassBy = initOut.PassBy
 
-			cxExprAtomicOp.AddOutput(declarationSpecifiers)
-			cxExprAtomicOp.AddInput(initOut)
+			cxExprAtomicOp.AddOutput(prgrm, declSpecIdx)
+			cxExprAtomicOp.AddInput(prgrm, initOutIdx)
 
 			initializer[len(initializer)-1] = *exprCXLine
 			initializer = append(initializer, *expr)
@@ -412,9 +422,10 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 			// handling a dot notation initializer, and it needs to be replaced
 			// ELSE we simply add it using `AddOutput`
 			if len(cxExprAtomicOp.Outputs) > 0 {
-				cxExprAtomicOp.Outputs = []*ast.CXArgument{declarationSpecifiers}
+				declSpecIdx := prgrm.AddCXArgInArray(declarationSpecifiers)
+				cxExprAtomicOp.Outputs = []ast.CXArgumentIndex{declSpecIdx}
 			} else {
-				cxExprAtomicOp.AddOutput(declarationSpecifiers)
+				cxExprAtomicOp.AddOutput(prgrm, declSpecIdx)
 			}
 			return append([]ast.CXExpression{*declCXLine, *decl}, initializer...)
 		}
@@ -432,7 +443,7 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 		declarationSpecifiers.ArgDetails.FileLine = declarator.ArgDetails.FileLine
 		declarationSpecifiers.Package = ast.CXPackageIndex(pkg.Index)
 		declarationSpecifiers.PreviouslyDeclared = true
-		cxAtomicOp.AddOutput(declarationSpecifiers)
+		cxAtomicOp.AddOutput(prgrm, declSpecIdx)
 
 		return []ast.CXExpression{*exprCXLine, *expr}
 	}

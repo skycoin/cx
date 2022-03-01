@@ -205,8 +205,8 @@ func QueryArgument(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpress
 			continue
 		}
 
-		queryParam(prgrm, fn, exCXAtomicOp.Inputs, exCXAtomicOp.Label+".Input", argOffsetB, affOffset)
-		queryParam(prgrm, fn, exCXAtomicOp.Outputs, exCXAtomicOp.Label+".Output", argOffsetB, affOffset)
+		queryParam(prgrm, fn, prgrm.ConvertIndexArgsToPointerArgs(exCXAtomicOp.Inputs), exCXAtomicOp.Label+".Input", argOffsetB, affOffset)
+		queryParam(prgrm, fn, prgrm.ConvertIndexArgsToPointerArgs(exCXAtomicOp.Outputs), exCXAtomicOp.Label+".Output", argOffsetB, affOffset)
 	}
 }
 
@@ -877,9 +877,9 @@ func readArgAff(prgrm *ast.CXProgram, aff string, tgtFn *ast.CXFunction) *ast.CX
 	}
 
 	if argType == "Input" {
-		return affExprAtomicOp.Inputs[argIdx]
+		return prgrm.GetCXArgFromArray(affExprAtomicOp.Inputs[argIdx])
 	}
-	return affExprAtomicOp.Outputs[argIdx]
+	return prgrm.GetCXArgFromArray(affExprAtomicOp.Outputs[argIdx])
 
 }
 

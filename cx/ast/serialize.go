@@ -247,8 +247,8 @@ func serializeExpression(prgrm *CXProgram, expr *CXExpression, s *SerializedCXPr
 			}
 		}
 
-		sExpr.InputsOffset, sExpr.InputsSize = serializeSliceOfArguments(prgrm, cxAtomicOp.Inputs, s)
-		sExpr.OutputsOffset, sExpr.OutputsSize = serializeSliceOfArguments(prgrm, cxAtomicOp.Outputs, s)
+		sExpr.InputsOffset, sExpr.InputsSize = serializeSliceOfArguments(prgrm, prgrm.ConvertIndexArgsToPointerArgs(cxAtomicOp.Inputs), s)
+		sExpr.OutputsOffset, sExpr.OutputsSize = serializeSliceOfArguments(prgrm, prgrm.ConvertIndexArgsToPointerArgs(cxAtomicOp.Outputs), s)
 
 		sExpr.LabelOffset, sExpr.LabelSize = serializeString(cxAtomicOp.Label, s)
 		sExpr.ThenLines = int64(cxAtomicOp.ThenLines)
@@ -909,7 +909,7 @@ func deserializePackages(s *SerializedCXProgram, prgrm *CXProgram) {
 			glblArgs := deserializeArguments(sPkg.GlobalsOffset, sPkg.GlobalsSize, s, prgrm)
 			var glblArgsIdxs []CXArgumentIndex
 			for _, glbl := range glblArgs {
-				glblIdx := prgrm.AddCXArg(glbl)
+				glblIdx := prgrm.AddCXArgInArray(glbl)
 				glblArgsIdxs = append(glblArgsIdxs, CXArgumentIndex(glblIdx))
 			}
 			pkg.Globals = glblArgsIdxs
@@ -1132,8 +1132,8 @@ func deserializeExpression(sExpr *serializedExpression, s *SerializedCXProgram, 
 			cxAtomicOp.Operator = deserializeOperator(sExpr, s, prgrm)
 		}
 
-		cxAtomicOp.Inputs = deserializeArguments(sExpr.InputsOffset, sExpr.InputsSize, s, prgrm)
-		cxAtomicOp.Outputs = deserializeArguments(sExpr.OutputsOffset, sExpr.OutputsSize, s, prgrm)
+		cxAtomicOp.Inputs = prgrm.AddPointerArgsToCXArgsArray(deserializeArguments(sExpr.InputsOffset, sExpr.InputsSize, s, prgrm))
+		cxAtomicOp.Outputs = prgrm.AddPointerArgsToCXArgsArray(deserializeArguments(sExpr.OutputsOffset, sExpr.OutputsSize, s, prgrm))
 
 		cxAtomicOp.Label = deserializeString(sExpr.LabelOffset, sExpr.LabelSize, s)
 

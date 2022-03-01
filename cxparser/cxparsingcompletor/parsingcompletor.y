@@ -623,9 +623,10 @@ slice_literal_expression:
                                         panic(err)
                                 }
 
-				if exprAtomicOp.Outputs[0].Name == lastExprAtomicOp.Inputs[0].Name {
-					exprAtomicOp.Outputs[0].Lengths = append(exprAtomicOp.Outputs[0].Lengths, 0)
-					exprAtomicOp.Outputs[0].DeclarationSpecifiers = append(exprAtomicOp.Outputs[0].DeclarationSpecifiers, constants.DECL_SLICE)
+                                exprAtomicOpOutput:=actions.AST.GetCXArgFromArray(exprAtomicOp.Outputs[0])
+				if exprAtomicOpOutput.Name == actions.AST.GetCXArgFromArray(lastExprAtomicOp.Inputs[0]).Name {
+					exprAtomicOpOutput.Lengths = append(exprAtomicOpOutput.Lengths, 0)
+					exprAtomicOpOutput.DeclarationSpecifiers = append(exprAtomicOpOutput.DeclarationSpecifiers, constants.DECL_SLICE)
                                 }
 			}
 	
@@ -991,8 +992,7 @@ struct_literal_expression:
                         if err != nil {
                                 panic(err)
                         }
-
-			$$ = actions.PrimaryStructLiteralExternal(actions.AST,cxAtomicOp.Outputs[0].Name, $3, $5)
+			$$ = actions.PrimaryStructLiteralExternal(actions.AST,actions.AST.GetCXArgFromArray(cxAtomicOp.Outputs[0]).Name, $3, $5)
                 }
                 ;
 
@@ -1021,8 +1021,8 @@ assignment_expression:
                                                                         if err != nil {
                                                                                 panic(err)
                                                                         }
-                                                                        fromAtomicOp.Outputs[0].IsShortAssignmentDeclaration = true
-                                                                        fromAtomicOp.Outputs[0].PreviouslyDeclared = true
+                                                                        actions.AST.GetCXArgFromArray(fromAtomicOp.Outputs[0]).IsShortAssignmentDeclaration = true
+                                                                        actions.AST.GetCXArgFromArray(fromAtomicOp.Outputs[0]).PreviouslyDeclared = true
                                                                 }
                                                         }
                                                         $$ = actions.ArrayLiteralAssignment(actions.AST,$1, $3)
@@ -1040,8 +1040,8 @@ assignment_expression:
                                                                         if err != nil {
                                                                                 panic(err)
                                                                         }
-                                                                        fromAtomicOp.Outputs[0].IsShortAssignmentDeclaration = true
-                                                                        fromAtomicOp.Outputs[0].PreviouslyDeclared = true
+                                                                        actions.AST.GetCXArgFromArray(fromAtomicOp.Outputs[0]).IsShortAssignmentDeclaration = true
+                                                                        actions.AST.GetCXArgFromArray(fromAtomicOp.Outputs[0]).PreviouslyDeclared = true
                                                                 }
                                                         }
                                                         $$ = actions.StructLiteralAssignment(actions.AST,$1, $3)
@@ -1186,7 +1186,7 @@ expression_statement:
 			if len($1) > 0 && lastFirstAtomicOp.Operator == nil  && !$1[len($1) - 1].IsMethodCall() {
 				outs := lastFirstAtomicOp.Outputs
 				if len(outs) > 0 {
-					println(ast.CompilationError(outs[0].ArgDetails.FileName, outs[0].ArgDetails.FileLine), "invalid expression")
+					println(ast.CompilationError(actions.AST.GetCXArgFromArray(outs[0]).ArgDetails.FileName, actions.AST.GetCXArgFromArray(outs[0]).ArgDetails.FileLine), "invalid expression")
 				} else {
 					println(ast.CompilationError(actions.CurrentFile, actions.LineNo), "invalid expression")
 				}

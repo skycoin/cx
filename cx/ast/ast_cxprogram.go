@@ -202,11 +202,11 @@ func (cxprogram *CXProgram) AddCXLine(CXLine *CXLine) int {
 	return len(cxprogram.CXLines) - 1
 }
 
-func (cxprogram *CXProgram) AddCXArg(CXArg *CXArgument) int {
-	cxprogram.CXArgs = append(cxprogram.CXArgs, *CXArg)
+// func (cxprogram *CXProgram) AddCXArg(CXArg *CXArgument) int {
+// 	cxprogram.CXArgs = append(cxprogram.CXArgs, *CXArg)
 
-	return len(cxprogram.CXArgs) - 1
-}
+// 	return len(cxprogram.CXArgs) - 1
+// }
 
 func (cxprogram *CXProgram) AddCXAtomicOp(CXAtomicOp *CXAtomicOperator) int {
 	cxprogram.CXAtomicOps = append(cxprogram.CXAtomicOps, *CXAtomicOp)

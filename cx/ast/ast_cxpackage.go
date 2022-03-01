@@ -255,7 +255,7 @@ func (pkg *CXPackage) AddGlobal(prgrm *CXProgram, def *CXArgument) *CXPackage {
 		}
 	}
 	if !found {
-		defIdx := prgrm.AddCXArg(def)
+		defIdx := prgrm.AddCXArgInArray(def)
 		pkg.Globals = append(pkg.Globals, CXArgumentIndex(defIdx))
 	}
 

@@ -70,6 +70,7 @@ func WritePrimary(prgrm *ast.CXProgram, typeCode types.Code, byts []byte, isSlic
 				types.Write_ptr(byts, 0, arg.Offset)
 			}
 		}
+		argIdx := prgrm.AddCXArgInArray(arg)
 
 		// A CX program allocates min(INIT_HEAP_SIZE, MAX_HEAP_SIZE) bytes
 		// after the stack segment. These bytes are used to allocate the data segment
@@ -103,7 +104,7 @@ func WritePrimary(prgrm *ast.CXProgram, typeCode types.Code, byts []byte, isSlic
 		}
 
 		cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
-		cxAtomicOp.AddOutput(arg)
+		cxAtomicOp.AddOutput(prgrm, argIdx)
 		return []ast.CXExpression{*expr}
 	} else {
 		panic(err)
@@ -124,13 +125,14 @@ func StructLiteralFields(prgrm *ast.CXProgram, ident string) ast.CXExpression {
 		arg.AddType(types.IDENTIFIER)
 		arg.Name = ident
 		arg.Package = ast.CXPackageIndex(pkg.Index)
+		argIdx := prgrm.AddCXArgInArray(arg)
 
 		expr := ast.MakeAtomicOperatorExpression(prgrm, nil)
 		cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
 		if err != nil {
 			panic(err)
 		}
-		cxAtomicOp.AddOutput(arg)
+		cxAtomicOp.AddOutput(prgrm, argIdx)
 		cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
 		return *expr
 	} else {
@@ -254,6 +256,7 @@ func PrimaryIdentifier(prgrm *ast.CXProgram, ident string) []ast.CXExpression {
 		// arg.Typ = "ident"
 		arg.Name = ident
 		arg.Package = ast.CXPackageIndex(pkg.Index)
+		argIdx := prgrm.AddCXArgInArray(arg)
 
 		// exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
 		// expr := &cxcore.CXExpression{ProgramOutput: []*cxcore.CXArgument{arg}}
@@ -262,7 +265,7 @@ func PrimaryIdentifier(prgrm *ast.CXProgram, ident string) []ast.CXExpression {
 		if err != nil {
 			panic(err)
 		}
-		cxAtomicOp.AddOutput(arg)
+		cxAtomicOp.AddOutput(prgrm, argIdx)
 		cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
 		return []ast.CXExpression{*expr}
 	} else {
@@ -277,7 +280,8 @@ func IsAllArgsBasicTypes(prgrm *ast.CXProgram, expr *ast.CXExpression) bool {
 		panic(err)
 	}
 
-	for _, inp := range cxAtomicOp.Inputs {
+	for _, inpIdx := range cxAtomicOp.Inputs {
+		inp := prgrm.GetCXArgFromArray(inpIdx)
 		inpType := inp.Type
 		if inp.Type == types.POINTER {
 			inpType = inp.PointerTargetType
