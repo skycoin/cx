@@ -27,10 +27,7 @@ type CXPackage struct {
 // Only Used by Affordances in op_aff.go
 func (pkg *CXPackage) GetFunction(prgrm *CXProgram, fnName string) (*CXFunction, error) {
 	if fnIdx, ok := pkg.Functions[fnName]; ok {
-		fn, err := prgrm.GetFunctionFromArray(fnIdx)
-		if err != nil {
-			return fn, err
-		}
+		fn := prgrm.GetFunctionFromArray(fnIdx)
 
 		return fn, nil
 	}
@@ -43,10 +40,7 @@ func (pkg *CXPackage) GetFunction(prgrm *CXProgram, fnName string) (*CXFunction,
 		}
 
 		if fnIdx, ok := imp.Functions[fnName]; ok {
-			fn, err := prgrm.GetFunctionFromArray(fnIdx)
-			if err != nil {
-				return fn, err
-			}
+			fn := prgrm.GetFunctionFromArray(fnIdx)
 
 			return fn, nil
 		}
@@ -71,10 +65,7 @@ func (pkg *CXPackage) GetImport(prgrm *CXProgram, impName string) (*CXPackage, e
 // GetMethod ...
 func (pkg *CXPackage) GetMethod(prgrm *CXProgram, fnName string, receiverType string) (*CXFunction, error) {
 	if fnIdx, ok := pkg.Functions[fnName]; ok {
-		fn, err := prgrm.GetFunctionFromArray(fnIdx)
-		if err != nil {
-			return fn, err
-		}
+		fn := prgrm.GetFunctionFromArray(fnIdx)
 
 		fnInput := prgrm.GetCXArgFromArray(fn.Inputs[0])
 		if len(fn.Inputs) > 0 && fnInput.StructType != nil && fnInput.StructType.Name == receiverType {
@@ -136,7 +127,7 @@ func (pkg *CXPackage) GetCurrentFunction(prgrm *CXProgram) (*CXFunction, error) 
 		return nil, errors.New("current function is nil")
 	}
 
-	return prgrm.GetFunctionFromArray(pkg.CurrentFunction)
+	return prgrm.GetFunctionFromArray(pkg.CurrentFunction), nil
 }
 
 // ----------------------------------------------------------------
@@ -151,7 +142,7 @@ func (pkg *CXPackage) SelectFunction(prgrm *CXProgram, name string) (*CXFunction
 	idx := pkg.Functions[name]
 	pkg.CurrentFunction = idx
 
-	return prgrm.GetFunctionFromArray(idx)
+	return prgrm.GetFunctionFromArray(idx), nil
 }
 
 // MakePackage creates a new empty CXPackage.

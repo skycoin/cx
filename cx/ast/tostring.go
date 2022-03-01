@@ -101,15 +101,12 @@ func buildStrFunctions(prgrm *CXProgram, pkg *CXPackage, ast1 *string) {
 	// ignore the increment from the `*init` function.
 	var j int
 	for _, fnIdx := range pkg.Functions {
-		fn, err := prgrm.GetFunctionFromArray(fnIdx)
-		if err != nil {
-			panic(err)
-		}
+		fn := prgrm.GetFunctionFromArray(fnIdx)
 
 		if fn.Name == constants.SYS_INIT_FUNC {
 			continue
 		}
-		_, err = pkg.SelectFunction(prgrm, fn.Name)
+		_, err := pkg.SelectFunction(prgrm, fn.Name)
 		if err != nil {
 			panic(err)
 		}

@@ -157,16 +157,16 @@ func (cxprogram *CXProgram) AddFunctionInArray(fn *CXFunction) CXFunctionIndex {
 	return CXFunctionIndex(fn.Index)
 }
 
-func (cxprogram *CXProgram) GetFunctionFromArray(index CXFunctionIndex) (*CXFunction, error) {
+func (cxprogram *CXProgram) GetFunctionFromArray(index CXFunctionIndex) *CXFunction {
 	if index == -1 {
-		return nil, nil
+		return nil
 	}
 
 	if int(index) > (len(cxprogram.CXFunctions) - 1) {
-		return nil, fmt.Errorf("error: CXFunctions[%d]: index out of bounds", index)
+		panic(fmt.Errorf("error: CXFunctions[%d]: index out of bounds", index))
 	}
 
-	return &cxprogram.CXFunctions[index], nil
+	return &cxprogram.CXFunctions[index]
 }
 
 // ----------------------------------------------------------------
@@ -383,7 +383,7 @@ func (cxprogram *CXProgram) GetCurrentFunction() (*CXFunction, error) {
 		return nil, errors.New("current function is nil")
 	}
 
-	return cxprogram.GetFunctionFromArray(currentPackage.CurrentFunction)
+	return cxprogram.GetFunctionFromArray(currentPackage.CurrentFunction), nil
 
 }
 

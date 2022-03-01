@@ -189,10 +189,7 @@ func QueryArgument(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpress
 		panic(err)
 	}
 
-	cxAtomicOpFunction, err := prgrm.GetFunctionFromArray(cxAtomicOp.Function)
-	if err != nil {
-		panic(err)
-	}
+	cxAtomicOpFunction := prgrm.GetFunctionFromArray(cxAtomicOp.Function)
 
 	for _, ex := range cxAtomicOpFunction.Expressions {
 		exCXAtomicOp, _, _, err := prgrm.GetOperation(&ex)
@@ -217,10 +214,7 @@ func QueryExpressions(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpr
 		panic(err)
 	}
 
-	cxAtomicOpFunction, err := prgrm.GetFunctionFromArray(cxAtomicOp.Function)
-	if err != nil {
-		panic(err)
-	}
+	cxAtomicOpFunction := prgrm.GetFunctionFromArray(cxAtomicOp.Function)
 
 	for _, ex := range cxAtomicOpFunction.Expressions {
 		exCXAtomicOp, _, _, err := prgrm.GetOperation(&ex)
@@ -350,10 +344,7 @@ func QueryFunction(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpress
 		panic(err)
 	}
 	for _, fIdx := range pkg.Functions {
-		f, err := prgrm.GetFunctionFromArray(fIdx)
-		if err != nil {
-			panic(err)
-		}
+		f := prgrm.GetFunctionFromArray(fIdx)
 
 		if f.Name == constants.SYS_INIT_FUNC {
 			continue

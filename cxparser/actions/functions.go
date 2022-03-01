@@ -33,11 +33,8 @@ func FunctionHeader(prgrm *ast.CXProgram, ident string, receiver []*ast.CXArgume
 			} else {
 				fn := ast.MakeFunction(fnName, CurrentFile, LineNo)
 				_, fnIdx := pkg.AddFunction(prgrm, fn)
-				newFn, err := prgrm.GetFunctionFromArray(fnIdx)
+				newFn := prgrm.GetFunctionFromArray(fnIdx)
 				newFn.AddInput(prgrm, receiver[0])
-				if err != nil {
-					panic(err)
-				}
 
 				return newFn
 			}
@@ -52,10 +49,8 @@ func FunctionHeader(prgrm *ast.CXProgram, ident string, receiver []*ast.CXArgume
 			} else {
 				fn := ast.MakeFunction(ident, CurrentFile, LineNo)
 				_, fnIdx := pkg.AddFunction(prgrm, fn)
-				newFn, err := prgrm.GetFunctionFromArray(fnIdx)
-				if err != nil {
-					panic(err)
-				}
+				newFn := prgrm.GetFunctionFromArray(fnIdx)
+
 				return newFn
 			}
 		} else {

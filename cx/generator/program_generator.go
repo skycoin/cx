@@ -136,10 +136,7 @@ func getRandInp(prgrm *cxast.CXProgram, expr *cxast.CXExpression) *cxast.CXArgum
 		panic(err)
 	}
 
-	cxAtomicOpFunction, err := prgrm.GetFunctionFromArray(cxAtomicOp.Function)
-	if err != nil {
-		panic(err)
-	}
+	cxAtomicOpFunction := prgrm.GetFunctionFromArray(cxAtomicOp.Function)
 
 	// Find available arg options.
 	optionsFromInputs, optionsFromExpressions := findArgOptions(prgrm, expr, prgrm.GetCXArgFromArray(cxAtomicOp.Operator.Inputs[0]).Type)
@@ -190,10 +187,7 @@ func addNewExpression(prgrm *cxast.CXProgram, expr *cxast.CXExpression, expressi
 		panic(err)
 	}
 
-	exprCXAtomicOpFunction, err := prgrm.GetFunctionFromArray(exprCXAtomicOp.Function)
-	if err != nil {
-		panic(err)
-	}
+	exprCXAtomicOpFunction := prgrm.GetFunctionFromArray(exprCXAtomicOp.Function)
 
 	newExprCXLine := cxast.MakeCXLineExpression(prgrm, "", -1, "")
 	newExpr := cxast.MakeAtomicOperatorExpression(prgrm, cxast.Natives[expressionType])
@@ -245,10 +239,8 @@ func findArgOptions(prgrm *cxast.CXProgram, expr *cxast.CXExpression, argTypeToF
 		panic(err)
 	}
 
-	cxAtomicOpFunction, err := prgrm.GetFunctionFromArray(cxAtomicOp.Function)
-	if err != nil {
-		panic(err)
-	}
+	cxAtomicOpFunction := prgrm.GetFunctionFromArray(cxAtomicOp.Function)
+
 	// loop in inputs
 	for i, inpIdx := range cxAtomicOpFunction.Inputs {
 		inp := prgrm.GetCXArgFromArray(inpIdx)
@@ -282,10 +274,7 @@ func getRandOut(prgrm *cxast.CXProgram, expr *cxast.CXExpression) *cxast.CXArgum
 		panic(err)
 	}
 
-	cxAtomicOpFunction, err := prgrm.GetFunctionFromArray(cxAtomicOp.Function)
-	if err != nil {
-		panic(err)
-	}
+	cxAtomicOpFunction := prgrm.GetFunctionFromArray(cxAtomicOp.Function)
 
 	for i, exp := range cxAtomicOpFunction.Expressions {
 		if exp.Type == cxast.CX_LINE {
@@ -327,10 +316,7 @@ func determineExpressionOffset(prgrm *cxast.CXProgram, arg *cxast.CXArgument, ex
 		panic(err)
 	}
 
-	cxAtomicOpFunction, err := prgrm.GetFunctionFromArray(cxAtomicOp.Function)
-	if err != nil {
-		panic(err)
-	}
+	cxAtomicOpFunction := prgrm.GetFunctionFromArray(cxAtomicOp.Function)
 
 	// Determining the offset where the expression should be writing to.
 	for c := 0; c < len(cxAtomicOpFunction.Inputs); c++ {
