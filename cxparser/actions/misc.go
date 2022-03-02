@@ -15,12 +15,12 @@ func SetCorrectArithmeticOp(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 	if err != nil {
 		panic(err)
 	}
-
-	if cxAtomicOp.Operator == nil || len(cxAtomicOp.Outputs) < 1 {
+	cxAtomicOpOperator := prgrm.GetFunctionFromArray(cxAtomicOp.Operator)
+	if cxAtomicOpOperator == nil || len(cxAtomicOp.Outputs) < 1 {
 		return
 	}
 
-	code := cxAtomicOp.Operator.AtomicOPCode
+	code := cxAtomicOpOperator.AtomicOPCode
 	if code > constants.START_OF_OPERATORS && code < constants.END_OF_OPERATORS {
 		// TODO: argument type are not fully resolved here, should be move elsewhere.
 		//cxAtomicOp.Operator = cxcore.GetTypedOperator(cxcore.GetType(cxAtomicOp.ProgramInput[0]), code)

@@ -57,9 +57,11 @@ func (cxprogram *CXProgram) PrintStack() {
 			if err != nil {
 				panic(err)
 			}
+
+			cxAtomicOpOperator := cxprogram.GetFunctionFromArray(cxAtomicOp.Operator)
 			for _, inpIdx := range cxAtomicOp.Inputs {
 				inp := cxprogram.GetCXArgFromArray(inpIdx)
-				if inp.Name == "" || cxAtomicOp.Operator == nil {
+				if inp.Name == "" || cxAtomicOpOperator == nil {
 					continue
 				}
 
@@ -88,7 +90,7 @@ func (cxprogram *CXProgram) PrintStack() {
 
 			for _, outIdx := range cxAtomicOp.Outputs {
 				out := cxprogram.GetCXArgFromArray(outIdx)
-				if out.Name == "" || cxAtomicOp.Operator == nil {
+				if out.Name == "" || cxAtomicOpOperator == nil {
 					continue
 				}
 

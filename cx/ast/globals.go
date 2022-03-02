@@ -9,6 +9,6 @@ var PROGRAM *CXProgram //Why do we have global?
 // Initializing `CXProgram` structure where packages, structs, functions and
 // global variables that belong to core packages are stored.
 func init() {
-	prgrm := CXProgram{Packages: make(map[string]CXPackageIndex, 0)}
+	prgrm := CXProgram{Packages: make(map[string]CXPackageIndex, 0), CXFunctions: make([]CXFunction, 0)}
 	PROGRAM = &prgrm
 }

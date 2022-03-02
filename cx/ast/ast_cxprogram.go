@@ -73,6 +73,7 @@ func MakeProgram() *CXProgram {
 	minHeapSize := minHeapSize()
 	newPrgrm := &CXProgram{
 		Packages:       make(map[string]CXPackageIndex, 0),
+		CXFunctions:    make([]CXFunction, 0),
 		CurrentPackage: -1,
 		CallStack:      make([]CXCall, constants.CALLSTACK_SIZE),
 		Memory:         make([]byte, constants.STACK_SIZE+minHeapSize),
@@ -152,6 +153,7 @@ func (cxprogram *CXProgram) RemovePackage(modName string) {
 func (cxprogram *CXProgram) AddFunctionInArray(fn *CXFunction) CXFunctionIndex {
 	// The index of fn after it will be added in the array
 	fn.Index = len(cxprogram.CXFunctions)
+
 	cxprogram.CXFunctions = append(cxprogram.CXFunctions, *fn)
 
 	return CXFunctionIndex(fn.Index)

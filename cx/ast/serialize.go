@@ -224,24 +224,26 @@ func serializeExpression(prgrm *CXProgram, expr *CXExpression, s *SerializedCXPr
 			panic(err)
 		}
 
-		if cxAtomicOp.Operator == nil {
+		cxAtomicOpOperator := prgrm.GetFunctionFromArray(cxAtomicOp.Operator)
+
+		if cxAtomicOpOperator == nil {
 			// then it's a declaration
 			sExpr.OperatorOffset = sNil
 			sExpr.IsNative = serializeBoolean(false)
 			sExpr.OpCode = int64(-1)
-		} else if cxAtomicOp.Operator.IsBuiltIn() {
+		} else if cxAtomicOpOperator.IsBuiltIn() {
 			sExpr.OperatorOffset = sNil
 			sExpr.IsNative = serializeBoolean(true)
-			sExpr.OpCode = int64(cxAtomicOp.Operator.AtomicOPCode)
+			sExpr.OpCode = int64(cxAtomicOpOperator.AtomicOPCode)
 		} else {
 			sExpr.IsNative = serializeBoolean(false)
 			sExpr.OpCode = sNil
 
-			opPkg, err := prgrm.GetPackageFromArray(cxAtomicOp.Operator.Package)
+			opPkg, err := prgrm.GetPackageFromArray(cxAtomicOpOperator.Package)
 			if err != nil {
 				panic(err)
 			}
-			opName := opPkg.Name + "." + cxAtomicOp.Operator.Name
+			opName := opPkg.Name + "." + cxAtomicOpOperator.Name
 			if opOff, found := s.FunctionsMap[opName]; found {
 				sExpr.OperatorOffset = int64(opOff)
 			}
@@ -1110,11 +1112,15 @@ func deserializeExpression(sExpr *serializedExpression, s *SerializedCXProgram, 
 		expr.Index = index
 		expr.Type = CX_LINE
 	case int64(CX_ATOMIC_OPERATOR):
-		cxAtomicOp := &CXAtomicOperator{}
+		cxAtomicOpOperatorIdx := prgrm.AddFunctionInArray(&CXFunction{})
+		cxAtomicOp := &CXAtomicOperator{Operator: cxAtomicOpOperatorIdx}
+
 		if deserializeBool(sExpr.IsNative) {
-			cxAtomicOp.Operator = Natives[int(sExpr.OpCode)]
+			opIdx := prgrm.AddFunctionInArray(Natives[int(sExpr.OpCode)])
+			cxAtomicOp.Operator = opIdx
 		} else {
-			cxAtomicOp.Operator = deserializeOperator(sExpr, s, prgrm)
+			opIdx := prgrm.AddFunctionInArray(deserializeOperator(sExpr, s, prgrm))
+			cxAtomicOp.Operator = opIdx
 		}
 
 		cxAtomicOp.Inputs = prgrm.AddPointerArgsToCXArgsArray(deserializeArguments(sExpr.InputsOffset, sExpr.InputsSize, s, prgrm))

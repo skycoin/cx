@@ -56,7 +56,8 @@ func (cxe CXExpression) IsBreak(prgrm *CXProgram) bool {
 		panic(err)
 	}
 
-	return cxAtomicOp.Operator != nil && cxAtomicOp.Operator.AtomicOPCode == constants.OP_BREAK
+	cxAtomicOpOperator := prgrm.GetFunctionFromArray(cxAtomicOp.Operator)
+	return cxAtomicOpOperator != nil && cxAtomicOpOperator.AtomicOPCode == constants.OP_BREAK
 }
 
 // IsContinue checks if expression type is continue
@@ -66,7 +67,8 @@ func (cxe CXExpression) IsContinue(prgrm *CXProgram) bool {
 		panic(err)
 	}
 
-	return cxAtomicOp.Operator != nil && cxAtomicOp.Operator.AtomicOPCode == constants.OP_CONTINUE
+	cxAtomicOpOperator := prgrm.GetFunctionFromArray(cxAtomicOp.Operator)
+	return cxAtomicOpOperator != nil && cxAtomicOpOperator.AtomicOPCode == constants.OP_CONTINUE
 }
 
 // IsUndType checks if expression type is und type
@@ -76,7 +78,8 @@ func (cxe CXExpression) IsUndType(prgrm *CXProgram) bool {
 		panic(err)
 	}
 
-	return cxAtomicOp.Operator != nil && IsOperator(cxAtomicOp.Operator.AtomicOPCode)
+	cxAtomicOpOperator := prgrm.GetFunctionFromArray(cxAtomicOp.Operator)
+	return cxAtomicOpOperator != nil && IsOperator(cxAtomicOpOperator.AtomicOPCode)
 
 }
 

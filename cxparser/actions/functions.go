@@ -93,8 +93,8 @@ func isParseOp(prgrm *ast.CXProgram, expr *ast.CXExpression) bool {
 	if err != nil {
 		panic(err)
 	}
-
-	if exprAtomicOp.Operator != nil && exprAtomicOp.Operator.AtomicOPCode > constants.START_PARSE_OPS && exprAtomicOp.Operator.AtomicOPCode < constants.END_PARSE_OPS {
+	exprAtomicOpOperator := prgrm.GetFunctionFromArray(exprAtomicOp.Operator)
+	if exprAtomicOpOperator != nil && exprAtomicOpOperator.AtomicOPCode > constants.START_PARSE_OPS && exprAtomicOpOperator.AtomicOPCode < constants.END_PARSE_OPS {
 		return true
 	}
 	return false
@@ -108,9 +108,9 @@ func CheckUndValidTypes(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 	if err != nil {
 		panic(err)
 	}
-
-	if exprAtomicOp.Operator != nil && ast.IsOperator(exprAtomicOp.Operator.AtomicOPCode) && !IsAllArgsBasicTypes(prgrm, expr) {
-		println(ast.CompilationError(CurrentFile, LineNo), fmt.Sprintf("invalid argument types for '%s' operator", ast.OpNames[exprAtomicOp.Operator.AtomicOPCode]))
+	exprAtomicOpOperator := prgrm.GetFunctionFromArray(exprAtomicOp.Operator)
+	if exprAtomicOpOperator != nil && ast.IsOperator(exprAtomicOpOperator.AtomicOPCode) && !IsAllArgsBasicTypes(prgrm, expr) {
+		println(ast.CompilationError(CurrentFile, LineNo), fmt.Sprintf("invalid argument types for '%s' operator", ast.OpNames[exprAtomicOpOperator.AtomicOPCode]))
 	}
 }
 
@@ -190,6 +190,7 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fn *ast.CXFunction, inputs, outpu
 			if err != nil {
 				panic(err)
 			}
+			exprAtomicOpOperator := prgrm.GetFunctionFromArray(exprAtomicOp.Operator)
 
 			exprBeforeAtomicOp, err := prgrm.GetPreviousCXAtomicOpFromExpressions(fn.Expressions, i-1)
 			if err != nil {
@@ -197,7 +198,7 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fn *ast.CXFunction, inputs, outpu
 			}
 
 			if expr.IsMethodCall() {
-				arg = prgrm.GetCXArgFromArray(exprAtomicOp.Operator.Outputs[0])
+				arg = prgrm.GetCXArgFromArray(exprAtomicOpOperator.Outputs[0])
 			} else {
 				arg = prgrm.GetCXArgFromArray(exprAtomicOp.Inputs[0])
 			}
@@ -235,8 +236,8 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 	if err != nil {
 		panic(err)
 	}
-
-	if cxAtomicOp.Operator == nil {
+	cxAtomicOpOperator := prgrm.GetFunctionFromArray(cxAtomicOp.Operator)
+	if cxAtomicOpOperator == nil {
 		cxAtomicOpOutput := prgrm.GetCXArgFromArray(cxAtomicOp.Outputs[0])
 		opName := cxAtomicOpOutput.Name
 		opPkgIdx := cxAtomicOpOutput.Package
@@ -247,7 +248,7 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 		}
 
 		if op, err := prgrm.GetFunction(opName, opPkg.Name); err == nil {
-			cxAtomicOp.Operator = op
+			cxAtomicOp.Operator = ast.CXFunctionIndex(op.Index)
 		} else if cxAtomicOpOutput.Fields == nil {
 			// then it's not a possible method call
 			println(ast.CompilationError(CurrentFile, LineNo), err.Error())
@@ -271,10 +272,11 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 		if err != nil {
 			panic(err)
 		}
+		inpExprAtomicOpOperator := prgrm.GetFunctionFromArray(inpExprAtomicOp.Operator)
 
 		inpExprCXLine, _ := prgrm.GetPreviousCXLine(args, i)
 
-		if inpExprAtomicOp.Operator == nil {
+		if inpExprAtomicOpOperator == nil {
 			// then it's a literal
 			cxAtomicOp.AddInput(prgrm, inpExprAtomicOp.Outputs[0])
 		} else {
@@ -282,7 +284,7 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 			if len(inpExprAtomicOp.Outputs) < 1 {
 				var out *ast.CXArgument
 
-				inpExprAtomicOpOperatorOutput := prgrm.GetCXArgFromArray(inpExprAtomicOp.Operator.Outputs[0])
+				inpExprAtomicOpOperatorOutput := prgrm.GetCXArgFromArray(inpExprAtomicOpOperator.Outputs[0])
 				if inpExprAtomicOpOperatorOutput.Type == types.UNDEFINED {
 					// if undefined type, then adopt argument's type
 					inpExprAtomicOpInput := prgrm.GetCXArgFromArray(inpExprAtomicOp.Inputs[0])
@@ -375,8 +377,9 @@ func ProcessOperatorExpression(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 	if err != nil {
 		panic(err)
 	}
+	cxAtomicOpOperator := prgrm.GetFunctionFromArray(cxAtomicOp.Operator)
 
-	if cxAtomicOp.Operator != nil && ast.IsOperator(cxAtomicOp.Operator.AtomicOPCode) {
+	if cxAtomicOpOperator != nil && ast.IsOperator(cxAtomicOpOperator.AtomicOPCode) {
 		if err := checkSameNativeType(prgrm, expr); err != nil {
 			println(ast.CompilationError(CurrentFile, LineNo), err.Error())
 		}
@@ -386,7 +389,7 @@ func ProcessOperatorExpression(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 			out := prgrm.GetCXArgFromArray(outIdx)
 
 			size := types.Pointer(1)
-			if !ast.IsComparisonOperator(cxAtomicOp.Operator.AtomicOPCode) {
+			if !ast.IsComparisonOperator(cxAtomicOpOperator.AtomicOPCode) {
 				size = ast.GetSize(prgrm, prgrm.GetCXArgFromArray(cxAtomicOp.Inputs[0]).GetAssignmentElement(prgrm))
 			}
 			out.Size = size
@@ -425,14 +428,15 @@ func processTestExpression(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 	if err != nil {
 		panic(err)
 	}
+	cxAtomicOpOperator := prgrm.GetFunctionFromArray(cxAtomicOp.Operator)
 
-	if cxAtomicOp.Operator != nil {
-		opCode := cxAtomicOp.Operator.AtomicOPCode
+	if cxAtomicOpOperator != nil {
+		opCode := cxAtomicOpOperator.AtomicOPCode
 		if opCode == constants.OP_ASSERT || opCode == constants.OP_TEST || opCode == constants.OP_PANIC {
 			inp1Type := ast.GetFormattedType(prgrm, prgrm.GetCXArgFromArray(cxAtomicOp.Inputs[0]))
 			inp2Type := ast.GetFormattedType(prgrm, prgrm.GetCXArgFromArray(cxAtomicOp.Inputs[1]))
 			if inp1Type != inp2Type {
-				println(ast.CompilationError(CurrentFile, LineNo), fmt.Sprintf("first and second input arguments' types are not equal in '%s' call ('%s' != '%s')", ast.OpNames[cxAtomicOp.Operator.AtomicOPCode], inp1Type, inp2Type))
+				println(ast.CompilationError(CurrentFile, LineNo), fmt.Sprintf("first and second input arguments' types are not equal in '%s' call ('%s' != '%s')", ast.OpNames[cxAtomicOpOperator.AtomicOPCode], inp1Type, inp2Type))
 			}
 		}
 	}
@@ -565,8 +569,9 @@ func CheckRedeclared(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXArgument
 	if err != nil {
 		panic(err)
 	}
+	cxAtomicOpOperator := prgrm.GetFunctionFromArray(cxAtomicOp.Operator)
 
-	if cxAtomicOp.Operator == nil && len(cxAtomicOp.Outputs) > 0 && len(cxAtomicOp.Inputs) == 0 {
+	if cxAtomicOpOperator == nil && len(cxAtomicOp.Outputs) > 0 && len(cxAtomicOp.Inputs) == 0 {
 		lastIdx := len(*symbols) - 1
 
 		symPkg, err := prgrm.GetPackageFromArray(sym.Package)
@@ -599,12 +604,13 @@ func ProcessGoTos(prgrm *ast.CXProgram, fn *ast.CXFunction, exprs []ast.CXExpres
 		if err != nil {
 			panic(err)
 		}
+		cxAtomicOpOperator := prgrm.GetFunctionFromArray(cxAtomicOp.Operator)
 
 		opGotoFn := ast.Natives[constants.OP_IDENTITY]
-		if cxAtomicOp.Operator != nil {
-			opGotoFn.Index = cxAtomicOp.Operator.Index
+		if cxAtomicOpOperator != nil {
+			opGotoFn.Index = cxAtomicOpOperator.Index
 		}
-		if cxAtomicOp.Operator == opGotoFn {
+		if cxAtomicOpOperator == opGotoFn {
 			// then it's a goto
 			for j, e := range exprs {
 				ecxAtomicOp, _, _, err := prgrm.GetOperation(&e)
@@ -629,6 +635,7 @@ func checkMatchParamTypes(prgrm *ast.CXProgram, expr *ast.CXExpression, expected
 	if err != nil {
 		panic(err)
 	}
+	cxAtomicOpOperator := prgrm.GetFunctionFromArray(cxAtomicOp.Operator)
 
 	for i, inp := range expected {
 		expectedType := ast.GetFormattedType(prgrm, expected[i])
@@ -645,10 +652,10 @@ func checkMatchParamTypes(prgrm *ast.CXProgram, expr *ast.CXExpression, expected
 
 		if expectedType != receivedType && inp.Type != types.UNDEFINED {
 			var opName string
-			if cxAtomicOp.Operator.IsBuiltIn() {
-				opName = ast.OpNames[cxAtomicOp.Operator.AtomicOPCode]
+			if cxAtomicOpOperator.IsBuiltIn() {
+				opName = ast.OpNames[cxAtomicOpOperator.AtomicOPCode]
 			} else {
-				opName = cxAtomicOp.Operator.Name
+				opName = cxAtomicOpOperator.Name
 			}
 
 			if isInputs {
@@ -663,7 +670,7 @@ func checkMatchParamTypes(prgrm *ast.CXProgram, expr *ast.CXExpression, expected
 		// FIXME: There are some expressions added by the cxgo where temporary variables are used.
 		// These temporary variables' types are not properly being set. That's why we use !cxcore.IsTempVar to
 		// exclude these cases for now.
-		if cxAtomicOp.Operator.AtomicOPCode == constants.OP_IDENTITY && !IsTempVar(prgrm.GetCXArgFromArray(cxAtomicOp.Outputs[0]).Name) {
+		if cxAtomicOpOperator.AtomicOPCode == constants.OP_IDENTITY && !IsTempVar(prgrm.GetCXArgFromArray(cxAtomicOp.Outputs[0]).Name) {
 			inpType := ast.GetFormattedType(prgrm, prgrm.GetCXArgFromArray(cxAtomicOp.Inputs[0]))
 			outType := ast.GetFormattedType(prgrm, prgrm.GetCXArgFromArray(cxAtomicOp.Outputs[0]))
 
@@ -681,22 +688,23 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) {
 	if err != nil {
 		panic(err)
 	}
+	cxAtomicOpOperator := prgrm.GetFunctionFromArray(cxAtomicOp.Operator)
 
 	exprCXLine, _ := prgrm.GetPreviousCXLine(exprs, currIndex)
 
-	if cxAtomicOp.Operator != nil {
+	if cxAtomicOpOperator != nil {
 		opName := cxAtomicOp.GetOperatorName(prgrm)
 
 		// checking if number of inputs is less than the required number of inputs
-		if len(cxAtomicOp.Inputs) != len(cxAtomicOp.Operator.Inputs) {
-			if !(len(cxAtomicOp.Operator.Inputs) > 0 && prgrm.GetCXArgFromArray(cxAtomicOp.Operator.Inputs[len(cxAtomicOp.Operator.Inputs)-1]).Type != types.UNDEFINED) {
+		if len(cxAtomicOp.Inputs) != len(cxAtomicOpOperator.Inputs) {
+			if !(len(cxAtomicOpOperator.Inputs) > 0 && prgrm.GetCXArgFromArray(cxAtomicOpOperator.Inputs[len(cxAtomicOpOperator.Inputs)-1]).Type != types.UNDEFINED) {
 				// if the last input is of type cxcore.TYPE_UNDEFINED then it might be a variadic function, such as printf
 			} else {
 				// then we need to be strict in the number of inputs
 				var plural1 string
 				var plural2 string = "s"
 				var plural3 string = "were"
-				if len(cxAtomicOp.Operator.Inputs) > 1 {
+				if len(cxAtomicOpOperator.Inputs) > 1 {
 					plural1 = "s"
 				}
 				if len(cxAtomicOp.Inputs) == 1 {
@@ -704,17 +712,17 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) {
 					plural3 = "was"
 				}
 
-				println(ast.CompilationError(exprCXLine.FileName, exprCXLine.LineNumber), fmt.Sprintf("operator '%s' expects %d input%s, but %d input argument%s %s provided", opName, len(cxAtomicOp.Operator.Inputs), plural1, len(cxAtomicOp.Inputs), plural2, plural3))
+				println(ast.CompilationError(exprCXLine.FileName, exprCXLine.LineNumber), fmt.Sprintf("operator '%s' expects %d input%s, but %d input argument%s %s provided", opName, len(cxAtomicOpOperator.Inputs), plural1, len(cxAtomicOp.Inputs), plural2, plural3))
 				return
 			}
 		}
 
 		// checking if number of expr.ProgramOutput matches number of Operator.ProgramOutput
-		if len(cxAtomicOp.Outputs) != len(cxAtomicOp.Operator.Outputs) {
+		if len(cxAtomicOp.Outputs) != len(cxAtomicOpOperator.Outputs) {
 			var plural1 string
 			var plural2 string = "s"
 			var plural3 string = "were"
-			if len(cxAtomicOp.Operator.Outputs) > 1 {
+			if len(cxAtomicOpOperator.Outputs) > 1 {
 				plural1 = "s"
 			}
 			if len(cxAtomicOp.Outputs) == 1 {
@@ -722,12 +730,12 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) {
 				plural3 = "was"
 			}
 
-			println(ast.CompilationError(exprCXLine.FileName, exprCXLine.LineNumber), fmt.Sprintf("operator '%s' expects to return %d output%s, but %d receiving argument%s %s provided", opName, len(cxAtomicOp.Operator.Outputs), plural1, len(cxAtomicOp.Outputs), plural2, plural3))
+			println(ast.CompilationError(exprCXLine.FileName, exprCXLine.LineNumber), fmt.Sprintf("operator '%s' expects to return %d output%s, but %d receiving argument%s %s provided", opName, len(cxAtomicOpOperator.Outputs), plural1, len(cxAtomicOp.Outputs), plural2, plural3))
 			os.Exit(constants.CX_COMPILATION_ERROR)
 		}
 	}
 
-	if cxAtomicOp.Operator != nil && cxAtomicOp.Operator.IsBuiltIn() && cxAtomicOp.Operator.AtomicOPCode == constants.OP_IDENTITY {
+	if cxAtomicOpOperator != nil && cxAtomicOpOperator.IsBuiltIn() && cxAtomicOpOperator.AtomicOPCode == constants.OP_IDENTITY {
 		for i := range cxAtomicOp.Inputs {
 			var expectedType string
 			var receivedType string
@@ -767,12 +775,12 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) {
 	}
 
 	// then it's a function call and not a declaration
-	if cxAtomicOp.Operator != nil {
+	if cxAtomicOpOperator != nil {
 		// checking inputs matching operator's inputs
-		checkMatchParamTypes(prgrm, &exprs[currIndex], prgrm.ConvertIndexArgsToPointerArgs(cxAtomicOp.Operator.Inputs), prgrm.ConvertIndexArgsToPointerArgs(cxAtomicOp.Inputs), true)
+		checkMatchParamTypes(prgrm, &exprs[currIndex], prgrm.ConvertIndexArgsToPointerArgs(cxAtomicOpOperator.Inputs), prgrm.ConvertIndexArgsToPointerArgs(cxAtomicOp.Inputs), true)
 
 		// checking outputs matching operator's outputs
-		checkMatchParamTypes(prgrm, &exprs[currIndex], prgrm.ConvertIndexArgsToPointerArgs(cxAtomicOp.Operator.Outputs), prgrm.ConvertIndexArgsToPointerArgs(cxAtomicOp.Outputs), false)
+		checkMatchParamTypes(prgrm, &exprs[currIndex], prgrm.ConvertIndexArgsToPointerArgs(cxAtomicOpOperator.Outputs), prgrm.ConvertIndexArgsToPointerArgs(cxAtomicOp.Outputs), false)
 	}
 }
 
@@ -781,12 +789,13 @@ func ProcessStringAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 	if err != nil {
 		panic(err)
 	}
+	cxAtomicOpOperator := prgrm.GetFunctionFromArray(cxAtomicOp.Operator)
 
 	opIdentFn := ast.Natives[constants.OP_IDENTITY]
-	if cxAtomicOp.Operator != nil {
-		opIdentFn.Index = cxAtomicOp.Operator.Index
+	if cxAtomicOpOperator != nil {
+		opIdentFn.Index = cxAtomicOpOperator.Index
 	}
-	if cxAtomicOp.Operator == opIdentFn {
+	if cxAtomicOpOperator == opIdentFn {
 		for i, outIdx := range cxAtomicOp.Outputs {
 			out := prgrm.GetCXArgFromArray(outIdx)
 			if len(cxAtomicOp.Inputs) > i {
@@ -847,12 +856,13 @@ func ProcessSliceAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 	if err != nil {
 		panic(err)
 	}
+	cxAtomicOpOperator := prgrm.GetFunctionFromArray(cxAtomicOp.Operator)
 
 	opIdentFn := ast.Natives[constants.OP_IDENTITY]
-	if cxAtomicOp.Operator != nil {
-		opIdentFn.Index = cxAtomicOp.Operator.Index
+	if cxAtomicOpOperator != nil {
+		opIdentFn.Index = cxAtomicOpOperator.Index
 	}
-	if cxAtomicOp.Operator == opIdentFn {
+	if cxAtomicOpOperator == opIdentFn {
 		var inp *ast.CXArgument
 		var out *ast.CXArgument
 
@@ -863,7 +873,7 @@ func ProcessSliceAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 			out.PassBy = constants.PASSBY_VALUE
 		}
 	}
-	if cxAtomicOp.Operator != nil && !cxAtomicOp.Operator.IsBuiltIn() {
+	if cxAtomicOpOperator != nil && !cxAtomicOpOperator.IsBuiltIn() {
 		// then it's a function call
 		for _, inpIdx := range cxAtomicOp.Inputs {
 			inp := prgrm.GetCXArgFromArray(inpIdx)
@@ -997,7 +1007,7 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 					}
 
 					if fn, err := strctPkg.GetMethod(prgrm, strct.Name+"."+prgrm.GetCXArgFromArray(out.Fields[len(out.Fields)-1]).Name, strct.Name); err == nil {
-						cxAtomicOp.Operator = fn
+						cxAtomicOp.Operator = ast.CXFunctionIndex(fn.Index)
 					} else {
 						panic("")
 					}
@@ -1028,7 +1038,7 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 					}
 
 					if fn, err := strctPkg.GetMethod(prgrm, strct.Name+"."+prgrm.GetCXArgFromArray(inp.Fields[len(inp.Fields)-1]).Name, strct.Name); err == nil {
-						cxAtomicOp.Operator = fn
+						cxAtomicOp.Operator = ast.CXFunctionIndex(fn.Index)
 					} else {
 						panic(err)
 					}
@@ -1061,7 +1071,7 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 					}
 
 					if fn, err := strctPkg.GetMethod(prgrm, strct.Name+"."+prgrm.GetCXArgFromArray(out.Fields[len(out.Fields)-1]).Name, strct.Name); err == nil {
-						cxAtomicOp.Operator = fn
+						cxAtomicOp.Operator = ast.CXFunctionIndex(fn.Index)
 					} else {
 						panic(err)
 					}
@@ -1100,7 +1110,7 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 				}
 
 				if fn, err := strctPkg.GetMethod(prgrm, strct.Name+"."+prgrm.GetCXArgFromArray(out.Fields[len(out.Fields)-1]).Name, strct.Name); err == nil {
-					cxAtomicOp.Operator = fn
+					cxAtomicOp.Operator = ast.CXFunctionIndex(fn.Index)
 				} else {
 					panic("")
 				}
@@ -1113,9 +1123,10 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 				// expr.ProgramOutput = nil
 			}
 		}
+		cxAtomicOpOperator := prgrm.GetFunctionFromArray(cxAtomicOp.Operator)
 
 		// checking if receiver is sent as pointer or not
-		if prgrm.GetCXArgFromArray(cxAtomicOp.Operator.Inputs[0]).IsPointer() {
+		if prgrm.GetCXArgFromArray(cxAtomicOpOperator.Inputs[0]).IsPointer() {
 			prgrm.GetCXArgFromArray(cxAtomicOp.Inputs[0]).PassBy = constants.PASSBY_REFERENCE
 		}
 	}
@@ -1145,12 +1156,13 @@ func ProcessTempVariable(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 	if err != nil {
 		panic(err)
 	}
+	cxAtomicOpOperator := prgrm.GetFunctionFromArray(cxAtomicOp.Operator)
 
 	opIdentFn := ast.Natives[constants.OP_IDENTITY]
-	if cxAtomicOp.Operator != nil {
-		opIdentFn.Index = cxAtomicOp.Operator.Index
+	if cxAtomicOpOperator != nil {
+		opIdentFn.Index = cxAtomicOpOperator.Index
 	}
-	if cxAtomicOp.Operator != nil && (cxAtomicOp.Operator == opIdentFn || ast.IsArithmeticOperator(cxAtomicOp.Operator.AtomicOPCode)) && len(cxAtomicOp.Outputs) > 0 && len(cxAtomicOp.Inputs) > 0 {
+	if cxAtomicOpOperator != nil && (cxAtomicOpOperator == opIdentFn || ast.IsArithmeticOperator(cxAtomicOpOperator.AtomicOPCode)) && len(cxAtomicOp.Outputs) > 0 && len(cxAtomicOp.Inputs) > 0 {
 		arg := prgrm.GetCXArgFromArray(cxAtomicOp.Outputs[0])
 		name := arg.Name
 		if IsTempVar(name) {

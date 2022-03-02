@@ -116,10 +116,12 @@ func calcFnSize(prgrm *cxast.CXProgram, fn *cxast.CXFunction) (size types.Pointe
 			panic(err)
 		}
 
+		cxAtomicOpOperator := prgrm.GetFunctionFromArray(cxAtomicOp.Operator)
+
 		// TODO: We're only considering one output per operator.
 		/// Not because of practicality, but because multiple returns in CX are currently buggy anyway.
-		if len(cxAtomicOp.Operator.Outputs) > 0 {
-			size += prgrm.GetCXArgFromArray(cxAtomicOp.Operator.Outputs[0]).TotalSize
+		if len(cxAtomicOpOperator.Outputs) > 0 {
+			size += prgrm.GetCXArgFromArray(cxAtomicOpOperator.Outputs[0]).TotalSize
 		}
 	}
 
@@ -136,14 +138,16 @@ func getRandInp(prgrm *cxast.CXProgram, expr *cxast.CXExpression) *cxast.CXArgum
 		panic(err)
 	}
 
+	cxAtomicOpOperator := prgrm.GetFunctionFromArray(cxAtomicOp.Operator)
+
 	cxAtomicOpFunction := prgrm.GetFunctionFromArray(cxAtomicOp.Function)
 
 	// Find available arg options.
-	optionsFromInputs, optionsFromExpressions := findArgOptions(prgrm, expr, prgrm.GetCXArgFromArray(cxAtomicOp.Operator.Inputs[0]).Type)
+	optionsFromInputs, optionsFromExpressions := findArgOptions(prgrm, expr, prgrm.GetCXArgFromArray(cxAtomicOpOperator.Inputs[0]).Type)
 	lengthOfOptions := len(optionsFromInputs) + len(optionsFromExpressions)
 
 	// if no options available or if operator is jump, add new i32_LT expression.
-	if lengthOfOptions == 0 || cxAtomicOp.Operator.AtomicOPCode == cxconstants.OP_JMP {
+	if lengthOfOptions == 0 || cxAtomicOpOperator.AtomicOPCode == cxconstants.OP_JMP {
 		// TODO: improve process when there's OP_JMP
 		return addNewExpression(prgrm, expr, cxast.OpCodes["i32.lt"])
 	}
@@ -159,8 +163,8 @@ func getRandInp(prgrm *cxast.CXProgram, expr *cxast.CXExpression) *cxast.CXArgum
 		if err != nil {
 			panic(err)
 		}
-
-		argToCopy = prgrm.GetCXArgFromArray(cxAtomicOp1.Operator.Outputs[0])
+		cxAtomicOp1Operator := prgrm.GetFunctionFromArray(cxAtomicOp1.Operator)
+		argToCopy = prgrm.GetCXArgFromArray(cxAtomicOp1Operator.Outputs[0])
 	}
 
 	// Making a copy of the argument
@@ -195,12 +199,13 @@ func addNewExpression(prgrm *cxast.CXProgram, expr *cxast.CXExpression, expressi
 	if err != nil {
 		panic(err)
 	}
+	newExprCXAtomicOpOperator := prgrm.GetFunctionFromArray(newExprCXAtomicOp.Operator)
 
-	newExprCXAtomicOp.Operator.Name = cxast.OpNames[expressionType]
+	newExprCXAtomicOpOperator.Name = cxast.OpNames[expressionType]
 
 	// Add expression's inputs
 	for i := 0; i < 2; i++ {
-		optionsFromInputs, optionsFromExpressions := findArgOptions(prgrm, expr, prgrm.GetCXArgFromArray(newExprCXAtomicOp.Operator.Inputs[0]).Type)
+		optionsFromInputs, optionsFromExpressions := findArgOptions(prgrm, expr, prgrm.GetCXArgFromArray(newExprCXAtomicOpOperator.Inputs[0]).Type)
 		rndExprIdx = rand.Intn(len(optionsFromInputs) + len(optionsFromExpressions))
 		if rndExprIdx < len(optionsFromInputs) {
 			argToAdd = exprCXAtomicOpFunction.Inputs[optionsFromInputs[rndExprIdx]]
@@ -273,6 +278,7 @@ func getRandOut(prgrm *cxast.CXProgram, expr *cxast.CXExpression) *cxast.CXArgum
 	if err != nil {
 		panic(err)
 	}
+	cxAtomicOpOperator := prgrm.GetFunctionFromArray(cxAtomicOp.Operator)
 
 	cxAtomicOpFunction := prgrm.GetFunctionFromArray(cxAtomicOp.Function)
 
@@ -284,8 +290,9 @@ func getRandOut(prgrm *cxast.CXProgram, expr *cxast.CXExpression) *cxast.CXArgum
 		if err != nil {
 			panic(err)
 		}
+		expCXAtomicOpOperator := prgrm.GetFunctionFromArray(expCXAtomicOp.Operator)
 
-		if len(expCXAtomicOp.Operator.Outputs) > 0 && prgrm.GetCXArgFromArray(expCXAtomicOp.Operator.Outputs[0]).Type == prgrm.GetCXArgFromArray(cxAtomicOp.Operator.Outputs[0]).Type {
+		if len(expCXAtomicOpOperator.Outputs) > 0 && prgrm.GetCXArgFromArray(expCXAtomicOpOperator.Outputs[0]).Type == prgrm.GetCXArgFromArray(cxAtomicOpOperator.Outputs[0]).Type {
 			optionsFromExpressions = append(optionsFromExpressions, i)
 		}
 	}
@@ -296,9 +303,9 @@ func getRandOut(prgrm *cxast.CXProgram, expr *cxast.CXExpression) *cxast.CXArgum
 	if err != nil {
 		panic(err)
 	}
-
+	copyCXAtomicOpOperator := prgrm.GetFunctionFromArray(copyCXAtomicOp.Operator)
 	// Making a copy of the argument
-	err = copier.Copy(&arg, copyCXAtomicOp.Operator.Outputs[0])
+	err = copier.Copy(&arg, copyCXAtomicOpOperator.Outputs[0])
 	if err != nil {
 		panic(err)
 	}
@@ -330,11 +337,12 @@ func determineExpressionOffset(prgrm *cxast.CXProgram, arg *cxast.CXArgument, ex
 		if err != nil {
 			panic(err)
 		}
+		cxAtomicOp1Operator := prgrm.GetFunctionFromArray(cxAtomicOp1.Operator)
 
-		if len(cxAtomicOp1.Operator.Outputs) > 0 {
+		if len(cxAtomicOp1Operator.Outputs) > 0 {
 			// TODO: We're only considering one output per operator.
 			/// Not because of practicality, but because multiple returns in CX are currently buggy anyway.
-			arg.Offset += prgrm.GetCXArgFromArray(cxAtomicOp1.Operator.Outputs[0]).TotalSize
+			arg.Offset += prgrm.GetCXArgFromArray(cxAtomicOp1Operator.Outputs[0]).TotalSize
 		}
 	}
 }

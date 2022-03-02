@@ -221,8 +221,9 @@ func QueryExpressions(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpr
 		if err != nil {
 			panic(err)
 		}
+		exCXAtomicOpOperator := prgrm.GetFunctionFromArray(exCXAtomicOp.Operator)
 
-		if exCXAtomicOp.Operator == nil || exCXAtomicOp.Label == "" {
+		if exCXAtomicOpOperator == nil || exCXAtomicOp.Label == "" {
 			// then it's a variable declaration
 			// or it's a non-labeled expression
 			continue
@@ -230,12 +231,12 @@ func QueryExpressions(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpr
 
 		// var opNameB []byte
 		opNameOffset := types.Pointer(0)
-		if exCXAtomicOp.Operator.IsBuiltIn() {
+		if exCXAtomicOpOperator.IsBuiltIn() {
 			// opNameB = encoder.Serialize(OpNames[ex.Operator.OpCode])
-			opNameOffset = types.AllocWrite_str_data(prgrm, prgrm.Memory, ast.OpNames[exCXAtomicOp.Operator.AtomicOPCode])
+			opNameOffset = types.AllocWrite_str_data(prgrm, prgrm.Memory, ast.OpNames[exCXAtomicOpOperator.AtomicOPCode])
 		} else {
 			// opNameB = encoder.Serialize(ex.Operator.Name)
-			opNameOffset = types.AllocWrite_str_data(prgrm, prgrm.Memory, exCXAtomicOp.Operator.Name)
+			opNameOffset = types.AllocWrite_str_data(prgrm, prgrm.Memory, exCXAtomicOpOperator.Name)
 		}
 
 		// opNameOffset := AllocateSeq(len(opNameB))

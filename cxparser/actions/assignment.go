@@ -143,12 +143,14 @@ func ShortAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression, exprCXLine *a
 	if err != nil {
 		panic(err)
 	}
+	fromCXAtomicOpOperator := prgrm.GetFunctionFromArray(fromCXAtomicOp.Operator)
 
 	cxAtomicOp.AddInput(prgrm, toCXAtomicOp.Outputs[0])
 	cxAtomicOp.AddOutput(prgrm, toCXAtomicOp.Outputs[0])
+
 	cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
 
-	if fromCXAtomicOp.Operator == nil {
+	if fromCXAtomicOpOperator == nil {
 		cxAtomicOp.AddInput(prgrm, fromCXAtomicOp.Outputs[0])
 	} else {
 		sym := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(prgrm.GetCXArgFromArray(fromCXAtomicOp.Inputs[0]).Type)
@@ -156,11 +158,12 @@ func ShortAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression, exprCXLine *a
 		sym.PreviouslyDeclared = true
 		symIdx := prgrm.AddCXArgInArray(sym)
 		fromCXAtomicOp.AddOutput(prgrm, symIdx)
+
 		cxAtomicOp.AddInput(prgrm, symIdx)
 	}
 
 	//must check if from expression is naked previously declared variable
-	if len(from) == 1 && fromCXAtomicOp.Operator == nil && len(fromCXAtomicOp.Outputs) > 0 && len(fromCXAtomicOp.Inputs) == 0 {
+	if len(from) == 1 && fromCXAtomicOpOperator == nil && len(fromCXAtomicOp.Outputs) > 0 && len(fromCXAtomicOp.Inputs) == 0 {
 		return []ast.CXExpression{*exprCXLine, *expr}
 	} else {
 		return append(from, *exprCXLine, *expr)
@@ -177,9 +180,10 @@ func getOutputType(prgrm *ast.CXProgram, expr *ast.CXExpression) *ast.CXArgument
 	if err != nil {
 		panic(err)
 	}
+	cxAtomicOpOperator := prgrm.GetFunctionFromArray(cxAtomicOp.Operator)
 
-	if prgrm.GetCXArgFromArray(cxAtomicOp.Operator.Outputs[0]).Type != types.UNDEFINED {
-		return prgrm.GetCXArgFromArray(cxAtomicOp.Operator.Outputs[0])
+	if prgrm.GetCXArgFromArray(cxAtomicOpOperator.Outputs[0]).Type != types.UNDEFINED {
+		return prgrm.GetCXArgFromArray(cxAtomicOpOperator.Outputs[0])
 	}
 
 	return prgrm.GetCXArgFromArray(cxAtomicOp.Inputs[0])
@@ -198,10 +202,11 @@ func Assignment(prgrm *ast.CXProgram, to []ast.CXExpression, assignOp string, fr
 	if err != nil {
 		panic(err)
 	}
+	fromCXAtomicOpOperator := prgrm.GetFunctionFromArray(fromCXAtomicOp.Operator)
 
 	// Checking if we're trying to assign stuff from a function call
 	// And if that function call actually returns something. If not, throw an error.
-	if fromCXAtomicOp.Operator != nil && len(fromCXAtomicOp.Operator.Outputs) == 0 {
+	if fromCXAtomicOpOperator != nil && len(fromCXAtomicOpOperator.Outputs) == 0 {
 		println(ast.CompilationError(prgrm.GetCXArgFromArray(toCXAtomicOp.Outputs[0]).ArgDetails.FileName, prgrm.GetCXArgFromArray(toCXAtomicOp.Outputs[0]).ArgDetails.FileLine), "trying to use an outputless operator in an assignment")
 		os.Exit(constants.CX_COMPILATION_ERROR)
 	}
@@ -225,7 +230,7 @@ func Assignment(prgrm *ast.CXProgram, to []ast.CXExpression, assignOp string, fr
 		cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
 		var sym *ast.CXArgument
 
-		if fromCXAtomicOp.Operator == nil {
+		if fromCXAtomicOpOperator == nil {
 			// then it's a literal
 			sym = ast.MakeArgument(prgrm.GetCXArgFromArray(toCXAtomicOp.Outputs[0]).Name, CurrentFile, LineNo).AddType(prgrm.GetCXArgFromArray(fromCXAtomicOp.Outputs[0]).Type)
 		} else {
@@ -254,6 +259,7 @@ func Assignment(prgrm *ast.CXProgram, to []ast.CXExpression, assignOp string, fr
 		symIdx := prgrm.AddCXArgInArray(sym)
 
 		cxAtomicOp.AddOutput(prgrm, symIdx)
+
 		for _, toExpr := range to {
 			if toExpr.Type == ast.CX_LINE {
 				continue
@@ -306,8 +312,9 @@ func Assignment(prgrm *ast.CXProgram, to []ast.CXExpression, assignOp string, fr
 		panic(err)
 	}
 
-	if fromCXAtomicOp.Operator == nil {
-		fromCXAtomicOp.Operator = ast.Natives[constants.OP_IDENTITY]
+	if fromCXAtomicOpOperator == nil {
+		opIdx := prgrm.AddFunctionInArray(ast.Natives[constants.OP_IDENTITY])
+		fromCXAtomicOp.Operator = opIdx
 
 		toCXAtomicOpOutput := prgrm.GetCXArgFromArray(toCXAtomicOp.Outputs[0])
 		fromCXAtomicOpOutput := prgrm.GetCXArgFromArray(fromCXAtomicOp.Outputs[0])
@@ -336,12 +343,12 @@ func Assignment(prgrm *ast.CXProgram, to []ast.CXExpression, assignOp string, fr
 		return append(to[:len(to)-1], from...)
 	} else {
 
-		fromCXAtomicOpOperatorOutput := prgrm.GetCXArgFromArray(fromCXAtomicOp.Operator.Outputs[0])
-		if fromCXAtomicOp.Operator.IsBuiltIn() {
+		fromCXAtomicOpOperatorOutput := prgrm.GetCXArgFromArray(fromCXAtomicOpOperator.Outputs[0])
+		if fromCXAtomicOpOperator.IsBuiltIn() {
 			// only assigning as if the operator had only one output defined
 
 			toCXAtomicOpOutput := prgrm.GetCXArgFromArray(toCXAtomicOp.Outputs[0])
-			if fromCXAtomicOp.Operator.AtomicOPCode != constants.OP_IDENTITY {
+			if fromCXAtomicOpOperator.AtomicOPCode != constants.OP_IDENTITY {
 				// it's a short variable declaration
 				toCXAtomicOpOutput.Size = fromCXAtomicOpOperatorOutput.Size
 				toCXAtomicOpOutput.Type = fromCXAtomicOpOperatorOutput.Type

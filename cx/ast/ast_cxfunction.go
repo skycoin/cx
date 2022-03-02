@@ -230,8 +230,13 @@ func (fn *CXFunction) RemoveExpression(line int) {
 
 // MakeAtomicOperatorExpression ...
 func MakeAtomicOperatorExpression(prgrm *CXProgram, op *CXFunction) *CXExpression {
+	var opIdx CXFunctionIndex = -1
+	if op != nil {
+		opIdx = prgrm.AddFunctionInArray(op)
+	}
+
 	index := prgrm.AddCXAtomicOp(&CXAtomicOperator{
-		Operator: op,
+		Operator: opIdx,
 		// Function: -1,
 	})
 

@@ -59,9 +59,10 @@ func IterationExpressions(prgrm *ast.CXProgram, init []ast.CXExpression, cond []
 	if err != nil {
 		panic(err)
 	}
+	lastCondAtomicOpOperator := prgrm.GetFunctionFromArray(lastCondAtomicOp.Operator)
 
 	if len(lastCondAtomicOp.Outputs) < 1 {
-		predicate := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(prgrm.GetCXArgFromArray(lastCondAtomicOp.Operator.Outputs[0]).Type)
+		predicate := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(prgrm.GetCXArgFromArray(lastCondAtomicOpOperator.Outputs[0]).Type)
 		predicate.Package = ast.CXPackageIndex(pkg.Index)
 		predicate.PreviouslyDeclared = true
 		predicateIdx := prgrm.AddCXArgInArray(predicate)
@@ -180,9 +181,10 @@ func SelectionExpressions(prgrm *ast.CXProgram, condExprs []ast.CXExpression, th
 	if err != nil {
 		panic(err)
 	}
+	lastCondExprsAtomicOpOperator := prgrm.GetFunctionFromArray(lastCondExprsAtomicOp.Operator)
 
 	var predicateIdx ast.CXArgumentIndex
-	if lastCondExprsAtomicOp.Operator == nil && !condExprs[len(condExprs)-1].IsMethodCall() {
+	if lastCondExprsAtomicOpOperator == nil && !condExprs[len(condExprs)-1].IsMethodCall() {
 		// then it's a literal
 		predicateIdx = lastCondExprsAtomicOp.Outputs[0]
 	} else {
@@ -195,7 +197,7 @@ func SelectionExpressions(prgrm *ast.CXProgram, condExprs []ast.CXExpression, th
 			lastCondExprsAtomicOp.Inputs = append(lastCondExprsAtomicOp.Outputs, lastCondExprsAtomicOp.Inputs...)
 			lastCondExprsAtomicOp.Outputs = nil
 		} else {
-			predicate.AddType(prgrm.GetCXArgFromArray(lastCondExprsAtomicOp.Operator.Outputs[0]).Type)
+			predicate.AddType(prgrm.GetCXArgFromArray(lastCondExprsAtomicOpOperator.Outputs[0]).Type)
 		}
 		predicate.PreviouslyDeclared = true
 
@@ -233,7 +235,7 @@ func SelectionExpressions(prgrm *ast.CXProgram, condExprs []ast.CXExpression, th
 	skipExprAtomicOp.ElseLines = 0
 
 	var exprs []ast.CXExpression
-	if lastCondExprsAtomicOp.Operator != nil || condExprs[len(condExprs)-1].IsMethodCall() {
+	if lastCondExprsAtomicOpOperator != nil || condExprs[len(condExprs)-1].IsMethodCall() {
 		exprs = append(exprs, condExprs...)
 	}
 
@@ -255,6 +257,8 @@ func resolveTypeForUnd(prgrm *ast.CXProgram, expr *ast.CXExpression) types.Code 
 		panic(err)
 	}
 
+	cxAtomicOpOperator := prgrm.GetFunctionFromArray(cxAtomicOp.Operator)
+
 	if len(cxAtomicOp.Inputs) > 0 {
 		// it's a literal
 		return prgrm.GetCXArgFromArray(cxAtomicOp.Inputs[0]).Type
@@ -263,13 +267,13 @@ func resolveTypeForUnd(prgrm *ast.CXProgram, expr *ast.CXExpression) types.Code 
 		// it's an expression with an output
 		return prgrm.GetCXArgFromArray(cxAtomicOp.Outputs[0]).Type
 	}
-	if cxAtomicOp.Operator == nil {
+	if cxAtomicOpOperator == nil {
 		// the expression doesn't return anything
 		return -1
 	}
-	if len(cxAtomicOp.Operator.Outputs) > 0 {
+	if len(cxAtomicOpOperator.Outputs) > 0 {
 		// always return first output's type
-		return prgrm.GetCXArgFromArray(cxAtomicOp.Operator.Outputs[0]).Type
+		return prgrm.GetCXArgFromArray(cxAtomicOpOperator.Outputs[0]).Type
 	}
 
 	// error
@@ -295,9 +299,10 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 	if err != nil {
 		panic(err)
 	}
+	lastLeftExprsAtomicOpOperator := prgrm.GetFunctionFromArray(lastLeftExprsAtomicOp.Operator)
 
 	if len(lastLeftExprsAtomicOp.Outputs) < 1 {
-		lastLeftExprsAtomicOpOperatorOutput := prgrm.GetCXArgFromArray(lastLeftExprsAtomicOp.Operator.Outputs[0])
+		lastLeftExprsAtomicOpOperatorOutput := prgrm.GetCXArgFromArray(lastLeftExprsAtomicOpOperator.Outputs[0])
 		name := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(resolveTypeForUnd(prgrm, &leftExprs[len(leftExprs)-1]))
 		name.Size = lastLeftExprsAtomicOpOperatorOutput.Size
 		name.TotalSize = ast.GetSize(prgrm, lastLeftExprsAtomicOpOperatorOutput)
@@ -314,11 +319,12 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 	if err != nil {
 		panic(err)
 	}
+	lastRightExprsAtomicOpOperator := prgrm.GetFunctionFromArray(lastRightExprsAtomicOp.Operator)
 
 	if len(lastRightExprsAtomicOp.Outputs) < 1 {
 		name := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(resolveTypeForUnd(prgrm, &rightExprs[len(rightExprs)-1]))
 
-		lastRightExprsAtomicOpOperatorOutput := prgrm.GetCXArgFromArray(lastRightExprsAtomicOp.Operator.Outputs[0])
+		lastRightExprsAtomicOpOperatorOutput := prgrm.GetCXArgFromArray(lastRightExprsAtomicOpOperator.Outputs[0])
 		name.Size = lastRightExprsAtomicOpOperatorOutput.Size
 		name.TotalSize = ast.GetSize(prgrm, lastRightExprsAtomicOpOperatorOutput)
 		name.Type = lastRightExprsAtomicOpOperatorOutput.Type
@@ -340,7 +346,7 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 	// we can't know the type until we compile the full function
 	cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
 
-	if len(prgrm.GetCXArgFromArray(lastLeftExprsAtomicOp.Outputs[0]).Indexes) > 0 || lastLeftExprsAtomicOp.Operator != nil {
+	if len(prgrm.GetCXArgFromArray(lastLeftExprsAtomicOp.Outputs[0]).Indexes) > 0 || lastLeftExprsAtomicOpOperator != nil {
 		// then it's a function call or an array access
 		cxAtomicOp.AddInput(prgrm, lastLeftExprsAtomicOp.Outputs[0])
 
@@ -353,7 +359,7 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 		cxAtomicOp.Inputs = append(cxAtomicOp.Inputs, lastLeftExprsAtomicOp.Outputs[0])
 	}
 
-	if len(prgrm.GetCXArgFromArray(lastRightExprsAtomicOp.Outputs[0]).Indexes) > 0 || lastRightExprsAtomicOp.Operator != nil {
+	if len(prgrm.GetCXArgFromArray(lastRightExprsAtomicOp.Outputs[0]).Indexes) > 0 || lastRightExprsAtomicOpOperator != nil {
 		// then it's a function call or an array access
 		cxAtomicOp.AddInput(prgrm, lastRightExprsAtomicOp.Outputs[0])
 
@@ -467,8 +473,10 @@ func AssociateReturnExpressions(prgrm *ast.CXProgram, idx int, retExprs []ast.CX
 		panic(err)
 	}
 
-	if lastExprAtomicOp.Operator == nil {
-		lastExprAtomicOp.Operator = ast.Natives[constants.OP_IDENTITY]
+	lastExprAtomicOpOperator := prgrm.GetFunctionFromArray(lastExprAtomicOp.Operator)
+	if lastExprAtomicOpOperator == nil {
+		opIdx := prgrm.AddFunctionInArray(ast.Natives[constants.OP_IDENTITY])
+		lastExprAtomicOp.Operator = opIdx
 
 		lastExprAtomicOp.Inputs = lastExprAtomicOp.Outputs
 		lastExprAtomicOp.Outputs = nil

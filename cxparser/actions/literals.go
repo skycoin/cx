@@ -48,6 +48,7 @@ func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []a
 		if err != nil {
 			panic(err)
 		}
+		exprAtomicOpOperator := prgrm.GetFunctionFromArray(exprAtomicOp.Operator)
 
 		exprCXLine, _ := prgrm.GetPreviousCXLine(exprs, i)
 
@@ -74,9 +75,10 @@ func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []a
 			symExprAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
 			symExprAtomicOp.AddOutput(prgrm, symOutIdx)
 
-			if exprAtomicOp.Operator == nil {
+			if exprAtomicOpOperator == nil {
 				// then it's a literal
-				symExprAtomicOp.Operator = ast.Natives[constants.OP_APPEND]
+				opIdx := prgrm.AddFunctionInArray(ast.Natives[constants.OP_APPEND])
+				symExprAtomicOp.Operator = opIdx
 
 				symExprAtomicOp.Inputs = nil
 				symExprAtomicOp.Inputs = append(symExprAtomicOp.Inputs, symInpIdx)
@@ -96,9 +98,10 @@ func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []a
 
 				exprAtomicOp.Outputs = nil
 				exprAtomicOp.AddOutput(prgrm, outIdx)
-				result = append(result, expr)
 
-				symExprAtomicOp.Operator = ast.Natives[constants.OP_APPEND]
+				result = append(result, expr)
+				opIdx := prgrm.AddFunctionInArray(ast.Natives[constants.OP_APPEND])
+				symExprAtomicOp.Operator = opIdx
 
 				symExprAtomicOp.Inputs = nil
 				symExprAtomicOp.Inputs = append(symExprAtomicOp.Inputs, symInpIdx)
@@ -279,6 +282,7 @@ func ArrayLiteralExpression(prgrm *ast.CXProgram, arrSizes []types.Pointer, type
 		if err != nil {
 			panic(err)
 		}
+		exprAtomicOpOperator := prgrm.GetFunctionFromArray(exprAtomicOp.Operator)
 
 		if expr.IsArrayLiteral() {
 			expr.ExpressionType = ast.CXEXPR_UNUSED
@@ -312,9 +316,10 @@ func ArrayLiteralExpression(prgrm *ast.CXProgram, arrSizes []types.Pointer, type
 
 			symExprAtomicOp.AddOutput(prgrm, symIdx)
 
-			if exprAtomicOp.Operator == nil {
+			if exprAtomicOpOperator == nil {
 				// then it's a literal
-				symExprAtomicOp.Operator = ast.Natives[constants.OP_IDENTITY]
+				opIdx := prgrm.AddFunctionInArray(ast.Natives[constants.OP_IDENTITY])
+				symExprAtomicOp.Operator = opIdx
 				symExprAtomicOp.Inputs = exprAtomicOp.Outputs
 			} else {
 				symExprAtomicOp.Operator = exprAtomicOp.Operator
@@ -361,6 +366,7 @@ func ArrayLiteralExpression(prgrm *ast.CXProgram, arrSizes []types.Pointer, type
 	symExprAtomicOp.Outputs = append(symExprAtomicOp.Outputs, symOutputIdx)
 	symInputIdx := prgrm.AddCXArgInArray(symInput)
 	symExprAtomicOp.Inputs = append(symExprAtomicOp.Inputs, symInputIdx)
+
 	// symOutput.SynonymousTo = symInput.Name
 
 	// marking the output so multidimensional arrays identify the expressions

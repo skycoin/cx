@@ -130,6 +130,7 @@ func buildStrFunctions(prgrm *CXProgram, pkg *CXPackage, ast1 *string) {
 				panic(err)
 			}
 
+			cxAtomicOpOperator := prgrm.GetFunctionFromArray(cxAtomicOp.Operator)
 			// Adding label in case a `goto` statement was used for the expression.
 			if cxAtomicOp.Label != "" {
 				lbl = " <<" + cxAtomicOp.Label + ">>"
@@ -138,12 +139,12 @@ func buildStrFunctions(prgrm *CXProgram, pkg *CXPackage, ast1 *string) {
 			}
 
 			// Determining operator's name.
-			if cxAtomicOp.Operator != nil {
-				if cxAtomicOp.Operator.IsBuiltIn() {
+			if cxAtomicOpOperator != nil {
+				if cxAtomicOpOperator.IsBuiltIn() {
 
-					opName1 = OpNames[cxAtomicOp.Operator.AtomicOPCode]
+					opName1 = OpNames[cxAtomicOpOperator.AtomicOPCode]
 				} else {
-					opName1 = cxAtomicOp.Operator.Name
+					opName1 = cxAtomicOpOperator.Name
 				}
 			}
 
@@ -156,7 +157,7 @@ func buildStrFunctions(prgrm *CXProgram, pkg *CXPackage, ast1 *string) {
 					k,
 					cxLine.LineNumber,
 					strings.TrimSpace(cxLine.LineStr))
-			} else if cxAtomicOp.Operator != nil {
+			} else if cxAtomicOpOperator != nil {
 				assignOp := ""
 				if outs.Len() > 0 {
 					assignOp = " = "

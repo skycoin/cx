@@ -76,9 +76,9 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 			if err != nil {
 				panic(err)
 			}
-
+			initializerAtomicOpOperator := prgrm.GetFunctionFromArray(initializerAtomicOp.Operator)
 			// then we just re-assign offsets
-			if initializerAtomicOp.Operator == nil {
+			if initializerAtomicOpOperator == nil {
 				// then it's a literal
 				declaration_specifiers.Name = glbl.Name
 				declaration_specifiers.Offset = glbl.Offset
@@ -91,7 +91,8 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 				initializerAtomicOp.AddInput(prgrm, initializerAtomicOp.Outputs[0])
 				initializerAtomicOp.Outputs = nil
 				initializerAtomicOp.AddOutput(prgrm, ast.CXArgumentIndex(glbl.Index))
-				initializerAtomicOp.Operator = ast.Natives[constants.OP_IDENTITY]
+				opIdx := prgrm.AddFunctionInArray(ast.Natives[constants.OP_IDENTITY])
+				initializerAtomicOp.Operator = opIdx
 				initializerAtomicOp.Package = glbl.Package
 
 				//add intialization statements, to array
@@ -107,7 +108,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 				glbl.Index = glblIdx
 
 				if initializer[len(initializer)-1].IsStructLiteral() {
-					index := prgrm.AddCXAtomicOp(&ast.CXAtomicOperator{Outputs: []ast.CXArgumentIndex{ast.CXArgumentIndex(glblIdx)}, Function: -1})
+					index := prgrm.AddCXAtomicOp(&ast.CXAtomicOperator{Outputs: []ast.CXArgumentIndex{ast.CXArgumentIndex(glblIdx)}, Operator: -1, Function: -1})
 					initializer = StructLiteralAssignment(prgrm,
 						[]ast.CXExpression{
 							{
@@ -151,13 +152,14 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 			if err != nil {
 				panic(err)
 			}
+			initializerAtomicOpOperator := prgrm.GetFunctionFromArray(initializerAtomicOp.Operator)
 
 			offExprAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(offExpr, 0)
 			if err != nil {
 				panic(err)
 			}
 
-			if initializerAtomicOp.Operator == nil {
+			if initializerAtomicOpOperator == nil {
 				// then it's a literal
 
 				declaration_specifiers.Name = declarator.Name
@@ -167,7 +169,8 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 				declaration_specifiers.TotalSize = prgrm.GetCXArgFromArray(offExprAtomicOp.Outputs[0]).TotalSize
 				declaration_specifiers.Package = ast.CXPackageIndex(pkg.Index)
 
-				initializerAtomicOp.Operator = ast.Natives[constants.OP_IDENTITY]
+				opIdx := prgrm.AddFunctionInArray(ast.Natives[constants.OP_IDENTITY])
+				initializerAtomicOp.Operator = opIdx
 				initializerAtomicOp.AddInput(prgrm, initializerAtomicOp.Outputs[0])
 				initializerAtomicOp.Outputs = nil
 				declSpecIdx := prgrm.AddCXArgInArray(declaration_specifiers)
@@ -187,7 +190,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 
 				if initializer[len(initializer)-1].IsStructLiteral() {
 					declSpecIdx := prgrm.AddCXArgInArray(declaration_specifiers)
-					index := prgrm.AddCXAtomicOp(&ast.CXAtomicOperator{Outputs: []ast.CXArgumentIndex{declSpecIdx}, Function: -1})
+					index := prgrm.AddCXAtomicOp(&ast.CXAtomicOperator{Outputs: []ast.CXArgumentIndex{declSpecIdx}, Operator: -1, Function: -1})
 					initializer = StructLiteralAssignment(prgrm,
 						[]ast.CXExpression{
 							{
@@ -382,10 +385,10 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 		if err != nil {
 			panic(err)
 		}
-
+		initializerAtomicOpOperator := prgrm.GetFunctionFromArray(initializerAtomicOp.Operator)
 		// THEN it's a literal, e.g. var foo i32 = 10;
 		// ELSE it's an expression with an operator
-		if initializerAtomicOp.Operator == nil {
+		if initializerAtomicOpOperator == nil {
 
 			exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
 			// we need to create an expression that links the initializer expressions
@@ -427,6 +430,7 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 			} else {
 				cxExprAtomicOp.AddOutput(prgrm, declSpecIdx)
 			}
+
 			return append([]ast.CXExpression{*declCXLine, *decl}, initializer...)
 		}
 	} else {

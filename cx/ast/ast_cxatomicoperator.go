@@ -3,7 +3,7 @@ package ast
 type CXAtomicOperator struct {
 	Inputs   []CXArgumentIndex
 	Outputs  []CXArgumentIndex
-	Operator *CXFunction
+	Operator CXFunctionIndex
 
 	Function CXFunctionIndex
 	Package  CXPackageIndex
@@ -18,10 +18,11 @@ type CXAtomicOperator struct {
 //                             `CXAtomicOperator` Getters
 
 func (op *CXAtomicOperator) GetOperatorName(prgrm *CXProgram) string {
-	if op.Operator.IsBuiltIn() {
-		return OpNames[op.Operator.AtomicOPCode]
+	opOperator := prgrm.GetFunctionFromArray(op.Operator)
+	if opOperator.IsBuiltIn() {
+		return OpNames[opOperator.AtomicOPCode]
 	}
-	return op.Operator.Name
+	return opOperator.Name
 
 }
 

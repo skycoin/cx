@@ -1172,7 +1172,7 @@ expression_statement:
                 { $$ = nil }
 	|       expression SEMICOLON
                 {          
-                        var lastFirstAtomicOp *ast.CXAtomicOperator
+                        var lastFirstAtomicOp *ast.CXAtomicOperator= &ast.CXAtomicOperator{Operator:-1}
                         var err error
 
                         if len($1) > 0 {
@@ -1181,9 +1181,9 @@ expression_statement:
                                         panic(err)
                                 }
                         }
-                       
+                       lastFirstAtomicOpOperator:=actions.AST.GetFunctionFromArray(lastFirstAtomicOp.Operator)
 
-			if len($1) > 0 && lastFirstAtomicOp.Operator == nil  && !$1[len($1) - 1].IsMethodCall() {
+			if len($1) > 0 && lastFirstAtomicOpOperator == nil  && !$1[len($1) - 1].IsMethodCall() {
 				outs := lastFirstAtomicOp.Outputs
 				if len(outs) > 0 {
 					println(ast.CompilationError(actions.AST.GetCXArgFromArray(outs[0]).ArgDetails.FileName, actions.AST.GetCXArgFromArray(outs[0]).ArgDetails.FileLine), "invalid expression")

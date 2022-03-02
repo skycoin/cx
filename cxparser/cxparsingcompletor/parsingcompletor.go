@@ -2293,7 +2293,7 @@ yydefault:
 		yyDollar = yyS[yypt-2 : yypt+1]
 //line cxparser/cxparsingcompletor/parsingcompletor.y:1174
 		{
-			var lastFirstAtomicOp *ast.CXAtomicOperator
+			var lastFirstAtomicOp *ast.CXAtomicOperator = &ast.CXAtomicOperator{Operator: -1}
 			var err error
 
 			if len(yyDollar[1].expressions) > 0 {
@@ -2302,8 +2302,9 @@ yydefault:
 					panic(err)
 				}
 			}
+			lastFirstAtomicOpOperator := actions.AST.GetFunctionFromArray(lastFirstAtomicOp.Operator)
 
-			if len(yyDollar[1].expressions) > 0 && lastFirstAtomicOp.Operator == nil && !yyDollar[1].expressions[len(yyDollar[1].expressions)-1].IsMethodCall() {
+			if len(yyDollar[1].expressions) > 0 && lastFirstAtomicOpOperator == nil && !yyDollar[1].expressions[len(yyDollar[1].expressions)-1].IsMethodCall() {
 				outs := lastFirstAtomicOp.Outputs
 				if len(outs) > 0 {
 					println(ast.CompilationError(actions.AST.GetCXArgFromArray(outs[0]).ArgDetails.FileName, actions.AST.GetCXArgFromArray(outs[0]).ArgDetails.FileLine), "invalid expression")

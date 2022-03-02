@@ -21,7 +21,7 @@ func getLastLine(cxprogram *ast.CXProgram) ast.CXExpression {
 	}
 
 	cxAtomicOp := &ast.CXAtomicOperator{
-		// Operator: nil,
+		Operator: -1,
 		Function: -1,
 	}
 
@@ -79,19 +79,21 @@ func RunCxAst(cxprogram *ast.CXProgram, untilEnd bool, maxOps int, untilCall typ
 				panic(err)
 			}
 
-			if cxAtomicOp.Operator == nil {
+			cxAtomicOpOperator := cxprogram.GetFunctionFromArray(cxAtomicOp.Operator)
+
+			if cxAtomicOpOperator == nil {
 				// then it's a declaration
 				toCallName = "declaration"
-			} else if cxAtomicOp.Operator.IsBuiltIn() {
-				toCallName = ast.OpNames[cxAtomicOp.Operator.AtomicOPCode]
+			} else if cxAtomicOpOperator.IsBuiltIn() {
+				toCallName = ast.OpNames[cxAtomicOpOperator.AtomicOPCode]
 			} else {
-				if cxAtomicOp.Operator.Name != "" {
-					opPkg, err := cxprogram.GetPackageFromArray(cxAtomicOp.Operator.Package)
+				if cxAtomicOpOperator.Name != "" {
+					opPkg, err := cxprogram.GetPackageFromArray(cxAtomicOpOperator.Package)
 					if err != nil {
 						panic(err)
 					}
 
-					toCallName = opPkg.Name + "." + cxAtomicOp.Operator.Name
+					toCallName = opPkg.Name + "." + cxAtomicOpOperator.Name
 				} else {
 					// then it's the end of the program got from nested function calls
 					cxprogram.Terminated = true
