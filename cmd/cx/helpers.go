@@ -66,9 +66,8 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 
 	// Checking if a main package exists. If not, create and add it to `AST`.
 	if _, err := actions.AST.GetFunction(constants.MAIN_FUNC, constants.MAIN_PKG); err != nil {
-		panic(fmt.Sprintf("error getting function: %v", err))
+		initMainPkg(actions.AST)
 	}
-	initMainPkg(actions.AST)
 
 	// Setting what function to start in if using the REPL.
 	repl.ReplTargetFn = constants.MAIN_FUNC
@@ -95,9 +94,13 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 // initMainPkg adds a `main` package with an empty `main` function to `prgrm`.
 func initMainPkg(prgrm *ast.CXProgram) {
 	mod := ast.MakePackage(constants.MAIN_PKG)
+	modIdx := prgrm.AddPackage(mod)
+	modPkg, err := prgrm.GetPackageFromArray(modIdx)
+	if err != nil {
+		panic(err)
+	}
 	fn := ast.MakeFunction(constants.MAIN_FUNC, actions.CurrentFile, actions.LineNo)
-	mod.AddFunction(prgrm, fn)
-	prgrm.AddPackage(mod)
+	modPkg.AddFunction(prgrm, fn)
 }
 
 // optionTokenize checks if the user wants to use CX to generate the lexer tokens
