@@ -12,11 +12,10 @@ func RegisterPackage(prgrm *ast.CXProgram) {
 	regexpPkg := ast.MakePackage("regexp")
 	regexpStrct := ast.MakeStruct("Regexp")
 
-	regexpStrct.AddField(prgrm, ast.MakeArgument("exp", "", 0).AddType(types.STR).AddPackage(regexpPkg))
-
 	regexpPkg.AddStruct(regexpStrct)
 
 	prgrm.AddPackage(regexpPkg)
+	regexpStrct.AddField(prgrm, ast.MakeArgument("exp", "", 0).AddType(types.STR).AddPackage(regexpPkg))
 
 	RegisterFunction(prgrm, "regexp.Compile", opRegexpCompile, In(ast.ConstCxArg_STR), Out(ast.Struct(prgrm, "regexp", "Regexp", "r"), ast.ConstCxArg_STR))
 	RegisterFunction(prgrm, "regexp.MustCompile", opRegexpMustCompile, In(ast.ConstCxArg_STR), Out(ast.Struct(prgrm, "regexp", "Regexp", "r")))

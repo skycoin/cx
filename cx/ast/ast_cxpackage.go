@@ -194,11 +194,11 @@ func (pkg *CXPackage) RemoveImport(impName string) {
 
 // AddFunction ...
 func (pkg *CXPackage) AddFunction(prgrm *CXProgram, fn *CXFunction) (*CXPackage, CXFunctionIndex) {
-	fn.Package = CXPackageIndex(pkg.Index)
-
 	if _, ok := pkg.Functions[fn.Name]; ok {
 		println(CompilationError(fn.FileName, fn.FileLine), "function redeclaration")
 	}
+
+	fn.Package = CXPackageIndex(pkg.Index)
 
 	fnIdx := prgrm.AddFunctionInArray(fn)
 	pkg.Functions[fn.Name] = fnIdx

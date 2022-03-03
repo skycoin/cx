@@ -227,6 +227,11 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fn *ast.CXFunction, inputs, outpu
 	}
 
 	fn.Size = offset
+
+	// TODO: temporary bug fix, needs improvements
+	if fn.Name == "main" {
+		prgrm.CXFunctions[fn.Index] = *fn
+	}
 }
 
 func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXExpression) []ast.CXExpression {

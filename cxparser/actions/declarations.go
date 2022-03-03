@@ -269,7 +269,10 @@ func DeclarePackage(prgrm *ast.CXProgram, ident string) {
 		prgrm.AddPackage(pkg)
 	}
 
-	prgrm.SelectPackage(ident)
+	_, err := prgrm.SelectPackage(ident)
+	if err != nil {
+		panic(err)
+	}
 }
 
 // DeclareImport()

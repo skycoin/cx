@@ -38,11 +38,11 @@ func popStack(prgrm *CXProgram, call *CXCall) error {
 
 	lenOuts := len(cxAtomicOp.Outputs)
 	for i, outIdx := range call.Operator.Outputs {
-		out := prgrm.GetCXArgFromArray(outIdx)
 		// Continuing if there is no receiving variable available.
 		if i >= lenOuts {
 			continue
 		}
+		out := prgrm.GetCXArgFromArray(outIdx)
 
 		types.WriteSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, returnFP, prgrm.GetCXArgFromArray(cxAtomicOp.Outputs[i])),
 			types.GetSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, fp, out), GetSize(prgrm, out)))

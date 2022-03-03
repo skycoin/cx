@@ -348,14 +348,6 @@ func (cxprogram *CXProgram) GetCurrentPackage() (*CXPackage, error) {
 	return cxprogram.GetPackageFromArray(cxprogram.CurrentPackage)
 }
 
-func (cxprogram *CXProgram) GetCurrentPackageIndex() CXPackageIndex {
-	if cxprogram.CurrentPackage == -1 {
-		panic("current package is nil")
-	}
-
-	return cxprogram.CurrentPackage
-}
-
 // GetCurrentStruct ...
 func (cxprogram *CXProgram) GetCurrentStruct() (*CXStruct, error) {
 	// if cxprogram.CurrentPackage == nil {
