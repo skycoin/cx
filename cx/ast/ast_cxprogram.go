@@ -97,6 +97,11 @@ func MakeProgram() *CXProgram {
 
 // AddPackage ...
 func (cxprogram *CXProgram) AddPackage(mod *CXPackage) CXPackageIndex {
+	if idx, ok := cxprogram.Packages[mod.Name]; ok {
+		cxprogram.CurrentPackage = idx
+		return idx
+	}
+
 	index := cxprogram.AddPackageInArray(mod)
 
 	cxprogram.Packages[mod.Name] = CXPackageIndex(index)
