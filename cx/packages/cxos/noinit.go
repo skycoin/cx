@@ -2,6 +2,10 @@
 
 package cxos
 
-func RegisterPackage() {
-	
+import (
+	"github.com/skycoin/cx/cx/ast"
+)
+
+func RegisterPackage(prgrm *ast.CXProgram) {
+
 }
