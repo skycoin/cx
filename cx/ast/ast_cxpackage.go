@@ -234,21 +234,17 @@ func (pkg *CXPackage) RemoveStruct(strctName string) {
 }
 
 // AddGlobal ...
-func (pkg *CXPackage) AddGlobal(prgrm *CXProgram, def *CXArgument) *CXPackage {
-	def.Package = CXPackageIndex(pkg.Index)
-	found := false
-	for i, dfIdx := range pkg.Globals {
+func (pkg *CXPackage) AddGlobal(prgrm *CXProgram, defIdx CXArgumentIndex) *CXPackage {
+	defArg := prgrm.GetCXArgFromArray(defIdx)
+	defArg.Package = CXPackageIndex(pkg.Index)
+	for _, dfIdx := range pkg.Globals {
 		df := prgrm.GetCXArg(dfIdx)
-		if df.Name == def.Name {
-			prgrm.CXArgs[pkg.Globals[i]] = *def
-			found = true
-			break
+		if df.Name == defArg.Name {
+			return pkg
 		}
 	}
-	if !found {
-		defIdx := prgrm.AddCXArgInArray(def)
-		pkg.Globals = append(pkg.Globals, CXArgumentIndex(defIdx))
-	}
+
+	pkg.Globals = append(pkg.Globals, defIdx)
 
 	return pkg
 }

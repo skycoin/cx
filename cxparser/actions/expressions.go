@@ -202,10 +202,8 @@ func SelectionExpressions(prgrm *ast.CXProgram, condExprs []ast.CXExpression, th
 		predicate.PreviouslyDeclared = true
 
 		predicateIdx = prgrm.AddCXArgInArray(predicate)
-		lastCondExprsAtomicOp.Outputs = append(lastCondExprsAtomicOp.Outputs, predicateIdx)
+		lastCondExprsAtomicOp.AddOutput(prgrm, predicateIdx)
 	}
-	// predicate.Package = pkg
-
 	ifExprAtomicOp.AddInput(prgrm, predicateIdx)
 
 	thenLines := 0
@@ -391,8 +389,9 @@ func UnaryExpression(prgrm *ast.CXProgram, op string, prevExprs []ast.CXExpressi
 
 	// Some properties need to be read from the base argument
 	// due to how we calculate dereferences at the moment.
-	baseOut := prgrm.GetCXArgFromArray(lastPrevExprsAtomicOp.Outputs[0])
-	exprOut := prgrm.GetCXArgFromArray(lastPrevExprsAtomicOp.Outputs[0]).GetAssignmentElement(prgrm)
+	lastPrevExprsAtomicOpOutput := prgrm.GetCXArgFromArray(lastPrevExprsAtomicOp.Outputs[0])
+	baseOut := lastPrevExprsAtomicOpOutput
+	exprOut := lastPrevExprsAtomicOpOutput.GetAssignmentElement(prgrm)
 	switch op {
 	case "*":
 		exprOut.DereferenceLevels++

@@ -73,9 +73,9 @@ func MakeNativeFunction(prgrm *ast.CXProgram, opCode int, inputs []*ast.CXArgume
 		fn.Inputs = append(fn.Inputs, inpIdx)
 	}
 	for _, out := range outputs {
-		outIdx := prgrm.AddCXArgInArray(out)
 		out.Offset = offset
 		offset.Add(ast.GetSize(prgrm, out))
+		outIdx := prgrm.AddCXArgInArray(out)
 		fn.Outputs = append(fn.Outputs, outIdx)
 	}
 

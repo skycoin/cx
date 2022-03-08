@@ -114,8 +114,9 @@ func CheckUndValidTypes(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 	}
 }
 
-func FunctionProcessParameters(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXArgument, symbolsScope *map[string]bool, offset *types.Pointer, fn *ast.CXFunction, params []*ast.CXArgument) {
-	for _, param := range params {
+func FunctionProcessParameters(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXArgument, symbolsScope *map[string]bool, offset *types.Pointer, fn *ast.CXFunction, params []ast.CXArgumentIndex) {
+	for _, paramIdx := range params {
+		param := prgrm.GetCXArgFromArray(paramIdx)
 		ProcessLocalDeclaration(prgrm, symbols, symbolsScope, param)
 
 		UpdateSymbolsTable(prgrm, symbols, param, offset, false)
@@ -131,7 +132,6 @@ func FunctionProcessParameters(prgrm *ast.CXProgram, symbols *[]map[string]*ast.
 
 func FunctionDeclaration(prgrm *ast.CXProgram, fn *ast.CXFunction, inputs, outputs []*ast.CXArgument, exprs []ast.CXExpression) {
 	//var exprs []*cxcore.CXExpression = prgrm.SysInitExprs
-
 	FunctionAddParameters(prgrm, fn, inputs, outputs)
 
 	// getting offset to use by statements (excluding inputs, outputs and receiver)
@@ -154,8 +154,8 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fn *ast.CXFunction, inputs, outpu
 	// local being function constrained variables, and global being global variables
 	var symbolsScope map[string]bool = make(map[string]bool)
 
-	FunctionProcessParameters(prgrm, symbols, &symbolsScope, &offset, fn, prgrm.ConvertIndexArgsToPointerArgs(fn.Inputs))
-	FunctionProcessParameters(prgrm, symbols, &symbolsScope, &offset, fn, prgrm.ConvertIndexArgsToPointerArgs(fn.Outputs))
+	FunctionProcessParameters(prgrm, symbols, &symbolsScope, &offset, fn, fn.Inputs)
+	FunctionProcessParameters(prgrm, symbols, &symbolsScope, &offset, fn, fn.Outputs)
 
 	for i, expr := range fn.Expressions {
 		if expr.Type == ast.CX_LINE {
@@ -171,8 +171,8 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fn *ast.CXFunction, inputs, outpu
 		}
 
 		ProcessMethodCall(prgrm, &expr, symbols, &offset, true)
-		ProcessExpressionArguments(prgrm, symbols, &symbolsScope, &offset, fn, prgrm.ConvertIndexArgsToPointerArgs(exprAtomicOp.Inputs), &expr, true)
-		ProcessExpressionArguments(prgrm, symbols, &symbolsScope, &offset, fn, prgrm.ConvertIndexArgsToPointerArgs(exprAtomicOp.Outputs), &expr, false)
+		ProcessExpressionArguments(prgrm, symbols, &symbolsScope, &offset, fn, exprAtomicOp.Inputs, &expr, true)
+		ProcessExpressionArguments(prgrm, symbols, &symbolsScope, &offset, fn, exprAtomicOp.Outputs, &expr, false)
 
 		ProcessPointerStructs(prgrm, &expr)
 
@@ -229,9 +229,7 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fn *ast.CXFunction, inputs, outpu
 	fn.Size = offset
 
 	// TODO: temporary bug fix, needs improvements
-	if fn.Name == "main" {
-		prgrm.CXFunctions[fn.Index] = *fn
-	}
+	prgrm.CXFunctions[fn.Index] = *fn
 }
 
 func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXExpression) []ast.CXExpression {
@@ -458,8 +456,9 @@ func checkIndexType(prgrm *ast.CXProgram, idx *ast.CXArgument) {
 // ProcessExpressionArguments performs a series of checks and processes to an expresion's inputs and outputs.
 // Some of these checks are: checking if a an input has not been declared, assign a relative offset to the argument,
 // and calculate the correct size of the argument.
-func ProcessExpressionArguments(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXArgument, symbolsScope *map[string]bool, offset *types.Pointer, fn *ast.CXFunction, args []*ast.CXArgument, expr *ast.CXExpression, isInput bool) {
-	for _, arg := range args {
+func ProcessExpressionArguments(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXArgument, symbolsScope *map[string]bool, offset *types.Pointer, fn *ast.CXFunction, args []ast.CXArgumentIndex, expr *ast.CXExpression, isInput bool) {
+	for _, argIdx := range args {
+		arg := prgrm.GetCXArgFromArray(argIdx)
 		ProcessLocalDeclaration(prgrm, symbols, symbolsScope, arg)
 
 		if !isInput {
@@ -1153,6 +1152,7 @@ func GiveOffset(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXArgument, sym
 			ProcessSymbolFields(prgrm, sym, arg)
 			CopyArgFields(prgrm, sym, arg)
 		}
+
 	}
 }
 

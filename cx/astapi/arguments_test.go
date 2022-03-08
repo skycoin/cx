@@ -130,7 +130,8 @@ func TestASTAPI_Arguments(t *testing.T) {
 			panic(err)
 		}
 
-		cxpackage.AddGlobal(cxprogram, arg)
+		argIdx := cxprogram.AddCXArgInArray(arg)
+		cxpackage.AddGlobal(cxprogram, argIdx)
 	})
 
 	t.Run("get accessible i16 args", func(t *testing.T) {

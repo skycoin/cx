@@ -265,7 +265,9 @@ func Preliminarystage(srcStrs, srcNames []string) int {
 						arg := ast.MakeArgument(match[len(match)-1], "", 0)
 						arg.Offset = types.InvalidPointer
 						arg.Package = ast.CXPackageIndex(prePkg.Index)
-						prePkg.AddGlobal(actions.AST, arg)
+						argIdx := actions.AST.AddCXArgInArray(arg)
+
+						prePkg.AddGlobal(actions.AST, argIdx)
 					}
 				}
 			}
