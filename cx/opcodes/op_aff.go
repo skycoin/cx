@@ -131,8 +131,9 @@ func CallAffPredicate(prgrm *ast.CXProgram, fn *ast.CXFunction, predValue []byte
 // }
 
 // Used by QueryArgument to query inputs and then outputs from expressions.
-func queryParam(prgrm *ast.CXProgram, fn *ast.CXFunction, args []*ast.CXArgument, exprLbl string, argOffsetB []byte, affOffset *types.Pointer) {
-	for i, arg := range args {
+func queryParam(prgrm *ast.CXProgram, fn *ast.CXFunction, argsIdx []ast.CXArgumentIndex, exprLbl string, argOffsetB []byte, affOffset *types.Pointer) {
+	for i, argIdx := range argsIdx {
+		arg := prgrm.GetCXArgFromArray(argIdx)
 
 		var typOffset types.Pointer
 		elt := arg.GetAssignmentElement(prgrm)
@@ -202,8 +203,8 @@ func QueryArgument(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpress
 			continue
 		}
 
-		queryParam(prgrm, fn, prgrm.ConvertIndexArgsToPointerArgs(exCXAtomicOp.Inputs), exCXAtomicOp.Label+".Input", argOffsetB, affOffset)
-		queryParam(prgrm, fn, prgrm.ConvertIndexArgsToPointerArgs(exCXAtomicOp.Outputs), exCXAtomicOp.Label+".Output", argOffsetB, affOffset)
+		queryParam(prgrm, fn, exCXAtomicOp.Inputs, exCXAtomicOp.Label+".Input", argOffsetB, affOffset)
+		queryParam(prgrm, fn, exCXAtomicOp.Outputs, exCXAtomicOp.Label+".Output", argOffsetB, affOffset)
 	}
 }
 
@@ -259,9 +260,10 @@ func QueryExpressions(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpr
 	}
 }
 
-func getSignatureSlice(prgrm *ast.CXProgram, params []*ast.CXArgument) types.Pointer {
+func getSignatureSlice(prgrm *ast.CXProgram, params []ast.CXArgumentIndex) types.Pointer {
 	var sliceOffset types.Pointer
-	for _, param := range params {
+	for _, paramIdx := range params {
+		param := prgrm.GetCXArgFromArray(paramIdx)
 
 		var typOffset types.Pointer
 		if param.StructType != nil {
@@ -365,8 +367,8 @@ func QueryFunction(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpress
 		// WriteMemI32(opNameOffsetB[:], 0, int32(WriteObjectRetOff(opNameB)))
 		types.Write_ptr(opNameOffsetB[:], 0, opNameOffset)
 
-		inpSigOffset := getSignatureSlice(prgrm, prgrm.ConvertIndexArgsToPointerArgs(f.Inputs))
-		outSigOffset := getSignatureSlice(prgrm, prgrm.ConvertIndexArgsToPointerArgs(f.Outputs))
+		inpSigOffset := getSignatureSlice(prgrm, f.Inputs)
+		outSigOffset := getSignatureSlice(prgrm, f.Outputs)
 
 		fnOffset := ast.AllocateSeq(prgrm, types.OBJECT_HEADER_SIZE+types.STR_SIZE+types.POINTER_SIZE+types.POINTER_SIZE)
 		// Name

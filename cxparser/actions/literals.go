@@ -55,13 +55,13 @@ func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []a
 		if expr.IsArrayLiteral() {
 			symInp := ast.MakeArgument(symName, CurrentFile, LineNo).AddType(typeCode)
 			symInp.Package = ast.CXPackageIndex(pkg.Index)
+			symInp.TotalSize = types.POINTER_SIZE
 			symInpIdx := prgrm.AddCXArgInArray(symInp)
-			symInp = prgrm.GetCXArgFromArray(symInpIdx)
 
 			symOut := ast.MakeArgument(symName, CurrentFile, LineNo).AddType(typeCode)
 			symOut.Package = ast.CXPackageIndex(pkg.Index)
+			symOut.TotalSize = types.POINTER_SIZE
 			symOutIdx := prgrm.AddCXArgInArray(symOut)
-			symOut = prgrm.GetCXArgFromArray(symOutIdx)
 
 			endPointsCounter++
 
@@ -108,9 +108,6 @@ func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []a
 				symExprAtomicOp.Inputs = append(symExprAtomicOp.Inputs, outIdx)
 			}
 			result = append(result, *symExprExprCXLine, *symExpr)
-
-			symInp.TotalSize = types.POINTER_SIZE
-			symOut.TotalSize = types.POINTER_SIZE
 		} else {
 			result = append(result, expr)
 		}
@@ -123,13 +120,14 @@ func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []a
 	symOutput.IsSlice = true
 	symOutput.Package = ast.CXPackageIndex(pkg.Index)
 	symOutput.PreviouslyDeclared = true
+	symOutput.TotalSize = types.POINTER_SIZE
+	symOutputIdx := prgrm.AddCXArgInArray(symOutput)
 
 	symInput := ast.MakeArgument(symName, CurrentFile, LineNo).AddType(typeCode)
 	symInput.IsSlice = true
 	symInput.Package = ast.CXPackageIndex(pkg.Index)
-
 	symInput.TotalSize = types.POINTER_SIZE
-	symOutput.TotalSize = types.POINTER_SIZE
+	symInputIdx := prgrm.AddCXArgInArray(symInput)
 
 	symExprExprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
 	symExpr := ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_IDENTITY])
@@ -139,9 +137,7 @@ func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []a
 	}
 
 	symExprAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
-	symOutputIdx := prgrm.AddCXArgInArray(symOutput)
 	symExprAtomicOp.Outputs = append(symExprAtomicOp.Outputs, symOutputIdx)
-	symInputIdx := prgrm.AddCXArgInArray(symInput)
 	symExprAtomicOp.Inputs = append(symExprAtomicOp.Inputs, symInputIdx)
 
 	// marking the output so multidimensional arrays identify the expressions

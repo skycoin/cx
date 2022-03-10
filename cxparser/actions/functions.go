@@ -634,18 +634,21 @@ func ProcessGoTos(prgrm *ast.CXProgram, fn *ast.CXFunction, exprs []ast.CXExpres
 	}
 }
 
-func checkMatchParamTypes(prgrm *ast.CXProgram, expr *ast.CXExpression, expected, received []*ast.CXArgument, isInputs bool) {
+func checkMatchParamTypes(prgrm *ast.CXProgram, expr *ast.CXExpression, expected, received []ast.CXArgumentIndex, isInputs bool) {
 	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
 	if err != nil {
 		panic(err)
 	}
 	cxAtomicOpOperator := prgrm.GetFunctionFromArray(cxAtomicOp.Operator)
 
-	for i, inp := range expected {
-		expectedType := ast.GetFormattedType(prgrm, expected[i])
-		receivedType := ast.GetFormattedType(prgrm, received[i])
+	for i, inpIdx := range expected {
+		expectedArg := prgrm.GetCXArgFromArray(inpIdx)
+		receivedArg := prgrm.GetCXArg(received[i])
 
-		if expr.IsMethodCall() && expected[i].IsPointer() && i == 0 {
+		expectedType := ast.GetFormattedType(prgrm, expectedArg)
+		receivedType := ast.GetFormattedType(prgrm, receivedArg)
+
+		if expr.IsMethodCall() && expectedArg.IsPointer() && i == 0 {
 			// if method receiver is pointer, remove *
 			if expectedType[0] == '*' {
 				// we need to check if it's not an `str`
@@ -654,7 +657,7 @@ func checkMatchParamTypes(prgrm *ast.CXProgram, expr *ast.CXExpression, expected
 			}
 		}
 
-		if expectedType != receivedType && inp.Type != types.UNDEFINED {
+		if expectedType != receivedType && expectedArg.Type != types.UNDEFINED {
 			var opName string
 			if cxAtomicOpOperator.IsBuiltIn() {
 				opName = ast.OpNames[cxAtomicOpOperator.AtomicOPCode]
@@ -663,7 +666,7 @@ func checkMatchParamTypes(prgrm *ast.CXProgram, expr *ast.CXExpression, expected
 			}
 
 			if isInputs {
-				println(ast.CompilationError(received[i].ArgDetails.FileName, received[i].ArgDetails.FileLine), fmt.Sprintf("function '%s' expected input argument of type '%s'; '%s' was provided", opName, expectedType, receivedType))
+				println(ast.CompilationError(receivedArg.ArgDetails.FileName, receivedArg.ArgDetails.FileLine), fmt.Sprintf("function '%s' expected input argument of type '%s'; '%s' was provided", opName, expectedType, receivedType))
 			} else {
 				println(ast.CompilationError(prgrm.GetCXArgFromArray(cxAtomicOp.Outputs[i]).ArgDetails.FileName, prgrm.GetCXArgFromArray(cxAtomicOp.Outputs[i]).ArgDetails.FileLine), fmt.Sprintf("function '%s' expected receiving variable of type '%s'; '%s' was provided", opName, expectedType, receivedType))
 			}
@@ -681,7 +684,7 @@ func checkMatchParamTypes(prgrm *ast.CXProgram, expr *ast.CXExpression, expected
 			// We use `isInputs` to only print the error once.
 			// Otherwise we'd print the error twice: once for the input and again for the output
 			if inpType != outType && isInputs {
-				println(ast.CompilationError(received[i].ArgDetails.FileName, received[i].ArgDetails.FileLine), fmt.Sprintf("cannot assign value of type '%s' to identifier '%s' of type '%s'", inpType, prgrm.GetCXArgFromArray(cxAtomicOp.Outputs[0]).GetAssignmentElement(prgrm).Name, outType))
+				println(ast.CompilationError(receivedArg.ArgDetails.FileName, receivedArg.ArgDetails.FileLine), fmt.Sprintf("cannot assign value of type '%s' to identifier '%s' of type '%s'", inpType, prgrm.GetCXArgFromArray(cxAtomicOp.Outputs[0]).GetAssignmentElement(prgrm).Name, outType))
 			}
 		}
 	}
@@ -781,10 +784,10 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) {
 	// then it's a function call and not a declaration
 	if cxAtomicOpOperator != nil {
 		// checking inputs matching operator's inputs
-		checkMatchParamTypes(prgrm, &exprs[currIndex], prgrm.ConvertIndexArgsToPointerArgs(cxAtomicOpOperator.Inputs), prgrm.ConvertIndexArgsToPointerArgs(cxAtomicOp.Inputs), true)
+		checkMatchParamTypes(prgrm, &exprs[currIndex], cxAtomicOpOperator.Inputs, cxAtomicOp.Inputs, true)
 
 		// checking outputs matching operator's outputs
-		checkMatchParamTypes(prgrm, &exprs[currIndex], prgrm.ConvertIndexArgsToPointerArgs(cxAtomicOpOperator.Outputs), prgrm.ConvertIndexArgsToPointerArgs(cxAtomicOp.Outputs), false)
+		checkMatchParamTypes(prgrm, &exprs[currIndex], cxAtomicOpOperator.Outputs, cxAtomicOp.Outputs, false)
 	}
 }
 

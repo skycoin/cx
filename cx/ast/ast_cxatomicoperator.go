@@ -31,8 +31,9 @@ func (op *CXAtomicOperator) GetOperatorName(prgrm *CXProgram) string {
 
 // AddInput ...
 func (op *CXAtomicOperator) AddInput(prgrm *CXProgram, paramIdx CXArgumentIndex) *CXAtomicOperator {
-	if prgrm.GetCXArgFromArray(paramIdx).Package == -1 {
-		prgrm.GetCXArgFromArray(paramIdx).Package = op.Package
+	param := prgrm.GetCXArgFromArray(paramIdx)
+	if param.Package == -1 {
+		param.Package = op.Package
 	}
 	op.Inputs = append(op.Inputs, paramIdx)
 
@@ -48,8 +49,9 @@ func (op *CXAtomicOperator) RemoveInput() {
 
 // AddOutput ...
 func (op *CXAtomicOperator) AddOutput(prgrm *CXProgram, paramIdx CXArgumentIndex) *CXAtomicOperator {
-	if prgrm.GetCXArgFromArray(paramIdx).Package == -1 {
-		prgrm.GetCXArgFromArray(paramIdx).Package = op.Package
+	param := prgrm.GetCXArgFromArray(paramIdx)
+	if param.Package == -1 {
+		param.Package = op.Package
 	}
 
 	op.Outputs = append(op.Outputs, paramIdx)

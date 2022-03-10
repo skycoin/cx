@@ -116,14 +116,16 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 			idxSymIdx := prgrm.AddCXArgInArray(idxSym)
 			postExprsAtomicOp.Outputs = append(postExprsAtomicOp.Outputs, idxSymIdx)
 
-			prgrm.GetCXArgFromArray(prevExpr2AtomicOp.Outputs[0]).Indexes = append(prgrm.GetCXArgFromArray(prevExpr2AtomicOp.Outputs[0]).Indexes, idxSymIdx)
+			prevExpr2AtomicOpOutput := prgrm.GetCXArgFromArray(prevExpr2AtomicOp.Outputs[0])
+			prevExpr2AtomicOpOutput.Indexes = append(prevExpr2AtomicOpOutput.Indexes, idxSymIdx)
 
 			// we push the index expression
 			prevExprs = append(postExprs, prevExprs...)
 		} else {
 			prevOuts := prevExpr2AtomicOp.Outputs
 			postOuts := postExprsAtomicOp.Outputs
-			prgrm.GetCXArgFromArray(prevOuts[0]).Indexes = append(prgrm.GetCXArgFromArray(prevOuts[0]).Indexes, postOuts[0])
+			prevOut := prgrm.GetCXArgFromArray(prevOuts[0])
+			prevOut.Indexes = append(prevOut.Indexes, postOuts[0])
 		}
 	}
 

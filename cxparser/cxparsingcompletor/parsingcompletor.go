@@ -370,7 +370,7 @@ const yyEofCode = 1
 const yyErrCode = 2
 const yyInitialStackSize = 16
 
-//line cxparser/cxparsingcompletor/parsingcompletor.y:1339
+//line cxparser/cxparsingcompletor/parsingcompletor.y:1341
 
 //line yacctab:1
 var yyExca = [...]int{
@@ -2163,8 +2163,9 @@ yydefault:
 									if err != nil {
 										panic(err)
 									}
-									actions.AST.GetCXArgFromArray(fromAtomicOp.Outputs[0]).IsShortAssignmentDeclaration = true
-									actions.AST.GetCXArgFromArray(fromAtomicOp.Outputs[0]).PreviouslyDeclared = true
+									fromAtomicOpOutput := actions.AST.GetCXArgFromArray(fromAtomicOp.Outputs[0])
+									fromAtomicOpOutput.IsShortAssignmentDeclaration = true
+									fromAtomicOpOutput.PreviouslyDeclared = true
 								}
 							}
 							yyVAL.expressions = actions.ArrayLiteralAssignment(actions.AST, yyDollar[1].expressions, yyDollar[3].expressions)
@@ -2182,8 +2183,9 @@ yydefault:
 									if err != nil {
 										panic(err)
 									}
-									actions.AST.GetCXArgFromArray(fromAtomicOp.Outputs[0]).IsShortAssignmentDeclaration = true
-									actions.AST.GetCXArgFromArray(fromAtomicOp.Outputs[0]).PreviouslyDeclared = true
+									fromAtomicOpOutput := actions.AST.GetCXArgFromArray(fromAtomicOp.Outputs[0])
+									fromAtomicOpOutput.IsShortAssignmentDeclaration = true
+									fromAtomicOpOutput.PreviouslyDeclared = true
 								}
 							}
 							yyVAL.expressions = actions.StructLiteralAssignment(actions.AST, yyDollar[1].expressions, yyDollar[3].expressions)
@@ -2198,7 +2200,7 @@ yydefault:
 		}
 	case 182:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line cxparser/cxparsingcompletor/parsingcompletor.y:1076
+//line cxparser/cxparsingcompletor/parsingcompletor.y:1078
 		{
 			lastOfThirdAtomicOp, err := actions.AST.GetCXAtomicOpFromExpressions(yyDollar[3].expressions, len(yyDollar[3].expressions)-1)
 			if err != nil {
@@ -2215,25 +2217,25 @@ yydefault:
 		}
 	case 184:
 		yyDollar = yyS[yypt-4 : yypt+1]
-//line cxparser/cxparsingcompletor/parsingcompletor.y:1098
+//line cxparser/cxparsingcompletor/parsingcompletor.y:1100
 		{
 			yyVAL.expressions = actions.DeclareLocal(actions.AST, yyDollar[2].argument, yyDollar[3].argument, nil, false)
 		}
 	case 185:
 		yyDollar = yyS[yypt-6 : yypt+1]
-//line cxparser/cxparsingcompletor/parsingcompletor.y:1102
+//line cxparser/cxparsingcompletor/parsingcompletor.y:1104
 		{
 			yyVAL.expressions = actions.DeclareLocal(actions.AST, yyDollar[2].argument, yyDollar[3].argument, yyDollar[5].expressions, true)
 		}
 	case 193:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line cxparser/cxparsingcompletor/parsingcompletor.y:1118
+//line cxparser/cxparsingcompletor/parsingcompletor.y:1120
 		{
 			yyVAL.expressions = nil
 		}
 	case 195:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line cxparser/cxparsingcompletor/parsingcompletor.y:1124
+//line cxparser/cxparsingcompletor/parsingcompletor.y:1126
 		{
 			// it has to be the first expression so all the nested expressions are executed
 			// instead of only executing the last one
@@ -2255,43 +2257,43 @@ yydefault:
 		}
 	case 196:
 		yyDollar = yyS[yypt-4 : yypt+1]
-//line cxparser/cxparsingcompletor/parsingcompletor.y:1144
+//line cxparser/cxparsingcompletor/parsingcompletor.y:1146
 		{
 			yyVAL.expressions = nil
 		}
 	case 197:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line cxparser/cxparsingcompletor/parsingcompletor.y:1146
+//line cxparser/cxparsingcompletor/parsingcompletor.y:1148
 		{
 			yyVAL.expressions = nil
 		}
 	case 198:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line cxparser/cxparsingcompletor/parsingcompletor.y:1151
+//line cxparser/cxparsingcompletor/parsingcompletor.y:1153
 		{
 			yyVAL.expressions = nil
 		}
 	case 199:
 		yyDollar = yyS[yypt-4 : yypt+1]
-//line cxparser/cxparsingcompletor/parsingcompletor.y:1153
+//line cxparser/cxparsingcompletor/parsingcompletor.y:1155
 		{
 			yyVAL.expressions = yyDollar[2].expressions
 		}
 	case 201:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line cxparser/cxparsingcompletor/parsingcompletor.y:1161
+//line cxparser/cxparsingcompletor/parsingcompletor.y:1163
 		{
 			yyVAL.expressions = append(yyDollar[1].expressions, yyDollar[2].expressions...)
 		}
 	case 204:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line cxparser/cxparsingcompletor/parsingcompletor.y:1172
+//line cxparser/cxparsingcompletor/parsingcompletor.y:1174
 		{
 			yyVAL.expressions = nil
 		}
 	case 205:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line cxparser/cxparsingcompletor/parsingcompletor.y:1174
+//line cxparser/cxparsingcompletor/parsingcompletor.y:1176
 		{
 			var lastFirstAtomicOp *ast.CXAtomicOperator = &ast.CXAtomicOperator{Operator: -1}
 			var err error
@@ -2319,57 +2321,57 @@ yydefault:
 		}
 	case 206:
 		yyDollar = yyS[yypt-8 : yypt+1]
-//line cxparser/cxparsingcompletor/parsingcompletor.y:1203
+//line cxparser/cxparsingcompletor/parsingcompletor.y:1205
 		{
 			yyVAL.expressions = actions.SelectionStatement(actions.AST, yyDollar[2].expressions, yyDollar[4].expressions, yyDollar[6].SelectStatements, yyDollar[7].expressions, actions.SEL_ELSEIFELSE)
 		}
 	case 207:
 		yyDollar = yyS[yypt-7 : yypt+1]
-//line cxparser/cxparsingcompletor/parsingcompletor.y:1207
+//line cxparser/cxparsingcompletor/parsingcompletor.y:1209
 		{
 			yyVAL.expressions = actions.SelectionExpressions(actions.AST, yyDollar[2].expressions, yyDollar[4].expressions, yyDollar[6].expressions)
 		}
 	case 208:
 		yyDollar = yyS[yypt-6 : yypt+1]
-//line cxparser/cxparsingcompletor/parsingcompletor.y:1211
+//line cxparser/cxparsingcompletor/parsingcompletor.y:1213
 		{
 			yyVAL.expressions = actions.SelectionExpressions(actions.AST, yyDollar[2].expressions, nil, yyDollar[5].expressions)
 		}
 	case 209:
 		yyDollar = yyS[yypt-7 : yypt+1]
-//line cxparser/cxparsingcompletor/parsingcompletor.y:1215
+//line cxparser/cxparsingcompletor/parsingcompletor.y:1217
 		{
 			yyVAL.expressions = actions.SelectionStatement(actions.AST, yyDollar[2].expressions, yyDollar[4].expressions, yyDollar[6].SelectStatements, nil, actions.SEL_ELSEIF)
 		}
 	case 210:
 		yyDollar = yyS[yypt-6 : yypt+1]
-//line cxparser/cxparsingcompletor/parsingcompletor.y:1219
+//line cxparser/cxparsingcompletor/parsingcompletor.y:1221
 		{
 			//
 			yyVAL.expressions = actions.SelectionStatement(actions.AST, yyDollar[2].expressions, nil, yyDollar[5].SelectStatements, nil, actions.SEL_ELSEIF)
 		}
 	case 211:
 		yyDollar = yyS[yypt-7 : yypt+1]
-//line cxparser/cxparsingcompletor/parsingcompletor.y:1224
+//line cxparser/cxparsingcompletor/parsingcompletor.y:1226
 		{
 			//
 			yyVAL.expressions = actions.SelectionStatement(actions.AST, yyDollar[2].expressions, nil, yyDollar[5].SelectStatements, yyDollar[6].expressions, actions.SEL_ELSEIFELSE)
 		}
 	case 212:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line cxparser/cxparsingcompletor/parsingcompletor.y:1229
+//line cxparser/cxparsingcompletor/parsingcompletor.y:1231
 		{
 			yyVAL.expressions = actions.SelectionExpressions(actions.AST, yyDollar[2].expressions, yyDollar[3].expressions, nil)
 		}
 	case 213:
 		yyDollar = yyS[yypt-5 : yypt+1]
-//line cxparser/cxparsingcompletor/parsingcompletor.y:1233
+//line cxparser/cxparsingcompletor/parsingcompletor.y:1235
 		{
 			yyVAL.expressions = nil
 		}
 	case 214:
 		yyDollar = yyS[yypt-6 : yypt+1]
-//line cxparser/cxparsingcompletor/parsingcompletor.y:1237
+//line cxparser/cxparsingcompletor/parsingcompletor.y:1239
 		{
 			yyVAL.SelectStatement = actions.SelectStatement{
 				Condition: yyDollar[3].expressions,
@@ -2378,7 +2380,7 @@ yydefault:
 		}
 	case 215:
 		yyDollar = yyS[yypt-5 : yypt+1]
-//line cxparser/cxparsingcompletor/parsingcompletor.y:1244
+//line cxparser/cxparsingcompletor/parsingcompletor.y:1246
 		{
 			yyVAL.SelectStatement = actions.SelectStatement{
 				Condition: yyDollar[3].expressions,
@@ -2387,49 +2389,49 @@ yydefault:
 		}
 	case 216:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line cxparser/cxparsingcompletor/parsingcompletor.y:1253
+//line cxparser/cxparsingcompletor/parsingcompletor.y:1255
 		{
 			yyVAL.SelectStatements = []actions.SelectStatement{yyDollar[1].SelectStatement}
 		}
 	case 217:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line cxparser/cxparsingcompletor/parsingcompletor.y:1257
+//line cxparser/cxparsingcompletor/parsingcompletor.y:1259
 		{
 			yyVAL.SelectStatements = append(yyDollar[1].SelectStatements, yyDollar[2].SelectStatement)
 		}
 	case 218:
 		yyDollar = yyS[yypt-4 : yypt+1]
-//line cxparser/cxparsingcompletor/parsingcompletor.y:1264
+//line cxparser/cxparsingcompletor/parsingcompletor.y:1266
 		{
 			yyVAL.expressions = yyDollar[3].expressions
 		}
 	case 219:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line cxparser/cxparsingcompletor/parsingcompletor.y:1268
+//line cxparser/cxparsingcompletor/parsingcompletor.y:1270
 		{
 			yyVAL.expressions = nil
 		}
 	case 220:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line cxparser/cxparsingcompletor/parsingcompletor.y:1275
+//line cxparser/cxparsingcompletor/parsingcompletor.y:1277
 		{
 			yyVAL.expressions = actions.IterationExpressions(actions.AST, nil, yyDollar[2].expressions, nil, yyDollar[3].expressions)
 		}
 	case 221:
 		yyDollar = yyS[yypt-4 : yypt+1]
-//line cxparser/cxparsingcompletor/parsingcompletor.y:1279
+//line cxparser/cxparsingcompletor/parsingcompletor.y:1281
 		{
 			yyVAL.expressions = actions.IterationExpressions(actions.AST, yyDollar[2].expressions, yyDollar[3].expressions, nil, yyDollar[4].expressions)
 		}
 	case 222:
 		yyDollar = yyS[yypt-5 : yypt+1]
-//line cxparser/cxparsingcompletor/parsingcompletor.y:1283
+//line cxparser/cxparsingcompletor/parsingcompletor.y:1285
 		{
 			yyVAL.expressions = actions.IterationExpressions(actions.AST, yyDollar[2].expressions, yyDollar[3].expressions, yyDollar[4].expressions, yyDollar[5].expressions)
 		}
 	case 223:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line cxparser/cxparsingcompletor/parsingcompletor.y:1290
+//line cxparser/cxparsingcompletor/parsingcompletor.y:1292
 		{
 			retExprs := actions.ReturnExpressions{Expressions: actions.AssociateReturnExpressions(actions.AST, 0, yyDollar[1].expressions)}
 			retExprs.Size++
@@ -2437,7 +2439,7 @@ yydefault:
 		}
 	case 224:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line cxparser/cxparsingcompletor/parsingcompletor.y:1296
+//line cxparser/cxparsingcompletor/parsingcompletor.y:1298
 		{
 			yyDollar[1].ReturnExpressions.Expressions = append(yyDollar[1].ReturnExpressions.Expressions, actions.AssociateReturnExpressions(actions.AST, yyDollar[1].ReturnExpressions.Size, yyDollar[3].expressions)...)
 			yyDollar[1].ReturnExpressions.Size++
@@ -2445,7 +2447,7 @@ yydefault:
 		}
 	case 225:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line cxparser/cxparsingcompletor/parsingcompletor.y:1304
+//line cxparser/cxparsingcompletor/parsingcompletor.y:1306
 		{
 			pkg, err := actions.AST.GetCurrentPackage()
 			if err != nil {
@@ -2466,25 +2468,25 @@ yydefault:
 		}
 	case 226:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line cxparser/cxparsingcompletor/parsingcompletor.y:1323
+//line cxparser/cxparsingcompletor/parsingcompletor.y:1325
 		{
 			yyVAL.expressions = actions.ContinueExpressions(actions.AST)
 		}
 	case 227:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line cxparser/cxparsingcompletor/parsingcompletor.y:1327
+//line cxparser/cxparsingcompletor/parsingcompletor.y:1329
 		{
 			yyVAL.expressions = actions.BreakExpressions(actions.AST)
 		}
 	case 228:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line cxparser/cxparsingcompletor/parsingcompletor.y:1331
+//line cxparser/cxparsingcompletor/parsingcompletor.y:1333
 		{
 			yyVAL.expressions = actions.AddJmpToReturnExpressions(actions.AST, actions.ReturnExpressions{})
 		}
 	case 229:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line cxparser/cxparsingcompletor/parsingcompletor.y:1335
+//line cxparser/cxparsingcompletor/parsingcompletor.y:1337
 		{
 			yyVAL.expressions = actions.AddJmpToReturnExpressions(actions.AST, yyDollar[2].ReturnExpressions)
 		}
