@@ -303,10 +303,9 @@ func AddInitFunction(prgrm *ast.CXProgram) error {
 
 	initFn := ast.MakeFunction(constants.SYS_INIT_FUNC, actions.CurrentFile, actions.LineNo)
 	_, fnIdx := mainPkg.AddFunction(prgrm, initFn)
-	initFnFromArr := prgrm.GetFunctionFromArray(fnIdx)
 
 	//Init Expressions
-	actions.FunctionDeclaration(prgrm, initFnFromArr, nil, nil, prgrm.SysInitExprs)
+	actions.FunctionDeclaration(prgrm, fnIdx, nil, nil, prgrm.SysInitExprs)
 
 	if _, err := mainPkg.SelectFunction(prgrm, constants.MAIN_FUNC); err != nil {
 		return err

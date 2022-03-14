@@ -29,7 +29,8 @@
 		return yyParse(NewLexer(codeBuf))
 	}
 
-	func PreFunctionDeclaration (fn *ast.CXFunction, inputs []*ast.CXArgument, outputs []*ast.CXArgument) {
+	func PreFunctionDeclaration (fnIdx ast.CXFunctionIndex, inputs []*ast.CXArgument, outputs []*ast.CXArgument) {
+                fn:=actions.AST.GetFunctionFromArray(fnIdx)
 		// adding inputs, outputs
 		for _, inp := range inputs {
 			fn.AddInput(actions.AST,inp)
@@ -68,6 +69,7 @@
 	expressions []*ast.CXExpression
 
         function *ast.CXFunction
+        functionIndex ast.CXFunctionIndex
 }
 
 %token  <bool>          BOOLEAN_LITERAL
@@ -137,7 +139,7 @@
 %type   <arguments>     id_list
 %type   <arguments>     types_list
                                                 
-%type   <function>      function_header
+%type   <functionIndex>      function_header
 
 %type   <ints>          indexing_literal
 %type   <ints>          indexing_slice_literal
@@ -225,9 +227,8 @@ function_header:
 			if pkg, err := Program.GetCurrentPackage(); err == nil {
 				fn := ast.MakeFunction($2, CurrentFileName, lineNo)
 				_,fnIdx:=pkg.AddFunction(Program,fn)
-                                newFn:=Program.GetFunctionFromArray(fnIdx)
 
-                                $$ = newFn
+                                $$ = fnIdx
 			} else {
 				panic(err)
 			}
@@ -245,7 +246,7 @@ function_header:
 				_,fnIdx:=pkg.AddFunction(Program,fn)
                                 newFn:=Program.GetFunctionFromArray(fnIdx)
                                 newFn.AddInput(Program,$3[0])
-                                $$ = newFn
+                                $$ = fnIdx
 			} else {
 				panic(err)
 			}

@@ -63,6 +63,7 @@ build-parser: ## Generate lexer and parser for CX grammar
 	arrayArguments [][]ast.CXExpression
 
     function *ast.CXFunction
+    functionIndex ast.CXFunctionIndex
 }
 
 %token  <bool>          BOOLEAN_LITERAL
@@ -187,7 +188,7 @@ build-parser: ## Generate lexer and parser for CX grammar
 %type   <expressions>   jump_statement
 %type   <expressions>   statement
 
-%type   <function>      function_header
+%type   <functionIndex>      function_header
 
 %type   <string>        infer_action_arg
 %type   <stringA>       infer_action, infer_actions

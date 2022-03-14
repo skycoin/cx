@@ -18,7 +18,7 @@ import (
 // If the function is a method (isMethod = true), then it adds the object that
 // it's called on as the first argument.
 //
-func FunctionHeader(prgrm *ast.CXProgram, ident string, receiver []*ast.CXArgument, isMethod bool) *ast.CXFunction {
+func FunctionHeader(prgrm *ast.CXProgram, ident string, receiver []*ast.CXArgument, isMethod bool) ast.CXFunctionIndex {
 	if isMethod {
 		if len(receiver) > 1 {
 			panic("method has multiple receivers")
@@ -29,14 +29,13 @@ func FunctionHeader(prgrm *ast.CXProgram, ident string, receiver []*ast.CXArgume
 			if fn, err := prgrm.GetFunction(fnName, pkg.Name); err == nil {
 				fn.AddInput(prgrm, receiver[0])
 				pkg.CurrentFunction = ast.CXFunctionIndex(fn.Index)
-				return fn
+				return ast.CXFunctionIndex(fn.Index)
 			} else {
 				fn := ast.MakeFunction(fnName, CurrentFile, LineNo)
+				fn.AddInput(prgrm, receiver[0])
 				_, fnIdx := pkg.AddFunction(prgrm, fn)
-				newFn := prgrm.GetFunctionFromArray(fnIdx)
-				newFn.AddInput(prgrm, receiver[0])
 
-				return newFn
+				return fnIdx
 			}
 		} else {
 			panic(err)
@@ -45,13 +44,12 @@ func FunctionHeader(prgrm *ast.CXProgram, ident string, receiver []*ast.CXArgume
 		if pkg, err := prgrm.GetCurrentPackage(); err == nil {
 			if fn, err := prgrm.GetFunction(ident, pkg.Name); err == nil {
 				pkg.CurrentFunction = ast.CXFunctionIndex(fn.Index)
-				return fn
+				return ast.CXFunctionIndex(fn.Index)
 			} else {
 				fn := ast.MakeFunction(ident, CurrentFile, LineNo)
 				_, fnIdx := pkg.AddFunction(prgrm, fn)
-				newFn := prgrm.GetFunctionFromArray(fnIdx)
 
-				return newFn
+				return fnIdx
 			}
 		} else {
 			panic(err)
@@ -59,7 +57,8 @@ func FunctionHeader(prgrm *ast.CXProgram, ident string, receiver []*ast.CXArgume
 	}
 }
 
-func FunctionAddParameters(prgrm *ast.CXProgram, fn *ast.CXFunction, inputs, outputs []*ast.CXArgument) {
+func FunctionAddParameters(prgrm *ast.CXProgram, fnIdx ast.CXFunctionIndex, inputs, outputs []*ast.CXArgument) {
+	fn := prgrm.GetFunctionFromArray(fnIdx)
 	if len(fn.Inputs) != len(inputs) {
 		// it must be a method declaration
 		// so we save the first input
@@ -114,25 +113,29 @@ func CheckUndValidTypes(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 	}
 }
 
-func FunctionProcessParameters(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXArgument, symbolsScope *map[string]bool, offset *types.Pointer, fn *ast.CXFunction, params []ast.CXArgumentIndex) {
+func FunctionProcessParameters(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXArgument, symbolsScope *map[string]bool, offset *types.Pointer, fnIdx ast.CXFunctionIndex, params []ast.CXArgumentIndex) {
+	fn := prgrm.GetFunctionFromArray(fnIdx)
+
 	for _, paramIdx := range params {
+		ProcessLocalDeclaration(prgrm, symbols, symbolsScope, paramIdx)
+
+		UpdateSymbolsTable(prgrm, symbols, paramIdx, offset, false)
+		GiveOffset(prgrm, symbols, paramIdx, offset, false)
+		SetFinalSize(prgrm, symbols, paramIdx)
+
+		AddPointer(prgrm, fn, paramIdx)
+
 		param := prgrm.GetCXArgFromArray(paramIdx)
-		ProcessLocalDeclaration(prgrm, symbols, symbolsScope, param)
-
-		UpdateSymbolsTable(prgrm, symbols, param, offset, false)
-		GiveOffset(prgrm, symbols, param, offset, false)
-		SetFinalSize(prgrm, symbols, param)
-
-		AddPointer(prgrm, fn, param)
-
 		// as these are declarations, they should not have any dereference operations
 		param.DereferenceOperations = nil
 	}
 }
 
-func FunctionDeclaration(prgrm *ast.CXProgram, fn *ast.CXFunction, inputs, outputs []*ast.CXArgument, exprs []ast.CXExpression) {
+func FunctionDeclaration(prgrm *ast.CXProgram, fnIdx ast.CXFunctionIndex, inputs, outputs []*ast.CXArgument, exprs []ast.CXExpression) {
+	fn := prgrm.GetFunctionFromArray(fnIdx)
+
 	//var exprs []*cxcore.CXExpression = prgrm.SysInitExprs
-	FunctionAddParameters(prgrm, fn, inputs, outputs)
+	FunctionAddParameters(prgrm, ast.CXFunctionIndex(fnIdx), inputs, outputs)
 
 	// getting offset to use by statements (excluding inputs, outputs and receiver)
 	var offset types.Pointer
@@ -140,9 +143,7 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fn *ast.CXFunction, inputs, outpu
 	//TODO: HeapStartsAt only increases, with every write?
 	//DataOffset only increases
 
-	ProcessGoTos(prgrm, fn, exprs)
-
-	fn.LineCount = len(fn.Expressions)
+	ProcessGoTos(prgrm, ast.CXFunctionIndex(fnIdx), exprs)
 
 	// each element in the slice corresponds to a different scope
 	var symbols *[]map[string]*ast.CXArgument
@@ -154,8 +155,8 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fn *ast.CXFunction, inputs, outpu
 	// local being function constrained variables, and global being global variables
 	var symbolsScope map[string]bool = make(map[string]bool)
 
-	FunctionProcessParameters(prgrm, symbols, &symbolsScope, &offset, fn, fn.Inputs)
-	FunctionProcessParameters(prgrm, symbols, &symbolsScope, &offset, fn, fn.Outputs)
+	FunctionProcessParameters(prgrm, symbols, &symbolsScope, &offset, fnIdx, fn.Inputs)
+	FunctionProcessParameters(prgrm, symbols, &symbolsScope, &offset, fnIdx, fn.Outputs)
 
 	for i, expr := range fn.Expressions {
 		if expr.Type == ast.CX_LINE {
@@ -171,8 +172,8 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fn *ast.CXFunction, inputs, outpu
 		}
 
 		ProcessMethodCall(prgrm, &expr, symbols, &offset, true)
-		ProcessExpressionArguments(prgrm, symbols, &symbolsScope, &offset, fn, exprAtomicOp.Inputs, &expr, true)
-		ProcessExpressionArguments(prgrm, symbols, &symbolsScope, &offset, fn, exprAtomicOp.Outputs, &expr, false)
+		ProcessExpressionArguments(prgrm, symbols, &symbolsScope, &offset, fnIdx, exprAtomicOp.Inputs, &expr, true)
+		ProcessExpressionArguments(prgrm, symbols, &symbolsScope, &offset, fnIdx, exprAtomicOp.Outputs, &expr, false)
 
 		ProcessPointerStructs(prgrm, &expr)
 
@@ -226,10 +227,8 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fn *ast.CXFunction, inputs, outpu
 		}
 	}
 
+	fn.LineCount = len(fn.Expressions)
 	fn.Size = offset
-
-	// TODO: temporary bug fix, needs improvements
-	prgrm.CXFunctions[fn.Index] = *fn
 }
 
 func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXExpression) []ast.CXExpression {
@@ -446,7 +445,9 @@ func processTestExpression(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 }
 
 // checkIndexType throws an error if the type of `idx` is not `i32` or `i64`.
-func checkIndexType(prgrm *ast.CXProgram, idx *ast.CXArgument) {
+func checkIndexType(prgrm *ast.CXProgram, idxIdx ast.CXArgumentIndex) {
+	idx := prgrm.GetCXArgFromArray(idxIdx)
+
 	typ := ast.GetFormattedType(prgrm, idx)
 	if typ != "i32" && typ != "i64" {
 		println(ast.CompilationError(idx.ArgDetails.FileName, idx.ArgDetails.FileLine), fmt.Sprintf("wrong index type; expected either 'i32' or 'i64', got '%s'", typ))
@@ -456,13 +457,15 @@ func checkIndexType(prgrm *ast.CXProgram, idx *ast.CXArgument) {
 // ProcessExpressionArguments performs a series of checks and processes to an expresion's inputs and outputs.
 // Some of these checks are: checking if a an input has not been declared, assign a relative offset to the argument,
 // and calculate the correct size of the argument.
-func ProcessExpressionArguments(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXArgument, symbolsScope *map[string]bool, offset *types.Pointer, fn *ast.CXFunction, args []ast.CXArgumentIndex, expr *ast.CXExpression, isInput bool) {
+func ProcessExpressionArguments(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXArgument, symbolsScope *map[string]bool, offset *types.Pointer, fnIdx ast.CXFunctionIndex, args []ast.CXArgumentIndex, expr *ast.CXExpression, isInput bool) {
+	fn := prgrm.GetFunctionFromArray(fnIdx)
+
 	for _, argIdx := range args {
 		arg := prgrm.GetCXArgFromArray(argIdx)
-		ProcessLocalDeclaration(prgrm, symbols, symbolsScope, arg)
+		ProcessLocalDeclaration(prgrm, symbols, symbolsScope, argIdx)
 
 		if !isInput {
-			CheckRedeclared(prgrm, symbols, expr, arg)
+			CheckRedeclared(prgrm, symbols, expr, argIdx)
 		}
 
 		if !isInput {
@@ -470,37 +473,35 @@ func ProcessExpressionArguments(prgrm *ast.CXProgram, symbols *[]map[string]*ast
 		}
 
 		if arg.PreviouslyDeclared {
-			UpdateSymbolsTable(prgrm, symbols, arg, offset, false)
+			UpdateSymbolsTable(prgrm, symbols, argIdx, offset, false)
 		} else {
-			UpdateSymbolsTable(prgrm, symbols, arg, offset, true)
+			UpdateSymbolsTable(prgrm, symbols, argIdx, offset, true)
 		}
 
 		if isInput {
-			GiveOffset(prgrm, symbols, arg, offset, true)
+			GiveOffset(prgrm, symbols, argIdx, offset, true)
 		} else {
-			GiveOffset(prgrm, symbols, arg, offset, false)
+			GiveOffset(prgrm, symbols, argIdx, offset, false)
 		}
 
-		ProcessSlice(prgrm, arg)
+		ProcessSlice(prgrm, argIdx)
 
 		for _, idxIdx := range arg.Indexes {
-			idx := prgrm.GetCXArgFromArray(idxIdx)
-			UpdateSymbolsTable(prgrm, symbols, idx, offset, true)
-			GiveOffset(prgrm, symbols, idx, offset, true)
-			checkIndexType(prgrm, idx)
+			UpdateSymbolsTable(prgrm, symbols, idxIdx, offset, true)
+			GiveOffset(prgrm, symbols, idxIdx, offset, true)
+			checkIndexType(prgrm, idxIdx)
 		}
 		for _, fldIdx := range arg.Fields {
 			fld := prgrm.GetCXArgFromArray(fldIdx)
 			for _, idxIdx := range fld.Indexes {
-				idx := prgrm.GetCXArgFromArray(idxIdx)
-				UpdateSymbolsTable(prgrm, symbols, idx, offset, true)
-				GiveOffset(prgrm, symbols, idx, offset, true)
+				UpdateSymbolsTable(prgrm, symbols, idxIdx, offset, true)
+				GiveOffset(prgrm, symbols, idxIdx, offset, true)
 			}
 		}
 
-		SetFinalSize(prgrm, symbols, arg)
+		SetFinalSize(prgrm, symbols, argIdx)
 
-		AddPointer(prgrm, fn, arg)
+		AddPointer(prgrm, fn, argIdx)
 	}
 }
 
@@ -532,7 +533,9 @@ func isPointerAdded(prgrm *ast.CXProgram, fn *ast.CXFunction, sym *ast.CXArgumen
 // AddPointer checks if `sym` or its last field, if a struct, behaves like a
 // pointer (slice, pointer, string). If this is the case, `sym` is added to
 // `fn.ListOfPointers` so the CX runtime does not have to determine this.
-func AddPointer(prgrm *ast.CXProgram, fn *ast.CXFunction, sym *ast.CXArgument) {
+func AddPointer(prgrm *ast.CXProgram, fn *ast.CXFunction, symIdx ast.CXArgumentIndex) {
+	sym := prgrm.GetCXArgFromArray(symIdx)
+
 	// Ignore if it's a global variable.
 	if sym.Offset > prgrm.Stack.Size {
 		return
@@ -568,7 +571,9 @@ func AddPointer(prgrm *ast.CXProgram, fn *ast.CXFunction, sym *ast.CXArgument) {
 
 // CheckRedeclared checks if `expr` represents a variable declaration and then checks if an
 // instance of that variable has already been declared.
-func CheckRedeclared(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXArgument, expr *ast.CXExpression, sym *ast.CXArgument) {
+func CheckRedeclared(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXArgument, expr *ast.CXExpression, symIdx ast.CXArgumentIndex) {
+	sym := prgrm.GetCXArgFromArray(symIdx)
+
 	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
 	if err != nil {
 		panic(err)
@@ -590,7 +595,9 @@ func CheckRedeclared(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXArgument
 	}
 }
 
-func ProcessLocalDeclaration(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXArgument, symbolsScope *map[string]bool, arg *ast.CXArgument) {
+func ProcessLocalDeclaration(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXArgument, symbolsScope *map[string]bool, argIdx ast.CXArgumentIndex) {
+	arg := prgrm.GetCXArgFromArray(argIdx)
+
 	argPkg, err := prgrm.GetPackageFromArray(arg.Package)
 	if err != nil {
 		panic(err)
@@ -602,7 +609,8 @@ func ProcessLocalDeclaration(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CX
 	arg.IsLocalDeclaration = (*symbolsScope)[argPkg.Name+"."+arg.Name]
 }
 
-func ProcessGoTos(prgrm *ast.CXProgram, fn *ast.CXFunction, exprs []ast.CXExpression) {
+func ProcessGoTos(prgrm *ast.CXProgram, fnIdx ast.CXFunctionIndex, exprs []ast.CXExpression) {
+	fn := prgrm.GetFunctionFromArray(fnIdx)
 	for i, expr := range exprs {
 		cxAtomicOp, _, _, err := prgrm.GetOperation(&expr)
 		if err != nil {
@@ -610,11 +618,12 @@ func ProcessGoTos(prgrm *ast.CXProgram, fn *ast.CXFunction, exprs []ast.CXExpres
 		}
 		cxAtomicOpOperator := prgrm.GetFunctionFromArray(cxAtomicOp.Operator)
 
-		opGotoFn := ast.Natives[constants.OP_IDENTITY]
-		if cxAtomicOpOperator != nil {
-			opGotoFn.Index = cxAtomicOpOperator.Index
+		opGotoFn := ast.Natives[constants.OP_GOTO]
+		isOpGoto := false
+		if cxAtomicOpOperator != nil && cxAtomicOpOperator.AtomicOPCode == opGotoFn.AtomicOPCode && len(cxAtomicOpOperator.Inputs) == len(opGotoFn.Inputs) && len(cxAtomicOpOperator.Outputs) == len(opGotoFn.Outputs) {
+			isOpGoto = true
 		}
-		if cxAtomicOpOperator == opGotoFn {
+		if isOpGoto {
 			// then it's a goto
 			for j, e := range exprs {
 				ecxAtomicOp, _, _, err := prgrm.GetOperation(&e)
@@ -799,10 +808,11 @@ func ProcessStringAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 	cxAtomicOpOperator := prgrm.GetFunctionFromArray(cxAtomicOp.Operator)
 
 	opIdentFn := ast.Natives[constants.OP_IDENTITY]
-	if cxAtomicOpOperator != nil {
-		opIdentFn.Index = cxAtomicOpOperator.Index
+	isOpIdent := false
+	if cxAtomicOpOperator != nil && cxAtomicOpOperator.AtomicOPCode == opIdentFn.AtomicOPCode && len(cxAtomicOpOperator.Inputs) == len(opIdentFn.Inputs) && len(cxAtomicOpOperator.Outputs) == len(opIdentFn.Outputs) {
+		isOpIdent = true
 	}
-	if cxAtomicOpOperator == opIdentFn {
+	if isOpIdent {
 		for i, outIdx := range cxAtomicOp.Outputs {
 			out := prgrm.GetCXArgFromArray(outIdx)
 			if len(cxAtomicOp.Inputs) > i {
@@ -838,9 +848,10 @@ func ProcessReferenceAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 
 }
 
-func ProcessSlice(prgrm *ast.CXProgram, inp *ast.CXArgument) {
-	var elt *ast.CXArgument
+func ProcessSlice(prgrm *ast.CXProgram, inpIdx ast.CXArgumentIndex) {
+	inp := prgrm.GetCXArgFromArray(inpIdx)
 
+	var elt *ast.CXArgument
 	if len(inp.Fields) > 0 {
 		elt = prgrm.GetCXArgFromArray(inp.Fields[len(inp.Fields)-1])
 	} else {
@@ -866,10 +877,12 @@ func ProcessSliceAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 	cxAtomicOpOperator := prgrm.GetFunctionFromArray(cxAtomicOp.Operator)
 
 	opIdentFn := ast.Natives[constants.OP_IDENTITY]
-	if cxAtomicOpOperator != nil {
-		opIdentFn.Index = cxAtomicOpOperator.Index
+	isOpIdent := false
+	if cxAtomicOpOperator != nil && cxAtomicOpOperator.AtomicOPCode == opIdentFn.AtomicOPCode && len(cxAtomicOpOperator.Inputs) == len(opIdentFn.Inputs) && len(cxAtomicOpOperator.Outputs) == len(opIdentFn.Outputs) {
+		isOpIdent = true
 	}
-	if cxAtomicOpOperator == opIdentFn {
+
+	if isOpIdent {
 		var inp *ast.CXArgument
 		var out *ast.CXArgument
 
@@ -926,7 +939,9 @@ func lookupSymbol(prgrm *ast.CXProgram, pkgName, ident string, symbols *[]map[st
 }
 
 // UpdateSymbolsTable adds `sym` to the innermost scope (last element of slice) in `symbols`.
-func UpdateSymbolsTable(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXArgument, sym *ast.CXArgument, offset *types.Pointer, shouldExist bool) {
+func UpdateSymbolsTable(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXArgument, symIdx ast.CXArgumentIndex, offset *types.Pointer, shouldExist bool) {
+	sym := prgrm.GetCXArgFromArray(symIdx)
+
 	if sym.Name != "" {
 		symPkg, err := prgrm.GetPackageFromArray(sym.Package)
 		if err != nil {
@@ -1139,7 +1154,9 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 	}
 }
 
-func GiveOffset(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXArgument, sym *ast.CXArgument, offset *types.Pointer, shouldExist bool) {
+func GiveOffset(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXArgument, symIdx ast.CXArgumentIndex, offset *types.Pointer, shouldExist bool) {
+	sym := prgrm.GetCXArgFromArray(symIdx)
+
 	if sym.Name != "" {
 		symPkg, err := prgrm.GetPackageFromArray(sym.Package)
 		if err != nil {
@@ -1167,10 +1184,12 @@ func ProcessTempVariable(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 	cxAtomicOpOperator := prgrm.GetFunctionFromArray(cxAtomicOp.Operator)
 
 	opIdentFn := ast.Natives[constants.OP_IDENTITY]
-	if cxAtomicOpOperator != nil {
-		opIdentFn.Index = cxAtomicOpOperator.Index
+	isOpIdent := false
+	if cxAtomicOpOperator != nil && cxAtomicOpOperator.AtomicOPCode == opIdentFn.AtomicOPCode && len(cxAtomicOpOperator.Inputs) == len(opIdentFn.Inputs) && len(cxAtomicOpOperator.Outputs) == len(opIdentFn.Outputs) {
+		isOpIdent = true
 	}
-	if cxAtomicOpOperator != nil && (cxAtomicOpOperator == opIdentFn || ast.IsArithmeticOperator(cxAtomicOpOperator.AtomicOPCode)) && len(cxAtomicOp.Outputs) > 0 && len(cxAtomicOp.Inputs) > 0 {
+
+	if cxAtomicOpOperator != nil && (isOpIdent || ast.IsArithmeticOperator(cxAtomicOpOperator.AtomicOPCode)) && len(cxAtomicOp.Outputs) > 0 && len(cxAtomicOp.Inputs) > 0 {
 		arg := prgrm.GetCXArgFromArray(cxAtomicOp.Outputs[0])
 		name := arg.Name
 		if IsTempVar(name) {
@@ -1424,7 +1443,8 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, sym *ast.CXArgument, arg *ast.CXA
 	}
 }
 
-func SetFinalSize(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXArgument, sym *ast.CXArgument) {
+func SetFinalSize(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXArgument, symIdx ast.CXArgumentIndex) {
+	sym := prgrm.GetCXArgFromArray(symIdx)
 	finalSize := sym.TotalSize
 
 	symPkg, err := prgrm.GetPackageFromArray(sym.Package)
