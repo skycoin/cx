@@ -16,6 +16,7 @@ import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/globals"
+	cxinit "github.com/skycoin/cx/cx/init"
 	"github.com/skycoin/cx/cx/util"
 	"github.com/skycoin/cx/cxparser/actions"
 	cxparsering "github.com/skycoin/cx/cxparser/cxparsing"
@@ -35,7 +36,7 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 	defer profiling.StopProfile("parse")
 
 	if actions.AST == nil {
-		actions.AST = ast.MakeProgram()
+		actions.AST = cxinit.MakeProgram()
 	}
 
 	//corePkgsPrgrm, err := cxcore.GetCurrentCxProgram()

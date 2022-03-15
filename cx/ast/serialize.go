@@ -1200,7 +1200,7 @@ func initDeserialization(prgrm *CXProgram, s *SerializedCXProgram) {
 
 	// This means reinstantiate memory and add DataSegmentMemory
 	if len(s.DataSegmentMemory) > 0 && len(s.Memory) == 0 {
-		minHeapSize := minHeapSize()
+		minHeapSize := MinHeapSize()
 		prgrm.Memory = make([]byte, constants.STACK_SIZE+minHeapSize)
 		y := 0
 		for i := prgrm.Data.StartsAt; i < prgrm.Data.StartsAt+prgrm.Data.Size; i++ {

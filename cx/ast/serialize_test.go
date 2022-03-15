@@ -12,8 +12,8 @@ import (
 	cxast "github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/astapi"
 	cxgenerator "github.com/skycoin/cx/cx/generator"
+	cxinit "github.com/skycoin/cx/cx/init"
 	"github.com/skycoin/cx/cx/types"
-	cxparsingcompletor "github.com/skycoin/cx/cxparser/cxparsingcompletor"
 )
 
 // t.Logf("Stack size=%v\n", tc.program.StackSize)
@@ -210,8 +210,8 @@ func generateSampleProgramFromCXEvolves(t *testing.T, withLiteral bool) *cxast.C
 
 	// Needed for AddNativeExpressionToFunction
 	// because of dependency on cxast.OpNames
-	cxparsingcompletor.InitCXCore()
-	cxProgram = cxast.MakeProgram()
+	// cxparsingcompletor.InitCXCore()
+	cxProgram = cxinit.MakeProgram()
 
 	err := astapi.AddEmptyPackage(cxProgram, "main")
 	if err != nil {

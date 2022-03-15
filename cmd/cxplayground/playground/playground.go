@@ -12,12 +12,12 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/execute"
 
 	"github.com/skycoin/cx/cxparser/actions"
 	cxparsing "github.com/skycoin/cx/cxparser/cxparsing"
 
+	cxinit "github.com/skycoin/cx/cx/init"
 	cxparsingcompletor "github.com/skycoin/cx/cxparser/cxparsingcompletor"
 	cxpartialparsing "github.com/skycoin/cx/cxparser/cxpartialparsing"
 )
@@ -150,7 +150,7 @@ func unsafeeval(code string) (out string) {
 
 	actions.LineNo = 0
 
-	actions.AST = ast.MakeProgram()
+	actions.AST = cxinit.MakeProgram()
 	cxpartialparsing.Program = actions.AST
 
 	cxpartialparsing.Parse(code)
@@ -168,7 +168,7 @@ func unsafeeval(code string) (out string) {
 	//if err := actions.AST.RunCompiled(0, nil); err != nil {
 	err = execute.RunCompiled(actions.AST, 0, nil)
 	if err != nil {
-		actions.AST = ast.MakeProgram()
+		actions.AST = cxinit.MakeProgram()
 		return fmt.Sprintf("%s", err)
 	}
 
@@ -183,7 +183,7 @@ func unsafeeval(code string) (out string) {
 	os.Stdout = old // restoring the real stdout
 	out = <-outC
 
-	actions.AST = ast.MakeProgram()
+	actions.AST = cxinit.MakeProgram()
 	return out
 }
 
@@ -205,7 +205,7 @@ func eval(code string) string {
 	case <-ch:
 		return result
 	case <-timer.C:
-		actions.AST = ast.MakeProgram()
+		actions.AST = cxinit.MakeProgram()
 		return "Timed out."
 	}
 }

@@ -13,6 +13,7 @@ import (
 	cxast "github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/astapi"
 	cxconstants "github.com/skycoin/cx/cx/constants"
+	cxinit "github.com/skycoin/cx/cx/init"
 	cxparsingcompletor "github.com/skycoin/cx/cxparser/cxparsingcompletor"
 )
 
@@ -365,7 +366,7 @@ func GenerateSampleProgram(t *testing.T, withLiteral bool) *cxast.CXProgram {
 	// Needed for AddNativeExpressionToFunction
 	// because of dependency on cxast.OpNames
 	cxparsingcompletor.InitCXCore()
-	cxProgram = cxast.MakeProgram()
+	cxProgram = cxinit.MakeProgram()
 
 	err := astapi.AddEmptyPackage(cxProgram, "main")
 	if err != nil {

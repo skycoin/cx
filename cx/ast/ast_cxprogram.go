@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/types"
 )
 
@@ -66,30 +65,6 @@ type HeapSegmentStruct struct {
 	Size     types.Pointer // This field stores the size of a CX program's heap
 	StartsAt types.Pointer // Offset at which the heap starts in a CX program's memory (normally the stack size)
 	Pointer  types.Pointer // At what offset a CX program can insert a new object to the heap
-}
-
-// MakeProgram ...
-func MakeProgram() *CXProgram {
-	minHeapSize := minHeapSize()
-	newPrgrm := &CXProgram{
-		Packages:       make(map[string]CXPackageIndex, 0),
-		CXFunctions:    make([]CXFunction, 0),
-		CurrentPackage: -1,
-		CallStack:      make([]CXCall, constants.CALLSTACK_SIZE),
-		Memory:         make([]byte, constants.STACK_SIZE+minHeapSize),
-		Stack: StackSegmentStruct{
-			Size: constants.STACK_SIZE,
-		},
-		Data: DataSegmentStruct{
-			StartsAt: constants.STACK_SIZE,
-		},
-		Heap: HeapSegmentStruct{
-			Size:    minHeapSize,
-			Pointer: constants.NULL_HEAP_ADDRESS_OFFSET, // We can start adding objects to the heap after the NULL (nil) bytes.
-		},
-		CXArgs: make([]CXArgument, 0),
-	}
-	return newPrgrm
 }
 
 // ----------------------------------------------------------------
@@ -163,6 +138,34 @@ func (cxprogram *CXProgram) AddFunctionInArray(fn *CXFunction) CXFunctionIndex {
 
 	return CXFunctionIndex(fn.Index)
 }
+
+// func (cxprogram *CXProgram) AddNativeFunctionInArray(fn *CXNativeFunction) CXFunctionIndex {
+// 	var fnNativeInputs []CXArgumentIndex
+// 	var fnNativeOutputs []CXArgumentIndex
+
+// 	// Add inputs to cx arg array
+// 	for _, arg := range fn.Inputs {
+// 		argIdx := cxprogram.AddCXArgInArray(arg)
+// 		fnNativeInputs = append(fnNativeInputs, argIdx)
+// 	}
+
+// 	// Add outputs to cx arg array
+// 	for _, arg := range fn.Outputs {
+// 		argIdx := cxprogram.AddCXArgInArray(arg)
+// 		fnNativeOutputs = append(fnNativeOutputs, argIdx)
+// 	}
+
+// 	fnNative := CXFunction{
+// 		Index:        len(cxprogram.CXFunctions),
+// 		AtomicOPCode: fn.AtomicOPCode,
+// 		Inputs:       fnNativeInputs,
+// 		Outputs:      fnNativeOutputs,
+// 	}
+
+// 	cxprogram.CXFunctions = append(cxprogram.CXFunctions, fnNative)
+
+// 	return CXFunctionIndex(fnNative.Index)
+// }
 
 func (cxprogram *CXProgram) GetFunctionFromArray(index CXFunctionIndex) *CXFunction {
 	if index == -1 {

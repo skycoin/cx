@@ -36,6 +36,16 @@ type CXFunction struct {
 	ListOfPointers []*CXArgument // Root pointers for the GC algorithm
 }
 
+// // CXNativeFunction is used to represent built-in operations.
+// type CXNativeFunction struct {
+// 	// Metadata
+// 	AtomicOPCode int
+
+// 	// Contents
+// 	Inputs  []*CXArgument // Input parameters to the function
+// 	Outputs []*CXArgument // Output parameters from the function
+// }
+
 // IsBuiltIn determines if opcode is not 0
 // True if the function is native to CX, e.g. int32.add()
 func (cxf CXFunction) IsBuiltIn() bool {
