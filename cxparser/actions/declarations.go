@@ -4,11 +4,10 @@ import (
 	"fmt"
 	"os"
 
-	constants2 "github.com/skycoin/cx/cxparser/constants"
-
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
-	globals2 "github.com/skycoin/cx/cx/globals"
+	"github.com/skycoin/cx/cx/globals"
+	cxpackages "github.com/skycoin/cx/cx/packages"
 	"github.com/skycoin/cx/cx/types"
 )
 
@@ -326,7 +325,7 @@ func DeclareImport(prgrm *ast.CXProgram, name string, currentFile string, lineNo
 	// All packages are read during the first pass of the compilation.  So
 	// if we get here during the 2nd pass, it's either a core package or
 	// something is panic-level wrong.
-	if constants2.IsCorePackage(ident) {
+	if cxpackages.IsDefaultPackage(ident) {
 		imp := ast.MakePackage(ident)
 		impIdx := prgrm.AddPackage(imp)
 		newImp, err := prgrm.GetPackageFromArray(impIdx)
@@ -355,7 +354,7 @@ func DeclareImport(prgrm *ast.CXProgram, name string, currentFile string, lineNo
 //
 func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationSpecifiers *ast.CXArgument,
 	initializer []ast.CXExpression, doesInitialize bool) []ast.CXExpression {
-	if globals2.FoundCompileErrors {
+	if globals.FoundCompileErrors {
 		return nil
 	}
 

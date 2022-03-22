@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	constants2 "github.com/skycoin/cx/cxparser/constants"
+	cxpackages "github.com/skycoin/cx/cx/packages"
 
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/types"
@@ -187,7 +187,7 @@ func BuildStrPackages(prgrm *CXProgram, ast *string) {
 			panic(err)
 		}
 
-		if constants2.IsCorePackage(pkg.Name) {
+		if cxpackages.IsDefaultPackage(pkg.Name) {
 			continue
 		}
 
