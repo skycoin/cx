@@ -47,6 +47,31 @@ func GetSize(prgrm *CXProgram, arg *CXArgument) types.Pointer {
 	return arg.TotalSize
 }
 
+func GetNativeSize(arg *CXArgument) types.Pointer {
+	derefCount := len(arg.DereferenceOperations)
+	if derefCount > 0 {
+		deref := arg.DereferenceOperations[derefCount-1]
+		if deref == constants.DEREF_SLICE || deref == constants.DEREF_ARRAY {
+			declCount := len(arg.DeclarationSpecifiers)
+			if declCount > 1 {
+			}
+			return arg.Size
+		}
+	}
+
+	for _, decl := range arg.DeclarationSpecifiers {
+		if decl == constants.DECL_POINTER || decl == constants.DECL_SLICE || decl == constants.DECL_ARRAY {
+			return arg.TotalSize
+		}
+	}
+
+	if arg.StructType != nil {
+		return arg.StructType.Size
+	}
+
+	return arg.TotalSize
+}
+
 // GetDerefSize ...
 func GetDerefSize(arg *CXArgument, index int, derefPointer bool, derefArray bool) types.Pointer {
 	if !derefArray && len(arg.Lengths) > 1 && ((index + 1) < len(arg.Lengths)) {

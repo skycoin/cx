@@ -68,13 +68,13 @@ func MakeNativeFunction(prgrm *ast.CXProgram, opCode int, inputs []*ast.CXArgume
 	offset := types.Pointer(0)
 	for _, inp := range inputs {
 		inp.Offset = offset
-		offset.Add(ast.GetSize(prgrm, inp))
+		offset.Add(ast.GetNativeSize(inp))
 		inpIdx := prgrm.AddCXArgInArray(inp)
 		fn.Inputs = append(fn.Inputs, inpIdx)
 	}
 	for _, out := range outputs {
 		out.Offset = offset
-		offset.Add(ast.GetSize(prgrm, out))
+		offset.Add(ast.GetNativeSize(out))
 		outIdx := prgrm.AddCXArgInArray(out)
 		fn.Outputs = append(fn.Outputs, outIdx)
 	}
