@@ -7,7 +7,7 @@ import (
 
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
-	globals2 "github.com/skycoin/cx/cx/globals"
+	"github.com/skycoin/cx/cx/globals"
 	"github.com/skycoin/cx/cx/types"
 
 	"github.com/skycoin/cx/cxparser/actions"
@@ -56,7 +56,7 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 
 	actions.AST = cxpartialparsing.Program
 
-	if globals2.FoundCompileErrors || parseErrors > 0 {
+	if globals.FoundCompileErrors || parseErrors > 0 {
 		profiling.CleanupAndExit(constants.CX_COMPILATION_ERROR)
 	}
 
@@ -109,7 +109,7 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 
 	profiling.StopProfile("4. passtwo")
 
-	if globals2.FoundCompileErrors || parseErrors > 0 {
+	if globals.FoundCompileErrors || parseErrors > 0 {
 		profiling.CleanupAndExit(constants.CX_COMPILATION_ERROR)
 	}
 }
