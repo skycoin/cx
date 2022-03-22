@@ -21,20 +21,6 @@ func ToString(cxprogram *CXProgram) string {
 	var ast3 string
 	// ast3 += "Program\n" //why is top line "Program" ???
 
-	var currentFunction *CXFunction
-	var currentPackage *CXPackage
-
-	currentPackage, err := cxprogram.GetCurrentPackage()
-	if err != nil {
-		panic("CXProgram.ToString(): error, currentPackage is nil")
-	}
-
-	currentFunction, err = cxprogram.GetCurrentFunction()
-	if err != nil {
-		panic(err)
-	}
-	currentPackage.CurrentFunction = CXFunctionIndex(currentFunction.Index)
-
 	BuildStrPackages(cxprogram, &ast3) //what does this do?
 
 	return ast3
