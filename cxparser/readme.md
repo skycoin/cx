@@ -7,7 +7,7 @@
 
 # CX Compiler Stages
 
-Parsing starts in [/cmd/cx/helpers.go/parseProgram()](https://github.com/skycoin/cx/blob/develop/cmd/cx/helpers.go#L27). This creates an empty AST and will call [/cxparser/cxparsing/cxparsing.go/ParseSourceCode()](https://github.com/skycoin/cx/blob/develop/cxparser/cxparsing/cxparsing.go#L30) to start parsing the source code. It will copy the CX source code into a string and will be passed to [/cxparser/cxparsing/utils.go/PreliminaryStage()](https://github.com/skycoin/cx/blob/develop/cxparser/cxparsing/utils.go#L21). 
+Parsing starts in [/cmd/cx/helpers.go/parseProgram()](https://github.com/skycoin/cx/blob/develop/cmd/cx/helpers.go#L27). This creates an empty AST and will call [/cxparser/cxparsing/cxparsing.go/ParseSourceCode()](https://github.com/skycoin/cx/blob/develop/cxparser/cxparsing/cxparsing.go#L30) to start parsing the source code. It will copy the CX source code into a string variable and will be passed to [/cxparser/cxparsing/utils.go/PreliminaryStage()](https://github.com/skycoin/cx/blob/develop/cxparser/cxparsing/utils.go#L21). 
 
 `PreliminaryStage`
 
