@@ -313,7 +313,8 @@ func Assignment(prgrm *ast.CXProgram, to []ast.CXExpression, assignOp string, fr
 	}
 
 	if fromCXAtomicOpOperator == nil {
-		opIdx := prgrm.AddFunctionInArray(ast.Natives[constants.OP_IDENTITY])
+
+		opIdx := prgrm.AddNativeFunctionInArray(ast.Natives[constants.OP_IDENTITY])
 		fromCXAtomicOp.Operator = opIdx
 
 		toCXAtomicOpOutput := prgrm.GetCXArgFromArray(toCXAtomicOp.Outputs[0])

@@ -139,33 +139,28 @@ func (cxprogram *CXProgram) AddFunctionInArray(fn *CXFunction) CXFunctionIndex {
 	return CXFunctionIndex(fn.Index)
 }
 
-// func (cxprogram *CXProgram) AddNativeFunctionInArray(fn *CXNativeFunction) CXFunctionIndex {
-// 	var fnNativeInputs []CXArgumentIndex
-// 	var fnNativeOutputs []CXArgumentIndex
+func (cxprogram *CXProgram) AddNativeFunctionInArray(fn *CXNativeFunction) CXFunctionIndex {
+	fnNative := CXFunction{
+		Index:        len(cxprogram.CXFunctions),
+		AtomicOPCode: fn.AtomicOPCode,
+	}
 
-// 	// Add inputs to cx arg array
-// 	for _, arg := range fn.Inputs {
-// 		argIdx := cxprogram.AddCXArgInArray(arg)
-// 		fnNativeInputs = append(fnNativeInputs, argIdx)
-// 	}
+	// Add inputs to cx arg array
+	for _, argIn := range fn.Inputs {
+		argInIdx := cxprogram.AddCXArgInArray(argIn)
+		fnNative.Inputs = append(fnNative.Inputs, argInIdx)
+	}
 
-// 	// Add outputs to cx arg array
-// 	for _, arg := range fn.Outputs {
-// 		argIdx := cxprogram.AddCXArgInArray(arg)
-// 		fnNativeOutputs = append(fnNativeOutputs, argIdx)
-// 	}
+	// Add outputs to cx arg array
+	for _, argOut := range fn.Outputs {
+		argOutIdx := cxprogram.AddCXArgInArray(argOut)
+		fnNative.Outputs = append(fnNative.Outputs, argOutIdx)
+	}
 
-// 	fnNative := CXFunction{
-// 		Index:        len(cxprogram.CXFunctions),
-// 		AtomicOPCode: fn.AtomicOPCode,
-// 		Inputs:       fnNativeInputs,
-// 		Outputs:      fnNativeOutputs,
-// 	}
+	cxprogram.CXFunctions = append(cxprogram.CXFunctions, fnNative)
 
-// 	cxprogram.CXFunctions = append(cxprogram.CXFunctions, fnNative)
-
-// 	return CXFunctionIndex(fnNative.Index)
-// }
+	return CXFunctionIndex(fnNative.Index)
+}
 
 func (cxprogram *CXProgram) GetFunctionFromArray(index CXFunctionIndex) *CXFunction {
 	if index == -1 {

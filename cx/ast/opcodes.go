@@ -34,6 +34,6 @@ const (
 //Todo: What is an operator?
 var (
 	// Natives ...
-	Natives   = map[int]*CXFunction{}
-	Operators []*CXFunction
+	Natives   = map[int]*CXNativeFunction{}
+	Operators []*CXNativeFunction
 )

@@ -43,7 +43,6 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 	// Treat the name a bit different whether it's defined already or not.
 	if glbl, err := pkg.GetGlobal(prgrm, declarator.Name); err == nil {
 		// The name is already defined.
-
 		glblIdx := glbl.Index
 		if glbl.Offset < 0 || glbl.Size == 0 || glbl.TotalSize == 0 {
 			// then it was only added a reference to the symbol
@@ -86,13 +85,12 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 				declaration_specifiers.Package = glbl.Package
 
 				*glbl = *declaration_specifiers
-
 				glbl.Index = glblIdx
 
 				initializerAtomicOp.AddInput(prgrm, initializerAtomicOp.Outputs[0])
 				initializerAtomicOp.Outputs = nil
 				initializerAtomicOp.AddOutput(prgrm, ast.CXArgumentIndex(glblIdx))
-				opIdx := prgrm.AddFunctionInArray(ast.Natives[constants.OP_IDENTITY])
+				opIdx := prgrm.AddNativeFunctionInArray(ast.Natives[constants.OP_IDENTITY])
 				initializerAtomicOp.Operator = opIdx
 				initializerAtomicOp.Package = glbl.Package
 
@@ -134,6 +132,9 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 			declaration_specifiers.Package = glbl.Package
 			*glbl = *declaration_specifiers
 			glbl.Index = glblIdx
+
+			// TODO: temporary bug fix, needs improvements
+			prgrm.CXArgs[glblIdx] = *glbl
 		}
 	} else {
 		// then it hasn't been defined
@@ -170,7 +171,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 				declaration_specifiers.TotalSize = offExprAtomicOpOutput.TotalSize
 				declaration_specifiers.Package = ast.CXPackageIndex(pkg.Index)
 
-				opIdx := prgrm.AddFunctionInArray(ast.Natives[constants.OP_IDENTITY])
+				opIdx := prgrm.AddNativeFunctionInArray(ast.Natives[constants.OP_IDENTITY])
 				initializerAtomicOp.Operator = opIdx
 				initializerAtomicOp.AddInput(prgrm, initializerAtomicOp.Outputs[0])
 				initializerAtomicOp.Outputs = nil

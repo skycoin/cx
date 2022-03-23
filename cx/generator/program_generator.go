@@ -17,14 +17,14 @@ import (
 	cxparsingcompletor "github.com/skycoin/cx/cxparser/cxparsingcompletor"
 )
 
-func GenerateRandomExpressions(prgrm *cxast.CXProgram, inputFn *cxast.CXFunction, inputPkg *cxast.CXPackage, fns []*cxast.CXFunction, numExprs int) {
+func GenerateRandomExpressions(prgrm *cxast.CXProgram, inputFn *cxast.CXFunction, inputPkg *cxast.CXPackage, fns []*cxast.CXNativeFunction, numExprs int) {
 	preExistingExpressions := len(inputFn.Expressions)
 	// Checking if we need to add more expressions.
 	for i := 0; i < numExprs-preExistingExpressions; i++ {
 		op := getRandFn(fns)
 		// Last expression output must be the same as function output.
 		if i == (numExprs-preExistingExpressions)-1 && len(op.Outputs) > 0 && len(inputFn.Outputs) > 0 {
-			for len(op.Outputs) == 0 || prgrm.GetCXArgFromArray(op.Outputs[0]).Type != prgrm.GetCXArgFromArray(inputFn.Outputs[0]).Type {
+			for len(op.Outputs) == 0 || op.Outputs[0].Type != prgrm.GetCXArgFromArray(inputFn.Outputs[0]).Type {
 				op = getRandFn(fns)
 			}
 		}
@@ -62,7 +62,7 @@ func GenerateRandomExpressions(prgrm *cxast.CXProgram, inputFn *cxast.CXFunction
 		// can consider this expression's output as a
 		// possibility to assign stuff.
 		inputFn.Expressions = append(inputFn.Expressions, *exprCXLine, *expr)
-
+		prgrm.CXFunctions[inputFn.Index] = *inputFn
 		// Adding last expression, so output must be fn's output.
 		if i == numExprs-preExistingExpressions-1 {
 			cxAtomicOp.Outputs = append(cxAtomicOp.Outputs, inputFn.Outputs[0])
@@ -95,7 +95,7 @@ func IsJumpOperator(opCode int) bool {
 	}
 }
 
-func getRandFn(fnSet []*cxast.CXFunction) *cxast.CXFunction {
+func getRandFn(fnSet []*cxast.CXNativeFunction) *cxast.CXNativeFunction {
 	return fnSet[rand.Intn(len(fnSet))]
 }
 
@@ -231,6 +231,8 @@ func addNewExpression(prgrm *cxast.CXProgram, expr *cxast.CXExpression, expressi
 	exprCXAtomicOpFunction.AddExpression(prgrm, newExprCXLine)
 	exprCXAtomicOpFunction.AddExpression(prgrm, newExpr)
 
+	prgrm.CXFunctions[exprCXAtomicOpFunction.Index] = *exprCXAtomicOpFunction
+
 	determineExpressionOffset(prgrm, argOut, expr, len(exprCXAtomicOpFunction.Expressions))
 
 	return argOut
@@ -348,7 +350,7 @@ func determineExpressionOffset(prgrm *cxast.CXProgram, arg *cxast.CXArgument, ex
 	}
 }
 
-func GetFunctionSet(fnNames []string) (fns []*cxast.CXFunction) {
+func GetFunctionSet(fnNames []string) (fns []*cxast.CXNativeFunction) {
 	for _, fnName := range fnNames {
 		fn := cxast.Natives[cxast.OpCodes[fnName]]
 		if fn == nil {

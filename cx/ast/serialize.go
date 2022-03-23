@@ -842,6 +842,8 @@ func deserializePackages(s *SerializedCXProgram, prgrm *CXProgram) {
 		// and current function and struct
 		pkg := &CXPackage{}
 		pkg.Name = deserializeString(sPkg.NameOffset, sPkg.NameSize, s)
+		pkgIdx := prgrm.AddPackage(pkg)
+		pkg, _ = prgrm.GetPackageFromArray(pkgIdx)
 
 		if sPkg.ImportsSize > 0 {
 			pkg.Imports = make(map[string]CXPackageIndex, sPkg.ImportsSize)
@@ -925,8 +927,7 @@ func deserializePackages(s *SerializedCXProgram, prgrm *CXProgram) {
 				deserializeFunction(&sFn, pkgFn, s, prgrm)
 			}
 		}
-
-		prgrm.AddPackage(pkg)
+		prgrm.CXPackages[pkgIdx] = *pkg
 	}
 
 	// current package
@@ -1116,7 +1117,7 @@ func deserializeExpression(sExpr *serializedExpression, s *SerializedCXProgram, 
 		cxAtomicOp := &CXAtomicOperator{Operator: cxAtomicOpOperatorIdx}
 
 		if deserializeBool(sExpr.IsNative) {
-			opIdx := prgrm.AddFunctionInArray(Natives[int(sExpr.OpCode)])
+			opIdx := prgrm.AddNativeFunctionInArray(Natives[int(sExpr.OpCode)])
 			cxAtomicOp.Operator = opIdx
 		} else {
 			opIdx := prgrm.AddFunctionInArray(deserializeOperator(sExpr, s, prgrm))
@@ -1130,10 +1131,8 @@ func deserializeExpression(sExpr *serializedExpression, s *SerializedCXProgram, 
 
 		cxAtomicOp.ThenLines = int(sExpr.ThenLines)
 		cxAtomicOp.ElseLines = int(sExpr.ElseLines)
-
-		cxAtomicOp.Function = deserializeExpressionFunction(sExpr, s, prgrm)
-
 		cxAtomicOp.Package = prgrm.Packages[sExpr.PackageName]
+		cxAtomicOp.Function = deserializeExpressionFunction(sExpr, s, prgrm)
 
 		index := prgrm.AddCXAtomicOp(cxAtomicOp)
 		expr.Index = index
@@ -1148,11 +1147,11 @@ func deserializeFunction(sFn *serializedFunction, fn *CXFunction, s *SerializedC
 	fn.Inputs = prgrm.AddPointerArgsToCXArgsArray(deserializeArguments(sFn.InputsOffset, sFn.InputsSize, s, prgrm))
 	fn.Outputs = prgrm.AddPointerArgsToCXArgsArray(deserializeArguments(sFn.OutputsOffset, sFn.OutputsSize, s, prgrm))
 	fn.ListOfPointers = deserializeArguments(sFn.ListOfPointersOffset, sFn.ListOfPointersSize, s, prgrm)
+	fn.Package = prgrm.Packages[sFn.PackageName]
 	fn.Expressions = deserializeExpressions(sFn.ExpressionsOffset, sFn.ExpressionsSize, s, prgrm)
 	fn.Size = types.Cast_i64_to_ptr(sFn.Size)
 	fn.LineCount = int(sFn.Length)
-
-	fn.Package = prgrm.Packages[sFn.PackageName]
+	prgrm.CXFunctions[fn.Index] = *fn
 }
 
 func deserializeBool(val int64) bool {

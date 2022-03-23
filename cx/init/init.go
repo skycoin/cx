@@ -8,7 +8,7 @@ import (
 	"github.com/skycoin/cx/cx/packages/cxos"
 
 	// "github.com/skycoin/cx/cx/packages/http"
-	"github.com/skycoin/cx/cx/opcodes"
+
 	"github.com/skycoin/cx/cx/packages/regexp"
 )
 
@@ -41,9 +41,6 @@ func MakeProgram() *ast.CXProgram {
 		},
 		CXArgs: make([]ast.CXArgument, 0),
 	}
-
-	opcodes.RegisterOpcodes(newPrgrm)
-	RegisterPackages(newPrgrm)
 
 	return newPrgrm
 }

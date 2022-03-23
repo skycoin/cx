@@ -3,6 +3,7 @@ package ast_test
 import (
 	"bytes"
 	"encoding/binary"
+	"fmt"
 	"reflect"
 	"strings"
 	"testing"
@@ -68,7 +69,7 @@ func TestSerialize_CipherEncoder(t *testing.T) {
 			t.Logf("Deserialization took=%v\n", time.Since(timeStart))
 
 			if cxast.ToString(deserializedCXProgram) != cxast.ToString(tc.program) {
-				t.Errorf("want same program, got different")
+				t.Errorf(fmt.Sprintf("%+v\n!=\n%+v\n", cxast.ToString(deserializedCXProgram), cxast.ToString(tc.program)))
 			}
 
 			if tc.includeDataMemory {

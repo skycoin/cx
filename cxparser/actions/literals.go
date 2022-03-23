@@ -79,7 +79,7 @@ func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []a
 
 			if exprAtomicOpOperator == nil {
 				// then it's a literal
-				opIdx := prgrm.AddFunctionInArray(ast.Natives[constants.OP_APPEND])
+				opIdx := prgrm.AddNativeFunctionInArray(ast.Natives[constants.OP_APPEND])
 				symExprAtomicOp.Operator = opIdx
 
 				symExprAtomicOp.Inputs = nil
@@ -102,7 +102,7 @@ func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []a
 				exprAtomicOp.AddOutput(prgrm, outIdx)
 
 				result = append(result, expr)
-				opIdx := prgrm.AddFunctionInArray(ast.Natives[constants.OP_APPEND])
+				opIdx := prgrm.AddNativeFunctionInArray(ast.Natives[constants.OP_APPEND])
 				symExprAtomicOp.Operator = opIdx
 
 				symExprAtomicOp.Inputs = nil
@@ -184,6 +184,8 @@ func PrimaryStructLiteral(prgrm *ast.CXProgram, ident string, strctFlds []ast.CX
 				fldIdx := prgrm.AddCXArgInArray(fld)
 				cxAtomicOpOutput.Fields = append(cxAtomicOpOutput.Fields, fldIdx)
 
+				// TODO: temporary bug fix, needs improvements
+				prgrm.CXArgs[cxAtomicOp.Outputs[0]] = *cxAtomicOpOutput
 				result = append(result, expr)
 			}
 		} else {
@@ -318,7 +320,7 @@ func ArrayLiteralExpression(prgrm *ast.CXProgram, arrSizes []types.Pointer, type
 
 			if exprAtomicOpOperator == nil {
 				// then it's a literal
-				opIdx := prgrm.AddFunctionInArray(ast.Natives[constants.OP_IDENTITY])
+				opIdx := prgrm.AddNativeFunctionInArray(ast.Natives[constants.OP_IDENTITY])
 				symExprAtomicOp.Operator = opIdx
 				symExprAtomicOp.Inputs = exprAtomicOp.Outputs
 			} else {

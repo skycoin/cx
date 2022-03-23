@@ -22,7 +22,7 @@ func Out(params ...*ast.CXArgument) []*ast.CXArgument {
 }
 
 func RegisterOpcodes(prgrm *ast.CXProgram) {
-	ast.Operators = make([]*ast.CXFunction, ast.OPERATOR_HANDLER_COUNT)
+	ast.Operators = make([]*ast.CXNativeFunction, ast.OPERATOR_HANDLER_COUNT)
 
 	RegisterOpCode(prgrm, constants.OP_IDENTITY, "identity", opIdentity, In(ast.ConstCxArg_UND_TYPE), Out(ast.ConstCxArg_UND_TYPE))
 	RegisterOpCode(prgrm, constants.OP_GOTO, "goto", opGoto, nil, nil)

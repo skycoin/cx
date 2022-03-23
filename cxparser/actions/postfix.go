@@ -100,6 +100,9 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 			prevExprs = append(postExprs, prevExprs...)
 
 			fld.Indexes = append(fld.Indexes, symIdx)
+
+			// TODO: temporary bug fix, needs improvements
+			prgrm.CXArgs[prgrm.GetCXArgFromArray(prevExpr2AtomicOp.Outputs[0]).Fields[len(prgrm.GetCXArgFromArray(prevExpr2AtomicOp.Outputs[0]).Fields)-1]] = *fld
 			// expr.AddInput(sym)
 		}
 	} else {
@@ -187,7 +190,7 @@ func PostfixExpressionEmptyFunCall(prgrm *ast.CXProgram, prevExprs []ast.CXExpre
 				firstPrevExprsAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
 			}
 			firstPrevExprsAtomicOp.Outputs = nil
-			opIdx := prgrm.AddFunctionInArray(ast.Natives[opCode])
+			opIdx := prgrm.AddNativeFunctionInArray(ast.Natives[opCode])
 			firstPrevExprsAtomicOp.Operator = opIdx
 		}
 
@@ -218,7 +221,7 @@ func PostfixExpressionFunCall(prgrm *ast.CXProgram, prevExprs []ast.CXExpression
 				firstPrevExprsAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
 			}
 			firstPrevExprsAtomicOp.Outputs = nil
-			opIdx := prgrm.AddFunctionInArray(ast.Natives[opCode])
+			opIdx := prgrm.AddNativeFunctionInArray(ast.Natives[opCode])
 			firstPrevExprsAtomicOp.Operator = opIdx
 		}
 
@@ -357,6 +360,7 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		fld.AddType(types.IDENTIFIER).AddPackage(leftPkg)
 		fldIdx := prgrm.AddCXArgInArray(fld)
 		left.Fields = append(left.Fields, fldIdx)
+
 		return prevExprs
 	}
 
@@ -386,12 +390,14 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 				}
 
 				lastExprAtomicOp.Outputs[0] = valAtomicOp.Outputs[0]
+
 				return prevExprs
 			} else if _, ok := ast.OpCodes[left.Name+"."+ident]; ok {
 				// then it's a native
 				// TODO: we'd be referring to the function itself, not a function call
 				// (functions as first-class objects)
 				left.Name = left.Name + "." + ident
+
 				return prevExprs
 			}
 		}
@@ -444,6 +450,9 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 
 		fldIdx := prgrm.AddCXArgInArray(fld)
 		left.Fields = append(left.Fields, fldIdx)
+
+		// TODO: temporary bug fix, needs improvements
+		prgrm.CXArgs[lastExprAtomicOp.Outputs[0]] = *left
 	}
 
 	return prevExprs

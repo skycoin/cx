@@ -474,13 +474,12 @@ func AssociateReturnExpressions(prgrm *ast.CXProgram, idx int, retExprs []ast.CX
 
 	lastExprAtomicOpOperator := prgrm.GetFunctionFromArray(lastExprAtomicOp.Operator)
 	if lastExprAtomicOpOperator == nil {
-		opIdx := prgrm.AddFunctionInArray(ast.Natives[constants.OP_IDENTITY])
+		opIdx := prgrm.AddNativeFunctionInArray(ast.Natives[constants.OP_IDENTITY])
 		lastExprAtomicOp.Operator = opIdx
 
 		lastExprAtomicOp.Inputs = lastExprAtomicOp.Outputs
 		lastExprAtomicOp.Outputs = nil
 		lastExprAtomicOp.AddOutput(prgrm, outIdx)
-
 		return retExprs
 	} else if len(lastExprAtomicOp.Outputs) > 0 {
 		exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)

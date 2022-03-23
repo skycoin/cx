@@ -36,15 +36,15 @@ type CXFunction struct {
 	ListOfPointers []*CXArgument // Root pointers for the GC algorithm
 }
 
-// // CXNativeFunction is used to represent built-in operations.
-// type CXNativeFunction struct {
-// 	// Metadata
-// 	AtomicOPCode int
+// CXNativeFunction is used to represent built-in operations.
+type CXNativeFunction struct {
+	// Metadata
+	AtomicOPCode int
 
-// 	// Contents
-// 	Inputs  []*CXArgument // Input parameters to the function
-// 	Outputs []*CXArgument // Output parameters from the function
-// }
+	// Contents
+	Inputs  []*CXArgument // Input parameters to the function
+	Outputs []*CXArgument // Output parameters from the function
+}
 
 // IsBuiltIn determines if opcode is not 0
 // True if the function is native to CX, e.g. int32.add()
@@ -239,10 +239,10 @@ func (fn *CXFunction) RemoveExpression(line int) {
 //                             `CXFunction` Selectors
 
 // MakeAtomicOperatorExpression ...
-func MakeAtomicOperatorExpression(prgrm *CXProgram, op *CXFunction) *CXExpression {
+func MakeAtomicOperatorExpression(prgrm *CXProgram, op *CXNativeFunction) *CXExpression {
 	var opIdx CXFunctionIndex = -1
 	if op != nil {
-		opIdx = prgrm.AddFunctionInArray(op)
+		opIdx = prgrm.AddNativeFunctionInArray(op)
 	}
 
 	index := prgrm.AddCXAtomicOp(&CXAtomicOperator{

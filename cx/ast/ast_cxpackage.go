@@ -63,23 +63,24 @@ func (pkg *CXPackage) GetImport(prgrm *CXProgram, impName string) (*CXPackage, e
 }
 
 // GetMethod ...
-func (pkg *CXPackage) GetMethod(prgrm *CXProgram, fnName string, receiverType string) (*CXFunction, error) {
+func (pkg *CXPackage) GetMethod(prgrm *CXProgram, fnName string, receiverType string) (CXFunctionIndex, error) {
 	if fnIdx, ok := pkg.Functions[fnName]; ok {
 		fn := prgrm.GetFunctionFromArray(fnIdx)
 
 		fnInput := prgrm.GetCXArgFromArray(fn.Inputs[0])
 		if len(fn.Inputs) > 0 && fnInput.StructType != nil && fnInput.StructType.Name == receiverType {
-			return fn, nil
+			return fnIdx, nil
 		}
 	}
 
 	// Trying to find it in `Natives`.
 	// Most likely a method from a core package.
 	if opCode, found := OpCodes[pkg.Name+"."+fnName]; found {
-		return Natives[opCode], nil
+		opFnIdx := prgrm.AddNativeFunctionInArray(Natives[opCode])
+		return opFnIdx, nil
 	}
 
-	return nil, fmt.Errorf("method '%s' not found in package '%s'", fnName, pkg.Name)
+	return -1, fmt.Errorf("method '%s' not found in package '%s'", fnName, pkg.Name)
 }
 
 // GetStruct ...

@@ -1028,8 +1028,8 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 						panic(err)
 					}
 
-					if fn, err := strctPkg.GetMethod(prgrm, strct.Name+"."+prgrm.GetCXArgFromArray(out.Fields[len(out.Fields)-1]).Name, strct.Name); err == nil {
-						cxAtomicOp.Operator = ast.CXFunctionIndex(fn.Index)
+					if fnIdx, err := strctPkg.GetMethod(prgrm, strct.Name+"."+prgrm.GetCXArgFromArray(out.Fields[len(out.Fields)-1]).Name, strct.Name); err == nil {
+						cxAtomicOp.Operator = fnIdx
 					} else {
 						panic("")
 					}
@@ -1059,8 +1059,8 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 						panic(err)
 					}
 
-					if fn, err := strctPkg.GetMethod(prgrm, strct.Name+"."+prgrm.GetCXArgFromArray(inp.Fields[len(inp.Fields)-1]).Name, strct.Name); err == nil {
-						cxAtomicOp.Operator = ast.CXFunctionIndex(fn.Index)
+					if fnIdx, err := strctPkg.GetMethod(prgrm, strct.Name+"."+prgrm.GetCXArgFromArray(inp.Fields[len(inp.Fields)-1]).Name, strct.Name); err == nil {
+						cxAtomicOp.Operator = fnIdx
 					} else {
 						panic(err)
 					}
@@ -1092,8 +1092,8 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 						panic(err)
 					}
 
-					if fn, err := strctPkg.GetMethod(prgrm, strct.Name+"."+prgrm.GetCXArgFromArray(out.Fields[len(out.Fields)-1]).Name, strct.Name); err == nil {
-						cxAtomicOp.Operator = ast.CXFunctionIndex(fn.Index)
+					if fnIdx, err := strctPkg.GetMethod(prgrm, strct.Name+"."+prgrm.GetCXArgFromArray(out.Fields[len(out.Fields)-1]).Name, strct.Name); err == nil {
+						cxAtomicOp.Operator = fnIdx
 					} else {
 						panic(err)
 					}
@@ -1131,8 +1131,8 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 					panic(err)
 				}
 
-				if fn, err := strctPkg.GetMethod(prgrm, strct.Name+"."+prgrm.GetCXArgFromArray(out.Fields[len(out.Fields)-1]).Name, strct.Name); err == nil {
-					cxAtomicOp.Operator = ast.CXFunctionIndex(fn.Index)
+				if fnIdx, err := strctPkg.GetMethod(prgrm, strct.Name+"."+prgrm.GetCXArgFromArray(out.Fields[len(out.Fields)-1]).Name, strct.Name); err == nil {
+					cxAtomicOp.Operator = fnIdx
 				} else {
 					panic("")
 				}
@@ -1172,7 +1172,6 @@ func GiveOffset(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXArgument, sym
 			ProcessSymbolFields(prgrm, sym, arg)
 			CopyArgFields(prgrm, sym, arg)
 		}
-
 	}
 }
 
@@ -1376,13 +1375,13 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, sym *ast.CXArgument, arg *ast.CXA
 				methodName := prgrm.GetCXArgFromArray(sym.Fields[len(sym.Fields)-1]).Name
 				receiverType := strct.Name
 
-				if method, methodErr := strctPkg.GetMethod(prgrm, receiverType+"."+methodName, receiverType); methodErr == nil {
+				if methodIdx, methodErr := strctPkg.GetMethod(prgrm, receiverType+"."+methodName, receiverType); methodErr == nil {
+					method := prgrm.GetFunctionFromArray(methodIdx)
 					fld.Type = prgrm.GetCXArgFromArray(method.Outputs[0]).Type
 					fld.PointerTargetType = prgrm.GetCXArgFromArray(method.Outputs[0]).PointerTargetType
 				} else {
 					println(ast.CompilationError(fld.ArgDetails.FileName, fld.ArgDetails.FileLine), err.Error())
 				}
-
 			}
 		}
 
