@@ -2,7 +2,7 @@
 ## Glossary
 * [AST](https://en.wikipedia.org/wiki/Abstract_syntax_tree) - An abstract syntax tree (AST) is a way of representing the syntax of a programming language as a hierarchical tree-like structure. The AST contains a final parsed output that can be executed.
 * [Lexer](https://en.wikipedia.org/wiki/Lexical_analysis) - takes a text [or sequence of characters] as an input and breaks it up into a list of tokens.
-* [CXParser Spec](https://github.com/skycoin/cx/docs/cxparser_spec.md) - CX Parser Specification defines the cx parser.
+* [CXParser Spec](https://github.com/skycoin/cx/blob/develop/docs/cxparser_spec.md) - CX Parser Specification defines the cx parser.
 ---
 
 # CX Compiler Stages
