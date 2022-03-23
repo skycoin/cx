@@ -1,49 +1,24 @@
-# CX Parser Specification
-CX Parser Specification defines the cx parser.
-(found in [cxparser_spec.md](https://github.com/skycoin/cx/docs/cxparser_spec.md))
 
-# CX Parser Stages
-A description about the parsing stages.
-(found in [parserstages.md](https://github.com/skycoin/cx/docs/parserstages.md))
+## Glossary
+* [AST](https://en.wikipedia.org/wiki/Abstract_syntax_tree) - An abstract syntax tree (AST) is a way of representing the syntax of a programming language as a hierarchical tree-like structure. The AST contains a final parsed output that can be executed.
+* [Lexer](https://en.wikipedia.org/wiki/Lexical_analysis) - takes a text [or sequence of characters] as an input and breaks it up into a list of tokens.
+* [CXParser Spec](https://github.com/skycoin/cx/docs/cxparser_spec.md) - CX Parser Specification defines the cx parser.
+---
 
-# Hello world CX Sample
-A sample cx program.
-(found in [hello-world.md](https://github.com/skycoin/cx/docs/hello-world.md))
+# CX Compiler Stages
 
-# CX Lexer
-CX in house `lexer` generates a chain of tokens which is used by yacc for parsing.
-(found in [lex.go](https://github.com/skycoin/cx/cxparser/cxpartialparsing/lex.go))
+Parsing starts in [helpers.go/parseProgram()](https://github.com/skycoin/cx/blob/develop/cmd/cx/helpers.go#28). This creates an empty AST and will call [cxparsing.go/ParseSourceCode()](https://github.com/skycoin/cx/blob/develop/cxparser/cxparsing/cxparsing.go#30) to start parsing the source code. ParseSourceCode() will copy the CX source code into a string and will be passed to PreliminaryStage(). 
 
+`PreliminaryStage`
 
-Parser stages 
+In PreliminaryStage()(found in [utils.go](https://github.com/skycoin/cx/blob/develop/cxparser/cxparsing/utils.go#L21), it will identify all the packages, structs, global variables, and package imports and add thse to our AST. The comments are disregarded. After this PassOne() will be called.
 
+`PassOne`
 
-stage 0
+PassOne or the first parsing stage, using CXPartialParsing.Parse()(found in [cxpartialparsing.go](https://github.com/skycoin/cx/blob/develop/cxparser/cxpartialparsing/cxpartialparsing.go) compiles function primitives and types, along with the structure of their parameters and global variables. This stage also finalizes compilation of structs and ensures packages and their imports are correct. This uses `goyacc` for parsing and creates a chain of tokens for the parser using an in-house lexer known as `Lexer`. 
 
-prilimalary stage of using regex 
+`PassTwo`
 
-Preliminarystage()
-The compiler creates an AST first by using regular expression parsing (found in [utils.go](https://github.com/PratikDhanave/cx/blob/develop/cxparser/cxparsing/utils.go#L21)) which structures the AST to include all package declarations, import chains, struct declarations, and globals, skipping over comments. 
-This preliminary stage of parsing aids further stages since the structure of a CX repository and the names of custom types are already known. 
+The second parsing stage, PassTwo or the second parsing stage, using CXParsingCompletor.Parse()(found in [cxparsingcompletor.go](https://github.com/skycoin/cx/blob/develop/cxparser/cxparsingcompletor/cxparsingcompletor.go) fully compiles functions and all expressions. 
 
-Step I
-
- `Passone`
-
-After this preliminary stage, the first parsing stage compiles function primitives and types, along with the structure of their parameters and global variables. This stage also finalizes compilation of structs and ensures packages and their imports are correct. This uses `goyacc` for parsing and creates a chain of tokens for the parser using an in-house lexer known as `Lexer`. 
-
-main tasks 
--the signature of functions and methods are added here
--also we figure out type of global varialble.
--imports
--type of stuct are figure out
-
-
-
-step II
-
-`Passtwo`
-
-The second parsing stage fully compiles functions and all expressions. This functions similarly to the first stage, using `Lexer` and `goyacc`, but also uses `cxparser/actions` for each action the parser should take after encountering a valid syntactical production rule. These work entirely to validate program structure and to build the AST for a CX program.
-
-
+Finally, the `main` function and invisible `*init` functions are created, the latter of which acts as an initializer for global variables. After this, the CXProgram AST is complete and is ready to run.
