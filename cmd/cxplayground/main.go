@@ -28,8 +28,14 @@ func main() {
 	mux.Handle("/program/", webapi.NewAPI("/program", actions.AST))
 	mux.HandleFunc("/eval", playground.RunProgram)
 
-	if listener, err := net.Listen("tcp", host); err == nil {
-		fmt.Println("Starting web service for CX playground on http://127.0.0.1:5336/")
-		http.Serve(listener, mux)
+	listener, err := net.Listen("tcp", host)
+	if err != nil {
+		fmt.Printf("Listener error: %v", err)
+	}
+	fmt.Println("Starting web service for CX playground on http://127.0.0.1:5336/")
+
+	err = http.Serve(listener, mux)
+	if err != nil {
+		fmt.Printf("Service error: %v", err)
 	}
 }

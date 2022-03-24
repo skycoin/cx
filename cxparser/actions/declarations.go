@@ -2,7 +2,6 @@ package actions
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
@@ -342,8 +341,7 @@ func DeclareImport(prgrm *ast.CXProgram, name string, currentFile string, lineNo
 		}
 	} else {
 		// This should never happen.
-		println(ast.CompilationError(currentFile, lineNo), fmt.Sprintf("unkown error when trying to read package '%s'", ident))
-		os.Exit(constants.CX_COMPILATION_ERROR)
+		panic(fmt.Sprintf("%v: unkown error when trying to read package '%s'", ast.CompilationError(currentFile, lineNo), ident))
 	}
 }
 

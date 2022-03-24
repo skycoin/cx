@@ -125,20 +125,21 @@ func RunProgram(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := r.ParseForm(); err == nil {
-		fmt.Fprintf(w, "%s", eval(source.Code+"\n"))
+	err = r.ParseForm()
+	if err != nil {
+		http.Error(w, err.Error(), 500)
 	}
+	fmt.Fprintf(w, "%s", eval(source.Code+"\n"))
 }
 
 func unsafeeval(code string) (out string) {
 	var lexer *cxparsingcompletor.Lexer
-	defer func(lexer *cxparsingcompletor.Lexer) {
+	defer func() {
 		if r := recover(); r != nil {
 			out = fmt.Sprintf("%v", r)
-			// lexer.Stop()
 			return
 		}
-	}(lexer)
+	}()
 
 	// storing strings sent to standard output
 	old := os.Stdout
@@ -158,6 +159,7 @@ func unsafeeval(code string) (out string) {
 	actions.AST = cxpartialparsing.Program
 
 	lexer = cxparsingcompletor.NewLexer(bytes.NewBufferString(code))
+
 	cxparsingcompletor.Parse(lexer)
 	//yyParse(lexer)
 

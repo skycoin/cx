@@ -46,7 +46,7 @@ func (yylex *Lexer) Next() int {
 func NewLexer(rdr io.Reader) *Lexer {
 	lx := &Lexer{}
 	lx.init(rdr, func(l, c int, msg string) {
-		fmt.Printf("[%d:%d] %s\n", l, c, msg)
+		panic(fmt.Sprintf("[%d:%d] %s\n", l, c, msg))
 	})
 	return lx
 }
