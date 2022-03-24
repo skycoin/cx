@@ -152,22 +152,21 @@ func unsafeeval(code string) (out string) {
 	actions.LineNo = 0
 
 	actions.AST = cxinit.MakeProgram()
+
+	// PassOne
 	cxpartialparsing.Program = actions.AST
-
 	cxpartialparsing.Parse(code)
-
 	actions.AST = cxpartialparsing.Program
 
+	// PassTwo
 	lexer = cxparsingcompletor.NewLexer(bytes.NewBufferString(code))
-
 	cxparsingcompletor.Parse(lexer)
-	//yyParse(lexer)
 
 	err = cxparsing.AddInitFunction(actions.AST)
 	if err != nil {
 		return fmt.Sprintf("%s", err)
 	}
-	//if err := actions.AST.RunCompiled(0, nil); err != nil {
+
 	err = execute.RunCompiled(actions.AST, 0, nil)
 	if err != nil {
 		actions.AST = cxinit.MakeProgram()
