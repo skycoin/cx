@@ -18,7 +18,6 @@ func InitCXCore() {
 			actions.AST = cxinit.MakeProgram()
 		}
 		opcodes.RegisterOpcodes(actions.AST)
-		cxinit.RegisterPackages(actions.AST)
 
 		Initialized = true
 	}

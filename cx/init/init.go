@@ -42,5 +42,7 @@ func MakeProgram() *ast.CXProgram {
 		CXArgs: make([]ast.CXArgument, 0),
 	}
 
+	RegisterPackages(newPrgrm)
+
 	return newPrgrm
 }
