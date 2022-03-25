@@ -102,31 +102,31 @@ func (cxprogram *CXProgram) GetPackageFromArray(index CXPackageIndex) (*CXPackag
 }
 
 // RemovePackage ...
-func (cxprogram *CXProgram) RemovePackage(modName string) {
-	// If doesnt exist, return
-	// if cxprogram.Packages[modName] == nil {
-	// 	return
-	// }
+// func (cxprogram *CXProgram) RemovePackage(modName string) {
+// 	// If doesnt exist, return
+// 	// if cxprogram.Packages[modName] == nil {
+// 	// 	return
+// 	// }
 
-	// Check if it is the current pkg so when it
-	// is deleted, it will be replaced with new pkg
-	isCurrentPkg := cxprogram.Packages[modName] == cxprogram.CurrentPackage
+// 	// Check if it is the current pkg so when it
+// 	// is deleted, it will be replaced with new pkg
+// 	isCurrentPkg := cxprogram.Packages[modName] == cxprogram.CurrentPackage
 
-	// Delete package
-	delete(cxprogram.Packages, modName)
+// 	// Delete package
+// 	delete(cxprogram.Packages, modName)
 
-	// This means that we're removing the package set to be the CurrentPackage.
-	// If it is removed from the program's map of packages, cxprogram.CurrentPackage
-	// would be pointing to a package meant to be collected by the GC.
-	// We fix this by pointing to random package in the program's map of packages.
-	if isCurrentPkg {
-		for _, pkg := range cxprogram.Packages {
-			cxprogram.CurrentPackage = pkg
-			break
-		}
-	}
+// 	// This means that we're removing the package set to be the CurrentPackage.
+// 	// If it is removed from the program's map of packages, cxprogram.CurrentPackage
+// 	// would be pointing to a package meant to be collected by the GC.
+// 	// We fix this by pointing to random package in the program's map of packages.
+// 	if isCurrentPkg {
+// 		for _, pkg := range cxprogram.Packages {
+// 			cxprogram.CurrentPackage = pkg
+// 			break
+// 		}
+// 	}
 
-}
+// }
 
 // ----------------------------------------------------------------
 //                         `CXProgram` Function handling

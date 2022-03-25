@@ -1,4 +1,4 @@
-package opcodes
+package tcp
 
 import (
 	"context"
@@ -19,16 +19,6 @@ var lc net.ListenConfig
 var conn net.Conn
 
 var DefaultServer = rpc.NewServer()
-
-func init() {
-	netPkg := ast.MakePackage("tcp")
-
-	dialerStrct := ast.MakeStruct("Dialer")
-
-	netPkg.AddStruct(dialerStrct)
-
-	ast.PROGRAM.AddPackage(netPkg)
-}
 
 func opTCPDial(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	network, address, errorstring := inputs[0].Arg, inputs[1].Arg, outputs[0].Arg

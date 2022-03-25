@@ -489,11 +489,6 @@ func RegisterOpcodes(prgrm *ast.CXProgram) {
 	// RegisterFunction(prgrm,"aff.inform", opAffInform, In(ast.Slice(types.AFF), ast.ConstCxArg_I32, ast.Slice(types.AFF)), nil)
 	// RegisterFunction(prgrm,"aff.request", opAffRequest, In(ast.Slice(types.AFF), ast.ConstCxArg_I32, ast.Slice(types.AFF)), nil)
 
-	RegisterFunction(prgrm, "tcp.Dial", opTCPDial, In(ast.ConstCxArg_STR, ast.ConstCxArg_STR), Out(ast.ConstCxArg_STR))
-	RegisterFunction(prgrm, "tcp.Listen", opTCPListen, In(ast.ConstCxArg_STR, ast.ConstCxArg_STR), Out(ast.ConstCxArg_STR))
-	RegisterFunction(prgrm, "tcp.Accept", opTCPAccept, In(ast.ConstCxArg_STR, ast.ConstCxArg_STR), Out(ast.ConstCxArg_STR))
-	RegisterFunction(prgrm, "tcp.Close", opTCPClose, nil, nil)
-
 	//RegisterOpCode(prgrm,OP_EVOLVE_EVOLVE, "evolve.evolve", opEvolve, In(Slice(TYPE_AFF), Slice(TYPE_AFF), Slice(TYPE_F64), Slice(TYPE_F64), ConstCxArg_I32, ConstCxArg_I32, ConstCxArg_I32, ConstCxArg_F64), nil)
 	//RegisterOpCode(prgrm,OP_EVOLVE_EVOLVE, "evolve.evolve", opEvolve, In(Slice(TYPE_AFF), Slice(TYPE_AFF), Slice(TYPE_AFF), Slice(TYPE_AFF), Slice(TYPE_AFF), ConstCxArg_I32, ConstCxArg_I32, ConstCxArg_I32, ConstCxArg_F64), nil)
 

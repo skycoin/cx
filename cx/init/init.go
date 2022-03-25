@@ -6,6 +6,7 @@ import (
 	"github.com/skycoin/cx/cx/packages/cipher"
 	"github.com/skycoin/cx/cx/packages/cxfx"
 	"github.com/skycoin/cx/cx/packages/cxos"
+	"github.com/skycoin/cx/cx/packages/tcp"
 
 	// "github.com/skycoin/cx/cx/packages/http"
 
@@ -18,6 +19,7 @@ func RegisterPackages(prgrm *ast.CXProgram) {
 	cxos.RegisterPackage(prgrm)
 	// http.RegisterPackage()
 	regexp.RegisterPackage(prgrm)
+	tcp.RegisterPackage(prgrm)
 }
 
 // MakeProgram ...
