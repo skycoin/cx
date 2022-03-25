@@ -194,7 +194,7 @@ The CX Runtime consists mainly of a [CXProgram](https://github.com/skycoin/cx/bl
 
 CX Runtime also has CXCalls, which store an Operator, FramePoiner, and Line. 
 
-CXPrograms are the root object of the entire AST for CX. Additionally, there is a global named PROGRAM, which stores the main CXProgram. 
+CXPrograms are the root object of the entire AST for CX. 
 
 The maker for CXProgram sets the CallStack to a default size, Memory, StackSize, HeapSize, HeapPointer, and Packages to default sizes.
 

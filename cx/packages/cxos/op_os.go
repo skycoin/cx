@@ -747,7 +747,6 @@ func opOsWriteI8Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.
 }
 
 func opOsGetWorkingDirectory(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	//outputs[0].Set_str(prgrm,prgrm,cxcore.PROGRAM.Path)
 	outputs[0].Set_str(prgrm, globals.CxProgramPath)
 }
 

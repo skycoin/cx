@@ -98,38 +98,6 @@ func CallAffPredicate(prgrm *ast.CXProgram, fn *ast.CXFunction, predValue []byte
 		ast.GetSize(prgrm, prgrm.GetCXArgFromArray(newCall.Operator.Outputs[0])))[0]
 }
 
-// This might not make sense, as we can use normal programming to create conditions on values
-// func QueryValue (fn *CXFunction, argOffsetB []byte, affOffset *int) {
-// 	for c := 0; c <= PROGRAM.CallCounter; c++ {
-// 		inFP := 0
-// 		op := PROGRAM.CallStack[c].Operator
-
-// 		for _, expr := range op.Expressions {
-// 			if expr.Operator == nil {
-// 				for _, out := range expr.ProgramOutput {
-// 					if fn.ProgramInput[0].Type == out.Type && out.Name != "" {
-// 						res := CallAffPredicate(fn, PROGRAM.Memory[inFP + out.Offset : inFP + out.Offset + out.TotalSize])
-
-// 						if res == 1 {
-// 							*affOffset = WriteToSlice(*affOffset, argOffsetB)
-
-// 							outNameB := encoder.Serialize(out.Name)
-// 							outNameOffset := AllocateSeq(len(outNameB))
-// 							WriteMemory(outNameOffset, outNameB)
-
-// 							var outNameOffsetB [4]byte
-//							WriteMemI32(outNameOffsetB[:], 0, int32(outNameOffset))
-// 							*affOffset = WriteToSlice(*affOffset, outNameOffsetB[:])
-// 						}
-// 					}
-// 				}
-// 			}
-// 		}
-
-// 		inFP += op.Size
-// 	}
-// }
-
 // Used by QueryArgument to query inputs and then outputs from expressions.
 func queryParam(prgrm *ast.CXProgram, fn *ast.CXFunction, argsIdx []ast.CXArgumentIndex, exprLbl string, argOffsetB []byte, affOffset *types.Pointer) {
 	for i, argIdx := range argsIdx {
@@ -465,12 +433,6 @@ func QueryProgram(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpressi
 		types.WriteSlice_byte(prgrm.Memory, prgrmOffset+types.OBJECT_HEADER_SIZE+types.I32_SIZE+types.I64_SIZE, opNameOffsetB[:])
 		// FnSize
 		types.Write_ptr(prgrm.Memory, prgrmOffset+types.OBJECT_HEADER_SIZE+types.I32_SIZE+types.I64_SIZE+types.STR_SIZE, call.Operator.Size)
-
-		// res := CallAffPredicate(fn, PROGRAM.Memory[callOffset + OBJECT_HEADER_SIZE : callOffset + OBJECT_HEADER_SIZE + STR_SIZE + I32_SIZE])
-
-		// if res == 1 {
-		// 	*affOffset = WriteToSlice(*affOffset, callerOffsetB)
-		// }
 	}
 
 	res := CallAffPredicate(prgrm, fn, prgrm.Memory[prgrmOffset+types.OBJECT_HEADER_SIZE:prgrmOffset+types.OBJECT_HEADER_SIZE+types.I32_SIZE+types.I64_SIZE+types.STR_SIZE+types.I32_SIZE])

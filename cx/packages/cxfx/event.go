@@ -82,9 +82,9 @@ func (cb *CXCallback) InitEx(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs
 	cb.init(prgrm, inputs, outputs, inputs[2].Get_str(prgrm))
 }
 
-func (cb *CXCallback) Call(inputs [][]byte) {
-	if fn, err := ast.PROGRAM.GetFunction(cb.functionName, cb.packageName); err == nil {
-		execute.Callback(ast.PROGRAM, fn, inputs)
+func (cb *CXCallback) Call(prgrm *ast.CXProgram, inputs [][]byte) {
+	if fn, err := prgrm.GetFunction(cb.functionName, cb.packageName); err == nil {
+		execute.Callback(prgrm, fn, inputs)
 	}
 }
 
@@ -198,7 +198,7 @@ func fromF64(value float64) []byte {
 	return memory[:]
 }
 
-func PollEvents() {
+func PollEvents(prgrm *ast.CXProgram) {
 	purgeEvents()
 	eventCount := len(polled)
 	for i := 0; i < eventCount; i++ {
@@ -207,11 +207,11 @@ func PollEvents() {
 		case APP_START:
 			var inputs [][]byte = make([][]byte, 1)
 			inputs[0] = appStartCallback.windowNameBytes
-			appStartCallback.Call(inputs)
+			appStartCallback.Call(prgrm, inputs)
 		case APP_STOP:
 			var inputs [][]byte = make([][]byte, 1)
 			inputs[0] = appStopCallback.windowNameBytes
-			appStopCallback.Call(inputs)
+			appStopCallback.Call(prgrm, inputs)
 		case APP_KEYBOARD:
 			var inputs [][]byte = make([][]byte, 5)
 			inputs[0] = appKeyboardCallback.windowNameBytes
@@ -219,7 +219,7 @@ func PollEvents() {
 			inputs[2] = fromI32(int32(e.scancode))
 			inputs[3] = fromI32(int32(e.action))
 			inputs[4] = fromI32(e.mods)
-			appKeyboardCallback.Call(inputs)
+			appKeyboardCallback.Call(prgrm, inputs)
 		case APP_MOUSE:
 			var inputs [][]byte = make([][]byte, 7)
 			inputs[0] = appMouseCallback.windowNameBytes
@@ -229,38 +229,38 @@ func PollEvents() {
 			inputs[4] = fromI32(e.mods)
 			inputs[5] = fromF64(e.x)
 			inputs[6] = fromF64(e.y)
-			appMouseCallback.Call(inputs)
+			appMouseCallback.Call(prgrm, inputs)
 		case APP_FRAMEBUFFER_SIZE:
 			var inputs [][]byte = make([][]byte, 3)
 			inputs[0] = appFramebufferSizeCallback.windowNameBytes
 			inputs[1] = fromI32(int32(e.x)) // TODO : use float64 (deprecate int32)
 			inputs[2] = fromI32(int32(e.y)) // TODO : use float64 (deprecate int32)
-			appFramebufferSizeCallback.Call(inputs)
+			appFramebufferSizeCallback.Call(prgrm, inputs)
 		case APP_WINDOW_SIZE:
 			var inputs [][]byte = make([][]byte, 3)
 			inputs[0] = appWindowSizeCallback.windowNameBytes
 			inputs[1] = fromI32(int32(e.x)) // TODO : use float64 (deprecate int32)
 			inputs[2] = fromI32(int32(e.y)) // TODO : use float64 (deprecate int32)
-			appWindowSizeCallback.Call(inputs)
+			appWindowSizeCallback.Call(prgrm, inputs)
 		case APP_WINDOW_POSITION:
 			var inputs [][]byte = make([][]byte, 3)
 			inputs[0] = appWindowPosCallback.windowNameBytes
 			inputs[1] = fromI32(int32(e.x)) // TODO : use float64 (deprecate int32)
 			inputs[2] = fromI32(int32(e.y)) // TODO : use float64 (deprecate int32)
-			appWindowPosCallback.Call(inputs)
+			appWindowPosCallback.Call(prgrm, inputs)
 		case APP_CURSOR_POS: // TODO : to deprecate
 			var inputs [][]byte = make([][]byte, 3)
 			inputs[0] = appCursorPositionCallback.windowNameBytes
 			inputs[1] = fromF64(e.x)
 			inputs[2] = fromF64(e.y)
-			appCursorPositionCallback.Call(inputs)
+			appCursorPositionCallback.Call(prgrm, inputs)
 		case APP_MOUSE_BUTTON: // TODO to deprecate
 			var inputs [][]byte = make([][]byte, 4)
 			inputs[0] = appMouseButtonCallback.windowNameBytes
 			inputs[1] = fromI32(e.key)
 			inputs[2] = fromI32(int32(e.action))
 			inputs[3] = fromI32(e.mods)
-			appMouseButtonCallback.Call(inputs)
+			appMouseButtonCallback.Call(prgrm, inputs)
 		}
 	}
 	polled = polled[0:0]

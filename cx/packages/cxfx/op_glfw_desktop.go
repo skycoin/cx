@@ -124,7 +124,7 @@ func opGlfwPollEvents(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.
 	if initialized {
 		glfw.PollEvents()
 	}
-	PollEvents()
+	PollEvents(prgrm)
 }
 
 func opGlfwGetTime(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
