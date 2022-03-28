@@ -1,7 +1,7 @@
 package constants
 
 import (
-    "github.com/skycoin/cx/cx/types"
+	"github.com/skycoin/cx/cx/types"
 )
 
 // var COREPATH = ""
@@ -24,7 +24,6 @@ const LITERAL_PLACEHOLDER = "*lit"
 const ID_FN = "identity"
 const INIT_FN = "initDef"
 
-
 const CALLSTACK_SIZE types.Pointer = 1000
 
 var STACK_SIZE types.Pointer = 1048576     // 1 Mb
@@ -33,10 +32,9 @@ var MAX_HEAP_SIZE types.Pointer = 67108864 // 64 Mb
 var MIN_HEAP_FREE_RATIO float32 = 0.4
 var MAX_HEAP_FREE_RATIO float32 = 0.7
 
-
 const NULL_HEAP_ADDRESS_OFFSET = types.POINTER_SIZE
 const NULL_HEAP_ADDRESS = types.Pointer(0)
-const SLICE_HEADER_SIZE = 2*types.POINTER_SIZE
+const SLICE_HEADER_SIZE = 2 * types.POINTER_SIZE
 
 //VERY WEIRD
 //gives error, "cx" not found, even if it exists when changed
@@ -201,5 +199,3 @@ const (
 	DEREF_DEREF          // 4
 	DEREF_SLICE          // 5
 )
-
-

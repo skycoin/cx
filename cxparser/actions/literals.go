@@ -161,31 +161,30 @@ func PrimaryStructLiteral(prgrm *ast.CXProgram, ident string, strctFlds []ast.CX
 					panic(err)
 				}
 
-				cxAtomicOpOutput := prgrm.GetCXArgFromArray(cxAtomicOp.Outputs[0])
-				name := cxAtomicOpOutput.Name
+				cxAtomicOpOutputIdx := cxAtomicOp.Outputs[0]
+
+				name := prgrm.CXArgs[cxAtomicOpOutputIdx].Name
 
 				fld := ast.MakeArgument(name, CurrentFile, LineNo)
-				fld.Type = cxAtomicOpOutput.Type
-				fld.PointerTargetType = cxAtomicOpOutput.PointerTargetType
+				fld.Type = prgrm.CXArgs[cxAtomicOpOutputIdx].Type
+				fld.PointerTargetType = prgrm.CXArgs[cxAtomicOpOutputIdx].PointerTargetType
 				expr.ExpressionType = ast.CXEXPR_STRUCT_LITERAL
 
-				cxAtomicOpOutput.Package = ast.CXPackageIndex(pkg.Index)
+				prgrm.CXArgs[cxAtomicOpOutputIdx].Package = ast.CXPackageIndex(pkg.Index)
 				// expr.ProgramOutput[0].Program = prgrm
 
-				if cxAtomicOpOutput.StructType == nil {
-					cxAtomicOpOutput.StructType = strct
+				if prgrm.CXArgs[cxAtomicOpOutputIdx].StructType == nil {
+					prgrm.CXArgs[cxAtomicOpOutputIdx].StructType = strct
 				}
 				// expr.ProgramOutput[0].StructType = strct
 				fld.StructType = strct
 
-				cxAtomicOpOutput.Size = strct.Size
-				cxAtomicOpOutput.TotalSize = strct.Size
-				cxAtomicOpOutput.Name = ident
+				prgrm.CXArgs[cxAtomicOpOutputIdx].Size = strct.Size
+				prgrm.CXArgs[cxAtomicOpOutputIdx].TotalSize = strct.Size
+				prgrm.CXArgs[cxAtomicOpOutputIdx].Name = ident
 				fldIdx := prgrm.AddCXArgInArray(fld)
-				cxAtomicOpOutput.Fields = append(cxAtomicOpOutput.Fields, fldIdx)
+				prgrm.CXArgs[cxAtomicOpOutputIdx].Fields = append(prgrm.CXArgs[cxAtomicOpOutputIdx].Fields, fldIdx)
 
-				// TODO: temporary bug fix, needs improvements
-				prgrm.CXArgs[cxAtomicOp.Outputs[0]] = *cxAtomicOpOutput
 				result = append(result, expr)
 			}
 		} else {

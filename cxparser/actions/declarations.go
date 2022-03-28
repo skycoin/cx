@@ -43,6 +43,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 	if glbl, err := pkg.GetGlobal(prgrm, declarator.Name); err == nil {
 		// The name is already defined.
 		glblIdx := glbl.Index
+
 		if glbl.Offset < 0 || glbl.Size == 0 || glbl.TotalSize == 0 {
 			// then it was only added a reference to the symbol
 			var offExpr []ast.CXExpression
@@ -60,9 +61,9 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 			}
 
 			offExprAtomicOpOutput := prgrm.GetCXArgFromArray(offExprAtomicOp.Outputs[0])
-			glbl.Offset = offExprAtomicOpOutput.Offset
-			glbl.PassBy = offExprAtomicOpOutput.PassBy
-			// glbl.Package = offExpr[0].ProgramOutput[0].Package
+			prgrm.CXArgs[glblIdx].Offset = offExprAtomicOpOutput.Offset
+			prgrm.CXArgs[glblIdx].PassBy = offExprAtomicOpOutput.PassBy
+			// prgrm.CXArgs[glblIdx].Package = offExpr[0].ProgramOutput[0].Package
 		}
 
 		// Checking if something is supposed to be initialized
@@ -78,32 +79,32 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 			// then we just re-assign offsets
 			if initializerAtomicOpOperator == nil {
 				// then it's a literal
-				declaration_specifiers.Name = glbl.Name
-				declaration_specifiers.Offset = glbl.Offset
-				declaration_specifiers.PassBy = glbl.PassBy
-				declaration_specifiers.Package = glbl.Package
+				declaration_specifiers.Name = prgrm.CXArgs[glblIdx].Name
+				declaration_specifiers.Offset = prgrm.CXArgs[glblIdx].Offset
+				declaration_specifiers.PassBy = prgrm.CXArgs[glblIdx].PassBy
+				declaration_specifiers.Package = prgrm.CXArgs[glblIdx].Package
 
-				*glbl = *declaration_specifiers
-				glbl.Index = glblIdx
+				prgrm.CXArgs[glblIdx] = *declaration_specifiers
+				prgrm.CXArgs[glblIdx].Index = glblIdx
 
 				initializerAtomicOp.AddInput(prgrm, initializerAtomicOp.Outputs[0])
 				initializerAtomicOp.Outputs = nil
 				initializerAtomicOp.AddOutput(prgrm, ast.CXArgumentIndex(glblIdx))
 				opIdx := prgrm.AddNativeFunctionInArray(ast.Natives[constants.OP_IDENTITY])
 				initializerAtomicOp.Operator = opIdx
-				initializerAtomicOp.Package = glbl.Package
+				initializerAtomicOp.Package = prgrm.CXArgs[glblIdx].Package
 
 				//add intialization statements, to array
 				prgrm.SysInitExprs = append(prgrm.SysInitExprs, initializer...)
 			} else {
 				// then it's an expression
-				declaration_specifiers.Name = glbl.Name
-				declaration_specifiers.Offset = glbl.Offset
-				declaration_specifiers.PassBy = glbl.PassBy
-				declaration_specifiers.Package = glbl.Package
+				declaration_specifiers.Name = prgrm.CXArgs[glblIdx].Name
+				declaration_specifiers.Offset = prgrm.CXArgs[glblIdx].Offset
+				declaration_specifiers.PassBy = prgrm.CXArgs[glblIdx].PassBy
+				declaration_specifiers.Package = prgrm.CXArgs[glblIdx].Package
 
-				*glbl = *declaration_specifiers
-				glbl.Index = glblIdx
+				prgrm.CXArgs[glblIdx] = *declaration_specifiers
+				prgrm.CXArgs[glblIdx].Index = glblIdx
 
 				if initializer[len(initializer)-1].IsStructLiteral() {
 					index := prgrm.AddCXAtomicOp(&ast.CXAtomicOperator{Outputs: []ast.CXArgumentIndex{ast.CXArgumentIndex(glblIdx)}, Operator: -1, Function: -1})
@@ -125,15 +126,12 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 			}
 		} else {
 			// we keep the last value for now
-			declaration_specifiers.Name = glbl.Name
-			declaration_specifiers.Offset = glbl.Offset
-			declaration_specifiers.PassBy = glbl.PassBy
-			declaration_specifiers.Package = glbl.Package
-			*glbl = *declaration_specifiers
-			glbl.Index = glblIdx
-
-			// TODO: temporary bug fix, needs improvements
-			prgrm.CXArgs[glblIdx] = *glbl
+			declaration_specifiers.Name = prgrm.CXArgs[glblIdx].Name
+			declaration_specifiers.Offset = prgrm.CXArgs[glblIdx].Offset
+			declaration_specifiers.PassBy = prgrm.CXArgs[glblIdx].PassBy
+			declaration_specifiers.Package = prgrm.CXArgs[glblIdx].Package
+			prgrm.CXArgs[glblIdx] = *declaration_specifiers
+			prgrm.CXArgs[glblIdx].Index = glblIdx
 		}
 	} else {
 		// then it hasn't been defined

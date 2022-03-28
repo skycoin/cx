@@ -85,11 +85,12 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 	postExprsAtomicOpOperator := prgrm.GetFunctionFromArray(postExprsAtomicOp.Operator)
 
 	if len(prgrm.GetCXArgFromArray(prevExpr2AtomicOp.Outputs[0]).Fields) > 0 {
-		fld := prgrm.GetCXArgFromArray(prgrm.GetCXArgFromArray(prevExpr2AtomicOp.Outputs[0]).Fields[len(prgrm.GetCXArgFromArray(prevExpr2AtomicOp.Outputs[0]).Fields)-1])
+		fldIdx := prgrm.GetCXArgFromArray(prevExpr2AtomicOp.Outputs[0]).Fields[len(prgrm.GetCXArgFromArray(prevExpr2AtomicOp.Outputs[0]).Fields)-1]
+
 		if postExprsAtomicOpOperator == nil {
 			// expr.AddInput(postExprs[len(postExprs)-1].ProgramOutput[0])
 			indexIdx := postExprsAtomicOp.Outputs[0]
-			fld.Indexes = append(fld.Indexes, indexIdx)
+			prgrm.CXArgs[fldIdx].Indexes = append(prgrm.CXArgs[fldIdx].Indexes, indexIdx)
 		} else {
 			sym := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(prgrm.GetCXArgFromArray(postExprsAtomicOpOperator.Outputs[0]).Type)
 			sym.Package = postExprsAtomicOp.Package
@@ -99,11 +100,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 
 			prevExprs = append(postExprs, prevExprs...)
 
-			fld.Indexes = append(fld.Indexes, symIdx)
-
-			// TODO: temporary bug fix, needs improvements
-			prgrm.CXArgs[prgrm.GetCXArgFromArray(prevExpr2AtomicOp.Outputs[0]).Fields[len(prgrm.GetCXArgFromArray(prevExpr2AtomicOp.Outputs[0]).Fields)-1]] = *fld
-			// expr.AddInput(sym)
+			prgrm.CXArgs[fldIdx].Indexes = append(prgrm.CXArgs[fldIdx].Indexes, symIdx)
 		}
 	} else {
 		if len(postExprsAtomicOp.Outputs) < 1 {
@@ -342,29 +339,29 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		}
 	}
 
-	left := prgrm.GetCXArgFromArray(lastExprAtomicOp.Outputs[0])
+	leftIdx := lastExprAtomicOp.Outputs[0]
 
 	// If the left already is a rest (e.g. "var" in "pkg.var"), then
 	// it can't be a package name and we propagate the property to
 	//  the right side.
-	if left.IsInnerArg {
+	if prgrm.CXArgs[leftIdx].IsInnerArg {
 		// right.IsInnerArg = true
 		// left.DereferenceOperations = append(left.DereferenceOperations, cxcore.DEREF_FIELD)
-		left.IsStruct = true
+		prgrm.CXArgs[leftIdx].IsStruct = true
 		fld := ast.MakeArgument(ident, CurrentFile, LineNo)
-		leftPkg, err := prgrm.GetPackageFromArray(left.Package)
+		leftPkg, err := prgrm.GetPackageFromArray(prgrm.CXArgs[leftIdx].Package)
 		if err != nil {
 			panic(err)
 		}
 
 		fld.AddType(types.IDENTIFIER).AddPackage(leftPkg)
 		fldIdx := prgrm.AddCXArgInArray(fld)
-		left.Fields = append(left.Fields, fldIdx)
+		prgrm.CXArgs[leftIdx].Fields = append(prgrm.CXArgs[leftIdx].Fields, fldIdx)
 
 		return prevExprs
 	}
 
-	left.IsInnerArg = true
+	prgrm.CXArgs[leftIdx].IsInnerArg = true
 	// then left is a first (e.g first.rest) and right is a rest
 	// let's check if left is a package
 	pkg, err := prgrm.GetCurrentPackage()
@@ -372,16 +369,16 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		panic(err)
 	}
 
-	if imp, err := pkg.GetImport(prgrm, left.Name); err == nil {
+	if imp, err := pkg.GetImport(prgrm, prgrm.CXArgs[leftIdx].Name); err == nil {
 		// the external property will be propagated to the following arguments
 		// this way we avoid considering these arguments as module names
 
-		if cxpackages.IsDefaultPackage(left.Name) {
+		if cxpackages.IsDefaultPackage(prgrm.CXArgs[leftIdx].Name) {
 
-			//TODO: constants.ConstCodes[left.Name+"."+ident]
+			//TODO: constants.ConstCodes[prgrm.CXArgs[leftIdx].Name+"."+ident]
 			//TODO: only play ConstCodes are used
 			//Is used for constant declaration? But only for core packages?
-			if code, ok := ConstCodes[left.Name+"."+ident]; ok {
+			if code, ok := ConstCodes[prgrm.CXArgs[leftIdx].Name+"."+ident]; ok {
 				constant := Constants[code]
 				val := WritePrimary(prgrm, constant.Type, constant.Value, false)
 				valAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(val, 0)
@@ -392,17 +389,17 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 				lastExprAtomicOp.Outputs[0] = valAtomicOp.Outputs[0]
 
 				return prevExprs
-			} else if _, ok := ast.OpCodes[left.Name+"."+ident]; ok {
+			} else if _, ok := ast.OpCodes[prgrm.CXArgs[leftIdx].Name+"."+ident]; ok {
 				// then it's a native
 				// TODO: we'd be referring to the function itself, not a function call
 				// (functions as first-class objects)
-				left.Name = left.Name + "." + ident
+				prgrm.CXArgs[leftIdx].Name = prgrm.CXArgs[leftIdx].Name + "." + ident
 
 				return prevExprs
 			}
 		}
 
-		left.Package = ast.CXPackageIndex(imp.Index)
+		prgrm.CXArgs[leftIdx].Package = ast.CXPackageIndex(imp.Index)
 
 		if glbl, err := imp.GetGlobal(prgrm, ident); err == nil {
 			// then it's a global
@@ -432,27 +429,24 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		}
 	} else {
 		// then left is not a package name
-		if cxpackages.IsDefaultPackage(left.Name) {
-			println(ast.CompilationError(left.ArgDetails.FileName, left.ArgDetails.FileLine),
+		if cxpackages.IsDefaultPackage(prgrm.CXArgs[leftIdx].Name) {
+			println(ast.CompilationError(prgrm.CXArgs[leftIdx].ArgDetails.FileName, prgrm.CXArgs[leftIdx].ArgDetails.FileLine),
 				fmt.Sprintf("identifier '%s' does not exist",
-					left.Name))
+					prgrm.CXArgs[leftIdx].Name))
 			os.Exit(constants.CX_COMPILATION_ERROR)
 		}
 		// then it's a struct
-		left.IsStruct = true
+		prgrm.CXArgs[leftIdx].IsStruct = true
 
 		fld := ast.MakeArgument(ident, CurrentFile, LineNo)
-		leftPkg, err := prgrm.GetPackageFromArray(left.Package)
+		leftPkg, err := prgrm.GetPackageFromArray(prgrm.CXArgs[leftIdx].Package)
 		if err != nil {
 			panic(err)
 		}
 		fld.AddType(types.IDENTIFIER).AddPackage(leftPkg)
 
 		fldIdx := prgrm.AddCXArgInArray(fld)
-		left.Fields = append(left.Fields, fldIdx)
-
-		// TODO: temporary bug fix, needs improvements
-		prgrm.CXArgs[lastExprAtomicOp.Outputs[0]] = *left
+		prgrm.CXArgs[leftIdx].Fields = append(prgrm.CXArgs[leftIdx].Fields, fldIdx)
 	}
 
 	return prevExprs

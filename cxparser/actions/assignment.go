@@ -198,11 +198,8 @@ func Assignment(prgrm *ast.CXProgram, to []ast.CXExpression, assignOp string, fr
 		panic(err)
 	}
 
-	fromCXAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(from, idx)
-	if err != nil {
-		panic(err)
-	}
-	fromCXAtomicOpOperator := prgrm.GetFunctionFromArray(fromCXAtomicOp.Operator)
+	fromCXAtomicOpIdx := from[idx].Index
+	fromCXAtomicOpOperator := prgrm.GetFunctionFromArray(prgrm.CXAtomicOps[fromCXAtomicOpIdx].Operator)
 
 	// Checking if we're trying to assign stuff from a function call
 	// And if that function call actually returns something. If not, throw an error.
@@ -232,14 +229,14 @@ func Assignment(prgrm *ast.CXProgram, to []ast.CXExpression, assignOp string, fr
 
 		if fromCXAtomicOpOperator == nil {
 			// then it's a literal
-			sym = ast.MakeArgument(prgrm.GetCXArgFromArray(toCXAtomicOp.Outputs[0]).Name, CurrentFile, LineNo).AddType(prgrm.GetCXArgFromArray(fromCXAtomicOp.Outputs[0]).Type)
+			sym = ast.MakeArgument(prgrm.GetCXArgFromArray(toCXAtomicOp.Outputs[0]).Name, CurrentFile, LineNo).AddType(prgrm.GetCXArgFromArray(prgrm.CXAtomicOps[fromCXAtomicOpIdx].Outputs[0]).Type)
 		} else {
 			outTypeArg := getOutputType(prgrm, &from[idx])
 
 			sym = ast.MakeArgument(prgrm.GetCXArgFromArray(toCXAtomicOp.Outputs[0]).Name, CurrentFile, LineNo).AddType(outTypeArg.Type)
 
 			if from[idx].IsArrayLiteral() {
-				fromCXAtomicOpInputs := prgrm.GetCXArgFromArray(fromCXAtomicOp.Inputs[0])
+				fromCXAtomicOpInputs := prgrm.GetCXArgFromArray(prgrm.CXAtomicOps[fromCXAtomicOpIdx].Inputs[0])
 				sym.Size = fromCXAtomicOpInputs.Size
 				sym.TotalSize = fromCXAtomicOpInputs.TotalSize
 				sym.Lengths = fromCXAtomicOpInputs.Lengths
@@ -315,10 +312,10 @@ func Assignment(prgrm *ast.CXProgram, to []ast.CXExpression, assignOp string, fr
 	if fromCXAtomicOpOperator == nil {
 
 		opIdx := prgrm.AddNativeFunctionInArray(ast.Natives[constants.OP_IDENTITY])
-		fromCXAtomicOp.Operator = opIdx
+		prgrm.CXAtomicOps[fromCXAtomicOpIdx].Operator = opIdx
 
 		toCXAtomicOpOutput := prgrm.GetCXArgFromArray(toCXAtomicOp.Outputs[0])
-		fromCXAtomicOpOutput := prgrm.GetCXArgFromArray(fromCXAtomicOp.Outputs[0])
+		fromCXAtomicOpOutput := prgrm.GetCXArgFromArray(prgrm.CXAtomicOps[fromCXAtomicOpIdx].Outputs[0])
 
 		toCXAtomicOpOutput.Size = fromCXAtomicOpOutput.Size
 		toCXAtomicOpOutput.TotalSize = fromCXAtomicOpOutput.TotalSize
@@ -330,16 +327,12 @@ func Assignment(prgrm *ast.CXProgram, to []ast.CXExpression, assignOp string, fr
 		// toCXAtomicOp.ProgramOutput[0].Program = prgrm
 
 		if from[idx].IsMethodCall() {
-			fromCXAtomicOp.Inputs = append(fromCXAtomicOp.Outputs, fromCXAtomicOp.Inputs...)
+			prgrm.CXAtomicOps[fromCXAtomicOpIdx].Inputs = append(prgrm.CXAtomicOps[fromCXAtomicOpIdx].Outputs, prgrm.CXAtomicOps[fromCXAtomicOpIdx].Inputs...)
 		} else {
-			fromCXAtomicOp.Inputs = fromCXAtomicOp.Outputs
+			prgrm.CXAtomicOps[fromCXAtomicOpIdx].Inputs = prgrm.CXAtomicOps[fromCXAtomicOpIdx].Outputs
 		}
 
-		fromCXAtomicOp.Outputs = toLastExprAtomicOp.Outputs
-		// from[idx].Program = prgrm
-
-		// TODO: temporary bug fix, needs improvements
-		prgrm.CXAtomicOps[from[idx].Index] = *fromCXAtomicOp
+		prgrm.CXAtomicOps[fromCXAtomicOpIdx].Outputs = toLastExprAtomicOp.Outputs
 
 		return append(to[:len(to)-1], from...)
 	} else {
@@ -374,10 +367,8 @@ func Assignment(prgrm *ast.CXProgram, to []ast.CXExpression, assignOp string, fr
 			// toCXAtomicOp.ProgramOutput[0].Program = prgrm
 		}
 
-		fromCXAtomicOp.Outputs = toLastExprAtomicOp.Outputs
+		prgrm.CXAtomicOps[fromCXAtomicOpIdx].Outputs = toLastExprAtomicOp.Outputs
 
-		// TODO: temporary bug fix, needs improvements
-		prgrm.CXAtomicOps[from[idx].Index] = *fromCXAtomicOp
 		return append(to[:len(to)-1], from...)
 		// return append(to, from...)
 	}

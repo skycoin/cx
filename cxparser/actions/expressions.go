@@ -27,11 +27,9 @@ func IterationExpressions(prgrm *ast.CXProgram, init []ast.CXExpression, cond []
 
 	upExprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
 	upExpr := ast.MakeAtomicOperatorExpression(prgrm, jmpFn)
-	upExprAtomicOp, _, _, err := prgrm.GetOperation(upExpr)
-	if err != nil {
-		panic(err)
-	}
-	upExprAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
+	upExprAtomicOpIdx := upExpr.Index
+
+	prgrm.CXAtomicOps[upExprAtomicOpIdx].Package = ast.CXPackageIndex(pkg.Index)
 
 	trueArg := WritePrimary(prgrm, types.BOOL, encoder.Serialize(true), false)
 	trueArgAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(trueArg, 0)
@@ -43,9 +41,9 @@ func IterationExpressions(prgrm *ast.CXProgram, init []ast.CXExpression, cond []
 	upLines := ((len(statements) + len(incr) + len(cond) + 2) * -1) - 2
 	downLines := 0
 
-	upExprAtomicOp.AddInput(prgrm, trueArgAtomicOp.Outputs[0])
-	upExprAtomicOp.ThenLines = upLines
-	upExprAtomicOp.ElseLines = downLines
+	prgrm.CXAtomicOps[upExprAtomicOpIdx].AddInput(prgrm, trueArgAtomicOp.Outputs[0])
+	prgrm.CXAtomicOps[upExprAtomicOpIdx].ThenLines = upLines
+	prgrm.CXAtomicOps[upExprAtomicOpIdx].ElseLines = downLines
 
 	downExprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
 	downExpr := ast.MakeAtomicOperatorExpression(prgrm, jmpFn)
@@ -108,9 +106,6 @@ func IterationExpressions(prgrm *ast.CXProgram, init []ast.CXExpression, cond []
 
 	downExprAtomicOp.ThenLines = thenLines
 	downExprAtomicOp.ElseLines = elseLines
-
-	// TODO: temporary bug fix, needs improvements
-	prgrm.CXAtomicOps[upExpr.Index] = *upExprAtomicOp
 
 	exprs := init
 	exprs = append(exprs, cond...)
@@ -215,11 +210,9 @@ func SelectionExpressions(prgrm *ast.CXProgram, condExprs []ast.CXExpression, th
 
 	skipExprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
 	skipExpr := ast.MakeAtomicOperatorExpression(prgrm, jmpFn)
-	skipExprAtomicOp, _, _, err := prgrm.GetOperation(skipExpr)
-	if err != nil {
-		panic(err)
-	}
-	skipExprAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
+	skipExprAtomicOpIdx := skipExpr.Index
+
+	prgrm.CXAtomicOps[skipExprAtomicOpIdx].Package = ast.CXPackageIndex(pkg.Index)
 
 	trueArg := WritePrimary(prgrm, types.BOOL, encoder.Serialize(true), false)
 	trueArgAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(trueArg, 0)
@@ -228,17 +221,14 @@ func SelectionExpressions(prgrm *ast.CXProgram, condExprs []ast.CXExpression, th
 	}
 	skipLines := len(elseExprs)
 
-	skipExprAtomicOp.AddInput(prgrm, trueArgAtomicOp.Outputs[0])
-	skipExprAtomicOp.ThenLines = skipLines
-	skipExprAtomicOp.ElseLines = 0
+	prgrm.CXAtomicOps[skipExprAtomicOpIdx].AddInput(prgrm, trueArgAtomicOp.Outputs[0])
+	prgrm.CXAtomicOps[skipExprAtomicOpIdx].ThenLines = skipLines
+	prgrm.CXAtomicOps[skipExprAtomicOpIdx].ElseLines = 0
 
 	var exprs []ast.CXExpression
 	if lastCondExprsAtomicOpOperator != nil || condExprs[len(condExprs)-1].IsMethodCall() {
 		exprs = append(exprs, condExprs...)
 	}
-
-	// TODO: temporary bug fix, needs improvements
-	prgrm.CXAtomicOps[skipExpr.Index] = *skipExprAtomicOp
 
 	exprs = append(exprs, *ifExprCXLine, *ifExpr)
 	exprs = append(exprs, thenExprs...)
