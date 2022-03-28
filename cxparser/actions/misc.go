@@ -53,7 +53,7 @@ func hasDerefOp(arg *ast.CXArgument, spec int) bool {
 func WritePrimary(prgrm *ast.CXProgram, typeCode types.Code, byts []byte, isSlice bool) []ast.CXExpression {
 	if pkg, err := prgrm.GetCurrentPackage(); err == nil {
 		arg := ast.MakeArgument("", CurrentFile, LineNo)
-		arg.AddType(typeCode)
+		arg.SetType(typeCode)
 		arg.Package = ast.CXPackageIndex(pkg.Index)
 
 		size := types.Cast_int_to_ptr(len(byts))
@@ -122,7 +122,7 @@ func TotalLength(lengths []types.Pointer) types.Pointer {
 func StructLiteralFields(prgrm *ast.CXProgram, ident string) ast.CXExpression {
 	if pkg, err := prgrm.GetCurrentPackage(); err == nil {
 		arg := ast.MakeArgument("", CurrentFile, LineNo)
-		arg.AddType(types.IDENTIFIER)
+		arg.SetType(types.IDENTIFIER)
 		arg.Name = ident
 		arg.Package = ast.CXPackageIndex(pkg.Index)
 		argIdx := prgrm.AddCXArgInArray(arg)
@@ -252,7 +252,7 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 func PrimaryIdentifier(prgrm *ast.CXProgram, ident string) []ast.CXExpression {
 	if pkg, err := prgrm.GetCurrentPackage(); err == nil {
 		arg := ast.MakeArgument(ident, CurrentFile, LineNo) // fix: line numbers in errors sometimes report +1 or -1. Issue #195
-		arg.AddType(types.IDENTIFIER)
+		arg.SetType(types.IDENTIFIER)
 		// arg.Typ = "ident"
 		arg.Name = ident
 		arg.Package = ast.CXPackageIndex(pkg.Index)

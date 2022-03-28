@@ -531,7 +531,7 @@ func DeclarationSpecifiers(declSpec *ast.CXArgument, arrayLengths []types.Pointe
 //
 func DeclarationSpecifiersBasic(typeCode types.Code) *ast.CXArgument {
 	arg := ast.MakeArgument("", CurrentFile, LineNo)
-	arg.AddType(typeCode)
+	arg.SetType(typeCode)
 	if typeCode == types.AFF {
 		// equivalent to slice of strings
 		return DeclarationSpecifiers(arg, []types.Pointer{0}, constants.DECL_SLICE)

@@ -67,7 +67,7 @@ func StructLiteralAssignment(prgrm *ast.CXProgram, to []ast.CXExpression, from [
 		// otherwise we'd be trying to assign the fields to a nil value.
 		fOut := prgrm.GetCXArgFromArray(lastFromAtomicOp.Outputs[0])
 		auxName := MakeGenSym(constants.LOCAL_PREFIX)
-		aux := ast.MakeArgument(auxName, lastFromCXLine.FileName, lastFromCXLine.LineNumber).AddType(fOut.Type)
+		aux := ast.MakeArgument(auxName, lastFromCXLine.FileName, lastFromCXLine.LineNumber).SetType(fOut.Type)
 		aux.DeclarationSpecifiers = append(aux.DeclarationSpecifiers, constants.DECL_POINTER)
 		aux.StructType = fOut.StructType
 		aux.Size = fOut.Size
@@ -153,7 +153,7 @@ func ShortAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression, exprCXLine *a
 	if fromCXAtomicOpOperator == nil {
 		cxAtomicOp.AddInput(prgrm, fromCXAtomicOp.Outputs[0])
 	} else {
-		sym := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(prgrm.GetCXArgFromArray(fromCXAtomicOp.Inputs[0]).Type)
+		sym := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).SetType(prgrm.GetCXArgFromArray(fromCXAtomicOp.Inputs[0]).Type)
 		sym.Package = ast.CXPackageIndex(pkg.Index)
 		sym.PreviouslyDeclared = true
 		symIdx := prgrm.AddCXArgInArray(sym)
@@ -229,11 +229,11 @@ func Assignment(prgrm *ast.CXProgram, to []ast.CXExpression, assignOp string, fr
 
 		if fromCXAtomicOpOperator == nil {
 			// then it's a literal
-			sym = ast.MakeArgument(prgrm.GetCXArgFromArray(toCXAtomicOp.Outputs[0]).Name, CurrentFile, LineNo).AddType(prgrm.GetCXArgFromArray(prgrm.CXAtomicOps[fromCXAtomicOpIdx].Outputs[0]).Type)
+			sym = ast.MakeArgument(prgrm.GetCXArgFromArray(toCXAtomicOp.Outputs[0]).Name, CurrentFile, LineNo).SetType(prgrm.GetCXArgFromArray(prgrm.CXAtomicOps[fromCXAtomicOpIdx].Outputs[0]).Type)
 		} else {
 			outTypeArg := getOutputType(prgrm, &from[idx])
 
-			sym = ast.MakeArgument(prgrm.GetCXArgFromArray(toCXAtomicOp.Outputs[0]).Name, CurrentFile, LineNo).AddType(outTypeArg.Type)
+			sym = ast.MakeArgument(prgrm.GetCXArgFromArray(toCXAtomicOp.Outputs[0]).Name, CurrentFile, LineNo).SetType(outTypeArg.Type)
 
 			if from[idx].IsArrayLiteral() {
 				fromCXAtomicOpInputs := prgrm.GetCXArgFromArray(prgrm.CXAtomicOps[fromCXAtomicOpIdx].Inputs[0])

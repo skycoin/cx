@@ -5,9 +5,6 @@ package cxfx
 import (
 	"bufio"
 	"fmt"
-	"github.com/skycoin/cx/cx/ast"
-	"github.com/skycoin/cx/cx/types"
-	"github.com/skycoin/cx/cx/util"
 	"image"
 	"image/draw"
 	"image/gif"
@@ -19,6 +16,11 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+
+	"github.com/skycoin/cx/cx/ast"
+	"github.com/skycoin/cx/cx/types"
+	"github.com/skycoin/cx/cx/util"
+
 	//"bytes"
 	"unsafe"
 )

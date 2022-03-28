@@ -224,7 +224,7 @@ func addNewExpression(prgrm *cxast.CXProgram, expr *cxast.CXExpression, expressi
 	// Add expression's output
 	argOutName := strconv.Itoa(len(exprCXAtomicOpFunction.Expressions))
 	argOut := cxast.MakeField(argOutName, types.BOOL, "", -1)
-	argOut.AddType(types.Code(types.BOOL))
+	argOut.SetType(types.Code(types.BOOL))
 	argOut.Package = exprCXAtomicOpFunction.Package
 	argOutIdx := prgrm.AddCXArgInArray(argOut)
 	newExprCXAtomicOp.AddOutput(prgrm, argOutIdx)

@@ -1372,7 +1372,7 @@ yydefault:
 		{
 			if pkg, err := actions.AST.GetCurrentPackage(); err == nil {
 				arg := ast.MakeArgument("", actions.CurrentFile, actions.LineNo)
-				arg.AddType(types.UNDEFINED)
+				arg.SetType(types.UNDEFINED)
 				arg.Name = yyDollar[1].tok
 				arg.Package = ast.CXPackageIndex(pkg.Index)
 				yyVAL.argument = arg
@@ -1432,7 +1432,7 @@ yydefault:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line cxparser/cxparsingcompletor/parsingcompletor.y:403
 		{
-			arg := ast.MakeArgument("", actions.CurrentFile, actions.LineNo).AddType(types.FUNC)
+			arg := ast.MakeArgument("", actions.CurrentFile, actions.LineNo).SetType(types.FUNC)
 
 			arg.Inputs = actions.AST.AddPointerArgsToCXArgsArray(yyDollar[2].arguments)
 			arg.Outputs = actions.AST.AddPointerArgsToCXArgsArray(yyDollar[3].arguments)

@@ -28,7 +28,7 @@ func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []a
 
 	slcVarExprAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
 	slcVar := ast.MakeArgument(symName, CurrentFile, LineNo)
-	slcVar.AddType(typeCode)
+	slcVar.SetType(typeCode)
 	slcVar = DeclarationSpecifiers(slcVar, []types.Pointer{0}, constants.DECL_SLICE)
 	slcVar.TotalSize = types.POINTER_SIZE
 	slcVar.Package = ast.CXPackageIndex(pkg.Index)
@@ -55,12 +55,12 @@ func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []a
 		if expr.IsArrayLiteral() {
 			expr.ExpressionType = ast.CXEXPR_UNUSED
 
-			symInp := ast.MakeArgument(symName, CurrentFile, LineNo).AddType(typeCode)
+			symInp := ast.MakeArgument(symName, CurrentFile, LineNo).SetType(typeCode)
 			symInp.Package = ast.CXPackageIndex(pkg.Index)
 			symInp.TotalSize = types.POINTER_SIZE
 			symInpIdx := prgrm.AddCXArgInArray(symInp)
 
-			symOut := ast.MakeArgument(symName, CurrentFile, LineNo).AddType(typeCode)
+			symOut := ast.MakeArgument(symName, CurrentFile, LineNo).SetType(typeCode)
 			symOut.Package = ast.CXPackageIndex(pkg.Index)
 			symOut.TotalSize = types.POINTER_SIZE
 			symOutIdx := prgrm.AddCXArgInArray(symOut)
@@ -90,7 +90,7 @@ func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []a
 				// nested expressions. Then use that variable as part of the slice literal.
 				out := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), exprCXLine.FileName, exprCXLine.LineNumber)
 				outArg := getOutputType(prgrm, &expr)
-				out.AddType(outArg.Type)
+				out.SetType(outArg.Type)
 				out.PointerTargetType = outArg.PointerTargetType
 				out.StructType = outArg.StructType
 				out.Size = outArg.Size
@@ -117,14 +117,14 @@ func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []a
 
 	symNameOutput := MakeGenSym(constants.LOCAL_PREFIX)
 
-	symOutput := ast.MakeArgument(symNameOutput, CurrentFile, LineNo).AddType(typeCode)
+	symOutput := ast.MakeArgument(symNameOutput, CurrentFile, LineNo).SetType(typeCode)
 	symOutput.IsSlice = true
 	symOutput.Package = ast.CXPackageIndex(pkg.Index)
 	symOutput.PreviouslyDeclared = true
 	symOutput.TotalSize = types.POINTER_SIZE
 	symOutputIdx := prgrm.AddCXArgInArray(symOutput)
 
-	symInput := ast.MakeArgument(symName, CurrentFile, LineNo).AddType(typeCode)
+	symInput := ast.MakeArgument(symName, CurrentFile, LineNo).SetType(typeCode)
 	symInput.IsSlice = true
 	symInput.Package = ast.CXPackageIndex(pkg.Index)
 	symInput.TotalSize = types.POINTER_SIZE
@@ -213,7 +213,7 @@ func PrimaryStructLiteralExternal(prgrm *ast.CXProgram, impName string, ident st
 
 					cxAtomicOpOutput := prgrm.GetCXArgFromArray(cxAtomicOp.Outputs[0])
 					fld := ast.MakeArgument("", CurrentFile, LineNo)
-					fld.AddType(types.IDENTIFIER)
+					fld.SetType(types.IDENTIFIER)
 					fld.Name = cxAtomicOpOutput.Name
 
 					expr.ExpressionType = ast.CXEXPR_STRUCT_LITERAL
@@ -262,7 +262,7 @@ func ArrayLiteralExpression(prgrm *ast.CXProgram, arrSizes []types.Pointer, type
 	arrVarExprAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
 	arrVar := ast.MakeArgument(symName, CurrentFile, LineNo)
 	arrVar = DeclarationSpecifiers(arrVar, arrSizes, constants.DECL_ARRAY)
-	arrVar.AddType(typeCode)
+	arrVar.SetType(typeCode)
 	arrVar.TotalSize = arrVar.Size * TotalLength(arrVar.Lengths)
 	arrVar.Package = ast.CXPackageIndex(pkg.Index)
 	arrVar.PreviouslyDeclared = true
@@ -286,7 +286,7 @@ func ArrayLiteralExpression(prgrm *ast.CXProgram, arrSizes []types.Pointer, type
 		if expr.IsArrayLiteral() {
 			expr.ExpressionType = ast.CXEXPR_UNUSED
 
-			sym := ast.MakeArgument(symName, CurrentFile, LineNo).AddType(typeCode)
+			sym := ast.MakeArgument(symName, CurrentFile, LineNo).SetType(typeCode)
 			sym.Package = ast.CXPackageIndex(pkg.Index)
 			sym.PreviouslyDeclared = true
 
@@ -337,7 +337,7 @@ func ArrayLiteralExpression(prgrm *ast.CXProgram, arrSizes []types.Pointer, type
 
 	symNameOutput := MakeGenSym(constants.LOCAL_PREFIX)
 
-	symOutput := ast.MakeArgument(symNameOutput, CurrentFile, LineNo).AddType(typeCode)
+	symOutput := ast.MakeArgument(symNameOutput, CurrentFile, LineNo).SetType(typeCode)
 	// symOutput.Lengths = append(symOutput.Lengths, arrSizes[len(arrSizes)-1])
 	symOutput.Lengths = arrSizes
 	symOutput.Package = ast.CXPackageIndex(pkg.Index)
@@ -345,7 +345,7 @@ func ArrayLiteralExpression(prgrm *ast.CXProgram, arrSizes []types.Pointer, type
 	symOutput.TotalSize = symOutput.Size * TotalLength(symOutput.Lengths)
 	symOutputIdx := prgrm.AddCXArgInArray(symOutput)
 
-	symInput := ast.MakeArgument(symName, CurrentFile, LineNo).AddType(typeCode)
+	symInput := ast.MakeArgument(symName, CurrentFile, LineNo).SetType(typeCode)
 	// symInput.Lengths = append(symInput.Lengths, arrSizes[len(arrSizes)-1])
 	symInput.Lengths = arrSizes
 	symInput.Package = ast.CXPackageIndex(pkg.Index)

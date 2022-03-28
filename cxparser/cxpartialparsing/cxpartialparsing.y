@@ -310,7 +310,7 @@ direct_declarator:
                 {
 			if pkg, err := Program.GetCurrentPackage(); err == nil {
 				arg := ast.MakeArgument("", actions.CurrentFile, actions.LineNo)
-				arg.AddType(types.UNDEFINED)
+				arg.SetType(types.UNDEFINED)
 				arg.Name = $1
 				arg.Package = ast.CXPackageIndex(pkg.Index)
 				$$ = arg
@@ -358,7 +358,7 @@ types_list:
 declaration_specifiers:
 		FUNC types_list types_list
 		{
-			arg := ast.MakeArgument("", actions.CurrentFile, actions.LineNo).AddType(types.FUNC)
+			arg := ast.MakeArgument("", actions.CurrentFile, actions.LineNo).SetType(types.FUNC)
 			arg.Inputs = Program.AddPointerArgsToCXArgsArray($2)
 			arg.Outputs = Program.AddPointerArgsToCXArgsArray($3)
 			$$ = actions.DeclarationSpecifiers(arg, []types.Pointer{0}, constants.DECL_FUNC)

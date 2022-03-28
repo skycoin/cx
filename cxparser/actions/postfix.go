@@ -27,7 +27,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		genName := MakeGenSym(constants.LOCAL_PREFIX)
 
 		prevExprAtomicOpOperatorOutput := prgrm.GetCXArgFromArray(prevExprAtomicOpOperator.Outputs[0])
-		out := ast.MakeArgument(genName, prevExprCXLine.FileName, prevExprCXLine.LineNumber-1).AddType(prevExprAtomicOpOperatorOutput.Type)
+		out := ast.MakeArgument(genName, prevExprCXLine.FileName, prevExprCXLine.LineNumber-1).SetType(prevExprAtomicOpOperatorOutput.Type)
 
 		out.DeclarationSpecifiers = prevExprAtomicOpOperatorOutput.DeclarationSpecifiers
 		out.StructType = prevExprAtomicOpOperatorOutput.StructType
@@ -40,7 +40,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 
 		prevExprAtomicOp.AddOutput(prgrm, outIdx)
 
-		inp := ast.MakeArgument(genName, prevExprCXLine.FileName, prevExprCXLine.LineNumber).AddType(prevExprAtomicOpOperatorOutput.Type)
+		inp := ast.MakeArgument(genName, prevExprCXLine.FileName, prevExprCXLine.LineNumber).SetType(prevExprAtomicOpOperatorOutput.Type)
 
 		inp.DeclarationSpecifiers = prevExprAtomicOpOperatorOutput.DeclarationSpecifiers
 		inp.StructType = prevExprAtomicOpOperatorOutput.StructType
@@ -92,7 +92,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 			indexIdx := postExprsAtomicOp.Outputs[0]
 			prgrm.CXArgs[fldIdx].Indexes = append(prgrm.CXArgs[fldIdx].Indexes, indexIdx)
 		} else {
-			sym := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(prgrm.GetCXArgFromArray(postExprsAtomicOpOperator.Outputs[0]).Type)
+			sym := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).SetType(prgrm.GetCXArgFromArray(postExprsAtomicOpOperator.Outputs[0]).Type)
 			sym.Package = postExprsAtomicOp.Package
 			sym.PreviouslyDeclared = true
 			symIdx := prgrm.AddCXArgInArray(sym)
@@ -106,7 +106,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		if len(postExprsAtomicOp.Outputs) < 1 {
 			// then it's an expression (e.g. i32.add(0, 0))
 			// we create a gensym for it
-			idxSym := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(prgrm.GetCXArgFromArray(postExprsAtomicOpOperator.Outputs[0]).Type)
+			idxSym := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).SetType(prgrm.GetCXArgFromArray(postExprsAtomicOpOperator.Outputs[0]).Type)
 			idxSym.Size = prgrm.GetCXArgFromArray(postExprsAtomicOpOperator.Outputs[0]).Size
 			idxSym.TotalSize = ast.GetSize(prgrm, prgrm.GetCXArgFromArray(postExprsAtomicOpOperator.Outputs[0]))
 
@@ -293,7 +293,7 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		symName := MakeGenSym(constants.LOCAL_PREFIX)
 
 		// we associate the result of the function call to the aux variable
-		out := ast.MakeArgument(symName, lastExprCXLine.FileName, lastExprCXLine.LineNumber).AddType(opOut.Type)
+		out := ast.MakeArgument(symName, lastExprCXLine.FileName, lastExprCXLine.LineNumber).SetType(opOut.Type)
 		out.DeclarationSpecifiers = opOut.DeclarationSpecifiers
 		out.StructType = opOut.StructType
 		out.Size = opOut.Size
@@ -310,7 +310,7 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 
 		// we need to create an expression to hold all the modifications
 		// that will take place after this if statement
-		inp := ast.MakeArgument(symName, lastExprCXLine.FileName, lastExprCXLine.LineNumber).AddType(opOut.Type)
+		inp := ast.MakeArgument(symName, lastExprCXLine.FileName, lastExprCXLine.LineNumber).SetType(opOut.Type)
 		inp.DeclarationSpecifiers = opOut.DeclarationSpecifiers
 		inp.StructType = opOut.StructType
 		inp.Size = opOut.Size
@@ -339,29 +339,29 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		}
 	}
 
-	leftIdx := lastExprAtomicOp.Outputs[0]
+	leftExprIdx := lastExprAtomicOp.Outputs[0]
 
 	// If the left already is a rest (e.g. "var" in "pkg.var"), then
 	// it can't be a package name and we propagate the property to
 	//  the right side.
-	if prgrm.CXArgs[leftIdx].IsInnerArg {
+	if prgrm.CXArgs[leftExprIdx].IsInnerArg {
 		// right.IsInnerArg = true
 		// left.DereferenceOperations = append(left.DereferenceOperations, cxcore.DEREF_FIELD)
-		prgrm.CXArgs[leftIdx].IsStruct = true
+		prgrm.CXArgs[leftExprIdx].IsStruct = true
 		fld := ast.MakeArgument(ident, CurrentFile, LineNo)
-		leftPkg, err := prgrm.GetPackageFromArray(prgrm.CXArgs[leftIdx].Package)
+		leftPkg, err := prgrm.GetPackageFromArray(prgrm.CXArgs[leftExprIdx].Package)
 		if err != nil {
 			panic(err)
 		}
 
-		fld.AddType(types.IDENTIFIER).AddPackage(leftPkg)
+		fld.SetType(types.IDENTIFIER).SetPackage(leftPkg)
 		fldIdx := prgrm.AddCXArgInArray(fld)
-		prgrm.CXArgs[leftIdx].Fields = append(prgrm.CXArgs[leftIdx].Fields, fldIdx)
+		prgrm.CXArgs[leftExprIdx].Fields = append(prgrm.CXArgs[leftExprIdx].Fields, fldIdx)
 
 		return prevExprs
 	}
 
-	prgrm.CXArgs[leftIdx].IsInnerArg = true
+	prgrm.CXArgs[leftExprIdx].IsInnerArg = true
 	// then left is a first (e.g first.rest) and right is a rest
 	// let's check if left is a package
 	pkg, err := prgrm.GetCurrentPackage()
@@ -369,16 +369,16 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		panic(err)
 	}
 
-	if imp, err := pkg.GetImport(prgrm, prgrm.CXArgs[leftIdx].Name); err == nil {
+	if imp, err := pkg.GetImport(prgrm, prgrm.CXArgs[leftExprIdx].Name); err == nil {
 		// the external property will be propagated to the following arguments
 		// this way we avoid considering these arguments as module names
 
-		if cxpackages.IsDefaultPackage(prgrm.CXArgs[leftIdx].Name) {
+		if cxpackages.IsDefaultPackage(prgrm.CXArgs[leftExprIdx].Name) {
 
-			//TODO: constants.ConstCodes[prgrm.CXArgs[leftIdx].Name+"."+ident]
+			//TODO: constants.ConstCodes[prgrm.CXArgs[leftExprIdx].Name+"."+ident]
 			//TODO: only play ConstCodes are used
 			//Is used for constant declaration? But only for core packages?
-			if code, ok := ConstCodes[prgrm.CXArgs[leftIdx].Name+"."+ident]; ok {
+			if code, ok := ConstCodes[prgrm.CXArgs[leftExprIdx].Name+"."+ident]; ok {
 				constant := Constants[code]
 				val := WritePrimary(prgrm, constant.Type, constant.Value, false)
 				valAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(val, 0)
@@ -389,17 +389,17 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 				lastExprAtomicOp.Outputs[0] = valAtomicOp.Outputs[0]
 
 				return prevExprs
-			} else if _, ok := ast.OpCodes[prgrm.CXArgs[leftIdx].Name+"."+ident]; ok {
+			} else if _, ok := ast.OpCodes[prgrm.CXArgs[leftExprIdx].Name+"."+ident]; ok {
 				// then it's a native
 				// TODO: we'd be referring to the function itself, not a function call
 				// (functions as first-class objects)
-				prgrm.CXArgs[leftIdx].Name = prgrm.CXArgs[leftIdx].Name + "." + ident
+				prgrm.CXArgs[leftExprIdx].Name = prgrm.CXArgs[leftExprIdx].Name + "." + ident
 
 				return prevExprs
 			}
 		}
 
-		prgrm.CXArgs[leftIdx].Package = ast.CXPackageIndex(imp.Index)
+		prgrm.CXArgs[leftExprIdx].Package = ast.CXPackageIndex(imp.Index)
 
 		if glbl, err := imp.GetGlobal(prgrm, ident); err == nil {
 			// then it's a global
@@ -429,24 +429,25 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		}
 	} else {
 		// then left is not a package name
-		if cxpackages.IsDefaultPackage(prgrm.CXArgs[leftIdx].Name) {
-			println(ast.CompilationError(prgrm.CXArgs[leftIdx].ArgDetails.FileName, prgrm.CXArgs[leftIdx].ArgDetails.FileLine),
+		if cxpackages.IsDefaultPackage(prgrm.CXArgs[leftExprIdx].Name) {
+			println(ast.CompilationError(prgrm.CXArgs[leftExprIdx].ArgDetails.FileName, prgrm.CXArgs[leftExprIdx].ArgDetails.FileLine),
 				fmt.Sprintf("identifier '%s' does not exist",
-					prgrm.CXArgs[leftIdx].Name))
+					prgrm.CXArgs[leftExprIdx].Name))
 			os.Exit(constants.CX_COMPILATION_ERROR)
 		}
 		// then it's a struct
-		prgrm.CXArgs[leftIdx].IsStruct = true
+		prgrm.CXArgs[leftExprIdx].IsStruct = true
 
-		fld := ast.MakeArgument(ident, CurrentFile, LineNo)
-		leftPkg, err := prgrm.GetPackageFromArray(prgrm.CXArgs[leftIdx].Package)
+		leftExprField := ast.MakeArgument(ident, CurrentFile, LineNo)
+		leftPkg, err := prgrm.GetPackageFromArray(prgrm.CXArgs[leftExprIdx].Package)
 		if err != nil {
 			panic(err)
 		}
-		fld.AddType(types.IDENTIFIER).AddPackage(leftPkg)
+		leftExprField.SetType(types.IDENTIFIER)
+		leftExprField.SetPackage(leftPkg)
 
-		fldIdx := prgrm.AddCXArgInArray(fld)
-		prgrm.CXArgs[leftIdx].Fields = append(prgrm.CXArgs[leftIdx].Fields, fldIdx)
+		leftExprFieldIdx := prgrm.AddCXArgInArray(leftExprField)
+		prgrm.CXArgs[leftExprIdx].Fields = append(prgrm.CXArgs[leftExprIdx].Fields, leftExprFieldIdx)
 	}
 
 	return prevExprs

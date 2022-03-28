@@ -276,14 +276,14 @@ func (arg *CXArgument) GetType(prgrm *CXProgram) types.Code {
 // ----------------------------------------------------------------
 //                     `CXArgument` Member handling
 
-// AddPackage assigns CX package `pkg` to CX argument `arg`.
-func (arg *CXArgument) AddPackage(pkg *CXPackage) *CXArgument {
+// SetPackage sets CX package `pkg` of CX argument `arg`.
+func (arg *CXArgument) SetPackage(pkg *CXPackage) *CXArgument {
 	arg.Package = CXPackageIndex(pkg.Index)
 	return arg
 }
 
-// AddType ...
-func (arg *CXArgument) AddType(typeCode types.Code) *CXArgument {
+// SetType ...
+func (arg *CXArgument) SetType(typeCode types.Code) *CXArgument {
 	arg.Type = typeCode
 	size := typeCode.Size()
 	arg.Size = size
@@ -343,7 +343,7 @@ func Struct(prgrm *CXProgram, pkgName, strctName, argName string) *CXArgument {
 		panic(err)
 	}
 
-	arg := MakeArgument(argName, "", -1).AddType(types.STRUCT)
+	arg := MakeArgument(argName, "", -1).SetType(types.STRUCT)
 	// arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_STRUCT)
 	arg.Size = strct.Size
 	arg.TotalSize = strct.Size
@@ -373,7 +373,7 @@ func Slice(typeCode types.Code) *CXArgument {
 
 // Param ...
 func Param(typeCode types.Code) *CXArgument {
-	arg := MakeArgument("", "", -1).AddType(typeCode)
+	arg := MakeArgument("", "", -1).SetType(typeCode)
 	arg.IsLocalDeclaration = true
 	return arg
 }

@@ -290,7 +290,7 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 				if inpExprAtomicOpOperatorOutput.Type == types.UNDEFINED {
 					// if undefined type, then adopt argument's type
 					inpExprAtomicOpInput := prgrm.GetCXArgFromArray(inpExprAtomicOp.Inputs[0])
-					out = ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, inpExprCXLine.LineNumber).AddType(inpExprAtomicOpInput.Type)
+					out = ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, inpExprCXLine.LineNumber).SetType(inpExprAtomicOpInput.Type)
 					out.StructType = inpExprAtomicOpInput.StructType
 
 					out.Size = inpExprAtomicOpInput.Size
@@ -300,7 +300,7 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 					out.PointerTargetType = inpExprAtomicOpInput.PointerTargetType
 					out.PreviouslyDeclared = true
 				} else {
-					out = ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, inpExprCXLine.LineNumber).AddType(inpExprAtomicOpOperatorOutput.Type)
+					out = ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, inpExprCXLine.LineNumber).SetType(inpExprAtomicOpOperatorOutput.Type)
 					out.DeclarationSpecifiers = inpExprAtomicOpOperatorOutput.DeclarationSpecifiers
 
 					out.StructType = inpExprAtomicOpOperatorOutput.StructType
@@ -932,7 +932,7 @@ func lookupSymbol(prgrm *ast.CXProgram, pkgName, ident string, symbols *[]map[st
 	}
 	// Then we found a function by that name. Let's create a `cxcore.CXArgument` of
 	// type `func` with that name.
-	fnArg := ast.MakeArgument(ident, fn.FileName, fn.FileLine).AddType(types.FUNC)
+	fnArg := ast.MakeArgument(ident, fn.FileName, fn.FileLine).SetType(types.FUNC)
 	fnArg.Package = ast.CXPackageIndex(pkg.Index)
 
 	return fnArg, nil
