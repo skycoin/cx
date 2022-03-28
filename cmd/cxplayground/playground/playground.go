@@ -16,6 +16,7 @@ import (
 
 	"github.com/skycoin/cx/cxparser/actions"
 	cxparsing "github.com/skycoin/cx/cxparser/cxparsing"
+	parsingcompletor "github.com/skycoin/cx/cxparser/cxparsingcompletor"
 
 	cxinit "github.com/skycoin/cx/cx/init"
 	cxparsingcompletor "github.com/skycoin/cx/cxparser/cxparsingcompletor"
@@ -150,8 +151,9 @@ func unsafeeval(code string) (out string) {
 	os.Stdout = w
 
 	actions.LineNo = 0
-
-	actions.AST = cxinit.MakeProgram()
+	// Load op code tables
+	// Initialized cx program
+	parsingcompletor.InitCXCore()
 
 	// PassOne
 	cxpartialparsing.Program = actions.AST
