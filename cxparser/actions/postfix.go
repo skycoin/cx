@@ -293,7 +293,8 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		symName := MakeGenSym(constants.LOCAL_PREFIX)
 
 		// we associate the result of the function call to the aux variable
-		out := ast.MakeArgument(symName, lastExprCXLine.FileName, lastExprCXLine.LineNumber).SetType(opOut.Type)
+		out := ast.MakeArgument(symName, lastExprCXLine.FileName, lastExprCXLine.LineNumber)
+		out.SetType(opOut.Type)
 		out.DeclarationSpecifiers = opOut.DeclarationSpecifiers
 		out.StructType = opOut.StructType
 		out.Size = opOut.Size
@@ -310,7 +311,8 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 
 		// we need to create an expression to hold all the modifications
 		// that will take place after this if statement
-		inp := ast.MakeArgument(symName, lastExprCXLine.FileName, lastExprCXLine.LineNumber).SetType(opOut.Type)
+		inp := ast.MakeArgument(symName, lastExprCXLine.FileName, lastExprCXLine.LineNumber)
+		inp.SetType(opOut.Type)
 		inp.DeclarationSpecifiers = opOut.DeclarationSpecifiers
 		inp.StructType = opOut.StructType
 		inp.Size = opOut.Size
@@ -374,7 +376,6 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		// this way we avoid considering these arguments as module names
 
 		if cxpackages.IsDefaultPackage(prgrm.CXArgs[leftExprIdx].Name) {
-
 			//TODO: constants.ConstCodes[prgrm.CXArgs[leftExprIdx].Name+"."+ident]
 			//TODO: only play ConstCodes are used
 			//Is used for constant declaration? But only for core packages?

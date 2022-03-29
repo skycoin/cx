@@ -6,10 +6,6 @@ import (
 	"github.com/skycoin/cx/cx/types"
 )
 
-// func SelectProgram(prgrm *ast.CXProgram) {
-// 	AST = prgrm
-// }
-
 func SetCorrectArithmeticOp(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
 	if err != nil {
@@ -51,64 +47,65 @@ func hasDerefOp(arg *ast.CXArgument, spec int) bool {
 
 // This function writes those bytes to prgrm.Data
 func WritePrimary(prgrm *ast.CXProgram, typeCode types.Code, byts []byte, isSlice bool) []ast.CXExpression {
-	if pkg, err := prgrm.GetCurrentPackage(); err == nil {
-		arg := ast.MakeArgument("", CurrentFile, LineNo)
-		arg.SetType(typeCode)
-		arg.Package = ast.CXPackageIndex(pkg.Index)
-
-		size := types.Cast_int_to_ptr(len(byts))
-
-		arg.Size = typeCode.Size()
-		arg.TotalSize = size
-		arg.Offset = prgrm.Data.Size + prgrm.Data.StartsAt
-
-		if arg.Type == types.STR || arg.Type == types.AFF {
-			arg.PassBy = constants.PASSBY_REFERENCE
-			arg.Size = types.POINTER_SIZE
-			arg.TotalSize = types.POINTER_SIZE
-			if isSlice == false {
-				types.Write_ptr(byts, 0, arg.Offset)
-			}
-		}
-		argIdx := prgrm.AddCXArgInArray(arg)
-
-		// A CX program allocates min(INIT_HEAP_SIZE, MAX_HEAP_SIZE) bytes
-		// after the stack segment. These bytes are used to allocate the data segment
-		// at compile time. If the data segment is bigger than min(INIT_HEAP_SIZE, MAX_HEAP_SIZE),
-		// we'll start appending the bytes to prgrm.Memory.
-		// After compilation, we calculate how many bytes we need to add to have a heap segment
-		// equal to `minHeapSize()` that is allocated after the data segment.
-		memSize := types.Cast_int_to_ptr(len(prgrm.Memory))
-		if (size + prgrm.Data.Size + prgrm.Data.StartsAt) > memSize {
-			var i types.Pointer
-			// First we need to fill the remaining free bytes in
-			// the current `prgrm.Memory` slice.
-			for i = types.Pointer(0); i < memSize-prgrm.Data.Size+prgrm.Data.StartsAt; i++ {
-				prgrm.Memory[prgrm.Data.Size+prgrm.Data.StartsAt+i] = byts[i]
-			}
-			// Then we append the bytes that didn't fit.
-			prgrm.Memory = append(prgrm.Memory, byts[i:]...)
-		} else {
-			for i, byt := range byts {
-				prgrm.Memory[prgrm.Data.Size+prgrm.Data.StartsAt+types.Cast_int_to_ptr(i)] = byt
-			}
-		}
-		prgrm.Data.Size += size
-		prgrm.Heap.StartsAt = prgrm.Data.Size + prgrm.Data.StartsAt
-
-		// exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
-		expr := ast.MakeAtomicOperatorExpression(prgrm, nil)
-		cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
-		if err != nil {
-			panic(err)
-		}
-
-		cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
-		cxAtomicOp.AddOutput(prgrm, argIdx)
-		return []ast.CXExpression{*expr}
-	} else {
+	pkg, err := prgrm.GetCurrentPackage()
+	if err != nil {
 		panic(err)
 	}
+
+	arg := ast.MakeArgument("", CurrentFile, LineNo)
+	arg.SetType(typeCode)
+	arg.Package = ast.CXPackageIndex(pkg.Index)
+
+	size := types.Cast_int_to_ptr(len(byts))
+
+	arg.Size = typeCode.Size()
+	arg.TotalSize = size
+	arg.Offset = prgrm.Data.Size + prgrm.Data.StartsAt
+
+	if arg.Type == types.STR || arg.Type == types.AFF {
+		arg.PassBy = constants.PASSBY_REFERENCE
+		arg.Size = types.POINTER_SIZE
+		arg.TotalSize = types.POINTER_SIZE
+		if isSlice == false {
+			types.Write_ptr(byts, 0, arg.Offset)
+		}
+	}
+	argIdx := prgrm.AddCXArgInArray(arg)
+
+	// A CX program allocates min(INIT_HEAP_SIZE, MAX_HEAP_SIZE) bytes
+	// after the stack segment. These bytes are used to allocate the data segment
+	// at compile time. If the data segment is bigger than min(INIT_HEAP_SIZE, MAX_HEAP_SIZE),
+	// we'll start appending the bytes to prgrm.Memory.
+	// After compilation, we calculate how many bytes we need to add to have a heap segment
+	// equal to `minHeapSize()` that is allocated after the data segment.
+	memSize := types.Cast_int_to_ptr(len(prgrm.Memory))
+	if (size + prgrm.Data.Size + prgrm.Data.StartsAt) > memSize {
+		var i types.Pointer
+		// First we need to fill the remaining free bytes in
+		// the current `prgrm.Memory` slice.
+		for i = types.Pointer(0); i < memSize-prgrm.Data.Size+prgrm.Data.StartsAt; i++ {
+			prgrm.Memory[prgrm.Data.Size+prgrm.Data.StartsAt+i] = byts[i]
+		}
+		// Then we append the bytes that didn't fit.
+		prgrm.Memory = append(prgrm.Memory, byts[i:]...)
+	} else {
+		for i, byt := range byts {
+			prgrm.Memory[prgrm.Data.Size+prgrm.Data.StartsAt+types.Cast_int_to_ptr(i)] = byt
+		}
+	}
+	prgrm.Data.Size += size
+	prgrm.Heap.StartsAt = prgrm.Data.Size + prgrm.Data.StartsAt
+
+	// exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
+	expr := ast.MakeAtomicOperatorExpression(prgrm, nil)
+	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	if err != nil {
+		panic(err)
+	}
+
+	cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
+	cxAtomicOp.AddOutput(prgrm, argIdx)
+	return []ast.CXExpression{*expr}
 }
 
 func TotalLength(lengths []types.Pointer) types.Pointer {
@@ -116,28 +113,30 @@ func TotalLength(lengths []types.Pointer) types.Pointer {
 	for _, i := range lengths {
 		total *= i
 	}
+
 	return total
 }
 
 func StructLiteralFields(prgrm *ast.CXProgram, ident string) ast.CXExpression {
-	if pkg, err := prgrm.GetCurrentPackage(); err == nil {
-		arg := ast.MakeArgument("", CurrentFile, LineNo)
-		arg.SetType(types.IDENTIFIER)
-		arg.Name = ident
-		arg.Package = ast.CXPackageIndex(pkg.Index)
-		argIdx := prgrm.AddCXArgInArray(arg)
-
-		expr := ast.MakeAtomicOperatorExpression(prgrm, nil)
-		cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
-		if err != nil {
-			panic(err)
-		}
-		cxAtomicOp.AddOutput(prgrm, argIdx)
-		cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
-		return *expr
-	} else {
+	pkg, err := prgrm.GetCurrentPackage()
+	if err != nil {
 		panic(err)
 	}
+
+	arg := ast.MakeArgument("", CurrentFile, LineNo)
+	arg.SetType(types.IDENTIFIER)
+	arg.Name = ident
+	arg.Package = ast.CXPackageIndex(pkg.Index)
+	argIdx := prgrm.AddCXArgInArray(arg)
+
+	expr := ast.MakeAtomicOperatorExpression(prgrm, nil)
+	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	if err != nil {
+		panic(err)
+	}
+	cxAtomicOp.AddOutput(prgrm, argIdx)
+	cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
+	return *expr
 }
 
 func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile string, lineNo int) {
@@ -250,27 +249,28 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 }
 
 func PrimaryIdentifier(prgrm *ast.CXProgram, ident string) []ast.CXExpression {
-	if pkg, err := prgrm.GetCurrentPackage(); err == nil {
-		arg := ast.MakeArgument(ident, CurrentFile, LineNo) // fix: line numbers in errors sometimes report +1 or -1. Issue #195
-		arg.SetType(types.IDENTIFIER)
-		// arg.Typ = "ident"
-		arg.Name = ident
-		arg.Package = ast.CXPackageIndex(pkg.Index)
-		argIdx := prgrm.AddCXArgInArray(arg)
-
-		// exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
-		// expr := &cxcore.CXExpression{ProgramOutput: []*cxcore.CXArgument{arg}}
-		expr := ast.MakeAtomicOperatorExpression(prgrm, nil)
-		cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
-		if err != nil {
-			panic(err)
-		}
-		cxAtomicOp.AddOutput(prgrm, argIdx)
-		cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
-		return []ast.CXExpression{*expr}
-	} else {
+	pkg, err := prgrm.GetCurrentPackage()
+	if err != nil {
 		panic(err)
 	}
+
+	arg := ast.MakeArgument(ident, CurrentFile, LineNo) // fix: line numbers in errors sometimes report +1 or -1. Issue #195
+	arg.SetType(types.IDENTIFIER)
+	// arg.Typ = "ident"
+	arg.Name = ident
+	arg.Package = ast.CXPackageIndex(pkg.Index)
+	argIdx := prgrm.AddCXArgInArray(arg)
+
+	// exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
+	// expr := &cxcore.CXExpression{ProgramOutput: []*cxcore.CXArgument{arg}}
+	expr := ast.MakeAtomicOperatorExpression(prgrm, nil)
+	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	if err != nil {
+		panic(err)
+	}
+	cxAtomicOp.AddOutput(prgrm, argIdx)
+	cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
+	return []ast.CXExpression{*expr}
 }
 
 // IsAllArgsBasicTypes checks if all the input arguments in an expressions are of basic type.

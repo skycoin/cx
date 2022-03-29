@@ -132,18 +132,11 @@ func FunctionProcessParameters(prgrm *ast.CXProgram, symbols *[]map[string]*ast.
 }
 
 func FunctionDeclaration(prgrm *ast.CXProgram, fnIdx ast.CXFunctionIndex, inputs, outputs []*ast.CXArgument, exprs []ast.CXExpression) {
-	fn := prgrm.GetFunctionFromArray(fnIdx)
-
-	//var exprs []*cxcore.CXExpression = prgrm.SysInitExprs
-	FunctionAddParameters(prgrm, ast.CXFunctionIndex(fnIdx), inputs, outputs)
-
 	// getting offset to use by statements (excluding inputs, outputs and receiver)
 	var offset types.Pointer
 	//TODO: Why would the heap starting position always be incrasing?
 	//TODO: HeapStartsAt only increases, with every write?
 	//DataOffset only increases
-
-	ProcessGoTos(prgrm, ast.CXFunctionIndex(fnIdx), exprs)
 
 	// each element in the slice corresponds to a different scope
 	var symbols *[]map[string]*ast.CXArgument
@@ -154,6 +147,12 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fnIdx ast.CXFunctionIndex, inputs
 	// this variable only handles the difference between local and global scopes
 	// local being function constrained variables, and global being global variables
 	var symbolsScope map[string]bool = make(map[string]bool)
+
+	fn := prgrm.GetFunctionFromArray(fnIdx)
+
+	FunctionAddParameters(prgrm, ast.CXFunctionIndex(fnIdx), inputs, outputs)
+	ProcessGoTos(prgrm, exprs)
+	AddExprsToFunction(prgrm, ast.CXFunctionIndex(fnIdx), exprs)
 
 	FunctionProcessParameters(prgrm, symbols, &symbolsScope, &offset, fnIdx, fn.Inputs)
 	FunctionProcessParameters(prgrm, symbols, &symbolsScope, &offset, fnIdx, fn.Outputs)
@@ -182,41 +181,7 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fnIdx ast.CXFunctionIndex, inputs
 		ProcessSliceAssignment(prgrm, &expr)
 		ProcessStringAssignment(prgrm, &expr)
 		ProcessReferenceAssignment(prgrm, &expr)
-
-		// process short declaration
-		if len(exprAtomicOp.Outputs) > 0 && len(exprAtomicOp.Inputs) > 0 && prgrm.GetCXArgFromArray(exprAtomicOp.Outputs[0]).IsShortAssignmentDeclaration && !expr.IsStructLiteral() && !isParseOp(prgrm, &expr) {
-			var arg *ast.CXArgument
-
-			exprAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(fn.Expressions, i)
-			if err != nil {
-				panic(err)
-			}
-			exprAtomicOpOperator := prgrm.GetFunctionFromArray(exprAtomicOp.Operator)
-
-			exprBeforeAtomicOp, err := prgrm.GetPreviousCXAtomicOpFromExpressions(fn.Expressions, i-1)
-			if err != nil {
-				panic(err)
-			}
-
-			if expr.IsMethodCall() {
-				arg = prgrm.GetCXArgFromArray(exprAtomicOpOperator.Outputs[0])
-			} else {
-				arg = prgrm.GetCXArgFromArray(exprAtomicOp.Inputs[0])
-			}
-
-			exprBeforeAtomicOpOutput := prgrm.GetCXArgFromArray(exprBeforeAtomicOp.Outputs[0])
-			exprBeforeAtomicOpOutput.Type = arg.Type
-			exprBeforeAtomicOpOutput.PointerTargetType = arg.PointerTargetType
-			exprBeforeAtomicOpOutput.Size = arg.Size
-			exprBeforeAtomicOpOutput.TotalSize = arg.TotalSize
-
-			exprAtomicOpOutput := prgrm.GetCXArgFromArray(exprAtomicOp.Outputs[0])
-			exprAtomicOpOutput.Type = arg.Type
-			exprAtomicOpOutput.PointerTargetType = arg.PointerTargetType
-			exprAtomicOpOutput.Size = arg.Size
-			exprAtomicOpOutput.TotalSize = arg.TotalSize
-		}
-
+		ProcessShortDeclaration(prgrm, &expr, fn.Expressions, i)
 		processTestExpression(prgrm, &expr)
 
 		CheckTypes(prgrm, fn.Expressions, i)
@@ -290,12 +255,11 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 				if inpExprAtomicOpOperatorOutput.Type == types.UNDEFINED {
 					// if undefined type, then adopt argument's type
 					inpExprAtomicOpInput := prgrm.GetCXArgFromArray(inpExprAtomicOp.Inputs[0])
+
 					out = ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, inpExprCXLine.LineNumber).SetType(inpExprAtomicOpInput.Type)
 					out.StructType = inpExprAtomicOpInput.StructType
-
 					out.Size = inpExprAtomicOpInput.Size
 					out.TotalSize = ast.GetSize(prgrm, inpExprAtomicOpInput)
-
 					out.Type = inpExprAtomicOpInput.Type
 					out.PointerTargetType = inpExprAtomicOpInput.PointerTargetType
 					out.PreviouslyDeclared = true
@@ -549,8 +513,8 @@ func AddPointer(prgrm *ast.CXProgram, fn *ast.CXFunction, symIdx ast.CXArgumentI
 	// Checking if it is a pointer candidate and if it was already
 	// added to the list.
 	if len(sym.Fields) > 0 {
-		fld := prgrm.GetCXArgFromArray(sym.Fields[len(sym.Fields)-1])
-		if fld.IsPointer() && !isPointerAdded(prgrm, fn, sym) {
+		field := prgrm.GetCXArgFromArray(sym.Fields[len(sym.Fields)-1])
+		if field.IsPointer() && !isPointerAdded(prgrm, fn, sym) {
 			fn.ListOfPointers = append(fn.ListOfPointers, sym)
 		}
 	}
@@ -609,8 +573,7 @@ func ProcessLocalDeclaration(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CX
 	arg.IsLocalDeclaration = (*symbolsScope)[argPkg.Name+"."+arg.Name]
 }
 
-func ProcessGoTos(prgrm *ast.CXProgram, fnIdx ast.CXFunctionIndex, exprs []ast.CXExpression) {
-	fn := prgrm.GetFunctionFromArray(fnIdx)
+func ProcessGoTos(prgrm *ast.CXProgram, exprs []ast.CXExpression) {
 	for i, expr := range exprs {
 		cxAtomicOp, _, _, err := prgrm.GetOperation(&expr)
 		if err != nil {
@@ -638,7 +601,12 @@ func ProcessGoTos(prgrm *ast.CXProgram, fnIdx ast.CXFunctionIndex, exprs []ast.C
 				}
 			}
 		}
+	}
+}
 
+func AddExprsToFunction(prgrm *ast.CXProgram, fnIdx ast.CXFunctionIndex, exprs []ast.CXExpression) {
+	fn := prgrm.GetFunctionFromArray(fnIdx)
+	for _, expr := range exprs {
 		fn.AddExpression(prgrm, &expr)
 	}
 }
@@ -848,6 +816,41 @@ func ProcessReferenceAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 
 }
 
+func ProcessShortDeclaration(prgrm *ast.CXProgram, expr *ast.CXExpression, expressions []ast.CXExpression, idx int) {
+	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	if err != nil {
+		panic(err)
+	}
+
+	// process short declaration
+	if len(cxAtomicOp.Outputs) > 0 && len(cxAtomicOp.Inputs) > 0 && prgrm.GetCXArgFromArray(cxAtomicOp.Outputs[0]).IsShortAssignmentDeclaration && !expr.IsStructLiteral() && !isParseOp(prgrm, expr) {
+		exprAtomicOpOperator := prgrm.GetFunctionFromArray(cxAtomicOp.Operator)
+		exprBeforeAtomicOp, err := prgrm.GetPreviousCXAtomicOpFromExpressions(expressions, idx-1)
+		if err != nil {
+			panic(err)
+		}
+
+		var arg *ast.CXArgument
+		if expr.IsMethodCall() {
+			arg = prgrm.GetCXArgFromArray(exprAtomicOpOperator.Outputs[0])
+		} else {
+			arg = prgrm.GetCXArgFromArray(cxAtomicOp.Inputs[0])
+		}
+
+		exprBeforeAtomicOpOutput := prgrm.GetCXArgFromArray(exprBeforeAtomicOp.Outputs[0])
+		exprBeforeAtomicOpOutput.Type = arg.Type
+		exprBeforeAtomicOpOutput.PointerTargetType = arg.PointerTargetType
+		exprBeforeAtomicOpOutput.Size = arg.Size
+		exprBeforeAtomicOpOutput.TotalSize = arg.TotalSize
+
+		exprAtomicOpOutput := prgrm.GetCXArgFromArray(cxAtomicOp.Outputs[0])
+		exprAtomicOpOutput.Type = arg.Type
+		exprAtomicOpOutput.PointerTargetType = arg.PointerTargetType
+		exprAtomicOpOutput.Size = arg.Size
+		exprAtomicOpOutput.TotalSize = arg.TotalSize
+	}
+}
+
 func ProcessSlice(prgrm *ast.CXProgram, inpIdx ast.CXArgumentIndex) {
 	inp := prgrm.GetCXArgFromArray(inpIdx)
 
@@ -1046,8 +1049,8 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 					strct := argInp.StructType
 
 					for _, fldIdx := range inp.Fields {
-						fld := prgrm.GetCXArgFromArray(fldIdx)
-						if inFld, err := strct.GetField(fld.Name); err == nil {
+						field := prgrm.GetCXArgFromArray(fldIdx)
+						if inFld, err := strct.GetField(field.Name); err == nil {
 							if inFld.StructType != nil {
 								strct = inFld.StructType
 							}
@@ -1077,14 +1080,12 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 					}
 
 					strct := argOut.StructType
-
 					if strct == nil {
 						println(ast.CompilationError(argOut.ArgDetails.FileName, argOut.ArgDetails.FileLine), fmt.Sprintf("illegal method call or field access on identifier '%s' of primitive type '%s'", argOut.Name, argOut.Type.Name()))
 						os.Exit(constants.CX_COMPILATION_ERROR)
 					}
 
 					cxAtomicOp.Inputs = append(cxAtomicOp.Outputs[:1], cxAtomicOp.Inputs...)
-
 					cxAtomicOp.Outputs = cxAtomicOp.Outputs[:len(cxAtomicOp.Outputs)-1]
 
 					strctPkg, err := prgrm.GetPackageFromArray(strct.Package)
@@ -1149,7 +1150,7 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 
 		// checking if receiver is sent as pointer or not
 		if prgrm.GetCXArgFromArray(cxAtomicOpOperator.Inputs[0]).IsPointer() {
-			prgrm.GetCXArgFromArray(cxAtomicOp.Inputs[0]).PassBy = constants.PASSBY_REFERENCE
+			prgrm.CXArgs[cxAtomicOp.Inputs[0]].PassBy = constants.PASSBY_REFERENCE
 		}
 	}
 }
@@ -1206,8 +1207,6 @@ func ProcessTempVariable(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 func CopyArgFields(prgrm *ast.CXProgram, sym *ast.CXArgument, arg *ast.CXArgument) {
 	sym.Offset = arg.Offset
 	sym.Type = arg.Type
-
-	// sym.IndirectionLevels = arg.IndirectionLevels
 
 	if sym.ArgDetails.FileLine != arg.ArgDetails.FileLine {
 		// FIXME Maybe we can unify this later.
@@ -1290,20 +1289,19 @@ func CopyArgFields(prgrm *ast.CXProgram, sym *ast.CXArgument, arg *ast.CXArgumen
 	// Checking if it's a slice struct field. We'll do the same process as
 	// below (as in the `arg.IsSlice` check), but the process differs in the
 	// case of a slice struct field.
-	elt := sym.GetAssignmentElement(prgrm)
-
-	if (!arg.IsSlice || hasDerefOp(sym, constants.DEREF_ARRAY)) && arg.StructType != nil && elt.IsSlice && elt != sym {
-		for i, deref := range elt.DereferenceOperations {
+	assignElement := sym.GetAssignmentElement(prgrm)
+	if (!arg.IsSlice || hasDerefOp(sym, constants.DEREF_ARRAY)) && arg.StructType != nil && assignElement.IsSlice && assignElement != sym {
+		for i, deref := range assignElement.DereferenceOperations {
 			// The cxgo when reading `foo[5]` in postfix.go does not know if `foo`
 			// is a slice or an array. At this point we now know it's a slice and we need
 			// to change those dereferences to cxcore.DEREF_SLICE.
 			if deref == constants.DEREF_ARRAY {
-				elt.DereferenceOperations[i] = constants.DEREF_SLICE
+				assignElement.DereferenceOperations[i] = constants.DEREF_SLICE
 			}
 		}
 
-		if len(elt.DereferenceOperations) > 0 && elt.DereferenceOperations[0] == constants.DEREF_POINTER {
-			elt.DereferenceOperations = elt.DereferenceOperations[1:]
+		if len(assignElement.DereferenceOperations) > 0 && assignElement.DereferenceOperations[0] == constants.DEREF_POINTER {
+			assignElement.DereferenceOperations = assignElement.DereferenceOperations[1:]
 		}
 	}
 
@@ -1365,10 +1363,10 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, sym *ast.CXArgument, arg *ast.CXA
 		}
 
 		for _, fldIdx := range sym.Fields {
-			fld := prgrm.GetCXArgFromArray(fldIdx)
-			if inFld, err := strct.GetField(fld.Name); err == nil {
+			field := prgrm.GetCXArgFromArray(fldIdx)
+			if inFld, err := strct.GetField(field.Name); err == nil {
 				if inFld.StructType != nil {
-					fld.StructType = strct
+					field.StructType = strct
 					strct = inFld.StructType
 				}
 			} else {
@@ -1377,10 +1375,10 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, sym *ast.CXArgument, arg *ast.CXA
 
 				if methodIdx, methodErr := strctPkg.GetMethod(prgrm, receiverType+"."+methodName, receiverType); methodErr == nil {
 					method := prgrm.GetFunctionFromArray(methodIdx)
-					fld.Type = prgrm.GetCXArgFromArray(method.Outputs[0]).Type
-					fld.PointerTargetType = prgrm.GetCXArgFromArray(method.Outputs[0]).PointerTargetType
+					field.Type = prgrm.GetCXArgFromArray(method.Outputs[0]).Type
+					field.PointerTargetType = prgrm.GetCXArgFromArray(method.Outputs[0]).PointerTargetType
 				} else {
-					println(ast.CompilationError(fld.ArgDetails.FileName, fld.ArgDetails.FileLine), err.Error())
+					println(ast.CompilationError(field.ArgDetails.FileName, field.ArgDetails.FileLine), err.Error())
 				}
 			}
 		}
@@ -1389,54 +1387,54 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, sym *ast.CXArgument, arg *ast.CXA
 		// then we copy all the type struct fields
 		// to the respective sym.Fields
 		for _, nameFldIdx := range sym.Fields {
-			nameFld := prgrm.GetCXArgFromArray(nameFldIdx)
-			if nameFld.StructType != nil {
-				strct = nameFld.StructType
+			nameField := prgrm.GetCXArgFromArray(nameFldIdx)
+			if nameField.StructType != nil {
+				strct = nameField.StructType
 			}
 
-			for _, fld := range strct.Fields {
-				if nameFld.Name == fld.Name {
-					nameFld.Type = fld.Type
-					nameFld.Lengths = fld.Lengths
-					nameFld.Size = fld.Size
-					nameFld.TotalSize = fld.TotalSize
-					nameFld.DereferenceLevels = sym.DereferenceLevels
-					nameFld.PointerTargetType = fld.PointerTargetType
-					nameFld.StructType = fld.StructType
+			for _, field := range strct.Fields {
+				if nameField.Name == field.Name {
+					nameField.Type = field.Type
+					nameField.Lengths = field.Lengths
+					nameField.Size = field.Size
+					nameField.TotalSize = field.TotalSize
+					nameField.DereferenceLevels = sym.DereferenceLevels
+					nameField.PointerTargetType = field.PointerTargetType
+					nameField.StructType = field.StructType
 
-					sym.Lengths = fld.Lengths
+					sym.Lengths = field.Lengths
 
 					// nameFld.DeclarationSpecifiers = fld.DeclarationSpecifiers
 					// nameFld.DeclarationSpecifiers = append(fld.DeclarationSpecifiers, nameFld.DeclarationSpecifiers[1:]...)
-					if len(nameFld.DeclarationSpecifiers) > 0 {
-						nameFld.DeclarationSpecifiers = append(fld.DeclarationSpecifiers, nameFld.DeclarationSpecifiers[1:]...)
+					if len(nameField.DeclarationSpecifiers) > 0 {
+						nameField.DeclarationSpecifiers = append(field.DeclarationSpecifiers, nameField.DeclarationSpecifiers[1:]...)
 					} else {
-						nameFld.DeclarationSpecifiers = fld.DeclarationSpecifiers
+						nameField.DeclarationSpecifiers = field.DeclarationSpecifiers
 					}
 
 					// sym.DereferenceOperations = append(sym.DereferenceOperations, DEREF_FIELD)
 
-					if fld.IsSlice {
-						nameFld.DereferenceOperations = append([]int{constants.DEREF_POINTER}, nameFld.DereferenceOperations...)
-						nameFld.DereferenceLevels++
+					if field.IsSlice {
+						nameField.DereferenceOperations = append([]int{constants.DEREF_POINTER}, nameField.DereferenceOperations...)
+						nameField.DereferenceLevels++
 					}
 
-					nameFld.PassBy = fld.PassBy
-					nameFld.IsSlice = fld.IsSlice
+					nameField.PassBy = field.PassBy
+					nameField.IsSlice = field.IsSlice
 
-					if fld.Type == types.STR || fld.Type == types.AFF {
-						nameFld.PassBy = constants.PASSBY_REFERENCE
+					if field.Type == types.STR || field.Type == types.AFF {
+						nameField.PassBy = constants.PASSBY_REFERENCE
 						// nameFld.Size = cxcore.POINTER_SIZE
 						// nameFld.TotalSize = cxcore.POINTER_SIZE
 					}
 
-					if fld.StructType != nil {
-						strct = fld.StructType
+					if field.StructType != nil {
+						strct = field.StructType
 					}
 					break
 				}
 
-				nameFld.Offset += ast.GetSize(prgrm, fld)
+				nameField.Offset += ast.GetSize(prgrm, field)
 			}
 		}
 	}

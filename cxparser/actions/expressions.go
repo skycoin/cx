@@ -47,11 +47,9 @@ func IterationExpressions(prgrm *ast.CXProgram, init []ast.CXExpression, cond []
 
 	downExprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
 	downExpr := ast.MakeAtomicOperatorExpression(prgrm, jmpFn)
-	downExprAtomicOp, _, _, err := prgrm.GetOperation(downExpr)
-	if err != nil {
-		panic(err)
-	}
-	downExprAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
+	downExprAtomicOpIdx := downExpr.Index
+
+	prgrm.CXAtomicOps[downExprAtomicOpIdx].Package = ast.CXPackageIndex(pkg.Index)
 
 	lastCondAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(cond, len(cond)-1)
 	if err != nil {
@@ -66,14 +64,14 @@ func IterationExpressions(prgrm *ast.CXProgram, init []ast.CXExpression, cond []
 		predicateIdx := prgrm.AddCXArgInArray(predicate)
 
 		lastCondAtomicOp.AddOutput(prgrm, predicateIdx)
-		downExprAtomicOp.AddInput(prgrm, predicateIdx)
+		prgrm.CXAtomicOps[downExprAtomicOpIdx].AddInput(prgrm, predicateIdx)
 	} else {
 		predicate := prgrm.GetCXArgFromArray(lastCondAtomicOp.Outputs[0])
 		predicate.Package = ast.CXPackageIndex(pkg.Index)
 		predicate.PreviouslyDeclared = true
 		predicateIdx := lastCondAtomicOp.Outputs[0]
 
-		downExprAtomicOp.AddInput(prgrm, predicateIdx)
+		prgrm.CXAtomicOps[downExprAtomicOpIdx].AddInput(prgrm, predicateIdx)
 	}
 
 	thenLines := 0
@@ -81,31 +79,31 @@ func IterationExpressions(prgrm *ast.CXProgram, init []ast.CXExpression, cond []
 	elseLines := len(incr) + len(statements) + 1 + 1
 
 	// processing possible breaks
-	for i, stat := range statements {
-		if stat.IsBreak(prgrm) {
-			statAtomicOp, _, _, err := prgrm.GetOperation(&stat)
+	for i, statementExpr := range statements {
+		if statementExpr.IsBreak(prgrm) {
+			statementAtomicOp, _, _, err := prgrm.GetOperation(&statementExpr)
 			if err != nil {
 				panic(err)
 			}
 
-			statAtomicOp.ThenLines = elseLines - i - 1
+			statementAtomicOp.ThenLines = elseLines - i - 1
 		}
 	}
 
 	// processing possible continues
-	for i, stat := range statements {
-		if stat.IsContinue(prgrm) {
-			statAtomicOp, _, _, err := prgrm.GetOperation(&stat)
+	for i, statementExpr := range statements {
+		if statementExpr.IsContinue(prgrm) {
+			statementAtomicOp, _, _, err := prgrm.GetOperation(&statementExpr)
 			if err != nil {
 				panic(err)
 			}
 
-			statAtomicOp.ThenLines = len(statements) - i - 1
+			statementAtomicOp.ThenLines = len(statements) - i - 1
 		}
 	}
 
-	downExprAtomicOp.ThenLines = thenLines
-	downExprAtomicOp.ElseLines = elseLines
+	prgrm.CXAtomicOps[downExprAtomicOpIdx].ThenLines = thenLines
+	prgrm.CXAtomicOps[downExprAtomicOpIdx].ElseLines = elseLines
 
 	exprs := init
 	exprs = append(exprs, cond...)
@@ -291,16 +289,18 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 
 	if len(lastLeftExprsAtomicOp.Outputs) < 1 {
 		lastLeftExprsAtomicOpOperatorOutput := prgrm.GetCXArgFromArray(lastLeftExprsAtomicOpOperator.Outputs[0])
-		name := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).SetType(resolveTypeForUnd(prgrm, &leftExprs[len(leftExprs)-1]))
-		name.Size = lastLeftExprsAtomicOpOperatorOutput.Size
-		name.TotalSize = ast.GetSize(prgrm, lastLeftExprsAtomicOpOperatorOutput)
-		name.Type = lastLeftExprsAtomicOpOperatorOutput.Type
-		name.PointerTargetType = lastLeftExprsAtomicOpOperatorOutput.PointerTargetType
-		name.Package = ast.CXPackageIndex(pkg.Index)
-		name.PreviouslyDeclared = true
 
-		nameIdx := prgrm.AddCXArgInArray(name)
-		lastLeftExprsAtomicOp.Outputs = append(lastLeftExprsAtomicOp.Outputs, nameIdx)
+		out := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo)
+		out.SetType(resolveTypeForUnd(prgrm, &leftExprs[len(leftExprs)-1]))
+		out.Size = lastLeftExprsAtomicOpOperatorOutput.Size
+		out.TotalSize = ast.GetSize(prgrm, lastLeftExprsAtomicOpOperatorOutput)
+		out.Type = lastLeftExprsAtomicOpOperatorOutput.Type
+		out.PointerTargetType = lastLeftExprsAtomicOpOperatorOutput.PointerTargetType
+		out.Package = ast.CXPackageIndex(pkg.Index)
+		out.PreviouslyDeclared = true
+
+		outIdx := prgrm.AddCXArgInArray(out)
+		lastLeftExprsAtomicOp.Outputs = append(lastLeftExprsAtomicOp.Outputs, outIdx)
 	}
 
 	lastRightExprsAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(rightExprs, len(rightExprs)-1)
@@ -310,18 +310,19 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 	lastRightExprsAtomicOpOperator := prgrm.GetFunctionFromArray(lastRightExprsAtomicOp.Operator)
 
 	if len(lastRightExprsAtomicOp.Outputs) < 1 {
-		name := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).SetType(resolveTypeForUnd(prgrm, &rightExprs[len(rightExprs)-1]))
-
 		lastRightExprsAtomicOpOperatorOutput := prgrm.GetCXArgFromArray(lastRightExprsAtomicOpOperator.Outputs[0])
-		name.Size = lastRightExprsAtomicOpOperatorOutput.Size
-		name.TotalSize = ast.GetSize(prgrm, lastRightExprsAtomicOpOperatorOutput)
-		name.Type = lastRightExprsAtomicOpOperatorOutput.Type
-		name.PointerTargetType = lastRightExprsAtomicOpOperatorOutput.PointerTargetType
-		name.Package = ast.CXPackageIndex(pkg.Index)
-		name.PreviouslyDeclared = true
 
-		nameIdx := prgrm.AddCXArgInArray(name)
-		lastRightExprsAtomicOp.Outputs = append(lastRightExprsAtomicOp.Outputs, nameIdx)
+		out := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo)
+		out.SetType(resolveTypeForUnd(prgrm, &rightExprs[len(rightExprs)-1]))
+		out.Size = lastRightExprsAtomicOpOperatorOutput.Size
+		out.TotalSize = ast.GetSize(prgrm, lastRightExprsAtomicOpOperatorOutput)
+		out.Type = lastRightExprsAtomicOpOperatorOutput.Type
+		out.PointerTargetType = lastRightExprsAtomicOpOperatorOutput.PointerTargetType
+		out.Package = ast.CXPackageIndex(pkg.Index)
+		out.PreviouslyDeclared = true
+
+		outIdx := prgrm.AddCXArgInArray(out)
+		lastRightExprsAtomicOp.Outputs = append(lastRightExprsAtomicOp.Outputs, outIdx)
 	}
 
 	exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
@@ -386,9 +387,7 @@ func UnaryExpression(prgrm *ast.CXProgram, op string, prevExprs []ast.CXExpressi
 	case "*":
 		exprOut.DereferenceLevels++
 		exprOut.DereferenceOperations = append(exprOut.DereferenceOperations, constants.DEREF_POINTER)
-
 		exprOut.DeclarationSpecifiers = append(exprOut.DeclarationSpecifiers, constants.DECL_DEREF)
-		// exprOut.IsReference = false
 	case "&":
 		baseOut.PassBy = constants.PASSBY_REFERENCE
 		exprOut.DeclarationSpecifiers = append(exprOut.DeclarationSpecifiers, constants.DECL_POINTER)

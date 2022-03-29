@@ -63,7 +63,6 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 			offExprAtomicOpOutput := prgrm.GetCXArgFromArray(offExprAtomicOp.Outputs[0])
 			prgrm.CXArgs[glblIdx].Offset = offExprAtomicOpOutput.Offset
 			prgrm.CXArgs[glblIdx].PassBy = offExprAtomicOpOutput.PassBy
-			// prgrm.CXArgs[glblIdx].Package = offExpr[0].ProgramOutput[0].Package
 		}
 
 		// Checking if something is supposed to be initialized
@@ -191,7 +190,6 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 				declSpecIdx := prgrm.AddCXArgInArray(declaration_specifiers)
 
 				if initializer[len(initializer)-1].IsStructLiteral() {
-
 					index := prgrm.AddCXAtomicOp(&ast.CXAtomicOperator{Outputs: []ast.CXArgumentIndex{declSpecIdx}, Operator: -1, Function: -1})
 					initializer = StructLiteralAssignment(prgrm,
 						[]ast.CXExpression{
@@ -212,9 +210,6 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 				prgrm.SysInitExprs = append(prgrm.SysInitExprs, initializer...)
 			}
 		} else {
-			// offExpr := WritePrimary(declaration_specifiers.Type, make([]byte, declaration_specifiers.Size), false)
-			// exprOut := expr[0].ProgramOutput[0]
-
 			offExprAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(offExpr, 0)
 			if err != nil {
 				panic(err)
@@ -394,8 +389,8 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 		// THEN it's a literal, e.g. var foo i32 = 10;
 		// ELSE it's an expression with an operator
 		if initializerAtomicOpOperator == nil {
-
 			exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
+
 			// we need to create an expression that links the initializer expressions
 			// with the declared variable
 			expr := ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_IDENTITY])
@@ -566,7 +561,6 @@ func DeclarationSpecifiersStruct(prgrm *ast.CXProgram, ident string, pkgName str
 		arg.StructType = strct
 		arg.Size = strct.Size
 		arg.TotalSize = strct.Size
-
 		arg.Package = ast.CXPackageIndex(pkg.Index)
 		arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_STRUCT)
 

@@ -16,26 +16,26 @@ func assignStructLiteralFields(prgrm *ast.CXProgram, to []ast.CXExpression, from
 		panic(err)
 	}
 
-	for _, f := range from {
-		if f.Type == ast.CX_LINE {
+	for _, expr := range from {
+		if expr.Type == ast.CX_LINE {
 			continue
 		}
-		cxAtomicOp, _, _, err := prgrm.GetOperation(&f)
+		cxAtomicOp, _, _, err := prgrm.GetOperation(&expr)
 		if err != nil {
 			panic(err)
 		}
 
-		cxAtomicOpOutput := prgrm.GetCXArgFromArray(cxAtomicOp.Outputs[0])
-		cxAtomicOpOutput.Name = name
+		cxAtomicOpOutputIdx := cxAtomicOp.Outputs[0]
+		prgrm.CXArgs[cxAtomicOpOutputIdx].Name = name
 
 		toCXAtomicOpOutput := prgrm.GetCXArgFromArray(toCXAtomicOp.Outputs[0])
 		if len(toCXAtomicOpOutput.Indexes) > 0 {
-			cxAtomicOpOutput.Lengths = toCXAtomicOpOutput.Lengths
-			cxAtomicOpOutput.Indexes = toCXAtomicOpOutput.Indexes
-			cxAtomicOpOutput.DereferenceOperations = append(cxAtomicOpOutput.DereferenceOperations, constants.DEREF_ARRAY)
+			prgrm.CXArgs[cxAtomicOpOutputIdx].Lengths = toCXAtomicOpOutput.Lengths
+			prgrm.CXArgs[cxAtomicOpOutputIdx].Indexes = toCXAtomicOpOutput.Indexes
+			prgrm.CXArgs[cxAtomicOpOutputIdx].DereferenceOperations = append(prgrm.CXArgs[cxAtomicOpOutputIdx].DereferenceOperations, constants.DEREF_ARRAY)
 		}
 
-		cxAtomicOpOutput.DereferenceOperations = append(cxAtomicOpOutput.DereferenceOperations, constants.DEREF_FIELD)
+		prgrm.CXArgs[cxAtomicOpOutputIdx].DereferenceOperations = append(prgrm.CXArgs[cxAtomicOpOutputIdx].DereferenceOperations, constants.DEREF_FIELD)
 	}
 
 	return from
@@ -65,13 +65,14 @@ func StructLiteralAssignment(prgrm *ast.CXProgram, to []ast.CXExpression, from [
 	} else {
 		// And we also need an auxiliary variable to point to,
 		// otherwise we'd be trying to assign the fields to a nil value.
-		fOut := prgrm.GetCXArgFromArray(lastFromAtomicOp.Outputs[0])
+		outField := prgrm.GetCXArgFromArray(lastFromAtomicOp.Outputs[0])
 		auxName := MakeGenSym(constants.LOCAL_PREFIX)
-		aux := ast.MakeArgument(auxName, lastFromCXLine.FileName, lastFromCXLine.LineNumber).SetType(fOut.Type)
+		aux := ast.MakeArgument(auxName, lastFromCXLine.FileName, lastFromCXLine.LineNumber)
+		aux.SetType(outField.Type)
 		aux.DeclarationSpecifiers = append(aux.DeclarationSpecifiers, constants.DECL_POINTER)
-		aux.StructType = fOut.StructType
-		aux.Size = fOut.Size
-		aux.TotalSize = fOut.TotalSize
+		aux.StructType = outField.StructType
+		aux.Size = outField.Size
+		aux.TotalSize = outField.TotalSize
 		aux.PreviouslyDeclared = true
 		aux.Package = lastFromAtomicOp.Package
 		auxIdx := prgrm.AddCXArgInArray(aux)
@@ -114,8 +115,8 @@ func ArrayLiteralAssignment(prgrm *ast.CXProgram, to []ast.CXExpression, from []
 		panic(err)
 	}
 
-	for _, f := range from {
-		cxAtomicOp, _, _, err := prgrm.GetOperation(&f)
+	for _, expr := range from {
+		cxAtomicOp, _, _, err := prgrm.GetOperation(&expr)
 		if err != nil {
 			panic(err)
 		}
@@ -310,7 +311,6 @@ func Assignment(prgrm *ast.CXProgram, to []ast.CXExpression, assignOp string, fr
 	}
 
 	if fromCXAtomicOpOperator == nil {
-
 		opIdx := prgrm.AddNativeFunctionInArray(ast.Natives[constants.OP_IDENTITY])
 		prgrm.CXAtomicOps[fromCXAtomicOpIdx].Operator = opIdx
 
