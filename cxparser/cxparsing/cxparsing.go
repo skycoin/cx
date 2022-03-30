@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"io"
 	"os"
-	"regexp"
 
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
@@ -33,8 +32,6 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 	//local
 	cxpartialparsing.Program = actions.AST
 
-	reMultiComment := regexp.MustCompile(`/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+/`)
-	reSingleComment := regexp.MustCompile(`//.*`)
 	/*
 		Copy the contents of the file pointers containing the CX source
 		code into sourceCodeStrings
@@ -43,7 +40,7 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 	for i, source := range sourceCode {
 		tmp := bytes.NewBuffer(nil)
 		io.Copy(tmp, source)
-		sourceCodeStrings[i] = string(reSingleComment.ReplaceAll(reMultiComment.ReplaceAll(tmp.Bytes(), []byte("")),[]byte("") )[:])
+		sourceCodeStrings[i] = tmp.String()
 	}
 
 	/*
