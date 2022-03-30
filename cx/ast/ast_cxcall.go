@@ -38,14 +38,14 @@ func popStack(prgrm *CXProgram, call *CXCall) error {
 
 	lenOuts := len(cxAtomicOp.Outputs)
 	for i, outIdx := range call.Operator.Outputs {
-		out := prgrm.GetCXArgFromArray(outIdx)
 		// Continuing if there is no receiving variable available.
 		if i >= lenOuts {
 			continue
 		}
+		out := prgrm.GetCXArgFromArray(outIdx)
 
-		types.WriteSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, returnFP, cxAtomicOp.Outputs[i]),
-			types.GetSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, fp, out), GetSize(out)))
+		types.WriteSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, returnFP, prgrm.GetCXArgFromArray(cxAtomicOp.Outputs[i])),
+			types.GetSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, fp, out), GetSize(prgrm, out)))
 	}
 
 	// return the stack pointer to its previous state
@@ -65,9 +65,9 @@ func wipeDeclarationMemory(prgrm *CXProgram, expr *CXExpression) error {
 
 	newCall := &prgrm.CallStack[prgrm.CallCounter]
 	newFP := newCall.FramePointer
-	size := GetSize(cxAtomicOp.Outputs[0])
+	size := GetSize(prgrm, prgrm.GetCXArgFromArray(cxAtomicOp.Outputs[0]))
 	for c := types.Pointer(0); c < size; c++ {
-		prgrm.Memory[newFP+cxAtomicOp.Outputs[0].Offset+c] = 0
+		prgrm.Memory[newFP+prgrm.GetCXArgFromArray(cxAtomicOp.Outputs[0]).Offset+c] = 0
 	}
 
 	return nil
@@ -79,10 +79,13 @@ func processBuiltInOperators(prgrm *CXProgram, expr *CXExpression, globalInputs 
 		return err
 	}
 
-	if IsOperator(cxAtomicOp.Operator.AtomicOPCode) {
+	cxAtomicOpOperator := prgrm.GetFunctionFromArray(cxAtomicOp.Operator)
+	if IsOperator(cxAtomicOpOperator.AtomicOPCode) {
 		// TODO: resolve this at compile time
-		atomicType := cxAtomicOp.Inputs[0].GetType()
-		cxAtomicOp.Operator = GetTypedOperator(atomicType, cxAtomicOp.Operator.AtomicOPCode)
+		atomicType := prgrm.GetCXArgFromArray(cxAtomicOp.Inputs[0]).GetType(prgrm)
+		opIdx := prgrm.AddNativeFunctionInArray(GetTypedOperator(atomicType, cxAtomicOpOperator.AtomicOPCode))
+		op := prgrm.GetFunctionFromArray(opIdx)
+		cxAtomicOpOperator = op
 	}
 	inputs := cxAtomicOp.Inputs
 	inputCount := len(inputs)
@@ -100,7 +103,7 @@ func processBuiltInOperators(prgrm *CXProgram, expr *CXExpression, globalInputs 
 
 	argIndex := 0
 	for inputIndex := 0; inputIndex < inputCount; inputIndex++ {
-		input := inputs[inputIndex]
+		input := prgrm.GetCXArgFromArray(inputs[inputIndex])
 		offset := GetFinalOffset(prgrm, fp, input)
 		value := &inputValues[inputIndex]
 		value.Arg = input
@@ -115,7 +118,7 @@ func processBuiltInOperators(prgrm *CXProgram, expr *CXExpression, globalInputs 
 	}
 
 	for outputIndex := 0; outputIndex < outputCount; outputIndex++ {
-		output := outputs[outputIndex]
+		output := prgrm.GetCXArgFromArray(outputs[outputIndex])
 		offset := GetFinalOffset(prgrm, fp, output)
 		value := &outputValues[outputIndex]
 		value.Arg = output
@@ -129,7 +132,7 @@ func processBuiltInOperators(prgrm *CXProgram, expr *CXExpression, globalInputs 
 		argIndex++
 	}
 
-	OpcodeHandlers[cxAtomicOp.Operator.AtomicOPCode](prgrm, inputValues, outputValues)
+	OpcodeHandlers[cxAtomicOpOperator.AtomicOPCode](prgrm, inputValues, outputValues)
 
 	return nil
 }
@@ -140,6 +143,7 @@ func processNonAtomicOperators(prgrm *CXProgram, expr *CXExpression, fp types.Po
 		return err
 	}
 
+	cxAtomicOpOperator := prgrm.GetFunctionFromArray(cxAtomicOp.Operator)
 	//TODO: Is this only called for user defined functions?
 	/*
 	   It was not a native, so we need to create another call
@@ -153,7 +157,7 @@ func processNonAtomicOperators(prgrm *CXProgram, expr *CXExpression, fp types.Po
 
 	newCall := &prgrm.CallStack[prgrm.CallCounter]
 	// setting the new call
-	newCall.Operator = cxAtomicOp.Operator
+	newCall.Operator = cxAtomicOpOperator
 	newCall.Line = 0
 	newCall.FramePointer = prgrm.Stack.Pointer
 	// the stack pointer is moved to create room for the next call
@@ -167,11 +171,12 @@ func processNonAtomicOperators(prgrm *CXProgram, expr *CXExpression, fp types.Po
 
 	newFP := newCall.FramePointer
 	// wiping next stack frame (removing garbage)
-	for c := types.Pointer(0); c < cxAtomicOp.Operator.Size; c++ {
+	for c := types.Pointer(0); c < cxAtomicOpOperator.Size; c++ {
 		prgrm.Memory[newFP+c] = 0
 	}
 
-	for i, inp := range cxAtomicOp.Inputs {
+	for i, inpIdx := range cxAtomicOp.Inputs {
+		inp := prgrm.GetCXArgFromArray(inpIdx)
 		var byts []byte
 
 		finalOffset := GetFinalOffset(prgrm, fp, inp)
@@ -187,7 +192,7 @@ func processNonAtomicOperators(prgrm *CXProgram, expr *CXExpression, fp types.Po
 			types.Write_ptr(finalOffsetB[:], 0, finalOffset)
 			byts = finalOffsetB[:]
 		} else {
-			size := GetSize(inp)
+			size := GetSize(prgrm, inp)
 			byts = prgrm.Memory[finalOffset : finalOffset+size]
 		}
 
@@ -234,10 +239,10 @@ func (call *CXCall) Call(prgrm *CXProgram, globalInputs *[]CXValue, globalOutput
 	if err != nil {
 		return err
 	}
-
+	cxAtomicOpOperator := prgrm.GetFunctionFromArray(cxAtomicOp.Operator)
 	// if it's a native, then we just process the arguments with execNative
 	//TODO: WHEN WOULD OPERATOR EVER BE NIL?
-	if cxAtomicOp.Operator == nil {
+	if cxAtomicOpOperator == nil {
 		// then it's a declaration
 		// wiping this declaration's memory (removing garbage)
 		err := wipeDeclarationMemory(prgrm, &expr)
@@ -246,7 +251,7 @@ func (call *CXCall) Call(prgrm *CXProgram, globalInputs *[]CXValue, globalOutput
 		}
 
 		call.Line++
-	} else if cxAtomicOp.Operator.IsBuiltIn() {
+	} else if cxAtomicOpOperator.IsBuiltIn() {
 		//TODO: SLICES ARE NON ATOMIC
 		err := processBuiltInOperators(prgrm, &expr, globalInputs, globalOutputs, fp)
 		if err != nil {

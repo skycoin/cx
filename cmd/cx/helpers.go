@@ -16,6 +16,7 @@ import (
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/globals"
+	cxinit "github.com/skycoin/cx/cx/init"
 	"github.com/skycoin/cx/cx/util"
 	"github.com/skycoin/cx/cxparser/actions"
 	cxparsering "github.com/skycoin/cx/cxparser/cxparsing"
@@ -35,40 +36,16 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 	defer profiling.StopProfile("parse")
 
 	if actions.AST == nil {
-		actions.AST = ast.MakeProgram()
+		actions.AST = cxinit.MakeProgram()
 	}
-
-	//corePkgsPrgrm, err := cxcore.GetCurrentCxProgram()
-	var corePkgsPrgrm *ast.CXProgram = ast.PROGRAM
-
-	if corePkgsPrgrm == nil {
-		panic("CxProgram is nil")
-	}
-	actions.AST.Packages = corePkgsPrgrm.Packages
-
-	// var bcPrgrm *CXProgram
-	//var sPrgrm []byte
-	// In case of a CX chain, we need to temporarily store the blockchain code heap elsewhere,
-	// so we can then add it after the transaction code's data segment.
-	//var bcHeap []byte
 
 	// Parsing all the source code files sent as CLI arguments to CX.
 	cxparsing.ParseSourceCode(sourceCode, fileNames)
 
-	//remove path variable, not used
-	// setting project's working directory
-	//if !options.replMode && len(sourceCode) > 0 {
-	//cxgo0.PRGRM0.Path = determineWorkDir(sourceCode[0].Name())
-	//}
-
-	//globals.CxProgramPath = determineWorkDir(sourceCode[0].Name())
-	//globals2.SetWorkingDir(sourceCode[0].Name())
-
 	// Checking if a main package exists. If not, create and add it to `AST`.
 	if _, err := actions.AST.GetFunction(constants.MAIN_FUNC, constants.MAIN_PKG); err != nil {
-		panic(fmt.Sprintf("error getting function: %v", err))
+		initMainPkg(actions.AST)
 	}
-	initMainPkg(actions.AST)
 
 	// Setting what function to start in if using the REPL.
 	repl.ReplTargetFn = constants.MAIN_FUNC
@@ -95,9 +72,13 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 // initMainPkg adds a `main` package with an empty `main` function to `prgrm`.
 func initMainPkg(prgrm *ast.CXProgram) {
 	mod := ast.MakePackage(constants.MAIN_PKG)
+	modIdx := prgrm.AddPackage(mod)
+	modPkg, err := prgrm.GetPackageFromArray(modIdx)
+	if err != nil {
+		panic(err)
+	}
 	fn := ast.MakeFunction(constants.MAIN_FUNC, actions.CurrentFile, actions.LineNo)
-	mod.AddFunction(prgrm, fn)
-	prgrm.AddPackage(mod)
+	modPkg.AddFunction(prgrm, fn)
 }
 
 // optionTokenize checks if the user wants to use CX to generate the lexer tokens

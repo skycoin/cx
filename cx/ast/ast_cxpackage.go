@@ -27,10 +27,7 @@ type CXPackage struct {
 // Only Used by Affordances in op_aff.go
 func (pkg *CXPackage) GetFunction(prgrm *CXProgram, fnName string) (*CXFunction, error) {
 	if fnIdx, ok := pkg.Functions[fnName]; ok {
-		fn, err := prgrm.GetFunctionFromArray(fnIdx)
-		if err != nil {
-			return fn, err
-		}
+		fn := prgrm.GetFunctionFromArray(fnIdx)
 
 		return fn, nil
 	}
@@ -43,10 +40,7 @@ func (pkg *CXPackage) GetFunction(prgrm *CXProgram, fnName string) (*CXFunction,
 		}
 
 		if fnIdx, ok := imp.Functions[fnName]; ok {
-			fn, err := prgrm.GetFunctionFromArray(fnIdx)
-			if err != nil {
-				return fn, err
-			}
+			fn := prgrm.GetFunctionFromArray(fnIdx)
 
 			return fn, nil
 		}
@@ -69,26 +63,24 @@ func (pkg *CXPackage) GetImport(prgrm *CXProgram, impName string) (*CXPackage, e
 }
 
 // GetMethod ...
-func (pkg *CXPackage) GetMethod(prgrm *CXProgram, fnName string, receiverType string) (*CXFunction, error) {
+func (pkg *CXPackage) GetMethod(prgrm *CXProgram, fnName string, receiverType string) (CXFunctionIndex, error) {
 	if fnIdx, ok := pkg.Functions[fnName]; ok {
-		fn, err := prgrm.GetFunctionFromArray(fnIdx)
-		if err != nil {
-			return fn, err
-		}
+		fn := prgrm.GetFunctionFromArray(fnIdx)
 
 		fnInput := prgrm.GetCXArgFromArray(fn.Inputs[0])
 		if len(fn.Inputs) > 0 && fnInput.StructType != nil && fnInput.StructType.Name == receiverType {
-			return fn, nil
+			return fnIdx, nil
 		}
 	}
 
 	// Trying to find it in `Natives`.
 	// Most likely a method from a core package.
 	if opCode, found := OpCodes[pkg.Name+"."+fnName]; found {
-		return Natives[opCode], nil
+		opFnIdx := prgrm.AddNativeFunctionInArray(Natives[opCode])
+		return opFnIdx, nil
 	}
 
-	return nil, fmt.Errorf("method '%s' not found in package '%s'", fnName, pkg.Name)
+	return -1, fmt.Errorf("method '%s' not found in package '%s'", fnName, pkg.Name)
 }
 
 // GetStruct ...
@@ -136,7 +128,7 @@ func (pkg *CXPackage) GetCurrentFunction(prgrm *CXProgram) (*CXFunction, error) 
 		return nil, errors.New("current function is nil")
 	}
 
-	return prgrm.GetFunctionFromArray(pkg.CurrentFunction)
+	return prgrm.GetFunctionFromArray(pkg.CurrentFunction), nil
 }
 
 // ----------------------------------------------------------------
@@ -151,7 +143,7 @@ func (pkg *CXPackage) SelectFunction(prgrm *CXProgram, name string) (*CXFunction
 	idx := pkg.Functions[name]
 	pkg.CurrentFunction = idx
 
-	return prgrm.GetFunctionFromArray(idx)
+	return prgrm.GetFunctionFromArray(idx), nil
 }
 
 // MakePackage creates a new empty CXPackage.
@@ -203,11 +195,11 @@ func (pkg *CXPackage) RemoveImport(impName string) {
 
 // AddFunction ...
 func (pkg *CXPackage) AddFunction(prgrm *CXProgram, fn *CXFunction) (*CXPackage, CXFunctionIndex) {
-	fn.Package = CXPackageIndex(pkg.Index)
-
 	if _, ok := pkg.Functions[fn.Name]; ok {
 		println(CompilationError(fn.FileName, fn.FileLine), "function redeclaration")
 	}
+
+	fn.Package = CXPackageIndex(pkg.Index)
 
 	fnIdx := prgrm.AddFunctionInArray(fn)
 	pkg.Functions[fn.Name] = fnIdx
@@ -243,21 +235,17 @@ func (pkg *CXPackage) RemoveStruct(strctName string) {
 }
 
 // AddGlobal ...
-func (pkg *CXPackage) AddGlobal(prgrm *CXProgram, def *CXArgument) *CXPackage {
-	def.Package = CXPackageIndex(pkg.Index)
-	found := false
-	for i, dfIdx := range pkg.Globals {
+func (pkg *CXPackage) AddGlobal(prgrm *CXProgram, defIdx CXArgumentIndex) *CXPackage {
+	defArg := prgrm.GetCXArgFromArray(defIdx)
+	defArg.Package = CXPackageIndex(pkg.Index)
+	for _, dfIdx := range pkg.Globals {
 		df := prgrm.GetCXArg(dfIdx)
-		if df.Name == def.Name {
-			prgrm.CXArgs[pkg.Globals[i]] = *def
-			found = true
-			break
+		if df.Name == defArg.Name {
+			return pkg
 		}
 	}
-	if !found {
-		defIdx := prgrm.AddCXArg(def)
-		pkg.Globals = append(pkg.Globals, CXArgumentIndex(defIdx))
-	}
+
+	pkg.Globals = append(pkg.Globals, defIdx)
 
 	return pkg
 }

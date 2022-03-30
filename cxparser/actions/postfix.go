@@ -6,8 +6,8 @@ import (
 
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
+	cxpackages "github.com/skycoin/cx/cx/packages"
 	"github.com/skycoin/cx/cx/types"
-	constants2 "github.com/skycoin/cx/cxparser/constants"
 )
 
 // PostfixExpressionArray...
@@ -19,14 +19,15 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 	if err != nil {
 		panic(err)
 	}
+	prevExprAtomicOpOperator := prgrm.GetFunctionFromArray(prevExprAtomicOp.Operator)
 
 	prevExprCXLine, _ := prgrm.GetPreviousCXLine(prevExprs, len(prevExprs)-1)
 
-	if prevExprAtomicOp.Operator != nil && len(prevExprAtomicOp.Outputs) == 0 {
+	if prevExprAtomicOpOperator != nil && len(prevExprAtomicOp.Outputs) == 0 {
 		genName := MakeGenSym(constants.LOCAL_PREFIX)
 
-		prevExprAtomicOpOperatorOutput := prgrm.GetCXArgFromArray(prevExprAtomicOp.Operator.Outputs[0])
-		out := ast.MakeArgument(genName, prevExprCXLine.FileName, prevExprCXLine.LineNumber-1).AddType(prevExprAtomicOpOperatorOutput.Type)
+		prevExprAtomicOpOperatorOutput := prgrm.GetCXArgFromArray(prevExprAtomicOpOperator.Outputs[0])
+		out := ast.MakeArgument(genName, prevExprCXLine.FileName, prevExprCXLine.LineNumber-1).SetType(prevExprAtomicOpOperatorOutput.Type)
 
 		out.DeclarationSpecifiers = prevExprAtomicOpOperatorOutput.DeclarationSpecifiers
 		out.StructType = prevExprAtomicOpOperatorOutput.StructType
@@ -35,10 +36,11 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		out.Lengths = prevExprAtomicOpOperatorOutput.Lengths
 		out.IsSlice = prevExprAtomicOpOperatorOutput.IsSlice
 		out.PreviouslyDeclared = true
+		outIdx := prgrm.AddCXArgInArray(out)
 
-		prevExprAtomicOp.AddOutput(out)
+		prevExprAtomicOp.AddOutput(prgrm, outIdx)
 
-		inp := ast.MakeArgument(genName, prevExprCXLine.FileName, prevExprCXLine.LineNumber).AddType(prevExprAtomicOpOperatorOutput.Type)
+		inp := ast.MakeArgument(genName, prevExprCXLine.FileName, prevExprCXLine.LineNumber).SetType(prevExprAtomicOpOperatorOutput.Type)
 
 		inp.DeclarationSpecifiers = prevExprAtomicOpOperatorOutput.DeclarationSpecifiers
 		inp.StructType = prevExprAtomicOpOperatorOutput.StructType
@@ -47,6 +49,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		inp.Lengths = prevExprAtomicOpOperatorOutput.Lengths
 		inp.IsSlice = prevExprAtomicOpOperatorOutput.IsSlice
 		inp.PreviouslyDeclared = true
+		inpIdx := prgrm.AddCXArgInArray(inp)
 
 		useExprCXLine := ast.MakeCXLineExpression(prgrm, prevExprCXLine.FileName, prevExprCXLine.LineNumber, prevExprCXLine.LineStr)
 		useExpr := ast.MakeAtomicOperatorExpression(prgrm, nil)
@@ -56,7 +59,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		}
 
 		useExprAtomicOp.Package = prevExprAtomicOp.Package
-		useExprAtomicOp.AddOutput(inp)
+		useExprAtomicOp.AddOutput(prgrm, inpIdx)
 		prevExprs = append(prevExprs, *useExprCXLine, *useExpr)
 	}
 
@@ -65,10 +68,10 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		panic(err)
 	}
 
-	if len(prevExpr2AtomicOp.Outputs[0].Fields) > 0 {
-		elt = prevExpr2AtomicOp.Outputs[0].Fields[len(prevExpr2AtomicOp.Outputs[0].Fields)-1]
+	if len(prgrm.GetCXArgFromArray(prevExpr2AtomicOp.Outputs[0]).Fields) > 0 {
+		elt = prgrm.GetCXArgFromArray(prgrm.GetCXArgFromArray(prevExpr2AtomicOp.Outputs[0]).Fields[len(prgrm.GetCXArgFromArray(prevExpr2AtomicOp.Outputs[0]).Fields)-1])
 	} else {
-		elt = prevExpr2AtomicOp.Outputs[0]
+		elt = prgrm.GetCXArgFromArray(prevExpr2AtomicOp.Outputs[0])
 	}
 
 	// elt.IsArray = false
@@ -79,44 +82,50 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 	if err != nil {
 		panic(err)
 	}
+	postExprsAtomicOpOperator := prgrm.GetFunctionFromArray(postExprsAtomicOp.Operator)
 
-	if len(prevExpr2AtomicOp.Outputs[0].Fields) > 0 {
-		fld := prevExpr2AtomicOp.Outputs[0].Fields[len(prevExpr2AtomicOp.Outputs[0].Fields)-1]
+	if len(prgrm.GetCXArgFromArray(prevExpr2AtomicOp.Outputs[0]).Fields) > 0 {
+		fldIdx := prgrm.GetCXArgFromArray(prevExpr2AtomicOp.Outputs[0]).Fields[len(prgrm.GetCXArgFromArray(prevExpr2AtomicOp.Outputs[0]).Fields)-1]
 
-		if postExprsAtomicOp.Operator == nil {
+		if postExprsAtomicOpOperator == nil {
 			// expr.AddInput(postExprs[len(postExprs)-1].ProgramOutput[0])
-			fld.Indexes = append(fld.Indexes, postExprsAtomicOp.Outputs[0])
+			indexIdx := postExprsAtomicOp.Outputs[0]
+			prgrm.CXArgs[fldIdx].Indexes = append(prgrm.CXArgs[fldIdx].Indexes, indexIdx)
 		} else {
-			sym := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(prgrm.GetCXArgFromArray(postExprsAtomicOp.Operator.Outputs[0]).Type)
+			sym := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).SetType(prgrm.GetCXArgFromArray(postExprsAtomicOpOperator.Outputs[0]).Type)
 			sym.Package = postExprsAtomicOp.Package
 			sym.PreviouslyDeclared = true
-			postExprsAtomicOp.AddOutput(sym)
+			symIdx := prgrm.AddCXArgInArray(sym)
+			postExprsAtomicOp.AddOutput(prgrm, symIdx)
 
 			prevExprs = append(postExprs, prevExprs...)
 
-			fld.Indexes = append(fld.Indexes, sym)
-			// expr.AddInput(sym)
+			prgrm.CXArgs[fldIdx].Indexes = append(prgrm.CXArgs[fldIdx].Indexes, symIdx)
 		}
 	} else {
 		if len(postExprsAtomicOp.Outputs) < 1 {
 			// then it's an expression (e.g. i32.add(0, 0))
 			// we create a gensym for it
-			idxSym := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).AddType(prgrm.GetCXArgFromArray(postExprsAtomicOp.Operator.Outputs[0]).Type)
-			idxSym.Size = prgrm.GetCXArgFromArray(postExprsAtomicOp.Operator.Outputs[0]).Size
-			idxSym.TotalSize = ast.GetSize(prgrm.GetCXArgFromArray(postExprsAtomicOp.Operator.Outputs[0]))
+			idxSym := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).SetType(prgrm.GetCXArgFromArray(postExprsAtomicOpOperator.Outputs[0]).Type)
+			idxSym.Size = prgrm.GetCXArgFromArray(postExprsAtomicOpOperator.Outputs[0]).Size
+			idxSym.TotalSize = ast.GetSize(prgrm, prgrm.GetCXArgFromArray(postExprsAtomicOpOperator.Outputs[0]))
 
 			idxSym.Package = postExprsAtomicOp.Package
 			idxSym.PreviouslyDeclared = true
-			postExprsAtomicOp.Outputs = append(postExprsAtomicOp.Outputs, idxSym)
 
-			prevExpr2AtomicOp.Outputs[0].Indexes = append(prevExpr2AtomicOp.Outputs[0].Indexes, idxSym)
+			idxSymIdx := prgrm.AddCXArgInArray(idxSym)
+			postExprsAtomicOp.Outputs = append(postExprsAtomicOp.Outputs, idxSymIdx)
+
+			prevExpr2AtomicOpOutput := prgrm.GetCXArgFromArray(prevExpr2AtomicOp.Outputs[0])
+			prevExpr2AtomicOpOutput.Indexes = append(prevExpr2AtomicOpOutput.Indexes, idxSymIdx)
 
 			// we push the index expression
 			prevExprs = append(postExprs, prevExprs...)
 		} else {
 			prevOuts := prevExpr2AtomicOp.Outputs
 			postOuts := postExprsAtomicOp.Outputs
-			prevOuts[0].Indexes = append(prevOuts[0].Indexes, postOuts[0])
+			prevOut := prgrm.GetCXArgFromArray(prevOuts[0])
+			prevOut.Indexes = append(prevOut.Indexes, postOuts[0])
 		}
 	}
 
@@ -153,13 +162,14 @@ func PostfixExpressionEmptyFunCall(prgrm *ast.CXProgram, prevExprs []ast.CXExpre
 	if err != nil {
 		panic(err)
 	}
+	prevExprsAtomicOpOperator := prgrm.GetFunctionFromArray(prevExprsAtomicOp.Operator)
 
 	firstPrevExprsAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(prevExprs, 0)
 	if err != nil {
 		panic(err)
 	}
 
-	if prevExprsAtomicOp.Outputs != nil && len(prevExprsAtomicOp.Outputs[0].Fields) > 0 {
+	if prevExprsAtomicOp.Outputs != nil && len(prgrm.GetCXArgFromArray(prevExprsAtomicOp.Outputs[0]).Fields) > 0 {
 		// then it's a method call or function in field
 		// prevExprs[len(prevExprs) - 1].IsMethodCall = true
 		// expr.IsMethodCall = true
@@ -171,13 +181,14 @@ func PostfixExpressionEmptyFunCall(prgrm *ast.CXProgram, prevExprs []ast.CXExpre
 		// inp.StructType = expr.ProgramOutput[0].StructType
 		// expr.ProgramInput = append(expr.ProgramInput, inp)
 
-	} else if prevExprsAtomicOp.Operator == nil {
-		if opCode, ok := ast.OpCodes[prevExprsAtomicOp.Outputs[0].Name]; ok {
+	} else if prevExprsAtomicOpOperator == nil {
+		if opCode, ok := ast.OpCodes[prgrm.GetCXArgFromArray(prevExprsAtomicOp.Outputs[0]).Name]; ok {
 			if pkg, err := prgrm.GetCurrentPackage(); err == nil {
 				firstPrevExprsAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
 			}
 			firstPrevExprsAtomicOp.Outputs = nil
-			firstPrevExprsAtomicOp.Operator = ast.Natives[opCode]
+			opIdx := prgrm.AddNativeFunctionInArray(ast.Natives[opCode])
+			firstPrevExprsAtomicOp.Operator = opIdx
 		}
 
 		firstPrevExprsAtomicOp.Inputs = nil
@@ -191,23 +202,24 @@ func PostfixExpressionFunCall(prgrm *ast.CXProgram, prevExprs []ast.CXExpression
 	if err != nil {
 		panic(err)
 	}
+	lastPrevExprsAtomicOpOperator := prgrm.GetFunctionFromArray(lastPrevExprsAtomicOp.Operator)
 
 	firstPrevExprsAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(prevExprs, 0)
 	if err != nil {
 		panic(err)
 	}
-
-	if lastPrevExprsAtomicOp.Outputs != nil && len(lastPrevExprsAtomicOp.Outputs[0].Fields) > 0 {
+	if lastPrevExprsAtomicOp.Outputs != nil && len(prgrm.GetCXArgFromArray(lastPrevExprsAtomicOp.Outputs[0]).Fields) > 0 {
 		// then it's a method
 		// prevExprs[len(prevExprs) - 1].IsMethodCall = true
 
-	} else if lastPrevExprsAtomicOp.Operator == nil {
-		if opCode, ok := ast.OpCodes[lastPrevExprsAtomicOp.Outputs[0].Name]; ok {
+	} else if lastPrevExprsAtomicOpOperator == nil {
+		if opCode, ok := ast.OpCodes[prgrm.GetCXArgFromArray(lastPrevExprsAtomicOp.Outputs[0]).Name]; ok {
 			if pkg, err := prgrm.GetCurrentPackage(); err == nil {
 				firstPrevExprsAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
 			}
 			firstPrevExprsAtomicOp.Outputs = nil
-			firstPrevExprsAtomicOp.Operator = ast.Natives[opCode]
+			opIdx := prgrm.AddNativeFunctionInArray(ast.Natives[opCode])
+			firstPrevExprsAtomicOp.Operator = opIdx
 		}
 
 		firstPrevExprsAtomicOp.Inputs = nil
@@ -251,9 +263,9 @@ func PostfixExpressionIncDec(prgrm *ast.CXProgram, prevExprs []ast.CXExpression,
 
 	cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
 
-	cxAtomicOp.AddInput(lastPrevExprsAtomicOp.Outputs[0])
-	cxAtomicOp.AddInput(valAtomicOp.Outputs[0])
-	cxAtomicOp.AddOutput(lastPrevExprsAtomicOp.Outputs[0])
+	cxAtomicOp.AddInput(prgrm, lastPrevExprsAtomicOp.Outputs[0])
+	cxAtomicOp.AddInput(prgrm, valAtomicOp.Outputs[0])
+	cxAtomicOp.AddOutput(prgrm, lastPrevExprsAtomicOp.Outputs[0])
 
 	// exprs := append(prevExprs, expr)
 	exprs := append([]ast.CXExpression{}, *exprCXLine, *expr)
@@ -269,18 +281,20 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 	if err != nil {
 		panic(err)
 	}
+	lastExprAtomicOpOperator := prgrm.GetFunctionFromArray(lastExprAtomicOp.Operator)
 
 	lastExprCXLine, _ := prgrm.GetPreviousCXLine(prevExprs, len(prevExprs)-1)
 
 	// Then it's a function call, e.g. foo().fld
 	// and we need to create some auxiliary variables to hold the result from
 	// the function call
-	if lastExprAtomicOp.Operator != nil {
-		opOut := prgrm.GetCXArgFromArray(lastExprAtomicOp.Operator.Outputs[0])
+	if lastExprAtomicOpOperator != nil {
+		opOut := prgrm.GetCXArgFromArray(lastExprAtomicOpOperator.Outputs[0])
 		symName := MakeGenSym(constants.LOCAL_PREFIX)
 
 		// we associate the result of the function call to the aux variable
-		out := ast.MakeArgument(symName, lastExprCXLine.FileName, lastExprCXLine.LineNumber).AddType(opOut.Type)
+		out := ast.MakeArgument(symName, lastExprCXLine.FileName, lastExprCXLine.LineNumber)
+		out.SetType(opOut.Type)
 		out.DeclarationSpecifiers = opOut.DeclarationSpecifiers
 		out.StructType = opOut.StructType
 		out.Size = opOut.Size
@@ -292,17 +306,20 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		out.PreviouslyDeclared = true
 		out.IsInnerArg = true
 
-		lastExprAtomicOp.Outputs = append(lastExprAtomicOp.Outputs, out)
+		outIdx := prgrm.AddCXArgInArray(out)
+		lastExprAtomicOp.Outputs = append(lastExprAtomicOp.Outputs, outIdx)
 
 		// we need to create an expression to hold all the modifications
 		// that will take place after this if statement
-		inp := ast.MakeArgument(symName, lastExprCXLine.FileName, lastExprCXLine.LineNumber).AddType(opOut.Type)
+		inp := ast.MakeArgument(symName, lastExprCXLine.FileName, lastExprCXLine.LineNumber)
+		inp.SetType(opOut.Type)
 		inp.DeclarationSpecifiers = opOut.DeclarationSpecifiers
 		inp.StructType = opOut.StructType
 		inp.Size = opOut.Size
 		inp.TotalSize = opOut.TotalSize
 		inp.Package = lastExprAtomicOp.Package
 		inp.IsInnerArg = true
+		inpIdx := prgrm.AddCXArgInArray(inp)
 
 		exprCXLine := ast.MakeCXLineExpression(prgrm, lastExprCXLine.FileName, lastExprCXLine.LineNumber, lastExprCXLine.LineStr)
 		expr := ast.MakeAtomicOperatorExpression(prgrm, nil)
@@ -313,7 +330,7 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		}
 
 		exprAtomicOp.Package = lastExprAtomicOp.Package
-		exprAtomicOp.AddOutput(inp)
+		exprAtomicOp.AddOutput(prgrm, inpIdx)
 		prevExprs = append(prevExprs, *exprCXLine, *expr)
 
 		lastExpr = prevExprs[len(prevExprs)-1]
@@ -324,27 +341,29 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		}
 	}
 
-	left := lastExprAtomicOp.Outputs[0]
+	leftExprIdx := lastExprAtomicOp.Outputs[0]
 
 	// If the left already is a rest (e.g. "var" in "pkg.var"), then
 	// it can't be a package name and we propagate the property to
 	//  the right side.
-	if left.IsInnerArg {
+	if prgrm.CXArgs[leftExprIdx].IsInnerArg {
 		// right.IsInnerArg = true
 		// left.DereferenceOperations = append(left.DereferenceOperations, cxcore.DEREF_FIELD)
-		left.IsStruct = true
+		prgrm.CXArgs[leftExprIdx].IsStruct = true
 		fld := ast.MakeArgument(ident, CurrentFile, LineNo)
-		leftPkg, err := prgrm.GetPackageFromArray(left.Package)
+		leftPkg, err := prgrm.GetPackageFromArray(prgrm.CXArgs[leftExprIdx].Package)
 		if err != nil {
 			panic(err)
 		}
 
-		fld.AddType(types.IDENTIFIER).AddPackage(leftPkg)
-		left.Fields = append(left.Fields, fld)
+		fld.SetType(types.IDENTIFIER).SetPackage(leftPkg)
+		fldIdx := prgrm.AddCXArgInArray(fld)
+		prgrm.CXArgs[leftExprIdx].Fields = append(prgrm.CXArgs[leftExprIdx].Fields, fldIdx)
+
 		return prevExprs
 	}
 
-	left.IsInnerArg = true
+	prgrm.CXArgs[leftExprIdx].IsInnerArg = true
 	// then left is a first (e.g first.rest) and right is a rest
 	// let's check if left is a package
 	pkg, err := prgrm.GetCurrentPackage()
@@ -352,16 +371,15 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		panic(err)
 	}
 
-	if imp, err := pkg.GetImport(prgrm, left.Name); err == nil {
+	if imp, err := pkg.GetImport(prgrm, prgrm.CXArgs[leftExprIdx].Name); err == nil {
 		// the external property will be propagated to the following arguments
 		// this way we avoid considering these arguments as module names
 
-		if constants2.IsCorePackage(left.Name) {
-
-			//TODO: constants.ConstCodes[left.Name+"."+ident]
+		if cxpackages.IsDefaultPackage(prgrm.CXArgs[leftExprIdx].Name) {
+			//TODO: constants.ConstCodes[prgrm.CXArgs[leftExprIdx].Name+"."+ident]
 			//TODO: only play ConstCodes are used
 			//Is used for constant declaration? But only for core packages?
-			if code, ok := ConstCodes[left.Name+"."+ident]; ok {
+			if code, ok := ConstCodes[prgrm.CXArgs[leftExprIdx].Name+"."+ident]; ok {
 				constant := Constants[code]
 				val := WritePrimary(prgrm, constant.Type, constant.Value, false)
 				valAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(val, 0)
@@ -370,37 +388,41 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 				}
 
 				lastExprAtomicOp.Outputs[0] = valAtomicOp.Outputs[0]
+
 				return prevExprs
-			} else if _, ok := ast.OpCodes[left.Name+"."+ident]; ok {
+			} else if _, ok := ast.OpCodes[prgrm.CXArgs[leftExprIdx].Name+"."+ident]; ok {
 				// then it's a native
 				// TODO: we'd be referring to the function itself, not a function call
 				// (functions as first-class objects)
-				left.Name = left.Name + "." + ident
+				prgrm.CXArgs[leftExprIdx].Name = prgrm.CXArgs[leftExprIdx].Name + "." + ident
+
 				return prevExprs
 			}
 		}
 
-		left.Package = ast.CXPackageIndex(imp.Index)
+		prgrm.CXArgs[leftExprIdx].Package = ast.CXPackageIndex(imp.Index)
 
 		if glbl, err := imp.GetGlobal(prgrm, ident); err == nil {
 			// then it's a global
 			// prevExprs[len(prevExprs)-1].ProgramOutput[0] = glbl
-			lastExprAtomicOp.Outputs[0].Name = glbl.Name
-			lastExprAtomicOp.Outputs[0].Type = glbl.Type
-			lastExprAtomicOp.Outputs[0].StructType = glbl.StructType
-			lastExprAtomicOp.Outputs[0].Size = glbl.Size
-			lastExprAtomicOp.Outputs[0].TotalSize = glbl.TotalSize
-			lastExprAtomicOp.Outputs[0].PointerTargetType = glbl.PointerTargetType
-			lastExprAtomicOp.Outputs[0].IsSlice = glbl.IsSlice
-			lastExprAtomicOp.Outputs[0].IsStruct = glbl.IsStruct
-			lastExprAtomicOp.Outputs[0].Package = glbl.Package
+			lastExprAtomicOpOutput := prgrm.GetCXArgFromArray(lastExprAtomicOp.Outputs[0])
+			lastExprAtomicOpOutput.Name = glbl.Name
+			lastExprAtomicOpOutput.Type = glbl.Type
+			lastExprAtomicOpOutput.StructType = glbl.StructType
+			lastExprAtomicOpOutput.Size = glbl.Size
+			lastExprAtomicOpOutput.TotalSize = glbl.TotalSize
+			lastExprAtomicOpOutput.PointerTargetType = glbl.PointerTargetType
+			lastExprAtomicOpOutput.IsSlice = glbl.IsSlice
+			lastExprAtomicOpOutput.IsStruct = glbl.IsStruct
+			lastExprAtomicOpOutput.Package = glbl.Package
 		} else if fn, err := imp.GetFunction(prgrm, ident); err == nil {
 			// then it's a function
 			// not sure about this next line
 			lastExprAtomicOp.Outputs = nil
-			lastExprAtomicOp.Operator = fn
+			lastExprAtomicOp.Operator = ast.CXFunctionIndex(fn.Index)
 		} else if strct, err := prgrm.GetStruct(ident, imp.Name); err == nil {
-			lastExprAtomicOp.Outputs[0].StructType = strct
+			lastExprAtomicOpOutput := prgrm.GetCXArgFromArray(lastExprAtomicOp.Outputs[0])
+			lastExprAtomicOpOutput.StructType = strct
 		} else {
 			// panic(err)
 			fmt.Println(err)
@@ -408,23 +430,25 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		}
 	} else {
 		// then left is not a package name
-		if constants2.IsCorePackage(left.Name) {
-			println(ast.CompilationError(left.ArgDetails.FileName, left.ArgDetails.FileLine),
+		if cxpackages.IsDefaultPackage(prgrm.CXArgs[leftExprIdx].Name) {
+			println(ast.CompilationError(prgrm.CXArgs[leftExprIdx].ArgDetails.FileName, prgrm.CXArgs[leftExprIdx].ArgDetails.FileLine),
 				fmt.Sprintf("identifier '%s' does not exist",
-					left.Name))
+					prgrm.CXArgs[leftExprIdx].Name))
 			os.Exit(constants.CX_COMPILATION_ERROR)
 		}
 		// then it's a struct
-		left.IsStruct = true
+		prgrm.CXArgs[leftExprIdx].IsStruct = true
 
-		fld := ast.MakeArgument(ident, CurrentFile, LineNo)
-		leftPkg, err := prgrm.GetPackageFromArray(left.Package)
+		leftExprField := ast.MakeArgument(ident, CurrentFile, LineNo)
+		leftPkg, err := prgrm.GetPackageFromArray(prgrm.CXArgs[leftExprIdx].Package)
 		if err != nil {
 			panic(err)
 		}
-		fld.AddType(types.IDENTIFIER).AddPackage(leftPkg)
+		leftExprField.SetType(types.IDENTIFIER)
+		leftExprField.SetPackage(leftPkg)
 
-		left.Fields = append(left.Fields, fld)
+		leftExprFieldIdx := prgrm.AddCXArgInArray(leftExprField)
+		prgrm.CXArgs[leftExprIdx].Fields = append(prgrm.CXArgs[leftExprIdx].Fields, leftExprFieldIdx)
 	}
 
 	return prevExprs

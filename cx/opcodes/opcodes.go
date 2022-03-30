@@ -59,24 +59,23 @@ func RegisterOperator(prgrm *ast.CXProgram, name string, handler ast.OpcodeHandl
 }
 
 // MakeNativeFunction ...
-func MakeNativeFunction(prgrm *ast.CXProgram, opCode int, inputs []*ast.CXArgument, outputs []*ast.CXArgument) *ast.CXFunction {
-	fn := &ast.CXFunction{
+func MakeNativeFunction(prgrm *ast.CXProgram, opCode int, inputs []*ast.CXArgument, outputs []*ast.CXArgument) *ast.CXNativeFunction {
+	fn := &ast.CXNativeFunction{
 		AtomicOPCode: opCode,
-		Index:        -1,
+		Inputs:       []*ast.CXArgument{},
+		Outputs:      []*ast.CXArgument{},
 	}
 
 	offset := types.Pointer(0)
 	for _, inp := range inputs {
 		inp.Offset = offset
-		offset.Add(ast.GetSize(inp))
-		inpIdx := prgrm.AddCXArgInArray(inp)
-		fn.Inputs = append(fn.Inputs, inpIdx)
+		offset.Add(ast.GetNativeSize(inp))
+		fn.Inputs = append(fn.Inputs, inp)
 	}
 	for _, out := range outputs {
-		outIdx := prgrm.AddCXArgInArray(out)
 		out.Offset = offset
-		offset.Add(ast.GetSize(out))
-		fn.Outputs = append(fn.Outputs, outIdx)
+		offset.Add(ast.GetNativeSize(out))
+		fn.Outputs = append(fn.Outputs, out)
 	}
 
 	return fn

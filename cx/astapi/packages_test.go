@@ -5,12 +5,13 @@ import (
 
 	cxast "github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/astapi"
+	cxinit "github.com/skycoin/cx/cx/init"
 )
 
 func TestASTAPI_Packages(t *testing.T) {
 	var cxprogram *cxast.CXProgram
 	t.Run("make program", func(t *testing.T) {
-		cxprogram = cxast.MakeProgram()
+		cxprogram = cxinit.MakeProgram()
 	})
 
 	t.Run("add empty package", func(t *testing.T) {

@@ -23,7 +23,7 @@ CX in house `lexer` generates a chain of tokens which is used by yacc for parsin
 
 `Preliminarystage`
 
-The compiler creates an AST first by using regular expression parsing (found in [utils.go](https://github.com/PratikDhanave/cx/blob/develop/cxparser/cxparsing/utils.go#L21) which structures the AST to include all package declarations, import chains, struct declarations, and globals, skipping over comments. 
+The compiler creates an AST first by using regular expression parsing (found in [utils.go](https://github.com/skycoin/cx/blob/develop/cxparser/cxparsing/utils.go#L21) which structures the AST to include all package declarations, import chains, struct declarations, and globals, skipping over comments. 
 This preliminary stage of parsing aids further stages since the structure of a CX repository and the names of custom types are already known. 
 
 `Passone`
@@ -37,7 +37,7 @@ The second parsing stage fully compiles functions and all expressions. This func
 Finally, the `main` function and invisible `*init` functions are created, the latter of which acts as an initializer for global variables. 
 
 The lifetime of a CX program in depth is given here:
-1.Preliminarystage ](https://github.com/PratikDhanave/cx/blob/develop/cxparser/cxparsing/utils.go#L21) - here, a copy of the source code is passed in as an array of strings, along with the file names. A series of regular expressions are compiled to check for various things. Finally, the source code is iterated over, and for each file, we iterate over a scanner of the file. Then, for each successful scan:
+1.Preliminarystage ](https://github.com/skycoin/cx/blob/develop/cxparser/cxparsing/utils.go#L21) - here, a copy of the source code is passed in as an array of strings, along with the file names. A series of regular expressions are compiled to check for various things. Finally, the source code is iterated over, and for each file, we iterate over a scanner of the file. Then, for each successful scan:
     1. We first check if we’re in a comment or not. If we are, we continue scanning and ignore the following steps.
     2. Next, we check if this current line contains a package declaration. If so, then we check if the program has added a package with that name. If not, then we add that package to the CXProgram (PRGM0, basically the main program). Remember, now that package is the current package.
     3. We do the same thing for structures.
@@ -194,7 +194,7 @@ The CX Runtime consists mainly of a [CXProgram](https://github.com/skycoin/cx/bl
 
 CX Runtime also has CXCalls, which store an Operator, FramePoiner, and Line. 
 
-CXPrograms are the root object of the entire AST for CX. Additionally, there is a global named PROGRAM, which stores the main CXProgram. 
+CXPrograms are the root object of the entire AST for CX. 
 
 The maker for CXProgram sets the CallStack to a default size, Memory, StackSize, HeapSize, HeapPointer, and Packages to default sizes.
 

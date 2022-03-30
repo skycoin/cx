@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/types"
 )
 
@@ -68,34 +67,16 @@ type HeapSegmentStruct struct {
 	Pointer  types.Pointer // At what offset a CX program can insert a new object to the heap
 }
 
-// MakeProgram ...
-func MakeProgram() *CXProgram {
-	minHeapSize := minHeapSize()
-	newPrgrm := &CXProgram{
-		Packages:       make(map[string]CXPackageIndex, 0),
-		CurrentPackage: -1,
-		CallStack:      make([]CXCall, constants.CALLSTACK_SIZE),
-		Memory:         make([]byte, constants.STACK_SIZE+minHeapSize),
-		Stack: StackSegmentStruct{
-			Size: constants.STACK_SIZE,
-		},
-		Data: DataSegmentStruct{
-			StartsAt: constants.STACK_SIZE,
-		},
-		Heap: HeapSegmentStruct{
-			Size:    minHeapSize,
-			Pointer: constants.NULL_HEAP_ADDRESS_OFFSET, // We can start adding objects to the heap after the NULL (nil) bytes.
-		},
-		CXArgs: make([]CXArgument, 0),
-	}
-	return newPrgrm
-}
-
 // ----------------------------------------------------------------
 //                         `CXProgram` Package handling
 
 // AddPackage ...
 func (cxprogram *CXProgram) AddPackage(mod *CXPackage) CXPackageIndex {
+	if idx, ok := cxprogram.Packages[mod.Name]; ok {
+		cxprogram.CurrentPackage = idx
+		return idx
+	}
+
 	index := cxprogram.AddPackageInArray(mod)
 
 	cxprogram.Packages[mod.Name] = CXPackageIndex(index)
@@ -121,52 +102,76 @@ func (cxprogram *CXProgram) GetPackageFromArray(index CXPackageIndex) (*CXPackag
 }
 
 // RemovePackage ...
-func (cxprogram *CXProgram) RemovePackage(modName string) {
-	// If doesnt exist, return
-	// if cxprogram.Packages[modName] == nil {
-	// 	return
-	// }
+// func (cxprogram *CXProgram) RemovePackage(modName string) {
+// 	// If doesnt exist, return
+// 	// if cxprogram.Packages[modName] == nil {
+// 	// 	return
+// 	// }
 
-	// Check if it is the current pkg so when it
-	// is deleted, it will be replaced with new pkg
-	isCurrentPkg := cxprogram.Packages[modName] == cxprogram.CurrentPackage
+// 	// Check if it is the current pkg so when it
+// 	// is deleted, it will be replaced with new pkg
+// 	isCurrentPkg := cxprogram.Packages[modName] == cxprogram.CurrentPackage
 
-	// Delete package
-	delete(cxprogram.Packages, modName)
+// 	// Delete package
+// 	delete(cxprogram.Packages, modName)
 
-	// This means that we're removing the package set to be the CurrentPackage.
-	// If it is removed from the program's map of packages, cxprogram.CurrentPackage
-	// would be pointing to a package meant to be collected by the GC.
-	// We fix this by pointing to random package in the program's map of packages.
-	if isCurrentPkg {
-		for _, pkg := range cxprogram.Packages {
-			cxprogram.CurrentPackage = pkg
-			break
-		}
-	}
+// 	// This means that we're removing the package set to be the CurrentPackage.
+// 	// If it is removed from the program's map of packages, cxprogram.CurrentPackage
+// 	// would be pointing to a package meant to be collected by the GC.
+// 	// We fix this by pointing to random package in the program's map of packages.
+// 	if isCurrentPkg {
+// 		for _, pkg := range cxprogram.Packages {
+// 			cxprogram.CurrentPackage = pkg
+// 			break
+// 		}
+// 	}
 
-}
+// }
 
 // ----------------------------------------------------------------
 //                         `CXProgram` Function handling
 func (cxprogram *CXProgram) AddFunctionInArray(fn *CXFunction) CXFunctionIndex {
 	// The index of fn after it will be added in the array
 	fn.Index = len(cxprogram.CXFunctions)
+
 	cxprogram.CXFunctions = append(cxprogram.CXFunctions, *fn)
 
 	return CXFunctionIndex(fn.Index)
 }
 
-func (cxprogram *CXProgram) GetFunctionFromArray(index CXFunctionIndex) (*CXFunction, error) {
+func (cxprogram *CXProgram) AddNativeFunctionInArray(fn *CXNativeFunction) CXFunctionIndex {
+	fnNative := CXFunction{
+		Index:        len(cxprogram.CXFunctions),
+		AtomicOPCode: fn.AtomicOPCode,
+	}
+
+	// Add inputs to cx arg array
+	for _, argIn := range fn.Inputs {
+		argInIdx := cxprogram.AddCXArgInArray(argIn)
+		fnNative.Inputs = append(fnNative.Inputs, argInIdx)
+	}
+
+	// Add outputs to cx arg array
+	for _, argOut := range fn.Outputs {
+		argOutIdx := cxprogram.AddCXArgInArray(argOut)
+		fnNative.Outputs = append(fnNative.Outputs, argOutIdx)
+	}
+
+	cxprogram.CXFunctions = append(cxprogram.CXFunctions, fnNative)
+
+	return CXFunctionIndex(fnNative.Index)
+}
+
+func (cxprogram *CXProgram) GetFunctionFromArray(index CXFunctionIndex) *CXFunction {
 	if index == -1 {
-		return nil, nil
+		return nil
 	}
 
 	if int(index) > (len(cxprogram.CXFunctions) - 1) {
-		return nil, fmt.Errorf("error: CXFunctions[%d]: index out of bounds", index)
+		panic(fmt.Errorf("error: CXFunctions[%d]: index out of bounds", index))
 	}
 
-	return &cxprogram.CXFunctions[index], nil
+	return &cxprogram.CXFunctions[index]
 }
 
 // ----------------------------------------------------------------
@@ -202,11 +207,11 @@ func (cxprogram *CXProgram) AddCXLine(CXLine *CXLine) int {
 	return len(cxprogram.CXLines) - 1
 }
 
-func (cxprogram *CXProgram) AddCXArg(CXArg *CXArgument) int {
-	cxprogram.CXArgs = append(cxprogram.CXArgs, *CXArg)
+// func (cxprogram *CXProgram) AddCXArg(CXArg *CXArgument) int {
+// 	cxprogram.CXArgs = append(cxprogram.CXArgs, *CXArg)
 
-	return len(cxprogram.CXArgs) - 1
-}
+// 	return len(cxprogram.CXArgs) - 1
+// }
 
 func (cxprogram *CXProgram) AddCXAtomicOp(CXAtomicOp *CXAtomicOperator) int {
 	cxprogram.CXAtomicOps = append(cxprogram.CXAtomicOps, *CXAtomicOp)
@@ -341,14 +346,6 @@ func (cxprogram *CXProgram) GetCurrentPackage() (*CXPackage, error) {
 	return cxprogram.GetPackageFromArray(cxprogram.CurrentPackage)
 }
 
-func (cxprogram *CXProgram) GetCurrentPackageIndex() CXPackageIndex {
-	if cxprogram.CurrentPackage == -1 {
-		panic("current package is nil")
-	}
-
-	return cxprogram.CurrentPackage
-}
-
 // GetCurrentStruct ...
 func (cxprogram *CXProgram) GetCurrentStruct() (*CXStruct, error) {
 	// if cxprogram.CurrentPackage == nil {
@@ -383,7 +380,7 @@ func (cxprogram *CXProgram) GetCurrentFunction() (*CXFunction, error) {
 		return nil, errors.New("current function is nil")
 	}
 
-	return cxprogram.GetFunctionFromArray(currentPackage.CurrentFunction)
+	return cxprogram.GetFunctionFromArray(currentPackage.CurrentFunction), nil
 
 }
 

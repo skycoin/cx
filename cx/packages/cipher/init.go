@@ -14,27 +14,28 @@ func RegisterPackage(prgrm *ast.CXProgram) {
 	pubkeyStrct := ast.MakeStruct("PubKey")
 	seckeyStrct := ast.MakeStruct("SecKey")
 
+	pkgIdx := prgrm.AddPackage(cipherPkg)
+	cPkg, _ := prgrm.GetPackageFromArray(pkgIdx)
+
 	// PubKey
-	pubkeyFld := ast.MakeArgument("PubKey", "", -1).AddType(types.UI8).AddPackage(cipherPkg)
+	pubkeyFld := ast.MakeArgument("PubKey", "", -1).SetType(types.UI8).SetPackage(cPkg)
 	pubkeyFld.DeclarationSpecifiers = append(pubkeyFld.DeclarationSpecifiers, constants.DECL_ARRAY)
 	// pubkeyFld.IsArray = true
 	pubkeyFld.Lengths = []types.Pointer{33} // Yes, PubKey is 33 bytes long.
 	pubkeyFld.TotalSize = 33                // 33 * 1 byte (ui8)
 
 	// SecKey
-	seckeyFld := ast.MakeArgument("SecKey", "", -1).AddType(types.UI8).AddPackage(cipherPkg)
+	seckeyFld := ast.MakeArgument("SecKey", "", -1).SetType(types.UI8).SetPackage(cPkg)
 	seckeyFld.DeclarationSpecifiers = append(seckeyFld.DeclarationSpecifiers, constants.DECL_ARRAY)
 	// seckeyFld.IsArray = true
 	seckeyFld.Lengths = []types.Pointer{32} // Yes, SecKey is 32 bytes long.
 	seckeyFld.TotalSize = 33                // 33 * 1 byte (ui8)
 
-	pubkeyStrct.AddField(pubkeyFld)
-	seckeyStrct.AddField(seckeyFld)
+	pubkeyStrct.AddField(prgrm, pubkeyFld)
+	seckeyStrct.AddField(prgrm, seckeyFld)
 
-	cipherPkg.AddStruct(pubkeyStrct)
-	cipherPkg.AddStruct(seckeyStrct)
-
-	prgrm.AddPackage(cipherPkg)
+	cPkg.AddStruct(pubkeyStrct)
+	cPkg.AddStruct(seckeyStrct)
 
 	opcodes.RegisterFunction(prgrm, "cipher.GenerateKeyPair", opCipherGenerateKeyPair, nil,
 		opcodes.Out(ast.Struct(prgrm, "cipher", "PubKey", "pubKey"), ast.Struct(prgrm, "cipher", "SecKey", "sec")))

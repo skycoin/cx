@@ -29,6 +29,6 @@ func GetTypedOperatorOffset(typeCode types.Code, opCode int) int {
 	return int(typeCode)*OPERATOR_COUNT + opCode - constants.START_OF_OPERATORS - 1
 }
 
-func GetTypedOperator(typeCode types.Code, opCode int) *CXFunction {
+func GetTypedOperator(typeCode types.Code, opCode int) *CXNativeFunction {
 	return Operators[GetTypedOperatorOffset(typeCode, opCode)]
 }

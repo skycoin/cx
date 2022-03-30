@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	constants2 "github.com/skycoin/cx/cxparser/constants"
+	cxpackages "github.com/skycoin/cx/cx/packages"
 
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/types"
@@ -20,20 +20,6 @@ import (
 func ToString(cxprogram *CXProgram) string {
 	var ast3 string
 	// ast3 += "Program\n" //why is top line "Program" ???
-
-	var currentFunction *CXFunction
-	var currentPackage *CXPackage
-
-	currentPackage, err := cxprogram.GetCurrentPackage()
-	if err != nil {
-		panic("CXProgram.ToString(): error, currentPackage is nil")
-	}
-
-	currentFunction, err = cxprogram.GetCurrentFunction()
-	if err != nil {
-		panic(err)
-	}
-	currentPackage.CurrentFunction = CXFunctionIndex(currentFunction.Index)
 
 	BuildStrPackages(cxprogram, &ast3) //what does this do?
 
@@ -101,15 +87,12 @@ func buildStrFunctions(prgrm *CXProgram, pkg *CXPackage, ast1 *string) {
 	// ignore the increment from the `*init` function.
 	var j int
 	for _, fnIdx := range pkg.Functions {
-		fn, err := prgrm.GetFunctionFromArray(fnIdx)
-		if err != nil {
-			panic(err)
-		}
+		fn := prgrm.GetFunctionFromArray(fnIdx)
 
 		if fn.Name == constants.SYS_INIT_FUNC {
 			continue
 		}
-		_, err = pkg.SelectFunction(prgrm, fn.Name)
+		_, err := pkg.SelectFunction(prgrm, fn.Name)
 		if err != nil {
 			panic(err)
 		}
@@ -133,6 +116,7 @@ func buildStrFunctions(prgrm *CXProgram, pkg *CXPackage, ast1 *string) {
 				panic(err)
 			}
 
+			cxAtomicOpOperator := prgrm.GetFunctionFromArray(cxAtomicOp.Operator)
 			// Adding label in case a `goto` statement was used for the expression.
 			if cxAtomicOp.Label != "" {
 				lbl = " <<" + cxAtomicOp.Label + ">>"
@@ -141,17 +125,17 @@ func buildStrFunctions(prgrm *CXProgram, pkg *CXPackage, ast1 *string) {
 			}
 
 			// Determining operator's name.
-			if cxAtomicOp.Operator != nil {
-				if cxAtomicOp.Operator.IsBuiltIn() {
+			if cxAtomicOpOperator != nil {
+				if cxAtomicOpOperator.IsBuiltIn() {
 
-					opName1 = OpNames[cxAtomicOp.Operator.AtomicOPCode]
+					opName1 = OpNames[cxAtomicOpOperator.AtomicOPCode]
 				} else {
-					opName1 = cxAtomicOp.Operator.Name
+					opName1 = cxAtomicOpOperator.Name
 				}
 			}
 
-			getFormattedParam(prgrm, cxAtomicOp.Inputs, pkg, &inps)
-			getFormattedParam(prgrm, cxAtomicOp.Outputs, pkg, &outs)
+			getFormattedParam(prgrm, prgrm.ConvertIndexArgsToPointerArgs(cxAtomicOp.Inputs), pkg, &inps)
+			getFormattedParam(prgrm, prgrm.ConvertIndexArgsToPointerArgs(cxAtomicOp.Outputs), pkg, &outs)
 
 			if expr.Type == CX_LINE {
 				cxLine, _ := prgrm.GetCXLine(expr.Index)
@@ -159,7 +143,7 @@ func buildStrFunctions(prgrm *CXProgram, pkg *CXPackage, ast1 *string) {
 					k,
 					cxLine.LineNumber,
 					strings.TrimSpace(cxLine.LineStr))
-			} else if cxAtomicOp.Operator != nil {
+			} else if cxAtomicOpOperator != nil {
 				assignOp := ""
 				if outs.Len() > 0 {
 					assignOp = " = "
@@ -176,12 +160,12 @@ func buildStrFunctions(prgrm *CXProgram, pkg *CXPackage, ast1 *string) {
 				// Then it's a variable declaration. These are represented
 				// by expressions without operators that only have outputs.
 				if len(cxAtomicOp.Outputs) > 0 {
-					out := cxAtomicOp.Outputs[len(cxAtomicOp.Outputs)-1]
+					out := prgrm.GetCXArgFromArray(cxAtomicOp.Outputs[len(cxAtomicOp.Outputs)-1])
 
 					*ast1 += fmt.Sprintf("\t\t\t%d.- Declaration%s: %s %s\n",
 						k,
 						lbl,
-						cxAtomicOp.Outputs[0].Name,
+						prgrm.GetCXArgFromArray(cxAtomicOp.Outputs[0]).Name,
 						GetFormattedType(prgrm, out))
 				}
 			}
@@ -203,7 +187,7 @@ func BuildStrPackages(prgrm *CXProgram, ast *string) {
 			panic(err)
 		}
 
-		if constants2.IsCorePackage(pkg.Name) {
+		if cxpackages.IsDefaultPackage(pkg.Name) {
 			continue
 		}
 
@@ -224,7 +208,7 @@ func BuildStrPackages(prgrm *CXProgram, ast *string) {
 // `buf`.
 func getFormattedParam(prgrm *CXProgram, params []*CXArgument, pkg *CXPackage, buf *bytes.Buffer) {
 	for i, param := range params {
-		elt := param.GetAssignmentElement()
+		elt := param.GetAssignmentElement(prgrm)
 
 		// Checking if this argument comes from an imported package.
 		externalPkg := false
@@ -256,7 +240,7 @@ func getNonCollectionValue(prgrm *CXProgram, fp types.Pointer, arg, elt *CXArgum
 		return fmt.Sprintf("%v", types.Read_ptr(prgrm.Memory, GetFinalOffset(prgrm, fp, elt)))
 	}
 	if arg.IsSlice {
-		return fmt.Sprintf("%v", types.GetSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, fp, elt), GetSize(elt)))
+		return fmt.Sprintf("%v", types.GetSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, fp, elt), GetSize(prgrm, elt)))
 	}
 	switch typ {
 	case "bool":
@@ -355,7 +339,7 @@ func ReadSliceElements(prgrm *CXProgram, fp types.Pointer, arg, elt *CXArgument,
 // GetPrintableValue ...
 func GetPrintableValue(prgrm *CXProgram, fp types.Pointer, arg *CXArgument) string {
 	var typ string
-	elt := arg.GetAssignmentElement()
+	elt := arg.GetAssignmentElement(prgrm)
 	if elt.StructType != nil {
 		// then it's struct type
 		typ = elt.StructType.Name
@@ -603,7 +587,8 @@ func getFormattedDerefs(prgrm *CXProgram, arg *CXArgument, includePkg bool) stri
 	name = derefLevels + name
 
 	// Checking if we have indexing operations, e.g. foo[2][1]
-	for _, idx := range arg.Indexes {
+	for _, idxIdx := range arg.Indexes {
+		idx := prgrm.GetCXArgFromArray(idxIdx)
 		// Checking if the value is in data segment.
 		// If this is the case, we can safely display it.
 		idxValue := ""
@@ -631,7 +616,8 @@ func GetFormattedName(prgrm *CXProgram, arg *CXArgument, includePkg bool) string
 	name := getFormattedDerefs(prgrm, arg, includePkg)
 
 	// Adding as suffixes all the fields.
-	for _, fld := range arg.Fields {
+	for _, fldIdx := range arg.Fields {
+		fld := prgrm.GetCXArgFromArray(fldIdx)
 		name = fmt.Sprintf("%s.%s", name, getFormattedDerefs(prgrm, fld, includePkg))
 	}
 
@@ -662,7 +648,7 @@ func formatParameters(prgrm *CXProgram, params []*CXArgument) string {
 // GetFormattedType builds a string with the CXGO type representation of `arg`.
 func GetFormattedType(prgrm *CXProgram, arg *CXArgument) string {
 	typ := ""
-	elt := arg.GetAssignmentElement()
+	elt := arg.GetAssignmentElement(prgrm)
 
 	// this is used to know what arg.Lengths index to use
 	// used for cases like [5]*[3]i32, where we jump to another decl spec
@@ -698,8 +684,8 @@ func GetFormattedType(prgrm *CXProgram, arg *CXArgument) string {
 					if elt.IsLocalDeclaration {
 						// Then it's a local variable, which can be assigned to a
 						// lambda function, for example.
-						typ += formatParameters(prgrm, elt.Inputs)
-						typ += formatParameters(prgrm, elt.Outputs)
+						typ += formatParameters(prgrm, prgrm.ConvertIndexArgsToPointerArgs(elt.Inputs))
+						typ += formatParameters(prgrm, prgrm.ConvertIndexArgsToPointerArgs(elt.Outputs))
 					} else {
 						// Then it refers to a named function defined in a package.
 						pkg, err := prgrm.GetPackageFromArray(arg.Package)

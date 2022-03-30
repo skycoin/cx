@@ -63,6 +63,7 @@ build-parser: ## Generate lexer and parser for CX grammar
 	arrayArguments [][]ast.CXExpression
 
     function *ast.CXFunction
+    functionIndex ast.CXFunctionIndex
 }
 
 %token  <bool>          BOOLEAN_LITERAL
@@ -187,7 +188,7 @@ build-parser: ## Generate lexer and parser for CX grammar
 %type   <expressions>   jump_statement
 %type   <expressions>   statement
 
-%type   <function>      function_header
+%type   <functionIndex>      function_header
 
 %type   <string>        infer_action_arg
 %type   <stringA>       infer_action, infer_actions
@@ -346,7 +347,7 @@ direct_declarator:
                 {
 			if pkg, err := actions.AST.GetCurrentPackage(); err == nil {
 				arg := ast.MakeArgument("", actions.CurrentFile, actions.LineNo)
-                arg.AddType(types.UNDEFINED)
+                arg.SetType(types.UNDEFINED)
 				arg.Name = $1
 				arg.Package = ast.CXPackageIndex(pkg.Index)
 				$$ = arg
@@ -400,9 +401,10 @@ types_list:
 declaration_specifiers:
                 FUNC types_list types_list
 		{
-			arg := ast.MakeArgument("", actions.CurrentFile, actions.LineNo).AddType(types.FUNC)
-			arg.Inputs = $2
-			arg.Outputs = $3
+			arg := ast.MakeArgument("", actions.CurrentFile, actions.LineNo).SetType(types.FUNC)
+                       
+			arg.Inputs =  actions.AST.AddPointerArgsToCXArgsArray($2)
+			arg.Outputs =  actions.AST.AddPointerArgsToCXArgsArray($3)
 			$$ = actions.DeclarationSpecifiers(arg, []types.Pointer{0}, constants.DECL_FUNC)
 		}
         |       MUL_OP declaration_specifiers
@@ -622,9 +624,10 @@ slice_literal_expression:
                                         panic(err)
                                 }
 
-				if exprAtomicOp.Outputs[0].Name == lastExprAtomicOp.Inputs[0].Name {
-					exprAtomicOp.Outputs[0].Lengths = append(exprAtomicOp.Outputs[0].Lengths, 0)
-					exprAtomicOp.Outputs[0].DeclarationSpecifiers = append(exprAtomicOp.Outputs[0].DeclarationSpecifiers, constants.DECL_SLICE)
+                                exprAtomicOpOutput:=actions.AST.GetCXArgFromArray(exprAtomicOp.Outputs[0])
+				if exprAtomicOpOutput.Name == actions.AST.GetCXArgFromArray(lastExprAtomicOp.Inputs[0]).Name {
+					exprAtomicOpOutput.Lengths = append(exprAtomicOpOutput.Lengths, 0)
+					exprAtomicOpOutput.DeclarationSpecifiers = append(exprAtomicOpOutput.DeclarationSpecifiers, constants.DECL_SLICE)
                                 }
 			}
 	
@@ -990,8 +993,7 @@ struct_literal_expression:
                         if err != nil {
                                 panic(err)
                         }
-
-			$$ = actions.PrimaryStructLiteralExternal(actions.AST,cxAtomicOp.Outputs[0].Name, $3, $5)
+			$$ = actions.PrimaryStructLiteralExternal(actions.AST,actions.AST.GetCXArgFromArray(cxAtomicOp.Outputs[0]).Name, $3, $5)
                 }
                 ;
 
@@ -1020,8 +1022,9 @@ assignment_expression:
                                                                         if err != nil {
                                                                                 panic(err)
                                                                         }
-                                                                        fromAtomicOp.Outputs[0].IsShortAssignmentDeclaration = true
-                                                                        fromAtomicOp.Outputs[0].PreviouslyDeclared = true
+                                                                        fromAtomicOpOutput:=actions.AST.GetCXArgFromArray(fromAtomicOp.Outputs[0])
+                                                                        fromAtomicOpOutput.IsShortAssignmentDeclaration = true
+                                                                        fromAtomicOpOutput.PreviouslyDeclared = true
                                                                 }
                                                         }
                                                         $$ = actions.ArrayLiteralAssignment(actions.AST,$1, $3)
@@ -1039,8 +1042,9 @@ assignment_expression:
                                                                         if err != nil {
                                                                                 panic(err)
                                                                         }
-                                                                        fromAtomicOp.Outputs[0].IsShortAssignmentDeclaration = true
-                                                                        fromAtomicOp.Outputs[0].PreviouslyDeclared = true
+                                                                        fromAtomicOpOutput:=actions.AST.GetCXArgFromArray(fromAtomicOp.Outputs[0])
+                                                                        fromAtomicOpOutput.IsShortAssignmentDeclaration = true
+                                                                        fromAtomicOpOutput.PreviouslyDeclared = true
                                                                 }
                                                         }
                                                         $$ = actions.StructLiteralAssignment(actions.AST,$1, $3)
@@ -1171,7 +1175,7 @@ expression_statement:
                 { $$ = nil }
 	|       expression SEMICOLON
                 {          
-                        var lastFirstAtomicOp *ast.CXAtomicOperator
+                        var lastFirstAtomicOp *ast.CXAtomicOperator= &ast.CXAtomicOperator{Operator:-1}
                         var err error
 
                         if len($1) > 0 {
@@ -1180,12 +1184,12 @@ expression_statement:
                                         panic(err)
                                 }
                         }
-                       
+                       lastFirstAtomicOpOperator:=actions.AST.GetFunctionFromArray(lastFirstAtomicOp.Operator)
 
-			if len($1) > 0 && lastFirstAtomicOp.Operator == nil  && !$1[len($1) - 1].IsMethodCall() {
+			if len($1) > 0 && lastFirstAtomicOpOperator == nil  && !$1[len($1) - 1].IsMethodCall() {
 				outs := lastFirstAtomicOp.Outputs
 				if len(outs) > 0 {
-					println(ast.CompilationError(outs[0].ArgDetails.FileName, outs[0].ArgDetails.FileLine), "invalid expression")
+					println(ast.CompilationError(actions.AST.GetCXArgFromArray(outs[0]).ArgDetails.FileName, actions.AST.GetCXArgFromArray(outs[0]).ArgDetails.FileLine), "invalid expression")
 				} else {
 					println(ast.CompilationError(actions.CurrentFile, actions.LineNo), "invalid expression")
 				}

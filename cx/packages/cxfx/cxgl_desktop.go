@@ -3,10 +3,11 @@
 package cxfx
 
 import (
+	"strings"
+
 	"github.com/go-gl/gl/v3.2-compatibility/gl"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
-	"strings"
 )
 
 const (
@@ -52,7 +53,7 @@ func opGlInit(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue)
 }
 
 func opGlDestroy(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	for k, _ := range cSources {
+	for k := range cSources {
 		freeCString(k)
 	}
 }

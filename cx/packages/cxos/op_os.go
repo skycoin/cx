@@ -415,13 +415,13 @@ func opOsWriteBOOL(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXV
 func getSlice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) (outputSlicePointer types.Pointer, outputSliceOffset types.Pointer, sizeofElement types.Pointer, count types.Pointer) {
 	inp1, out0 := inputs[1].Arg, outputs[0].Arg
 
-	if inp1.Type != out0.Type || !(inp1.GetAssignmentElement()).IsSlice || !(out0.GetAssignmentElement()).IsSlice {
+	if inp1.Type != out0.Type || !(inp1.GetAssignmentElement(prgrm)).IsSlice || !(out0.GetAssignmentElement(prgrm)).IsSlice {
 		panic(constants.CX_RUNTIME_INVALID_ARGUMENT)
 	}
 
 	count = inputs[2].Get_ptr(prgrm)
 	outputSlicePointer = outputs[0].Offset
-	sizeofElement = (inp1.GetAssignmentElement()).Size
+	sizeofElement = (inp1.GetAssignmentElement(prgrm)).Size
 	outputSliceOffset = ast.SliceResize(prgrm, outputs[0].FramePointer, out0, inp1, count, sizeofElement)
 	return
 }
@@ -747,7 +747,6 @@ func opOsWriteI8Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.
 }
 
 func opOsGetWorkingDirectory(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	//outputs[0].Set_str(prgrm,prgrm,cxcore.PROGRAM.Path)
 	outputs[0].Set_str(prgrm, globals.CxProgramPath)
 }
 

@@ -8,7 +8,7 @@ import (
 
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
-	globals2 "github.com/skycoin/cx/cx/globals"
+	"github.com/skycoin/cx/cx/globals"
 	"github.com/skycoin/cx/cx/types"
 
 	"github.com/skycoin/cx/cxparser/actions"
@@ -59,7 +59,7 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 
 	actions.AST = cxpartialparsing.Program
 
-	if globals2.FoundCompileErrors || parseErrors > 0 {
+	if globals.FoundCompileErrors || parseErrors > 0 {
 		profiling.CleanupAndExit(constants.CX_COMPILATION_ERROR)
 	}
 
@@ -69,10 +69,10 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 	*/
 	if osPkg, err := actions.AST.GetPackage(constants.OS_PKG); err == nil {
 		if _, err := osPkg.GetGlobal(actions.AST, constants.OS_ARGS); err != nil {
-			arg0 := ast.MakeArgument(constants.OS_ARGS, "", -1).AddType(types.UNDEFINED)
+			arg0 := ast.MakeArgument(constants.OS_ARGS, "", -1).SetType(types.UNDEFINED)
 			arg0.Package = ast.CXPackageIndex(osPkg.Index)
 
-			arg1 := ast.MakeArgument(constants.OS_ARGS, "", -1).AddType(types.STR)
+			arg1 := ast.MakeArgument(constants.OS_ARGS, "", -1).SetType(types.STR)
 			arg1 = actions.DeclarationSpecifiers(arg1, []types.Pointer{0}, constants.DECL_BASIC)
 			arg1 = actions.DeclarationSpecifiers(arg1, []types.Pointer{0}, constants.DECL_SLICE)
 			actions.DeclareGlobalInPackage(actions.AST, osPkg, arg0, arg1, nil, false)
@@ -112,7 +112,7 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 
 	profiling.StopProfile("4. passtwo")
 
-	if globals2.FoundCompileErrors || parseErrors > 0 {
+	if globals.FoundCompileErrors || parseErrors > 0 {
 		profiling.CleanupAndExit(constants.CX_COMPILATION_ERROR)
 	}
 }

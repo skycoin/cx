@@ -8,10 +8,10 @@ import (
 
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
-	globals2 "github.com/skycoin/cx/cx/globals"
+	"github.com/skycoin/cx/cx/globals"
+	cxpackages "github.com/skycoin/cx/cx/packages"
 	"github.com/skycoin/cx/cx/types"
 	"github.com/skycoin/cx/cxparser/actions"
-	constants2 "github.com/skycoin/cx/cxparser/constants"
 	cxpartialparsing "github.com/skycoin/cx/cxparser/cxpartialparsing"
 	"github.com/skycoin/cx/cxparser/util/profiling"
 )
@@ -106,9 +106,9 @@ func Preliminarystage(srcStrs, srcNames []string) int {
 				if match := reImpName.FindStringSubmatch(string(line)); match != nil {
 					pkgName := match[len(match)-1]
 					// Checking if `pkgName` already exists and if it's not a standard library package.
-					if _, err := cxpartialparsing.Program.GetPackage(pkgName); err != nil && !constants2.IsCorePackage(pkgName) {
+					if _, err := cxpartialparsing.Program.GetPackage(pkgName); err != nil && !cxpackages.IsDefaultPackage(pkgName) {
 						// _, sourceCode, srcNames := ParseArgsForCX([]string{fmt.Sprintf("%s%s", SRCPATH, pkgName)}, false)
-						_, sourceCode, fileNames := ast.ParseArgsForCX([]string{filepath.Join(globals2.SRCPATH, pkgName)}, false)
+						_, sourceCode, fileNames := ast.ParseArgsForCX([]string{filepath.Join(globals.SRCPATH, pkgName)}, false)
 						ParseSourceCode(sourceCode, fileNames)
 					}
 				}
@@ -164,7 +164,9 @@ func Preliminarystage(srcStrs, srcNames []string) int {
 						arg := ast.MakeArgument(match[len(match)-1], "", 0)
 						arg.Offset = types.InvalidPointer
 						arg.Package = ast.CXPackageIndex(prePkg.Index)
-						prePkg.AddGlobal(actions.AST, arg)
+						argIdx := actions.AST.AddCXArgInArray(arg)
+
+						prePkg.AddGlobal(actions.AST, argIdx)
 					}
 				}
 			}
@@ -200,13 +202,9 @@ func AddInitFunction(prgrm *ast.CXProgram) error {
 
 	initFn := ast.MakeFunction(constants.SYS_INIT_FUNC, actions.CurrentFile, actions.LineNo)
 	_, fnIdx := mainPkg.AddFunction(prgrm, initFn)
-	initFnFromArr, err := prgrm.GetFunctionFromArray(fnIdx)
-	if err != nil {
-		return err
-	}
 
 	//Init Expressions
-	actions.FunctionDeclaration(prgrm, initFnFromArr, nil, nil, prgrm.SysInitExprs)
+	actions.FunctionDeclaration(prgrm, fnIdx, nil, nil, prgrm.SysInitExprs)
 
 	if _, err := mainPkg.SelectFunction(prgrm, constants.MAIN_FUNC); err != nil {
 		return err

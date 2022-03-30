@@ -3,6 +3,7 @@ package ast_test
 import (
 	"bytes"
 	"encoding/binary"
+	"fmt"
 	"reflect"
 	"strings"
 	"testing"
@@ -12,8 +13,8 @@ import (
 	cxast "github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/astapi"
 	cxgenerator "github.com/skycoin/cx/cx/generator"
+	cxinit "github.com/skycoin/cx/cx/init"
 	"github.com/skycoin/cx/cx/types"
-	cxparsingcompletor "github.com/skycoin/cx/cxparser/cxparsingcompletor"
 )
 
 // t.Logf("Stack size=%v\n", tc.program.StackSize)
@@ -68,7 +69,7 @@ func TestSerialize_CipherEncoder(t *testing.T) {
 			t.Logf("Deserialization took=%v\n", time.Since(timeStart))
 
 			if cxast.ToString(deserializedCXProgram) != cxast.ToString(tc.program) {
-				t.Errorf("want same program, got different")
+				t.Errorf(fmt.Sprintf("%+v\n!=\n%+v\n", cxast.ToString(deserializedCXProgram), cxast.ToString(tc.program)))
 			}
 
 			if tc.includeDataMemory {
@@ -210,8 +211,8 @@ func generateSampleProgramFromCXEvolves(t *testing.T, withLiteral bool) *cxast.C
 
 	// Needed for AddNativeExpressionToFunction
 	// because of dependency on cxast.OpNames
-	cxparsingcompletor.InitCXCore()
-	cxProgram = cxast.MakeProgram()
+	// cxparsingcompletor.InitCXCore()
+	cxProgram = cxinit.MakeProgram()
 
 	err := astapi.AddEmptyPackage(cxProgram, "main")
 	if err != nil {

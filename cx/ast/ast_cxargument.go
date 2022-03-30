@@ -80,24 +80,24 @@ type CXArgument struct {
 	// `CXArgument` is an index or a slice. The elements of
 	// `Indexes` can be any `CXArgument` (for example, literals
 	// and variables).
-	Indexes []*CXArgument
+	Indexes []CXArgumentIndex
 
 	// Fields stores what fields are being accessed from the
 	// `CXArgument` and in what order. Whenever a `DEREF_FIELD` in
 	// `DereferenceOperations` is found, we consume a field from
 	// `Field` to determine the new offset to the desired
 	// value.
-	Fields []*CXArgument
+	Fields []CXArgumentIndex
 
 	// Inputs defines the input parameters of a first-class
 	// function. The `CXArgument` is of type `TYPE_FUNC` if
 	// `ProgramInput` is non-nil.
-	Inputs []*CXArgument
+	Inputs []CXArgumentIndex
 
 	// Outputs defines the output parameters of a first-class
 	// function. The `CXArgument` is of type `TYPE_FUNC` if
 	// `ProgramOutput` is non-nil.
-	Outputs []*CXArgument
+	Outputs []CXArgumentIndex
 
 	// Type defines what's the basic or primitev type of the
 	// `CXArgument`. `Type` can be equal to any of the `TYPE_*`
@@ -252,19 +252,19 @@ grep -rn "PassBy" .
 //                             `CXArgument` Getters
 
 // GetAssignmentElement ...
-func (arg *CXArgument) GetAssignmentElement() *CXArgument {
+func (arg *CXArgument) GetAssignmentElement(prgrm *CXProgram) *CXArgument {
 	if len(arg.Fields) > 0 {
-		return arg.Fields[len(arg.Fields)-1].GetAssignmentElement()
+		return prgrm.GetCXArgFromArray(arg.Fields[len(arg.Fields)-1]).GetAssignmentElement(prgrm)
 	}
 	return arg
 
 }
 
 // GetType ...
-func (arg *CXArgument) GetType() types.Code {
+func (arg *CXArgument) GetType(prgrm *CXProgram) types.Code {
 	fieldCount := len(arg.Fields)
 	if fieldCount > 0 {
-		return arg.Fields[fieldCount-1].GetType()
+		return prgrm.GetCXArgFromArray(arg.Fields[fieldCount-1]).GetType(prgrm)
 	}
 
 	if arg.Type == types.POINTER {
@@ -276,14 +276,14 @@ func (arg *CXArgument) GetType() types.Code {
 // ----------------------------------------------------------------
 //                     `CXArgument` Member handling
 
-// AddPackage assigns CX package `pkg` to CX argument `arg`.
-func (arg *CXArgument) AddPackage(pkg *CXPackage) *CXArgument {
+// SetPackage sets CX package `pkg` of CX argument `arg`.
+func (arg *CXArgument) SetPackage(pkg *CXPackage) *CXArgument {
 	arg.Package = CXPackageIndex(pkg.Index)
 	return arg
 }
 
-// AddType ...
-func (arg *CXArgument) AddType(typeCode types.Code) *CXArgument {
+// SetType ...
+func (arg *CXArgument) SetType(typeCode types.Code) *CXArgument {
 	arg.Type = typeCode
 	size := typeCode.Size()
 	arg.Size = size
@@ -293,20 +293,26 @@ func (arg *CXArgument) AddType(typeCode types.Code) *CXArgument {
 }
 
 // AddInput adds input parameters to `arg` in case arg is of type `TYPE_FUNC`.
-func (arg *CXArgument) AddInput(inp *CXArgument) *CXArgument {
-	arg.Inputs = append(arg.Inputs, inp)
+func (arg *CXArgument) AddInput(prgrm *CXProgram, inp *CXArgument) *CXArgument {
 	if inp.Package == -1 {
 		inp.Package = arg.Package
 	}
+
+	inpIdx := prgrm.AddCXArgInArray(inp)
+	arg.Inputs = append(arg.Inputs, inpIdx)
+
 	return arg
 }
 
 // AddOutput adds output parameters to `arg` in case arg is of type `TYPE_FUNC`.
-func (arg *CXArgument) AddOutput(out *CXArgument) *CXArgument {
-	arg.Outputs = append(arg.Outputs, out)
+func (arg *CXArgument) AddOutput(prgrm *CXProgram, out *CXArgument) *CXArgument {
 	if out.Package == -1 {
 		out.Package = arg.Package
 	}
+
+	outIdx := prgrm.AddCXArgInArray(out)
+	arg.Outputs = append(arg.Outputs, outIdx)
+
 	return arg
 }
 
@@ -337,8 +343,8 @@ func Struct(prgrm *CXProgram, pkgName, strctName, argName string) *CXArgument {
 		panic(err)
 	}
 
-	arg := MakeArgument(argName, "", -1).AddType(types.STRUCT)
-	arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_STRUCT)
+	arg := MakeArgument(argName, "", -1).SetType(types.STRUCT)
+	// arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_STRUCT)
 	arg.Size = strct.Size
 	arg.TotalSize = strct.Size
 	arg.StructType = strct
@@ -357,17 +363,17 @@ func Slice(typeCode types.Code) *CXArgument {
 
 // Func Helper function for creating function parameters for standard library operators.
 // The current standard library only uses basic types and slices. If more options are needed, modify this function
-func Func(pkg *CXPackage, inputs []*CXArgument, outputs []*CXArgument) *CXArgument {
-	arg := Param(types.FUNC)
-	arg.Package = CXPackageIndex(pkg.Index)
-	arg.Inputs = inputs
-	arg.Outputs = outputs
-	return arg
-}
+// func Func(pkg *CXPackage, inputs []*CXArgument, outputs []*CXArgument) *CXArgument {
+// 	arg := Param(types.FUNC)
+// 	arg.Package = CXPackageIndex(pkg.Index)
+// 	arg.Inputs = inputs
+// 	arg.Outputs = outputs
+// 	return arg
+// }
 
 // Param ...
 func Param(typeCode types.Code) *CXArgument {
-	arg := MakeArgument("", "", -1).AddType(typeCode)
+	arg := MakeArgument("", "", -1).SetType(typeCode)
 	arg.IsLocalDeclaration = true
 	return arg
 }

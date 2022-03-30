@@ -43,7 +43,7 @@ func MakeStruct(name string) *CXStruct {
 }
 
 // AddField ...
-func (strct *CXStruct) AddField(fld *CXArgument) *CXStruct {
+func (strct *CXStruct) AddField(prgrm *CXProgram, fld *CXArgument) *CXStruct {
 	for _, fl := range strct.Fields {
 		if fl.Name == fld.Name {
 			fmt.Printf("%s : duplicate field", CompilationError(fl.ArgDetails.FileName, fl.ArgDetails.FileLine))
@@ -58,7 +58,7 @@ func (strct *CXStruct) AddField(fld *CXArgument) *CXStruct {
 		lastFld := strct.Fields[numFlds-1]
 		fld.Offset = lastFld.Offset + lastFld.TotalSize
 	}
-	strct.Size += GetSize(fld)
+	strct.Size += GetSize(prgrm, fld)
 
 	return strct
 }

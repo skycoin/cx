@@ -28,14 +28,14 @@ func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []a
 
 	slcVarExprAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
 	slcVar := ast.MakeArgument(symName, CurrentFile, LineNo)
-	slcVar.AddType(typeCode)
+	slcVar.SetType(typeCode)
 	slcVar = DeclarationSpecifiers(slcVar, []types.Pointer{0}, constants.DECL_SLICE)
-
 	slcVar.TotalSize = types.POINTER_SIZE
-
-	slcVarExprAtomicOp.AddOutput(slcVar)
 	slcVar.Package = ast.CXPackageIndex(pkg.Index)
 	slcVar.PreviouslyDeclared = true
+
+	slcVarIdx := prgrm.AddCXArgInArray(slcVar)
+	slcVarExprAtomicOp.AddOutput(prgrm, slcVarIdx)
 
 	result = append(result, *slcVarExprCXLine, *slcVarExpr)
 
@@ -48,14 +48,22 @@ func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []a
 		if err != nil {
 			panic(err)
 		}
+		exprAtomicOpOperator := prgrm.GetFunctionFromArray(exprAtomicOp.Operator)
 
 		exprCXLine, _ := prgrm.GetPreviousCXLine(exprs, i)
 
 		if expr.IsArrayLiteral() {
-			symInp := ast.MakeArgument(symName, CurrentFile, LineNo).AddType(typeCode)
+			expr.ExpressionType = ast.CXEXPR_UNUSED
+
+			symInp := ast.MakeArgument(symName, CurrentFile, LineNo).SetType(typeCode)
 			symInp.Package = ast.CXPackageIndex(pkg.Index)
-			symOut := ast.MakeArgument(symName, CurrentFile, LineNo).AddType(typeCode)
+			symInp.TotalSize = types.POINTER_SIZE
+			symInpIdx := prgrm.AddCXArgInArray(symInp)
+
+			symOut := ast.MakeArgument(symName, CurrentFile, LineNo).SetType(typeCode)
 			symOut.Package = ast.CXPackageIndex(pkg.Index)
+			symOut.TotalSize = types.POINTER_SIZE
+			symOutIdx := prgrm.AddCXArgInArray(symOut)
 
 			endPointsCounter++
 
@@ -67,60 +75,62 @@ func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []a
 			}
 
 			symExprAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
-			symExprAtomicOp.AddOutput(symOut)
+			symExprAtomicOp.AddOutput(prgrm, symOutIdx)
 
-			if exprAtomicOp.Operator == nil {
+			if exprAtomicOpOperator == nil {
 				// then it's a literal
-				symExprAtomicOp.Operator = ast.Natives[constants.OP_APPEND]
+				opIdx := prgrm.AddNativeFunctionInArray(ast.Natives[constants.OP_APPEND])
+				symExprAtomicOp.Operator = opIdx
 
 				symExprAtomicOp.Inputs = nil
-				symExprAtomicOp.Inputs = append(symExprAtomicOp.Inputs, symInp)
+				symExprAtomicOp.Inputs = append(symExprAtomicOp.Inputs, symInpIdx)
 				symExprAtomicOp.Inputs = append(symExprAtomicOp.Inputs, exprAtomicOp.Outputs...)
 			} else {
 				// We need to create a temporary variable to hold the result of the
 				// nested expressions. Then use that variable as part of the slice literal.
 				out := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), exprCXLine.FileName, exprCXLine.LineNumber)
 				outArg := getOutputType(prgrm, &expr)
-				out.AddType(outArg.Type)
+				out.SetType(outArg.Type)
 				out.PointerTargetType = outArg.PointerTargetType
 				out.StructType = outArg.StructType
 				out.Size = outArg.Size
-				out.TotalSize = ast.GetSize(outArg)
+				out.TotalSize = ast.GetSize(prgrm, outArg)
 				out.PreviouslyDeclared = true
+				outIdx := prgrm.AddCXArgInArray(out)
 
 				exprAtomicOp.Outputs = nil
-				exprAtomicOp.AddOutput(out)
-				result = append(result, expr)
+				exprAtomicOp.AddOutput(prgrm, outIdx)
 
-				symExprAtomicOp.Operator = ast.Natives[constants.OP_APPEND]
+				result = append(result, expr)
+				opIdx := prgrm.AddNativeFunctionInArray(ast.Natives[constants.OP_APPEND])
+				symExprAtomicOp.Operator = opIdx
 
 				symExprAtomicOp.Inputs = nil
-				symExprAtomicOp.Inputs = append(symExprAtomicOp.Inputs, symInp)
-				symExprAtomicOp.Inputs = append(symExprAtomicOp.Inputs, out)
+				symExprAtomicOp.Inputs = append(symExprAtomicOp.Inputs, symInpIdx)
+				symExprAtomicOp.Inputs = append(symExprAtomicOp.Inputs, outIdx)
 			}
 			result = append(result, *symExprExprCXLine, *symExpr)
-
-			symInp.TotalSize = types.POINTER_SIZE
-			symOut.TotalSize = types.POINTER_SIZE
 		} else {
 			result = append(result, expr)
 		}
-		expr.ExpressionType = ast.CXEXPR_UNUSED
 	}
 
 	symNameOutput := MakeGenSym(constants.LOCAL_PREFIX)
 
-	symOutput := ast.MakeArgument(symNameOutput, CurrentFile, LineNo).AddType(typeCode)
+	symOutput := ast.MakeArgument(symNameOutput, CurrentFile, LineNo)
+	symOutput.SetType(typeCode)
 	symOutput.IsSlice = true
 	symOutput.Package = ast.CXPackageIndex(pkg.Index)
 	symOutput.PreviouslyDeclared = true
+	symOutput.TotalSize = types.POINTER_SIZE
+	symOutputIdx := prgrm.AddCXArgInArray(symOutput)
 
-	symInput := ast.MakeArgument(symName, CurrentFile, LineNo).AddType(typeCode)
+	symInput := ast.MakeArgument(symName, CurrentFile, LineNo)
+	symInput.SetType(typeCode)
 	symInput.IsSlice = true
 	symInput.Package = ast.CXPackageIndex(pkg.Index)
-
 	symInput.TotalSize = types.POINTER_SIZE
-	symOutput.TotalSize = types.POINTER_SIZE
+	symInputIdx := prgrm.AddCXArgInArray(symInput)
 
 	symExprExprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
 	symExpr := ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_IDENTITY])
@@ -130,8 +140,8 @@ func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []a
 	}
 
 	symExprAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
-	symExprAtomicOp.Outputs = append(symExprAtomicOp.Outputs, symOutput)
-	symExprAtomicOp.Inputs = append(symExprAtomicOp.Inputs, symInput)
+	symExprAtomicOp.Outputs = append(symExprAtomicOp.Outputs, symOutputIdx)
+	symExprAtomicOp.Inputs = append(symExprAtomicOp.Inputs, symInputIdx)
 
 	// marking the output so multidimensional arrays identify the expressions
 	result = append(result, *symExprExprCXLine, *symExpr)
@@ -152,26 +162,31 @@ func PrimaryStructLiteral(prgrm *ast.CXProgram, ident string, strctFlds []ast.CX
 				if err != nil {
 					panic(err)
 				}
-				name := cxAtomicOp.Outputs[0].Name
 
-				fld := ast.MakeArgument(name, CurrentFile, LineNo)
-				fld.Type = cxAtomicOp.Outputs[0].Type
-				fld.PointerTargetType = cxAtomicOp.Outputs[0].PointerTargetType
+				cxAtomicOpOutputIdx := cxAtomicOp.Outputs[0]
+
+				name := prgrm.CXArgs[cxAtomicOpOutputIdx].Name
+
+				field := ast.MakeArgument(name, CurrentFile, LineNo)
+				field.Type = prgrm.CXArgs[cxAtomicOpOutputIdx].Type
+				field.PointerTargetType = prgrm.CXArgs[cxAtomicOpOutputIdx].PointerTargetType
 				expr.ExpressionType = ast.CXEXPR_STRUCT_LITERAL
 
-				cxAtomicOp.Outputs[0].Package = ast.CXPackageIndex(pkg.Index)
+				prgrm.CXArgs[cxAtomicOpOutputIdx].Package = ast.CXPackageIndex(pkg.Index)
 				// expr.ProgramOutput[0].Program = prgrm
 
-				if cxAtomicOp.Outputs[0].StructType == nil {
-					cxAtomicOp.Outputs[0].StructType = strct
+				if prgrm.CXArgs[cxAtomicOpOutputIdx].StructType == nil {
+					prgrm.CXArgs[cxAtomicOpOutputIdx].StructType = strct
 				}
 				// expr.ProgramOutput[0].StructType = strct
-				fld.StructType = strct
+				field.StructType = strct
 
-				cxAtomicOp.Outputs[0].Size = strct.Size
-				cxAtomicOp.Outputs[0].TotalSize = strct.Size
-				cxAtomicOp.Outputs[0].Name = ident
-				cxAtomicOp.Outputs[0].Fields = append(cxAtomicOp.Outputs[0].Fields, fld)
+				prgrm.CXArgs[cxAtomicOpOutputIdx].Size = strct.Size
+				prgrm.CXArgs[cxAtomicOpOutputIdx].TotalSize = strct.Size
+				prgrm.CXArgs[cxAtomicOpOutputIdx].Name = ident
+				fieldIdx := prgrm.AddCXArgInArray(field)
+				prgrm.CXArgs[cxAtomicOpOutputIdx].Fields = append(prgrm.CXArgs[cxAtomicOpOutputIdx].Fields, fieldIdx)
+
 				result = append(result, expr)
 			}
 		} else {
@@ -198,20 +213,22 @@ func PrimaryStructLiteralExternal(prgrm *ast.CXProgram, impName string, ident st
 						panic(err)
 					}
 
-					fld := ast.MakeArgument("", CurrentFile, LineNo)
-					fld.AddType(types.IDENTIFIER)
-					fld.Name = cxAtomicOp.Outputs[0].Name
+					cxAtomicOpOutput := prgrm.GetCXArgFromArray(cxAtomicOp.Outputs[0])
+					field := ast.MakeArgument("", CurrentFile, LineNo)
+					field.SetType(types.IDENTIFIER)
+					field.Name = cxAtomicOpOutput.Name
 
 					expr.ExpressionType = ast.CXEXPR_STRUCT_LITERAL
 
-					cxAtomicOp.Outputs[0].Package = ast.CXPackageIndex(pkg.Index)
+					cxAtomicOpOutput.Package = ast.CXPackageIndex(pkg.Index)
 					// expr.ProgramOutput[0].Program = prgrm
 
-					cxAtomicOp.Outputs[0].StructType = strct
-					cxAtomicOp.Outputs[0].Size = strct.Size
-					cxAtomicOp.Outputs[0].TotalSize = strct.Size
-					cxAtomicOp.Outputs[0].Name = ident
-					cxAtomicOp.Outputs[0].Fields = append(cxAtomicOp.Outputs[0].Fields, fld)
+					cxAtomicOpOutput.StructType = strct
+					cxAtomicOpOutput.Size = strct.Size
+					cxAtomicOpOutput.TotalSize = strct.Size
+					cxAtomicOpOutput.Name = ident
+					fieldIdx := prgrm.AddCXArgInArray(field)
+					cxAtomicOpOutput.Fields = append(cxAtomicOpOutput.Fields, fieldIdx)
 					result = append(result, expr)
 				}
 			} else {
@@ -247,12 +264,13 @@ func ArrayLiteralExpression(prgrm *ast.CXProgram, arrSizes []types.Pointer, type
 	arrVarExprAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
 	arrVar := ast.MakeArgument(symName, CurrentFile, LineNo)
 	arrVar = DeclarationSpecifiers(arrVar, arrSizes, constants.DECL_ARRAY)
-	arrVar.AddType(typeCode)
+	arrVar.SetType(typeCode)
 	arrVar.TotalSize = arrVar.Size * TotalLength(arrVar.Lengths)
-
-	arrVarExprAtomicOp.AddOutput(arrVar)
 	arrVar.Package = ast.CXPackageIndex(pkg.Index)
 	arrVar.PreviouslyDeclared = true
+	arrVarIdx := prgrm.AddCXArgInArray(arrVar)
+
+	arrVarExprAtomicOp.AddOutput(prgrm, arrVarIdx)
 
 	result = append(result, *arrVarExprCXLine, *arrVarExpr)
 
@@ -265,11 +283,13 @@ func ArrayLiteralExpression(prgrm *ast.CXProgram, arrSizes []types.Pointer, type
 		if err != nil {
 			panic(err)
 		}
+		exprAtomicOpOperator := prgrm.GetFunctionFromArray(exprAtomicOp.Operator)
 
 		if expr.IsArrayLiteral() {
 			expr.ExpressionType = ast.CXEXPR_UNUSED
 
-			sym := ast.MakeArgument(symName, CurrentFile, LineNo).AddType(typeCode)
+			sym := ast.MakeArgument(symName, CurrentFile, LineNo)
+			sym.SetType(typeCode)
 			sym.Package = ast.CXPackageIndex(pkg.Index)
 			sym.PreviouslyDeclared = true
 
@@ -287,6 +307,9 @@ func ArrayLiteralExpression(prgrm *ast.CXProgram, arrSizes []types.Pointer, type
 
 			sym.Indexes = append(sym.Indexes, idxExprAtomicOp.Outputs[0])
 			sym.DereferenceOperations = append(sym.DereferenceOperations, constants.DEREF_ARRAY)
+			sym.Lengths = arrSizes
+			sym.TotalSize = sym.Size * TotalLength(sym.Lengths)
+			symIdx := prgrm.AddCXArgInArray(sym)
 
 			symExprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
 			symExpr := ast.MakeAtomicOperatorExpression(prgrm, nil)
@@ -295,24 +318,21 @@ func ArrayLiteralExpression(prgrm *ast.CXProgram, arrSizes []types.Pointer, type
 				panic(err)
 			}
 
-			symExprAtomicOp.AddOutput(sym)
+			symExprAtomicOp.AddOutput(prgrm, symIdx)
 
-			if exprAtomicOp.Operator == nil {
+			if exprAtomicOpOperator == nil {
 				// then it's a literal
-				symExprAtomicOp.Operator = ast.Natives[constants.OP_IDENTITY]
+				opIdx := prgrm.AddNativeFunctionInArray(ast.Natives[constants.OP_IDENTITY])
+				symExprAtomicOp.Operator = opIdx
 				symExprAtomicOp.Inputs = exprAtomicOp.Outputs
 			} else {
 				symExprAtomicOp.Operator = exprAtomicOp.Operator
 				symExprAtomicOp.Inputs = exprAtomicOp.Inputs
 
 				// hack to get the correct lengths below
-				exprAtomicOp.Outputs = append(exprAtomicOp.Outputs, sym)
+				exprAtomicOp.Outputs = append(exprAtomicOp.Outputs, symIdx)
 			}
 			result = append(result, *symExprCXLine, *symExpr)
-
-			// sym.Lengths = append(expr.ProgramOutput[0].Lengths, arrSizes[len(arrSizes)-1])
-			sym.Lengths = arrSizes
-			sym.TotalSize = sym.Size * TotalLength(sym.Lengths)
 		} else {
 			result = append(result, expr)
 		}
@@ -320,19 +340,23 @@ func ArrayLiteralExpression(prgrm *ast.CXProgram, arrSizes []types.Pointer, type
 
 	symNameOutput := MakeGenSym(constants.LOCAL_PREFIX)
 
-	symOutput := ast.MakeArgument(symNameOutput, CurrentFile, LineNo).AddType(typeCode)
+	symOutput := ast.MakeArgument(symNameOutput, CurrentFile, LineNo)
+	symOutput.SetType(typeCode)
 	// symOutput.Lengths = append(symOutput.Lengths, arrSizes[len(arrSizes)-1])
 	symOutput.Lengths = arrSizes
 	symOutput.Package = ast.CXPackageIndex(pkg.Index)
 	symOutput.PreviouslyDeclared = true
 	symOutput.TotalSize = symOutput.Size * TotalLength(symOutput.Lengths)
+	symOutputIdx := prgrm.AddCXArgInArray(symOutput)
 
-	symInput := ast.MakeArgument(symName, CurrentFile, LineNo).AddType(typeCode)
+	symInput := ast.MakeArgument(symName, CurrentFile, LineNo)
+	symInput.SetType(typeCode)
 	// symInput.Lengths = append(symInput.Lengths, arrSizes[len(arrSizes)-1])
 	symInput.Lengths = arrSizes
 	symInput.Package = ast.CXPackageIndex(pkg.Index)
 	symInput.PreviouslyDeclared = true
 	symInput.TotalSize = symInput.Size * TotalLength(symInput.Lengths)
+	symInputIdx := prgrm.AddCXArgInArray(symInput)
 
 	symExprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
 	symExpr := ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_IDENTITY])
@@ -341,8 +365,9 @@ func ArrayLiteralExpression(prgrm *ast.CXProgram, arrSizes []types.Pointer, type
 		panic(err)
 	}
 	symExprAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
-	symExprAtomicOp.Outputs = append(symExprAtomicOp.Outputs, symOutput)
-	symExprAtomicOp.Inputs = append(symExprAtomicOp.Inputs, symInput)
+	symExprAtomicOp.AddOutput(prgrm, symOutputIdx)
+	symExprAtomicOp.AddInput(prgrm, symInputIdx)
+
 	// symOutput.SynonymousTo = symInput.Name
 
 	// marking the output so multidimensional arrays identify the expressions

@@ -6,21 +6,17 @@ import (
 	"github.com/skycoin/cx/cx/types"
 )
 
-// func SelectProgram(prgrm *ast.CXProgram) {
-// 	AST = prgrm
-// }
-
 func SetCorrectArithmeticOp(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
 	if err != nil {
 		panic(err)
 	}
-
-	if cxAtomicOp.Operator == nil || len(cxAtomicOp.Outputs) < 1 {
+	cxAtomicOpOperator := prgrm.GetFunctionFromArray(cxAtomicOp.Operator)
+	if cxAtomicOpOperator == nil || len(cxAtomicOp.Outputs) < 1 {
 		return
 	}
 
-	code := cxAtomicOp.Operator.AtomicOPCode
+	code := cxAtomicOpOperator.AtomicOPCode
 	if code > constants.START_OF_OPERATORS && code < constants.END_OF_OPERATORS {
 		// TODO: argument type are not fully resolved here, should be move elsewhere.
 		//cxAtomicOp.Operator = cxcore.GetTypedOperator(cxcore.GetType(cxAtomicOp.ProgramInput[0]), code)
@@ -51,63 +47,65 @@ func hasDerefOp(arg *ast.CXArgument, spec int) bool {
 
 // This function writes those bytes to prgrm.Data
 func WritePrimary(prgrm *ast.CXProgram, typeCode types.Code, byts []byte, isSlice bool) []ast.CXExpression {
-	if pkg, err := prgrm.GetCurrentPackage(); err == nil {
-		arg := ast.MakeArgument("", CurrentFile, LineNo)
-		arg.AddType(typeCode)
-		arg.Package = ast.CXPackageIndex(pkg.Index)
-
-		size := types.Cast_int_to_ptr(len(byts))
-
-		arg.Size = typeCode.Size()
-		arg.TotalSize = size
-		arg.Offset = prgrm.Data.Size + prgrm.Data.StartsAt
-
-		if arg.Type == types.STR || arg.Type == types.AFF {
-			arg.PassBy = constants.PASSBY_REFERENCE
-			arg.Size = types.POINTER_SIZE
-			arg.TotalSize = types.POINTER_SIZE
-			if isSlice == false {
-				types.Write_ptr(byts, 0, arg.Offset)
-			}
-		}
-
-		// A CX program allocates min(INIT_HEAP_SIZE, MAX_HEAP_SIZE) bytes
-		// after the stack segment. These bytes are used to allocate the data segment
-		// at compile time. If the data segment is bigger than min(INIT_HEAP_SIZE, MAX_HEAP_SIZE),
-		// we'll start appending the bytes to prgrm.Memory.
-		// After compilation, we calculate how many bytes we need to add to have a heap segment
-		// equal to `minHeapSize()` that is allocated after the data segment.
-		memSize := types.Cast_int_to_ptr(len(prgrm.Memory))
-		if (size + prgrm.Data.Size + prgrm.Data.StartsAt) > memSize {
-			var i types.Pointer
-			// First we need to fill the remaining free bytes in
-			// the current `prgrm.Memory` slice.
-			for i = types.Pointer(0); i < memSize-prgrm.Data.Size+prgrm.Data.StartsAt; i++ {
-				prgrm.Memory[prgrm.Data.Size+prgrm.Data.StartsAt+i] = byts[i]
-			}
-			// Then we append the bytes that didn't fit.
-			prgrm.Memory = append(prgrm.Memory, byts[i:]...)
-		} else {
-			for i, byt := range byts {
-				prgrm.Memory[prgrm.Data.Size+prgrm.Data.StartsAt+types.Cast_int_to_ptr(i)] = byt
-			}
-		}
-		prgrm.Data.Size += size
-		prgrm.Heap.StartsAt = prgrm.Data.Size + prgrm.Data.StartsAt
-
-		// exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
-		expr := ast.MakeAtomicOperatorExpression(prgrm, nil)
-		cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
-		if err != nil {
-			panic(err)
-		}
-
-		cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
-		cxAtomicOp.AddOutput(arg)
-		return []ast.CXExpression{*expr}
-	} else {
+	pkg, err := prgrm.GetCurrentPackage()
+	if err != nil {
 		panic(err)
 	}
+
+	arg := ast.MakeArgument("", CurrentFile, LineNo)
+	arg.SetType(typeCode)
+	arg.Package = ast.CXPackageIndex(pkg.Index)
+
+	size := types.Cast_int_to_ptr(len(byts))
+
+	arg.Size = typeCode.Size()
+	arg.TotalSize = size
+	arg.Offset = prgrm.Data.Size + prgrm.Data.StartsAt
+
+	if arg.Type == types.STR || arg.Type == types.AFF {
+		arg.PassBy = constants.PASSBY_REFERENCE
+		arg.Size = types.POINTER_SIZE
+		arg.TotalSize = types.POINTER_SIZE
+		if isSlice == false {
+			types.Write_ptr(byts, 0, arg.Offset)
+		}
+	}
+	argIdx := prgrm.AddCXArgInArray(arg)
+
+	// A CX program allocates min(INIT_HEAP_SIZE, MAX_HEAP_SIZE) bytes
+	// after the stack segment. These bytes are used to allocate the data segment
+	// at compile time. If the data segment is bigger than min(INIT_HEAP_SIZE, MAX_HEAP_SIZE),
+	// we'll start appending the bytes to prgrm.Memory.
+	// After compilation, we calculate how many bytes we need to add to have a heap segment
+	// equal to `minHeapSize()` that is allocated after the data segment.
+	memSize := types.Cast_int_to_ptr(len(prgrm.Memory))
+	if (size + prgrm.Data.Size + prgrm.Data.StartsAt) > memSize {
+		var i types.Pointer
+		// First we need to fill the remaining free bytes in
+		// the current `prgrm.Memory` slice.
+		for i = types.Pointer(0); i < memSize-prgrm.Data.Size+prgrm.Data.StartsAt; i++ {
+			prgrm.Memory[prgrm.Data.Size+prgrm.Data.StartsAt+i] = byts[i]
+		}
+		// Then we append the bytes that didn't fit.
+		prgrm.Memory = append(prgrm.Memory, byts[i:]...)
+	} else {
+		for i, byt := range byts {
+			prgrm.Memory[prgrm.Data.Size+prgrm.Data.StartsAt+types.Cast_int_to_ptr(i)] = byt
+		}
+	}
+	prgrm.Data.Size += size
+	prgrm.Heap.StartsAt = prgrm.Data.Size + prgrm.Data.StartsAt
+
+	// exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
+	expr := ast.MakeAtomicOperatorExpression(prgrm, nil)
+	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	if err != nil {
+		panic(err)
+	}
+
+	cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
+	cxAtomicOp.AddOutput(prgrm, argIdx)
+	return []ast.CXExpression{*expr}
 }
 
 func TotalLength(lengths []types.Pointer) types.Pointer {
@@ -115,27 +113,30 @@ func TotalLength(lengths []types.Pointer) types.Pointer {
 	for _, i := range lengths {
 		total *= i
 	}
+
 	return total
 }
 
 func StructLiteralFields(prgrm *ast.CXProgram, ident string) ast.CXExpression {
-	if pkg, err := prgrm.GetCurrentPackage(); err == nil {
-		arg := ast.MakeArgument("", CurrentFile, LineNo)
-		arg.AddType(types.IDENTIFIER)
-		arg.Name = ident
-		arg.Package = ast.CXPackageIndex(pkg.Index)
-
-		expr := ast.MakeAtomicOperatorExpression(prgrm, nil)
-		cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
-		if err != nil {
-			panic(err)
-		}
-		cxAtomicOp.AddOutput(arg)
-		cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
-		return *expr
-	} else {
+	pkg, err := prgrm.GetCurrentPackage()
+	if err != nil {
 		panic(err)
 	}
+
+	arg := ast.MakeArgument("", CurrentFile, LineNo)
+	arg.SetType(types.IDENTIFIER)
+	arg.Name = ident
+	arg.Package = ast.CXPackageIndex(pkg.Index)
+	argIdx := prgrm.AddCXArgInArray(arg)
+
+	expr := ast.MakeAtomicOperatorExpression(prgrm, nil)
+	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	if err != nil {
+		panic(err)
+	}
+	cxAtomicOp.AddOutput(prgrm, argIdx)
+	cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
+	return *expr
 }
 
 func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile string, lineNo int) {
@@ -150,9 +151,9 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 	argFldType := ast.MakeField("Type", types.STR, "", 0)
 	argFldType.TotalSize = types.STR.Size()
 
-	argStrct.AddField(argFldName)
-	argStrct.AddField(argFldIndex)
-	argStrct.AddField(argFldType)
+	argStrct.AddField(prgrm, argFldName)
+	argStrct.AddField(prgrm, argFldIndex)
+	argStrct.AddField(prgrm, argFldType)
 
 	pkg.AddStruct(argStrct)
 
@@ -162,7 +163,7 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 
 	exprFldOperator := ast.MakeField("Operator", types.STR, "", 0)
 
-	exprStrct.AddField(exprFldOperator)
+	exprStrct.AddField(prgrm, exprFldOperator)
 
 	pkg.AddStruct(exprStrct)
 
@@ -181,10 +182,10 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 	fnFldOutSig.Size = types.STR.Size()
 	fnFldOutSig = DeclarationSpecifiers(fnFldOutSig, []types.Pointer{0}, constants.DECL_SLICE)
 
-	fnStrct.AddField(fnFldName)
-	fnStrct.AddField(fnFldInpSig)
+	fnStrct.AddField(prgrm, fnFldName)
+	fnStrct.AddField(prgrm, fnFldInpSig)
 
-	fnStrct.AddField(fnFldOutSig)
+	fnStrct.AddField(prgrm, fnFldOutSig)
 
 	pkg.AddStruct(fnStrct)
 
@@ -195,7 +196,7 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 	strctFldName := ast.MakeField("Name", types.STR, "", 0)
 	strctFldName.TotalSize = types.STR.Size()
 
-	strctStrct.AddField(strctFldName)
+	strctStrct.AddField(prgrm, strctFldName)
 
 	pkg.AddStruct(strctStrct)
 
@@ -205,7 +206,7 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 
 	pkgFldName := ast.MakeField("Name", types.STR, "", 0)
 
-	pkgStrct.AddField(pkgFldName)
+	pkgStrct.AddField(prgrm, pkgFldName)
 
 	pkg.AddStruct(pkgStrct)
 
@@ -218,8 +219,8 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 	callFldFnSize := ast.MakeField("FnSize", types.I32, "", 0)
 	callFldFnSize.TotalSize = types.I32.Size()
 
-	callStrct.AddField(callFldFnName)
-	callStrct.AddField(callFldFnSize)
+	callStrct.AddField(prgrm, callFldFnName)
+	callStrct.AddField(prgrm, callFldFnSize)
 
 	pkg.AddStruct(callStrct)
 
@@ -240,34 +241,36 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 	prgrmFldCaller := DeclarationSpecifiersStruct(prgrm, callStrct.Name, strctPkg.Name, false, currentFile, lineNo)
 	prgrmFldCaller.Name = "Caller"
 
-	prgrmStrct.AddField(prgrmFldCallCounter)
-	prgrmStrct.AddField(prgrmFldFreeHeap)
-	prgrmStrct.AddField(prgrmFldCaller)
+	prgrmStrct.AddField(prgrm, prgrmFldCallCounter)
+	prgrmStrct.AddField(prgrm, prgrmFldFreeHeap)
+	prgrmStrct.AddField(prgrm, prgrmFldCaller)
 
 	pkg.AddStruct(prgrmStrct)
 }
 
 func PrimaryIdentifier(prgrm *ast.CXProgram, ident string) []ast.CXExpression {
-	if pkg, err := prgrm.GetCurrentPackage(); err == nil {
-		arg := ast.MakeArgument(ident, CurrentFile, LineNo) // fix: line numbers in errors sometimes report +1 or -1. Issue #195
-		arg.AddType(types.IDENTIFIER)
-		// arg.Typ = "ident"
-		arg.Name = ident
-		arg.Package = ast.CXPackageIndex(pkg.Index)
-
-		// exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
-		// expr := &cxcore.CXExpression{ProgramOutput: []*cxcore.CXArgument{arg}}
-		expr := ast.MakeAtomicOperatorExpression(prgrm, nil)
-		cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
-		if err != nil {
-			panic(err)
-		}
-		cxAtomicOp.AddOutput(arg)
-		cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
-		return []ast.CXExpression{*expr}
-	} else {
+	pkg, err := prgrm.GetCurrentPackage()
+	if err != nil {
 		panic(err)
 	}
+
+	arg := ast.MakeArgument(ident, CurrentFile, LineNo) // fix: line numbers in errors sometimes report +1 or -1. Issue #195
+	arg.SetType(types.IDENTIFIER)
+	// arg.Typ = "ident"
+	arg.Name = ident
+	arg.Package = ast.CXPackageIndex(pkg.Index)
+	argIdx := prgrm.AddCXArgInArray(arg)
+
+	// exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
+	// expr := &cxcore.CXExpression{ProgramOutput: []*cxcore.CXArgument{arg}}
+	expr := ast.MakeAtomicOperatorExpression(prgrm, nil)
+	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	if err != nil {
+		panic(err)
+	}
+	cxAtomicOp.AddOutput(prgrm, argIdx)
+	cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
+	return []ast.CXExpression{*expr}
 }
 
 // IsAllArgsBasicTypes checks if all the input arguments in an expressions are of basic type.
@@ -277,7 +280,8 @@ func IsAllArgsBasicTypes(prgrm *ast.CXProgram, expr *ast.CXExpression) bool {
 		panic(err)
 	}
 
-	for _, inp := range cxAtomicOp.Inputs {
+	for _, inpIdx := range cxAtomicOp.Inputs {
+		inp := prgrm.GetCXArgFromArray(inpIdx)
 		inpType := inp.Type
 		if inp.Type == types.POINTER {
 			inpType = inp.PointerTargetType

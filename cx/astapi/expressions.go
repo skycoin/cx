@@ -35,7 +35,8 @@ func AddNativeExpressionToFunction(cxprogram *cxast.CXProgram, functionName stri
 		panic(err)
 	}
 
-	cxAtomicOp.Operator.Name = cxast.OpNames[expressionType]
+	cxAtomicOpOperator := cxprogram.GetFunctionFromArray(cxAtomicOp.Operator)
+	cxAtomicOpOperator.Name = cxast.OpNames[expressionType]
 
 	fn, err := FindFunction(cxprogram, functionName)
 	if err != nil {
@@ -114,7 +115,8 @@ func AddNativeExpressionToFunctionByLineNumber(cxprogram *cxast.CXProgram, funct
 		panic(err)
 	}
 
-	cxAtomicOp.Operator.Name = cxast.OpNames[expressionType]
+	cxAtomicOpOperator := cxprogram.GetFunctionFromArray(cxAtomicOp.Operator)
+	cxAtomicOpOperator.Name = cxast.OpNames[expressionType]
 	fn, err := FindFunction(cxprogram, functionName)
 	if err != nil {
 		return err

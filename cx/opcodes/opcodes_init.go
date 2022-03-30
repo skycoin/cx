@@ -22,7 +22,7 @@ func Out(params ...*ast.CXArgument) []*ast.CXArgument {
 }
 
 func RegisterOpcodes(prgrm *ast.CXProgram) {
-	ast.Operators = make([]*ast.CXFunction, ast.OPERATOR_HANDLER_COUNT)
+	ast.Operators = make([]*ast.CXNativeFunction, ast.OPERATOR_HANDLER_COUNT)
 
 	RegisterOpCode(prgrm, constants.OP_IDENTITY, "identity", opIdentity, In(ast.ConstCxArg_UND_TYPE), Out(ast.ConstCxArg_UND_TYPE))
 	RegisterOpCode(prgrm, constants.OP_GOTO, "goto", opGoto, nil, nil)
@@ -488,11 +488,6 @@ func RegisterOpcodes(prgrm *ast.CXProgram) {
 	// RegisterFunction(prgrm,"aff.of", opAffOf, In(ast.Slice(types.AFF), ast.Slice(types.AFF)), nil)
 	// RegisterFunction(prgrm,"aff.inform", opAffInform, In(ast.Slice(types.AFF), ast.ConstCxArg_I32, ast.Slice(types.AFF)), nil)
 	// RegisterFunction(prgrm,"aff.request", opAffRequest, In(ast.Slice(types.AFF), ast.ConstCxArg_I32, ast.Slice(types.AFF)), nil)
-
-	RegisterFunction(prgrm, "tcp.Dial", opTCPDial, In(ast.ConstCxArg_STR, ast.ConstCxArg_STR), Out(ast.ConstCxArg_STR))
-	RegisterFunction(prgrm, "tcp.Listen", opTCPListen, In(ast.ConstCxArg_STR, ast.ConstCxArg_STR), Out(ast.ConstCxArg_STR))
-	RegisterFunction(prgrm, "tcp.Accept", opTCPAccept, In(ast.ConstCxArg_STR, ast.ConstCxArg_STR), Out(ast.ConstCxArg_STR))
-	RegisterFunction(prgrm, "tcp.Close", opTCPClose, nil, nil)
 
 	//RegisterOpCode(prgrm,OP_EVOLVE_EVOLVE, "evolve.evolve", opEvolve, In(Slice(TYPE_AFF), Slice(TYPE_AFF), Slice(TYPE_F64), Slice(TYPE_F64), ConstCxArg_I32, ConstCxArg_I32, ConstCxArg_I32, ConstCxArg_F64), nil)
 	//RegisterOpCode(prgrm,OP_EVOLVE_EVOLVE, "evolve.evolve", opEvolve, In(Slice(TYPE_AFF), Slice(TYPE_AFF), Slice(TYPE_AFF), Slice(TYPE_AFF), Slice(TYPE_AFF), ConstCxArg_I32, ConstCxArg_I32, ConstCxArg_I32, ConstCxArg_F64), nil)

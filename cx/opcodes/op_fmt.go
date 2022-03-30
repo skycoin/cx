@@ -92,7 +92,7 @@ func buildString(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVal
 		lInps := len(inputs[specifiersCounter+1:])
 		for c := 0; c < lInps; c++ {
 			inp := &inputs[specifiersCounter+1+c]
-			elt := inp.Arg.GetAssignmentElement()
+			elt := inp.Arg.GetAssignmentElement(prgrm)
 			typ := ""
 			_ = typ
 			if elt.StructType != nil {

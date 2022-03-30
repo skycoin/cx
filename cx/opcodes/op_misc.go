@@ -10,7 +10,7 @@ func opIdentity(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 	out1 := outputs[0].Arg
 	var elt *ast.CXArgument
 	if len(out1.Fields) > 0 {
-		elt = out1.Fields[len(out1.Fields)-1]
+		elt = prgrm.GetCXArgFromArray(out1.Fields[len(out1.Fields)-1])
 	} else {
 		elt = out1
 	}

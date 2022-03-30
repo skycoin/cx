@@ -1,7 +1,6 @@
 package parsingcompletor
 
 import (
-	"github.com/skycoin/cx/cx/ast"
 	cxinit "github.com/skycoin/cx/cx/init"
 	"github.com/skycoin/cx/cx/opcodes"
 	"github.com/skycoin/cx/cxparser/actions"
@@ -16,11 +15,9 @@ func init() {
 func InitCXCore() {
 	if !Initialized {
 		if actions.AST == nil {
-			actions.AST = ast.MakeProgram()
+			actions.AST = cxinit.MakeProgram()
 		}
-
 		opcodes.RegisterOpcodes(actions.AST)
-		cxinit.RegisterPackages(actions.AST)
 
 		Initialized = true
 	}

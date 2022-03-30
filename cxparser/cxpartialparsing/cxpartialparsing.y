@@ -29,7 +29,8 @@
 		return yyParse(NewLexer(codeBuf))
 	}
 
-	func PreFunctionDeclaration (fn *ast.CXFunction, inputs []*ast.CXArgument, outputs []*ast.CXArgument) {
+	func PreFunctionDeclaration (fnIdx ast.CXFunctionIndex, inputs []*ast.CXArgument, outputs []*ast.CXArgument) {
+                fn:=actions.AST.GetFunctionFromArray(fnIdx)
 		// adding inputs, outputs
 		for _, inp := range inputs {
 			fn.AddInput(actions.AST,inp)
@@ -68,6 +69,7 @@
 	expressions []*ast.CXExpression
 
         function *ast.CXFunction
+        functionIndex ast.CXFunctionIndex
 }
 
 %token  <bool>          BOOLEAN_LITERAL
@@ -137,7 +139,7 @@
 %type   <arguments>     id_list
 %type   <arguments>     types_list
                                                 
-%type   <function>      function_header
+%type   <functionIndex>      function_header
 
 %type   <ints>          indexing_literal
 %type   <ints>          indexing_slice_literal
@@ -225,12 +227,8 @@ function_header:
 			if pkg, err := Program.GetCurrentPackage(); err == nil {
 				fn := ast.MakeFunction($2, CurrentFileName, lineNo)
 				_,fnIdx:=pkg.AddFunction(Program,fn)
-                                newFn,err:=Program.GetFunctionFromArray(fnIdx)
-                                if err!=nil{
-                                        panic(err)
-                                }
 
-                                $$ = newFn
+                                $$ = fnIdx
 			} else {
 				panic(err)
 			}
@@ -246,12 +244,9 @@ function_header:
 			if pkg, err := Program.GetCurrentPackage(); err == nil {
 				fn := ast.MakeFunction(fnName, CurrentFileName, lineNo)
 				_,fnIdx:=pkg.AddFunction(Program,fn)
-                                newFn,err:=Program.GetFunctionFromArray(fnIdx)
-                                if err!=nil{
-                                        panic(err)
-                                }
+                                newFn:=Program.GetFunctionFromArray(fnIdx)
                                 newFn.AddInput(Program,$3[0])
-                                $$ = newFn
+                                $$ = fnIdx
 			} else {
 				panic(err)
 			}
@@ -315,7 +310,7 @@ direct_declarator:
                 {
 			if pkg, err := Program.GetCurrentPackage(); err == nil {
 				arg := ast.MakeArgument("", actions.CurrentFile, actions.LineNo)
-				arg.AddType(types.UNDEFINED)
+				arg.SetType(types.UNDEFINED)
 				arg.Name = $1
 				arg.Package = ast.CXPackageIndex(pkg.Index)
 				$$ = arg
@@ -363,9 +358,9 @@ types_list:
 declaration_specifiers:
 		FUNC types_list types_list
 		{
-			arg := ast.MakeArgument("", actions.CurrentFile, actions.LineNo).AddType(types.FUNC)
-			arg.Inputs = $2
-			arg.Outputs = $3
+			arg := ast.MakeArgument("", actions.CurrentFile, actions.LineNo).SetType(types.FUNC)
+			arg.Inputs = Program.AddPointerArgsToCXArgsArray($2)
+			arg.Outputs = Program.AddPointerArgsToCXArgsArray($3)
 			$$ = actions.DeclarationSpecifiers(arg, []types.Pointer{0}, constants.DECL_FUNC)
 		}
         |       MUL_OP declaration_specifiers

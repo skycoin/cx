@@ -98,7 +98,7 @@ func opGlfwSwapInterval(inputs []CXValue, outputs []CXValue) {
 }
 
 func opGlfwPollEvents(inputs []CXValue, outputs []CXValue) {
-	PollEvents()
+	PollEvents(prgrm)
 }
 
 func opGlfwGetTime(inputs []CXValue, outputs []CXValue) {

@@ -51,15 +51,15 @@ func AddNativeInputToExpression(cxprogram *cxast.CXProgram, packageName, functio
 		return err
 	}
 
-	arg := cxast.MakeField(inputName, inputType, "", -1).AddType(types.Code(inputType))
+	arg := cxast.MakeField(inputName, inputType, "", -1).SetType(types.Code(inputType))
 	arg.Package = cxast.CXPackageIndex(pkg.Index)
-
+	argIdx := cxprogram.AddCXArgInArray(arg)
 	cxAtomicOp, _, _, err := cxprogram.GetOperation(expr)
 	if err != nil {
 		panic(err)
 	}
 
-	cxAtomicOp.AddInput(arg)
+	cxAtomicOp.AddInput(cxprogram, argIdx)
 
 	return nil
 }
@@ -149,15 +149,15 @@ func AddNativeOutputToExpression(cxprogram *cxast.CXProgram, packageName, functi
 		return err
 	}
 
-	arg := cxast.MakeField(outputName, outputType, "", -1).AddType(types.Code(outputType))
+	arg := cxast.MakeField(outputName, outputType, "", -1).SetType(types.Code(outputType))
 	arg.Package = cxast.CXPackageIndex(pkg.Index)
-
+	argIdx := cxprogram.AddCXArgInArray(arg)
 	cxAtomicOp, _, _, err := cxprogram.GetOperation(expr)
 	if err != nil {
 		panic(err)
 	}
 
-	cxAtomicOp.AddOutput(arg)
+	cxAtomicOp.AddOutput(cxprogram, argIdx)
 
 	return nil
 }
@@ -249,7 +249,7 @@ func MakeInputExpressionAPointer(cxprogram *cxast.CXProgram, functionName string
 		panic(err)
 	}
 
-	cxast.Pointer(cxAtomicOp.Inputs[inputNumber])
+	cxast.Pointer(cxprogram.GetCXArgFromArray(cxAtomicOp.Inputs[inputNumber]))
 	return nil
 }
 
@@ -297,7 +297,7 @@ func MakeOutputExpressionAPointer(cxprogram *cxast.CXProgram, functionName strin
 		panic(err)
 	}
 
-	cxast.Pointer(cxAtomicOp.Outputs[outputNumber])
+	cxast.Pointer(cxprogram.GetCXArgFromArray(cxAtomicOp.Outputs[outputNumber]))
 	return nil
 }
 
@@ -376,7 +376,8 @@ func GetAccessibleArgsForFunctionByType(cxprogram *cxast.CXProgram, packageLocat
 		if err != nil {
 			panic(err)
 		}
-		for _, arg := range cxAtomicOp.Inputs {
+		for _, argIdx := range cxAtomicOp.Inputs {
+			arg := cxprogram.GetCXArgFromArray(argIdx)
 			if arg.IsStruct {
 				for _, field := range arg.StructType.Fields {
 					if field.Type == argType {
@@ -416,15 +417,15 @@ func AddLiteralInputToExpression(cxprogram *cxast.CXProgram, packageName, functi
 		panic(err)
 	}
 
-	arg := cxAtomicOp1.Outputs[0]
-
+	arg := cxprogram.GetCXArgFromArray(cxAtomicOp1.Outputs[0])
+	argIdx := cxAtomicOp1.Outputs[0]
 	cxAtomicOp2, _, _, err := cxprogram.GetOperation(expr)
 	if err != nil {
 		panic(err)
 	}
 
 	arg.Package = cxast.CXPackageIndex(pkg.Index)
-	cxAtomicOp2.AddInput(arg)
+	cxAtomicOp2.AddInput(cxprogram, argIdx)
 
 	return nil
 }

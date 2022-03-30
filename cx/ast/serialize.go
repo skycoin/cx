@@ -156,10 +156,10 @@ func serializeArgument(prgrm *CXProgram, arg *CXArgument, s *SerializedCXProgram
 	s.Arguments[argOff].DoesEscape = serializeBoolean(arg.DoesEscape)
 
 	s.Arguments[argOff].LengthsOffset, s.Arguments[argOff].LengthsSize = serializePointers(arg.Lengths, s)
-	s.Arguments[argOff].IndexesOffset, s.Arguments[argOff].IndexesSize = serializeSliceOfArguments(prgrm, arg.Indexes, s)
-	s.Arguments[argOff].FieldsOffset, s.Arguments[argOff].FieldsSize = serializeSliceOfArguments(prgrm, arg.Fields, s)
-	s.Arguments[argOff].InputsOffset, s.Arguments[argOff].InputsSize = serializeSliceOfArguments(prgrm, arg.Inputs, s)
-	s.Arguments[argOff].OutputsOffset, s.Arguments[argOff].OutputsSize = serializeSliceOfArguments(prgrm, arg.Outputs, s)
+	s.Arguments[argOff].IndexesOffset, s.Arguments[argOff].IndexesSize = serializeSliceOfArguments(prgrm, prgrm.ConvertIndexArgsToPointerArgs(arg.Indexes), s)
+	s.Arguments[argOff].FieldsOffset, s.Arguments[argOff].FieldsSize = serializeSliceOfArguments(prgrm, prgrm.ConvertIndexArgsToPointerArgs(arg.Fields), s)
+	s.Arguments[argOff].InputsOffset, s.Arguments[argOff].InputsSize = serializeSliceOfArguments(prgrm, prgrm.ConvertIndexArgsToPointerArgs(arg.Inputs), s)
+	s.Arguments[argOff].OutputsOffset, s.Arguments[argOff].OutputsSize = serializeSliceOfArguments(prgrm, prgrm.ConvertIndexArgsToPointerArgs(arg.Outputs), s)
 
 	argPkg, err := prgrm.GetPackageFromArray(arg.Package)
 	if err != nil {
@@ -224,31 +224,33 @@ func serializeExpression(prgrm *CXProgram, expr *CXExpression, s *SerializedCXPr
 			panic(err)
 		}
 
-		if cxAtomicOp.Operator == nil {
+		cxAtomicOpOperator := prgrm.GetFunctionFromArray(cxAtomicOp.Operator)
+
+		if cxAtomicOpOperator == nil {
 			// then it's a declaration
 			sExpr.OperatorOffset = sNil
 			sExpr.IsNative = serializeBoolean(false)
 			sExpr.OpCode = int64(-1)
-		} else if cxAtomicOp.Operator.IsBuiltIn() {
+		} else if cxAtomicOpOperator.IsBuiltIn() {
 			sExpr.OperatorOffset = sNil
 			sExpr.IsNative = serializeBoolean(true)
-			sExpr.OpCode = int64(cxAtomicOp.Operator.AtomicOPCode)
+			sExpr.OpCode = int64(cxAtomicOpOperator.AtomicOPCode)
 		} else {
 			sExpr.IsNative = serializeBoolean(false)
 			sExpr.OpCode = sNil
 
-			opPkg, err := prgrm.GetPackageFromArray(cxAtomicOp.Operator.Package)
+			opPkg, err := prgrm.GetPackageFromArray(cxAtomicOpOperator.Package)
 			if err != nil {
 				panic(err)
 			}
-			opName := opPkg.Name + "." + cxAtomicOp.Operator.Name
+			opName := opPkg.Name + "." + cxAtomicOpOperator.Name
 			if opOff, found := s.FunctionsMap[opName]; found {
 				sExpr.OperatorOffset = int64(opOff)
 			}
 		}
 
-		sExpr.InputsOffset, sExpr.InputsSize = serializeSliceOfArguments(prgrm, cxAtomicOp.Inputs, s)
-		sExpr.OutputsOffset, sExpr.OutputsSize = serializeSliceOfArguments(prgrm, cxAtomicOp.Outputs, s)
+		sExpr.InputsOffset, sExpr.InputsSize = serializeSliceOfArguments(prgrm, prgrm.ConvertIndexArgsToPointerArgs(cxAtomicOp.Inputs), s)
+		sExpr.OutputsOffset, sExpr.OutputsSize = serializeSliceOfArguments(prgrm, prgrm.ConvertIndexArgsToPointerArgs(cxAtomicOp.Outputs), s)
 
 		sExpr.LabelOffset, sExpr.LabelSize = serializeString(cxAtomicOp.Label, s)
 		sExpr.ThenLines = int64(cxAtomicOp.ThenLines)
@@ -256,10 +258,7 @@ func serializeExpression(prgrm *CXProgram, expr *CXExpression, s *SerializedCXPr
 
 		sExpr.ExpressionType = int64(expr.ExpressionType)
 
-		cxAtomicOpFunction, err := prgrm.GetFunctionFromArray(cxAtomicOp.Function)
-		if err != nil {
-			panic(err)
-		}
+		cxAtomicOpFunction := prgrm.GetFunctionFromArray(cxAtomicOp.Function)
 
 		fnPkg, err := prgrm.GetPackageFromArray(cxAtomicOpFunction.Package)
 		if err != nil {
@@ -459,10 +458,8 @@ func serializePackageIntegers(prgrm *CXProgram, pkg *CXPackage, s *SerializedCXP
 			// package has no functions
 			sPkg.CurrentFunctionName = ""
 		} else {
-			currFn, err := prgrm.GetFunctionFromArray(pkg.CurrentFunction)
-			if err != nil {
-				panic(err)
-			}
+			currFn := prgrm.GetFunctionFromArray(pkg.CurrentFunction)
+
 			currFnPkg, err := prgrm.GetPackageFromArray(currFn.Package)
 			if err != nil {
 				panic(err)
@@ -683,10 +680,8 @@ func serializeCXProgramElements(prgrm *CXProgram, s *SerializedCXProgram) {
 		}
 
 		for _, fnIdx := range pkg.Functions {
-			fn, err := prgrm.GetFunctionFromArray(fnIdx)
-			if err != nil {
-				panic(err)
-			}
+			fn := prgrm.GetFunctionFromArray(fnIdx)
+
 			indexFunction(prgrm, fn, s)
 			serializeFunctionName(prgrm, fn, s)
 			serializeFunctionPackage(prgrm, fn, s)
@@ -748,10 +743,8 @@ func serializeCXProgramElements(prgrm *CXProgram, s *SerializedCXProgram) {
 		}
 
 		for _, fnIdx := range pkg.Functions {
-			fn, err := prgrm.GetFunctionFromArray(fnIdx)
-			if err != nil {
-				panic(err)
-			}
+			fn := prgrm.GetFunctionFromArray(fnIdx)
+
 			fnPkg, err := prgrm.GetPackageFromArray(fn.Package)
 			if err != nil {
 				panic(err)
@@ -849,6 +842,8 @@ func deserializePackages(s *SerializedCXProgram, prgrm *CXProgram) {
 		// and current function and struct
 		pkg := &CXPackage{}
 		pkg.Name = deserializeString(sPkg.NameOffset, sPkg.NameSize, s)
+		pkgIdx := prgrm.AddPackage(pkg)
+		pkg, _ = prgrm.GetPackageFromArray(pkgIdx)
 
 		if sPkg.ImportsSize > 0 {
 			pkg.Imports = make(map[string]CXPackageIndex, sPkg.ImportsSize)
@@ -909,7 +904,7 @@ func deserializePackages(s *SerializedCXProgram, prgrm *CXProgram) {
 			glblArgs := deserializeArguments(sPkg.GlobalsOffset, sPkg.GlobalsSize, s, prgrm)
 			var glblArgsIdxs []CXArgumentIndex
 			for _, glbl := range glblArgs {
-				glblIdx := prgrm.AddCXArg(glbl)
+				glblIdx := prgrm.AddCXArgInArray(glbl)
 				glblArgsIdxs = append(glblArgsIdxs, CXArgumentIndex(glblIdx))
 			}
 			pkg.Globals = glblArgsIdxs
@@ -927,15 +922,12 @@ func deserializePackages(s *SerializedCXProgram, prgrm *CXProgram) {
 		if sPkg.FunctionsSize > 0 {
 			for _, sFn := range s.Functions[sPkg.FunctionsOffset : sPkg.FunctionsOffset+sPkg.FunctionsSize] {
 				fnName := deserializeString(sFn.NameOffset, sFn.NameSize, s)
-				pkgFn, err := prgrm.GetFunctionFromArray(pkg.Functions[fnName])
-				if err != nil {
-					panic(err)
-				}
+				pkgFn := prgrm.GetFunctionFromArray(pkg.Functions[fnName])
+
 				deserializeFunction(&sFn, pkgFn, s, prgrm)
 			}
 		}
-
-		prgrm.AddPackage(pkg)
+		prgrm.CXPackages[pkgIdx] = *pkg
 	}
 
 	// current package
@@ -1012,10 +1004,10 @@ func deserializeArgument(sArg *serializedArgument, s *SerializedCXProgram, prgrm
 	arg.DoesEscape = deserializeBool(sArg.DoesEscape)
 
 	arg.Lengths = deserializePointers(sArg.LengthsOffset, sArg.LengthsSize, s)
-	arg.Indexes = deserializeArguments(sArg.IndexesOffset, sArg.IndexesSize, s, prgrm)
-	arg.Fields = deserializeArguments(sArg.FieldsOffset, sArg.FieldsSize, s, prgrm)
-	arg.Inputs = deserializeArguments(sArg.InputsOffset, sArg.InputsSize, s, prgrm)
-	arg.Outputs = deserializeArguments(sArg.OutputsOffset, sArg.OutputsSize, s, prgrm)
+	arg.Indexes = prgrm.AddPointerArgsToCXArgsArray(deserializeArguments(sArg.IndexesOffset, sArg.IndexesSize, s, prgrm))
+	arg.Fields = prgrm.AddPointerArgsToCXArgsArray(deserializeArguments(sArg.FieldsOffset, sArg.FieldsSize, s, prgrm))
+	arg.Inputs = prgrm.AddPointerArgsToCXArgsArray(deserializeArguments(sArg.InputsOffset, sArg.InputsSize, s, prgrm))
+	arg.Outputs = prgrm.AddPointerArgsToCXArgsArray(deserializeArguments(sArg.OutputsOffset, sArg.OutputsSize, s, prgrm))
 	arg.Package = -1
 	if _, ok := prgrm.Packages[sArg.PackageName]; ok {
 		arg.Package = prgrm.Packages[sArg.PackageName]
@@ -1039,10 +1031,8 @@ func deserializeOperator(sExpr *serializedExpression, s *SerializedCXProgram, pr
 	}
 
 	for _, fnIdx := range opPkg.Functions {
-		fn, err := prgrm.GetFunctionFromArray(fnIdx)
-		if err != nil {
-			panic(err)
-		}
+		fn := prgrm.GetFunctionFromArray(fnIdx)
+
 		if fn.Name == opName {
 			return fn
 		}
@@ -1082,10 +1072,8 @@ func deserializeExpressionFunction(sExpr *serializedExpression, s *SerializedCXP
 		panic(err)
 	}
 	for _, fnIdx := range fnPkg.Functions {
-		fn, err := prgrm.GetFunctionFromArray(fnIdx)
-		if err != nil {
-			panic(err)
-		}
+		fn := prgrm.GetFunctionFromArray(fnIdx)
+
 		if fn.Name == fnName {
 			return fnIdx
 		}
@@ -1125,24 +1113,26 @@ func deserializeExpression(sExpr *serializedExpression, s *SerializedCXProgram, 
 		expr.Index = index
 		expr.Type = CX_LINE
 	case int64(CX_ATOMIC_OPERATOR):
-		cxAtomicOp := &CXAtomicOperator{}
+		cxAtomicOpOperatorIdx := prgrm.AddFunctionInArray(&CXFunction{})
+		cxAtomicOp := &CXAtomicOperator{Operator: cxAtomicOpOperatorIdx}
+
 		if deserializeBool(sExpr.IsNative) {
-			cxAtomicOp.Operator = Natives[int(sExpr.OpCode)]
+			opIdx := prgrm.AddNativeFunctionInArray(Natives[int(sExpr.OpCode)])
+			cxAtomicOp.Operator = opIdx
 		} else {
-			cxAtomicOp.Operator = deserializeOperator(sExpr, s, prgrm)
+			opIdx := prgrm.AddFunctionInArray(deserializeOperator(sExpr, s, prgrm))
+			cxAtomicOp.Operator = opIdx
 		}
 
-		cxAtomicOp.Inputs = deserializeArguments(sExpr.InputsOffset, sExpr.InputsSize, s, prgrm)
-		cxAtomicOp.Outputs = deserializeArguments(sExpr.OutputsOffset, sExpr.OutputsSize, s, prgrm)
+		cxAtomicOp.Inputs = prgrm.AddPointerArgsToCXArgsArray(deserializeArguments(sExpr.InputsOffset, sExpr.InputsSize, s, prgrm))
+		cxAtomicOp.Outputs = prgrm.AddPointerArgsToCXArgsArray(deserializeArguments(sExpr.OutputsOffset, sExpr.OutputsSize, s, prgrm))
 
 		cxAtomicOp.Label = deserializeString(sExpr.LabelOffset, sExpr.LabelSize, s)
 
 		cxAtomicOp.ThenLines = int(sExpr.ThenLines)
 		cxAtomicOp.ElseLines = int(sExpr.ElseLines)
-
-		cxAtomicOp.Function = deserializeExpressionFunction(sExpr, s, prgrm)
-
 		cxAtomicOp.Package = prgrm.Packages[sExpr.PackageName]
+		cxAtomicOp.Function = deserializeExpressionFunction(sExpr, s, prgrm)
 
 		index := prgrm.AddCXAtomicOp(cxAtomicOp)
 		expr.Index = index
@@ -1157,11 +1147,11 @@ func deserializeFunction(sFn *serializedFunction, fn *CXFunction, s *SerializedC
 	fn.Inputs = prgrm.AddPointerArgsToCXArgsArray(deserializeArguments(sFn.InputsOffset, sFn.InputsSize, s, prgrm))
 	fn.Outputs = prgrm.AddPointerArgsToCXArgsArray(deserializeArguments(sFn.OutputsOffset, sFn.OutputsSize, s, prgrm))
 	fn.ListOfPointers = deserializeArguments(sFn.ListOfPointersOffset, sFn.ListOfPointersSize, s, prgrm)
+	fn.Package = prgrm.Packages[sFn.PackageName]
 	fn.Expressions = deserializeExpressions(sFn.ExpressionsOffset, sFn.ExpressionsSize, s, prgrm)
 	fn.Size = types.Cast_i64_to_ptr(sFn.Size)
 	fn.LineCount = int(sFn.Length)
-
-	fn.Package = prgrm.Packages[sFn.PackageName]
+	prgrm.CXFunctions[fn.Index] = *fn
 }
 
 func deserializeBool(val int64) bool {
@@ -1209,7 +1199,7 @@ func initDeserialization(prgrm *CXProgram, s *SerializedCXProgram) {
 
 	// This means reinstantiate memory and add DataSegmentMemory
 	if len(s.DataSegmentMemory) > 0 && len(s.Memory) == 0 {
-		minHeapSize := minHeapSize()
+		minHeapSize := MinHeapSize()
 		prgrm.Memory = make([]byte, constants.STACK_SIZE+minHeapSize)
 		y := 0
 		for i := prgrm.Data.StartsAt; i < prgrm.Data.StartsAt+prgrm.Data.Size; i++ {

@@ -95,47 +95,16 @@ func CallAffPredicate(prgrm *ast.CXProgram, fn *ast.CXFunction, predValue []byte
 	return types.GetSlice_byte(prgrm.Memory, ast.GetFinalOffset(prgrm,
 		newCall.FramePointer,
 		prgrm.GetCXArgFromArray(newCall.Operator.Outputs[0])),
-		ast.GetSize(prgrm.GetCXArgFromArray(newCall.Operator.Outputs[0])))[0]
+		ast.GetSize(prgrm, prgrm.GetCXArgFromArray(newCall.Operator.Outputs[0])))[0]
 }
 
-// This might not make sense, as we can use normal programming to create conditions on values
-// func QueryValue (fn *CXFunction, argOffsetB []byte, affOffset *int) {
-// 	for c := 0; c <= PROGRAM.CallCounter; c++ {
-// 		inFP := 0
-// 		op := PROGRAM.CallStack[c].Operator
-
-// 		for _, expr := range op.Expressions {
-// 			if expr.Operator == nil {
-// 				for _, out := range expr.ProgramOutput {
-// 					if fn.ProgramInput[0].Type == out.Type && out.Name != "" {
-// 						res := CallAffPredicate(fn, PROGRAM.Memory[inFP + out.Offset : inFP + out.Offset + out.TotalSize])
-
-// 						if res == 1 {
-// 							*affOffset = WriteToSlice(*affOffset, argOffsetB)
-
-// 							outNameB := encoder.Serialize(out.Name)
-// 							outNameOffset := AllocateSeq(len(outNameB))
-// 							WriteMemory(outNameOffset, outNameB)
-
-// 							var outNameOffsetB [4]byte
-//							WriteMemI32(outNameOffsetB[:], 0, int32(outNameOffset))
-// 							*affOffset = WriteToSlice(*affOffset, outNameOffsetB[:])
-// 						}
-// 					}
-// 				}
-// 			}
-// 		}
-
-// 		inFP += op.Size
-// 	}
-// }
-
 // Used by QueryArgument to query inputs and then outputs from expressions.
-func queryParam(prgrm *ast.CXProgram, fn *ast.CXFunction, args []*ast.CXArgument, exprLbl string, argOffsetB []byte, affOffset *types.Pointer) {
-	for i, arg := range args {
+func queryParam(prgrm *ast.CXProgram, fn *ast.CXFunction, argsIdx []ast.CXArgumentIndex, exprLbl string, argOffsetB []byte, affOffset *types.Pointer) {
+	for i, argIdx := range argsIdx {
+		arg := prgrm.GetCXArgFromArray(argIdx)
 
 		var typOffset types.Pointer
-		elt := arg.GetAssignmentElement()
+		elt := arg.GetAssignmentElement(prgrm)
 		if elt.StructType != nil {
 			strctTypePkg, err := prgrm.GetPackageFromArray(elt.StructType.Package)
 			if err != nil {
@@ -189,10 +158,7 @@ func QueryArgument(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpress
 		panic(err)
 	}
 
-	cxAtomicOpFunction, err := prgrm.GetFunctionFromArray(cxAtomicOp.Function)
-	if err != nil {
-		panic(err)
-	}
+	cxAtomicOpFunction := prgrm.GetFunctionFromArray(cxAtomicOp.Function)
 
 	for _, ex := range cxAtomicOpFunction.Expressions {
 		exCXAtomicOp, _, _, err := prgrm.GetOperation(&ex)
@@ -217,18 +183,16 @@ func QueryExpressions(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpr
 		panic(err)
 	}
 
-	cxAtomicOpFunction, err := prgrm.GetFunctionFromArray(cxAtomicOp.Function)
-	if err != nil {
-		panic(err)
-	}
+	cxAtomicOpFunction := prgrm.GetFunctionFromArray(cxAtomicOp.Function)
 
 	for _, ex := range cxAtomicOpFunction.Expressions {
 		exCXAtomicOp, _, _, err := prgrm.GetOperation(&ex)
 		if err != nil {
 			panic(err)
 		}
+		exCXAtomicOpOperator := prgrm.GetFunctionFromArray(exCXAtomicOp.Operator)
 
-		if exCXAtomicOp.Operator == nil || exCXAtomicOp.Label == "" {
+		if exCXAtomicOpOperator == nil || exCXAtomicOp.Label == "" {
 			// then it's a variable declaration
 			// or it's a non-labeled expression
 			continue
@@ -236,12 +200,12 @@ func QueryExpressions(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpr
 
 		// var opNameB []byte
 		opNameOffset := types.Pointer(0)
-		if exCXAtomicOp.Operator.IsBuiltIn() {
+		if exCXAtomicOpOperator.IsBuiltIn() {
 			// opNameB = encoder.Serialize(OpNames[ex.Operator.OpCode])
-			opNameOffset = types.AllocWrite_str_data(prgrm, prgrm.Memory, ast.OpNames[exCXAtomicOp.Operator.AtomicOPCode])
+			opNameOffset = types.AllocWrite_str_data(prgrm, prgrm.Memory, ast.OpNames[exCXAtomicOpOperator.AtomicOPCode])
 		} else {
 			// opNameB = encoder.Serialize(ex.Operator.Name)
-			opNameOffset = types.AllocWrite_str_data(prgrm, prgrm.Memory, exCXAtomicOp.Operator.Name)
+			opNameOffset = types.AllocWrite_str_data(prgrm, prgrm.Memory, exCXAtomicOpOperator.Name)
 		}
 
 		// opNameOffset := AllocateSeq(len(opNameB))
@@ -264,9 +228,10 @@ func QueryExpressions(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpr
 	}
 }
 
-func getSignatureSlice(prgrm *ast.CXProgram, params []*ast.CXArgument) types.Pointer {
+func getSignatureSlice(prgrm *ast.CXProgram, params []ast.CXArgumentIndex) types.Pointer {
 	var sliceOffset types.Pointer
-	for _, param := range params {
+	for _, paramIdx := range params {
+		param := prgrm.GetCXArgFromArray(paramIdx)
 
 		var typOffset types.Pointer
 		if param.StructType != nil {
@@ -350,10 +315,7 @@ func QueryFunction(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpress
 		panic(err)
 	}
 	for _, fIdx := range pkg.Functions {
-		f, err := prgrm.GetFunctionFromArray(fIdx)
-		if err != nil {
-			panic(err)
-		}
+		f := prgrm.GetFunctionFromArray(fIdx)
 
 		if f.Name == constants.SYS_INIT_FUNC {
 			continue
@@ -373,8 +335,8 @@ func QueryFunction(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpress
 		// WriteMemI32(opNameOffsetB[:], 0, int32(WriteObjectRetOff(opNameB)))
 		types.Write_ptr(opNameOffsetB[:], 0, opNameOffset)
 
-		inpSigOffset := getSignatureSlice(prgrm, prgrm.ConvertIndexArgsToPointerArgs(f.Inputs))
-		outSigOffset := getSignatureSlice(prgrm, prgrm.ConvertIndexArgsToPointerArgs(f.Outputs))
+		inpSigOffset := getSignatureSlice(prgrm, f.Inputs)
+		outSigOffset := getSignatureSlice(prgrm, f.Outputs)
 
 		fnOffset := ast.AllocateSeq(prgrm, types.OBJECT_HEADER_SIZE+types.STR_SIZE+types.POINTER_SIZE+types.POINTER_SIZE)
 		// Name
@@ -471,12 +433,6 @@ func QueryProgram(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpressi
 		types.WriteSlice_byte(prgrm.Memory, prgrmOffset+types.OBJECT_HEADER_SIZE+types.I32_SIZE+types.I64_SIZE, opNameOffsetB[:])
 		// FnSize
 		types.Write_ptr(prgrm.Memory, prgrmOffset+types.OBJECT_HEADER_SIZE+types.I32_SIZE+types.I64_SIZE+types.STR_SIZE, call.Operator.Size)
-
-		// res := CallAffPredicate(fn, PROGRAM.Memory[callOffset + OBJECT_HEADER_SIZE : callOffset + OBJECT_HEADER_SIZE + STR_SIZE + I32_SIZE])
-
-		// if res == 1 {
-		// 	*affOffset = WriteToSlice(*affOffset, callerOffsetB)
-		// }
 	}
 
 	res := CallAffPredicate(prgrm, fn, prgrm.Memory[prgrmOffset+types.OBJECT_HEADER_SIZE:prgrmOffset+types.OBJECT_HEADER_SIZE+types.I32_SIZE+types.I64_SIZE+types.STR_SIZE+types.I32_SIZE])
@@ -877,9 +833,9 @@ func readArgAff(prgrm *ast.CXProgram, aff string, tgtFn *ast.CXFunction) *ast.CX
 	}
 
 	if argType == "Input" {
-		return affExprAtomicOp.Inputs[argIdx]
+		return prgrm.GetCXArgFromArray(affExprAtomicOp.Inputs[argIdx])
 	}
-	return affExprAtomicOp.Outputs[argIdx]
+	return prgrm.GetCXArgFromArray(affExprAtomicOp.Outputs[argIdx])
 
 }
 
