@@ -157,13 +157,12 @@ func ArrayLiteralAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fr
 //
 // Input arguments description:
 // prgrm - a CXProgram that contains all the data and array of the program.
-// expr -
-// exprCXLine -
-// toExprs -
-// fromExprs -
-// pkg -
-// idx -
-func ShortAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression, exprCXLine *ast.CXExpression, toExprs []ast.CXExpression, fromExprs []ast.CXExpression, pkg *ast.CXPackage, idx int) []ast.CXExpression {
+// expr - the expression for the short assignment.
+// exprCXLine - the cx line or the line string of the short assignment expression.
+// toExprs - Contains the output cx arg to be added to the expression.
+// fromExprs - Contains the output cx arg to be added to the expression.
+// pkg - the package the expression belongs.
+func ShortAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression, exprCXLine *ast.CXExpression, toExprs []ast.CXExpression, fromExprs []ast.CXExpression, pkg *ast.CXPackage) []ast.CXExpression {
 	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		panic(err)
@@ -174,7 +173,7 @@ func ShortAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression, exprCXLine *a
 		panic(err)
 	}
 
-	fromCXAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(fromExprs, idx)
+	fromCXAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(fromExprs, len(fromExprs)-1)
 	if err != nil {
 		panic(err)
 	}
@@ -224,16 +223,24 @@ func getOutputType(prgrm *ast.CXProgram, expr *ast.CXExpression) *ast.CXArgument
 	return prgrm.GetCXArgFromArray(cxAtomicOp.Inputs[0])
 }
 
-// Assignment handles assignment statements with different operators, like =, :=, +=, *=.
-func Assignment(prgrm *ast.CXProgram, to []ast.CXExpression, assignOp string, from []ast.CXExpression) []ast.CXExpression {
-	idx := len(from) - 1
+// Assignment handles assignment statements with different operators,
+// like =, :=, +=, *=.
+//
+// Input arguments description:
+// prgrm - a CXProgram that contains all the data and array of the program.
+// toExprs, fromExprs - array of expressions where the assingment
+// expression will be added.
+// assignOp - the assignment operator, "=", ":=", ">>=","<<=",
+// "+=","-=","*=","/=","%=","&=","^=", and "|=".
+func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp string, fromExprs []ast.CXExpression) []ast.CXExpression {
+	idx := len(fromExprs) - 1
 
-	toCXAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(to, 0)
+	toCXAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(toExprs, 0)
 	if err != nil {
 		panic(err)
 	}
 
-	fromCXAtomicOpIdx := from[idx].Index
+	fromCXAtomicOpIdx := fromExprs[idx].Index
 	fromCXAtomicOpOperator := prgrm.GetFunctionFromArray(prgrm.CXAtomicOps[fromCXAtomicOpIdx].Operator)
 
 	// Checking if we're trying to assign stuff from a function call
@@ -266,11 +273,11 @@ func Assignment(prgrm *ast.CXProgram, to []ast.CXExpression, assignOp string, fr
 			// then it's a literal
 			sym = ast.MakeArgument(prgrm.GetCXArgFromArray(toCXAtomicOp.Outputs[0]).Name, CurrentFile, LineNo).SetType(prgrm.GetCXArgFromArray(prgrm.CXAtomicOps[fromCXAtomicOpIdx].Outputs[0]).Type)
 		} else {
-			outTypeArg := getOutputType(prgrm, &from[idx])
+			outTypeArg := getOutputType(prgrm, &fromExprs[idx])
 
 			sym = ast.MakeArgument(prgrm.GetCXArgFromArray(toCXAtomicOp.Outputs[0]).Name, CurrentFile, LineNo).SetType(outTypeArg.Type)
 
-			if from[idx].IsArrayLiteral() {
+			if fromExprs[idx].IsArrayLiteral() {
 				fromCXAtomicOpInputs := prgrm.GetCXArgFromArray(prgrm.CXAtomicOps[fromCXAtomicOpIdx].Inputs[0])
 				sym.Size = fromCXAtomicOpInputs.Size
 				sym.TotalSize = fromCXAtomicOpInputs.TotalSize
@@ -292,7 +299,7 @@ func Assignment(prgrm *ast.CXProgram, to []ast.CXExpression, assignOp string, fr
 
 		cxAtomicOp.AddOutput(prgrm, symIdx)
 
-		for _, toExpr := range to {
+		for _, toExpr := range toExprs {
 			if toExpr.Type == ast.CX_LINE {
 				continue
 			}
@@ -306,40 +313,40 @@ func Assignment(prgrm *ast.CXProgram, to []ast.CXExpression, assignOp string, fr
 			toExprAtomicOpOutput.IsShortAssignmentDeclaration = true
 		}
 
-		to = append([]ast.CXExpression{*exprCXLine, *expr}, to...)
+		toExprs = append([]ast.CXExpression{*exprCXLine, *expr}, toExprs...)
 	case ">>=":
 		expr = ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_BITSHR])
-		return ShortAssignment(prgrm, expr, exprCXLine, to, from, pkg, idx)
+		return ShortAssignment(prgrm, expr, exprCXLine, toExprs, fromExprs, pkg)
 	case "<<=":
 		expr = ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_BITSHL])
-		return ShortAssignment(prgrm, expr, exprCXLine, to, from, pkg, idx)
+		return ShortAssignment(prgrm, expr, exprCXLine, toExprs, fromExprs, pkg)
 	case "+=":
 		expr = ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_ADD])
-		return ShortAssignment(prgrm, expr, exprCXLine, to, from, pkg, idx)
+		return ShortAssignment(prgrm, expr, exprCXLine, toExprs, fromExprs, pkg)
 	case "-=":
 		expr = ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_SUB])
-		return ShortAssignment(prgrm, expr, exprCXLine, to, from, pkg, idx)
+		return ShortAssignment(prgrm, expr, exprCXLine, toExprs, fromExprs, pkg)
 	case "*=":
 		expr = ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_MUL])
-		return ShortAssignment(prgrm, expr, exprCXLine, to, from, pkg, idx)
+		return ShortAssignment(prgrm, expr, exprCXLine, toExprs, fromExprs, pkg)
 	case "/=":
 		expr = ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_DIV])
-		return ShortAssignment(prgrm, expr, exprCXLine, to, from, pkg, idx)
+		return ShortAssignment(prgrm, expr, exprCXLine, toExprs, fromExprs, pkg)
 	case "%=":
 		expr = ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_MOD])
-		return ShortAssignment(prgrm, expr, exprCXLine, to, from, pkg, idx)
+		return ShortAssignment(prgrm, expr, exprCXLine, toExprs, fromExprs, pkg)
 	case "&=":
 		expr = ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_BITAND])
-		return ShortAssignment(prgrm, expr, exprCXLine, to, from, pkg, idx)
+		return ShortAssignment(prgrm, expr, exprCXLine, toExprs, fromExprs, pkg)
 	case "^=":
 		expr = ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_BITXOR])
-		return ShortAssignment(prgrm, expr, exprCXLine, to, from, pkg, idx)
+		return ShortAssignment(prgrm, expr, exprCXLine, toExprs, fromExprs, pkg)
 	case "|=":
 		expr = ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_BITOR])
-		return ShortAssignment(prgrm, expr, exprCXLine, to, from, pkg, idx)
+		return ShortAssignment(prgrm, expr, exprCXLine, toExprs, fromExprs, pkg)
 	}
 
-	toLastExprAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(to, len(to)-1)
+	toLastExprAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(toExprs, len(toExprs)-1)
 	if err != nil {
 		panic(err)
 	}
@@ -360,7 +367,7 @@ func Assignment(prgrm *ast.CXProgram, to []ast.CXExpression, assignOp string, fr
 		toCXAtomicOpOutput.DoesEscape = fromCXAtomicOpOutput.DoesEscape
 		// toCXAtomicOp.ProgramOutput[0].Program = prgrm
 
-		if from[idx].IsMethodCall() {
+		if fromExprs[idx].IsMethodCall() {
 			prgrm.CXAtomicOps[fromCXAtomicOpIdx].Inputs = append(prgrm.CXAtomicOps[fromCXAtomicOpIdx].Outputs, prgrm.CXAtomicOps[fromCXAtomicOpIdx].Inputs...)
 		} else {
 			prgrm.CXAtomicOps[fromCXAtomicOpIdx].Inputs = prgrm.CXAtomicOps[fromCXAtomicOpIdx].Outputs
@@ -368,9 +375,8 @@ func Assignment(prgrm *ast.CXProgram, to []ast.CXExpression, assignOp string, fr
 
 		prgrm.CXAtomicOps[fromCXAtomicOpIdx].Outputs = toLastExprAtomicOp.Outputs
 
-		return append(to[:len(to)-1], from...)
+		return append(toExprs[:len(toExprs)-1], fromExprs...)
 	} else {
-
 		fromCXAtomicOpOperatorOutput := prgrm.GetCXArgFromArray(fromCXAtomicOpOperator.Outputs[0])
 		if fromCXAtomicOpOperator.IsBuiltIn() {
 			// only assigning as if the operator had only one output defined
@@ -386,7 +392,6 @@ func Assignment(prgrm *ast.CXProgram, to []ast.CXExpression, assignOp string, fr
 
 			toCXAtomicOpOutput.DoesEscape = fromCXAtomicOpOperatorOutput.DoesEscape
 			toCXAtomicOpOutput.PassBy = fromCXAtomicOpOperatorOutput.PassBy
-			// toCXAtomicOp.ProgramOutput[0].Program = prgrm
 		} else {
 			// we'll delegate multiple-value returns to the 'expression' grammar rule
 			// only assigning as if the operator had only one output defined
@@ -398,12 +403,10 @@ func Assignment(prgrm *ast.CXProgram, to []ast.CXExpression, assignOp string, fr
 			toCXAtomicOpOutput.Lengths = fromCXAtomicOpOperatorOutput.Lengths
 			toCXAtomicOpOutput.DoesEscape = fromCXAtomicOpOperatorOutput.DoesEscape
 			toCXAtomicOpOutput.PassBy = fromCXAtomicOpOperatorOutput.PassBy
-			// toCXAtomicOp.ProgramOutput[0].Program = prgrm
 		}
 
 		prgrm.CXAtomicOps[fromCXAtomicOpIdx].Outputs = toLastExprAtomicOp.Outputs
 
-		return append(to[:len(to)-1], from...)
-		// return append(to, from...)
+		return append(toExprs[:len(toExprs)-1], fromExprs...)
 	}
 }
