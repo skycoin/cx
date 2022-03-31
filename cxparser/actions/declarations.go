@@ -10,25 +10,6 @@ import (
 	"github.com/skycoin/cx/cx/types"
 )
 
-// DeclareGlobal creates a global variable in the current package.
-//
-// If `doesInitialize` is true, then `initializer` is used to initialize the
-// new variable. This function is a wrapper around DeclareGlobalInPackage()
-// which does the real work.
-//
-// FIXME: This function should be merged with DeclareGlobalInPackage.
-//        Just use pkg=nil to indicate that CurrentPackage should be used.
-//
-func DeclareGlobal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationSpecifiers *ast.CXArgument,
-	initializer []ast.CXExpression, doesInitialize bool) {
-	pkg, err := prgrm.GetCurrentPackage()
-	if err != nil {
-		panic(err)
-	}
-
-	DeclareGlobalInPackage(prgrm, pkg, declarator, declarationSpecifiers, initializer, doesInitialize)
-}
-
 // DeclareGlobalInPackage creates a global variable in a specified package
 //
 // If `doesInitialize` is true, then `initializer` is used to initialize the
@@ -37,6 +18,14 @@ func DeclareGlobal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declaration
 func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 	declarator *ast.CXArgument, declaration_specifiers *ast.CXArgument,
 	initializer []ast.CXExpression, doesInitialize bool) {
+	if pkg == nil {
+		var err error
+		pkg, err = prgrm.GetCurrentPackage()
+		if err != nil {
+			panic(err)
+		}
+	}
+
 	declaration_specifiers.Package = ast.CXPackageIndex(pkg.Index)
 
 	// Treat the name a bit different whether it's defined already or not.
