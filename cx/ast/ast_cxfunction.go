@@ -188,7 +188,7 @@ func (fn *CXFunction) RemoveOutput(prgrm *CXProgram, outName string) {
 // AddExpression ...
 func (fn *CXFunction) AddExpression(prgrm *CXProgram, expr *CXExpression) *CXFunction {
 	if expr.Type == CX_ATOMIC_OPERATOR {
-		cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+		cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 		if err != nil {
 			panic(err)
 		}
@@ -203,7 +203,7 @@ func (fn *CXFunction) AddExpression(prgrm *CXProgram, expr *CXExpression) *CXFun
 }
 
 func (fn *CXFunction) AddExpressionByLineNumber(prgrm *CXProgram, expr *CXExpression, line int) *CXFunction {
-	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		panic(err)
 	}

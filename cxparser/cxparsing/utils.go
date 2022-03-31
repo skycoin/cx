@@ -22,6 +22,10 @@ func Preliminarystage(srcStrs, srcNames []string) int {
 	var prePkg *ast.CXPackage
 	parseErrors := 0
 
+	reMultiCommentOpen := regexp.MustCompile(`/\*`)
+	reMultiCommentClose := regexp.MustCompile(`\*/`)
+	reComment := regexp.MustCompile("//")
+
 	rePkg := regexp.MustCompile("package")
 	rePkgName := regexp.MustCompile(`(^|[\s])package\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
 	reStrct := regexp.MustCompile("type")
@@ -44,14 +48,37 @@ func Preliminarystage(srcStrs, srcNames []string) int {
 
 		reader := strings.NewReader(srcStr)
 		scanner := bufio.NewScanner(reader)
+		var commentedCode bool
 		var lineno = 0
 		for scanner.Scan() {
 			line := scanner.Bytes()
 			lineno++
 
+			// Identify whether we are in a comment or not.
+			commentLoc := reComment.FindIndex(line)
+			multiCommentOpenLoc := reMultiCommentOpen.FindIndex(line)
+			multiCommentCloseLoc := reMultiCommentClose.FindIndex(line)
+			if commentedCode && multiCommentCloseLoc != nil {
+				commentedCode = false
+			}
+			if commentedCode {
+				continue
+			}
+			if multiCommentOpenLoc != nil && !commentedCode && multiCommentCloseLoc == nil {
+				commentedCode = true
+				continue
+			}
+
+			// At this point we know that we are *not* in a comment
 			// 1-a. Identify all the packages
 			if loc := rePkg.FindIndex(line); loc != nil {
-				 
+				if (commentLoc != nil && commentLoc[0] < loc[0]) ||
+					(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
+					(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
+					// then it's commented out
+					continue
+				}
+
 				if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
 					if pkg, err := cxpartialparsing.Program.GetPackage(match[len(match)-1]); err != nil {
 						// then it hasn't been added
@@ -70,7 +97,13 @@ func Preliminarystage(srcStrs, srcNames []string) int {
 
 			// 1-b. Identify all the structs
 			if loc := reStrct.FindIndex(line); loc != nil {
-				 
+				if (commentLoc != nil && commentLoc[0] < loc[0]) ||
+					(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
+					(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
+					// then it's commented out
+					continue
+				}
+
 				if match := reStrctName.FindStringSubmatch(string(line)); match != nil {
 					if prePkg == nil {
 						println(ast.CompilationError(srcName, lineno),
@@ -95,13 +128,40 @@ func Preliminarystage(srcStrs, srcNames []string) int {
 		profiling.StartProfile(srcNames[i])
 		// inBlock needs to be 0 to guarantee that we're in the global scope
 		var inBlock int
+		var commentedCode bool
 
 		scanner := bufio.NewScanner(strings.NewReader(source))
 		for scanner.Scan() {
 			line := scanner.Bytes()
 
+			// we need to ignore function bodies
+			// it'll also ignore struct declaration's bodies, but this doesn't matter
+			commentLoc := reComment.FindIndex(line)
+
+			multiCommentOpenLoc := reMultiCommentOpen.FindIndex(line)
+			multiCommentCloseLoc := reMultiCommentClose.FindIndex(line)
+
+			if commentedCode && multiCommentCloseLoc != nil {
+				commentedCode = false
+			}
+
+			if commentedCode {
+				continue
+			}
+
+			if multiCommentOpenLoc != nil && !commentedCode && multiCommentCloseLoc == nil {
+				commentedCode = true
+				// continue
+			}
+
 			// Identify all the package imports.
 			if loc := reImp.FindIndex(line); loc != nil {
+				if (commentLoc != nil && commentLoc[0] < loc[0]) ||
+					(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
+					(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
+					// then it's commented out
+					continue
+				}
 
 				if match := reImpName.FindStringSubmatch(string(line)); match != nil {
 					pkgName := match[len(match)-1]
@@ -116,7 +176,13 @@ func Preliminarystage(srcStrs, srcNames []string) int {
 
 			// we search for packages at the same time, so we can know to what package to add the global
 			if loc := rePkg.FindIndex(line); loc != nil {
-				 
+				if (commentLoc != nil && commentLoc[0] < loc[0]) ||
+					(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
+					(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
+					// then it's commented out
+					continue
+				}
+
 				if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
 					if pkg, err := cxpartialparsing.Program.GetPackage(match[len(match)-1]); err != nil {
 						// then it hasn't been added
@@ -133,17 +199,44 @@ func Preliminarystage(srcStrs, srcNames []string) int {
 			}
 
 			if locs := reBodyOpen.FindAllIndex(line, -1); locs != nil {
-				inBlock++
+				for _, loc := range locs {
+					if !(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
+						// then it's outside of a */, e.g. `*/ }`
+						if (commentLoc == nil && multiCommentOpenLoc == nil && multiCommentCloseLoc == nil) ||
+							(commentLoc != nil && commentLoc[0] > loc[0]) ||
+							(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] > loc[0]) ||
+							(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] < loc[0]) {
+							// then we have an uncommented opening bracket
+							inBlock++
+						}
+					}
+				}
 			}
-			if locs := reBodyClose.FindAllIndex(line, -1); locs != nil{
-				inBlock--
+			if locs := reBodyClose.FindAllIndex(line, -1); locs != nil {
+				for _, loc := range locs {
+					if !(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
+						if (commentLoc == nil && multiCommentOpenLoc == nil && multiCommentCloseLoc == nil) ||
+							(commentLoc != nil && commentLoc[0] > loc[0]) ||
+							(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] > loc[0]) ||
+							(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] < loc[0]) {
+							// then we have an uncommented closing bracket
+							inBlock--
+						}
+					}
+				}
 			}
 
 			// we could have this situation: {var local i32}
 			// but we don't care about this, as the later passes will throw an error as it's invalid syntax
 
 			if loc := rePkg.FindIndex(line); loc != nil {
-				 
+				if (commentLoc != nil && commentLoc[0] < loc[0]) ||
+					(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
+					(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
+					// then it's commented out
+					continue
+				}
+
 				if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
 					if pkg, err := cxpartialparsing.Program.GetPackage(match[len(match)-1]); err != nil {
 						// it should be already present
@@ -156,8 +249,13 @@ func Preliminarystage(srcStrs, srcNames []string) int {
 
 			// finally, if we read a "var" and we're in global scope, we add the global without any type
 			// the type will be determined later on
-			if loc := reGlbl.FindIndex(line); loc != nil && inBlock == 0{
-				 
+			if loc := reGlbl.FindIndex(line); loc != nil {
+				if (commentLoc != nil && commentLoc[0] < loc[0]) ||
+					(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
+					(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) || inBlock != 0 {
+					// then it's commented out or inside a block
+					continue
+				}
 				if match := reGlblName.FindStringSubmatch(string(line)); match != nil {
 					if _, err := prePkg.GetGlobal(actions.AST, match[len(match)-1]); err != nil {
 						// then it hasn't been added

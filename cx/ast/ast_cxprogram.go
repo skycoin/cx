@@ -265,7 +265,7 @@ func (cxprogram *CXProgram) AddPointerArgsToCXArgsArray(cxArgs []*CXArgument) []
 func (cxprogram *CXProgram) GetOperation(expr *CXExpression) (*CXAtomicOperator, *CXArgument, *CXLine, error) {
 	switch expr.Type {
 	case CX_ATOMIC_OPERATOR:
-		cxAtomicOp, err := cxprogram.GetCXAtomicOp(int(expr.Index))
+		cxAtomicOp, err := cxprogram.GetCXAtomicOp(expr.Index)
 		if err != nil {
 			return &CXAtomicOperator{}, &CXArgument{}, &CXLine{}, err
 		}

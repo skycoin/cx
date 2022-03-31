@@ -158,7 +158,7 @@ func PrimaryStructLiteral(prgrm *ast.CXProgram, ident string, strctFlds []ast.CX
 				if expr.Type == ast.CX_LINE {
 					continue
 				}
-				cxAtomicOp, _, _, err := prgrm.GetOperation(&expr)
+				cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 				if err != nil {
 					panic(err)
 				}
@@ -208,7 +208,7 @@ func PrimaryStructLiteralExternal(prgrm *ast.CXProgram, impName string, ident st
 					if expr.Type == ast.CX_LINE {
 						continue
 					}
-					cxAtomicOp, _, _, err := prgrm.GetOperation(&expr)
+					cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 					if err != nil {
 						panic(err)
 					}

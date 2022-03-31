@@ -1312,7 +1312,7 @@ jump_statement: GOTO IDENTIFIER SEMICOLON
                         
                         exprCXLine := ast.MakeCXLineExpression(actions.AST, actions.CurrentFile, actions.LineNo, actions.LineStr)
                         expr := ast.MakeAtomicOperatorExpression(actions.AST,ast.Natives[constants.OP_GOTO])
-                        cxAtomicOp, _, _, err := actions.AST.GetOperation(expr)
+                        cxAtomicOp, err := actions.AST.GetCXAtomicOp(expr.Index)
                         if err != nil {
                                 panic(err)
                         }

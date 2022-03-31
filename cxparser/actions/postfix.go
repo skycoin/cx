@@ -144,7 +144,7 @@ func PostfixExpressionNative(prgrm *ast.CXProgram, typeCode types.Code, opStrCod
 
 	exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
 	expr := ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[opCode])
-	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		panic(err)
 	}
@@ -246,7 +246,7 @@ func PostfixExpressionIncDec(prgrm *ast.CXProgram, prevExprs []ast.CXExpression,
 	types.Write_i32(valB[:], 0, 1)
 	val := WritePrimary(prgrm, types.I32, valB[:], false)
 
-	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		panic(err)
 	}

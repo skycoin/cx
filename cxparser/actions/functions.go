@@ -306,7 +306,7 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 // checkSameNativeType checks if all the inputs of an expression are of the same type.
 // It is used mainly to prevent implicit castings in arithmetic operations
 func checkSameNativeType(prgrm *ast.CXProgram, expr *ast.CXExpression) error {
-	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		panic(err)
 	}
@@ -339,7 +339,7 @@ func checkSameNativeType(prgrm *ast.CXProgram, expr *ast.CXExpression) error {
 }
 
 func ProcessOperatorExpression(prgrm *ast.CXProgram, expr *ast.CXExpression) {
-	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		panic(err)
 	}
@@ -365,7 +365,7 @@ func ProcessOperatorExpression(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 }
 
 func ProcessPointerStructs(prgrm *ast.CXProgram, expr *ast.CXExpression) {
-	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		panic(err)
 	}
@@ -390,7 +390,7 @@ func ProcessPointerStructs(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 // their first input's type needs to be the same as its second input's type. This can't be handled by
 // `checkSameNativeType` because these test functions' third input parameter is always a `str`.
 func processTestExpression(prgrm *ast.CXProgram, expr *ast.CXExpression) {
-	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		panic(err)
 	}
@@ -538,7 +538,7 @@ func AddPointer(prgrm *ast.CXProgram, fn *ast.CXFunction, symIdx ast.CXArgumentI
 func CheckRedeclared(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXArgument, expr *ast.CXExpression, symIdx ast.CXArgumentIndex) {
 	sym := prgrm.GetCXArgFromArray(symIdx)
 
-	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		panic(err)
 	}
@@ -612,7 +612,7 @@ func AddExprsToFunction(prgrm *ast.CXProgram, fnIdx ast.CXFunctionIndex, exprs [
 }
 
 func checkMatchParamTypes(prgrm *ast.CXProgram, expr *ast.CXExpression, expected, received []ast.CXArgumentIndex, isInputs bool) {
-	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		panic(err)
 	}
@@ -769,7 +769,7 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) {
 }
 
 func ProcessStringAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
-	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		panic(err)
 	}
@@ -799,7 +799,7 @@ func ProcessStringAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 // ProcessReferenceAssignment checks if the reference of a symbol can be assigned to the expression's output.
 // For example: `var foo i32; var bar i32; bar = &foo` is not valid.
 func ProcessReferenceAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
-	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		panic(err)
 	}
@@ -817,7 +817,7 @@ func ProcessReferenceAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 }
 
 func ProcessShortDeclaration(prgrm *ast.CXProgram, expr *ast.CXExpression, expressions []ast.CXExpression, idx int) {
-	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		panic(err)
 	}
@@ -873,7 +873,7 @@ func ProcessSlice(prgrm *ast.CXProgram, inpIdx ast.CXArgumentIndex) {
 }
 
 func ProcessSliceAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
-	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		panic(err)
 	}
@@ -986,7 +986,7 @@ func UpdateSymbolsTable(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXArgum
 }
 
 func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]map[string]*ast.CXArgument, offset *types.Pointer, shouldExist bool) {
-	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		panic(err)
 	}
@@ -1177,7 +1177,7 @@ func GiveOffset(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXArgument, sym
 }
 
 func ProcessTempVariable(prgrm *ast.CXProgram, expr *ast.CXExpression) {
-	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		panic(err)
 	}

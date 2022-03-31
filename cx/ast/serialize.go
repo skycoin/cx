@@ -219,7 +219,7 @@ func serializeExpression(prgrm *CXProgram, expr *CXExpression, s *SerializedCXPr
 		sExpr.LineStr = cxLine.LineStr
 
 	case CX_ATOMIC_OPERATOR:
-		cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+		cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 		if err != nil {
 			panic(err)
 		}
