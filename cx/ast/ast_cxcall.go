@@ -31,7 +31,7 @@ func popStack(prgrm *CXProgram, call *CXCall) error {
 
 	expr := returnOp.Expressions[returnLine]
 
-	cxAtomicOp, _, _, err := prgrm.GetOperation(&expr)
+	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		return err
 	}
@@ -58,7 +58,7 @@ func popStack(prgrm *CXProgram, call *CXCall) error {
 }
 
 func wipeDeclarationMemory(prgrm *CXProgram, expr *CXExpression) error {
-	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		return err
 	}
@@ -74,7 +74,7 @@ func wipeDeclarationMemory(prgrm *CXProgram, expr *CXExpression) error {
 }
 
 func processBuiltInOperators(prgrm *CXProgram, expr *CXExpression, globalInputs *[]CXValue, globalOutputs *[]CXValue, fp types.Pointer) error {
-	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		return err
 	}
@@ -138,7 +138,7 @@ func processBuiltInOperators(prgrm *CXProgram, expr *CXExpression, globalInputs 
 }
 
 func processNonAtomicOperators(prgrm *CXProgram, expr *CXExpression, fp types.Pointer) error {
-	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		return err
 	}
@@ -235,7 +235,7 @@ func (call *CXCall) Call(prgrm *CXProgram, globalInputs *[]CXValue, globalOutput
 		return nil
 	}
 
-	cxAtomicOp, _, _, err := prgrm.GetOperation(&expr)
+	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		return err
 	}

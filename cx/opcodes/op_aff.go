@@ -153,7 +153,7 @@ func queryParam(prgrm *ast.CXProgram, fn *ast.CXFunction, argsIdx []ast.CXArgume
 
 // QueryArgument ...
 func QueryArgument(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpression, argOffsetB []byte, affOffset *types.Pointer) {
-	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		panic(err)
 	}
@@ -178,7 +178,7 @@ func QueryArgument(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpress
 
 // QueryExpressions ...
 func QueryExpressions(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpression, exprOffsetB []byte, affOffset *types.Pointer) {
-	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		panic(err)
 	}
@@ -283,7 +283,7 @@ func queryStructsInPackage(prgrm *ast.CXProgram, fn *ast.CXFunction, strctOffset
 
 // QueryStructure ...
 func QueryStructure(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpression, strctOffsetB []byte, affOffset *types.Pointer) {
-	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		panic(err)
 	}
@@ -305,7 +305,7 @@ func QueryStructure(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpres
 
 // QueryFunction ...
 func QueryFunction(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpression, fnOffsetB []byte, affOffset *types.Pointer) {
-	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		panic(err)
 	}
@@ -664,7 +664,7 @@ func getAffordances(prgrm *ast.CXProgram, inp1 *ast.CXArgument, fp types.Pointer
 
 // 	var tgtPkg = ast.CXPackage(*prevPkg)
 
-// 	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+// 	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 // 	if err != nil {
 // 		panic(err)
 // 	}
@@ -721,7 +721,7 @@ func getAffordances(prgrm *ast.CXProgram, inp1 *ast.CXArgument, fp types.Pointer
 // 	expr := call.Operator.Expressions[call.Line]
 // 	fp := inputs[0].FramePointer
 
-// 	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+// 	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 // 	if err != nil {
 // 		panic(err)
 // 	}
@@ -782,7 +782,7 @@ func readArgAff(prgrm *ast.CXProgram, aff string, tgtFn *ast.CXFunction) *ast.CX
 				if expr.Type == ast.CX_LINE {
 					continue
 				}
-				cxAtomicOp, _, _, err := prgrm.GetOperation(&expr)
+				cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 				if err != nil {
 					panic(err)
 				}
@@ -861,7 +861,7 @@ func readArgAff(prgrm *ast.CXProgram, aff string, tgtFn *ast.CXFunction) *ast.CX
 
 // 	var tgtPkg = ast.CXPackage(*prevPkg)
 
-// 	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+// 	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 // 	if err != nil {
 // 		panic(err)
 // 	}
@@ -989,7 +989,7 @@ func readArgAff(prgrm *ast.CXProgram, aff string, tgtFn *ast.CXFunction) *ast.CX
 
 // 	var tgtPkg = ast.CXPackage(*prevPkg)
 
-// 	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+// 	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 // 	if err != nil {
 // 		panic(err)
 // 	}

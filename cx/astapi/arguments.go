@@ -54,7 +54,7 @@ func AddNativeInputToExpression(cxprogram *cxast.CXProgram, packageName, functio
 	arg := cxast.MakeField(inputName, inputType, "", -1).SetType(types.Code(inputType))
 	arg.Package = cxast.CXPackageIndex(pkg.Index)
 	argIdx := cxprogram.AddCXArgInArray(arg)
-	cxAtomicOp, _, _, err := cxprogram.GetOperation(expr)
+	cxAtomicOp, err := cxprogram.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		panic(err)
 	}
@@ -98,7 +98,7 @@ func RemoveInputFromExpression(cxprogram *cxast.CXProgram, functionName string, 
 		return err
 	}
 
-	cxAtomicOp, _, _, err := cxprogram.GetOperation(expr)
+	cxAtomicOp, err := cxprogram.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		panic(err)
 	}
@@ -152,7 +152,7 @@ func AddNativeOutputToExpression(cxprogram *cxast.CXProgram, packageName, functi
 	arg := cxast.MakeField(outputName, outputType, "", -1).SetType(types.Code(outputType))
 	arg.Package = cxast.CXPackageIndex(pkg.Index)
 	argIdx := cxprogram.AddCXArgInArray(arg)
-	cxAtomicOp, _, _, err := cxprogram.GetOperation(expr)
+	cxAtomicOp, err := cxprogram.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		panic(err)
 	}
@@ -196,7 +196,7 @@ func RemoveOutputFromExpression(cxprogram *cxast.CXProgram, functionName string,
 		return err
 	}
 
-	cxAtomicOp, _, _, err := cxprogram.GetOperation(expr)
+	cxAtomicOp, err := cxprogram.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		panic(err)
 	}
@@ -244,7 +244,7 @@ func MakeInputExpressionAPointer(cxprogram *cxast.CXProgram, functionName string
 	if expr.Type == ast.CX_LINE {
 		return errors.New("Expression is a CXLine")
 	}
-	cxAtomicOp, _, _, err := cxprogram.GetOperation(expr)
+	cxAtomicOp, err := cxprogram.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		panic(err)
 	}
@@ -292,7 +292,7 @@ func MakeOutputExpressionAPointer(cxprogram *cxast.CXProgram, functionName strin
 	if expr.Type == ast.CX_LINE {
 		return errors.New("Expression is a CXLine")
 	}
-	cxAtomicOp, _, _, err := cxprogram.GetOperation(expr)
+	cxAtomicOp, err := cxprogram.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		panic(err)
 	}

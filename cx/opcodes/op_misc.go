@@ -32,7 +32,7 @@ func opGoto(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	call := prgrm.GetCurrentCall()
 	expr := call.Operator.Expressions[call.Line]
 
-	cxAtomicOp, _, _, err := prgrm.GetOperation(&expr)
+	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		panic(err)
 	}
@@ -44,7 +44,7 @@ func opJmp(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	call := prgrm.GetCurrentCall()
 	expr := inputs[0].Expr
 
-	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		panic(err)
 	}
@@ -60,7 +60,7 @@ func opAbsJmp(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue)
 	call := prgrm.GetCurrentCall()
 	expr := inputs[0].Expr
 
-	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		panic(err)
 	}
@@ -76,7 +76,7 @@ func opBreak(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) 
 	call := prgrm.GetCurrentCall()
 	expr := call.Operator.Expressions[call.Line]
 
-	cxAtomicOp, _, _, err := prgrm.GetOperation(&expr)
+	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		panic(err)
 	}
@@ -88,7 +88,7 @@ func opContinue(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 	call := prgrm.GetCurrentCall()
 	expr := call.Operator.Expressions[call.Line]
 
-	cxAtomicOp, _, _, err := prgrm.GetOperation(&expr)
+	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		panic(err)
 	}

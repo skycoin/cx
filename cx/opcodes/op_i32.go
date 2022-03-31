@@ -231,7 +231,7 @@ func opI32JmpEq(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 	call := prgrm.GetCurrentCall()
 	expr := inputs[0].Expr
 
-	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		panic(err)
 	}
@@ -248,7 +248,7 @@ func opI32JmpUnEq(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVa
 	call := prgrm.GetCurrentCall()
 	expr := inputs[0].Expr
 
-	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		panic(err)
 	}
@@ -265,7 +265,7 @@ func opI32JmpGt(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 	call := prgrm.GetCurrentCall()
 	expr := inputs[0].Expr
 
-	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		panic(err)
 	}
@@ -282,7 +282,7 @@ func opI32JmpGtEq(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVa
 	call := prgrm.GetCurrentCall()
 	expr := inputs[0].Expr
 
-	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		panic(err)
 	}
@@ -299,7 +299,7 @@ func opI32JmpLt(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 	call := prgrm.GetCurrentCall()
 	expr := inputs[0].Expr
 
-	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		panic(err)
 	}
@@ -316,7 +316,7 @@ func opI32JmpLtEq(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVa
 	call := prgrm.GetCurrentCall()
 	expr := inputs[0].Expr
 
-	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		panic(err)
 	}
@@ -333,7 +333,7 @@ func opI32JmpZero(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVa
 	call := prgrm.GetCurrentCall()
 	expr := inputs[0].Expr
 
-	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		panic(err)
 	}
@@ -350,7 +350,7 @@ func opI32JmpNotZero(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.C
 	call := prgrm.GetCurrentCall()
 	expr := inputs[0].Expr
 
-	cxAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		panic(err)
 	}
