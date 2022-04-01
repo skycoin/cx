@@ -187,7 +187,7 @@ func addNewExpression(prgrm *cxast.CXProgram, expr *cxast.CXExpression, expressi
 	var rndExprIdx int
 	var argToAdd cxast.CXArgumentIndex
 
-	exprcxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
+	exprCXAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		panic(err)
 	}

@@ -238,11 +238,11 @@ selector:
 global_declaration:
                 VAR declarator declaration_specifiers SEMICOLON
                 {
-			actions.DeclareGlobal(actions.AST,$2, $3, nil, false)
+			actions.DeclareGlobalInPackage(actions.AST,nil,$2, $3, nil, false)
                 }
         |       VAR declarator declaration_specifiers ASSIGN initializer SEMICOLON
                 {
-			actions.DeclareGlobal(actions.AST,$2, $3, $5, true)
+			actions.DeclareGlobalInPackage(actions.AST,nil,$2, $3, $5, true)
                 }
                 ;
 

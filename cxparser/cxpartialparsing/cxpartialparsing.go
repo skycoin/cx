@@ -1220,13 +1220,13 @@ yydefault:
 		yyDollar = yyS[yypt-4 : yypt+1]
 //line cxparser/cxpartialparsing/cxpartialparsing.y:177
 		{
-			actions.DeclareGlobal(Program, yyDollar[2].argument, yyDollar[3].argument, nil, false)
+			actions.DeclareGlobalInPackage(Program, nil, yyDollar[2].argument, yyDollar[3].argument, nil, false)
 		}
 	case 9:
 		yyDollar = yyS[yypt-6 : yypt+1]
 //line cxparser/cxpartialparsing/cxpartialparsing.y:181
 		{
-			actions.DeclareGlobal(Program, yyDollar[2].argument, yyDollar[3].argument, nil, false)
+			actions.DeclareGlobalInPackage(Program, nil, yyDollar[2].argument, yyDollar[3].argument, nil, false)
 		}
 	case 10:
 		yyDollar = yyS[yypt-4 : yypt+1]

@@ -175,11 +175,11 @@ stepping:       TSTEP int_value int_value
 global_declaration:
                 VAR declarator declaration_specifiers SEMICOLON
                 {
-			actions.DeclareGlobal(Program,$2, $3, nil, false)
+			actions.DeclareGlobalInPackage(Program,nil,$2, $3, nil, false)
                 }
         |       VAR declarator declaration_specifiers ASSIGN initializer SEMICOLON
                 {
-			actions.DeclareGlobal(Program,$2, $3, nil, false)
+			actions.DeclareGlobalInPackage(Program,nil,$2, $3, nil, false)
                 }
                 ;
 

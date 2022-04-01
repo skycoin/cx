@@ -1258,13 +1258,13 @@ yydefault:
 		yyDollar = yyS[yypt-4 : yypt+1]
 //line cxparser/cxparsingcompletor/parsingcompletor.y:240
 		{
-			actions.DeclareGlobal(actions.AST, yyDollar[2].argument, yyDollar[3].argument, nil, false)
+			actions.DeclareGlobalInPackage(actions.AST, nil, yyDollar[2].argument, yyDollar[3].argument, nil, false)
 		}
 	case 12:
 		yyDollar = yyS[yypt-6 : yypt+1]
 //line cxparser/cxparsingcompletor/parsingcompletor.y:244
 		{
-			actions.DeclareGlobal(actions.AST, yyDollar[2].argument, yyDollar[3].argument, yyDollar[5].expressions, true)
+			actions.DeclareGlobalInPackage(actions.AST, nil, yyDollar[2].argument, yyDollar[3].argument, yyDollar[5].expressions, true)
 		}
 	case 13:
 		yyDollar = yyS[yypt-4 : yypt+1]
