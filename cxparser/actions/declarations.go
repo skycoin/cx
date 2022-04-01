@@ -15,6 +15,14 @@ import (
 // If `doesInitialize` is true, then `initializer` is used to initialize the
 // new variable.
 //
+// Input arguments description:
+// 	prgrm - a CXProgram that contains all the data and arrays of the program.
+// 	pkg - the package where the global will belong.
+// 	declarator - contains the name of the global var.
+// 	declaration_specifiers - contains the type build of the global.
+// 	initializer - if doesInitialize is true then this contains the initial
+// 				  value of the global.
+// 	doesInitialize - true if global is initialized or given a value.
 func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 	declarator *ast.CXArgument, declaration_specifiers *ast.CXArgument,
 	initializer []ast.CXExpression, doesInitialize bool) {
@@ -221,7 +229,11 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 // DeclareStruct takes a name of a struct and a slice of fields representing
 // the members and adds the struct to the package.
 //
-func DeclareStruct(prgrm *ast.CXProgram, ident string, strctFlds []*ast.CXArgument) {
+// Input arguments description:
+// 	prgrm - a CXProgram that contains all the data and arrays of the program.
+// 	structName - name of the struct to declare.
+//  structFields - fields of the struct to be added.
+func DeclareStruct(prgrm *ast.CXProgram, structName string, structFields []*ast.CXArgument) {
 	// Make sure we are inside a package.
 	pkg, err := prgrm.GetCurrentPackage()
 	if err != nil {
@@ -230,7 +242,7 @@ func DeclareStruct(prgrm *ast.CXProgram, ident string, strctFlds []*ast.CXArgume
 	}
 
 	// Make sure a struct with the same name is not yet defined.
-	strct, err := prgrm.GetStruct(ident, pkg.Name)
+	strct, err := prgrm.GetStruct(structName, pkg.Name)
 	if err != nil {
 		// FIXME: Should give a relevant error message
 		panic(err)
@@ -238,25 +250,28 @@ func DeclareStruct(prgrm *ast.CXProgram, ident string, strctFlds []*ast.CXArgume
 
 	strct.Fields = nil
 	strct.Size = 0
-	for _, fld := range strctFlds {
-		if _, err := strct.GetField(fld.Name); err == nil {
-			println(ast.CompilationError(fld.ArgDetails.FileName, fld.ArgDetails.FileLine), "Multiply defined struct field:", fld.Name)
+	for _, field := range structFields {
+		if _, err := strct.GetField(field.Name); err == nil {
+			println(ast.CompilationError(field.ArgDetails.FileName, field.ArgDetails.FileLine), "Multiply defined struct field:", field.Name)
 		} else {
-			strct.AddField(prgrm, fld)
+			strct.AddField(prgrm, field)
 		}
 	}
 }
 
 // DeclarePackage() switches the current package in the program.
 //
-func DeclarePackage(prgrm *ast.CXProgram, ident string) {
+// Input arguments description:
+// 	prgrm - a CXProgram that contains all the data and arrays of the program.
+// 	pkgName - name of the package to declare.
+func DeclarePackage(prgrm *ast.CXProgram, pkgName string) {
 	// Add a new package to the program if it's not previously defined.
-	if _, err := prgrm.GetPackage(ident); err != nil {
-		pkg := ast.MakePackage(ident)
+	if _, err := prgrm.GetPackage(pkgName); err != nil {
+		pkg := ast.MakePackage(pkgName)
 		prgrm.AddPackage(pkg)
 	}
 
-	_, err := prgrm.SelectPackage(ident)
+	_, err := prgrm.SelectPackage(pkgName)
 	if err != nil {
 		panic(err)
 	}
@@ -264,7 +279,12 @@ func DeclarePackage(prgrm *ast.CXProgram, ident string) {
 
 // DeclareImport()
 //
-func DeclareImport(prgrm *ast.CXProgram, name string, currentFile string, lineNo int) {
+// Input arguments description:
+// 	prgrm - a CXProgram that contains all the data and arrays of the program.
+// 	impName - name of the import to declare.
+// 	currentFile - name of the current cx source code file.
+// 	lineNo - the current line number from the source code.
+func DeclareImport(prgrm *ast.CXProgram, impName string, currentFile string, lineNo int) {
 	// Make sure we are inside a package
 	pkg, err := prgrm.GetCurrentPackage()
 	if err != nil {
@@ -273,23 +293,23 @@ func DeclareImport(prgrm *ast.CXProgram, name string, currentFile string, lineNo
 	}
 
 	// Checking if it's a package in the CX workspace by trying to find a
-	// slash (/) in the name.
+	// slash (/) in the impName.
 	// We start backwards and we stop if we find a slash.
 	hasSlash := false
-	c := len(name) - 1
+	c := len(impName) - 1
 	for ; c >= 0; c-- {
-		if name[c] == '/' {
+		if impName[c] == '/' {
 			hasSlash = true
 			break
 		}
 	}
 	ident := ""
-	// If the `name` has a slash, then we need to strip
+	// If the `impName` has a slash, then we need to strip
 	// everything behind the slash and the slash itself.
 	if hasSlash {
-		ident = name[c+1:]
+		ident = impName[c+1:]
 	} else {
-		ident = name
+		ident = impName
 	}
 
 	// If the package is already imported, then there is nothing more to be done.
@@ -328,11 +348,16 @@ func DeclareImport(prgrm *ast.CXProgram, name string, currentFile string, lineNo
 }
 
 // DeclareLocal() creates a local variable inside a function.
-// If `doesInitialize` is true, then `initializer` contains the initial values
-// of the variable(s).
 //
 // Returns a list of expressions that contains the initialization, if any.
 //
+// Input arguments description:
+// 	prgrm - a CXProgram that contains all the data and arrays of the program.
+// 	declarator - contains the name of the var.
+// 	declaration_specifiers - contains the type build of the var.
+// 	initializer - if doesInitialize is true then this contains the initial
+// 				  value of the var.
+// 	doesInitialize - true if var is initialized or given a value.
 func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationSpecifiers *ast.CXArgument,
 	initializer []ast.CXExpression, doesInitialize bool) []ast.CXExpression {
 	if globals.FoundCompileErrors {
@@ -446,12 +471,12 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 //
 // It is called repeatedly while the type is parsed.
 //
+// Returns the new type build from `declSpec` and `opTyp`.
+//
+// Input arguments description:
 //   declSpec:     The incoming type
 //   arrayLengths: The lengths of the array if `opTyp` = cxcore.DECL_ARRAY
 //   opTyp:        The type of modification to `declSpec` (array of, pointer to, ...)
-//
-// Returns the new type build from `declSpec` and `opTyp`.
-//
 func DeclarationSpecifiers(declSpec *ast.CXArgument, arrayLengths []types.Pointer, opTyp int) *ast.CXArgument {
 	switch opTyp {
 	case constants.DECL_POINTER:
