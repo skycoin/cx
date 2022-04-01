@@ -12,12 +12,12 @@ import (
 // For example, `foo = Item{x: 10, y: 20}` is converted to: `foo.x = 10; foo.y = 20;`.
 //
 // Input arguments description:
-// prgrm - a CXProgram that contains all the data and array of the program.
-// toExprs - toExprs are the array of expressions that contains the data needed
-// to construct the series of struct field assignments.
-// fromExprs - fromExprs are the array of expressions that will contain the
-// series of struct field assignments.
-// structLiteralName - name of the struct, in the example above this is "foo".
+// 	prgrm - a CXProgram that contains all the data and array of the program.
+// 	toExprs - toExprs are the array of expressions that contains the data needed
+// 			  to construct the series of struct field assignments.
+// 	fromExprs - fromExprs are the array of expressions that will contain the
+// 			    series of struct field assignments.
+// 	structLiteralName - name of the struct, in the example above this is "foo".
 func assignStructLiteralFields(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fromExprs []ast.CXExpression, structLiteralName string) []ast.CXExpression {
 	toCXAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(toExprs, 0)
 	if err != nil {
@@ -53,11 +53,11 @@ func assignStructLiteralFields(prgrm *ast.CXProgram, toExprs []ast.CXExpression,
 // struct literals, e.g. `&Item{x: 10, y: 20}` in assignment expressions.
 //
 // Input arguments description:
-// prgrm - a CXProgram that contains all the data and array of the program.
-// toExprs - toExprs are the array of expressions that contains the data needed
-// to construct the series of struct field assignments.
-// fromExprs - fromExprs are the array of expressions that will contain the
-// series of struct field assignments.
+// 	prgrm - a CXProgram that contains all the data and array of the program.
+// 	toExprs - toExprs are the array of expressions that contains the data needed
+// 			  to construct the series of struct field assignments.
+// 	fromExprs - fromExprs are the array of expressions that will contain the
+// 				series of struct field assignments.
 func StructLiteralAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fromExprs []ast.CXExpression) []ast.CXExpression {
 	lastFromExpr := fromExprs[len(fromExprs)-1]
 
@@ -127,11 +127,11 @@ func StructLiteralAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, f
 // ArrayLiteralAssignment handles array literals.
 //
 // Input arguments description:
-// prgrm - a CXProgram that contains all the data and array of the program.
-// toExprs - toExprs are the array of expressions that contains the data needed
-// to construct the series of array literals.
-// fromExprs - fromExprs are the array of expressions that will contain the
-// series of array literal assignments.
+// 	prgrm - a CXProgram that contains all the data and array of the program.
+// 	toExprs - toExprs are the array of expressions that contains the data needed
+// 			  to construct the series of array literals.
+// 	fromExprs - fromExprs are the array of expressions that will contain the
+// 				series of array literal assignments.
 func ArrayLiteralAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fromExprs []ast.CXExpression) []ast.CXExpression {
 	toCXAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(toExprs, 0)
 	if err != nil {
@@ -156,12 +156,12 @@ func ArrayLiteralAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fr
 // "+=","-=","*=","/=","%=","&=","^=", and "|=" operators.
 //
 // Input arguments description:
-// prgrm - a CXProgram that contains all the data and array of the program.
-// expr - the expression for the short assignment.
-// exprCXLine - the cx line or the line string of the short assignment expression.
-// toExprs - Contains the output cx arg to be added to the expression.
-// fromExprs - Contains the output cx arg to be added to the expression.
-// pkg - the package the expression belongs.
+// 	prgrm - a CXProgram that contains all the data and array of the program.
+// 	expr - the expression for the short assignment.
+// 	exprCXLine - the cx line or the line string of the short assignment expression.
+// 	toExprs - Contains the output cx arg to be added to the expression.
+// 	fromExprs - Contains the output cx arg to be added to the expression.
+// 	pkg - the package the expression belongs.
 func ShortAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression, exprCXLine *ast.CXExpression, toExprs []ast.CXExpression, fromExprs []ast.CXExpression, pkg *ast.CXPackage) []ast.CXExpression {
 	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 	if err != nil {
@@ -227,11 +227,11 @@ func getOutputType(prgrm *ast.CXProgram, expr *ast.CXExpression) *ast.CXArgument
 // like =, :=, +=, *=.
 //
 // Input arguments description:
-// prgrm - a CXProgram that contains all the data and array of the program.
-// toExprs, fromExprs - array of expressions where the assingment
-// expression will be added.
-// assignOp - the assignment operator, "=", ":=", ">>=","<<=",
-// "+=","-=","*=","/=","%=","&=","^=", and "|=".
+// 	prgrm - a CXProgram that contains all the data and array of the program.
+// 	toExprs, fromExprs - array of expressions where the assingment
+// 			  		  	 expression will be added.
+// 	assignOp - the assignment operator, "=", ":=", ">>=","<<=",
+// 			   "+=","-=","*=","/=","%=","&=","^=", and "|=".
 func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp string, fromExprs []ast.CXExpression) []ast.CXExpression {
 	idx := len(fromExprs) - 1
 
