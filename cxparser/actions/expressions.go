@@ -17,7 +17,22 @@ type ReturnExpressions struct {
 	Expressions []ast.CXExpression
 }
 
-func IterationExpressions(prgrm *ast.CXProgram, init []ast.CXExpression, cond []ast.CXExpression, incr []ast.CXExpression, statements []ast.CXExpression) []ast.CXExpression {
+// IterationExpressions creates series of expressions that will create
+// a for loop condition.
+//
+// Input arguments description:
+// 	prgrm - a CXProgram that contains all the data and arrays of the program.
+// 	initializeExprs - contains the initialization of the variables used
+// 					  for the condition of the iteration expression.
+//  conditionExprs - contains the condition of the iteration expression.
+//  incrementExprs - contains the increment expr for the variable used
+// 					 in the condition.
+//  statementExprs - contains the statements inside the iteration expression.
+func IterationExpressions(prgrm *ast.CXProgram,
+	initializeExprs []ast.CXExpression,
+	conditionExprs []ast.CXExpression,
+	incrementExprs []ast.CXExpression,
+	statementExprs []ast.CXExpression) []ast.CXExpression {
 	jmpFn := ast.Natives[constants.OP_JMP]
 
 	pkg, err := prgrm.GetCurrentPackage()
@@ -38,7 +53,7 @@ func IterationExpressions(prgrm *ast.CXProgram, init []ast.CXExpression, cond []
 	}
 
 	// -2 for the cx line expression addition for up and down expr
-	upLines := ((len(statements) + len(incr) + len(cond) + 2) * -1) - 2
+	upLines := ((len(statementExprs) + len(incrementExprs) + len(conditionExprs) + 2) * -1) - 2
 	downLines := 0
 
 	prgrm.CXAtomicOps[upExprAtomicOpIdx].AddInput(prgrm, trueArgAtomicOp.Outputs[0])
@@ -51,7 +66,7 @@ func IterationExpressions(prgrm *ast.CXProgram, init []ast.CXExpression, cond []
 
 	prgrm.CXAtomicOps[downExprAtomicOpIdx].Package = ast.CXPackageIndex(pkg.Index)
 
-	lastCondAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(cond, len(cond)-1)
+	lastCondAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(conditionExprs, len(conditionExprs)-1)
 	if err != nil {
 		panic(err)
 	}
@@ -76,10 +91,10 @@ func IterationExpressions(prgrm *ast.CXProgram, init []ast.CXExpression, cond []
 
 	thenLines := 0
 	// + 1 for the cx line expression addition for the down expr jmp
-	elseLines := len(incr) + len(statements) + 1 + 1
+	elseLines := len(incrementExprs) + len(statementExprs) + 1 + 1
 
 	// processing possible breaks
-	for i, statementExpr := range statements {
+	for i, statementExpr := range statementExprs {
 		if statementExpr.IsBreak(prgrm) {
 			statementAtomicOp, _, _, err := prgrm.GetOperation(&statementExpr)
 			if err != nil {
@@ -91,25 +106,25 @@ func IterationExpressions(prgrm *ast.CXProgram, init []ast.CXExpression, cond []
 	}
 
 	// processing possible continues
-	for i, statementExpr := range statements {
+	for i, statementExpr := range statementExprs {
 		if statementExpr.IsContinue(prgrm) {
 			statementAtomicOp, _, _, err := prgrm.GetOperation(&statementExpr)
 			if err != nil {
 				panic(err)
 			}
 
-			statementAtomicOp.ThenLines = len(statements) - i - 1
+			statementAtomicOp.ThenLines = len(statementExprs) - i - 1
 		}
 	}
 
 	prgrm.CXAtomicOps[downExprAtomicOpIdx].ThenLines = thenLines
 	prgrm.CXAtomicOps[downExprAtomicOpIdx].ElseLines = elseLines
 
-	exprs := init
-	exprs = append(exprs, cond...)
+	exprs := initializeExprs
+	exprs = append(exprs, conditionExprs...)
 	exprs = append(exprs, *downExprCXLine, *downExpr)
-	exprs = append(exprs, statements...)
-	exprs = append(exprs, incr...)
+	exprs = append(exprs, statementExprs...)
+	exprs = append(exprs, incrementExprs...)
 	exprs = append(exprs, *upExprCXLine, *upExpr)
 
 	DefineNewScope(exprs)
@@ -117,6 +132,12 @@ func IterationExpressions(prgrm *ast.CXProgram, init []ast.CXExpression, cond []
 	return exprs
 }
 
+// trueJmpExpressions makes a true jump expression for BREAKS and CONTINUES.
+//
+// Input arguments description:
+// 	prgrm - a CXProgram that contains all the data and arrays of the program.
+// 	opcode - the opcode of the expression. Currently used as either a
+//  		 BREAK or CONTINUE expression.
 func trueJmpExpressions(prgrm *ast.CXProgram, opcode int) []ast.CXExpression {
 	pkg, err := prgrm.GetCurrentPackage()
 	if err != nil {
@@ -142,17 +163,33 @@ func trueJmpExpressions(prgrm *ast.CXProgram, opcode int) []ast.CXExpression {
 	return []ast.CXExpression{*exprCXLine, *expr}
 }
 
+// BreakExpressions makes a true jump expression for BREAKS.
+//
+// Input arguments description:
+// 	prgrm - a CXProgram that contains all the data and arrays of the program.
 func BreakExpressions(prgrm *ast.CXProgram) []ast.CXExpression {
 	exprs := trueJmpExpressions(prgrm, constants.OP_BREAK)
 	return exprs
 }
 
+// ContinueExpressions makes a true jump expression for CONTINUES.
+//
+// Input arguments description:
+// 	prgrm - a CXProgram that contains all the data and arrays of the program.
 func ContinueExpressions(prgrm *ast.CXProgram) []ast.CXExpression {
 	exprs := trueJmpExpressions(prgrm, constants.OP_CONTINUE)
 	return exprs
 }
 
-func SelectionExpressions(prgrm *ast.CXProgram, condExprs []ast.CXExpression, thenExprs []ast.CXExpression, elseExprs []ast.CXExpression) []ast.CXExpression {
+// SelectionExpressions creates series of expressions that will create
+// an if else condition.
+//
+// Input arguments description:
+// 	prgrm - a CXProgram that contains all the data and arrays of the program.
+//  conditionExprs - contains the condition of the selection expression.
+// 	thenExprs - contains the statements if condition is true.
+//  elseExprs - contains the statements if condition is false.
+func SelectionExpressions(prgrm *ast.CXProgram, conditionExprs []ast.CXExpression, thenExprs []ast.CXExpression, elseExprs []ast.CXExpression) []ast.CXExpression {
 	DefineNewScope(thenExprs)
 	DefineNewScope(elseExprs)
 
@@ -170,20 +207,20 @@ func SelectionExpressions(prgrm *ast.CXProgram, condExprs []ast.CXExpression, th
 	}
 	ifExprAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
 
-	lastCondExprsAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(condExprs, len(condExprs)-1)
+	lastCondExprsAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(conditionExprs, len(conditionExprs)-1)
 	if err != nil {
 		panic(err)
 	}
 	lastCondExprsAtomicOpOperator := prgrm.GetFunctionFromArray(lastCondExprsAtomicOp.Operator)
 
 	var predicateIdx ast.CXArgumentIndex
-	if lastCondExprsAtomicOpOperator == nil && !condExprs[len(condExprs)-1].IsMethodCall() {
+	if lastCondExprsAtomicOpOperator == nil && !conditionExprs[len(conditionExprs)-1].IsMethodCall() {
 		// then it's a literal
 		predicateIdx = lastCondExprsAtomicOp.Outputs[0]
 	} else {
 		// then it's an expression
 		predicate := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo)
-		if condExprs[len(condExprs)-1].IsMethodCall() {
+		if conditionExprs[len(conditionExprs)-1].IsMethodCall() {
 			// we'll change this once we have access to method's types in
 			// ProcessMethodCall
 			predicate.SetType(types.BOOL)
@@ -224,8 +261,8 @@ func SelectionExpressions(prgrm *ast.CXProgram, condExprs []ast.CXExpression, th
 	prgrm.CXAtomicOps[skipExprAtomicOpIdx].ElseLines = 0
 
 	var exprs []ast.CXExpression
-	if lastCondExprsAtomicOpOperator != nil || condExprs[len(condExprs)-1].IsMethodCall() {
-		exprs = append(exprs, condExprs...)
+	if lastCondExprsAtomicOpOperator != nil || conditionExprs[len(conditionExprs)-1].IsMethodCall() {
+		exprs = append(exprs, conditionExprs...)
 	}
 
 	exprs = append(exprs, *ifExprCXLine, *ifExpr)
@@ -275,6 +312,14 @@ func IsTempVar(name string) bool {
 	return false
 }
 
+// OperatorExpression creates an expression for an expression OP expression instance.
+// i.e. ((expr+expr) * (expr-expr))
+//
+// Input arguments description:
+// 	prgrm - a CXProgram that contains all the data and arrays of the program.
+//  leftExprs - exprs on the left side of the operator expression
+// 	rightExprs - exprs on the right side of the operator expression
+// 	opcode - the opcode of the operator.
 func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, rightExprs []ast.CXExpression, opcode int) (out []ast.CXExpression) {
 	pkg, err := prgrm.GetCurrentPackage()
 	if err != nil {
@@ -366,6 +411,12 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 	return
 }
 
+// UnaryExpression ...
+//
+// Input arguments description:
+// 	prgrm - a CXProgram that contains all the data and arrays of the program.
+//  op - the unary operator, '*', '&', '!', and '-'.
+//  prevExprs - the array of expressions the unary expression belongs.
 func UnaryExpression(prgrm *ast.CXProgram, op string, prevExprs []ast.CXExpression) []ast.CXExpression {
 	lastPrevExprsAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(prevExprs, len(prevExprs)-1)
 	if err != nil {
@@ -429,8 +480,14 @@ func UnaryExpression(prgrm *ast.CXProgram, op string, prevExprs []ast.CXExpressi
 	return prevExprs
 }
 
-// AssociateReturnExpressions associates the output of `retExprs` to the
+// AssociateReturnExpressions associate the output of `retExprs` to the
 // `idx`th output parameter of the current function.
+//
+// Input arguments description:
+// 	prgrm - a CXProgram that contains all the data and arrays of the program.
+//  idx - referring to the nth output parameter of the current function.
+// 	retExprs - the return expressions to be associated or linked to the
+// 			   output parameter of the current function.
 func AssociateReturnExpressions(prgrm *ast.CXProgram, idx int, retExprs []ast.CXExpression) []ast.CXExpression {
 	var pkg *ast.CXPackage
 	var fn *ast.CXFunction
@@ -488,6 +545,10 @@ func AssociateReturnExpressions(prgrm *ast.CXProgram, idx int, retExprs []ast.CX
 }
 
 // AddJmpToReturnExpressions adds an jump expression that makes a function stop its execution
+//
+// Input arguments description:
+// 	prgrm - a CXProgram that contains all the data and arrays of the program.
+//  exprs - contains the array of return expressions where the jump expr will be added.
 func AddJmpToReturnExpressions(prgrm *ast.CXProgram, exprs ReturnExpressions) []ast.CXExpression {
 	var pkg *ast.CXPackage
 	var fn *ast.CXFunction
