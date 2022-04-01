@@ -411,7 +411,8 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 	return
 }
 
-// UnaryExpression ...
+// UnaryExpression creates an expression for unary operations,
+// operations that only need one input, '*', '&', '!', and '-'.
 //
 // Input arguments description:
 // 	prgrm - a CXProgram that contains all the data and arrays of the program.
@@ -544,7 +545,7 @@ func AssociateReturnExpressions(prgrm *ast.CXProgram, idx int, retExprs []ast.CX
 	}
 }
 
-// AddJmpToReturnExpressions adds an jump expression that makes a function stop its execution
+// AddJmpToReturnExpressions adds an jump expression that makes a function stop its execution.
 //
 // Input arguments description:
 // 	prgrm - a CXProgram that contains all the data and arrays of the program.
