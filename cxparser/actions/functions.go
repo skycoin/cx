@@ -11,20 +11,20 @@ import (
 	"github.com/skycoin/cx/cx/types"
 )
 
-// FunctionHeader takes a function name ('ident') and either creates the
+// FunctionHeader takes a function name ('fnName') and either creates the
 // function if it's not known before or returns the already existing function
 // if it is.
 //
 // If the function is a method (isMethod = true), then it adds the object that
 // it's called on as the first argument.
 //
-func FunctionHeader(prgrm *ast.CXProgram, ident string, receiver []*ast.CXArgument, isMethod bool) ast.CXFunctionIndex {
+func FunctionHeader(prgrm *ast.CXProgram, fnName string, receiver []*ast.CXArgument, isMethod bool) ast.CXFunctionIndex {
 	if isMethod {
 		if len(receiver) > 1 {
 			panic("method has multiple receivers")
 		}
 		if pkg, err := prgrm.GetCurrentPackage(); err == nil {
-			fnName := receiver[0].StructType.Name + "." + ident
+			fnName := receiver[0].StructType.Name + "." + fnName
 
 			if fn, err := prgrm.GetFunction(fnName, pkg.Name); err == nil {
 				fn.AddInput(prgrm, receiver[0])
@@ -42,11 +42,11 @@ func FunctionHeader(prgrm *ast.CXProgram, ident string, receiver []*ast.CXArgume
 		}
 	} else {
 		if pkg, err := prgrm.GetCurrentPackage(); err == nil {
-			if fn, err := prgrm.GetFunction(ident, pkg.Name); err == nil {
+			if fn, err := prgrm.GetFunction(fnName, pkg.Name); err == nil {
 				pkg.CurrentFunction = ast.CXFunctionIndex(fn.Index)
 				return ast.CXFunctionIndex(fn.Index)
 			} else {
-				fn := ast.MakeFunction(ident, CurrentFile, LineNo)
+				fn := ast.MakeFunction(fnName, CurrentFile, LineNo)
 				_, fnIdx := pkg.AddFunction(prgrm, fn)
 
 				return fnIdx
