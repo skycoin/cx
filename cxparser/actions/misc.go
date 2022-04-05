@@ -23,7 +23,7 @@ func SetCorrectArithmeticOp(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 	}
 }
 
-// hasDeclSpec determines if an argument has certain declaration specifier
+// hasDeclSpec determines if an argument has certain declaration specifier.
 func hasDeclSpec(arg *ast.CXArgument, spec int) bool {
 	found := false
 	for _, s := range arg.DeclarationSpecifiers {
@@ -45,7 +45,7 @@ func hasDerefOp(arg *ast.CXArgument, spec int) bool {
 	return found
 }
 
-// This function writes those bytes to prgrm.Data
+// This function writes those bytes to prgrm.Data.
 func WritePrimary(prgrm *ast.CXProgram, typeCode types.Code, byts []byte, isSlice bool) []ast.CXExpression {
 	pkg, err := prgrm.GetCurrentPackage()
 	if err != nil {
@@ -115,28 +115,6 @@ func TotalLength(lengths []types.Pointer) types.Pointer {
 	}
 
 	return total
-}
-
-func StructLiteralFields(prgrm *ast.CXProgram, ident string) ast.CXExpression {
-	pkg, err := prgrm.GetCurrentPackage()
-	if err != nil {
-		panic(err)
-	}
-
-	arg := ast.MakeArgument("", CurrentFile, LineNo)
-	arg.SetType(types.IDENTIFIER)
-	arg.Name = ident
-	arg.Package = ast.CXPackageIndex(pkg.Index)
-	argIdx := prgrm.AddCXArgInArray(arg)
-
-	expr := ast.MakeAtomicOperatorExpression(prgrm, nil)
-	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
-	if err != nil {
-		panic(err)
-	}
-	cxAtomicOp.AddOutput(prgrm, argIdx)
-	cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
-	return *expr
 }
 
 func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile string, lineNo int) {

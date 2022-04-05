@@ -399,3 +399,31 @@ func ArrayLiteralExpression(prgrm *ast.CXProgram, arraySizes []types.Pointer, ty
 
 	return result
 }
+
+// StructLiteralFields creates an initial expression for the
+// struct literal expression.
+//
+// Input arguments description:
+// 	prgrm - a CXProgram that contains all the data and arrays of the program.
+//	structName - name of the struct.
+func StructLiteralFields(prgrm *ast.CXProgram, structName string) ast.CXExpression {
+	pkg, err := prgrm.GetCurrentPackage()
+	if err != nil {
+		panic(err)
+	}
+
+	arg := ast.MakeArgument("", CurrentFile, LineNo)
+	arg.SetType(types.IDENTIFIER)
+	arg.Name = structName
+	arg.Package = ast.CXPackageIndex(pkg.Index)
+	argIdx := prgrm.AddCXArgInArray(arg)
+
+	expr := ast.MakeAtomicOperatorExpression(prgrm, nil)
+	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
+	if err != nil {
+		panic(err)
+	}
+	cxAtomicOp.AddOutput(prgrm, argIdx)
+	cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
+	return *expr
+}
