@@ -8,6 +8,11 @@ import (
 )
 
 // SliceLiteralExpression handles literal expressions by converting it to a series of `append` expressions.
+//
+// Input arguments description:
+// 	prgrm - a CXProgram that contains all the data and arrays of the program.
+//  typeCode - type code of the slice.
+//  exprs - array of expressions that make up the slice literal expression.
 func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []ast.CXExpression) []ast.CXExpression {
 	var result []ast.CXExpression
 
@@ -149,12 +154,18 @@ func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []a
 	return result
 }
 
-func PrimaryStructLiteral(prgrm *ast.CXProgram, ident string, strctFlds []ast.CXExpression) []ast.CXExpression {
+// PrimaryStructLiteral
+//
+// Input arguments description:
+// 	prgrm - a CXProgram that contains all the data and arrays of the program.
+//  structName - name of the struct.
+//  structFields - fields of the struct.
+func PrimaryStructLiteral(prgrm *ast.CXProgram, structName string, structFields []ast.CXExpression) []ast.CXExpression {
 	var result []ast.CXExpression
 
 	if pkg, err := prgrm.GetCurrentPackage(); err == nil {
-		if strct, err := prgrm.GetStruct(ident, pkg.Name); err == nil {
-			for _, expr := range strctFlds {
+		if strct, err := prgrm.GetStruct(structName, pkg.Name); err == nil {
+			for _, expr := range structFields {
 				if expr.Type == ast.CX_LINE {
 					continue
 				}
@@ -164,7 +175,6 @@ func PrimaryStructLiteral(prgrm *ast.CXProgram, ident string, strctFlds []ast.CX
 				}
 
 				cxAtomicOpOutputIdx := cxAtomicOp.Outputs[0]
-
 				name := prgrm.CXArgs[cxAtomicOpOutputIdx].Name
 
 				field := ast.MakeArgument(name, CurrentFile, LineNo)
@@ -173,24 +183,22 @@ func PrimaryStructLiteral(prgrm *ast.CXProgram, ident string, strctFlds []ast.CX
 				expr.ExpressionType = ast.CXEXPR_STRUCT_LITERAL
 
 				prgrm.CXArgs[cxAtomicOpOutputIdx].Package = ast.CXPackageIndex(pkg.Index)
-				// expr.ProgramOutput[0].Program = prgrm
 
 				if prgrm.CXArgs[cxAtomicOpOutputIdx].StructType == nil {
 					prgrm.CXArgs[cxAtomicOpOutputIdx].StructType = strct
 				}
-				// expr.ProgramOutput[0].StructType = strct
 				field.StructType = strct
 
 				prgrm.CXArgs[cxAtomicOpOutputIdx].Size = strct.Size
 				prgrm.CXArgs[cxAtomicOpOutputIdx].TotalSize = strct.Size
-				prgrm.CXArgs[cxAtomicOpOutputIdx].Name = ident
+				prgrm.CXArgs[cxAtomicOpOutputIdx].Name = structName
 				fieldIdx := prgrm.AddCXArgInArray(field)
 				prgrm.CXArgs[cxAtomicOpOutputIdx].Fields = append(prgrm.CXArgs[cxAtomicOpOutputIdx].Fields, fieldIdx)
 
 				result = append(result, expr)
 			}
 		} else {
-			panic("type '" + ident + "' does not exist")
+			panic("type '" + structName + "' does not exist")
 		}
 	} else {
 		panic(err)
@@ -199,12 +207,19 @@ func PrimaryStructLiteral(prgrm *ast.CXProgram, ident string, strctFlds []ast.CX
 	return result
 }
 
-func PrimaryStructLiteralExternal(prgrm *ast.CXProgram, impName string, ident string, strctFlds []ast.CXExpression) []ast.CXExpression {
+// PrimaryStructLiteralExternal
+//
+// Input arguments description:
+// 	prgrm - a CXProgram that contains all the data and arrays of the program.
+//  importName - name of the import.
+//  structName - name of the struct.
+//  structFields - fields of the struct.
+func PrimaryStructLiteralExternal(prgrm *ast.CXProgram, importName string, structName string, structFields []ast.CXExpression) []ast.CXExpression {
 	var result []ast.CXExpression
 	if pkg, err := prgrm.GetCurrentPackage(); err == nil {
-		if _, err := pkg.GetImport(prgrm, impName); err == nil {
-			if strct, err := prgrm.GetStruct(ident, impName); err == nil {
-				for _, expr := range strctFlds {
+		if _, err := pkg.GetImport(prgrm, importName); err == nil {
+			if strct, err := prgrm.GetStruct(structName, importName); err == nil {
+				for _, expr := range structFields {
 					if expr.Type == ast.CX_LINE {
 						continue
 					}
@@ -226,13 +241,13 @@ func PrimaryStructLiteralExternal(prgrm *ast.CXProgram, impName string, ident st
 					cxAtomicOpOutput.StructType = strct
 					cxAtomicOpOutput.Size = strct.Size
 					cxAtomicOpOutput.TotalSize = strct.Size
-					cxAtomicOpOutput.Name = ident
+					cxAtomicOpOutput.Name = structName
 					fieldIdx := prgrm.AddCXArgInArray(field)
 					cxAtomicOpOutput.Fields = append(cxAtomicOpOutput.Fields, fieldIdx)
 					result = append(result, expr)
 				}
 			} else {
-				panic("type '" + ident + "' does not exist")
+				panic("type '" + structName + "' does not exist")
 			}
 		} else {
 			panic(err)
@@ -244,7 +259,15 @@ func PrimaryStructLiteralExternal(prgrm *ast.CXProgram, impName string, ident st
 	return result
 }
 
-func ArrayLiteralExpression(prgrm *ast.CXProgram, arrSizes []types.Pointer, typeCode types.Code, exprs []ast.CXExpression) []ast.CXExpression {
+// ArrayLiteralExpression
+//
+// Input arguments description:
+// 	prgrm - a CXProgram that contains all the data and arrays of the program.
+//  arraySizes - len(arraySizes) is the length of the array while contents of
+// 				 arraySizes define the size of each dimension.
+//  typeCode - type code of the array.
+//  exprs - the array of expressions composing the array literal expression.
+func ArrayLiteralExpression(prgrm *ast.CXProgram, arraySizes []types.Pointer, typeCode types.Code, exprs []ast.CXExpression) []ast.CXExpression {
 	var result []ast.CXExpression
 
 	pkg, err := prgrm.GetCurrentPackage()
@@ -263,7 +286,7 @@ func ArrayLiteralExpression(prgrm *ast.CXProgram, arrSizes []types.Pointer, type
 
 	arrVarExprAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
 	arrVar := ast.MakeArgument(symName, CurrentFile, LineNo)
-	arrVar = DeclarationSpecifiers(arrVar, arrSizes, constants.DECL_ARRAY)
+	arrVar = DeclarationSpecifiers(arrVar, arraySizes, constants.DECL_ARRAY)
 	arrVar.SetType(typeCode)
 	arrVar.TotalSize = arrVar.Size * TotalLength(arrVar.Lengths)
 	arrVar.Package = ast.CXPackageIndex(pkg.Index)
@@ -307,7 +330,7 @@ func ArrayLiteralExpression(prgrm *ast.CXProgram, arrSizes []types.Pointer, type
 
 			sym.Indexes = append(sym.Indexes, idxExprAtomicOp.Outputs[0])
 			sym.DereferenceOperations = append(sym.DereferenceOperations, constants.DEREF_ARRAY)
-			sym.Lengths = arrSizes
+			sym.Lengths = arraySizes
 			sym.TotalSize = sym.Size * TotalLength(sym.Lengths)
 			symIdx := prgrm.AddCXArgInArray(sym)
 
@@ -343,7 +366,7 @@ func ArrayLiteralExpression(prgrm *ast.CXProgram, arrSizes []types.Pointer, type
 	symOutput := ast.MakeArgument(symNameOutput, CurrentFile, LineNo)
 	symOutput.SetType(typeCode)
 	// symOutput.Lengths = append(symOutput.Lengths, arrSizes[len(arrSizes)-1])
-	symOutput.Lengths = arrSizes
+	symOutput.Lengths = arraySizes
 	symOutput.Package = ast.CXPackageIndex(pkg.Index)
 	symOutput.PreviouslyDeclared = true
 	symOutput.TotalSize = symOutput.Size * TotalLength(symOutput.Lengths)
@@ -352,7 +375,7 @@ func ArrayLiteralExpression(prgrm *ast.CXProgram, arrSizes []types.Pointer, type
 	symInput := ast.MakeArgument(symName, CurrentFile, LineNo)
 	symInput.SetType(typeCode)
 	// symInput.Lengths = append(symInput.Lengths, arrSizes[len(arrSizes)-1])
-	symInput.Lengths = arrSizes
+	symInput.Lengths = arraySizes
 	symInput.Package = ast.CXPackageIndex(pkg.Index)
 	symInput.PreviouslyDeclared = true
 	symInput.TotalSize = symInput.Size * TotalLength(symInput.Lengths)
@@ -375,4 +398,32 @@ func ArrayLiteralExpression(prgrm *ast.CXProgram, arrSizes []types.Pointer, type
 	result = append(result, *symExprCXLine, *symExpr)
 
 	return result
+}
+
+// StructLiteralFields creates an initial expression for the
+// struct literal expression.
+//
+// Input arguments description:
+// 	prgrm - a CXProgram that contains all the data and arrays of the program.
+//	structName - name of the struct.
+func StructLiteralFields(prgrm *ast.CXProgram, structName string) ast.CXExpression {
+	pkg, err := prgrm.GetCurrentPackage()
+	if err != nil {
+		panic(err)
+	}
+
+	arg := ast.MakeArgument("", CurrentFile, LineNo)
+	arg.SetType(types.IDENTIFIER)
+	arg.Name = structName
+	arg.Package = ast.CXPackageIndex(pkg.Index)
+	argIdx := prgrm.AddCXArgInArray(arg)
+
+	expr := ast.MakeAtomicOperatorExpression(prgrm, nil)
+	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
+	if err != nil {
+		panic(err)
+	}
+	cxAtomicOp.AddOutput(prgrm, argIdx)
+	cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
+	return *expr
 }

@@ -23,7 +23,7 @@ func SetCorrectArithmeticOp(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 	}
 }
 
-// hasDeclSpec determines if an argument has certain declaration specifier
+// hasDeclSpec determines if an argument has certain declaration specifier.
 func hasDeclSpec(arg *ast.CXArgument, spec int) bool {
 	found := false
 	for _, s := range arg.DeclarationSpecifiers {
@@ -45,7 +45,7 @@ func hasDerefOp(arg *ast.CXArgument, spec int) bool {
 	return found
 }
 
-// This function writes those bytes to prgrm.Data
+// This function writes those bytes to prgrm.Data.
 func WritePrimary(prgrm *ast.CXProgram, typeCode types.Code, byts []byte, isSlice bool) []ast.CXExpression {
 	pkg, err := prgrm.GetCurrentPackage()
 	if err != nil {
@@ -115,28 +115,6 @@ func TotalLength(lengths []types.Pointer) types.Pointer {
 	}
 
 	return total
-}
-
-func StructLiteralFields(prgrm *ast.CXProgram, ident string) ast.CXExpression {
-	pkg, err := prgrm.GetCurrentPackage()
-	if err != nil {
-		panic(err)
-	}
-
-	arg := ast.MakeArgument("", CurrentFile, LineNo)
-	arg.SetType(types.IDENTIFIER)
-	arg.Name = ident
-	arg.Package = ast.CXPackageIndex(pkg.Index)
-	argIdx := prgrm.AddCXArgInArray(arg)
-
-	expr := ast.MakeAtomicOperatorExpression(prgrm, nil)
-	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
-	if err != nil {
-		panic(err)
-	}
-	cxAtomicOp.AddOutput(prgrm, argIdx)
-	cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
-	return *expr
 }
 
 func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile string, lineNo int) {
@@ -248,6 +226,7 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 	pkg.AddStruct(prgrmStrct)
 }
 
+// PrimaryIdentifier creates an identifier expression with an output name of 'ident'.
 func PrimaryIdentifier(prgrm *ast.CXProgram, ident string) []ast.CXExpression {
 	pkg, err := prgrm.GetCurrentPackage()
 	if err != nil {
@@ -256,13 +235,10 @@ func PrimaryIdentifier(prgrm *ast.CXProgram, ident string) []ast.CXExpression {
 
 	arg := ast.MakeArgument(ident, CurrentFile, LineNo) // fix: line numbers in errors sometimes report +1 or -1. Issue #195
 	arg.SetType(types.IDENTIFIER)
-	// arg.Typ = "ident"
 	arg.Name = ident
 	arg.Package = ast.CXPackageIndex(pkg.Index)
 	argIdx := prgrm.AddCXArgInArray(arg)
 
-	// exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
-	// expr := &cxcore.CXExpression{ProgramOutput: []*cxcore.CXArgument{arg}}
 	expr := ast.MakeAtomicOperatorExpression(prgrm, nil)
 	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 	if err != nil {

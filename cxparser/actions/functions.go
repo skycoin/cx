@@ -205,7 +205,7 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fnIdx ast.CXFunctionIndex, inputs
 			*symbols = append(*symbols, make(map[string]*ast.CXArgument))
 		}
 
-		ProcessMethodCall(prgrm, &expr, symbols, &offset, true)
+		ProcessMethodCall(prgrm, &expr, symbols)
 		ProcessExpressionArguments(prgrm, symbols, &symbolsScope, &offset, fnIdx, exprAtomicOp.Inputs, &expr, true)
 		ProcessExpressionArguments(prgrm, symbols, &symbolsScope, &offset, fnIdx, exprAtomicOp.Outputs, &expr, false)
 
@@ -231,12 +231,12 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fnIdx ast.CXFunctionIndex, inputs
 	fn.Size = offset
 }
 
-// FunctionCall
+// FunctionCall completes the array of expressions for postfix function call.
 //
 // Input arguments description:
 // 	prgrm - a CXProgram that contains all the data and arrays of the program.
-// 	exprs -
-//  args -
+// 	exprs - the array of expressions.
+//  args - the input arg expressions to the function.
 func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXExpression) []ast.CXExpression {
 	expr := exprs[len(exprs)-1]
 
@@ -1091,71 +1091,79 @@ func UpdateSymbolsTable(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXArgum
 	}
 }
 
-// ProcessMethodCall
-func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]map[string]*ast.CXArgument, offset *types.Pointer, shouldExist bool) {
+// ProcessMethodCall completes the method call expression's inputs and outputs.
+//
+// Input arguments description:
+// 	prgrm - a CXProgram that contains all the data and arrays of the program.
+//  expr - the method call expression.
+// 	symbols - a slice of string-CXArg map which corresponds to
+// 			  the scoping of the  CXArguments. Each element in the slice
+// 			  corresponds to a different scope. The innermost scope is
+// 			  the last element of the slice.
+func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]map[string]*ast.CXArgument) {
 	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		panic(err)
 	}
 
 	if expr.IsMethodCall() {
-		var inp *ast.CXArgument
-		var out *ast.CXArgument
+		var inpIdx ast.CXArgumentIndex = -1
+		var outIdx ast.CXArgumentIndex = -1
 
 		if len(cxAtomicOp.Inputs) > 0 && prgrm.GetCXArgFromArray(cxAtomicOp.Inputs[0]).Name != "" {
-			inp = prgrm.GetCXArgFromArray(cxAtomicOp.Inputs[0])
+			inpIdx = cxAtomicOp.Inputs[0]
 		}
 		if len(cxAtomicOp.Outputs) > 0 && prgrm.GetCXArgFromArray(cxAtomicOp.Outputs[0]).Name != "" {
-			out = prgrm.GetCXArgFromArray(cxAtomicOp.Outputs[0])
+			outIdx = cxAtomicOp.Outputs[0]
 		}
 
-		if inp != nil {
-			inpPkg, err := prgrm.GetPackageFromArray(inp.Package)
+		if inpIdx != -1 {
+			inpPkg, err := prgrm.GetPackageFromArray(prgrm.CXArgs[inpIdx].Package)
 			if err != nil {
 				panic(err)
 			}
-			// if argInp, found := (*symbols)[lastIdx][inp.Package.Name+"."+inp.Name]; !found {
-			if argInp, err := lookupSymbol(prgrm, inpPkg.Name, inp.Name, symbols); err != nil {
-				if out == nil {
+
+			if argInp, err := lookupSymbol(prgrm, inpPkg.Name, prgrm.CXArgs[inpIdx].Name, symbols); err != nil {
+				if outIdx == -1 {
 					panic("")
 				}
 
-				outPkg, err := prgrm.GetPackageFromArray(out.Package)
+				outPkg, err := prgrm.GetPackageFromArray(prgrm.CXArgs[outIdx].Package)
 				if err != nil {
 					panic(err)
 				}
 
-				argOut, err := lookupSymbol(prgrm, outPkg.Name, out.Name, symbols)
+				argOut, err := lookupSymbol(prgrm, outPkg.Name, prgrm.CXArgs[outIdx].Name, symbols)
 				if err != nil {
-					println(ast.CompilationError(out.ArgDetails.FileName, out.ArgDetails.FileLine), fmt.Sprintf("identifier '%s' does not exist", out.Name))
+					println(ast.CompilationError(prgrm.CXArgs[outIdx].ArgDetails.FileName, prgrm.CXArgs[outIdx].ArgDetails.FileLine), fmt.Sprintf("identifier '%s' does not exist", prgrm.CXArgs[outIdx].Name))
 					os.Exit(constants.CX_COMPILATION_ERROR)
 				}
 				// then we found an output
-				if len(out.Fields) > 0 {
+				if len(prgrm.CXArgs[outIdx].Fields) > 0 {
 					strct := argOut.StructType
 					strctPkg, err := prgrm.GetPackageFromArray(strct.Package)
 					if err != nil {
 						panic(err)
 					}
 
-					if fnIdx, err := strctPkg.GetMethod(prgrm, strct.Name+"."+prgrm.GetCXArgFromArray(out.Fields[len(out.Fields)-1]).Name, strct.Name); err == nil {
+					if fnIdx, err := strctPkg.GetMethod(prgrm, strct.Name+"."+prgrm.GetCXArgFromArray(prgrm.CXArgs[outIdx].Fields[len(prgrm.CXArgs[outIdx].Fields)-1]).Name, strct.Name); err == nil {
 						cxAtomicOp.Operator = fnIdx
 					} else {
 						panic("")
 					}
 
-					cxAtomicOp.Inputs = append([]ast.CXArgumentIndex{ast.CXArgumentIndex(out.Index)}, cxAtomicOp.Inputs...)
+					cxAtomicOp.Inputs = append([]ast.CXArgumentIndex{ast.CXArgumentIndex(prgrm.CXArgs[outIdx].Index)}, cxAtomicOp.Inputs...)
 
-					out.Fields = out.Fields[:len(out.Fields)-1]
+					prgrm.CXArgs[outIdx].Fields = prgrm.CXArgs[outIdx].Fields[:len(prgrm.CXArgs[outIdx].Fields)-1]
 
 					cxAtomicOp.Outputs = cxAtomicOp.Outputs[1:]
 				}
 			} else {
 				// then we found an input
-				if len(inp.Fields) > 0 {
+				if len(prgrm.CXArgs[inpIdx].Fields) > 0 {
 					strct := argInp.StructType
 
-					for _, fldIdx := range inp.Fields {
+					for _, fldIdx := range prgrm.CXArgs[inpIdx].Fields {
 						field := prgrm.GetCXArgFromArray(fldIdx)
 						if inFld, err := strct.GetField(field.Name); err == nil {
 							if inFld.StructType != nil {
@@ -1169,19 +1177,19 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 						panic(err)
 					}
 
-					if fnIdx, err := strctPkg.GetMethod(prgrm, strct.Name+"."+prgrm.GetCXArgFromArray(inp.Fields[len(inp.Fields)-1]).Name, strct.Name); err == nil {
+					if fnIdx, err := strctPkg.GetMethod(prgrm, strct.Name+"."+prgrm.GetCXArgFromArray(prgrm.CXArgs[inpIdx].Fields[len(prgrm.CXArgs[inpIdx].Fields)-1]).Name, strct.Name); err == nil {
 						cxAtomicOp.Operator = fnIdx
 					} else {
 						panic(err)
 					}
 
-					inp.Fields = inp.Fields[:len(inp.Fields)-1]
-				} else if len(out.Fields) > 0 {
-					outPkg, err := prgrm.GetPackageFromArray(out.Package)
+					prgrm.CXArgs[inpIdx].Fields = prgrm.CXArgs[inpIdx].Fields[:len(prgrm.CXArgs[inpIdx].Fields)-1]
+				} else if len(prgrm.CXArgs[outIdx].Fields) > 0 {
+					outPkg, err := prgrm.GetPackageFromArray(prgrm.CXArgs[outIdx].Package)
 					if err != nil {
 						panic(err)
 					}
-					argOut, err := lookupSymbol(prgrm, outPkg.Name, out.Name, symbols)
+					argOut, err := lookupSymbol(prgrm, outPkg.Name, prgrm.CXArgs[outIdx].Name, symbols)
 					if err != nil {
 						panic(err)
 					}
@@ -1200,33 +1208,33 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 						panic(err)
 					}
 
-					if fnIdx, err := strctPkg.GetMethod(prgrm, strct.Name+"."+prgrm.GetCXArgFromArray(out.Fields[len(out.Fields)-1]).Name, strct.Name); err == nil {
+					if fnIdx, err := strctPkg.GetMethod(prgrm, strct.Name+"."+prgrm.GetCXArgFromArray(prgrm.CXArgs[outIdx].Fields[len(prgrm.CXArgs[outIdx].Fields)-1]).Name, strct.Name); err == nil {
 						cxAtomicOp.Operator = fnIdx
 					} else {
 						panic(err)
 					}
 
-					out.Fields = out.Fields[:len(out.Fields)-1]
+					prgrm.CXArgs[outIdx].Fields = prgrm.CXArgs[outIdx].Fields[:len(prgrm.CXArgs[outIdx].Fields)-1]
 				}
 			}
 		} else {
-			if out == nil {
+			if outIdx == -1 {
 				panic("")
 			}
 
-			outPkg, err := prgrm.GetPackageFromArray(out.Package)
+			outPkg, err := prgrm.GetPackageFromArray(prgrm.CXArgs[outIdx].Package)
 			if err != nil {
 				panic(err)
 			}
 
-			argOut, err := lookupSymbol(prgrm, outPkg.Name, out.Name, symbols)
+			argOut, err := lookupSymbol(prgrm, outPkg.Name, prgrm.CXArgs[outIdx].Name, symbols)
 			if err != nil {
-				println(ast.CompilationError(out.ArgDetails.FileName, out.ArgDetails.FileLine), fmt.Sprintf("identifier '%s' does not exist", out.Name))
+				println(ast.CompilationError(prgrm.CXArgs[outIdx].ArgDetails.FileName, prgrm.CXArgs[outIdx].ArgDetails.FileLine), fmt.Sprintf("identifier '%s' does not exist", prgrm.CXArgs[outIdx].Name))
 				os.Exit(constants.CX_COMPILATION_ERROR)
 			}
 
 			// then we found an output
-			if len(out.Fields) > 0 {
+			if len(prgrm.CXArgs[outIdx].Fields) > 0 {
 				strct := argOut.StructType
 
 				if strct == nil {
@@ -1239,18 +1247,17 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 					panic(err)
 				}
 
-				if fnIdx, err := strctPkg.GetMethod(prgrm, strct.Name+"."+prgrm.GetCXArgFromArray(out.Fields[len(out.Fields)-1]).Name, strct.Name); err == nil {
+				if fnIdx, err := strctPkg.GetMethod(prgrm, strct.Name+"."+prgrm.GetCXArgFromArray(prgrm.CXArgs[outIdx].Fields[len(prgrm.CXArgs[outIdx].Fields)-1]).Name, strct.Name); err == nil {
 					cxAtomicOp.Operator = fnIdx
 				} else {
 					panic("")
 				}
 
-				cxAtomicOp.Inputs = append([]ast.CXArgumentIndex{ast.CXArgumentIndex(out.Index)}, cxAtomicOp.Inputs...)
+				cxAtomicOp.Inputs = append([]ast.CXArgumentIndex{ast.CXArgumentIndex(prgrm.CXArgs[outIdx].Index)}, cxAtomicOp.Inputs...)
 
-				out.Fields = out.Fields[:len(out.Fields)-1]
+				prgrm.CXArgs[outIdx].Fields = prgrm.CXArgs[outIdx].Fields[:len(prgrm.CXArgs[outIdx].Fields)-1]
 
 				cxAtomicOp.Outputs = cxAtomicOp.Outputs[1:]
-				// expr.ProgramOutput = nil
 			}
 		}
 		cxAtomicOpOperator := prgrm.GetFunctionFromArray(cxAtomicOp.Operator)
@@ -1284,7 +1291,7 @@ func GiveOffset(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXArgument, sym
 	}
 }
 
-// ProcessTempVariable
+// ProcessTempVariable completes the temp variable expression.
 func ProcessTempVariable(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 	if err != nil {
@@ -1299,16 +1306,16 @@ func ProcessTempVariable(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 	}
 
 	if cxAtomicOpOperator != nil && (isOpIdent || ast.IsArithmeticOperator(cxAtomicOpOperator.AtomicOPCode)) && len(cxAtomicOp.Outputs) > 0 && len(cxAtomicOp.Inputs) > 0 {
-		arg := prgrm.GetCXArgFromArray(cxAtomicOp.Outputs[0])
-		name := arg.Name
+		outputArg := prgrm.GetCXArgFromArray(cxAtomicOp.Outputs[0])
+		name := outputArg.Name
 		if IsTempVar(name) {
 			cxAtomicOpInput := prgrm.GetCXArgFromArray(cxAtomicOp.Inputs[0])
 			// then it's a temporary variable and it needs to adopt its input's type
-			arg.Type = cxAtomicOpInput.Type
-			arg.PointerTargetType = cxAtomicOpInput.PointerTargetType
-			arg.Size = cxAtomicOpInput.Size
-			arg.TotalSize = cxAtomicOpInput.TotalSize
-			arg.PreviouslyDeclared = true
+			outputArg.Type = cxAtomicOpInput.Type
+			outputArg.PointerTargetType = cxAtomicOpInput.PointerTargetType
+			outputArg.Size = cxAtomicOpInput.Size
+			outputArg.TotalSize = cxAtomicOpInput.TotalSize
+			outputArg.PreviouslyDeclared = true
 		}
 	}
 }
@@ -1457,7 +1464,7 @@ func CopyArgFields(prgrm *ast.CXProgram, sym *ast.CXArgument, arg *ast.CXArgumen
 	}
 }
 
-// ProcessSymbolFields
+// ProcessSymbolFields copies the correct field values for the sym.Fields from their struct fields.
 func ProcessSymbolFields(prgrm *ast.CXProgram, sym *ast.CXArgument, arg *ast.CXArgument) {
 	if len(sym.Fields) > 0 {
 		if arg.StructType == nil || len(arg.StructType.Fields) == 0 {
@@ -1515,15 +1522,11 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, sym *ast.CXArgument, arg *ast.CXA
 
 					sym.Lengths = field.Lengths
 
-					// nameFld.DeclarationSpecifiers = fld.DeclarationSpecifiers
-					// nameFld.DeclarationSpecifiers = append(fld.DeclarationSpecifiers, nameFld.DeclarationSpecifiers[1:]...)
 					if len(nameField.DeclarationSpecifiers) > 0 {
 						nameField.DeclarationSpecifiers = append(field.DeclarationSpecifiers, nameField.DeclarationSpecifiers[1:]...)
 					} else {
 						nameField.DeclarationSpecifiers = field.DeclarationSpecifiers
 					}
-
-					// sym.DereferenceOperations = append(sym.DereferenceOperations, DEREF_FIELD)
 
 					if field.IsSlice {
 						nameField.DereferenceOperations = append([]int{constants.DEREF_POINTER}, nameField.DereferenceOperations...)
@@ -1535,8 +1538,6 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, sym *ast.CXArgument, arg *ast.CXA
 
 					if field.Type == types.STR || field.Type == types.AFF {
 						nameField.PassBy = constants.PASSBY_REFERENCE
-						// nameFld.Size = cxcore.POINTER_SIZE
-						// nameFld.TotalSize = cxcore.POINTER_SIZE
 					}
 
 					if field.StructType != nil {
