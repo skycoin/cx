@@ -226,6 +226,7 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 	pkg.AddStruct(prgrmStrct)
 }
 
+// PrimaryIdentifier creates an identifier expression with an output name of 'ident'.
 func PrimaryIdentifier(prgrm *ast.CXProgram, ident string) []ast.CXExpression {
 	pkg, err := prgrm.GetCurrentPackage()
 	if err != nil {
