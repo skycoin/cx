@@ -65,15 +65,9 @@ func (cb *CXCallback) init(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs [
 }
 
 func (cb *CXCallback) Init(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	cxAtomicOp, _, _, err := prgrm.GetOperation(inputs[0].Expr)
-	if err != nil {
-		panic(err)
-	}
+	cxAtomicOp := prgrm.CXAtomicOps[inputs[0].Expr.Index]
 
-	pkg, err := prgrm.GetPackageFromArray(cxAtomicOp.Package)
-	if err != nil {
-		panic(err)
-	}
+	pkg := prgrm.CXPackages[cxAtomicOp.Package]
 
 	cb.init(prgrm, inputs, outputs, pkg.Name)
 }
