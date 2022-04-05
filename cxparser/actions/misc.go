@@ -235,13 +235,10 @@ func PrimaryIdentifier(prgrm *ast.CXProgram, ident string) []ast.CXExpression {
 
 	arg := ast.MakeArgument(ident, CurrentFile, LineNo) // fix: line numbers in errors sometimes report +1 or -1. Issue #195
 	arg.SetType(types.IDENTIFIER)
-	// arg.Typ = "ident"
 	arg.Name = ident
 	arg.Package = ast.CXPackageIndex(pkg.Index)
 	argIdx := prgrm.AddCXArgInArray(arg)
 
-	// exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
-	// expr := &cxcore.CXExpression{ProgramOutput: []*cxcore.CXArgument{arg}}
 	expr := ast.MakeAtomicOperatorExpression(prgrm, nil)
 	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 	if err != nil {
