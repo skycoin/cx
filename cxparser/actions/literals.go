@@ -154,7 +154,7 @@ func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []a
 	return result
 }
 
-// PrimaryStructLiteral
+// PrimaryStructLiteral creates a struct literal expression.
 //
 // Input arguments description:
 // 	prgrm - a CXProgram that contains all the data and arrays of the program.
@@ -207,7 +207,7 @@ func PrimaryStructLiteral(prgrm *ast.CXProgram, structName string, structFields 
 	return result
 }
 
-// PrimaryStructLiteralExternal
+// PrimaryStructLiteralExternal creates a struct literal expression after a postfix expression.
 //
 // Input arguments description:
 // 	prgrm - a CXProgram that contains all the data and arrays of the program.
@@ -259,7 +259,7 @@ func PrimaryStructLiteralExternal(prgrm *ast.CXProgram, importName string, struc
 	return result
 }
 
-// ArrayLiteralExpression
+// ArrayLiteralExpression creates an array literal expression.
 //
 // Input arguments description:
 // 	prgrm - a CXProgram that contains all the data and arrays of the program.

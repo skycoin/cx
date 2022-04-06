@@ -10,8 +10,12 @@ import (
 	"github.com/skycoin/cx/cx/types"
 )
 
-// PostfixExpressionArray...
+// PostfixExpressionArray handles the postfix expression arrays.
 //
+// Input arguments description:
+// 	prgrm - a CXProgram that contains all the data and arrays of the program.
+// 	prevExprs - the previous expressions that compose the postfix expression.
+//  postExprs - the array expressions.
 func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, postExprs []ast.CXExpression) []ast.CXExpression {
 	var elt *ast.CXArgument
 
@@ -132,6 +136,13 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 	return prevExprs
 }
 
+// PostfixExpressionNative handles native postfix expression function calls.
+//
+// Input arguments description:
+// 	prgrm - a CXProgram that contains all the data and arrays of the program.
+// 	typeCode - type code of the native expression.
+//  opStrCode - name of the function to be called that belongs to the native
+// 				expression.
 func PostfixExpressionNative(prgrm *ast.CXProgram, typeCode types.Code, opStrCode string) []ast.CXExpression {
 	// these will always be native functions
 	opCode, ok := ast.OpCodes[typeCode.Name()+"."+opStrCode]
@@ -157,6 +168,12 @@ func PostfixExpressionNative(prgrm *ast.CXProgram, typeCode types.Code, opStrCod
 	return []ast.CXExpression{*exprCXLine, *expr}
 }
 
+// PostfixExpressionEmptyFunCall handles postfix expression empty function calls
+// or the function calls that doesn't have any input args.
+//
+// Input arguments description:
+// 	prgrm - a CXProgram that contains all the data and arrays of the program.
+// 	prevExprs - the previous expressions that compose the postfix expression.
 func PostfixExpressionEmptyFunCall(prgrm *ast.CXProgram, prevExprs []ast.CXExpression) []ast.CXExpression {
 	prevExprsAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(prevExprs, len(prevExprs)-1)
 	if err != nil {
@@ -197,6 +214,12 @@ func PostfixExpressionEmptyFunCall(prgrm *ast.CXProgram, prevExprs []ast.CXExpre
 	return FunctionCall(prgrm, prevExprs, nil)
 }
 
+// PostfixExpressionFunCall handles postfix expression function calls.
+//
+// Input arguments description:
+// 	prgrm - a CXProgram that contains all the data and arrays of the program.
+// 	prevExprs - the previous expressions that compose the postfix expression.
+//  args - input args list for the function call.
 func PostfixExpressionFunCall(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, args []ast.CXExpression) []ast.CXExpression {
 	lastPrevExprsAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(prevExprs, len(prevExprs)-1)
 	if err != nil {
@@ -228,6 +251,13 @@ func PostfixExpressionFunCall(prgrm *ast.CXProgram, prevExprs []ast.CXExpression
 	return FunctionCall(prgrm, prevExprs, args)
 }
 
+// PostfixExpressionIncDec handles the incrementing or decrementing of the
+// postfix expression.
+//
+// Input arguments description:
+// 	prgrm - a CXProgram that contains all the data and arrays of the program.
+// 	prevExprs - the previous expressions that compose the postfix expression.
+//  isInc - true if expression is to be incremented, false if to be decremented.
 func PostfixExpressionIncDec(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, isInc bool) []ast.CXExpression {
 	pkg, err := prgrm.GetCurrentPackage()
 	if err != nil {
@@ -272,8 +302,14 @@ func PostfixExpressionIncDec(prgrm *ast.CXProgram, prevExprs []ast.CXExpression,
 	return exprs
 }
 
-// PostfixExpressionField handles the dot notation that can follow an identifier.
+// PostfixExpressionField handles the dot notation that can be followed by an identifier.
 // Examples are: `foo.bar`, `foo().bar`, `pkg.foo`
+//
+// Input arguments description:
+// 	prgrm - a CXProgram that contains all the data and arrays of the program.
+// 	prevExprs - the previous expressions that compose the left expression
+// 				i.e. 'foo' in the example above.
+//  ident - field name or the identifier after the dot notation.
 func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, ident string) []ast.CXExpression {
 	lastExpr := prevExprs[len(prevExprs)-1]
 
@@ -347,8 +383,6 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 	// it can't be a package name and we propagate the property to
 	//  the right side.
 	if prgrm.CXArgs[leftExprIdx].IsInnerArg {
-		// right.IsInnerArg = true
-		// left.DereferenceOperations = append(left.DereferenceOperations, cxcore.DEREF_FIELD)
 		prgrm.CXArgs[leftExprIdx].IsStruct = true
 		fld := ast.MakeArgument(ident, CurrentFile, LineNo)
 		leftPkg, err := prgrm.GetPackageFromArray(prgrm.CXArgs[leftExprIdx].Package)
