@@ -20,7 +20,7 @@ Use same tasbar library that we're using for skywire(https://github.com/getlante
 2. CX App Store - a web server for CX or a CX Repository. To be an added feature in CX-Playground/CX-IDE. This will use CX Package Format in compiling cx program.
 
 ## Web Interface for CX game objects
-To change the behavior while the game is running, change the behavior, change the image, sprite, sound effects, etc. Example is, there's a list of agents/objects, 35 ships, while the game is running, I can change the ship to attack or run away through the web interface while the game is running. To be added as a feature in CX-Playground/CX-IDE
+To change the behavior while the game is running, change the behavior, change the image, sprite, sound effects, etc. Example is, there's a list of agents/objects, 35 ships, while the game is running, I can change the ship to attack or run away through the web interface while the game is running. To be added as a feature in CX-Playground/CX-IDE.
 
 ## CX Memory - a requirement for CX to run on an embedded system
 1. Every variable and everything that needs to be defined has to be in that linear array as embedded system only have one memory stack.
