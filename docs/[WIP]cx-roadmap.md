@@ -6,8 +6,8 @@
 3. Add unit tests to all functions and more acceptance tests to achieve 100% coverage.
 
 ## Integrate CX and Golang
-Integrating CX and Golang. Golang can call functions in CX program that are exposed and CX program can also call the game API. Example in a game created with Golang, a feature/support/API to program an object with CX. 
-1. CXStruct definition to Golang struct definition conversion and vice versa. This is needed for the function input arguments and returns. CX program takes a golang struct and read out the data from the golang struct to CX struct with a pointer.
+Integrating CX and Golang. Golang can call functions in CX program that are exposed and CX program can also call the golang game API. Example, in a game created with Golang, there will be a feature/support/API to program an object with CX. 
+1. CXStruct definition to Golang struct definition conversion and vice versa - this is needed for the function input arguments and returns. CX program takes a golang struct and read out the data from the golang struct to CX struct with a pointer.
 
 ## Taskbar Launcher for CX
 This is going to launch the CX Playground. It’s going to open up a web browser on the user’s computer. It’s going to let them type in a CX program and run it. This is going to be expanded into what’s called a CX-IDE or CX-Playground. That will be github.com/skycoin/cx-ide or github.com/skycoin/cx-playground. 
@@ -19,7 +19,7 @@ Use same tasbar library that we're using for skywire(https://github.com/getlante
 2. CX App Store - a web server for CX or a CX Repository. To be an added feature in CX-Playground/CX-IDE. This will use CX Package Format in compiling cx program.
 
 ## Web Interface for CX game objects
-To change the behavior live while the game is running, change the behavior, change the image, sprite, sound effects, etc. Example is, there's a list of agents/objects, 35 ships, while the game is running, I can change the ship to attack or run away through the web interface while the game is running. To be added as a feature in CX-Playground/CX-IDE
+To change the behavior while the game is running, change the behavior, change the image, sprite, sound effects, etc. Example is, there's a list of agents/objects, 35 ships, while the game is running, I can change the ship to attack or run away through the web interface while the game is running. To be added as a feature in CX-Playground/CX-IDE
 
 ## CX Memory - a requirement for CX to run on an embedded system
 1. Every variable and everything that needs to be defined has to be in that linear array as embedded system only have one memory stack.
