@@ -1,9 +1,10 @@
 # 2022 CX Roadmap
 
 ## CX Refactoring
-1. Give complete details to all functions and their arguments.
-2. Implement new CXStruct definition.
-3. Add unit tests to all functions and more acceptance tests to achieve 100% coverage.
+1. Implement new CX AST format. (in progress)
+2. Give complete details to all functions and their arguments. (in progress)
+3. Implement new CXStruct definition.
+4. Add unit tests to all functions and more acceptance tests to achieve 100% coverage.
 
 ## Integrate CX and Golang
 Integrating CX and Golang. Golang can call functions in CX program that are exposed and CX program can also call the golang game API. Example, in a game created with Golang, there will be a feature/support/API to program an object with CX. 
