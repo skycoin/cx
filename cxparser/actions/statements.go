@@ -22,7 +22,7 @@ type SelectStatement struct {
 // 				  elseif statement.
 //  elseExprs - contains the statements if condition is false and there are
 // 			 	no elseif conditions.
-// statementType - determines if the statement is an if+elseif+else or if+elseif only.
+//  statementType - determines if the statement is an if+elseif+else or if+elseif only.
 func SelectionStatement(prgrm *ast.CXProgram, conditionExprs []ast.CXExpression, thenExprs []ast.CXExpression, elseifExprs []SelectStatement, elseExprs []ast.CXExpression, statementType int) []ast.CXExpression {
 	var lastElse []ast.CXExpression
 	switch statementType {

@@ -74,7 +74,7 @@ func RunCxAst(cxprogram *ast.CXProgram, untilEnd bool, maxOps int, untilCall typ
 				continue
 			}
 
-			cxAtomicOp, _, _, err := cxprogram.GetOperation(&toCall)
+			cxAtomicOp, err := cxprogram.GetCXAtomicOp(toCall.Index)
 			if err != nil {
 				panic(err)
 			}
@@ -88,11 +88,7 @@ func RunCxAst(cxprogram *ast.CXProgram, untilEnd bool, maxOps int, untilCall typ
 				toCallName = ast.OpNames[cxAtomicOpOperator.AtomicOPCode]
 			} else {
 				if cxAtomicOpOperator.Name != "" {
-					opPkg, err := cxprogram.GetPackageFromArray(cxAtomicOpOperator.Package)
-					if err != nil {
-						panic(err)
-					}
-
+					opPkg := cxprogram.CXPackages[cxAtomicOpOperator.Package]
 					toCallName = opPkg.Name + "." + cxAtomicOpOperator.Name
 				} else {
 					// then it's the end of the program got from nested function calls
