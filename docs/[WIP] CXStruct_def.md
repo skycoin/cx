@@ -8,22 +8,31 @@ These have the same layout format as a “struct” definition
 4. the outputs of a function
 
 ## CXStruct
-- num fields 
-- field string
-- field offset 
-- field size
-- field type
-- TypeID
+- NumFields int
+- Fields []CXStructField
+
+## CXStructField
+- FieldNameStringId  int
+- FieldOffset int
+- FieldType enum
     - CXAtomic
     - CXAtomicPointer
     - CXStruct
     - CXStructPointer
-    - CXArray
     - CXArrayPointer
+    - CXArrayAtomic
+    - CXArrayStruct
+    - CXMap
+    - CXComplexType
     - etc
-- TypeField
-    - If CXAtomic, then CXAtomic type
-    - if StructPointer, then the pointer id
-    - If CXAtomicPointer, then the type of CXAtomic
-    - etc
-
+- FieldMeta enum 
+    - if FieldType is a cx atomic pointer, enum of the type, is struct pointer meta will be struct field, if array struct pointer will be type of struct id, array to atomic will be the type atomic type
+    - if FieldType is CXAtomicPointer, CXAtomic
+    - if FieldType is CXStructPointer, CXStruct
+    - if fFieldType is ArrayAtomic, AtomicType
+    
+Note:
+- Implement SizeOf() method for CXStructField, panics if asked for type for a complex/non fixed size, only sizeof simple types
+- Make one struct for complex type.
+- glob all complex types which will just be cxargs
+- From complex types, move types one by one to fieldTypes
