@@ -221,7 +221,7 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fnIdx ast.CXFunctionIndex, inputs
 
 		CheckTypes(prgrm, fn.Expressions, i)
 		CheckUndValidTypes(prgrm, &expr)
-
+		ProcessTypedOperator(prgrm, &expr)
 		if expr.IsScopeDel() {
 			*symbols = (*symbols)[:len(*symbols)-1]
 		}
@@ -229,6 +229,32 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fnIdx ast.CXFunctionIndex, inputs
 
 	fn.LineCount = len(fn.Expressions)
 	fn.Size = offset
+}
+
+// ProcessTypedOperator gets the proper typed operator for the expression.
+// i.e. add -> i32.add
+//
+// Input arguments description:
+// 	prgrm - a CXProgram that contains all the data and arrays of the program.
+// 	expr - the expression.
+func ProcessTypedOperator(prgrm *ast.CXProgram, expr *ast.CXExpression) {
+	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
+	if err != nil {
+		panic(err)
+	}
+
+	cxAtomicOpOperator := prgrm.GetFunctionFromArray(cxAtomicOp.Operator)
+	if cxAtomicOpOperator == nil {
+		return
+	}
+	if ast.IsOperator(cxAtomicOpOperator.AtomicOPCode) {
+		atomicType := prgrm.CXArgs[cxAtomicOp.Inputs[0]].GetType(prgrm)
+		typedOp := ast.GetTypedOperator(atomicType, cxAtomicOpOperator.AtomicOPCode)
+		if typedOp == nil {
+			return
+		}
+		cxAtomicOpOperator.AtomicOPCode = typedOp.AtomicOPCode
+	}
 }
 
 // FunctionCall completes the array of expressions for postfix function call.
