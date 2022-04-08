@@ -26,7 +26,6 @@ These have the same layout format as a “struct” definition
     - CXComplexType
     - etc
 - FieldMeta enum 
-    - if FieldType is a cx atomic pointer, enum of the type, is struct pointer meta will be struct field, if array struct pointer will be type of struct id, array to atomic will be the type atomic type
     - if FieldType is CXAtomicPointer, CXAtomic
     - if FieldType is CXStructPointer, CXStruct
     - if FieldType is ArrayAtomic, AtomicType

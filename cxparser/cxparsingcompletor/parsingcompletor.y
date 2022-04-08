@@ -1022,9 +1022,9 @@ assignment_expression:
                                                                         if err != nil {
                                                                                 panic(err)
                                                                         }
-                                                                        fromAtomicOpOutput:=actions.AST.GetCXArgFromArray(fromAtomicOp.Outputs[0])
-                                                                        fromAtomicOpOutput.IsShortAssignmentDeclaration = true
-                                                                        fromAtomicOpOutput.PreviouslyDeclared = true
+                                                                        fromAtomicOpOutputIdx:=fromAtomicOp.Outputs[0]
+                                                                        actions.AST.CXArgs[fromAtomicOpOutputIdx].IsShortAssignmentDeclaration = true
+                                                                        actions.AST.CXArgs[fromAtomicOpOutputIdx].PreviouslyDeclared = true
                                                                 }
                                                         }
                                                         $$ = actions.ArrayLiteralAssignment(actions.AST,$1, $3)
@@ -1042,9 +1042,9 @@ assignment_expression:
                                                                         if err != nil {
                                                                                 panic(err)
                                                                         }
-                                                                        fromAtomicOpOutput:=actions.AST.GetCXArgFromArray(fromAtomicOp.Outputs[0])
-                                                                        fromAtomicOpOutput.IsShortAssignmentDeclaration = true
-                                                                        fromAtomicOpOutput.PreviouslyDeclared = true
+                                                                        fromAtomicOpOutputIdx:=fromAtomicOp.Outputs[0]
+                                                                        actions.AST.CXArgs[fromAtomicOpOutputIdx].IsShortAssignmentDeclaration = true
+                                                                        actions.AST.CXArgs[fromAtomicOpOutputIdx].PreviouslyDeclared = true
                                                                 }
                                                         }
                                                         $$ = actions.StructLiteralAssignment(actions.AST,$1, $3)

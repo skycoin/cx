@@ -336,21 +336,18 @@ func ArrayLiteralExpression(prgrm *ast.CXProgram, arraySizes []types.Pointer, ty
 
 			symExprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
 			symExpr := ast.MakeAtomicOperatorExpression(prgrm, nil)
-			symExprAtomicOp, _, _, err := prgrm.GetOperation(symExpr)
-			if err != nil {
-				panic(err)
-			}
+			symExprAtomicOpIdx := symExpr.Index
 
-			symExprAtomicOp.AddOutput(prgrm, symIdx)
+			prgrm.CXAtomicOps[symExprAtomicOpIdx].AddOutput(prgrm, symIdx)
 
 			if exprAtomicOpOperator == nil {
 				// then it's a literal
 				opIdx := prgrm.AddNativeFunctionInArray(ast.Natives[constants.OP_IDENTITY])
-				symExprAtomicOp.Operator = opIdx
-				symExprAtomicOp.Inputs = exprAtomicOp.Outputs
+				prgrm.CXAtomicOps[symExprAtomicOpIdx].Operator = opIdx
+				prgrm.CXAtomicOps[symExprAtomicOpIdx].Inputs = exprAtomicOp.Outputs
 			} else {
-				symExprAtomicOp.Operator = exprAtomicOp.Operator
-				symExprAtomicOp.Inputs = exprAtomicOp.Inputs
+				prgrm.CXAtomicOps[symExprAtomicOpIdx].Operator = exprAtomicOp.Operator
+				prgrm.CXAtomicOps[symExprAtomicOpIdx].Inputs = exprAtomicOp.Inputs
 
 				// hack to get the correct lengths below
 				exprAtomicOp.Outputs = append(exprAtomicOp.Outputs, symIdx)
@@ -383,13 +380,10 @@ func ArrayLiteralExpression(prgrm *ast.CXProgram, arraySizes []types.Pointer, ty
 
 	symExprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
 	symExpr := ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_IDENTITY])
-	symExprAtomicOp, _, _, err := prgrm.GetOperation(symExpr)
-	if err != nil {
-		panic(err)
-	}
-	symExprAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
-	symExprAtomicOp.AddOutput(prgrm, symOutputIdx)
-	symExprAtomicOp.AddInput(prgrm, symInputIdx)
+	symExprAtomicOpIdx := symExpr.Index
+	prgrm.CXAtomicOps[symExprAtomicOpIdx].Package = ast.CXPackageIndex(pkg.Index)
+	prgrm.CXAtomicOps[symExprAtomicOpIdx].AddOutput(prgrm, symOutputIdx)
+	prgrm.CXAtomicOps[symExprAtomicOpIdx].AddInput(prgrm, symInputIdx)
 
 	// symOutput.SynonymousTo = symInput.Name
 

@@ -70,7 +70,6 @@ func WritePrimary(prgrm *ast.CXProgram, typeCode types.Code, byts []byte, isSlic
 			types.Write_ptr(byts, 0, arg.Offset)
 		}
 	}
-	argIdx := prgrm.AddCXArgInArray(arg)
 
 	// A CX program allocates min(INIT_HEAP_SIZE, MAX_HEAP_SIZE) bytes
 	// after the stack segment. These bytes are used to allocate the data segment
@@ -98,13 +97,10 @@ func WritePrimary(prgrm *ast.CXProgram, typeCode types.Code, byts []byte, isSlic
 
 	// exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
 	expr := ast.MakeAtomicOperatorExpression(prgrm, nil)
-	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
-	if err != nil {
-		panic(err)
-	}
+	prgrm.CXAtomicOps[expr.Index].Package = ast.CXPackageIndex(pkg.Index)
+	argIdx := prgrm.AddCXArgInArray(arg)
+	prgrm.CXAtomicOps[expr.Index].AddOutput(prgrm, argIdx)
 
-	cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
-	cxAtomicOp.AddOutput(prgrm, argIdx)
 	return []ast.CXExpression{*expr}
 }
 
