@@ -94,30 +94,25 @@ func StructLiteralAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, f
 
 		declExprCXLine := ast.MakeCXLineExpression(prgrm, lastFromCXLine.FileName, lastFromCXLine.LineNumber, lastFromCXLine.LineStr)
 		declExpr := ast.MakeAtomicOperatorExpression(prgrm, nil)
-		declExprAtomicOp, _, _, err := prgrm.GetOperation(declExpr)
-		if err != nil {
-			panic(err)
-		}
-		declExprAtomicOp.Package = lastFromAtomicOp.Package
-		declExprAtomicOp.AddOutput(prgrm, auxIdx)
+		declExprAtomicOpIdx := declExpr.Index
+
+		prgrm.CXAtomicOps[declExprAtomicOpIdx].Package = lastFromAtomicOp.Package
+		prgrm.CXAtomicOps[declExprAtomicOpIdx].AddOutput(prgrm, auxIdx)
 
 		fromExprs = assignStructLiteralFields(prgrm, toExprs, fromExprs, auxName)
 
 		assignExprCXLine := ast.MakeCXLineExpression(prgrm, lastFromCXLine.FileName, lastFromCXLine.LineNumber, lastFromCXLine.LineStr)
 		assignExpr := ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_IDENTITY])
-		assignExprAtomicOp, _, _, err := prgrm.GetOperation(assignExpr)
-		if err != nil {
-			panic(err)
-		}
+		assignExprAtomicOpIdx := assignExpr.Index
 
-		assignExprAtomicOp.Package = lastFromAtomicOp.Package
+		prgrm.CXAtomicOps[assignExprAtomicOpIdx].Package = lastFromAtomicOp.Package
 		out := ast.MakeArgument(prgrm.GetCXArgFromArray(toCXAtomicOp.Outputs[0]).Name, lastFromCXLine.FileName, lastFromCXLine.LineNumber)
 		out.PassBy = constants.PASSBY_REFERENCE
 		out.Package = lastFromAtomicOp.Package
 		outIdx := prgrm.AddCXArgInArray(out)
 
-		assignExprAtomicOp.AddOutput(prgrm, outIdx)
-		assignExprAtomicOp.AddInput(prgrm, auxIdx)
+		prgrm.CXAtomicOps[assignExprAtomicOpIdx].AddOutput(prgrm, outIdx)
+		prgrm.CXAtomicOps[assignExprAtomicOpIdx].AddInput(prgrm, auxIdx)
 
 		fromExprs = append([]ast.CXExpression{*declExprCXLine, *declExpr}, fromExprs...)
 		return append(fromExprs, *assignExprCXLine, *assignExpr)
@@ -144,9 +139,9 @@ func ArrayLiteralAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fr
 			panic(err)
 		}
 
-		cxAtomicOpOutput := prgrm.GetCXArgFromArray(cxAtomicOp.Outputs[0])
-		cxAtomicOpOutput.Name = prgrm.GetCXArgFromArray(toCXAtomicOp.Outputs[0]).Name
-		cxAtomicOpOutput.DereferenceOperations = append(cxAtomicOpOutput.DereferenceOperations, constants.DEREF_ARRAY)
+		cxAtomicOpOutputIdx := cxAtomicOp.Outputs[0]
+		prgrm.CXArgs[cxAtomicOpOutputIdx].Name = prgrm.GetCXArgFromArray(toCXAtomicOp.Outputs[0]).Name
+		prgrm.CXArgs[cxAtomicOpOutputIdx].DereferenceOperations = append(prgrm.CXArgs[cxAtomicOpOutputIdx].DereferenceOperations, constants.DEREF_ARRAY)
 	}
 
 	return fromExprs

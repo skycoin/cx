@@ -2164,9 +2164,9 @@ yydefault:
 									if err != nil {
 										panic(err)
 									}
-									fromAtomicOpOutput := actions.AST.GetCXArgFromArray(fromAtomicOp.Outputs[0])
-									fromAtomicOpOutput.IsShortAssignmentDeclaration = true
-									fromAtomicOpOutput.PreviouslyDeclared = true
+									fromAtomicOpOutputIdx := fromAtomicOp.Outputs[0]
+									actions.AST.CXArgs[fromAtomicOpOutputIdx].IsShortAssignmentDeclaration = true
+									actions.AST.CXArgs[fromAtomicOpOutputIdx].PreviouslyDeclared = true
 								}
 							}
 							yyVAL.expressions = actions.ArrayLiteralAssignment(actions.AST, yyDollar[1].expressions, yyDollar[3].expressions)
@@ -2184,9 +2184,9 @@ yydefault:
 									if err != nil {
 										panic(err)
 									}
-									fromAtomicOpOutput := actions.AST.GetCXArgFromArray(fromAtomicOp.Outputs[0])
-									fromAtomicOpOutput.IsShortAssignmentDeclaration = true
-									fromAtomicOpOutput.PreviouslyDeclared = true
+									fromAtomicOpOutputIdx := fromAtomicOp.Outputs[0]
+									actions.AST.CXArgs[fromAtomicOpOutputIdx].IsShortAssignmentDeclaration = true
+									actions.AST.CXArgs[fromAtomicOpOutputIdx].PreviouslyDeclared = true
 								}
 							}
 							yyVAL.expressions = actions.StructLiteralAssignment(actions.AST, yyDollar[1].expressions, yyDollar[3].expressions)

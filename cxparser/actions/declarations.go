@@ -33,7 +33,6 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 			panic(err)
 		}
 	}
-
 	declaration_specifiers.Package = ast.CXPackageIndex(pkg.Index)
 
 	// Treat the name a bit different whether it's defined already or not.
@@ -67,11 +66,8 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 		// If `initializer` is `nil`, this means that an expression
 		// equivalent to nil was used, such as `[]i32{}`.
 		if doesInitialize && initializer != nil {
-			initializerAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(initializer, len(initializer)-1)
-			if err != nil {
-				panic(err)
-			}
-			initializerAtomicOpOperator := prgrm.GetFunctionFromArray(initializerAtomicOp.Operator)
+			initializerAtomicOpIdx := initializer[len(initializer)-1].Index
+			initializerAtomicOpOperator := prgrm.GetFunctionFromArray(prgrm.CXAtomicOps[initializerAtomicOpIdx].Operator)
 			// then we just re-assign offsets
 			if initializerAtomicOpOperator == nil {
 				// then it's a literal
@@ -83,12 +79,12 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 				prgrm.CXArgs[glblIdx] = *declaration_specifiers
 				prgrm.CXArgs[glblIdx].Index = glblIdx
 
-				initializerAtomicOp.AddInput(prgrm, initializerAtomicOp.Outputs[0])
-				initializerAtomicOp.Outputs = nil
-				initializerAtomicOp.AddOutput(prgrm, ast.CXArgumentIndex(glblIdx))
+				prgrm.CXAtomicOps[initializerAtomicOpIdx].AddInput(prgrm, prgrm.CXAtomicOps[initializerAtomicOpIdx].Outputs[0])
+				prgrm.CXAtomicOps[initializerAtomicOpIdx].Outputs = nil
+				prgrm.CXAtomicOps[initializerAtomicOpIdx].AddOutput(prgrm, ast.CXArgumentIndex(glblIdx))
 				opIdx := prgrm.AddNativeFunctionInArray(ast.Natives[constants.OP_IDENTITY])
-				initializerAtomicOp.Operator = opIdx
-				initializerAtomicOp.Package = prgrm.CXArgs[glblIdx].Package
+				prgrm.CXAtomicOps[initializerAtomicOpIdx].Operator = opIdx
+				prgrm.CXAtomicOps[initializerAtomicOpIdx].Package = prgrm.CXArgs[glblIdx].Package
 
 				//add intialization statements, to array
 				prgrm.SysInitExprs = append(prgrm.SysInitExprs, initializer...)
@@ -114,8 +110,8 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 						initializer,
 					)
 				} else {
-					initializerAtomicOp.Outputs = nil
-					initializerAtomicOp.AddOutput(prgrm, ast.CXArgumentIndex(glblIdx))
+					prgrm.CXAtomicOps[initializerAtomicOpIdx].Outputs = nil
+					prgrm.CXAtomicOps[initializerAtomicOpIdx].AddOutput(prgrm, ast.CXArgumentIndex(glblIdx))
 				}
 				//add intialization statements, to array
 				prgrm.SysInitExprs = append(prgrm.SysInitExprs, initializer...)
