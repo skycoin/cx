@@ -9,33 +9,32 @@
 - [ ] Complete new CXStruct definition specifications.
 - [ ] Implement new CXStruct definition.
 
-Change CX type signatures
-To eliminate CxArguments, we need int id codes for types (enum)
-- type (with a sizeof function for type)
-- offset for each variable
-
-Simple types are like int, float, int64, etc.
+Objectives:
+- To eliminate CxArguments and replace with CXTypeSignature, we need int id codes for types (enum)
+    - type (with a sizeof function for type)
+    - offset for each variable
+    Simple types are like int, float, int64, etc.
 
 ## Struct-def Library
 For interfacing CX to Golang. Golang can call functions in CX program that are exposed and CX program can also call the golang game API. Example, in a game created with Golang, there will be a feature/support/API to program an object with CX. 
 
 - [ ] CXStruct definition to Golang struct definition conversion and vice versa - this is needed for the function input arguments and returns. CX program takes a golang struct and read out the data from the golang struct to CX struct with a pointer.
 
-Library reads in a golang struct definition and gets the 
-- variable type
-- offset of variable from start of struct
-- size of variable
-
 Objectives:
 - Allow CX to read/write from golang structs directly using "unsafe".
 
 Notes:
-Support only for simple types, no pointers, only atomics
+- Support only for simple types, no pointers, only atomics.
+- Library reads in a golang struct definition and gets the 
+    - variable type
+    - offset of variable from start of struct
+    - size of variable
 
 ## Taskbar Launcher for CX
 This is going to launch the CX Playground. It’s going to open up a web browser on the user’s computer. It’s going to let them type in a CX program and run it. This is going to be expanded into what’s called a CX-IDE or CX-Playground. That will be github.com/skycoin/cx-ide or github.com/skycoin/cx-playground. 
 
-Use same tasbar library that we're using for skywire(https://github.com/getlantern/systray).
+Notes:
+- Use same tasbar library that we're using for skywire(https://github.com/getlantern/systray).
 
 ## CX Module format or Package format
 - [ ] Package format - This is how we’re representing the file. Every file has a length, a name, and a hash. Every module is a list of files – file structs. And then, we have a list of the package structs. And then, we can serialize it and hash that to get the ID for the whole program.
