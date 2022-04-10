@@ -8,15 +8,17 @@ These have the same layout format as a “struct” definition
 4. the outputs of a function
 
 ## CXStruct
-- NumFields int
-- Fields []CXStructField
+- StructId int
+- NameStringId  int
+- PackageNameStringId int
+- Fields []CXTypeSignature
 
-## CXStructField
-- FieldNameStringId  int
-- FieldOffset int
-- FieldType enum
-    - CXAtomic
-    - CXAtomicPointer
+## CXTypeSignature
+- NameStringId  int
+- Offset int
+- Type enum
+    - CXAtomicI32
+    - CXAtomicI32Pointer
     - CXStruct
     - CXStructPointer
     - CXArrayPointer
@@ -25,8 +27,8 @@ These have the same layout format as a “struct” definition
     - CXMap
     - CXComplexType
     - etc
-- FieldMeta enum 
-    - if FieldType is CXAtomicPointer, CXAtomic
+- Meta enum 
+    - if FieldType is CXAtomicI32Pointer, CXAtomicI32
     - if FieldType is CXStructPointer, CXStruct
     - if FieldType is ArrayAtomic, AtomicType
     
