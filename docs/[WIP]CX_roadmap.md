@@ -19,6 +19,7 @@ Objectives:
 For interfacing CX to Golang. Golang can call functions in CX program that are exposed and CX program can also call the golang game API. Example, in a game created with Golang, there will be a feature/support/API to program an object with CX. 
 
 - [ ] CXStruct definition to Golang struct definition conversion and vice versa - this is needed for the function input arguments and returns. CX program takes a golang struct and read out the data from the golang struct to CX struct with a pointer.
+- [ ] Unit tests of struct-def library.
 
 Objectives:
 - Allow CX to read/write from golang structs directly using "unsafe".
@@ -36,7 +37,7 @@ This is going to launch the CX Playground. It’s going to open up a web browser
 Notes:
 - Use same tasbar library that we're using for skywire(https://github.com/getlantern/systray).
 
-## CX Module format or Package format
+## CX Package format
 - [ ] Package format - This is how we’re representing the file. Every file has a length, a name, and a hash. Every module is a list of files – file structs. And then, we have a list of the package structs. And then, we can serialize it and hash that to get the ID for the whole program.
 - [ ] CX App Store - For storing CX programs/packages in a key-value store for downloading from website with simple API. To be an added feature in CX-Playground/CX-IDE. This will use CX Package Format in compiling cx program.
 
