@@ -73,3 +73,12 @@ Objectives:
 
 Notes:
 - Compiler will still use global when outputing AST from source file, but lock compilation so that only one program can be compiled at a time. (Maybe use a channel to pass in data with compiled AST returned)
+
+## Abstract Binary Interface (ABI)
+- [ ] Define the ABI
+- [ ] then we can take a CX function, then compiled it to x86 assembly or x64 with LLVM
+- [ ] then we can "Execute" the function directly on the CPU
+- [ ] it takes in byte array, cx program, etc then runs the assembly language instructions, that modify the byte array directly; no interpreter
+
+Objectives:
+- so functions in AST can be reduced completely to assembly language and executed natively eventually.
