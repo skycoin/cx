@@ -3,14 +3,12 @@
 ## Questions to be answered
 1. What is a type signature?
 2. What a type signature contains?
-3. How functions are called?
-4. Memory layout for function inputs, function outputs, function body
-5. How stack is extended or truncated?
-6. How functions are called?
-7. How functions return?
-8. How returns should be rewritten?
-9. Naming convention for anon variables, anon structs, 
-10. Struct for package globals, etc
+3. Memory layout for function inputs, function outputs, function body
+4. How returns should be rewritten?
+5. Naming convention for input variable structs, output variable structs, body variable structs, temp variable struct, and global variable structs.
+6. How stack is extended or truncated?
+7. How functions are called and returned?
+
 
 ---
 ## Memory Layout for Function Inputs, Outputs, and Body
@@ -215,7 +213,7 @@ You see?
 
 You can actually put the offset in the signature type or have a type signature struct with an offset parameter. Then a function body's variables or a struct is really just a []CxTypeSignature
 
-## How functions are called
+## How Functions Are Called and Returned
 When we call a function
 - we take size of output variables, and size of input variables
 - we expand the stack by that much, the size of those two together
