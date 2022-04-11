@@ -415,7 +415,7 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 			// CX checks the output of an expression to determine if it's being passed
 			// by value or by reference, so we copy this property from the initializer's
 			// output, in case of something like var foo *i32 = &bar
-			declarationSpecifiers.PassBy = initOut.PassBy
+			prgrm.CXArgs[declSpecIdx].PassBy = initOut.PassBy
 
 			cxExprAtomicOp.AddOutput(prgrm, declSpecIdx)
 			cxExprAtomicOp.AddInput(prgrm, initOutIdx)
@@ -447,17 +447,14 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 		exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
 		// There is no initialization.
 		expr := ast.MakeAtomicOperatorExpression(prgrm, nil)
-		cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
-		if err != nil {
-			panic(err)
-		}
-		cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
+		cxAtomicOpIdx := expr.Index
+		prgrm.CXAtomicOps[cxAtomicOpIdx].Package = ast.CXPackageIndex(pkg.Index)
 
-		declarationSpecifiers.Name = declarator.Name
-		declarationSpecifiers.ArgDetails.FileLine = declarator.ArgDetails.FileLine
-		declarationSpecifiers.Package = ast.CXPackageIndex(pkg.Index)
-		declarationSpecifiers.PreviouslyDeclared = true
-		cxAtomicOp.AddOutput(prgrm, declSpecIdx)
+		prgrm.CXArgs[declSpecIdx].Name = declarator.Name
+		prgrm.CXArgs[declSpecIdx].ArgDetails.FileLine = declarator.ArgDetails.FileLine
+		prgrm.CXArgs[declSpecIdx].Package = ast.CXPackageIndex(pkg.Index)
+		prgrm.CXArgs[declSpecIdx].PreviouslyDeclared = true
+		prgrm.CXAtomicOps[cxAtomicOpIdx].AddOutput(prgrm, declSpecIdx)
 
 		return []ast.CXExpression{*exprCXLine, *expr}
 	}

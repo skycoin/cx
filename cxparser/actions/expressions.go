@@ -81,10 +81,9 @@ func IterationExpressions(prgrm *ast.CXProgram,
 		lastCondAtomicOp.AddOutput(prgrm, predicateIdx)
 		prgrm.CXAtomicOps[downExprAtomicOpIdx].AddInput(prgrm, predicateIdx)
 	} else {
-		predicate := prgrm.GetCXArgFromArray(lastCondAtomicOp.Outputs[0])
-		predicate.Package = ast.CXPackageIndex(pkg.Index)
-		predicate.PreviouslyDeclared = true
 		predicateIdx := lastCondAtomicOp.Outputs[0]
+		prgrm.CXArgs[predicateIdx].Package = ast.CXPackageIndex(pkg.Index)
+		prgrm.CXArgs[predicateIdx].PreviouslyDeclared = true
 
 		prgrm.CXAtomicOps[downExprAtomicOpIdx].AddInput(prgrm, predicateIdx)
 	}
