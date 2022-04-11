@@ -158,10 +158,7 @@ func ArrayLiteralAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fr
 // 	fromExprs - Contains the output cx arg to be added to the expression.
 // 	pkg - the package the expression belongs.
 func ShortAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression, exprCXLine *ast.CXExpression, toExprs []ast.CXExpression, fromExprs []ast.CXExpression, pkg *ast.CXPackage) []ast.CXExpression {
-	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
-	if err != nil {
-		panic(err)
-	}
+	cxAtomicOpIdx := expr.Index
 
 	toCXAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(toExprs, 0)
 	if err != nil {
@@ -174,13 +171,13 @@ func ShortAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression, exprCXLine *a
 	}
 	fromCXAtomicOpOperator := prgrm.GetFunctionFromArray(fromCXAtomicOp.Operator)
 
-	cxAtomicOp.AddInput(prgrm, toCXAtomicOp.Outputs[0])
-	cxAtomicOp.AddOutput(prgrm, toCXAtomicOp.Outputs[0])
+	prgrm.CXAtomicOps[cxAtomicOpIdx].AddInput(prgrm, toCXAtomicOp.Outputs[0])
+	prgrm.CXAtomicOps[cxAtomicOpIdx].AddOutput(prgrm, toCXAtomicOp.Outputs[0])
 
-	cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
+	prgrm.CXAtomicOps[cxAtomicOpIdx].Package = ast.CXPackageIndex(pkg.Index)
 
 	if fromCXAtomicOpOperator == nil {
-		cxAtomicOp.AddInput(prgrm, fromCXAtomicOp.Outputs[0])
+		prgrm.CXAtomicOps[cxAtomicOpIdx].AddInput(prgrm, fromCXAtomicOp.Outputs[0])
 	} else {
 		sym := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).SetType(prgrm.GetCXArgFromArray(fromCXAtomicOp.Inputs[0]).Type)
 		sym.Package = ast.CXPackageIndex(pkg.Index)
@@ -188,7 +185,7 @@ func ShortAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression, exprCXLine *a
 		symIdx := prgrm.AddCXArgInArray(sym)
 		fromCXAtomicOp.AddOutput(prgrm, symIdx)
 
-		cxAtomicOp.AddInput(prgrm, symIdx)
+		prgrm.CXAtomicOps[cxAtomicOpIdx].AddInput(prgrm, symIdx)
 	}
 
 	//must check if from expression is naked previously declared variable
