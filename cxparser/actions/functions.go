@@ -453,13 +453,13 @@ func ProcessPointerStructs(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 		for _, fldIdx := range arg.Fields {
 			fld := prgrm.GetCXArgFromArray(fldIdx)
 			if fld.IsPointer() && fld.DereferenceLevels == 0 {
-				fld.DereferenceLevels++
-				fld.DereferenceOperations = append(fld.DereferenceOperations, constants.DEREF_POINTER)
+				prgrm.CXArgs[fldIdx].DereferenceLevels++
+				prgrm.CXArgs[fldIdx].DereferenceOperations = append(prgrm.CXArgs[fldIdx].DereferenceOperations, constants.DEREF_POINTER)
 			}
 		}
 		if arg.IsStruct && arg.IsPointer() && len(arg.Fields) > 0 && arg.DereferenceLevels == 0 {
-			arg.DereferenceLevels++
-			arg.DereferenceOperations = append(arg.DereferenceOperations, constants.DEREF_POINTER)
+			prgrm.CXArgs[argIdx].DereferenceLevels++
+			prgrm.CXArgs[argIdx].DereferenceOperations = append(arg.DereferenceOperations, constants.DEREF_POINTER)
 		}
 	}
 }
@@ -582,7 +582,7 @@ func isPointerAdded(prgrm *ast.CXProgram, fn *ast.CXFunction, sym *ast.CXArgumen
 			// be considered by the garbage collector.
 			if len(sym.Fields) > 0 &&
 				len(sym.Fields) == len(ptr.Fields) &&
-				prgrm.GetCXArgFromArray(sym.Fields[len(sym.Fields)-1]).Name == prgrm.GetCXArgFromArray(ptr.Fields[len(ptr.Fields)-1]).Name {
+				prgrm.CXArgs[sym.Fields[len(sym.Fields)-1]].Name == prgrm.CXArgs[ptr.Fields[len(ptr.Fields)-1]].Name {
 				found = true
 				break
 			}
@@ -967,17 +967,17 @@ func ProcessShortDeclaration(prgrm *ast.CXProgram, expr *ast.CXExpression, expre
 			arg = prgrm.GetCXArgFromArray(cxAtomicOp.Inputs[0])
 		}
 
-		exprBeforeAtomicOpOutput := prgrm.GetCXArgFromArray(exprBeforeAtomicOp.Outputs[0])
-		exprBeforeAtomicOpOutput.Type = arg.Type
-		exprBeforeAtomicOpOutput.PointerTargetType = arg.PointerTargetType
-		exprBeforeAtomicOpOutput.Size = arg.Size
-		exprBeforeAtomicOpOutput.TotalSize = arg.TotalSize
+		exprBeforeAtomicOpOutputIdx := exprBeforeAtomicOp.Outputs[0]
+		prgrm.CXArgs[exprBeforeAtomicOpOutputIdx].Type = arg.Type
+		prgrm.CXArgs[exprBeforeAtomicOpOutputIdx].PointerTargetType = arg.PointerTargetType
+		prgrm.CXArgs[exprBeforeAtomicOpOutputIdx].Size = arg.Size
+		prgrm.CXArgs[exprBeforeAtomicOpOutputIdx].TotalSize = arg.TotalSize
 
-		exprAtomicOpOutput := prgrm.GetCXArgFromArray(cxAtomicOp.Outputs[0])
-		exprAtomicOpOutput.Type = arg.Type
-		exprAtomicOpOutput.PointerTargetType = arg.PointerTargetType
-		exprAtomicOpOutput.Size = arg.Size
-		exprAtomicOpOutput.TotalSize = arg.TotalSize
+		exprAtomicOpOutputIdx := cxAtomicOp.Outputs[0]
+		prgrm.CXArgs[exprAtomicOpOutputIdx].Type = arg.Type
+		prgrm.CXArgs[exprAtomicOpOutputIdx].PointerTargetType = arg.PointerTargetType
+		prgrm.CXArgs[exprAtomicOpOutputIdx].Size = arg.Size
+		prgrm.CXArgs[exprAtomicOpOutputIdx].TotalSize = arg.TotalSize
 	}
 }
 
@@ -1173,16 +1173,14 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 					}
 
 					if fnIdx, err := strctPkg.GetMethod(prgrm, strct.Name+"."+prgrm.GetCXArgFromArray(prgrm.CXArgs[outIdx].Fields[len(prgrm.CXArgs[outIdx].Fields)-1]).Name, strct.Name); err == nil {
-						cxAtomicOp.Operator = fnIdx
+						prgrm.CXAtomicOps[expr.Index].Operator = fnIdx
 					} else {
 						panic("")
 					}
 
-					cxAtomicOp.Inputs = append([]ast.CXArgumentIndex{ast.CXArgumentIndex(prgrm.CXArgs[outIdx].Index)}, cxAtomicOp.Inputs...)
-
+					prgrm.CXAtomicOps[expr.Index].Inputs = append([]ast.CXArgumentIndex{ast.CXArgumentIndex(prgrm.CXArgs[outIdx].Index)}, prgrm.CXAtomicOps[expr.Index].Inputs...)
+					prgrm.CXAtomicOps[expr.Index].Outputs = prgrm.CXAtomicOps[expr.Index].Outputs[1:]
 					prgrm.CXArgs[outIdx].Fields = prgrm.CXArgs[outIdx].Fields[:len(prgrm.CXArgs[outIdx].Fields)-1]
-
-					cxAtomicOp.Outputs = cxAtomicOp.Outputs[1:]
 				}
 			} else {
 				// then we found an input
@@ -1204,7 +1202,7 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 					}
 
 					if fnIdx, err := strctPkg.GetMethod(prgrm, strct.Name+"."+prgrm.GetCXArgFromArray(prgrm.CXArgs[inpIdx].Fields[len(prgrm.CXArgs[inpIdx].Fields)-1]).Name, strct.Name); err == nil {
-						cxAtomicOp.Operator = fnIdx
+						prgrm.CXAtomicOps[expr.Index].Operator = fnIdx
 					} else {
 						panic(err)
 					}
@@ -1226,8 +1224,8 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 						os.Exit(constants.CX_COMPILATION_ERROR)
 					}
 
-					cxAtomicOp.Inputs = append(cxAtomicOp.Outputs[:1], cxAtomicOp.Inputs...)
-					cxAtomicOp.Outputs = cxAtomicOp.Outputs[:len(cxAtomicOp.Outputs)-1]
+					prgrm.CXAtomicOps[expr.Index].Inputs = append(prgrm.CXAtomicOps[expr.Index].Outputs[:1], prgrm.CXAtomicOps[expr.Index].Inputs...)
+					prgrm.CXAtomicOps[expr.Index].Outputs = prgrm.CXAtomicOps[expr.Index].Outputs[:len(prgrm.CXAtomicOps[expr.Index].Outputs)-1]
 
 					strctPkg, err := prgrm.GetPackageFromArray(strct.Package)
 					if err != nil {
@@ -1235,7 +1233,7 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 					}
 
 					if fnIdx, err := strctPkg.GetMethod(prgrm, strct.Name+"."+prgrm.GetCXArgFromArray(prgrm.CXArgs[outIdx].Fields[len(prgrm.CXArgs[outIdx].Fields)-1]).Name, strct.Name); err == nil {
-						cxAtomicOp.Operator = fnIdx
+						prgrm.CXAtomicOps[expr.Index].Operator = fnIdx
 					} else {
 						panic(err)
 					}
@@ -1274,16 +1272,14 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 				}
 
 				if fnIdx, err := strctPkg.GetMethod(prgrm, strct.Name+"."+prgrm.GetCXArgFromArray(prgrm.CXArgs[outIdx].Fields[len(prgrm.CXArgs[outIdx].Fields)-1]).Name, strct.Name); err == nil {
-					cxAtomicOp.Operator = fnIdx
+					prgrm.CXAtomicOps[expr.Index].Operator = fnIdx
 				} else {
 					panic("")
 				}
 
-				cxAtomicOp.Inputs = append([]ast.CXArgumentIndex{ast.CXArgumentIndex(prgrm.CXArgs[outIdx].Index)}, cxAtomicOp.Inputs...)
-
+				prgrm.CXAtomicOps[expr.Index].Inputs = append([]ast.CXArgumentIndex{ast.CXArgumentIndex(prgrm.CXArgs[outIdx].Index)}, prgrm.CXAtomicOps[expr.Index].Inputs...)
+				prgrm.CXAtomicOps[expr.Index].Outputs = prgrm.CXAtomicOps[expr.Index].Outputs[1:]
 				prgrm.CXArgs[outIdx].Fields = prgrm.CXArgs[outIdx].Fields[:len(prgrm.CXArgs[outIdx].Fields)-1]
-
-				cxAtomicOp.Outputs = cxAtomicOp.Outputs[1:]
 			}
 		}
 		cxAtomicOpOperator := prgrm.GetFunctionFromArray(cxAtomicOp.Operator)
@@ -1332,16 +1328,16 @@ func ProcessTempVariable(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 	}
 
 	if cxAtomicOpOperator != nil && (isOpIdent || ast.IsArithmeticOperator(cxAtomicOpOperator.AtomicOPCode)) && len(cxAtomicOp.Outputs) > 0 && len(cxAtomicOp.Inputs) > 0 {
-		outputArg := prgrm.GetCXArgFromArray(cxAtomicOp.Outputs[0])
-		name := outputArg.Name
+		outputArgIdx := cxAtomicOp.Outputs[0]
+		name := prgrm.CXArgs[outputArgIdx].Name
 		if IsTempVar(name) {
 			cxAtomicOpInput := prgrm.GetCXArgFromArray(cxAtomicOp.Inputs[0])
 			// then it's a temporary variable and it needs to adopt its input's type
-			outputArg.Type = cxAtomicOpInput.Type
-			outputArg.PointerTargetType = cxAtomicOpInput.PointerTargetType
-			outputArg.Size = cxAtomicOpInput.Size
-			outputArg.TotalSize = cxAtomicOpInput.TotalSize
-			outputArg.PreviouslyDeclared = true
+			prgrm.CXArgs[outputArgIdx].Type = cxAtomicOpInput.Type
+			prgrm.CXArgs[outputArgIdx].PointerTargetType = cxAtomicOpInput.PointerTargetType
+			prgrm.CXArgs[outputArgIdx].Size = cxAtomicOpInput.Size
+			prgrm.CXArgs[outputArgIdx].TotalSize = cxAtomicOpInput.TotalSize
+			prgrm.CXArgs[outputArgIdx].PreviouslyDeclared = true
 		}
 	}
 }

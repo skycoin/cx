@@ -415,7 +415,7 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 			// CX checks the output of an expression to determine if it's being passed
 			// by value or by reference, so we copy this property from the initializer's
 			// output, in case of something like var foo *i32 = &bar
-			declarationSpecifiers.PassBy = initOut.PassBy
+			prgrm.CXArgs[declSpecIdx].PassBy = initOut.PassBy
 
 			cxExprAtomicOp.AddOutput(prgrm, declSpecIdx)
 			cxExprAtomicOp.AddInput(prgrm, initOutIdx)
@@ -453,10 +453,10 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 		}
 		cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
 
-		declarationSpecifiers.Name = declarator.Name
-		declarationSpecifiers.ArgDetails.FileLine = declarator.ArgDetails.FileLine
-		declarationSpecifiers.Package = ast.CXPackageIndex(pkg.Index)
-		declarationSpecifiers.PreviouslyDeclared = true
+		prgrm.CXArgs[declSpecIdx].Name = declarator.Name
+		prgrm.CXArgs[declSpecIdx].ArgDetails.FileLine = declarator.ArgDetails.FileLine
+		prgrm.CXArgs[declSpecIdx].Package = ast.CXPackageIndex(pkg.Index)
+		prgrm.CXArgs[declSpecIdx].PreviouslyDeclared = true
 		cxAtomicOp.AddOutput(prgrm, declSpecIdx)
 
 		return []ast.CXExpression{*exprCXLine, *expr}

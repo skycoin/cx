@@ -228,22 +228,22 @@ func PrimaryStructLiteralExternal(prgrm *ast.CXProgram, importName string, struc
 						panic(err)
 					}
 
-					cxAtomicOpOutput := prgrm.GetCXArgFromArray(cxAtomicOp.Outputs[0])
+					cxAtomicOpOutputIdx := cxAtomicOp.Outputs[0]
 					field := ast.MakeArgument("", CurrentFile, LineNo)
 					field.SetType(types.IDENTIFIER)
-					field.Name = cxAtomicOpOutput.Name
+					field.Name = prgrm.CXArgs[cxAtomicOpOutputIdx].Name
 
 					expr.ExpressionType = ast.CXEXPR_STRUCT_LITERAL
 
-					cxAtomicOpOutput.Package = ast.CXPackageIndex(pkg.Index)
+					prgrm.CXArgs[cxAtomicOpOutputIdx].Package = ast.CXPackageIndex(pkg.Index)
 					// expr.ProgramOutput[0].Program = prgrm
 
-					cxAtomicOpOutput.StructType = strct
-					cxAtomicOpOutput.Size = strct.Size
-					cxAtomicOpOutput.TotalSize = strct.Size
-					cxAtomicOpOutput.Name = structName
+					prgrm.CXArgs[cxAtomicOpOutputIdx].StructType = strct
+					prgrm.CXArgs[cxAtomicOpOutputIdx].Size = strct.Size
+					prgrm.CXArgs[cxAtomicOpOutputIdx].TotalSize = strct.Size
+					prgrm.CXArgs[cxAtomicOpOutputIdx].Name = structName
 					fieldIdx := prgrm.AddCXArgInArray(field)
-					cxAtomicOpOutput.Fields = append(cxAtomicOpOutput.Fields, fieldIdx)
+					prgrm.CXArgs[cxAtomicOpOutputIdx].Fields = append(prgrm.CXArgs[cxAtomicOpOutputIdx].Fields, fieldIdx)
 					result = append(result, expr)
 				}
 			} else {

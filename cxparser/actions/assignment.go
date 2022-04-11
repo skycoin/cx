@@ -303,9 +303,9 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 				panic(err)
 			}
 
-			toExprAtomicOpOutput := prgrm.GetCXArgFromArray(toExprAtomicOp.Outputs[0])
-			toExprAtomicOpOutput.PreviouslyDeclared = true
-			toExprAtomicOpOutput.IsShortAssignmentDeclaration = true
+			toExprAtomicOpOutputIdx := toExprAtomicOp.Outputs[0]
+			prgrm.CXArgs[toExprAtomicOpOutputIdx].PreviouslyDeclared = true
+			prgrm.CXArgs[toExprAtomicOpOutputIdx].IsShortAssignmentDeclaration = true
 		}
 
 		toExprs = append([]ast.CXExpression{*exprCXLine, *expr}, toExprs...)
@@ -350,16 +350,16 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 		opIdx := prgrm.AddNativeFunctionInArray(ast.Natives[constants.OP_IDENTITY])
 		prgrm.CXAtomicOps[fromCXAtomicOpIdx].Operator = opIdx
 
-		toCXAtomicOpOutput := prgrm.GetCXArgFromArray(toCXAtomicOp.Outputs[0])
+		toCXAtomicOpOutputIdx := toCXAtomicOp.Outputs[0]
 		fromCXAtomicOpOutput := prgrm.GetCXArgFromArray(prgrm.CXAtomicOps[fromCXAtomicOpIdx].Outputs[0])
 
-		toCXAtomicOpOutput.Size = fromCXAtomicOpOutput.Size
-		toCXAtomicOpOutput.TotalSize = fromCXAtomicOpOutput.TotalSize
-		toCXAtomicOpOutput.Type = fromCXAtomicOpOutput.Type
-		toCXAtomicOpOutput.PointerTargetType = fromCXAtomicOpOutput.PointerTargetType
-		toCXAtomicOpOutput.Lengths = fromCXAtomicOpOutput.Lengths
-		toCXAtomicOpOutput.PassBy = fromCXAtomicOpOutput.PassBy
-		toCXAtomicOpOutput.DoesEscape = fromCXAtomicOpOutput.DoesEscape
+		prgrm.CXArgs[toCXAtomicOpOutputIdx].Size = fromCXAtomicOpOutput.Size
+		prgrm.CXArgs[toCXAtomicOpOutputIdx].TotalSize = fromCXAtomicOpOutput.TotalSize
+		prgrm.CXArgs[toCXAtomicOpOutputIdx].Type = fromCXAtomicOpOutput.Type
+		prgrm.CXArgs[toCXAtomicOpOutputIdx].PointerTargetType = fromCXAtomicOpOutput.PointerTargetType
+		prgrm.CXArgs[toCXAtomicOpOutputIdx].Lengths = fromCXAtomicOpOutput.Lengths
+		prgrm.CXArgs[toCXAtomicOpOutputIdx].PassBy = fromCXAtomicOpOutput.PassBy
+		prgrm.CXArgs[toCXAtomicOpOutputIdx].DoesEscape = fromCXAtomicOpOutput.DoesEscape
 		// toCXAtomicOp.ProgramOutput[0].Program = prgrm
 
 		if fromExprs[idx].IsMethodCall() {
@@ -376,28 +376,28 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 		if fromCXAtomicOpOperator.IsBuiltIn() {
 			// only assigning as if the operator had only one output defined
 
-			toCXAtomicOpOutput := prgrm.GetCXArgFromArray(toCXAtomicOp.Outputs[0])
+			toCXAtomicOpOutputIdx := toCXAtomicOp.Outputs[0]
 			if fromCXAtomicOpOperator.AtomicOPCode != constants.OP_IDENTITY {
 				// it's a short variable declaration
-				toCXAtomicOpOutput.Size = fromCXAtomicOpOperatorOutput.Size
-				toCXAtomicOpOutput.Type = fromCXAtomicOpOperatorOutput.Type
-				toCXAtomicOpOutput.PointerTargetType = fromCXAtomicOpOperatorOutput.PointerTargetType
-				toCXAtomicOpOutput.Lengths = fromCXAtomicOpOperatorOutput.Lengths
+				prgrm.CXArgs[toCXAtomicOpOutputIdx].Size = fromCXAtomicOpOperatorOutput.Size
+				prgrm.CXArgs[toCXAtomicOpOutputIdx].Type = fromCXAtomicOpOperatorOutput.Type
+				prgrm.CXArgs[toCXAtomicOpOutputIdx].PointerTargetType = fromCXAtomicOpOperatorOutput.PointerTargetType
+				prgrm.CXArgs[toCXAtomicOpOutputIdx].Lengths = fromCXAtomicOpOperatorOutput.Lengths
 			}
 
-			toCXAtomicOpOutput.DoesEscape = fromCXAtomicOpOperatorOutput.DoesEscape
-			toCXAtomicOpOutput.PassBy = fromCXAtomicOpOperatorOutput.PassBy
+			prgrm.CXArgs[toCXAtomicOpOutputIdx].DoesEscape = fromCXAtomicOpOperatorOutput.DoesEscape
+			prgrm.CXArgs[toCXAtomicOpOutputIdx].PassBy = fromCXAtomicOpOperatorOutput.PassBy
 		} else {
 			// we'll delegate multiple-value returns to the 'expression' grammar rule
 			// only assigning as if the operator had only one output defined
-			toCXAtomicOpOutput := prgrm.GetCXArgFromArray(toCXAtomicOp.Outputs[0])
+			toCXAtomicOpOutputIdx := toCXAtomicOp.Outputs[0]
 
-			toCXAtomicOpOutput.Size = fromCXAtomicOpOperatorOutput.Size
-			toCXAtomicOpOutput.Type = fromCXAtomicOpOperatorOutput.Type
-			toCXAtomicOpOutput.PointerTargetType = fromCXAtomicOpOperatorOutput.PointerTargetType
-			toCXAtomicOpOutput.Lengths = fromCXAtomicOpOperatorOutput.Lengths
-			toCXAtomicOpOutput.DoesEscape = fromCXAtomicOpOperatorOutput.DoesEscape
-			toCXAtomicOpOutput.PassBy = fromCXAtomicOpOperatorOutput.PassBy
+			prgrm.CXArgs[toCXAtomicOpOutputIdx].Size = fromCXAtomicOpOperatorOutput.Size
+			prgrm.CXArgs[toCXAtomicOpOutputIdx].Type = fromCXAtomicOpOperatorOutput.Type
+			prgrm.CXArgs[toCXAtomicOpOutputIdx].PointerTargetType = fromCXAtomicOpOperatorOutput.PointerTargetType
+			prgrm.CXArgs[toCXAtomicOpOutputIdx].Lengths = fromCXAtomicOpOperatorOutput.Lengths
+			prgrm.CXArgs[toCXAtomicOpOutputIdx].DoesEscape = fromCXAtomicOpOperatorOutput.DoesEscape
+			prgrm.CXArgs[toCXAtomicOpOutputIdx].PassBy = fromCXAtomicOpOperatorOutput.PassBy
 		}
 
 		prgrm.CXAtomicOps[fromCXAtomicOpIdx].Outputs = toLastExprAtomicOp.Outputs
