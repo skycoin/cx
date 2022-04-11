@@ -127,3 +127,5 @@ The CX Runtime consists mainly of a [CXProgram](https://github.com/skycoin/cx/bl
 * AtomicOps  - Array of AtomicOp.
 * CxArgs - Array of CXArg.
 * CXLines - Array of CXLine.
+* CXPackages - Array of CXPackage.
+* CXFunctions - Arrays of CXFunction.
