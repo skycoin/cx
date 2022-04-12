@@ -26,12 +26,9 @@ func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []a
 	slcVarExprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
 	// adding the declaration
 	slcVarExpr := ast.MakeAtomicOperatorExpression(prgrm, nil)
-	slcVarExprAtomicOp, _, _, err := prgrm.GetOperation(slcVarExpr)
-	if err != nil {
-		panic(err)
-	}
+	slcVarExprAtomicOpIdx := slcVarExpr.Index
 
-	slcVarExprAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
+	prgrm.CXAtomicOps[slcVarExprAtomicOpIdx].Package = ast.CXPackageIndex(pkg.Index)
 	slcVar := ast.MakeArgument(symName, CurrentFile, LineNo)
 	slcVar.SetType(typeCode)
 	slcVar = DeclarationSpecifiers(slcVar, []types.Pointer{0}, constants.DECL_SLICE)
@@ -40,7 +37,7 @@ func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []a
 	slcVar.PreviouslyDeclared = true
 
 	slcVarIdx := prgrm.AddCXArgInArray(slcVar)
-	slcVarExprAtomicOp.AddOutput(prgrm, slcVarIdx)
+	prgrm.CXAtomicOps[slcVarExprAtomicOpIdx].AddOutput(prgrm, slcVarIdx)
 
 	result = append(result, *slcVarExprCXLine, *slcVarExpr)
 
@@ -74,22 +71,19 @@ func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []a
 
 			symExprExprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
 			symExpr := ast.MakeAtomicOperatorExpression(prgrm, nil)
-			symExprAtomicOp, _, _, err := prgrm.GetOperation(symExpr)
-			if err != nil {
-				panic(err)
-			}
+			symExprAtomicOpIdx := symExpr.Index
 
-			symExprAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
-			symExprAtomicOp.AddOutput(prgrm, symOutIdx)
+			prgrm.CXAtomicOps[symExprAtomicOpIdx].Package = ast.CXPackageIndex(pkg.Index)
+			prgrm.CXAtomicOps[symExprAtomicOpIdx].AddOutput(prgrm, symOutIdx)
 
 			if exprAtomicOpOperator == nil {
 				// then it's a literal
 				opIdx := prgrm.AddNativeFunctionInArray(ast.Natives[constants.OP_APPEND])
-				symExprAtomicOp.Operator = opIdx
+				prgrm.CXAtomicOps[symExprAtomicOpIdx].Operator = opIdx
 
-				symExprAtomicOp.Inputs = nil
-				symExprAtomicOp.Inputs = append(symExprAtomicOp.Inputs, symInpIdx)
-				symExprAtomicOp.Inputs = append(symExprAtomicOp.Inputs, exprAtomicOp.Outputs...)
+				prgrm.CXAtomicOps[symExprAtomicOpIdx].Inputs = nil
+				prgrm.CXAtomicOps[symExprAtomicOpIdx].Inputs = append(prgrm.CXAtomicOps[symExprAtomicOpIdx].Inputs, symInpIdx)
+				prgrm.CXAtomicOps[symExprAtomicOpIdx].Inputs = append(prgrm.CXAtomicOps[symExprAtomicOpIdx].Inputs, exprAtomicOp.Outputs...)
 			} else {
 				// We need to create a temporary variable to hold the result of the
 				// nested expressions. Then use that variable as part of the slice literal.
@@ -108,11 +102,11 @@ func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []a
 
 				result = append(result, expr)
 				opIdx := prgrm.AddNativeFunctionInArray(ast.Natives[constants.OP_APPEND])
-				symExprAtomicOp.Operator = opIdx
+				prgrm.CXAtomicOps[symExprAtomicOpIdx].Operator = opIdx
 
-				symExprAtomicOp.Inputs = nil
-				symExprAtomicOp.Inputs = append(symExprAtomicOp.Inputs, symInpIdx)
-				symExprAtomicOp.Inputs = append(symExprAtomicOp.Inputs, outIdx)
+				prgrm.CXAtomicOps[symExprAtomicOpIdx].Inputs = nil
+				prgrm.CXAtomicOps[symExprAtomicOpIdx].Inputs = append(prgrm.CXAtomicOps[symExprAtomicOpIdx].Inputs, symInpIdx)
+				prgrm.CXAtomicOps[symExprAtomicOpIdx].Inputs = append(prgrm.CXAtomicOps[symExprAtomicOpIdx].Inputs, outIdx)
 			}
 			result = append(result, *symExprExprCXLine, *symExpr)
 		} else {
@@ -279,12 +273,9 @@ func ArrayLiteralExpression(prgrm *ast.CXProgram, arraySizes []types.Pointer, ty
 
 	arrVarExprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
 	arrVarExpr := ast.MakeAtomicOperatorExpression(prgrm, nil)
-	arrVarExprAtomicOp, _, _, err := prgrm.GetOperation(arrVarExpr)
-	if err != nil {
-		panic(err)
-	}
+	arrVarExprAtomicOpIdx := arrVarExpr.Index
 
-	arrVarExprAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
+	prgrm.CXAtomicOps[arrVarExprAtomicOpIdx].Package = ast.CXPackageIndex(pkg.Index)
 	arrVar := ast.MakeArgument(symName, CurrentFile, LineNo)
 	arrVar = DeclarationSpecifiers(arrVar, arraySizes, constants.DECL_ARRAY)
 	arrVar.SetType(typeCode)
@@ -293,7 +284,7 @@ func ArrayLiteralExpression(prgrm *ast.CXProgram, arraySizes []types.Pointer, ty
 	arrVar.PreviouslyDeclared = true
 	arrVarIdx := prgrm.AddCXArgInArray(arrVar)
 
-	arrVarExprAtomicOp.AddOutput(prgrm, arrVarIdx)
+	prgrm.CXAtomicOps[arrVarExprAtomicOpIdx].AddOutput(prgrm, arrVarIdx)
 
 	result = append(result, *arrVarExprCXLine, *arrVarExpr)
 

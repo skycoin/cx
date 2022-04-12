@@ -372,11 +372,8 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 	// For example, `var foo i32 = 11` needs to be divided into two expressions:
 	// one that declares `foo`, and another that assigns 11 to `foo`
 	decl := ast.MakeAtomicOperatorExpression(prgrm, nil)
-	cxAtomicOp, _, _, err := prgrm.GetOperation(decl)
-	if err != nil {
-		panic(err)
-	}
-	cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
+	cxAtomicOpIdx := decl.Index
+	prgrm.CXAtomicOps[cxAtomicOpIdx].Package = ast.CXPackageIndex(pkg.Index)
 
 	declarationSpecifiers.Name = declarator.Name
 	declarationSpecifiers.ArgDetails.FileLine = declarator.ArgDetails.FileLine
@@ -384,7 +381,7 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 	declarationSpecifiers.PreviouslyDeclared = true
 	declSpecIdx := prgrm.AddCXArgInArray(declarationSpecifiers)
 	declarationSpecifiers = prgrm.GetCXArgFromArray(declSpecIdx)
-	cxAtomicOp.AddOutput(prgrm, declSpecIdx)
+	prgrm.CXAtomicOps[cxAtomicOpIdx].AddOutput(prgrm, declSpecIdx)
 
 	// Checking if something is supposed to be initialized
 	// and if `initializer` actually contains something.
@@ -404,11 +401,8 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 			// we need to create an expression that links the initializer expressions
 			// with the declared variable
 			expr := ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_IDENTITY])
-			cxExprAtomicOp, _, _, err := prgrm.GetOperation(expr)
-			if err != nil {
-				panic(err)
-			}
-			cxExprAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
+			cxExprAtomicOpIdx := expr.Index
+			prgrm.CXAtomicOps[cxExprAtomicOpIdx].Package = ast.CXPackageIndex(pkg.Index)
 
 			initOut := prgrm.GetCXArgFromArray(initializerAtomicOp.Outputs[0])
 			initOutIdx := initializerAtomicOp.Outputs[0]
@@ -417,8 +411,8 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 			// output, in case of something like var foo *i32 = &bar
 			prgrm.CXArgs[declSpecIdx].PassBy = initOut.PassBy
 
-			cxExprAtomicOp.AddOutput(prgrm, declSpecIdx)
-			cxExprAtomicOp.AddInput(prgrm, initOutIdx)
+			prgrm.CXAtomicOps[cxExprAtomicOpIdx].AddOutput(prgrm, declSpecIdx)
+			prgrm.CXAtomicOps[cxExprAtomicOpIdx].AddInput(prgrm, initOutIdx)
 
 			initializer[len(initializer)-1] = *exprCXLine
 			initializer = append(initializer, *expr)
