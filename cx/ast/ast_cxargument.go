@@ -316,10 +316,10 @@ func (arg *CXArgument) AddOutput(prgrm *CXProgram, out *CXArgument) *CXArgument 
 	return arg
 }
 
-// Pointer takes an already defined `CXArgument` and turns it into a pointer.
+// MakePointer takes an already defined `CXArgument` and turns it into a pointer.
 //Only used once, deprecate
 //TODO: only used by HTTP, create a better module system
-func Pointer(arg *CXArgument) *CXArgument {
+func MakePointer(arg *CXArgument) *CXArgument {
 	arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_POINTER)
 	arg.PointerTargetType = arg.Type
 	arg.Type = types.POINTER
@@ -329,10 +329,10 @@ func Pointer(arg *CXArgument) *CXArgument {
 	return arg
 }
 
-// Struct helper for creating a struct parameter. It creates a
+// MakeStructParameter helper for creating a struct parameter. It creates a
 // `CXArgument` named `argName`, that represents a structure instane of
 // `strctName`, from package `pkgName`.
-func Struct(prgrm *CXProgram, pkgName, strctName, argName string) *CXArgument {
+func MakeStructParameter(prgrm *CXProgram, pkgName, strctName, argName string) *CXArgument {
 	pkg, err := prgrm.GetPackage(pkgName)
 	if err != nil {
 		panic(err)
