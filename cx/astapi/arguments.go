@@ -249,7 +249,7 @@ func MakeInputExpressionAPointer(cxprogram *cxast.CXProgram, functionName string
 		panic(err)
 	}
 
-	cxast.Pointer(cxprogram.GetCXArgFromArray(cxAtomicOp.Inputs[inputNumber]))
+	cxast.MakePointer(cxprogram.GetCXArgFromArray(cxAtomicOp.Inputs[inputNumber]))
 	return nil
 }
 
@@ -297,7 +297,7 @@ func MakeOutputExpressionAPointer(cxprogram *cxast.CXProgram, functionName strin
 		panic(err)
 	}
 
-	cxast.Pointer(cxprogram.GetCXArgFromArray(cxAtomicOp.Outputs[outputNumber]))
+	cxast.MakePointer(cxprogram.GetCXArgFromArray(cxAtomicOp.Outputs[outputNumber]))
 	return nil
 }
 

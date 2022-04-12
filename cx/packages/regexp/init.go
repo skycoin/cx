@@ -17,7 +17,7 @@ func RegisterPackage(prgrm *ast.CXProgram) {
 	regexpStrct.AddField(prgrm, ast.MakeArgument("exp", "", 0).SetType(types.STR).SetPackage(regexpPkg))
 	regexpPkg.AddStruct(regexpStrct)
 
-	opcodes.RegisterFunction(prgrm, "regexp.Compile", opRegexpCompile, opcodes.In(ast.ConstCxArg_STR), opcodes.Out(ast.Struct(prgrm, "regexp", "Regexp", "r"), ast.ConstCxArg_STR))
-	opcodes.RegisterFunction(prgrm, "regexp.MustCompile", opRegexpMustCompile, opcodes.In(ast.ConstCxArg_STR), opcodes.Out(ast.Struct(prgrm, "regexp", "Regexp", "r")))
-	opcodes.RegisterFunction(prgrm, "regexp.Regexp.Find", opRegexpFind, opcodes.In(ast.Struct(prgrm, "regexp", "Regexp", "r"), ast.ConstCxArg_STR), opcodes.Out(ast.ConstCxArg_STR))
+	opcodes.RegisterFunction(prgrm, "regexp.Compile", opRegexpCompile, opcodes.In(ast.ConstCxArg_STR), opcodes.Out(ast.MakeStructParameter(prgrm, "regexp", "Regexp", "r"), ast.ConstCxArg_STR))
+	opcodes.RegisterFunction(prgrm, "regexp.MustCompile", opRegexpMustCompile, opcodes.In(ast.ConstCxArg_STR), opcodes.Out(ast.MakeStructParameter(prgrm, "regexp", "Regexp", "r")))
+	opcodes.RegisterFunction(prgrm, "regexp.Regexp.Find", opRegexpFind, opcodes.In(ast.MakeStructParameter(prgrm, "regexp", "Regexp", "r"), ast.ConstCxArg_STR), opcodes.Out(ast.ConstCxArg_STR))
 }

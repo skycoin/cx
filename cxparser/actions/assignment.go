@@ -94,25 +94,25 @@ func StructLiteralAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, f
 
 		declExprCXLine := ast.MakeCXLineExpression(prgrm, lastFromCXLine.FileName, lastFromCXLine.LineNumber, lastFromCXLine.LineStr)
 		declExpr := ast.MakeAtomicOperatorExpression(prgrm, nil)
-		declExprAtomicOpIdx := declExpr.Index
+		declExpressionIdx := declExpr.Index
 
-		prgrm.CXAtomicOps[declExprAtomicOpIdx].Package = lastFromExpression.Package
-		prgrm.CXAtomicOps[declExprAtomicOpIdx].AddOutput(prgrm, auxIdx)
+		prgrm.CXAtomicOps[declExpressionIdx].Package = lastFromExpression.Package
+		prgrm.CXAtomicOps[declExpressionIdx].AddOutput(prgrm, auxIdx)
 
 		fromExprs = assignStructLiteralFields(prgrm, toExprs, fromExprs, auxName)
 
 		assignExprCXLine := ast.MakeCXLineExpression(prgrm, lastFromCXLine.FileName, lastFromCXLine.LineNumber, lastFromCXLine.LineStr)
 		assignExpr := ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_IDENTITY])
-		assignExprAtomicOpIdx := assignExpr.Index
+		assignExpressionIdx := assignExpr.Index
 
-		prgrm.CXAtomicOps[assignExprAtomicOpIdx].Package = lastFromExpression.Package
+		prgrm.CXAtomicOps[assignExpressionIdx].Package = lastFromExpression.Package
 		out := ast.MakeArgument(prgrm.GetCXArgFromArray(toExpression.Outputs[0]).Name, lastFromCXLine.FileName, lastFromCXLine.LineNumber)
 		out.PassBy = constants.PASSBY_REFERENCE
 		out.Package = lastFromExpression.Package
 		outIdx := prgrm.AddCXArgInArray(out)
 
-		prgrm.CXAtomicOps[assignExprAtomicOpIdx].AddOutput(prgrm, outIdx)
-		prgrm.CXAtomicOps[assignExprAtomicOpIdx].AddInput(prgrm, auxIdx)
+		prgrm.CXAtomicOps[assignExpressionIdx].AddOutput(prgrm, outIdx)
+		prgrm.CXAtomicOps[assignExpressionIdx].AddInput(prgrm, auxIdx)
 
 		fromExprs = append([]ast.CXExpression{*declExprCXLine, *declExpr}, fromExprs...)
 		return append(fromExprs, *assignExprCXLine, *assignExpr)
@@ -254,11 +254,8 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 	switch assignOp {
 	case ":=":
 		expr = ast.MakeAtomicOperatorExpression(prgrm, nil)
-		cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
-		if err != nil {
-			panic(err)
-		}
-		cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
+		expressionIdx := expr.Index
+		prgrm.CXAtomicOps[expressionIdx].Package = ast.CXPackageIndex(pkg.Index)
 		var sym *ast.CXArgument
 
 		if fromExpressionOperator == nil {
@@ -289,7 +286,7 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 		sym.IsShortAssignmentDeclaration = true
 		symIdx := prgrm.AddCXArgInArray(sym)
 
-		cxAtomicOp.AddOutput(prgrm, symIdx)
+		prgrm.CXAtomicOps[expressionIdx].AddOutput(prgrm, symIdx)
 
 		for _, toExpr := range toExprs {
 			if toExpr.Type == ast.CX_LINE {
