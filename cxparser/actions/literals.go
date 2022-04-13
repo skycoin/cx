@@ -404,11 +404,11 @@ func StructLiteralFields(prgrm *ast.CXProgram, structName string) ast.CXExpressi
 	argIdx := prgrm.AddCXArgInArray(arg)
 
 	expr := ast.MakeAtomicOperatorExpression(prgrm, nil)
-	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
+	expression, err := prgrm.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		panic(err)
 	}
-	cxAtomicOp.AddOutput(prgrm, argIdx)
-	cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
+	expression.AddOutput(prgrm, argIdx)
+	expression.Package = ast.CXPackageIndex(pkg.Index)
 	return *expr
 }

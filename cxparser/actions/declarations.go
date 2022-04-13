@@ -66,10 +66,10 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 		// If `initializer` is `nil`, this means that an expression
 		// equivalent to nil was used, such as `[]i32{}`.
 		if doesInitialize && initializer != nil {
-			initializerAtomicOpIdx := initializer[len(initializer)-1].Index
-			initializerAtomicOpOperator := prgrm.GetFunctionFromArray(prgrm.CXAtomicOps[initializerAtomicOpIdx].Operator)
+			initializerExpressionIdx := initializer[len(initializer)-1].Index
+			initializerExpressionOperator := prgrm.GetFunctionFromArray(prgrm.CXAtomicOps[initializerExpressionIdx].Operator)
 			// then we just re-assign offsets
-			if initializerAtomicOpOperator == nil {
+			if initializerExpressionOperator == nil {
 				// then it's a literal
 				declaration_specifiers.Name = prgrm.CXArgs[glblIdx].Name
 				declaration_specifiers.Offset = prgrm.CXArgs[glblIdx].Offset
@@ -79,12 +79,12 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 				prgrm.CXArgs[glblIdx] = *declaration_specifiers
 				prgrm.CXArgs[glblIdx].Index = glblIdx
 
-				prgrm.CXAtomicOps[initializerAtomicOpIdx].AddInput(prgrm, prgrm.CXAtomicOps[initializerAtomicOpIdx].Outputs[0])
-				prgrm.CXAtomicOps[initializerAtomicOpIdx].Outputs = nil
-				prgrm.CXAtomicOps[initializerAtomicOpIdx].AddOutput(prgrm, ast.CXArgumentIndex(glblIdx))
+				prgrm.CXAtomicOps[initializerExpressionIdx].AddInput(prgrm, prgrm.CXAtomicOps[initializerExpressionIdx].Outputs[0])
+				prgrm.CXAtomicOps[initializerExpressionIdx].Outputs = nil
+				prgrm.CXAtomicOps[initializerExpressionIdx].AddOutput(prgrm, ast.CXArgumentIndex(glblIdx))
 				opIdx := prgrm.AddNativeFunctionInArray(ast.Natives[constants.OP_IDENTITY])
-				prgrm.CXAtomicOps[initializerAtomicOpIdx].Operator = opIdx
-				prgrm.CXAtomicOps[initializerAtomicOpIdx].Package = prgrm.CXArgs[glblIdx].Package
+				prgrm.CXAtomicOps[initializerExpressionIdx].Operator = opIdx
+				prgrm.CXAtomicOps[initializerExpressionIdx].Package = prgrm.CXArgs[glblIdx].Package
 
 				//add intialization statements, to array
 				prgrm.SysInitExprs = append(prgrm.SysInitExprs, initializer...)
@@ -110,8 +110,8 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 						initializer,
 					)
 				} else {
-					prgrm.CXAtomicOps[initializerAtomicOpIdx].Outputs = nil
-					prgrm.CXAtomicOps[initializerAtomicOpIdx].AddOutput(prgrm, ast.CXArgumentIndex(glblIdx))
+					prgrm.CXAtomicOps[initializerExpressionIdx].Outputs = nil
+					prgrm.CXAtomicOps[initializerExpressionIdx].AddOutput(prgrm, ast.CXArgumentIndex(glblIdx))
 				}
 				//add intialization statements, to array
 				prgrm.SysInitExprs = append(prgrm.SysInitExprs, initializer...)
@@ -139,18 +139,18 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 		// If `initializer` is `nil`, this means that an expression
 		// equivalent to nil was used, such as `[]i32{}`.
 		if doesInitialize && initializer != nil {
-			initializerAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(initializer, len(initializer)-1)
+			initializerExpression, err := prgrm.GetCXAtomicOpFromExpressions(initializer, len(initializer)-1)
 			if err != nil {
 				panic(err)
 			}
-			initializerAtomicOpOperator := prgrm.GetFunctionFromArray(initializerAtomicOp.Operator)
+			initializerExpressionOperator := prgrm.GetFunctionFromArray(initializerExpression.Operator)
 
 			offExprAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(offExpr, 0)
 			if err != nil {
 				panic(err)
 			}
 
-			if initializerAtomicOpOperator == nil {
+			if initializerExpressionOperator == nil {
 				// then it's a literal
 				offExprAtomicOpOutput := prgrm.GetCXArgFromArray(offExprAtomicOp.Outputs[0])
 				declaration_specifiers.Name = declarator.Name
@@ -161,11 +161,11 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 				declaration_specifiers.Package = ast.CXPackageIndex(pkg.Index)
 
 				opIdx := prgrm.AddNativeFunctionInArray(ast.Natives[constants.OP_IDENTITY])
-				initializerAtomicOp.Operator = opIdx
-				initializerAtomicOp.AddInput(prgrm, initializerAtomicOp.Outputs[0])
-				initializerAtomicOp.Outputs = nil
+				initializerExpression.Operator = opIdx
+				initializerExpression.AddInput(prgrm, initializerExpression.Outputs[0])
+				initializerExpression.Outputs = nil
 				declSpecIdx := prgrm.AddCXArgInArray(declaration_specifiers)
-				initializerAtomicOp.AddOutput(prgrm, declSpecIdx)
+				initializerExpression.AddOutput(prgrm, declSpecIdx)
 
 				pkg.AddGlobal(prgrm, declSpecIdx)
 				//add intialization statements, to array
@@ -194,8 +194,8 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 						initializer,
 					)
 				} else {
-					initializerAtomicOp.Outputs = nil
-					initializerAtomicOp.AddOutput(prgrm, declSpecIdx)
+					initializerExpression.Outputs = nil
+					initializerExpression.AddOutput(prgrm, declSpecIdx)
 				}
 
 				pkg.AddGlobal(prgrm, declSpecIdx)
@@ -372,8 +372,8 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 	// For example, `var foo i32 = 11` needs to be divided into two expressions:
 	// one that declares `foo`, and another that assigns 11 to `foo`
 	decl := ast.MakeAtomicOperatorExpression(prgrm, nil)
-	cxAtomicOpIdx := decl.Index
-	prgrm.CXAtomicOps[cxAtomicOpIdx].Package = ast.CXPackageIndex(pkg.Index)
+	expressionIdx := decl.Index
+	prgrm.CXAtomicOps[expressionIdx].Package = ast.CXPackageIndex(pkg.Index)
 
 	declarationSpecifiers.Name = declarator.Name
 	declarationSpecifiers.ArgDetails.FileLine = declarator.ArgDetails.FileLine
@@ -381,21 +381,21 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 	declarationSpecifiers.PreviouslyDeclared = true
 	declSpecIdx := prgrm.AddCXArgInArray(declarationSpecifiers)
 	declarationSpecifiers = prgrm.GetCXArgFromArray(declSpecIdx)
-	prgrm.CXAtomicOps[cxAtomicOpIdx].AddOutput(prgrm, declSpecIdx)
+	prgrm.CXAtomicOps[expressionIdx].AddOutput(prgrm, declSpecIdx)
 
 	// Checking if something is supposed to be initialized
 	// and if `initializer` actually contains something.
 	// If `initializer` is `nil`, this means that an expression
 	// equivalent to nil was used, such as `[]i32{}`.
 	if doesInitialize && initializer != nil {
-		initializerAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(initializer, len(initializer)-1)
+		initializerExpression, err := prgrm.GetCXAtomicOpFromExpressions(initializer, len(initializer)-1)
 		if err != nil {
 			panic(err)
 		}
-		initializerAtomicOpOperator := prgrm.GetFunctionFromArray(initializerAtomicOp.Operator)
+		initializerExpressionOperator := prgrm.GetFunctionFromArray(initializerExpression.Operator)
 		// THEN it's a literal, e.g. var foo i32 = 10;
 		// ELSE it's an expression with an operator
-		if initializerAtomicOpOperator == nil {
+		if initializerExpressionOperator == nil {
 			exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
 
 			// we need to create an expression that links the initializer expressions
@@ -404,8 +404,8 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 			cxExprAtomicOpIdx := expr.Index
 			prgrm.CXAtomicOps[cxExprAtomicOpIdx].Package = ast.CXPackageIndex(pkg.Index)
 
-			initOut := prgrm.GetCXArgFromArray(initializerAtomicOp.Outputs[0])
-			initOutIdx := initializerAtomicOp.Outputs[0]
+			initOut := prgrm.GetCXArgFromArray(initializerExpression.Outputs[0])
+			initOutIdx := initializerExpression.Outputs[0]
 			// CX checks the output of an expression to determine if it's being passed
 			// by value or by reference, so we copy this property from the initializer's
 			// output, in case of something like var foo *i32 = &bar

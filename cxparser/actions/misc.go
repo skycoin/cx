@@ -6,23 +6,6 @@ import (
 	"github.com/skycoin/cx/cx/types"
 )
 
-func SetCorrectArithmeticOp(prgrm *ast.CXProgram, expr *ast.CXExpression) {
-	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
-	if err != nil {
-		panic(err)
-	}
-	cxAtomicOpOperator := prgrm.GetFunctionFromArray(cxAtomicOp.Operator)
-	if cxAtomicOpOperator == nil || len(cxAtomicOp.Outputs) < 1 {
-		return
-	}
-
-	code := cxAtomicOpOperator.AtomicOPCode
-	if code > constants.START_OF_OPERATORS && code < constants.END_OF_OPERATORS {
-		// TODO: argument type are not fully resolved here, should be move elsewhere.
-		//cxAtomicOp.Operator = cxcore.GetTypedOperator(cxcore.GetType(cxAtomicOp.ProgramInput[0]), code)
-	}
-}
-
 // hasDeclSpec determines if an argument has certain declaration specifier.
 func hasDeclSpec(arg *ast.CXArgument, spec int) bool {
 	found := false
@@ -236,23 +219,23 @@ func PrimaryIdentifier(prgrm *ast.CXProgram, ident string) []ast.CXExpression {
 	argIdx := prgrm.AddCXArgInArray(arg)
 
 	expr := ast.MakeAtomicOperatorExpression(prgrm, nil)
-	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
+	expression, err := prgrm.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		panic(err)
 	}
-	cxAtomicOp.AddOutput(prgrm, argIdx)
-	cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
+	expression.AddOutput(prgrm, argIdx)
+	expression.Package = ast.CXPackageIndex(pkg.Index)
 	return []ast.CXExpression{*expr}
 }
 
 // IsAllArgsBasicTypes checks if all the input arguments in an expressions are of basic type.
 func IsAllArgsBasicTypes(prgrm *ast.CXProgram, expr *ast.CXExpression) bool {
-	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
+	expression, err := prgrm.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		panic(err)
 	}
 
-	for _, inpIdx := range cxAtomicOp.Inputs {
+	for _, inpIdx := range expression.Inputs {
 		inp := prgrm.GetCXArgFromArray(inpIdx)
 		inpType := inp.Type
 		if inp.Type == types.POINTER {

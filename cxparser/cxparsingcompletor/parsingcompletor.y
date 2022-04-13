@@ -1204,7 +1204,7 @@ expression_statement:
 selection_statement:
                 IF conditional_expression LBRACE block_item_list RBRACE elseif_list else_statement SEMICOLON
                 {
-			$$ = actions.SelectionStatement(actions.AST,$2, $4, $6, $7, actions.SEL_ELSEIFELSE)
+			$$ = actions.CreateSelectionStatement(actions.AST,$2, $4, $6, $7, actions.SEL_ELSEIFELSE)
                 }
         |       IF conditional_expression LBRACE block_item_list RBRACE else_statement SEMICOLON
                 {
@@ -1216,17 +1216,17 @@ selection_statement:
                 }
         |       IF conditional_expression LBRACE block_item_list RBRACE elseif_list SEMICOLON
                 {
-			$$ = actions.SelectionStatement(actions.AST,$2, $4, $6, nil, actions.SEL_ELSEIF)
+			$$ = actions.CreateSelectionStatement(actions.AST,$2, $4, $6, nil, actions.SEL_ELSEIF)
                 }
         |       IF conditional_expression LBRACE RBRACE elseif_list SEMICOLON
                 {
 			//
-			$$ = actions.SelectionStatement(actions.AST,$2, nil, $5, nil, actions.SEL_ELSEIF)
+			$$ = actions.CreateSelectionStatement(actions.AST,$2, nil, $5, nil, actions.SEL_ELSEIF)
                 }
         |       IF conditional_expression LBRACE RBRACE elseif_list else_statement SEMICOLON
                 {
 			//
-			$$ = actions.SelectionStatement(actions.AST,$2, nil, $5, $6, actions.SEL_ELSEIFELSE)
+			$$ = actions.CreateSelectionStatement(actions.AST,$2, nil, $5, $6, actions.SEL_ELSEIFELSE)
                 }
         |       IF conditional_expression compound_statement
                 {

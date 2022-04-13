@@ -225,14 +225,14 @@ func getOutputType(prgrm *ast.CXProgram, expr *ast.CXExpression) *ast.CXArgument
 // 	assignOp - the assignment operator, "=", ":=", ">>=","<<=",
 // 			   "+=","-=","*=","/=","%=","&=","^=", and "|=".
 func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp string, fromExprs []ast.CXExpression) []ast.CXExpression {
-	idx := len(fromExprs) - 1
+	lastFromExpressionIdx := len(fromExprs) - 1
 
 	toExpression, err := prgrm.GetCXAtomicOpFromExpressions(toExprs, 0)
 	if err != nil {
 		panic(err)
 	}
 
-	fromExpressionIdx := fromExprs[idx].Index
+	fromExpressionIdx := fromExprs[lastFromExpressionIdx].Index
 	fromExpressionOperator := prgrm.GetFunctionFromArray(prgrm.CXAtomicOps[fromExpressionIdx].Operator)
 
 	// Checking if we're trying to assign stuff from a function call
@@ -262,11 +262,11 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 			// then it's a literal
 			sym = ast.MakeArgument(prgrm.GetCXArgFromArray(toExpression.Outputs[0]).Name, CurrentFile, LineNo).SetType(prgrm.GetCXArgFromArray(prgrm.CXAtomicOps[fromExpressionIdx].Outputs[0]).Type)
 		} else {
-			outTypeArg := getOutputType(prgrm, &fromExprs[idx])
+			outTypeArg := getOutputType(prgrm, &fromExprs[lastFromExpressionIdx])
 
 			sym = ast.MakeArgument(prgrm.GetCXArgFromArray(toExpression.Outputs[0]).Name, CurrentFile, LineNo).SetType(outTypeArg.Type)
 
-			if fromExprs[idx].IsArrayLiteral() {
+			if fromExprs[lastFromExpressionIdx].IsArrayLiteral() {
 				fromCXAtomicOpInputs := prgrm.GetCXArgFromArray(prgrm.CXAtomicOps[fromExpressionIdx].Inputs[0])
 				sym.Size = fromCXAtomicOpInputs.Size
 				sym.TotalSize = fromCXAtomicOpInputs.TotalSize
@@ -354,9 +354,8 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 		prgrm.CXArgs[toExpressionOutputIdx].Lengths = fromExpressionOutput.Lengths
 		prgrm.CXArgs[toExpressionOutputIdx].PassBy = fromExpressionOutput.PassBy
 		prgrm.CXArgs[toExpressionOutputIdx].DoesEscape = fromExpressionOutput.DoesEscape
-		// toCXAtomicOp.ProgramOutput[0].Program = prgrm
 
-		if fromExprs[idx].IsMethodCall() {
+		if fromExprs[lastFromExpressionIdx].IsMethodCall() {
 			prgrm.CXAtomicOps[fromExpressionIdx].Inputs = append(prgrm.CXAtomicOps[fromExpressionIdx].Outputs, prgrm.CXAtomicOps[fromExpressionIdx].Inputs...)
 		} else {
 			prgrm.CXAtomicOps[fromExpressionIdx].Inputs = prgrm.CXAtomicOps[fromExpressionIdx].Outputs
