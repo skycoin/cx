@@ -165,11 +165,9 @@ func ShortAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression, exprCXLine *a
 		panic(err)
 	}
 
-	fromExpression, err := prgrm.GetCXAtomicOpFromExpressions(fromExprs, len(fromExprs)-1)
-	if err != nil {
-		panic(err)
-	}
-	fromExpressionOperator := prgrm.GetFunctionFromArray(fromExpression.Operator)
+	fromExpressionIdx := fromExprs[len(fromExprs)-1].Index
+
+	fromExpressionOperator := prgrm.GetFunctionFromArray(prgrm.CXAtomicOps[fromExpressionIdx].Operator)
 
 	prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, toExpression.Outputs[0])
 	prgrm.CXAtomicOps[expressionIdx].AddOutput(prgrm, toExpression.Outputs[0])
@@ -177,19 +175,19 @@ func ShortAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression, exprCXLine *a
 	prgrm.CXAtomicOps[expressionIdx].Package = ast.CXPackageIndex(pkg.Index)
 
 	if fromExpressionOperator == nil {
-		prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, fromExpression.Outputs[0])
+		prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, prgrm.CXAtomicOps[fromExpressionIdx].Outputs[0])
 	} else {
-		sym := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).SetType(prgrm.GetCXArgFromArray(fromExpression.Inputs[0]).Type)
+		sym := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).SetType(prgrm.GetCXArgFromArray(prgrm.CXAtomicOps[fromExpressionIdx].Inputs[0]).Type)
 		sym.Package = ast.CXPackageIndex(pkg.Index)
 		sym.PreviouslyDeclared = true
 		symIdx := prgrm.AddCXArgInArray(sym)
-		fromExpression.AddOutput(prgrm, symIdx)
+		prgrm.CXAtomicOps[fromExpressionIdx].AddOutput(prgrm, symIdx)
 
 		prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, symIdx)
 	}
 
 	//must check if from expression is naked previously declared variable
-	if len(fromExprs) == 1 && fromExpressionOperator == nil && len(fromExpression.Outputs) > 0 && len(fromExpression.Inputs) == 0 {
+	if len(fromExprs) == 1 && fromExpressionOperator == nil && len(prgrm.CXAtomicOps[fromExpressionIdx].Outputs) > 0 && len(prgrm.CXAtomicOps[fromExpressionIdx].Inputs) == 0 {
 		return []ast.CXExpression{*exprCXLine, *expr}
 	} else {
 		return append(fromExprs, *exprCXLine, *expr)

@@ -139,11 +139,8 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 		// If `initializer` is `nil`, this means that an expression
 		// equivalent to nil was used, such as `[]i32{}`.
 		if doesInitialize && initializer != nil {
-			initializerExpression, err := prgrm.GetCXAtomicOpFromExpressions(initializer, len(initializer)-1)
-			if err != nil {
-				panic(err)
-			}
-			initializerExpressionOperator := prgrm.GetFunctionFromArray(initializerExpression.Operator)
+			initializerExpressionIdx := initializer[len(initializer)-1].Index
+			initializerExpressionOperator := prgrm.GetFunctionFromArray(prgrm.CXAtomicOps[initializerExpressionIdx].Operator)
 
 			offExprAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(offExpr, 0)
 			if err != nil {
@@ -161,11 +158,11 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 				declaration_specifiers.Package = ast.CXPackageIndex(pkg.Index)
 
 				opIdx := prgrm.AddNativeFunctionInArray(ast.Natives[constants.OP_IDENTITY])
-				initializerExpression.Operator = opIdx
-				initializerExpression.AddInput(prgrm, initializerExpression.Outputs[0])
-				initializerExpression.Outputs = nil
+				prgrm.CXAtomicOps[initializerExpressionIdx].Operator = opIdx
+				prgrm.CXAtomicOps[initializerExpressionIdx].AddInput(prgrm, prgrm.CXAtomicOps[initializerExpressionIdx].Outputs[0])
+				prgrm.CXAtomicOps[initializerExpressionIdx].Outputs = nil
 				declSpecIdx := prgrm.AddCXArgInArray(declaration_specifiers)
-				initializerExpression.AddOutput(prgrm, declSpecIdx)
+				prgrm.CXAtomicOps[initializerExpressionIdx].AddOutput(prgrm, declSpecIdx)
 
 				pkg.AddGlobal(prgrm, declSpecIdx)
 				//add intialization statements, to array
@@ -194,8 +191,8 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 						initializer,
 					)
 				} else {
-					initializerExpression.Outputs = nil
-					initializerExpression.AddOutput(prgrm, declSpecIdx)
+					prgrm.CXAtomicOps[initializerExpressionIdx].Outputs = nil
+					prgrm.CXAtomicOps[initializerExpressionIdx].AddOutput(prgrm, declSpecIdx)
 				}
 
 				pkg.AddGlobal(prgrm, declSpecIdx)
