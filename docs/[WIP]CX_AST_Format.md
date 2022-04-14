@@ -2,18 +2,9 @@
 
 The CX AST, or abstract syntax tree, is the intermediate representation of a CX program which the CX runtime executes. It consists of multiple flavors of nodes, each one broken down in the following subsections.
 
-## CXAtomicOperator
-CXAtomicOperator have the following fields:
-* Inputs
-* Outputs
-* Operator
-* Function
-* Package
-* Label
-* ThenLines
-* ElseLines
-
 ## CXArgument
+Note: CXArgument is to be deprecated after the new CXStruct def will be fully implemented.
+
 The object is composed of the following fields:
 * Name - the symbol of the CXArgument.
 * Package - the CXPackage this CXArgument resides in.
@@ -39,6 +30,17 @@ The object is composed of the following fields:
 * PreviouslyDeclared - used by compiler to check if this variable has been declared yet or not, or if there are duplicate declarations.
 * DoesEscape - should this variable be kept alive after the scope ends? (for example, a function returning a pointer to a variable created in the function should keep that variable alive after the scope ends, hence, this should be set to true then).
 
+## CXAtomicOperator
+CXAtomicOperator have the following fields:
+* Inputs - input arguments of the atomic operator.
+* Outputs - output arguments of the atomic operator.
+* Operator - the operator of the expression.
+* Function - the function where the atomic operator expression belongs.
+* Package - the package where it belongs. 
+* Label - label used for goto expressions.
+* ThenLines - used for if-else and goto/jump expressions.
+* ElseLines - used for if-else and goto/jump expressions.
+
 ## CXLine
 CXLine is a NOP(No operation). Only used for information about the expression.
 CXLine have the following fields:
@@ -57,10 +59,10 @@ CXOperation have the following fields:
     * 1-CXAtomicOperator
     * 2-CXArgument
     * 3-CXLine
-    * 4-CXStructDef
-    * 5-CXFunctionDef
-    * 6-CXModuleDef
-    * 7-CXGlobalDef/CXModuleGlobalDef
+    * 4-CXStructDef - to be implemented.
+    * 5-CXFunctionDef - to be implemented.
+    * 6-CXModuleDef - to be implemented.
+    * 7-CXGlobalDef/CXModuleGlobalDef - to be implemented.
 * ExpressionType
   * The types are:
     * CXEXPR_METHOD_CALL
