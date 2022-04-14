@@ -161,7 +161,7 @@ func QueryArgument(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpress
 	cxAtomicOpFunction := prgrm.GetFunctionFromArray(cxAtomicOp.Function)
 
 	for _, ex := range cxAtomicOpFunction.Expressions {
-		exCXAtomicOp, _, _, err := prgrm.GetOperation(&ex)
+		exCXAtomicOp, err := prgrm.GetCXAtomicOp(ex.Index)
 		if err != nil {
 			panic(err)
 		}
@@ -186,7 +186,7 @@ func QueryExpressions(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpr
 	cxAtomicOpFunction := prgrm.GetFunctionFromArray(cxAtomicOp.Function)
 
 	for _, ex := range cxAtomicOpFunction.Expressions {
-		exCXAtomicOp, _, _, err := prgrm.GetOperation(&ex)
+		exCXAtomicOp, err := prgrm.GetCXAtomicOp(ex.Index)
 		if err != nil {
 			panic(err)
 		}
@@ -516,7 +516,7 @@ func getAffordances(prgrm *ast.CXProgram, inp1 *ast.CXArgument, fp types.Pointer
 	var fltrElt string
 	elts := GetInferActions(prgrm, inp1, fp)
 
-	tgtExprAtomicOp, _, _, err := prgrm.GetOperation(tgtExpr)
+	tgtExprAtomicOp, err := prgrm.GetCXAtomicOp(tgtExpr.Index)
 	if err != nil {
 		panic(err)
 	}
@@ -827,7 +827,7 @@ func readArgAff(prgrm *ast.CXProgram, aff string, tgtFn *ast.CXFunction) *ast.CX
 		panic(err)
 	}
 
-	affExprAtomicOp, _, _, err := prgrm.GetOperation(affExpr)
+	affExprAtomicOp, err := prgrm.GetCXAtomicOp(affExpr.Index)
 	if err != nil {
 		panic(err)
 	}

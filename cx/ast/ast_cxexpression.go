@@ -51,35 +51,35 @@ func (cxe CXExpression) IsArrayLiteral() bool {
 
 // IsBreak checks if expression type is break
 func (cxe CXExpression) IsBreak(prgrm *CXProgram) bool {
-	cxAtomicOp, _, _, err := prgrm.GetOperation(&cxe)
+	expression, err := prgrm.GetCXAtomicOp(cxe.Index)
 	if err != nil {
 		panic(err)
 	}
 
-	cxAtomicOpOperator := prgrm.GetFunctionFromArray(cxAtomicOp.Operator)
-	return cxAtomicOpOperator != nil && cxAtomicOpOperator.AtomicOPCode == constants.OP_BREAK
+	expressionOperator := prgrm.GetFunctionFromArray(expression.Operator)
+	return expressionOperator != nil && expressionOperator.AtomicOPCode == constants.OP_BREAK
 }
 
 // IsContinue checks if expression type is continue
 func (cxe CXExpression) IsContinue(prgrm *CXProgram) bool {
-	cxAtomicOp, _, _, err := prgrm.GetOperation(&cxe)
+	expression, err := prgrm.GetCXAtomicOp(cxe.Index)
 	if err != nil {
 		panic(err)
 	}
 
-	cxAtomicOpOperator := prgrm.GetFunctionFromArray(cxAtomicOp.Operator)
-	return cxAtomicOpOperator != nil && cxAtomicOpOperator.AtomicOPCode == constants.OP_CONTINUE
+	expressionOperator := prgrm.GetFunctionFromArray(expression.Operator)
+	return expressionOperator != nil && expressionOperator.AtomicOPCode == constants.OP_CONTINUE
 }
 
 // IsUndType checks if expression type is und type
 func (cxe CXExpression) IsUndType(prgrm *CXProgram) bool {
-	cxAtomicOp, _, _, err := prgrm.GetOperation(&cxe)
+	expression, err := prgrm.GetCXAtomicOp(cxe.Index)
 	if err != nil {
 		panic(err)
 	}
 
-	cxAtomicOpOperator := prgrm.GetFunctionFromArray(cxAtomicOp.Operator)
-	return cxAtomicOpOperator != nil && IsOperator(cxAtomicOpOperator.AtomicOPCode)
+	expressionOperator := prgrm.GetFunctionFromArray(expression.Operator)
+	return expressionOperator != nil && IsOperator(expressionOperator.AtomicOPCode)
 
 }
 
@@ -97,10 +97,10 @@ func (cxe CXExpression) IsScopeDel() bool {
 //                             `CXExpression` Getters
 
 func (cxe CXExpression) GetLabel(prgrm *CXProgram) string {
-	cxAtomicOp, _, _, err := prgrm.GetOperation(&cxe)
+	expression, err := prgrm.GetCXAtomicOp(cxe.Index)
 	if err != nil {
 		panic(err)
 	}
 
-	return cxAtomicOp.Label
+	return expression.Label
 }

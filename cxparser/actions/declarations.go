@@ -420,7 +420,7 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 			return append([]ast.CXExpression{*declCXLine, *decl}, initializer...)
 		} else {
 			expr := initializer[len(initializer)-1]
-			cxExprAtomicOp, _, _, err := prgrm.GetOperation(&expr)
+			cxExprAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 			if err != nil {
 				panic(err)
 			}

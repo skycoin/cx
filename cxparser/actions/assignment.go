@@ -292,7 +292,7 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 			if toExpr.Type == ast.CX_LINE {
 				continue
 			}
-			toExprAtomicOp, _, _, err := prgrm.GetOperation(&toExpr)
+			toExprAtomicOp, err := prgrm.GetCXAtomicOp(toExpr.Index)
 			if err != nil {
 				panic(err)
 			}

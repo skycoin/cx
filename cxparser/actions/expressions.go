@@ -496,7 +496,7 @@ func AssociateReturnExpressions(prgrm *ast.CXProgram, idx int, retExprs []ast.CX
 	out.PreviouslyDeclared = true
 	outIdx := prgrm.AddCXArgInArray(out)
 
-	lastExpression, _, _, err := prgrm.GetOperation(&lastExpr)
+	lastExpression, err := prgrm.GetCXAtomicOp(lastExpr.Index)
 	if err != nil {
 		panic(err)
 	}
