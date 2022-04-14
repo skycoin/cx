@@ -61,7 +61,7 @@ func assignStructLiteralFields(prgrm *ast.CXProgram, toExprs []ast.CXExpression,
 func StructLiteralAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fromExprs []ast.CXExpression) []ast.CXExpression {
 	lastFromExpr := fromExprs[len(fromExprs)-1]
 
-	lastFromExpression, _, _, err := prgrm.GetOperation(&lastFromExpr)
+	lastFromExpression, err := prgrm.GetCXAtomicOp(lastFromExpr.Index)
 	if err != nil {
 		panic(err)
 	}
