@@ -79,3 +79,33 @@ func (strct *CXStruct) RemoveField(fldName string) {
 		}
 	}
 }
+
+// ---------------- NEW CXStruct def ----------------
+
+// CXTypeSignature_TYPE enum contains CXTypeSignature types.
+type CXTypeSignature_TYPE int
+
+const (
+	TYPE_UNUSED CXTypeSignature_TYPE = iota
+)
+
+// CXTypeSignature_META enum contains CXTypeSignature metas.
+type CXTypeSignature_META int
+
+const (
+	META_UNUSED CXTypeSignature_META = iota
+)
+
+type NewCXStruct struct {
+	StructID     int
+	NameStringID int
+	Package      CXPackageIndex
+	Fields       []CXTypeSignature
+}
+
+type CXTypeSignature struct {
+	NameStringID int
+	Offset       int
+	Type         CXTypeSignature_TYPE
+	Meta         CXTypeSignature_META
+}
