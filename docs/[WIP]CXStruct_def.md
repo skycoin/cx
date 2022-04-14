@@ -33,7 +33,7 @@ These have the same layout format as a “struct” definition
     - if FieldType is ArrayAtomic, AtomicType
     
 Note:
-- Implement SizeOf() method for CXStructField, panics if asked for type for a complex/non fixed size, only sizeof simple types
+- Implement SizeOf() method for CXTypeSignature, panics if asked for type for a complex/non fixed size, only sizeof simple types
 - Make one struct for complex type.
 - glob all complex types which will just be cxargs
 - From complex types, move types one by one to FieldTypes

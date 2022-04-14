@@ -301,7 +301,7 @@ func (cxprogram *CXProgram) GetPreviousCXLine(exprs []CXExpression, currIndex in
 func (cxprogram *CXProgram) GetCXAtomicOpFromExpressions(exprs []CXExpression, currIndex int) (*CXAtomicOperator, error) {
 	for i := currIndex; i < len(exprs); i++ {
 		if exprs[i].Type == CX_ATOMIC_OPERATOR {
-			cxAtomicOp, _, _, err := cxprogram.GetOperation(&exprs[i])
+			cxAtomicOp, err := cxprogram.GetCXAtomicOp(exprs[i].Index)
 			if err != nil {
 				return &CXAtomicOperator{}, err
 			}
@@ -315,7 +315,7 @@ func (cxprogram *CXProgram) GetCXAtomicOpFromExpressions(exprs []CXExpression, c
 func (cxprogram *CXProgram) GetPreviousCXAtomicOpFromExpressions(exprs []CXExpression, currIndex int) (*CXAtomicOperator, error) {
 	for i := currIndex; i >= 0; i-- {
 		if exprs[i].Type == CX_ATOMIC_OPERATOR {
-			cxAtomicOp, _, _, err := cxprogram.GetOperation(&exprs[i])
+			cxAtomicOp, err := cxprogram.GetCXAtomicOp(exprs[i].Index)
 			if err != nil {
 				return &CXAtomicOperator{}, err
 			}

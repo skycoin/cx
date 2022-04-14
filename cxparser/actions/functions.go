@@ -99,7 +99,7 @@ func FunctionAddParameters(prgrm *ast.CXProgram, fnIdx ast.CXFunctionIndex, inpu
 }
 
 func isParseOp(prgrm *ast.CXProgram, expr *ast.CXExpression) bool {
-	exprAtomicOp, _, _, err := prgrm.GetOperation(expr)
+	exprAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		panic(err)
 	}
@@ -193,7 +193,7 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fnIdx ast.CXFunctionIndex, inputs
 		if expr.Type == ast.CX_LINE {
 			continue
 		}
-		exprAtomicOp, _, _, err := prgrm.GetOperation(&expr)
+		exprAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 		if err != nil {
 			panic(err)
 		}
@@ -297,7 +297,7 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 			continue
 		}
 
-		inpExprAtomicOp, _, _, err := prgrm.GetOperation(&inpExpr)
+		inpExprAtomicOp, err := prgrm.GetCXAtomicOp(inpExpr.Index)
 		if err != nil {
 			panic(err)
 		}

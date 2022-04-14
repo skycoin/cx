@@ -171,11 +171,7 @@ func PostfixExpressionEmptyFunCall(prgrm *ast.CXProgram, prevExprs []ast.CXExpre
 	}
 	prevExpressionOperator := prgrm.GetFunctionFromArray(prevExpression.Operator)
 
-	firstPrevExpression, err := prgrm.GetCXAtomicOpFromExpressions(prevExprs, 0)
-	if err != nil {
-		panic(err)
-	}
-
+	firstPrevExpressionIdx := prevExprs[0].Index
 	if prevExpression.Outputs != nil && len(prgrm.GetCXArgFromArray(prevExpression.Outputs[0]).Fields) > 0 {
 		// then it's a method call or function in field
 		// prevExprs[len(prevExprs) - 1].IsMethodCall = true
@@ -191,14 +187,14 @@ func PostfixExpressionEmptyFunCall(prgrm *ast.CXProgram, prevExprs []ast.CXExpre
 	} else if prevExpressionOperator == nil {
 		if opCode, ok := ast.OpCodes[prgrm.GetCXArgFromArray(prevExpression.Outputs[0]).Name]; ok {
 			if pkg, err := prgrm.GetCurrentPackage(); err == nil {
-				firstPrevExpression.Package = ast.CXPackageIndex(pkg.Index)
+				prgrm.CXAtomicOps[firstPrevExpressionIdx].Package = ast.CXPackageIndex(pkg.Index)
 			}
-			firstPrevExpression.Outputs = nil
+			prgrm.CXAtomicOps[firstPrevExpressionIdx].Outputs = nil
 			opIdx := prgrm.AddNativeFunctionInArray(ast.Natives[opCode])
-			firstPrevExpression.Operator = opIdx
+			prgrm.CXAtomicOps[firstPrevExpressionIdx].Operator = opIdx
 		}
 
-		firstPrevExpression.Inputs = nil
+		prgrm.CXAtomicOps[firstPrevExpressionIdx].Inputs = nil
 	}
 
 	return FunctionCall(prgrm, prevExprs, nil)
@@ -217,10 +213,7 @@ func PostfixExpressionFunCall(prgrm *ast.CXProgram, prevExprs []ast.CXExpression
 	}
 	lastPrevExpressionOperator := prgrm.GetFunctionFromArray(lastPrevExpression.Operator)
 
-	firstPrevExpression, err := prgrm.GetCXAtomicOpFromExpressions(prevExprs, 0)
-	if err != nil {
-		panic(err)
-	}
+	firstPrevExpressionIdx := prevExprs[0].Index
 	if lastPrevExpression.Outputs != nil && len(prgrm.GetCXArgFromArray(lastPrevExpression.Outputs[0]).Fields) > 0 {
 		// then it's a method
 		// prevExprs[len(prevExprs) - 1].IsMethodCall = true
@@ -228,14 +221,14 @@ func PostfixExpressionFunCall(prgrm *ast.CXProgram, prevExprs []ast.CXExpression
 	} else if lastPrevExpressionOperator == nil {
 		if opCode, ok := ast.OpCodes[prgrm.GetCXArgFromArray(lastPrevExpression.Outputs[0]).Name]; ok {
 			if pkg, err := prgrm.GetCurrentPackage(); err == nil {
-				firstPrevExpression.Package = ast.CXPackageIndex(pkg.Index)
+				prgrm.CXAtomicOps[firstPrevExpressionIdx].Package = ast.CXPackageIndex(pkg.Index)
 			}
-			firstPrevExpression.Outputs = nil
+			prgrm.CXAtomicOps[firstPrevExpressionIdx].Outputs = nil
 			opIdx := prgrm.AddNativeFunctionInArray(ast.Natives[opCode])
-			firstPrevExpression.Operator = opIdx
+			prgrm.CXAtomicOps[firstPrevExpressionIdx].Operator = opIdx
 		}
 
-		firstPrevExpression.Inputs = nil
+		prgrm.CXAtomicOps[firstPrevExpressionIdx].Inputs = nil
 	}
 
 	return FunctionCall(prgrm, prevExprs, args)

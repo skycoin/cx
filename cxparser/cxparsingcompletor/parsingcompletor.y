@@ -610,7 +610,7 @@ slice_literal_expression:
                 }
         |       LBRACK RBRACK slice_literal_expression
                 {
-                        lastExprAtomicOp, err := actions.AST.GetCXAtomicOpFromExpressions($3,len($3) - 1)
+                        lastExpression, err := actions.AST.GetCXAtomicOpFromExpressions($3,len($3) - 1)
                         if err != nil {
                                 panic(err)
                         }
@@ -619,15 +619,15 @@ slice_literal_expression:
                                 if expr.Type==ast.CX_LINE{
                                         continue
                                 }
-                                exprAtomicOp, _, _, err := actions.AST.GetOperation(&expr)
+                                expression, err := actions.AST.GetCXAtomicOp(expr.Index)
                                 if err != nil {
                                         panic(err)
                                 }
 
-                                exprAtomicOpOutput:=actions.AST.GetCXArgFromArray(exprAtomicOp.Outputs[0])
-				if exprAtomicOpOutput.Name == actions.AST.GetCXArgFromArray(lastExprAtomicOp.Inputs[0]).Name {
-					exprAtomicOpOutput.Lengths = append(exprAtomicOpOutput.Lengths, 0)
-					exprAtomicOpOutput.DeclarationSpecifiers = append(exprAtomicOpOutput.DeclarationSpecifiers, constants.DECL_SLICE)
+                                expressionOutput:=actions.AST.GetCXArgFromArray(expression.Outputs[0])
+				if expressionOutput.Name == actions.AST.GetCXArgFromArray(lastExpression.Inputs[0]).Name {
+					expressionOutput.Lengths = append(expressionOutput.Lengths, 0)
+					expressionOutput.DeclarationSpecifiers = append(expressionOutput.DeclarationSpecifiers, constants.DECL_SLICE)
                                 }
 			}
 	
@@ -1018,13 +1018,13 @@ assignment_expression:
                                                                                 continue
                                                                         }
 
-                                                                        fromAtomicOp, _, _, err := actions.AST.GetOperation(&from)
+                                                                        fromExpression,err := actions.AST.GetCXAtomicOp(from.Index)
                                                                         if err != nil {
                                                                                 panic(err)
                                                                         }
-                                                                        fromAtomicOpOutputIdx:=fromAtomicOp.Outputs[0]
-                                                                        actions.AST.CXArgs[fromAtomicOpOutputIdx].IsShortAssignmentDeclaration = true
-                                                                        actions.AST.CXArgs[fromAtomicOpOutputIdx].PreviouslyDeclared = true
+                                                                        fromExpressionOutputIdx:=fromExpression.Outputs[0]
+                                                                        actions.AST.CXArgs[fromExpressionOutputIdx].IsShortAssignmentDeclaration = true
+                                                                        actions.AST.CXArgs[fromExpressionOutputIdx].PreviouslyDeclared = true
                                                                 }
                                                         }
                                                         $$ = actions.ArrayLiteralAssignment(actions.AST,$1, $3)
@@ -1038,13 +1038,13 @@ assignment_expression:
                                                                                 continue
                                                                         }
 
-                                                                        fromAtomicOp, _, _, err := actions.AST.GetOperation(&from)
+                                                                        fromExpression, err := actions.AST.GetCXAtomicOp(from.Index)
                                                                         if err != nil {
                                                                                 panic(err)
                                                                         }
-                                                                        fromAtomicOpOutputIdx:=fromAtomicOp.Outputs[0]
-                                                                        actions.AST.CXArgs[fromAtomicOpOutputIdx].IsShortAssignmentDeclaration = true
-                                                                        actions.AST.CXArgs[fromAtomicOpOutputIdx].PreviouslyDeclared = true
+                                                                        fromExpressionOutputIdx:=fromExpression.Outputs[0]
+                                                                        actions.AST.CXArgs[fromExpressionOutputIdx].IsShortAssignmentDeclaration = true
+                                                                        actions.AST.CXArgs[fromExpressionOutputIdx].PreviouslyDeclared = true
                                                                 }
                                                         }
                                                         $$ = actions.StructLiteralAssignment(actions.AST,$1, $3)
@@ -1133,12 +1133,8 @@ labeled_statement:
                                 if expr.Type==ast.CX_LINE{
                                         continue
                                 }
-                                cxAtomicOp, _, _, err := actions.AST.GetOperation(&expr)
-                                if err != nil {
-                                        panic(err)
-                                }
-
-				cxAtomicOp.Label = $1
+                                expressionIdx :=expr.Index
+				actions.AST.CXAtomicOps[expressionIdx].Label = $1
 			}
 
 			$$ = $3
@@ -1312,13 +1308,9 @@ jump_statement: GOTO IDENTIFIER SEMICOLON
                         
                         exprCXLine := ast.MakeCXLineExpression(actions.AST, actions.CurrentFile, actions.LineNo, actions.LineStr)
                         expr := ast.MakeAtomicOperatorExpression(actions.AST,ast.Natives[constants.OP_GOTO])
-                        cxAtomicOp, err := actions.AST.GetCXAtomicOp(expr.Index)
-                        if err != nil {
-                                panic(err)
-                        }
-
-                        cxAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
-                        cxAtomicOp.Label = $2
+                        expressionIdx :=expr.Index
+                        actions.AST.CXAtomicOps[expressionIdx].Package = ast.CXPackageIndex(pkg.Index)
+                        actions.AST.CXAtomicOps[expressionIdx].Label = $2
                         $$ = []ast.CXExpression{*exprCXLine,*expr}
 			
                 }

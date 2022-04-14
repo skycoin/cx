@@ -1,14 +1,30 @@
 # Abstract Binary Interface (ABI) and its Memory Layout Standard
 
 ## Questions to be answered
-1. What is a type signature?
-2. What a type signature contains?
-3. Memory layout for function inputs, function outputs, function body
-4. How returns should be rewritten?
-5. Naming convention for input variable structs, output variable structs, body variable structs, temp variable struct, and global variable structs.
-6. How stack is extended or truncated?
-7. How functions are called and returned?
+1. What is a CXTypeSignature?
+2. Memory layout for function inputs, function outputs, function body
+3. How returns should be rewritten?
+4. Naming convention for input variable structs, output variable structs, body variable structs, temp variable struct, and global variable structs.
+5. How stack is extended or truncated?
+6. How functions are called and returned?
 
+---
+## What is a CXTypeSignature?
+A CXTypeSignature is a representation of a type. It contains the name, offset, type, and meta. 
+
+    type CXTypeSignature struct {
+        NameStringID int
+        Offset       int
+        Type         CXTypeSignature_TYPE
+        Meta         CXTypeSignature_META
+    }
+
+The type signature of `TestVariables []int32` would be:
+
+    Name: "TestVariable"
+    Offset: OffsetInStack
+    Type: array of int32
+    Meta: int32
 
 ---
 ## Memory Layout for Function Inputs, Outputs, and Body
@@ -50,16 +66,15 @@ When you call TestFunction() in assembly
 
 And pushing x,y,z down to stack is same as pushing FunctionInputs CXStruct down to stack.
 
----
 Now suppose we have this function:
 ```
 func TestFunction(int x, int y, int z) (a int, b int) {
-var1 int
-var2 int
+  var1 int
+  var2 int
 
-var1=10
-var2=20
-...
+  var1=10
+  var2=20
+  ...
 }
 ```
 
@@ -83,13 +98,11 @@ FnVariablesStruct struct{
 }
 
 func TestFunction(FnStructIn) (FnStructOut) {
-FnVariablesStruct.var1=10
-FnVariablesStruct.var2=20
+  FnVariablesStruct.var1=10
+  FnVariablesStruct.var2=20
 }
 ```
-Now we get to function body
-
-On the stack we will have
+Now we get to function body, on the stack we will have:
 
 1. FnStructInput - all the input variables.
 2. FnStructOutput - all the output variables that might be assigned.
@@ -97,19 +110,17 @@ On the stack we will have
 4. FnTempVariablesStruct - all temp variables used inside the function body.
 5. PackageGlobalsStruct - global variables accessible within the package.
 
-Now, in reality
+In reality we want to put FnStructOutputs Above FnStructInputs because after function is done executing we throw out FnStructInputs (we dont need anymore), but the return still needs the output data from the function.
 
-    We want to put FnStructOutputs Above FnStructInputs because after function is done executing we throw out FnStructInputs (we dont need anymore), but the return still needs the output data from the function
+So the stack is layed out like this. 
 
-So the stack is layed out like this
-
-First,
+First on stack memory is,
 
     FnStructOutputs - all the output variables for function that are returned or can be assigned
     - if we have return (2,3) we rewrite it as "Out.A = 2, Out.B  = 3, return". 
     - all returns are assigning the output variables, then calling a "return" that takes no arguements
 
-Next on stack is memory, is 
+Next is,
 
     FnStructInputs - This is all the variables we feed into function as parameters
 
@@ -127,19 +138,20 @@ Then we have the global variables that are accessible within the package
 
 
 ---
+## Naming Convention And How Returns Are Written
 Now pretend we have a package, like CxMath and we have function TestFunction
 
 ```
 Package CxMath
 
 func TestFunction(int x, int y, int z) (a int, b int) {
-var1 int = 10
-var2 int = 20
+  var1 int = 10
+  var2 int = 20
 
-a = var1
-b = var2
+  a = var1
+  b = var2
 
-return a,b
+  return a,b
 }
 ```
 
@@ -213,6 +225,7 @@ You see?
 
 You can actually put the offset in the signature type or have a type signature struct with an offset parameter. Then a function body's variables or a struct is really just a []CxTypeSignature
 
+---
 ## How Functions Are Called and Returned
 When we call a function
 - we take size of output variables, and size of input variables

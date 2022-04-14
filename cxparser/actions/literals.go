@@ -46,7 +46,7 @@ func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []a
 		if expr.Type == ast.CX_LINE {
 			continue
 		}
-		exprAtomicOp, _, _, err := prgrm.GetOperation(&expr)
+		exprAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
 		if err != nil {
 			panic(err)
 		}
@@ -133,7 +133,7 @@ func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []a
 
 	symExprExprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
 	symExpr := ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_IDENTITY])
-	symExprAtomicOp, _, _, err := prgrm.GetOperation(symExpr)
+	symExprAtomicOp, err := prgrm.GetCXAtomicOp(symExpr.Index)
 	if err != nil {
 		panic(err)
 	}
@@ -293,11 +293,11 @@ func ArrayLiteralExpression(prgrm *ast.CXProgram, arraySizes []types.Pointer, ty
 		if expr.Type == ast.CX_LINE {
 			continue
 		}
-		exprAtomicOp, _, _, err := prgrm.GetOperation(&expr)
+		expression, err := prgrm.GetCXAtomicOp(expr.Index)
 		if err != nil {
 			panic(err)
 		}
-		exprAtomicOpOperator := prgrm.GetFunctionFromArray(exprAtomicOp.Operator)
+		expressionOperator := prgrm.GetFunctionFromArray(expression.Operator)
 
 		if expr.IsArrayLiteral() {
 			expr.ExpressionType = ast.CXEXPR_UNUSED
@@ -331,17 +331,17 @@ func ArrayLiteralExpression(prgrm *ast.CXProgram, arraySizes []types.Pointer, ty
 
 			prgrm.CXAtomicOps[symExprAtomicOpIdx].AddOutput(prgrm, symIdx)
 
-			if exprAtomicOpOperator == nil {
+			if expressionOperator == nil {
 				// then it's a literal
 				opIdx := prgrm.AddNativeFunctionInArray(ast.Natives[constants.OP_IDENTITY])
 				prgrm.CXAtomicOps[symExprAtomicOpIdx].Operator = opIdx
-				prgrm.CXAtomicOps[symExprAtomicOpIdx].Inputs = exprAtomicOp.Outputs
+				prgrm.CXAtomicOps[symExprAtomicOpIdx].Inputs = expression.Outputs
 			} else {
-				prgrm.CXAtomicOps[symExprAtomicOpIdx].Operator = exprAtomicOp.Operator
-				prgrm.CXAtomicOps[symExprAtomicOpIdx].Inputs = exprAtomicOp.Inputs
+				prgrm.CXAtomicOps[symExprAtomicOpIdx].Operator = expression.Operator
+				prgrm.CXAtomicOps[symExprAtomicOpIdx].Inputs = expression.Inputs
 
 				// hack to get the correct lengths below
-				exprAtomicOp.Outputs = append(exprAtomicOp.Outputs, symIdx)
+				expression.Outputs = append(expression.Outputs, symIdx)
 			}
 			result = append(result, *symExprCXLine, *symExpr)
 		} else {
