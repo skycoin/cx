@@ -3,13 +3,13 @@ package actions
 import "fmt"
 
 var (
-	GenSymCounter int
+	TemporaryVariableCounter int
 )
 
-// MakeGenSym generates generated tmp name used for temporary variables.
-func MakeGenSym(name string) string {
-	gensym := fmt.Sprintf("%s_%d", name, GenSymCounter)
-	GenSymCounter++
+// generateTempVarName generates tmp name used for temporary variables.
+func generateTempVarName(name string) string {
+	tempVariableName := fmt.Sprintf("%s_%d", name, TemporaryVariableCounter)
+	TemporaryVariableCounter++
 
-	return gensym
+	return tempVariableName
 }

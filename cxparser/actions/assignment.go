@@ -81,7 +81,7 @@ func StructLiteralAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, f
 		// And we also need an auxiliary variable to point to,
 		// otherwise we'd be trying to assign the fields to a nil value.
 		outField := prgrm.GetCXArgFromArray(lastFromExpression.Outputs[0])
-		auxName := MakeGenSym(constants.LOCAL_PREFIX)
+		auxName := generateTempVarName(constants.LOCAL_PREFIX)
 		aux := ast.MakeArgument(auxName, lastFromCXLine.FileName, lastFromCXLine.LineNumber)
 		aux.SetType(outField.Type)
 		aux.DeclarationSpecifiers = append(aux.DeclarationSpecifiers, constants.DECL_POINTER)
@@ -177,7 +177,7 @@ func ShortAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression, exprCXLine *a
 	if fromExpressionOperator == nil {
 		prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, prgrm.CXAtomicOps[fromExpressionIdx].Outputs[0])
 	} else {
-		sym := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).SetType(prgrm.GetCXArgFromArray(prgrm.CXAtomicOps[fromExpressionIdx].Inputs[0]).Type)
+		sym := ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, LineNo).SetType(prgrm.GetCXArgFromArray(prgrm.CXAtomicOps[fromExpressionIdx].Inputs[0]).Type)
 		sym.Package = ast.CXPackageIndex(pkg.Index)
 		sym.PreviouslyDeclared = true
 		symIdx := prgrm.AddCXArgInArray(sym)

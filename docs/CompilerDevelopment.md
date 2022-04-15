@@ -206,7 +206,7 @@ There are also Selectors like previously defined for CXFunctions and CXPackages-
 
 Finally, there is PrintAllObjects, a printing algorithm used for printing the program state when debugging.
 
-Some miscellaneous makers in [cx/makers.go](https://github.com/skycoin/cx/blob/develop/cx/makers.go): MakeGenSym(name) (returns unique identifier with prefix name_); MakeDefaultValue (returns a blank `[]byte` the size of the specified type name), MakeValue (serializes the value and returns `*[]byte` of said value), MakeCall (returns a blank CXCall with the specified CXFunction as the Operator), and MakeIdentityOpName (used for making identity functions for storage).
+Some miscellaneous makers in [cx/makers.go](https://github.com/skycoin/cx/blob/develop/cx/makers.go): generateTempVarName(name) (returns unique identifier with prefix name_); MakeDefaultValue (returns a blank `[]byte` the size of the specified type name), MakeValue (serializes the value and returns `*[]byte` of said value), MakeCall (returns a blank CXCall with the specified CXFunction as the Operator), and MakeIdentityOpName (used for making identity functions for storage).
 
 The specific opcodes used by the CX runtime, among many other utilities, are found in the `cx/` [directory](https://github.com/skycoin/cx/tree/develop/cx) of this repository. 
 

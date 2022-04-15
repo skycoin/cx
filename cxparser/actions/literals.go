@@ -21,7 +21,7 @@ func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []a
 		panic(err)
 	}
 
-	symName := MakeGenSym(constants.LOCAL_PREFIX)
+	symName := generateTempVarName(constants.LOCAL_PREFIX)
 
 	slcVarExprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
 	// adding the declaration
@@ -87,7 +87,7 @@ func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []a
 			} else {
 				// We need to create a temporary variable to hold the result of the
 				// nested expressions. Then use that variable as part of the slice literal.
-				out := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), exprCXLine.FileName, exprCXLine.LineNumber)
+				out := ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), exprCXLine.FileName, exprCXLine.LineNumber)
 				outArg := getOutputType(prgrm, &expr)
 				out.SetType(outArg.Type)
 				out.PointerTargetType = outArg.PointerTargetType
@@ -114,7 +114,7 @@ func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []a
 		}
 	}
 
-	symNameOutput := MakeGenSym(constants.LOCAL_PREFIX)
+	symNameOutput := generateTempVarName(constants.LOCAL_PREFIX)
 
 	symOutput := ast.MakeArgument(symNameOutput, CurrentFile, LineNo)
 	symOutput.SetType(typeCode)
@@ -269,7 +269,7 @@ func ArrayLiteralExpression(prgrm *ast.CXProgram, arraySizes []types.Pointer, ty
 		panic(err)
 	}
 
-	symName := MakeGenSym(constants.LOCAL_PREFIX)
+	symName := generateTempVarName(constants.LOCAL_PREFIX)
 
 	arrVarExprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
 	arrVarExpr := ast.MakeAtomicOperatorExpression(prgrm, nil)
@@ -349,7 +349,7 @@ func ArrayLiteralExpression(prgrm *ast.CXProgram, arraySizes []types.Pointer, ty
 		}
 	}
 
-	symNameOutput := MakeGenSym(constants.LOCAL_PREFIX)
+	symNameOutput := generateTempVarName(constants.LOCAL_PREFIX)
 
 	symOutput := ast.MakeArgument(symNameOutput, CurrentFile, LineNo)
 	symOutput.SetType(typeCode)

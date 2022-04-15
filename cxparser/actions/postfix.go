@@ -25,7 +25,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 	prevExprCXLine, _ := prgrm.GetPreviousCXLine(prevExprs, len(prevExprs)-1)
 
 	if prevExpressionOperator != nil && len(prgrm.CXAtomicOps[prevExpressionIdx].Outputs) == 0 {
-		genName := MakeGenSym(constants.LOCAL_PREFIX)
+		genName := generateTempVarName(constants.LOCAL_PREFIX)
 
 		prevExpressionOperatorOutput := prgrm.GetCXArgFromArray(prevExpressionOperator.Outputs[0])
 		out := ast.MakeArgument(genName, prevExprCXLine.FileName, prevExprCXLine.LineNumber-1).SetType(prevExpressionOperatorOutput.Type)
@@ -87,7 +87,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 			indexIdx := prgrm.CXAtomicOps[postExpressionIdx].Outputs[0]
 			prgrm.CXArgs[fldIdx].Indexes = append(prgrm.CXArgs[fldIdx].Indexes, indexIdx)
 		} else {
-			sym := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).SetType(prgrm.GetCXArgFromArray(postExpressionOperator.Outputs[0]).Type)
+			sym := ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, LineNo).SetType(prgrm.GetCXArgFromArray(postExpressionOperator.Outputs[0]).Type)
 			sym.Package = prgrm.CXAtomicOps[postExpressionIdx].Package
 			sym.PreviouslyDeclared = true
 			symIdx := prgrm.AddCXArgInArray(sym)
@@ -101,7 +101,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		if len(prgrm.CXAtomicOps[postExpressionIdx].Outputs) < 1 {
 			// then it's an expression (e.g. i32.add(0, 0))
 			// we create a gensym for it
-			idxSym := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).SetType(prgrm.GetCXArgFromArray(postExpressionOperator.Outputs[0]).Type)
+			idxSym := ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, LineNo).SetType(prgrm.GetCXArgFromArray(postExpressionOperator.Outputs[0]).Type)
 			idxSym.Size = prgrm.GetCXArgFromArray(postExpressionOperator.Outputs[0]).Size
 			idxSym.TotalSize = ast.GetSize(prgrm, prgrm.GetCXArgFromArray(postExpressionOperator.Outputs[0]))
 
@@ -300,7 +300,7 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 	// the function call
 	if lastExpressionOperator != nil {
 		opOut := prgrm.GetCXArgFromArray(lastExpressionOperator.Outputs[0])
-		symName := MakeGenSym(constants.LOCAL_PREFIX)
+		symName := generateTempVarName(constants.LOCAL_PREFIX)
 
 		// we associate the result of the function call to the aux variable
 		out := ast.MakeArgument(symName, lastExprCXLine.FileName, lastExprCXLine.LineNumber)
