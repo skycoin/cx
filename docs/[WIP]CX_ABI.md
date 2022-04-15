@@ -19,12 +19,42 @@ A CXTypeSignature is a representation of a type. It contains the name, offset, t
         Meta         CXTypeSignature_META
     }
 
-The type signature of `TestVariables []int32` would be:
+Examples:
 
-    Name: "TestVariable"
-    Offset: OffsetInStack
-    Type: array of int32
-    Meta: int32
+The type signature of `TestVariables int32` would be:
+
+    CXTypeSignature{
+      Name: "TestVariable"
+      Offset: OffsetInStack
+      Type: int32
+      Meta: unused
+    }
+
+The type signature of `TestArrayVariables []int32` would be:
+
+    CXTypeSignature{
+      Name: "TestArrayVariable"
+      Offset: OffsetInStack
+      Type: array of int32
+      Meta: int32
+    }
+
+An array of CXTypeSignature can be written as a CXStruct.
+For example, we have 
+
+    []CXTypeSignature{
+      TestVariables int32,
+      TestArrayVariables []int32
+      }
+We can write this as
+
+    CXStruct{
+      Name: "TestStruct"
+      Fields:  []CXTypeSignature{
+                  TestVariables int32,
+                  TestArrayVariables []int32
+                },
+    }
 
 ---
 ## Memory Layout for Function Inputs, Outputs, and Body

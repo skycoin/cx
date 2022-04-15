@@ -4,6 +4,12 @@ import (
 	"github.com/skycoin/cx/cx/ast"
 )
 
+const (
+	SEL_RESERVED = iota
+	SEL_ELSEIF
+	SEL_ELSEIFELSE
+)
+
 // used for selection_statement to layout its outputs
 type SelectStatement struct {
 	Condition []ast.CXExpression

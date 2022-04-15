@@ -318,7 +318,7 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 					// if undefined type, then adopt argument's type
 					inpExprAtomicOpInput := prgrm.GetCXArgFromArray(inpExprAtomicOp.Inputs[0])
 
-					out = ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, inpExprCXLine.LineNumber).SetType(inpExprAtomicOpInput.Type)
+					out = ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, inpExprCXLine.LineNumber).SetType(inpExprAtomicOpInput.Type)
 					out.StructType = inpExprAtomicOpInput.StructType
 					out.Size = inpExprAtomicOpInput.Size
 					out.TotalSize = ast.GetSize(prgrm, inpExprAtomicOpInput)
@@ -326,7 +326,7 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 					out.PointerTargetType = inpExprAtomicOpInput.PointerTargetType
 					out.PreviouslyDeclared = true
 				} else {
-					out = ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, inpExprCXLine.LineNumber).SetType(inpExprAtomicOpOperatorOutput.Type)
+					out = ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, inpExprCXLine.LineNumber).SetType(inpExprAtomicOpOperatorOutput.Type)
 					out.DeclarationSpecifiers = inpExprAtomicOpOperatorOutput.DeclarationSpecifiers
 
 					out.StructType = inpExprAtomicOpOperatorOutput.StructType

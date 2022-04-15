@@ -70,7 +70,7 @@ func IterationExpressions(prgrm *ast.CXProgram,
 	lastCondExpressionOperator := prgrm.GetFunctionFromArray(prgrm.CXAtomicOps[lastCondExpressionIdx].Operator)
 
 	if len(prgrm.CXAtomicOps[lastCondExpressionIdx].Outputs) < 1 {
-		predicate := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo).SetType(prgrm.GetCXArgFromArray(lastCondExpressionOperator.Outputs[0]).Type)
+		predicate := ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, LineNo).SetType(prgrm.GetCXArgFromArray(lastCondExpressionOperator.Outputs[0]).Type)
 		predicate.Package = ast.CXPackageIndex(pkg.Index)
 		predicate.PreviouslyDeclared = true
 		predicateIdx := prgrm.AddCXArgInArray(predicate)
@@ -198,7 +198,7 @@ func SelectionExpressions(prgrm *ast.CXProgram, conditionExprs []ast.CXExpressio
 		predicateIdx = prgrm.CXAtomicOps[lastCondExpressionIdx].Outputs[0]
 	} else {
 		// then it's an expression
-		predicate := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo)
+		predicate := ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, LineNo)
 		if conditionExprs[len(conditionExprs)-1].IsMethodCall() {
 			// we'll change this once we have access to method's types in
 			// ProcessMethodCall
@@ -311,7 +311,7 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 	if len(prgrm.CXAtomicOps[lastLeftExpressionIdx].Outputs) < 1 {
 		lastLeftExpressionOperatorOutput := prgrm.GetCXArgFromArray(lastLeftExpressionOperator.Outputs[0])
 
-		out := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo)
+		out := ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, LineNo)
 		out.SetType(resolveTypeForUnd(prgrm, &leftExprs[len(leftExprs)-1]))
 		out.Size = lastLeftExpressionOperatorOutput.Size
 		out.TotalSize = ast.GetSize(prgrm, lastLeftExpressionOperatorOutput)
@@ -330,7 +330,7 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 	if len(prgrm.CXAtomicOps[lastRightExpressionIdx].Outputs) < 1 {
 		lastRightExpressionOperatorOutput := prgrm.GetCXArgFromArray(lastRightExpressionOperator.Outputs[0])
 
-		out := ast.MakeArgument(MakeGenSym(constants.LOCAL_PREFIX), CurrentFile, LineNo)
+		out := ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, LineNo)
 		out.SetType(resolveTypeForUnd(prgrm, &rightExprs[len(rightExprs)-1]))
 		out.Size = lastRightExpressionOperatorOutput.Size
 		out.TotalSize = ast.GetSize(prgrm, lastRightExpressionOperatorOutput)
@@ -564,7 +564,7 @@ func AddJmpToReturnExpressions(prgrm *ast.CXProgram, exprs ReturnExpressions) []
 	}
 
 	// simulating a label so it gets executed without evaluating a predicate
-	expression.Label = MakeGenSym(constants.LABEL_PREFIX)
+	expression.Label = generateTempVarName(constants.LABEL_PREFIX)
 	expression.ThenLines = types.MAX_INT32
 	expression.Package = ast.CXPackageIndex(pkg.Index)
 
