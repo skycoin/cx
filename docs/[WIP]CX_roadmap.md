@@ -1,9 +1,23 @@
 # 2022 CX Roadmap
 
 ## CX Refactoring
-- [ ] Implement new CX AST format. (in progress)
 - [ ] Give complete details to all functions and their arguments. (in progress)
 - [ ] Add unit tests to all functions and more acceptance tests to achieve 100% coverage.
+
+## New CX AST Format
+- [x] Add arrays for CXFunctions then reference by id
+- [x] Add arrays for CXPackages then reference by id
+- [x] Add arrays for CXlines then reference by id
+- [x] Add arrays for CXArgs then reference by id
+- [x] Add arrays for CXAtomicOps then reference by id
+- [ ] Implement CXOPERATION_TYPE for CXExpression
+    - [x] CX_ATOMIC_OPERATOR
+    - [x] CX_LINE
+    - [ ] CX_ARGUMENT
+    - [ ] CX_STRUCT_DEF
+    - [ ] CX_FUNCTION_DEF
+    - [ ] CX_PACKAGE_DEF
+    - [ ] CX_GLOBAL_DEF
 
 ## Struct Definition
 - [ ] Complete new CXStruct definition specifications.
