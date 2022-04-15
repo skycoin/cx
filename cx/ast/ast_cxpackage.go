@@ -219,6 +219,9 @@ func (pkg *CXPackage) RemoveFunction(fnName string) {
 
 // AddStruct ...
 func (pkg *CXPackage) AddStruct(strct *CXStruct) *CXPackage {
+	if _, ok := pkg.Structs[strct.Name]; ok {
+		return pkg
+	}
 	strct.Package = CXPackageIndex(pkg.Index)
 	pkg.Structs[strct.Name] = strct
 	pkg.CurrentStruct = strct
