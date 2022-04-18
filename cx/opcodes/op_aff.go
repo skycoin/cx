@@ -259,7 +259,8 @@ func getSignatureSlice(prgrm *ast.CXProgram, params []ast.CXArgumentIndex) types
 
 // Helper function for QueryStructure. Used to query all the structs in a particular package
 func queryStructsInPackage(prgrm *ast.CXProgram, fn *ast.CXFunction, strctOffsetB []byte, affOffset *types.Pointer, pkg *ast.CXPackage) {
-	for _, f := range pkg.Structs {
+	for _, fIdx := range pkg.Structs {
+		f := prgrm.CXStructs[fIdx]
 		// strctNameB := encoder.Serialize(f.Name)
 
 		// strctNameOffset := WriteObjectRetOff(strctNameB)

@@ -15,7 +15,7 @@ func RegisterPackage(prgrm *ast.CXProgram) {
 
 	regexpStrct := ast.MakeStruct("Regexp")
 	regexpStrct.AddField(prgrm, ast.MakeArgument("exp", "", 0).SetType(types.STR).SetPackage(regexpPkg))
-	regexpPkg.AddStruct(regexpStrct)
+	regexpPkg.AddStruct(prgrm, regexpStrct)
 
 	opcodes.RegisterFunction(prgrm, "regexp.Compile", opRegexpCompile, opcodes.In(ast.ConstCxArg_STR), opcodes.Out(ast.MakeStructParameter(prgrm, "regexp", "Regexp", "r"), ast.ConstCxArg_STR))
 	opcodes.RegisterFunction(prgrm, "regexp.MustCompile", opRegexpMustCompile, opcodes.In(ast.ConstCxArg_STR), opcodes.Out(ast.MakeStructParameter(prgrm, "regexp", "Regexp", "r")))

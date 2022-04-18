@@ -626,7 +626,8 @@ func serializeCXProgramElements(prgrm *CXProgram, s *SerializedCXProgram) {
 			panic(err)
 		}
 
-		for _, strct := range pkg.Structs {
+		for _, strctIdx := range pkg.Structs {
+			strct := &prgrm.CXStructs[strctIdx]
 			indexStruct(prgrm, strct, s)
 			serializeStructName(prgrm, strct, s)
 			serializeStructPackage(prgrm, strct, s)
@@ -641,7 +642,8 @@ func serializeCXProgramElements(prgrm *CXProgram, s *SerializedCXProgram) {
 			panic(err)
 		}
 
-		for _, strct := range pkg.Structs {
+		for _, strctIdx := range pkg.Structs {
+			strct := &prgrm.CXStructs[strctIdx]
 			serializeStructArguments(prgrm, strct, s)
 		}
 	}
@@ -846,12 +848,13 @@ func deserializePackages(s *SerializedCXProgram, prgrm *CXProgram) {
 		}
 
 		if sPkg.StructsSize > 0 {
-			pkg.Structs = make(map[string]*CXStruct, sPkg.StructsSize)
+			pkg.Structs = make(map[string]CXStructIndex, sPkg.StructsSize)
 
 			for _, sStrct := range s.Structs[sPkg.StructsOffset : sPkg.StructsOffset+sPkg.StructsSize] {
 				var strct CXStruct
 				strct.Name = deserializeString(sStrct.NameOffset, sStrct.NameSize, s)
-				pkg.Structs[strct.Name] = &strct
+				strctIdx := prgrm.AddStructInArray(&strct)
+				pkg.Structs[strct.Name] = strctIdx
 			}
 		}
 
@@ -893,7 +896,8 @@ func deserializePackages(s *SerializedCXProgram, prgrm *CXProgram) {
 		if sPkg.StructsSize > 0 {
 			for _, sStrct := range s.Structs[sPkg.StructsOffset : sPkg.StructsOffset+sPkg.StructsSize] {
 				strctName := deserializeString(sStrct.NameOffset, sStrct.NameSize, s)
-				deserializeStruct(&sStrct, pkg.Structs[strctName], s, prgrm)
+				strct := &prgrm.CXStructs[pkg.Structs[strctName]]
+				deserializeStruct(&sStrct, strct, s, prgrm)
 			}
 		}
 

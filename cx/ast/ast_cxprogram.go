@@ -44,6 +44,7 @@ type CXProgram struct {
 	CXLines     []CXLine
 	CXPackages  []CXPackage
 	CXFunctions []CXFunction
+	CXStructs   []CXStruct
 	// Then reference the package of function by CxFunction id
 
 	// For Initializers
@@ -172,6 +173,29 @@ func (cxprogram *CXProgram) GetFunctionFromArray(index CXFunctionIndex) *CXFunct
 	}
 
 	return &cxprogram.CXFunctions[index]
+}
+
+// ----------------------------------------------------------------
+//                         `CXProgram` Structs handling
+func (cxprogram *CXProgram) AddStructInArray(strct *CXStruct) CXStructIndex {
+	// The index of fn after it will be added in the array
+	strct.Index = len(cxprogram.CXStructs)
+
+	cxprogram.CXStructs = append(cxprogram.CXStructs, *strct)
+
+	return CXStructIndex(strct.Index)
+}
+
+func (cxprogram *CXProgram) GetStructFromArray(index CXStructIndex) *CXStruct {
+	if index == -1 {
+		return nil
+	}
+
+	if int(index) > (len(cxprogram.CXStructs) - 1) {
+		panic(fmt.Errorf("error: CXStructs[%d]: index out of bounds", index))
+	}
+
+	return &cxprogram.CXStructs[index]
 }
 
 // ----------------------------------------------------------------

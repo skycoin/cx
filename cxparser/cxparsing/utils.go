@@ -111,7 +111,7 @@ func Preliminarystage(srcStrs, srcNames []string) int {
 					} else if _, err := cxpartialparsing.Program.GetStruct(match[len(match)-1], prePkg.Name); err != nil {
 						// then it hasn't been added
 						strct := ast.MakeStruct(match[len(match)-1])
-						prePkg.AddStruct(strct)
+						prePkg.AddStruct(cxpartialparsing.Program, strct)
 					}
 				}
 			}
