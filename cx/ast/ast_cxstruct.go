@@ -59,7 +59,7 @@ func (strct *CXStruct) AddField(prgrm *CXProgram, fld *CXArgument) *CXStruct {
 	if numFlds != 0 {
 		// Pre-compiling the offset of the field.
 		lastFldIdx := strct.Fields[numFlds-1]
-		fld.Offset = prgrm.CXArgs[lastFldIdx].Offset + prgrm.CXArgs[lastFldIdx].TotalSize
+		prgrm.CXArgs[fldIdx].Offset = prgrm.CXArgs[lastFldIdx].Offset + prgrm.CXArgs[lastFldIdx].TotalSize
 	}
 
 	return strct
