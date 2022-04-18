@@ -17,20 +17,28 @@ These have the same layout format as a “struct” definition
 - NameStringId  int
 - Offset int
 - Type enum
-    - CXAtomicI32
-    - CXAtomicI32Pointer
-    - CXStruct
-    - CXStructPointer
-    - CXArrayPointer
-    - CXArrayAtomic
-    - CXArrayStruct
-    - CXMap
-    - CXComplexType
-    - etc
+    - Atomic
+    - PointerAtomic
+    - ArrayAtomic
+    - ArrayPointerAtomic
+    - SliceAtomic
+    - SlicePointerAtomic
+    - Struct
+    - PointerStruct
+    - ArrayStruct
+    - ArrayPointerStruct
+    - SliceStruct
+    - SlicePointerStruct
+    - Complex
+    - PointerComplex
+    - ArrayComplex
+    - ArrayPointerComplex
+    - SliceComplex
+    - SlicePointerComplex
 - Meta enum 
-    - if FieldType is CXAtomicI32Pointer, CXAtomicI32
-    - if FieldType is CXStructPointer, CXStruct
-    - if FieldType is ArrayAtomic, AtomicType
+    - if Type is Atomic, the atomic type
+    - if Type is Struct, the struct id
+    - if Type is complex, the complex id
     
 Note:
 - Implement SizeOf() method for CXTypeSignature, panics if asked for type for a complex/non fixed size, only sizeof simple types
