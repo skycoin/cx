@@ -1527,7 +1527,8 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, sym *ast.CXArgument, arg *ast.CXA
 				strct = nameField.StructType
 			}
 
-			for _, fieldIdx := range strct.Fields {
+			for _, typeSignature := range strct.Fields {
+				fieldIdx := typeSignature.Meta
 				field := prgrm.CXArgs[fieldIdx]
 				if nameField.Name == field.Name {
 					nameField.Type = field.Type

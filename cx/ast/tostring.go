@@ -68,7 +68,8 @@ func buildStrStructs(prgrm *CXProgram, pkg *CXPackage, ast *string) {
 		strct := prgrm.CXStructs[strctIdx]
 		*ast += fmt.Sprintf("\t\t%d.- Struct: %s\n", count, strct.Name)
 
-		for k, fldIdx := range strct.Fields {
+		for k, typeSignature := range strct.Fields {
+			fldIdx := typeSignature.Meta
 			fld := prgrm.CXArgs[fldIdx]
 			*ast += fmt.Sprintf("\t\t\t%d.- Field: %s %s\n",
 				k, fld.Name, GetFormattedType(prgrm, &fld))
@@ -277,7 +278,8 @@ func getNonCollectionValue(prgrm *CXProgram, fp types.Pointer, arg, elt *CXArgum
 		lFlds := len(elt.StructType.Fields)
 		off := types.Pointer(0)
 		for c := 0; c < lFlds; c++ {
-			fldIdx := elt.StructType.Fields[c]
+			typeSignature := elt.StructType.Fields[c]
+			fldIdx := typeSignature.Meta
 			fld := prgrm.CXArgs[fldIdx]
 			if c == lFlds-1 {
 				val += fmt.Sprintf("%s: %s", fld.Name, GetPrintableValue(prgrm, fp+arg.Offset+off, &fld))
@@ -326,7 +328,8 @@ func ReadSliceElements(prgrm *CXProgram, fp types.Pointer, arg, elt *CXArgument,
 		lFlds := len(elt.StructType.Fields)
 		off := types.Pointer(0)
 		for c := 0; c < lFlds; c++ {
-			fldIdx := elt.StructType.Fields[c]
+			typeSignature := elt.StructType.Fields[c]
+			fldIdx := typeSignature.Meta
 			fld := prgrm.CXArgs[fldIdx]
 			if c == lFlds-1 {
 				val += fmt.Sprintf("%s: %s", fld.Name, GetPrintableValue(prgrm, fp+arg.Offset+off, &fld))
@@ -718,7 +721,8 @@ func GetFormattedType(prgrm *CXProgram, arg *CXArgument) string {
 // SignatureStringOfStruct returns the signature string of a struct.
 func SignatureStringOfStruct(prgrm *CXProgram, s *CXStruct) string {
 	fields := ""
-	for _, fldIdx := range s.Fields {
+	for _, typeSignature := range s.Fields {
+		fldIdx := typeSignature.Meta
 		fld := prgrm.CXArgs[fldIdx]
 		fields += fmt.Sprintf(" %s %s;", fld.Name, GetFormattedType(prgrm, &fld))
 	}

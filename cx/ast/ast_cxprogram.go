@@ -283,6 +283,35 @@ func (cxprogram *CXProgram) AddPointerArgsToCXArgsArray(cxArgs []*CXArgument) []
 	return cxArgsIdxs
 }
 
+// Temporary only for intitial new struct def implementation.
+func (cxprogram *CXProgram) ConvertIndexTypeSignaturesToPointerArgs(idxs []CXTypeSignature) []*CXArgument {
+	var cxArgs []*CXArgument
+	for _, typeSignature := range idxs {
+		idx := typeSignature.Meta
+		arg := cxprogram.GetCXArgFromArray(CXArgumentIndex(idx))
+		cxArgs = append(cxArgs, arg)
+	}
+	return cxArgs
+}
+
+// Temporary only for intitial new struct def implementation.
+func (cxprogram *CXProgram) AddPointerArgsToTypeSignaturesArray(cxArgs []*CXArgument) []CXTypeSignature {
+	var cxTypeSignaturesIdxs []CXTypeSignature
+	for _, cxArg := range cxArgs {
+		cxArgIdx := cxprogram.AddCXArgInArray(cxArg)
+
+		newCXTypeSignature := CXTypeSignature{
+			Name:   cxArg.Name,
+			Offset: cxArg.Offset,
+			Type:   TYPE_COMPLEX,
+			Meta:   int(cxArgIdx),
+		}
+
+		cxTypeSignaturesIdxs = append(cxTypeSignaturesIdxs, newCXTypeSignature)
+	}
+	return cxTypeSignaturesIdxs
+}
+
 // ----------------------------------------------------------------
 //                             `CXProgram` Getters
 

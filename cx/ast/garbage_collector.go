@@ -36,7 +36,8 @@ func MarkAndCompact(prgrm *CXProgram) {
 
 			// If `ptr` has fields, we need to navigate the heap and mark its fields too.
 			if glbl.StructType != nil {
-				for _, fldIdx := range glbl.StructType.Fields {
+				for _, typeSignature := range glbl.StructType.Fields {
+					fldIdx := typeSignature.Meta
 					fld := prgrm.CXArgs[fldIdx]
 					offset := glbl.Offset + fld.Offset
 					// Getting the offset to the object in the heap
@@ -85,7 +86,8 @@ func MarkAndCompact(prgrm *CXProgram) {
 					// Getting the offset to the object in the heap
 					heapOffset := types.Read_ptr(prgrm.Memory, offset)
 					if heapOffset >= prgrm.Heap.StartsAt {
-						for _, fldIdx := range ptr.StructType.Fields {
+						for _, typeSignature := range ptr.StructType.Fields {
+							fldIdx := typeSignature.Meta
 							fld := prgrm.CXArgs[fldIdx]
 							MarkObjectsTree(prgrm, heapOffset+types.OBJECT_HEADER_SIZE+fld.Offset, fld.Type, fld.DeclarationSpecifiers[1:])
 						}
@@ -232,7 +234,8 @@ func DisplaceReferences(prgrm *CXProgram, off types.Pointer, numPkgs int) {
 
 			// If it's a struct instance we need to displace each of its fields.
 			if glbl.StructType != nil {
-				for _, fldIdx := range glbl.StructType.Fields {
+				for _, typeSignature := range glbl.StructType.Fields {
+					fldIdx := typeSignature.Meta
 					fld := prgrm.CXArgs[fldIdx]
 					if fld.IsPointer() || fld.IsSlice {
 						doDisplaceReferences(prgrm, &updated, glbl.Offset+fld.Offset, off, fld.Type, fld.DeclarationSpecifiers[1:])
@@ -391,7 +394,8 @@ func updatePointers(prgrm *CXProgram, oldAddr, newAddr types.Pointer) {
 
 			// If `ptr` has fields, we need to navigate the heap and mark its fields too.
 			if glbl.StructType != nil {
-				for _, fldIdx := range glbl.StructType.Fields {
+				for _, typeSignature := range glbl.StructType.Fields {
+					fldIdx := typeSignature.Meta
 					fld := prgrm.CXArgs[fldIdx]
 					if !fld.IsPointer() {
 						continue
@@ -446,7 +450,8 @@ func updatePointers(prgrm *CXProgram, oldAddr, newAddr types.Pointer) {
 					// If `ptr` has fields, we need to navigate the heap and mark its fields too.
 					if ptr.StructType != nil {
 						if heapOffset >= prgrm.Heap.StartsAt {
-							for _, fldIdx := range ptr.StructType.Fields {
+							for _, typeSignature := range ptr.StructType.Fields {
+								fldIdx := typeSignature.Meta
 								fld := prgrm.CXArgs[fldIdx]
 								updatePointerTree(prgrm, heapOffset+types.OBJECT_HEADER_SIZE+fld.Offset, oldAddr, newAddr, fld.Type, fld.DeclarationSpecifiers[1:])
 							}
