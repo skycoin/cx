@@ -337,8 +337,8 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 							panic(err)
 						}
 						if strct, err := inpExprPkg.GetStruct(prgrm, inpExprAtomicOpOperatorOutput.StructType.Name); err == nil {
-							out.Size = strct.Size
-							out.TotalSize = strct.Size
+							out.Size = strct.GetStructSize(prgrm)
+							out.TotalSize = strct.GetStructSize(prgrm)
 						}
 					} else {
 						out.Size = inpExprAtomicOpOperatorOutput.Size
@@ -1630,7 +1630,7 @@ func calculateFinalSize(prgrm *ast.CXProgram, finalSize *types.Pointer, sym *ast
 					case constants.DECL_BASIC:
 						subSize = sym.Type.Size()
 					case constants.DECL_STRUCT:
-						subSize = arg.StructType.Size
+						subSize = arg.StructType.GetStructSize(prgrm)
 					}
 				}
 

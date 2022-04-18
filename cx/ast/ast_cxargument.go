@@ -345,8 +345,8 @@ func MakeStructParameter(prgrm *CXProgram, pkgName, strctName, argName string) *
 
 	arg := MakeArgument(argName, "", -1).SetType(types.STRUCT)
 	// arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_STRUCT)
-	arg.Size = strct.Size
-	arg.TotalSize = strct.Size
+	arg.Size = strct.GetStructSize(prgrm)
+	arg.TotalSize = strct.GetStructSize(prgrm)
 	arg.StructType = strct
 
 	return arg

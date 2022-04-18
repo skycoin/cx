@@ -478,20 +478,20 @@ func serializePackageIntegers(prgrm *CXProgram, pkg *CXPackage, s *SerializedCXP
 	}
 }
 
-func serializeStructIntegers(prgrm *CXProgram, strct *CXStruct, s *SerializedCXProgram) {
-	strctPkg, err := prgrm.GetPackageFromArray(strct.Package)
-	if err != nil {
-		panic(err)
-	}
+// func serializeStructIntegers(prgrm *CXProgram, strct *CXStruct, s *SerializedCXProgram) {
+// 	strctPkg, err := prgrm.GetPackageFromArray(strct.Package)
+// 	if err != nil {
+// 		panic(err)
+// 	}
 
-	strctName := strctPkg.Name + "." + strct.Name
-	if off, found := s.StructsMap[strctName]; found {
-		sStrct := &s.Structs[off]
-		sStrct.Size = int64(strct.Size)
-	} else {
-		panic("struct reference not found")
-	}
-}
+// 	strctName := strctPkg.Name + "." + strct.Name
+// 	if off, found := s.StructsMap[strctName]; found {
+// 		sStrct := &s.Structs[off]
+// 		sStrct.Size = int64(strct.Size)
+// 	} else {
+// 		panic("struct reference not found")
+// 	}
+// }
 
 func serializeFunctionIntegers(prgrm *CXProgram, fn *CXFunction, s *SerializedCXProgram) {
 	fnPkg, err := prgrm.GetPackageFromArray(fn.Package)
@@ -630,7 +630,7 @@ func serializeCXProgramElements(prgrm *CXProgram, s *SerializedCXProgram) {
 			indexStruct(prgrm, strct, s)
 			serializeStructName(prgrm, strct, s)
 			serializeStructPackage(prgrm, strct, s)
-			serializeStructIntegers(prgrm, strct, s)
+			// serializeStructIntegers(prgrm, strct, s)
 		}
 	}
 	// we first needed to populate references to all structs
@@ -916,7 +916,6 @@ func deserializePackages(s *SerializedCXProgram, prgrm *CXProgram) {
 func deserializeStruct(sStrct *serializedStruct, strct *CXStruct, s *SerializedCXProgram, prgrm *CXProgram) {
 	strct.Name = deserializeString(sStrct.NameOffset, sStrct.NameSize, s)
 	strct.Fields = prgrm.AddPointerArgsToCXArgsArray(deserializeArguments(sStrct.FieldsOffset, sStrct.FieldsSize, s, prgrm))
-	strct.Size = types.Cast_i64_to_ptr(sStrct.Size)
 
 	strct.Package = prgrm.Packages[sStrct.PackageName]
 }

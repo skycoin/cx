@@ -479,7 +479,7 @@ func (cxprogram *CXProgram) PrintAllObjects() {
 
 				// }
 
-				byts = types.Get_obj_data(cxprogram.Memory, heapOffset, ptr.StructType.Size)
+				byts = types.Get_obj_data(cxprogram.Memory, heapOffset, ptr.StructType.GetStructSize(cxprogram))
 			}
 
 			// var currLengths []int

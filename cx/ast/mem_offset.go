@@ -41,13 +41,13 @@ func GetSize(prgrm *CXProgram, arg *CXArgument) types.Pointer {
 	}
 
 	if arg.StructType != nil {
-		return arg.StructType.Size
+		return arg.StructType.GetStructSize(prgrm)
 	}
 
 	return arg.TotalSize
 }
 
-func GetNativeSize(arg *CXArgument) types.Pointer {
+func GetNativeSize(prgrm *CXProgram, arg *CXArgument) types.Pointer {
 	derefCount := len(arg.DereferenceOperations)
 	if derefCount > 0 {
 		deref := arg.DereferenceOperations[derefCount-1]
@@ -66,19 +66,19 @@ func GetNativeSize(arg *CXArgument) types.Pointer {
 	}
 
 	if arg.StructType != nil {
-		return arg.StructType.Size
+		return arg.StructType.GetStructSize(prgrm)
 	}
 
 	return arg.TotalSize
 }
 
 // GetDerefSize ...
-func GetDerefSize(arg *CXArgument, index int, derefPointer bool, derefArray bool) types.Pointer {
+func GetDerefSize(prgrm *CXProgram, arg *CXArgument, index int, derefPointer bool, derefArray bool) types.Pointer {
 	if !derefArray && len(arg.Lengths) > 1 && ((index + 1) < len(arg.Lengths)) {
 		return types.POINTER_SIZE
 	}
 	if arg.StructType != nil {
-		return arg.StructType.Size
+		return arg.StructType.GetStructSize(prgrm)
 	}
 	if derefPointer {
 		return arg.TotalSize
@@ -87,12 +87,12 @@ func GetDerefSize(arg *CXArgument, index int, derefPointer bool, derefArray bool
 }
 
 // GetDerefSizeSlice ...
-func GetDerefSizeSlice(arg *CXArgument) types.Pointer {
+func GetDerefSizeSlice(prgrm *CXProgram, arg *CXArgument) types.Pointer {
 	if len(arg.Lengths) > 1 && (len(arg.Lengths)-len(arg.Indexes)) > 1 {
 		return types.POINTER_SIZE
 	}
 	if arg.StructType != nil {
-		return arg.StructType.Size
+		return arg.StructType.GetStructSize(prgrm)
 	}
 	return arg.Size
 }
@@ -132,7 +132,7 @@ func CalculateDereference_Slice(prgrm *CXProgram, drfsStruct *DereferenceStruct)
 	drfsStruct.finalOffset += constants.SLICE_HEADER_SIZE
 
 	//TODO: delete
-	sizeToUse := GetDerefSize(drfsStruct.arg, drfsStruct.idxCounter, drfsStruct.derefPointer, false) //TODO: is always arg.Size unless arg.StructType != nil
+	sizeToUse := GetDerefSize(prgrm, drfsStruct.arg, drfsStruct.idxCounter, drfsStruct.derefPointer, false) //TODO: is always arg.Size unless arg.StructType != nil
 	drfsStruct.derefPointer = false
 
 	indexOffset := GetFinalOffset(prgrm, drfsStruct.fp, prgrm.GetCXArgFromArray(drfsStruct.arg.Indexes[drfsStruct.idxCounter]))
@@ -153,7 +153,7 @@ func CalculateDereference_Array(prgrm *CXProgram, drfsStruct *DereferenceStruct)
 	}
 
 	//TODO: Delete
-	sizeToUse := GetDerefSize(drfsStruct.arg, drfsStruct.idxCounter, drfsStruct.derefPointer, true) //TODO: is always arg.Size unless arg.StructType != nil
+	sizeToUse := GetDerefSize(prgrm, drfsStruct.arg, drfsStruct.idxCounter, drfsStruct.derefPointer, true) //TODO: is always arg.Size unless arg.StructType != nil
 	drfsStruct.derefPointer = false
 	drfsStruct.baseOffset = drfsStruct.finalOffset
 	drfsStruct.sizeofElement = subSize * sizeToUse

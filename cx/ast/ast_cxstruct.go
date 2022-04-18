@@ -13,7 +13,6 @@ type CXStruct struct {
 	// Metadata
 	Name    string         // Name of the struct
 	Package CXPackageIndex // The package this struct belongs to
-	Size    types.Pointer  // The size in memory that this struct takes.
 
 	// Contents
 	Fields []CXArgumentIndex // The fields of the struct
@@ -59,7 +58,6 @@ func (strct *CXStruct) AddField(prgrm *CXProgram, fld *CXArgument) *CXStruct {
 		lastFldIdx := strct.Fields[numFlds-1]
 		fld.Offset = prgrm.CXArgs[lastFldIdx].Offset + prgrm.CXArgs[lastFldIdx].TotalSize
 	}
-	strct.Size += GetSize(prgrm, fld)
 
 	return strct
 }
@@ -79,6 +77,16 @@ func (strct *CXStruct) RemoveField(prgrm *CXProgram, fldName string) {
 			}
 		}
 	}
+}
+
+func (strct *CXStruct) GetStructSize(prgrm *CXProgram) types.Pointer {
+	var structSize types.Pointer
+	for _, fldIdx := range strct.Fields {
+		fld := prgrm.CXArgs[fldIdx]
+		structSize += GetSize(prgrm, &fld)
+	}
+
+	return structSize
 }
 
 // ---------------- NEW CXStruct def ----------------
