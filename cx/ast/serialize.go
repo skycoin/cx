@@ -473,22 +473,6 @@ func serializePackageIntegers(prgrm *CXProgram, pkg *CXPackage, s *SerializedCXP
 			}
 		}
 
-		if pkg.CurrentStruct == nil {
-			// package has no structs
-			sPkg.CurrentStructName = ""
-		} else {
-			currStrctPkg, err := prgrm.GetPackageFromArray(pkg.CurrentStruct.Package)
-			if err != nil {
-				panic(err)
-			}
-			currStrctName := currStrctPkg.Name + "." + pkg.CurrentStruct.Name
-
-			if _, found := s.StructsMap[currStrctName]; found {
-				sPkg.CurrentStructName = currStrctName
-			} else {
-				panic("struct reference not found")
-			}
-		}
 	} else {
 		panic("package reference not found")
 	}
@@ -878,11 +862,6 @@ func deserializePackages(s *SerializedCXProgram, prgrm *CXProgram) {
 		// CurrentFunction
 		if sPkg.FunctionsSize > 0 {
 			pkg.CurrentFunction = pkg.Functions[sPkg.CurrentFunctionName]
-		}
-
-		// CurrentStruct
-		if sPkg.StructsSize > 0 {
-			pkg.CurrentStruct = pkg.Structs[sPkg.CurrentStructName]
 		}
 
 		fnCounter += sPkg.FunctionsSize

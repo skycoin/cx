@@ -346,25 +346,6 @@ func (cxprogram *CXProgram) GetCurrentPackage() (*CXPackage, error) {
 	return cxprogram.GetPackageFromArray(cxprogram.CurrentPackage)
 }
 
-// GetCurrentStruct ...
-func (cxprogram *CXProgram) GetCurrentStruct() (*CXStruct, error) {
-	// if cxprogram.CurrentPackage == nil {
-	// 	return nil, errors.New("current package is nil")
-	// }
-
-	currentPackage, err := cxprogram.GetPackageFromArray(cxprogram.CurrentPackage)
-	if err != nil {
-		return &CXStruct{}, err
-	}
-
-	if currentPackage.CurrentStruct == nil {
-		return nil, errors.New("current struct is nil")
-
-	}
-
-	return currentPackage.CurrentStruct, nil
-}
-
 // GetCurrentFunction ...
 func (cxprogram *CXProgram) GetCurrentFunction() (*CXFunction, error) {
 	if cxprogram.CurrentPackage == -1 {

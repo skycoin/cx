@@ -21,7 +21,6 @@ type CXPackage struct {
 
 	// Used by the REPL and cxgo
 	CurrentFunction CXFunctionIndex
-	CurrentStruct   *CXStruct
 }
 
 // Only Used by Affordances in op_aff.go
@@ -164,15 +163,6 @@ func MakePackage(name string) *CXPackage {
 // ----------------------------------------------------------------
 //                             `CXPackage` Getters
 
-// GetCurrentStruct ...
-func (pkg *CXPackage) GetCurrentStruct() (*CXStruct, error) {
-	if pkg.CurrentStruct == nil {
-		return nil, errors.New("current struct is nil")
-	}
-
-	return pkg.CurrentStruct, nil
-}
-
 // ----------------------------------------------------------------
 //                     `CXPackage` Member handling
 
@@ -224,7 +214,6 @@ func (pkg *CXPackage) AddStruct(strct *CXStruct) *CXPackage {
 	}
 	strct.Package = CXPackageIndex(pkg.Index)
 	pkg.Structs[strct.Name] = strct
-	pkg.CurrentStruct = strct
 
 	return pkg
 }
