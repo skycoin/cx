@@ -1184,7 +1184,7 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 
 					for _, fldIdx := range prgrm.CXArgs[inpIdx].Fields {
 						field := prgrm.GetCXArgFromArray(fldIdx)
-						if inFld, err := strct.GetField(field.Name); err == nil {
+						if inFld, err := strct.GetField(prgrm, field.Name); err == nil {
 							if inFld.StructType != nil {
 								strct = inFld.StructType
 							}
@@ -1499,7 +1499,7 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, sym *ast.CXArgument, arg *ast.CXA
 
 		for _, fldIdx := range sym.Fields {
 			field := prgrm.GetCXArgFromArray(fldIdx)
-			if inFld, err := strct.GetField(field.Name); err == nil {
+			if inFld, err := strct.GetField(prgrm, field.Name); err == nil {
 				if inFld.StructType != nil {
 					field.StructType = strct
 					strct = inFld.StructType
@@ -1527,7 +1527,8 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, sym *ast.CXArgument, arg *ast.CXA
 				strct = nameField.StructType
 			}
 
-			for _, field := range strct.Fields {
+			for _, fieldIdx := range strct.Fields {
+				field := prgrm.CXArgs[fieldIdx]
 				if nameField.Name == field.Name {
 					nameField.Type = field.Type
 					nameField.Lengths = field.Lengths
@@ -1563,7 +1564,7 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, sym *ast.CXArgument, arg *ast.CXA
 					break
 				}
 
-				nameField.Offset += ast.GetSize(prgrm, field)
+				nameField.Offset += ast.GetSize(prgrm, &field)
 			}
 		}
 	}

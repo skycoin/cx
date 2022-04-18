@@ -16,17 +16,17 @@ type CXStruct struct {
 	Size    types.Pointer  // The size in memory that this struct takes.
 
 	// Contents
-	Fields []*CXArgument // The fields of the struct
+	Fields []CXArgumentIndex // The fields of the struct
 }
 
 // ----------------------------------------------------------------
 //                             `CXStruct` Getters
 
 // GetField ...
-func (strct *CXStruct) GetField(name string) (*CXArgument, error) {
-	for _, fld := range strct.Fields {
-		if fld.Name == name {
-			return fld, nil
+func (strct *CXStruct) GetField(prgrm *CXProgram, name string) (*CXArgument, error) {
+	for _, fldIdx := range strct.Fields {
+		if prgrm.CXArgs[fldIdx].Name == name {
+			return &prgrm.CXArgs[fldIdx], nil
 		}
 	}
 	return nil, fmt.Errorf("field '%s' not found in struct '%s'", name, strct.Name)
@@ -44,19 +44,20 @@ func MakeStruct(name string) *CXStruct {
 
 // AddField ...
 func (strct *CXStruct) AddField(prgrm *CXProgram, fld *CXArgument) *CXStruct {
-	for _, fl := range strct.Fields {
-		if fl.Name == fld.Name {
-			fmt.Printf("%s : duplicate field", CompilationError(fl.ArgDetails.FileName, fl.ArgDetails.FileLine))
+	for _, fldIdx := range strct.Fields {
+		if prgrm.CXArgs[fldIdx].Name == fld.Name {
+			fmt.Printf("%s : duplicate field", CompilationError(prgrm.CXArgs[fldIdx].ArgDetails.FileName, prgrm.CXArgs[fldIdx].ArgDetails.FileLine))
 			os.Exit(constants.CX_COMPILATION_ERROR)
 		}
 	}
 
 	numFlds := len(strct.Fields)
-	strct.Fields = append(strct.Fields, fld)
+	fldIdx := prgrm.AddCXArgInArray(fld)
+	strct.Fields = append(strct.Fields, fldIdx)
 	if numFlds != 0 {
 		// Pre-compiling the offset of the field.
-		lastFld := strct.Fields[numFlds-1]
-		fld.Offset = lastFld.Offset + lastFld.TotalSize
+		lastFldIdx := strct.Fields[numFlds-1]
+		fld.Offset = prgrm.CXArgs[lastFldIdx].Offset + prgrm.CXArgs[lastFldIdx].TotalSize
 	}
 	strct.Size += GetSize(prgrm, fld)
 
@@ -64,11 +65,11 @@ func (strct *CXStruct) AddField(prgrm *CXProgram, fld *CXArgument) *CXStruct {
 }
 
 // RemoveField ...
-func (strct *CXStruct) RemoveField(fldName string) {
+func (strct *CXStruct) RemoveField(prgrm *CXProgram, fldName string) {
 	if len(strct.Fields) > 0 {
 		lenFlds := len(strct.Fields)
-		for i, fld := range strct.Fields {
-			if fld.Name == fldName {
+		for i, fldIdx := range strct.Fields {
+			if prgrm.CXArgs[fldIdx].Name == fldName {
 				if i == lenFlds-1 {
 					strct.Fields = strct.Fields[:len(strct.Fields)-1]
 				} else {

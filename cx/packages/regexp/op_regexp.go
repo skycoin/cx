@@ -3,10 +3,11 @@
 package regexp
 
 import (
+	"regexp"
+
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/types"
-	"regexp"
 
 	"github.com/jinzhu/copier"
 )
@@ -40,7 +41,7 @@ func regexpCompile(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXV
 	}
 
 	// Extracting `regexp.Regexp`'s `exp` field.
-	expFld, err := regexpType.GetField("exp")
+	expFld, err := regexpType.GetField(prgrm, "exp")
 	if err != nil {
 		panic(err)
 	}
@@ -108,7 +109,7 @@ func opRegexpFind(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVa
 	}
 
 	// Extracting `regexp.Regexp`'s `exp` field.
-	expFld, err := regexpType.GetField("exp")
+	expFld, err := regexpType.GetField(prgrm, "exp")
 	if err != nil {
 		panic(err)
 	}

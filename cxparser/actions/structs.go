@@ -27,7 +27,7 @@ func DeclareStruct(prgrm *ast.CXProgram, structName string, structFields []*ast.
 	strct.Fields = nil
 	strct.Size = 0
 	for _, field := range structFields {
-		if _, err := strct.GetField(field.Name); err == nil {
+		if _, err := strct.GetField(prgrm, field.Name); err == nil {
 			println(ast.CompilationError(field.ArgDetails.FileName, field.ArgDetails.FileLine), "Multiply defined struct field:", field.Name)
 		} else {
 			strct.AddField(prgrm, field)

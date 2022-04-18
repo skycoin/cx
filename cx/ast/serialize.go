@@ -317,7 +317,7 @@ func serializeStructArguments(prgrm *CXProgram, strct *CXStruct, s *SerializedCX
 	strctName := strctPkg.Name + "." + strct.Name
 	if strctOff, found := s.StructsMap[strctName]; found {
 		sStrct := &s.Structs[strctOff]
-		sStrct.FieldsOffset, sStrct.FieldsSize = serializeSliceOfArguments(prgrm, strct.Fields, s)
+		sStrct.FieldsOffset, sStrct.FieldsSize = serializeSliceOfArguments(prgrm, prgrm.ConvertIndexArgsToPointerArgs(strct.Fields), s)
 	} else {
 		panic("struct reference not found")
 	}
@@ -915,7 +915,7 @@ func deserializePackages(s *SerializedCXProgram, prgrm *CXProgram) {
 
 func deserializeStruct(sStrct *serializedStruct, strct *CXStruct, s *SerializedCXProgram, prgrm *CXProgram) {
 	strct.Name = deserializeString(sStrct.NameOffset, sStrct.NameSize, s)
-	strct.Fields = deserializeArguments(sStrct.FieldsOffset, sStrct.FieldsSize, s, prgrm)
+	strct.Fields = prgrm.AddPointerArgsToCXArgsArray(deserializeArguments(sStrct.FieldsOffset, sStrct.FieldsSize, s, prgrm))
 	strct.Size = types.Cast_i64_to_ptr(sStrct.Size)
 
 	strct.Package = prgrm.Packages[sStrct.PackageName]
