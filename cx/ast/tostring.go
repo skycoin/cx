@@ -64,12 +64,15 @@ func buildStrStructs(prgrm *CXProgram, pkg *CXPackage, ast *string) {
 	}
 
 	count := 0
-	for _, strct := range pkg.Structs {
+	for _, strctIdx := range pkg.Structs {
+		strct := prgrm.CXStructs[strctIdx]
 		*ast += fmt.Sprintf("\t\t%d.- Struct: %s\n", count, strct.Name)
 
-		for k, fld := range strct.Fields {
+		for k, typeSignature := range strct.Fields {
+			fldIdx := typeSignature.Meta
+			fld := prgrm.CXArgs[fldIdx]
 			*ast += fmt.Sprintf("\t\t\t%d.- Field: %s %s\n",
-				k, fld.Name, GetFormattedType(prgrm, fld))
+				k, fld.Name, GetFormattedType(prgrm, &fld))
 		}
 
 		count++
@@ -275,11 +278,13 @@ func getNonCollectionValue(prgrm *CXProgram, fp types.Pointer, arg, elt *CXArgum
 		lFlds := len(elt.StructType.Fields)
 		off := types.Pointer(0)
 		for c := 0; c < lFlds; c++ {
-			fld := elt.StructType.Fields[c]
+			typeSignature := elt.StructType.Fields[c]
+			fldIdx := typeSignature.Meta
+			fld := prgrm.CXArgs[fldIdx]
 			if c == lFlds-1 {
-				val += fmt.Sprintf("%s: %s", fld.Name, GetPrintableValue(prgrm, fp+arg.Offset+off, fld))
+				val += fmt.Sprintf("%s: %s", fld.Name, GetPrintableValue(prgrm, fp+arg.Offset+off, &fld))
 			} else {
-				val += fmt.Sprintf("%s: %s, ", fld.Name, GetPrintableValue(prgrm, fp+arg.Offset+off, fld))
+				val += fmt.Sprintf("%s: %s, ", fld.Name, GetPrintableValue(prgrm, fp+arg.Offset+off, &fld))
 			}
 			off += fld.TotalSize
 		}
@@ -323,11 +328,13 @@ func ReadSliceElements(prgrm *CXProgram, fp types.Pointer, arg, elt *CXArgument,
 		lFlds := len(elt.StructType.Fields)
 		off := types.Pointer(0)
 		for c := 0; c < lFlds; c++ {
-			fld := elt.StructType.Fields[c]
+			typeSignature := elt.StructType.Fields[c]
+			fldIdx := typeSignature.Meta
+			fld := prgrm.CXArgs[fldIdx]
 			if c == lFlds-1 {
-				val += fmt.Sprintf("%s: %s", fld.Name, GetPrintableValue(prgrm, fp+arg.Offset+off, fld))
+				val += fmt.Sprintf("%s: %s", fld.Name, GetPrintableValue(prgrm, fp+arg.Offset+off, &fld))
 			} else {
-				val += fmt.Sprintf("%s: %s, ", fld.Name, GetPrintableValue(prgrm, fp+arg.Offset+off, fld))
+				val += fmt.Sprintf("%s: %s, ", fld.Name, GetPrintableValue(prgrm, fp+arg.Offset+off, &fld))
 			}
 			off += fld.TotalSize
 		}
@@ -714,8 +721,10 @@ func GetFormattedType(prgrm *CXProgram, arg *CXArgument) string {
 // SignatureStringOfStruct returns the signature string of a struct.
 func SignatureStringOfStruct(prgrm *CXProgram, s *CXStruct) string {
 	fields := ""
-	for _, f := range s.Fields {
-		fields += fmt.Sprintf(" %s %s;", f.Name, GetFormattedType(prgrm, f))
+	for _, typeSignature := range s.Fields {
+		fldIdx := typeSignature.Meta
+		fld := prgrm.CXArgs[fldIdx]
+		fields += fmt.Sprintf(" %s %s;", fld.Name, GetFormattedType(prgrm, &fld))
 	}
 
 	return fmt.Sprintf("%s struct {%s }", s.Name, fields)

@@ -337,8 +337,8 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 							panic(err)
 						}
 						if strct, err := inpExprPkg.GetStruct(prgrm, inpExprAtomicOpOperatorOutput.StructType.Name); err == nil {
-							out.Size = strct.Size
-							out.TotalSize = strct.Size
+							out.Size = strct.GetStructSize(prgrm)
+							out.TotalSize = strct.GetStructSize(prgrm)
 						}
 					} else {
 						out.Size = inpExprAtomicOpOperatorOutput.Size
@@ -1184,7 +1184,7 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 
 					for _, fldIdx := range prgrm.CXArgs[inpIdx].Fields {
 						field := prgrm.GetCXArgFromArray(fldIdx)
-						if inFld, err := strct.GetField(field.Name); err == nil {
+						if inFld, err := strct.GetField(prgrm, field.Name); err == nil {
 							if inFld.StructType != nil {
 								strct = inFld.StructType
 							}
@@ -1499,7 +1499,7 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, sym *ast.CXArgument, arg *ast.CXA
 
 		for _, fldIdx := range sym.Fields {
 			field := prgrm.GetCXArgFromArray(fldIdx)
-			if inFld, err := strct.GetField(field.Name); err == nil {
+			if inFld, err := strct.GetField(prgrm, field.Name); err == nil {
 				if inFld.StructType != nil {
 					field.StructType = strct
 					strct = inFld.StructType
@@ -1527,7 +1527,9 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, sym *ast.CXArgument, arg *ast.CXA
 				strct = nameField.StructType
 			}
 
-			for _, field := range strct.Fields {
+			for _, typeSignature := range strct.Fields {
+				fieldIdx := typeSignature.Meta
+				field := prgrm.CXArgs[fieldIdx]
 				if nameField.Name == field.Name {
 					nameField.Type = field.Type
 					nameField.Lengths = field.Lengths
@@ -1563,7 +1565,7 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, sym *ast.CXArgument, arg *ast.CXA
 					break
 				}
 
-				nameField.Offset += ast.GetSize(prgrm, field)
+				nameField.Offset += ast.GetSize(prgrm, &field)
 			}
 		}
 	}
@@ -1629,7 +1631,7 @@ func calculateFinalSize(prgrm *ast.CXProgram, finalSize *types.Pointer, sym *ast
 					case constants.DECL_BASIC:
 						subSize = sym.Type.Size()
 					case constants.DECL_STRUCT:
-						subSize = arg.StructType.Size
+						subSize = arg.StructType.GetStructSize(prgrm)
 					}
 				}
 

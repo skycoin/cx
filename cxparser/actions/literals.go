@@ -183,8 +183,8 @@ func PrimaryStructLiteral(prgrm *ast.CXProgram, structName string, structFields 
 				}
 				field.StructType = strct
 
-				prgrm.CXArgs[cxAtomicOpOutputIdx].Size = strct.Size
-				prgrm.CXArgs[cxAtomicOpOutputIdx].TotalSize = strct.Size
+				prgrm.CXArgs[cxAtomicOpOutputIdx].Size = strct.GetStructSize(prgrm)
+				prgrm.CXArgs[cxAtomicOpOutputIdx].TotalSize = strct.GetStructSize(prgrm)
 				prgrm.CXArgs[cxAtomicOpOutputIdx].Name = structName
 				fieldIdx := prgrm.AddCXArgInArray(field)
 				prgrm.CXArgs[cxAtomicOpOutputIdx].Fields = append(prgrm.CXArgs[cxAtomicOpOutputIdx].Fields, fieldIdx)
@@ -233,8 +233,8 @@ func PrimaryStructLiteralExternal(prgrm *ast.CXProgram, importName string, struc
 					// expr.ProgramOutput[0].Program = prgrm
 
 					prgrm.CXArgs[cxAtomicOpOutputIdx].StructType = strct
-					prgrm.CXArgs[cxAtomicOpOutputIdx].Size = strct.Size
-					prgrm.CXArgs[cxAtomicOpOutputIdx].TotalSize = strct.Size
+					prgrm.CXArgs[cxAtomicOpOutputIdx].Size = strct.GetStructSize(prgrm)
+					prgrm.CXArgs[cxAtomicOpOutputIdx].TotalSize = strct.GetStructSize(prgrm)
 					prgrm.CXArgs[cxAtomicOpOutputIdx].Name = structName
 					fieldIdx := prgrm.AddCXArgInArray(field)
 					prgrm.CXArgs[cxAtomicOpOutputIdx].Fields = append(prgrm.CXArgs[cxAtomicOpOutputIdx].Fields, fieldIdx)

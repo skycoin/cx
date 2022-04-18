@@ -112,8 +112,8 @@ func DeclarationSpecifiersStruct(prgrm *ast.CXProgram, ident string, pkgName str
 		arg := ast.MakeArgument("", currentFile, lineNo)
 		arg.Type = types.STRUCT
 		arg.StructType = strct
-		arg.Size = strct.Size
-		arg.TotalSize = strct.Size
+		arg.Size = strct.GetStructSize(prgrm)
+		arg.TotalSize = strct.GetStructSize(prgrm)
 		arg.Package = ast.CXPackageIndex(pkg.Index)
 		arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_STRUCT)
 
@@ -130,8 +130,8 @@ func DeclarationSpecifiersStruct(prgrm *ast.CXProgram, ident string, pkgName str
 		arg.Type = types.STRUCT
 		arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_STRUCT)
 		arg.StructType = strct
-		arg.Size = strct.Size
-		arg.TotalSize = strct.Size
+		arg.Size = strct.GetStructSize(prgrm)
+		arg.TotalSize = strct.GetStructSize(prgrm)
 		arg.Package = ast.CXPackageIndex(pkg.Index)
 
 		return arg

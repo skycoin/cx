@@ -8,123 +8,31 @@ import (
 	"github.com/skycoin/cx/cx/types"
 )
 
-// CXStruct is used to represent a CX struct.
-type CXStruct struct {
-	// Metadata
-	Name    string         // Name of the struct
-	Package CXPackageIndex // The package this struct belongs to
-	Size    types.Pointer  // The size in memory that this struct takes.
-
-	// Contents
-	Fields []*CXArgument // The fields of the struct
-}
-
-// ----------------------------------------------------------------
-//                             `CXStruct` Getters
-
-// GetField ...
-func (strct *CXStruct) GetField(name string) (*CXArgument, error) {
-	for _, fld := range strct.Fields {
-		if fld.Name == name {
-			return fld, nil
-		}
-	}
-	return nil, fmt.Errorf("field '%s' not found in struct '%s'", name, strct.Name)
-}
-
-// ----------------------------------------------------------------
-//                     `CXStruct` Member handling
-
-// MakeStruct ...
-func MakeStruct(name string) *CXStruct {
-	return &CXStruct{
-		Name: name,
-	}
-}
-
-// AddField ...
-func (strct *CXStruct) AddField(prgrm *CXProgram, fld *CXArgument) *CXStruct {
-	for _, fl := range strct.Fields {
-		if fl.Name == fld.Name {
-			fmt.Printf("%s : duplicate field", CompilationError(fl.ArgDetails.FileName, fl.ArgDetails.FileLine))
-			os.Exit(constants.CX_COMPILATION_ERROR)
-		}
-	}
-
-	numFlds := len(strct.Fields)
-	strct.Fields = append(strct.Fields, fld)
-	if numFlds != 0 {
-		// Pre-compiling the offset of the field.
-		lastFld := strct.Fields[numFlds-1]
-		fld.Offset = lastFld.Offset + lastFld.TotalSize
-	}
-	strct.Size += GetSize(prgrm, fld)
-
-	return strct
-}
-
-// RemoveField ...
-func (strct *CXStruct) RemoveField(fldName string) {
-	if len(strct.Fields) > 0 {
-		lenFlds := len(strct.Fields)
-		for i, fld := range strct.Fields {
-			if fld.Name == fldName {
-				if i == lenFlds-1 {
-					strct.Fields = strct.Fields[:len(strct.Fields)-1]
-				} else {
-					strct.Fields = append(strct.Fields[:i], strct.Fields[i+1:]...)
-				}
-				break
-			}
-		}
-	}
-}
-
-// ---------------- NEW CXStruct def ----------------
-
 // CXTypeSignature_TYPE enum contains CXTypeSignature types.
 type CXTypeSignature_TYPE int
 
 const (
 	TYPE_UNUSED CXTypeSignature_TYPE = iota
-	TYPE_ATOMIC_BOOL
-	TYPE_ATOMIC_I8
-	TYPE_ATOMIC_I8_POINTER
-	TYPE_ATOMIC_I8_ARRAY
-	TYPE_ATOMIC_I16
-	TYPE_ATOMIC_I16_POINTER
-	TYPE_ATOMIC_I16_ARRAY
-	TYPE_ATOMIC_I32
-	TYPE_ATOMIC_I32_POINTER
-	TYPE_ATOMIC_I32_ARRAY
-	TYPE_ATOMIC_I64
-	TYPE_ATOMIC_I64_POINTER
-	TYPE_ATOMIC_I64_ARRAY
-	TYPE_ATOMIC_UI8
-	TYPE_ATOMIC_UI8_POINTER
-	TYPE_ATOMIC_UI8_ARRAY
-	TYPE_ATOMIC_UI16
-	TYPE_ATOMIC_UI16_POINTER
-	TYPE_ATOMIC_UI16_ARRAY
-	TYPE_ATOMIC_UI32
-	TYPE_ATOMIC_UI32_POINTER
-	TYPE_ATOMIC_UI32_ARRAY
-	TYPE_ATOMIC_UI64
-	TYPE_ATOMIC_UI64_POINTER
-	TYPE_ATOMIC_UI64_ARRAY
-	TYPE_ATOMIC_F32
-	TYPE_ATOMIC_F32_POINTER
-	TYPE_ATOMIC_F32_ARRAY
-	TYPE_ATOMIC_F64
-	TYPE_ATOMIC_F64_POINTER
-	TYPE_ATOMIC_F64_ARRAY
-	TYPE_ATOMIC_STR
-	TYPE_ATOMIC_STR_POINTER
-	TYPE_ATOMIC_STR_ARRAY
+	TYPE_ATOMIC
+	TYPE_POINTER_ATOMIC
+	TYPE_ARRAY_ATOMIC
+	TYPE_ARRAY_POINTER_ATOMIC
+	TYPE_SLICE_ATOMIC
+	TYPE_SLICE_POINTER_ATOMIC
+
 	TYPE_STRUCT
-	TYPE_STRUCT_POINTER
-	TYPE_STRUCT_ARRAY
+	TYPE_POINTER_STRUCT
+	TYPE_ARRAY_STRUCT
+	TYPE_ARRAY_POINTER_STRUCT
+	TYPE_SLICE_STRUCT
+	TYPE_SLICE_POINTER_STRUCT
+
 	TYPE_COMPLEX
+	TYPE_POINTER_COMPLEX
+	TYPE_ARRAY_COMPLEX
+	TYPE_ARRAY_POINTER_COMPLEX
+	TYPE_SLICE_COMPLEX
+	TYPE_SLICE_POINTER_COMPLEX
 )
 
 // CXTypeSignature_META enum contains CXTypeSignature metas.
@@ -144,19 +52,124 @@ const (
 	META_ATOMIC_F32
 	META_ATOMIC_F64
 	META_ATOMIC_STR
-	META_STRUCT
 )
 
-type NewCXStruct struct {
-	StructID     int
-	NameStringID int
-	Package      CXPackageIndex
-	Fields       []CXTypeSignature
-}
+// type NewCXStruct struct {
+// 	StructID     int
+// 	NameStringID int
+// 	Package      CXPackageIndex
+// 	Fields       []CXTypeSignature
+// }
 
 type CXTypeSignature struct {
-	NameStringID int
-	Offset       int
-	Type         CXTypeSignature_TYPE
-	Meta         CXTypeSignature_META
+	// NameStringID int
+	Name   string // temporary
+	Offset types.Pointer
+	Type   CXTypeSignature_TYPE
+
+	// if type is complex, meta is complex id
+	// if type is struct, meta is struct id
+	Meta int
+}
+
+type CXStructIndex int
+
+// CXStruct is used to represent a CX struct.
+type CXStruct struct {
+	// Metadata
+	Index   int
+	Name    string         // Name of the struct
+	Package CXPackageIndex // The package this struct belongs to
+
+	// Contents
+	Fields []CXTypeSignature // The fields of the struct
+}
+
+// ----------------------------------------------------------------
+//                             `CXStruct` Getters
+
+// GetField ...
+func (strct *CXStruct) GetField(prgrm *CXProgram, name string) (*CXArgument, error) {
+	// All are COMPLEX TYPE for now.
+	// FieldIdx or the CXArg ID is in Meta field.
+	for _, typeSignature := range strct.Fields {
+		fldIdx := typeSignature.Meta
+		if prgrm.CXArgs[fldIdx].Name == name {
+			return &prgrm.CXArgs[fldIdx], nil
+		}
+	}
+	return nil, fmt.Errorf("field '%s' not found in struct '%s'", name, strct.Name)
+}
+
+// ----------------------------------------------------------------
+//                     `CXStruct` Member handling
+
+// MakeStruct ...
+func MakeStruct(name string) *CXStruct {
+	return &CXStruct{
+		Name: name,
+	}
+}
+
+// AddField ...
+func (strct *CXStruct) AddField(prgrm *CXProgram, fld *CXArgument) *CXStruct {
+	// All are COMPLEX TYPE for now.
+	// FieldIdx or the CXArg ID is in Meta field.
+	for _, typeSignature := range strct.Fields {
+		fldIdx := typeSignature.Meta
+		if prgrm.CXArgs[fldIdx].Name == fld.Name {
+			fmt.Printf("%s : duplicate field", CompilationError(prgrm.CXArgs[fldIdx].ArgDetails.FileName, prgrm.CXArgs[fldIdx].ArgDetails.FileLine))
+			os.Exit(constants.CX_COMPILATION_ERROR)
+		}
+	}
+
+	numFlds := len(strct.Fields)
+	fldIdx := prgrm.AddCXArgInArray(fld)
+
+	// All are COMPLEX TYPE for now.
+	// FieldIdx or the CXArg ID is in Meta field.
+	newCXTypeSignature := CXTypeSignature{
+		Name:   fld.Name,
+		Offset: fld.Offset,
+		Type:   TYPE_COMPLEX,
+		Meta:   int(fldIdx),
+	}
+
+	strct.Fields = append(strct.Fields, newCXTypeSignature)
+	if numFlds != 0 {
+		// Pre-compiling the offset of the field.
+		lastTypeSignature := strct.Fields[numFlds-1]
+		lastFldIdx := lastTypeSignature.Meta
+		prgrm.CXArgs[fldIdx].Offset = prgrm.CXArgs[lastFldIdx].Offset + prgrm.CXArgs[lastFldIdx].TotalSize
+	}
+
+	return strct
+}
+
+// RemoveField ...
+// func (strct *CXStruct) RemoveField(prgrm *CXProgram, fldName string) {
+// 	if len(strct.Fields) > 0 {
+// 		lenFlds := len(strct.Fields)
+// 		for i, fldIdx := range strct.Fields {
+// 			if prgrm.CXArgs[fldIdx].Name == fldName {
+// 				if i == lenFlds-1 {
+// 					strct.Fields = strct.Fields[:len(strct.Fields)-1]
+// 				} else {
+// 					strct.Fields = append(strct.Fields[:i], strct.Fields[i+1:]...)
+// 				}
+// 				break
+// 			}
+// 		}
+// 	}
+// }
+
+func (strct *CXStruct) GetStructSize(prgrm *CXProgram) types.Pointer {
+	var structSize types.Pointer
+	for _, typeSignature := range strct.Fields {
+		fldIdx := typeSignature.Meta
+		fld := prgrm.CXArgs[fldIdx]
+		structSize += GetSize(prgrm, &fld)
+	}
+
+	return structSize
 }

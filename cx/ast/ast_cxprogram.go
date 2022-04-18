@@ -44,6 +44,7 @@ type CXProgram struct {
 	CXLines     []CXLine
 	CXPackages  []CXPackage
 	CXFunctions []CXFunction
+	CXStructs   []CXStruct
 	// Then reference the package of function by CxFunction id
 
 	// For Initializers
@@ -175,6 +176,29 @@ func (cxprogram *CXProgram) GetFunctionFromArray(index CXFunctionIndex) *CXFunct
 }
 
 // ----------------------------------------------------------------
+//                         `CXProgram` Structs handling
+func (cxprogram *CXProgram) AddStructInArray(strct *CXStruct) CXStructIndex {
+	// The index of fn after it will be added in the array
+	strct.Index = len(cxprogram.CXStructs)
+
+	cxprogram.CXStructs = append(cxprogram.CXStructs, *strct)
+
+	return CXStructIndex(strct.Index)
+}
+
+func (cxprogram *CXProgram) GetStructFromArray(index CXStructIndex) *CXStruct {
+	if index == -1 {
+		return nil
+	}
+
+	if int(index) > (len(cxprogram.CXStructs) - 1) {
+		panic(fmt.Errorf("error: CXStructs[%d]: index out of bounds", index))
+	}
+
+	return &cxprogram.CXStructs[index]
+}
+
+// ----------------------------------------------------------------
 //            `CXProgram` CXLines, CXArgs, and CXAtomicOps Handling
 
 func (cxprogram *CXProgram) GetCXLine(index int) (*CXLine, error) {
@@ -257,6 +281,35 @@ func (cxprogram *CXProgram) AddPointerArgsToCXArgsArray(cxArgs []*CXArgument) []
 		cxArgsIdxs = append(cxArgsIdxs, cxArgIdx)
 	}
 	return cxArgsIdxs
+}
+
+// Temporary only for intitial new struct def implementation.
+func (cxprogram *CXProgram) ConvertIndexTypeSignaturesToPointerArgs(idxs []CXTypeSignature) []*CXArgument {
+	var cxArgs []*CXArgument
+	for _, typeSignature := range idxs {
+		idx := typeSignature.Meta
+		arg := cxprogram.GetCXArgFromArray(CXArgumentIndex(idx))
+		cxArgs = append(cxArgs, arg)
+	}
+	return cxArgs
+}
+
+// Temporary only for intitial new struct def implementation.
+func (cxprogram *CXProgram) AddPointerArgsToTypeSignaturesArray(cxArgs []*CXArgument) []CXTypeSignature {
+	var cxTypeSignaturesIdxs []CXTypeSignature
+	for _, cxArg := range cxArgs {
+		cxArgIdx := cxprogram.AddCXArgInArray(cxArg)
+
+		newCXTypeSignature := CXTypeSignature{
+			Name:   cxArg.Name,
+			Offset: cxArg.Offset,
+			Type:   TYPE_COMPLEX,
+			Meta:   int(cxArgIdx),
+		}
+
+		cxTypeSignaturesIdxs = append(cxTypeSignaturesIdxs, newCXTypeSignature)
+	}
+	return cxTypeSignaturesIdxs
 }
 
 // ----------------------------------------------------------------
@@ -344,25 +397,6 @@ func (cxprogram *CXProgram) GetCurrentPackage() (*CXPackage, error) {
 	}
 
 	return cxprogram.GetPackageFromArray(cxprogram.CurrentPackage)
-}
-
-// GetCurrentStruct ...
-func (cxprogram *CXProgram) GetCurrentStruct() (*CXStruct, error) {
-	// if cxprogram.CurrentPackage == nil {
-	// 	return nil, errors.New("current package is nil")
-	// }
-
-	currentPackage, err := cxprogram.GetPackageFromArray(cxprogram.CurrentPackage)
-	if err != nil {
-		return &CXStruct{}, err
-	}
-
-	if currentPackage.CurrentStruct == nil {
-		return nil, errors.New("current struct is nil")
-
-	}
-
-	return currentPackage.CurrentStruct, nil
 }
 
 // GetCurrentFunction ...
@@ -498,7 +532,7 @@ func (cxprogram *CXProgram) PrintAllObjects() {
 
 				// }
 
-				byts = types.Get_obj_data(cxprogram.Memory, heapOffset, ptr.StructType.Size)
+				byts = types.Get_obj_data(cxprogram.Memory, heapOffset, ptr.StructType.GetStructSize(cxprogram))
 			}
 
 			// var currLengths []int

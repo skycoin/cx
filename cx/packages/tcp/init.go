@@ -12,7 +12,7 @@ func RegisterPackage(prgrm *ast.CXProgram) {
 	netPkg, _ = prgrm.GetPackageFromArray(pkgIdx)
 
 	dialerStrct := ast.MakeStruct("Dialer")
-	netPkg.AddStruct(dialerStrct)
+	netPkg.AddStruct(prgrm, dialerStrct)
 
 	opcodes.RegisterFunction(prgrm, "tcp.Dial", opTCPDial, opcodes.In(ast.ConstCxArg_STR, ast.ConstCxArg_STR), opcodes.Out(ast.ConstCxArg_STR))
 	opcodes.RegisterFunction(prgrm, "tcp.Listen", opTCPListen, opcodes.In(ast.ConstCxArg_STR, ast.ConstCxArg_STR), opcodes.Out(ast.ConstCxArg_STR))

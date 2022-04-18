@@ -336,9 +336,11 @@ func GetAccessibleArgsForFunctionByType(cxprogram *cxast.CXProgram, packageLocat
 	for _, globalIdx := range pkg.Globals {
 		global := cxprogram.GetCXArg(globalIdx)
 		if global.IsStruct {
-			for _, field := range global.StructType.Fields {
+			for _, typeSignature := range global.StructType.Fields {
+				fieldIdx := typeSignature.Meta
+				field := cxprogram.CXArgs[fieldIdx]
 				if field.Type == argType {
-					argsList = append(argsList, field)
+					argsList = append(argsList, &field)
 				}
 			}
 		} else if global.Type == argType {
@@ -354,9 +356,11 @@ func GetAccessibleArgsForFunctionByType(cxprogram *cxast.CXProgram, packageLocat
 		for _, globalIdx := range imp.Globals {
 			global := cxprogram.GetCXArg(globalIdx)
 			if global.IsStruct {
-				for _, field := range global.StructType.Fields {
+				for _, typeSignature := range global.StructType.Fields {
+					fieldIdx := typeSignature.Meta
+					field := cxprogram.CXArgs[fieldIdx]
 					if field.Type == argType {
-						argsList = append(argsList, field)
+						argsList = append(argsList, &field)
 					}
 				}
 			} else if global.Type == argType {
@@ -379,9 +383,11 @@ func GetAccessibleArgsForFunctionByType(cxprogram *cxast.CXProgram, packageLocat
 		for _, argIdx := range cxAtomicOp.Inputs {
 			arg := cxprogram.GetCXArgFromArray(argIdx)
 			if arg.IsStruct {
-				for _, field := range arg.StructType.Fields {
+				for _, typeSignature := range arg.StructType.Fields {
+					fieldIdx := typeSignature.Meta
+					field := cxprogram.CXArgs[fieldIdx]
 					if field.Type == argType {
-						argsList = append(argsList, field)
+						argsList = append(argsList, &field)
 					}
 				}
 			} else if arg.Type == argType {

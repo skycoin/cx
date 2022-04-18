@@ -63,7 +63,7 @@ func opSliceAppend(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXV
 	}
 
 	// Preparing slice in case more memory is needed for the new element.
-	outputSliceOffset := ast.SliceAppendResize(prgrm, inputs[0].FramePointer, out0, inp0, ast.GetDerefSizeSlice(eltInp0), sliceInputsLen)
+	outputSliceOffset := ast.SliceAppendResize(prgrm, inputs[0].FramePointer, out0, inp0, ast.GetDerefSizeSlice(prgrm, eltInp0), sliceInputsLen)
 
 	// We need to update the address of the output and input, as the final offsets
 	// could be on the heap and they could have been moved by the GC.

@@ -112,7 +112,7 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 	argStrct.AddField(prgrm, argFldIndex)
 	argStrct.AddField(prgrm, argFldType)
 
-	pkg.AddStruct(argStrct)
+	pkg.AddStruct(prgrm, argStrct)
 
 	// Expression type
 	exprStrct := ast.MakeStruct("Expression")
@@ -122,7 +122,7 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 
 	exprStrct.AddField(prgrm, exprFldOperator)
 
-	pkg.AddStruct(exprStrct)
+	pkg.AddStruct(prgrm, exprStrct)
 
 	// Function type
 	fnStrct := ast.MakeStruct("Function")
@@ -144,7 +144,7 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 
 	fnStrct.AddField(prgrm, fnFldOutSig)
 
-	pkg.AddStruct(fnStrct)
+	pkg.AddStruct(prgrm, fnStrct)
 
 	// Structure type
 	strctStrct := ast.MakeStruct("Structure")
@@ -155,7 +155,7 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 
 	strctStrct.AddField(prgrm, strctFldName)
 
-	pkg.AddStruct(strctStrct)
+	pkg.AddStruct(prgrm, strctStrct)
 
 	// Package type
 	pkgStrct := ast.MakeStruct("Structure")
@@ -165,7 +165,7 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 
 	pkgStrct.AddField(prgrm, pkgFldName)
 
-	pkg.AddStruct(pkgStrct)
+	pkg.AddStruct(prgrm, pkgStrct)
 
 	// Caller type
 	callStrct := ast.MakeStruct("Caller")
@@ -179,7 +179,7 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 	callStrct.AddField(prgrm, callFldFnName)
 	callStrct.AddField(prgrm, callFldFnSize)
 
-	pkg.AddStruct(callStrct)
+	pkg.AddStruct(prgrm, callStrct)
 
 	// Program type
 	prgrmStrct := ast.MakeStruct("Program")
@@ -202,7 +202,7 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 	prgrmStrct.AddField(prgrm, prgrmFldFreeHeap)
 	prgrmStrct.AddField(prgrm, prgrmFldCaller)
 
-	pkg.AddStruct(prgrmStrct)
+	pkg.AddStruct(prgrm, prgrmStrct)
 }
 
 // PrimaryIdentifier creates an identifier expression with an output name of 'ident'.

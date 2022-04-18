@@ -16,12 +16,11 @@ type CXPackage struct {
 	// Contents
 	Imports   map[string]CXPackageIndex  // imported packages
 	Functions map[string]CXFunctionIndex // declared functions in this package
-	Structs   map[string]*CXStruct       // declared structs in this package
+	Structs   map[string]CXStructIndex   // declared structs in this package
 	Globals   []CXArgumentIndex          // declared global variables in this package
 
 	// Used by the REPL and cxgo
 	CurrentFunction CXFunctionIndex
-	CurrentStruct   *CXStruct
 }
 
 // Only Used by Affordances in op_aff.go
@@ -85,8 +84,8 @@ func (pkg *CXPackage) GetMethod(prgrm *CXProgram, fnName string, receiverType st
 
 // GetStruct ...
 func (pkg *CXPackage) GetStruct(prgrm *CXProgram, strctName string) (*CXStruct, error) {
-	if strct := pkg.Structs[strctName]; strct != nil {
-		return strct, nil
+	if strctIdx, ok := pkg.Structs[strctName]; ok {
+		return &prgrm.CXStructs[strctIdx], nil
 	}
 
 	// looking in imports
@@ -95,8 +94,8 @@ func (pkg *CXPackage) GetStruct(prgrm *CXProgram, strctName string) (*CXStruct, 
 		if err != nil {
 			panic(err)
 		}
-		if strct := imp.Structs[strctName]; strct != nil {
-			return strct, nil
+		if strctIdx, ok := imp.Structs[strctName]; ok {
+			return &prgrm.CXStructs[strctIdx], nil
 		}
 	}
 
@@ -155,7 +154,7 @@ func MakePackage(name string) *CXPackage {
 		Name:            name,
 		Globals:         make([]CXArgumentIndex, 0, 10),
 		Imports:         make(map[string]CXPackageIndex, 0),
-		Structs:         make(map[string]*CXStruct, 0),
+		Structs:         make(map[string]CXStructIndex, 0),
 		Functions:       make(map[string]CXFunctionIndex, 0),
 		CurrentFunction: -1,
 	}
@@ -163,15 +162,6 @@ func MakePackage(name string) *CXPackage {
 
 // ----------------------------------------------------------------
 //                             `CXPackage` Getters
-
-// GetCurrentStruct ...
-func (pkg *CXPackage) GetCurrentStruct() (*CXStruct, error) {
-	if pkg.CurrentStruct == nil {
-		return nil, errors.New("current struct is nil")
-	}
-
-	return pkg.CurrentStruct, nil
-}
 
 // ----------------------------------------------------------------
 //                     `CXPackage` Member handling
@@ -218,20 +208,20 @@ func (pkg *CXPackage) RemoveFunction(fnName string) {
 }
 
 // AddStruct ...
-func (pkg *CXPackage) AddStruct(strct *CXStruct) *CXPackage {
+func (pkg *CXPackage) AddStruct(prgrm *CXProgram, strct *CXStruct) *CXPackage {
 	if _, ok := pkg.Structs[strct.Name]; ok {
 		return pkg
 	}
 	strct.Package = CXPackageIndex(pkg.Index)
-	pkg.Structs[strct.Name] = strct
-	pkg.CurrentStruct = strct
+	strctIdx := prgrm.AddStructInArray(strct)
+	pkg.Structs[strct.Name] = strctIdx
 
 	return pkg
 }
 
 // RemoveStruct ...
 func (pkg *CXPackage) RemoveStruct(strctName string) {
-	if pkg.Structs[strctName] == nil {
+	if _, ok := pkg.Structs[strctName]; !ok {
 		return
 	}
 	delete(pkg.Structs, strctName)
