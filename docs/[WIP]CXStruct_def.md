@@ -38,7 +38,12 @@ These have the same layout format as a “struct” definition
 - Meta enum 
     - if Type is Atomic, the atomic type
     - if Type is Struct, the struct id
-    - if Type is complex, the complex id
+    - if Type is Complex, the complex id
+    - if Type is Array, the type signature array id
+
+## CXTypeSignature_Array
+- Type int
+- Length int
     
 Note:
 - Implement SizeOf() method for CXTypeSignature, panics if asked for type for a complex/non fixed size, only sizeof simple types

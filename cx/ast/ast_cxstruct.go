@@ -69,7 +69,13 @@ type CXTypeSignature struct {
 
 	// if type is complex, meta is complex id
 	// if type is struct, meta is struct id
+	// if type is array, meta is CXTypeSignature_Array id
 	Meta int
+}
+
+type CXTypeSignature_Array struct {
+	Type   int
+	Length int
 }
 
 type CXStructIndex int
