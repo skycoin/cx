@@ -112,25 +112,25 @@ func MakeStruct(name string) *CXStruct {
 }
 
 // AddField ...
-func (strct *CXStruct) AddField(prgrm *CXProgram, fld *CXArgument) *CXStruct {
+func (strct *CXStruct) AddField(prgrm *CXProgram, fieldType CXTypeSignature_TYPE, cxArgument *CXArgument, cxStruct *CXStruct) *CXStruct {
 	// All are COMPLEX TYPE for now.
 	// FieldIdx or the CXArg ID is in Meta field.
 	for _, typeSignature := range strct.Fields {
 		fldIdx := typeSignature.Meta
-		if prgrm.CXArgs[fldIdx].Name == fld.Name {
+		if prgrm.CXArgs[fldIdx].Name == cxArgument.Name {
 			fmt.Printf("%s : duplicate field", CompilationError(prgrm.CXArgs[fldIdx].ArgDetails.FileName, prgrm.CXArgs[fldIdx].ArgDetails.FileLine))
 			os.Exit(constants.CX_COMPILATION_ERROR)
 		}
 	}
 
 	numFlds := len(strct.Fields)
-	fldIdx := prgrm.AddCXArgInArray(fld)
+	fldIdx := prgrm.AddCXArgInArray(cxArgument)
 
 	// All are COMPLEX TYPE for now.
 	// FieldIdx or the CXArg ID is in Meta field.
 	newCXTypeSignature := CXTypeSignature{
-		Name:   fld.Name,
-		Offset: fld.Offset,
+		Name:   cxArgument.Name,
+		Offset: cxArgument.Offset,
 		Type:   TYPE_COMPLEX,
 		Meta:   int(fldIdx),
 	}
