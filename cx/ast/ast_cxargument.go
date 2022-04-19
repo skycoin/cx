@@ -273,6 +273,14 @@ func (arg *CXArgument) GetType(prgrm *CXProgram) types.Code {
 	return arg.Type
 }
 
+func (arg *CXArgument) GetSize() types.Pointer {
+	if arg.Type != types.I8 {
+		return arg.Type.Size()
+	}
+
+	return arg.Size
+}
+
 // ----------------------------------------------------------------
 //                     `CXArgument` Member handling
 
