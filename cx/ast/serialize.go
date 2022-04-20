@@ -153,7 +153,6 @@ func serializeArgument(prgrm *CXProgram, arg *CXArgument, s *SerializedCXProgram
 	s.Arguments[argOff].PreviouslyDeclared = serializeBoolean(arg.PreviouslyDeclared)
 
 	s.Arguments[argOff].PassBy = int64(arg.PassBy)
-	s.Arguments[argOff].DoesEscape = serializeBoolean(arg.DoesEscape)
 
 	s.Arguments[argOff].LengthsOffset, s.Arguments[argOff].LengthsSize = serializePointers(arg.Lengths, s)
 	s.Arguments[argOff].IndexesOffset, s.Arguments[argOff].IndexesSize = serializeSliceOfArguments(prgrm, prgrm.ConvertIndexArgsToPointerArgs(arg.Indexes), s)
@@ -983,7 +982,6 @@ func deserializeArgument(sArg *serializedArgument, s *SerializedCXProgram, prgrm
 	arg.IsLocalDeclaration = deserializeBool(sArg.IsLocalDeclaration)
 	arg.IsShortAssignmentDeclaration = deserializeBool(sArg.IsShortDeclaration)
 	arg.PreviouslyDeclared = deserializeBool(sArg.PreviouslyDeclared)
-	arg.DoesEscape = deserializeBool(sArg.DoesEscape)
 
 	arg.Lengths = deserializePointers(sArg.LengthsOffset, sArg.LengthsSize, s)
 	arg.Indexes = prgrm.AddPointerArgsToCXArgsArray(deserializeArguments(sArg.IndexesOffset, sArg.IndexesSize, s, prgrm))
