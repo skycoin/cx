@@ -173,7 +173,7 @@ func (strct *CXStruct) GetStructSize(prgrm *CXProgram) types.Pointer {
 	for _, typeSignature := range strct.Fields {
 		fldIdx := typeSignature.Meta
 		fld := prgrm.CXArgs[fldIdx]
-		structSize += GetSize(prgrm, &fld)
+		structSize += GetArgSize(prgrm, &fld)
 	}
 
 	return structSize

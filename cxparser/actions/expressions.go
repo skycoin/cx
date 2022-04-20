@@ -314,7 +314,7 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 		out := ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, LineNo)
 		out.SetType(resolveTypeForUnd(prgrm, &leftExprs[len(leftExprs)-1]))
 		out.Size = lastLeftExpressionOperatorOutput.Size
-		out.TotalSize = ast.GetSize(prgrm, lastLeftExpressionOperatorOutput)
+		out.TotalSize = ast.GetArgSize(prgrm, lastLeftExpressionOperatorOutput)
 		out.Type = lastLeftExpressionOperatorOutput.Type
 		out.PointerTargetType = lastLeftExpressionOperatorOutput.PointerTargetType
 		out.Package = ast.CXPackageIndex(pkg.Index)
@@ -333,7 +333,7 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 		out := ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, LineNo)
 		out.SetType(resolveTypeForUnd(prgrm, &rightExprs[len(rightExprs)-1]))
 		out.Size = lastRightExpressionOperatorOutput.Size
-		out.TotalSize = ast.GetSize(prgrm, lastRightExpressionOperatorOutput)
+		out.TotalSize = ast.GetArgSize(prgrm, lastRightExpressionOperatorOutput)
 		out.Type = lastRightExpressionOperatorOutput.Type
 		out.PointerTargetType = lastRightExpressionOperatorOutput.PointerTargetType
 		out.Package = ast.CXPackageIndex(pkg.Index)

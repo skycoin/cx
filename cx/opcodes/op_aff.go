@@ -95,7 +95,7 @@ func CallAffPredicate(prgrm *ast.CXProgram, fn *ast.CXFunction, predValue []byte
 	return types.GetSlice_byte(prgrm.Memory, ast.GetFinalOffset(prgrm,
 		newCall.FramePointer,
 		prgrm.GetCXArgFromArray(newCall.Operator.Outputs[0])),
-		ast.GetSize(prgrm, prgrm.GetCXArgFromArray(newCall.Operator.Outputs[0])))[0]
+		ast.GetArgSize(prgrm, prgrm.GetCXArgFromArray(newCall.Operator.Outputs[0])))[0]
 }
 
 // Used by QueryArgument to query inputs and then outputs from expressions.

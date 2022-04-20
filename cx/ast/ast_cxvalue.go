@@ -61,7 +61,7 @@ func (value *CXValue) Get_ptr(prgrm *CXProgram) types.Pointer {
 }
 
 func (value *CXValue) Get_bytes(prgrm *CXProgram) []byte {
-	return types.GetSlice_byte(prgrm.Memory, value.Offset, GetSize(prgrm, value.Arg))
+	return types.GetSlice_byte(prgrm.Memory, value.Offset, GetArgSize(prgrm, value.Arg))
 }
 
 func (value *CXValue) Get_str(prgrm *CXProgram) string {
@@ -139,7 +139,7 @@ func (value *CXValue) GetSlice_f64(prgrm *CXProgram) []float64 {
 }
 
 func (value *CXValue) GetSlice_bytes(prgrm *CXProgram) []byte {
-	return GetSliceData(prgrm, types.Read_ptr(prgrm.Memory, value.Offset), GetSize(prgrm, value.Arg))
+	return GetSliceData(prgrm, types.Read_ptr(prgrm.Memory, value.Offset), GetArgSize(prgrm, value.Arg))
 }
 
 func (value *CXValue) Set_bool(prgrm *CXProgram, data bool) {
