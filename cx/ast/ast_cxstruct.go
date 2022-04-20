@@ -39,25 +39,6 @@ const (
 	TYPE_CXARGUMENT_DEPRECATE
 )
 
-// CXTypeSignature_META enum contains CXTypeSignature metas.
-type CXTypeSignature_META int
-
-const (
-	META_UNUSED CXTypeSignature_META = iota
-	META_ATOMIC_BOOL
-	META_ATOMIC_I8
-	META_ATOMIC_I16
-	META_ATOMIC_I32
-	META_ATOMIC_I64
-	META_ATOMIC_UI8
-	META_ATOMIC_UI16
-	META_ATOMIC_UI32
-	META_ATOMIC_UI64
-	META_ATOMIC_F32
-	META_ATOMIC_F64
-	META_ATOMIC_STR
-)
-
 // type NewCXStruct struct {
 // 	StructID     int
 // 	NameStringID int
@@ -74,6 +55,19 @@ type CXTypeSignature struct {
 	// if type is complex, meta is complex id
 	// if type is struct, meta is struct id
 	// if type is array, meta is CXTypeSignature_Array id
+	// if type is atomic, meta is the atomic type
+	// types.BOOL
+	// types.I8
+	// types.I16
+	// types.I32
+	// types.I64
+	// types.UI8
+	// types.UI16
+	// types.UI32
+	// types.UI64
+	// types.F32
+	// types.F64
+	// types.STR
 	Meta int
 }
 
@@ -126,9 +120,10 @@ func (strct *CXStruct) AddField(prgrm *CXProgram, fieldType CXTypeSignature_TYPE
 	// All are TYPE_CXARGUMENT_DEPRECATEfor now.
 	// FieldIdx or the CXArg ID is in Meta field.
 	for _, typeSignature := range strct.Fields {
-		fldIdx := typeSignature.Meta
-		if prgrm.CXArgs[fldIdx].Name == cxArgument.Name {
-			fmt.Printf("%s : duplicate field", CompilationError(prgrm.CXArgs[fldIdx].ArgDetails.FileName, prgrm.CXArgs[fldIdx].ArgDetails.FileLine))
+		if typeSignature.Name == cxArgument.Name {
+			// fldIdx := typeSignature.Meta
+			// fmt.Printf("%s : duplicate field", CompilationError(prgrm.CXArgs[fldIdx].ArgDetails.FileName, prgrm.CXArgs[fldIdx].ArgDetails.FileLine))
+			fmt.Println("duplicate field")
 			os.Exit(constants.CX_COMPILATION_ERROR)
 		}
 	}
@@ -182,4 +177,44 @@ func (strct *CXStruct) GetStructSize(prgrm *CXProgram) types.Pointer {
 	}
 
 	return structSize
+}
+
+// ----------------------------------------------------------------
+//                             `CXTypeSignature` Getters
+
+func (typeSignature *CXTypeSignature) GetSize(prgrm *CXProgram) types.Pointer {
+	switch typeSignature.Type {
+	case TYPE_ATOMIC:
+		return types.Code(typeSignature.Meta).Size()
+	case TYPE_POINTER_ATOMIC:
+		return types.POINTER.Size()
+	case TYPE_ARRAY_ATOMIC:
+		// Access array struct then get length
+		// length * atomic size
+	case TYPE_ARRAY_POINTER_ATOMIC:
+		// Access array struct then get length
+		// length * pointer size
+	case TYPE_SLICE_ATOMIC:
+	case TYPE_SLICE_POINTER_ATOMIC:
+
+	case TYPE_STRUCT:
+	case TYPE_POINTER_STRUCT:
+	case TYPE_ARRAY_STRUCT:
+	case TYPE_ARRAY_POINTER_STRUCT:
+	case TYPE_SLICE_STRUCT:
+	case TYPE_SLICE_POINTER_STRUCT:
+
+	case TYPE_COMPLEX:
+	case TYPE_POINTER_COMPLEX:
+	case TYPE_ARRAY_COMPLEX:
+	case TYPE_ARRAY_POINTER_COMPLEX:
+	case TYPE_SLICE_COMPLEX:
+	case TYPE_SLICE_POINTER_COMPLEX:
+
+	case TYPE_CXARGUMENT_DEPRECATE:
+		argIdx := typeSignature.Meta
+		return prgrm.CXArgs[argIdx].Size
+	}
+
+	return 0
 }
