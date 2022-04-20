@@ -117,8 +117,7 @@ func MakeStruct(name string) *CXStruct {
 
 // AddField ...
 func (strct *CXStruct) AddField(prgrm *CXProgram, fieldType CXTypeSignature_TYPE, cxArgument *CXArgument, cxStruct *CXStruct) *CXStruct {
-	// All are TYPE_CXARGUMENT_DEPRECATEfor now.
-	// FieldIdx or the CXArg ID is in Meta field.
+	// Check if field already exist
 	for _, typeSignature := range strct.Fields {
 		if typeSignature.Name == cxArgument.Name {
 			// fldIdx := typeSignature.Meta
@@ -171,9 +170,7 @@ func (strct *CXStruct) AddField(prgrm *CXProgram, fieldType CXTypeSignature_TYPE
 func (strct *CXStruct) GetStructSize(prgrm *CXProgram) types.Pointer {
 	var structSize types.Pointer
 	for _, typeSignature := range strct.Fields {
-		fldIdx := typeSignature.Meta
-		fld := prgrm.CXArgs[fldIdx]
-		structSize += GetArgSize(prgrm, &fld)
+		structSize += typeSignature.GetSize(prgrm)
 	}
 
 	return structSize
@@ -213,7 +210,7 @@ func (typeSignature *CXTypeSignature) GetSize(prgrm *CXProgram) types.Pointer {
 
 	case TYPE_CXARGUMENT_DEPRECATE:
 		argIdx := typeSignature.Meta
-		return prgrm.CXArgs[argIdx].Size
+		return GetArgSize(prgrm, &prgrm.CXArgs[argIdx])
 	}
 
 	return 0
