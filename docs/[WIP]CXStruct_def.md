@@ -35,7 +35,7 @@ These have the same layout format as a “struct” definition
     - ArrayPointerComplex
     - SliceComplex
     - SlicePointerComplex
-- Meta enum 
+- Meta int
     - if Type is Atomic, the atomic type
     - if Type is Struct, the struct id
     - if Type is Complex, the complex id
