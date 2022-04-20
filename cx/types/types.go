@@ -128,7 +128,7 @@ var definitions []Type = []Type{
 	{"f64", F64_SIZE, true},
 
 	{"ptr", POINTER_SIZE, false},
-	{"str", STR_SIZE, true}, // TODO:PTR check why str needs to be a primitive type or we need to have both isPrimitive && isAtomic.
+	{"str", STR_SIZE, false},
 	{"array", ARRAY_SIZE, false},
 	{"slice", SLICE_SIZE, false},
 	{"struct", InvalidPointer, false},
