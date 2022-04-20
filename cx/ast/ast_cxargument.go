@@ -139,7 +139,6 @@ type CXArgument struct {
 	IsShortAssignmentDeclaration bool // variables defined with :=
 	IsInnerReference             bool // for example: &slice[0] or &struct.field
 	PreviouslyDeclared           bool
-	DoesEscape                   bool
 }
 
 func (arg CXArgument) IsPointer() bool {

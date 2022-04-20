@@ -375,7 +375,6 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 				prgrm.CXArgs[toExpressionOutputIdx].Lengths = fromCXAtomicOpOperatorOutput.Lengths
 			}
 
-			prgrm.CXArgs[toExpressionOutputIdx].DoesEscape = fromCXAtomicOpOperatorOutput.DoesEscape
 			prgrm.CXArgs[toExpressionOutputIdx].PassBy = fromCXAtomicOpOperatorOutput.PassBy
 		} else {
 			// we'll delegate multiple-value returns to the 'expression' grammar rule
@@ -386,7 +385,6 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 			prgrm.CXArgs[toExpressionOutputIdx].Type = fromCXAtomicOpOperatorOutput.Type
 			prgrm.CXArgs[toExpressionOutputIdx].PointerTargetType = fromCXAtomicOpOperatorOutput.PointerTargetType
 			prgrm.CXArgs[toExpressionOutputIdx].Lengths = fromCXAtomicOpOperatorOutput.Lengths
-			prgrm.CXArgs[toExpressionOutputIdx].DoesEscape = fromCXAtomicOpOperatorOutput.DoesEscape
 			prgrm.CXArgs[toExpressionOutputIdx].PassBy = fromCXAtomicOpOperatorOutput.PassBy
 		}
 
