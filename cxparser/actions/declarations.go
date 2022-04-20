@@ -82,6 +82,7 @@ func DeclarationSpecifiersStruct(prgrm *ast.CXProgram, ident string, pkgName str
 		panic(err)
 	}
 
+	var strct *ast.CXStruct
 	if isExternal {
 		// custom type in an imported package
 		imp, err := pkg.GetImport(prgrm, pkgName)
@@ -89,37 +90,29 @@ func DeclarationSpecifiersStruct(prgrm *ast.CXProgram, ident string, pkgName str
 			panic(err)
 		}
 
-		strct, err := prgrm.GetStruct(ident, imp.Name)
+		strct, err = prgrm.GetStruct(ident, imp.Name)
 		if err != nil {
 			println(ast.CompilationError(currentFile, lineNo), err.Error())
+
 			return nil
 		}
-
-		arg := ast.MakeArgument("", currentFile, lineNo)
-		arg.Type = types.STRUCT
-		arg.StructType = strct
-		arg.Size = strct.GetStructSize(prgrm)
-		arg.TotalSize = strct.GetStructSize(prgrm)
-		arg.Package = ast.CXPackageIndex(pkg.Index)
-		arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_STRUCT)
-
-		return arg
 	} else {
 		// custom type in the current package
-		strct, err := prgrm.GetStruct(ident, pkg.Name)
+		strct, err = prgrm.GetStruct(ident, pkg.Name)
 		if err != nil {
 			println(ast.CompilationError(currentFile, lineNo), err.Error())
+
 			return nil
 		}
-
-		arg := ast.MakeArgument("", currentFile, lineNo)
-		arg.Type = types.STRUCT
-		arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_STRUCT)
-		arg.StructType = strct
-		arg.Size = strct.GetStructSize(prgrm)
-		arg.TotalSize = strct.GetStructSize(prgrm)
-		arg.Package = ast.CXPackageIndex(pkg.Index)
-
-		return arg
 	}
+
+	arg := ast.MakeArgument("", currentFile, lineNo)
+	arg.Type = types.STRUCT
+	arg.StructType = strct
+	arg.Size = strct.GetStructSize(prgrm)
+	arg.TotalSize = strct.GetStructSize(prgrm)
+	arg.Package = ast.CXPackageIndex(pkg.Index)
+	arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_STRUCT)
+
+	return arg
 }
