@@ -351,7 +351,6 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 		prgrm.CXArgs[toExpressionOutputIdx].PointerTargetType = fromExpressionOutput.PointerTargetType
 		prgrm.CXArgs[toExpressionOutputIdx].Lengths = fromExpressionOutput.Lengths
 		prgrm.CXArgs[toExpressionOutputIdx].PassBy = fromExpressionOutput.PassBy
-		prgrm.CXArgs[toExpressionOutputIdx].DoesEscape = fromExpressionOutput.DoesEscape
 
 		if fromExprs[lastFromExpressionIdx].IsMethodCall() {
 			prgrm.CXAtomicOps[fromExpressionIdx].Inputs = append(prgrm.CXAtomicOps[fromExpressionIdx].Outputs, prgrm.CXAtomicOps[fromExpressionIdx].Inputs...)

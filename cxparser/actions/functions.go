@@ -89,13 +89,6 @@ func FunctionAddParameters(prgrm *ast.CXProgram, fnIdx ast.CXFunctionIndex, inpu
 	for _, out := range outputs {
 		fn.AddOutput(prgrm, out)
 	}
-
-	for _, outIdx := range fn.Outputs {
-		out := prgrm.GetCXArgFromArray(outIdx)
-		if out.IsPointer() && out.PointerTargetType != types.STR && out.Type != types.AFF {
-			out.DoesEscape = true
-		}
-	}
 }
 
 func isParseOp(prgrm *ast.CXProgram, expr *ast.CXExpression) bool {
@@ -1417,7 +1410,6 @@ func CopyArgFields(prgrm *ast.CXProgram, sym *ast.CXArgument, arg *ast.CXArgumen
 
 	// sym.Lengths = arg.Lengths
 	sym.Package = arg.Package
-	sym.DoesEscape = arg.DoesEscape
 	sym.Size = arg.Size
 
 	// Checking if it's a slice struct field. We'll do the same process as

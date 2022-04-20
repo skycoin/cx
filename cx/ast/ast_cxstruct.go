@@ -33,6 +33,10 @@ const (
 	TYPE_ARRAY_POINTER_COMPLEX
 	TYPE_SLICE_COMPLEX
 	TYPE_SLICE_POINTER_COMPLEX
+
+	// For CXArgument usage
+	// To be deprecated
+	TYPE_CXARGUMENT_DEPRECATE
 )
 
 // CXTypeSignature_META enum contains CXTypeSignature metas.
@@ -96,11 +100,11 @@ type CXStruct struct {
 
 // GetField ...
 func (strct *CXStruct) GetField(prgrm *CXProgram, name string) (*CXArgument, error) {
-	// All are COMPLEX TYPE for now.
+	// All are TYPE_CXARGUMENT_DEPRECATE for now.
 	// FieldIdx or the CXArg ID is in Meta field.
 	for _, typeSignature := range strct.Fields {
-		fldIdx := typeSignature.Meta
-		if prgrm.CXArgs[fldIdx].Name == name {
+		if typeSignature.Name == name {
+			fldIdx := typeSignature.Meta
 			return &prgrm.CXArgs[fldIdx], nil
 		}
 	}
@@ -119,7 +123,7 @@ func MakeStruct(name string) *CXStruct {
 
 // AddField ...
 func (strct *CXStruct) AddField(prgrm *CXProgram, fieldType CXTypeSignature_TYPE, cxArgument *CXArgument, cxStruct *CXStruct) *CXStruct {
-	// All are COMPLEX TYPE for now.
+	// All are TYPE_CXARGUMENT_DEPRECATEfor now.
 	// FieldIdx or the CXArg ID is in Meta field.
 	for _, typeSignature := range strct.Fields {
 		fldIdx := typeSignature.Meta
@@ -132,12 +136,12 @@ func (strct *CXStruct) AddField(prgrm *CXProgram, fieldType CXTypeSignature_TYPE
 	numFlds := len(strct.Fields)
 	fldIdx := prgrm.AddCXArgInArray(cxArgument)
 
-	// All are COMPLEX TYPE for now.
+	// All are TYPE_CXARGUMENT_DEPRECATE for now.
 	// FieldIdx or the CXArg ID is in Meta field.
 	newCXTypeSignature := CXTypeSignature{
 		Name:   cxArgument.Name,
 		Offset: cxArgument.Offset,
-		Type:   TYPE_COMPLEX,
+		Type:   TYPE_CXARGUMENT_DEPRECATE,
 		Meta:   int(fldIdx),
 	}
 
