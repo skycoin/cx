@@ -18,9 +18,9 @@ type DereferenceStruct struct {
 }
 
 // GetSize ...
-func GetSize(prgrm *CXProgram, arg *CXArgument) types.Pointer {
+func GetArgSize(prgrm *CXProgram, arg *CXArgument) types.Pointer {
 	if len(arg.Fields) > 0 {
-		return GetSize(prgrm, prgrm.GetCXArgFromArray(arg.Fields[len(arg.Fields)-1]))
+		return GetArgSize(prgrm, prgrm.GetCXArgFromArray(arg.Fields[len(arg.Fields)-1]))
 	}
 
 	derefCount := len(arg.DereferenceOperations)

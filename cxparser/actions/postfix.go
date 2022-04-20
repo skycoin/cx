@@ -103,7 +103,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 			// we create a gensym for it
 			idxSym := ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, LineNo).SetType(prgrm.GetCXArgFromArray(postExpressionOperator.Outputs[0]).Type)
 			idxSym.Size = prgrm.GetCXArgFromArray(postExpressionOperator.Outputs[0]).Size
-			idxSym.TotalSize = ast.GetSize(prgrm, prgrm.GetCXArgFromArray(postExpressionOperator.Outputs[0]))
+			idxSym.TotalSize = ast.GetArgSize(prgrm, prgrm.GetCXArgFromArray(postExpressionOperator.Outputs[0]))
 
 			idxSym.Package = prgrm.CXAtomicOps[postExpressionIdx].Package
 			idxSym.PreviouslyDeclared = true

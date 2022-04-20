@@ -89,13 +89,6 @@ func FunctionAddParameters(prgrm *ast.CXProgram, fnIdx ast.CXFunctionIndex, inpu
 	for _, out := range outputs {
 		fn.AddOutput(prgrm, out)
 	}
-
-	for _, outIdx := range fn.Outputs {
-		out := prgrm.GetCXArgFromArray(outIdx)
-		if out.IsPointer() && out.PointerTargetType != types.STR && out.Type != types.AFF {
-			out.DoesEscape = true
-		}
-	}
 }
 
 func isParseOp(prgrm *ast.CXProgram, expr *ast.CXExpression) bool {
@@ -321,7 +314,7 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 					out = ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, inpExprCXLine.LineNumber).SetType(inpExprAtomicOpInput.Type)
 					out.StructType = inpExprAtomicOpInput.StructType
 					out.Size = inpExprAtomicOpInput.Size
-					out.TotalSize = ast.GetSize(prgrm, inpExprAtomicOpInput)
+					out.TotalSize = ast.GetArgSize(prgrm, inpExprAtomicOpInput)
 					out.Type = inpExprAtomicOpInput.Type
 					out.PointerTargetType = inpExprAtomicOpInput.PointerTargetType
 					out.PreviouslyDeclared = true
@@ -342,7 +335,7 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 						}
 					} else {
 						out.Size = inpExprAtomicOpOperatorOutput.Size
-						out.TotalSize = ast.GetSize(prgrm, inpExprAtomicOpOperatorOutput)
+						out.TotalSize = ast.GetArgSize(prgrm, inpExprAtomicOpOperatorOutput)
 					}
 
 					out.Type = inpExprAtomicOpOperatorOutput.Type
@@ -424,7 +417,7 @@ func ProcessOperatorExpression(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 
 			size := types.Pointer(1)
 			if !ast.IsComparisonOperator(expressionOperator.AtomicOPCode) {
-				size = ast.GetSize(prgrm, prgrm.GetCXArgFromArray(expression.Inputs[0]).GetAssignmentElement(prgrm))
+				size = ast.GetArgSize(prgrm, prgrm.GetCXArgFromArray(expression.Inputs[0]).GetAssignmentElement(prgrm))
 			}
 			out.Size = size
 			out.TotalSize = size
@@ -1107,7 +1100,7 @@ func UpdateSymbolsTable(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXArgum
 			// then it was declared in an outer scope
 			sym.Offset = *offset
 			(*symbols)[lastIdx][fullName] = sym
-			*offset += ast.GetSize(prgrm, sym)
+			*offset += ast.GetArgSize(prgrm, sym)
 		}
 	}
 }
@@ -1417,7 +1410,6 @@ func CopyArgFields(prgrm *ast.CXProgram, sym *ast.CXArgument, arg *ast.CXArgumen
 
 	// sym.Lengths = arg.Lengths
 	sym.Package = arg.Package
-	sym.DoesEscape = arg.DoesEscape
 	sym.Size = arg.Size
 
 	// Checking if it's a slice struct field. We'll do the same process as
@@ -1565,7 +1557,7 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, sym *ast.CXArgument, arg *ast.CXA
 					break
 				}
 
-				nameField.Offset += ast.GetSize(prgrm, &field)
+				nameField.Offset += ast.GetArgSize(prgrm, &field)
 			}
 		}
 	}

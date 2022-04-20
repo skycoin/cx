@@ -139,7 +139,6 @@ type CXArgument struct {
 	IsShortAssignmentDeclaration bool // variables defined with :=
 	IsInnerReference             bool // for example: &slice[0] or &struct.field
 	PreviouslyDeclared           bool
-	DoesEscape                   bool
 }
 
 func (arg CXArgument) IsPointer() bool {
@@ -271,6 +270,14 @@ func (arg *CXArgument) GetType(prgrm *CXProgram) types.Code {
 		return arg.PointerTargetType
 	}
 	return arg.Type
+}
+
+func (arg *CXArgument) GetSize() types.Pointer {
+	if arg.Type != types.I8 {
+		return arg.Type.Size()
+	}
+
+	return arg.Size
 }
 
 // ----------------------------------------------------------------

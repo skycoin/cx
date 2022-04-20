@@ -93,7 +93,7 @@ func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []a
 				out.PointerTargetType = outArg.PointerTargetType
 				out.StructType = outArg.StructType
 				out.Size = outArg.Size
-				out.TotalSize = ast.GetSize(prgrm, outArg)
+				out.TotalSize = ast.GetArgSize(prgrm, outArg)
 				out.PreviouslyDeclared = true
 				outIdx := prgrm.AddCXArgInArray(out)
 

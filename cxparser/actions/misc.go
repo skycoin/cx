@@ -108,9 +108,9 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 	argFldType := ast.MakeField("Type", types.STR, "", 0)
 	argFldType.TotalSize = types.STR.Size()
 
-	argStrct.AddField(prgrm, argFldName)
-	argStrct.AddField(prgrm, argFldIndex)
-	argStrct.AddField(prgrm, argFldType)
+	argStrct.AddField(prgrm, ast.CXTypeSignature_TYPE(argFldName.Type), argFldName, nil)
+	argStrct.AddField(prgrm, ast.CXTypeSignature_TYPE(argFldIndex.Type), argFldIndex, nil)
+	argStrct.AddField(prgrm, ast.CXTypeSignature_TYPE(argFldType.Type), argFldType, nil)
 
 	pkg.AddStruct(prgrm, argStrct)
 
@@ -120,7 +120,7 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 
 	exprFldOperator := ast.MakeField("Operator", types.STR, "", 0)
 
-	exprStrct.AddField(prgrm, exprFldOperator)
+	exprStrct.AddField(prgrm, ast.CXTypeSignature_TYPE(exprFldOperator.Type), exprFldOperator, nil)
 
 	pkg.AddStruct(prgrm, exprStrct)
 
@@ -139,10 +139,10 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 	fnFldOutSig.Size = types.STR.Size()
 	fnFldOutSig = DeclarationSpecifiers(fnFldOutSig, []types.Pointer{0}, constants.DECL_SLICE)
 
-	fnStrct.AddField(prgrm, fnFldName)
-	fnStrct.AddField(prgrm, fnFldInpSig)
+	fnStrct.AddField(prgrm, ast.CXTypeSignature_TYPE(fnFldName.Type), fnFldName, nil)
+	fnStrct.AddField(prgrm, ast.CXTypeSignature_TYPE(fnFldInpSig.Type), fnFldInpSig, nil)
 
-	fnStrct.AddField(prgrm, fnFldOutSig)
+	fnStrct.AddField(prgrm, ast.CXTypeSignature_TYPE(fnFldOutSig.Type), fnFldOutSig, nil)
 
 	pkg.AddStruct(prgrm, fnStrct)
 
@@ -153,7 +153,7 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 	strctFldName := ast.MakeField("Name", types.STR, "", 0)
 	strctFldName.TotalSize = types.STR.Size()
 
-	strctStrct.AddField(prgrm, strctFldName)
+	strctStrct.AddField(prgrm, ast.CXTypeSignature_TYPE(strctFldName.Type), strctFldName, nil)
 
 	pkg.AddStruct(prgrm, strctStrct)
 
@@ -163,7 +163,7 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 
 	pkgFldName := ast.MakeField("Name", types.STR, "", 0)
 
-	pkgStrct.AddField(prgrm, pkgFldName)
+	pkgStrct.AddField(prgrm, ast.CXTypeSignature_TYPE(pkgFldName.Type), pkgFldName, nil)
 
 	pkg.AddStruct(prgrm, pkgStrct)
 
@@ -176,8 +176,8 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 	callFldFnSize := ast.MakeField("FnSize", types.I32, "", 0)
 	callFldFnSize.TotalSize = types.I32.Size()
 
-	callStrct.AddField(prgrm, callFldFnName)
-	callStrct.AddField(prgrm, callFldFnSize)
+	callStrct.AddField(prgrm, ast.CXTypeSignature_TYPE(callFldFnName.Type), callFldFnName, nil)
+	callStrct.AddField(prgrm, ast.CXTypeSignature_TYPE(callFldFnSize.Type), callFldFnSize, nil)
 
 	pkg.AddStruct(prgrm, callStrct)
 
@@ -198,9 +198,9 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 	prgrmFldCaller := DeclarationSpecifiersStruct(prgrm, callStrct.Name, strctPkg.Name, false, currentFile, lineNo)
 	prgrmFldCaller.Name = "Caller"
 
-	prgrmStrct.AddField(prgrm, prgrmFldCallCounter)
-	prgrmStrct.AddField(prgrm, prgrmFldFreeHeap)
-	prgrmStrct.AddField(prgrm, prgrmFldCaller)
+	prgrmStrct.AddField(prgrm, ast.CXTypeSignature_TYPE(prgrmFldCallCounter.Type), prgrmFldCallCounter, nil)
+	prgrmStrct.AddField(prgrm, ast.CXTypeSignature_TYPE(prgrmFldFreeHeap.Type), prgrmFldFreeHeap, nil)
+	prgrmStrct.AddField(prgrm, ast.CXTypeSignature_TYPE(prgrmFldCaller.Type), prgrmFldCaller, nil)
 
 	pkg.AddStruct(prgrm, prgrmStrct)
 }
@@ -241,7 +241,9 @@ func IsAllArgsBasicTypes(prgrm *ast.CXProgram, expr *ast.CXExpression) bool {
 		if inp.Type == types.POINTER {
 			inpType = inp.PointerTargetType
 		}
-		if !inpType.IsPrimitive() {
+
+		// TODO: Check why STR is considered as basic type.
+		if !inpType.IsPrimitive() && inpType != types.STR {
 			return false
 		}
 	}

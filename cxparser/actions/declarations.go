@@ -20,51 +20,37 @@ func DeclarationSpecifiers(declSpec *ast.CXArgument, arrayLengths []types.Pointe
 	switch opTyp {
 	case constants.DECL_POINTER:
 		declSpec.DeclarationSpecifiers = append(declSpec.DeclarationSpecifiers, constants.DECL_POINTER)
-
 		declSpec.Size = types.POINTER_SIZE
 		declSpec.TotalSize = types.POINTER_SIZE
-		// declSpec.IndirectionLevels++
 
 		if declSpec.Type == types.STR || declSpec.StructType != nil {
 			declSpec.PointerTargetType = declSpec.Type
 			declSpec.Type = types.POINTER
 		}
+
 		return declSpec
 	case constants.DECL_ARRAY:
 		for range arrayLengths {
 			declSpec.DeclarationSpecifiers = append(declSpec.DeclarationSpecifiers, constants.DECL_ARRAY)
 		}
 		arg := declSpec
-		// arg.IsArray = true
 		arg.Lengths = arrayLengths
 		arg.TotalSize = arg.Size * TotalLength(arg.Lengths)
 
 		return arg
 	case constants.DECL_SLICE:
-		// for range arrayLengths {
-		// 	declSpec.DeclarationSpecifiers = append(declSpec.DeclarationSpecifiers, cxcore.DECL_SLICE)
-		// }
-
 		arg := declSpec
-
 		arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_SLICE)
-
 		arg.IsSlice = true
-		// arg.IsReference = true
-		// arg.IsArray = true
 		arg.PassBy = constants.PASSBY_REFERENCE
-
 		arg.Lengths = append([]types.Pointer{0}, arg.Lengths...)
-		// arg.Lengths = arrayLengths
-		// arg.TotalSize = arg.Size
-		// arg.Size = cxcore.TYPE_POINTER_SIZE
 		arg.TotalSize = types.POINTER_SIZE
 
 		return arg
 	case constants.DECL_BASIC:
 		arg := declSpec
-		// arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, cxcore.DECL_BASIC)
 		arg.TotalSize = arg.Size
+
 		return arg
 	case constants.DECL_FUNC:
 		// Creating this case if additional operations are needed in the
@@ -96,6 +82,7 @@ func DeclarationSpecifiersStruct(prgrm *ast.CXProgram, ident string, pkgName str
 		panic(err)
 	}
 
+	var strct *ast.CXStruct
 	if isExternal {
 		// custom type in an imported package
 		imp, err := pkg.GetImport(prgrm, pkgName)
@@ -103,37 +90,29 @@ func DeclarationSpecifiersStruct(prgrm *ast.CXProgram, ident string, pkgName str
 			panic(err)
 		}
 
-		strct, err := prgrm.GetStruct(ident, imp.Name)
+		strct, err = prgrm.GetStruct(ident, imp.Name)
 		if err != nil {
 			println(ast.CompilationError(currentFile, lineNo), err.Error())
+
 			return nil
 		}
-
-		arg := ast.MakeArgument("", currentFile, lineNo)
-		arg.Type = types.STRUCT
-		arg.StructType = strct
-		arg.Size = strct.GetStructSize(prgrm)
-		arg.TotalSize = strct.GetStructSize(prgrm)
-		arg.Package = ast.CXPackageIndex(pkg.Index)
-		arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_STRUCT)
-
-		return arg
 	} else {
 		// custom type in the current package
-		strct, err := prgrm.GetStruct(ident, pkg.Name)
+		strct, err = prgrm.GetStruct(ident, pkg.Name)
 		if err != nil {
 			println(ast.CompilationError(currentFile, lineNo), err.Error())
+
 			return nil
 		}
-
-		arg := ast.MakeArgument("", currentFile, lineNo)
-		arg.Type = types.STRUCT
-		arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_STRUCT)
-		arg.StructType = strct
-		arg.Size = strct.GetStructSize(prgrm)
-		arg.TotalSize = strct.GetStructSize(prgrm)
-		arg.Package = ast.CXPackageIndex(pkg.Index)
-
-		return arg
 	}
+
+	arg := ast.MakeArgument("", currentFile, lineNo)
+	arg.Type = types.STRUCT
+	arg.StructType = strct
+	arg.Size = strct.GetStructSize(prgrm)
+	arg.TotalSize = strct.GetStructSize(prgrm)
+	arg.Package = ast.CXPackageIndex(pkg.Index)
+	arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_STRUCT)
+
+	return arg
 }
