@@ -225,9 +225,9 @@ func getFormattedParam(prgrm *CXProgram, params []*CXArgument, pkg *CXPackage, b
 		}
 
 		if i == len(params)-1 {
-			buf.WriteString(fmt.Sprintf("%s %s", GetFormattedName(prgrm, param, externalPkg), GetFormattedType(prgrm, elt)))
+			buf.WriteString(fmt.Sprintf("%s %s", GetFormattedName(prgrm, param, externalPkg, pkg), GetFormattedType(prgrm, elt)))
 		} else {
-			buf.WriteString(fmt.Sprintf("%s %s, ", GetFormattedName(prgrm, param, externalPkg), GetFormattedType(prgrm, elt)))
+			buf.WriteString(fmt.Sprintf("%s %s, ", GetFormattedName(prgrm, param, externalPkg, pkg), GetFormattedType(prgrm, elt)))
 		}
 	}
 }
@@ -570,13 +570,10 @@ func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCod
 
 // getFormattedDerefs is an auxiliary function for `GetFormattedName`. This
 // function formats indexing and pointer dereferences associated to `arg`.
-func getFormattedDerefs(prgrm *CXProgram, arg *CXArgument, includePkg bool) string {
+func getFormattedDerefs(prgrm *CXProgram, arg *CXArgument, includePkg bool, pkg *CXPackage) string {
 	name := ""
 
-	argPkg, err := prgrm.GetPackageFromArray(arg.Package)
-	if err != nil {
-		panic(err)
-	}
+	argPkg := pkg
 	// Checking if we should include `arg`'s package name.
 	if includePkg {
 		name = fmt.Sprintf("%s.%s", argPkg.Name, arg.Name)
@@ -623,14 +620,14 @@ func getFormattedDerefs(prgrm *CXProgram, arg *CXArgument, includePkg bool) stri
 // depicts how an argument is being accessed. Example outputs: "foo[3]",
 // "**bar", "foo.bar[0]". If `includePkg` is `true`, the argument name will
 // include the package name that contains it, such as in "pkg.foo".
-func GetFormattedName(prgrm *CXProgram, arg *CXArgument, includePkg bool) string {
+func GetFormattedName(prgrm *CXProgram, arg *CXArgument, includePkg bool, pkg *CXPackage) string {
 	// Getting formatted name which does not include fields.
-	name := getFormattedDerefs(prgrm, arg, includePkg)
+	name := getFormattedDerefs(prgrm, arg, includePkg, pkg)
 
 	// Adding as suffixes all the fields.
 	for _, fldIdx := range arg.Fields {
 		fld := prgrm.GetCXArgFromArray(fldIdx)
-		name = fmt.Sprintf("%s.%s", name, getFormattedDerefs(prgrm, fld, includePkg))
+		name = fmt.Sprintf("%s.%s", name, getFormattedDerefs(prgrm, fld, includePkg, pkg))
 	}
 
 	// Checking if we're referencing `arg`.
