@@ -69,6 +69,11 @@ func buildStrStructs(prgrm *CXProgram, pkg *CXPackage, ast *string) {
 		*ast += fmt.Sprintf("\t\t%d.- Struct: %s\n", count, strct.Name)
 
 		for k, typeSignature := range strct.Fields {
+			if typeSignature.Type == TYPE_ATOMIC {
+				*ast += fmt.Sprintf("\t\t\t%d.- Field: %s %s\n",
+					k, typeSignature.Name, types.Code(typeSignature.Meta).Name())
+				continue
+			}
 			fldIdx := typeSignature.Meta
 			fld := prgrm.CXArgs[fldIdx]
 			*ast += fmt.Sprintf("\t\t\t%d.- Field: %s %s\n",
@@ -722,6 +727,11 @@ func GetFormattedType(prgrm *CXProgram, arg *CXArgument) string {
 func SignatureStringOfStruct(prgrm *CXProgram, s *CXStruct) string {
 	fields := ""
 	for _, typeSignature := range s.Fields {
+		if typeSignature.Type == TYPE_ATOMIC {
+			fields += fmt.Sprintf(" %s %s;", typeSignature.Name, types.Code(typeSignature.Meta).Name())
+			continue
+		}
+
 		fldIdx := typeSignature.Meta
 		fld := prgrm.CXArgs[fldIdx]
 		fields += fmt.Sprintf(" %s %s;", fld.Name, GetFormattedType(prgrm, &fld))

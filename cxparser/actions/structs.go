@@ -1,6 +1,8 @@
 package actions
 
-import "github.com/skycoin/cx/cx/ast"
+import (
+	"github.com/skycoin/cx/cx/ast"
+)
 
 // DeclareStruct takes a name of a struct and a slice of fields representing
 // the members and adds the struct to the package.
@@ -29,7 +31,7 @@ func DeclareStruct(prgrm *ast.CXProgram, structName string, structFields []*ast.
 		if _, err := strct.GetField(prgrm, field.Name); err == nil {
 			println(ast.CompilationError(field.ArgDetails.FileName, field.ArgDetails.FileLine), "Multiply defined struct field:", field.Name)
 		} else {
-			strct.AddField(prgrm, ast.CXTypeSignature_TYPE(field.Type), field, nil)
+			strct.AddField(prgrm, field.Type, field, nil)
 		}
 	}
 }

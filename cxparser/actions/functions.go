@@ -842,6 +842,7 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) {
 			if prgrm.GetCXArgFromArray(expression.Outputs[i]).GetAssignmentElement(prgrm).StructType != nil {
 				// then it's custom type
 				expectedType = prgrm.GetCXArgFromArray(expression.Outputs[i]).GetAssignmentElement(prgrm).StructType.Name
+
 			} else {
 				// then it's native type
 				expectedType = prgrm.GetCXArgFromArray(expression.Outputs[i]).GetAssignmentElement(prgrm).Type.Name()
@@ -863,7 +864,6 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) {
 				}
 			}
 
-			// if cxcore.GetAssignmentElement(exprs[currIndex].ProgramOutput[i]).Type != cxcore.GetAssignmentElement(inp).Type {
 			if receivedType != expectedType {
 				if exprs[currIndex].IsStructLiteral() {
 					println(ast.CompilationError(prgrm.GetCXArgFromArray(expression.Outputs[i]).ArgDetails.FileName, prgrm.GetCXArgFromArray(expression.Outputs[i]).ArgDetails.FileLine), fmt.Sprintf("field '%s' in struct literal of type '%s' expected argument of type '%s'; '%s' was provided", prgrm.GetCXArgFromArray(prgrm.GetCXArgFromArray(expression.Outputs[i]).Fields[0]).Name, prgrm.GetCXArgFromArray(expression.Outputs[i]).StructType.Name, expectedType, receivedType))
@@ -1520,9 +1520,19 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, sym *ast.CXArgument, arg *ast.CXA
 			}
 
 			for _, typeSignature := range strct.Fields {
+				if nameField.Name == typeSignature.Name && typeSignature.Type == ast.TYPE_ATOMIC {
+					nameField.Type = types.Code(typeSignature.Meta)
+					nameField.StructType = nil
+					nameField.Size = typeSignature.GetSize(prgrm)
+					nameField.TotalSize = typeSignature.GetSize(prgrm)
+					nameField.DeclarationSpecifiers = []int{constants.DECL_BASIC}
+					break
+				}
+
 				fieldIdx := typeSignature.Meta
 				field := prgrm.CXArgs[fieldIdx]
-				if nameField.Name == field.Name {
+
+				if nameField.Name == field.Name && typeSignature.Type != ast.TYPE_ATOMIC {
 					nameField.Type = field.Type
 					nameField.Lengths = field.Lengths
 					nameField.Size = field.Size
@@ -1557,7 +1567,7 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, sym *ast.CXArgument, arg *ast.CXA
 					break
 				}
 
-				nameField.Offset += ast.GetArgSize(prgrm, &field)
+				nameField.Offset += typeSignature.GetSize(prgrm)
 			}
 		}
 	}

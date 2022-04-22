@@ -98,6 +98,15 @@ func (strct *CXStruct) GetField(prgrm *CXProgram, name string) (*CXArgument, err
 	// FieldIdx or the CXArg ID is in Meta field.
 	for _, typeSignature := range strct.Fields {
 		if typeSignature.Name == name {
+			if typeSignature.Type == TYPE_ATOMIC {
+				return &CXArgument{
+					Name:                  typeSignature.Name,
+					Type:                  types.Code(typeSignature.Meta),
+					DeclarationSpecifiers: []int{constants.DECL_BASIC},
+					StructType:            nil,
+				}, nil
+			}
+
 			fldIdx := typeSignature.Meta
 			return &prgrm.CXArgs[fldIdx], nil
 		}
@@ -116,7 +125,7 @@ func MakeStruct(name string) *CXStruct {
 }
 
 // AddField ...
-func (strct *CXStruct) AddField(prgrm *CXProgram, fieldType CXTypeSignature_TYPE, cxArgument *CXArgument, cxStruct *CXStruct) *CXStruct {
+func (strct *CXStruct) AddField(prgrm *CXProgram, fieldType types.Code, cxArgument *CXArgument, cxStruct *CXStruct) *CXStruct {
 	// Check if field already exist
 	for _, typeSignature := range strct.Fields {
 		if typeSignature.Name == cxArgument.Name {
@@ -127,24 +136,38 @@ func (strct *CXStruct) AddField(prgrm *CXProgram, fieldType CXTypeSignature_TYPE
 		}
 	}
 
-	numFlds := len(strct.Fields)
-	fldIdx := prgrm.AddCXArgInArray(cxArgument)
-
-	// All are TYPE_CXARGUMENT_DEPRECATE for now.
-	// FieldIdx or the CXArg ID is in Meta field.
 	newCXTypeSignature := CXTypeSignature{
-		Name:   cxArgument.Name,
-		Offset: cxArgument.Offset,
-		Type:   TYPE_CXARGUMENT_DEPRECATE,
-		Meta:   int(fldIdx),
+		Name: cxArgument.Name,
+	}
+
+	if fieldType == types.BOOL {
+		newCXTypeSignature.Type = TYPE_ATOMIC
+		newCXTypeSignature.Meta = int(fieldType)
+	} else {
+		fldIdx := prgrm.AddCXArgInArray(cxArgument)
+
+		// All are TYPE_CXARGUMENT_DEPRECATE for now.
+		// FieldIdx or the CXArg ID is in Meta field.
+		newCXTypeSignature.Type = TYPE_CXARGUMENT_DEPRECATE
+		newCXTypeSignature.Meta = int(fldIdx)
 	}
 
 	strct.Fields = append(strct.Fields, newCXTypeSignature)
-	if numFlds != 0 {
+
+	// TODO: Found out the effect and completely remove this.
+	// Dont remove this yet as removing this gives another error on cxfx
+	// even though all cx tests passed already.
+	numFlds := len(strct.Fields)
+	if numFlds > 2 {
 		// Pre-compiling the offset of the field.
-		lastTypeSignature := strct.Fields[numFlds-1]
-		lastFldIdx := lastTypeSignature.Meta
-		prgrm.CXArgs[fldIdx].Offset = prgrm.CXArgs[lastFldIdx].Offset + prgrm.CXArgs[lastFldIdx].TotalSize
+		lastTypeSignature := strct.Fields[numFlds-2]
+		currentTypeSignature := strct.Fields[numFlds-1]
+		if lastTypeSignature.Type != TYPE_ATOMIC && currentTypeSignature.Type != TYPE_ATOMIC {
+			lastFldIdx := lastTypeSignature.Meta
+			currFldIdx := currentTypeSignature.Meta
+			prgrm.CXArgs[currFldIdx].Offset = prgrm.CXArgs[lastFldIdx].Offset + prgrm.CXArgs[lastFldIdx].TotalSize
+		}
+
 	}
 
 	return strct
