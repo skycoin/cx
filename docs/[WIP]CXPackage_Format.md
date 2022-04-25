@@ -4,14 +4,13 @@ This is how we’re representing the file. Every file has a length, a name, and 
 ## File Struct
 - Name string
 - Length uint32
-- SHA256Hash string
+- SHA256Hash UUID
 
 ## Package Struct
 - Name string
 - Files []FileStruct
 
 ## CXProgram Struct
-- MainPackage PackageID
 - Packages []PackageID
 
 1. We start with making package structs.
@@ -21,7 +20,7 @@ This is how we’re representing the file. Every file has a length, a name, and 
 5. We will sort the files in the order of the SHA256 hash. 
 6. And then, we will serialize, using [SkyEncoder](https://github.com/skycoin/skyencoder), the Package struct and then we hash the serialization with SHA256, so we get a Package ID.
 7. The Package struct will be stored in a key-value store with its SHA256 hash(Package ID) as its key. 
-8. The CXProgram struct will then be composed of a list of packageID.
+8. The CXProgram struct will then be composed of a list of packageID in which the first packageID is the main package.
 9. And then we will serialize, using [SkyEncoder](https://github.com/skycoin/skyencoder), the CXProgram struct and then we hash the serialization with SHA256, so we get a CXProgram ID.
 10. The CXProgram struct will be stored in a key-value store with its SHA256 hash(CXProgram ID) as its key. 
 
