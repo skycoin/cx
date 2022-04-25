@@ -141,7 +141,7 @@ func (strct *CXStruct) AddField(prgrm *CXProgram, fieldType types.Code, cxArgume
 	}
 
 	// if !cxArgument.IsSlice && (fieldType >= types.BOOL && fieldType <= types.F64) {
-	if !cxArgument.IsSlice && len(cxArgument.Lengths) == 0 && (fieldType >= types.BOOL && fieldType <= types.F64 && fieldType != types.I32) {
+	if !cxArgument.IsSlice && len(cxArgument.Lengths) == 0 && (fieldType >= types.BOOL && fieldType <= types.F64) {
 		newCXTypeSignature.Type = TYPE_ATOMIC
 		newCXTypeSignature.Meta = int(fieldType)
 	} else {
