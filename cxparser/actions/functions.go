@@ -1525,7 +1525,13 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, sym *ast.CXArgument, arg *ast.CXA
 					nameField.StructType = nil
 					nameField.Size = typeSignature.GetSize(prgrm)
 					nameField.TotalSize = typeSignature.GetSize(prgrm)
-					nameField.DeclarationSpecifiers = []int{constants.DECL_BASIC}
+
+					// TODO: this should not be needed.
+					if len(nameField.DeclarationSpecifiers) > 0 {
+						nameField.DeclarationSpecifiers = append([]int{constants.DECL_BASIC}, nameField.DeclarationSpecifiers[1:]...)
+					} else {
+						nameField.DeclarationSpecifiers = []int{constants.DECL_BASIC}
+					}
 					break
 				}
 

@@ -52,7 +52,7 @@ Notes:
 - Use same tasbar library that we're using for skywire(https://github.com/getlantern/systray).
 
 ## CX Package format
-- [ ] Package format - This is how we’re representing the file. Every file has a length, a name, and a hash. Every module is a list of files – file structs. And then, we have a list of the package structs. And then, we can serialize it and hash that to get the ID for the whole program.
+- [ ] Package format - This is how we’re representing the file. Every file has a length, a name, and a hash. Every package is a list of files – file structs. And then, we have a list of the package structs. And then, we can serialize it and hash that to get the ID for the whole program.
 - [ ] CX App Store - For storing CX programs/packages in a key-value store for downloading from website with simple API. To be an added feature in CX-Playground/CX-IDE. This will use CX Package Format in compiling cx program.
 
 Objectives:
