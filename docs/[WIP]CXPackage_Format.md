@@ -18,12 +18,12 @@ This is how we’re representing the file. Every file has a length, a name, and 
 2. Each package struct will have a name and a list of file struct. 
 3. Each file struct will have a filename, a UINT32 length, and a SHA256 hash of the file content.
 4. The file content will be stored in a key-value store with its SHA256 hash as its key. 
-4. We will sort the files in the order of the SHA256 hash. 
-5. And then, we will serialize, using [SkyEncoder](https://github.com/skycoin/skyencoder), the Package struct and then we hash the serialization with SHA256, so we get a Package ID.
-4. The Package struct will be stored in a key-value store with its SHA256 hash(Package ID) as its key. 
-6. The CXProgram struct will then be composed of a list of packageID.
-7. And then we will serialize, using [SkyEncoder](https://github.com/skycoin/skyencoder), the CXProgram struct and then we hash the serialization with SHA256, so we get a CXProgram ID.
-4. The CXProgram struct will be stored in a key-value store with its SHA256 hash(CXProgram ID) as its key. 
+5. We will sort the files in the order of the SHA256 hash. 
+6. And then, we will serialize, using [SkyEncoder](https://github.com/skycoin/skyencoder), the Package struct and then we hash the serialization with SHA256, so we get a Package ID.
+7. The Package struct will be stored in a key-value store with its SHA256 hash(Package ID) as its key. 
+8. The CXProgram struct will then be composed of a list of packageID.
+9. And then we will serialize, using [SkyEncoder](https://github.com/skycoin/skyencoder), the CXProgram struct and then we hash the serialization with SHA256, so we get a CXProgram ID.
+10. The CXProgram struct will be stored in a key-value store with its SHA256 hash(CXProgram ID) as its key. 
 
 Then for retrieving the packages and files to run the cx program
 1. Using only the CXProgram ID, retrieve the serialized CXProgram struct and deserialize it.
