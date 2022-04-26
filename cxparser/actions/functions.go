@@ -1533,6 +1533,22 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, sym *ast.CXArgument, arg *ast.CXA
 						nameField.DeclarationSpecifiers = []int{constants.DECL_BASIC}
 					}
 					break
+				} else if nameField.Name == typeSignature.Name && typeSignature.Type == ast.TYPE_ARRAY_ATOMIC {
+					typeSignatureArray := prgrm.GetTypeSignatureArrayFromArray(typeSignature.Meta)
+					nameField.Type = types.Code(typeSignatureArray.Type)
+					nameField.StructType = nil
+					nameField.Size = typeSignature.GetSize(prgrm)
+					nameField.Lengths = []types.Pointer{typeSignature.GetArrayLength(prgrm)}
+					sym.Lengths = []types.Pointer{typeSignature.GetArrayLength(prgrm)}
+					nameField.TotalSize = typeSignature.GetSize(prgrm) * nameField.Lengths[0]
+
+					// TODO: this should not be needed.
+					if len(nameField.DeclarationSpecifiers) > 0 {
+						nameField.DeclarationSpecifiers = append([]int{constants.DECL_BASIC, constants.DECL_ARRAY}, nameField.DeclarationSpecifiers[1:]...)
+					} else {
+						nameField.DeclarationSpecifiers = []int{constants.DECL_BASIC}
+					}
+					break
 				}
 
 				fieldIdx := typeSignature.Meta
