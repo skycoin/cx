@@ -39,12 +39,13 @@ type CXProgram struct {
 	ProgramError   error
 
 	// For new CX AST arrays
-	CXAtomicOps []CXAtomicOperator
-	CXArgs      []CXArgument
-	CXLines     []CXLine
-	CXPackages  []CXPackage
-	CXFunctions []CXFunction
-	CXStructs   []CXStruct
+	CXAtomicOps            []CXAtomicOperator
+	CXArgs                 []CXArgument
+	CXLines                []CXLine
+	CXPackages             []CXPackage
+	CXFunctions            []CXFunction
+	CXStructs              []CXStruct
+	TypeSignatureForArrays []CXTypeSignature_Array
 	// Then reference the package of function by CxFunction id
 
 	// For Initializers
@@ -241,6 +242,26 @@ func (cxprogram *CXProgram) AddCXAtomicOp(CXAtomicOp *CXAtomicOperator) int {
 	cxprogram.CXAtomicOps = append(cxprogram.CXAtomicOps, *CXAtomicOp)
 
 	return len(cxprogram.CXAtomicOps) - 1
+}
+
+// ----------------------------------------------------------------
+//                         `CXProgram` TypeSignature_Array handling
+func (cxprogram *CXProgram) AddTypeSignatureArrayInArray(typeSignatureArray *CXTypeSignature_Array) int {
+	cxprogram.TypeSignatureForArrays = append(cxprogram.TypeSignatureForArrays, *typeSignatureArray)
+
+	return len(cxprogram.TypeSignatureForArrays) - 1
+}
+
+func (cxprogram *CXProgram) GetTypeSignatureArrayFromArray(index int) *CXTypeSignature_Array {
+	if index == -1 {
+		return nil
+	}
+
+	if int(index) > (len(cxprogram.TypeSignatureForArrays) - 1) {
+		panic(fmt.Errorf("error: TypeSignatureForArrays[%d]: index out of bounds", index))
+	}
+
+	return &cxprogram.TypeSignatureForArrays[index]
 }
 
 // ----------------------------------------------------------------

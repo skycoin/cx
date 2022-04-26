@@ -140,15 +140,30 @@ func (strct *CXStruct) AddField(prgrm *CXProgram, fieldType types.Code, cxArgume
 		Name: cxArgument.Name,
 	}
 
-	// if !cxArgument.IsSlice && (fieldType >= types.BOOL && fieldType <= types.F64) {
+	// If atomic type. i.e. i8, i16, i32, f32, etc.
 	if !cxArgument.IsSlice && len(cxArgument.Lengths) == 0 && (fieldType >= types.BOOL && fieldType <= types.F64) {
+		newCXTypeSignature.Name = cxArgument.Name
 		newCXTypeSignature.Type = TYPE_ATOMIC
 		newCXTypeSignature.Meta = int(fieldType)
+
+		// If simple array atomic type, i.e. [5]i32, [2]f64, etc.
+	} else if !cxArgument.IsSlice && len(cxArgument.Lengths) == 1 && len(cxArgument.Indexes) == 0 && (fieldType >= types.BOOL && fieldType <= types.F64) {
+		newCXTypeSignature.Name = cxArgument.Name
+		newCXTypeSignature.Type = TYPE_ARRAY_ATOMIC
+
+		typeSignatureForArray := &CXTypeSignature_Array{
+			Type:   int(fieldType),
+			Length: int(cxArgument.Lengths[0]),
+		}
+		typeSignatureForArrayIdx := prgrm.AddTypeSignatureArrayInArray(typeSignatureForArray)
+
+		newCXTypeSignature.Meta = typeSignatureForArrayIdx
 	} else {
 		fldIdx := prgrm.AddCXArgInArray(cxArgument)
 
 		// All are TYPE_CXARGUMENT_DEPRECATE for now.
 		// FieldIdx or the CXArg ID is in Meta field.
+		newCXTypeSignature.Name = cxArgument.Name
 		newCXTypeSignature.Type = TYPE_CXARGUMENT_DEPRECATE
 		newCXTypeSignature.Meta = int(fldIdx)
 	}
@@ -210,8 +225,8 @@ func (typeSignature *CXTypeSignature) GetSize(prgrm *CXProgram) types.Pointer {
 	case TYPE_POINTER_ATOMIC:
 		return types.POINTER.Size()
 	case TYPE_ARRAY_ATOMIC:
-		// Access array struct then get length
-		// length * atomic size
+		typeSignatureForArray := prgrm.GetTypeSignatureArrayFromArray(typeSignature.Meta)
+		return types.Code(typeSignatureForArray.Type).Size()
 	case TYPE_ARRAY_POINTER_ATOMIC:
 		// Access array struct then get length
 		// length * pointer size
@@ -235,6 +250,16 @@ func (typeSignature *CXTypeSignature) GetSize(prgrm *CXProgram) types.Pointer {
 	case TYPE_CXARGUMENT_DEPRECATE:
 		argIdx := typeSignature.Meta
 		return GetArgSize(prgrm, &prgrm.CXArgs[argIdx])
+	}
+
+	return 0
+}
+
+func (typeSignature *CXTypeSignature) GetArrayLength(prgrm *CXProgram) types.Pointer {
+	switch typeSignature.Type {
+	case TYPE_ARRAY_ATOMIC:
+		typeSignatureForArray := prgrm.GetTypeSignatureArrayFromArray(typeSignature.Meta)
+		return types.Pointer(typeSignatureForArray.Length)
 	}
 
 	return 0
