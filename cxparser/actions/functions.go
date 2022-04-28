@@ -1552,10 +1552,10 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, sym *ast.CXArgument, arg *ast.CXA
 				} else if nameField.Name == typeSignature.Name && typeSignature.Type == ast.TYPE_SLICE_ATOMIC {
 					nameField.Type = types.Code(typeSignature.Meta)
 					nameField.StructType = nil
-					nameField.Size = typeSignature.GetSize(prgrm)
+					nameField.Size = types.Code(typeSignature.Meta).Size()
 					nameField.Lengths = []types.Pointer{0}
 					sym.Lengths = []types.Pointer{0}
-					nameField.TotalSize = types.POINTER_SIZE
+					nameField.TotalSize = typeSignature.GetSize(prgrm)
 					nameField.IsSlice = true
 					nameField.PassBy = constants.PASSBY_REFERENCE
 					// TODO: this should not be needed.
