@@ -174,6 +174,7 @@ func (strct *CXStruct) AddField(prgrm *CXProgram, fieldType types.Code, cxArgume
 		newCXTypeSignature.Meta = int(fldIdx)
 	}
 
+	newCXTypeSignature.Offset = newCXTypeSignature.GetSize(prgrm)
 	strct.Fields = append(strct.Fields, newCXTypeSignature)
 
 	// TODO: Found out the effect and completely remove this.
@@ -241,12 +242,11 @@ func (typeSignature *CXTypeSignature) GetSize(prgrm *CXProgram) types.Pointer {
 		typeSignatureForArray := prgrm.GetTypeSignatureArrayFromArray(typeSignature.Meta)
 		return types.Code(typeSignatureForArray.Type).Size()
 	case TYPE_ARRAY_POINTER_ATOMIC:
-		// Access array struct then get length
-		// length * pointer size
+		return types.POINTER.Size()
 	case TYPE_SLICE_ATOMIC:
 		return types.POINTER.Size()
 	case TYPE_SLICE_POINTER_ATOMIC:
-
+		return types.POINTER.Size()
 	case TYPE_STRUCT:
 	case TYPE_POINTER_STRUCT:
 	case TYPE_ARRAY_STRUCT:

@@ -1611,7 +1611,7 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, sym *ast.CXArgument, arg *ast.CXA
 					break
 				}
 
-				nameField.Offset += typeSignature.GetSize(prgrm)
+				nameField.Offset += typeSignature.Offset
 			}
 		}
 	}
