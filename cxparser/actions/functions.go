@@ -1532,6 +1532,7 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, sym *ast.CXArgument, arg *ast.CXA
 					} else {
 						nameField.DeclarationSpecifiers = []int{constants.DECL_BASIC}
 					}
+
 					break
 				} else if nameField.Name == typeSignature.Name && typeSignature.Type == ast.TYPE_ARRAY_ATOMIC {
 					typeSignatureArray := prgrm.GetTypeSignatureArrayFromArray(typeSignature.Meta)
@@ -1552,12 +1553,12 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, sym *ast.CXArgument, arg *ast.CXA
 				} else if nameField.Name == typeSignature.Name && typeSignature.Type == ast.TYPE_SLICE_ATOMIC {
 					nameField.Type = types.Code(typeSignature.Meta)
 					nameField.StructType = nil
-					nameField.Size = typeSignature.GetSize(prgrm)
+					nameField.Size = types.Code(typeSignature.Meta).Size()
 					nameField.Lengths = []types.Pointer{0}
 					sym.Lengths = []types.Pointer{0}
-					nameField.TotalSize = types.POINTER_SIZE
+					nameField.TotalSize = typeSignature.GetSize(prgrm)
 					nameField.IsSlice = true
-					nameField.PassBy = constants.PASSBY_REFERENCE
+					// nameField.PassBy = constants.PASSBY_REFERENCE
 					// TODO: this should not be needed.
 					if len(nameField.DeclarationSpecifiers) > 0 {
 						nameField.DeclarationSpecifiers = append([]int{constants.DECL_BASIC, constants.DECL_SLICE}, nameField.DeclarationSpecifiers[1:]...)
@@ -1567,6 +1568,21 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, sym *ast.CXArgument, arg *ast.CXA
 
 					nameField.DereferenceOperations = append([]int{constants.DEREF_POINTER}, nameField.DereferenceOperations...)
 					nameField.DereferenceLevels++
+
+					break
+				} else if nameField.Name == typeSignature.Name && typeSignature.Type == ast.TYPE_STRUCT {
+					nameField.Type = types.STRUCT
+					nameField.StructType = prgrm.GetStructFromArray(ast.CXStructIndex(typeSignature.Meta))
+					if nameField.StructType != nil {
+						strct = nameField.StructType
+					}
+
+					// TODO: this should not be needed.
+					if len(nameField.DeclarationSpecifiers) > 0 {
+						nameField.DeclarationSpecifiers = append([]int{constants.DECL_STRUCT}, nameField.DeclarationSpecifiers[1:]...)
+					} else {
+						nameField.DeclarationSpecifiers = []int{constants.DECL_STRUCT}
+					}
 
 					break
 				}
@@ -1610,7 +1626,7 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, sym *ast.CXArgument, arg *ast.CXA
 					break
 				}
 
-				nameField.Offset += typeSignature.GetSize(prgrm)
+				nameField.Offset += typeSignature.Offset
 			}
 		}
 	}
