@@ -160,7 +160,7 @@ func (strct *CXStruct) AddField(prgrm *CXProgram, fieldType types.Code, cxArgume
 		newCXTypeSignature.Meta = typeSignatureForArrayIdx
 
 		// If slice atomic type, i.e. []i32, []f64, etc.
-	} else if cxArgument.IsSlice && len(cxArgument.Lengths) == 1 && fieldType.IsPrimitive() {
+	} else if cxArgument.IsSlice && len(cxArgument.Lengths) == 1 && (fieldType.IsPrimitive() || fieldType == types.STR) {
 		newCXTypeSignature.Name = cxArgument.Name
 		newCXTypeSignature.Type = TYPE_SLICE_ATOMIC
 		newCXTypeSignature.Meta = int(fieldType)
