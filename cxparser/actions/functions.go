@@ -1570,6 +1570,21 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, sym *ast.CXArgument, arg *ast.CXA
 					nameField.DereferenceLevels++
 
 					break
+				} else if nameField.Name == typeSignature.Name && typeSignature.Type == ast.TYPE_STRUCT {
+					nameField.Type = types.STRUCT
+					nameField.StructType = prgrm.GetStructFromArray(ast.CXStructIndex(typeSignature.Meta))
+					if nameField.StructType != nil {
+						strct = nameField.StructType
+					}
+
+					// TODO: this should not be needed.
+					if len(nameField.DeclarationSpecifiers) > 0 {
+						nameField.DeclarationSpecifiers = append([]int{constants.DECL_STRUCT}, nameField.DeclarationSpecifiers[1:]...)
+					} else {
+						nameField.DeclarationSpecifiers = []int{constants.DECL_STRUCT}
+					}
+
+					break
 				}
 
 				fieldIdx := typeSignature.Meta
