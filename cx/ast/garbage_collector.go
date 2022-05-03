@@ -20,7 +20,7 @@ func MarkAndCompact(prgrm *CXProgram) {
 
 		for _, glblIdx := range pkg.Globals {
 			glbl := prgrm.GetCXArg(glblIdx)
-			if (glbl.IsPointer() || glbl.IsSlice || glbl.Type == types.STR) && glbl.StructType == nil {
+			if (glbl.IsString() || glbl.IsSlice || glbl.Type == types.STR) && glbl.StructType == nil {
 				// Getting the offset to the object in the heap
 				heapOffset := types.Read_ptr(prgrm.Memory, glbl.Offset)
 				if heapOffset < prgrm.Heap.StartsAt {
@@ -46,7 +46,7 @@ func MarkAndCompact(prgrm *CXProgram) {
 						continue
 					}
 
-					if fld.IsPointer() || fld.IsSlice || fld.Type == types.STR {
+					if fld.IsString() || fld.IsSlice || fld.Type == types.STR {
 						fldType := fld.Type
 						if fld.Type == types.POINTER {
 							fldType = fld.PointerTargetType
@@ -228,7 +228,7 @@ func DisplaceReferences(prgrm *CXProgram, off types.Pointer, numPkgs int) {
 		// execution.
 		for _, glblIdx := range pkg.Globals {
 			glbl := prgrm.GetCXArg(glblIdx)
-			if glbl.IsPointer() || glbl.IsSlice {
+			if glbl.IsString() || glbl.IsStruct || glbl.IsSlice {
 				doDisplaceReferences(prgrm, &updated, glbl.Offset, off, glbl.Type, glbl.DeclarationSpecifiers[1:]) // TODO:PTR remove hardcoded offsets
 			}
 
@@ -237,7 +237,7 @@ func DisplaceReferences(prgrm *CXProgram, off types.Pointer, numPkgs int) {
 				for _, typeSignature := range glbl.StructType.Fields {
 					fldIdx := typeSignature.Meta
 					fld := prgrm.CXArgs[fldIdx]
-					if fld.IsPointer() || fld.IsSlice {
+					if fld.IsString() || fld.IsStruct || fld.IsSlice {
 						doDisplaceReferences(prgrm, &updated, glbl.Offset+fld.Offset, off, fld.Type, fld.DeclarationSpecifiers[1:])
 					}
 				}

@@ -145,6 +145,10 @@ func (arg CXArgument) IsPointer() bool {
 	return arg.Type == types.POINTER
 }
 
+func (arg CXArgument) IsString() bool {
+	return arg.PointerTargetType == types.STR || arg.Type == types.STR
+}
+
 /*
 grep -rn "IsShortAssignmentDeclaration" .
 IsShortAssignmentDeclaration - is this CXArgument the result of a `CASSIGN` operation (`:=`)?
