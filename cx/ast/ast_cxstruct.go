@@ -148,7 +148,7 @@ func (strct *CXStruct) AddField(prgrm *CXProgram, fieldType types.Code, cxArgume
 	}
 
 	// If atomic type. i.e. i8, i16, i32, f32, etc.
-	if !cxArgument.IsSlice && len(cxArgument.Lengths) == 0 && len(cxArgument.DeclarationSpecifiers) <= 1 && fieldType.IsPrimitive() {
+	if !cxArgument.IsSlice && len(cxArgument.Lengths) == 0 && fieldType.IsPrimitive() {
 		newCXTypeSignature.Type = TYPE_ATOMIC
 		newCXTypeSignature.Meta = int(fieldType)
 
