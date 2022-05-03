@@ -15,13 +15,13 @@ func ArgOfType(arg *ast.CXArgument, t int) {
 }
 
 func ArgAtomic(arg *ast.CXArgument) {
-	if arg.IsStruct || arg.IsPointer() || arg.IsSlice {
+	if arg.IsStruct || arg.IsString() || arg.IsSlice {
 		panic(fmt.Sprintf("Argument %s of type %s is not atomic", arg.Name, arg.Type.Name()))
 	}
 }
 
 func ArgNotAtomic(arg *ast.CXArgument) {
-	if !arg.IsStruct && !arg.IsPointer() && !arg.IsSlice {
+	if !arg.IsStruct && !arg.IsString() && !arg.IsSlice {
 		panic(fmt.Sprintf("Argument %s of type %s is atomic", arg.Name, arg.Type.Name()))
 	}
 }
