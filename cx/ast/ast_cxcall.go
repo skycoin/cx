@@ -101,6 +101,7 @@ func processBuiltInOperators(prgrm *CXProgram, expr *CXExpression, globalInputs 
 		offset := GetFinalOffset(prgrm, fp, input)
 		value := &inputValues[inputIndex]
 		value.Arg = input
+		value.Size = GetArgSize(prgrm, input)
 		value.Offset = offset
 		value.Type = input.Type
 		if input.Type == types.POINTER {
@@ -116,6 +117,7 @@ func processBuiltInOperators(prgrm *CXProgram, expr *CXExpression, globalInputs 
 		offset := GetFinalOffset(prgrm, fp, output)
 		value := &outputValues[outputIndex]
 		value.Arg = output
+		value.Size = GetArgSize(prgrm, output)
 		value.Offset = offset
 		value.Type = output.Type
 		if output.Type == types.POINTER {
