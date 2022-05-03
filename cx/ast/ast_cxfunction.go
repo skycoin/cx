@@ -113,18 +113,16 @@ func (fn *CXFunction) GetExpressionByLine(line int) (*CXExpression, error) {
 
 // AddInput ...
 func (fn *CXFunction) AddInput(prgrm *CXProgram, param *CXArgument) *CXFunction {
-	found := false
 	for _, inpIdx := range fn.Inputs {
 		inp := prgrm.GetCXArgFromArray(inpIdx)
 		if inp.Name == param.Name {
-			found = true
-			break
+			return fn
 		}
 	}
-	if !found {
-		paramIdx := prgrm.AddCXArgInArray(param)
-		fn.Inputs = append(fn.Inputs, paramIdx)
-	}
+
+	param.Package = fn.Package
+	paramIdx := prgrm.AddCXArgInArray(param)
+	fn.Inputs = append(fn.Inputs, paramIdx)
 
 	return fn
 }
@@ -149,20 +147,16 @@ func (fn *CXFunction) RemoveInput(prgrm *CXProgram, inpName string) {
 
 // AddOutput ...
 func (fn *CXFunction) AddOutput(prgrm *CXProgram, param *CXArgument) *CXFunction {
-	found := false
 	for _, outIdx := range fn.Outputs {
 		out := prgrm.GetCXArgFromArray(outIdx)
 		if out.Name == param.Name {
-			found = true
-			break
+			return fn
 		}
-	}
-	if !found {
-		paramIdx := prgrm.AddCXArgInArray(param)
-		fn.Outputs = append(fn.Outputs, paramIdx)
 	}
 
 	param.Package = fn.Package
+	paramIdx := prgrm.AddCXArgInArray(param)
+	fn.Outputs = append(fn.Outputs, paramIdx)
 
 	return fn
 }
