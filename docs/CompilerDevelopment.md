@@ -79,8 +79,6 @@ The atomic unit of data in a program is the [CXArgument](https://github.com/skyc
 * Size - the size of the underlying basic type.
 * TotalSize - total size of an array (only used for Array). 
 * Offset - the location in the program memory this CXArgument resides in.
-* IndirectionLevels - how many discrete levels of indirection to this specific CXArgument?
-* DereferenceLevels - How many dereference operations are performed to get this CXArgument?
 * PassBy - an int constant representing how the variable is passed - pass by value, or pass by reference.
 * FileLine - an int used for crash behavior, storing which file line this CXArgument originates from.
 * StructType - a CXStruct representing the custom type this variable might be (if struct).

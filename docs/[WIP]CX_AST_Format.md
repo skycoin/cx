@@ -19,7 +19,6 @@ The object is composed of the following fields:
 * Size - the size of the underlying basic type.
 * TotalSize - total size of an array (only used for Array). 
 * Offset - the location in the program memory this CXArgument resides in.
-* DereferenceLevels - How many dereference operations are performed to get this CXArgument?
 * PassBy - an int constant representing how the variable is passed - pass by value, or pass by reference.
 * StructType - a CXStruct representing the custom type this variable might be (if struct).
 * IsSlice, IsStruct - name says it all.

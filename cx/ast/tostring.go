@@ -586,15 +586,6 @@ func getFormattedDerefs(prgrm *CXProgram, arg *CXArgument, includePkg bool, pkg 
 		name = constants.LITERAL_PLACEHOLDER
 	}
 
-	// Checking if we got dereferences, e.g. **foo
-	derefLevels := ""
-	if arg.DereferenceLevels > 0 {
-		for c := 0; c < arg.DereferenceLevels; c++ {
-			derefLevels += "*"
-		}
-	}
-	name = derefLevels + name
-
 	// Checking if we have indexing operations, e.g. foo[2][1]
 	for _, idxIdx := range arg.Indexes {
 		idx := prgrm.GetCXArgFromArray(idxIdx)

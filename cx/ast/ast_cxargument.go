@@ -126,8 +126,7 @@ type CXArgument struct {
 	// value of the `CXArgument`.
 	Offset types.Pointer
 
-	DereferenceLevels int
-	PassBy            int // pass by value or reference
+	PassBy int // pass by value or reference
 
 	ArgDetails *CXArgumentDebug
 
@@ -174,27 +173,6 @@ Binary file ./bin/cx matches
 - can be moved to CX AST annotations (comments to be skipped or map)
 
 	FileLine
-*/
-
-/*
-Note: Dereference Levels, is possible unused
-
-grep -rn "DereferenceLevels" .
-
-./cxparser/actions/functions.go:328:			if fld.IsPointer && fld.DereferenceLevels == 0 {
-./cxparser/actions/functions.go:329:				fld.DereferenceLevels++
-./cxparser/actions/functions.go:333:		if arg.IsStruct && arg.IsPointer && len(arg.Fields) > 0 && arg.DereferenceLevels == 0 {
-./cxparser/actions/functions.go:334:			arg.DereferenceLevels++
-./cxparser/actions/functions.go:1132:					nameFld.DereferenceLevels = sym.DereferenceLevels
-./cxparser/actions/functions.go:1150:						nameFld.DereferenceLevels++
-./cxparser/actions/expressions.go:328:		exprOut.DereferenceLevels++
-./CompilerDevelopment.md:70:* DereferenceLevels - How many dereference operations are performed to get this CXArgument?
-./cx/serialize.go:149:	DereferenceLevels           int32
-./cx/serialize.go:300:	s.Arguments[argOff].DereferenceLevels = int32(arg.DereferenceLevels)
-./cx/serialize.go:1008:	arg.DereferenceLevels = int(sArg.DereferenceLevels)
-./cx/cxargument.go:22:	DereferenceLevels     int
-./cx/utilities.go:143:	if arg.DereferenceLevels > 0 {
-./cx/utilities.go:144:		for c := 0; c < arg.DereferenceLevels; c++ {
 */
 
 /*
