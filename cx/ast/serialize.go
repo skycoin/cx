@@ -136,16 +136,11 @@ func serializeArgument(prgrm *CXProgram, arg *CXArgument, s *SerializedCXProgram
 	s.Arguments[argOff].Size = int64(arg.Size)
 	s.Arguments[argOff].TotalSize = int64(arg.TotalSize)
 	s.Arguments[argOff].Offset = int64(arg.Offset)
-	// s.Arguments[argOff].IndirectionLevels = int64(arg.IndirectionLevels)
-	s.Arguments[argOff].DereferenceLevels = int64(arg.DereferenceLevels)
 
 	s.Arguments[argOff].DeclarationSpecifiersOffset,
 		s.Arguments[argOff].DeclarationSpecifiersSize = serializeIntegers(arg.DeclarationSpecifiers, s)
 
 	s.Arguments[argOff].IsSlice = serializeBoolean(arg.IsSlice)
-	// s.Arguments[argOff].IsPointer = serializeBoolean(arg.IsPointer)
-	// s.Arguments[argOff].IsReference = serializeBoolean(arg.IsReference)
-
 	s.Arguments[argOff].IsStruct = serializeBoolean(arg.IsStruct)
 	s.Arguments[argOff].IsInnerArg = serializeBoolean(arg.IsInnerArg)
 	s.Arguments[argOff].IsLocalDeclaration = serializeBoolean(arg.IsLocalDeclaration)
@@ -968,8 +963,6 @@ func deserializeArgument(sArg *serializedArgument, s *SerializedCXProgram, prgrm
 	arg.Size = types.Cast_i64_to_ptr(sArg.Size)
 	arg.TotalSize = types.Cast_i64_to_ptr(sArg.TotalSize)
 	arg.Offset = types.Cast_i64_to_ptr(sArg.Offset)
-	// arg.IndirectionLevels = int(sArg.IndirectionLevels)
-	arg.DereferenceLevels = int(sArg.DereferenceLevels)
 	arg.PassBy = int(sArg.PassBy)
 
 	arg.DeclarationSpecifiers = deserializeIntegers(sArg.DeclarationSpecifiersOffset, sArg.DeclarationSpecifiersSize, s)

@@ -440,13 +440,24 @@ func ProcessPointerStructs(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 		arg := prgrm.GetCXArgFromArray(argIdx)
 		for _, fldIdx := range arg.Fields {
 			fld := prgrm.GetCXArgFromArray(fldIdx)
-			if fld.IsPointer() && fld.DereferenceLevels == 0 {
-				prgrm.CXArgs[fldIdx].DereferenceLevels++
+			doesFieldHaveDerefPointer := false
+			for _, deref := range fld.DereferenceOperations {
+				if deref == constants.DEREF_POINTER {
+					doesFieldHaveDerefPointer = true
+				}
+			}
+			if fld.IsPointer() && !doesFieldHaveDerefPointer {
 				prgrm.CXArgs[fldIdx].DereferenceOperations = append(prgrm.CXArgs[fldIdx].DereferenceOperations, constants.DEREF_POINTER)
 			}
 		}
-		if arg.IsStruct && arg.IsPointer() && len(arg.Fields) > 0 && arg.DereferenceLevels == 0 {
-			prgrm.CXArgs[argIdx].DereferenceLevels++
+
+		doesArgHaveDerefPointer := false
+		for _, deref := range arg.DereferenceOperations {
+			if deref == constants.DEREF_POINTER {
+				doesArgHaveDerefPointer = true
+			}
+		}
+		if arg.IsStruct && arg.IsPointer() && len(arg.Fields) > 0 && !doesArgHaveDerefPointer {
 			prgrm.CXArgs[argIdx].DereferenceOperations = append(arg.DereferenceOperations, constants.DEREF_POINTER)
 		}
 	}
@@ -1567,7 +1578,6 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, sym *ast.CXArgument, arg *ast.CXA
 					}
 
 					nameField.DereferenceOperations = append([]int{constants.DEREF_POINTER}, nameField.DereferenceOperations...)
-					nameField.DereferenceLevels++
 
 					break
 				} else if nameField.Name == typeSignature.Name && typeSignature.Type == ast.TYPE_STRUCT {
@@ -1595,7 +1605,6 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, sym *ast.CXArgument, arg *ast.CXA
 					nameField.Lengths = field.Lengths
 					nameField.Size = field.Size
 					nameField.TotalSize = field.TotalSize
-					nameField.DereferenceLevels = sym.DereferenceLevels
 					nameField.PointerTargetType = field.PointerTargetType
 					nameField.StructType = field.StructType
 
@@ -1609,7 +1618,6 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, sym *ast.CXArgument, arg *ast.CXA
 
 					if field.IsSlice {
 						nameField.DereferenceOperations = append([]int{constants.DEREF_POINTER}, nameField.DereferenceOperations...)
-						nameField.DereferenceLevels++
 					}
 
 					nameField.PassBy = field.PassBy

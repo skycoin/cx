@@ -407,7 +407,6 @@ func UnaryExpression(prgrm *ast.CXProgram, op string, prevExprs []ast.CXExpressi
 	exprOut := lastPrevExpressionOutput.GetAssignmentElement(prgrm)
 	switch op {
 	case "*":
-		exprOut.DereferenceLevels++
 		exprOut.DereferenceOperations = append(exprOut.DereferenceOperations, constants.DEREF_POINTER)
 		exprOut.DeclarationSpecifiers = append(exprOut.DeclarationSpecifiers, constants.DECL_DEREF)
 	case "&":
