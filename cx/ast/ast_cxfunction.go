@@ -18,7 +18,7 @@ type CXFunction struct {
 	AtomicOPCode int
 
 	// Contents
-	Inputs      []CXArgumentIndex // Input parameters to the function
+	Inputs      *CXStruct         // Input parameters to the function
 	Outputs     []CXArgumentIndex // Output parameters from the function
 	Expressions []CXExpression    // Expressions, including control flow statements, in the function
 
@@ -65,6 +65,9 @@ func MakeFunction(name string, fileName string, fileLine int) *CXFunction {
 		Index:    -1,
 		FileName: fileName,
 		FileLine: fileLine,
+		Inputs: &CXStruct{
+			Name: name + "_Input",
+		},
 	}
 }
 
@@ -113,7 +116,8 @@ func (fn *CXFunction) GetExpressionByLine(line int) (*CXExpression, error) {
 
 // AddInput ...
 func (fn *CXFunction) AddInput(prgrm *CXProgram, param *CXArgument) *CXFunction {
-	for _, inpIdx := range fn.Inputs {
+	fnInputs := fn.GetInputs(prgrm)
+	for _, inpIdx := range fnInputs {
 		inp := prgrm.GetCXArgFromArray(inpIdx)
 		if inp.Name == param.Name {
 			return fn
@@ -122,28 +126,53 @@ func (fn *CXFunction) AddInput(prgrm *CXProgram, param *CXArgument) *CXFunction 
 
 	param.Package = fn.Package
 	paramIdx := prgrm.AddCXArgInArray(param)
-	fn.Inputs = append(fn.Inputs, paramIdx)
+
+	newField := CXTypeSignature{
+		Name: param.Name,
+		Type: TYPE_CXARGUMENT_DEPRECATE,
+		Meta: int(paramIdx),
+	}
+
+	if fn.Inputs == nil {
+		fn.Inputs = &CXStruct{}
+	}
+	fn.Inputs.AddField_New(prgrm, &newField)
 
 	return fn
 }
 
-// RemoveInput ...
-func (fn *CXFunction) RemoveInput(prgrm *CXProgram, inpName string) {
-	if len(fn.Inputs) > 0 {
-		lenInps := len(fn.Inputs)
-		for i, inpIdx := range fn.Inputs {
-			inp := prgrm.GetCXArgFromArray(inpIdx)
-			if inp.Name == inpName {
-				if i == lenInps {
-					fn.Inputs = fn.Inputs[:len(fn.Inputs)-1]
-				} else {
-					fn.Inputs = append(fn.Inputs[:i], fn.Inputs[i+1:]...)
-				}
-				break
-			}
+func (fn *CXFunction) GetInputs(prgrm *CXProgram) []CXArgumentIndex {
+	var cxArgsIndexes []CXArgumentIndex
+
+	if fn == nil || fn.Inputs == nil {
+		return cxArgsIndexes
+	}
+	for _, field := range fn.Inputs.Fields {
+		if field.Type == TYPE_CXARGUMENT_DEPRECATE {
+			cxArgsIndexes = append(cxArgsIndexes, CXArgumentIndex(field.Meta))
 		}
 	}
+
+	return cxArgsIndexes
 }
+
+// RemoveInput ...
+// func (fn *CXFunction) RemoveInput(prgrm *CXProgram, inpName string) {
+// 	if len(fn.Inputs) > 0 {
+// 		lenInps := len(fn.Inputs)
+// 		for i, inpIdx := range fn.Inputs {
+// 			inp := prgrm.GetCXArgFromArray(inpIdx)
+// 			if inp.Name == inpName {
+// 				if i == lenInps {
+// 					fn.Inputs = fn.Inputs[:len(fn.Inputs)-1]
+// 				} else {
+// 					fn.Inputs = append(fn.Inputs[:i], fn.Inputs[i+1:]...)
+// 				}
+// 				break
+// 			}
+// 		}
+// 	}
+// }
 
 // AddOutput ...
 func (fn *CXFunction) AddOutput(prgrm *CXProgram, param *CXArgument) *CXFunction {

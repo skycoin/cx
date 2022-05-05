@@ -87,25 +87,25 @@ func AddNativeInputToExpression(cxprogram *cxast.CXProgram, packageName, functio
 //             0.- Expression: z i16 = add(x i16)
 //
 // Note the y i16 removed from the expression in line 0.
-func RemoveInputFromExpression(cxprogram *cxast.CXProgram, functionName string, lineNumber int) error {
-	fn, err := FindFunction(cxprogram, functionName)
-	if err != nil {
-		return err
-	}
+// func RemoveInputFromExpression(cxprogram *cxast.CXProgram, functionName string, lineNumber int) error {
+// 	fn, err := FindFunction(cxprogram, functionName)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	expr, err := fn.GetExpressionByLine(lineNumber)
-	if err != nil {
-		return err
-	}
+// 	expr, err := fn.GetExpressionByLine(lineNumber)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	cxAtomicOp, err := cxprogram.GetCXAtomicOp(expr.Index)
-	if err != nil {
-		panic(err)
-	}
+// 	cxAtomicOp, err := cxprogram.GetCXAtomicOp(expr.Index)
+// 	if err != nil {
+// 		panic(err)
+// 	}
 
-	cxAtomicOp.RemoveInput()
-	return nil
-}
+// 	// cxAtomicOp.RemoveInput()
+// 	return nil
+// }
 
 // AddNativeOutputToExpression adds native output to
 // an expression in a function in cx program.

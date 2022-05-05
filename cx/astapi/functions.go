@@ -129,15 +129,15 @@ func AddNativeInputToFunction(cxprogram *cxast.CXProgram, packageName, functionN
 //         0.- Function: TestFunction() ()
 //
 // Note the inputOne i32 input was removed from the TestFunction.
-func RemoveFunctionInput(cxprogram *cxast.CXProgram, functionName, inputName string) error {
-	fn, err := FindFunction(cxprogram, functionName)
-	if err != nil {
-		return err
-	}
+// func RemoveFunctionInput(cxprogram *cxast.CXProgram, functionName, inputName string) error {
+// 	fn, err := FindFunction(cxprogram, functionName)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	fn.RemoveInput(cxprogram, inputName)
-	return nil
-}
+// 	fn.RemoveInput(cxprogram, inputName)
+// 	return nil
+// }
 
 // AddNativeOutputToFunction adds a native output to a function in cx program.
 //

@@ -108,9 +108,9 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 	argFldType := ast.MakeField("Type", types.STR, "", 0)
 	argFldType.TotalSize = types.STR.Size()
 
-	argStrct.AddField(prgrm, argFldName.Type, argFldName, nil)
-	argStrct.AddField(prgrm, argFldIndex.Type, argFldIndex, nil)
-	argStrct.AddField(prgrm, argFldType.Type, argFldType, nil)
+	argStrct.AddField(prgrm, argFldName.Type, argFldName)
+	argStrct.AddField(prgrm, argFldIndex.Type, argFldIndex)
+	argStrct.AddField(prgrm, argFldType.Type, argFldType)
 
 	pkg.AddStruct(prgrm, argStrct)
 
@@ -120,7 +120,7 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 
 	exprFldOperator := ast.MakeField("Operator", types.STR, "", 0)
 
-	exprStrct.AddField(prgrm, exprFldOperator.Type, exprFldOperator, nil)
+	exprStrct.AddField(prgrm, exprFldOperator.Type, exprFldOperator)
 
 	pkg.AddStruct(prgrm, exprStrct)
 
@@ -139,10 +139,10 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 	fnFldOutSig.Size = types.STR.Size()
 	fnFldOutSig = DeclarationSpecifiers(fnFldOutSig, []types.Pointer{0}, constants.DECL_SLICE)
 
-	fnStrct.AddField(prgrm, fnFldName.Type, fnFldName, nil)
-	fnStrct.AddField(prgrm, fnFldInpSig.Type, fnFldInpSig, nil)
+	fnStrct.AddField(prgrm, fnFldName.Type, fnFldName)
+	fnStrct.AddField(prgrm, fnFldInpSig.Type, fnFldInpSig)
 
-	fnStrct.AddField(prgrm, fnFldOutSig.Type, fnFldOutSig, nil)
+	fnStrct.AddField(prgrm, fnFldOutSig.Type, fnFldOutSig)
 
 	pkg.AddStruct(prgrm, fnStrct)
 
@@ -153,7 +153,7 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 	strctFldName := ast.MakeField("Name", types.STR, "", 0)
 	strctFldName.TotalSize = types.STR.Size()
 
-	strctStrct.AddField(prgrm, strctFldName.Type, strctFldName, nil)
+	strctStrct.AddField(prgrm, strctFldName.Type, strctFldName)
 
 	pkg.AddStruct(prgrm, strctStrct)
 
@@ -163,7 +163,7 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 
 	pkgFldName := ast.MakeField("Name", types.STR, "", 0)
 
-	pkgStrct.AddField(prgrm, pkgFldName.Type, pkgFldName, nil)
+	pkgStrct.AddField(prgrm, pkgFldName.Type, pkgFldName)
 
 	pkg.AddStruct(prgrm, pkgStrct)
 
@@ -176,8 +176,8 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 	callFldFnSize := ast.MakeField("FnSize", types.I32, "", 0)
 	callFldFnSize.TotalSize = types.I32.Size()
 
-	callStrct.AddField(prgrm, callFldFnName.Type, callFldFnName, nil)
-	callStrct.AddField(prgrm, callFldFnSize.Type, callFldFnSize, nil)
+	callStrct.AddField(prgrm, callFldFnName.Type, callFldFnName)
+	callStrct.AddField(prgrm, callFldFnSize.Type, callFldFnSize)
 
 	pkg.AddStruct(prgrm, callStrct)
 
@@ -198,9 +198,9 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 	prgrmFldCaller := DeclarationSpecifiersStruct(prgrm, callStrct.Name, strctPkg.Name, false, currentFile, lineNo)
 	prgrmFldCaller.Name = "Caller"
 
-	prgrmStrct.AddField(prgrm, prgrmFldCallCounter.Type, prgrmFldCallCounter, nil)
-	prgrmStrct.AddField(prgrm, prgrmFldFreeHeap.Type, prgrmFldFreeHeap, nil)
-	prgrmStrct.AddField(prgrm, prgrmFldCaller.Type, prgrmFldCaller, nil)
+	prgrmStrct.AddField(prgrm, prgrmFldCallCounter.Type, prgrmFldCallCounter)
+	prgrmStrct.AddField(prgrm, prgrmFldFreeHeap.Type, prgrmFldFreeHeap)
+	prgrmStrct.AddField(prgrm, prgrmFldCaller.Type, prgrmFldCaller)
 
 	pkg.AddStruct(prgrm, prgrmStrct)
 }

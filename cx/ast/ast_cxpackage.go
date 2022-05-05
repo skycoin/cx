@@ -65,9 +65,9 @@ func (pkg *CXPackage) GetImport(prgrm *CXProgram, impName string) (*CXPackage, e
 func (pkg *CXPackage) GetMethod(prgrm *CXProgram, fnName string, receiverType string) (CXFunctionIndex, error) {
 	if fnIdx, ok := pkg.Functions[fnName]; ok {
 		fn := prgrm.GetFunctionFromArray(fnIdx)
-
-		fnInput := prgrm.GetCXArgFromArray(fn.Inputs[0])
-		if len(fn.Inputs) > 0 && fnInput.StructType != nil && fnInput.StructType.Name == receiverType {
+		fnInputs := fn.GetInputs(prgrm)
+		fnInput := prgrm.GetCXArgFromArray(fnInputs[0])
+		if len(fnInputs) > 0 && fnInput.StructType != nil && fnInput.StructType.Name == receiverType {
 			return fnIdx, nil
 		}
 	}

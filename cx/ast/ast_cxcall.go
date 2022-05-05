@@ -171,6 +171,7 @@ func processNonAtomicOperators(prgrm *CXProgram, expr *CXExpression, fp types.Po
 		prgrm.Memory[newFP+c] = 0
 	}
 
+	newCallOperatorInputs := newCall.Operator.GetInputs(prgrm)
 	for i, inpIdx := range cxAtomicOp.Inputs {
 		inp := &prgrm.CXArgs[inpIdx]
 		var byts []byte
@@ -195,7 +196,7 @@ func processNonAtomicOperators(prgrm *CXProgram, expr *CXExpression, fp types.Po
 		// writing inputs to new stack frame
 		types.WriteSlice_byte(
 			prgrm.Memory,
-			GetFinalOffset(prgrm, newFP, &prgrm.CXArgs[newCall.Operator.Inputs[i]]),
+			GetFinalOffset(prgrm, newFP, &prgrm.CXArgs[newCallOperatorInputs[i]]),
 			// newFP + newCall.Operator.ProgramInput[i].Offset,
 			// GetFinalOffset(prgrm.Memory, newFP, newCall.Operator.ProgramInput[i], MEM_WRITE),
 			byts)

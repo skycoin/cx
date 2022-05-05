@@ -326,7 +326,8 @@ func serializeFunctionArguments(prgrm *CXProgram, fn *CXFunction, s *SerializedC
 	if fnOff, found := s.FunctionsMap[fnName]; found {
 		sFn := &s.Functions[fnOff]
 
-		sFn.InputsOffset, sFn.InputsSize = serializeSliceOfArguments(prgrm, prgrm.ConvertIndexArgsToPointerArgs(fn.Inputs), s)
+		fnInputs := fn.GetInputs(prgrm)
+		sFn.InputsOffset, sFn.InputsSize = serializeSliceOfArguments(prgrm, prgrm.ConvertIndexArgsToPointerArgs(fnInputs), s)
 		sFn.OutputsOffset, sFn.OutputsSize = serializeSliceOfArguments(prgrm, prgrm.ConvertIndexArgsToPointerArgs(fn.Outputs), s)
 		sFn.ListOfPointersOffset, sFn.ListOfPointersSize = serializeSliceOfArguments(prgrm, fn.ListOfPointers, s)
 	} else {
@@ -1117,7 +1118,11 @@ func deserializeExpression(sExpr *serializedExpression, s *SerializedCXProgram, 
 
 func deserializeFunction(sFn *serializedFunction, fn *CXFunction, s *SerializedCXProgram, prgrm *CXProgram) {
 	fn.Name = deserializeString(sFn.NameOffset, sFn.NameSize, s)
-	fn.Inputs = prgrm.AddPointerArgsToCXArgsArray(deserializeArguments(sFn.InputsOffset, sFn.InputsSize, s, prgrm))
+
+	cxArgsArray := deserializeArguments(sFn.InputsOffset, sFn.InputsSize, s, prgrm)
+	for _, cxArg := range cxArgsArray {
+		fn.AddInput(prgrm, cxArg)
+	}
 	fn.Outputs = prgrm.AddPointerArgsToCXArgsArray(deserializeArguments(sFn.OutputsOffset, sFn.OutputsSize, s, prgrm))
 	fn.ListOfPointers = deserializeArguments(sFn.ListOfPointersOffset, sFn.ListOfPointersSize, s, prgrm)
 	fn.Package = prgrm.Packages[sFn.PackageName]

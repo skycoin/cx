@@ -31,8 +31,8 @@ func RegisterPackage(prgrm *ast.CXProgram) {
 	seckeyFld.Lengths = []types.Pointer{32} // Yes, SecKey is 32 bytes long.
 	seckeyFld.TotalSize = 33                // 33 * 1 byte (ui8)
 
-	pubkeyStrct.AddField(prgrm, pubkeyFld.Type, pubkeyFld, nil)
-	seckeyStrct.AddField(prgrm, seckeyFld.Type, seckeyFld, nil)
+	pubkeyStrct.AddField(prgrm, pubkeyFld.Type, pubkeyFld)
+	seckeyStrct.AddField(prgrm, seckeyFld.Type, seckeyFld)
 
 	cPkg.AddStruct(prgrm, pubkeyStrct)
 	cPkg.AddStruct(prgrm, seckeyStrct)
