@@ -70,12 +70,14 @@ func FunctionHeader(prgrm *ast.CXProgram, fnName string, receiver []*ast.CXArgum
 //  outputs - parameters to be added in the function as output.
 func FunctionAddParameters(prgrm *ast.CXProgram, fnIdx ast.CXFunctionIndex, inputs, outputs []*ast.CXArgument) {
 	fn := prgrm.GetFunctionFromArray(fnIdx)
-	if len(fn.Inputs) != len(inputs) {
+
+	fnInputs := fn.GetInputs(prgrm)
+	if len(fnInputs) != len(inputs) {
 		// it must be a method declaration
 		// so we save the first input
-		fn.Inputs = fn.Inputs[:1]
+		fn.Inputs.Fields = fn.Inputs.Fields[:1]
 	} else {
-		fn.Inputs = nil
+		fn.Inputs.Fields = nil
 	}
 
 	// we need to wipe the inputs recognized in the first pass
@@ -179,7 +181,7 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fnIdx ast.CXFunctionIndex, inputs
 	ProcessGoTos(prgrm, exprs)
 	AddExprsToFunction(prgrm, fnIdx, exprs)
 
-	ProcessFunctionParameters(prgrm, symbols, &symbolsScope, &offset, fnIdx, fn.Inputs)
+	ProcessFunctionParameters(prgrm, symbols, &symbolsScope, &offset, fnIdx, fn.GetInputs(prgrm))
 	ProcessFunctionParameters(prgrm, symbols, &symbolsScope, &offset, fnIdx, fn.Outputs)
 
 	for i, expr := range fn.Expressions {
@@ -705,10 +707,11 @@ func ProcessGoTos(prgrm *ast.CXProgram, exprs []ast.CXExpression) {
 			panic(err)
 		}
 		expressionOperator := prgrm.GetFunctionFromArray(expression.Operator)
+		expressionOperatorInputs := expressionOperator.GetInputs(prgrm)
 
 		opGotoFn := ast.Natives[constants.OP_GOTO]
 		isOpGoto := false
-		if expressionOperator != nil && expressionOperator.AtomicOPCode == opGotoFn.AtomicOPCode && len(expressionOperator.Inputs) == len(opGotoFn.Inputs) && len(expressionOperator.Outputs) == len(opGotoFn.Outputs) {
+		if expressionOperator != nil && expressionOperator.AtomicOPCode == opGotoFn.AtomicOPCode && len(expressionOperatorInputs) == len(opGotoFn.Inputs) && len(expressionOperator.Outputs) == len(opGotoFn.Outputs) {
 			isOpGoto = true
 		}
 		if isOpGoto {
@@ -800,6 +803,7 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) {
 		panic(err)
 	}
 	expressionOperator := prgrm.GetFunctionFromArray(expression.Operator)
+	expressionOperatorInputs := expressionOperator.GetInputs(prgrm)
 
 	exprCXLine, _ := prgrm.GetPreviousCXLine(exprs, currIndex)
 
@@ -807,15 +811,15 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) {
 		opName := expression.GetOperatorName(prgrm)
 
 		// checking if number of inputs is less than the required number of inputs
-		if len(expression.Inputs) != len(expressionOperator.Inputs) {
-			if !(len(expressionOperator.Inputs) > 0 && prgrm.GetCXArgFromArray(expressionOperator.Inputs[len(expressionOperator.Inputs)-1]).Type != types.UNDEFINED) {
+		if len(expression.Inputs) != len(expressionOperatorInputs) {
+			if !(len(expressionOperatorInputs) > 0 && prgrm.GetCXArgFromArray(expressionOperatorInputs[len(expressionOperatorInputs)-1]).Type != types.UNDEFINED) {
 				// if the last input is of type cxcore.TYPE_UNDEFINED then it might be a variadic function, such as printf
 			} else {
 				// then we need to be strict in the number of inputs
 				var plural1 string
 				var plural2 string = "s"
 				var plural3 string = "were"
-				if len(expressionOperator.Inputs) > 1 {
+				if len(expressionOperatorInputs) > 1 {
 					plural1 = "s"
 				}
 				if len(expression.Inputs) == 1 {
@@ -823,7 +827,7 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) {
 					plural3 = "was"
 				}
 
-				println(ast.CompilationError(exprCXLine.FileName, exprCXLine.LineNumber), fmt.Sprintf("operator '%s' expects %d input%s, but %d input argument%s %s provided", opName, len(expressionOperator.Inputs), plural1, len(expression.Inputs), plural2, plural3))
+				println(ast.CompilationError(exprCXLine.FileName, exprCXLine.LineNumber), fmt.Sprintf("operator '%s' expects %d input%s, but %d input argument%s %s provided", opName, len(expressionOperatorInputs), plural1, len(expression.Inputs), plural2, plural3))
 				return
 			}
 		}
@@ -888,7 +892,7 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) {
 	// then it's a function call and not a declaration
 	if expressionOperator != nil {
 		// checking inputs matching operator's inputs
-		checkMatchParamTypes(prgrm, &exprs[currIndex], expressionOperator.Inputs, expression.Inputs, true)
+		checkMatchParamTypes(prgrm, &exprs[currIndex], expressionOperatorInputs, expression.Inputs, true)
 
 		// checking outputs matching operator's outputs
 		checkMatchParamTypes(prgrm, &exprs[currIndex], expressionOperator.Outputs, expression.Outputs, false)
@@ -902,10 +906,11 @@ func ProcessStringAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 		panic(err)
 	}
 	expressionOperator := prgrm.GetFunctionFromArray(expression.Operator)
+	expressionOperatorInputs := expressionOperator.GetInputs(prgrm)
 
 	opIdentFn := ast.Natives[constants.OP_IDENTITY]
 	isOpIdent := false
-	if expressionOperator != nil && expressionOperator.AtomicOPCode == opIdentFn.AtomicOPCode && len(expressionOperator.Inputs) == len(opIdentFn.Inputs) && len(expressionOperator.Outputs) == len(opIdentFn.Outputs) {
+	if expressionOperator != nil && expressionOperator.AtomicOPCode == opIdentFn.AtomicOPCode && len(expressionOperatorInputs) == len(opIdentFn.Inputs) && len(expressionOperator.Outputs) == len(opIdentFn.Outputs) {
 		isOpIdent = true
 	}
 	if isOpIdent {
@@ -1009,10 +1014,11 @@ func ProcessSliceAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 		panic(err)
 	}
 	expressionOperator := prgrm.GetFunctionFromArray(expression.Operator)
+	expressionOperatorInputs := expressionOperator.GetInputs(prgrm)
 
 	opIdentFn := ast.Natives[constants.OP_IDENTITY]
 	isOpIdent := false
-	if expressionOperator != nil && expressionOperator.AtomicOPCode == opIdentFn.AtomicOPCode && len(expressionOperator.Inputs) == len(opIdentFn.Inputs) && len(expressionOperator.Outputs) == len(opIdentFn.Outputs) {
+	if expressionOperator != nil && expressionOperator.AtomicOPCode == opIdentFn.AtomicOPCode && len(expressionOperatorInputs) == len(opIdentFn.Inputs) && len(expressionOperator.Outputs) == len(opIdentFn.Outputs) {
 		isOpIdent = true
 	}
 
@@ -1282,9 +1288,10 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 			}
 		}
 		expressionOperator := prgrm.GetFunctionFromArray(expression.Operator)
+		expressionOperatorInputs := expressionOperator.GetInputs(prgrm)
 
 		// checking if receiver is sent as pointer or not
-		if prgrm.GetCXArgFromArray(expressionOperator.Inputs[0]).IsPointer() {
+		if prgrm.GetCXArgFromArray(expressionOperatorInputs[0]).IsPointer() {
 			prgrm.CXArgs[expression.Inputs[0]].PassBy = constants.PASSBY_REFERENCE
 		}
 	}
@@ -1319,10 +1326,11 @@ func ProcessTempVariable(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 		panic(err)
 	}
 	expressionOperator := prgrm.GetFunctionFromArray(expression.Operator)
+	expressionOperatorInputs := expressionOperator.GetInputs(prgrm)
 
 	opIdentFn := ast.Natives[constants.OP_IDENTITY]
 	isOpIdent := false
-	if expressionOperator != nil && expressionOperator.AtomicOPCode == opIdentFn.AtomicOPCode && len(expressionOperator.Inputs) == len(opIdentFn.Inputs) && len(expressionOperator.Outputs) == len(opIdentFn.Outputs) {
+	if expressionOperator != nil && expressionOperator.AtomicOPCode == opIdentFn.AtomicOPCode && len(expressionOperatorInputs) == len(opIdentFn.Inputs) && len(expressionOperator.Outputs) == len(opIdentFn.Outputs) {
 		isOpIdent = true
 	}
 

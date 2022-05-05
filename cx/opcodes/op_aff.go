@@ -59,6 +59,7 @@ func CallAffPredicate(prgrm *ast.CXProgram, fn *ast.CXFunction, predValue []byte
 	prgrm.CallCounter++
 	newCall := &prgrm.CallStack[prgrm.CallCounter]
 	newCall.Operator = fn
+	newCallOperatorInputs := newCall.Operator.GetInputs(prgrm)
 	newCall.Line = 0
 	newCall.FramePointer = prgrm.Stack.Pointer
 
@@ -74,7 +75,7 @@ func CallAffPredicate(prgrm *ast.CXProgram, fn *ast.CXFunction, predValue []byte
 	// sending value to predicate function
 	types.WriteSlice_byte(
 		prgrm.Memory,
-		ast.GetFinalOffset(prgrm, newFP, prgrm.GetCXArgFromArray(newCall.Operator.Inputs[0])),
+		ast.GetFinalOffset(prgrm, newFP, prgrm.GetCXArgFromArray(newCallOperatorInputs[0])),
 		predValue)
 
 	var inputs []ast.CXValue
@@ -336,7 +337,7 @@ func QueryFunction(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpress
 		// WriteMemI32(opNameOffsetB[:], 0, int32(WriteObjectRetOff(opNameB)))
 		types.Write_ptr(opNameOffsetB[:], 0, opNameOffset)
 
-		inpSigOffset := getSignatureSlice(prgrm, f.Inputs)
+		inpSigOffset := getSignatureSlice(prgrm, f.GetInputs(prgrm))
 		outSigOffset := getSignatureSlice(prgrm, f.Outputs)
 
 		fnOffset := ast.AllocateSeq(prgrm, types.OBJECT_HEADER_SIZE+types.STR_SIZE+types.POINTER_SIZE+types.POINTER_SIZE)
@@ -1191,7 +1192,8 @@ func opAffQuery(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 					var prgrmOffsetB [4]byte
 					types.Write_ptr(prgrmOffsetB[:], 0, prgrmOffset)
 
-					predInp := prgrm.GetCXArgFromArray(fn.Inputs[0])
+					fnInputs := fn.GetInputs(prgrm)
+					predInp := prgrm.GetCXArgFromArray(fnInputs[0])
 
 					if predInp.Type == types.STRUCT {
 						if predInp.StructType != nil {

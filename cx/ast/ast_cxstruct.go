@@ -132,7 +132,7 @@ func MakeStruct(name string) *CXStruct {
 }
 
 // AddField ...
-func (strct *CXStruct) AddField(prgrm *CXProgram, fieldType types.Code, cxArgument *CXArgument, cxStruct *CXStruct) *CXStruct {
+func (strct *CXStruct) AddField(prgrm *CXProgram, fieldType types.Code, cxArgument *CXArgument) *CXStruct {
 	// Check if field already exist
 	for _, typeSignature := range strct.Fields {
 		if typeSignature.Name == cxArgument.Name {
@@ -207,6 +207,23 @@ func (strct *CXStruct) AddField(prgrm *CXProgram, fieldType types.Code, cxArgume
 	// 		currentTypeSignature.Offset = lastTypeSignature.Offset + lastTypeSignature.GetSize(prgrm)
 	// 	}
 	// }
+
+	return strct
+}
+
+// AddField ...
+func (strct *CXStruct) AddField_New(prgrm *CXProgram, field *CXTypeSignature) *CXStruct {
+	// Check if field already exist
+	for _, typeSignature := range strct.Fields {
+		if typeSignature.Name == field.Name {
+			// fldIdx := typeSignature.Meta
+			// fmt.Printf("%s : duplicate field", CompilationError(prgrm.CXArgs[fldIdx].ArgDetails.FileName, prgrm.CXArgs[fldIdx].ArgDetails.FileLine))
+			fmt.Println("duplicate field")
+			os.Exit(constants.CX_COMPILATION_ERROR)
+		}
+	}
+
+	strct.Fields = append(strct.Fields, *field)
 
 	return strct
 }

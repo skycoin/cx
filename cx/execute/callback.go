@@ -31,8 +31,9 @@ func Callback(cxprogram *ast.CXProgram, fn *ast.CXFunction, inputs [][]byte) (ou
 		cxprogram.Memory[newFP+c] = 0
 	}
 
+	newCallOperatorInputs := newCall.Operator.GetInputs(cxprogram)
 	for i, inp := range inputs {
-		types.WriteSlice_byte(cxprogram.Memory, ast.GetFinalOffset(cxprogram, newFP, &cxprogram.CXArgs[newCall.Operator.Inputs[i]]), inp)
+		types.WriteSlice_byte(cxprogram.Memory, ast.GetFinalOffset(cxprogram, newFP, &cxprogram.CXArgs[newCallOperatorInputs[i]]), inp)
 	}
 
 	var maxOps = 0
