@@ -201,12 +201,12 @@ func AddNativeOutputToFunction(cxprogram *cxast.CXProgram, packageName, function
 //         0.- Function: TestFunction() ()
 //
 // Note the outputOne i32 output was removed from the TestFunction.
-func RemoveFunctionOutput(cxprogram *cxast.CXProgram, functionName, outputName string) error {
-	fn, err := FindFunction(cxprogram, functionName)
-	if err != nil {
-		return err
-	}
+// func RemoveFunctionOutput(cxprogram *cxast.CXProgram, functionName, outputName string) error {
+// 	fn, err := FindFunction(cxprogram, functionName)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	fn.RemoveOutput(cxprogram, outputName)
-	return nil
-}
+// 	fn.RemoveOutput(cxprogram, outputName)
+// 	return nil
+// }

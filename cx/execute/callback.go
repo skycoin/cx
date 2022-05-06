@@ -47,7 +47,8 @@ func Callback(cxprogram *ast.CXProgram, fn *ast.CXFunction, inputs [][]byte) (ou
 	cxprogram.CallCounter = previousCall
 	cxprogram.CallStack[cxprogram.CallCounter].Line = line
 
-	for _, outIdx := range fn.Outputs {
+	fnOutputs := fn.GetOutputs(cxprogram)
+	for _, outIdx := range fnOutputs {
 		out := &cxprogram.CXArgs[outIdx]
 		// Making a copy of the bytes, so if we modify the bytes being held by `outputs`
 		// we don't modify the program memory.

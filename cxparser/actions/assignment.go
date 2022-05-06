@@ -205,9 +205,9 @@ func getOutputType(prgrm *ast.CXProgram, expr *ast.CXExpression) *ast.CXArgument
 		panic(err)
 	}
 	expressionOperator := prgrm.GetFunctionFromArray(expression.Operator)
-
-	if prgrm.GetCXArgFromArray(expressionOperator.Outputs[0]).Type != types.UNDEFINED {
-		return prgrm.GetCXArgFromArray(expressionOperator.Outputs[0])
+	expressionOperatorOutputs := expressionOperator.GetOutputs(prgrm)
+	if prgrm.GetCXArgFromArray(expressionOperatorOutputs[0]).Type != types.UNDEFINED {
+		return prgrm.GetCXArgFromArray(expressionOperatorOutputs[0])
 	}
 
 	return prgrm.GetCXArgFromArray(expression.Inputs[0])
@@ -232,10 +232,10 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 
 	fromExpressionIdx := fromExprs[lastFromExpressionIdx].Index
 	fromExpressionOperator := prgrm.GetFunctionFromArray(prgrm.CXAtomicOps[fromExpressionIdx].Operator)
-
+	fromExpressionOperatorOutputs := fromExpressionOperator.GetOutputs(prgrm)
 	// Checking if we're trying to assign stuff from a function call
 	// And if that function call actually returns something. If not, throw an error.
-	if fromExpressionOperator != nil && len(fromExpressionOperator.Outputs) == 0 {
+	if fromExpressionOperator != nil && len(fromExpressionOperatorOutputs) == 0 {
 		println(ast.CompilationError(prgrm.GetCXArgFromArray(toExpression.Outputs[0]).ArgDetails.FileName, prgrm.GetCXArgFromArray(toExpression.Outputs[0]).ArgDetails.FileLine), "trying to use an outputless operator in an assignment")
 		os.Exit(constants.CX_COMPILATION_ERROR)
 	}
@@ -362,7 +362,8 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 
 		return append(toExprs[:len(toExprs)-1], fromExprs...)
 	} else {
-		fromCXAtomicOpOperatorOutput := prgrm.GetCXArgFromArray(fromExpressionOperator.Outputs[0])
+		fromExpressionOperatorOutputs := fromExpressionOperator.GetOutputs(prgrm)
+		fromCXAtomicOpOperatorOutput := prgrm.GetCXArgFromArray(fromExpressionOperatorOutputs[0])
 		if fromExpressionOperator.IsBuiltIn() {
 			// only assigning as if the operator had only one output defined
 

@@ -108,7 +108,7 @@ func buildStrFunctions(prgrm *CXProgram, pkg *CXPackage, ast1 *string) {
 		var inps bytes.Buffer
 		var outs bytes.Buffer
 		getFormattedParam(prgrm, prgrm.ConvertIndexArgsToPointerArgs(fn.GetInputs(prgrm)), pkg, &inps)
-		getFormattedParam(prgrm, prgrm.ConvertIndexArgsToPointerArgs(fn.Outputs), pkg, &outs)
+		getFormattedParam(prgrm, prgrm.ConvertIndexArgsToPointerArgs(fn.GetOutputs(prgrm)), pkg, &outs)
 
 		*ast1 += fmt.Sprintf("\t\t%d.- Function: %s (%s) (%s)\n",
 			j, fn.Name, inps.String(), outs.String())
@@ -237,7 +237,7 @@ func SignatureStringOfFunction(prgrm *CXProgram, pkg *CXPackage, f *CXFunction) 
 	var ins bytes.Buffer
 	var outs bytes.Buffer
 	getFormattedParam(prgrm, prgrm.ConvertIndexArgsToPointerArgs(f.GetInputs(prgrm)), pkg, &ins)
-	getFormattedParam(prgrm, prgrm.ConvertIndexArgsToPointerArgs(f.Outputs), pkg, &outs)
+	getFormattedParam(prgrm, prgrm.ConvertIndexArgsToPointerArgs(f.GetOutputs(prgrm)), pkg, &outs)
 
 	return fmt.Sprintf("func %s(%s) (%s)",
 		f.Name, ins.String(), outs.String())
@@ -700,7 +700,7 @@ func GetFormattedType(prgrm *CXProgram, arg *CXArgument) string {
 							// os.Exit(CX_COMPILATION_ERROR)
 							// Adding list of inputs and outputs types.
 							typ += formatParameters(prgrm, prgrm.ConvertIndexArgsToPointerArgs(fn.GetInputs(prgrm)))
-							typ += formatParameters(prgrm, prgrm.ConvertIndexArgsToPointerArgs(fn.Outputs))
+							typ += formatParameters(prgrm, prgrm.ConvertIndexArgsToPointerArgs(fn.GetOutputs(prgrm)))
 						}
 					}
 				}

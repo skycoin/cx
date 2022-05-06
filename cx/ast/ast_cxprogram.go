@@ -146,6 +146,7 @@ func (cxprogram *CXProgram) AddNativeFunctionInArray(fn *CXNativeFunction) CXFun
 		Index:        len(cxprogram.CXFunctions),
 		AtomicOPCode: fn.AtomicOPCode,
 		Inputs:       &CXStruct{},
+		Outputs:      &CXStruct{},
 	}
 
 	// Add inputs to cx arg array
@@ -164,7 +165,14 @@ func (cxprogram *CXProgram) AddNativeFunctionInArray(fn *CXNativeFunction) CXFun
 	// Add outputs to cx arg array
 	for _, argOut := range fn.Outputs {
 		argOutIdx := cxprogram.AddCXArgInArray(argOut)
-		fnNative.Outputs = append(fnNative.Outputs, argOutIdx)
+
+		newField := CXTypeSignature{
+			Name: argOut.Name,
+			Type: TYPE_CXARGUMENT_DEPRECATE,
+			Meta: int(argOutIdx),
+		}
+
+		fnNative.Outputs.Fields = append(fnNative.Outputs.Fields, newField)
 	}
 
 	cxprogram.CXFunctions = append(cxprogram.CXFunctions, *fnNative)
