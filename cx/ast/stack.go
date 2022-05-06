@@ -39,7 +39,8 @@ func (cxprogram *CXProgram) PrintStack() {
 			dupNames = append(dupNames, inpPkg.Name+inp.Name)
 		}
 
-		for _, outIdx := range op.Outputs {
+		opOutputs := op.GetOutputs(cxprogram)
+		for _, outIdx := range opOutputs {
 			out := cxprogram.GetCXArgFromArray(outIdx)
 			fmt.Println("ProgramOutput")
 			fmt.Printf("\t%s : %s() : %s\n", stackValueHeader(out.ArgDetails.FileName, out.ArgDetails.FileLine), op.Name, GetPrintableValue(cxprogram, fp, out))

@@ -37,7 +37,8 @@ func popStack(prgrm *CXProgram, call *CXCall) error {
 	}
 
 	lenOuts := len(cxAtomicOp.Outputs)
-	for i, outIdx := range call.Operator.Outputs {
+	callOperatorOutputs := call.Operator.GetOutputs(prgrm)
+	for i, outIdx := range callOperatorOutputs {
 		// Continuing if there is no receiving variable available.
 		if i >= lenOuts {
 			continue

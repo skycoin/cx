@@ -18,9 +18,9 @@ type CXFunction struct {
 	AtomicOPCode int
 
 	// Contents
-	Inputs      *CXStruct         // Input parameters to the function
-	Outputs     []CXArgumentIndex // Output parameters from the function
-	Expressions []CXExpression    // Expressions, including control flow statements, in the function
+	Inputs      *CXStruct      // Input parameters to the function
+	Outputs     *CXStruct      // Output parameters from the function
+	Expressions []CXExpression // Expressions, including control flow statements, in the function
 
 	//TODO: Better Comment for this
 	LineCount int // number of expressions, pre-computed for performance
@@ -176,7 +176,8 @@ func (fn *CXFunction) GetInputs(prgrm *CXProgram) []CXArgumentIndex {
 
 // AddOutput ...
 func (fn *CXFunction) AddOutput(prgrm *CXProgram, param *CXArgument) *CXFunction {
-	for _, outIdx := range fn.Outputs {
+	fnOutputs := fn.GetOutputs(prgrm)
+	for _, outIdx := range fnOutputs {
 		out := prgrm.GetCXArgFromArray(outIdx)
 		if out.Name == param.Name {
 			return fn
@@ -185,28 +186,53 @@ func (fn *CXFunction) AddOutput(prgrm *CXProgram, param *CXArgument) *CXFunction
 
 	param.Package = fn.Package
 	paramIdx := prgrm.AddCXArgInArray(param)
-	fn.Outputs = append(fn.Outputs, paramIdx)
+
+	newField := CXTypeSignature{
+		Name: param.Name,
+		Type: TYPE_CXARGUMENT_DEPRECATE,
+		Meta: int(paramIdx),
+	}
+
+	if fn.Outputs == nil {
+		fn.Outputs = &CXStruct{}
+	}
+	fn.Outputs.AddField_New(prgrm, &newField)
 
 	return fn
 }
 
-// RemoveOutput ...
-func (fn *CXFunction) RemoveOutput(prgrm *CXProgram, outName string) {
-	if len(fn.Outputs) > 0 {
-		lenOuts := len(fn.Outputs)
-		for i, outIdx := range fn.Outputs {
-			out := prgrm.GetCXArgFromArray(outIdx)
-			if out.Name == outName {
-				if i == lenOuts {
-					fn.Outputs = fn.Outputs[:len(fn.Outputs)-1]
-				} else {
-					fn.Outputs = append(fn.Outputs[:i], fn.Outputs[i+1:]...)
-				}
-				break
-			}
+func (fn *CXFunction) GetOutputs(prgrm *CXProgram) []CXArgumentIndex {
+	var cxArgsIndexes []CXArgumentIndex
+
+	if fn == nil || fn.Outputs == nil {
+		return cxArgsIndexes
+	}
+	for _, field := range fn.Outputs.Fields {
+		if field.Type == TYPE_CXARGUMENT_DEPRECATE {
+			cxArgsIndexes = append(cxArgsIndexes, CXArgumentIndex(field.Meta))
 		}
 	}
+
+	return cxArgsIndexes
 }
+
+// RemoveOutput ...
+// func (fn *CXFunction) RemoveOutput(prgrm *CXProgram, outName string) {
+// 	if len(fn.Outputs) > 0 {
+// 		lenOuts := len(fn.Outputs)
+// 		for i, outIdx := range fn.Outputs {
+// 			out := prgrm.GetCXArgFromArray(outIdx)
+// 			if out.Name == outName {
+// 				if i == lenOuts {
+// 					fn.Outputs = fn.Outputs[:len(fn.Outputs)-1]
+// 				} else {
+// 					fn.Outputs = append(fn.Outputs[:i], fn.Outputs[i+1:]...)
+// 				}
+// 				break
+// 			}
+// 		}
+// 	}
+// }
 
 // AddExpression ...
 func (fn *CXFunction) AddExpression(prgrm *CXProgram, expr *CXExpression) *CXFunction {

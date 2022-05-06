@@ -68,9 +68,9 @@ func IterationExpressions(prgrm *ast.CXProgram,
 
 	lastCondExpressionIdx := conditionExprs[len(conditionExprs)-1].Index
 	lastCondExpressionOperator := prgrm.GetFunctionFromArray(prgrm.CXAtomicOps[lastCondExpressionIdx].Operator)
-
+	lastCondExpressionOperatorOutputs := lastCondExpressionOperator.GetOutputs(prgrm)
 	if len(prgrm.CXAtomicOps[lastCondExpressionIdx].Outputs) < 1 {
-		predicate := ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, LineNo).SetType(prgrm.GetCXArgFromArray(lastCondExpressionOperator.Outputs[0]).Type)
+		predicate := ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, LineNo).SetType(prgrm.GetCXArgFromArray(lastCondExpressionOperatorOutputs[0]).Type)
 		predicate.Package = ast.CXPackageIndex(pkg.Index)
 		predicate.PreviouslyDeclared = true
 		predicateIdx := prgrm.AddCXArgInArray(predicate)
@@ -206,7 +206,8 @@ func SelectionExpressions(prgrm *ast.CXProgram, conditionExprs []ast.CXExpressio
 			prgrm.CXAtomicOps[lastCondExpressionIdx].Inputs = append(prgrm.CXAtomicOps[lastCondExpressionIdx].Outputs, prgrm.CXAtomicOps[lastCondExpressionIdx].Inputs...)
 			prgrm.CXAtomicOps[lastCondExpressionIdx].Outputs = nil
 		} else {
-			predicate.SetType(prgrm.GetCXArgFromArray(lastCondExpressionOperator.Outputs[0]).Type)
+			lastCondExpressionOperatorOutputs := lastCondExpressionOperator.GetOutputs(prgrm)
+			predicate.SetType(prgrm.GetCXArgFromArray(lastCondExpressionOperatorOutputs[0]).Type)
 		}
 		predicate.PreviouslyDeclared = true
 
@@ -273,9 +274,10 @@ func resolveTypeForUnd(prgrm *ast.CXProgram, expr *ast.CXExpression) types.Code 
 		// the expression doesn't return anything
 		return -1
 	}
-	if len(expressionOperator.Outputs) > 0 {
+	expressionOperatorOutputs := expressionOperator.GetOutputs(prgrm)
+	if len(expressionOperatorOutputs) > 0 {
 		// always return first output's type
-		return prgrm.GetCXArgFromArray(expressionOperator.Outputs[0]).Type
+		return prgrm.GetCXArgFromArray(expressionOperatorOutputs[0]).Type
 	}
 
 	// error
@@ -307,9 +309,9 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 
 	lastLeftExpressionIdx := leftExprs[len(leftExprs)-1].Index
 	lastLeftExpressionOperator := prgrm.GetFunctionFromArray(prgrm.CXAtomicOps[lastLeftExpressionIdx].Operator)
-
+	lastLeftExpressionOperatorOutputs := lastLeftExpressionOperator.GetOutputs(prgrm)
 	if len(prgrm.CXAtomicOps[lastLeftExpressionIdx].Outputs) < 1 {
-		lastLeftExpressionOperatorOutput := prgrm.GetCXArgFromArray(lastLeftExpressionOperator.Outputs[0])
+		lastLeftExpressionOperatorOutput := prgrm.GetCXArgFromArray(lastLeftExpressionOperatorOutputs[0])
 
 		out := ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, LineNo)
 		out.SetType(resolveTypeForUnd(prgrm, &leftExprs[len(leftExprs)-1]))
@@ -326,9 +328,9 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 
 	lastRightExpressionIdx := rightExprs[len(rightExprs)-1].Index
 	lastRightExpressionOperator := prgrm.GetFunctionFromArray(prgrm.CXAtomicOps[lastRightExpressionIdx].Operator)
-
+	lastRightExpressionOperatorOutputs := lastRightExpressionOperator.GetOutputs(prgrm)
 	if len(prgrm.CXAtomicOps[lastRightExpressionIdx].Outputs) < 1 {
-		lastRightExpressionOperatorOutput := prgrm.GetCXArgFromArray(lastRightExpressionOperator.Outputs[0])
+		lastRightExpressionOperatorOutput := prgrm.GetCXArgFromArray(lastRightExpressionOperatorOutputs[0])
 
 		out := ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, LineNo)
 		out.SetType(resolveTypeForUnd(prgrm, &rightExprs[len(rightExprs)-1]))
@@ -475,7 +477,8 @@ func AssociateReturnExpressions(prgrm *ast.CXProgram, idx int, retExprs []ast.CX
 
 	lastExpr := retExprs[len(retExprs)-1]
 
-	outParam := prgrm.GetCXArgFromArray(fn.Outputs[idx])
+	fnOutputs := fn.GetOutputs(prgrm)
+	outParam := prgrm.GetCXArgFromArray(fnOutputs[idx])
 
 	out := ast.MakeArgument(outParam.Name, CurrentFile, LineNo)
 	out.SetType(outParam.Type)
@@ -535,15 +538,15 @@ func AddJmpToReturnExpressions(prgrm *ast.CXProgram, exprs ReturnExpressions) []
 	}
 
 	retExprs := exprs.Expressions
-
-	if len(fn.Outputs) != exprs.Size && exprs.Expressions != nil {
+	fnOutputs := fn.GetOutputs(prgrm)
+	if len(fnOutputs) != exprs.Size && exprs.Expressions != nil {
 		// lastExpr := retExprs[len(retExprs)-1]
 		lastExprCXLine, _ := prgrm.GetPreviousCXLine(retExprs, len(retExprs)-1)
 
 		var plural1 string
 		var plural2 string = "s"
 		var plural3 string = "were"
-		if len(fn.Outputs) > 1 {
+		if len(fnOutputs) > 1 {
 			plural1 = "s"
 		}
 		if exprs.Size == 1 {
@@ -551,7 +554,7 @@ func AddJmpToReturnExpressions(prgrm *ast.CXProgram, exprs ReturnExpressions) []
 			plural3 = "was"
 		}
 
-		println(ast.CompilationError(lastExprCXLine.FileName, lastExprCXLine.LineNumber), fmt.Sprintf("function '%s' expects to return %d argument%s, but %d output argument%s %s provided", fn.Name, len(fn.Outputs), plural1, exprs.Size, plural2, plural3))
+		println(ast.CompilationError(lastExprCXLine.FileName, lastExprCXLine.LineNumber), fmt.Sprintf("function '%s' expects to return %d argument%s, but %d output argument%s %s provided", fn.Name, len(fnOutputs), plural1, exprs.Size, plural2, plural3))
 	}
 
 	exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)

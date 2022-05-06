@@ -182,7 +182,7 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fnIdx ast.CXFunctionIndex, inputs
 	AddExprsToFunction(prgrm, fnIdx, exprs)
 
 	ProcessFunctionParameters(prgrm, symbols, &symbolsScope, &offset, fnIdx, fn.GetInputs(prgrm))
-	ProcessFunctionParameters(prgrm, symbols, &symbolsScope, &offset, fnIdx, fn.Outputs)
+	ProcessFunctionParameters(prgrm, symbols, &symbolsScope, &offset, fnIdx, fn.GetOutputs(prgrm))
 
 	for i, expr := range fn.Expressions {
 		if expr.Type == ast.CX_LINE {
@@ -308,7 +308,8 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 			if len(inpExprAtomicOp.Outputs) < 1 {
 				var out *ast.CXArgument
 
-				inpExprAtomicOpOperatorOutput := prgrm.GetCXArgFromArray(inpExprAtomicOpOperator.Outputs[0])
+				inpExprAtomicOpOperatorOutputs := inpExprAtomicOpOperator.GetOutputs(prgrm)
+				inpExprAtomicOpOperatorOutput := prgrm.GetCXArgFromArray(inpExprAtomicOpOperatorOutputs[0])
 				if inpExprAtomicOpOperatorOutput.Type == types.UNDEFINED {
 					// if undefined type, then adopt argument's type
 					inpExprAtomicOpInput := prgrm.GetCXArgFromArray(inpExprAtomicOp.Inputs[0])
@@ -708,10 +709,11 @@ func ProcessGoTos(prgrm *ast.CXProgram, exprs []ast.CXExpression) {
 		}
 		expressionOperator := prgrm.GetFunctionFromArray(expression.Operator)
 		expressionOperatorInputs := expressionOperator.GetInputs(prgrm)
+		expressionOperatorOutputs := expressionOperator.GetOutputs(prgrm)
 
 		opGotoFn := ast.Natives[constants.OP_GOTO]
 		isOpGoto := false
-		if expressionOperator != nil && expressionOperator.AtomicOPCode == opGotoFn.AtomicOPCode && len(expressionOperatorInputs) == len(opGotoFn.Inputs) && len(expressionOperator.Outputs) == len(opGotoFn.Outputs) {
+		if expressionOperator != nil && expressionOperator.AtomicOPCode == opGotoFn.AtomicOPCode && len(expressionOperatorInputs) == len(opGotoFn.Inputs) && len(expressionOperatorOutputs) == len(opGotoFn.Outputs) {
 			isOpGoto = true
 		}
 		if isOpGoto {
@@ -831,13 +833,13 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) {
 				return
 			}
 		}
-
+		expressionOperatorOutputs := expressionOperator.GetOutputs(prgrm)
 		// checking if number of expr.ProgramOutput matches number of Operator.ProgramOutput
-		if len(expression.Outputs) != len(expressionOperator.Outputs) {
+		if len(expression.Outputs) != len(expressionOperatorOutputs) {
 			var plural1 string
 			var plural2 string = "s"
 			var plural3 string = "were"
-			if len(expressionOperator.Outputs) > 1 {
+			if len(expressionOperatorOutputs) > 1 {
 				plural1 = "s"
 			}
 			if len(expression.Outputs) == 1 {
@@ -845,7 +847,7 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) {
 				plural3 = "was"
 			}
 
-			println(ast.CompilationError(exprCXLine.FileName, exprCXLine.LineNumber), fmt.Sprintf("operator '%s' expects to return %d output%s, but %d receiving argument%s %s provided", opName, len(expressionOperator.Outputs), plural1, len(expression.Outputs), plural2, plural3))
+			println(ast.CompilationError(exprCXLine.FileName, exprCXLine.LineNumber), fmt.Sprintf("operator '%s' expects to return %d output%s, but %d receiving argument%s %s provided", opName, len(expressionOperatorOutputs), plural1, len(expression.Outputs), plural2, plural3))
 			os.Exit(constants.CX_COMPILATION_ERROR)
 		}
 	}
@@ -894,8 +896,9 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) {
 		// checking inputs matching operator's inputs
 		checkMatchParamTypes(prgrm, &exprs[currIndex], expressionOperatorInputs, expression.Inputs, true)
 
+		expressionOperatorOutputs := expressionOperator.GetOutputs(prgrm)
 		// checking outputs matching operator's outputs
-		checkMatchParamTypes(prgrm, &exprs[currIndex], expressionOperator.Outputs, expression.Outputs, false)
+		checkMatchParamTypes(prgrm, &exprs[currIndex], expressionOperatorOutputs, expression.Outputs, false)
 	}
 }
 
@@ -907,10 +910,11 @@ func ProcessStringAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 	}
 	expressionOperator := prgrm.GetFunctionFromArray(expression.Operator)
 	expressionOperatorInputs := expressionOperator.GetInputs(prgrm)
+	expressionOperatorOutputs := expressionOperator.GetOutputs(prgrm)
 
 	opIdentFn := ast.Natives[constants.OP_IDENTITY]
 	isOpIdent := false
-	if expressionOperator != nil && expressionOperator.AtomicOPCode == opIdentFn.AtomicOPCode && len(expressionOperatorInputs) == len(opIdentFn.Inputs) && len(expressionOperator.Outputs) == len(opIdentFn.Outputs) {
+	if expressionOperator != nil && expressionOperator.AtomicOPCode == opIdentFn.AtomicOPCode && len(expressionOperatorInputs) == len(opIdentFn.Inputs) && len(expressionOperatorOutputs) == len(opIdentFn.Outputs) {
 		isOpIdent = true
 	}
 	if isOpIdent {
@@ -959,6 +963,7 @@ func ProcessShortDeclaration(prgrm *ast.CXProgram, expr *ast.CXExpression, expre
 	// process short declaration
 	if len(expression.Outputs) > 0 && len(expression.Inputs) > 0 && prgrm.GetCXArgFromArray(expression.Outputs[0]).IsShortAssignmentDeclaration && !expr.IsStructLiteral() && !isParseOp(prgrm, expr) {
 		expressionOperator := prgrm.GetFunctionFromArray(expression.Operator)
+		expressionOperatorOutputs := expressionOperator.GetOutputs(prgrm)
 		prevExpression, err := prgrm.GetPreviousCXAtomicOpFromExpressions(expressions, idx-1)
 		if err != nil {
 			panic(err)
@@ -966,7 +971,7 @@ func ProcessShortDeclaration(prgrm *ast.CXProgram, expr *ast.CXExpression, expre
 
 		var arg *ast.CXArgument
 		if expr.IsMethodCall() {
-			arg = prgrm.GetCXArgFromArray(expressionOperator.Outputs[0])
+			arg = prgrm.GetCXArgFromArray(expressionOperatorOutputs[0])
 		} else {
 			arg = prgrm.GetCXArgFromArray(expression.Inputs[0])
 		}
@@ -1015,10 +1020,11 @@ func ProcessSliceAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 	}
 	expressionOperator := prgrm.GetFunctionFromArray(expression.Operator)
 	expressionOperatorInputs := expressionOperator.GetInputs(prgrm)
+	expressionOperatorOutputs := expressionOperator.GetOutputs(prgrm)
 
 	opIdentFn := ast.Natives[constants.OP_IDENTITY]
 	isOpIdent := false
-	if expressionOperator != nil && expressionOperator.AtomicOPCode == opIdentFn.AtomicOPCode && len(expressionOperatorInputs) == len(opIdentFn.Inputs) && len(expressionOperator.Outputs) == len(opIdentFn.Outputs) {
+	if expressionOperator != nil && expressionOperator.AtomicOPCode == opIdentFn.AtomicOPCode && len(expressionOperatorInputs) == len(opIdentFn.Inputs) && len(expressionOperatorOutputs) == len(opIdentFn.Outputs) {
 		isOpIdent = true
 	}
 
@@ -1327,10 +1333,11 @@ func ProcessTempVariable(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 	}
 	expressionOperator := prgrm.GetFunctionFromArray(expression.Operator)
 	expressionOperatorInputs := expressionOperator.GetInputs(prgrm)
+	expressionOperatorOutputs := expressionOperator.GetOutputs(prgrm)
 
 	opIdentFn := ast.Natives[constants.OP_IDENTITY]
 	isOpIdent := false
-	if expressionOperator != nil && expressionOperator.AtomicOPCode == opIdentFn.AtomicOPCode && len(expressionOperatorInputs) == len(opIdentFn.Inputs) && len(expressionOperator.Outputs) == len(opIdentFn.Outputs) {
+	if expressionOperator != nil && expressionOperator.AtomicOPCode == opIdentFn.AtomicOPCode && len(expressionOperatorInputs) == len(opIdentFn.Inputs) && len(expressionOperatorOutputs) == len(opIdentFn.Outputs) {
 		isOpIdent = true
 	}
 
@@ -1521,8 +1528,9 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, sym *ast.CXArgument, arg *ast.CXA
 
 				if methodIdx, methodErr := strctPkg.GetMethod(prgrm, receiverType+"."+methodName, receiverType); methodErr == nil {
 					method := prgrm.GetFunctionFromArray(methodIdx)
-					field.Type = prgrm.GetCXArgFromArray(method.Outputs[0]).Type
-					field.PointerTargetType = prgrm.GetCXArgFromArray(method.Outputs[0]).PointerTargetType
+					methodOutputs := method.GetOutputs(prgrm)
+					field.Type = prgrm.GetCXArgFromArray(methodOutputs[0]).Type
+					field.PointerTargetType = prgrm.GetCXArgFromArray(methodOutputs[0]).PointerTargetType
 				} else {
 					println(ast.CompilationError(field.ArgDetails.FileName, field.ArgDetails.FileLine), err.Error())
 				}
