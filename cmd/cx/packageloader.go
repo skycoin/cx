@@ -32,6 +32,16 @@ type PackageList struct {
 
 var SRC_PATH = os.Args[1]
 var CURRENT_PATH = ""
+var IMPORTED_DIRECTORIES = []string{}
+
+func contains(list []string, element string) bool {
+	for _, elem := range list {
+		if elem == element {
+			return true
+		}
+	}
+	return false
+}
 
 func main() {
 	if SRC_PATH[len(SRC_PATH)-1:] != "/" {
@@ -60,10 +70,13 @@ func main() {
 
 func (packageList PackageList) addPackagesIn(path string) {
 	CURRENT_PATH = path + "/"
+	if contains(IMPORTED_DIRECTORIES, CURRENT_PATH) {
+		return
+	}
 	newPackage := Package{}
 	imports := []string{}
 	fileList := []os.FileInfo{}
-	files, err := ioutil.ReadDir(path)
+	files, err := ioutil.ReadDir(CURRENT_PATH)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -99,7 +112,10 @@ func (packageList PackageList) addPackagesIn(path string) {
 	}
 	newPackage.addFiles(fileList)
 	packageList.hashPackage(newPackage)
-
+	IMPORTED_DIRECTORIES = append(IMPORTED_DIRECTORIES, CURRENT_PATH)
+	for _, path := range imports {
+		packageList.addPackagesIn(SRC_PATH + path)
+	}
 }
 
 // For a list of cx files, get their package names and return if they match, and add the imports
@@ -159,7 +175,7 @@ func getImports(fileInfo fs.FileInfo, imports []string) ([]string, error) {
 	for scanner.Scan() {
 		if scanner.Text() == "import" {
 			scanner.Scan()
-			imports = append(imports, scanner.Text())
+			imports = append(imports, scanner.Text()[1:len(scanner.Text())-1])
 		}
 		if scanner.Text() == "var" || scanner.Text() == "const" || scanner.Text() == "type" || scanner.Text() == "func" {
 			break
