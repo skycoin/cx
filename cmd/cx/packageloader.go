@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/gob"
+	"errors"
 	"io/fs"
 	"io/ioutil"
 	"log"
@@ -29,9 +30,17 @@ type PackageList struct {
 	Packages []string
 }
 
+var SRC_PATH = os.Args[1]
+var CURRENT_PATH = ""
+
 func main() {
+	if SRC_PATH[len(SRC_PATH)-1:] != "/" {
+		SRC_PATH += "/"
+	}
+	packageList := PackageList{}
+
 	directoryList := []string{}
-	err := filepath.Walk(os.Args[1], func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk(SRC_PATH, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -44,56 +53,136 @@ func main() {
 		log.Fatal(err)
 	}
 
-	packageList := PackageList{}
-	var importList []string
-
-	// For each directory, create a package and get the files in that directory
 	for _, path := range directoryList {
-		var fileList = []fs.FileInfo{}
-		files, err := ioutil.ReadDir(path)
+		packageList.addPackagesIn(path)
+	}
+}
+
+func (packageList PackageList) addPackagesIn(path string) {
+	CURRENT_PATH = path + "/"
+	newPackage := Package{}
+	imports := []string{}
+	fileList := []os.FileInfo{}
+	files, err := ioutil.ReadDir(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	for _, fileInfo := range files {
+		if fileInfo.Name()[len(fileInfo.Name())-2:] != "cx" {
+			continue
+		}
+		fileList = append(fileList, fileInfo)
+	}
+	if len(fileList) == 1 {
+		packageName, err := getPackageName(fileList[0])
 		if err != nil {
 			log.Fatal(err)
 		}
-		for _, file := range files {
-			if file.Name()[len(file.Name())-2:] != "cx" {
-				continue
-			}
-			fileList = append(fileList, file)
+		imports, err = getImports(fileList[0], imports)
+		if err != nil {
+			log.Fatal(err)
 		}
-
-		newPackage := Package{}
-
-		// For each file in the directory, add it to the package
-		for i := 1; i < len(fileList); i++ {
-			samePackage, packageName, err := comparePackages(path+"/"+fileList[i].Name(), path+"/"+fileList[i-1].Name())
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			if !samePackage {
-				log.Print("Files in directory " + path + " are not all in the same newPackage.\nSource of the error: " + fileList[i].Name())
-				log.Fatal("ErrMismatchedPackageFiles")
-			}
-			// Once files are taken care of, add imports to the package
-			newImports, err := getImports(path + "/" + fileList[i].Name())
-			if err != nil {
-				log.Fatal(err)
-			}
-			importList = append(importList, newImports...)
-			newFile := File{
-				FileName: fileList[i].Name(),
-				Length:   uint32(fileList[i].Size()),
-			}
-			h := blake2b.Sum512(newFile.Content)
-			newFile.Blake2Hash = string(h[:])
-			newFile.Content, err = ioutil.ReadFile(path + "/" + fileList[i].Name())
-			if err != nil {
-				log.Fatal(err)
-			}
-			newPackage.PackageName = packageName
-			newPackage.hashFile(newFile)
+		newPackage.PackageName = packageName
+	}
+	if len(fileList) > 1 {
+		samePackage := false
+		packageName := ""
+		samePackage, packageName, imports, err = comparePackageNames(fileList, imports)
+		if err != nil {
+			log.Fatal(err)
 		}
-		packageList.hashPackage(newPackage)
+		if !samePackage {
+			log.Print("Files in directory " + CURRENT_PATH + " are not all in the same newPackage.\nSource of the error: " + packageName)
+			log.Fatal("ErrMismatchedPackageFiles")
+		}
+		newPackage.PackageName = packageName
+	}
+	newPackage.addFiles(fileList)
+	packageList.hashPackage(newPackage)
+
+}
+
+// For a list of cx files, get their package names and return if they match, and add the imports
+func comparePackageNames(fileList []fs.FileInfo, imports []string) (bool, string, []string, error) {
+	packageName, err := getPackageName(fileList[0])
+	if err != nil {
+		return false, "", imports, err
+	}
+	imports, err = getImports(fileList[0], imports)
+	if err != nil {
+		return false, "", imports, err
+	}
+	for i := 1; i < len(fileList); i++ {
+		newPackageName, err := getPackageName(fileList[i])
+		if err != nil {
+			return false, "", imports, err
+		}
+		imports, err = getImports(fileList[i], imports)
+		if err != nil {
+			return false, "", imports, err
+		}
+		if newPackageName != packageName {
+			return false, newPackageName + "in" + fileList[i].Name(), imports, nil
+		}
+	}
+	return true, packageName, imports, nil
+}
+
+// Get the package name of a cx file
+func getPackageName(fileInfo fs.FileInfo) (string, error) {
+	file, err := os.Open(CURRENT_PATH + fileInfo.Name())
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+	scanner := bufio.NewScanner(file)
+	scanner.Split(bufio.ScanWords)
+	for scanner.Text() != "package" {
+		scanner.Scan()
+		if scanner.Text() == "var" || scanner.Text() == "const" || scanner.Text() == "type" || scanner.Text() == "func" {
+			return "", errors.New("No package name found")
+		}
+	}
+	scanner.Scan()
+	return scanner.Text(), nil
+}
+
+// Get the import names in a cx file
+func getImports(fileInfo fs.FileInfo, imports []string) ([]string, error) {
+	file, err := os.Open(CURRENT_PATH + fileInfo.Name())
+	if err != nil {
+		return imports, err
+	}
+	defer file.Close()
+	scanner := bufio.NewScanner(file)
+	scanner.Split(bufio.ScanWords)
+	for scanner.Scan() {
+		if scanner.Text() == "import" {
+			scanner.Scan()
+			imports = append(imports, scanner.Text())
+		}
+		if scanner.Text() == "var" || scanner.Text() == "const" || scanner.Text() == "type" || scanner.Text() == "func" {
+			break
+		}
+	}
+	return imports, nil
+}
+
+// Add the hashes of the files in fileList to the package
+func (newPackage Package) addFiles(fileList []fs.FileInfo) {
+	for _, file := range fileList {
+		newFile := File{
+			FileName: file.Name(),
+			Length:   uint32(file.Size()),
+		}
+		byteArray, err := ioutil.ReadFile(CURRENT_PATH + file.Name())
+		if err != nil {
+			log.Fatal(err)
+		}
+		newFile.Content = byteArray
+		h := blake2b.Sum512(byteArray)
+		newFile.Blake2Hash = string(h[:])
+		newPackage.hashFile(newFile)
 	}
 }
 
@@ -123,47 +212,4 @@ func (packageList PackageList) hashPackage(newPackage Package) error {
 	h := blake2b.Sum512(buffer.Bytes())
 	packageList.Packages = append(packageList.Packages, string(h[:]))
 	return nil
-}
-
-func comparePackages(filepath1 string, filepath2 string) (bool, string, error) {
-	file1, err := os.Open(filepath1)
-	if err != nil {
-		return false, "", err
-	}
-	defer file1.Close()
-	file2, err := os.Open(filepath2)
-	if err != nil {
-		return false, "", err
-	}
-	defer file2.Close()
-	scanner1 := bufio.NewScanner(file1)
-	scanner2 := bufio.NewScanner(file2)
-	scanner1.Split(bufio.ScanWords)
-	scanner2.Split(bufio.ScanWords)
-	for scanner1.Text() != "package" {
-		scanner1.Scan()
-	}
-	for scanner2.Text() != "package" {
-		scanner2.Scan()
-	}
-	scanner1.Scan()
-	scanner2.Scan()
-	return scanner1.Text() == scanner2.Text(), scanner1.Text(), nil
-}
-
-func getImports(filepath string) (imports []string, err error) {
-	file, err := os.Open(filepath)
-	if err != nil {
-		return []string{}, err
-	}
-	defer file.Close()
-	scanner := bufio.NewScanner(file)
-	scanner.Split(bufio.ScanWords)
-	for scanner.Scan() {
-		if scanner.Text() == "import" {
-			scanner.Scan()
-			imports = append(imports, scanner.Text())
-		}
-	}
-	return imports, nil
 }
