@@ -33,6 +33,7 @@ type PackageList struct {
 var SRC_PATH = os.Args[1]
 var CURRENT_PATH = ""
 var IMPORTED_DIRECTORIES = []string{}
+var SKIP_PACKAGES = []string{"al", "gl", "glfw", "time", "os", "gltext", "cx", "json", "cipher", "tcp"}
 
 func contains(list []string, element string) bool {
 	for _, elem := range list {
@@ -45,7 +46,9 @@ func contains(list []string, element string) bool {
 
 func main() {
 	if SRC_PATH[len(SRC_PATH)-1:] != "/" {
-		SRC_PATH += "/"
+		SRC_PATH += "/src/"
+	} else {
+		SRC_PATH += "src/"
 	}
 	packageList := PackageList{}
 
@@ -66,10 +69,18 @@ func main() {
 	for _, path := range directoryList {
 		packageList.addPackagesIn(path)
 	}
+	count := 0
+	for _, _ = range packageList.Packages {
+		count++
+	}
+	log.Print(count)
 }
 
-func (packageList PackageList) addPackagesIn(path string) {
-	CURRENT_PATH = path + "/"
+func (packageList *PackageList) addPackagesIn(path string) {
+	if path[len(path)-1:] != "/" {
+		path += "/"
+	}
+	CURRENT_PATH = path
 	if contains(IMPORTED_DIRECTORIES, CURRENT_PATH) {
 		return
 	}
@@ -111,9 +122,12 @@ func (packageList PackageList) addPackagesIn(path string) {
 		newPackage.PackageName = packageName
 	}
 	newPackage.addFiles(fileList)
-	packageList.hashPackage(newPackage)
+	packageList.hashPackage(&newPackage)
 	IMPORTED_DIRECTORIES = append(IMPORTED_DIRECTORIES, CURRENT_PATH)
 	for _, path := range imports {
+		if contains(SKIP_PACKAGES, path) {
+			continue
+		}
 		packageList.addPackagesIn(SRC_PATH + path)
 	}
 }
@@ -185,7 +199,7 @@ func getImports(fileInfo fs.FileInfo, imports []string) ([]string, error) {
 }
 
 // Add the hashes of the files in fileList to the package
-func (newPackage Package) addFiles(fileList []fs.FileInfo) {
+func (newPackage *Package) addFiles(fileList []fs.FileInfo) {
 	for _, file := range fileList {
 		newFile := File{
 			FileName: file.Name(),
@@ -198,12 +212,12 @@ func (newPackage Package) addFiles(fileList []fs.FileInfo) {
 		newFile.Content = byteArray
 		h := blake2b.Sum512(byteArray)
 		newFile.Blake2Hash = string(h[:])
-		newPackage.hashFile(newFile)
+		newPackage.hashFile(&newFile)
 	}
 }
 
 // Encode a file and put it in the specified package
-func (newPackage Package) hashFile(newFile File) error {
+func (newPackage *Package) hashFile(newFile *File) error {
 	var buffer bytes.Buffer
 	encoder := gob.NewEncoder(&buffer)
 
@@ -212,12 +226,13 @@ func (newPackage Package) hashFile(newFile File) error {
 		return err
 	}
 	h := blake2b.Sum512(buffer.Bytes())
+
 	newPackage.Files = append(newPackage.Files, string(h[:]))
 	return nil
 }
 
 // Encode a package and put it in the specified package list
-func (packageList PackageList) hashPackage(newPackage Package) error {
+func (packageList *PackageList) hashPackage(newPackage *Package) error {
 	var buffer bytes.Buffer
 	encoder := gob.NewEncoder(&buffer)
 
