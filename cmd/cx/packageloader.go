@@ -29,13 +29,13 @@ type PackageList struct {
 }
 
 func main() {
-	dirList := []string{}
+	directoryList := []string{}
 	err := filepath.Walk(os.Args[1], func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
 		if info.IsDir() {
-			dirList = append(dirList, path)
+			directoryList = append(directoryList, path)
 		}
 		return nil
 	})
@@ -43,17 +43,19 @@ func main() {
 		log.Fatal(err)
 	}
 
-	pl := PackageList{}
+	packageList := PackageList{}
 	var importList []string
 
-	for _, path := range dirList {
+	// For each directory, create a package
+	for _, path := range directoryList {
 		fileList, err := ioutil.ReadDir(path)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		p := Package{}
+		newPackage := Package{}
 
+		// For each file in the directory, add it to the package
 		for i := 1; i < len(fileList); i++ {
 			if fileList[i].IsDir() {
 				continue
@@ -63,54 +65,58 @@ func main() {
 				log.Fatal(err)
 			}
 			if !samePackage {
-				log.Print("Files in directory " + path + " are not all in the same package.\nSource of the error: " + fileList[i].Name())
+				log.Print("Files in directory " + path + " are not all in the same newPackage.\nSource of the error: " + fileList[i].Name())
 				log.Fatal("ErrMismatchedPackageFiles")
 			}
+
+			// Once files are taken care of, add imports to the package
 			newImports, err := getImports(path + "/" + fileList[i].Name())
 			if err != nil {
 				log.Fatal(err)
 			}
 			importList = append(importList, newImports...)
-			f := File{
+			newFile := File{
 				FileName: fileList[i].Name(),
 				Length:   uint32(fileList[i].Size()),
 			}
-			h := blake2b.Sum512(f.Content)
-			f.Blake2Hash = string(h[:])
-			f.Content, err = ioutil.ReadFile(path + "/" + fileList[i].Name())
+			h := blake2b.Sum512(newFile.Content)
+			newFile.Blake2Hash = string(h[:])
+			newFile.Content, err = ioutil.ReadFile(path + "/" + fileList[i].Name())
 			if err != nil {
 				log.Fatal(err)
 			}
-			p.PackageName = packageName
-			p.hashFile(f)
+			newPackage.PackageName = packageName
+			newPackage.hashFile(newFile)
 		}
-		pl.hashPackage(p)
+		packageList.hashPackage(newPackage)
 	}
 }
 
-func (p Package) hashFile(f File) error {
+// Encode a file and put it in the specified package
+func (newPackage Package) hashFile(newFile File) error {
 	var buffer bytes.Buffer
-	enc := gob.NewEncoder(&buffer)
+	encoder := gob.NewEncoder(&buffer)
 
-	err := enc.Encode(f)
+	err := encoder.Encode(newFile)
 	if err != nil {
 		return err
 	}
 	h := blake2b.Sum512(buffer.Bytes())
-	p.Files = append(p.Files, string(h[:]))
+	newPackage.Files = append(newPackage.Files, string(h[:]))
 	return nil
 }
 
-func (pl PackageList) hashPackage(p Package) error {
+// Encode a package and put it in the specified package list
+func (packageList PackageList) hashPackage(newPackage Package) error {
 	var buffer bytes.Buffer
-	enc := gob.NewEncoder(&buffer)
+	encoder := gob.NewEncoder(&buffer)
 
-	err := enc.Encode(p)
+	err := encoder.Encode(newPackage)
 	if err != nil {
 		return err
 	}
 	h := blake2b.Sum512(buffer.Bytes())
-	pl.Packages = append(pl.Packages, string(h[:]))
+	packageList.Packages = append(packageList.Packages, string(h[:]))
 	return nil
 }
 
@@ -129,10 +135,10 @@ func comparePackages(filepath1 string, filepath2 string) (bool, string, error) {
 	scanner2 := bufio.NewScanner(file2)
 	scanner1.Split(bufio.ScanWords)
 	scanner2.Split(bufio.ScanWords)
-	for scanner1.Text() != "package" {
+	for scanner1.Text() != "newPackage" {
 		scanner1.Scan()
 	}
-	for scanner2.Text() != "package" {
+	for scanner2.Text() != "newPackage" {
 		scanner2.Scan()
 	}
 	scanner1.Scan()
