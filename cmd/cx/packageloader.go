@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/gob"
+	"io/fs"
 	"io/ioutil"
 	"log"
 	"os"
@@ -46,29 +47,33 @@ func main() {
 	packageList := PackageList{}
 	var importList []string
 
-	// For each directory, create a package
+	// For each directory, create a package and get the files in that directory
 	for _, path := range directoryList {
-		fileList, err := ioutil.ReadDir(path)
+		var fileList = []fs.FileInfo{}
+		files, err := ioutil.ReadDir(path)
 		if err != nil {
 			log.Fatal(err)
+		}
+		for _, file := range files {
+			if file.Name()[len(file.Name())-2:] != "cx" {
+				continue
+			}
+			fileList = append(fileList, file)
 		}
 
 		newPackage := Package{}
 
 		// For each file in the directory, add it to the package
 		for i := 1; i < len(fileList); i++ {
-			if fileList[i].IsDir() {
-				continue
-			}
 			samePackage, packageName, err := comparePackages(path+"/"+fileList[i].Name(), path+"/"+fileList[i-1].Name())
 			if err != nil {
 				log.Fatal(err)
 			}
+
 			if !samePackage {
 				log.Print("Files in directory " + path + " are not all in the same newPackage.\nSource of the error: " + fileList[i].Name())
 				log.Fatal("ErrMismatchedPackageFiles")
 			}
-
 			// Once files are taken care of, add imports to the package
 			newImports, err := getImports(path + "/" + fileList[i].Name())
 			if err != nil {
@@ -135,10 +140,10 @@ func comparePackages(filepath1 string, filepath2 string) (bool, string, error) {
 	scanner2 := bufio.NewScanner(file2)
 	scanner1.Split(bufio.ScanWords)
 	scanner2.Split(bufio.ScanWords)
-	for scanner1.Text() != "newPackage" {
+	for scanner1.Text() != "package" {
 		scanner1.Scan()
 	}
-	for scanner2.Text() != "newPackage" {
+	for scanner2.Text() != "package" {
 		scanner2.Scan()
 	}
 	scanner1.Scan()
