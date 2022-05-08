@@ -70,10 +70,9 @@ func main() {
 		packageList.addPackagesIn(path)
 	}
 	count := 0
-	for _, _ = range packageList.Packages {
+	for range packageList.Packages {
 		count++
 	}
-	log.Print(count)
 }
 
 func (packageList *PackageList) addPackagesIn(path string) {

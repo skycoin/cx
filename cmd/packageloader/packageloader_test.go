@@ -11,6 +11,7 @@ var testFileList = []os.FileInfo{}
 var testFileList2 = []os.FileInfo{}
 
 const TEST_SRC_PATH = "./test/src/"
+const TEST_SRC_PATH2 = "./test/validsrc/"
 
 func init() {
 	files, err := ioutil.ReadDir(TEST_SRC_PATH)
@@ -97,5 +98,23 @@ func TestComparePackageNamesTrue(t *testing.T) {
 	}
 	if testPackageName != "testimport" {
 		t.Error("Expected testimport, got", testPackageName)
+	}
+}
+
+func TestAddFiles(t *testing.T) {
+	CURRENT_PATH = TEST_SRC_PATH
+	testPackage := Package{}
+	testPackage.addFiles(testFileList)
+	if len(testPackage.Files) != 2 {
+		t.Error("Expected 2 files, got", len(testPackage.Files))
+	}
+}
+
+func TestAddPackagesIn(t *testing.T) {
+	SRC_PATH = TEST_SRC_PATH2
+	testPackageList := PackageList{}
+	testPackageList.addPackagesIn(SRC_PATH)
+	if len(testPackageList.Packages) != 2 {
+		t.Error("Expected 2 packages, got", len(testPackageList.Packages))
 	}
 }
