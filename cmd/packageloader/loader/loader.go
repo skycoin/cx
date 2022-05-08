@@ -30,6 +30,10 @@ type PackageList struct {
 	Packages []string
 }
 
+var FileLookup = map[string]*File{}
+var PackageLookup = map[string]*Package{}
+var PackageListLookup = map[string]*PackageList{}
+
 var SRC_PATH string
 var CURRENT_PATH string
 var IMPORTED_DIRECTORIES = []string{}
@@ -44,12 +48,8 @@ func contains(list []string, element string) bool {
 	return false
 }
 
-func LoadPackages(PATH string) {
-	if PATH[len(PATH)-1:] != "/" {
-		SRC_PATH = PATH + "/src/"
-	} else {
-		SRC_PATH = PATH + "src/"
-	}
+func LoadPackages(programName string, path string) {
+	SRC_PATH = path + "src/"
 
 	packageList := PackageList{}
 
@@ -70,6 +70,7 @@ func LoadPackages(PATH string) {
 	for _, path := range directoryList {
 		packageList.addPackagesIn(path)
 	}
+	PackageListLookup[programName] = &packageList
 }
 
 func (packageList *PackageList) addPackagesIn(path string) {
@@ -224,6 +225,7 @@ func (newPackage *Package) hashFile(newFile *File) error {
 	h := blake2b.Sum512(buffer.Bytes())
 
 	newPackage.Files = append(newPackage.Files, string(h[:]))
+	FileLookup[string(h[:])] = newFile
 	return nil
 }
 
@@ -238,5 +240,6 @@ func (packageList *PackageList) hashPackage(newPackage *Package) error {
 	}
 	h := blake2b.Sum512(buffer.Bytes())
 	packageList.Packages = append(packageList.Packages, string(h[:]))
+	PackageLookup[string(h[:])] = newPackage
 	return nil
 }

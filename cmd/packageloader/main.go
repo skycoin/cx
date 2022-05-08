@@ -4,15 +4,28 @@ import (
 	"log"
 	"os"
 
+	"github.com/skycoin/cx/cmd/packageloader/encoder"
 	"github.com/skycoin/cx/cmd/packageloader/loader"
 )
 
 func main() {
-	if len(os.Args) < 2 {
-		log.Fatal("No arguments given. Usage: packageloader <path>")
+	if len(os.Args) < 4 {
+		log.Fatal("Not enough arguments given. Usage: packageloader <option> <program name> <path>")
 	}
-	if len(os.Args) > 2 {
-		log.Fatal("Too many arguments given. Usage: packageloader <path>")
+	if len(os.Args) > 4 {
+		log.Fatal("Too many arguments given. Usage: packageloader <option> <program name> <path>")
 	}
-	loader.LoadPackages(os.Args[1])
+	programName := os.Args[2]
+	var path string
+	if os.Args[3][:len(os.Args[3])-1] != "/" {
+		path = os.Args[3] + "/"
+	} else {
+		path = os.Args[3]
+	}
+	if os.Args[1] == "-l" {
+		loader.LoadPackages(programName, path)
+	}
+	if os.Args[1] == "-s" {
+		encoder.SavePackagesToDisk(programName, path)
+	}
 }
