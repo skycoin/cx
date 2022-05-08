@@ -121,5 +121,5 @@ func TestAddPackagesIn(t *testing.T) {
 }
 
 func TestMain(t *testing.T) {
-	LoadPackages("./test2/")
+	LoadPackages("test2", "./test2/")
 }
