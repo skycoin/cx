@@ -10,10 +10,11 @@ import (
 var testFileList = []os.FileInfo{}
 var testFileList2 = []os.FileInfo{}
 
-const TEST_SRC_PATH = "./test/src/"
-const TEST_SRC_PATH2 = "./test/validsrc/"
+const TEST_SRC_PATH = "./test1/src/"
+const TEST_SRC_PATH2 = "./test2/src/"
 
 func init() {
+
 	files, err := ioutil.ReadDir(TEST_SRC_PATH)
 	if err != nil {
 		log.Fatal(err)
@@ -117,4 +118,10 @@ func TestAddPackagesIn(t *testing.T) {
 	if len(testPackageList.Packages) != 2 {
 		t.Error("Expected 2 packages, got", len(testPackageList.Packages))
 	}
+}
+
+func TestMain(t *testing.T) {
+	os.Args[1] = "./test2/"
+	SRC_PATH = os.Args[1]
+	main()
 }
