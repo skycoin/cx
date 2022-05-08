@@ -55,7 +55,7 @@
 			<div id="nav">
 				<select id="files">
 				
-				<option value="file0">github.com/skycoin/cx/cmd/packageloader/packageloader.go (71.1%)</option>
+				<option value="file0">github.com/skycoin/cx/cmd/packageloader/packageloader.go (83.6%)</option>
 				
 				</select>
 			</div>
@@ -115,33 +115,33 @@ func contains(list []string, element string) bool <span class="cov8" title="1">{
         <span class="cov8" title="1">return false</span>
 }
 
-func main() <span class="cov0" title="0">{
+func main() <span class="cov8" title="1">{
         if SRC_PATH[len(SRC_PATH)-1:] != "/" </span><span class="cov0" title="0">{
                 SRC_PATH += "/src/"
-        }</span> else<span class="cov0" title="0"> {
+        }</span> else<span class="cov8" title="1"> {
                 SRC_PATH += "src/"
         }</span>
-        <span class="cov0" title="0">packageList := PackageList{}
+        <span class="cov8" title="1">packageList := PackageList{}
 
         directoryList := []string{}
-        err := filepath.Walk(SRC_PATH, func(path string, info os.FileInfo, err error) error </span><span class="cov0" title="0">{
+        err := filepath.Walk(SRC_PATH, func(path string, info os.FileInfo, err error) error </span><span class="cov8" title="1">{
                 if err != nil </span><span class="cov0" title="0">{
                         return err
                 }</span>
-                <span class="cov0" title="0">if info.IsDir() </span><span class="cov0" title="0">{
+                <span class="cov8" title="1">if info.IsDir() </span><span class="cov8" title="1">{
                         directoryList = append(directoryList, path)
                 }</span>
-                <span class="cov0" title="0">return nil</span>
+                <span class="cov8" title="1">return nil</span>
         })
-        <span class="cov0" title="0">if err != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if err != nil </span><span class="cov0" title="0">{
                 log.Fatal(err)
         }</span>
 
-        <span class="cov0" title="0">for _, path := range directoryList </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">for _, path := range directoryList </span><span class="cov8" title="1">{
                 packageList.addPackagesIn(path)
         }</span>
-        <span class="cov0" title="0">count := 0
-        for range packageList.Packages </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">count := 0
+        for range packageList.Packages </span><span class="cov8" title="1">{
                 count++
         }</span>
 }
@@ -151,7 +151,7 @@ func (packageList *PackageList) addPackagesIn(path string) <span class="cov8" ti
                 path += "/"
         }</span>
         <span class="cov8" title="1">CURRENT_PATH = path
-        if contains(IMPORTED_DIRECTORIES, CURRENT_PATH) </span><span class="cov0" title="0">{
+        if contains(IMPORTED_DIRECTORIES, CURRENT_PATH) </span><span class="cov8" title="1">{
                 return
         }</span>
         <span class="cov8" title="1">newPackage := Package{}

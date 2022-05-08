@@ -1,4 +1,4 @@
-package main
+package loader
 
 import (
 	"bufio"
@@ -30,8 +30,8 @@ type PackageList struct {
 	Packages []string
 }
 
-var SRC_PATH = os.Args[1]
-var CURRENT_PATH = ""
+var SRC_PATH string
+var CURRENT_PATH string
 var IMPORTED_DIRECTORIES = []string{}
 var SKIP_PACKAGES = []string{"al", "gl", "glfw", "time", "os", "gltext", "cx", "json", "cipher", "tcp"}
 
@@ -44,12 +44,13 @@ func contains(list []string, element string) bool {
 	return false
 }
 
-func main() {
-	if SRC_PATH[len(SRC_PATH)-1:] != "/" {
-		SRC_PATH += "/src/"
+func LoadPackages(PATH string) {
+	if PATH[len(PATH)-1:] != "/" {
+		SRC_PATH = PATH + "/src/"
 	} else {
-		SRC_PATH += "src/"
+		SRC_PATH = PATH + "src/"
 	}
+
 	packageList := PackageList{}
 
 	directoryList := []string{}
@@ -68,10 +69,6 @@ func main() {
 
 	for _, path := range directoryList {
 		packageList.addPackagesIn(path)
-	}
-	count := 0
-	for range packageList.Packages {
-		count++
 	}
 }
 

@@ -1,4 +1,4 @@
-package main
+package loader
 
 import (
 	"io/ioutil"
@@ -121,7 +121,5 @@ func TestAddPackagesIn(t *testing.T) {
 }
 
 func TestMain(t *testing.T) {
-	os.Args[1] = "./test2/"
-	SRC_PATH = os.Args[1]
-	main()
+	LoadPackages("./test2/")
 }
