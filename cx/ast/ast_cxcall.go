@@ -189,6 +189,7 @@ func processNonAtomicOperators(prgrm *CXProgram, expr *CXExpression, fp types.Po
 			var finalOffsetB [types.POINTER_SIZE]byte
 			types.Write_ptr(finalOffsetB[:], 0, finalOffset)
 			byts = finalOffsetB[:]
+
 		} else {
 			size := GetArgSize(prgrm, inp)
 			byts = prgrm.Memory[finalOffset : finalOffset+size]

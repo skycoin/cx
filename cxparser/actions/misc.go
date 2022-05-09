@@ -46,7 +46,6 @@ func WritePrimary(prgrm *ast.CXProgram, typeCode types.Code, byts []byte, isSlic
 	arg.Offset = prgrm.Data.Size + prgrm.Data.StartsAt
 
 	if arg.Type == types.STR || arg.Type == types.AFF {
-		arg.PassBy = constants.PASSBY_REFERENCE
 		arg.Size = types.POINTER_SIZE
 		arg.TotalSize = types.POINTER_SIZE
 		if isSlice == false {

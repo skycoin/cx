@@ -205,7 +205,7 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fnIdx ast.CXFunctionIndex, inputs
 		ProcessTempVariable(prgrm, &expr)
 		ProcessSliceAssignment(prgrm, &expr)
 		ProcessStringAssignment(prgrm, &expr)
-		ProcessReferenceAssignment(prgrm, &expr)
+		// ProcessReferenceAssignment(prgrm, &expr)
 		ProcessShortDeclaration(prgrm, &expr, fn.Expressions, i)
 		processTestExpression(prgrm, &expr)
 
@@ -935,23 +935,23 @@ func ProcessStringAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 
 // ProcessReferenceAssignment checks if the reference of a symbol can be assigned to the expression's output.
 // For example: `var foo i32; var bar i32; bar = &foo` is not valid.
-func ProcessReferenceAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
-	expression, err := prgrm.GetCXAtomicOp(expr.Index)
-	if err != nil {
-		panic(err)
-	}
+// func ProcessReferenceAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
+// 	expression, err := prgrm.GetCXAtomicOp(expr.Index)
+// 	if err != nil {
+// 		panic(err)
+// 	}
 
-	for _, outIdx := range expression.Outputs {
-		out := prgrm.GetCXArgFromArray(outIdx)
-		elt := out.GetAssignmentElement(prgrm)
-		if elt.PassBy == constants.PASSBY_REFERENCE &&
-			!hasDeclSpec(elt, constants.DECL_POINTER) &&
-			elt.PointerTargetType != types.STR && elt.Type != types.STR && !elt.IsSlice {
-			println(ast.CompilationError(CurrentFile, LineNo), "invalid reference assignment", elt.Name)
-		}
-	}
+// 	for _, outIdx := range expression.Outputs {
+// 		out := prgrm.GetCXArgFromArray(outIdx)
+// 		elt := out.GetAssignmentElement(prgrm)
+// 		if elt.PassBy == constants.PASSBY_REFERENCE &&
+// 			!hasDeclSpec(elt, constants.DECL_POINTER) &&
+// 			elt.PointerTargetType != types.STR && elt.Type != types.STR && !elt.IsSlice {
+// 			println(ast.CompilationError(CurrentFile, LineNo), "invalid reference assignment", elt.Name)
+// 		}
+// 	}
 
-}
+// }
 
 // ProcessShortDeclaration sets proper values if the expr is a short declaration.
 func ProcessShortDeclaration(prgrm *ast.CXProgram, expr *ast.CXExpression, expressions []ast.CXExpression, idx int) {
@@ -1293,13 +1293,6 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 				prgrm.CXArgs[outIdx].Fields = prgrm.CXArgs[outIdx].Fields[:len(prgrm.CXArgs[outIdx].Fields)-1]
 			}
 		}
-		expressionOperator := prgrm.GetFunctionFromArray(expression.Operator)
-		expressionOperatorInputs := expressionOperator.GetInputs(prgrm)
-
-		// checking if receiver is sent as pointer or not
-		if prgrm.GetCXArgFromArray(expressionOperatorInputs[0]).IsPointer() {
-			prgrm.CXArgs[expression.Inputs[0]].PassBy = constants.PASSBY_REFERENCE
-		}
 	}
 }
 
@@ -1585,7 +1578,7 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, sym *ast.CXArgument, arg *ast.CXA
 					sym.Lengths = []types.Pointer{0}
 					nameField.TotalSize = typeSignature.GetSize(prgrm)
 					nameField.IsSlice = true
-					// nameField.PassBy = constants.PASSBY_REFERENCE
+
 					// TODO: this should not be needed.
 					if len(nameField.DeclarationSpecifiers) > 0 {
 						nameField.DeclarationSpecifiers = append([]int{constants.DECL_BASIC, constants.DECL_SLICE}, nameField.DeclarationSpecifiers[1:]...)
@@ -1638,10 +1631,6 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, sym *ast.CXArgument, arg *ast.CXA
 
 					nameField.PassBy = field.PassBy
 					nameField.IsSlice = field.IsSlice
-
-					if field.Type == types.STR || field.Type == types.AFF {
-						nameField.PassBy = constants.PASSBY_REFERENCE
-					}
 
 					if field.StructType != nil {
 						strct = field.StructType
