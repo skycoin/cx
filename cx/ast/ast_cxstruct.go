@@ -170,7 +170,7 @@ func (strct *CXStruct) AddField(prgrm *CXProgram, fieldType types.Code, cxArgume
 		newCXTypeSignature.Meta = int(fieldType)
 
 		// TODO: Remove the printf bug
-		// ./tests/issue-cxfx.cx
+		// ./tests/issue-struct-a.cx
 		// If type is struct
 		// } else if !cxArgument.IsSlice && len(cxArgument.Lengths) == 0 && fieldType == types.STRUCT {
 		// 	newCXTypeSignature.Type = TYPE_STRUCT
