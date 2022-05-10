@@ -169,10 +169,12 @@ func (strct *CXStruct) AddField(prgrm *CXProgram, fieldType types.Code, cxArgume
 		newCXTypeSignature.Type = TYPE_SLICE_ATOMIC
 		newCXTypeSignature.Meta = int(fieldType)
 
+		// TODO: Remove the printf bug
+		// ./tests/issue-cxfx.cx
 		// If type is struct
-	} else if !cxArgument.IsSlice && len(cxArgument.Lengths) == 0 && fieldType == types.STRUCT {
-		newCXTypeSignature.Type = TYPE_STRUCT
-		newCXTypeSignature.Meta = cxArgument.StructType.Index
+		// } else if !cxArgument.IsSlice && len(cxArgument.Lengths) == 0 && fieldType == types.STRUCT {
+		// 	newCXTypeSignature.Type = TYPE_STRUCT
+		// 	newCXTypeSignature.Meta = cxArgument.StructType.Index
 	} else {
 		fldIdx := prgrm.AddCXArgInArray(cxArgument)
 
