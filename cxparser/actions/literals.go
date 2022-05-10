@@ -307,10 +307,6 @@ func ArrayLiteralExpression(prgrm *ast.CXProgram, arraySizes []types.Pointer, ty
 			sym.Package = ast.CXPackageIndex(pkg.Index)
 			sym.PreviouslyDeclared = true
 
-			if sym.Type == types.STR || sym.Type == types.AFF {
-				sym.PassBy = constants.PASSBY_REFERENCE
-			}
-
 			idxExpr := WritePrimary(prgrm, types.I32, encoder.Serialize(int32(endPointsCounter)), false)
 			endPointsCounter++
 

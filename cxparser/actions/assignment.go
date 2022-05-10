@@ -107,7 +107,6 @@ func StructLiteralAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, f
 
 		prgrm.CXAtomicOps[assignExpressionIdx].Package = lastFromExpression.Package
 		out := ast.MakeArgument(prgrm.GetCXArgFromArray(toExpression.Outputs[0]).Name, lastFromCXLine.FileName, lastFromCXLine.LineNumber)
-		out.PassBy = constants.PASSBY_REFERENCE
 		out.Package = lastFromExpression.Package
 		outIdx := prgrm.AddCXArgInArray(out)
 
