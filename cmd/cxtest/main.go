@@ -331,4 +331,8 @@ func runTestCases(t *runner.TestRunner) {
 	t.Run("issue-28-ui16.cx", runner.CxSuccess, "ui16")
 	t.Run("issue-28-ui32.cx", runner.CxSuccess, "ui32")
 	t.Run("issue-28-ui64.cx", runner.CxSuccess, "ui64")
+
+	// // New tests added starting 05/10/2022
+	t.Run("issue-struct-a.cx", runner.CxSuccess, "struct printf")
+	t.Run("issue-struct-b.cx", runner.CxSuccess, "struct printf uninitialized")
 }

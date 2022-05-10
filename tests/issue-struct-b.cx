@@ -1,0 +1,14 @@
+package main
+
+// garbage in tt.t.i if it's not initialised
+type test struct {
+  i i32
+}
+type test_test struct {
+  t test
+}
+var tt test_test
+func main() {
+  //tt.t.i = 44 // uncomment here to move/remove the issue
+  printf("i %d\n", tt.t.i)
+}
