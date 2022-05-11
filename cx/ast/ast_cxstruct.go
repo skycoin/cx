@@ -171,6 +171,7 @@ func (strct *CXStruct) AddField(prgrm *CXProgram, fieldType types.Code, cxArgume
 
 		// TODO: Remove the printf bug
 		// ./tests/issue-struct-a.cx
+		// ./tests/issue-struct-b.cx
 		// If type is struct
 		// } else if !cxArgument.IsSlice && len(cxArgument.Lengths) == 0 && fieldType == types.STRUCT {
 		// 	newCXTypeSignature.Type = TYPE_STRUCT
@@ -275,7 +276,7 @@ func (typeSignature *CXTypeSignature) GetSize(prgrm *CXProgram) types.Pointer {
 	case TYPE_SLICE_POINTER_ATOMIC:
 		return types.POINTER.Size()
 	case TYPE_STRUCT:
-		return 0
+		return typeSignature.Offset
 	case TYPE_POINTER_STRUCT:
 	case TYPE_ARRAY_STRUCT:
 	case TYPE_ARRAY_POINTER_STRUCT:

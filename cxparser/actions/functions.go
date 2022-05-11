@@ -1609,7 +1609,7 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, sym *ast.CXArgument, arg *ast.CXA
 				fieldIdx := typeSignature.Meta
 				field := prgrm.CXArgs[fieldIdx]
 
-				if nameField.Name == field.Name && typeSignature.Type != ast.TYPE_ATOMIC {
+				if nameField.Name == field.Name && typeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 					nameField.Type = field.Type
 					nameField.Lengths = field.Lengths
 					nameField.Size = field.Size
