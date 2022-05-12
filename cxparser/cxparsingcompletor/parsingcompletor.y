@@ -1023,7 +1023,6 @@ assignment_expression:
                                                                                 panic(err)
                                                                         }
                                                                         fromExpressionOutputIdx:=fromExpression.Outputs[0]
-                                                                        actions.AST.CXArgs[fromExpressionOutputIdx].IsShortAssignmentDeclaration = true
                                                                         actions.AST.CXArgs[fromExpressionOutputIdx].PreviouslyDeclared = true
                                                                 }
                                                         }
@@ -1043,7 +1042,6 @@ assignment_expression:
                                                                                 panic(err)
                                                                         }
                                                                         fromExpressionOutputIdx:=fromExpression.Outputs[0]
-                                                                        actions.AST.CXArgs[fromExpressionOutputIdx].IsShortAssignmentDeclaration = true
                                                                         actions.AST.CXArgs[fromExpressionOutputIdx].PreviouslyDeclared = true
                                                                 }
                                                         }
