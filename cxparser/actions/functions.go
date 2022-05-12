@@ -955,13 +955,17 @@ func ProcessStringAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 
 // ProcessShortDeclaration sets proper values if the expr is a short declaration.
 func ProcessShortDeclaration(prgrm *ast.CXProgram, expr *ast.CXExpression, expressions []ast.CXExpression, idx int) {
+	if len(expressions) <= 1 {
+		return
+	}
+
 	expression, err := prgrm.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		panic(err)
 	}
 
 	// process short declaration
-	if len(expression.Outputs) > 0 && len(expression.Inputs) > 0 && prgrm.GetCXArgFromArray(expression.Outputs[0]).IsShortAssignmentDeclaration && !expr.IsStructLiteral() && !isParseOp(prgrm, expr) {
+	if len(expression.Outputs) > 0 && len(expression.Inputs) > 0 && prgrm.GetCXArgFromArray(expression.Outputs[0]).Type == types.IDENTIFIER && !expr.IsStructLiteral() && !isParseOp(prgrm, expr) {
 		expressionOperator := prgrm.GetFunctionFromArray(expression.Operator)
 		expressionOperatorOutputs := expressionOperator.GetOutputs(prgrm)
 		prevExpression, err := prgrm.GetPreviousCXAtomicOpFromExpressions(expressions, idx-1)

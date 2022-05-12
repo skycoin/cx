@@ -295,12 +295,11 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 
 			toExprAtomicOpOutputIdx := toExprAtomicOp.Outputs[0]
 			prgrm.CXArgs[toExprAtomicOpOutputIdx].PreviouslyDeclared = true
-			prgrm.CXArgs[toExprAtomicOpOutputIdx].IsShortAssignmentDeclaration = true
 
-			// prgrm.CXArgs[toExprAtomicOpOutputIdx].Type = sym.Type
-			// prgrm.CXArgs[toExprAtomicOpOutputIdx].PointerTargetType = sym.PointerTargetType
-			// prgrm.CXArgs[toExprAtomicOpOutputIdx].Size = sym.Size
-			// prgrm.CXArgs[toExprAtomicOpOutputIdx].TotalSize = sym.TotalSize
+			prgrm.CXArgs[toExprAtomicOpOutputIdx].Type = sym.Type
+			prgrm.CXArgs[toExprAtomicOpOutputIdx].PointerTargetType = sym.PointerTargetType
+			prgrm.CXArgs[toExprAtomicOpOutputIdx].Size = sym.Size
+			prgrm.CXArgs[toExprAtomicOpOutputIdx].TotalSize = sym.TotalSize
 		}
 
 		toExprs = append([]ast.CXExpression{*exprCXLine, *expr}, toExprs...)

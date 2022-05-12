@@ -130,14 +130,13 @@ type CXArgument struct {
 
 	ArgDetails *CXArgumentDebug
 
-	StructType                   *CXStruct
-	IsSlice                      bool
-	IsStruct                     bool
-	IsInnerArg                   bool // ex. pkg.var <- var is the inner arg
-	IsLocalDeclaration           bool
-	IsShortAssignmentDeclaration bool // variables defined with :=
-	IsInnerReference             bool // for example: &slice[0] or &struct.field
-	PreviouslyDeclared           bool
+	StructType         *CXStruct
+	IsSlice            bool
+	IsStruct           bool
+	IsInnerArg         bool // ex. pkg.var <- var is the inner arg
+	IsLocalDeclaration bool
+	IsInnerReference   bool // for example: &slice[0] or &struct.field
+	PreviouslyDeclared bool
 }
 
 func (arg CXArgument) IsPointer() bool {
@@ -147,25 +146,6 @@ func (arg CXArgument) IsPointer() bool {
 func (arg CXArgument) IsString() bool {
 	return arg.PointerTargetType == types.STR || arg.Type == types.STR
 }
-
-/*
-grep -rn "IsShortAssignmentDeclaration" .
-IsShortAssignmentDeclaration - is this CXArgument the result of a `CASSIGN` operation (`:=`)?
-./cxparser/cxgo/cxparser.y:1158:							from.Outputs[0].IsShortAssignmentDeclaration = true
-./cxparser/cxgo/cxparser.y:1169:							from.Outputs[0].IsShortAssignmentDeclaration = true
-./cxparser/cxgo/cxparser.go:2366:							from.Outputs[0].IsShortAssignmentDeclaration = true
-./cxparser/cxgo/cxparser.go:2377:							from.Outputs[0].IsShortAssignmentDeclaration = true
-./cxparser/actions/functions.go:147:		if len(expr.Outputs) > 0 && len(expr.Inputs) > 0 && expr.Outputs[0].IsShortAssignmentDeclaration && !expr.IsStructLiteral && !isParseOp(expr) {
-./cxparser/actions/assignment.go:161:		sym.IsShortAssignmentDeclaration = true
-./cxparser/actions/assignment.go:167:			toExpr.Outputs[0].IsShortAssignmentDeclaration = true
-Binary file ./bin/cx matches
-./docs/CompilerDevelopment.md:81:* IsShortAssignmentDeclaration - is this CXArgument the result of a `CASSIGN` operation (`:=`)?
-./cx/serialize.go:168:	IsShortAssignmentDeclaration int32
-./cx/serialize.go:337:	s.Arguments[argOff].IsShortAssignmentDeclaration = serializeBoolean(arg.IsShortAssignmentDeclaration)
-./cx/serialize.go:1051:	arg.IsShortAssignmentDeclaration = dsBool(sArg.IsShortAssignmentDeclaration)
-./cx/ast.go:234:	IsShortAssignmentDeclaration    bool
-./cx/ast.go:1499:	IsShortAssignmentDeclaration    bool
-*/
 
 /*
 	FileName              string
@@ -184,7 +164,6 @@ All "Is" can be removed
 	IsStruct              bool
 	IsInnerArg                bool // pkg.var <- var is rest
 	IsLocalDeclaration    bool
-	IsShortAssignmentDeclaration    bool
 	IsInnerReference      bool // for example: &slice[0] or &struct.field
 
 */
