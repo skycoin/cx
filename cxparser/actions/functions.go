@@ -1558,6 +1558,16 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, sym *ast.CXArgument, arg *ast.CXA
 					}
 
 					break
+				} else if nameField.Name == typeSignature.Name && typeSignature.Type == ast.TYPE_POINTER_ATOMIC {
+					nameField.Type = types.POINTER
+					nameField.PointerTargetType = types.Code(typeSignature.Meta)
+					nameField.StructType = nil
+					nameField.Size = types.Code(typeSignature.Meta).Size()
+					nameField.TotalSize = typeSignature.GetSize(prgrm)
+
+					nameField.DereferenceOperations = append([]int{constants.DEREF_POINTER}, nameField.DereferenceOperations...)
+
+					break
 				} else if nameField.Name == typeSignature.Name && typeSignature.Type == ast.TYPE_ARRAY_ATOMIC {
 					typeSignatureArray := prgrm.GetTypeSignatureArrayFromArray(typeSignature.Meta)
 					nameField.Type = types.Code(typeSignatureArray.Type)
