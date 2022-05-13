@@ -152,6 +152,11 @@ func (strct *CXStruct) AddField(prgrm *CXProgram, fieldType types.Code, cxArgume
 		newCXTypeSignature.Type = TYPE_ATOMIC
 		newCXTypeSignature.Meta = int(fieldType)
 
+		// If pointer atomic, i.e. *i32, *f32, etc.
+	} else if cxArgument.IsSlice && len(cxArgument.Lengths) == 1 && fieldType == types.POINTER && cxArgument.PointerTargetType.IsPrimitive() {
+		newCXTypeSignature.Type = TYPE_POINTER_ATOMIC
+		newCXTypeSignature.Meta = int(cxArgument.PointerTargetType)
+
 		// If simple array atomic type, i.e. [5]i32, [2]f64, etc.
 	} else if !cxArgument.IsSlice && len(cxArgument.Lengths) == 1 && len(cxArgument.Indexes) == 0 && fieldType.IsPrimitive() {
 		newCXTypeSignature.Type = TYPE_ARRAY_ATOMIC
