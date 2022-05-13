@@ -169,13 +169,10 @@ func (strct *CXStruct) AddField(prgrm *CXProgram, fieldType types.Code, cxArgume
 		newCXTypeSignature.Type = TYPE_SLICE_ATOMIC
 		newCXTypeSignature.Meta = int(fieldType)
 
-		// TODO: Remove the printf bug
-		// ./tests/issue-struct-a.cx
-		// ./tests/issue-struct-b.cx
 		// If type is struct
-		// } else if !cxArgument.IsSlice && len(cxArgument.Lengths) == 0 && fieldType == types.STRUCT {
-		// 	newCXTypeSignature.Type = TYPE_STRUCT
-		// 	newCXTypeSignature.Meta = cxArgument.StructType.Index
+	} else if !cxArgument.IsSlice && len(cxArgument.Lengths) == 0 && fieldType == types.STRUCT {
+		newCXTypeSignature.Type = TYPE_STRUCT
+		newCXTypeSignature.Meta = cxArgument.StructType.Index
 	} else {
 		fldIdx := prgrm.AddCXArgInArray(cxArgument)
 
@@ -276,7 +273,7 @@ func (typeSignature *CXTypeSignature) GetSize(prgrm *CXProgram) types.Pointer {
 	case TYPE_SLICE_POINTER_ATOMIC:
 		return types.POINTER.Size()
 	case TYPE_STRUCT:
-		return typeSignature.Offset
+		return prgrm.GetStructFromArray(CXStructIndex(typeSignature.Meta)).GetStructSize(prgrm)
 	case TYPE_POINTER_STRUCT:
 	case TYPE_ARRAY_STRUCT:
 	case TYPE_ARRAY_POINTER_STRUCT:
@@ -306,4 +303,67 @@ func (typeSignature *CXTypeSignature) GetArrayLength(prgrm *CXProgram) types.Poi
 	}
 
 	return 0
+}
+
+func (typeSignature *CXTypeSignature) GetCXArgFormat(prgrm *CXProgram) *CXArgument {
+	var arg *CXArgument
+	if typeSignature.Type == TYPE_ATOMIC {
+		arg.Type = types.Code(typeSignature.Meta)
+		arg.StructType = nil
+		arg.Size = typeSignature.GetSize(prgrm)
+		arg.TotalSize = typeSignature.GetSize(prgrm)
+
+		// TODO: this should not be needed.
+		if len(arg.DeclarationSpecifiers) > 0 {
+			arg.DeclarationSpecifiers = append([]int{constants.DECL_BASIC}, arg.DeclarationSpecifiers[1:]...)
+		} else {
+			arg.DeclarationSpecifiers = []int{constants.DECL_BASIC}
+		}
+
+	} else if typeSignature.Type == TYPE_ARRAY_ATOMIC {
+		typeSignatureArray := prgrm.GetTypeSignatureArrayFromArray(typeSignature.Meta)
+		arg.Type = types.Code(typeSignatureArray.Type)
+		arg.StructType = nil
+		arg.Size = typeSignature.GetSize(prgrm)
+		arg.Lengths = []types.Pointer{typeSignature.GetArrayLength(prgrm)}
+		arg.TotalSize = typeSignature.GetSize(prgrm) * arg.Lengths[0]
+
+		// TODO: this should not be needed.
+		if len(arg.DeclarationSpecifiers) > 0 {
+			arg.DeclarationSpecifiers = append([]int{constants.DECL_BASIC, constants.DECL_ARRAY}, arg.DeclarationSpecifiers[1:]...)
+		} else {
+			arg.DeclarationSpecifiers = []int{constants.DECL_BASIC}
+		}
+
+	} else if typeSignature.Type == TYPE_SLICE_ATOMIC {
+		arg.Type = types.Code(typeSignature.Meta)
+		arg.StructType = nil
+		arg.Size = types.Code(typeSignature.Meta).Size()
+		arg.Lengths = []types.Pointer{0}
+		arg.TotalSize = typeSignature.GetSize(prgrm)
+		arg.IsSlice = true
+
+		// TODO: this should not be needed.
+		if len(arg.DeclarationSpecifiers) > 0 {
+			arg.DeclarationSpecifiers = append([]int{constants.DECL_BASIC, constants.DECL_SLICE}, arg.DeclarationSpecifiers[1:]...)
+		} else {
+			arg.DeclarationSpecifiers = []int{constants.DECL_BASIC}
+		}
+
+		arg.DereferenceOperations = append([]int{constants.DEREF_POINTER}, arg.DereferenceOperations...)
+
+	} else if typeSignature.Type == TYPE_STRUCT {
+		arg.Type = types.STRUCT
+		arg.StructType = prgrm.GetStructFromArray(CXStructIndex(typeSignature.Meta))
+		// TODO: this should not be needed.
+		if len(arg.DeclarationSpecifiers) > 0 {
+			arg.DeclarationSpecifiers = append([]int{constants.DECL_STRUCT}, arg.DeclarationSpecifiers[1:]...)
+		} else {
+			arg.DeclarationSpecifiers = []int{constants.DECL_STRUCT}
+		}
+
+	}
+	arg.Offset = typeSignature.Offset
+
+	return arg
 }
