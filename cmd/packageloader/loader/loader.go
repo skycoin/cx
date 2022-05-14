@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/gob"
+	"encoding/json"
 	"errors"
 	"io/fs"
 	"io/ioutil"
@@ -11,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/skycoin/cx/cmd/packageloader/server"
 	"golang.org/x/crypto/blake2b"
 )
 
@@ -29,10 +31,6 @@ type Package struct {
 type PackageList struct {
 	Packages []string
 }
-
-var FileLookup = map[string]*File{}
-var PackageLookup = map[string]*Package{}
-var PackageListLookup = map[string]*PackageList{}
 
 var SRC_PATH string
 var CURRENT_PATH string
@@ -70,7 +68,8 @@ func LoadPackages(programName string, path string) {
 	for _, path := range directoryList {
 		packageList.addPackagesIn(path)
 	}
-	PackageListLookup[programName] = &packageList
+	// TODO: Remove after testing!
+	server.Add((programName), packageList)
 }
 
 func (packageList *PackageList) addPackagesIn(path string) {
@@ -120,6 +119,7 @@ func (packageList *PackageList) addPackagesIn(path string) {
 	}
 	newPackage.addFiles(fileList)
 	packageList.hashPackage(&newPackage)
+
 	IMPORTED_DIRECTORIES = append(IMPORTED_DIRECTORIES, CURRENT_PATH)
 	for _, path := range imports {
 		if contains(SKIP_PACKAGES, path) {
@@ -210,6 +210,7 @@ func (newPackage *Package) addFiles(fileList []fs.FileInfo) {
 		h := blake2b.Sum512(byteArray)
 		newFile.Blake2Hash = string(h[:])
 		newPackage.hashFile(&newFile)
+
 	}
 }
 
@@ -225,7 +226,8 @@ func (newPackage *Package) hashFile(newFile *File) error {
 	h := blake2b.Sum512(buffer.Bytes())
 
 	newPackage.Files = append(newPackage.Files, string(h[:]))
-	FileLookup[string(h[:])] = newFile
+	// TODO: Remove after testing!
+	server.Add(string(h[:]), *newFile)
 	return nil
 }
 
@@ -240,6 +242,30 @@ func (packageList *PackageList) hashPackage(newPackage *Package) error {
 	}
 	h := blake2b.Sum512(buffer.Bytes())
 	packageList.Packages = append(packageList.Packages, string(h[:]))
-	PackageLookup[string(h[:])] = newPackage
+	server.Add(string(h[:]), *newPackage)
 	return nil
+}
+
+func (f File) MarshalBinary() ([]byte, error) {
+	return json.Marshal(f)
+}
+
+func (f *File) UnmarshalBinary(data []byte) error {
+	return json.Unmarshal(data, f)
+}
+
+func (p Package) MarshalBinary() ([]byte, error) {
+	return json.Marshal(p)
+}
+
+func (p *Package) UnmarshalBinary(data []byte) error {
+	return json.Unmarshal(data, p)
+}
+
+func (pl PackageList) MarshalBinary() ([]byte, error) {
+	return json.Marshal(pl)
+}
+
+func (pl *PackageList) UnmarshalBinary(data []byte) error {
+	return json.Unmarshal(data, pl)
 }

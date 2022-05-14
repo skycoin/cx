@@ -22,10 +22,10 @@ func main() {
 	} else {
 		path = os.Args[3]
 	}
-	if os.Args[1] == "-l" {
+	if os.Args[1] == "-l" || os.Args[1] == "-load" {
 		loader.LoadPackages(programName, path)
 	}
-	if os.Args[1] == "-s" {
+	if os.Args[1] == "-s" || os.Args[1] == "-save" {
 		encoder.SavePackagesToDisk(programName, path)
 	}
 }
