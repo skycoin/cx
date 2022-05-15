@@ -13,7 +13,6 @@ func SavePackagesToDisk(packageName string, path string) {
 	packageList.UnmarshalBinary([]byte(server.Get(packageName).(string)))
 
 	for _, pack := range packageList.Packages {
-		log.Print(pack)
 		var packageStruct loader.Package
 		packageStruct.UnmarshalBinary([]byte(server.Get(pack).(string)))
 

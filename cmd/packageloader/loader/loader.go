@@ -210,7 +210,6 @@ func (newPackage *Package) addFiles(fileList []fs.FileInfo) {
 		h := blake2b.Sum512(byteArray)
 		newFile.Blake2Hash = string(h[:])
 		newPackage.hashFile(&newFile)
-
 	}
 }
 
