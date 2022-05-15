@@ -55,8 +55,8 @@ func TestGetPackageName(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	if testPackageName != "testone" {
-		t.Error("Expected testone, got", testPackageName)
+	if testPackageName != "main" {
+		t.Error("Expected main, got", testPackageName)
 	}
 }
 
@@ -120,6 +120,6 @@ func TestAddPackagesIn(t *testing.T) {
 	}
 }
 
-func TestMain(t *testing.T) {
+func TestLoad(t *testing.T) {
 	LoadPackages("test2", "./test2/")
 }
