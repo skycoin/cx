@@ -16,12 +16,17 @@ func main() {
 		log.Fatal("Too many arguments given. Usage: packageloader <option> <program name> <path>")
 	}
 	programName := os.Args[2]
+
 	var path string
-	if os.Args[3][:len(os.Args[3])-1] != "/" {
-		path = os.Args[3] + "/"
+	if os.Args[3][0:2] == "./" {
+		path = os.Args[3][2:len(os.Args[3])]
 	} else {
 		path = os.Args[3]
 	}
+	if path[len(path)-1:] != "/" {
+		path = path + "/"
+	}
+
 	if os.Args[1] == "-l" || os.Args[1] == "-load" {
 		loader.LoadPackages(programName, path)
 	}

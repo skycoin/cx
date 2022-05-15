@@ -6,6 +6,7 @@ import (
 	"encoding/gob"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/fs"
 	"io/ioutil"
 	"log"
@@ -224,9 +225,9 @@ func (newPackage *Package) hashFile(newFile *File) error {
 	}
 	h := blake2b.Sum512(buffer.Bytes())
 
-	newPackage.Files = append(newPackage.Files, string(h[:]))
+	newPackage.Files = append(newPackage.Files, fmt.Sprintf("%x", h[:]))
 	// TODO: Remove after testing!
-	server.Add(string(h[:]), *newFile)
+	server.Add(fmt.Sprintf("%x", h[:]), *newFile)
 	return nil
 }
 
@@ -240,8 +241,8 @@ func (packageList *PackageList) hashPackage(newPackage *Package) error {
 		return err
 	}
 	h := blake2b.Sum512(buffer.Bytes())
-	packageList.Packages = append(packageList.Packages, string(h[:]))
-	server.Add(string(h[:]), *newPackage)
+	packageList.Packages = append(packageList.Packages, fmt.Sprintf("%x", h[:]))
+	server.Add(fmt.Sprintf("%x", h[:]), *newPackage)
 	return nil
 }
 
