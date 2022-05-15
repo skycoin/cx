@@ -20,55 +20,41 @@ func SavePackagesToDisk(packageName string, path string) {
 		var packageStruct loader.Package
 		packageStruct.UnmarshalBinary([]byte(server.Get(pack).(string)))
 
-		var filePath string
 		if packageStruct.PackageName != "main" {
 			continue
 		}
-
 		path = path + "src/"
-		filePath = path
+		var filePath = path
 
-		err := os.Mkdir(filePath, 0755)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		for _, file := range packageStruct.Files {
-			var fileStruct loader.File
-			fileStruct.UnmarshalBinary([]byte(server.Get(file).(string)))
-
-			err = os.WriteFile(filePath+fileStruct.FileName, fileStruct.Content, 0755)
-			if err != nil {
-				log.Fatal(err)
-			}
-		}
+		SaveFilesToDisk(packageStruct, filePath)
 	}
 
 	for _, pack := range packageList.Packages {
 		var packageStruct loader.Package
 		packageStruct.UnmarshalBinary([]byte(server.Get(pack).(string)))
 
-		var filePath string
 		if packageStruct.PackageName == "main" {
 			continue
 		}
-		filePath = path + packageStruct.PackageName + "/"
+		var filePath = path + packageStruct.PackageName + "/"
 
-		err := os.Mkdir(filePath, 0755)
+		SaveFilesToDisk(packageStruct, filePath)
+	}
+
+}
+
+func SaveFilesToDisk(packageStruct loader.Package, filePath string) {
+	err := os.Mkdir(filePath, 0755)
+	if err != nil {
+		log.Fatal(err)
+	}
+	for _, file := range packageStruct.Files {
+		var fileStruct loader.File
+		fileStruct.UnmarshalBinary([]byte(server.Get(file).(string)))
+
+		err = os.WriteFile(filePath+fileStruct.FileName, fileStruct.Content, 0755)
 		if err != nil {
 			log.Fatal(err)
 		}
-
-		for _, file := range packageStruct.Files {
-			var fileStruct loader.File
-			fileStruct.UnmarshalBinary([]byte(server.Get(file).(string)))
-			log.Println(fileStruct.FileName)
-
-			err = os.WriteFile(filePath+fileStruct.FileName, fileStruct.Content, 0755)
-			if err != nil {
-				log.Fatal(err)
-			}
-		}
 	}
-
 }
