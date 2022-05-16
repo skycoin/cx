@@ -318,7 +318,6 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		out.Lengths = opOut.Lengths
 		out.Package = prgrm.CXAtomicOps[lastExpressionIdx].Package
 		out.PreviouslyDeclared = true
-		out.IsInnerArg = true
 
 		outIdx := prgrm.AddCXArgInArray(out)
 		prgrm.CXAtomicOps[lastExpressionIdx].Outputs = append(prgrm.CXAtomicOps[lastExpressionIdx].Outputs, outIdx)
@@ -332,7 +331,6 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		inp.Size = opOut.Size
 		inp.TotalSize = opOut.TotalSize
 		inp.Package = prgrm.CXAtomicOps[lastExpressionIdx].Package
-		inp.IsInnerArg = true
 		inpIdx := prgrm.AddCXArgInArray(inp)
 
 		exprCXLine := ast.MakeCXLineExpression(prgrm, lastExprCXLine.FileName, lastExprCXLine.LineNumber, lastExprCXLine.LineStr)
@@ -354,25 +352,6 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 
 	leftExprIdx := prgrm.CXAtomicOps[lastExpressionIdx].Outputs[0]
 
-	// If the left already is a rest (e.g. "var" in "pkg.var"), then
-	// it can't be a package name and we propagate the property to
-	//  the right side.
-	if prgrm.CXArgs[leftExprIdx].IsInnerArg {
-		prgrm.CXArgs[leftExprIdx].IsStruct = true
-		fld := ast.MakeArgument(ident, CurrentFile, LineNo)
-		leftPkg, err := prgrm.GetPackageFromArray(prgrm.CXArgs[leftExprIdx].Package)
-		if err != nil {
-			panic(err)
-		}
-
-		fld.SetType(types.IDENTIFIER).SetPackage(leftPkg)
-		fldIdx := prgrm.AddCXArgInArray(fld)
-		prgrm.CXArgs[leftExprIdx].Fields = append(prgrm.CXArgs[leftExprIdx].Fields, fldIdx)
-
-		return prevExprs
-	}
-
-	prgrm.CXArgs[leftExprIdx].IsInnerArg = true
 	// then left is a first (e.g first.rest) and right is a rest
 	// let's check if left is a package
 	pkg, err := prgrm.GetCurrentPackage()

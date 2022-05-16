@@ -22,7 +22,6 @@ The object is composed of the following fields:
 * PassBy - an int constant representing how the variable is passed - pass by value, or pass by reference.
 * StructType - a CXStruct representing the custom type this variable might be (if struct).
 * IsSlice, IsStruct - name says it all.
-* IsInnerArg - if this is a package global, is this CXArgument representing the actual global variable from that package?
 * IsLocalDeclaration - is this CXArgument bounded in lifetime by scope (as opposed to being a global variable)?
 * IsShortDeclaration - is this CXArgument the result of a `CASSIGN` operation (`:=`)?
 * IsInnerReference - is this CXArgument a reference to the field or element of another CXArgument? (`&array[0]` or `&struct.field`)

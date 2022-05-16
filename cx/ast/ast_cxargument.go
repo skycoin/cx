@@ -133,7 +133,6 @@ type CXArgument struct {
 	StructType         *CXStruct
 	IsSlice            bool
 	IsStruct           bool
-	IsInnerArg         bool // ex. pkg.var <- var is the inner arg
 	IsLocalDeclaration bool
 	IsInnerReference   bool // for example: &slice[0] or &struct.field
 	PreviouslyDeclared bool
@@ -162,7 +161,6 @@ All "Is" can be removed
 - but use int lookup
 	IsSlice               bool
 	IsStruct              bool
-	IsInnerArg                bool // pkg.var <- var is rest
 	IsLocalDeclaration    bool
 	IsInnerReference      bool // for example: &slice[0] or &struct.field
 
