@@ -46,17 +46,12 @@ func IterationExpressions(prgrm *ast.CXProgram,
 
 	prgrm.CXAtomicOps[upExpressionIdx].Package = ast.CXPackageIndex(pkg.Index)
 
-	trueArg := WritePrimary(prgrm, types.BOOL, encoder.Serialize(true), false)
-	trueArgAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(trueArg, 0)
-	if err != nil {
-		panic(err)
-	}
-
 	// -2 for the cx line expression addition for up and down expr
 	upLines := ((len(statementExprs) + len(incrementExprs) + len(conditionExprs) + 2) * -1) - 2
 	downLines := 0
 
-	prgrm.CXAtomicOps[upExpressionIdx].AddInput(prgrm, trueArgAtomicOp.Outputs[0])
+	trueArg := WritePrimary(prgrm, types.BOOL, encoder.Serialize(true), false)
+	prgrm.CXAtomicOps[upExpressionIdx].AddInput(prgrm, ast.CXArgumentIndex(trueArg.Index))
 	prgrm.CXAtomicOps[upExpressionIdx].ThenLines = upLines
 	prgrm.CXAtomicOps[upExpressionIdx].ElseLines = downLines
 
@@ -137,12 +132,7 @@ func trueJmpExpressions(prgrm *ast.CXProgram, opcode int) []ast.CXExpression {
 	expressionIdx := expr.Index
 
 	trueArg := WritePrimary(prgrm, types.BOOL, encoder.Serialize(true), false)
-	trueArgExpression, err := prgrm.GetCXAtomicOpFromExpressions(trueArg, 0)
-	if err != nil {
-		panic(err)
-	}
-
-	prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, trueArgExpression.Outputs[0])
+	prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, ast.CXArgumentIndex(trueArg.Index))
 	prgrm.CXAtomicOps[expressionIdx].Package = ast.CXPackageIndex(pkg.Index)
 
 	return []ast.CXExpression{*exprCXLine, *expr}
@@ -229,14 +219,10 @@ func SelectionExpressions(prgrm *ast.CXProgram, conditionExprs []ast.CXExpressio
 
 	prgrm.CXAtomicOps[skipExpressionIdx].Package = ast.CXPackageIndex(pkg.Index)
 
-	trueArg := WritePrimary(prgrm, types.BOOL, encoder.Serialize(true), false)
-	trueArgExpression, err := prgrm.GetCXAtomicOpFromExpressions(trueArg, 0)
-	if err != nil {
-		panic(err)
-	}
 	skipLines := len(elseExprs)
 
-	prgrm.CXAtomicOps[skipExpressionIdx].AddInput(prgrm, trueArgExpression.Outputs[0])
+	trueArg := WritePrimary(prgrm, types.BOOL, encoder.Serialize(true), false)
+	prgrm.CXAtomicOps[skipExpressionIdx].AddInput(prgrm, ast.CXArgumentIndex(trueArg.Index))
 	prgrm.CXAtomicOps[skipExpressionIdx].ThenLines = skipLines
 	prgrm.CXAtomicOps[skipExpressionIdx].ElseLines = 0
 
