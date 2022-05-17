@@ -1801,7 +1801,7 @@ yydefault:
 		{
 			var exprs []ast.CXExpression
 			for _, str := range yyDollar[1].stringA {
-				expr := actions.WritePrimary(actions.AST, types.AFF, encoder.Serialize(str), false)
+				expr := actions.WritePrimaryExprs(actions.AST, types.AFF, encoder.Serialize(str), false)
 				expr[len(expr)-1].ExpressionType = ast.CXEXPR_ARRAY_LITERAL
 				exprs = append(exprs, expr...)
 			}
@@ -1842,74 +1842,74 @@ yydefault:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line cxparser/cxparsingcompletor/parsingcompletor.y:731
 		{
-			yyVAL.expressions = actions.WritePrimary(actions.AST, types.STR, types.Make_obj([]byte(yyDollar[1].tok)), false)
+			yyVAL.expressions = actions.WritePrimaryExprs(actions.AST, types.STR, types.Make_obj([]byte(yyDollar[1].tok)), false)
 		}
 	case 98:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line cxparser/cxparsingcompletor/parsingcompletor.y:735
 		{
-			exprs := actions.WritePrimary(actions.AST, types.BOOL, encoder.Serialize(yyDollar[1].bool), false)
+			exprs := actions.WritePrimaryExprs(actions.AST, types.BOOL, encoder.Serialize(yyDollar[1].bool), false)
 			yyVAL.expressions = exprs
 		}
 	case 99:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line cxparser/cxparsingcompletor/parsingcompletor.y:740
 		{
-			yyVAL.expressions = actions.WritePrimary(actions.AST, types.I8, encoder.Serialize(yyDollar[1].i8), false)
+			yyVAL.expressions = actions.WritePrimaryExprs(actions.AST, types.I8, encoder.Serialize(yyDollar[1].i8), false)
 		}
 	case 100:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line cxparser/cxparsingcompletor/parsingcompletor.y:744
 		{
-			yyVAL.expressions = actions.WritePrimary(actions.AST, types.I16, encoder.Serialize(yyDollar[1].i16), false)
+			yyVAL.expressions = actions.WritePrimaryExprs(actions.AST, types.I16, encoder.Serialize(yyDollar[1].i16), false)
 		}
 	case 101:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line cxparser/cxparsingcompletor/parsingcompletor.y:748
 		{
-			yyVAL.expressions = actions.WritePrimary(actions.AST, types.I32, encoder.Serialize(yyDollar[1].i32), false)
+			yyVAL.expressions = actions.WritePrimaryExprs(actions.AST, types.I32, encoder.Serialize(yyDollar[1].i32), false)
 		}
 	case 102:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line cxparser/cxparsingcompletor/parsingcompletor.y:752
 		{
-			yyVAL.expressions = actions.WritePrimary(actions.AST, types.I64, encoder.Serialize(yyDollar[1].i64), false)
+			yyVAL.expressions = actions.WritePrimaryExprs(actions.AST, types.I64, encoder.Serialize(yyDollar[1].i64), false)
 		}
 	case 103:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line cxparser/cxparsingcompletor/parsingcompletor.y:756
 		{
-			yyVAL.expressions = actions.WritePrimary(actions.AST, types.UI8, encoder.Serialize(yyDollar[1].ui8), false)
+			yyVAL.expressions = actions.WritePrimaryExprs(actions.AST, types.UI8, encoder.Serialize(yyDollar[1].ui8), false)
 		}
 	case 104:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line cxparser/cxparsingcompletor/parsingcompletor.y:760
 		{
-			yyVAL.expressions = actions.WritePrimary(actions.AST, types.UI16, encoder.Serialize(yyDollar[1].ui16), false)
+			yyVAL.expressions = actions.WritePrimaryExprs(actions.AST, types.UI16, encoder.Serialize(yyDollar[1].ui16), false)
 		}
 	case 105:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line cxparser/cxparsingcompletor/parsingcompletor.y:764
 		{
-			yyVAL.expressions = actions.WritePrimary(actions.AST, types.UI32, encoder.Serialize(yyDollar[1].ui32), false)
+			yyVAL.expressions = actions.WritePrimaryExprs(actions.AST, types.UI32, encoder.Serialize(yyDollar[1].ui32), false)
 		}
 	case 106:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line cxparser/cxparsingcompletor/parsingcompletor.y:768
 		{
-			yyVAL.expressions = actions.WritePrimary(actions.AST, types.UI64, encoder.Serialize(yyDollar[1].ui64), false)
+			yyVAL.expressions = actions.WritePrimaryExprs(actions.AST, types.UI64, encoder.Serialize(yyDollar[1].ui64), false)
 		}
 	case 107:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line cxparser/cxparsingcompletor/parsingcompletor.y:772
 		{
-			yyVAL.expressions = actions.WritePrimary(actions.AST, types.F32, encoder.Serialize(yyDollar[1].f32), false)
+			yyVAL.expressions = actions.WritePrimaryExprs(actions.AST, types.F32, encoder.Serialize(yyDollar[1].f32), false)
 		}
 	case 108:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line cxparser/cxparsingcompletor/parsingcompletor.y:776
 		{
-			yyVAL.expressions = actions.WritePrimary(actions.AST, types.F64, encoder.Serialize(yyDollar[1].f64), false)
+			yyVAL.expressions = actions.WritePrimaryExprs(actions.AST, types.F64, encoder.Serialize(yyDollar[1].f64), false)
 		}
 	case 109:
 		yyDollar = yyS[yypt-3 : yypt+1]

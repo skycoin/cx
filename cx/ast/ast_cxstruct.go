@@ -153,7 +153,7 @@ func (strct *CXStruct) AddField(prgrm *CXProgram, fieldType types.Code, cxArgume
 		newCXTypeSignature.Meta = int(fieldType)
 
 		// If pointer atomic, i.e. *i32, *f32, etc.
-	} else if cxArgument.IsSlice && len(cxArgument.Lengths) == 1 && fieldType == types.POINTER && cxArgument.PointerTargetType.IsPrimitive() {
+	} else if fieldType == types.POINTER && cxArgument.PointerTargetType.IsPrimitive() {
 		newCXTypeSignature.Type = TYPE_POINTER_ATOMIC
 		newCXTypeSignature.Meta = int(cxArgument.PointerTargetType)
 

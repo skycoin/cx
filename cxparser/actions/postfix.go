@@ -260,14 +260,9 @@ func PostfixExpressionIncDec(prgrm *ast.CXProgram, prevExprs []ast.CXExpression,
 
 	var valB [4]byte
 	types.Write_i32(valB[:], 0, 1)
-	val := WritePrimary(prgrm, types.I32, valB[:], false)
+	valArg := WritePrimary(prgrm, types.I32, valB[:], false)
 
 	lastPrevExpression, err := prgrm.GetCXAtomicOpFromExpressions(prevExprs, len(prevExprs)-1)
-	if err != nil {
-		panic(err)
-	}
-
-	valAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(val, len(val)-1)
 	if err != nil {
 		panic(err)
 	}
@@ -275,7 +270,7 @@ func PostfixExpressionIncDec(prgrm *ast.CXProgram, prevExprs []ast.CXExpression,
 	expressionIdx := expr.Index
 	prgrm.CXAtomicOps[expressionIdx].Package = ast.CXPackageIndex(pkg.Index)
 	prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, lastPrevExpression.Outputs[0])
-	prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, valAtomicOp.Outputs[0])
+	prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, ast.CXArgumentIndex(valArg.Index))
 	prgrm.CXAtomicOps[expressionIdx].AddOutput(prgrm, lastPrevExpression.Outputs[0])
 
 	exprs := append([]ast.CXExpression{}, *exprCXLine, *expr)
@@ -369,13 +364,9 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 			//Is used for constant declaration? But only for core packages?
 			if code, ok := ConstCodes[prgrm.CXArgs[leftExprIdx].Name+"."+ident]; ok {
 				constant := Constants[code]
-				val := WritePrimary(prgrm, constant.Type, constant.Value, false)
-				valAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(val, 0)
-				if err != nil {
-					panic(err)
-				}
+				valArg := WritePrimary(prgrm, constant.Type, constant.Value, false)
 
-				prgrm.CXAtomicOps[lastExpressionIdx].Outputs[0] = valAtomicOp.Outputs[0]
+				prgrm.CXAtomicOps[lastExpressionIdx].Outputs[0] = ast.CXArgumentIndex(valArg.Index)
 
 				return prevExprs
 			} else if _, ok := ast.OpCodes[prgrm.CXArgs[leftExprIdx].Name+"."+ident]; ok {
