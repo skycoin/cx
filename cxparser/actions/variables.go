@@ -297,11 +297,6 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 		expr := ast.MakeAtomicOperatorExpression(prgrm, nil)
 		cxAtomicOpIdx := expr.Index
 		prgrm.CXAtomicOps[cxAtomicOpIdx].Package = ast.CXPackageIndex(pkg.Index)
-
-		prgrm.CXArgs[declSpecIdx].Name = declarator.Name
-		prgrm.CXArgs[declSpecIdx].ArgDetails.FileLine = declarator.ArgDetails.FileLine
-		prgrm.CXArgs[declSpecIdx].Package = ast.CXPackageIndex(pkg.Index)
-		prgrm.CXArgs[declSpecIdx].PreviouslyDeclared = true
 		prgrm.CXAtomicOps[cxAtomicOpIdx].AddOutput(prgrm, declSpecIdx)
 
 		return []ast.CXExpression{*exprCXLine, *expr}
