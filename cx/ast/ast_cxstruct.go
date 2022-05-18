@@ -132,7 +132,7 @@ func MakeStruct(name string) *CXStruct {
 }
 
 // AddField ...
-func (strct *CXStruct) AddField(prgrm *CXProgram, fieldType types.Code, cxArgument *CXArgument) *CXStruct {
+func (strct *CXStruct) AddField(prgrm *CXProgram, cxArgument *CXArgument) *CXStruct {
 	// Check if field already exist
 	for _, typeSignature := range strct.Fields {
 		if typeSignature.Name == cxArgument.Name {
@@ -143,7 +143,7 @@ func (strct *CXStruct) AddField(prgrm *CXProgram, fieldType types.Code, cxArgume
 		}
 	}
 
-	newCXTypeSignature := GetCXTypeSignatureRepresentationOfCXArg(prgrm, fieldType, cxArgument)
+	newCXTypeSignature := GetCXTypeSignatureRepresentationOfCXArg(prgrm, cxArgument)
 	strct.Fields = append(strct.Fields, *newCXTypeSignature)
 
 	// TODO: Found out the effect and completely remove this.
@@ -329,11 +329,12 @@ func (typeSignature *CXTypeSignature) GetCXArgFormat(prgrm *CXProgram) *CXArgume
 	return arg
 }
 
-func GetCXTypeSignatureRepresentationOfCXArg(prgrm *CXProgram, fieldType types.Code, cxArgument *CXArgument) *CXTypeSignature {
+func GetCXTypeSignatureRepresentationOfCXArg(prgrm *CXProgram, cxArgument *CXArgument) *CXTypeSignature {
 	newCXTypeSignature := CXTypeSignature{
 		Name: cxArgument.Name,
 	}
 
+	fieldType := cxArgument.Type
 	// If atomic type. i.e. i8, i16, i32, f32, etc.
 	if !cxArgument.IsSlice && len(cxArgument.Lengths) == 0 && fieldType.IsPrimitive() {
 		newCXTypeSignature.Type = TYPE_ATOMIC
