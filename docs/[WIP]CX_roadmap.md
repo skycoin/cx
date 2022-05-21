@@ -96,3 +96,9 @@ Notes:
 
 Objectives:
 - so functions in AST can be reduced completely to assembly language and executed natively eventually.
+
+## Misc
+- [ ] Memory Explorer
+- [ ] App/library that shows all CX objects, layout values, location, etc
+- [ ] Count of object types, total memory, used, unused, etc
+- [ ] Stack trace library

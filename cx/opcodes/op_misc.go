@@ -15,17 +15,12 @@ func opIdentity(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 		elt = out1
 	}
 
-	//TODO: Delete
-	// DoesEscape==true
-	if elt.IsPointer() && elt.PointerTargetType != types.STR && elt.Type != types.AFF {
-		outputs[0].Set_ptr(prgrm, types.AllocWrite_obj_data(prgrm, prgrm.Memory, inputs[0].Get_bytes(prgrm)))
+	if elt.IsPointer() && elt.PointerTargetType != types.STR && elt.Type != types.AFF || elt.PassBy == constants.PASSBY_REFERENCE {
+		// outputs[0].Set_ptr(prgrm, types.AllocWrite_obj_data(prgrm, prgrm.Memory, inputs[0].Get_bytes(prgrm)))
+		outputs[0].Set_ptr(prgrm, inputs[0].Offset)
 	} else {
-		switch elt.PassBy {
-		case constants.PASSBY_VALUE:
-			outputs[0].Set_bytes(prgrm, inputs[0].Get_bytes(prgrm))
-		case constants.PASSBY_REFERENCE:
-			outputs[0].Set_ptr(prgrm, inputs[0].Offset)
-		}
+		// Pass by value
+		outputs[0].Set_bytes(prgrm, inputs[0].Get_bytes(prgrm))
 	}
 }
 

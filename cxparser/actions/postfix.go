@@ -260,14 +260,9 @@ func PostfixExpressionIncDec(prgrm *ast.CXProgram, prevExprs []ast.CXExpression,
 
 	var valB [4]byte
 	types.Write_i32(valB[:], 0, 1)
-	val := WritePrimary(prgrm, types.I32, valB[:], false)
+	valArg := WritePrimary(prgrm, types.I32, valB[:], false)
 
 	lastPrevExpression, err := prgrm.GetCXAtomicOpFromExpressions(prevExprs, len(prevExprs)-1)
-	if err != nil {
-		panic(err)
-	}
-
-	valAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(val, len(val)-1)
 	if err != nil {
 		panic(err)
 	}
@@ -275,7 +270,7 @@ func PostfixExpressionIncDec(prgrm *ast.CXProgram, prevExprs []ast.CXExpression,
 	expressionIdx := expr.Index
 	prgrm.CXAtomicOps[expressionIdx].Package = ast.CXPackageIndex(pkg.Index)
 	prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, lastPrevExpression.Outputs[0])
-	prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, valAtomicOp.Outputs[0])
+	prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, ast.CXArgumentIndex(valArg.Index))
 	prgrm.CXAtomicOps[expressionIdx].AddOutput(prgrm, lastPrevExpression.Outputs[0])
 
 	exprs := append([]ast.CXExpression{}, *exprCXLine, *expr)
@@ -318,7 +313,6 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		out.Lengths = opOut.Lengths
 		out.Package = prgrm.CXAtomicOps[lastExpressionIdx].Package
 		out.PreviouslyDeclared = true
-		out.IsInnerArg = true
 
 		outIdx := prgrm.AddCXArgInArray(out)
 		prgrm.CXAtomicOps[lastExpressionIdx].Outputs = append(prgrm.CXAtomicOps[lastExpressionIdx].Outputs, outIdx)
@@ -332,7 +326,6 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		inp.Size = opOut.Size
 		inp.TotalSize = opOut.TotalSize
 		inp.Package = prgrm.CXAtomicOps[lastExpressionIdx].Package
-		inp.IsInnerArg = true
 		inpIdx := prgrm.AddCXArgInArray(inp)
 
 		exprCXLine := ast.MakeCXLineExpression(prgrm, lastExprCXLine.FileName, lastExprCXLine.LineNumber, lastExprCXLine.LineStr)
@@ -354,25 +347,6 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 
 	leftExprIdx := prgrm.CXAtomicOps[lastExpressionIdx].Outputs[0]
 
-	// If the left already is a rest (e.g. "var" in "pkg.var"), then
-	// it can't be a package name and we propagate the property to
-	//  the right side.
-	if prgrm.CXArgs[leftExprIdx].IsInnerArg {
-		prgrm.CXArgs[leftExprIdx].IsStruct = true
-		fld := ast.MakeArgument(ident, CurrentFile, LineNo)
-		leftPkg, err := prgrm.GetPackageFromArray(prgrm.CXArgs[leftExprIdx].Package)
-		if err != nil {
-			panic(err)
-		}
-
-		fld.SetType(types.IDENTIFIER).SetPackage(leftPkg)
-		fldIdx := prgrm.AddCXArgInArray(fld)
-		prgrm.CXArgs[leftExprIdx].Fields = append(prgrm.CXArgs[leftExprIdx].Fields, fldIdx)
-
-		return prevExprs
-	}
-
-	prgrm.CXArgs[leftExprIdx].IsInnerArg = true
 	// then left is a first (e.g first.rest) and right is a rest
 	// let's check if left is a package
 	pkg, err := prgrm.GetCurrentPackage()
@@ -390,13 +364,9 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 			//Is used for constant declaration? But only for core packages?
 			if code, ok := ConstCodes[prgrm.CXArgs[leftExprIdx].Name+"."+ident]; ok {
 				constant := Constants[code]
-				val := WritePrimary(prgrm, constant.Type, constant.Value, false)
-				valAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(val, 0)
-				if err != nil {
-					panic(err)
-				}
+				valArg := WritePrimary(prgrm, constant.Type, constant.Value, false)
 
-				prgrm.CXAtomicOps[lastExpressionIdx].Outputs[0] = valAtomicOp.Outputs[0]
+				prgrm.CXAtomicOps[lastExpressionIdx].Outputs[0] = ast.CXArgumentIndex(valArg.Index)
 
 				return prevExprs
 			} else if _, ok := ast.OpCodes[prgrm.CXArgs[leftExprIdx].Name+"."+ident]; ok {

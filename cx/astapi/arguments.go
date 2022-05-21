@@ -418,20 +418,13 @@ func AddLiteralInputToExpression(cxprogram *cxast.CXProgram, packageName, functi
 	cxparseractions.AST = cxprogram
 	litArg := cxparseractions.WritePrimary(cxprogram, argType, bytes, false)
 
-	cxAtomicOp1, err := cxprogram.GetCXAtomicOpFromExpressions(litArg, 0)
-	if err != nil {
-		panic(err)
-	}
-
-	arg := cxprogram.GetCXArgFromArray(cxAtomicOp1.Outputs[0])
-	argIdx := cxAtomicOp1.Outputs[0]
 	cxAtomicOp2, _, _, err := cxprogram.GetOperation(expr)
 	if err != nil {
 		panic(err)
 	}
 
-	arg.Package = cxast.CXPackageIndex(pkg.Index)
-	cxAtomicOp2.AddInput(cxprogram, argIdx)
+	litArg.Package = cxast.CXPackageIndex(pkg.Index)
+	cxAtomicOp2.AddInput(cxprogram, cxast.CXArgumentIndex(litArg.Index))
 
 	return nil
 }

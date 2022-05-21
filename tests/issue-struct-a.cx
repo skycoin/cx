@@ -1,0 +1,19 @@
+package main
+
+
+// printf is printing garbage, comment //s str in test struct to move/remove the issue
+type test struct {
+  s str // comment here to remove the issue
+  i i32
+}
+type test_test struct {
+  t test
+}
+var tt test_test
+func run(s str, i i32) {
+  tt.t.i = 33
+  printf("i %d\n", tt.t.i)
+}
+func main() {
+  run("test", 55)
+}

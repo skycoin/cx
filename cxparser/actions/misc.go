@@ -28,8 +28,8 @@ func hasDerefOp(arg *ast.CXArgument, spec int) bool {
 	return found
 }
 
-// This function writes those bytes to prgrm.Data.
-func WritePrimary(prgrm *ast.CXProgram, typeCode types.Code, byts []byte, isSlice bool) []ast.CXExpression {
+// WritePrimary writes those bytes to prgrm.Data and returns a CXArg.
+func WritePrimary(prgrm *ast.CXProgram, typeCode types.Code, byts []byte, isSlice bool) *ast.CXArgument {
 	pkg, err := prgrm.GetCurrentPackage()
 	if err != nil {
 		panic(err)
@@ -46,7 +46,6 @@ func WritePrimary(prgrm *ast.CXProgram, typeCode types.Code, byts []byte, isSlic
 	arg.Offset = prgrm.Data.Size + prgrm.Data.StartsAt
 
 	if arg.Type == types.STR || arg.Type == types.AFF {
-		arg.PassBy = constants.PASSBY_REFERENCE
 		arg.Size = types.POINTER_SIZE
 		arg.TotalSize = types.POINTER_SIZE
 		if isSlice == false {
@@ -78,7 +77,21 @@ func WritePrimary(prgrm *ast.CXProgram, typeCode types.Code, byts []byte, isSlic
 	prgrm.Data.Size += size
 	prgrm.Heap.StartsAt = prgrm.Data.Size + prgrm.Data.StartsAt
 
-	// exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
+	argIdx := prgrm.AddCXArgInArray(arg)
+	argReturn := prgrm.GetCXArgFromArray(argIdx)
+
+	return argReturn
+}
+
+// WritePrimary writes those bytes to prgrm.Data and returns a []CXExpression.
+func WritePrimaryExprs(prgrm *ast.CXProgram, typeCode types.Code, byts []byte, isSlice bool) []ast.CXExpression {
+	pkg, err := prgrm.GetCurrentPackage()
+	if err != nil {
+		panic(err)
+	}
+
+	arg := WritePrimary(prgrm, typeCode, byts, isSlice)
+
 	expr := ast.MakeAtomicOperatorExpression(prgrm, nil)
 	prgrm.CXAtomicOps[expr.Index].Package = ast.CXPackageIndex(pkg.Index)
 	argIdx := prgrm.AddCXArgInArray(arg)

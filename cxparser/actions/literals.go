@@ -307,19 +307,10 @@ func ArrayLiteralExpression(prgrm *ast.CXProgram, arraySizes []types.Pointer, ty
 			sym.Package = ast.CXPackageIndex(pkg.Index)
 			sym.PreviouslyDeclared = true
 
-			if sym.Type == types.STR || sym.Type == types.AFF {
-				sym.PassBy = constants.PASSBY_REFERENCE
-			}
-
-			idxExpr := WritePrimary(prgrm, types.I32, encoder.Serialize(int32(endPointsCounter)), false)
+			idxArg := WritePrimary(prgrm, types.I32, encoder.Serialize(int32(endPointsCounter)), false)
 			endPointsCounter++
 
-			idxExprAtomicOp, err := prgrm.GetCXAtomicOpFromExpressions(idxExpr, 0)
-			if err != nil {
-				panic(err)
-			}
-
-			sym.Indexes = append(sym.Indexes, idxExprAtomicOp.Outputs[0])
+			sym.Indexes = append(sym.Indexes, ast.CXArgumentIndex(idxArg.Index))
 			sym.DereferenceOperations = append(sym.DereferenceOperations, constants.DEREF_ARRAY)
 			sym.Lengths = arraySizes
 			sym.TotalSize = sym.Size * TotalLength(sym.Lengths)

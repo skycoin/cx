@@ -42,7 +42,6 @@ func DeclarationSpecifiers(declSpec *ast.CXArgument, arrayLengths []types.Pointe
 		arg := declSpec
 		arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_SLICE)
 		arg.IsSlice = true
-		arg.PassBy = constants.PASSBY_REFERENCE
 		arg.Lengths = append([]types.Pointer{0}, arg.Lengths...)
 		arg.TotalSize = types.POINTER_SIZE
 

@@ -694,7 +694,7 @@ infer_clauses:
                 {
 			var exprs []ast.CXExpression
 			for _, str := range $1 {
-				expr := actions.WritePrimary(actions.AST,types.AFF, encoder.Serialize(str), false)
+				expr := actions.WritePrimaryExprs(actions.AST,types.AFF, encoder.Serialize(str), false)
 				expr[len(expr) - 1].ExpressionType = ast.CXEXPR_ARRAY_LITERAL
 				exprs = append(exprs, expr...)
 			}
@@ -729,52 +729,52 @@ primary_expression:
                 }
         |       STRING_LITERAL
                 {
-			$$ = actions.WritePrimary(actions.AST,types.STR, types.Make_obj([]byte($1)), false)
+			$$ = actions.WritePrimaryExprs(actions.AST,types.STR, types.Make_obj([]byte($1)), false)
                 }
         |       BOOLEAN_LITERAL
                 {
-			exprs := actions.WritePrimary(actions.AST,types.BOOL, encoder.Serialize($1), false)
+			exprs := actions.WritePrimaryExprs(actions.AST,types.BOOL, encoder.Serialize($1), false)
 			$$ = exprs
                 }
         |       BYTE_LITERAL
                 {
-			$$ = actions.WritePrimary(actions.AST,types.I8, encoder.Serialize($1), false)
+			$$ = actions.WritePrimaryExprs(actions.AST,types.I8, encoder.Serialize($1), false)
                 }
         |       SHORT_LITERAL
                 {
-			$$ = actions.WritePrimary(actions.AST,types.I16, encoder.Serialize($1), false)
+			$$ = actions.WritePrimaryExprs(actions.AST,types.I16, encoder.Serialize($1), false)
                 }
         |       INT_LITERAL
                 {
-			$$ = actions.WritePrimary(actions.AST,types.I32, encoder.Serialize($1), false)
+			$$ = actions.WritePrimaryExprs(actions.AST,types.I32, encoder.Serialize($1), false)
                 }
         |       LONG_LITERAL
                 {
-			$$ = actions.WritePrimary(actions.AST,types.I64, encoder.Serialize($1), false)
+			$$ = actions.WritePrimaryExprs(actions.AST,types.I64, encoder.Serialize($1), false)
                 }
         |       UNSIGNED_BYTE_LITERAL
                 {
-			$$ = actions.WritePrimary(actions.AST,types.UI8, encoder.Serialize($1), false)
+			$$ = actions.WritePrimaryExprs(actions.AST,types.UI8, encoder.Serialize($1), false)
                 }
         |       UNSIGNED_SHORT_LITERAL
                 {
-			$$ = actions.WritePrimary(actions.AST,types.UI16, encoder.Serialize($1), false)
+			$$ = actions.WritePrimaryExprs(actions.AST,types.UI16, encoder.Serialize($1), false)
                 }
         |       UNSIGNED_INT_LITERAL
                 {
-			$$ = actions.WritePrimary(actions.AST,types.UI32, encoder.Serialize($1), false)
+			$$ = actions.WritePrimaryExprs(actions.AST,types.UI32, encoder.Serialize($1), false)
                 }
         |       UNSIGNED_LONG_LITERAL
                 {
-			$$ = actions.WritePrimary(actions.AST,types.UI64, encoder.Serialize($1), false)
+			$$ = actions.WritePrimaryExprs(actions.AST,types.UI64, encoder.Serialize($1), false)
                 }
         |       FLOAT_LITERAL
                 {
-			$$ = actions.WritePrimary(actions.AST,types.F32, encoder.Serialize($1), false)
+			$$ = actions.WritePrimaryExprs(actions.AST,types.F32, encoder.Serialize($1), false)
                 }
         |       DOUBLE_LITERAL
                 {
-			$$ = actions.WritePrimary(actions.AST,types.F64, encoder.Serialize($1), false)
+			$$ = actions.WritePrimaryExprs(actions.AST,types.F64, encoder.Serialize($1), false)
                 }
         |       LPAREN expression RPAREN
                 { $$ = $2 }
@@ -1023,7 +1023,6 @@ assignment_expression:
                                                                                 panic(err)
                                                                         }
                                                                         fromExpressionOutputIdx:=fromExpression.Outputs[0]
-                                                                        actions.AST.CXArgs[fromExpressionOutputIdx].IsShortAssignmentDeclaration = true
                                                                         actions.AST.CXArgs[fromExpressionOutputIdx].PreviouslyDeclared = true
                                                                 }
                                                         }
@@ -1043,7 +1042,6 @@ assignment_expression:
                                                                                 panic(err)
                                                                         }
                                                                         fromExpressionOutputIdx:=fromExpression.Outputs[0]
-                                                                        actions.AST.CXArgs[fromExpressionOutputIdx].IsShortAssignmentDeclaration = true
                                                                         actions.AST.CXArgs[fromExpressionOutputIdx].PreviouslyDeclared = true
                                                                 }
                                                         }
