@@ -15,7 +15,6 @@ const TEST_SRC_PATH2 = "testValidProgram/src/"
 const TEST_SRC_PATH3 = "testVariousFiles/src/"
 
 func init() {
-
 	files, err := ioutil.ReadDir(TEST_SRC_PATH)
 	if err != nil {
 		log.Fatal(err)

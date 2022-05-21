@@ -74,6 +74,7 @@ func (packageList *PackageList) addPackagesIn(path string) {
 		}
 		fileList = append(fileList, fileInfo)
 	}
+
 	if len(fileList) == 1 {
 		packageName, err := getPackageName(fileList[0])
 		if err != nil {
@@ -94,7 +95,7 @@ func (packageList *PackageList) addPackagesIn(path string) {
 		}
 		if !samePackage {
 			log.Print("Files in directory " + CURRENT_PATH + " are not all in the same newPackage.\nSource of the error: " + packageName)
-			log.Fatal("ErrMismatchedPackageFiles")
+			log.Fatal(errors.New("ErrMismatchedPackageFiles"))
 		}
 		newPackage.PackageName = packageName
 	}
@@ -156,7 +157,7 @@ func getPackageName(fileInfo fs.FileInfo) (string, error) {
 			wordBefore = scanner.Text()
 			continue
 		}
-		if scanner.Text() == "var" || scanner.Text() == "const" || scanner.Text() == "type" || scanner.Text() == "func" {
+		if scanner.Text() == "import" || scanner.Text() == "var" || scanner.Text() == "const" || scanner.Text() == "type" || scanner.Text() == "func" {
 			return "", errors.New("no package name found")
 		}
 		break
