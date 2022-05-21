@@ -2,36 +2,16 @@ package loader
 
 import (
 	"bufio"
-	"bytes"
-	"encoding/gob"
-	"encoding/json"
 	"errors"
-	"fmt"
 	"io/fs"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 
-	"github.com/skycoin/cx/cmd/packageloader/server"
+	"github.com/skycoin/cx/cmd/packageloader/database"
 	"golang.org/x/crypto/blake2b"
 )
-
-type File struct {
-	FileName   string
-	Length     uint32
-	Content    []byte
-	Blake2Hash string
-}
-
-type Package struct {
-	PackageName string
-	Files       []string
-}
-
-type PackageList struct {
-	Packages []string
-}
 
 var SRC_PATH string
 var CURRENT_PATH string
@@ -70,7 +50,7 @@ func LoadPackages(programName string, path string) {
 		packageList.addPackagesIn(path)
 	}
 	// TODO: Remove after testing!
-	server.Add((programName), packageList)
+	database.Add((programName), packageList)
 }
 
 func (packageList *PackageList) addPackagesIn(path string) {
@@ -168,7 +148,7 @@ func getPackageName(fileInfo fs.FileInfo) (string, error) {
 	for scanner.Text() != "package" {
 		scanner.Scan()
 		if scanner.Text() == "var" || scanner.Text() == "const" || scanner.Text() == "type" || scanner.Text() == "func" {
-			return "", errors.New("No package name found")
+			return "", errors.New("no package name found")
 		}
 	}
 	scanner.Scan()
@@ -212,60 +192,4 @@ func (newPackage *Package) addFiles(fileList []fs.FileInfo) {
 		newFile.Blake2Hash = string(h[:])
 		newPackage.hashFile(&newFile)
 	}
-}
-
-// Encode a file and put it in the specified package
-func (newPackage *Package) hashFile(newFile *File) error {
-	var buffer bytes.Buffer
-	encoder := gob.NewEncoder(&buffer)
-
-	err := encoder.Encode(newFile)
-	if err != nil {
-		return err
-	}
-	h := blake2b.Sum512(buffer.Bytes())
-
-	newPackage.Files = append(newPackage.Files, fmt.Sprintf("%x", h[:]))
-	// TODO: Remove after testing!
-	server.Add(fmt.Sprintf("%x", h[:]), *newFile)
-	return nil
-}
-
-// Encode a package and put it in the specified package list
-func (packageList *PackageList) hashPackage(newPackage *Package) error {
-	var buffer bytes.Buffer
-	encoder := gob.NewEncoder(&buffer)
-
-	err := encoder.Encode(newPackage)
-	if err != nil {
-		return err
-	}
-	h := blake2b.Sum512(buffer.Bytes())
-	packageList.Packages = append(packageList.Packages, fmt.Sprintf("%x", h[:]))
-	server.Add(fmt.Sprintf("%x", h[:]), *newPackage)
-	return nil
-}
-
-func (f File) MarshalBinary() ([]byte, error) {
-	return json.Marshal(f)
-}
-
-func (f *File) UnmarshalBinary(data []byte) error {
-	return json.Unmarshal(data, f)
-}
-
-func (p Package) MarshalBinary() ([]byte, error) {
-	return json.Marshal(p)
-}
-
-func (p *Package) UnmarshalBinary(data []byte) error {
-	return json.Unmarshal(data, p)
-}
-
-func (pl PackageList) MarshalBinary() ([]byte, error) {
-	return json.Marshal(pl)
-}
-
-func (pl *PackageList) UnmarshalBinary(data []byte) error {
-	return json.Unmarshal(data, pl)
 }

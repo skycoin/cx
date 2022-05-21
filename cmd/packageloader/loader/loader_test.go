@@ -77,8 +77,7 @@ func TestGetImports(t *testing.T) {
 
 func TestComparePackageNamesFalse(t *testing.T) {
 	CURRENT_PATH = TEST_SRC_PATH
-	testImports := []string{}
-	testSamePackage, _, testImports, err := comparePackageNames(testFileList, testImports)
+	testSamePackage, _, _, err := comparePackageNames(testFileList, []string{})
 	if err != nil {
 		t.Error(err)
 	}
@@ -89,8 +88,7 @@ func TestComparePackageNamesFalse(t *testing.T) {
 
 func TestComparePackageNamesTrue(t *testing.T) {
 	CURRENT_PATH = TEST_SRC_PATH + "testimport/"
-	testImports := []string{}
-	testSamePackage, testPackageName, testImports, err := comparePackageNames(testFileList2, testImports)
+	testSamePackage, testPackageName, _, err := comparePackageNames(testFileList2, []string{})
 	if err != nil {
 		t.Error(err)
 	}
