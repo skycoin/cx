@@ -10,8 +10,9 @@ import (
 var testFileList = []os.FileInfo{}
 var testFileList2 = []os.FileInfo{}
 
-const TEST_SRC_PATH = "./test1/src/"
-const TEST_SRC_PATH2 = "./test2/src/"
+const TEST_SRC_PATH = "testInvalidProgram/src/"
+const TEST_SRC_PATH2 = "testValidProgram/src/"
+const TEST_SRC_PATH3 = "testVariousFiles/src/"
 
 func init() {
 
@@ -119,5 +120,34 @@ func TestAddPackagesIn(t *testing.T) {
 }
 
 func TestLoad(t *testing.T) {
-	LoadPackages("test2", "./test2/")
+	LoadPackages("TestValid", "testValidProgram/")
+}
+
+func TestCommentsPackage(t *testing.T) {
+	files, err := ioutil.ReadDir("testVariousFiles/")
+	if err != nil {
+		log.Fatal(err)
+	}
+	CURRENT_PATH = "testVariousFiles/"
+	for _, f := range files {
+		if f.Name() == "package_comment.cx" {
+			packageName, err := getPackageName(f)
+			if err != nil {
+				t.Error(err)
+			}
+			if packageName != "main" {
+				t.Error("Expected package main, got", packageName)
+			}
+		}
+		if f.Name() == "import_comment.cx" {
+			importList := []string{}
+			importList, err := getImports(f, importList)
+			if err != nil {
+				t.Error(err)
+			}
+			if len(importList) != 1 || importList[0] != "cx" {
+				t.Error("Expected import cx, got imports", importList)
+			}
+		}
+	}
 }

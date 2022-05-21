@@ -8,8 +8,8 @@ test_loader:
 	open cover.html
 
 test_encoder:
-	go run main.go -l Test2 ./loader/test2/
-	sudo rm -r ./encoder/test/
+	go run main.go -load -name Test2 -path ./loader/test2/
 	go test ./encoder -v -coverprofile cover.out
 	go tool cover -html=cover.out -o cover.html
 	open cover.html
+	sudo rm -r ./encoder/test/

@@ -145,11 +145,21 @@ func getPackageName(fileInfo fs.FileInfo) (string, error) {
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
 	scanner.Split(bufio.ScanWords)
-	for scanner.Text() != "package" {
-		scanner.Scan()
+
+	wordBefore := ""
+	for scanner.Scan() {
+		if scanner.Text() != "package" {
+			wordBefore = scanner.Text()
+			continue
+		}
+		if wordBefore == "//" {
+			wordBefore = scanner.Text()
+			continue
+		}
 		if scanner.Text() == "var" || scanner.Text() == "const" || scanner.Text() == "type" || scanner.Text() == "func" {
 			return "", errors.New("no package name found")
 		}
+		break
 	}
 	scanner.Scan()
 	return scanner.Text(), nil
@@ -164,14 +174,23 @@ func getImports(fileInfo fs.FileInfo, imports []string) ([]string, error) {
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
 	scanner.Split(bufio.ScanWords)
+
+	wordBefore := ""
 	for scanner.Scan() {
-		if scanner.Text() == "import" {
-			scanner.Scan()
-			imports = append(imports, scanner.Text()[1:len(scanner.Text())-1])
+		if scanner.Text() != "import" {
+			wordBefore = scanner.Text()
+			continue
+		}
+		if wordBefore == "//" {
+			wordBefore = scanner.Text()
+			continue
 		}
 		if scanner.Text() == "var" || scanner.Text() == "const" || scanner.Text() == "type" || scanner.Text() == "func" {
 			break
 		}
+		scanner.Scan()
+		imports = append(imports, scanner.Text()[1:len(scanner.Text())-1])
+		wordBefore = scanner.Text()
 	}
 	return imports, nil
 }
