@@ -9,10 +9,12 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/skycoin/cx/cmd/packageloader/database"
+	"github.com/skycoin/cx/cmd/packageloader/bolt"
+	"github.com/skycoin/cx/cmd/packageloader/redis"
 	"golang.org/x/crypto/blake2b"
 )
 
+var DATABASE = "bolt"
 var SRC_PATH string
 var CURRENT_PATH string
 var IMPORTED_DIRECTORIES = []string{}
@@ -49,8 +51,16 @@ func LoadPackages(programName string, path string) {
 	for _, path := range directoryList {
 		packageList.addPackagesIn(path)
 	}
-	// TODO: Remove after testing!
-	database.Add((programName), packageList)
+	switch DATABASE {
+	case "redis":
+		redis.Add(programName, packageList)
+	case "bolt":
+		value, err := packageList.MarshalBinary()
+		if err != nil {
+			log.Fatal(err)
+		}
+		bolt.Add(programName, value)
+	}
 }
 
 func (packageList *PackageList) addPackagesIn(path string) {

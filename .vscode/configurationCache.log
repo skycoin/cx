@@ -1,0 +1,1 @@
+{"buildTargets":["build","build-core","build-debug","build-goyacc","build-parser","clean","configure-workspace","dep","format","help","install","test","test-all","test-parser","token-fuzzer"],"launchTargets":[],"customConfigurationProvider":{"workspaceBrowse":{"browsePath":[],"compilerArgs":[]},"fileIndex":[]}}

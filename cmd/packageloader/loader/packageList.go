@@ -5,8 +5,10 @@ import (
 	"encoding/gob"
 	"encoding/json"
 	"fmt"
+	"log"
 
-	"github.com/skycoin/cx/cmd/packageloader/database"
+	"github.com/skycoin/cx/cmd/packageloader/bolt"
+	"github.com/skycoin/cx/cmd/packageloader/redis"
 	"golang.org/x/crypto/blake2b"
 )
 
@@ -33,6 +35,15 @@ func (packageList *PackageList) hashPackage(newPackage *Package) error {
 	}
 	h := blake2b.Sum512(buffer.Bytes())
 	packageList.Packages = append(packageList.Packages, fmt.Sprintf("%x", h[:]))
-	database.Add(fmt.Sprintf("%x", h[:]), *newPackage)
+	switch DATABASE {
+	case "redis":
+		redis.Add(fmt.Sprintf("%x", h[:]), *newPackage)
+	case "bolt":
+		value, err := newPackage.MarshalBinary()
+		if err != nil {
+			log.Fatal(err)
+		}
+		bolt.Add(fmt.Sprintf("%x", h[:]), value)
+	}
 	return nil
 }

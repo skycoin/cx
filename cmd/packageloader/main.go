@@ -11,6 +11,7 @@ import (
 )
 
 func main() {
+	redisFlag := flag.Bool("redis", false, "Use Redis Key-Value database.")
 	loadFlag := flag.Bool("load", false, "OPTION: Load a program to the database, with a given name to load it as and path to the program")
 	saveFlag := flag.Bool("save", false, "OPTION: Save a package to disk, with a given name to search on the database and a new directory path to save to")
 	helpFlag := flag.Bool("help", false, "OPTION: Display this help message")
@@ -18,11 +19,11 @@ func main() {
 	pathFlag := flag.String("path", "", "The path to the program to load or save")
 	flag.Parse()
 	if *helpFlag {
-		fmt.Println("Syntax: packageloader [OPTION] -path [PATH] -name [NAME]")
+		fmt.Println("Syntax: packageloader [OPTION] -path [PATH] -name [NAME] (REDIS)")
 		flag.Usage()
 		os.Exit(0)
 	}
-	if flag.NFlag()+flag.NArg() > 3 || flag.NFlag()+flag.NArg() < 3 {
+	if flag.NFlag()+flag.NArg() > 4 || flag.NFlag()+flag.NArg() < 3 {
 		log.Fatal("Wrong number of arguments. Type -help for more information")
 	}
 
@@ -33,6 +34,11 @@ func main() {
 	}
 	if path[0:2] == "./" {
 		path = path[2:]
+	}
+
+	if *redisFlag {
+		loader.DATABASE = "redis"
+		encoder.DATABASE = "redis"
 	}
 
 	if *loadFlag {

@@ -4,9 +4,11 @@ import (
 	"log"
 	"os"
 
-	"github.com/skycoin/cx/cmd/packageloader/database"
 	"github.com/skycoin/cx/cmd/packageloader/loader"
+	"github.com/skycoin/cx/cmd/packageloader/redis"
 )
+
+var DATABASE = "bolt"
 
 func SavePackagesToDisk(packageName string, path string) {
 	err := os.Mkdir(path, 0755)
@@ -14,11 +16,11 @@ func SavePackagesToDisk(packageName string, path string) {
 		log.Fatal(err)
 	}
 	var packageList loader.PackageList
-	packageList.UnmarshalBinary([]byte(database.Get(packageName).(string)))
+	packageList.UnmarshalBinary([]byte(redis.Get(packageName).(string)))
 
 	for _, pack := range packageList.Packages {
 		var packageStruct loader.Package
-		packageStruct.UnmarshalBinary([]byte(database.Get(pack).(string)))
+		packageStruct.UnmarshalBinary([]byte(redis.Get(pack).(string)))
 
 		if packageStruct.PackageName != "main" {
 			continue
@@ -32,7 +34,7 @@ func SavePackagesToDisk(packageName string, path string) {
 
 	for _, pack := range packageList.Packages {
 		var packageStruct loader.Package
-		packageStruct.UnmarshalBinary([]byte(database.Get(pack).(string)))
+		packageStruct.UnmarshalBinary([]byte(redis.Get(pack).(string)))
 
 		if packageStruct.PackageName == "main" {
 			continue
@@ -50,7 +52,7 @@ func SaveFilesToDisk(packageStruct loader.Package, filePath string) {
 	}
 	for _, file := range packageStruct.Files {
 		var fileStruct loader.File
-		fileStruct.UnmarshalBinary([]byte(database.Get(file).(string)))
+		fileStruct.UnmarshalBinary([]byte(redis.Get(file).(string)))
 
 		err = os.WriteFile(filePath+fileStruct.FileName, fileStruct.Content, 0755)
 		if err != nil {
