@@ -45,6 +45,7 @@ type CXProgram struct {
 	CXPackages             []CXPackage
 	CXFunctions            []CXFunction
 	CXStructs              []CXStruct
+	CXTypeSignatures       []CXTypeSignature
 	TypeSignatureForArrays []CXTypeSignature_Array
 	// Then reference the package of function by CxFunction id
 
@@ -258,6 +259,26 @@ func (cxprogram *CXProgram) AddCXAtomicOp(CXAtomicOp *CXAtomicOperator) int {
 	cxprogram.CXAtomicOps = append(cxprogram.CXAtomicOps, *CXAtomicOp)
 
 	return len(cxprogram.CXAtomicOps) - 1
+}
+
+// ----------------------------------------------------------------
+//                         `CXProgram` CXTypeSignatures handling
+func (cxprogram *CXProgram) AddCXTypeSignatureInArray(typeSignature *CXTypeSignature) int {
+	cxprogram.CXTypeSignatures = append(cxprogram.CXTypeSignatures, *typeSignature)
+
+	return len(cxprogram.CXTypeSignatures) - 1
+}
+
+func (cxprogram *CXProgram) GetCXTypeSignatureFromArray(index int) *CXTypeSignature {
+	if index == -1 {
+		return nil
+	}
+
+	if int(index) > (len(cxprogram.CXTypeSignatures) - 1) {
+		panic(fmt.Errorf("error: CXTypeSignature[%d]: index out of bounds", index))
+	}
+
+	return &cxprogram.CXTypeSignatures[index]
 }
 
 // ----------------------------------------------------------------

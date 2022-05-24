@@ -136,7 +136,7 @@ func (fn *CXFunction) AddInput(prgrm *CXProgram, param *CXArgument) *CXFunction 
 	if fn.Inputs == nil {
 		fn.Inputs = &CXStruct{}
 	}
-	fn.Inputs.AddField_New(prgrm, &newField)
+	fn.Inputs.AddField_Function(prgrm, &newField)
 
 	return fn
 }
@@ -196,7 +196,7 @@ func (fn *CXFunction) AddOutput(prgrm *CXProgram, param *CXArgument) *CXFunction
 	if fn.Outputs == nil {
 		fn.Outputs = &CXStruct{}
 	}
-	fn.Outputs.AddField_New(prgrm, &newField)
+	fn.Outputs.AddField_Function(prgrm, &newField)
 
 	return fn
 }

@@ -241,8 +241,8 @@ func serializeExpression(prgrm *CXProgram, expr *CXExpression, s *SerializedCXPr
 			}
 		}
 
-		sExpr.InputsOffset, sExpr.InputsSize = serializeSliceOfArguments(prgrm, prgrm.ConvertIndexArgsToPointerArgs(cxAtomicOp.Inputs), s)
-		sExpr.OutputsOffset, sExpr.OutputsSize = serializeSliceOfArguments(prgrm, prgrm.ConvertIndexArgsToPointerArgs(cxAtomicOp.Outputs), s)
+		sExpr.InputsOffset, sExpr.InputsSize = serializeSliceOfArguments(prgrm, prgrm.ConvertIndexArgsToPointerArgs(cxAtomicOp.GetInputs(prgrm)), s)
+		sExpr.OutputsOffset, sExpr.OutputsSize = serializeSliceOfArguments(prgrm, prgrm.ConvertIndexArgsToPointerArgs(cxAtomicOp.GetOutputs(prgrm)), s)
 
 		sExpr.LabelOffset, sExpr.LabelSize = serializeString(cxAtomicOp.Label, s)
 		sExpr.ThenLines = int64(cxAtomicOp.ThenLines)
@@ -1095,8 +1095,17 @@ func deserializeExpression(sExpr *serializedExpression, s *SerializedCXProgram, 
 			cxAtomicOp.Operator = opIdx
 		}
 
-		cxAtomicOp.Inputs = prgrm.AddPointerArgsToCXArgsArray(deserializeArguments(sExpr.InputsOffset, sExpr.InputsSize, s, prgrm))
-		cxAtomicOp.Outputs = prgrm.AddPointerArgsToCXArgsArray(deserializeArguments(sExpr.OutputsOffset, sExpr.OutputsSize, s, prgrm))
+		inputCXArgsArray := deserializeArguments(sExpr.InputsOffset, sExpr.InputsSize, s, prgrm)
+		for _, inputCXArg := range inputCXArgsArray {
+			typeSignature := GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, inputCXArg)
+			cxAtomicOp.AddInput(prgrm, typeSignature)
+		}
+
+		outputCXArgsArray := deserializeArguments(sExpr.OutputsOffset, sExpr.OutputsSize, s, prgrm)
+		for _, outputCXArg := range outputCXArgsArray {
+			typeSignature := GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, outputCXArg)
+			cxAtomicOp.AddOutput(prgrm, typeSignature)
+		}
 
 		cxAtomicOp.Label = deserializeString(sExpr.LabelOffset, sExpr.LabelSize, s)
 

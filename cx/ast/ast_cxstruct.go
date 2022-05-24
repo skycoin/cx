@@ -132,7 +132,7 @@ func MakeStruct(name string) *CXStruct {
 }
 
 // AddField ...
-func (strct *CXStruct) AddField(prgrm *CXProgram, fieldType types.Code, cxArgument *CXArgument) *CXStruct {
+func (strct *CXStruct) AddField(prgrm *CXProgram, cxArgument *CXArgument) *CXStruct {
 	// Check if field already exist
 	for _, typeSignature := range strct.Fields {
 		if typeSignature.Name == cxArgument.Name {
@@ -143,52 +143,8 @@ func (strct *CXStruct) AddField(prgrm *CXProgram, fieldType types.Code, cxArgume
 		}
 	}
 
-	newCXTypeSignature := CXTypeSignature{
-		Name: cxArgument.Name,
-	}
-
-	// If atomic type. i.e. i8, i16, i32, f32, etc.
-	if !cxArgument.IsSlice && len(cxArgument.Lengths) == 0 && fieldType.IsPrimitive() {
-		newCXTypeSignature.Type = TYPE_ATOMIC
-		newCXTypeSignature.Meta = int(fieldType)
-
-		// If pointer atomic, i.e. *i32, *f32, etc.
-	} else if fieldType == types.POINTER && cxArgument.PointerTargetType.IsPrimitive() {
-		newCXTypeSignature.Type = TYPE_POINTER_ATOMIC
-		newCXTypeSignature.Meta = int(cxArgument.PointerTargetType)
-
-		// If simple array atomic type, i.e. [5]i32, [2]f64, etc.
-	} else if !cxArgument.IsSlice && len(cxArgument.Lengths) == 1 && len(cxArgument.Indexes) == 0 && fieldType.IsPrimitive() {
-		newCXTypeSignature.Type = TYPE_ARRAY_ATOMIC
-
-		typeSignatureForArray := &CXTypeSignature_Array{
-			Type:   int(fieldType),
-			Length: int(cxArgument.Lengths[0]),
-		}
-		typeSignatureForArrayIdx := prgrm.AddTypeSignatureArrayInArray(typeSignatureForArray)
-
-		newCXTypeSignature.Meta = typeSignatureForArrayIdx
-
-		// If slice atomic type, i.e. []i32, []f64, etc.
-	} else if cxArgument.IsSlice && len(cxArgument.Lengths) == 1 && (fieldType.IsPrimitive() || fieldType == types.STR) {
-		newCXTypeSignature.Type = TYPE_SLICE_ATOMIC
-		newCXTypeSignature.Meta = int(fieldType)
-
-		// If type is struct
-	} else if !cxArgument.IsSlice && len(cxArgument.Lengths) == 0 && fieldType == types.STRUCT {
-		newCXTypeSignature.Type = TYPE_STRUCT
-		newCXTypeSignature.Meta = cxArgument.StructType.Index
-	} else {
-		fldIdx := prgrm.AddCXArgInArray(cxArgument)
-
-		// All are TYPE_CXARGUMENT_DEPRECATE for now.
-		// FieldIdx or the CXArg ID is in Meta field.
-		newCXTypeSignature.Type = TYPE_CXARGUMENT_DEPRECATE
-		newCXTypeSignature.Meta = int(fldIdx)
-	}
-
-	newCXTypeSignature.Offset = newCXTypeSignature.GetSize(prgrm)
-	strct.Fields = append(strct.Fields, newCXTypeSignature)
+	newCXTypeSignature := GetCXTypeSignatureRepresentationOfCXArg_ForStructs(prgrm, cxArgument)
+	strct.Fields = append(strct.Fields, *newCXTypeSignature)
 
 	// TODO: Found out the effect and completely remove this.
 	// Dont remove this yet as removing this gives another error on cxfx
@@ -217,7 +173,7 @@ func (strct *CXStruct) AddField(prgrm *CXProgram, fieldType types.Code, cxArgume
 }
 
 // AddField ...
-func (strct *CXStruct) AddField_New(prgrm *CXProgram, field *CXTypeSignature) *CXStruct {
+func (strct *CXStruct) AddField_Function(prgrm *CXProgram, field *CXTypeSignature) *CXStruct {
 	// Check if field already exist
 	for _, typeSignature := range strct.Fields {
 		if typeSignature.Name == field.Name {
@@ -229,6 +185,31 @@ func (strct *CXStruct) AddField_New(prgrm *CXProgram, field *CXTypeSignature) *C
 	}
 
 	strct.Fields = append(strct.Fields, *field)
+
+	return strct
+}
+
+func (strct *CXStruct) AddField_CXAtomicOps(prgrm *CXProgram, field *CXTypeSignature) *CXStruct {
+	strct.Fields = append(strct.Fields, *field)
+
+	return strct
+}
+
+func (strct *CXStruct) AddField_Globals_CXAtomicOps(prgrm *CXProgram, cxArgIdx CXArgumentIndex) *CXStruct {
+	cxArgument := prgrm.GetCXArgFromArray(cxArgIdx)
+	// Check if field already exist
+	for _, typeSignature := range strct.Fields {
+		if typeSignature.Name == cxArgument.Name {
+			// fldIdx := typeSignature.Meta
+			// fmt.Printf("%s : duplicate field", CompilationError(prgrm.CXArgs[fldIdx].ArgDetails.FileName, prgrm.CXArgs[fldIdx].ArgDetails.FileLine))
+			fmt.Println("duplicate field")
+			os.Exit(constants.CX_COMPILATION_ERROR)
+		}
+	}
+
+	cxArgument.Package = strct.Package
+	newCXTypeSignature := GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, cxArgument)
+	strct.Fields = append(strct.Fields, *newCXTypeSignature)
 
 	return strct
 }
@@ -260,7 +241,7 @@ func (strct *CXStruct) GetStructSize(prgrm *CXProgram) types.Pointer {
 }
 
 // ----------------------------------------------------------------
-//                             `CXTypeSignature` Getters
+//                             `CXTypeSignature` Handlers
 
 func (typeSignature *CXTypeSignature) GetSize(prgrm *CXProgram) types.Pointer {
 	switch typeSignature.Type {
@@ -371,4 +352,108 @@ func (typeSignature *CXTypeSignature) GetCXArgFormat(prgrm *CXProgram) *CXArgume
 	arg.Offset = typeSignature.Offset
 
 	return arg
+}
+
+// Added _ForStructs for now so it will be separate from others for smooth transition.
+// TODO: Remove _ForStructs
+func GetCXTypeSignatureRepresentationOfCXArg_ForStructs(prgrm *CXProgram, cxArgument *CXArgument) *CXTypeSignature {
+	newCXTypeSignature := CXTypeSignature{
+		Name: cxArgument.Name,
+	}
+
+	fieldType := cxArgument.Type
+	// If atomic type. i.e. i8, i16, i32, f32, etc.
+	if !cxArgument.IsSlice && len(cxArgument.Lengths) == 0 && fieldType.IsPrimitive() {
+		newCXTypeSignature.Type = TYPE_ATOMIC
+		newCXTypeSignature.Meta = int(fieldType)
+
+		// If pointer atomic, i.e. *i32, *f32, etc.
+	} else if fieldType == types.POINTER && cxArgument.PointerTargetType.IsPrimitive() {
+		newCXTypeSignature.Type = TYPE_POINTER_ATOMIC
+		newCXTypeSignature.Meta = int(cxArgument.PointerTargetType)
+
+		// If simple array atomic type, i.e. [5]i32, [2]f64, etc.
+	} else if !cxArgument.IsSlice && len(cxArgument.Lengths) == 1 && len(cxArgument.Indexes) == 0 && fieldType.IsPrimitive() {
+		newCXTypeSignature.Type = TYPE_ARRAY_ATOMIC
+
+		typeSignatureForArray := &CXTypeSignature_Array{
+			Type:   int(fieldType),
+			Length: int(cxArgument.Lengths[0]),
+		}
+		typeSignatureForArrayIdx := prgrm.AddTypeSignatureArrayInArray(typeSignatureForArray)
+
+		newCXTypeSignature.Meta = typeSignatureForArrayIdx
+
+		// If slice atomic type, i.e. []i32, []f64, etc.
+	} else if cxArgument.IsSlice && len(cxArgument.Lengths) == 1 && (fieldType.IsPrimitive() || fieldType == types.STR) {
+		newCXTypeSignature.Type = TYPE_SLICE_ATOMIC
+		newCXTypeSignature.Meta = int(fieldType)
+
+		// If type is struct
+	} else if !cxArgument.IsSlice && len(cxArgument.Lengths) == 0 && fieldType == types.STRUCT {
+		newCXTypeSignature.Type = TYPE_STRUCT
+		newCXTypeSignature.Meta = cxArgument.StructType.Index
+	} else {
+		fldIdx := prgrm.AddCXArgInArray(cxArgument)
+
+		// All are TYPE_CXARGUMENT_DEPRECATE for now.
+		// FieldIdx or the CXArg ID is in Meta field.
+		newCXTypeSignature.Type = TYPE_CXARGUMENT_DEPRECATE
+		newCXTypeSignature.Meta = int(fldIdx)
+	}
+
+	newCXTypeSignature.Offset = newCXTypeSignature.GetSize(prgrm)
+
+	return &newCXTypeSignature
+}
+
+func GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm *CXProgram, cxArgument *CXArgument) *CXTypeSignature {
+	newCXTypeSignature := CXTypeSignature{
+		Name: cxArgument.Name,
+	}
+
+	// fieldType := cxArgument.Type
+	// // If atomic type. i.e. i8, i16, i32, f32, etc.
+	// if !cxArgument.IsSlice && len(cxArgument.Lengths) == 0 && fieldType.IsPrimitive() {
+	// 	newCXTypeSignature.Type = TYPE_ATOMIC
+	// 	newCXTypeSignature.Meta = int(fieldType)
+
+	// 	// If pointer atomic, i.e. *i32, *f32, etc.
+	// } else if fieldType == types.POINTER && cxArgument.PointerTargetType.IsPrimitive() {
+	// 	newCXTypeSignature.Type = TYPE_POINTER_ATOMIC
+	// 	newCXTypeSignature.Meta = int(cxArgument.PointerTargetType)
+
+	// 	// If simple array atomic type, i.e. [5]i32, [2]f64, etc.
+	// } else if !cxArgument.IsSlice && len(cxArgument.Lengths) == 1 && len(cxArgument.Indexes) == 0 && fieldType.IsPrimitive() {
+	// 	newCXTypeSignature.Type = TYPE_ARRAY_ATOMIC
+
+	// 	typeSignatureForArray := &CXTypeSignature_Array{
+	// 		Type:   int(fieldType),
+	// 		Length: int(cxArgument.Lengths[0]),
+	// 	}
+	// 	typeSignatureForArrayIdx := prgrm.AddTypeSignatureArrayInArray(typeSignatureForArray)
+
+	// 	newCXTypeSignature.Meta = typeSignatureForArrayIdx
+
+	// 	// If slice atomic type, i.e. []i32, []f64, etc.
+	// } else if cxArgument.IsSlice && len(cxArgument.Lengths) == 1 && (fieldType.IsPrimitive() || fieldType == types.STR) {
+	// 	newCXTypeSignature.Type = TYPE_SLICE_ATOMIC
+	// 	newCXTypeSignature.Meta = int(fieldType)
+
+	// 	// If type is struct
+	// } else if !cxArgument.IsSlice && len(cxArgument.Lengths) == 0 && fieldType == types.STRUCT {
+	// 	newCXTypeSignature.Type = TYPE_STRUCT
+	// 	newCXTypeSignature.Meta = cxArgument.StructType.Index
+	// } else {
+	fldIdx := cxArgument.Index
+
+	// All are TYPE_CXARGUMENT_DEPRECATE for now.
+	// FieldIdx or the CXArg ID is in Meta field.
+	newCXTypeSignature.Type = TYPE_CXARGUMENT_DEPRECATE
+	newCXTypeSignature.Meta = int(fldIdx)
+	// }
+
+	newCXTypeSignature.Offset = newCXTypeSignature.GetSize(prgrm)
+
+	return &newCXTypeSignature
 }

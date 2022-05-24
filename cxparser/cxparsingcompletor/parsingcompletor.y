@@ -624,8 +624,8 @@ slice_literal_expression:
                                         panic(err)
                                 }
 
-                                expressionOutput:=actions.AST.GetCXArgFromArray(expression.Outputs[0])
-				if expressionOutput.Name == actions.AST.GetCXArgFromArray(lastExpression.Inputs[0]).Name {
+                                expressionOutput:=actions.AST.GetCXArgFromArray(expression.GetOutputs(actions.AST)[0])
+				if expressionOutput.Name == actions.AST.GetCXArgFromArray(lastExpression.GetInputs(actions.AST)[0]).Name {
 					expressionOutput.Lengths = append(expressionOutput.Lengths, 0)
 					expressionOutput.DeclarationSpecifiers = append(expressionOutput.DeclarationSpecifiers, constants.DECL_SLICE)
                                 }
@@ -993,7 +993,7 @@ struct_literal_expression:
                         if err != nil {
                                 panic(err)
                         }
-			$$ = actions.PrimaryStructLiteralExternal(actions.AST,actions.AST.GetCXArgFromArray(cxAtomicOp.Outputs[0]).Name, $3, $5)
+			$$ = actions.PrimaryStructLiteralExternal(actions.AST,actions.AST.GetCXArgFromArray(cxAtomicOp.GetOutputs(actions.AST)[0]).Name, $3, $5)
                 }
                 ;
 
@@ -1022,7 +1022,7 @@ assignment_expression:
                                                                         if err != nil {
                                                                                 panic(err)
                                                                         }
-                                                                        fromExpressionOutputIdx:=fromExpression.Outputs[0]
+                                                                        fromExpressionOutputIdx:=fromExpression.GetOutputs(actions.AST)[0]
                                                                         actions.AST.CXArgs[fromExpressionOutputIdx].PreviouslyDeclared = true
                                                                 }
                                                         }
@@ -1041,7 +1041,7 @@ assignment_expression:
                                                                         if err != nil {
                                                                                 panic(err)
                                                                         }
-                                                                        fromExpressionOutputIdx:=fromExpression.Outputs[0]
+                                                                        fromExpressionOutputIdx:=fromExpression.GetOutputs(actions.AST)[0]
                                                                         actions.AST.CXArgs[fromExpressionOutputIdx].PreviouslyDeclared = true
                                                                 }
                                                         }
@@ -1085,7 +1085,7 @@ expression:     assignment_expression
                                 panic(err)
                         }
 
-			lastOfThirdAtomicOp.Outputs = append(lastOfFirstAtomicOp.Outputs, lastOfThirdAtomicOp.Outputs...)
+			lastOfThirdAtomicOp.Outputs.Fields = append(lastOfFirstAtomicOp.Outputs.Fields, lastOfThirdAtomicOp.Outputs.Fields...)
                         $$ = $3
                 }
                 ;
@@ -1181,7 +1181,7 @@ expression_statement:
                        lastFirstAtomicOpOperator:=actions.AST.GetFunctionFromArray(lastFirstAtomicOp.Operator)
 
 			if len($1) > 0 && lastFirstAtomicOpOperator == nil  && !$1[len($1) - 1].IsMethodCall() {
-				outs := lastFirstAtomicOp.Outputs
+				outs := lastFirstAtomicOp.GetOutputs(actions.AST)
 				if len(outs) > 0 {
 					println(ast.CompilationError(actions.AST.GetCXArgFromArray(outs[0]).ArgDetails.FileName, actions.AST.GetCXArgFromArray(outs[0]).ArgDetails.FileLine), "invalid expression")
 				} else {

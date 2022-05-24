@@ -61,7 +61,7 @@ func (cxprogram *CXProgram) PrintStack() {
 			}
 
 			cxAtomicOpOperator := cxprogram.GetFunctionFromArray(cxAtomicOp.Operator)
-			for _, inpIdx := range cxAtomicOp.Inputs {
+			for _, inpIdx := range cxAtomicOp.GetInputs(cxprogram) {
 				inp := cxprogram.GetCXArgFromArray(inpIdx)
 				if inp.Name == "" || cxAtomicOpOperator == nil {
 					continue
@@ -90,7 +90,7 @@ func (cxprogram *CXProgram) PrintStack() {
 				dupNames = append(dupNames, inpPkg.Name+inp.Name)
 			}
 
-			for _, outIdx := range cxAtomicOp.Outputs {
+			for _, outIdx := range cxAtomicOp.GetOutputs(cxprogram) {
 				out := cxprogram.GetCXArgFromArray(outIdx)
 				if out.Name == "" || cxAtomicOpOperator == nil {
 					continue

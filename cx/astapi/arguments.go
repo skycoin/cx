@@ -59,7 +59,8 @@ func AddNativeInputToExpression(cxprogram *cxast.CXProgram, packageName, functio
 		panic(err)
 	}
 
-	cxAtomicOp.AddInput(cxprogram, argIdx)
+	typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(cxprogram, cxprogram.GetCXArgFromArray(cxast.CXArgumentIndex(argIdx)))
+	cxAtomicOp.AddInput(cxprogram, typeSig)
 
 	return nil
 }
@@ -157,7 +158,8 @@ func AddNativeOutputToExpression(cxprogram *cxast.CXProgram, packageName, functi
 		panic(err)
 	}
 
-	cxAtomicOp.AddOutput(cxprogram, argIdx)
+	typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(cxprogram, cxprogram.GetCXArgFromArray(cxast.CXArgumentIndex(argIdx)))
+	cxAtomicOp.AddOutput(cxprogram, typeSig)
 
 	return nil
 }
@@ -185,25 +187,25 @@ func AddNativeOutputToExpression(cxprogram *cxast.CXProgram, packageName, functi
 //             0.- Expression: add(x i16, y i16)
 //
 // Note the z i16 removed as an output from the expression in line 0.
-func RemoveOutputFromExpression(cxprogram *cxast.CXProgram, functionName string, lineNumber int) error {
-	fn, err := FindFunction(cxprogram, functionName)
-	if err != nil {
-		return err
-	}
+// func RemoveOutputFromExpression(cxprogram *cxast.CXProgram, functionName string, lineNumber int) error {
+// 	fn, err := FindFunction(cxprogram, functionName)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	expr, err := fn.GetExpressionByLine(lineNumber)
-	if err != nil {
-		return err
-	}
+// 	expr, err := fn.GetExpressionByLine(lineNumber)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	cxAtomicOp, err := cxprogram.GetCXAtomicOp(expr.Index)
-	if err != nil {
-		panic(err)
-	}
+// 	cxAtomicOp, err := cxprogram.GetCXAtomicOp(expr.Index)
+// 	if err != nil {
+// 		panic(err)
+// 	}
 
-	cxAtomicOp.RemoveOutput()
-	return nil
-}
+// 	cxAtomicOp.RemoveOutput()
+// 	return nil
+// }
 
 // MakeInputExpressionAPointer makes an input of an
 // expression a pointer.
@@ -249,7 +251,7 @@ func MakeInputExpressionAPointer(cxprogram *cxast.CXProgram, functionName string
 		panic(err)
 	}
 
-	cxast.MakePointer(cxprogram.GetCXArgFromArray(cxAtomicOp.Inputs[inputNumber]))
+	cxast.MakePointer(cxprogram.GetCXArgFromArray(cxAtomicOp.GetInputs(cxprogram)[inputNumber]))
 	return nil
 }
 
@@ -297,7 +299,7 @@ func MakeOutputExpressionAPointer(cxprogram *cxast.CXProgram, functionName strin
 		panic(err)
 	}
 
-	cxast.MakePointer(cxprogram.GetCXArgFromArray(cxAtomicOp.Outputs[outputNumber]))
+	cxast.MakePointer(cxprogram.GetCXArgFromArray(cxAtomicOp.GetOutputs(cxprogram)[outputNumber]))
 	return nil
 }
 
@@ -380,7 +382,7 @@ func GetAccessibleArgsForFunctionByType(cxprogram *cxast.CXProgram, packageLocat
 		if err != nil {
 			panic(err)
 		}
-		for _, argIdx := range cxAtomicOp.Inputs {
+		for _, argIdx := range cxAtomicOp.GetInputs(cxprogram) {
 			arg := cxprogram.GetCXArgFromArray(argIdx)
 			if arg.IsStruct {
 				for _, typeSignature := range arg.StructType.Fields {
@@ -424,7 +426,9 @@ func AddLiteralInputToExpression(cxprogram *cxast.CXProgram, packageName, functi
 	}
 
 	litArg.Package = cxast.CXPackageIndex(pkg.Index)
-	cxAtomicOp2.AddInput(cxprogram, cxast.CXArgumentIndex(litArg.Index))
+
+	typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(cxprogram, cxprogram.GetCXArgFromArray(cxast.CXArgumentIndex(litArg.Index)))
+	cxAtomicOp2.AddInput(cxprogram, typeSig)
 
 	return nil
 }

@@ -198,8 +198,8 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fnIdx ast.CXFunctionIndex, inputs
 		}
 
 		ProcessMethodCall(prgrm, &expr, symbols)
-		ProcessExpressionArguments(prgrm, symbols, &symbolsScope, &offset, fnIdx, exprAtomicOp.Inputs, &expr, true)
-		ProcessExpressionArguments(prgrm, symbols, &symbolsScope, &offset, fnIdx, exprAtomicOp.Outputs, &expr, false)
+		ProcessExpressionArguments(prgrm, symbols, &symbolsScope, &offset, fnIdx, exprAtomicOp.GetInputs(prgrm), &expr, true)
+		ProcessExpressionArguments(prgrm, symbols, &symbolsScope, &offset, fnIdx, exprAtomicOp.GetOutputs(prgrm), &expr, false)
 
 		ProcessPointerStructs(prgrm, &expr)
 		ProcessTempVariable(prgrm, &expr)
@@ -238,7 +238,7 @@ func ProcessTypedOperator(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 		return
 	}
 	if ast.IsOperator(expressionOperator.AtomicOPCode) {
-		atomicType := prgrm.CXArgs[expression.Inputs[0]].GetType(prgrm)
+		atomicType := prgrm.CXArgs[expression.GetInputs(prgrm)[0]].GetType(prgrm)
 		typedOp := ast.GetTypedOperator(atomicType, expressionOperator.AtomicOPCode)
 		if typedOp == nil {
 			return
@@ -262,7 +262,7 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 	}
 	expressionOperator := prgrm.GetFunctionFromArray(expression.Operator)
 	if expressionOperator == nil {
-		cxAtomicOpOutput := prgrm.GetCXArgFromArray(expression.Outputs[0])
+		cxAtomicOpOutput := prgrm.GetCXArgFromArray(expression.GetOutputs(prgrm)[0])
 		opName := cxAtomicOpOutput.Name
 		opPkgIdx := cxAtomicOpOutput.Package
 
@@ -281,7 +281,7 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 			exprs[len(exprs)-1].ExpressionType = ast.CXEXPR_METHOD_CALL
 		}
 
-		if len(expression.Outputs) > 0 && cxAtomicOpOutput.Fields == nil {
+		if len(expression.GetOutputs(prgrm)) > 0 && cxAtomicOpOutput.Fields == nil {
 			expression.Outputs = nil
 		}
 	}
@@ -301,18 +301,20 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 		inpExprCXLine, _ := prgrm.GetPreviousCXLine(args, i)
 
 		if inpExprAtomicOpOperator == nil {
+
+			typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(inpExprAtomicOp.GetOutputs(prgrm)[0]))
 			// then it's a literal
-			expression.AddInput(prgrm, inpExprAtomicOp.Outputs[0])
+			expression.AddInput(prgrm, typeSig)
 		} else {
 			// then it's a function call
-			if len(inpExprAtomicOp.Outputs) < 1 {
+			if len(inpExprAtomicOp.GetOutputs(prgrm)) < 1 {
 				var out *ast.CXArgument
 
 				inpExprAtomicOpOperatorOutputs := inpExprAtomicOpOperator.GetOutputs(prgrm)
 				inpExprAtomicOpOperatorOutput := prgrm.GetCXArgFromArray(inpExprAtomicOpOperatorOutputs[0])
 				if inpExprAtomicOpOperatorOutput.Type == types.UNDEFINED {
 					// if undefined type, then adopt argument's type
-					inpExprAtomicOpInput := prgrm.GetCXArgFromArray(inpExprAtomicOp.Inputs[0])
+					inpExprAtomicOpInput := prgrm.GetCXArgFromArray(inpExprAtomicOp.GetInputs(prgrm)[0])
 
 					out = ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, inpExprCXLine.LineNumber).SetType(inpExprAtomicOpInput.Type)
 					out.StructType = inpExprAtomicOpInput.StructType
@@ -349,11 +351,13 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 				out.Package = inpExprAtomicOp.Package
 				outIdx := prgrm.AddCXArgInArray(out)
 
-				inpExprAtomicOp.AddOutput(prgrm, outIdx)
-				expression.AddInput(prgrm, outIdx)
+				typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(outIdx))
+				inpExprAtomicOp.AddOutput(prgrm, typeSig)
+				expression.AddInput(prgrm, typeSig)
 			}
-			if len(inpExprAtomicOp.Outputs) > 0 && inpExpr.IsArrayLiteral() {
-				expression.AddInput(prgrm, inpExprAtomicOp.Outputs[0])
+			if len(inpExprAtomicOp.GetOutputs(prgrm)) > 0 && inpExpr.IsArrayLiteral() {
+				typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(inpExprAtomicOp.GetOutputs(prgrm)[0]))
+				expression.AddInput(prgrm, typeSig)
 			}
 			nestedExprs = append(nestedExprs, inpExpr)
 		}
@@ -369,16 +373,16 @@ func checkSameNativeType(prgrm *ast.CXProgram, expr *ast.CXExpression) error {
 		panic(err)
 	}
 
-	if len(expression.Inputs) < 1 {
+	if len(expression.GetInputs(prgrm)) < 1 {
 		return errors.New("cannot perform arithmetic without operands")
 	}
 
-	typeCode := prgrm.GetCXArgFromArray(expression.Inputs[0]).Type
-	if prgrm.GetCXArgFromArray(expression.Inputs[0]).Type == types.POINTER {
-		typeCode = prgrm.GetCXArgFromArray(expression.Inputs[0]).PointerTargetType
+	typeCode := prgrm.GetCXArgFromArray(expression.GetInputs(prgrm)[0]).Type
+	if prgrm.GetCXArgFromArray(expression.GetInputs(prgrm)[0]).Type == types.POINTER {
+		typeCode = prgrm.GetCXArgFromArray(expression.GetInputs(prgrm)[0]).PointerTargetType
 	}
 
-	for _, inpIdx := range expression.Inputs {
+	for _, inpIdx := range expression.GetInputs(prgrm) {
 		inp := prgrm.GetCXArgFromArray(inpIdx)
 		inpType := inp.Type
 
@@ -415,12 +419,12 @@ func ProcessOperatorExpression(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 		}
 	}
 	if expr.IsUndType(prgrm) {
-		for _, outIdx := range expression.Outputs {
+		for _, outIdx := range expression.GetOutputs(prgrm) {
 			out := prgrm.GetCXArgFromArray(outIdx)
 
 			size := types.Pointer(1)
 			if !ast.IsComparisonOperator(expressionOperator.AtomicOPCode) {
-				size = ast.GetArgSize(prgrm, prgrm.GetCXArgFromArray(expression.Inputs[0]).GetAssignmentElement(prgrm))
+				size = ast.GetArgSize(prgrm, prgrm.GetCXArgFromArray(expression.GetInputs(prgrm)[0]).GetAssignmentElement(prgrm))
 			}
 			out.Size = size
 			out.TotalSize = size
@@ -439,7 +443,7 @@ func ProcessPointerStructs(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 		panic(err)
 	}
 
-	for _, argIdx := range append(expression.Inputs, expression.Outputs...) {
+	for _, argIdx := range append(expression.GetInputs(prgrm), expression.GetOutputs(prgrm)...) {
 		arg := prgrm.GetCXArgFromArray(argIdx)
 		for _, fldIdx := range arg.Fields {
 			fld := prgrm.GetCXArgFromArray(fldIdx)
@@ -483,8 +487,8 @@ func processTestExpression(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 	if expressionOperator != nil {
 		opCode := expressionOperator.AtomicOPCode
 		if opCode == constants.OP_ASSERT || opCode == constants.OP_TEST || opCode == constants.OP_PANIC {
-			inp1Type := ast.GetFormattedType(prgrm, prgrm.GetCXArgFromArray(expression.Inputs[0]))
-			inp2Type := ast.GetFormattedType(prgrm, prgrm.GetCXArgFromArray(expression.Inputs[1]))
+			inp1Type := ast.GetFormattedType(prgrm, prgrm.GetCXArgFromArray(expression.GetInputs(prgrm)[0]))
+			inp2Type := ast.GetFormattedType(prgrm, prgrm.GetCXArgFromArray(expression.GetInputs(prgrm)[1]))
 			if inp1Type != inp2Type {
 				println(ast.CompilationError(CurrentFile, LineNo), fmt.Sprintf("first and second input arguments' types are not equal in '%s' call ('%s' != '%s')", ast.OpNames[expressionOperator.AtomicOPCode], inp1Type, inp2Type))
 			}
@@ -658,7 +662,7 @@ func CheckRedeclared(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXArgument
 	}
 	expressionOperator := prgrm.GetFunctionFromArray(expression.Operator)
 
-	if expressionOperator == nil && len(expression.Outputs) > 0 && len(expression.Inputs) == 0 {
+	if expressionOperator == nil && len(expression.GetOutputs(prgrm)) > 0 && len(expression.GetInputs(prgrm)) == 0 {
 		lastIdx := len(*symbols) - 1
 
 		symPkg, err := prgrm.GetPackageFromArray(sym.Package)
@@ -776,7 +780,7 @@ func checkMatchParamTypes(prgrm *ast.CXProgram, expr *ast.CXExpression, expected
 			if isInputs {
 				println(ast.CompilationError(receivedArg.ArgDetails.FileName, receivedArg.ArgDetails.FileLine), fmt.Sprintf("function '%s' expected input argument of type '%s'; '%s' was provided", opName, expectedType, receivedType))
 			} else {
-				println(ast.CompilationError(prgrm.GetCXArgFromArray(expression.Outputs[i]).ArgDetails.FileName, prgrm.GetCXArgFromArray(expression.Outputs[i]).ArgDetails.FileLine), fmt.Sprintf("function '%s' expected receiving variable of type '%s'; '%s' was provided", opName, expectedType, receivedType))
+				println(ast.CompilationError(prgrm.GetCXArgFromArray(expression.GetOutputs(prgrm)[i]).ArgDetails.FileName, prgrm.GetCXArgFromArray(expression.GetOutputs(prgrm)[i]).ArgDetails.FileLine), fmt.Sprintf("function '%s' expected receiving variable of type '%s'; '%s' was provided", opName, expectedType, receivedType))
 			}
 
 		}
@@ -785,14 +789,14 @@ func checkMatchParamTypes(prgrm *ast.CXProgram, expr *ast.CXExpression, expected
 		// FIXME: There are some expressions added by the cxgo where temporary variables are used.
 		// These temporary variables' types are not properly being set. That's why we use !cxcore.IsTempVar to
 		// exclude these cases for now.
-		if expressionOperator.AtomicOPCode == constants.OP_IDENTITY && !IsTempVar(prgrm.GetCXArgFromArray(expression.Outputs[0]).Name) {
-			inpType := ast.GetFormattedType(prgrm, prgrm.GetCXArgFromArray(expression.Inputs[0]))
-			outType := ast.GetFormattedType(prgrm, prgrm.GetCXArgFromArray(expression.Outputs[0]))
+		if expressionOperator.AtomicOPCode == constants.OP_IDENTITY && !IsTempVar(prgrm.GetCXArgFromArray(expression.GetOutputs(prgrm)[0]).Name) {
+			inpType := ast.GetFormattedType(prgrm, prgrm.GetCXArgFromArray(expression.GetInputs(prgrm)[0]))
+			outType := ast.GetFormattedType(prgrm, prgrm.GetCXArgFromArray(expression.GetOutputs(prgrm)[0]))
 
 			// We use `isInputs` to only print the error once.
 			// Otherwise we'd print the error twice: once for the input and again for the output
 			if inpType != outType && isInputs {
-				println(ast.CompilationError(receivedArg.ArgDetails.FileName, receivedArg.ArgDetails.FileLine), fmt.Sprintf("cannot assign value of type '%s' to identifier '%s' of type '%s'", inpType, prgrm.GetCXArgFromArray(expression.Outputs[0]).GetAssignmentElement(prgrm).Name, outType))
+				println(ast.CompilationError(receivedArg.ArgDetails.FileName, receivedArg.ArgDetails.FileLine), fmt.Sprintf("cannot assign value of type '%s' to identifier '%s' of type '%s'", inpType, prgrm.GetCXArgFromArray(expression.GetOutputs(prgrm)[0]).GetAssignmentElement(prgrm).Name, outType))
 			}
 		}
 	}
@@ -813,7 +817,7 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) {
 		opName := expression.GetOperatorName(prgrm)
 
 		// checking if number of inputs is less than the required number of inputs
-		if len(expression.Inputs) != len(expressionOperatorInputs) {
+		if len(expression.GetInputs(prgrm)) != len(expressionOperatorInputs) {
 			if !(len(expressionOperatorInputs) > 0 && prgrm.GetCXArgFromArray(expressionOperatorInputs[len(expressionOperatorInputs)-1]).Type != types.UNDEFINED) {
 				// if the last input is of type cxcore.TYPE_UNDEFINED then it might be a variadic function, such as printf
 			} else {
@@ -824,68 +828,68 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) {
 				if len(expressionOperatorInputs) > 1 {
 					plural1 = "s"
 				}
-				if len(expression.Inputs) == 1 {
+				if len(expression.GetInputs(prgrm)) == 1 {
 					plural2 = ""
 					plural3 = "was"
 				}
 
-				println(ast.CompilationError(exprCXLine.FileName, exprCXLine.LineNumber), fmt.Sprintf("operator '%s' expects %d input%s, but %d input argument%s %s provided", opName, len(expressionOperatorInputs), plural1, len(expression.Inputs), plural2, plural3))
+				println(ast.CompilationError(exprCXLine.FileName, exprCXLine.LineNumber), fmt.Sprintf("operator '%s' expects %d input%s, but %d input argument%s %s provided", opName, len(expressionOperatorInputs), plural1, len(expression.GetInputs(prgrm)), plural2, plural3))
 				return
 			}
 		}
 		expressionOperatorOutputs := expressionOperator.GetOutputs(prgrm)
 		// checking if number of expr.ProgramOutput matches number of Operator.ProgramOutput
-		if len(expression.Outputs) != len(expressionOperatorOutputs) {
+		if len(expression.GetOutputs(prgrm)) != len(expressionOperatorOutputs) {
 			var plural1 string
 			var plural2 string = "s"
 			var plural3 string = "were"
 			if len(expressionOperatorOutputs) > 1 {
 				plural1 = "s"
 			}
-			if len(expression.Outputs) == 1 {
+			if len(expression.GetOutputs(prgrm)) == 1 {
 				plural2 = ""
 				plural3 = "was"
 			}
 
-			println(ast.CompilationError(exprCXLine.FileName, exprCXLine.LineNumber), fmt.Sprintf("operator '%s' expects to return %d output%s, but %d receiving argument%s %s provided", opName, len(expressionOperatorOutputs), plural1, len(expression.Outputs), plural2, plural3))
+			println(ast.CompilationError(exprCXLine.FileName, exprCXLine.LineNumber), fmt.Sprintf("operator '%s' expects to return %d output%s, but %d receiving argument%s %s provided", opName, len(expressionOperatorOutputs), plural1, len(expression.GetOutputs(prgrm)), plural2, plural3))
 			os.Exit(constants.CX_COMPILATION_ERROR)
 		}
 	}
 
 	if expressionOperator != nil && expressionOperator.IsBuiltIn() && expressionOperator.AtomicOPCode == constants.OP_IDENTITY {
-		for i := range expression.Inputs {
+		for i := range expression.GetInputs(prgrm) {
 			var expectedType string
 			var receivedType string
-			if prgrm.GetCXArgFromArray(expression.Outputs[i]).GetAssignmentElement(prgrm).StructType != nil {
+			if prgrm.GetCXArgFromArray(expression.GetOutputs(prgrm)[i]).GetAssignmentElement(prgrm).StructType != nil {
 				// then it's custom type
-				expectedType = prgrm.GetCXArgFromArray(expression.Outputs[i]).GetAssignmentElement(prgrm).StructType.Name
+				expectedType = prgrm.GetCXArgFromArray(expression.GetOutputs(prgrm)[i]).GetAssignmentElement(prgrm).StructType.Name
 
 			} else {
 				// then it's native type
-				expectedType = prgrm.GetCXArgFromArray(expression.Outputs[i]).GetAssignmentElement(prgrm).Type.Name()
+				expectedType = prgrm.GetCXArgFromArray(expression.GetOutputs(prgrm)[i]).GetAssignmentElement(prgrm).Type.Name()
 
-				if prgrm.GetCXArgFromArray(expression.Outputs[i]).GetAssignmentElement(prgrm).Type == types.POINTER {
-					expectedType = prgrm.GetCXArgFromArray(expression.Outputs[i]).GetAssignmentElement(prgrm).PointerTargetType.Name()
+				if prgrm.GetCXArgFromArray(expression.GetOutputs(prgrm)[i]).GetAssignmentElement(prgrm).Type == types.POINTER {
+					expectedType = prgrm.GetCXArgFromArray(expression.GetOutputs(prgrm)[i]).GetAssignmentElement(prgrm).PointerTargetType.Name()
 				}
 			}
 
-			if prgrm.GetCXArgFromArray(expression.Inputs[i]).GetAssignmentElement(prgrm).StructType != nil {
+			if prgrm.GetCXArgFromArray(expression.GetInputs(prgrm)[i]).GetAssignmentElement(prgrm).StructType != nil {
 				// then it's custom type
-				receivedType = prgrm.GetCXArgFromArray(expression.Inputs[i]).GetAssignmentElement(prgrm).StructType.Name
+				receivedType = prgrm.GetCXArgFromArray(expression.GetInputs(prgrm)[i]).GetAssignmentElement(prgrm).StructType.Name
 			} else {
 				// then it's native type
-				receivedType = prgrm.GetCXArgFromArray(expression.Inputs[i]).GetAssignmentElement(prgrm).Type.Name()
+				receivedType = prgrm.GetCXArgFromArray(expression.GetInputs(prgrm)[i]).GetAssignmentElement(prgrm).Type.Name()
 
-				if prgrm.GetCXArgFromArray(expression.Inputs[i]).GetAssignmentElement(prgrm).Type == types.POINTER {
-					receivedType = prgrm.GetCXArgFromArray(expression.Inputs[i]).GetAssignmentElement(prgrm).PointerTargetType.Name()
+				if prgrm.GetCXArgFromArray(expression.GetInputs(prgrm)[i]).GetAssignmentElement(prgrm).Type == types.POINTER {
+					receivedType = prgrm.GetCXArgFromArray(expression.GetInputs(prgrm)[i]).GetAssignmentElement(prgrm).PointerTargetType.Name()
 				}
 			}
 
 			if receivedType != expectedType {
 				if exprs[currIndex].IsStructLiteral() {
-					println(ast.CompilationError(prgrm.GetCXArgFromArray(expression.Outputs[i]).ArgDetails.FileName, prgrm.GetCXArgFromArray(expression.Outputs[i]).ArgDetails.FileLine), fmt.Sprintf("field '%s' in struct literal of type '%s' expected argument of type '%s'; '%s' was provided", prgrm.GetCXArgFromArray(prgrm.GetCXArgFromArray(expression.Outputs[i]).Fields[0]).Name, prgrm.GetCXArgFromArray(expression.Outputs[i]).StructType.Name, expectedType, receivedType))
+					println(ast.CompilationError(prgrm.GetCXArgFromArray(expression.GetOutputs(prgrm)[i]).ArgDetails.FileName, prgrm.GetCXArgFromArray(expression.GetOutputs(prgrm)[i]).ArgDetails.FileLine), fmt.Sprintf("field '%s' in struct literal of type '%s' expected argument of type '%s'; '%s' was provided", prgrm.GetCXArgFromArray(prgrm.GetCXArgFromArray(expression.GetOutputs(prgrm)[i]).Fields[0]).Name, prgrm.GetCXArgFromArray(expression.GetOutputs(prgrm)[i]).StructType.Name, expectedType, receivedType))
 				} else {
-					println(ast.CompilationError(prgrm.GetCXArgFromArray(expression.Outputs[i]).ArgDetails.FileName, prgrm.GetCXArgFromArray(expression.Outputs[i]).ArgDetails.FileLine), fmt.Sprintf("trying to assign argument of type '%s' to symbol '%s' of type '%s'", receivedType, prgrm.GetCXArgFromArray(expression.Outputs[i]).GetAssignmentElement(prgrm).Name, expectedType))
+					println(ast.CompilationError(prgrm.GetCXArgFromArray(expression.GetOutputs(prgrm)[i]).ArgDetails.FileName, prgrm.GetCXArgFromArray(expression.GetOutputs(prgrm)[i]).ArgDetails.FileLine), fmt.Sprintf("trying to assign argument of type '%s' to symbol '%s' of type '%s'", receivedType, prgrm.GetCXArgFromArray(expression.GetOutputs(prgrm)[i]).GetAssignmentElement(prgrm).Name, expectedType))
 				}
 			}
 		}
@@ -894,11 +898,11 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) {
 	// then it's a function call and not a declaration
 	if expressionOperator != nil {
 		// checking inputs matching operator's inputs
-		checkMatchParamTypes(prgrm, &exprs[currIndex], expressionOperatorInputs, expression.Inputs, true)
+		checkMatchParamTypes(prgrm, &exprs[currIndex], expressionOperatorInputs, expression.GetInputs(prgrm), true)
 
 		expressionOperatorOutputs := expressionOperator.GetOutputs(prgrm)
 		// checking outputs matching operator's outputs
-		checkMatchParamTypes(prgrm, &exprs[currIndex], expressionOperatorOutputs, expression.Outputs, false)
+		checkMatchParamTypes(prgrm, &exprs[currIndex], expressionOperatorOutputs, expression.GetOutputs(prgrm), false)
 	}
 }
 
@@ -918,11 +922,11 @@ func ProcessStringAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 		isOpIdent = true
 	}
 	if isOpIdent {
-		for i, outIdx := range expression.Outputs {
+		for i, outIdx := range expression.GetOutputs(prgrm) {
 			out := prgrm.GetCXArgFromArray(outIdx)
-			if len(expression.Inputs) > i {
+			if len(expression.GetInputs(prgrm)) > i {
 				out = out.GetAssignmentElement(prgrm)
-				inp := prgrm.GetCXArgFromArray(expression.Inputs[i]).GetAssignmentElement(prgrm)
+				inp := prgrm.GetCXArgFromArray(expression.GetInputs(prgrm)[i]).GetAssignmentElement(prgrm)
 
 				if (out.Type == types.STR || out.Type == types.AFF) && out.Name != "" &&
 					(inp.Type == types.STR || inp.Type == types.AFF) && inp.Name != "" {
@@ -965,7 +969,7 @@ func ProcessShortDeclaration(prgrm *ast.CXProgram, expr *ast.CXExpression, expre
 	}
 
 	// process short declaration
-	if len(expression.Outputs) > 0 && len(expression.Inputs) > 0 && prgrm.GetCXArgFromArray(expression.Outputs[0]).Type == types.IDENTIFIER && !expr.IsStructLiteral() && !isParseOp(prgrm, expr) {
+	if len(expression.GetOutputs(prgrm)) > 0 && len(expression.GetInputs(prgrm)) > 0 && prgrm.GetCXArgFromArray(expression.GetOutputs(prgrm)[0]).Type == types.IDENTIFIER && !expr.IsStructLiteral() && !isParseOp(prgrm, expr) {
 		expressionOperator := prgrm.GetFunctionFromArray(expression.Operator)
 		expressionOperatorOutputs := expressionOperator.GetOutputs(prgrm)
 		prevExpression, err := prgrm.GetPreviousCXAtomicOpFromExpressions(expressions, idx-1)
@@ -977,16 +981,16 @@ func ProcessShortDeclaration(prgrm *ast.CXProgram, expr *ast.CXExpression, expre
 		if expr.IsMethodCall() {
 			arg = prgrm.GetCXArgFromArray(expressionOperatorOutputs[0])
 		} else {
-			arg = prgrm.GetCXArgFromArray(expression.Inputs[0])
+			arg = prgrm.GetCXArgFromArray(expression.GetInputs(prgrm)[0])
 		}
 
-		prevExpressionOutputIdx := prevExpression.Outputs[0]
+		prevExpressionOutputIdx := prevExpression.GetOutputs(prgrm)[0]
 		prgrm.CXArgs[prevExpressionOutputIdx].Type = arg.Type
 		prgrm.CXArgs[prevExpressionOutputIdx].PointerTargetType = arg.PointerTargetType
 		prgrm.CXArgs[prevExpressionOutputIdx].Size = arg.Size
 		prgrm.CXArgs[prevExpressionOutputIdx].TotalSize = arg.TotalSize
 
-		expressionOutputIdx := expression.Outputs[0]
+		expressionOutputIdx := expression.GetOutputs(prgrm)[0]
 		prgrm.CXArgs[expressionOutputIdx].Type = arg.Type
 		prgrm.CXArgs[expressionOutputIdx].PointerTargetType = arg.PointerTargetType
 		prgrm.CXArgs[expressionOutputIdx].Size = arg.Size
@@ -1036,8 +1040,8 @@ func ProcessSliceAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 		var inp *ast.CXArgument
 		var out *ast.CXArgument
 
-		inp = prgrm.GetCXArgFromArray(expression.Inputs[0]).GetAssignmentElement(prgrm)
-		out = prgrm.GetCXArgFromArray(expression.Outputs[0]).GetAssignmentElement(prgrm)
+		inp = prgrm.GetCXArgFromArray(expression.GetInputs(prgrm)[0]).GetAssignmentElement(prgrm)
+		out = prgrm.GetCXArgFromArray(expression.GetOutputs(prgrm)[0]).GetAssignmentElement(prgrm)
 
 		if inp.IsSlice && out.IsSlice && len(inp.Indexes) == 0 && len(out.Indexes) == 0 {
 			out.PassBy = constants.PASSBY_VALUE
@@ -1045,7 +1049,7 @@ func ProcessSliceAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 	}
 	if expressionOperator != nil && !expressionOperator.IsBuiltIn() {
 		// then it's a function call
-		for _, inpIdx := range expression.Inputs {
+		for _, inpIdx := range expression.GetInputs(prgrm) {
 			inp := prgrm.GetCXArgFromArray(inpIdx)
 			assignElt := inp.GetAssignmentElement(prgrm)
 
@@ -1151,11 +1155,11 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 		var inpIdx ast.CXArgumentIndex = -1
 		var outIdx ast.CXArgumentIndex = -1
 
-		if len(expression.Inputs) > 0 && prgrm.GetCXArgFromArray(expression.Inputs[0]).Name != "" {
-			inpIdx = expression.Inputs[0]
+		if len(expression.GetInputs(prgrm)) > 0 && prgrm.GetCXArgFromArray(expression.GetInputs(prgrm)[0]).Name != "" {
+			inpIdx = expression.GetInputs(prgrm)[0]
 		}
-		if len(expression.Outputs) > 0 && prgrm.GetCXArgFromArray(expression.Outputs[0]).Name != "" {
-			outIdx = expression.Outputs[0]
+		if len(expression.GetOutputs(prgrm)) > 0 && prgrm.GetCXArgFromArray(expression.GetOutputs(prgrm)[0]).Name != "" {
+			outIdx = expression.GetOutputs(prgrm)[0]
 		}
 
 		if inpIdx != -1 {
@@ -1193,8 +1197,10 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 						panic("")
 					}
 
-					prgrm.CXAtomicOps[expr.Index].Inputs = append([]ast.CXArgumentIndex{ast.CXArgumentIndex(prgrm.CXArgs[outIdx].Index)}, prgrm.CXAtomicOps[expr.Index].Inputs...)
-					prgrm.CXAtomicOps[expr.Index].Outputs = prgrm.CXAtomicOps[expr.Index].Outputs[1:]
+					typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, &prgrm.CXArgs[outIdx])
+
+					prgrm.CXAtomicOps[expr.Index].Inputs.Fields = append([]ast.CXTypeSignature{*typeSig}, prgrm.CXAtomicOps[expr.Index].Inputs.Fields...)
+					prgrm.CXAtomicOps[expr.Index].Outputs.Fields = prgrm.CXAtomicOps[expr.Index].Outputs.Fields[1:]
 					prgrm.CXArgs[outIdx].Fields = prgrm.CXArgs[outIdx].Fields[:len(prgrm.CXArgs[outIdx].Fields)-1]
 				}
 			} else {
@@ -1239,8 +1245,8 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 						os.Exit(constants.CX_COMPILATION_ERROR)
 					}
 
-					prgrm.CXAtomicOps[expr.Index].Inputs = append(prgrm.CXAtomicOps[expr.Index].Outputs[:1], prgrm.CXAtomicOps[expr.Index].Inputs...)
-					prgrm.CXAtomicOps[expr.Index].Outputs = prgrm.CXAtomicOps[expr.Index].Outputs[:len(prgrm.CXAtomicOps[expr.Index].Outputs)-1]
+					prgrm.CXAtomicOps[expr.Index].Inputs.Fields = append(prgrm.CXAtomicOps[expr.Index].Outputs.Fields[:1], prgrm.CXAtomicOps[expr.Index].Inputs.Fields...)
+					prgrm.CXAtomicOps[expr.Index].Outputs.Fields = prgrm.CXAtomicOps[expr.Index].Outputs.Fields[:len(prgrm.CXAtomicOps[expr.Index].Outputs.Fields)-1]
 
 					strctPkg, err := prgrm.GetPackageFromArray(strct.Package)
 					if err != nil {
@@ -1292,8 +1298,15 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 					panic("")
 				}
 
-				prgrm.CXAtomicOps[expr.Index].Inputs = append([]ast.CXArgumentIndex{ast.CXArgumentIndex(prgrm.CXArgs[outIdx].Index)}, prgrm.CXAtomicOps[expr.Index].Inputs...)
-				prgrm.CXAtomicOps[expr.Index].Outputs = prgrm.CXAtomicOps[expr.Index].Outputs[1:]
+				typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, &prgrm.CXArgs[outIdx])
+				newInputs := &ast.CXStruct{Fields: []ast.CXTypeSignature{*typeSig}}
+				if prgrm.CXAtomicOps[expr.Index].Inputs != nil {
+					for _, typeSig := range prgrm.CXAtomicOps[expr.Index].Inputs.Fields {
+						newInputs.AddField_CXAtomicOps(prgrm, &typeSig)
+					}
+				}
+				prgrm.CXAtomicOps[expr.Index].Inputs = newInputs
+				prgrm.CXAtomicOps[expr.Index].Outputs.Fields = prgrm.CXAtomicOps[expr.Index].Outputs.Fields[1:]
 				prgrm.CXArgs[outIdx].Fields = prgrm.CXArgs[outIdx].Fields[:len(prgrm.CXArgs[outIdx].Fields)-1]
 			}
 		}
@@ -1338,11 +1351,11 @@ func ProcessTempVariable(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 		isOpIdent = true
 	}
 
-	if expressionOperator != nil && (isOpIdent || ast.IsArithmeticOperator(expressionOperator.AtomicOPCode)) && len(expression.Outputs) > 0 && len(expression.Inputs) > 0 {
-		outputArgIdx := expression.Outputs[0]
+	if expressionOperator != nil && (isOpIdent || ast.IsArithmeticOperator(expressionOperator.AtomicOPCode)) && len(expression.GetOutputs(prgrm)) > 0 && len(expression.GetInputs(prgrm)) > 0 {
+		outputArgIdx := expression.GetOutputs(prgrm)[0]
 		name := prgrm.CXArgs[outputArgIdx].Name
 		if IsTempVar(name) {
-			expressionInput := prgrm.GetCXArgFromArray(expression.Inputs[0])
+			expressionInput := prgrm.GetCXArgFromArray(expression.GetInputs(prgrm)[0])
 			// then it's a temporary variable and it needs to adopt its input's type
 			prgrm.CXArgs[outputArgIdx].Type = expressionInput.Type
 			prgrm.CXArgs[outputArgIdx].PointerTargetType = expressionInput.PointerTargetType
