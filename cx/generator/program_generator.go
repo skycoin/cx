@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/types"
 
 	"github.com/jinzhu/copier"
@@ -42,7 +43,8 @@ func GenerateRandomExpressions(prgrm *cxast.CXProgram, inputFn *cxast.CXFunction
 		cxAtomicOp.Function = cxast.CXFunctionIndex(inputFn.Index)
 		for c := 0; c < len(op.Inputs); c++ {
 			inpIdx := prgrm.AddCXArgInArray(getRandInp(prgrm, expr))
-			cxAtomicOp.Inputs = append(cxAtomicOp.Inputs, inpIdx)
+			typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(inpIdx))
+			cxAtomicOp.AddInput(prgrm, typeSig)
 		}
 
 		// if operator is jmp, add then and else lines
@@ -67,11 +69,13 @@ func GenerateRandomExpressions(prgrm *cxast.CXProgram, inputFn *cxast.CXFunction
 		prgrm.CXFunctions[inputFn.Index] = *inputFn
 		// Adding last expression, so output must be fn's output.
 		if i == numExprs-preExistingExpressions-1 {
-			cxAtomicOp.Outputs = append(cxAtomicOp.Outputs, inputFnOutputs[0])
+			typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(inputFnOutputs[0]))
+			cxAtomicOp.AddOutput(prgrm, typeSig)
 		} else {
 			for c := 0; c < len(op.Outputs); c++ {
 				outIdx := prgrm.AddCXArgInArray(getRandOut(prgrm, expr))
-				cxAtomicOp.Outputs = append(cxAtomicOp.Outputs, outIdx)
+				typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(outIdx))
+				cxAtomicOp.AddOutput(prgrm, typeSig)
 			}
 		}
 	}
@@ -222,9 +226,11 @@ func addNewExpression(prgrm *cxast.CXProgram, expr *cxast.CXExpression, expressi
 			if err != nil {
 				panic(err)
 			}
-			argToAdd = argToAddCXAtomicOp.Outputs[0]
+			argToAdd = argToAddCXAtomicOp.GetOutputs(prgrm)[0]
 		}
-		newExprCXAtomicOp.AddInput(prgrm, argToAdd)
+
+		typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(argToAdd))
+		newExprCXAtomicOp.AddInput(prgrm, typeSig)
 	}
 
 	// Add expression's output
@@ -233,7 +239,8 @@ func addNewExpression(prgrm *cxast.CXProgram, expr *cxast.CXExpression, expressi
 	argOut.SetType(types.Code(types.BOOL))
 	argOut.Package = exprCXAtomicOpFunction.Package
 	argOutIdx := prgrm.AddCXArgInArray(argOut)
-	newExprCXAtomicOp.AddOutput(prgrm, argOutIdx)
+	typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(argOutIdx))
+	newExprCXAtomicOp.AddOutput(prgrm, typeSig)
 	exprCXAtomicOpFunction.AddExpression(prgrm, newExprCXLine)
 	exprCXAtomicOpFunction.AddExpression(prgrm, newExpr)
 
@@ -271,7 +278,8 @@ func findArgOptions(prgrm *cxast.CXProgram, expr *cxast.CXExpression, argTypeToF
 			panic(err)
 		}
 
-		if len(expCXAtomicOp.Outputs) > 0 && prgrm.GetCXArgFromArray(expCXAtomicOp.Outputs[0]).Type == argTypeToFind && prgrm.GetCXArgFromArray(expCXAtomicOp.Outputs[0]).Name != "" {
+		expCXAtomicOpOutputs := expCXAtomicOp.GetOutputs(prgrm)
+		if len(expCXAtomicOpOutputs) > 0 && prgrm.GetCXArgFromArray(expCXAtomicOpOutputs[0]).Type == argTypeToFind && prgrm.GetCXArgFromArray(expCXAtomicOpOutputs[0]).Name != "" {
 			// add index to options from inputs
 			optionsFromExpressions = append(optionsFromExpressions, i)
 		}

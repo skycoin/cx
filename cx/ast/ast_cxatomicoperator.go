@@ -1,8 +1,8 @@
 package ast
 
 type CXAtomicOperator struct {
-	Inputs   []CXArgumentIndex
-	Outputs  []CXArgumentIndex
+	Inputs   *CXStruct
+	Outputs  *CXStruct
 	Operator CXFunctionIndex
 
 	Function CXFunctionIndex
@@ -30,41 +30,85 @@ func (op *CXAtomicOperator) GetOperatorName(prgrm *CXProgram) string {
 //                     `CXAtomicOperator` Member handling
 
 // AddInput ...
-func (op *CXAtomicOperator) AddInput(prgrm *CXProgram, paramIdx CXArgumentIndex) *CXAtomicOperator {
-	param := prgrm.GetCXArgFromArray(paramIdx)
-	if param.Package == -1 {
-		param.Package = op.Package
+func (op *CXAtomicOperator) AddInput(prgrm *CXProgram, typeSignature *CXTypeSignature) *CXAtomicOperator {
+	if op.Inputs == nil {
+		op.Inputs = &CXStruct{Package: op.Package}
 	}
-	op.Inputs = append(op.Inputs, paramIdx)
+
+	// Add Package if arg has no package
+	if typeSignature.Type == TYPE_CXARGUMENT_DEPRECATE {
+		arg := prgrm.GetCXArgFromArray(CXArgumentIndex(typeSignature.Meta))
+		if arg.Package == -1 {
+			arg.Package = op.Package
+		}
+	}
+
+	op.Inputs.AddField_CXAtomicOps(prgrm, typeSignature)
 
 	return op
+}
+
+func (op *CXAtomicOperator) GetInputs(prgrm *CXProgram) []CXArgumentIndex {
+	var cxArgsIndexes []CXArgumentIndex
+
+	if op == nil || op.Inputs == nil {
+		return cxArgsIndexes
+	}
+	for _, field := range op.Inputs.Fields {
+		if field.Type == TYPE_CXARGUMENT_DEPRECATE {
+			cxArgsIndexes = append(cxArgsIndexes, CXArgumentIndex(field.Meta))
+		}
+	}
+
+	return cxArgsIndexes
 }
 
 // RemoveInput ...
-func (op *CXAtomicOperator) RemoveInput() {
-	if len(op.Inputs) > 0 {
-		op.Inputs = op.Inputs[:len(op.Inputs)-1]
-	}
-}
+// func (op *CXAtomicOperator) RemoveInput() {
+// 	if len(op.Inputs) > 0 {
+// 		op.Inputs = op.Inputs[:len(op.Inputs)-1]
+// 	}
+// }
 
 // AddOutput ...
-func (op *CXAtomicOperator) AddOutput(prgrm *CXProgram, paramIdx CXArgumentIndex) *CXAtomicOperator {
-	param := prgrm.GetCXArgFromArray(paramIdx)
-	if param.Package == -1 {
-		param.Package = op.Package
+func (op *CXAtomicOperator) AddOutput(prgrm *CXProgram, typeSignature *CXTypeSignature) *CXAtomicOperator {
+	if op.Outputs == nil {
+		op.Outputs = &CXStruct{Package: op.Package}
 	}
 
-	op.Outputs = append(op.Outputs, paramIdx)
+	// Add Package if arg has no package
+	if typeSignature.Type == TYPE_CXARGUMENT_DEPRECATE {
+		arg := prgrm.GetCXArgFromArray(CXArgumentIndex(typeSignature.Meta))
+		if arg.Package == -1 {
+			arg.Package = op.Package
+		}
+	}
 
+	op.Outputs.AddField_CXAtomicOps(prgrm, typeSignature)
 	return op
 }
 
-// RemoveOutput ...
-func (op *CXAtomicOperator) RemoveOutput() {
-	if len(op.Outputs) > 0 {
-		op.Outputs = op.Outputs[:len(op.Outputs)-1]
+func (op *CXAtomicOperator) GetOutputs(prgrm *CXProgram) []CXArgumentIndex {
+	var cxArgsIndexes []CXArgumentIndex
+
+	if op == nil || op.Outputs == nil {
+		return cxArgsIndexes
 	}
+	for _, field := range op.Outputs.Fields {
+		if field.Type == TYPE_CXARGUMENT_DEPRECATE {
+			cxArgsIndexes = append(cxArgsIndexes, CXArgumentIndex(field.Meta))
+		}
+	}
+
+	return cxArgsIndexes
 }
+
+// RemoveOutput ...
+// func (op *CXAtomicOperator) RemoveOutput() {
+// 	if len(op.Outputs) > 0 {
+// 		op.Outputs = op.Outputs[:len(op.Outputs)-1]
+// 	}
+// }
 
 // AddLabel ...
 func (op *CXAtomicOperator) AddLabel(lbl string) *CXAtomicOperator {

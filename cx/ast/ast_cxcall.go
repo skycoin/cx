@@ -36,7 +36,8 @@ func popStack(prgrm *CXProgram, call *CXCall) error {
 		return err
 	}
 
-	lenOuts := len(cxAtomicOp.Outputs)
+	cxAtomicOpOutputs := cxAtomicOp.GetOutputs(prgrm)
+	lenOuts := len(cxAtomicOpOutputs)
 	callOperatorOutputs := call.Operator.GetOutputs(prgrm)
 	for i, outIdx := range callOperatorOutputs {
 		// Continuing if there is no receiving variable available.
@@ -45,7 +46,7 @@ func popStack(prgrm *CXProgram, call *CXCall) error {
 		}
 		out := &prgrm.CXArgs[outIdx]
 
-		types.WriteSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, returnFP, &prgrm.CXArgs[cxAtomicOp.Outputs[i]]),
+		types.WriteSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, returnFP, &prgrm.CXArgs[cxAtomicOpOutputs[i]]),
 			types.GetSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, fp, out), GetArgSize(prgrm, out)))
 	}
 
@@ -66,9 +67,10 @@ func wipeDeclarationMemory(prgrm *CXProgram, expr *CXExpression) error {
 
 	newCall := &prgrm.CallStack[prgrm.CallCounter]
 	newFP := newCall.FramePointer
-	size := GetArgSize(prgrm, &prgrm.CXArgs[cxAtomicOp.Outputs[0]])
+	cxAtomicOpOutputs := cxAtomicOp.GetOutputs(prgrm)
+	size := GetArgSize(prgrm, &prgrm.CXArgs[cxAtomicOpOutputs[0]])
 	for c := types.Pointer(0); c < size; c++ {
-		prgrm.Memory[newFP+prgrm.CXArgs[cxAtomicOp.Outputs[0]].Offset+c] = 0
+		prgrm.Memory[newFP+prgrm.CXArgs[cxAtomicOpOutputs[0]].Offset+c] = 0
 	}
 
 	return nil
@@ -82,14 +84,14 @@ func processBuiltInOperators(prgrm *CXProgram, expr *CXExpression, globalInputs 
 
 	cxAtomicOpOperator := prgrm.GetFunctionFromArray(cxAtomicOp.Operator)
 
-	inputs := cxAtomicOp.Inputs
+	inputs := cxAtomicOp.GetInputs(prgrm)
 	inputCount := len(inputs)
 	if inputCount > len(*globalInputs) {
 		*globalInputs = make([]CXValue, inputCount)
 	}
 	inputValues := (*globalInputs)[:inputCount]
 
-	outputs := cxAtomicOp.Outputs
+	outputs := cxAtomicOp.GetOutputs(prgrm)
 	outputCount := len(outputs)
 	if outputCount > len(*globalOutputs) {
 		*globalOutputs = make([]CXValue, outputCount)
@@ -173,7 +175,7 @@ func processNonAtomicOperators(prgrm *CXProgram, expr *CXExpression, fp types.Po
 	}
 
 	newCallOperatorInputs := newCall.Operator.GetInputs(prgrm)
-	for i, inpIdx := range cxAtomicOp.Inputs {
+	for i, inpIdx := range cxAtomicOp.GetInputs(prgrm) {
 		inp := &prgrm.CXArgs[inpIdx]
 		var byts []byte
 

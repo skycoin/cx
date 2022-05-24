@@ -33,10 +33,10 @@ func assignStructLiteralFields(prgrm *ast.CXProgram, toExprs []ast.CXExpression,
 			panic(err)
 		}
 
-		expressionOutputIdx := expression.Outputs[0]
+		expressionOutputIdx := expression.GetOutputs(prgrm)[0]
 		prgrm.CXArgs[expressionOutputIdx].Name = structLiteralName
 
-		toExpressionOutput := prgrm.GetCXArgFromArray(toExpression.Outputs[0])
+		toExpressionOutput := prgrm.GetCXArgFromArray(toExpression.GetOutputs(prgrm)[0])
 		if len(toExpressionOutput.Indexes) > 0 {
 			prgrm.CXArgs[expressionOutputIdx].Lengths = toExpressionOutput.Lengths
 			prgrm.CXArgs[expressionOutputIdx].Indexes = toExpressionOutput.Indexes
@@ -75,12 +75,12 @@ func StructLiteralAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, f
 
 	// If the last expression in `fromExprs` is declared as pointer
 	// then it means the whole struct literal needs to be passed by reference.
-	if !hasDeclSpec(prgrm.GetCXArgFromArray(lastFromExpression.Outputs[0]).GetAssignmentElement(prgrm), constants.DECL_POINTER) {
-		return assignStructLiteralFields(prgrm, toExprs, fromExprs, prgrm.GetCXArgFromArray(toExpression.Outputs[0]).Name)
+	if !hasDeclSpec(prgrm.GetCXArgFromArray(lastFromExpression.GetOutputs(prgrm)[0]).GetAssignmentElement(prgrm), constants.DECL_POINTER) {
+		return assignStructLiteralFields(prgrm, toExprs, fromExprs, prgrm.GetCXArgFromArray(toExpression.GetOutputs(prgrm)[0]).Name)
 	} else {
 		// And we also need an auxiliary variable to point to,
 		// otherwise we'd be trying to assign the fields to a nil value.
-		outField := prgrm.GetCXArgFromArray(lastFromExpression.Outputs[0])
+		outField := prgrm.GetCXArgFromArray(lastFromExpression.GetOutputs(prgrm)[0])
 		auxName := generateTempVarName(constants.LOCAL_PREFIX)
 		aux := ast.MakeArgument(auxName, lastFromCXLine.FileName, lastFromCXLine.LineNumber)
 		aux.SetType(outField.Type)
@@ -97,7 +97,9 @@ func StructLiteralAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, f
 		declExpressionIdx := declExpr.Index
 
 		prgrm.CXAtomicOps[declExpressionIdx].Package = lastFromExpression.Package
-		prgrm.CXAtomicOps[declExpressionIdx].AddOutput(prgrm, auxIdx)
+
+		typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(auxIdx))
+		prgrm.CXAtomicOps[declExpressionIdx].AddOutput(prgrm, typeSig)
 
 		fromExprs = assignStructLiteralFields(prgrm, toExprs, fromExprs, auxName)
 
@@ -106,12 +108,15 @@ func StructLiteralAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, f
 		assignExpressionIdx := assignExpr.Index
 
 		prgrm.CXAtomicOps[assignExpressionIdx].Package = lastFromExpression.Package
-		out := ast.MakeArgument(prgrm.GetCXArgFromArray(toExpression.Outputs[0]).Name, lastFromCXLine.FileName, lastFromCXLine.LineNumber)
+		out := ast.MakeArgument(prgrm.GetCXArgFromArray(toExpression.GetOutputs(prgrm)[0]).Name, lastFromCXLine.FileName, lastFromCXLine.LineNumber)
 		out.Package = lastFromExpression.Package
 		outIdx := prgrm.AddCXArgInArray(out)
 
-		prgrm.CXAtomicOps[assignExpressionIdx].AddOutput(prgrm, outIdx)
-		prgrm.CXAtomicOps[assignExpressionIdx].AddInput(prgrm, auxIdx)
+		outTypeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(outIdx))
+		prgrm.CXAtomicOps[assignExpressionIdx].AddOutput(prgrm, outTypeSig)
+
+		auxTypeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(auxIdx))
+		prgrm.CXAtomicOps[assignExpressionIdx].AddInput(prgrm, auxTypeSig)
 
 		fromExprs = append([]ast.CXExpression{*declExprCXLine, *declExpr}, fromExprs...)
 		return append(fromExprs, *assignExprCXLine, *assignExpr)
@@ -138,8 +143,8 @@ func ArrayLiteralAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fr
 			panic(err)
 		}
 
-		expressionOutputIdx := expression.Outputs[0]
-		prgrm.CXArgs[expressionOutputIdx].Name = prgrm.GetCXArgFromArray(toExpression.Outputs[0]).Name
+		expressionOutputIdx := expression.GetOutputs(prgrm)[0]
+		prgrm.CXArgs[expressionOutputIdx].Name = prgrm.GetCXArgFromArray(toExpression.GetOutputs(prgrm)[0]).Name
 		prgrm.CXArgs[expressionOutputIdx].DereferenceOperations = append(prgrm.CXArgs[expressionOutputIdx].DereferenceOperations, constants.DEREF_ARRAY)
 	}
 
@@ -168,25 +173,27 @@ func ShortAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression, exprCXLine *a
 
 	fromExpressionOperator := prgrm.GetFunctionFromArray(prgrm.CXAtomicOps[fromExpressionIdx].Operator)
 
-	prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, toExpression.Outputs[0])
-	prgrm.CXAtomicOps[expressionIdx].AddOutput(prgrm, toExpression.Outputs[0])
+	typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(toExpression.GetOutputs(prgrm)[0]))
+	prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, typeSig)
+	prgrm.CXAtomicOps[expressionIdx].AddOutput(prgrm, typeSig)
 
 	prgrm.CXAtomicOps[expressionIdx].Package = ast.CXPackageIndex(pkg.Index)
 
 	if fromExpressionOperator == nil {
-		prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, prgrm.CXAtomicOps[fromExpressionIdx].Outputs[0])
+		typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(prgrm.CXAtomicOps[fromExpressionIdx].GetOutputs(prgrm)[0]))
+		prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, typeSig)
 	} else {
-		sym := ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, LineNo).SetType(prgrm.GetCXArgFromArray(prgrm.CXAtomicOps[fromExpressionIdx].Inputs[0]).Type)
+		sym := ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, LineNo).SetType(prgrm.GetCXArgFromArray(prgrm.CXAtomicOps[fromExpressionIdx].GetInputs(prgrm)[0]).Type)
 		sym.Package = ast.CXPackageIndex(pkg.Index)
 		sym.PreviouslyDeclared = true
 		symIdx := prgrm.AddCXArgInArray(sym)
-		prgrm.CXAtomicOps[fromExpressionIdx].AddOutput(prgrm, symIdx)
-
-		prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, symIdx)
+		typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(symIdx))
+		prgrm.CXAtomicOps[fromExpressionIdx].AddOutput(prgrm, typeSig)
+		prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, typeSig)
 	}
 
 	//must check if from expression is naked previously declared variable
-	if len(fromExprs) == 1 && fromExpressionOperator == nil && len(prgrm.CXAtomicOps[fromExpressionIdx].Outputs) > 0 && len(prgrm.CXAtomicOps[fromExpressionIdx].Inputs) == 0 {
+	if len(fromExprs) == 1 && fromExpressionOperator == nil && len(prgrm.CXAtomicOps[fromExpressionIdx].GetOutputs(prgrm)) > 0 && len(prgrm.CXAtomicOps[fromExpressionIdx].GetInputs(prgrm)) == 0 {
 		return []ast.CXExpression{*exprCXLine, *expr}
 	} else {
 		return append(fromExprs, *exprCXLine, *expr)
@@ -209,7 +216,7 @@ func getOutputType(prgrm *ast.CXProgram, expr *ast.CXExpression) *ast.CXArgument
 		return prgrm.GetCXArgFromArray(expressionOperatorOutputs[0])
 	}
 
-	return prgrm.GetCXArgFromArray(expression.Inputs[0])
+	return prgrm.GetCXArgFromArray(expression.GetInputs(prgrm)[0])
 }
 
 // Assignment handles assignment statements with different operators,
@@ -235,7 +242,8 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 	// Checking if we're trying to assign stuff from a function call
 	// And if that function call actually returns something. If not, throw an error.
 	if fromExpressionOperator != nil && len(fromExpressionOperatorOutputs) == 0 {
-		println(ast.CompilationError(prgrm.GetCXArgFromArray(toExpression.Outputs[0]).ArgDetails.FileName, prgrm.GetCXArgFromArray(toExpression.Outputs[0]).ArgDetails.FileLine), "trying to use an outputless operator in an assignment")
+		toExpressionOutputs := toExpression.GetOutputs(prgrm)
+		println(ast.CompilationError(prgrm.GetCXArgFromArray(toExpressionOutputs[0]).ArgDetails.FileName, prgrm.GetCXArgFromArray(toExpressionOutputs[0]).ArgDetails.FileLine), "trying to use an outputless operator in an assignment")
 		os.Exit(constants.CX_COMPILATION_ERROR)
 	}
 
@@ -257,14 +265,14 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 
 		if fromExpressionOperator == nil {
 			// then it's a literal
-			sym = ast.MakeArgument(prgrm.GetCXArgFromArray(toExpression.Outputs[0]).Name, CurrentFile, LineNo).SetType(prgrm.GetCXArgFromArray(prgrm.CXAtomicOps[fromExpressionIdx].Outputs[0]).Type)
+			sym = ast.MakeArgument(prgrm.GetCXArgFromArray(toExpression.GetOutputs(prgrm)[0]).Name, CurrentFile, LineNo).SetType(prgrm.GetCXArgFromArray(prgrm.CXAtomicOps[fromExpressionIdx].GetOutputs(prgrm)[0]).Type)
 		} else {
 			outTypeArg := getOutputType(prgrm, &fromExprs[lastFromExpressionIdx])
 
-			sym = ast.MakeArgument(prgrm.GetCXArgFromArray(toExpression.Outputs[0]).Name, CurrentFile, LineNo).SetType(outTypeArg.Type)
+			sym = ast.MakeArgument(prgrm.GetCXArgFromArray(toExpression.GetOutputs(prgrm)[0]).Name, CurrentFile, LineNo).SetType(outTypeArg.Type)
 
 			if fromExprs[lastFromExpressionIdx].IsArrayLiteral() {
-				fromCXAtomicOpInputs := prgrm.GetCXArgFromArray(prgrm.CXAtomicOps[fromExpressionIdx].Inputs[0])
+				fromCXAtomicOpInputs := prgrm.GetCXArgFromArray(prgrm.CXAtomicOps[fromExpressionIdx].GetInputs(prgrm)[0])
 				sym.Size = fromCXAtomicOpInputs.Size
 				sym.TotalSize = fromCXAtomicOpInputs.TotalSize
 				sym.Lengths = fromCXAtomicOpInputs.Lengths
@@ -282,7 +290,8 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 		sym.PreviouslyDeclared = true
 		symIdx := prgrm.AddCXArgInArray(sym)
 
-		prgrm.CXAtomicOps[expressionIdx].AddOutput(prgrm, symIdx)
+		typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(symIdx))
+		prgrm.CXAtomicOps[expressionIdx].AddOutput(prgrm, typeSig)
 
 		for _, toExpr := range toExprs {
 			if toExpr.Type == ast.CX_LINE {
@@ -293,7 +302,7 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 				panic(err)
 			}
 
-			toExprAtomicOpOutputIdx := toExprAtomicOp.Outputs[0]
+			toExprAtomicOpOutputIdx := toExprAtomicOp.GetOutputs(prgrm)[0]
 			prgrm.CXArgs[toExprAtomicOpOutputIdx].PreviouslyDeclared = true
 
 			prgrm.CXArgs[toExprAtomicOpOutputIdx].Type = sym.Type
@@ -344,8 +353,8 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 		opIdx := prgrm.AddNativeFunctionInArray(ast.Natives[constants.OP_IDENTITY])
 		prgrm.CXAtomicOps[fromExpressionIdx].Operator = opIdx
 
-		toExpressionOutputIdx := toExpression.Outputs[0]
-		fromExpressionOutput := prgrm.GetCXArgFromArray(prgrm.CXAtomicOps[fromExpressionIdx].Outputs[0])
+		toExpressionOutputIdx := toExpression.GetOutputs(prgrm)[0]
+		fromExpressionOutput := prgrm.GetCXArgFromArray(prgrm.CXAtomicOps[fromExpressionIdx].GetOutputs(prgrm)[0])
 
 		prgrm.CXArgs[toExpressionOutputIdx].Size = fromExpressionOutput.Size
 		prgrm.CXArgs[toExpressionOutputIdx].TotalSize = fromExpressionOutput.TotalSize
@@ -355,7 +364,13 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 		prgrm.CXArgs[toExpressionOutputIdx].PassBy = fromExpressionOutput.PassBy
 
 		if fromExprs[lastFromExpressionIdx].IsMethodCall() {
-			prgrm.CXAtomicOps[fromExpressionIdx].Inputs = append(prgrm.CXAtomicOps[fromExpressionIdx].Outputs, prgrm.CXAtomicOps[fromExpressionIdx].Inputs...)
+			newInputs := prgrm.CXAtomicOps[fromExpressionIdx].Outputs
+			if prgrm.CXAtomicOps[fromExpressionIdx].Inputs != nil {
+				for _, typeSig := range prgrm.CXAtomicOps[fromExpressionIdx].Inputs.Fields {
+					newInputs.AddField_CXAtomicOps(prgrm, &typeSig)
+				}
+			}
+			prgrm.CXAtomicOps[fromExpressionIdx].Inputs = newInputs
 		} else {
 			prgrm.CXAtomicOps[fromExpressionIdx].Inputs = prgrm.CXAtomicOps[fromExpressionIdx].Outputs
 		}
@@ -369,7 +384,7 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 		if fromExpressionOperator.IsBuiltIn() {
 			// only assigning as if the operator had only one output defined
 
-			toExpressionOutputIdx := toExpression.Outputs[0]
+			toExpressionOutputIdx := toExpression.GetOutputs(prgrm)[0]
 			if fromExpressionOperator.AtomicOPCode != constants.OP_IDENTITY {
 				// it's a short variable declaration
 				prgrm.CXArgs[toExpressionOutputIdx].Size = fromCXAtomicOpOperatorOutput.Size
@@ -382,7 +397,7 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 		} else {
 			// we'll delegate multiple-value returns to the 'expression' grammar rule
 			// only assigning as if the operator had only one output defined
-			toExpressionOutputIdx := toExpression.Outputs[0]
+			toExpressionOutputIdx := toExpression.GetOutputs(prgrm)[0]
 
 			prgrm.CXArgs[toExpressionOutputIdx].Size = fromCXAtomicOpOperatorOutput.Size
 			prgrm.CXArgs[toExpressionOutputIdx].Type = fromCXAtomicOpOperatorOutput.Type

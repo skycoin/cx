@@ -142,8 +142,8 @@ func buildStrFunctions(prgrm *CXProgram, pkg *CXPackage, ast1 *string) {
 				}
 			}
 
-			getFormattedParam(prgrm, prgrm.ConvertIndexArgsToPointerArgs(cxAtomicOp.Inputs), pkg, &inps)
-			getFormattedParam(prgrm, prgrm.ConvertIndexArgsToPointerArgs(cxAtomicOp.Outputs), pkg, &outs)
+			getFormattedParam(prgrm, prgrm.ConvertIndexArgsToPointerArgs(cxAtomicOp.GetInputs(prgrm)), pkg, &inps)
+			getFormattedParam(prgrm, prgrm.ConvertIndexArgsToPointerArgs(cxAtomicOp.GetOutputs(prgrm)), pkg, &outs)
 
 			if expr.Type == CX_LINE {
 				cxLine, _ := prgrm.GetCXLine(expr.Index)
@@ -167,13 +167,14 @@ func buildStrFunctions(prgrm *CXProgram, pkg *CXPackage, ast1 *string) {
 			} else {
 				// Then it's a variable declaration. These are represented
 				// by expressions without operators that only have outputs.
-				if len(cxAtomicOp.Outputs) > 0 {
-					out := prgrm.GetCXArgFromArray(cxAtomicOp.Outputs[len(cxAtomicOp.Outputs)-1])
+				cxAtomicOpOutputs := cxAtomicOp.GetOutputs(prgrm)
+				if len(cxAtomicOpOutputs) > 0 {
+					out := prgrm.GetCXArgFromArray(cxAtomicOpOutputs[len(cxAtomicOpOutputs)-1])
 
 					*ast1 += fmt.Sprintf("\t\t\t%d.- Declaration%s: %s %s\n",
 						k,
 						lbl,
-						prgrm.GetCXArgFromArray(cxAtomicOp.Outputs[0]).Name,
+						prgrm.GetCXArgFromArray(cxAtomicOpOutputs[0]).Name,
 						GetFormattedType(prgrm, out))
 				}
 			}

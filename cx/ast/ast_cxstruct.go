@@ -189,6 +189,12 @@ func (strct *CXStruct) AddField_Function(prgrm *CXProgram, field *CXTypeSignatur
 	return strct
 }
 
+func (strct *CXStruct) AddField_CXAtomicOps(prgrm *CXProgram, field *CXTypeSignature) *CXStruct {
+	strct.Fields = append(strct.Fields, *field)
+
+	return strct
+}
+
 func (strct *CXStruct) AddField_Globals_CXAtomicOps(prgrm *CXProgram, cxArgIdx CXArgumentIndex) *CXStruct {
 	cxArgument := prgrm.GetCXArgFromArray(cxArgIdx)
 	// Check if field already exist
@@ -201,6 +207,7 @@ func (strct *CXStruct) AddField_Globals_CXAtomicOps(prgrm *CXProgram, cxArgIdx C
 		}
 	}
 
+	cxArgument.Package = strct.Package
 	newCXTypeSignature := GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, cxArgument)
 	strct.Fields = append(strct.Fields, *newCXTypeSignature)
 

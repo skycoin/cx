@@ -105,19 +105,19 @@ func TestASTAPI_Arguments(t *testing.T) {
 		cxprogram.PrintProgram()
 	})
 
-	t.Run("remove input from an expression", func(t *testing.T) {
-		// err := astapi.RemoveInputFromExpression(cxprogram, "TestFunction", 0)
-		// if err != nil {
-		// 	t.Errorf("want no error, got %v", err)
-		// }
-	})
+	// t.Run("remove input from an expression", func(t *testing.T) {
+	// err := astapi.RemoveInputFromExpression(cxprogram, "TestFunction", 0)
+	// if err != nil {
+	// 	t.Errorf("want no error, got %v", err)
+	// }
+	// })
 
-	t.Run("remove output from an expression", func(t *testing.T) {
-		err := astapi.RemoveOutputFromExpression(cxprogram, "TestFunction", 0)
-		if err != nil {
-			t.Errorf("want no error, got %v", err)
-		}
-	})
+	// t.Run("remove output from an expression", func(t *testing.T) {
+	// 	err := astapi.RemoveOutputFromExpression(cxprogram, "TestFunction", 0)
+	// 	if err != nil {
+	// 		t.Errorf("want no error, got %v", err)
+	// 	}
+	// })
 
 	t.Run("print program", func(t *testing.T) {
 		cxprogram.PrintProgram()
