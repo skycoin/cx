@@ -53,6 +53,8 @@ Notes:
 
 ## CX Package format
 - [ ] Package format - This is how we’re representing the file. Every file has a length, a name, and a hash. Every package is a list of files – file structs. And then, we have a list of the package structs. And then, we can serialize it and hash that to get the ID for the whole program.
+
+## CX App Store
 - [ ] CX App Store - For storing CX programs/packages in a key-value store for downloading from website with simple API. To be an added feature in CX-Playground/CX-IDE. This will use CX Package Format in compiling cx program.
 
 Objectives:
@@ -89,7 +91,7 @@ Notes:
 - Compiler will still use global when outputing AST from source file, but lock compilation so that only one program can be compiled at a time. (Maybe use a channel to pass in data with compiled AST returned)
 
 ## Abstract Binary Interface (ABI)
-- [ ] Define the ABI
+- [x] Define the ABI
 - [ ] then we can take a CX function, then compiled it to x86 assembly or x64 with LLVM
 - [ ] then we can "Execute" the function directly on the CPU
 - [ ] it takes in byte array, cx program, etc then runs the assembly language instructions, that modify the byte array directly; no interpreter
@@ -102,3 +104,5 @@ Objectives:
 - [ ] App/library that shows all CX objects, layout values, location, etc
 - [ ] Count of object types, total memory, used, unused, etc
 - [ ] Stack trace library
+- [ ] AST manipulation/inspection API
+- [ ] CX Evolves task API
