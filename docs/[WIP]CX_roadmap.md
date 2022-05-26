@@ -45,20 +45,27 @@ Notes:
     - offset of variable from start of struct
     - size of variable
 
-## Taskbar Launcher for CX
-This is going to launch the CX Playground. It’s going to open up a web browser on the user’s computer. It’s going to let them type in a CX program and run it. This is going to be expanded into what’s called a CX-IDE or CX-Playground. That will be github.com/skycoin/cx-ide or github.com/skycoin/cx-playground. 
-
-Notes:
-- Use same tasbar library that we're using for skywire(https://github.com/getlantern/systray).
-
-## CX Package format
-- [ ] Package format - This is how we’re representing the file. Every file has a length, a name, and a hash. Every package is a list of files – file structs. And then, we have a list of the package structs. And then, we can serialize it and hash that to get the ID for the whole program.
+## CX Compiler Frontend
+- [ ] Stage 1: Package format - This is how we’re representing the file. Every file has a length, a name, and a hash. Every package is a list of files – file structs. And then, we have a list of the package structs. And then, we can serialize it and hash that to get the ID for the whole program.
+- [ ] Stage 2: Declaration Extraction
+- [ ] Stage 3: Type Checks
+- [ ] Stage 4: Function Body Extraction
 
 ## CX App Store
-- [ ] CX App Store - For storing CX programs/packages in a key-value store for downloading from website with simple API. To be an added feature in CX-Playground/CX-IDE. This will use CX Package Format in compiling cx program.
+CX App Store will be a downloadable app for windows and mac. Once it is downloaded and installed, when ran, the app will start its own local web app server and automatically open up a web browser that redirects to that web app. It will show lists of CX programs/apps/games that the user can run. For example, the user clicks "CXPacman", it will then automatically open up an OpenGL window that runs the CXPacman game.
+- [ ] Taskbar launcher 
+- [ ] Windows and Mac installer
+- [ ] Web App
 
 Objectives:
 - To easily download a CX program from CX App Store website and run the CX program.
+
+## CX Apps
+- [ ] CXS - CXShell
+
+## CX Playground
+- [ ] Running server
+- [ ] More Functionailities for CXPlayground
 
 ## Web Interface for CX game objects
 To change the behavior while the game is running, change the behavior, change the image, sprite, sound effects, etc. Example is, there's a list of agents/objects, 35 ships, while the game is running, I can change the ship to attack or run away through the web interface while the game is running. To be added as a feature in CX-Playground/CX-IDE.
