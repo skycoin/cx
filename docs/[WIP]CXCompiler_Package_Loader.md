@@ -9,6 +9,7 @@ This is how we’re representing the file. Every file has a length, a name, and 
 
 ## Package Struct
 - PackageName string
+- Blake2Hash UUID
 - Files []UUID
 
 ## PackageList Struct
