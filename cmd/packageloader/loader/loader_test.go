@@ -142,6 +142,7 @@ func TestAddFilesRedis(t *testing.T) {
 func TestAddPackagesInRedis(t *testing.T) {
 	DATABASE = "redis"
 	SRC_PATH = TEST_SRC_PATH2
+	IMPORTED_DIRECTORIES = []string{}
 	testPackageList := PackageList{}
 	testPackageList.addPackagesIn(SRC_PATH)
 	if len(testPackageList.Packages) != 2 {
@@ -151,6 +152,7 @@ func TestAddPackagesInRedis(t *testing.T) {
 
 func TestLoadRedis(t *testing.T) {
 	DATABASE = "redis"
+	IMPORTED_DIRECTORIES = []string{}
 	LoadPackages("TestValid", "testValidProgram/")
 }
 
@@ -167,6 +169,7 @@ func TestAddFilesBolt(t *testing.T) {
 func TestAddPackagesInBolt(t *testing.T) {
 	DATABASE = "bolt"
 	SRC_PATH = TEST_SRC_PATH2
+	IMPORTED_DIRECTORIES = []string{}
 	testPackageList := PackageList{}
 	testPackageList.addPackagesIn(SRC_PATH)
 	if len(testPackageList.Packages) != 2 {
@@ -176,5 +179,6 @@ func TestAddPackagesInBolt(t *testing.T) {
 
 func TestLoadBolt(t *testing.T) {
 	DATABASE = "bolt"
+	IMPORTED_DIRECTORIES = []string{}
 	LoadPackages("TestValid", "testValidProgram/")
 }

@@ -7,8 +7,6 @@ import (
 	"github.com/boltdb/bolt"
 )
 
-var db *bolt.DB
-
 func init() {
 	db, err := bolt.Open("program_list.db", 0644, nil)
 	if err != nil {
@@ -28,7 +26,12 @@ func init() {
 }
 
 func Add(key string, value []byte) {
-	err := db.Update(func(tx *bolt.Tx) error {
+	db, err := bolt.Open("program_list.db", 0644, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+	err = db.Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte("program"))
 		if bucket == nil {
 			return errors.New("bucket program was not found")
@@ -45,15 +48,20 @@ func Add(key string, value []byte) {
 }
 
 func Get(key string) []byte {
+	db, err := bolt.Open("program_list.db", 0644, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
 	ret := []byte{}
-	err := db.View(func(tx *bolt.Tx) error {
+	err = db.View(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte("program"))
 		if bucket == nil {
 			return errors.New("bucket program was not found")
 		}
 		ret = bucket.Get([]byte(key))
 		if ret == nil {
-			return errors.New("No value associated with key " + key)
+			return errors.New("no value associated with key " + key)
 		}
 		return nil
 	})
