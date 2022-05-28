@@ -1,6 +1,7 @@
 cover.html
 cover.out
 packageloader
-encoder/test
+encoder/test_redis
+encoder/test_bolt
 .vscode
-loader/program_list.db
+program_list.db

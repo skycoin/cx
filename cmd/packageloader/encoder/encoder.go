@@ -3,6 +3,7 @@ package encoder
 import (
 	"os"
 
+	"github.com/skycoin/cx/cmd/packageloader/bolt"
 	"github.com/skycoin/cx/cmd/packageloader/loader"
 	"github.com/skycoin/cx/cmd/packageloader/redis"
 )
@@ -15,19 +16,38 @@ func SavePackagesToDisk(packageName string, path string) error {
 		return err
 	}
 	var packageList loader.PackageList
-	listString, err := redis.Get(packageName)
-	if err != nil {
-		return err
-	}
-	packageList.UnmarshalBinary([]byte(listString.(string)))
-
-	for _, pack := range packageList.Packages {
-		var packageStruct loader.Package
-		packageString, err := redis.Get(pack)
+	var listBytes []byte
+	switch DATABASE {
+	case "redis":
+		interfaceString, err := redis.Get(packageName)
 		if err != nil {
 			return err
 		}
-		packageStruct.UnmarshalBinary([]byte(packageString.(string)))
+		listBytes = []byte(interfaceString.(string))
+	case "bolt":
+		listBytes, err = bolt.Get(packageName)
+		if err != nil {
+			return err
+		}
+	}
+	packageList.UnmarshalBinary(listBytes)
+	for _, pack := range packageList.Packages {
+		var packageStruct loader.Package
+		var packageBytes []byte
+		switch DATABASE {
+		case "redis":
+			interfaceString, err := redis.Get(pack)
+			if err != nil {
+				return err
+			}
+			packageBytes = []byte(interfaceString.(string))
+		case "bolt":
+			packageBytes, err = bolt.Get(pack)
+			if err != nil {
+				return err
+			}
+		}
+		packageStruct.UnmarshalBinary(packageBytes)
 
 		if packageStruct.PackageName != "main" {
 			continue
@@ -41,11 +61,21 @@ func SavePackagesToDisk(packageName string, path string) error {
 
 	for _, pack := range packageList.Packages {
 		var packageStruct loader.Package
-		packageString, err := redis.Get(pack)
-		if err != nil {
-			return err
+		var packageBytes []byte
+		switch DATABASE {
+		case "redis":
+			interfaceString, err := redis.Get(pack)
+			if err != nil {
+				return err
+			}
+			packageBytes = []byte(interfaceString.(string))
+		case "bolt":
+			packageBytes, err = bolt.Get(pack)
+			if err != nil {
+				return err
+			}
 		}
-		packageStruct.UnmarshalBinary([]byte(packageString.(string)))
+		packageStruct.UnmarshalBinary(packageBytes)
 
 		if packageStruct.PackageName == "main" {
 			continue
@@ -63,11 +93,21 @@ func SaveFilesToDisk(packageStruct loader.Package, filePath string) error {
 	}
 	for _, file := range packageStruct.Files {
 		var fileStruct loader.File
-		fileString, err := redis.Get(file)
-		if err != nil {
-			return err
+		var fileBytes []byte
+		switch DATABASE {
+		case "redis":
+			interfaceString, err := redis.Get(file)
+			if err != nil {
+				return err
+			}
+			fileBytes = []byte(interfaceString.(string))
+		case "bolt":
+			fileBytes, err = bolt.Get(file)
+			if err != nil {
+				return err
+			}
 		}
-		fileStruct.UnmarshalBinary([]byte(fileString.(string)))
+		fileStruct.UnmarshalBinary(fileBytes)
 
 		err = os.WriteFile(filePath+fileStruct.FileName, fileStruct.Content, 0755)
 		if err != nil {

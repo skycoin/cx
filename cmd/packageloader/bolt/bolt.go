@@ -3,12 +3,21 @@ package bolt
 import (
 	"errors"
 	"log"
+	"os"
+	"path/filepath"
 
 	"github.com/boltdb/bolt"
 )
 
+var DBPath string
+
 func init() {
-	db, err := bolt.Open("program_list.db", 0644, nil)
+	path, err := os.Executable()
+	if err != nil {
+		log.Fatal(err)
+	}
+	DBPath = filepath.Dir(path)
+	db, err := bolt.Open(DBPath+"/program_list.db", 0644, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -26,7 +35,7 @@ func init() {
 }
 
 func Add(key string, value []byte) error {
-	db, err := bolt.Open("program_list.db", 0644, nil)
+	db, err := bolt.Open(DBPath+"/program_list.db", 0644, nil)
 	if err != nil {
 		return err
 	}
@@ -49,8 +58,8 @@ func Add(key string, value []byte) error {
 }
 
 func Get(key string) ([]byte, error) {
-	ret := []byte{}
-	db, err := bolt.Open("program_list.db", 0644, nil)
+	var ret []byte
+	db, err := bolt.Open(DBPath+"/program_list.db", 0644, nil)
 	if err != nil {
 		return ret, err
 	}
@@ -60,12 +69,15 @@ func Get(key string) ([]byte, error) {
 		if bucket == nil {
 			return errors.New("bucket program was not found")
 		}
-		ret = bucket.Get([]byte(key))
+		value := bucket.Get([]byte(key))
+		ret = make([]byte, len(value))
+		copy(ret, value)
 		if ret == nil {
 			return errors.New("no value associated with key " + key)
 		}
 		return nil
 	})
+	log.Println(ret)
 	if err != nil {
 		return ret, err
 	}
