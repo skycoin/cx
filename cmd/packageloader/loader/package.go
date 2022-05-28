@@ -42,6 +42,7 @@ func (newPackage *Package) hashFile(newFile *File) error {
 		redis.Add(fmt.Sprintf("%x", h[:]), *newFile)
 	case "bolt":
 		value, err := newFile.MarshalBinary()
+		log.Print(value)
 		if err != nil {
 			log.Fatal(err)
 		}

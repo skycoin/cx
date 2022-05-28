@@ -2,3 +2,5 @@ cover.html
 cover.out
 packageloader
 encoder/test
+.vscode
+loader/program_list.db

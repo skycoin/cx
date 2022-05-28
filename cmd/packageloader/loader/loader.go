@@ -35,7 +35,7 @@ func LoadPackages(programName string, path string) {
 	packageList := PackageList{}
 
 	directoryList := []string{}
-	err := filepath.Walk(SRC_PATH, func(path string, info os.FileInfo, err error) error {
+	err := filepath.WalkDir(SRC_PATH, func(path string, info fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
@@ -73,16 +73,16 @@ func (packageList *PackageList) addPackagesIn(path string) {
 	}
 	newPackage := Package{}
 	imports := []string{}
-	fileList := []os.FileInfo{}
-	files, err := ioutil.ReadDir(CURRENT_PATH)
+	fileList := []os.DirEntry{}
+	files, err := os.ReadDir(CURRENT_PATH)
 	if err != nil {
 		log.Fatal(err)
 	}
-	for _, fileInfo := range files {
-		if fileInfo.Name()[len(fileInfo.Name())-2:] != "cx" {
+	for _, dirEntry := range files {
+		if dirEntry.Name()[len(dirEntry.Name())-2:] != "cx" {
 			continue
 		}
-		fileList = append(fileList, fileInfo)
+		fileList = append(fileList, dirEntry)
 	}
 
 	if len(fileList) == 1 {
@@ -122,7 +122,7 @@ func (packageList *PackageList) addPackagesIn(path string) {
 }
 
 // For a list of cx files, get their package names and return if they match, and add the imports
-func comparePackageNames(fileList []fs.FileInfo, imports []string) (bool, string, []string, error) {
+func comparePackageNames(fileList []fs.DirEntry, imports []string) (bool, string, []string, error) {
 	packageName, err := getPackageName(fileList[0])
 	if err != nil {
 		return false, "", imports, err
@@ -148,8 +148,8 @@ func comparePackageNames(fileList []fs.FileInfo, imports []string) (bool, string
 }
 
 // Get the package name of a cx file
-func getPackageName(fileInfo fs.FileInfo) (string, error) {
-	file, err := os.Open(CURRENT_PATH + fileInfo.Name())
+func getPackageName(dirEntry fs.DirEntry) (string, error) {
+	file, err := os.Open(CURRENT_PATH + dirEntry.Name())
 	if err != nil {
 		return "", err
 	}
@@ -177,8 +177,8 @@ func getPackageName(fileInfo fs.FileInfo) (string, error) {
 }
 
 // Get the import names in a cx file
-func getImports(fileInfo fs.FileInfo, imports []string) ([]string, error) {
-	file, err := os.Open(CURRENT_PATH + fileInfo.Name())
+func getImports(dirEntry fs.DirEntry, imports []string) ([]string, error) {
+	file, err := os.Open(CURRENT_PATH + dirEntry.Name())
 	if err != nil {
 		return imports, err
 	}
@@ -207,11 +207,16 @@ func getImports(fileInfo fs.FileInfo, imports []string) ([]string, error) {
 }
 
 // Add the hashes of the files in fileList to the package
-func (newPackage *Package) addFiles(fileList []fs.FileInfo) {
+func (newPackage *Package) addFiles(fileList []fs.DirEntry) {
 	for _, file := range fileList {
+		fileInfo, err := file.Info()
+		if err != nil {
+			log.Fatal(err)
+		}
+
 		newFile := File{
 			FileName: file.Name(),
-			Length:   uint32(file.Size()),
+			Length:   uint32(fileInfo.Size()),
 		}
 		byteArray, err := ioutil.ReadFile(CURRENT_PATH + file.Name())
 		if err != nil {

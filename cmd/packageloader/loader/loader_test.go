@@ -1,21 +1,21 @@
 package loader
 
 import (
-	"io/ioutil"
+	"io/fs"
 	"log"
 	"os"
 	"testing"
 )
 
-var testFileList = []os.FileInfo{}
-var testFileList2 = []os.FileInfo{}
+var testFileList = []fs.DirEntry{}
+var testFileList2 = []fs.DirEntry{}
 
 const TEST_SRC_PATH = "testInvalidProgram/src/"
 const TEST_SRC_PATH2 = "testValidProgram/src/"
 const TEST_SRC_PATH3 = "testVariousFiles/src/"
 
 func init() {
-	files, err := ioutil.ReadDir(TEST_SRC_PATH)
+	files, err := os.ReadDir(TEST_SRC_PATH)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -26,7 +26,7 @@ func init() {
 		testFileList = append(testFileList, fileInfo)
 	}
 
-	files, err = ioutil.ReadDir(TEST_SRC_PATH + "testimport/")
+	files, err = os.ReadDir(TEST_SRC_PATH + "testimport/")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -101,7 +101,7 @@ func TestComparePackageNamesTrue(t *testing.T) {
 }
 
 func TestCommentsPackage(t *testing.T) {
-	files, err := ioutil.ReadDir("testVariousFiles/")
+	files, err := os.ReadDir("testVariousFiles/")
 	if err != nil {
 		log.Fatal(err)
 	}
