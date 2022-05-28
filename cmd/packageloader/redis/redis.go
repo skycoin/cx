@@ -2,7 +2,6 @@ package redis
 
 import (
 	"context"
-	"log"
 
 	"github.com/go-redis/redis/v8"
 )
@@ -18,17 +17,18 @@ func init() {
 	})
 }
 
-func Add(key string, value interface{}) {
+func Add(key string, value interface{}) error {
 	err := rdb.Set(ctx, key, value, 0).Err()
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
+	return nil
 }
 
-func Get(key string) interface{} {
+func Get(key string) (interface{}, error) {
 	ret, err := rdb.Get(ctx, key).Result()
 	if err != nil {
-		log.Fatal(err)
+		return ret, err
 	}
-	return ret
+	return ret, nil
 }

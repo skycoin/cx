@@ -42,11 +42,17 @@ func main() {
 	}
 
 	if *loadFlag {
-		loader.LoadPackages(programName, path)
+		err := loader.LoadPackages(programName, path)
+		if err != nil {
+			log.Fatal(err)
+		}
 		return
 	}
 	if *saveFlag {
-		encoder.SavePackagesToDisk(programName, path)
+		err := encoder.SavePackagesToDisk(programName, path)
+		if err != nil {
+			log.Fatal(err)
+		}
 		return
 	}
 	log.Fatal("Wrong arguments provided. Type -help for more information")

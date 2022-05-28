@@ -25,10 +25,10 @@ func init() {
 	}
 }
 
-func Add(key string, value []byte) {
+func Add(key string, value []byte) error {
 	db, err := bolt.Open("program_list.db", 0644, nil)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	defer db.Close()
 	err = db.Update(func(tx *bolt.Tx) error {
@@ -43,17 +43,18 @@ func Add(key string, value []byte) {
 		return nil
 	})
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
+	return nil
 }
 
-func Get(key string) []byte {
+func Get(key string) ([]byte, error) {
+	ret := []byte{}
 	db, err := bolt.Open("program_list.db", 0644, nil)
 	if err != nil {
-		log.Fatal(err)
+		return ret, err
 	}
 	defer db.Close()
-	ret := []byte{}
 	err = db.View(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte("program"))
 		if bucket == nil {
@@ -66,7 +67,7 @@ func Get(key string) []byte {
 		return nil
 	})
 	if err != nil {
-		log.Fatal(err)
+		return ret, err
 	}
-	return ret
+	return ret, nil
 }

@@ -5,7 +5,6 @@ import (
 	"encoding/gob"
 	"encoding/json"
 	"fmt"
-	"log"
 
 	"github.com/skycoin/cx/cmd/packageloader/bolt"
 	"github.com/skycoin/cx/cmd/packageloader/redis"
@@ -41,7 +40,7 @@ func (packageList *PackageList) hashPackage(newPackage *Package) error {
 	case "bolt":
 		value, err := newPackage.MarshalBinary()
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		bolt.Add(fmt.Sprintf("%x", h[:]), value)
 	}

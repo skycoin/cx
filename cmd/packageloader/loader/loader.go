@@ -29,7 +29,7 @@ func contains(list []string, element string) bool {
 	return false
 }
 
-func LoadPackages(programName string, path string) {
+func LoadPackages(programName string, path string) error {
 	SRC_PATH = path + "src/"
 
 	packageList := PackageList{}
@@ -45,7 +45,7 @@ func LoadPackages(programName string, path string) {
 		return nil
 	})
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	for _, path := range directoryList {
@@ -57,26 +57,27 @@ func LoadPackages(programName string, path string) {
 	case "bolt":
 		value, err := packageList.MarshalBinary()
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		bolt.Add(programName, value)
 	}
+	return nil
 }
 
-func (packageList *PackageList) addPackagesIn(path string) {
+func (packageList *PackageList) addPackagesIn(path string) error {
 	if path[len(path)-1:] != "/" {
 		path += "/"
 	}
 	CURRENT_PATH = path
 	if contains(IMPORTED_DIRECTORIES, CURRENT_PATH) {
-		return
+		return nil
 	}
 	newPackage := Package{}
 	imports := []string{}
 	fileList := []os.DirEntry{}
 	files, err := os.ReadDir(CURRENT_PATH)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	for _, dirEntry := range files {
 		if dirEntry.Name()[len(dirEntry.Name())-2:] != "cx" {
@@ -88,11 +89,11 @@ func (packageList *PackageList) addPackagesIn(path string) {
 	if len(fileList) == 1 {
 		packageName, err := getPackageName(fileList[0])
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		imports, err = getImports(fileList[0], imports)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		newPackage.PackageName = packageName
 	}
@@ -101,7 +102,7 @@ func (packageList *PackageList) addPackagesIn(path string) {
 		packageName := ""
 		samePackage, packageName, imports, err = comparePackageNames(fileList, imports)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		if !samePackage {
 			log.Print("Files in directory " + CURRENT_PATH + " are not all in the same newPackage.\nSource of the error: " + packageName)
@@ -119,6 +120,7 @@ func (packageList *PackageList) addPackagesIn(path string) {
 		}
 		packageList.addPackagesIn(SRC_PATH + path)
 	}
+	return nil
 }
 
 // For a list of cx files, get their package names and return if they match, and add the imports
@@ -207,11 +209,11 @@ func getImports(dirEntry fs.DirEntry, imports []string) ([]string, error) {
 }
 
 // Add the hashes of the files in fileList to the package
-func (newPackage *Package) addFiles(fileList []fs.DirEntry) {
+func (newPackage *Package) addFiles(fileList []fs.DirEntry) error {
 	for _, file := range fileList {
 		fileInfo, err := file.Info()
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 
 		newFile := File{
@@ -220,11 +222,12 @@ func (newPackage *Package) addFiles(fileList []fs.DirEntry) {
 		}
 		byteArray, err := ioutil.ReadFile(CURRENT_PATH + file.Name())
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		newFile.Content = byteArray
 		h := blake2b.Sum512(byteArray)
 		newFile.Blake2Hash = string(h[:])
 		newPackage.hashFile(&newFile)
 	}
+	return nil
 }

@@ -1,7 +1,6 @@
 package encoder
 
 import (
-	"log"
 	"os"
 
 	"github.com/skycoin/cx/cmd/packageloader/loader"
@@ -10,17 +9,25 @@ import (
 
 var DATABASE = "bolt"
 
-func SavePackagesToDisk(packageName string, path string) {
+func SavePackagesToDisk(packageName string, path string) error {
 	err := os.Mkdir(path, 0755)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	var packageList loader.PackageList
-	packageList.UnmarshalBinary([]byte(redis.Get(packageName).(string)))
+	listString, err := redis.Get(packageName)
+	if err != nil {
+		return err
+	}
+	packageList.UnmarshalBinary([]byte(listString.(string)))
 
 	for _, pack := range packageList.Packages {
 		var packageStruct loader.Package
-		packageStruct.UnmarshalBinary([]byte(redis.Get(pack).(string)))
+		packageString, err := redis.Get(pack)
+		if err != nil {
+			return err
+		}
+		packageStruct.UnmarshalBinary([]byte(packageString.(string)))
 
 		if packageStruct.PackageName != "main" {
 			continue
@@ -34,7 +41,11 @@ func SavePackagesToDisk(packageName string, path string) {
 
 	for _, pack := range packageList.Packages {
 		var packageStruct loader.Package
-		packageStruct.UnmarshalBinary([]byte(redis.Get(pack).(string)))
+		packageString, err := redis.Get(pack)
+		if err != nil {
+			return err
+		}
+		packageStruct.UnmarshalBinary([]byte(packageString.(string)))
 
 		if packageStruct.PackageName == "main" {
 			continue
@@ -42,21 +53,26 @@ func SavePackagesToDisk(packageName string, path string) {
 		var filePath = path + packageStruct.PackageName + "/"
 		SaveFilesToDisk(packageStruct, filePath)
 	}
-
+	return nil
 }
 
-func SaveFilesToDisk(packageStruct loader.Package, filePath string) {
+func SaveFilesToDisk(packageStruct loader.Package, filePath string) error {
 	err := os.Mkdir(filePath, 0755)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	for _, file := range packageStruct.Files {
 		var fileStruct loader.File
-		fileStruct.UnmarshalBinary([]byte(redis.Get(file).(string)))
+		fileString, err := redis.Get(file)
+		if err != nil {
+			return err
+		}
+		fileStruct.UnmarshalBinary([]byte(fileString.(string)))
 
 		err = os.WriteFile(filePath+fileStruct.FileName, fileStruct.Content, 0755)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 	}
+	return nil
 }

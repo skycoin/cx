@@ -10,9 +10,9 @@ import (
 var testFileList = []fs.DirEntry{}
 var testFileList2 = []fs.DirEntry{}
 
-const TEST_SRC_PATH = "testInvalidProgram/src/"
-const TEST_SRC_PATH2 = "testValidProgram/src/"
-const TEST_SRC_PATH3 = "testVariousFiles/src/"
+const TEST_SRC_PATH = "test_folder/test_invalid_program/src/"
+const TEST_SRC_PATH2 = "test_folder/test_valid_program/src/"
+const TEST_SRC_PATH3 = "test_folder/test_various_files/src/"
 
 func init() {
 	files, err := os.ReadDir(TEST_SRC_PATH)
@@ -101,11 +101,11 @@ func TestComparePackageNamesTrue(t *testing.T) {
 }
 
 func TestCommentsPackage(t *testing.T) {
-	files, err := os.ReadDir("testVariousFiles/")
+	CURRENT_PATH = "test_folder/test_various_files/"
+	files, err := os.ReadDir(CURRENT_PATH)
 	if err != nil {
 		log.Fatal(err)
 	}
-	CURRENT_PATH = "testVariousFiles/"
 	for _, f := range files {
 		if f.Name() == "package_comment.cx" {
 			packageName, err := getPackageName(f)
@@ -153,7 +153,7 @@ func TestAddPackagesInRedis(t *testing.T) {
 func TestLoadRedis(t *testing.T) {
 	DATABASE = "redis"
 	IMPORTED_DIRECTORIES = []string{}
-	LoadPackages("TestValid", "testValidProgram/")
+	LoadPackages("TestValid", "test_folder/test_valid_program/")
 }
 
 func TestAddFilesBolt(t *testing.T) {
@@ -180,5 +180,5 @@ func TestAddPackagesInBolt(t *testing.T) {
 func TestLoadBolt(t *testing.T) {
 	DATABASE = "bolt"
 	IMPORTED_DIRECTORIES = []string{}
-	LoadPackages("TestValid", "testValidProgram/")
+	LoadPackages("TestValid", "test_folder/test_valid_program/")
 }
