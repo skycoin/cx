@@ -335,8 +335,10 @@ func GetAccessibleArgsForFunctionByType(cxprogram *cxast.CXProgram, packageLocat
 		return nil, err
 	}
 
-	for _, globalIdx := range pkg.Globals {
-		global := cxprogram.GetCXArg(globalIdx)
+	for _, glblFld := range pkg.Globals.Fields {
+		// Assuming only all are TYPE_CXARGUMENT_DEPRECATE
+		// TODO: To be replaced
+		global := cxprogram.GetCXArg(ast.CXArgumentIndex(glblFld.Meta))
 		if global.IsStruct {
 			for _, typeSignature := range global.StructType.Fields {
 				fieldIdx := typeSignature.Meta
@@ -355,8 +357,10 @@ func GetAccessibleArgsForFunctionByType(cxprogram *cxast.CXProgram, packageLocat
 		if err != nil {
 			panic(err)
 		}
-		for _, globalIdx := range imp.Globals {
-			global := cxprogram.GetCXArg(globalIdx)
+		for _, glblFld := range imp.Globals.Fields {
+			// Assuming only all are TYPE_CXARGUMENT_DEPRECATE
+			// TODO: To be replaced
+			global := cxprogram.GetCXArg(ast.CXArgumentIndex(glblFld.Meta))
 			if global.IsStruct {
 				for _, typeSignature := range global.StructType.Fields {
 					fieldIdx := typeSignature.Meta

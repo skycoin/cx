@@ -47,12 +47,14 @@ func buildStrImports(prgrm *CXProgram, pkg *CXPackage, ast *string) {
 // buildStrGlobals is an auxiliary function for `toString`. It builds
 // string representation of all the global variables of `pkg`.
 func buildStrGlobals(prgrm *CXProgram, pkg *CXPackage, ast *string) {
-	if len(pkg.Globals) > 0 {
+	if len(pkg.Globals.Fields) > 0 {
 		*ast += "\tGlobals\n"
 	}
 
-	for j, v := range pkg.Globals {
-		*ast += fmt.Sprintf("\t\t%d.- Global: %s %s\n", j, prgrm.GetCXArg(v).Name, GetFormattedType(prgrm, prgrm.GetCXArg(v)))
+	for idx, glblIdx := range pkg.Globals.Fields {
+		// Assuming they are all TYPE_CXARGUMENT_DEPRECATE
+		// TODO: To be replaced
+		*ast += fmt.Sprintf("\t\t%d.- Global: %s %s\n", idx, prgrm.GetCXArg(CXArgumentIndex(glblIdx.Meta)).Name, GetFormattedType(prgrm, prgrm.GetCXArg(CXArgumentIndex(glblIdx.Meta))))
 	}
 }
 

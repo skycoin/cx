@@ -17,7 +17,7 @@ type CXPackage struct {
 	Imports   map[string]CXPackageIndex  // imported packages
 	Functions map[string]CXFunctionIndex // declared functions in this package
 	Structs   map[string]CXStructIndex   // declared structs in this package
-	Globals   []CXArgumentIndex          // declared global variables in this package
+	Globals   *CXStruct                  // declared global variables in this package
 
 	// Used by the REPL and cxgo
 	CurrentFunction CXFunctionIndex
@@ -105,20 +105,14 @@ func (pkg *CXPackage) GetStruct(prgrm *CXProgram, strctName string) (*CXStruct, 
 
 // GetGlobal ...
 func (pkg *CXPackage) GetGlobal(prgrm *CXProgram, defName string) (*CXArgument, error) {
-	var foundDef *CXArgument
-	for _, defIdx := range pkg.Globals {
-		def := prgrm.GetCXArg(defIdx)
-		if def.Name == defName {
-			foundDef = def
-			break
+	for _, field := range pkg.Globals.Fields {
+		if field.Name == defName && field.Type == TYPE_CXARGUMENT_DEPRECATE {
+			glbl := prgrm.GetCXArgFromArray(CXArgumentIndex(field.Meta))
+			return glbl, nil
 		}
 	}
 
-	if foundDef != nil {
-		return foundDef, nil
-	}
 	return nil, fmt.Errorf("global '%s' not found in package '%s'", defName, pkg.Name)
-
 }
 
 // GetCurrentFunction ...
@@ -152,7 +146,7 @@ func (pkg *CXPackage) SelectFunction(prgrm *CXProgram, name string) (*CXFunction
 func MakePackage(name string) *CXPackage {
 	return &CXPackage{
 		Name:            name,
-		Globals:         make([]CXArgumentIndex, 0, 10),
+		Globals:         &CXStruct{},
 		Imports:         make(map[string]CXPackageIndex, 0),
 		Structs:         make(map[string]CXStructIndex, 0),
 		Functions:       make(map[string]CXFunctionIndex, 0),
@@ -230,31 +224,31 @@ func (pkg *CXPackage) RemoveStruct(strctName string) {
 // AddGlobal ...
 func (pkg *CXPackage) AddGlobal(prgrm *CXProgram, defIdx CXArgumentIndex) *CXPackage {
 	defArg := prgrm.GetCXArgFromArray(defIdx)
-	defArg.Package = CXPackageIndex(pkg.Index)
-	for _, dfIdx := range pkg.Globals {
-		df := prgrm.GetCXArg(dfIdx)
-		if df.Name == defArg.Name {
+	prgrm.CXArgs[defIdx].Package = CXPackageIndex(pkg.Index)
+
+	for _, field := range pkg.Globals.Fields {
+		if field.Name == defArg.Name && field.Type == TYPE_CXARGUMENT_DEPRECATE {
 			return pkg
 		}
 	}
 
-	pkg.Globals = append(pkg.Globals, defIdx)
+	pkg.Globals.AddField_Globals_CXAtomicOps(prgrm, defIdx)
 
 	return pkg
 }
 
 // RemoveGlobal ...
-func (pkg *CXPackage) RemoveGlobal(prgrm *CXProgram, defName string) {
-	lenGlobals := len(pkg.Globals)
-	for i, defIdx := range pkg.Globals {
-		def := prgrm.GetCXArg(defIdx)
-		if def.Name == defName {
-			if i == lenGlobals-1 {
-				pkg.Globals = pkg.Globals[:len(pkg.Globals)-1]
-			} else {
-				pkg.Globals = append(pkg.Globals[:i], pkg.Globals[i+1:]...)
-			}
-			break
-		}
-	}
-}
+// func (pkg *CXPackage) RemoveGlobal(prgrm *CXProgram, defName string) {
+// 	lenGlobals := len(pkg.Globals)
+// 	for i, defIdx := range pkg.Globals {
+// 		def := prgrm.GetCXArg(defIdx)
+// 		if def.Name == defName {
+// 			if i == lenGlobals-1 {
+// 				pkg.Globals = pkg.Globals[:len(pkg.Globals)-1]
+// 			} else {
+// 				pkg.Globals = append(pkg.Globals[:i], pkg.Globals[i+1:]...)
+// 			}
+// 			break
+// 		}
+// 	}
+// }
