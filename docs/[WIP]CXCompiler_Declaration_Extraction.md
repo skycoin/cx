@@ -27,6 +27,7 @@ Extract all enums and declarations declarations
 - FileID
 - StartOffset
 - Length
+- Type
 - Name
 
 Data Output:
