@@ -8,7 +8,8 @@ import (
 
 func TestExtractGlbl(t *testing.T) {
 
-	got, err := extractGlbl("test.cx")
+	file, err := os.Open("test.cx")
+	got, err := extractGlbl(file)
 
 	if err != nil {
 		log.Fatal(err)
@@ -46,7 +47,8 @@ func TestExtractGlbl(t *testing.T) {
 
 func TestExtractStrct(t *testing.T) {
 
-	got, err := extractStrct("test.cx")
+	file, err := os.Open("test.cx")
+	got, err := extractStrct(file)
 
 	if err != nil {
 		log.Fatal(err)
@@ -84,21 +86,22 @@ func TestExtractStrct(t *testing.T) {
 
 func TestExtractFunc(t *testing.T) {
 
-	got, err := extractFunc("test.cx")
+	file, err := os.Open("test.cx")
+	got, err := extractFunc(file)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	want := []Declaration{
-		Declaration{
+		{
 			PackageID:   "hello",
 			FileID:      "test.cx",
 			StartOffset: 0,
 			Length:      9,
 			Name:        "main",
 		},
-		Declaration{
+		{
 			PackageID:   "hello",
 			FileID:      "test.cx",
 			StartOffset: 0,
@@ -145,5 +148,25 @@ func TestExtractPkg(t *testing.T) {
 	}
 
 	t.Error(got)
+
+}
+
+func TestExtractEnum(t *testing.T) {
+	file, err := os.Open("test.cx")
+	got, err := extractEnum(file)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	//Check if any declaration were detected
+	if got == nil {
+		t.Error("No Function Declarations")
+	}
+
+	for i := range got {
+		t.Errorf(" %+v", got[i])
+	}
+	// t.Errorf(" %+v", got[0])
 
 }
