@@ -369,8 +369,10 @@ func serializePackageGlobals(prgrm *CXProgram, pkg *CXPackage, s *SerializedCXPr
 		sPkg := &s.Packages[pkgOff]
 
 		var glblArgs []*CXArgument
-		for _, glblIdx := range pkg.Globals {
-			glbl := prgrm.GetCXArg(glblIdx)
+		for _, glblFld := range pkg.Globals.Fields {
+			// Assuming only all are TYPE_CXARGUMENT_DEPRECATE
+			// TODO: To be replaced
+			glbl := prgrm.GetCXArg(CXArgumentIndex(glblFld.Meta))
 			glblArgs = append(glblArgs, glbl)
 		}
 		sPkg.GlobalsOffset, sPkg.GlobalsSize = serializeSliceOfArguments(prgrm, glblArgs, s)
@@ -852,9 +854,9 @@ func deserializePackages(s *SerializedCXProgram, prgrm *CXProgram) {
 			}
 		}
 
-		if sPkg.GlobalsSize > 0 {
-			pkg.Globals = make([]CXArgumentIndex, sPkg.GlobalsSize)
-		}
+		// if sPkg.GlobalsSize > 0 {
+		// 	pkg.Globals = make([]CXArgumentIndex, sPkg.GlobalsSize)
+		// }
 
 		// CurrentFunction
 		if sPkg.FunctionsSize > 0 {
@@ -883,7 +885,10 @@ func deserializePackages(s *SerializedCXProgram, prgrm *CXProgram) {
 				glblIdx := prgrm.AddCXArgInArray(glbl)
 				glblArgsIdxs = append(glblArgsIdxs, CXArgumentIndex(glblIdx))
 			}
-			pkg.Globals = glblArgsIdxs
+			// pkg.Globals = glblArgsIdxs
+			for _, glblIdx := range glblArgsIdxs {
+				pkg.Globals.AddField_Globals_CXAtomicOps(prgrm, glblIdx)
+			}
 		}
 
 		// structs

@@ -1,4 +1,4 @@
-# CX Package Loader Format
+# CXCompiler: Package Loader
 This is how we’re representing the file. Every file has a length, a name, and a blake2 hash. Every package is a list of files – file structs. And then, we have a list of the package structs. And then, we can hash that to get the ID for the whole program.
 
 ## File Struct
@@ -9,6 +9,7 @@ This is how we’re representing the file. Every file has a length, a name, and 
 
 ## Package Struct
 - PackageName string
+- Blake2Hash UUID
 - Files []UUID
 
 ## PackageList Struct
@@ -34,3 +35,15 @@ source files and create a `File struct` for it.
 
 ### Objectives
 This allows us to store the packages in our key-value store, and it allows us to store the program in our key-value store, so when we ask for a program, we just give the blake2 hash, and the web server responds with the program. This is how we’re going to package our games, how we’re going to package our CX apps, how we’re going to package our libraries so that they can be put on a key-value store in Redis initially, and eventually distributed peer-to-peer over DHT several years from now when we need to do that.
+
+
+---
+Additional milestones:
+- [ ] Add map for package name and its package hash id
+- [ ] Add map for filename and its file hash id
+- [ ] Function that prints import dependencies
+- [ ] Function to display a tree that shows its imports
+- [ ] Check for cycles in imports and give error if there's any
+- [ ] Use goroutine to load the packages
+    - one goroutine per file
+

@@ -18,8 +18,10 @@ func MarkAndCompact(prgrm *CXProgram) {
 			panic(err)
 		}
 
-		for _, glblIdx := range pkg.Globals {
-			glbl := prgrm.GetCXArg(glblIdx)
+		for _, glblFld := range pkg.Globals.Fields {
+			// Assuming only all are TYPE_CXARGUMENT_DEPRECATE
+			// TODO: To be replaced
+			glbl := prgrm.GetCXArg(CXArgumentIndex(glblFld.Meta))
 			if (glbl.IsString() || glbl.IsSlice || glbl.Type == types.STR) && glbl.StructType == nil {
 				// Getting the offset to the object in the heap
 				heapOffset := types.Read_ptr(prgrm.Memory, glbl.Offset)
@@ -238,8 +240,10 @@ func DisplaceReferences(prgrm *CXProgram, off types.Pointer, numPkgs int) {
 		// In a CX chain we're only interested on considering global variables,
 		// as any other object should be destroyed, as the program finished its
 		// execution.
-		for _, glblIdx := range pkg.Globals {
-			glbl := prgrm.GetCXArg(glblIdx)
+		for _, glblFld := range pkg.Globals.Fields {
+			// Assuming only all are TYPE_CXARGUMENT_DEPRECATE
+			// TODO: To be replaced
+			glbl := prgrm.GetCXArg(CXArgumentIndex(glblFld.Meta))
 			if glbl.IsString() || glbl.IsStruct || glbl.IsSlice {
 				doDisplaceReferences(prgrm, &updated, glbl.Offset, off, glbl.Type, glbl.DeclarationSpecifiers[1:]) // TODO:PTR remove hardcoded offsets
 			}
@@ -394,8 +398,10 @@ func updatePointers(prgrm *CXProgram, oldAddr, newAddr types.Pointer) {
 			panic(err)
 		}
 
-		for _, glblIdx := range pkg.Globals {
-			glbl := prgrm.GetCXArg(glblIdx)
+		for _, glblFld := range pkg.Globals.Fields {
+			// Assuming only all are TYPE_CXARGUMENT_DEPRECATE
+			// TODO: To be replaced
+			glbl := prgrm.GetCXArg(CXArgumentIndex(glblFld.Meta))
 			if (glbl.IsPointer() || glbl.IsSlice || glbl.Type == types.STR) && glbl.StructType == nil {
 				// Getting the offset to the object in the heap
 				heapOffset := types.Read_ptr(prgrm.Memory, glbl.Offset)

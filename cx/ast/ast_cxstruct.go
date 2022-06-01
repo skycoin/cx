@@ -39,13 +39,6 @@ const (
 	TYPE_CXARGUMENT_DEPRECATE
 )
 
-// type NewCXStruct struct {
-// 	StructID     int
-// 	NameStringID int
-// 	Package      CXPackageIndex
-// 	Fields       []CXTypeSignature
-// }
-
 type CXTypeSignature struct {
 	// NameStringID int
 	Name   string // temporary
@@ -94,10 +87,9 @@ type CXStruct struct {
 
 // GetField ...
 func (strct *CXStruct) GetField(prgrm *CXProgram, name string) (*CXArgument, error) {
-	// All are TYPE_CXARGUMENT_DEPRECATE for now.
-	// FieldIdx or the CXArg ID is in Meta field.
 	for _, typeSignature := range strct.Fields {
 		if typeSignature.Name == name {
+			// If type is struct
 			if typeSignature.Type == TYPE_STRUCT {
 				return &CXArgument{
 					Name:                  typeSignature.Name,
@@ -105,6 +97,7 @@ func (strct *CXStruct) GetField(prgrm *CXProgram, name string) (*CXArgument, err
 					DeclarationSpecifiers: []int{constants.DECL_STRUCT},
 					StructType:            prgrm.GetStructFromArray(CXStructIndex(typeSignature.Meta)),
 				}, nil
+				// If type is not cxargument deprecate
 			} else if typeSignature.Type != TYPE_CXARGUMENT_DEPRECATE {
 				return &CXArgument{
 					Name:                  typeSignature.Name,
@@ -114,6 +107,7 @@ func (strct *CXStruct) GetField(prgrm *CXProgram, name string) (*CXArgument, err
 				}, nil
 			}
 
+			// If type is cxargument deprecate
 			fldIdx := typeSignature.Meta
 			return &prgrm.CXArgs[fldIdx], nil
 		}
@@ -197,6 +191,7 @@ func (strct *CXStruct) AddField_CXAtomicOps(prgrm *CXProgram, field *CXTypeSigna
 
 func (strct *CXStruct) AddField_Globals_CXAtomicOps(prgrm *CXProgram, cxArgIdx CXArgumentIndex) *CXStruct {
 	cxArgument := prgrm.GetCXArgFromArray(cxArgIdx)
+
 	// Check if field already exist
 	for _, typeSignature := range strct.Fields {
 		if typeSignature.Name == cxArgument.Name {
@@ -207,7 +202,6 @@ func (strct *CXStruct) AddField_Globals_CXAtomicOps(prgrm *CXProgram, cxArgIdx C
 		}
 	}
 
-	cxArgument.Package = strct.Package
 	newCXTypeSignature := GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, cxArgument)
 	strct.Fields = append(strct.Fields, *newCXTypeSignature)
 
