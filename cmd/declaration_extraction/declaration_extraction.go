@@ -2,7 +2,7 @@ package declaration_extraction
 
 import (
 	"bufio"
-	"fmt"
+	"bytes"
 	"os"
 	"regexp"
 	"strings"
@@ -25,273 +25,133 @@ type Declaration struct {
 // 	return false
 // }
 
-func extractGlbl(source *os.File, fileName string) []Declaration {
+func rmComment(source []byte) []byte {
+
+	var src []byte
+	// Regexs
+	reMultiComment := regexp.MustCompile(`/\*[\s\S]*?\*/`)
+	reComment := regexp.MustCompile(`//[^\n\r]*`)
+
+	//Replace contents between /* */ with ""
+	src = reMultiComment.ReplaceAll(source, []byte(""))
+	//Replace contents after // with ""
+	src = reComment.ReplaceAll(src, []byte(""))
+
+	return src
+}
+
+func extractPkg(source []byte) string {
+	rePkgName := regexp.MustCompile(`(^|[\s])package[ ]+([_a-zA-Z][_a-zA-Z0-9]*)`)
+
+	srcStr := rePkgName.FindString(string(source))
+	if srcStr != "" {
+		srcStr = strings.Split(srcStr, " ")[1]
+	}
+
+	return srcStr
+}
+
+func extractGlbl(fileName string) ([]Declaration, error) {
 
 	var GlblDec []Declaration
 	var pkgID string
+	src, err := os.ReadFile(fileName)
 
-	scanner := bufio.NewScanner(source)
+	CmtRmd := rmComment(src)
+	pkgID = extractPkg(CmtRmd)
 
 	//Regexs
-	reMultiCommentOpen := regexp.MustCompile(`/\*`)
-	reMultiCommentClose := regexp.MustCompile(`\*/`)
-	reComment := regexp.MustCompile("//")
-
+	reGlbl := regexp.MustCompile(`var\s([_a-zA-Z][_a-zA-Z0-9]*)[ ]+([_a-zA-Z][_a-zA-Z0-9]*)`)
 	reBodyOpen := regexp.MustCompile("{")
 	reBodyClose := regexp.MustCompile("}")
 
-	rePkg := regexp.MustCompile("package")
-	rePkgName := regexp.MustCompile(`(^|[\s])package\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
-
-	reGlbl := regexp.MustCompile("var")
-	reGlblName := regexp.MustCompile(`(^|[\s])var\s([_a-zA-Z][_a-zA-Z0-9]*)`)
+	reader := bytes.NewReader(CmtRmd)
+	scanner := bufio.NewScanner(reader)
 
 	var inBlock int
-	var commentedCode bool
 
-	//Reading code line by line
 	for scanner.Scan() {
 		line := scanner.Bytes()
 
-		commentLoc := reComment.FindIndex(line)
-
-		multiCommentOpenLoc := reMultiCommentOpen.FindIndex(line)
-		multiCommentCloseLoc := reMultiCommentClose.FindIndex(line)
-
-		//Check for commented code
-		if commentedCode && multiCommentCloseLoc != nil {
-			commentedCode = false
-		}
-
-		if commentedCode {
-			continue
-		}
-
-		if multiCommentOpenLoc != nil && !commentedCode && multiCommentCloseLoc != nil {
-			commentedCode = true
-		}
-
-		//Check if in block of code
 		if locs := reBodyOpen.FindAllIndex(line, -1); locs != nil {
-			for _, loc := range locs {
-				if !(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
-					if (commentLoc == nil && multiCommentOpenLoc == nil && multiCommentCloseLoc == nil) ||
-						(commentLoc != nil && commentLoc[0] > loc[0]) ||
-						(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] > loc[0]) ||
-						(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] < loc[0]) {
-						inBlock++
-					}
-				}
-			}
+			inBlock++
 		}
-
 		if locs := reBodyClose.FindAllIndex(line, -1); locs != nil {
-			for _, loc := range locs {
-				if !(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
-					if (commentLoc == nil && multiCommentOpenLoc == nil && multiCommentCloseLoc == nil) ||
-						(commentLoc != nil && commentLoc[0] > loc[0]) ||
-						(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] > loc[0]) ||
-						(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] < loc[0]) {
-						inBlock--
-					}
-				}
-			}
+			inBlock--
 		}
 
-		// we search for packages at the same time, so we can know to what package to add the global
-		if loc := rePkg.FindIndex(line); loc != nil {
-			if (commentLoc != nil && commentLoc[0] < loc[0]) ||
-				(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
-				(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
-				// then it's commented out
-				continue
-			}
-
-			if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
-				tmp := strings.Split(match[0], "package")[1]
-				pkgID = strings.TrimSpace(tmp)
-			}
-		}
-
-		if loc := reGlbl.FindIndex(line); loc != nil {
-			if commentLoc != nil && commentLoc[0] < loc[0] ||
-				(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
-				(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0] || inBlock != 0) {
-				continue
-			}
-			if match := reGlblName.FindStringSubmatch(string(line)); match != nil {
-				var tmp Declaration
-				tmp.PackageID = pkgID
-				tmp.FileID = fileName
-				tmp.StartOffset = reGlblName.FindIndex(line)[0]
-				tmp.Length = len(match)
-				name := strings.Split(match[0], "var")[1]
-				tmp.Name = strings.TrimSpace(name)
-				GlblDec = append(GlblDec, tmp)
-			}
+		if match := reGlbl.Find(line); match != nil && inBlock == 0 {
+			var tmp Declaration
+			tmp.PackageID = string(pkgID)
+			tmp.FileID = fileName
+			tmp.StartOffset = reGlbl.FindIndex(line)[0]
+			name := strings.Split(string(match), " ")[1]
+			tmp.Length = len(match)
+			tmp.Name = name
+			GlblDec = append(GlblDec, tmp)
 		}
 	}
 
-	return GlblDec
+	return GlblDec, err
 
 }
 
-func extractStrct(source *os.File, fileName string) []Declaration {
+func extractStrct(fileName string) ([]Declaration, error) {
 	var StrctDec []Declaration
 	var pkgID string
-	var commentedCode bool
+	src, err := os.ReadFile(fileName)
 
-	scanner := bufio.NewScanner(source)
+	CmtRmd := rmComment(src)
+	pkgID = extractPkg(CmtRmd)
 
-	//Regexs
-	reMultiCommentOpen := regexp.MustCompile(`/\*`)
-	reMultiCommentClose := regexp.MustCompile(`\*/`)
-	reComment := regexp.MustCompile("//")
+	reStrctName := regexp.MustCompile(`type\s+([_a-zA-Z][_a-zA-Z0-9]*)[ ]+([_a-zA-Z][_a-zA-Z0-9]*)`)
 
-	rePkg := regexp.MustCompile("package")
-	rePkgName := regexp.MustCompile(`(^|[\s])package\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
-
-	reStrct := regexp.MustCompile("type")
-	reStrctName := regexp.MustCompile(`(^|[\s])type\s+([_a-zA-Z][_a-zA-Z0-9]*)?\s`)
-
+	reader := bytes.NewReader(CmtRmd)
+	scanner := bufio.NewScanner(reader)
 	//Reading code line by line
 	for scanner.Scan() {
 		line := scanner.Bytes()
 
-		commentLoc := reComment.FindIndex(line)
-
-		multiCommentOpenLoc := reMultiCommentOpen.FindIndex(line)
-		multiCommentCloseLoc := reMultiCommentClose.FindIndex(line)
-
-		//Check for commented code
-		if commentedCode && multiCommentCloseLoc != nil {
-			commentedCode = false
-		}
-
-		if commentedCode {
-			continue
-		}
-
-		if multiCommentOpenLoc != nil && !commentedCode && multiCommentCloseLoc != nil {
-			commentedCode = true
-		}
-
-		// we search for packages at the same time
-		if loc := rePkg.FindIndex(line); loc != nil {
-			if (commentLoc != nil && commentLoc[0] < loc[0]) ||
-				(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
-				(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
-				// then it's commented out
-				continue
-			}
-
-			if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
-				tmp := strings.Split(match[0], "package")[1]
-				pkgID = strings.TrimSpace(tmp)
-			}
-		}
-
-		// 1-b. Identify all the structs
-		if loc := reStrct.FindIndex(line); loc != nil {
-			if (commentLoc != nil && commentLoc[0] < loc[0]) ||
-				(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
-				(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
-				// then it's commented out
-				continue
-			}
-
-			if match := reStrctName.FindStringSubmatch(string(line)); match != nil {
-				var tmp Declaration
-				tmp.PackageID = pkgID
-				tmp.FileID = fileName
-				tmp.StartOffset = reStrctName.FindIndex(line)[0]
-				tmp.Length = len(match)
-				name := strings.Split(match[0], "type")[1]
-				tmp.Name = strings.TrimSpace(name)
-				StrctDec = append(StrctDec, tmp)
-			}
+		if match := reStrctName.Find(line); match != nil {
+			var tmp Declaration
+			tmp.PackageID = pkgID
+			tmp.FileID = fileName
+			tmp.StartOffset = reStrctName.FindIndex(line)[0]
+			name := strings.Split(string(match), " ")[1]
+			tmp.Length = len(match)
+			tmp.Name = name
+			StrctDec = append(StrctDec, tmp)
 		}
 	}
-	return StrctDec
+	return StrctDec, err
 }
 
-func extractFunc(source *os.File, fileName string) []Declaration {
+func extractFunc(fileName string) ([]Declaration, error) {
 	var FuncDec []Declaration
 	var pkgID string
-	var commentedCode bool
+	src, err := os.ReadFile(fileName)
 
-	scanner := bufio.NewScanner(source)
+	CmtRmd := rmComment(src)
+	pkgID = extractPkg(CmtRmd)
 
-	//Regexs
-	reMultiCommentOpen := regexp.MustCompile(`/\*`)
-	reMultiCommentClose := regexp.MustCompile(`\*/`)
-	reComment := regexp.MustCompile("//")
+	reFuncName := regexp.MustCompile(`func\s+([_a-zA-Z][_a-zA-Z0-9]*)?`)
 
-	rePkg := regexp.MustCompile("package")
-	rePkgName := regexp.MustCompile(`(^|[\s])package\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
-
-	reFunc := regexp.MustCompile("func")
-	reFuncName := regexp.MustCompile(`(^|[\s])func\s+([_a-zA-Z][_a-zA-Z0-9]*)?\s`)
-
+	reader := bytes.NewReader(CmtRmd)
+	scanner := bufio.NewScanner(reader)
 	//Reading code line by line
 	for scanner.Scan() {
 		line := scanner.Bytes()
 
-		commentLoc := reComment.FindIndex(line)
-
-		multiCommentOpenLoc := reMultiCommentOpen.FindIndex(line)
-		multiCommentCloseLoc := reMultiCommentClose.FindIndex(line)
-
-		//Check for commented code
-		if commentedCode && multiCommentCloseLoc != nil {
-			commentedCode = false
-		}
-
-		if commentedCode {
-			continue
-		}
-
-		if multiCommentOpenLoc != nil && !commentedCode && multiCommentCloseLoc != nil {
-			commentedCode = true
-		}
-
-		// we search for packages at the same time
-		if loc := rePkg.FindIndex(line); loc != nil {
-			if (commentLoc != nil && commentLoc[0] < loc[0]) ||
-				(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
-				(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
-				// then it's commented out
-				continue
-			}
-
-			if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
-				tmp := strings.Split(match[0], "package")[1]
-				pkgID = strings.TrimSpace(tmp)
-			}
-		}
-
-		// 1-b. Identify all the structs
-		if loc := reFunc.FindIndex(line); loc != nil {
-			if (commentLoc != nil && commentLoc[0] < loc[0]) ||
-				(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
-				(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
-				// then it's commented out
-				continue
-			}
-
-			if match := reFuncName.FindStringSubmatch(string(line)); match != nil {
-				var tmp Declaration
-				tmp.PackageID = pkgID
-				tmp.FileID = fileName
-				tmp.StartOffset = reFuncName.FindIndex(line)[0]
-				tmp.Length = len(match)
-				name := strings.Split(match[0], "func")[1]
-				tmp.Name = strings.TrimSpace(name)
-				FuncDec = append(FuncDec, tmp)
-
-				fmt.Printf("%+v\n", name)
-			}
+		if match := reFuncName.Find(line); match != nil {
+			var tmp Declaration
+			tmp.PackageID = pkgID
+			tmp.FileID = fileName
+			tmp.StartOffset = reFuncName.FindIndex(line)[0]
+			name := strings.Split(string(match), " ")[1]
+			tmp.Length = len(match)
+			tmp.Name = name
+			FuncDec = append(FuncDec, tmp)
 		}
 	}
-	return FuncDec
+	return FuncDec, err
 }

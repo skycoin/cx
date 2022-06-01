@@ -7,32 +7,31 @@ import (
 )
 
 func TestExtractGlbl(t *testing.T) {
-	file, err := os.Open("./test.cx")
+
+	got, err := extractGlbl("test.cx")
 
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	got := extractGlbl(file, "test.cx")
 
 	want := []Declaration{
 		Declaration{
 			PackageID:   "hello",
 			FileID:      "test.cx",
 			StartOffset: 0,
-			Length:      3,
+			Length:      16,
 			Name:        "apple",
 		},
 		Declaration{
 			PackageID:   "hello",
 			FileID:      "test.cx",
-			StartOffset: 7,
-			Length:      3,
+			StartOffset: 8,
+			Length:      17,
 			Name:        "banana",
 		},
 	}
 
-	//Check if any declaration were detected
+	// Check if any declaration were detected
 	if got == nil {
 		t.Error("No Global Declarations")
 	}
@@ -46,27 +45,26 @@ func TestExtractGlbl(t *testing.T) {
 }
 
 func TestExtractStrct(t *testing.T) {
-	file, err := os.Open("./test.cx")
+
+	got, err := extractStrct("test.cx")
 
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	got := extractStrct(file, "test.cx")
 
 	want := []Declaration{
 		Declaration{
 			PackageID:   "hello",
 			FileID:      "test.cx",
 			StartOffset: 0,
-			Length:      3,
+			Length:      18,
 			Name:        "person",
 		},
 		Declaration{
 			PackageID:   "hello",
 			FileID:      "test.cx",
-			StartOffset: 3,
-			Length:      3,
+			StartOffset: 4,
+			Length:      18,
 			Name:        "animal",
 		},
 	}
@@ -85,27 +83,26 @@ func TestExtractStrct(t *testing.T) {
 }
 
 func TestExtractFunc(t *testing.T) {
-	file, err := os.Open("./test.cx")
+
+	got, err := extractFunc("test.cx")
 
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	got := extractFunc(file, "test.cx")
 
 	want := []Declaration{
 		Declaration{
 			PackageID:   "hello",
 			FileID:      "test.cx",
 			StartOffset: 0,
-			Length:      3,
+			Length:      9,
 			Name:        "main",
 		},
 		Declaration{
 			PackageID:   "hello",
 			FileID:      "test.cx",
 			StartOffset: 0,
-			Length:      3,
+			Length:      16,
 			Name:        "functionTwo",
 		},
 	}
@@ -121,5 +118,32 @@ func TestExtractFunc(t *testing.T) {
 		}
 
 	}
+
+}
+
+func TestRmComment(t *testing.T) {
+
+	file, err := os.ReadFile("test.cx")
+
+	got := rmComment(file)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	t.Error(string(got))
+}
+
+func TestExtractPkg(t *testing.T) {
+
+	file, err := os.ReadFile("./test.cx")
+
+	got := extractPkg(file)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	t.Error(got)
 
 }
