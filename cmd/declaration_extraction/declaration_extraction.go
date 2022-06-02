@@ -120,7 +120,7 @@ func extractEnum(source *os.File) ([]EnumDeclaration, error) {
 	reEnumInit := regexp.MustCompile(`const`)
 	rePrtsOpen := regexp.MustCompile(`\(`)
 	rePrtsClose := regexp.MustCompile(`\)`)
-	reEnumDec := regexp.MustCompile(`([_a-zA-Z][_a-zA-Z0-9][^=]*)`)
+	reEnumDec := regexp.MustCompile(`([_a-zA-Z][_a-zA-Z0-9]*)`)
 	// reEqual := regexp.MustCompile(`=`)
 
 	reader := bytes.NewReader(CmtRmd)
@@ -156,25 +156,21 @@ func extractEnum(source *os.File) ([]EnumDeclaration, error) {
 			lineNo = 0
 		}
 
-		if match := reEnumDec.Find(line); match != nil && inPrts == 1 && EnumInit && lineNo > 1 {
+		if match := reEnumDec.FindAll(line, -1); match != nil && inPrts == 1 && EnumInit && lineNo > 1 {
 			var tmp EnumDeclaration
+			index := reEnumDec.FindIndex(line)
 			tmp.PackageID = string(pkgID)
 			tmp.FileID = source.Name()
-			tmp.StartOffset = reEnumDec.FindIndex(line)[0]
-			slice := strings.Split(string(match), " ")
+			tmp.StartOffset = index[1]
 			tmp.Length = len(match)
-			tmp.Name = slice[0]
+			tmp.Name = string(match[0][0])
 			tmp.Type = Type
-			if len(slice) > 1 {
-				if slice[1] != "" {
-					tmp.Type = slice[1]
-					Type = tmp.Type
-					fmt.Printf("slice:%v", slice[1])
-				}
-			}
 			tmp.Value = Index
 			EnumDec = append(EnumDec, tmp)
 			Index++
+
+			fmt.Printf("[%v]", string(match[0][1]))
+			fmt.Println(index)
 		}
 		fmt.Println(inPrts)
 		fmt.Println(EnumInit)

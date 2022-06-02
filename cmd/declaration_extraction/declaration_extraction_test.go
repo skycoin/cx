@@ -1,48 +1,122 @@
 package declaration_extraction
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"testing"
 )
 
-func TestExtractGlbl(t *testing.T) {
+func TestDeclarationExtraction(t *testing.T) {
 
-	file, err := os.Open("test.cx")
-	got, err := extractGlbl(file)
+	type Test struct {
+		content  string
+		fileName string
+		GlblDec  []Declaration
+		EnumDec  []EnumDeclaration
+		StrctDec []Declaration
+		FuncDec  []Declaration
+	}
 
+	test1 := Test{
+		content: `package hello
+var apple string
+
+		var banana string
+
+/* sfds*/
+
+//asdsdsa
+
+//sdfsd
+
+type person struct {
+	name string
+}
+
+func main () {
+	var local string
+
+	type animal struct {
+		kingdom string
+	}
+}
+
+func functionTwo () {
+
+}
+	`,
+		fileName: "test.cx",
+		GlblDec: []Declaration{
+			{
+				PackageID:   "hello",
+				FileID:      "test.cx",
+				StartOffset: 0,
+				Length:      16,
+				Name:        "apple",
+			},
+			{
+				PackageID:   "hello",
+				FileID:      "test.cx",
+				StartOffset: 8,
+				Length:      17,
+				Name:        "banana",
+			},
+		},
+		EnumDec: []EnumDeclaration{},
+		StrctDec: []Declaration{
+			{
+				PackageID:   "hello",
+				FileID:      "test.cx",
+				StartOffset: 0,
+				Length:      18,
+				Name:        "person",
+			},
+			{
+				PackageID:   "hello",
+				FileID:      "test.cx",
+				StartOffset: 4,
+				Length:      18,
+				Name:        "animal",
+			},
+		},
+		FuncDec: []Declaration{
+			{
+				PackageID:   "hello",
+				FileID:      "test.cx",
+				StartOffset: 0,
+				Length:      9,
+				Name:        "main",
+			},
+			{
+				PackageID:   "hello",
+				FileID:      "test.cx",
+				StartOffset: 0,
+				Length:      16,
+				Name:        "functionTwo",
+			},
+		},
+	}
+
+	file, err := os.Create(test1.fileName)
+	num, err := file.WriteString(test1.content)
+	src, err := os.Open(test1.fileName)
+
+	Glbl, err := extractGlbl(src)
+	// Enum, err := extractEnum(file)
+	// Strct, err := extractStrct(file)
+	// Func, err := extractFunc(file)
 	if err != nil {
 		log.Fatal(err)
+		fmt.Println(num)
 	}
 
-	want := []Declaration{
-		Declaration{
-			PackageID:   "hello",
-			FileID:      "test.cx",
-			StartOffset: 0,
-			Length:      16,
-			Name:        "apple",
-		},
-		Declaration{
-			PackageID:   "hello",
-			FileID:      "test.cx",
-			StartOffset: 8,
-			Length:      17,
-			Name:        "banana",
-		},
-	}
-
-	// Check if any declaration were detected
-	if got == nil {
-		t.Error("No Global Declarations")
-	}
-
-	for i := range got {
-		if got[i] != want[i] {
-			t.Errorf("got %+v   want %+v\n", got[i], want[i])
+	for i := range Glbl {
+		if Glbl[i] != test1.GlblDec[i] {
+			t.Errorf("got %+v : want %+v", Glbl[i], test1.GlblDec[i])
 		}
-	}
 
+	}
 }
 
 func TestExtractStrct(t *testing.T) {
