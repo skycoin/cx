@@ -324,8 +324,8 @@ func serializeFunctionArguments(prgrm *CXProgram, fn *CXFunction, s *SerializedC
 	if fnOff, found := s.FunctionsMap[fnName]; found {
 		sFn := &s.Functions[fnOff]
 
-		fnInputs := fn.GetInputs(prgrm)
-		sFn.InputsOffset, sFn.InputsSize = serializeSliceOfArguments(prgrm, prgrm.ConvertIndexArgsToPointerArgs(fnInputs), s)
+		arrCXArgs := prgrm.ConvertIndexTypeSignaturesToPointerArgs(fn.GetInputs(prgrm))
+		sFn.InputsOffset, sFn.InputsSize = serializeSliceOfArguments(prgrm, arrCXArgs, s)
 		fnOutputs := fn.GetOutputs(prgrm)
 		sFn.OutputsOffset, sFn.OutputsSize = serializeSliceOfArguments(prgrm, prgrm.ConvertIndexArgsToPointerArgs(fnOutputs), s)
 		sFn.ListOfPointersOffset, sFn.ListOfPointersSize = serializeSliceOfArguments(prgrm, fn.ListOfPointers, s)

@@ -117,11 +117,14 @@ func (fn *CXFunction) GetExpressionByLine(line int) (*CXExpression, error) {
 // AddInput ...
 func (fn *CXFunction) AddInput(prgrm *CXProgram, param *CXArgument) *CXFunction {
 	fnInputs := fn.GetInputs(prgrm)
-	for _, inpIdx := range fnInputs {
-		inp := prgrm.GetCXArgFromArray(inpIdx)
-		if inp.Name == param.Name {
-			return fn
+	for _, input := range fnInputs {
+		if input.Type == TYPE_CXARGUMENT_DEPRECATE {
+			inp := prgrm.GetCXArgFromArray(CXArgumentIndex(input.Meta))
+			if inp.Name == param.Name {
+				return fn
+			}
 		}
+
 	}
 
 	param.Package = fn.Package
@@ -141,19 +144,13 @@ func (fn *CXFunction) AddInput(prgrm *CXProgram, param *CXArgument) *CXFunction 
 	return fn
 }
 
-func (fn *CXFunction) GetInputs(prgrm *CXProgram) []CXArgumentIndex {
-	var cxArgsIndexes []CXArgumentIndex
+func (fn *CXFunction) GetInputs(prgrm *CXProgram) []CXTypeSignature {
 
 	if fn == nil || fn.Inputs == nil {
-		return cxArgsIndexes
-	}
-	for _, field := range fn.Inputs.Fields {
-		if field.Type == TYPE_CXARGUMENT_DEPRECATE {
-			cxArgsIndexes = append(cxArgsIndexes, CXArgumentIndex(field.Meta))
-		}
+		return []CXTypeSignature{}
 	}
 
-	return cxArgsIndexes
+	return fn.Inputs.Fields
 }
 
 // RemoveInput ...

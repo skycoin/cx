@@ -181,7 +181,13 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fnIdx ast.CXFunctionIndex, inputs
 	ProcessGoTos(prgrm, exprs)
 	AddExprsToFunction(prgrm, fnIdx, exprs)
 
-	ProcessFunctionParameters(prgrm, symbols, &symbolsScope, &offset, fnIdx, fn.GetInputs(prgrm))
+	var fnInputIdxs []ast.CXArgumentIndex
+	for _, fnInput := range fn.GetInputs(prgrm) {
+		if fnInput.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			fnInputIdxs = append(fnInputIdxs, ast.CXArgumentIndex(fnInput.Meta))
+		}
+	}
+	ProcessFunctionParameters(prgrm, symbols, &symbolsScope, &offset, fnIdx, fnInputIdxs)
 	ProcessFunctionParameters(prgrm, symbols, &symbolsScope, &offset, fnIdx, fn.GetOutputs(prgrm))
 
 	for i, expr := range fn.Expressions {
@@ -809,7 +815,7 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) {
 		panic(err)
 	}
 	expressionOperator := prgrm.GetFunctionFromArray(expression.Operator)
-	expressionOperatorInputs := expressionOperator.GetInputs(prgrm)
+	expressionOperatorInputs := prgrm.ConvertIndexTypeSignaturesToPointerArgs(expressionOperator.GetInputs(prgrm))
 
 	exprCXLine, _ := prgrm.GetPreviousCXLine(exprs, currIndex)
 
@@ -818,7 +824,7 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) {
 
 		// checking if number of inputs is less than the required number of inputs
 		if len(expression.GetInputs(prgrm)) != len(expressionOperatorInputs) {
-			if !(len(expressionOperatorInputs) > 0 && prgrm.GetCXArgFromArray(expressionOperatorInputs[len(expressionOperatorInputs)-1]).Type != types.UNDEFINED) {
+			if !(len(expressionOperatorInputs) > 0 && expressionOperatorInputs[len(expressionOperatorInputs)-1].Type != types.UNDEFINED) {
 				// if the last input is of type cxcore.TYPE_UNDEFINED then it might be a variadic function, such as printf
 			} else {
 				// then we need to be strict in the number of inputs
@@ -897,8 +903,12 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) {
 
 	// then it's a function call and not a declaration
 	if expressionOperator != nil {
+		var expressionOperatorInputsIdxs []ast.CXArgumentIndex
+		for _, input := range expressionOperatorInputs {
+			expressionOperatorInputsIdxs = append(expressionOperatorInputsIdxs, ast.CXArgumentIndex(input.Index))
+		}
 		// checking inputs matching operator's inputs
-		checkMatchParamTypes(prgrm, &exprs[currIndex], expressionOperatorInputs, expression.GetInputs(prgrm), true)
+		checkMatchParamTypes(prgrm, &exprs[currIndex], expressionOperatorInputsIdxs, expression.GetInputs(prgrm), true)
 
 		expressionOperatorOutputs := expressionOperator.GetOutputs(prgrm)
 		// checking outputs matching operator's outputs

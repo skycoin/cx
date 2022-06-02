@@ -46,8 +46,8 @@ func popStack(prgrm *CXProgram, call *CXCall) error {
 		}
 		out := &prgrm.CXArgs[outIdx]
 
-		types.WriteSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, returnFP, &prgrm.CXArgs[cxAtomicOpOutputs[i]]),
-			types.GetSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, fp, out), GetArgSize(prgrm, out)))
+		types.WriteSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, returnFP, &prgrm.CXArgs[cxAtomicOpOutputs[i]], nil),
+			types.GetSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, fp, out, nil), GetArgSize(prgrm, out)))
 	}
 
 	// return the stack pointer to its previous state
@@ -101,7 +101,7 @@ func processBuiltInOperators(prgrm *CXProgram, expr *CXExpression, globalInputs 
 	argIndex := 0
 	for inputIndex := 0; inputIndex < inputCount; inputIndex++ {
 		input := &prgrm.CXArgs[inputs[inputIndex]]
-		offset := GetFinalOffset(prgrm, fp, input)
+		offset := GetFinalOffset(prgrm, fp, input, nil)
 		value := &inputValues[inputIndex]
 		value.Arg = input
 		value.Size = GetArgSize(prgrm, input)
@@ -117,7 +117,7 @@ func processBuiltInOperators(prgrm *CXProgram, expr *CXExpression, globalInputs 
 
 	for outputIndex := 0; outputIndex < outputCount; outputIndex++ {
 		output := &prgrm.CXArgs[outputs[outputIndex]]
-		offset := GetFinalOffset(prgrm, fp, output)
+		offset := GetFinalOffset(prgrm, fp, output, nil)
 		value := &outputValues[outputIndex]
 		value.Arg = output
 		value.Size = GetArgSize(prgrm, output)
@@ -179,7 +179,7 @@ func processNonAtomicOperators(prgrm *CXProgram, expr *CXExpression, fp types.Po
 		inp := &prgrm.CXArgs[inpIdx]
 		var byts []byte
 
-		finalOffset := GetFinalOffset(prgrm, fp, inp)
+		finalOffset := GetFinalOffset(prgrm, fp, inp, nil)
 
 		if inp.PassBy == constants.PASSBY_REFERENCE {
 			// If we're referencing an inner element, like an element of a slice (&slc[0])
@@ -200,7 +200,7 @@ func processNonAtomicOperators(prgrm *CXProgram, expr *CXExpression, fp types.Po
 		// writing inputs to new stack frame
 		types.WriteSlice_byte(
 			prgrm.Memory,
-			GetFinalOffset(prgrm, newFP, &prgrm.CXArgs[newCallOperatorInputs[i]]),
+			GetFinalOffset(prgrm, newFP, nil, &newCallOperatorInputs[i]),
 			// newFP + newCall.Operator.ProgramInput[i].Offset,
 			// GetFinalOffset(prgrm.Memory, newFP, newCall.Operator.ProgramInput[i], MEM_WRITE),
 			byts)

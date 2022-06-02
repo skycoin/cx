@@ -31,7 +31,7 @@ func opTCPDial(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue
 	conn, err = net.Dial("tcp", "localhost:9000")
 
 	if err != nil {
-		types.Write_str(prgrm, prgrm.Memory, ast.GetFinalOffset(prgrm, fp, errorstring), err.Error())
+		types.Write_str(prgrm, prgrm.Memory, ast.GetFinalOffset(prgrm, fp, errorstring, nil), err.Error())
 	}
 
 	conn.Close()
@@ -64,6 +64,6 @@ func opTCPListen(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVal
 	ln.Close()
 
 	if err != nil {
-		types.Write_str(prgrm, prgrm.Memory, ast.GetFinalOffset(prgrm, fp, errorstring), err.Error())
+		types.Write_str(prgrm, prgrm.Memory, ast.GetFinalOffset(prgrm, fp, errorstring, nil), err.Error())
 	}
 }

@@ -27,8 +27,12 @@ func (cxprogram *CXProgram) PrintStack() {
 		fmt.Printf(">>> %s()\n", op.Name)
 
 		opInputs := op.GetInputs(cxprogram)
-		for _, inpIdx := range opInputs {
-			inp := cxprogram.GetCXArgFromArray(inpIdx)
+		for _, input := range opInputs {
+			var inp *CXArgument
+			if input.Type == TYPE_CXARGUMENT_DEPRECATE {
+				inp = cxprogram.GetCXArgFromArray(CXArgumentIndex(input.Meta))
+			}
+
 			fmt.Println("ProgramInput")
 			fmt.Printf("\t%s : %s() : %s\n", stackValueHeader(inp.ArgDetails.FileName, inp.ArgDetails.FileLine), op.Name, GetPrintableValue(cxprogram, fp, inp))
 

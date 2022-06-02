@@ -28,7 +28,7 @@ var ofMessages = map[string]string{
 
 // GetInferActions ...
 func GetInferActions(prgrm *ast.CXProgram, inp *ast.CXArgument, fp types.Pointer) []string {
-	inpOffset := ast.GetFinalOffset(prgrm, fp, inp)
+	inpOffset := ast.GetFinalOffset(prgrm, fp, inp, nil)
 
 	off := types.Read_ptr(prgrm.Memory, inpOffset)
 
@@ -76,7 +76,7 @@ func CallAffPredicate(prgrm *ast.CXProgram, fn *ast.CXFunction, predValue []byte
 	// sending value to predicate function
 	types.WriteSlice_byte(
 		prgrm.Memory,
-		ast.GetFinalOffset(prgrm, newFP, prgrm.GetCXArgFromArray(newCallOperatorInputs[0])),
+		ast.GetFinalOffset(prgrm, newFP, nil, &newCallOperatorInputs[0]),
 		predValue)
 
 	var inputs []ast.CXValue
@@ -96,7 +96,7 @@ func CallAffPredicate(prgrm *ast.CXProgram, fn *ast.CXFunction, predValue []byte
 	prevCall.Line--
 	return types.GetSlice_byte(prgrm.Memory, ast.GetFinalOffset(prgrm,
 		newCall.FramePointer,
-		prgrm.GetCXArgFromArray(newCallOperatorOutputs[0])),
+		prgrm.GetCXArgFromArray(newCallOperatorOutputs[0]), nil),
 		ast.GetArgSize(prgrm, prgrm.GetCXArgFromArray(newCallOperatorOutputs[0])))[0]
 }
 
@@ -230,11 +230,23 @@ func QueryExpressions(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpr
 	}
 }
 
-func getSignatureSlice(prgrm *ast.CXProgram, params []ast.CXArgumentIndex) types.Pointer {
+// TODO: remove params arg
+func getSignatureSlice(prgrm *ast.CXProgram, params []ast.CXArgumentIndex, paramsTypeSig []ast.CXTypeSignature) types.Pointer {
 	var sliceOffset types.Pointer
+
+	var arrCXArgs []*ast.CXArgument
 	for _, paramIdx := range params {
 		param := prgrm.GetCXArgFromArray(paramIdx)
+		arrCXArgs = append(arrCXArgs, param)
+	}
+	for _, param := range paramsTypeSig {
+		if param.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			arg := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(param.Meta))
+			arrCXArgs = append(arrCXArgs, arg)
+		}
+	}
 
+	for _, param := range arrCXArgs {
 		var typOffset types.Pointer
 		if param.StructType != nil {
 			strctTypePkg, err := prgrm.GetPackageFromArray(param.StructType.Package)
@@ -338,8 +350,8 @@ func QueryFunction(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpress
 		// WriteMemI32(opNameOffsetB[:], 0, int32(WriteObjectRetOff(opNameB)))
 		types.Write_ptr(opNameOffsetB[:], 0, opNameOffset)
 
-		inpSigOffset := getSignatureSlice(prgrm, f.GetInputs(prgrm))
-		outSigOffset := getSignatureSlice(prgrm, f.GetOutputs(prgrm))
+		inpSigOffset := getSignatureSlice(prgrm, nil, f.GetInputs(prgrm))
+		outSigOffset := getSignatureSlice(prgrm, f.GetOutputs(prgrm), nil)
 
 		fnOffset := ast.AllocateSeq(prgrm, types.OBJECT_HEADER_SIZE+types.STR_SIZE+types.POINTER_SIZE+types.POINTER_SIZE)
 		// Name
@@ -1125,7 +1137,7 @@ func opAffQuery(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 	expr := call.Operator.Expressions[call.Line]
 	fp := inputs[0].FramePointer
 
-	out1Offset := ast.GetFinalOffset(prgrm, fp, out1)
+	out1Offset := ast.GetFinalOffset(prgrm, fp, out1, nil)
 
 	var affOffset types.Pointer
 
@@ -1194,7 +1206,10 @@ func opAffQuery(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 					types.Write_ptr(prgrmOffsetB[:], 0, prgrmOffset)
 
 					fnInputs := fn.GetInputs(prgrm)
-					predInp := prgrm.GetCXArgFromArray(fnInputs[0])
+					var predInp *ast.CXArgument
+					if fnInputs[0].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+						predInp = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(fnInputs[0].Meta))
+					}
 
 					if predInp.Type == types.STRUCT {
 						if predInp.StructType != nil {

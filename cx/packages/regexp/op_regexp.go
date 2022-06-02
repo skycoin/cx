@@ -55,7 +55,7 @@ func regexpCompile(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXV
 	expFldIdx := prgrm.AddCXArgInArray(expFld)
 	accessExp := []ast.CXArgumentIndex{expFldIdx}
 	reg.Fields = accessExp
-	types.Write_str(prgrm, prgrm.Memory, ast.GetFinalOffset(prgrm, outputs[0].FramePointer, &reg), exp)
+	types.Write_str(prgrm, prgrm.Memory, ast.GetFinalOffset(prgrm, outputs[0].FramePointer, &reg, nil), exp)
 	// Storing `Regexp` instance.
 	regexps[exp], err = regexp.Compile(exp)
 
@@ -118,7 +118,7 @@ func opRegexpFind(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVa
 	expFldIdx := prgrm.AddCXArgInArray(expFld)
 	accessExp := []ast.CXArgumentIndex{expFldIdx}
 	reg.Fields = accessExp
-	exp := types.Read_str(prgrm.Memory, ast.GetFinalOffset(prgrm, inputs[0].FramePointer, &reg))
+	exp := types.Read_str(prgrm.Memory, ast.GetFinalOffset(prgrm, inputs[0].FramePointer, &reg, nil))
 	r := regexps[exp]
 
 	outputs[0].Set_str(prgrm, string(r.Find([]byte(inputs[1].Get_str(prgrm)))))

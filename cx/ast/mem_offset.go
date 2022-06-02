@@ -97,7 +97,13 @@ func GetDerefSizeSlice(prgrm *CXProgram, arg *CXArgument) types.Pointer {
 	return arg.Size
 }
 
-func GetFinalOffset(prgrm *CXProgram, fp types.Pointer, arg *CXArgument) types.Pointer {
+func GetFinalOffset(prgrm *CXProgram, fp types.Pointer, oldArg *CXArgument, argTypeSig *CXTypeSignature) types.Pointer {
+	var arg *CXArgument
+	if oldArg != nil {
+		arg = oldArg
+	} else if argTypeSig.Type == TYPE_CXARGUMENT_DEPRECATE {
+		arg = &prgrm.CXArgs[argTypeSig.Meta]
+	}
 	finalOffset := arg.Offset
 
 	//Todo: find way to eliminate this check
@@ -135,7 +141,7 @@ func CalculateDereference_Slice(prgrm *CXProgram, drfsStruct *DereferenceStruct)
 	sizeToUse := GetDerefSize(prgrm, drfsStruct.arg, drfsStruct.idxCounter, drfsStruct.derefPointer, false) //TODO: is always arg.Size unless arg.StructType != nil
 	drfsStruct.derefPointer = false
 
-	indexOffset := GetFinalOffset(prgrm, drfsStruct.fp, prgrm.GetCXArgFromArray(drfsStruct.arg.Indexes[drfsStruct.idxCounter]))
+	indexOffset := GetFinalOffset(prgrm, drfsStruct.fp, prgrm.GetCXArgFromArray(drfsStruct.arg.Indexes[drfsStruct.idxCounter]), nil)
 	indexValue := types.Read_i32(prgrm.Memory, indexOffset)
 
 	drfsStruct.finalOffset += types.Cast_i32_to_ptr(indexValue) * sizeToUse // TODO:PTR Use ptr/Read_ptr, array/slice indexing only works with i32.
@@ -158,7 +164,7 @@ func CalculateDereference_Array(prgrm *CXProgram, drfsStruct *DereferenceStruct)
 	drfsStruct.baseOffset = drfsStruct.finalOffset
 	drfsStruct.sizeofElement = subSize * sizeToUse
 
-	drfsStruct.finalOffset += types.Cast_i32_to_ptr(types.Read_i32(prgrm.Memory, GetFinalOffset(prgrm, drfsStruct.fp, prgrm.GetCXArgFromArray(drfsStruct.arg.Indexes[drfsStruct.idxCounter])))) * drfsStruct.sizeofElement // TODO:PTR Use Read_ptr
+	drfsStruct.finalOffset += types.Cast_i32_to_ptr(types.Read_i32(prgrm.Memory, GetFinalOffset(prgrm, drfsStruct.fp, prgrm.GetCXArgFromArray(drfsStruct.arg.Indexes[drfsStruct.idxCounter]), nil))) * drfsStruct.sizeofElement // TODO:PTR Use Read_ptr
 	drfsStruct.idxCounter++
 }
 

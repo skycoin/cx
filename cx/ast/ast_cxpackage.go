@@ -66,7 +66,12 @@ func (pkg *CXPackage) GetMethod(prgrm *CXProgram, fnName string, receiverType st
 	if fnIdx, ok := pkg.Functions[fnName]; ok {
 		fn := prgrm.GetFunctionFromArray(fnIdx)
 		fnInputs := fn.GetInputs(prgrm)
-		fnInput := prgrm.GetCXArgFromArray(fnInputs[0])
+		fnInputTypeSig := fnInputs[0]
+		var fnInput *CXArgument
+		if fnInputTypeSig.Type == TYPE_CXARGUMENT_DEPRECATE {
+			fnInput = prgrm.GetCXArgFromArray(CXArgumentIndex(fnInputTypeSig.Meta))
+		}
+
 		if len(fnInputs) > 0 && fnInput.StructType != nil && fnInput.StructType.Name == receiverType {
 			return fnIdx, nil
 		}
