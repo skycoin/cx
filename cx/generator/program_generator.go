@@ -27,7 +27,7 @@ func GenerateRandomExpressions(prgrm *cxast.CXProgram, inputFn *cxast.CXFunction
 		inputFnOutputs := inputFn.GetOutputs(prgrm)
 		// Last expression output must be the same as function output.
 		if i == (numExprs-preExistingExpressions)-1 && len(op.Outputs) > 0 && len(inputFnOutputs) > 0 {
-			for len(op.Outputs) == 0 || op.Outputs[0].Type != prgrm.GetCXArgFromArray(inputFnOutputs[0]).Type {
+			for len(op.Outputs) == 0 || op.Outputs[0].Type != prgrm.GetCXArgFromArray(cxast.CXArgumentIndex(inputFnOutputs[0].Meta)).Type {
 				op = getRandFn(fns)
 			}
 		}
@@ -69,8 +69,7 @@ func GenerateRandomExpressions(prgrm *cxast.CXProgram, inputFn *cxast.CXFunction
 		prgrm.CXFunctions[inputFn.Index] = *inputFn
 		// Adding last expression, so output must be fn's output.
 		if i == numExprs-preExistingExpressions-1 {
-			typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(inputFnOutputs[0]))
-			cxAtomicOp.AddOutput(prgrm, typeSig)
+			cxAtomicOp.AddOutput(prgrm, &inputFnOutputs[0])
 		} else {
 			for c := 0; c < len(op.Outputs); c++ {
 				outIdx := prgrm.AddCXArgInArray(getRandOut(prgrm, expr))
@@ -115,8 +114,12 @@ func calcFnSize(prgrm *cxast.CXProgram, fn *cxast.CXFunction) (size types.Pointe
 	}
 
 	fnOutputs := fn.GetOutputs(prgrm)
-	for _, argIdx := range fnOutputs {
-		arg := prgrm.GetCXArgFromArray(argIdx)
+	for _, output := range fnOutputs {
+		var arg *ast.CXArgument
+		if output.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			arg = prgrm.GetCXArgFromArray(cxast.CXArgumentIndex(output.Meta))
+		}
+
 		size += arg.TotalSize
 	}
 	for _, expr := range fn.Expressions {
@@ -133,7 +136,7 @@ func calcFnSize(prgrm *cxast.CXProgram, fn *cxast.CXFunction) (size types.Pointe
 		// TODO: We're only considering one output per operator.
 		/// Not because of practicality, but because multiple returns in CX are currently buggy anyway.
 		if len(cxAtomicOpOperatorOutputs) > 0 {
-			size += prgrm.GetCXArgFromArray(cxAtomicOpOperatorOutputs[0]).TotalSize
+			size += prgrm.GetCXArgFromArray(cxast.CXArgumentIndex(cxAtomicOpOperatorOutputs[0].Meta)).TotalSize
 		}
 	}
 
@@ -177,7 +180,7 @@ func getRandInp(prgrm *cxast.CXProgram, expr *cxast.CXExpression) *cxast.CXArgum
 		}
 		cxAtomicOp1Operator := prgrm.GetFunctionFromArray(cxAtomicOp1.Operator)
 		cxAtomicOp1OperatorOutputs := cxAtomicOp1Operator.GetOutputs(prgrm)
-		argToCopy = prgrm.GetCXArgFromArray(cxAtomicOp1OperatorOutputs[0])
+		argToCopy = prgrm.GetCXArgFromArray(cxast.CXArgumentIndex(cxAtomicOp1OperatorOutputs[0].Meta))
 	}
 
 	// Making a copy of the argument
@@ -316,7 +319,7 @@ func getRandOut(prgrm *cxast.CXProgram, expr *cxast.CXExpression) *cxast.CXArgum
 		}
 		expCXAtomicOpOperator := prgrm.GetFunctionFromArray(expCXAtomicOp.Operator)
 		expCXAtomicOpOperatorOutputs := expCXAtomicOpOperator.GetOutputs(prgrm)
-		if len(expCXAtomicOpOperatorOutputs) > 0 && prgrm.GetCXArgFromArray(expCXAtomicOpOperatorOutputs[0]).Type == prgrm.GetCXArgFromArray(cxAtomicOpOperatorOutputs[0]).Type {
+		if len(expCXAtomicOpOperatorOutputs) > 0 && prgrm.GetCXArgFromArray(cxast.CXArgumentIndex(expCXAtomicOpOperatorOutputs[0].Meta)).Type == prgrm.GetCXArgFromArray(cxast.CXArgumentIndex(cxAtomicOpOperatorOutputs[0].Meta)).Type {
 			optionsFromExpressions = append(optionsFromExpressions, i)
 		}
 	}
@@ -356,7 +359,7 @@ func determineExpressionOffset(prgrm *cxast.CXProgram, arg *cxast.CXArgument, ex
 		arg.Offset += cxAtomicOpFunctionInputs[c].TotalSize
 	}
 	for c := 0; c < len(cxAtomicOpFunctionOutputs); c++ {
-		arg.Offset += prgrm.GetCXArgFromArray(cxAtomicOpFunctionOutputs[c]).TotalSize
+		arg.Offset += prgrm.GetCXArgFromArray(cxast.CXArgumentIndex(cxAtomicOpFunctionOutputs[c].Meta)).TotalSize
 	}
 	for c := 0; c < indexOfSelectedOption; c++ {
 		cxAtomicOp1, err := prgrm.GetCXAtomicOpFromExpressions(cxAtomicOpFunction.Expressions, c)
@@ -368,7 +371,7 @@ func determineExpressionOffset(prgrm *cxast.CXProgram, arg *cxast.CXArgument, ex
 		if len(cxAtomicOp1OperatorOutputs) > 0 {
 			// TODO: We're only considering one output per operator.
 			/// Not because of practicality, but because multiple returns in CX are currently buggy anyway.
-			arg.Offset += prgrm.GetCXArgFromArray(cxAtomicOp1OperatorOutputs[0]).TotalSize
+			arg.Offset += prgrm.GetCXArgFromArray(cxast.CXArgumentIndex(cxAtomicOp1OperatorOutputs[0].Meta)).TotalSize
 		}
 	}
 }

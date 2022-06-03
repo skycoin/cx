@@ -110,9 +110,11 @@ func buildStrFunctions(prgrm *CXProgram, pkg *CXPackage, ast1 *string) {
 		var inps bytes.Buffer
 		var outs bytes.Buffer
 
-		arrCXArgs := prgrm.ConvertIndexTypeSignaturesToPointerArgs(fn.GetInputs(prgrm))
-		getFormattedParam(prgrm, arrCXArgs, pkg, &inps)
-		getFormattedParam(prgrm, prgrm.ConvertIndexArgsToPointerArgs(fn.GetOutputs(prgrm)), pkg, &outs)
+		inputCXArgs := prgrm.ConvertIndexTypeSignaturesToPointerArgs(fn.GetInputs(prgrm))
+		getFormattedParam(prgrm, inputCXArgs, pkg, &inps)
+
+		outputCxArgs := prgrm.ConvertIndexTypeSignaturesToPointerArgs(fn.GetOutputs(prgrm))
+		getFormattedParam(prgrm, outputCxArgs, pkg, &outs)
 
 		*ast1 += fmt.Sprintf("\t\t%d.- Function: %s (%s) (%s)\n",
 			j, fn.Name, inps.String(), outs.String())
@@ -242,9 +244,11 @@ func SignatureStringOfFunction(prgrm *CXProgram, pkg *CXPackage, f *CXFunction) 
 	var ins bytes.Buffer
 	var outs bytes.Buffer
 
-	arrCXArgs := prgrm.ConvertIndexTypeSignaturesToPointerArgs(f.GetInputs(prgrm))
-	getFormattedParam(prgrm, arrCXArgs, pkg, &ins)
-	getFormattedParam(prgrm, prgrm.ConvertIndexArgsToPointerArgs(f.GetOutputs(prgrm)), pkg, &outs)
+	inputCXArgs := prgrm.ConvertIndexTypeSignaturesToPointerArgs(f.GetInputs(prgrm))
+	getFormattedParam(prgrm, inputCXArgs, pkg, &ins)
+
+	outputCXArgs := prgrm.ConvertIndexTypeSignaturesToPointerArgs(f.GetOutputs(prgrm))
+	getFormattedParam(prgrm, outputCXArgs, pkg, &outs)
 
 	return fmt.Sprintf("func %s(%s) (%s)",
 		f.Name, ins.String(), outs.String())
@@ -706,9 +710,11 @@ func GetFormattedType(prgrm *CXProgram, arg *CXArgument) string {
 							// println(CompilationError(elt.FileName, elt.FileLine), err.ProgramError())
 							// os.Exit(CX_COMPILATION_ERROR)
 							// Adding list of inputs and outputs types.
-							arrCXArgs := prgrm.ConvertIndexTypeSignaturesToPointerArgs(fn.GetInputs(prgrm))
-							typ += formatParameters(prgrm, arrCXArgs)
-							typ += formatParameters(prgrm, prgrm.ConvertIndexArgsToPointerArgs(fn.GetOutputs(prgrm)))
+							inputCXArgs := prgrm.ConvertIndexTypeSignaturesToPointerArgs(fn.GetInputs(prgrm))
+							typ += formatParameters(prgrm, inputCXArgs)
+
+							outputCXArgs := prgrm.ConvertIndexTypeSignaturesToPointerArgs(fn.GetOutputs(prgrm))
+							typ += formatParameters(prgrm, outputCXArgs)
 						}
 					}
 				}

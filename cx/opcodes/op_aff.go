@@ -96,8 +96,8 @@ func CallAffPredicate(prgrm *ast.CXProgram, fn *ast.CXFunction, predValue []byte
 	prevCall.Line--
 	return types.GetSlice_byte(prgrm.Memory, ast.GetFinalOffset(prgrm,
 		newCall.FramePointer,
-		prgrm.GetCXArgFromArray(newCallOperatorOutputs[0]), nil),
-		ast.GetArgSize(prgrm, prgrm.GetCXArgFromArray(newCallOperatorOutputs[0])))[0]
+		nil, &newCallOperatorOutputs[0]),
+		ast.GetArgSize(prgrm, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(newCallOperatorOutputs[0].Meta))))[0]
 }
 
 // Used by QueryArgument to query inputs and then outputs from expressions.
@@ -351,7 +351,7 @@ func QueryFunction(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpress
 		types.Write_ptr(opNameOffsetB[:], 0, opNameOffset)
 
 		inpSigOffset := getSignatureSlice(prgrm, nil, f.GetInputs(prgrm))
-		outSigOffset := getSignatureSlice(prgrm, f.GetOutputs(prgrm), nil)
+		outSigOffset := getSignatureSlice(prgrm, nil, f.GetOutputs(prgrm))
 
 		fnOffset := ast.AllocateSeq(prgrm, types.OBJECT_HEADER_SIZE+types.STR_SIZE+types.POINTER_SIZE+types.POINTER_SIZE)
 		// Name

@@ -326,8 +326,8 @@ func serializeFunctionArguments(prgrm *CXProgram, fn *CXFunction, s *SerializedC
 
 		arrCXArgs := prgrm.ConvertIndexTypeSignaturesToPointerArgs(fn.GetInputs(prgrm))
 		sFn.InputsOffset, sFn.InputsSize = serializeSliceOfArguments(prgrm, arrCXArgs, s)
-		fnOutputs := fn.GetOutputs(prgrm)
-		sFn.OutputsOffset, sFn.OutputsSize = serializeSliceOfArguments(prgrm, prgrm.ConvertIndexArgsToPointerArgs(fnOutputs), s)
+		outputCXArgs := prgrm.ConvertIndexTypeSignaturesToPointerArgs(fn.GetOutputs(prgrm))
+		sFn.OutputsOffset, sFn.OutputsSize = serializeSliceOfArguments(prgrm, outputCXArgs, s)
 		sFn.ListOfPointersOffset, sFn.ListOfPointersSize = serializeSliceOfArguments(prgrm, fn.ListOfPointers, s)
 	} else {
 		panic("function reference not found")

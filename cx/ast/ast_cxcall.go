@@ -39,15 +39,18 @@ func popStack(prgrm *CXProgram, call *CXCall) error {
 	cxAtomicOpOutputs := cxAtomicOp.GetOutputs(prgrm)
 	lenOuts := len(cxAtomicOpOutputs)
 	callOperatorOutputs := call.Operator.GetOutputs(prgrm)
-	for i, outIdx := range callOperatorOutputs {
+	for i, output := range callOperatorOutputs {
+		var out *CXArgument
+		if output.Type == TYPE_CXARGUMENT_DEPRECATE {
+			out = prgrm.GetCXArgFromArray(CXArgumentIndex(output.Meta))
+		}
 		// Continuing if there is no receiving variable available.
 		if i >= lenOuts {
 			continue
 		}
-		out := &prgrm.CXArgs[outIdx]
 
 		types.WriteSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, returnFP, &prgrm.CXArgs[cxAtomicOpOutputs[i]], nil),
-			types.GetSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, fp, out, nil), GetArgSize(prgrm, out)))
+			types.GetSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, &output), GetArgSize(prgrm, out)))
 	}
 
 	// return the stack pointer to its previous state

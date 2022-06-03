@@ -212,8 +212,8 @@ func getOutputType(prgrm *ast.CXProgram, expr *ast.CXExpression) *ast.CXArgument
 	}
 	expressionOperator := prgrm.GetFunctionFromArray(expression.Operator)
 	expressionOperatorOutputs := expressionOperator.GetOutputs(prgrm)
-	if prgrm.GetCXArgFromArray(expressionOperatorOutputs[0]).Type != types.UNDEFINED {
-		return prgrm.GetCXArgFromArray(expressionOperatorOutputs[0])
+	if prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionOperatorOutputs[0].Meta)).Type != types.UNDEFINED {
+		return prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionOperatorOutputs[0].Meta))
 	}
 
 	return prgrm.GetCXArgFromArray(expression.GetInputs(prgrm)[0])
@@ -380,7 +380,7 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 		return append(toExprs[:len(toExprs)-1], fromExprs...)
 	} else {
 		fromExpressionOperatorOutputs := fromExpressionOperator.GetOutputs(prgrm)
-		fromCXAtomicOpOperatorOutput := prgrm.GetCXArgFromArray(fromExpressionOperatorOutputs[0])
+		fromCXAtomicOpOperatorOutput := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(fromExpressionOperatorOutputs[0].Meta))
 		if fromExpressionOperator.IsBuiltIn() {
 			// only assigning as if the operator had only one output defined
 

@@ -188,7 +188,14 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fnIdx ast.CXFunctionIndex, inputs
 		}
 	}
 	ProcessFunctionParameters(prgrm, symbols, &symbolsScope, &offset, fnIdx, fnInputIdxs)
-	ProcessFunctionParameters(prgrm, symbols, &symbolsScope, &offset, fnIdx, fn.GetOutputs(prgrm))
+
+	var fnOutputIdxs []ast.CXArgumentIndex
+	for _, fnOutput := range fn.GetOutputs(prgrm) {
+		if fnOutput.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			fnOutputIdxs = append(fnOutputIdxs, ast.CXArgumentIndex(fnOutput.Meta))
+		}
+	}
+	ProcessFunctionParameters(prgrm, symbols, &symbolsScope, &offset, fnIdx, fnOutputIdxs)
 
 	for i, expr := range fn.Expressions {
 		if expr.Type == ast.CX_LINE {
@@ -317,7 +324,7 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 				var out *ast.CXArgument
 
 				inpExprAtomicOpOperatorOutputs := inpExprAtomicOpOperator.GetOutputs(prgrm)
-				inpExprAtomicOpOperatorOutput := prgrm.GetCXArgFromArray(inpExprAtomicOpOperatorOutputs[0])
+				inpExprAtomicOpOperatorOutput := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inpExprAtomicOpOperatorOutputs[0].Meta))
 				if inpExprAtomicOpOperatorOutput.Type == types.UNDEFINED {
 					// if undefined type, then adopt argument's type
 					inpExprAtomicOpInput := prgrm.GetCXArgFromArray(inpExprAtomicOp.GetInputs(prgrm)[0])
@@ -911,8 +918,13 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) {
 		checkMatchParamTypes(prgrm, &exprs[currIndex], expressionOperatorInputsIdxs, expression.GetInputs(prgrm), true)
 
 		expressionOperatorOutputs := expressionOperator.GetOutputs(prgrm)
+		var expressionOperatorOutputsIdxs []ast.CXArgumentIndex
+		for _, output := range expressionOperatorOutputs {
+			expressionOperatorOutputsIdxs = append(expressionOperatorOutputsIdxs, ast.CXArgumentIndex(output.Meta))
+		}
+
 		// checking outputs matching operator's outputs
-		checkMatchParamTypes(prgrm, &exprs[currIndex], expressionOperatorOutputs, expression.GetOutputs(prgrm), false)
+		checkMatchParamTypes(prgrm, &exprs[currIndex], expressionOperatorOutputsIdxs, expression.GetOutputs(prgrm), false)
 	}
 }
 
@@ -989,7 +1001,7 @@ func ProcessShortDeclaration(prgrm *ast.CXProgram, expr *ast.CXExpression, expre
 
 		var arg *ast.CXArgument
 		if expr.IsMethodCall() {
-			arg = prgrm.GetCXArgFromArray(expressionOperatorOutputs[0])
+			arg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionOperatorOutputs[0].Meta))
 		} else {
 			arg = prgrm.GetCXArgFromArray(expression.GetInputs(prgrm)[0])
 		}
@@ -1549,8 +1561,8 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, sym *ast.CXArgument, arg *ast.CXA
 				if methodIdx, methodErr := strctPkg.GetMethod(prgrm, receiverType+"."+methodName, receiverType); methodErr == nil {
 					method := prgrm.GetFunctionFromArray(methodIdx)
 					methodOutputs := method.GetOutputs(prgrm)
-					field.Type = prgrm.GetCXArgFromArray(methodOutputs[0]).Type
-					field.PointerTargetType = prgrm.GetCXArgFromArray(methodOutputs[0]).PointerTargetType
+					field.Type = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(methodOutputs[0].Meta)).Type
+					field.PointerTargetType = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(methodOutputs[0].Meta)).PointerTargetType
 				} else {
 					println(ast.CompilationError(field.ArgDetails.FileName, field.ArgDetails.FileLine), err.Error())
 				}

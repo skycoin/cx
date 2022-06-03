@@ -48,8 +48,12 @@ func Callback(cxprogram *ast.CXProgram, fn *ast.CXFunction, inputs [][]byte) (ou
 	cxprogram.CallStack[cxprogram.CallCounter].Line = line
 
 	fnOutputs := fn.GetOutputs(cxprogram)
-	for _, outIdx := range fnOutputs {
-		out := &cxprogram.CXArgs[outIdx]
+	for _, output := range fnOutputs {
+		var out *ast.CXArgument
+		if output.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			out = cxprogram.GetCXArgFromArray(ast.CXArgumentIndex(output.Meta))
+		}
+
 		// Making a copy of the bytes, so if we modify the bytes being held by `outputs`
 		// we don't modify the program memory.
 		mem := types.GetSlice_byte(cxprogram.Memory, ast.GetFinalOffset(cxprogram, newFP, out, nil), ast.GetArgSize(cxprogram, out))
