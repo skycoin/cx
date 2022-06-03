@@ -8,7 +8,6 @@ var apple string
 //asdsdsa
 
 //sdfsd
-
 type person struct {
 	name string
 }
@@ -21,7 +20,20 @@ func main () {
 	}
 }
 
-func functionTwo () {
+	func functionTwo () {
 
 }
-	
+
+type Direction int
+
+const (
+	North Direction = iota
+	South
+	East
+	West
+)
+
+const (
+	First Number = iota
+	Second
+)

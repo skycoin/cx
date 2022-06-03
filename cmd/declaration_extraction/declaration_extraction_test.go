@@ -29,7 +29,6 @@ var apple string
 //asdsdsa
 
 //sdfsd
-
 type person struct {
 	name string
 }
@@ -42,10 +41,23 @@ func main () {
 	}
 }
 
-func functionTwo () {
+	func functionTwo () {
 
 }
-	`,
+
+type Direction int
+
+const (
+	North Direction = iota
+	South
+	East
+	West
+)
+
+const (
+	First Number = iota
+	Second
+)`,
 		fileName: "test.cx",
 		GlblDec: []Declaration{
 			{
@@ -58,12 +70,67 @@ func functionTwo () {
 			{
 				PackageID:   "hello",
 				FileID:      "test.cx",
-				StartOffset: 8,
+				StartOffset: 2,
 				Length:      17,
 				Name:        "banana",
 			},
 		},
-		EnumDec: []EnumDeclaration{},
+		EnumDec: []EnumDeclaration{
+			{
+				PackageID:   "hello",
+				FileID:      "test.cx",
+				StartOffset: 1,
+				Length:      15,
+				Name:        "North",
+				Type:        "Direction",
+				Value:       0,
+			},
+			{
+				PackageID:   "hello",
+				FileID:      "test.cx",
+				StartOffset: 1,
+				Length:      5,
+				Name:        "South",
+				Type:        "Direction",
+				Value:       1,
+			},
+			{
+				PackageID:   "hello",
+				FileID:      "test.cx",
+				StartOffset: 1,
+				Length:      4,
+				Name:        "East",
+				Type:        "Direction",
+				Value:       2,
+			},
+			{
+				PackageID:   "hello",
+				FileID:      "test.cx",
+				StartOffset: 1,
+				Length:      4,
+				Name:        "West",
+				Type:        "Direction",
+				Value:       3,
+			},
+			{
+				PackageID:   "hello",
+				FileID:      "test.cx",
+				StartOffset: 1,
+				Length:      12,
+				Name:        "First",
+				Type:        "Number",
+				Value:       0,
+			},
+			{
+				PackageID:   "hello",
+				FileID:      "test.cx",
+				StartOffset: 1,
+				Length:      6,
+				Name:        "Second",
+				Type:        "Number",
+				Value:       1,
+			},
+		},
 		StrctDec: []Declaration{
 			{
 				PackageID:   "hello",
@@ -75,9 +142,16 @@ func functionTwo () {
 			{
 				PackageID:   "hello",
 				FileID:      "test.cx",
-				StartOffset: 4,
+				StartOffset: 1,
 				Length:      18,
 				Name:        "animal",
+			},
+			{
+				PackageID:   "hello",
+				FileID:      "test.cx",
+				StartOffset: 0,
+				Length:      18,
+				Name:        "Direction",
 			},
 		},
 		FuncDec: []Declaration{
@@ -85,162 +159,73 @@ func functionTwo () {
 				PackageID:   "hello",
 				FileID:      "test.cx",
 				StartOffset: 0,
-				Length:      9,
+				Length:      12,
 				Name:        "main",
 			},
 			{
 				PackageID:   "hello",
 				FileID:      "test.cx",
-				StartOffset: 0,
-				Length:      16,
+				StartOffset: 1,
+				Length:      19,
 				Name:        "functionTwo",
 			},
 		},
 	}
 
 	file, err := os.Create(test1.fileName)
-	num, err := file.WriteString(test1.content)
+	num, err := file.Write([]byte(test1.content))
 	src, err := os.Open(test1.fileName)
 
-	Glbl, err := extractGlbl(src)
-	// Enum, err := extractEnum(file)
-	// Strct, err := extractStrct(file)
-	// Func, err := extractFunc(file)
 	if err != nil {
 		log.Fatal(err)
 		fmt.Println(num)
 	}
 
+	Glbl := extractGlbl(src)
+
+	if Glbl == nil {
+		t.Error("No Global Declarations.")
+	}
+
 	for i := range Glbl {
 		if Glbl[i] != test1.GlblDec[i] {
-			t.Errorf("got %+v : want %+v", Glbl[i], test1.GlblDec[i])
-		}
-
-	}
-}
-
-func TestExtractStrct(t *testing.T) {
-
-	file, err := os.Open("test.cx")
-	got, err := extractStrct(file)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	want := []Declaration{
-		Declaration{
-			PackageID:   "hello",
-			FileID:      "test.cx",
-			StartOffset: 0,
-			Length:      18,
-			Name:        "person",
-		},
-		Declaration{
-			PackageID:   "hello",
-			FileID:      "test.cx",
-			StartOffset: 4,
-			Length:      18,
-			Name:        "animal",
-		},
-	}
-
-	//Check if any declaration were detected
-	if got == nil {
-		t.Error("No Struct Declarations")
-	}
-
-	for i := range got {
-		if got[i] != want[i] {
-			t.Errorf("got %+v   want %+v\n", got[i], want[i])
+			t.Errorf("Global Declaration got %+v : want %+v", Glbl[i], test1.GlblDec[i])
 		}
 	}
 
-}
-
-func TestExtractFunc(t *testing.T) {
-
-	file, err := os.Open("test.cx")
-	got, err := extractFunc(file)
-
-	if err != nil {
-		log.Fatal(err)
+	src, err = os.Open(test1.fileName)
+	Enum := extractEnum(src)
+	if Enum == nil {
+		t.Error("No Enum Declarations.")
 	}
 
-	want := []Declaration{
-		{
-			PackageID:   "hello",
-			FileID:      "test.cx",
-			StartOffset: 0,
-			Length:      9,
-			Name:        "main",
-		},
-		{
-			PackageID:   "hello",
-			FileID:      "test.cx",
-			StartOffset: 0,
-			Length:      16,
-			Name:        "functionTwo",
-		},
-	}
-
-	//Check if any declaration were detected
-	if got == nil {
-		t.Error("No Function Declarations")
-	}
-
-	for i := range got {
-		if got[i] != want[i] {
-			t.Errorf("got %+v   want %+v\n", got[i], want[i])
+	for i := range Enum {
+		if Enum[i] != test1.EnumDec[i] {
+			t.Errorf("Enum Declaration got %+v : want %+v", Enum[i], test1.EnumDec[i])
 		}
-
 	}
 
-}
-
-func TestRmComment(t *testing.T) {
-
-	file, err := os.ReadFile("test.cx")
-
-	got := rmComment(file)
-
-	if err != nil {
-		log.Fatal(err)
+	src, err = os.Open(test1.fileName)
+	Strct := extractStrct(src)
+	if Strct == nil {
+		t.Error("No Struct Declarations.")
 	}
 
-	t.Error(string(got))
-}
-
-func TestExtractPkg(t *testing.T) {
-
-	file, err := os.ReadFile("./test.cx")
-
-	got := extractPkg(file)
-
-	if err != nil {
-		log.Fatal(err)
+	for i := range Strct {
+		if Strct[i] != test1.StrctDec[i] {
+			t.Errorf("Struct Declaration got %+v : want %+v", Strct[i], test1.StrctDec[i])
+		}
 	}
 
-	t.Error(got)
-
-}
-
-func TestExtractEnum(t *testing.T) {
-	file, err := os.Open("test.cx")
-	got, err := extractEnum(file)
-
-	if err != nil {
-		log.Fatal(err)
+	src, err = os.Open(test1.fileName)
+	Func := extractFunc(src)
+	if Func == nil {
+		t.Error("No Function Declarations.")
 	}
 
-	//Check if any declaration were detected
-	if got == nil {
-		t.Error("No Function Declarations")
+	for i := range Func {
+		if Func[i] != test1.FuncDec[i] {
+			t.Errorf("Function Declaration got %+v : want %+v", Func[i], test1.FuncDec[i])
+		}
 	}
-
-	for i := range got {
-		t.Errorf(" %+v", got[i])
-	}
-	// t.Errorf(" %+v", got[0])
-
 }
