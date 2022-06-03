@@ -211,7 +211,14 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fnIdx ast.CXFunctionIndex, inputs
 		}
 
 		ProcessMethodCall(prgrm, &expr, symbols)
-		ProcessExpressionArguments(prgrm, symbols, &symbolsScope, &offset, fnIdx, exprAtomicOp.GetInputs(prgrm), &expr, true)
+		var exprInputsCXArgsIdx []ast.CXArgumentIndex
+		for _, input := range exprAtomicOp.GetInputs(prgrm) {
+			if input.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				exprInputsCXArgsIdx = append(exprInputsCXArgsIdx, ast.CXArgumentIndex(input.Meta))
+			}
+
+		}
+		ProcessExpressionArguments(prgrm, symbols, &symbolsScope, &offset, fnIdx, exprInputsCXArgsIdx, &expr, true)
 		ProcessExpressionArguments(prgrm, symbols, &symbolsScope, &offset, fnIdx, exprAtomicOp.GetOutputs(prgrm), &expr, false)
 
 		ProcessPointerStructs(prgrm, &expr)
@@ -251,7 +258,7 @@ func ProcessTypedOperator(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 		return
 	}
 	if ast.IsOperator(expressionOperator.AtomicOPCode) {
-		atomicType := prgrm.CXArgs[expression.GetInputs(prgrm)[0]].GetType(prgrm)
+		atomicType := prgrm.CXArgs[expression.GetInputs(prgrm)[0].Meta].GetType(prgrm)
 		typedOp := ast.GetTypedOperator(atomicType, expressionOperator.AtomicOPCode)
 		if typedOp == nil {
 			return
@@ -327,7 +334,7 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 				inpExprAtomicOpOperatorOutput := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inpExprAtomicOpOperatorOutputs[0].Meta))
 				if inpExprAtomicOpOperatorOutput.Type == types.UNDEFINED {
 					// if undefined type, then adopt argument's type
-					inpExprAtomicOpInput := prgrm.GetCXArgFromArray(inpExprAtomicOp.GetInputs(prgrm)[0])
+					inpExprAtomicOpInput := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inpExprAtomicOp.GetInputs(prgrm)[0].Meta))
 
 					out = ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, inpExprCXLine.LineNumber).SetType(inpExprAtomicOpInput.Type)
 					out.StructType = inpExprAtomicOpInput.StructType
@@ -390,13 +397,17 @@ func checkSameNativeType(prgrm *ast.CXProgram, expr *ast.CXExpression) error {
 		return errors.New("cannot perform arithmetic without operands")
 	}
 
-	typeCode := prgrm.GetCXArgFromArray(expression.GetInputs(prgrm)[0]).Type
-	if prgrm.GetCXArgFromArray(expression.GetInputs(prgrm)[0]).Type == types.POINTER {
-		typeCode = prgrm.GetCXArgFromArray(expression.GetInputs(prgrm)[0]).PointerTargetType
+	typeCode := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expression.GetInputs(prgrm)[0].Meta)).Type
+	if prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expression.GetInputs(prgrm)[0].Meta)).Type == types.POINTER {
+		typeCode = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expression.GetInputs(prgrm)[0].Meta)).PointerTargetType
 	}
 
-	for _, inpIdx := range expression.GetInputs(prgrm) {
-		inp := prgrm.GetCXArgFromArray(inpIdx)
+	for _, input := range expression.GetInputs(prgrm) {
+		var inp *ast.CXArgument
+		if input.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			inp = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(input.Meta))
+		}
+
 		inpType := inp.Type
 
 		if inp.Type == types.POINTER {
@@ -437,7 +448,7 @@ func ProcessOperatorExpression(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 
 			size := types.Pointer(1)
 			if !ast.IsComparisonOperator(expressionOperator.AtomicOPCode) {
-				size = ast.GetArgSize(prgrm, prgrm.GetCXArgFromArray(expression.GetInputs(prgrm)[0]).GetAssignmentElement(prgrm))
+				size = ast.GetArgSize(prgrm, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expression.GetInputs(prgrm)[0].Meta)).GetAssignmentElement(prgrm))
 			}
 			out.Size = size
 			out.TotalSize = size
@@ -456,7 +467,13 @@ func ProcessPointerStructs(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 		panic(err)
 	}
 
-	for _, argIdx := range append(expression.GetInputs(prgrm), expression.GetOutputs(prgrm)...) {
+	var exprInputsIdxs []ast.CXArgumentIndex
+	for _, input := range expression.GetInputs(prgrm) {
+		if input.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			exprInputsIdxs = append(exprInputsIdxs, ast.CXArgumentIndex(input.Meta))
+		}
+	}
+	for _, argIdx := range append(exprInputsIdxs, expression.GetOutputs(prgrm)...) {
 		arg := prgrm.GetCXArgFromArray(argIdx)
 		for _, fldIdx := range arg.Fields {
 			fld := prgrm.GetCXArgFromArray(fldIdx)
@@ -500,8 +517,8 @@ func processTestExpression(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 	if expressionOperator != nil {
 		opCode := expressionOperator.AtomicOPCode
 		if opCode == constants.OP_ASSERT || opCode == constants.OP_TEST || opCode == constants.OP_PANIC {
-			inp1Type := ast.GetFormattedType(prgrm, prgrm.GetCXArgFromArray(expression.GetInputs(prgrm)[0]))
-			inp2Type := ast.GetFormattedType(prgrm, prgrm.GetCXArgFromArray(expression.GetInputs(prgrm)[1]))
+			inp1Type := ast.GetFormattedType(prgrm, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expression.GetInputs(prgrm)[0].Meta)))
+			inp2Type := ast.GetFormattedType(prgrm, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expression.GetInputs(prgrm)[1].Meta)))
 			if inp1Type != inp2Type {
 				println(ast.CompilationError(CurrentFile, LineNo), fmt.Sprintf("first and second input arguments' types are not equal in '%s' call ('%s' != '%s')", ast.OpNames[expressionOperator.AtomicOPCode], inp1Type, inp2Type))
 			}
@@ -803,7 +820,7 @@ func checkMatchParamTypes(prgrm *ast.CXProgram, expr *ast.CXExpression, expected
 		// These temporary variables' types are not properly being set. That's why we use !cxcore.IsTempVar to
 		// exclude these cases for now.
 		if expressionOperator.AtomicOPCode == constants.OP_IDENTITY && !IsTempVar(prgrm.GetCXArgFromArray(expression.GetOutputs(prgrm)[0]).Name) {
-			inpType := ast.GetFormattedType(prgrm, prgrm.GetCXArgFromArray(expression.GetInputs(prgrm)[0]))
+			inpType := ast.GetFormattedType(prgrm, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expression.GetInputs(prgrm)[0].Meta)))
 			outType := ast.GetFormattedType(prgrm, prgrm.GetCXArgFromArray(expression.GetOutputs(prgrm)[0]))
 
 			// We use `isInputs` to only print the error once.
@@ -886,15 +903,15 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) {
 				}
 			}
 
-			if prgrm.GetCXArgFromArray(expression.GetInputs(prgrm)[i]).GetAssignmentElement(prgrm).StructType != nil {
+			if prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expression.GetInputs(prgrm)[i].Meta)).GetAssignmentElement(prgrm).StructType != nil {
 				// then it's custom type
-				receivedType = prgrm.GetCXArgFromArray(expression.GetInputs(prgrm)[i]).GetAssignmentElement(prgrm).StructType.Name
+				receivedType = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expression.GetInputs(prgrm)[i].Meta)).GetAssignmentElement(prgrm).StructType.Name
 			} else {
 				// then it's native type
-				receivedType = prgrm.GetCXArgFromArray(expression.GetInputs(prgrm)[i]).GetAssignmentElement(prgrm).Type.Name()
+				receivedType = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expression.GetInputs(prgrm)[i].Meta)).GetAssignmentElement(prgrm).Type.Name()
 
-				if prgrm.GetCXArgFromArray(expression.GetInputs(prgrm)[i]).GetAssignmentElement(prgrm).Type == types.POINTER {
-					receivedType = prgrm.GetCXArgFromArray(expression.GetInputs(prgrm)[i]).GetAssignmentElement(prgrm).PointerTargetType.Name()
+				if prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expression.GetInputs(prgrm)[i].Meta)).GetAssignmentElement(prgrm).Type == types.POINTER {
+					receivedType = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expression.GetInputs(prgrm)[i].Meta)).GetAssignmentElement(prgrm).PointerTargetType.Name()
 				}
 			}
 
@@ -914,8 +931,15 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) {
 		for _, input := range expressionOperatorInputs {
 			expressionOperatorInputsIdxs = append(expressionOperatorInputsIdxs, ast.CXArgumentIndex(input.Index))
 		}
+
+		var expressionInputsIdxs []ast.CXArgumentIndex
+		for _, input := range expression.GetInputs(prgrm) {
+			if input.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				expressionInputsIdxs = append(expressionInputsIdxs, ast.CXArgumentIndex(input.Meta))
+			}
+		}
 		// checking inputs matching operator's inputs
-		checkMatchParamTypes(prgrm, &exprs[currIndex], expressionOperatorInputsIdxs, expression.GetInputs(prgrm), true)
+		checkMatchParamTypes(prgrm, &exprs[currIndex], expressionOperatorInputsIdxs, expressionInputsIdxs, true)
 
 		expressionOperatorOutputs := expressionOperator.GetOutputs(prgrm)
 		var expressionOperatorOutputsIdxs []ast.CXArgumentIndex
@@ -948,7 +972,7 @@ func ProcessStringAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 			out := prgrm.GetCXArgFromArray(outIdx)
 			if len(expression.GetInputs(prgrm)) > i {
 				out = out.GetAssignmentElement(prgrm)
-				inp := prgrm.GetCXArgFromArray(expression.GetInputs(prgrm)[i]).GetAssignmentElement(prgrm)
+				inp := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expression.GetInputs(prgrm)[i].Meta)).GetAssignmentElement(prgrm)
 
 				if (out.Type == types.STR || out.Type == types.AFF) && out.Name != "" &&
 					(inp.Type == types.STR || inp.Type == types.AFF) && inp.Name != "" {
@@ -1003,7 +1027,7 @@ func ProcessShortDeclaration(prgrm *ast.CXProgram, expr *ast.CXExpression, expre
 		if expr.IsMethodCall() {
 			arg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionOperatorOutputs[0].Meta))
 		} else {
-			arg = prgrm.GetCXArgFromArray(expression.GetInputs(prgrm)[0])
+			arg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expression.GetInputs(prgrm)[0].Meta))
 		}
 
 		prevExpressionOutputIdx := prevExpression.GetOutputs(prgrm)[0]
@@ -1062,7 +1086,7 @@ func ProcessSliceAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 		var inp *ast.CXArgument
 		var out *ast.CXArgument
 
-		inp = prgrm.GetCXArgFromArray(expression.GetInputs(prgrm)[0]).GetAssignmentElement(prgrm)
+		inp = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expression.GetInputs(prgrm)[0].Meta)).GetAssignmentElement(prgrm)
 		out = prgrm.GetCXArgFromArray(expression.GetOutputs(prgrm)[0]).GetAssignmentElement(prgrm)
 
 		if inp.IsSlice && out.IsSlice && len(inp.Indexes) == 0 && len(out.Indexes) == 0 {
@@ -1071,8 +1095,12 @@ func ProcessSliceAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 	}
 	if expressionOperator != nil && !expressionOperator.IsBuiltIn() {
 		// then it's a function call
-		for _, inpIdx := range expression.GetInputs(prgrm) {
-			inp := prgrm.GetCXArgFromArray(inpIdx)
+		for _, input := range expression.GetInputs(prgrm) {
+			var inp *ast.CXArgument
+			if input.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				inp = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(input.Meta))
+			}
+
 			assignElt := inp.GetAssignmentElement(prgrm)
 
 			// we want to pass by value if we're sending the slice as a whole (no indexing)
@@ -1177,8 +1205,8 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 		var inpIdx ast.CXArgumentIndex = -1
 		var outIdx ast.CXArgumentIndex = -1
 
-		if len(expression.GetInputs(prgrm)) > 0 && prgrm.GetCXArgFromArray(expression.GetInputs(prgrm)[0]).Name != "" {
-			inpIdx = expression.GetInputs(prgrm)[0]
+		if len(expression.GetInputs(prgrm)) > 0 && prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expression.GetInputs(prgrm)[0].Meta)).Name != "" {
+			inpIdx = ast.CXArgumentIndex(expression.GetInputs(prgrm)[0].Meta)
 		}
 		if len(expression.GetOutputs(prgrm)) > 0 && prgrm.GetCXArgFromArray(expression.GetOutputs(prgrm)[0]).Name != "" {
 			outIdx = expression.GetOutputs(prgrm)[0]
@@ -1377,7 +1405,7 @@ func ProcessTempVariable(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 		outputArgIdx := expression.GetOutputs(prgrm)[0]
 		name := prgrm.CXArgs[outputArgIdx].Name
 		if IsTempVar(name) {
-			expressionInput := prgrm.GetCXArgFromArray(expression.GetInputs(prgrm)[0])
+			expressionInput := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expression.GetInputs(prgrm)[0].Meta))
 			// then it's a temporary variable and it needs to adopt its input's type
 			prgrm.CXArgs[outputArgIdx].Type = expressionInput.Type
 			prgrm.CXArgs[outputArgIdx].PointerTargetType = expressionInput.PointerTargetType

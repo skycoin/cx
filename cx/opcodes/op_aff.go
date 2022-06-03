@@ -173,7 +173,13 @@ func QueryArgument(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpress
 			continue
 		}
 
-		queryParam(prgrm, fn, exCXAtomicOp.GetInputs(prgrm), exCXAtomicOp.Label+".Input", argOffsetB, affOffset)
+		var inputCXArgsIdxs []ast.CXArgumentIndex
+		for _, input := range exCXAtomicOp.GetInputs(prgrm) {
+			if input.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				inputCXArgsIdxs = append(inputCXArgsIdxs, ast.CXArgumentIndex(input.Meta))
+			}
+		}
+		queryParam(prgrm, fn, inputCXArgsIdxs, exCXAtomicOp.Label+".Input", argOffsetB, affOffset)
 		queryParam(prgrm, fn, exCXAtomicOp.GetOutputs(prgrm), exCXAtomicOp.Label+".Output", argOffsetB, affOffset)
 	}
 }
@@ -848,7 +854,7 @@ func readArgAff(prgrm *ast.CXProgram, aff string, tgtFn *ast.CXFunction) *ast.CX
 	}
 
 	if argType == "Input" {
-		return prgrm.GetCXArgFromArray(affExprAtomicOp.GetInputs(prgrm)[argIdx])
+		return prgrm.GetCXArgFromArray(ast.CXArgumentIndex(affExprAtomicOp.GetInputs(prgrm)[argIdx].Meta))
 	}
 	return prgrm.GetCXArgFromArray(affExprAtomicOp.GetOutputs(prgrm)[argIdx])
 

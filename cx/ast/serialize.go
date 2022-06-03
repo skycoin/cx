@@ -241,7 +241,8 @@ func serializeExpression(prgrm *CXProgram, expr *CXExpression, s *SerializedCXPr
 			}
 		}
 
-		sExpr.InputsOffset, sExpr.InputsSize = serializeSliceOfArguments(prgrm, prgrm.ConvertIndexArgsToPointerArgs(cxAtomicOp.GetInputs(prgrm)), s)
+		inputCXArgs := prgrm.ConvertIndexTypeSignaturesToPointerArgs(cxAtomicOp.GetInputs(prgrm))
+		sExpr.InputsOffset, sExpr.InputsSize = serializeSliceOfArguments(prgrm, inputCXArgs, s)
 		sExpr.OutputsOffset, sExpr.OutputsSize = serializeSliceOfArguments(prgrm, prgrm.ConvertIndexArgsToPointerArgs(cxAtomicOp.GetOutputs(prgrm)), s)
 
 		sExpr.LabelOffset, sExpr.LabelSize = serializeString(cxAtomicOp.Label, s)

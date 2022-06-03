@@ -259,7 +259,7 @@ func resolveTypeForUnd(prgrm *ast.CXProgram, expr *ast.CXExpression) types.Code 
 	expressionOutputs := expression.GetOutputs(prgrm)
 	if len(expressionInputs) > 0 {
 		// it's a literal
-		return prgrm.GetCXArgFromArray(expressionInputs[0]).Type
+		return prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionInputs[0].Meta)).Type
 	}
 	if len(expressionOutputs) > 0 {
 		// it's an expression with an output

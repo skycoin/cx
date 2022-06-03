@@ -1722,7 +1722,7 @@ yydefault:
 				}
 
 				expressionOutput := actions.AST.GetCXArgFromArray(expression.GetOutputs(actions.AST)[0])
-				if expressionOutput.Name == actions.AST.GetCXArgFromArray(lastExpression.GetInputs(actions.AST)[0]).Name {
+				if expressionOutput.Name == actions.AST.GetCXArgFromArray(ast.CXArgumentIndex(lastExpression.GetInputs(actions.AST)[0].Meta)).Name {
 					expressionOutput.Lengths = append(expressionOutput.Lengths, 0)
 					expressionOutput.DeclarationSpecifiers = append(expressionOutput.DeclarationSpecifiers, constants.DECL_SLICE)
 				}

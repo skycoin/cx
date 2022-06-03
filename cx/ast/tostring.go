@@ -148,7 +148,7 @@ func buildStrFunctions(prgrm *CXProgram, pkg *CXPackage, ast1 *string) {
 				}
 			}
 
-			getFormattedParam(prgrm, prgrm.ConvertIndexArgsToPointerArgs(cxAtomicOp.GetInputs(prgrm)), pkg, &inps)
+			getFormattedParam(prgrm, prgrm.ConvertIndexTypeSignaturesToPointerArgs(cxAtomicOp.GetInputs(prgrm)), pkg, &inps)
 			getFormattedParam(prgrm, prgrm.ConvertIndexArgsToPointerArgs(cxAtomicOp.GetOutputs(prgrm)), pkg, &outs)
 
 			if expr.Type == CX_LINE {

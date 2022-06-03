@@ -68,8 +68,12 @@ func (cxprogram *CXProgram) PrintStack() {
 			}
 
 			cxAtomicOpOperator := cxprogram.GetFunctionFromArray(cxAtomicOp.Operator)
-			for _, inpIdx := range cxAtomicOp.GetInputs(cxprogram) {
-				inp := cxprogram.GetCXArgFromArray(inpIdx)
+			for _, input := range cxAtomicOp.GetInputs(cxprogram) {
+				var inp *CXArgument
+				if input.Type == TYPE_CXARGUMENT_DEPRECATE {
+					inp = cxprogram.GetCXArgFromArray(CXArgumentIndex(input.Meta))
+				}
+
 				if inp.Name == "" || cxAtomicOpOperator == nil {
 					continue
 				}

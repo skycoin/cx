@@ -103,7 +103,11 @@ func processBuiltInOperators(prgrm *CXProgram, expr *CXExpression, globalInputs 
 
 	argIndex := 0
 	for inputIndex := 0; inputIndex < inputCount; inputIndex++ {
-		input := &prgrm.CXArgs[inputs[inputIndex]]
+		var input *CXArgument
+		if inputs[inputIndex].Type == TYPE_CXARGUMENT_DEPRECATE {
+			input = prgrm.GetCXArgFromArray(CXArgumentIndex(inputs[inputIndex].Meta))
+		}
+
 		offset := GetFinalOffset(prgrm, fp, input, nil)
 		value := &inputValues[inputIndex]
 		value.Arg = input
@@ -178,8 +182,12 @@ func processNonAtomicOperators(prgrm *CXProgram, expr *CXExpression, fp types.Po
 	}
 
 	newCallOperatorInputs := newCall.Operator.GetInputs(prgrm)
-	for i, inpIdx := range cxAtomicOp.GetInputs(prgrm) {
-		inp := &prgrm.CXArgs[inpIdx]
+	for i, input := range cxAtomicOp.GetInputs(prgrm) {
+		var inp *CXArgument
+		if input.Type == TYPE_CXARGUMENT_DEPRECATE {
+			inp = prgrm.GetCXArgFromArray(CXArgumentIndex(input.Meta))
+		}
+
 		var byts []byte
 
 		finalOffset := GetFinalOffset(prgrm, fp, inp, nil)

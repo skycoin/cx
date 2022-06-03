@@ -183,7 +183,7 @@ func ShortAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression, exprCXLine *a
 		typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(prgrm.CXAtomicOps[fromExpressionIdx].GetOutputs(prgrm)[0]))
 		prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, typeSig)
 	} else {
-		sym := ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, LineNo).SetType(prgrm.GetCXArgFromArray(prgrm.CXAtomicOps[fromExpressionIdx].GetInputs(prgrm)[0]).Type)
+		sym := ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, LineNo).SetType(prgrm.GetCXArgFromArray(ast.CXArgumentIndex(prgrm.CXAtomicOps[fromExpressionIdx].GetInputs(prgrm)[0].Meta)).Type)
 		sym.Package = ast.CXPackageIndex(pkg.Index)
 		sym.PreviouslyDeclared = true
 		symIdx := prgrm.AddCXArgInArray(sym)
@@ -216,7 +216,7 @@ func getOutputType(prgrm *ast.CXProgram, expr *ast.CXExpression) *ast.CXArgument
 		return prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionOperatorOutputs[0].Meta))
 	}
 
-	return prgrm.GetCXArgFromArray(expression.GetInputs(prgrm)[0])
+	return prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expression.GetInputs(prgrm)[0].Meta))
 }
 
 // Assignment handles assignment statements with different operators,
@@ -272,7 +272,7 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 			sym = ast.MakeArgument(prgrm.GetCXArgFromArray(toExpression.GetOutputs(prgrm)[0]).Name, CurrentFile, LineNo).SetType(outTypeArg.Type)
 
 			if fromExprs[lastFromExpressionIdx].IsArrayLiteral() {
-				fromCXAtomicOpInputs := prgrm.GetCXArgFromArray(prgrm.CXAtomicOps[fromExpressionIdx].GetInputs(prgrm)[0])
+				fromCXAtomicOpInputs := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(prgrm.CXAtomicOps[fromExpressionIdx].GetInputs(prgrm)[0].Meta))
 				sym.Size = fromCXAtomicOpInputs.Size
 				sym.TotalSize = fromCXAtomicOpInputs.TotalSize
 				sym.Lengths = fromCXAtomicOpInputs.Lengths
