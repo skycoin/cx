@@ -1,231 +1,395 @@
-package declaration_extraction
+package declaration_extraction_test
 
 import (
-	"fmt"
-	"log"
+	"errors"
 	"os"
 	"testing"
+
+	"test.com/declaration_extraction"
 )
 
-func TestDeclarationExtraction(t *testing.T) {
+func TestDeclarationExtraction_ExtractGlobal(t *testing.T) {
 
-	type Test struct {
-		content  string
-		fileName string
-		GlblDec  []Declaration
-		EnumDec  []EnumDeclaration
-		StrctDec []Declaration
-		FuncDec  []Declaration
+	tests := []struct {
+		scenario    string
+		testDir     string
+		wantGlobals []declaration_extraction.GlobalDeclaration
+	}{
+		{
+			scenario: "Has globals",
+			testDir:  "./test.cx",
+			wantGlobals: []declaration_extraction.GlobalDeclaration{
+				{
+					PackageID:   "hello",
+					FileID:      "test.cx",
+					StartOffset: 0,
+					Length:      16,
+					Name:        "apple",
+				},
+				{
+					PackageID:   "hello",
+					FileID:      "test.cx",
+					StartOffset: 2,
+					Length:      17,
+					Name:        "banana",
+				},
+			},
+		},
 	}
 
-	test1 := Test{
-		content: `package hello
-var apple string
-
-		var banana string
-
-/* sfds*/
-
-//asdsdsa
-
-//sdfsd
-type person struct {
-	name string
+	for _, tc := range tests {
+		t.Run(tc.scenario, func(t *testing.T) {
+			srcBytes, err := os.Open(tc.testDir)
+			if err != nil {
+				t.Fatal(err)
+			}
+			globals, err := declaration_extraction.ExtractGlobals(srcBytes)
+			if err != nil {
+				t.Fatal(err)
+			}
+			for i := range globals {
+				if globals[i] != tc.wantGlobals[i] {
+					t.Errorf("want globals %+v, got %+v", tc.wantGlobals[i], globals[i])
+				}
+			}
+		})
+	}
 }
 
-func main () {
-	var local string
+func TestDeclarationExtraction_ExtractEnums(t *testing.T) {
 
-	type animal struct {
-		kingdom string
+	tests := []struct {
+		scenario  string
+		testDir   string
+		wantEnums []declaration_extraction.EnumDeclaration
+	}{
+		{
+			scenario: "Has enums",
+			testDir:  "./test.cx",
+			wantEnums: []declaration_extraction.EnumDeclaration{
+				{
+					PackageID:   "hello",
+					FileID:      "test.cx",
+					StartOffset: 1,
+					Length:      15,
+					Name:        "North",
+					Type:        "Direction",
+					Value:       0,
+				},
+				{
+					PackageID:   "hello",
+					FileID:      "test.cx",
+					StartOffset: 1,
+					Length:      5,
+					Name:        "South",
+					Type:        "Direction",
+					Value:       1,
+				},
+				{
+					PackageID:   "hello",
+					FileID:      "test.cx",
+					StartOffset: 1,
+					Length:      4,
+					Name:        "East",
+					Type:        "Direction",
+					Value:       2,
+				},
+				{
+					PackageID:   "hello",
+					FileID:      "test.cx",
+					StartOffset: 1,
+					Length:      4,
+					Name:        "West",
+					Type:        "Direction",
+					Value:       3,
+				},
+				{
+					PackageID:   "hello",
+					FileID:      "test.cx",
+					StartOffset: 1,
+					Length:      12,
+					Name:        "First",
+					Type:        "Number",
+					Value:       0,
+				},
+				{
+					PackageID:   "hello",
+					FileID:      "test.cx",
+					StartOffset: 1,
+					Length:      6,
+					Name:        "Second",
+					Type:        "Number",
+					Value:       1,
+				},
+			},
+		},
+		{
+			scenario: "Has enums and nested parenthesis",
+			testDir:  "./testInPrts.cx",
+			wantEnums: []declaration_extraction.EnumDeclaration{
+				{
+					PackageID:   "hello",
+					FileID:      "testInPrts.cx",
+					StartOffset: 1,
+					Length:      15,
+					Name:        "North",
+					Type:        "Direction",
+					Value:       0,
+				},
+				{
+					PackageID:   "hello",
+					FileID:      "testInPrts.cx",
+					StartOffset: 1,
+					Length:      5,
+					Name:        "South",
+					Type:        "Direction",
+					Value:       1,
+				},
+				{
+					PackageID:   "hello",
+					FileID:      "testInPrts.cx",
+					StartOffset: 1,
+					Length:      4,
+					Name:        "East",
+					Type:        "Direction",
+					Value:       2,
+				},
+				{
+					PackageID:   "hello",
+					FileID:      "testInPrts.cx",
+					StartOffset: 1,
+					Length:      4,
+					Name:        "West",
+					Type:        "Direction",
+					Value:       3,
+				},
+				{
+					PackageID:   "hello",
+					FileID:      "testInPrts.cx",
+					StartOffset: 1,
+					Length:      12,
+					Name:        "First",
+					Type:        "Number",
+					Value:       0,
+				},
+				{
+					PackageID:   "hello",
+					FileID:      "testInPrts.cx",
+					StartOffset: 1,
+					Length:      6,
+					Name:        "Second",
+					Type:        "Number",
+					Value:       1,
+				},
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.scenario, func(t *testing.T) {
+			srcBytes, err := os.Open(tc.testDir)
+			if err != nil {
+				t.Fatal(err)
+			}
+			enums, err := declaration_extraction.ExtractEnums(srcBytes)
+			if err != nil {
+				t.Fatal(err)
+			}
+			for i := range enums {
+				if enums[i] != tc.wantEnums[i] {
+					t.Errorf("want enums %+v, got %+v", tc.wantEnums[i], enums[i])
+				}
+			}
+		})
 	}
 }
 
-	func functionTwo () {
+func TestDeclarationExtraction_ExtractStructs(t *testing.T) {
 
+	tests := []struct {
+		scenario    string
+		testDir     string
+		wantStructs []declaration_extraction.StructDeclaration
+	}{
+		{
+			scenario: "Has structs",
+			testDir:  "./test.cx",
+			wantStructs: []declaration_extraction.StructDeclaration{
+				{
+					PackageID:   "hello",
+					FileID:      "test.cx",
+					StartOffset: 0,
+					Length:      18,
+					Name:        "person",
+				},
+				{
+					PackageID:   "hello",
+					FileID:      "test.cx",
+					StartOffset: 1,
+					Length:      18,
+					Name:        "animal",
+				},
+				{
+					PackageID:   "hello",
+					FileID:      "test.cx",
+					StartOffset: 0,
+					Length:      18,
+					Name:        "Direction",
+				},
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.scenario, func(t *testing.T) {
+			srcBytes, err := os.Open(tc.testDir)
+			if err != nil {
+				t.Fatal(err)
+			}
+			structs, err := declaration_extraction.ExtractStructs(srcBytes)
+			if err != nil {
+				t.Fatal(err)
+			}
+			for i := range structs {
+				if structs[i] != tc.wantStructs[i] {
+					t.Errorf("want structs %+v, got %+v", tc.wantStructs[i], structs[i])
+				}
+			}
+		})
+	}
 }
 
-type Direction int
+func TestDeclarationExtraction_ExtractFuncs(t *testing.T) {
 
-const (
-	North Direction = iota
-	South
-	East
-	West
-)
-
-const (
-	First Number = iota
-	Second
-)`,
-		fileName: "test.cx",
-		GlblDec: []Declaration{
-			{
-				PackageID:   "hello",
-				FileID:      "test.cx",
-				StartOffset: 0,
-				Length:      16,
-				Name:        "apple",
-			},
-			{
-				PackageID:   "hello",
-				FileID:      "test.cx",
-				StartOffset: 2,
-				Length:      17,
-				Name:        "banana",
-			},
-		},
-		EnumDec: []EnumDeclaration{
-			{
-				PackageID:   "hello",
-				FileID:      "test.cx",
-				StartOffset: 1,
-				Length:      15,
-				Name:        "North",
-				Type:        "Direction",
-				Value:       0,
-			},
-			{
-				PackageID:   "hello",
-				FileID:      "test.cx",
-				StartOffset: 1,
-				Length:      5,
-				Name:        "South",
-				Type:        "Direction",
-				Value:       1,
-			},
-			{
-				PackageID:   "hello",
-				FileID:      "test.cx",
-				StartOffset: 1,
-				Length:      4,
-				Name:        "East",
-				Type:        "Direction",
-				Value:       2,
-			},
-			{
-				PackageID:   "hello",
-				FileID:      "test.cx",
-				StartOffset: 1,
-				Length:      4,
-				Name:        "West",
-				Type:        "Direction",
-				Value:       3,
-			},
-			{
-				PackageID:   "hello",
-				FileID:      "test.cx",
-				StartOffset: 1,
-				Length:      12,
-				Name:        "First",
-				Type:        "Number",
-				Value:       0,
-			},
-			{
-				PackageID:   "hello",
-				FileID:      "test.cx",
-				StartOffset: 1,
-				Length:      6,
-				Name:        "Second",
-				Type:        "Number",
-				Value:       1,
-			},
-		},
-		StrctDec: []Declaration{
-			{
-				PackageID:   "hello",
-				FileID:      "test.cx",
-				StartOffset: 0,
-				Length:      18,
-				Name:        "person",
-			},
-			{
-				PackageID:   "hello",
-				FileID:      "test.cx",
-				StartOffset: 1,
-				Length:      18,
-				Name:        "animal",
-			},
-			{
-				PackageID:   "hello",
-				FileID:      "test.cx",
-				StartOffset: 0,
-				Length:      18,
-				Name:        "Direction",
-			},
-		},
-		FuncDec: []Declaration{
-			{
-				PackageID:   "hello",
-				FileID:      "test.cx",
-				StartOffset: 0,
-				Length:      12,
-				Name:        "main",
-			},
-			{
-				PackageID:   "hello",
-				FileID:      "test.cx",
-				StartOffset: 1,
-				Length:      19,
-				Name:        "functionTwo",
+	tests := []struct {
+		scenario  string
+		testDir   string
+		wantFuncs []declaration_extraction.FuncDeclaration
+	}{
+		{
+			scenario: "Has structs",
+			testDir:  "./test.cx",
+			wantFuncs: []declaration_extraction.FuncDeclaration{
+				{
+					PackageID:   "hello",
+					FileID:      "test.cx",
+					StartOffset: 0,
+					Length:      12,
+					Name:        "main",
+				},
+				{
+					PackageID:   "hello",
+					FileID:      "test.cx",
+					StartOffset: 1,
+					Length:      19,
+					Name:        "functionTwo",
+				},
 			},
 		},
 	}
 
-	file, err := os.Create(test1.fileName)
-	num, err := file.Write([]byte(test1.content))
-	src, err := os.Open(test1.fileName)
+	for _, tc := range tests {
+		t.Run(tc.scenario, func(t *testing.T) {
+			srcBytes, err := os.Open(tc.testDir)
+			if err != nil {
+				t.Fatal(err)
+			}
+			funcs, err := declaration_extraction.ExtractFuncs(srcBytes)
+			if err != nil {
+				t.Fatal(err)
+			}
+			for i := range funcs {
+				if funcs[i] != tc.wantFuncs[i] {
+					t.Errorf("want funcs %+v, got %+v", tc.wantFuncs[i], funcs[i])
+				}
+			}
+		})
+	}
+}
 
-	if err != nil {
-		log.Fatal(err)
-		fmt.Println(num)
+func TestDeclarationExtraction_ReDeclarationCheck(t *testing.T) {
+
+	tests := []struct {
+		scenario   string
+		testDir    string
+		wantReDclr error
+	}{
+		{
+			scenario:   "No Redeclarations",
+			testDir:    "./test.cx",
+			wantReDclr: nil,
+		},
+		{
+			scenario:   "Redeclared globals",
+			testDir:    "./reDclrGlbl.cx",
+			wantReDclr: errors.New("global redeclared"),
+		},
+		{
+			scenario:   "Redeclared enums",
+			testDir:    "./reDclrEnum.cx",
+			wantReDclr: errors.New("enum redeclared"),
+		},
+		{
+			scenario:   "Redeclared structs",
+			testDir:    "./reDclrStrct.cx",
+			wantReDclr: errors.New("struct redeclared"),
+		},
+		{
+			scenario:   "Redeclared funcs",
+			testDir:    "./reDclrFunc.cx",
+			wantReDclr: errors.New("func redeclared"),
+		},
 	}
 
-	Glbl := extractGlbl(src)
+	// Problems
+	//Is there a way to open the file once and use it for all?
+	// How to compare error nil to error nil?
 
-	if Glbl == nil {
-		t.Error("No Global Declarations.")
-	}
+	for _, tc := range tests {
+		t.Run(tc.scenario, func(t *testing.T) {
+			srcBytes, err := os.Open(tc.testDir)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-	for i := range Glbl {
-		if Glbl[i] != test1.GlblDec[i] {
-			t.Errorf("Global Declaration got %+v : want %+v", Glbl[i], test1.GlblDec[i])
-		}
-	}
+			globals, err := declaration_extraction.ExtractGlobals(srcBytes)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-	src, err = os.Open(test1.fileName)
-	Enum := extractEnum(src)
-	if Enum == nil {
-		t.Error("No Enum Declarations.")
-	}
+			srcBytes, err = os.Open(tc.testDir)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-	for i := range Enum {
-		if Enum[i] != test1.EnumDec[i] {
-			t.Errorf("Enum Declaration got %+v : want %+v", Enum[i], test1.EnumDec[i])
-		}
-	}
+			enums, err := declaration_extraction.ExtractEnums(srcBytes)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-	src, err = os.Open(test1.fileName)
-	Strct := extractStrct(src)
-	if Strct == nil {
-		t.Error("No Struct Declarations.")
-	}
+			srcBytes, err = os.Open(tc.testDir)
+			if err != nil {
+				t.Fatal(err)
+			}
+			structs, err := declaration_extraction.ExtractStructs(srcBytes)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-	for i := range Strct {
-		if Strct[i] != test1.StrctDec[i] {
-			t.Errorf("Struct Declaration got %+v : want %+v", Strct[i], test1.StrctDec[i])
-		}
-	}
+			srcBytes, err = os.Open(tc.testDir)
+			if err != nil {
+				t.Fatal(err)
+			}
+			funcs, err := declaration_extraction.ExtractFuncs(srcBytes)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-	src, err = os.Open(test1.fileName)
-	Func := extractFunc(src)
-	if Func == nil {
-		t.Error("No Function Declarations.")
-	}
+			reDclr := declaration_extraction.ReDeclarationCheck(globals, enums, structs, funcs)
+			if errors.Is(reDclr, tc.wantReDclr) {
+				t.Errorf("want %+v, got %+v", tc.wantReDclr, reDclr)
+			}
 
-	for i := range Func {
-		if Func[i] != test1.FuncDec[i] {
-			t.Errorf("Function Declaration got %+v : want %+v", Func[i], test1.FuncDec[i])
-		}
+		})
 	}
 }

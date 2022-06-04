@@ -4,14 +4,14 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
-	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 )
 
-type Declaration struct {
+type GlobalDeclaration struct {
 	PackageID   string
 	FileID      string
 	StartOffset int
@@ -27,6 +27,22 @@ type EnumDeclaration struct {
 	Name        string
 	Type        string
 	Value       int
+}
+
+type StructDeclaration struct {
+	PackageID   string
+	FileID      string
+	StartOffset int
+	Length      int
+	Name        string
+}
+
+type FuncDeclaration struct {
+	PackageID   string
+	FileID      string
+	StartOffset int
+	Length      int
+	Name        string
 }
 
 func rmComment(source []byte) []byte {
@@ -54,7 +70,7 @@ func rmComment(source []byte) []byte {
 	return src
 }
 
-func extractPkg(source []byte) string {
+func ExtractPackages(source []byte) string {
 	rePkgName := regexp.MustCompile(`(^|[\s])package[ \t]+([_a-zA-Z][_a-zA-Z0-9]*)`)
 
 	srcStr := rePkgName.FindString(string(source))
@@ -65,18 +81,14 @@ func extractPkg(source []byte) string {
 	return srcStr
 }
 
-func extractGlbl(source *os.File) []Declaration {
+func ExtractGlobals(source *os.File) ([]GlobalDeclaration, error) {
 
-	var GlblDec []Declaration
+	var GlblDec []GlobalDeclaration
 	var pkgID string
 	src, err := io.ReadAll(source)
 
-	if err != nil {
-		fmt.Println("Error reading...")
-	}
-
 	CmtRmd := rmComment(src)
-	pkgID = extractPkg(CmtRmd)
+	pkgID = ExtractPackages(CmtRmd)
 
 	//Regexs
 	reGlbl := regexp.MustCompile(`var\s([_a-zA-Z][_a-zA-Z0-9]*)\s[_a-zA-Z][_a-zA-Z0-9]*`)
@@ -99,9 +111,9 @@ func extractGlbl(source *os.File) []Declaration {
 		}
 
 		if match := reGlbl.Find(line); match != nil && inBlock == 0 {
-			var tmp Declaration
+			var tmp GlobalDeclaration
 			tmp.PackageID = string(pkgID)
-			tmp.FileID = source.Name()
+			tmp.FileID = filepath.Base(filepath.Base(source.Name()))
 			tmp.StartOffset = reGlbl.FindIndex(line)[0]
 			name := strings.Split(string(match), " ")[1]
 			tmp.Length = len(match)
@@ -110,21 +122,17 @@ func extractGlbl(source *os.File) []Declaration {
 		}
 	}
 
-	return GlblDec
+	return GlblDec, err
 
 }
 
-func extractEnum(source *os.File) []EnumDeclaration {
+func ExtractEnums(source *os.File) ([]EnumDeclaration, error) {
 	var EnumDec []EnumDeclaration
 	var pkgID string
 	src, err := io.ReadAll(source)
 
-	if err != nil {
-		fmt.Println("Error reading...")
-	}
-
 	CmtRmd := rmComment(src)
-	pkgID = extractPkg(CmtRmd)
+	pkgID = ExtractPackages(CmtRmd)
 
 	//Regexes
 	reEnumInit := regexp.MustCompile(`const\s+\(`)
@@ -174,7 +182,7 @@ func extractEnum(source *os.File) []EnumDeclaration {
 			var tmp EnumDeclaration
 			slice := strings.Split(string(match), " ")
 			tmp.PackageID = string(pkgID)
-			tmp.FileID = source.Name()
+			tmp.FileID = filepath.Base(source.Name())
 			tmp.StartOffset = reEnumDec.FindIndex(line)[0]
 			tmp.Length = len(match)
 			tmp.Name = string(slice[0])
@@ -185,29 +193,20 @@ func extractEnum(source *os.File) []EnumDeclaration {
 			tmp.Value = Index
 			EnumDec = append(EnumDec, tmp)
 			Index++
-
-			fmt.Printf("[%v]", slice)
-			// fmt.Println(index)
 		}
-		fmt.Println(inPrts)
-		fmt.Println(EnumInit)
 	}
 
-	return EnumDec
+	return EnumDec, err
 
 }
 
-func extractStrct(source *os.File) []Declaration {
-	var StrctDec []Declaration
+func ExtractStructs(source *os.File) ([]StructDeclaration, error) {
+	var StrctDec []StructDeclaration
 	var pkgID string
 	src, err := io.ReadAll(source)
 
-	if err != nil {
-		fmt.Println("Error reading...")
-	}
-
 	CmtRmd := rmComment(src)
-	pkgID = extractPkg(CmtRmd)
+	pkgID = ExtractPackages(CmtRmd)
 
 	reStrctName := regexp.MustCompile(`type\s+([_a-zA-Z][_a-zA-Z0-9]*)\s[_a-zA-Z][_a-zA-Z0-9]*`)
 
@@ -218,9 +217,9 @@ func extractStrct(source *os.File) []Declaration {
 		line := scanner.Bytes()
 
 		if match := reStrctName.Find(line); match != nil {
-			var tmp Declaration
+			var tmp StructDeclaration
 			tmp.PackageID = pkgID
-			tmp.FileID = source.Name()
+			tmp.FileID = filepath.Base(source.Name())
 			tmp.StartOffset = reStrctName.FindIndex(line)[0]
 			name := strings.Split(string(match), " ")[1]
 			tmp.Length = len(match)
@@ -228,20 +227,16 @@ func extractStrct(source *os.File) []Declaration {
 			StrctDec = append(StrctDec, tmp)
 		}
 	}
-	return StrctDec
+	return StrctDec, err
 }
 
-func extractFunc(source *os.File) []Declaration {
-	var FuncDec []Declaration
+func ExtractFuncs(source *os.File) ([]FuncDeclaration, error) {
+	var FuncDec []FuncDeclaration
 	var pkgID string
 	src, err := io.ReadAll(source)
 
-	if err != nil {
-		fmt.Println("Error reading...")
-	}
-
 	CmtRmd := rmComment(src)
-	pkgID = extractPkg(CmtRmd)
+	pkgID = ExtractPackages(CmtRmd)
 
 	//the offset is for the whole declaration including parameters "func main(para1, para2)"?
 
@@ -254,9 +249,9 @@ func extractFunc(source *os.File) []Declaration {
 		line := scanner.Bytes()
 
 		if match := reFuncName.Find(line); match != nil {
-			var tmp Declaration
+			var tmp FuncDeclaration
 			tmp.PackageID = pkgID
-			tmp.FileID = source.Name()
+			tmp.FileID = filepath.Base(source.Name())
 			tmp.StartOffset = reFuncName.FindIndex(line)[0]
 			name := strings.Split(string(match), " ")[1]
 			tmp.Length = len(match)
@@ -264,50 +259,48 @@ func extractFunc(source *os.File) []Declaration {
 			FuncDec = append(FuncDec, tmp)
 		}
 	}
-	return FuncDec
+	return FuncDec, err
 }
 
-func reDeclearCheck(Glbl []Declaration, Enum []EnumDeclaration, Strct []Declaration, Func []Declaration) []error {
-	var err []error
+func ReDeclarationCheck(Glbl []GlobalDeclaration, Enum []EnumDeclaration, Strct []StructDeclaration, Func []FuncDeclaration) error {
+	var err error
 
-	for i := range Glbl {
-		for j := i; j < len(Glbl); j++ {
+	for i := 0; i < len(Glbl); i++ {
+		for j := i + 1; j < len(Glbl); j++ {
 			if Glbl[i].Name == Glbl[j].Name {
-				err = append(err, errors.New(`redecleared global`))
-				break
+				err = errors.New("global redeclared")
+				return err
 			}
 		}
 	}
 
-	for i := range Enum {
-		for j := i; j < len(Enum); j++ {
-			if Enum[i].Name == Enum[j].Name &&
-				Enum[i].Type == Enum[j].Type &&
-				Enum[i].Value == Enum[j].Value {
-				err = append(err, errors.New(`redecleared enum`))
-				break
+	for i := 0; i < len(Enum); i++ {
+		for j := i + 1; j < len(Enum); j++ {
+			if Enum[i].Name == Enum[j].Name {
+				err = errors.New("enum redeclared")
+				return err
 			}
 		}
 	}
 
-	for i := range Strct {
-		for j := i; j < len(Strct); j++ {
+	for i := 0; i < len(Strct); i++ {
+		for j := i + 1; j < len(Strct); j++ {
 			if Strct[i].Name == Strct[j].Name {
-				err = append(err, errors.New(`redecleared struct`))
-				break
+				err = errors.New("struct redeclared")
+				return err
 			}
 		}
 	}
 
-	for i := range Func {
-		for j := i; j < len(Func); j++ {
+	for i := 0; i < len(Func); i++ {
+		for j := i + 1; j < len(Func); j++ {
 			if Func[i].Name == Func[j].Name {
-				err = append(err, errors.New(`redecleared function`))
-				break
+				err = errors.New("func redeclared")
+				return err
 			}
 		}
 	}
 
+	err = nil
 	return err
-
 }
