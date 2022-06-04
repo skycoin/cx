@@ -593,32 +593,6 @@ func (cxprogram *CXProgram) PrintAllObjects() {
 				byts = types.Get_obj_data(cxprogram.Memory, heapOffset, ptr.StructType.GetStructSize(cxprogram))
 			}
 
-			// var currLengths []int
-			// var currCustom *CXStruct
-
-			// for c := len(ptr.DeclarationSpecifiers) - 1; c >= 0; c-- {
-			// 	// we need to go backwards in here
-
-			// 	switch ptr.DeclarationSpecifiers[c] {
-			// 	case DECL_POINTER:
-			// 		// we might not need to do anything
-			// 	case DECL_ARRAY:
-			// 		currLengths = ptr.Lengths
-			// 	case DECL_SLICE:
-			// 	case DECL_STRUCT:
-			// 		currCustom = ptr.StructType
-			// 	case DECL_BASIC:
-			// 	}
-			// }
-
-			// if len(ptr.Lengths) > 0 {
-			// 	fmt.Println("ARRAY")
-			// }
-
-			// if ptr.StructType != nil {
-			// 	fmt.Println("STRUCT")
-			// }
-
 			fmt.Println("declarat", ptr.DeclarationSpecifiers)
 
 			fmt.Println("obj", ptr.Name, ptr.StructType, cxprogram.Memory[heapOffset:heapOffset+op.Size], byts)
