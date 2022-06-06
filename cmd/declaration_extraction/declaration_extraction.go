@@ -4,9 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
-	"io"
-	"os"
-	"path/filepath"
 	"regexp"
 	"strings"
 )
@@ -45,12 +42,7 @@ type FuncDeclaration struct {
 	Name        string
 }
 
-func rmComment(source []byte) []byte {
-
-	var src []byte
-	// Regexs
-	reMultiComment := regexp.MustCompile(`/\*[\s\S]*?\*/`)
-	reComment := regexp.MustCompile(`//[.]*`)
+func RemoveComment(source []byte) []byte {
 
 	// Possible issue if there are infront for multiline comments the offset maybe a bit off
 	// For Example:
@@ -62,12 +54,10 @@ func rmComment(source []byte) []byte {
 	// |}
 	// |
 
-	//Replace contents between /* */ with ""
-	src = reMultiComment.ReplaceAll(source, []byte(""))
-	//Replace contents after // with ""
-	src = reComment.ReplaceAll(src, []byte(""))
+	re := regexp.MustCompile("(?s)//.*?\n|/\\*.*?\\*/")
+	newBytes := re.ReplaceAll(source, nil)
 
-	return src
+	return newBytes
 }
 
 func ExtractPackages(source []byte) string {
@@ -81,21 +71,16 @@ func ExtractPackages(source []byte) string {
 	return srcStr
 }
 
-func ExtractGlobals(source *os.File) ([]GlobalDeclaration, error) {
+func ExtractGlobals(source []byte, fileName string, pkg string) []GlobalDeclaration {
 
 	var GlblDec []GlobalDeclaration
-	var pkgID string
-	src, err := io.ReadAll(source)
-
-	CmtRmd := rmComment(src)
-	pkgID = ExtractPackages(CmtRmd)
 
 	//Regexs
 	reGlbl := regexp.MustCompile(`var\s([_a-zA-Z][_a-zA-Z0-9]*)\s[_a-zA-Z][_a-zA-Z0-9]*`)
 	reBodyOpen := regexp.MustCompile("{")
 	reBodyClose := regexp.MustCompile("}")
 
-	reader := bytes.NewReader(CmtRmd)
+	reader := bytes.NewReader(source)
 	scanner := bufio.NewScanner(reader)
 
 	var inBlock int
@@ -112,8 +97,8 @@ func ExtractGlobals(source *os.File) ([]GlobalDeclaration, error) {
 
 		if match := reGlbl.Find(line); match != nil && inBlock == 0 {
 			var tmp GlobalDeclaration
-			tmp.PackageID = string(pkgID)
-			tmp.FileID = filepath.Base(filepath.Base(source.Name()))
+			tmp.PackageID = pkg
+			tmp.FileID = fileName
 			tmp.StartOffset = reGlbl.FindIndex(line)[0]
 			name := strings.Split(string(match), " ")[1]
 			tmp.Length = len(match)
@@ -122,25 +107,20 @@ func ExtractGlobals(source *os.File) ([]GlobalDeclaration, error) {
 		}
 	}
 
-	return GlblDec, err
+	return GlblDec
 
 }
 
-func ExtractEnums(source *os.File) ([]EnumDeclaration, error) {
+func ExtractEnums(source []byte, fileName string, pkg string) []EnumDeclaration {
 	var EnumDec []EnumDeclaration
-	var pkgID string
-	src, err := io.ReadAll(source)
-
-	CmtRmd := rmComment(src)
-	pkgID = ExtractPackages(CmtRmd)
 
 	//Regexes
 	reEnumInit := regexp.MustCompile(`const\s+\(`)
 	rePrtsOpen := regexp.MustCompile(`\(`)
 	rePrtsClose := regexp.MustCompile(`\)`)
-	reEnumDec := regexp.MustCompile(`([_a-zA-Z][_a-zA-Z0-9]*)[ \t]+([_a-zA-Z][_a-zA-Z0-9]*)|([_a-zA-Z][_a-zA-Z0-9]*)`)
+	reEnumDec := regexp.MustCompile(`([_a-zA-Z][_a-zA-Z0-9]*)\s+([_a-zA-Z][_a-zA-Z0-9]*)|([_a-zA-Z][_a-zA-Z0-9]*)`)
 
-	reader := bytes.NewReader(CmtRmd)
+	reader := bytes.NewReader(source)
 	scanner := bufio.NewScanner(reader)
 
 	var EnumInit bool
@@ -181,8 +161,8 @@ func ExtractEnums(source *os.File) ([]EnumDeclaration, error) {
 		if match := reEnumDec.Find(line); match != nil && inPrts == 1 && EnumInit {
 			var tmp EnumDeclaration
 			slice := strings.Split(string(match), " ")
-			tmp.PackageID = string(pkgID)
-			tmp.FileID = filepath.Base(source.Name())
+			tmp.PackageID = pkg
+			tmp.FileID = fileName
 			tmp.StartOffset = reEnumDec.FindIndex(line)[0]
 			tmp.Length = len(match)
 			tmp.Name = string(slice[0])
@@ -196,21 +176,16 @@ func ExtractEnums(source *os.File) ([]EnumDeclaration, error) {
 		}
 	}
 
-	return EnumDec, err
+	return EnumDec
 
 }
 
-func ExtractStructs(source *os.File) ([]StructDeclaration, error) {
+func ExtractStructs(source []byte, fileName string, pkg string) []StructDeclaration {
 	var StrctDec []StructDeclaration
-	var pkgID string
-	src, err := io.ReadAll(source)
 
-	CmtRmd := rmComment(src)
-	pkgID = ExtractPackages(CmtRmd)
+	reStrctName := regexp.MustCompile(`type\s+([_a-zA-Z][_a-zA-Z0-9]*)\s+[_a-zA-Z][_a-zA-Z0-9]*`)
 
-	reStrctName := regexp.MustCompile(`type\s+([_a-zA-Z][_a-zA-Z0-9]*)\s[_a-zA-Z][_a-zA-Z0-9]*`)
-
-	reader := bytes.NewReader(CmtRmd)
+	reader := bytes.NewReader(source)
 	scanner := bufio.NewScanner(reader)
 	//Reading code line by line
 	for scanner.Scan() {
@@ -218,8 +193,8 @@ func ExtractStructs(source *os.File) ([]StructDeclaration, error) {
 
 		if match := reStrctName.Find(line); match != nil {
 			var tmp StructDeclaration
-			tmp.PackageID = pkgID
-			tmp.FileID = filepath.Base(source.Name())
+			tmp.PackageID = pkg
+			tmp.FileID = fileName
 			tmp.StartOffset = reStrctName.FindIndex(line)[0]
 			name := strings.Split(string(match), " ")[1]
 			tmp.Length = len(match)
@@ -227,22 +202,17 @@ func ExtractStructs(source *os.File) ([]StructDeclaration, error) {
 			StrctDec = append(StrctDec, tmp)
 		}
 	}
-	return StrctDec, err
+	return StrctDec
 }
 
-func ExtractFuncs(source *os.File) ([]FuncDeclaration, error) {
+func ExtractFuncs(source []byte, fileName string, pkg string) []FuncDeclaration {
 	var FuncDec []FuncDeclaration
-	var pkgID string
-	src, err := io.ReadAll(source)
-
-	CmtRmd := rmComment(src)
-	pkgID = ExtractPackages(CmtRmd)
 
 	//the offset is for the whole declaration including parameters "func main(para1, para2)"?
 
 	reFuncName := regexp.MustCompile(`func\s+([_a-zA-Z][_a-zA-Z0-9]*)\s+(\(.*\))`)
 
-	reader := bytes.NewReader(CmtRmd)
+	reader := bytes.NewReader(source)
 	scanner := bufio.NewScanner(reader)
 	//Reading code line by line
 	for scanner.Scan() {
@@ -250,8 +220,8 @@ func ExtractFuncs(source *os.File) ([]FuncDeclaration, error) {
 
 		if match := reFuncName.Find(line); match != nil {
 			var tmp FuncDeclaration
-			tmp.PackageID = pkgID
-			tmp.FileID = filepath.Base(source.Name())
+			tmp.PackageID = pkg
+			tmp.FileID = fileName
 			tmp.StartOffset = reFuncName.FindIndex(line)[0]
 			name := strings.Split(string(match), " ")[1]
 			tmp.Length = len(match)
@@ -259,7 +229,7 @@ func ExtractFuncs(source *os.File) ([]FuncDeclaration, error) {
 			FuncDec = append(FuncDec, tmp)
 		}
 	}
-	return FuncDec, err
+	return FuncDec
 }
 
 func ReDeclarationCheck(Glbl []GlobalDeclaration, Enum []EnumDeclaration, Strct []StructDeclaration, Func []FuncDeclaration) error {

@@ -3,11 +3,9 @@ var apple string
 
 		var banana string
 
-/* sfds*/
 
-//asdsdsa
 
-//sdfsd
+
 type person struct {
 	name string
 }

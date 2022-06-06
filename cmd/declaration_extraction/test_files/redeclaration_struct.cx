@@ -3,13 +3,14 @@ var apple string
 
 		var banana string
 
-	var banana int
+/* var notVar bool
+multi line comment
 
-/* sfds*/
+*/
 
-//asdsdsa
+//single line comment
 
-//sdfsd
+//another comment
 type person struct {
 	name string
 }
@@ -21,6 +22,8 @@ func main () {
 		kingdom string
 	}
 }
+
+type animal struct
 
 	func functionTwo () {
 

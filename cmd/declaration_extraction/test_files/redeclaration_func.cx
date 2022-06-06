@@ -3,11 +3,14 @@ var apple string
 
 		var banana string
 
-/* sfds*/
+/* var notVar bool
+multi line comment
 
-//asdsdsa
+*/
 
-//sdfsd
+//single line comment
+
+//another comment
 type person struct {
 	name string
 }
@@ -20,10 +23,12 @@ func main () {
 	}
 }
 
-type animal struct
-
 	func functionTwo () {
 
+}
+
+func functionTwo () {
+	
 }
 
 type Direction int
