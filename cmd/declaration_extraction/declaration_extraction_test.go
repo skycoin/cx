@@ -146,7 +146,7 @@ func TestDeclarationExtraction_ExtractEnums(t *testing.T) {
 				{
 					PackageID:   "hello",
 					FileID:      "test.cx",
-					StartOffset: 1,
+					StartOffset: 383,
 					Length:      15,
 					Name:        "North",
 					Type:        "Direction",
@@ -155,7 +155,7 @@ func TestDeclarationExtraction_ExtractEnums(t *testing.T) {
 				{
 					PackageID:   "hello",
 					FileID:      "test.cx",
-					StartOffset: 1,
+					StartOffset: 408,
 					Length:      5,
 					Name:        "South",
 					Type:        "Direction",
@@ -164,7 +164,7 @@ func TestDeclarationExtraction_ExtractEnums(t *testing.T) {
 				{
 					PackageID:   "hello",
 					FileID:      "test.cx",
-					StartOffset: 1,
+					StartOffset: 416,
 					Length:      4,
 					Name:        "East",
 					Type:        "Direction",
@@ -173,7 +173,7 @@ func TestDeclarationExtraction_ExtractEnums(t *testing.T) {
 				{
 					PackageID:   "hello",
 					FileID:      "test.cx",
-					StartOffset: 1,
+					StartOffset: 423,
 					Length:      4,
 					Name:        "West",
 					Type:        "Direction",
@@ -182,7 +182,7 @@ func TestDeclarationExtraction_ExtractEnums(t *testing.T) {
 				{
 					PackageID:   "hello",
 					FileID:      "test.cx",
-					StartOffset: 1,
+					StartOffset: 444,
 					Length:      12,
 					Name:        "First",
 					Type:        "Number",
@@ -191,7 +191,7 @@ func TestDeclarationExtraction_ExtractEnums(t *testing.T) {
 				{
 					PackageID:   "hello",
 					FileID:      "test.cx",
-					StartOffset: 1,
+					StartOffset: 466,
 					Length:      6,
 					Name:        "Second",
 					Type:        "Number",
@@ -206,7 +206,7 @@ func TestDeclarationExtraction_ExtractEnums(t *testing.T) {
 				{
 					PackageID:   "hello",
 					FileID:      "enum_in_parenthesis.cx",
-					StartOffset: 1,
+					StartOffset: 341,
 					Length:      15,
 					Name:        "North",
 					Type:        "Direction",
@@ -215,7 +215,7 @@ func TestDeclarationExtraction_ExtractEnums(t *testing.T) {
 				{
 					PackageID:   "hello",
 					FileID:      "enum_in_parenthesis.cx",
-					StartOffset: 1,
+					StartOffset: 366,
 					Length:      5,
 					Name:        "South",
 					Type:        "Direction",
@@ -224,7 +224,7 @@ func TestDeclarationExtraction_ExtractEnums(t *testing.T) {
 				{
 					PackageID:   "hello",
 					FileID:      "enum_in_parenthesis.cx",
-					StartOffset: 1,
+					StartOffset: 387,
 					Length:      4,
 					Name:        "East",
 					Type:        "Direction",
@@ -233,7 +233,7 @@ func TestDeclarationExtraction_ExtractEnums(t *testing.T) {
 				{
 					PackageID:   "hello",
 					FileID:      "enum_in_parenthesis.cx",
-					StartOffset: 1,
+					StartOffset: 394,
 					Length:      4,
 					Name:        "West",
 					Type:        "Direction",
@@ -242,7 +242,7 @@ func TestDeclarationExtraction_ExtractEnums(t *testing.T) {
 				{
 					PackageID:   "hello",
 					FileID:      "enum_in_parenthesis.cx",
-					StartOffset: 1,
+					StartOffset: 415,
 					Length:      12,
 					Name:        "First",
 					Type:        "Number",
@@ -251,7 +251,7 @@ func TestDeclarationExtraction_ExtractEnums(t *testing.T) {
 				{
 					PackageID:   "hello",
 					FileID:      "enum_in_parenthesis.cx",
-					StartOffset: 1,
+					StartOffset: 437,
 					Length:      6,
 					Name:        "Second",
 					Type:        "Number",
@@ -278,7 +278,7 @@ func TestDeclarationExtraction_ExtractEnums(t *testing.T) {
 
 			for i := range enums {
 				if enums[i] != tc.wantEnums[i] {
-					t.Errorf("want enums %+v, got %+v", tc.wantEnums[i], enums[i])
+					t.Errorf("want enums %v, got %v", tc.wantEnums[i], enums[i])
 				}
 			}
 		})
@@ -359,14 +359,14 @@ func TestDeclarationExtraction_ExtractFuncs(t *testing.T) {
 				{
 					PackageID:   "hello",
 					FileID:      "test.cx",
-					StartOffset: 0,
+					StartOffset: 212,
 					Length:      12,
 					Name:        "main",
 				},
 				{
 					PackageID:   "hello",
 					FileID:      "test.cx",
-					StartOffset: 1,
+					StartOffset: 321,
 					Length:      19,
 					Name:        "functionTwo",
 				},

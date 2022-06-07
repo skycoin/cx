@@ -121,7 +121,9 @@ func ExtractEnums(source []byte, fileName string, pkg string) ([]EnumDeclaration
 
 	//Regexes
 	reEnumInit := regexp.MustCompile(`const\s+\(`)
-	reEnumDec := regexp.MustCompile(`([_a-zA-Z][_a-zA-Z0-9]*)\s+([_a-zA-Z][_a-zA-Z0-9]*)|([_a-zA-Z][_a-zA-Z0-9]*)`)
+	rePrtsOpen := regexp.MustCompile(`\(`)
+	rePrtsClose := regexp.MustCompile(`\)`)
+	reEnumDec := regexp.MustCompile(`([_a-zA-Z][_a-zA-Z0-9]*)\s+[_a-zA-Z][_a-zA-Z0-9]*|([_a-zA-Z][_a-zA-Z0-9]*)`)
 
 	reader := bytes.NewReader(source)
 	scanner := bufio.NewScanner(reader)
@@ -162,12 +164,11 @@ func ExtractEnums(source []byte, fileName string, pkg string) ([]EnumDeclaration
 		}
 
 		if match := reEnumDec.Find(line); match != nil && inPrts == 1 && EnumInit {
-			reEnum := regexp.MustCompile(string(match))
 			var tmp EnumDeclaration
 			slice := strings.Split(string(match), " ")
 			tmp.PackageID = pkg
 			tmp.FileID = fileName
-			tmp.StartOffset = reEnum.FindIndex(source)[1]
+			tmp.StartOffset = bytes.Index(source, match)
 			tmp.Length = len(match)
 			tmp.Name = string(slice[0])
 			if len(slice) > 1 {
@@ -211,7 +212,7 @@ func ExtractFuncs(source []byte, fileName string, pkg string) ([]FuncDeclaration
 	var FuncDec []FuncDeclaration
 	var err error
 
-	reFunc := regexp.MustCompile(`func\s+([_a-zA-Z][_a-zA-Z0-9]*)\s+\(.*\)`)
+	reFunc := regexp.MustCompile(`func\s+([_a-zA-Z][_a-zA-Z0-9]*)[^{\n]*`)
 
 	funcLocs := reFunc.FindAllSubmatchIndex(source, -1)
 
@@ -220,7 +221,7 @@ func ExtractFuncs(source []byte, fileName string, pkg string) ([]FuncDeclaration
 		tmp.PackageID = pkg
 		tmp.FileID = fileName
 		tmp.StartOffset = funcLocs[i][0]
-		tmp.Length = funcLocs[i][1] - funcLocs[i][0]
+		tmp.Length = len(bytes.TrimSpace(source[funcLocs[i][0]:funcLocs[i][1]]))
 		tmp.Name = string(source[funcLocs[i][2]:funcLocs[i][3]])
 		FuncDec = append(FuncDec, tmp)
 	}
