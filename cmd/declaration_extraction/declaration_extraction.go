@@ -54,8 +54,8 @@ func RemoveComment(source []byte) []byte {
 	// |}
 	// |
 
-	re := regexp.MustCompile("(?s)//.*?\n|/\\*.*?\\*/")
-	newBytes := re.ReplaceAll(source, nil)
+	reComment := regexp.MustCompile("(?s)//.*?\n|/\\*.*?\\*/")
+	newBytes := reComment.ReplaceAll(source, nil)
 
 	return newBytes
 }
