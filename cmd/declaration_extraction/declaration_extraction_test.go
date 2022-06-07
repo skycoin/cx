@@ -59,10 +59,12 @@ func TestDeclarationExtraction_ExtractPackages(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
 			srcBytes, err := os.ReadFile(tc.testDir)
+			removeComment := declaration_extraction.RemoveComment(srcBytes)
+
 			if err != nil {
 				t.Fatal(err)
 			}
-			pkg := declaration_extraction.ExtractPackages(srcBytes)
+			pkg := declaration_extraction.ExtractPackages(removeComment)
 
 			if pkg != tc.wantPackage {
 				t.Errorf("want packages %v, got %v", tc.wantPackage, pkg)
