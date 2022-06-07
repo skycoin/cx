@@ -3,17 +3,22 @@ var apple string
 
 		var banana string
 
+                  
+                  
 
+  
 
+                     
 
-type person struct {
+                 
+                     type person struct {
 	name string
 }
 
 func main () {
 	var local string
 
-	type animal struct {
+	type animal                      struct {
 		kingdom string
 	}
 }

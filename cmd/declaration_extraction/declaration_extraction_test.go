@@ -9,7 +9,7 @@ import (
 	"github.com/skycoin/cx/cmd/declaration_extraction"
 )
 
-func TestDeclarationExtraction_RemoveComment(t *testing.T) {
+func TestDeclarationExtraction_ReplaceCommentsWithWhitespaces(t *testing.T) {
 
 	tests := []struct {
 		scenario           string
@@ -33,10 +33,15 @@ func TestDeclarationExtraction_RemoveComment(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			commentRemoved := declaration_extraction.RemoveComment(srcBytes)
+			commentRemoved := declaration_extraction.ReplaceCommentsWithWhitespaces(srcBytes)
 
 			if string(commentRemoved) != string(wantBytes) {
-				t.Errorf("want removed comments %v, got %v", string(wantBytes), string(commentRemoved))
+				t.Errorf("want comments replaced\n%v\ngot\n%v", string(wantBytes), string(commentRemoved))
+				file, err := os.Create("gotCommentsRemoved.cx")
+				if err != nil {
+					t.Fatal(err)
+				}
+				file.Write(commentRemoved)
 			}
 		})
 	}
@@ -59,12 +64,12 @@ func TestDeclarationExtraction_ExtractPackages(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
 			srcBytes, err := os.ReadFile(tc.testDir)
-			removeComment := declaration_extraction.RemoveComment(srcBytes)
+			ReplaceCommentsWithWhitespaces := declaration_extraction.ReplaceCommentsWithWhitespaces(srcBytes)
 
 			if err != nil {
 				t.Fatal(err)
 			}
-			pkg := declaration_extraction.ExtractPackages(removeComment)
+			pkg := declaration_extraction.ExtractPackages(ReplaceCommentsWithWhitespaces)
 
 			if pkg != tc.wantPackage {
 				t.Errorf("want packages %v, got %v", tc.wantPackage, pkg)
@@ -106,14 +111,14 @@ func TestDeclarationExtraction_ExtractGlobal(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
 			srcBytes, err := os.ReadFile(tc.testDir)
-			removeComment := declaration_extraction.RemoveComment(srcBytes)
+			ReplaceCommentsWithWhitespaces := declaration_extraction.ReplaceCommentsWithWhitespaces(srcBytes)
 			fileName := filepath.Base(tc.testDir)
-			pkg := declaration_extraction.ExtractPackages(removeComment)
+			pkg := declaration_extraction.ExtractPackages(ReplaceCommentsWithWhitespaces)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			globals, err := declaration_extraction.ExtractGlobals(removeComment, fileName, pkg)
+			globals, err := declaration_extraction.ExtractGlobals(ReplaceCommentsWithWhitespaces, fileName, pkg)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -259,14 +264,14 @@ func TestDeclarationExtraction_ExtractEnums(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
 			srcBytes, err := os.ReadFile(tc.testDir)
-			removeComment := declaration_extraction.RemoveComment(srcBytes)
+			ReplaceCommentsWithWhitespaces := declaration_extraction.ReplaceCommentsWithWhitespaces(srcBytes)
 			fileName := filepath.Base(tc.testDir)
-			pkg := declaration_extraction.ExtractPackages(removeComment)
+			pkg := declaration_extraction.ExtractPackages(ReplaceCommentsWithWhitespaces)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			enums, err := declaration_extraction.ExtractEnums(removeComment, fileName, pkg)
+			enums, err := declaration_extraction.ExtractEnums(ReplaceCommentsWithWhitespaces, fileName, pkg)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -319,14 +324,14 @@ func TestDeclarationExtraction_ExtractStructs(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
 			srcBytes, err := os.ReadFile(tc.testDir)
-			removeComment := declaration_extraction.RemoveComment(srcBytes)
+			ReplaceCommentsWithWhitespaces := declaration_extraction.ReplaceCommentsWithWhitespaces(srcBytes)
 			fileName := filepath.Base(tc.testDir)
-			pkg := declaration_extraction.ExtractPackages(removeComment)
+			pkg := declaration_extraction.ExtractPackages(ReplaceCommentsWithWhitespaces)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			structs, err := declaration_extraction.ExtractStructs(removeComment, fileName, pkg)
+			structs, err := declaration_extraction.ExtractStructs(ReplaceCommentsWithWhitespaces, fileName, pkg)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -372,14 +377,14 @@ func TestDeclarationExtraction_ExtractFuncs(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
 			srcBytes, err := os.ReadFile(tc.testDir)
-			removeComment := declaration_extraction.RemoveComment(srcBytes)
+			ReplaceCommentsWithWhitespaces := declaration_extraction.ReplaceCommentsWithWhitespaces(srcBytes)
 			fileName := filepath.Base(tc.testDir)
-			pkg := declaration_extraction.ExtractPackages(removeComment)
+			pkg := declaration_extraction.ExtractPackages(ReplaceCommentsWithWhitespaces)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			funcs, err := declaration_extraction.ExtractFuncs(removeComment, fileName, pkg)
+			funcs, err := declaration_extraction.ExtractFuncs(ReplaceCommentsWithWhitespaces, fileName, pkg)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -430,29 +435,29 @@ func TestDeclarationExtraction_ReDeclarationCheck(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
 			srcBytes, err := os.ReadFile(tc.testDir)
-			removeComment := declaration_extraction.RemoveComment(srcBytes)
+			ReplaceCommentsWithWhitespaces := declaration_extraction.ReplaceCommentsWithWhitespaces(srcBytes)
 			fileName := filepath.Base(tc.testDir)
-			pkg := declaration_extraction.ExtractPackages(removeComment)
+			pkg := declaration_extraction.ExtractPackages(ReplaceCommentsWithWhitespaces)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			globals, err := declaration_extraction.ExtractGlobals(removeComment, fileName, pkg)
+			globals, err := declaration_extraction.ExtractGlobals(ReplaceCommentsWithWhitespaces, fileName, pkg)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			enums, err := declaration_extraction.ExtractEnums(removeComment, fileName, pkg)
+			enums, err := declaration_extraction.ExtractEnums(ReplaceCommentsWithWhitespaces, fileName, pkg)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			structs, err := declaration_extraction.ExtractStructs(removeComment, fileName, pkg)
+			structs, err := declaration_extraction.ExtractStructs(ReplaceCommentsWithWhitespaces, fileName, pkg)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			funcs, err := declaration_extraction.ExtractFuncs(removeComment, fileName, pkg)
+			funcs, err := declaration_extraction.ExtractFuncs(ReplaceCommentsWithWhitespaces, fileName, pkg)
 			if err != nil {
 				t.Fatal(err)
 			}

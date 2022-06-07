@@ -6,6 +6,7 @@ import (
 	"errors"
 	"regexp"
 	"strings"
+	"unicode"
 )
 
 type GlobalDeclaration struct {
@@ -42,7 +43,7 @@ type FuncDeclaration struct {
 	Name        string
 }
 
-func RemoveComment(source []byte) []byte {
+func ReplaceCommentsWithWhitespaces(source []byte) []byte {
 
 	// Possible issue if there are infront for multiline comments the offset maybe a bit off
 	// For Example:
@@ -54,10 +55,22 @@ func RemoveComment(source []byte) []byte {
 	// |}
 	// |
 
-	reComment := regexp.MustCompile("(?s)//.*?\n|/\\*.*?\\*/")
-	newBytes := reComment.ReplaceAll(source, nil)
+	var sourceWithoutComments []byte = source
 
-	return newBytes
+	reComment := regexp.MustCompile(`//.*|/\*[\s\S]*?\*/`)
+
+	comments := reComment.FindAllIndex(source, -1)
+
+	for i := range comments {
+		for loc := comments[i][0]; loc < comments[i][1]; loc++ {
+			if unicode.IsSpace(rune(sourceWithoutComments[loc])) {
+				continue
+			}
+			sourceWithoutComments[loc] = byte(' ')
+		}
+	}
+
+	return sourceWithoutComments
 }
 
 func ExtractPackages(source []byte) string {
@@ -280,4 +293,8 @@ func ReDeclarationCheck(Glbl []GlobalDeclaration, Enum []EnumDeclaration, Strct 
 
 	err = nil
 	return err
+}
+
+func GetDeclaration(source []byte, offset int, length int) []byte {
+	return source[offset : offset+length]
 }

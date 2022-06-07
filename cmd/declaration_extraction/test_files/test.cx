@@ -11,14 +11,14 @@ multi line comment
 //single line comment
 
 //another comment
-type person struct {
+/* comment infront */type person struct {
 	name string
 }
 
 func main () {
 	var local string
 
-	type animal struct {
+	type animal /* comment between */struct {
 		kingdom string
 	}
 }
