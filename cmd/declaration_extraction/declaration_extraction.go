@@ -45,16 +45,6 @@ type FuncDeclaration struct {
 
 func ReplaceCommentsWithWhitespaces(source []byte) []byte {
 
-	// Possible issue if there are infront for multiline comments the offset maybe a bit off
-	// For Example:
-	// |/*
-	// |	Multi line comment
-	// |
-	// |	*/func main () { <--- offset should be 3 but when extracted is 0 since there are no more comments
-	// |
-	// |}
-	// |
-
 	var sourceWithoutComments []byte = source
 
 	reComment := regexp.MustCompile(`//.*|/\*[\s\S]*?\*/`)
@@ -201,25 +191,20 @@ func ExtractStructs(source []byte, fileName string, pkg string) ([]StructDeclara
 	var StrctDec []StructDeclaration
 	var err error
 
-	reStrctName := regexp.MustCompile(`type\s+([_a-zA-Z][_a-zA-Z0-9]*)\s+[_a-zA-Z][_a-zA-Z0-9]*`)
+	reStruct := regexp.MustCompile(`type\s+([_a-zA-Z][_a-zA-Z0-9]*)\s+[_a-zA-Z][_a-zA-Z0-9]*`)
 
-	reader := bytes.NewReader(source)
-	scanner := bufio.NewScanner(reader)
-	//Reading code line by line
-	for scanner.Scan() {
-		line := scanner.Bytes()
+	structLocs := reStruct.FindAllSubmatchIndex(source, -1)
 
-		if match := reStrctName.Find(line); match != nil {
-			var tmp StructDeclaration
-			tmp.PackageID = pkg
-			tmp.FileID = fileName
-			tmp.StartOffset = reStrctName.FindIndex(line)[0]
-			name := strings.Split(string(match), " ")[1]
-			tmp.Length = len(match)
-			tmp.Name = name
-			StrctDec = append(StrctDec, tmp)
-		}
+	for i := range structLocs {
+		var tmp StructDeclaration
+		tmp.PackageID = pkg
+		tmp.FileID = fileName
+		tmp.StartOffset = structLocs[i][0]
+		tmp.Length = structLocs[i][1] - structLocs[i][0]
+		tmp.Name = string(source[structLocs[i][2]:structLocs[i][3]])
+		StrctDec = append(StrctDec, tmp)
 	}
+
 	return StrctDec, err
 }
 
@@ -228,26 +213,18 @@ func ExtractFuncs(source []byte, fileName string, pkg string) ([]FuncDeclaration
 	var FuncDec []FuncDeclaration
 	var err error
 
-	//the offset is for the whole declaration including parameters "func main(para1, para2)"?
+	reFunc := regexp.MustCompile(`func\s+([_a-zA-Z][_a-zA-Z0-9]*)\s+\(.*\)`)
 
-	reFuncName := regexp.MustCompile(`func\s+([_a-zA-Z][_a-zA-Z0-9]*)\s+(\(.*\))`)
+	funcLocs := reFunc.FindAllSubmatchIndex(source, -1)
 
-	reader := bytes.NewReader(source)
-	scanner := bufio.NewScanner(reader)
-	//Reading code line by line
-	for scanner.Scan() {
-		line := scanner.Bytes()
-
-		if match := reFuncName.Find(line); match != nil {
-			var tmp FuncDeclaration
-			tmp.PackageID = pkg
-			tmp.FileID = fileName
-			tmp.StartOffset = reFuncName.FindIndex(line)[0]
-			name := strings.Split(string(match), " ")[1]
-			tmp.Length = len(match)
-			tmp.Name = name
-			FuncDec = append(FuncDec, tmp)
-		}
+	for i := range funcLocs {
+		var tmp FuncDeclaration
+		tmp.PackageID = pkg
+		tmp.FileID = fileName
+		tmp.StartOffset = funcLocs[i][0]
+		tmp.Length = funcLocs[i][1] - funcLocs[i][0]
+		tmp.Name = string(source[funcLocs[i][2]:funcLocs[i][3]])
+		FuncDec = append(FuncDec, tmp)
 	}
 	return FuncDec, err
 }

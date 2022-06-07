@@ -12,14 +12,14 @@ import (
 func TestDeclarationExtraction_ReplaceCommentsWithWhitespaces(t *testing.T) {
 
 	tests := []struct {
-		scenario           string
-		testDir            string
-		wantCommentRemoved string
+		scenario            string
+		testDir             string
+		wantCommentReplaced string
 	}{
 		{
-			scenario:           "Has comments",
-			testDir:            "./test_files/test.cx",
-			wantCommentRemoved: "./test_files/removeCommentResult.cx",
+			scenario:            "Has comments",
+			testDir:             "./test_files/test.cx",
+			wantCommentReplaced: "./test_files/replaceCommentResult.cx",
 		},
 	}
 
@@ -29,19 +29,19 @@ func TestDeclarationExtraction_ReplaceCommentsWithWhitespaces(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			wantBytes, err := os.ReadFile(tc.wantCommentRemoved)
+			wantBytes, err := os.ReadFile(tc.wantCommentReplaced)
 			if err != nil {
 				t.Fatal(err)
 			}
-			commentRemoved := declaration_extraction.ReplaceCommentsWithWhitespaces(srcBytes)
+			commentReplaced := declaration_extraction.ReplaceCommentsWithWhitespaces(srcBytes)
 
-			if string(commentRemoved) != string(wantBytes) {
-				t.Errorf("want comments replaced\n%v\ngot\n%v", string(wantBytes), string(commentRemoved))
-				file, err := os.Create("gotCommentsRemoved.cx")
+			if string(commentReplaced) != string(wantBytes) {
+				t.Errorf("want comments replaced\n%v\ngot\n%v", string(wantBytes), string(commentReplaced))
+				file, err := os.Create("gotCommentsReplaced.cx")
 				if err != nil {
 					t.Fatal(err)
 				}
-				file.Write(commentRemoved)
+				file.Write(commentReplaced)
 			}
 		})
 	}
@@ -299,21 +299,21 @@ func TestDeclarationExtraction_ExtractStructs(t *testing.T) {
 				{
 					PackageID:   "hello",
 					FileID:      "test.cx",
-					StartOffset: 0,
+					StartOffset: 171,
 					Length:      18,
 					Name:        "person",
 				},
 				{
 					PackageID:   "hello",
 					FileID:      "test.cx",
-					StartOffset: 1,
-					Length:      18,
+					StartOffset: 250,
+					Length:      39,
 					Name:        "animal",
 				},
 				{
 					PackageID:   "hello",
 					FileID:      "test.cx",
-					StartOffset: 0,
+					StartOffset: 351,
 					Length:      18,
 					Name:        "Direction",
 				},
