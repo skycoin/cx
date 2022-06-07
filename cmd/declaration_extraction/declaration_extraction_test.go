@@ -110,7 +110,11 @@ func TestDeclarationExtraction_ExtractGlobal(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			globals := declaration_extraction.ExtractGlobals(removeComment, fileName, pkg)
+
+			globals, err := declaration_extraction.ExtractGlobals(removeComment, fileName, pkg)
+			if err != nil {
+				t.Fatal(err)
+			}
 
 			for i := range globals {
 				if globals[i] != tc.wantGlobals[i] {
@@ -259,7 +263,11 @@ func TestDeclarationExtraction_ExtractEnums(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			enums := declaration_extraction.ExtractEnums(removeComment, fileName, pkg)
+
+			enums, err := declaration_extraction.ExtractEnums(removeComment, fileName, pkg)
+			if err != nil {
+				t.Fatal(err)
+			}
 
 			for i := range enums {
 				if enums[i] != tc.wantEnums[i] {
@@ -315,7 +323,11 @@ func TestDeclarationExtraction_ExtractStructs(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			structs := declaration_extraction.ExtractStructs(removeComment, fileName, pkg)
+
+			structs, err := declaration_extraction.ExtractStructs(removeComment, fileName, pkg)
+			if err != nil {
+				t.Fatal(err)
+			}
 
 			for i := range structs {
 				if structs[i] != tc.wantStructs[i] {
@@ -364,7 +376,11 @@ func TestDeclarationExtraction_ExtractFuncs(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			funcs := declaration_extraction.ExtractFuncs(removeComment, fileName, pkg)
+
+			funcs, err := declaration_extraction.ExtractFuncs(removeComment, fileName, pkg)
+			if err != nil {
+				t.Fatal(err)
+			}
 
 			for i := range funcs {
 				if funcs[i] != tc.wantFuncs[i] {
@@ -418,10 +434,26 @@ func TestDeclarationExtraction_ReDeclarationCheck(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			globals := declaration_extraction.ExtractGlobals(removeComment, fileName, pkg)
-			enums := declaration_extraction.ExtractEnums(removeComment, fileName, pkg)
-			structs := declaration_extraction.ExtractStructs(removeComment, fileName, pkg)
-			funcs := declaration_extraction.ExtractFuncs(removeComment, fileName, pkg)
+
+			globals, err := declaration_extraction.ExtractGlobals(removeComment, fileName, pkg)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			enums, err := declaration_extraction.ExtractEnums(removeComment, fileName, pkg)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			structs, err := declaration_extraction.ExtractStructs(removeComment, fileName, pkg)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			funcs, err := declaration_extraction.ExtractFuncs(removeComment, fileName, pkg)
+			if err != nil {
+				t.Fatal(err)
+			}
 
 			reDeclarationCheck := declaration_extraction.ReDeclarationCheck(globals, enums, structs, funcs)
 

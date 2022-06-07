@@ -71,9 +71,10 @@ func ExtractPackages(source []byte) string {
 	return srcStr
 }
 
-func ExtractGlobals(source []byte, fileName string, pkg string) []GlobalDeclaration {
+func ExtractGlobals(source []byte, fileName string, pkg string) ([]GlobalDeclaration, error) {
 
 	var GlblDec []GlobalDeclaration
+	var err error
 
 	//Regexs
 	reGlbl := regexp.MustCompile(`var\s([_a-zA-Z][_a-zA-Z0-9]*)\s[_a-zA-Z][_a-zA-Z0-9]*`)
@@ -107,12 +108,14 @@ func ExtractGlobals(source []byte, fileName string, pkg string) []GlobalDeclarat
 		}
 	}
 
-	return GlblDec
+	return GlblDec, err
 
 }
 
-func ExtractEnums(source []byte, fileName string, pkg string) []EnumDeclaration {
+func ExtractEnums(source []byte, fileName string, pkg string) ([]EnumDeclaration, error) {
+
 	var EnumDec []EnumDeclaration
+	var err error
 
 	//Regexes
 	reEnumInit := regexp.MustCompile(`const\s+\(`)
@@ -176,12 +179,14 @@ func ExtractEnums(source []byte, fileName string, pkg string) []EnumDeclaration 
 		}
 	}
 
-	return EnumDec
+	return EnumDec, err
 
 }
 
-func ExtractStructs(source []byte, fileName string, pkg string) []StructDeclaration {
+func ExtractStructs(source []byte, fileName string, pkg string) ([]StructDeclaration, error) {
+
 	var StrctDec []StructDeclaration
+	var err error
 
 	reStrctName := regexp.MustCompile(`type\s+([_a-zA-Z][_a-zA-Z0-9]*)\s+[_a-zA-Z][_a-zA-Z0-9]*`)
 
@@ -202,11 +207,13 @@ func ExtractStructs(source []byte, fileName string, pkg string) []StructDeclarat
 			StrctDec = append(StrctDec, tmp)
 		}
 	}
-	return StrctDec
+	return StrctDec, err
 }
 
-func ExtractFuncs(source []byte, fileName string, pkg string) []FuncDeclaration {
+func ExtractFuncs(source []byte, fileName string, pkg string) ([]FuncDeclaration, error) {
+
 	var FuncDec []FuncDeclaration
+	var err error
 
 	//the offset is for the whole declaration including parameters "func main(para1, para2)"?
 
@@ -229,7 +236,7 @@ func ExtractFuncs(source []byte, fileName string, pkg string) []FuncDeclaration 
 			FuncDec = append(FuncDec, tmp)
 		}
 	}
-	return FuncDec
+	return FuncDec, err
 }
 
 func ReDeclarationCheck(Glbl []GlobalDeclaration, Enum []EnumDeclaration, Strct []StructDeclaration, Func []FuncDeclaration) error {
