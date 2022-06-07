@@ -93,14 +93,14 @@ func TestDeclarationExtraction_ExtractGlobal(t *testing.T) {
 				{
 					PackageID:   "hello",
 					FileID:      "test.cx",
-					StartOffset: 0,
+					StartOffset: 15,
 					Length:      16,
 					Name:        "apple",
 				},
 				{
 					PackageID:   "hello",
 					FileID:      "test.cx",
-					StartOffset: 2,
+					StartOffset: 37,
 					Length:      17,
 					Name:        "banana",
 				},

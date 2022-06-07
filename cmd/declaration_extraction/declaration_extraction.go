@@ -80,35 +80,34 @@ func ExtractGlobals(source []byte, fileName string, pkg string) ([]GlobalDeclara
 	var err error
 
 	//Regexs
-	reGlbl := regexp.MustCompile(`var\s([_a-zA-Z][_a-zA-Z0-9]*)\s[_a-zA-Z][_a-zA-Z0-9]*`)
-	reBodyOpen := regexp.MustCompile("{")
-	reBodyClose := regexp.MustCompile("}")
+	reGlbl := regexp.MustCompile(`var\s([_a-zA-Z][_a-zA-Z0-9]*)\s+[\[_a-zA-Z][\]_a-zA-Z0-9]*`)
 
-	reader := bytes.NewReader(source)
-	scanner := bufio.NewScanner(reader)
+	var sourceWithoutBody []byte = source
 
 	var inBlock int
 
-	for scanner.Scan() {
-		line := scanner.Bytes()
-
-		if locs := reBodyOpen.FindAllIndex(line, -1); locs != nil {
+	for i := range source {
+		if source[i] == byte('{') {
 			inBlock++
 		}
-		if locs := reBodyClose.FindAllIndex(line, -1); locs != nil {
+		if source[i] == byte('}') {
 			inBlock--
 		}
-
-		if match := reGlbl.Find(line); match != nil && inBlock == 0 {
-			var tmp GlobalDeclaration
-			tmp.PackageID = pkg
-			tmp.FileID = fileName
-			tmp.StartOffset = reGlbl.FindIndex(line)[0]
-			name := strings.Split(string(match), " ")[1]
-			tmp.Length = len(match)
-			tmp.Name = name
-			GlblDec = append(GlblDec, tmp)
+		if inBlock != 0 {
+			sourceWithoutBody[i] = byte(' ')
 		}
+	}
+
+	GlblLocs := reGlbl.FindAllSubmatchIndex(sourceWithoutBody, -1)
+
+	for i := range GlblLocs {
+		var tmp GlobalDeclaration
+		tmp.PackageID = pkg
+		tmp.FileID = fileName
+		tmp.StartOffset = GlblLocs[i][0]
+		tmp.Length = GlblLocs[i][1] - GlblLocs[i][0]
+		tmp.Name = string(source[GlblLocs[i][2]:GlblLocs[i][3]])
+		GlblDec = append(GlblDec, tmp)
 	}
 
 	return GlblDec, err
@@ -122,8 +121,6 @@ func ExtractEnums(source []byte, fileName string, pkg string) ([]EnumDeclaration
 
 	//Regexes
 	reEnumInit := regexp.MustCompile(`const\s+\(`)
-	rePrtsOpen := regexp.MustCompile(`\(`)
-	rePrtsClose := regexp.MustCompile(`\)`)
 	reEnumDec := regexp.MustCompile(`([_a-zA-Z][_a-zA-Z0-9]*)\s+([_a-zA-Z][_a-zA-Z0-9]*)|([_a-zA-Z][_a-zA-Z0-9]*)`)
 
 	reader := bytes.NewReader(source)
@@ -165,11 +162,12 @@ func ExtractEnums(source []byte, fileName string, pkg string) ([]EnumDeclaration
 		}
 
 		if match := reEnumDec.Find(line); match != nil && inPrts == 1 && EnumInit {
+			reEnum := regexp.MustCompile(string(match))
 			var tmp EnumDeclaration
 			slice := strings.Split(string(match), " ")
 			tmp.PackageID = pkg
 			tmp.FileID = fileName
-			tmp.StartOffset = reEnumDec.FindIndex(line)[0]
+			tmp.StartOffset = reEnum.FindIndex(source)[1]
 			tmp.Length = len(match)
 			tmp.Name = string(slice[0])
 			if len(slice) > 1 {
