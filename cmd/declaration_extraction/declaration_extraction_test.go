@@ -95,6 +95,7 @@ func TestDeclarationExtraction_ExtractGlobal(t *testing.T) {
 					FileID:      "test.cx",
 					StartOffset: 15,
 					Length:      16,
+					LineNumber:  2,
 					Name:        "apple",
 				},
 				{
@@ -102,6 +103,7 @@ func TestDeclarationExtraction_ExtractGlobal(t *testing.T) {
 					FileID:      "test.cx",
 					StartOffset: 37,
 					Length:      17,
+					LineNumber:  4,
 					Name:        "banana",
 				},
 			},
@@ -537,7 +539,7 @@ func TestDeclarationExtraction_GetDeclarations(t *testing.T) {
 
 			for i := range declarations {
 				if declarations[i] != tc.wantDeclarations[i] {
-					t.Errorf("want declaration %v, got %v", declarations[i], tc.wantDeclarations[i])
+					t.Errorf("want declaration %v, got %v", tc.wantDeclarations[i], declarations[i])
 				}
 			}
 

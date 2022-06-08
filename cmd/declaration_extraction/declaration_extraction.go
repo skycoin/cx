@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
+	"fmt"
 	"regexp"
 	"strings"
 	"unicode"
@@ -14,6 +15,7 @@ type GlobalDeclaration struct {
 	FileID      string
 	StartOffset int
 	Length      int
+	LineNumber  int
 	Name        string
 }
 
@@ -22,9 +24,10 @@ type EnumDeclaration struct {
 	FileID      string
 	StartOffset int
 	Length      int
-	Name        string
+	LineNumber  int
 	Type        string
 	Value       int
+	Name        string
 }
 
 type StructDeclaration struct {
@@ -32,6 +35,7 @@ type StructDeclaration struct {
 	FileID      string
 	StartOffset int
 	Length      int
+	LineNumber  int
 	Name        string
 }
 
@@ -40,6 +44,7 @@ type FuncDeclaration struct {
 	FileID      string
 	StartOffset int
 	Length      int
+	LineNumber  int
 	Name        string
 }
 
@@ -81,35 +86,40 @@ func ExtractGlobals(source []byte, fileName string, pkg string) ([]GlobalDeclara
 
 	//Regexs
 	reGlbl := regexp.MustCompile(`var\s([_a-zA-Z][_a-zA-Z0-9]*)\s+[\[_a-zA-Z][\]_a-zA-Z0-9]*`)
+	reBodyOpen := regexp.MustCompile("{")
+	reBodyClose := regexp.MustCompile("}")
 
-	var sourceWithoutBody []byte = source
+	reader := bytes.NewReader(source)
+	scanner := bufio.NewScanner(reader)
 
+	var bytes int
+	var lineno int
 	var inBlock int
 
-	for i := range source {
-		if source[i] == byte('{') {
+	for scanner.Scan() {
+		line := scanner.Bytes()
+		lineno++
+
+		if locs := reBodyOpen.FindAllIndex(line, -1); locs != nil {
 			inBlock++
 		}
-		if source[i] == byte('}') {
+		if locs := reBodyClose.FindAllIndex(line, -1); locs != nil {
 			inBlock--
 		}
-		if inBlock != 0 {
-			sourceWithoutBody[i] = byte(' ')
+
+		if match := reGlbl.FindSubmatchIndex(line); match != nil && inBlock == 0 {
+			var tmp GlobalDeclaration
+			fmt.Print(string(line))
+			tmp.PackageID = pkg
+			tmp.FileID = fileName
+			tmp.StartOffset = bytes + match[0]
+			tmp.Length = match[1] - match[0]
+			tmp.LineNumber = lineno
+			tmp.Name = string(source[match[2]+bytes : match[3]+bytes])
+			GlblDec = append(GlblDec, tmp)
 		}
+		bytes += len(line) + lineno
 	}
-
-	GlblLocs := reGlbl.FindAllSubmatchIndex(sourceWithoutBody, -1)
-
-	for i := range GlblLocs {
-		var tmp GlobalDeclaration
-		tmp.PackageID = pkg
-		tmp.FileID = fileName
-		tmp.StartOffset = GlblLocs[i][0]
-		tmp.Length = GlblLocs[i][1] - GlblLocs[i][0]
-		tmp.Name = string(source[GlblLocs[i][2]:GlblLocs[i][3]])
-		GlblDec = append(GlblDec, tmp)
-	}
-
 	return GlblDec, err
 
 }
