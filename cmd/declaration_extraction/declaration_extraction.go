@@ -228,6 +228,7 @@ func ExtractFuncs(source []byte, fileName string, pkg string) ([]FuncDeclaration
 		tmp.Name = string(source[funcLocs[i][2]:funcLocs[i][3]])
 		FuncDec = append(FuncDec, tmp)
 	}
+
 	return FuncDec, err
 }
 
@@ -274,23 +275,23 @@ func ReDeclarationCheck(Glbl []GlobalDeclaration, Enum []EnumDeclaration, Strct 
 	return err
 }
 
-func GetDeclaration(source []byte, Glbl []GlobalDeclaration, Enum []EnumDeclaration, Strct []StructDeclaration, Func []FuncDeclaration) [][]byte {
-	var declarations [][]byte
+func GetDeclaration(source []byte, Glbl []GlobalDeclaration, Enum []EnumDeclaration, Strct []StructDeclaration, Func []FuncDeclaration) []string {
+	var declarations []string
 
 	for i := 0; i < len(Glbl); i++ {
-		declarations = append(declarations, source[Glbl[i].StartOffset:Glbl[i].StartOffset+Glbl[i].Length])
+		declarations = append(declarations, string(source[Glbl[i].StartOffset:Glbl[i].StartOffset+Glbl[i].Length]))
 	}
 
 	for i := 0; i < len(Enum); i++ {
-		declarations = append(declarations, source[Enum[i].StartOffset:Enum[i].StartOffset+Enum[i].Length])
+		declarations = append(declarations, string(source[Enum[i].StartOffset:Enum[i].StartOffset+Enum[i].Length]))
 	}
 
 	for i := 0; i < len(Strct); i++ {
-		declarations = append(declarations, source[Strct[i].StartOffset:Strct[i].StartOffset+Strct[i].Length])
+		declarations = append(declarations, string(source[Strct[i].StartOffset:Strct[i].StartOffset+Strct[i].Length]))
 	}
 
 	for i := 0; i < len(Func); i++ {
-		declarations = append(declarations, source[Func[i].StartOffset:Func[i].StartOffset+Func[i].Length])
+		declarations = append(declarations, string(source[Func[i].StartOffset:Func[i].StartOffset+Func[i].Length]))
 	}
 
 	return declarations

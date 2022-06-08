@@ -480,7 +480,7 @@ func TestDeclarationExtraction_GetDeclarations(t *testing.T) {
 		wantDeclarations [][]byte
 	}{
 		{
-			scenario: "No Redeclarations",
+			scenario: "Has declarations",
 			testDir:  "./test_files/test.cx",
 			wantDeclarations: [][]byte{
 				[]byte("sfdsfs"),
@@ -494,6 +494,11 @@ func TestDeclarationExtraction_GetDeclarations(t *testing.T) {
 			ReplaceCommentsWithWhitespaces := declaration_extraction.ReplaceCommentsWithWhitespaces(srcBytes)
 			fileName := filepath.Base(tc.testDir)
 			pkg := declaration_extraction.ExtractPackages(ReplaceCommentsWithWhitespaces)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			funcs, err := declaration_extraction.ExtractFuncs(ReplaceCommentsWithWhitespaces, fileName, pkg)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -513,16 +518,10 @@ func TestDeclarationExtraction_GetDeclarations(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			funcs, err := declaration_extraction.ExtractFuncs(ReplaceCommentsWithWhitespaces, fileName, pkg)
-			if err != nil {
-				t.Fatal(err)
-			}
-
 			declarations := declaration_extraction.GetDeclaration(srcBytes, globals, enums, structs, funcs)
 
-			for i := range declarations {
-				t.Errorf("%v", string(declarations[i]))
-			}
+			t.Errorf("%+v", declarations)
+
 		})
 	}
 }
