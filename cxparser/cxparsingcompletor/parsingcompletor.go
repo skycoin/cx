@@ -1721,7 +1721,7 @@ yydefault:
 					panic(err)
 				}
 
-				expressionOutput := actions.AST.GetCXArgFromArray(expression.GetOutputs(actions.AST)[0])
+				expressionOutput := actions.AST.GetCXArgFromArray(ast.CXArgumentIndex(expression.GetOutputs(actions.AST)[0].Meta))
 				if expressionOutput.Name == actions.AST.GetCXArgFromArray(ast.CXArgumentIndex(lastExpression.GetInputs(actions.AST)[0].Meta)).Name {
 					expressionOutput.Lengths = append(expressionOutput.Lengths, 0)
 					expressionOutput.DeclarationSpecifiers = append(expressionOutput.DeclarationSpecifiers, constants.DECL_SLICE)
@@ -2137,7 +2137,7 @@ yydefault:
 			if err != nil {
 				panic(err)
 			}
-			yyVAL.expressions = actions.PrimaryStructLiteralExternal(actions.AST, actions.AST.GetCXArgFromArray(cxAtomicOp.GetOutputs(actions.AST)[0]).Name, yyDollar[3].tok, yyDollar[5].expressions)
+			yyVAL.expressions = actions.PrimaryStructLiteralExternal(actions.AST, cxAtomicOp.GetOutputs(actions.AST)[0].Name, yyDollar[3].tok, yyDollar[5].expressions)
 		}
 	case 168:
 		yyDollar = yyS[yypt-3 : yypt+1]
@@ -2164,7 +2164,7 @@ yydefault:
 									if err != nil {
 										panic(err)
 									}
-									fromExpressionOutputIdx := fromExpression.GetOutputs(actions.AST)[0]
+									fromExpressionOutputIdx := fromExpression.GetOutputs(actions.AST)[0].Meta
 									actions.AST.CXArgs[fromExpressionOutputIdx].PreviouslyDeclared = true
 								}
 							}
@@ -2183,7 +2183,7 @@ yydefault:
 									if err != nil {
 										panic(err)
 									}
-									fromExpressionOutputIdx := fromExpression.GetOutputs(actions.AST)[0]
+									fromExpressionOutputIdx := fromExpression.GetOutputs(actions.AST)[0].Meta
 									actions.AST.CXArgs[fromExpressionOutputIdx].PreviouslyDeclared = true
 								}
 							}
@@ -2304,7 +2304,7 @@ yydefault:
 			if len(yyDollar[1].expressions) > 0 && lastFirstAtomicOpOperator == nil && !yyDollar[1].expressions[len(yyDollar[1].expressions)-1].IsMethodCall() {
 				outs := lastFirstAtomicOp.GetOutputs(actions.AST)
 				if len(outs) > 0 {
-					println(ast.CompilationError(actions.AST.GetCXArgFromArray(outs[0]).ArgDetails.FileName, actions.AST.GetCXArgFromArray(outs[0]).ArgDetails.FileLine), "invalid expression")
+					println(ast.CompilationError(actions.AST.GetCXArgFromArray(ast.CXArgumentIndex(outs[0].Meta)).ArgDetails.FileName, actions.AST.GetCXArgFromArray(ast.CXArgumentIndex(outs[0].Meta)).ArgDetails.FileLine), "invalid expression")
 				} else {
 					println(ast.CompilationError(actions.CurrentFile, actions.LineNo), "invalid expression")
 				}

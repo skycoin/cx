@@ -101,8 +101,12 @@ func (cxprogram *CXProgram) PrintStack() {
 				dupNames = append(dupNames, inpPkg.Name+inp.Name)
 			}
 
-			for _, outIdx := range cxAtomicOp.GetOutputs(cxprogram) {
-				out := cxprogram.GetCXArgFromArray(outIdx)
+			for _, output := range cxAtomicOp.GetOutputs(cxprogram) {
+				var out *CXArgument
+				if output.Type == TYPE_CXARGUMENT_DEPRECATE {
+					out = cxprogram.GetCXArgFromArray(CXArgumentIndex(output.Meta))
+				}
+
 				if out.Name == "" || cxAtomicOpOperator == nil {
 					continue
 				}
