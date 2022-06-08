@@ -529,11 +529,15 @@ func TestDeclarationExtraction_GetDeclarations(t *testing.T) {
 				t.Fatal(err)
 			}
 
+			if declaration_extraction.ReDeclarationCheck(globals, enums, structs, funcs) != nil {
+				t.Fatal(err)
+			}
+
 			declarations := declaration_extraction.GetDeclaration(srcBytes, globals, enums, structs, funcs)
 
 			for i := range declarations {
 				if declarations[i] != tc.wantDeclarations[i] {
-					t.Errorf("want declaration %v, got %v", declarations[i], tc.wantDeclarations)
+					t.Errorf("want declaration %v, got %v", declarations[i], tc.wantDeclarations[i])
 				}
 			}
 
