@@ -442,22 +442,22 @@ func TestDeclarationExtraction_ReDeclarationCheck(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			globals, err := declaration_extraction.ExtractGlobals(ReplaceCommentsWithWhitespaces, fileName, pkg)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			enums, err := declaration_extraction.ExtractEnums(ReplaceCommentsWithWhitespaces, fileName, pkg)
-			if err != nil {
-				t.Fatal(err)
-			}
-
 			structs, err := declaration_extraction.ExtractStructs(ReplaceCommentsWithWhitespaces, fileName, pkg)
 			if err != nil {
 				t.Fatal(err)
 			}
 
 			funcs, err := declaration_extraction.ExtractFuncs(ReplaceCommentsWithWhitespaces, fileName, pkg)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			globals, err := declaration_extraction.ExtractGlobals(ReplaceCommentsWithWhitespaces, fileName, pkg)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			enums, err := declaration_extraction.ExtractEnums(ReplaceCommentsWithWhitespaces, fileName, pkg)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -477,13 +477,24 @@ func TestDeclarationExtraction_GetDeclarations(t *testing.T) {
 	tests := []struct {
 		scenario         string
 		testDir          string
-		wantDeclarations [][]byte
+		wantDeclarations []string
 	}{
 		{
 			scenario: "Has declarations",
 			testDir:  "./test_files/test.cx",
-			wantDeclarations: [][]byte{
-				[]byte("sfdsfs"),
+			wantDeclarations: []string{
+				"var apple string",
+				"var banana string",
+				"North Direction",
+				"South",
+				"East",
+				"West",
+				"First Number",
+				"Second",
+				"type person struct",
+				"type Direction int",
+				"func main ()",
+				"func functionTwo ()",
 			},
 		},
 	}
@@ -520,7 +531,11 @@ func TestDeclarationExtraction_GetDeclarations(t *testing.T) {
 
 			declarations := declaration_extraction.GetDeclaration(srcBytes, globals, enums, structs, funcs)
 
-			t.Errorf("%+v", declarations)
+			for i := range declarations {
+				if declarations[i] != tc.wantDeclarations[i] {
+					t.Errorf("want declaration %v, got %v", declarations[i], tc.wantDeclarations)
+				}
+			}
 
 		})
 	}
