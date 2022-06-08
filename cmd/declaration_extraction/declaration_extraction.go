@@ -212,16 +212,19 @@ func ExtractFuncs(source []byte, fileName string, pkg string) ([]FuncDeclaration
 	var FuncDec []FuncDeclaration
 	var err error
 
-	reFunc := regexp.MustCompile(`func\s+([_a-zA-Z][_a-zA-Z0-9]*)[^{\n]*`)
+	reFunc := regexp.MustCompile(`func\s+([_a-zA-Z][_a-zA-Z0-9]*).*{`)
 
 	funcLocs := reFunc.FindAllSubmatchIndex(source, -1)
 
 	for i := range funcLocs {
 		var tmp FuncDeclaration
+
+		funcDec := string(bytes.Trim(source[funcLocs[i][0]:funcLocs[i][1]], "{"))
+		funcTrimSpace := bytes.TrimSpace([]byte(funcDec))
 		tmp.PackageID = pkg
 		tmp.FileID = fileName
 		tmp.StartOffset = funcLocs[i][0]
-		tmp.Length = len(bytes.TrimSpace(source[funcLocs[i][0]:funcLocs[i][1]]))
+		tmp.Length = len(funcTrimSpace)
 		tmp.Name = string(source[funcLocs[i][2]:funcLocs[i][3]])
 		FuncDec = append(FuncDec, tmp)
 	}
@@ -271,6 +274,24 @@ func ReDeclarationCheck(Glbl []GlobalDeclaration, Enum []EnumDeclaration, Strct 
 	return err
 }
 
-func GetDeclaration(source []byte, offset int, length int) []byte {
-	return source[offset : offset+length]
+func GetDeclaration(source []byte, Glbl []GlobalDeclaration, Enum []EnumDeclaration, Strct []StructDeclaration, Func []FuncDeclaration) [][]byte {
+	var declarations [][]byte
+
+	for i := 0; i < len(Glbl); i++ {
+		declarations = append(declarations, source[Glbl[i].StartOffset:Glbl[i].StartOffset+Glbl[i].Length])
+	}
+
+	for i := 0; i < len(Enum); i++ {
+		declarations = append(declarations, source[Enum[i].StartOffset:Enum[i].StartOffset+Enum[i].Length])
+	}
+
+	for i := 0; i < len(Strct); i++ {
+		declarations = append(declarations, source[Strct[i].StartOffset:Strct[i].StartOffset+Strct[i].Length])
+	}
+
+	for i := 0; i < len(Func); i++ {
+		declarations = append(declarations, source[Func[i].StartOffset:Func[i].StartOffset+Func[i].Length])
+	}
+
+	return declarations
 }

@@ -471,3 +471,58 @@ func TestDeclarationExtraction_ReDeclarationCheck(t *testing.T) {
 		})
 	}
 }
+
+func TestDeclarationExtraction_GetDeclarations(t *testing.T) {
+
+	tests := []struct {
+		scenario         string
+		testDir          string
+		wantDeclarations [][]byte
+	}{
+		{
+			scenario: "No Redeclarations",
+			testDir:  "./test_files/test.cx",
+			wantDeclarations: [][]byte{
+				[]byte("sfdsfs"),
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.scenario, func(t *testing.T) {
+			srcBytes, err := os.ReadFile(tc.testDir)
+			ReplaceCommentsWithWhitespaces := declaration_extraction.ReplaceCommentsWithWhitespaces(srcBytes)
+			fileName := filepath.Base(tc.testDir)
+			pkg := declaration_extraction.ExtractPackages(ReplaceCommentsWithWhitespaces)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			globals, err := declaration_extraction.ExtractGlobals(ReplaceCommentsWithWhitespaces, fileName, pkg)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			enums, err := declaration_extraction.ExtractEnums(ReplaceCommentsWithWhitespaces, fileName, pkg)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			structs, err := declaration_extraction.ExtractStructs(ReplaceCommentsWithWhitespaces, fileName, pkg)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			funcs, err := declaration_extraction.ExtractFuncs(ReplaceCommentsWithWhitespaces, fileName, pkg)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			declarations := declaration_extraction.GetDeclaration(srcBytes, globals, enums, structs, funcs)
+
+			for i := range declarations {
+				t.Errorf("%v", string(declarations[i]))
+			}
+		})
+	}
+}
