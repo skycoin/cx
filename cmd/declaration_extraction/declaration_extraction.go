@@ -10,7 +10,6 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
-	"sync"
 	"unicode"
 )
 
@@ -365,14 +364,10 @@ func ExtractAllDeclarations(source *os.File) []string {
 	srcWithoutComments := ReplaceCommentsWithWhitespaces(srcBytes)
 	pkg := ExtractPackages(srcWithoutComments)
 
-	Globals := make(chan []GlobalDeclaration)
-	Enums := make(chan []EnumDeclaration)
-	Structs := make(chan []StructDeclaration)
-	Funcs := make(chan []FuncDeclaration)
-
-	var wg sync.WaitGroup
-
-	wg.Add(4)
+	GlobalsCh := make(chan []GlobalDeclaration)
+	EnumsCh := make(chan []EnumDeclaration)
+	StructsCh := make(chan []StructDeclaration)
+	FuncsCh := make(chan []FuncDeclaration)
 
 	go func() {
 
@@ -381,9 +376,9 @@ func ExtractAllDeclarations(source *os.File) []string {
 			log.Fatal(err)
 		}
 
-		Globals <- glbls
+		GlobalsCh <- glbls
+		close(GlobalsCh)
 
-		wg.Done()
 	}()
 
 	go func() {
@@ -393,9 +388,9 @@ func ExtractAllDeclarations(source *os.File) []string {
 			log.Fatal(err)
 		}
 
-		Enums <- enums
+		EnumsCh <- enums
+		close(EnumsCh)
 
-		wg.Done()
 	}()
 
 	go func() {
@@ -405,9 +400,9 @@ func ExtractAllDeclarations(source *os.File) []string {
 			log.Fatal(err)
 		}
 
-		Structs <- structs
+		StructsCh <- structs
+		close(StructsCh)
 
-		wg.Done()
 	}()
 
 	go func() {
@@ -417,18 +412,20 @@ func ExtractAllDeclarations(source *os.File) []string {
 			log.Fatal(err)
 		}
 
-		Funcs <- funs
+		FuncsCh <- funs
 
-		wg.Done()
 	}()
 
-	wg.Wait()
+	Globals := <-GlobalsCh
+	Enums := <-EnumsCh
+	Structs := <-StructsCh
+	Funcs := <-FuncsCh
 
-	// if err := ReDeclarationCheck(<-Globals, <-Enums, <-Structs, <-Funcs); err != nil {
-	// 	log.Fatal(err)
-	// }
+	if err := ReDeclarationCheck(Globals, Enums, Structs, Funcs); err != nil {
+		log.Fatal(err)
+	}
 
-	declarations := GetDeclarations(srcBytes, <-Globals, <-Enums, <-Structs, <-Funcs)
+	declarations := GetDeclarations(srcBytes, Globals, Enums, Structs, Funcs)
 
 	return declarations
 }
