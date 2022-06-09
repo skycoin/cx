@@ -75,28 +75,28 @@ func TestGetImports(t *testing.T) {
 	}
 }
 
-func TestComparePackageNamesFalse(t *testing.T) {
-	CURRENT_PATH = TEST_SRC_PATH
-	testSamePackage, _, _, err := comparePackageNames(testFileList, []string{})
-	if err != nil {
-		t.Error(err)
-	}
-	if testSamePackage {
-		t.Error("Expected false, got true")
-	}
-}
-
-func TestComparePackageNamesTrue(t *testing.T) {
-	CURRENT_PATH = TEST_SRC_PATH + "testimport/"
-	testSamePackage, testPackageName, _, err := comparePackageNames(testFileList2, []string{})
-	if err != nil {
-		t.Error(err)
-	}
-	if !testSamePackage {
-		t.Error("Expected true, got false")
-	}
-	if testPackageName != "testimport" {
-		t.Error("Expected testimport, got", testPackageName)
+func TestComparePackageNames(t *testing.T) {
+	testValues := []struct {
+		Path     string
+		Files    []fs.DirEntry
+		Expected bool
+		ExpValue string
+	}{{TEST_SRC_PATH, testFileList, false, ""}, {TEST_SRC_PATH + "testimport/", testFileList2, true, "testimport"}}
+	for _, testcase := range testValues {
+		CURRENT_PATH = testcase.Path
+		testSamePackage, testPackageName, _, err := comparePackageNames(testcase.Files, []string{})
+		if err != nil {
+			t.Error(err)
+		}
+		if testSamePackage != testcase.Expected {
+			t.Error("Expected", testcase.Expected, "got", testSamePackage)
+		}
+		if testSamePackage == false {
+			return
+		}
+		if testPackageName != testcase.ExpValue {
+			t.Error("Expected", testcase.ExpValue, "got", testPackageName)
+		}
 	}
 }
 
