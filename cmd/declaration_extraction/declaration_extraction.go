@@ -132,8 +132,7 @@ func ExtractEnums(source []byte, fileName string, pkg string) ([]EnumDeclaration
 	reEnumInit := regexp.MustCompile(`const\s+\(`)
 	rePrtsOpen := regexp.MustCompile(`\(`)
 	rePrtsClose := regexp.MustCompile(`\)`)
-	reEnumDec := regexp.MustCompile(`[_a-zA-Z][_a-zA-Z0-9]*`)
-	reEqual := regexp.MustCompile(`=`)
+	reEnumDec := regexp.MustCompile(`([_a-zA-Z][_a-zA-Z0-9]*)\s+([_a-zA-Z][_a-zA-Z0-9]*)|([_a-zA-Z][_a-zA-Z0-9]*)`)
 
 	reader := bytes.NewReader(source)
 	scanner := bufio.NewScanner(reader)
@@ -144,15 +143,6 @@ func ExtractEnums(source []byte, fileName string, pkg string) ([]EnumDeclaration
 	var Index int
 	var bytes int
 	var lineno int
-
-	/* inPrts is supporting () with in the enum
-	for example:
-
-	const (
-		a int = pointer(1) <---it would close off the enum here
-	)
-
-	*/
 
 	for scanner.Scan() {
 		line := scanner.Bytes()
@@ -178,23 +168,20 @@ func ExtractEnums(source []byte, fileName string, pkg string) ([]EnumDeclaration
 			Index = 0
 		}
 
-		if match := reEnumDec.FindAllIndex(line, -1); match != nil && inPrts == 1 && EnumInit {
+		if match := reEnumDec.FindSubmatchIndex(line); match != nil && inPrts == 1 && EnumInit {
 			var tmp EnumDeclaration
 			tmp.PackageID = pkg
 			tmp.FileID = fileName
-			tmp.StartOffset = match[0][0] + bytes
-			tmp.Length = match[0][1] - match[0][0]
-
-			if len(match) > 1 {
-				tmp.Length = match[1][1] - match[0][0]
-			}
-
+			tmp.StartOffset = match[0] + bytes
+			tmp.Length = match[1] - match[0]
 			tmp.LineNumber = lineno
-			fmt.Print(match)
-			tmp.Name = string(source[match[0][0]+bytes : match[0][1]+bytes])
 
-			if len(match) > 1 {
-				Type = string(source[match[1][0]+bytes : match[1][1]+bytes])
+			fmt.Print(match)
+			tmp.Name = string(source[match[6]+bytes : match[7]+bytes])
+
+			if match[2] != -1 {
+				Type = string(source[match[4]+bytes : match[5]+bytes])
+				tmp.Name = string(source[match[2]+bytes : match[3]+bytes])
 			}
 
 			tmp.Type = Type
