@@ -251,7 +251,7 @@ func MakeInputExpressionAPointer(cxprogram *cxast.CXProgram, functionName string
 		panic(err)
 	}
 
-	cxast.MakePointer(cxprogram.GetCXArgFromArray(cxAtomicOp.GetInputs(cxprogram)[inputNumber]))
+	cxast.MakePointer(cxprogram.GetCXArgFromArray(cxast.CXArgumentIndex(cxAtomicOp.GetInputs(cxprogram)[inputNumber].Meta)))
 	return nil
 }
 
@@ -299,7 +299,7 @@ func MakeOutputExpressionAPointer(cxprogram *cxast.CXProgram, functionName strin
 		panic(err)
 	}
 
-	cxast.MakePointer(cxprogram.GetCXArgFromArray(cxAtomicOp.GetOutputs(cxprogram)[outputNumber]))
+	cxast.MakePointer(cxprogram.GetCXArgFromArray(cxast.CXArgumentIndex(cxAtomicOp.GetOutputs(cxprogram)[outputNumber].Meta)))
 	return nil
 }
 
@@ -386,8 +386,12 @@ func GetAccessibleArgsForFunctionByType(cxprogram *cxast.CXProgram, packageLocat
 		if err != nil {
 			panic(err)
 		}
-		for _, argIdx := range cxAtomicOp.GetInputs(cxprogram) {
-			arg := cxprogram.GetCXArgFromArray(argIdx)
+		for _, inputArg := range cxAtomicOp.GetInputs(cxprogram) {
+			var arg *ast.CXArgument
+			if inputArg.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				arg = cxprogram.GetCXArgFromArray(cxast.CXArgumentIndex(inputArg.Meta))
+			}
+
 			if arg.IsStruct {
 				for _, typeSignature := range arg.StructType.Fields {
 					fieldIdx := typeSignature.Meta

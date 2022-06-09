@@ -153,7 +153,7 @@ func feedOSArgs(cxprogram *ast.CXProgram, args []string) error {
 				types.Write_ptr(argOffsetBytes[:], 0, argOffset)
 				argsOffset = ast.WriteToSlice(cxprogram, argsOffset, argOffsetBytes[:])
 			}
-			types.Write_ptr(cxprogram.Memory, ast.GetFinalOffset(cxprogram, 0, osGbl), argsOffset)
+			types.Write_ptr(cxprogram.Memory, ast.GetFinalOffset(cxprogram, 0, osGbl, nil), argsOffset)
 		}
 	}
 	return nil

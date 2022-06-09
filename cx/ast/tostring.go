@@ -109,8 +109,12 @@ func buildStrFunctions(prgrm *CXProgram, pkg *CXPackage, ast1 *string) {
 
 		var inps bytes.Buffer
 		var outs bytes.Buffer
-		getFormattedParam(prgrm, prgrm.ConvertIndexArgsToPointerArgs(fn.GetInputs(prgrm)), pkg, &inps)
-		getFormattedParam(prgrm, prgrm.ConvertIndexArgsToPointerArgs(fn.GetOutputs(prgrm)), pkg, &outs)
+
+		inputCXArgs := prgrm.ConvertIndexTypeSignaturesToPointerArgs(fn.GetInputs(prgrm))
+		getFormattedParam(prgrm, inputCXArgs, pkg, &inps)
+
+		outputCxArgs := prgrm.ConvertIndexTypeSignaturesToPointerArgs(fn.GetOutputs(prgrm))
+		getFormattedParam(prgrm, outputCxArgs, pkg, &outs)
 
 		*ast1 += fmt.Sprintf("\t\t%d.- Function: %s (%s) (%s)\n",
 			j, fn.Name, inps.String(), outs.String())
@@ -144,8 +148,8 @@ func buildStrFunctions(prgrm *CXProgram, pkg *CXPackage, ast1 *string) {
 				}
 			}
 
-			getFormattedParam(prgrm, prgrm.ConvertIndexArgsToPointerArgs(cxAtomicOp.GetInputs(prgrm)), pkg, &inps)
-			getFormattedParam(prgrm, prgrm.ConvertIndexArgsToPointerArgs(cxAtomicOp.GetOutputs(prgrm)), pkg, &outs)
+			getFormattedParam(prgrm, prgrm.ConvertIndexTypeSignaturesToPointerArgs(cxAtomicOp.GetInputs(prgrm)), pkg, &inps)
+			getFormattedParam(prgrm, prgrm.ConvertIndexTypeSignaturesToPointerArgs(cxAtomicOp.GetOutputs(prgrm)), pkg, &outs)
 
 			if expr.Type == CX_LINE {
 				cxLine, _ := prgrm.GetCXLine(expr.Index)
@@ -171,12 +175,12 @@ func buildStrFunctions(prgrm *CXProgram, pkg *CXPackage, ast1 *string) {
 				// by expressions without operators that only have outputs.
 				cxAtomicOpOutputs := cxAtomicOp.GetOutputs(prgrm)
 				if len(cxAtomicOpOutputs) > 0 {
-					out := prgrm.GetCXArgFromArray(cxAtomicOpOutputs[len(cxAtomicOpOutputs)-1])
+					out := prgrm.GetCXArgFromArray(CXArgumentIndex(cxAtomicOpOutputs[len(cxAtomicOpOutputs)-1].Meta))
 
 					*ast1 += fmt.Sprintf("\t\t\t%d.- Declaration%s: %s %s\n",
 						k,
 						lbl,
-						prgrm.GetCXArgFromArray(cxAtomicOpOutputs[0]).Name,
+						prgrm.GetCXArgFromArray(CXArgumentIndex(cxAtomicOpOutputs[0].Meta)).Name,
 						GetFormattedType(prgrm, out))
 				}
 			}
@@ -239,8 +243,12 @@ func getFormattedParam(prgrm *CXProgram, params []*CXArgument, pkg *CXPackage, b
 func SignatureStringOfFunction(prgrm *CXProgram, pkg *CXPackage, f *CXFunction) string {
 	var ins bytes.Buffer
 	var outs bytes.Buffer
-	getFormattedParam(prgrm, prgrm.ConvertIndexArgsToPointerArgs(f.GetInputs(prgrm)), pkg, &ins)
-	getFormattedParam(prgrm, prgrm.ConvertIndexArgsToPointerArgs(f.GetOutputs(prgrm)), pkg, &outs)
+
+	inputCXArgs := prgrm.ConvertIndexTypeSignaturesToPointerArgs(f.GetInputs(prgrm))
+	getFormattedParam(prgrm, inputCXArgs, pkg, &ins)
+
+	outputCXArgs := prgrm.ConvertIndexTypeSignaturesToPointerArgs(f.GetOutputs(prgrm))
+	getFormattedParam(prgrm, outputCXArgs, pkg, &outs)
 
 	return fmt.Sprintf("func %s(%s) (%s)",
 		f.Name, ins.String(), outs.String())
@@ -248,36 +256,36 @@ func SignatureStringOfFunction(prgrm *CXProgram, pkg *CXPackage, f *CXFunction) 
 
 func getNonCollectionValue(prgrm *CXProgram, fp types.Pointer, arg, elt *CXArgument, typ string) string {
 	if arg.IsPointer() {
-		return fmt.Sprintf("%v", types.Read_ptr(prgrm.Memory, GetFinalOffset(prgrm, fp, elt)))
+		return fmt.Sprintf("%v", types.Read_ptr(prgrm.Memory, GetFinalOffset(prgrm, fp, elt, nil)))
 	}
 	if arg.IsSlice {
-		return fmt.Sprintf("%v", types.GetSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, fp, elt), GetArgSize(prgrm, elt)))
+		return fmt.Sprintf("%v", types.GetSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, fp, elt, nil), GetArgSize(prgrm, elt)))
 	}
 	switch typ {
 	case "bool":
-		return fmt.Sprintf("%v", types.Read_bool(prgrm.Memory, GetFinalOffset(prgrm, fp, elt)))
+		return fmt.Sprintf("%v", types.Read_bool(prgrm.Memory, GetFinalOffset(prgrm, fp, elt, nil)))
 	case "str":
-		return fmt.Sprintf("%v", types.Read_str(prgrm.Memory, GetFinalOffset(prgrm, fp, elt)))
+		return fmt.Sprintf("%v", types.Read_str(prgrm.Memory, GetFinalOffset(prgrm, fp, elt, nil)))
 	case "i8":
-		return fmt.Sprintf("%v", types.Read_i8(prgrm.Memory, GetFinalOffset(prgrm, fp, elt)))
+		return fmt.Sprintf("%v", types.Read_i8(prgrm.Memory, GetFinalOffset(prgrm, fp, elt, nil)))
 	case "i16":
-		return fmt.Sprintf("%v", types.Read_i16(prgrm.Memory, GetFinalOffset(prgrm, fp, elt)))
+		return fmt.Sprintf("%v", types.Read_i16(prgrm.Memory, GetFinalOffset(prgrm, fp, elt, nil)))
 	case "i32":
-		return fmt.Sprintf("%v", types.Read_i32(prgrm.Memory, GetFinalOffset(prgrm, fp, elt)))
+		return fmt.Sprintf("%v", types.Read_i32(prgrm.Memory, GetFinalOffset(prgrm, fp, elt, nil)))
 	case "i64":
-		return fmt.Sprintf("%v", types.Read_i64(prgrm.Memory, GetFinalOffset(prgrm, fp, elt)))
+		return fmt.Sprintf("%v", types.Read_i64(prgrm.Memory, GetFinalOffset(prgrm, fp, elt, nil)))
 	case "ui8":
-		return fmt.Sprintf("%v", types.Read_ui8(prgrm.Memory, GetFinalOffset(prgrm, fp, elt)))
+		return fmt.Sprintf("%v", types.Read_ui8(prgrm.Memory, GetFinalOffset(prgrm, fp, elt, nil)))
 	case "ui16":
-		return fmt.Sprintf("%v", types.Read_ui16(prgrm.Memory, GetFinalOffset(prgrm, fp, elt)))
+		return fmt.Sprintf("%v", types.Read_ui16(prgrm.Memory, GetFinalOffset(prgrm, fp, elt, nil)))
 	case "ui32":
-		return fmt.Sprintf("%v", types.Read_ui32(prgrm.Memory, GetFinalOffset(prgrm, fp, elt)))
+		return fmt.Sprintf("%v", types.Read_ui32(prgrm.Memory, GetFinalOffset(prgrm, fp, elt, nil)))
 	case "ui64":
-		return fmt.Sprintf("%v", types.Read_ui64(prgrm.Memory, GetFinalOffset(prgrm, fp, elt)))
+		return fmt.Sprintf("%v", types.Read_ui64(prgrm.Memory, GetFinalOffset(prgrm, fp, elt, nil)))
 	case "f32":
-		return fmt.Sprintf("%v", types.Read_f32(prgrm.Memory, GetFinalOffset(prgrm, fp, elt)))
+		return fmt.Sprintf("%v", types.Read_f32(prgrm.Memory, GetFinalOffset(prgrm, fp, elt, nil)))
 	case "f64":
-		return fmt.Sprintf("%v", types.Read_f64(prgrm.Memory, GetFinalOffset(prgrm, fp, elt)))
+		return fmt.Sprintf("%v", types.Read_f64(prgrm.Memory, GetFinalOffset(prgrm, fp, elt, nil)))
 	default:
 		// then it's a struct
 		var val string
@@ -702,8 +710,11 @@ func GetFormattedType(prgrm *CXProgram, arg *CXArgument) string {
 							// println(CompilationError(elt.FileName, elt.FileLine), err.ProgramError())
 							// os.Exit(CX_COMPILATION_ERROR)
 							// Adding list of inputs and outputs types.
-							typ += formatParameters(prgrm, prgrm.ConvertIndexArgsToPointerArgs(fn.GetInputs(prgrm)))
-							typ += formatParameters(prgrm, prgrm.ConvertIndexArgsToPointerArgs(fn.GetOutputs(prgrm)))
+							inputCXArgs := prgrm.ConvertIndexTypeSignaturesToPointerArgs(fn.GetInputs(prgrm))
+							typ += formatParameters(prgrm, inputCXArgs)
+
+							outputCXArgs := prgrm.ConvertIndexTypeSignaturesToPointerArgs(fn.GetOutputs(prgrm))
+							typ += formatParameters(prgrm, outputCXArgs)
 						}
 					}
 				}
