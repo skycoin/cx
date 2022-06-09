@@ -243,21 +243,41 @@ func ExtractFuncs(source []byte, fileName string, pkg string) ([]FuncDeclaration
 	var FuncDec []FuncDeclaration
 	var err error
 
-	reFunc := regexp.MustCompile(`func\s+([_a-zA-Z][_a-zA-Z0-9]*).*{`)
+	reFunc := regexp.MustCompile(`func\s+([_a-zA-Z]\w*)\s+\(.*\)\s+\S+\w+|func\s+([_a-zA-Z]\w*)\s+\(.*\)`)
 
-	funcLocs := reFunc.FindAllSubmatchIndex(source, -1)
+	reader := bytes.NewReader(source)
+	scanner := bufio.NewScanner(reader)
 
-	for i := range funcLocs {
-		var tmp FuncDeclaration
+	var bytes int
+	var lineno int
 
-		funcDec := string(bytes.Trim(source[funcLocs[i][0]:funcLocs[i][1]], "{"))
-		funcTrimSpace := bytes.TrimSpace([]byte(funcDec))
-		tmp.PackageID = pkg
-		tmp.FileID = fileName
-		tmp.StartOffset = funcLocs[i][0]
-		tmp.Length = len(funcTrimSpace)
-		tmp.Name = string(source[funcLocs[i][2]:funcLocs[i][3]])
-		FuncDec = append(FuncDec, tmp)
+	//Reading code line by line
+	for scanner.Scan() {
+		line := scanner.Bytes()
+		lineno++
+
+		if match := reFunc.FindSubmatchIndex(line); match != nil {
+
+			var tmp FuncDeclaration
+
+			tmp.PackageID = pkg
+			tmp.FileID = fileName
+
+			tmp.StartOffset = match[0] + bytes
+			tmp.Length = match[1] - match[0]
+
+			if match[2] != -1 {
+				tmp.Name = string(source[match[2]+bytes : match[3]+bytes])
+			}
+
+			tmp.Name = string(source[match[4]+bytes : match[5]+bytes])
+
+			tmp.LineNumber = lineno
+
+			FuncDec = append(FuncDec, tmp)
+
+		}
+		bytes += len(line) + 2
 	}
 
 	return FuncDec, err

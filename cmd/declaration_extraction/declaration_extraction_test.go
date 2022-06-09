@@ -390,6 +390,7 @@ func TestDeclarationExtraction_ExtractFuncs(t *testing.T) {
 					FileID:      "test.cx",
 					StartOffset: 212,
 					Length:      12,
+					LineNumber:  18,
 					Name:        "main",
 				},
 				{
@@ -397,6 +398,7 @@ func TestDeclarationExtraction_ExtractFuncs(t *testing.T) {
 					FileID:      "test.cx",
 					StartOffset: 321,
 					Length:      19,
+					LineNumber:  26,
 					Name:        "functionTwo",
 				},
 			},
@@ -521,6 +523,7 @@ func TestDeclarationExtraction_GetDeclarations(t *testing.T) {
 				"First Number",
 				"Second",
 				"type person struct",
+				"type animal                      struct",
 				"type Direction int",
 				"func main ()",
 				"func functionTwo ()",
