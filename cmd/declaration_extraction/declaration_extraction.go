@@ -109,16 +109,15 @@ func ExtractGlobals(source []byte, fileName string, pkg string) ([]GlobalDeclara
 
 		if match := reGlbl.FindSubmatchIndex(line); match != nil && inBlock == 0 {
 			var tmp GlobalDeclaration
-			fmt.Print(string(line))
 			tmp.PackageID = pkg
 			tmp.FileID = fileName
 			tmp.StartOffset = bytes + match[0]
 			tmp.Length = match[1] - match[0]
 			tmp.LineNumber = lineno
-			tmp.Name = string(source[match[2]+bytes : match[3]+bytes])
+			tmp.Name = string(line[match[2]+bytes : match[3]+bytes])
 			GlblDec = append(GlblDec, tmp)
 		}
-		bytes += len(line) + lineno
+		bytes += len(line) + 2
 	}
 	return GlblDec, err
 
@@ -133,7 +132,8 @@ func ExtractEnums(source []byte, fileName string, pkg string) ([]EnumDeclaration
 	reEnumInit := regexp.MustCompile(`const\s+\(`)
 	rePrtsOpen := regexp.MustCompile(`\(`)
 	rePrtsClose := regexp.MustCompile(`\)`)
-	reEnumDec := regexp.MustCompile(`([_a-zA-Z][_a-zA-Z0-9]*)\s+[_a-zA-Z][_a-zA-Z0-9]*|([_a-zA-Z][_a-zA-Z0-9]*)`)
+	reEnumDec := regexp.MustCompile(`[_a-zA-Z][_a-zA-Z0-9]*`)
+	reEqual := regexp.MustCompile(`=`)
 
 	reader := bytes.NewReader(source)
 	scanner := bufio.NewScanner(reader)
@@ -142,6 +142,8 @@ func ExtractEnums(source []byte, fileName string, pkg string) ([]EnumDeclaration
 	var inPrts int
 	var Type string
 	var Index int
+	var bytes int
+	var lineno int
 
 	/* inPrts is supporting () with in the enum
 	for example:
@@ -154,9 +156,12 @@ func ExtractEnums(source []byte, fileName string, pkg string) ([]EnumDeclaration
 
 	for scanner.Scan() {
 		line := scanner.Bytes()
+		lineno++
+
 		if locs := reEnumInit.FindAllIndex(line, -1); locs != nil {
 			EnumInit = true
 			inPrts++
+			bytes += len(line) + 2
 			continue
 		}
 
@@ -173,22 +178,32 @@ func ExtractEnums(source []byte, fileName string, pkg string) ([]EnumDeclaration
 			Index = 0
 		}
 
-		if match := reEnumDec.Find(line); match != nil && inPrts == 1 && EnumInit {
+		if match := reEnumDec.FindAllIndex(line, -1); match != nil && inPrts == 1 && EnumInit {
 			var tmp EnumDeclaration
-			slice := strings.Split(string(match), " ")
 			tmp.PackageID = pkg
 			tmp.FileID = fileName
-			tmp.StartOffset = bytes.Index(source, match)
-			tmp.Length = len(match)
-			tmp.Name = string(slice[0])
-			if len(slice) > 1 {
-				Type = slice[1]
+			tmp.StartOffset = match[0][0] + bytes
+			tmp.Length = match[0][1] - match[0][0]
+
+			if len(match) > 1 {
+				tmp.Length = match[1][1] - match[0][0]
 			}
+
+			tmp.LineNumber = lineno
+			fmt.Print(match)
+			tmp.Name = string(source[match[0][0]+bytes : match[0][1]+bytes])
+
+			if len(match) > 1 {
+				Type = string(source[match[1][0]+bytes : match[1][1]+bytes])
+			}
+
 			tmp.Type = Type
 			tmp.Value = Index
 			EnumDec = append(EnumDec, tmp)
 			Index++
 		}
+
+		bytes += len(line) + 2
 	}
 
 	return EnumDec, err

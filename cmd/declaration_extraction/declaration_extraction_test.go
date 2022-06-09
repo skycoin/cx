@@ -1,6 +1,7 @@
 package declaration_extraction_test
 
 import (
+	"bytes"
 	"errors"
 	"os"
 	"path/filepath"
@@ -34,6 +35,17 @@ func TestDeclarationExtraction_ReplaceCommentsWithWhitespaces(t *testing.T) {
 				t.Fatal(err)
 			}
 			commentReplaced := declaration_extraction.ReplaceCommentsWithWhitespaces(srcBytes)
+
+			if len(srcBytes) != len(commentReplaced) {
+				t.Errorf("Length not the same: orginal %vbytes, replaced %vbytes", len(srcBytes), len(commentReplaced))
+			}
+
+			srcLines := bytes.Count(srcBytes, []byte("\n")) + 1
+			newLines := bytes.Count(commentReplaced, []byte("\n")) + 1
+
+			if srcLines != newLines {
+				t.Errorf("Lines not equal: original %vlines, new %vlines", srcLines, newLines)
+			}
 
 			if string(commentReplaced) != string(wantBytes) {
 				t.Errorf("want comments replaced\n%v\ngot\n%v", string(wantBytes), string(commentReplaced))
@@ -150,6 +162,7 @@ func TestDeclarationExtraction_ExtractEnums(t *testing.T) {
 					FileID:      "test.cx",
 					StartOffset: 383,
 					Length:      15,
+					LineNumber:  33,
 					Name:        "North",
 					Type:        "Direction",
 					Value:       0,
@@ -159,6 +172,7 @@ func TestDeclarationExtraction_ExtractEnums(t *testing.T) {
 					FileID:      "test.cx",
 					StartOffset: 408,
 					Length:      5,
+					LineNumber:  34,
 					Name:        "South",
 					Type:        "Direction",
 					Value:       1,
@@ -168,6 +182,7 @@ func TestDeclarationExtraction_ExtractEnums(t *testing.T) {
 					FileID:      "test.cx",
 					StartOffset: 416,
 					Length:      4,
+					LineNumber:  35,
 					Name:        "East",
 					Type:        "Direction",
 					Value:       2,
@@ -177,6 +192,7 @@ func TestDeclarationExtraction_ExtractEnums(t *testing.T) {
 					FileID:      "test.cx",
 					StartOffset: 423,
 					Length:      4,
+					LineNumber:  36,
 					Name:        "West",
 					Type:        "Direction",
 					Value:       3,
@@ -186,6 +202,7 @@ func TestDeclarationExtraction_ExtractEnums(t *testing.T) {
 					FileID:      "test.cx",
 					StartOffset: 444,
 					Length:      12,
+					LineNumber:  40,
 					Name:        "First",
 					Type:        "Number",
 					Value:       0,
@@ -195,6 +212,7 @@ func TestDeclarationExtraction_ExtractEnums(t *testing.T) {
 					FileID:      "test.cx",
 					StartOffset: 466,
 					Length:      6,
+					LineNumber:  41,
 					Name:        "Second",
 					Type:        "Number",
 					Value:       1,
@@ -212,6 +230,7 @@ func TestDeclarationExtraction_ExtractEnums(t *testing.T) {
 					Length:      15,
 					Name:        "North",
 					Type:        "Direction",
+					LineNumber:  33,
 					Value:       0,
 				},
 				{
@@ -219,6 +238,7 @@ func TestDeclarationExtraction_ExtractEnums(t *testing.T) {
 					FileID:      "enum_in_parenthesis.cx",
 					StartOffset: 366,
 					Length:      5,
+					LineNumber:  34,
 					Name:        "South",
 					Type:        "Direction",
 					Value:       1,
@@ -228,6 +248,7 @@ func TestDeclarationExtraction_ExtractEnums(t *testing.T) {
 					FileID:      "enum_in_parenthesis.cx",
 					StartOffset: 387,
 					Length:      4,
+					LineNumber:  35,
 					Name:        "East",
 					Type:        "Direction",
 					Value:       2,
@@ -237,6 +258,7 @@ func TestDeclarationExtraction_ExtractEnums(t *testing.T) {
 					FileID:      "enum_in_parenthesis.cx",
 					StartOffset: 394,
 					Length:      4,
+					LineNumber:  36,
 					Name:        "West",
 					Type:        "Direction",
 					Value:       3,
@@ -246,6 +268,7 @@ func TestDeclarationExtraction_ExtractEnums(t *testing.T) {
 					FileID:      "enum_in_parenthesis.cx",
 					StartOffset: 415,
 					Length:      12,
+					LineNumber:  40,
 					Name:        "First",
 					Type:        "Number",
 					Value:       0,
@@ -255,6 +278,7 @@ func TestDeclarationExtraction_ExtractEnums(t *testing.T) {
 					FileID:      "enum_in_parenthesis.cx",
 					StartOffset: 437,
 					Length:      6,
+					LineNumber:  41,
 					Name:        "Second",
 					Type:        "Number",
 					Value:       1,
