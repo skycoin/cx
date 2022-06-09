@@ -113,7 +113,7 @@ func ExtractGlobals(source []byte, fileName string, pkg string) ([]GlobalDeclara
 			tmp.StartOffset = bytes + match[0]
 			tmp.Length = match[1] - match[0]
 			tmp.LineNumber = lineno
-			tmp.GlobalVariableName = string(line[match[2]+bytes : match[3]+bytes])
+			tmp.GlobalVariableName = string(source[match[2]+bytes : match[3]+bytes])
 			GlblDec = append(GlblDec, tmp)
 		}
 		bytes += len(line) + 2
@@ -266,11 +266,11 @@ func ExtractFuncs(source []byte, fileName string, pkg string) ([]FuncDeclaration
 			tmp.StartOffset = match[0] + bytes
 			tmp.Length = match[1] - match[0]
 
+			tmp.FuncVariableName = string(source[match[4]+bytes : match[5]+bytes])
+
 			if match[2] != -1 {
 				tmp.FuncVariableName = string(source[match[2]+bytes : match[3]+bytes])
 			}
-
-			tmp.FuncVariableName = string(source[match[4]+bytes : match[5]+bytes])
 
 			tmp.LineNumber = lineno
 
@@ -326,7 +326,7 @@ func ReDeclarationCheck(Glbl []GlobalDeclaration, Enum []EnumDeclaration, Strct 
 	return err
 }
 
-func GetDeclaration(source []byte, Glbl []GlobalDeclaration, Enum []EnumDeclaration, Strct []StructDeclaration, Func []FuncDeclaration) []string {
+func GetDeclarations(source []byte, Glbl []GlobalDeclaration, Enum []EnumDeclaration, Strct []StructDeclaration, Func []FuncDeclaration) []string {
 	var declarations []string
 
 	for i := 0; i < len(Glbl); i++ {
@@ -347,3 +347,8 @@ func GetDeclaration(source []byte, Glbl []GlobalDeclaration, Enum []EnumDeclarat
 
 	return declarations
 }
+
+// func ExtractAllDeclarations(source *os.File) {
+
+// 	srcBytes := bufio.re
+// }

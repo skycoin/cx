@@ -40,3 +40,7 @@ const (
 	First Number = iota
 	Second
 )
+
+func functionWithSingleReturn () string {
+
+}

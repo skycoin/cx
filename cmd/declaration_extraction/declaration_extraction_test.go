@@ -382,7 +382,7 @@ func TestDeclarationExtraction_ExtractFuncs(t *testing.T) {
 		wantFuncs []declaration_extraction.FuncDeclaration
 	}{
 		{
-			scenario: "Has structs",
+			scenario: "Has funcs",
 			testDir:  "./test_files/test.cx",
 			wantFuncs: []declaration_extraction.FuncDeclaration{
 				{
@@ -400,6 +400,14 @@ func TestDeclarationExtraction_ExtractFuncs(t *testing.T) {
 					Length:           19,
 					LineNumber:       26,
 					FuncVariableName: "functionTwo",
+				},
+				{
+					PackageID:        "hello",
+					FileID:           "test.cx",
+					StartOffset:      479,
+					Length:           39,
+					LineNumber:       44,
+					FuncVariableName: "functionWithSingleReturn",
 				},
 			},
 		},
@@ -473,22 +481,22 @@ func TestDeclarationExtraction_ReDeclarationCheck(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			structs, err := declaration_extraction.ExtractStructs(ReplaceCommentsWithWhitespaces, fileName, pkg)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			funcs, err := declaration_extraction.ExtractFuncs(ReplaceCommentsWithWhitespaces, fileName, pkg)
-			if err != nil {
-				t.Fatal(err)
-			}
-
 			globals, err := declaration_extraction.ExtractGlobals(ReplaceCommentsWithWhitespaces, fileName, pkg)
 			if err != nil {
 				t.Fatal(err)
 			}
 
 			enums, err := declaration_extraction.ExtractEnums(ReplaceCommentsWithWhitespaces, fileName, pkg)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			structs, err := declaration_extraction.ExtractStructs(ReplaceCommentsWithWhitespaces, fileName, pkg)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			funcs, err := declaration_extraction.ExtractFuncs(ReplaceCommentsWithWhitespaces, fileName, pkg)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -527,6 +535,7 @@ func TestDeclarationExtraction_GetDeclarations(t *testing.T) {
 				"type Direction int",
 				"func main ()",
 				"func functionTwo ()",
+				"func functionWithSingleReturn () string",
 			},
 		},
 	}
@@ -537,11 +546,6 @@ func TestDeclarationExtraction_GetDeclarations(t *testing.T) {
 			ReplaceCommentsWithWhitespaces := declaration_extraction.ReplaceCommentsWithWhitespaces(srcBytes)
 			fileName := filepath.Base(tc.testDir)
 			pkg := declaration_extraction.ExtractPackages(ReplaceCommentsWithWhitespaces)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			funcs, err := declaration_extraction.ExtractFuncs(ReplaceCommentsWithWhitespaces, fileName, pkg)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -561,11 +565,16 @@ func TestDeclarationExtraction_GetDeclarations(t *testing.T) {
 				t.Fatal(err)
 			}
 
+			funcs, err := declaration_extraction.ExtractFuncs(ReplaceCommentsWithWhitespaces, fileName, pkg)
+			if err != nil {
+				t.Fatal(err)
+			}
+
 			if declaration_extraction.ReDeclarationCheck(globals, enums, structs, funcs) != nil {
 				t.Fatal(err)
 			}
 
-			declarations := declaration_extraction.GetDeclaration(srcBytes, globals, enums, structs, funcs)
+			declarations := declaration_extraction.GetDeclarations(srcBytes, globals, enums, structs, funcs)
 
 			for i := range declarations {
 				if declarations[i] != tc.wantDeclarations[i] {
