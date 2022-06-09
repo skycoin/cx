@@ -129,56 +129,35 @@ func TestCommentsPackage(t *testing.T) {
 	}
 }
 
-func TestAddFilesRedis(t *testing.T) {
-	DATABASE = "redis"
-	CURRENT_PATH = TEST_SRC_PATH
-	testPackage := Package{}
-	testPackage.addFiles(testFileList)
-	if len(testPackage.Files) != 2 {
-		t.Error("Expected 2 files, got", len(testPackage.Files))
+func TestAddFiles(t *testing.T) {
+	for _, v := range []string{"redis", "bolt"} {
+		DATABASE = v
+		CURRENT_PATH = TEST_SRC_PATH
+		testPackage := Package{}
+		testPackage.addFiles(testFileList)
+		if len(testPackage.Files) != 2 {
+			t.Error("Expected 2 files, got", len(testPackage.Files))
+		}
 	}
 }
 
-func TestAddPackagesInRedis(t *testing.T) {
-	DATABASE = "redis"
-	SRC_PATH = TEST_SRC_PATH2
-	IMPORTED_DIRECTORIES = []string{}
-	testPackageList := PackageList{}
-	testPackageList.addPackagesIn(SRC_PATH)
-	if len(testPackageList.Packages) != 2 {
-		t.Error("Expected 2 packages, got", len(testPackageList.Packages))
+func TestAddPackagesIn(t *testing.T) {
+	for _, v := range []string{"redis", "bolt"} {
+		DATABASE = v
+		SRC_PATH = TEST_SRC_PATH2
+		IMPORTED_DIRECTORIES = []string{}
+		testPackageList := PackageList{}
+		testPackageList.addPackagesIn(SRC_PATH)
+		if len(testPackageList.Packages) != 2 {
+			t.Error("Expected 2 packages, got", len(testPackageList.Packages))
+		}
 	}
 }
 
-func TestLoadRedis(t *testing.T) {
-	DATABASE = "redis"
-	IMPORTED_DIRECTORIES = []string{}
-	LoadPackages("TestValid", "test_folder/test_valid_program/")
-}
-
-func TestAddFilesBolt(t *testing.T) {
-	DATABASE = "bolt"
-	CURRENT_PATH = TEST_SRC_PATH
-	testPackage := Package{}
-	testPackage.addFiles(testFileList)
-	if len(testPackage.Files) != 2 {
-		t.Error("Expected 2 files, got", len(testPackage.Files))
+func TestLoad(t *testing.T) {
+	for _, v := range []string{"redis", "bolt"} {
+		DATABASE = v
+		IMPORTED_DIRECTORIES = []string{}
+		LoadPackages("TestValid", "test_folder/test_valid_program/")
 	}
-}
-
-func TestAddPackagesInBolt(t *testing.T) {
-	DATABASE = "bolt"
-	SRC_PATH = TEST_SRC_PATH2
-	IMPORTED_DIRECTORIES = []string{}
-	testPackageList := PackageList{}
-	testPackageList.addPackagesIn(SRC_PATH)
-	if len(testPackageList.Packages) != 2 {
-		t.Error("Expected 2 packages, got", len(testPackageList.Packages))
-	}
-}
-
-func TestLoadBolt(t *testing.T) {
-	DATABASE = "bolt"
-	IMPORTED_DIRECTORIES = []string{}
-	LoadPackages("TestValid", "test_folder/test_valid_program/")
 }
