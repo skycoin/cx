@@ -48,9 +48,9 @@ func (op *CXAtomicOperator) AddInput(prgrm *CXProgram, typeSignature *CXTypeSign
 	return op
 }
 
-func (op *CXAtomicOperator) GetInputs(prgrm *CXProgram) []CXTypeSignature {
+func (op *CXAtomicOperator) GetInputs(prgrm *CXProgram) []*CXTypeSignature {
 	if op == nil || op.Inputs == nil {
-		return []CXTypeSignature{}
+		return []*CXTypeSignature{}
 	}
 
 	return op.Inputs.Fields
@@ -81,9 +81,9 @@ func (op *CXAtomicOperator) AddOutput(prgrm *CXProgram, typeSignature *CXTypeSig
 	return op
 }
 
-func (op *CXAtomicOperator) GetOutputs(prgrm *CXProgram) []CXTypeSignature {
+func (op *CXAtomicOperator) GetOutputs(prgrm *CXProgram) []*CXTypeSignature {
 	if op == nil || op.Outputs == nil {
-		return []CXTypeSignature{}
+		return []*CXTypeSignature{}
 	}
 
 	return op.Outputs.Fields

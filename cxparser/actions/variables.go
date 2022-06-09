@@ -71,11 +71,11 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 				prgrm.CXArgs[glblIdx].Index = glblIdx
 
 				typeSig := prgrm.CXAtomicOps[initializerExpressionIdx].GetOutputs(prgrm)[0]
-				prgrm.CXAtomicOps[initializerExpressionIdx].AddInput(prgrm, &typeSig)
+				prgrm.CXAtomicOps[initializerExpressionIdx].AddInput(prgrm, typeSig)
 				prgrm.CXAtomicOps[initializerExpressionIdx].Outputs = nil
 
-				typeSig = *ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(glblIdx)))
-				prgrm.CXAtomicOps[initializerExpressionIdx].AddOutput(prgrm, &typeSig)
+				typeSig = ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(glblIdx)))
+				prgrm.CXAtomicOps[initializerExpressionIdx].AddOutput(prgrm, typeSig)
 				opIdx := prgrm.AddNativeFunctionInArray(ast.Natives[constants.OP_IDENTITY])
 				prgrm.CXAtomicOps[initializerExpressionIdx].Operator = opIdx
 				prgrm.CXAtomicOps[initializerExpressionIdx].Package = prgrm.CXArgs[glblIdx].Package
@@ -152,12 +152,12 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 				prgrm.CXAtomicOps[initializerExpressionIdx].Operator = opIdx
 
 				typeSig := prgrm.CXAtomicOps[initializerExpressionIdx].GetOutputs(prgrm)[0]
-				prgrm.CXAtomicOps[initializerExpressionIdx].AddInput(prgrm, &typeSig)
+				prgrm.CXAtomicOps[initializerExpressionIdx].AddInput(prgrm, typeSig)
 				prgrm.CXAtomicOps[initializerExpressionIdx].Outputs = nil
 				declSpecIdx := prgrm.AddCXArgInArray(declaration_specifiers)
 
-				typeSig = *ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(declSpecIdx))
-				prgrm.CXAtomicOps[initializerExpressionIdx].AddOutput(prgrm, &typeSig)
+				typeSig = ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(declSpecIdx))
+				prgrm.CXAtomicOps[initializerExpressionIdx].AddOutput(prgrm, typeSig)
 
 				pkg.AddGlobal(prgrm, declSpecIdx)
 				//add intialization statements, to array

@@ -79,7 +79,7 @@ type CXStruct struct {
 	Package CXPackageIndex // The package this struct belongs to
 
 	// Contents
-	Fields []CXTypeSignature // The fields of the struct
+	Fields []*CXTypeSignature // The fields of the struct
 }
 
 // ----------------------------------------------------------------
@@ -138,7 +138,7 @@ func (strct *CXStruct) AddField(prgrm *CXProgram, cxArgument *CXArgument) *CXStr
 	}
 
 	newCXTypeSignature := GetCXTypeSignatureRepresentationOfCXArg_ForStructs(prgrm, cxArgument)
-	strct.Fields = append(strct.Fields, *newCXTypeSignature)
+	strct.Fields = append(strct.Fields, newCXTypeSignature)
 
 	// TODO: Found out the effect and completely remove this.
 	// Dont remove this yet as removing this gives another error on cxfx
@@ -178,13 +178,13 @@ func (strct *CXStruct) AddField_Function(prgrm *CXProgram, field *CXTypeSignatur
 		}
 	}
 
-	strct.Fields = append(strct.Fields, *field)
+	strct.Fields = append(strct.Fields, field)
 
 	return strct
 }
 
 func (strct *CXStruct) AddField_CXAtomicOps(prgrm *CXProgram, field *CXTypeSignature) *CXStruct {
-	strct.Fields = append(strct.Fields, *field)
+	strct.Fields = append(strct.Fields, field)
 
 	return strct
 }
@@ -203,7 +203,7 @@ func (strct *CXStruct) AddField_Globals_CXAtomicOps(prgrm *CXProgram, cxArgIdx C
 	}
 
 	newCXTypeSignature := GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, cxArgument)
-	strct.Fields = append(strct.Fields, *newCXTypeSignature)
+	strct.Fields = append(strct.Fields, newCXTypeSignature)
 
 	return strct
 }

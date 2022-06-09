@@ -144,9 +144,9 @@ func (fn *CXFunction) AddInput(prgrm *CXProgram, param *CXArgument) *CXFunction 
 	return fn
 }
 
-func (fn *CXFunction) GetInputs(prgrm *CXProgram) []CXTypeSignature {
+func (fn *CXFunction) GetInputs(prgrm *CXProgram) []*CXTypeSignature {
 	if fn == nil || fn.Inputs == nil {
-		return []CXTypeSignature{}
+		return []*CXTypeSignature{}
 	}
 
 	return fn.Inputs.Fields
@@ -196,9 +196,9 @@ func (fn *CXFunction) AddOutput(prgrm *CXProgram, param *CXArgument) *CXFunction
 	return fn
 }
 
-func (fn *CXFunction) GetOutputs(prgrm *CXProgram) []CXTypeSignature {
+func (fn *CXFunction) GetOutputs(prgrm *CXProgram) []*CXTypeSignature {
 	if fn == nil || fn.Outputs == nil {
-		return []CXTypeSignature{}
+		return []*CXTypeSignature{}
 	}
 
 	return fn.Outputs.Fields

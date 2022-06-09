@@ -69,7 +69,7 @@ func GenerateRandomExpressions(prgrm *cxast.CXProgram, inputFn *cxast.CXFunction
 		prgrm.CXFunctions[inputFn.Index] = *inputFn
 		// Adding last expression, so output must be fn's output.
 		if i == numExprs-preExistingExpressions-1 {
-			cxAtomicOp.AddOutput(prgrm, &inputFnOutputs[0])
+			cxAtomicOp.AddOutput(prgrm, inputFnOutputs[0])
 		} else {
 			for c := 0; c < len(op.Outputs); c++ {
 				outIdx := prgrm.AddCXArgInArray(getRandOut(prgrm, expr))

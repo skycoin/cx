@@ -279,13 +279,13 @@ func PostfixExpressionIncDec(prgrm *ast.CXProgram, prevExprs []ast.CXExpression,
 	prgrm.CXAtomicOps[expressionIdx].Package = ast.CXPackageIndex(pkg.Index)
 
 	typeSig := lastPrevExpression.GetOutputs(prgrm)[0]
-	prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, &typeSig)
+	prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, typeSig)
 
-	typeSig = *ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(valArg.Index)))
-	prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, &typeSig)
+	typeSig = ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(valArg.Index)))
+	prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, typeSig)
 
 	typeSig = lastPrevExpression.GetOutputs(prgrm)[0]
-	prgrm.CXAtomicOps[expressionIdx].AddOutput(prgrm, &typeSig)
+	prgrm.CXAtomicOps[expressionIdx].AddOutput(prgrm, typeSig)
 
 	exprs := append([]ast.CXExpression{}, *exprCXLine, *expr)
 	return exprs

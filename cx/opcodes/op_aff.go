@@ -76,7 +76,7 @@ func CallAffPredicate(prgrm *ast.CXProgram, fn *ast.CXFunction, predValue []byte
 	// sending value to predicate function
 	types.WriteSlice_byte(
 		prgrm.Memory,
-		ast.GetFinalOffset(prgrm, newFP, nil, &newCallOperatorInputs[0]),
+		ast.GetFinalOffset(prgrm, newFP, nil, newCallOperatorInputs[0]),
 		predValue)
 
 	var inputs []ast.CXValue
@@ -96,7 +96,7 @@ func CallAffPredicate(prgrm *ast.CXProgram, fn *ast.CXFunction, predValue []byte
 	prevCall.Line--
 	return types.GetSlice_byte(prgrm.Memory, ast.GetFinalOffset(prgrm,
 		newCall.FramePointer,
-		nil, &newCallOperatorOutputs[0]),
+		nil, newCallOperatorOutputs[0]),
 		ast.GetArgSize(prgrm, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(newCallOperatorOutputs[0].Meta))))[0]
 }
 
@@ -244,7 +244,7 @@ func QueryExpressions(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpr
 }
 
 // TODO: remove params arg
-func getSignatureSlice(prgrm *ast.CXProgram, params []ast.CXArgumentIndex, paramsTypeSig []ast.CXTypeSignature) types.Pointer {
+func getSignatureSlice(prgrm *ast.CXProgram, params []ast.CXArgumentIndex, paramsTypeSig []*ast.CXTypeSignature) types.Pointer {
 	var sliceOffset types.Pointer
 
 	var arrCXArgs []*ast.CXArgument

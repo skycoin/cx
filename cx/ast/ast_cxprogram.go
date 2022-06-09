@@ -154,7 +154,7 @@ func (cxprogram *CXProgram) AddNativeFunctionInArray(fn *CXNativeFunction) CXFun
 	for _, argIn := range fn.Inputs {
 		argInIdx := cxprogram.AddCXArgInArray(argIn)
 
-		newField := CXTypeSignature{
+		newField := &CXTypeSignature{
 			Name: argIn.Name,
 			Type: TYPE_CXARGUMENT_DEPRECATE,
 			Meta: int(argInIdx),
@@ -167,7 +167,7 @@ func (cxprogram *CXProgram) AddNativeFunctionInArray(fn *CXNativeFunction) CXFun
 	for _, argOut := range fn.Outputs {
 		argOutIdx := cxprogram.AddCXArgInArray(argOut)
 
-		newField := CXTypeSignature{
+		newField := &CXTypeSignature{
 			Name: argOut.Name,
 			Type: TYPE_CXARGUMENT_DEPRECATE,
 			Meta: int(argOutIdx),
@@ -342,7 +342,7 @@ func (cxprogram *CXProgram) AddPointerArgsToCXArgsArray(cxArgs []*CXArgument) []
 }
 
 // Temporary only for intitial new struct def implementation.
-func (cxprogram *CXProgram) ConvertIndexTypeSignaturesToPointerArgs(idxs []CXTypeSignature) []*CXArgument {
+func (cxprogram *CXProgram) ConvertIndexTypeSignaturesToPointerArgs(idxs []*CXTypeSignature) []*CXArgument {
 	var cxArgs []*CXArgument
 	for _, typeSignature := range idxs {
 		if typeSignature.Type == TYPE_CXARGUMENT_DEPRECATE {
@@ -355,12 +355,12 @@ func (cxprogram *CXProgram) ConvertIndexTypeSignaturesToPointerArgs(idxs []CXTyp
 }
 
 // Temporary only for intitial new struct def implementation.
-func (cxprogram *CXProgram) AddPointerArgsToTypeSignaturesArray(cxArgs []*CXArgument) []CXTypeSignature {
-	var cxTypeSignaturesIdxs []CXTypeSignature
+func (cxprogram *CXProgram) AddPointerArgsToTypeSignaturesArray(cxArgs []*CXArgument) []*CXTypeSignature {
+	var cxTypeSignaturesIdxs []*CXTypeSignature
 	for _, cxArg := range cxArgs {
 		cxArgIdx := cxprogram.AddCXArgInArray(cxArg)
 
-		newCXTypeSignature := CXTypeSignature{
+		newCXTypeSignature := &CXTypeSignature{
 			Name:   cxArg.Name,
 			Offset: cxArg.Offset,
 			Type:   TYPE_CXARGUMENT_DEPRECATE,

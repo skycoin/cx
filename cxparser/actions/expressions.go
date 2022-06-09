@@ -84,7 +84,7 @@ func IterationExpressions(prgrm *ast.CXProgram,
 		prgrm.CXArgs[predicateIdx].Package = ast.CXPackageIndex(pkg.Index)
 		prgrm.CXArgs[predicateIdx].PreviouslyDeclared = true
 
-		prgrm.CXAtomicOps[downExpressionIdx].AddInput(prgrm, &predicate)
+		prgrm.CXAtomicOps[downExpressionIdx].AddInput(prgrm, predicate)
 	}
 
 	thenLines := 0
@@ -193,7 +193,7 @@ func SelectionExpressions(prgrm *ast.CXProgram, conditionExprs []ast.CXExpressio
 	var predicateTypeSig *ast.CXTypeSignature
 	if lastCondExpressionOperator == nil && !conditionExprs[len(conditionExprs)-1].IsMethodCall() {
 		// then it's a literal
-		predicateTypeSig = &prgrm.CXAtomicOps[lastCondExpressionIdx].GetOutputs(prgrm)[0]
+		predicateTypeSig = prgrm.CXAtomicOps[lastCondExpressionIdx].GetOutputs(prgrm)[0]
 	} else {
 		// then it's an expression
 		predicate := ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, LineNo)
@@ -355,7 +355,7 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 	if len(prgrm.GetCXArgFromArray(ast.CXArgumentIndex(prgrm.CXAtomicOps[lastLeftExpressionIdx].GetOutputs(prgrm)[0].Meta)).Indexes) > 0 || lastLeftExpressionOperator != nil {
 		typeSig := prgrm.CXAtomicOps[lastLeftExpressionIdx].GetOutputs(prgrm)[0]
 		// then it's a function call or an array access
-		prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, &typeSig)
+		prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, typeSig)
 
 		if IsTempVar(prgrm.GetCXArgFromArray(ast.CXArgumentIndex(prgrm.CXAtomicOps[lastLeftExpressionIdx].GetOutputs(prgrm)[0].Meta)).Name) {
 			out = append(out, leftExprs...)
@@ -364,13 +364,13 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 		}
 	} else {
 		typeSig := prgrm.CXAtomicOps[lastLeftExpressionIdx].GetOutputs(prgrm)[0]
-		prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, &typeSig)
+		prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, typeSig)
 	}
 
 	if len(prgrm.GetCXArgFromArray(ast.CXArgumentIndex(prgrm.CXAtomicOps[lastRightExpressionIdx].GetOutputs(prgrm)[0].Meta)).Indexes) > 0 || lastRightExpressionOperator != nil {
 		typeSig := prgrm.CXAtomicOps[lastRightExpressionIdx].GetOutputs(prgrm)[0]
 		// then it's a function call or an array access
-		prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, &typeSig)
+		prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, typeSig)
 
 		if IsTempVar(prgrm.GetCXArgFromArray(ast.CXArgumentIndex(prgrm.CXAtomicOps[lastRightExpressionIdx].GetOutputs(prgrm)[0].Meta)).Name) {
 			out = append(out, rightExprs...)
@@ -379,7 +379,7 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 		}
 	} else {
 		typeSig := prgrm.CXAtomicOps[lastRightExpressionIdx].GetOutputs(prgrm)[0]
-		prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, &typeSig)
+		prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, typeSig)
 	}
 
 	out = append(out, *exprCXLine, *expr)
@@ -521,7 +521,7 @@ func AssociateReturnExpressions(prgrm *ast.CXProgram, idx int, retExprs []ast.CX
 		}
 
 		exprOutTypeSig := lastExpression.GetOutputs(prgrm)[0]
-		expression.AddInput(prgrm, &exprOutTypeSig)
+		expression.AddInput(prgrm, exprOutTypeSig)
 		typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(outIdx))
 		expression.AddOutput(prgrm, typeSig)
 

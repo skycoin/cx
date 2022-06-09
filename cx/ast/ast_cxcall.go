@@ -49,8 +49,8 @@ func popStack(prgrm *CXProgram, call *CXCall) error {
 			continue
 		}
 
-		types.WriteSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, returnFP, nil, &cxAtomicOpOutputs[i]),
-			types.GetSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, &output), GetArgSize(prgrm, out)))
+		types.WriteSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, returnFP, nil, cxAtomicOpOutputs[i]),
+			types.GetSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, output), GetArgSize(prgrm, out)))
 	}
 
 	// return the stack pointer to its previous state
@@ -215,7 +215,7 @@ func processNonAtomicOperators(prgrm *CXProgram, expr *CXExpression, fp types.Po
 		// writing inputs to new stack frame
 		types.WriteSlice_byte(
 			prgrm.Memory,
-			GetFinalOffset(prgrm, newFP, nil, &newCallOperatorInputs[i]),
+			GetFinalOffset(prgrm, newFP, nil, newCallOperatorInputs[i]),
 			// newFP + newCall.Operator.ProgramInput[i].Offset,
 			// GetFinalOffset(prgrm.Memory, newFP, newCall.Operator.ProgramInput[i], MEM_WRITE),
 			byts)

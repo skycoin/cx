@@ -183,14 +183,14 @@ func ShortAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression, exprCXLine *a
 	fromExpressionOperator := prgrm.GetFunctionFromArray(prgrm.CXAtomicOps[fromExpressionIdx].Operator)
 
 	typeSig := toExpression.GetOutputs(prgrm)[0]
-	prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, &typeSig)
-	prgrm.CXAtomicOps[expressionIdx].AddOutput(prgrm, &typeSig)
+	prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, typeSig)
+	prgrm.CXAtomicOps[expressionIdx].AddOutput(prgrm, typeSig)
 
 	prgrm.CXAtomicOps[expressionIdx].Package = ast.CXPackageIndex(pkg.Index)
 
 	if fromExpressionOperator == nil {
 		typeSig := prgrm.CXAtomicOps[fromExpressionIdx].GetOutputs(prgrm)[0]
-		prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, &typeSig)
+		prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, typeSig)
 	} else {
 		sym := ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, LineNo).SetType(prgrm.GetCXArgFromArray(ast.CXArgumentIndex(prgrm.CXAtomicOps[fromExpressionIdx].GetInputs(prgrm)[0].Meta)).Type)
 		sym.Package = ast.CXPackageIndex(pkg.Index)
@@ -385,7 +385,7 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 			newInputs := prgrm.CXAtomicOps[fromExpressionIdx].Outputs
 			if prgrm.CXAtomicOps[fromExpressionIdx].Inputs != nil {
 				for _, typeSig := range prgrm.CXAtomicOps[fromExpressionIdx].Inputs.Fields {
-					newInputs.AddField_CXAtomicOps(prgrm, &typeSig)
+					newInputs.AddField_CXAtomicOps(prgrm, typeSig)
 				}
 			}
 			prgrm.CXAtomicOps[fromExpressionIdx].Inputs = newInputs

@@ -331,7 +331,7 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 
 			typeSig := inpExprAtomicOp.GetOutputs(prgrm)[0]
 			// then it's a literal
-			expression.AddInput(prgrm, &typeSig)
+			expression.AddInput(prgrm, typeSig)
 		} else {
 			// then it's a function call
 			if len(inpExprAtomicOp.GetOutputs(prgrm)) < 1 {
@@ -384,7 +384,7 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 			}
 			if len(inpExprAtomicOp.GetOutputs(prgrm)) > 0 && inpExpr.IsArrayLiteral() {
 				typeSig := inpExprAtomicOp.GetOutputs(prgrm)[0]
-				expression.AddInput(prgrm, &typeSig)
+				expression.AddInput(prgrm, typeSig)
 			}
 			nestedExprs = append(nestedExprs, inpExpr)
 		}
@@ -1282,7 +1282,7 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 
 					typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, &prgrm.CXArgs[outIdx])
 
-					prgrm.CXAtomicOps[expr.Index].Inputs.Fields = append([]ast.CXTypeSignature{*typeSig}, prgrm.CXAtomicOps[expr.Index].Inputs.Fields...)
+					prgrm.CXAtomicOps[expr.Index].Inputs.Fields = append([]*ast.CXTypeSignature{typeSig}, prgrm.CXAtomicOps[expr.Index].Inputs.Fields...)
 					prgrm.CXAtomicOps[expr.Index].Outputs.Fields = prgrm.CXAtomicOps[expr.Index].Outputs.Fields[1:]
 					prgrm.CXArgs[outIdx].Fields = prgrm.CXArgs[outIdx].Fields[:len(prgrm.CXArgs[outIdx].Fields)-1]
 				}
@@ -1382,10 +1382,10 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 				}
 
 				typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, &prgrm.CXArgs[outIdx])
-				newInputs := &ast.CXStruct{Fields: []ast.CXTypeSignature{*typeSig}}
+				newInputs := &ast.CXStruct{Fields: []*ast.CXTypeSignature{typeSig}}
 				if prgrm.CXAtomicOps[expr.Index].Inputs != nil {
 					for _, typeSig := range prgrm.CXAtomicOps[expr.Index].Inputs.Fields {
-						newInputs.AddField_CXAtomicOps(prgrm, &typeSig)
+						newInputs.AddField_CXAtomicOps(prgrm, typeSig)
 					}
 				}
 				prgrm.CXAtomicOps[expr.Index].Inputs = newInputs
