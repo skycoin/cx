@@ -4,8 +4,13 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
+	"io"
+	"log"
+	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
+	"sync"
 	"unicode"
 )
 
@@ -348,7 +353,82 @@ func GetDeclarations(source []byte, Glbl []GlobalDeclaration, Enum []EnumDeclara
 	return declarations
 }
 
-// func ExtractAllDeclarations(source *os.File) {
+func ExtractAllDeclarations(source *os.File) []string {
 
-// 	srcBytes := bufio.re
-// }
+	srcBytes, err := io.ReadAll(source)
+	fileName := filepath.Base(source.Name())
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	srcWithoutComments := ReplaceCommentsWithWhitespaces(srcBytes)
+	pkg := ExtractPackages(srcWithoutComments)
+
+	Globals := make(chan []GlobalDeclaration)
+	Enums := make(chan []EnumDeclaration)
+	Structs := make(chan []StructDeclaration)
+	Funcs := make(chan []FuncDeclaration)
+
+	var wg sync.WaitGroup
+
+	wg.Add(4)
+
+	go func() {
+
+		glbls, err := ExtractGlobals(srcWithoutComments, fileName, pkg)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		Globals <- glbls
+
+		wg.Done()
+	}()
+
+	go func() {
+
+		enums, err := ExtractEnums(srcWithoutComments, fileName, pkg)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		Enums <- enums
+
+		wg.Done()
+	}()
+
+	go func() {
+
+		structs, err := ExtractStructs(srcWithoutComments, fileName, pkg)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		Structs <- structs
+
+		wg.Done()
+	}()
+
+	go func() {
+
+		funs, err := ExtractFuncs(srcWithoutComments, fileName, pkg)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		Funcs <- funs
+
+		wg.Done()
+	}()
+
+	wg.Wait()
+
+	// if err := ReDeclarationCheck(<-Globals, <-Enums, <-Structs, <-Funcs); err != nil {
+	// 	log.Fatal(err)
+	// }
+
+	declarations := GetDeclarations(srcBytes, <-Globals, <-Enums, <-Structs, <-Funcs)
+
+	return declarations
+}

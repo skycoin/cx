@@ -3,6 +3,7 @@ package declaration_extraction_test
 import (
 	"bytes"
 	"errors"
+	"log"
 	"os"
 	"path/filepath"
 	"testing"
@@ -582,6 +583,55 @@ func TestDeclarationExtraction_GetDeclarations(t *testing.T) {
 				}
 			}
 
+		})
+	}
+}
+
+func TestDeclarationExtraction_ExtractAllDeclarations(t *testing.T) {
+
+	tests := []struct {
+		scenario         string
+		testDir          string
+		wantDeclarations []string
+	}{
+		{
+			scenario: "Has declarations",
+			testDir:  "./test_files/test.cx",
+			wantDeclarations: []string{
+				"var apple string",
+				"var banana string",
+				"North Direction",
+				"South",
+				"East",
+				"West",
+				"First Number",
+				"Second",
+				"type person struct",
+				"type animal                      struct",
+				"type Direction int",
+				"func main ()",
+				"func functionTwo ()",
+				"func functionWithSingleReturn () string",
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.scenario, func(t *testing.T) {
+
+			file, err := os.Open(tc.testDir)
+
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			declarations := declaration_extraction.ExtractAllDeclarations(file)
+
+			for i := range declarations {
+				if declarations[i] != tc.wantDeclarations[i] {
+					t.Errorf("want declaration %v, got %v", tc.wantDeclarations[i], declarations[i])
+				}
+			}
 		})
 	}
 }
