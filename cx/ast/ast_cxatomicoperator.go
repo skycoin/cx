@@ -81,19 +81,12 @@ func (op *CXAtomicOperator) AddOutput(prgrm *CXProgram, typeSignature *CXTypeSig
 	return op
 }
 
-func (op *CXAtomicOperator) GetOutputs(prgrm *CXProgram) []CXArgumentIndex {
-	var cxArgsIndexes []CXArgumentIndex
-
+func (op *CXAtomicOperator) GetOutputs(prgrm *CXProgram) []CXTypeSignature {
 	if op == nil || op.Outputs == nil {
-		return cxArgsIndexes
-	}
-	for _, field := range op.Outputs.Fields {
-		if field.Type == TYPE_CXARGUMENT_DEPRECATE {
-			cxArgsIndexes = append(cxArgsIndexes, CXArgumentIndex(field.Meta))
-		}
+		return []CXTypeSignature{}
 	}
 
-	return cxArgsIndexes
+	return op.Outputs.Fields
 }
 
 // RemoveOutput ...

@@ -232,7 +232,7 @@ func addNewExpression(prgrm *cxast.CXProgram, expr *cxast.CXExpression, expressi
 			if err != nil {
 				panic(err)
 			}
-			argToAdd = argToAddCXAtomicOp.GetOutputs(prgrm)[0]
+			argToAdd = cxast.CXArgumentIndex(argToAddCXAtomicOp.GetOutputs(prgrm)[0].Meta)
 		}
 
 		typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(argToAdd))
@@ -289,7 +289,7 @@ func findArgOptions(prgrm *cxast.CXProgram, expr *cxast.CXExpression, argTypeToF
 		}
 
 		expCXAtomicOpOutputs := expCXAtomicOp.GetOutputs(prgrm)
-		if len(expCXAtomicOpOutputs) > 0 && prgrm.GetCXArgFromArray(expCXAtomicOpOutputs[0]).Type == argTypeToFind && prgrm.GetCXArgFromArray(expCXAtomicOpOutputs[0]).Name != "" {
+		if len(expCXAtomicOpOutputs) > 0 && prgrm.GetCXArgFromArray(cxast.CXArgumentIndex(expCXAtomicOpOutputs[0].Meta)).Type == argTypeToFind && prgrm.GetCXArgFromArray(cxast.CXArgumentIndex(expCXAtomicOpOutputs[0].Meta)).Name != "" {
 			// add index to options from inputs
 			optionsFromExpressions = append(optionsFromExpressions, i)
 		}
