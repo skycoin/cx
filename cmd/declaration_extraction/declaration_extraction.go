@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
-	"fmt"
 	"regexp"
 	"strings"
 	"unicode"
@@ -169,14 +168,15 @@ func ExtractEnums(source []byte, fileName string, pkg string) ([]EnumDeclaration
 		}
 
 		if match := reEnumDec.FindSubmatchIndex(line); match != nil && inPrts == 1 && EnumInit {
+
 			var tmp EnumDeclaration
+
 			tmp.PackageID = pkg
 			tmp.FileID = fileName
 			tmp.StartOffset = match[0] + bytes
 			tmp.Length = match[1] - match[0]
 			tmp.LineNumber = lineno
 
-			fmt.Print(match)
 			tmp.Name = string(source[match[6]+bytes : match[7]+bytes])
 
 			if match[2] != -1 {
@@ -185,6 +185,7 @@ func ExtractEnums(source []byte, fileName string, pkg string) ([]EnumDeclaration
 			}
 
 			tmp.Type = Type
+
 			tmp.Value = Index
 			EnumDec = append(EnumDec, tmp)
 			Index++
@@ -204,16 +205,34 @@ func ExtractStructs(source []byte, fileName string, pkg string) ([]StructDeclara
 
 	reStruct := regexp.MustCompile(`type\s+([_a-zA-Z][_a-zA-Z0-9]*)\s+[_a-zA-Z][_a-zA-Z0-9]*`)
 
-	structLocs := reStruct.FindAllSubmatchIndex(source, -1)
+	reader := bytes.NewReader(source)
+	scanner := bufio.NewScanner(reader)
 
-	for i := range structLocs {
-		var tmp StructDeclaration
-		tmp.PackageID = pkg
-		tmp.FileID = fileName
-		tmp.StartOffset = structLocs[i][0]
-		tmp.Length = structLocs[i][1] - structLocs[i][0]
-		tmp.Name = string(source[structLocs[i][2]:structLocs[i][3]])
-		StrctDec = append(StrctDec, tmp)
+	var bytes int
+	var lineno int
+
+	//Reading code line by line
+	for scanner.Scan() {
+		line := scanner.Bytes()
+		lineno++
+
+		if match := reStruct.FindSubmatchIndex(line); match != nil {
+
+			var tmp StructDeclaration
+
+			tmp.PackageID = pkg
+			tmp.FileID = fileName
+
+			tmp.StartOffset = match[0] + bytes
+			tmp.Length = match[1] - match[0]
+			tmp.Name = string(source[match[2]+bytes : match[3]+bytes])
+
+			tmp.LineNumber = lineno
+
+			StrctDec = append(StrctDec, tmp)
+
+		}
+		bytes += len(line) + 2
 	}
 
 	return StrctDec, err

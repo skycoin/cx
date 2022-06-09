@@ -327,6 +327,7 @@ func TestDeclarationExtraction_ExtractStructs(t *testing.T) {
 					FileID:      "test.cx",
 					StartOffset: 171,
 					Length:      18,
+					LineNumber:  14,
 					Name:        "person",
 				},
 				{
@@ -334,6 +335,7 @@ func TestDeclarationExtraction_ExtractStructs(t *testing.T) {
 					FileID:      "test.cx",
 					StartOffset: 250,
 					Length:      39,
+					LineNumber:  21,
 					Name:        "animal",
 				},
 				{
@@ -341,6 +343,7 @@ func TestDeclarationExtraction_ExtractStructs(t *testing.T) {
 					FileID:      "test.cx",
 					StartOffset: 351,
 					Length:      18,
+					LineNumber:  30,
 					Name:        "Direction",
 				},
 			},
