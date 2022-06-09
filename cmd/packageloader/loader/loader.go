@@ -85,7 +85,6 @@ func (packageList *PackageList) addPackagesIn(path string) error {
 		}
 		fileList = append(fileList, dirEntry)
 	}
-
 	if len(fileList) == 1 {
 		packageName, err := getPackageName(fileList[0])
 		if err != nil {
@@ -106,7 +105,7 @@ func (packageList *PackageList) addPackagesIn(path string) error {
 		}
 		if !samePackage {
 			log.Print("Files in directory " + CURRENT_PATH + " are not all in the same newPackage.\nSource of the error: " + packageName)
-			log.Fatal(errors.New("ErrMismatchedPackageFiles"))
+			return errors.New("ErrMismatchedPackageFiles")
 		}
 		newPackage.PackageName = packageName
 	}
