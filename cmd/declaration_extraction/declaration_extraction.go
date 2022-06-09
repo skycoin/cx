@@ -10,41 +10,41 @@ import (
 )
 
 type GlobalDeclaration struct {
-	PackageID   string
-	FileID      string
-	StartOffset int
-	Length      int
-	LineNumber  int
-	Name        string
+	PackageID          string
+	FileID             string
+	StartOffset        int
+	Length             int
+	LineNumber         int
+	GlobalVariableName string // name of variable being declared
 }
 
 type EnumDeclaration struct {
-	PackageID   string
-	FileID      string
-	StartOffset int
-	Length      int
-	LineNumber  int
-	Type        string
-	Value       int
-	Name        string
+	PackageID        string
+	FileID           string
+	StartOffset      int
+	Length           int
+	LineNumber       int
+	Type             string
+	Value            int
+	EnumVariableName string // name of variable being declared
 }
 
 type StructDeclaration struct {
-	PackageID   string
-	FileID      string
-	StartOffset int
-	Length      int
-	LineNumber  int
-	Name        string
+	PackageID          string
+	FileID             string
+	StartOffset        int
+	Length             int
+	LineNumber         int
+	StructVariableName string // name of variable being declared
 }
 
 type FuncDeclaration struct {
-	PackageID   string
-	FileID      string
-	StartOffset int
-	Length      int
-	LineNumber  int
-	Name        string
+	PackageID        string
+	FileID           string
+	StartOffset      int
+	Length           int
+	LineNumber       int
+	FuncVariableName string // name of variable being declared
 }
 
 func ReplaceCommentsWithWhitespaces(source []byte) []byte {
@@ -113,7 +113,7 @@ func ExtractGlobals(source []byte, fileName string, pkg string) ([]GlobalDeclara
 			tmp.StartOffset = bytes + match[0]
 			tmp.Length = match[1] - match[0]
 			tmp.LineNumber = lineno
-			tmp.Name = string(line[match[2]+bytes : match[3]+bytes])
+			tmp.GlobalVariableName = string(line[match[2]+bytes : match[3]+bytes])
 			GlblDec = append(GlblDec, tmp)
 		}
 		bytes += len(line) + 2
@@ -177,11 +177,11 @@ func ExtractEnums(source []byte, fileName string, pkg string) ([]EnumDeclaration
 			tmp.Length = match[1] - match[0]
 			tmp.LineNumber = lineno
 
-			tmp.Name = string(source[match[6]+bytes : match[7]+bytes])
+			tmp.EnumVariableName = string(source[match[6]+bytes : match[7]+bytes])
 
 			if match[2] != -1 {
 				Type = string(source[match[4]+bytes : match[5]+bytes])
-				tmp.Name = string(source[match[2]+bytes : match[3]+bytes])
+				tmp.EnumVariableName = string(source[match[2]+bytes : match[3]+bytes])
 			}
 
 			tmp.Type = Type
@@ -225,7 +225,7 @@ func ExtractStructs(source []byte, fileName string, pkg string) ([]StructDeclara
 
 			tmp.StartOffset = match[0] + bytes
 			tmp.Length = match[1] - match[0]
-			tmp.Name = string(source[match[2]+bytes : match[3]+bytes])
+			tmp.StructVariableName = string(source[match[2]+bytes : match[3]+bytes])
 
 			tmp.LineNumber = lineno
 
@@ -267,10 +267,10 @@ func ExtractFuncs(source []byte, fileName string, pkg string) ([]FuncDeclaration
 			tmp.Length = match[1] - match[0]
 
 			if match[2] != -1 {
-				tmp.Name = string(source[match[2]+bytes : match[3]+bytes])
+				tmp.FuncVariableName = string(source[match[2]+bytes : match[3]+bytes])
 			}
 
-			tmp.Name = string(source[match[4]+bytes : match[5]+bytes])
+			tmp.FuncVariableName = string(source[match[4]+bytes : match[5]+bytes])
 
 			tmp.LineNumber = lineno
 
@@ -288,7 +288,7 @@ func ReDeclarationCheck(Glbl []GlobalDeclaration, Enum []EnumDeclaration, Strct 
 
 	for i := 0; i < len(Glbl); i++ {
 		for j := i + 1; j < len(Glbl); j++ {
-			if Glbl[i].Name == Glbl[j].Name {
+			if Glbl[i].GlobalVariableName == Glbl[j].GlobalVariableName {
 				err = errors.New("global redeclared")
 				return err
 			}
@@ -297,7 +297,7 @@ func ReDeclarationCheck(Glbl []GlobalDeclaration, Enum []EnumDeclaration, Strct 
 
 	for i := 0; i < len(Enum); i++ {
 		for j := i + 1; j < len(Enum); j++ {
-			if Enum[i].Name == Enum[j].Name {
+			if Enum[i].EnumVariableName == Enum[j].EnumVariableName {
 				err = errors.New("enum redeclared")
 				return err
 			}
@@ -306,7 +306,7 @@ func ReDeclarationCheck(Glbl []GlobalDeclaration, Enum []EnumDeclaration, Strct 
 
 	for i := 0; i < len(Strct); i++ {
 		for j := i + 1; j < len(Strct); j++ {
-			if Strct[i].Name == Strct[j].Name {
+			if Strct[i].StructVariableName == Strct[j].StructVariableName {
 				err = errors.New("struct redeclared")
 				return err
 			}
@@ -315,7 +315,7 @@ func ReDeclarationCheck(Glbl []GlobalDeclaration, Enum []EnumDeclaration, Strct 
 
 	for i := 0; i < len(Func); i++ {
 		for j := i + 1; j < len(Func); j++ {
-			if Func[i].Name == Func[j].Name {
+			if Func[i].FuncVariableName == Func[j].FuncVariableName {
 				err = errors.New("func redeclared")
 				return err
 			}
