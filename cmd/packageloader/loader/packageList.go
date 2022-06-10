@@ -24,7 +24,7 @@ func (pl *PackageList) UnmarshalBinary(data []byte) error {
 }
 
 // Encode a package and put it in the specified package list
-func (packageList *PackageList) hashPackage(newPackage *Package) error {
+func (packageList *PackageList) hashPackage(newPackage *Package, database string) error {
 	var buffer bytes.Buffer
 	encoder := gob.NewEncoder(&buffer)
 
@@ -34,7 +34,7 @@ func (packageList *PackageList) hashPackage(newPackage *Package) error {
 	}
 	h := blake2b.Sum512(buffer.Bytes())
 	packageList.Packages = append(packageList.Packages, fmt.Sprintf("%x", h[:]))
-	switch DATABASE {
+	switch database {
 	case "redis":
 		redis.Add(fmt.Sprintf("%x", h[:]), *newPackage)
 	case "bolt":

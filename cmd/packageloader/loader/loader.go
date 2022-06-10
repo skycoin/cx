@@ -14,10 +14,6 @@ import (
 	"golang.org/x/crypto/blake2b"
 )
 
-var DATABASE = "bolt"
-var SRC_PATH string
-var CURRENT_PATH string
-var IMPORTED_DIRECTORIES = []string{}
 var SKIP_PACKAGES = []string{"al", "gl", "glfw", "time", "os", "gltext", "cx", "json", "cipher", "tcp"}
 
 func contains(list []string, element string) bool {
@@ -29,13 +25,13 @@ func contains(list []string, element string) bool {
 	return false
 }
 
-func LoadPackages(programName string, path string) error {
-	SRC_PATH = path + "src/"
+func LoadPackages(programName string, path string, database string) error {
+	srcPath := path + "src/"
 
 	packageList := PackageList{}
 
 	directoryList := []string{}
-	err := filepath.WalkDir(SRC_PATH, func(path string, info fs.DirEntry, err error) error {
+	err := filepath.WalkDir(srcPath, func(path string, info fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
@@ -48,10 +44,14 @@ func LoadPackages(programName string, path string) error {
 		return err
 	}
 
+	importedPackages := []string{}
 	for _, path := range directoryList {
-		packageList.addPackagesIn(path)
+		importedPackages, err = packageList.addPackages(srcPath, path, database, importedPackages)
+		if err != nil {
+			return err
+		}
 	}
-	switch DATABASE {
+	switch database {
 	case "redis":
 		redis.Add(programName, packageList)
 	case "bolt":
@@ -64,20 +64,19 @@ func LoadPackages(programName string, path string) error {
 	return nil
 }
 
-func (packageList *PackageList) addPackagesIn(path string) error {
-	if path[len(path)-1:] != "/" {
-		path += "/"
+func (packageList *PackageList) addPackages(srcPath string, packagePath string, database string, importedDirectories []string) ([]string, error) {
+	if packagePath[len(packagePath)-1:] != "/" {
+		packagePath += "/"
 	}
-	CURRENT_PATH = path
-	if contains(IMPORTED_DIRECTORIES, CURRENT_PATH) {
-		return nil
+	if contains(importedDirectories, packagePath) {
+		return importedDirectories, nil
 	}
 	newPackage := Package{}
 	imports := []string{}
 	fileList := []os.DirEntry{}
-	files, err := os.ReadDir(CURRENT_PATH)
+	files, err := os.ReadDir(packagePath)
 	if err != nil {
-		return err
+		return importedDirectories, err
 	}
 	for _, dirEntry := range files {
 		if dirEntry.Name()[len(dirEntry.Name())-2:] != "cx" {
@@ -86,58 +85,58 @@ func (packageList *PackageList) addPackagesIn(path string) error {
 		fileList = append(fileList, dirEntry)
 	}
 	if len(fileList) == 1 {
-		packageName, err := getPackageName(fileList[0])
+		packageName, err := getPackageName(fileList[0], packagePath)
 		if err != nil {
-			return err
+			return importedDirectories, err
 		}
-		imports, err = getImports(fileList[0], imports)
+		imports, err = getImports(fileList[0], packagePath, imports)
 		if err != nil {
-			return err
+			return importedDirectories, err
 		}
 		newPackage.PackageName = packageName
 	}
 	if len(fileList) > 1 {
 		samePackage := false
 		packageName := ""
-		samePackage, packageName, imports, err = comparePackageNames(fileList, imports)
+		samePackage, packageName, imports, err = comparePackageNames(fileList, packagePath, imports)
 		if err != nil {
-			return err
+			return importedDirectories, err
 		}
 		if !samePackage {
-			log.Print("Files in directory " + CURRENT_PATH + " are not all in the same newPackage.\nSource of the error: " + packageName)
-			return errors.New("ErrMismatchedPackageFiles")
+			log.Print("Files in directory " + packagePath + " are not all in the same newPackage.\nSource of the error: " + packageName)
+			return importedDirectories, errors.New("ErrMismatchedPackageFiles")
 		}
 		newPackage.PackageName = packageName
 	}
-	newPackage.addFiles(fileList)
-	packageList.hashPackage(&newPackage)
+	newPackage.addFiles(fileList, packagePath, database)
+	packageList.hashPackage(&newPackage, database)
 
-	IMPORTED_DIRECTORIES = append(IMPORTED_DIRECTORIES, CURRENT_PATH)
-	for _, path := range imports {
-		if contains(SKIP_PACKAGES, path) {
+	importedDirectories = append(importedDirectories, packagePath)
+	for _, importName := range imports {
+		if contains(SKIP_PACKAGES, importName) {
 			continue
 		}
-		packageList.addPackagesIn(SRC_PATH + path)
+		packageList.addPackages(srcPath, srcPath+importName, database, importedDirectories)
 	}
-	return nil
+	return importedDirectories, nil
 }
 
 // For a list of cx files, get their package names and return if they match, and add the imports
-func comparePackageNames(fileList []fs.DirEntry, imports []string) (bool, string, []string, error) {
-	packageName, err := getPackageName(fileList[0])
+func comparePackageNames(fileList []fs.DirEntry, packagePath string, imports []string) (bool, string, []string, error) {
+	packageName, err := getPackageName(fileList[0], packagePath)
 	if err != nil {
 		return false, "", imports, err
 	}
-	imports, err = getImports(fileList[0], imports)
+	imports, err = getImports(fileList[0], packagePath, imports)
 	if err != nil {
 		return false, "", imports, err
 	}
 	for i := 1; i < len(fileList); i++ {
-		newPackageName, err := getPackageName(fileList[i])
+		newPackageName, err := getPackageName(fileList[i], packagePath)
 		if err != nil {
 			return false, "", imports, err
 		}
-		imports, err = getImports(fileList[i], imports)
+		imports, err = getImports(fileList[i], packagePath, imports)
 		if err != nil {
 			return false, "", imports, err
 		}
@@ -149,8 +148,8 @@ func comparePackageNames(fileList []fs.DirEntry, imports []string) (bool, string
 }
 
 // Get the package name of a cx file
-func getPackageName(dirEntry fs.DirEntry) (string, error) {
-	file, err := os.Open(CURRENT_PATH + dirEntry.Name())
+func getPackageName(dirEntry fs.DirEntry, packagePath string) (string, error) {
+	file, err := os.Open(packagePath + dirEntry.Name())
 	if err != nil {
 		return "", err
 	}
@@ -178,8 +177,8 @@ func getPackageName(dirEntry fs.DirEntry) (string, error) {
 }
 
 // Get the import names in a cx file
-func getImports(dirEntry fs.DirEntry, imports []string) ([]string, error) {
-	file, err := os.Open(CURRENT_PATH + dirEntry.Name())
+func getImports(dirEntry fs.DirEntry, importPath string, imports []string) ([]string, error) {
+	file, err := os.Open(importPath + dirEntry.Name())
 	if err != nil {
 		return imports, err
 	}
@@ -208,7 +207,7 @@ func getImports(dirEntry fs.DirEntry, imports []string) ([]string, error) {
 }
 
 // Add the hashes of the files in fileList to the package
-func (newPackage *Package) addFiles(fileList []fs.DirEntry) error {
+func (newPackage *Package) addFiles(fileList []fs.DirEntry, packagePath string, database string) error {
 	for _, file := range fileList {
 		fileInfo, err := file.Info()
 		if err != nil {
@@ -219,14 +218,14 @@ func (newPackage *Package) addFiles(fileList []fs.DirEntry) error {
 			FileName: file.Name(),
 			Length:   uint32(fileInfo.Size()),
 		}
-		byteArray, err := ioutil.ReadFile(CURRENT_PATH + file.Name())
+		byteArray, err := ioutil.ReadFile(packagePath + file.Name())
 		if err != nil {
 			return err
 		}
 		newFile.Content = byteArray
 		h := blake2b.Sum512(byteArray)
 		newFile.Blake2Hash = string(h[:])
-		newPackage.hashFile(&newFile)
+		newPackage.hashFile(&newFile, database)
 	}
 	return nil
 }

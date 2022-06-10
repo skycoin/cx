@@ -25,7 +25,7 @@ func (p *Package) UnmarshalBinary(data []byte) error {
 }
 
 // Encode a file and put it in the specified package
-func (newPackage *Package) hashFile(newFile *File) error {
+func (newPackage *Package) hashFile(newFile *File, database string) error {
 	var buffer bytes.Buffer
 	encoder := gob.NewEncoder(&buffer)
 
@@ -36,7 +36,7 @@ func (newPackage *Package) hashFile(newFile *File) error {
 	h := blake2b.Sum512(buffer.Bytes())
 
 	newPackage.Files = append(newPackage.Files, fmt.Sprintf("%x", h[:]))
-	switch DATABASE {
+	switch database {
 	case "redis":
 		redis.Add(fmt.Sprintf("%x", h[:]), *newFile)
 	case "bolt":

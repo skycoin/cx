@@ -50,8 +50,7 @@ func TestContains(t *testing.T) {
 }
 
 func TestGetPackageName(t *testing.T) {
-	CURRENT_PATH = TEST_SRC_PATH
-	testPackageName, err := getPackageName(testFileList[0])
+	testPackageName, err := getPackageName(testFileList[0], TEST_SRC_PATH)
 	if err != nil {
 		t.Error(err)
 	}
@@ -61,9 +60,8 @@ func TestGetPackageName(t *testing.T) {
 }
 
 func TestGetImports(t *testing.T) {
-	CURRENT_PATH = TEST_SRC_PATH
 	testImports := []string{}
-	testImports, err := getImports(testFileList[0], testImports)
+	testImports, err := getImports(testFileList[0], TEST_SRC_PATH, testImports)
 	if err != nil {
 		t.Error(err)
 	}
@@ -100,8 +98,7 @@ func TestComparePackageNames(t *testing.T) {
 	}
 	for _, testcase := range tests {
 		t.Run(testcase.Scenario, func(t *testing.T) {
-			CURRENT_PATH = testcase.Path
-			testSamePackage, testPackageName, _, err := comparePackageNames(testcase.Files, []string{})
+			testSamePackage, testPackageName, _, err := comparePackageNames(testcase.Files, testcase.Path, []string{})
 			if err != nil {
 				t.Error(err)
 			}
@@ -119,14 +116,13 @@ func TestComparePackageNames(t *testing.T) {
 }
 
 func TestCommentsPackage(t *testing.T) {
-	CURRENT_PATH = "test_folder/test_various_files/"
-	files, err := os.ReadDir(CURRENT_PATH)
+	files, err := os.ReadDir("test_folder/test_various_files/")
 	if err != nil {
 		log.Fatal(err)
 	}
 	for _, f := range files {
 		if f.Name() == "package_comment.cx" {
-			packageName, err := getPackageName(f)
+			packageName, err := getPackageName(f, "test_folder/test_various_files/")
 			if err != nil {
 				t.Error(err)
 			}
@@ -136,7 +132,7 @@ func TestCommentsPackage(t *testing.T) {
 		}
 		if f.Name() == "import_comment.cx" {
 			importList := []string{}
-			importList, err := getImports(f, importList)
+			importList, err := getImports(f, "test_folder/test_various_files/", importList)
 			if err != nil {
 				t.Error(err)
 			}
@@ -166,10 +162,8 @@ func TestAddFiles(t *testing.T) {
 	}
 	for _, testcase := range tests {
 		t.Run(testcase.Scenario, func(t *testing.T) {
-			DATABASE = testcase.Database
-			CURRENT_PATH = TEST_SRC_PATH
 			testPackage := Package{}
-			testPackage.addFiles(testFileList)
+			testPackage.addFiles(testFileList, TEST_SRC_PATH, testcase.Database)
 			if len(testPackage.Files) != testcase.WantNumberOfFiles {
 				t.Error("Expected", testcase.WantNumberOfFiles, " files, got", len(testPackage.Files))
 			}
@@ -177,7 +171,7 @@ func TestAddFiles(t *testing.T) {
 	}
 }
 
-func TestAddPackagesIn(t *testing.T) {
+func TestAddPackages(t *testing.T) {
 	tests := []struct {
 		Scenario             string
 		Database             string
@@ -196,11 +190,11 @@ func TestAddPackagesIn(t *testing.T) {
 	}
 	for _, testcase := range tests {
 		t.Run(testcase.Scenario, func(t *testing.T) {
-			DATABASE = testcase.Database
-			SRC_PATH = TEST_SRC_PATH2
-			IMPORTED_DIRECTORIES = []string{}
 			testPackageList := PackageList{}
-			testPackageList.addPackagesIn(SRC_PATH)
+			_, err := testPackageList.addPackages(TEST_SRC_PATH2, TEST_SRC_PATH2, testcase.Database, []string{})
+			if err != nil {
+				t.Error(err)
+			}
 			if len(testPackageList.Packages) != testcase.WantNumberOfPackages {
 				t.Error("Expected", testcase.WantNumberOfPackages, "packages, got", len(testPackageList.Packages))
 			}
@@ -224,9 +218,7 @@ func TestLoad(t *testing.T) {
 	}
 	for _, testcase := range tests {
 		t.Run(testcase.Scenario, func(t *testing.T) {
-			DATABASE = testcase.Database
-			IMPORTED_DIRECTORIES = []string{}
-			LoadPackages("TestValid", "test_folder/test_valid_program/")
+			LoadPackages("TestValid", "test_folder/test_valid_program/", testcase.Database)
 		})
 	}
 }
