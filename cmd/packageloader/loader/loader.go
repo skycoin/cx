@@ -225,7 +225,7 @@ func (newPackage *Package) addFiles(fileList []fs.DirEntry, packagePath string, 
 		newFile.Content = byteArray
 		h := blake2b.Sum512(byteArray)
 		newFile.Blake2Hash = string(h[:])
-		newPackage.hashFile(&newFile, database)
+		newPackage.addFile(&newFile, database)
 	}
 	return nil
 }

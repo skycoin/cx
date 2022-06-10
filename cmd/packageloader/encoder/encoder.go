@@ -13,6 +13,7 @@ func SavePackagesToDisk(packageName string, path string, database string) error 
 	if err != nil {
 		return err
 	}
+
 	var packageList loader.PackageList
 	var listBytes []byte
 	switch database {
@@ -29,33 +30,6 @@ func SavePackagesToDisk(packageName string, path string, database string) error 
 		}
 	}
 	packageList.UnmarshalBinary(listBytes)
-	for _, pack := range packageList.Packages {
-		var packageStruct loader.Package
-		var packageBytes []byte
-		switch database {
-		case "redis":
-			interfaceString, err := redis.Get(pack)
-			if err != nil {
-				return err
-			}
-			packageBytes = []byte(interfaceString.(string))
-		case "bolt":
-			packageBytes, err = bolt.Get(pack)
-			if err != nil {
-				return err
-			}
-		}
-		packageStruct.UnmarshalBinary(packageBytes)
-
-		if packageStruct.PackageName != "main" {
-			continue
-		}
-
-		path = path + "src/"
-		var filePath = path
-
-		SaveFilesToDisk(packageStruct, filePath, database)
-	}
 
 	for _, pack := range packageList.Packages {
 		var packageStruct loader.Package
@@ -73,13 +47,22 @@ func SavePackagesToDisk(packageName string, path string, database string) error 
 				return err
 			}
 		}
-		packageStruct.UnmarshalBinary(packageBytes)
+		err := packageStruct.UnmarshalBinary(packageBytes)
+		if err != nil {
+			return err
+		}
 
+		var filePath string
 		if packageStruct.PackageName == "main" {
-			continue
+			filePath = path + "src/"
+		} else {
+			filePath = path + "src/" + packageStruct.PackageName + "/"
 		}
-		var filePath = path + packageStruct.PackageName + "/"
-		SaveFilesToDisk(packageStruct, filePath, database)
+
+		err = SaveFilesToDisk(packageStruct, filePath, database)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }

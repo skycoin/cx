@@ -25,26 +25,40 @@ func (p *Package) UnmarshalBinary(data []byte) error {
 }
 
 // Encode a file and put it in the specified package
-func (newPackage *Package) hashFile(newFile *File, database string) error {
-	var buffer bytes.Buffer
-	encoder := gob.NewEncoder(&buffer)
-
-	err := encoder.Encode(newFile)
+func (newPackage *Package) addFile(newFile *File, database string) error {
+	hash, err := newFile.getHash()
 	if err != nil {
 		return err
 	}
-	h := blake2b.Sum512(buffer.Bytes())
+	newPackage.Files = append(newPackage.Files, fmt.Sprintf("%x", hash[:]))
+	err = newFile.saveToDatabase(hash, database)
+	if err != nil {
+		return err
+	}
+	return nil
+}
 
-	newPackage.Files = append(newPackage.Files, fmt.Sprintf("%x", h[:]))
+func (newPackage *Package) getHash() ([64]byte, error) {
+	var buffer bytes.Buffer
+	encoder := gob.NewEncoder(&buffer)
+
+	err := encoder.Encode(newPackage)
+	if err != nil {
+		return [64]byte{}, err
+	}
+	return blake2b.Sum512(buffer.Bytes()), err
+}
+
+func (newPackage *Package) saveToDatabase(hash [64]byte, database string) error {
 	switch database {
 	case "redis":
-		redis.Add(fmt.Sprintf("%x", h[:]), *newFile)
+		redis.Add(fmt.Sprintf("%x", hash[:]), *newPackage)
 	case "bolt":
-		value, err := newFile.MarshalBinary()
+		value, err := newPackage.MarshalBinary()
 		if err != nil {
 			return err
 		}
-		bolt.Add(fmt.Sprintf("%x", h[:]), value)
+		bolt.Add(fmt.Sprintf("%x", hash[:]), value)
 	}
 	return nil
 }
