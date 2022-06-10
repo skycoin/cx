@@ -4,9 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
-	"fmt"
 	"io"
-	"log"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -356,141 +354,94 @@ func GetDeclarations(source []byte, Glbl []GlobalDeclaration, Enum []EnumDeclara
 
 func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDeclaration, []StructDeclaration, []FuncDeclaration, error) {
 
-	// var declarations []string
-	// var err error
-	var wg sync.WaitGroup
-
-	GlobalsCh := make(chan []GlobalDeclaration, 100)
-	EnumsCh := make(chan []EnumDeclaration, 100)
-	StructsCh := make(chan []StructDeclaration, 100)
-	FuncsCh := make(chan []FuncDeclaration, 100)
+	GlobalsCh := make(chan []GlobalDeclaration, len(source))
+	EnumsCh := make(chan []EnumDeclaration, len(source))
+	StructsCh := make(chan []StructDeclaration, len(source))
+	FuncsCh := make(chan []FuncDeclaration, len(source))
 	ErrCh := make(chan error)
+
+	var wg sync.WaitGroup
 
 	for i := range source {
 
-		source := source[i]
-		wg.Add(1)
+		go func(glbls chan<- []GlobalDeclaration, enums chan<- []EnumDeclaration, strcts chan<- []StructDeclaration, funcs chan<- []FuncDeclaration, wg *sync.WaitGroup) {
 
-		go func(GlobalsCh chan<- []GlobalDeclaration, EnumsCh chan<- []EnumDeclaration, StructCh chan<- []StructDeclaration, FuncsCh chan<- []FuncDeclaration, wg *sync.WaitGroup) {
-
-			var extractsWg sync.WaitGroup
-
-			extractsWg.Add(4)
-
-			srcBytes, err := io.ReadAll(source)
-			fileName := filepath.Base(source.Name())
+			src, err := io.ReadAll(source[i])
+			fileName := filepath.Base(source[i].Name())
 
 			if err != nil {
 				ErrCh <- err
 			}
 
-			srcWithoutComments := ReplaceCommentsWithWhitespaces(srcBytes)
-			pkg := ExtractPackages(srcWithoutComments)
+			replaceComments := ReplaceCommentsWithWhitespaces(src)
+			pkg := ExtractPackages(replaceComments)
 
-			go func(GlobalsCh chan<- []GlobalDeclaration, extractsWg *sync.WaitGroup) {
+			var extractWg sync.WaitGroup
 
-				glbls, err := ExtractGlobals(srcWithoutComments, fileName, pkg)
+			extractWg.Add(4)
+
+			go func() {
+
+				glbl, err := ExtractGlobals(replaceComments, fileName, pkg)
+
 				if err != nil {
-					log.Fatal(err)
+					ErrCh <- err
 				}
 
-				GlobalsCh <- glbls
+				extractWg.Done()
 
-				extractsWg.Done()
+				GlobalsCh <- glbl
 
-				fmt.Printf("extractsWg: %v\n", extractsWg)
+			}()
 
-			}(GlobalsCh, &extractsWg)
+			go func() {
 
-			go func(EnumsCh chan<- []EnumDeclaration, extractsWg *sync.WaitGroup) {
-				defer wg.Done()
+				enum, err := ExtractEnums(replaceComments, fileName, pkg)
 
-				enums, err := ExtractEnums(srcWithoutComments, fileName, pkg)
 				if err != nil {
-					log.Fatal(err)
+					ErrCh <- err
 				}
 
-				EnumsCh <- enums
+				extractWg.Done()
 
-				extractsWg.Done()
+				EnumsCh <- enum
 
-				fmt.Printf("extractsWg: %v\n", extractsWg)
+			}()
 
-			}(EnumsCh, &extractsWg)
+			go func() {
 
-			go func(StructCh chan<- []StructDeclaration, extractsWg *sync.WaitGroup) {
-				defer wg.Done()
+				strct, err := ExtractStructs(replaceComments, fileName, pkg)
 
-				structs, err := ExtractStructs(srcWithoutComments, fileName, pkg)
 				if err != nil {
-					log.Fatal(err)
+					ErrCh <- err
 				}
 
-				StructsCh <- structs
+				extractWg.Done()
 
-				extractsWg.Done()
+				StructsCh <- strct
 
-				fmt.Printf("extractsWg: %v\n", extractsWg)
+			}()
 
-			}(StructCh, &extractsWg)
+			go func() {
 
-			go func(FuncsCh chan<- []FuncDeclaration, extractsWg *sync.WaitGroup) {
+				funcs, err := ExtractFuncs(replaceComments, fileName, pkg)
 
-				funs, err := ExtractFuncs(srcWithoutComments, fileName, pkg)
 				if err != nil {
-					log.Fatal(err)
+					ErrCh <- err
 				}
 
-				FuncsCh <- funs
+				extractWg.Done()
 
-				extractsWg.Done()
+				FuncsCh <- funcs
 
-				fmt.Printf("extractsWg: %v\n", extractsWg)
+			}()
 
-			}(FuncsCh, &extractsWg)
+			extractWg.Wait()
 
-			extractsWg.Wait()
-
-			fmt.Printf("extractsWg: %v\n", extractsWg)
-
-			fmt.Printf("wg: %v\n", wg)
+			wg.Done()
 
 		}(GlobalsCh, EnumsCh, StructsCh, FuncsCh, &wg)
-		fmt.Printf("wg: %v\n", wg)
-
 	}
-
-	fmt.Printf("wg: %v\n", wg)
-
-	wg.Wait()
-	close(GlobalsCh)
-	close(EnumsCh)
-	close(StructsCh)
-	close(FuncsCh)
-
-	fmt.Print(<-GlobalsCh)
-	fmt.Print(<-EnumsCh)
-	fmt.Print(<-StructsCh)
-	fmt.Print(<-FuncsCh)
-
-	// srcBytes, err := io.ReadAll(source)
-	// fileName := filepath.Base(source.Name())
-
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	Globals := <-GlobalsCh
-	Enums := <-EnumsCh
-	Structs := <-StructsCh
-	Funcs := <-FuncsCh
-	err := <-ErrCh
-
-	// if err := ReDeclarationCheck(Globals, Enums, Structs, Funcs); err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// declarations = GetDeclarations(srcBytes, Globals, Enums, Structs, Funcs)
 
 	return Globals, Enums, Structs, Funcs, err
 }
