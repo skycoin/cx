@@ -3,7 +3,6 @@ package declaration_extraction_test
 import (
 	"bytes"
 	"errors"
-	"log"
 	"os"
 	"path/filepath"
 	"testing"
@@ -621,17 +620,24 @@ func TestDeclarationExtraction_ExtractAllDeclarations(t *testing.T) {
 
 			file, err := os.Open(tc.testDir)
 
+			var files = []*os.File{file}
+
 			if err != nil {
-				log.Fatal(err)
+				t.Fatal(err)
 			}
 
-			declarations := declaration_extraction.ExtractAllDeclarations(file)
+			Globals, Enums, Structs, Funcs, err := declaration_extraction.ExtractAllDeclarations(files)
 
-			for i := range declarations {
-				if declarations[i] != tc.wantDeclarations[i] {
-					t.Errorf("want declaration %v, got %v", tc.wantDeclarations[i], declarations[i])
-				}
-			}
+			// for i := range declarations {
+			// 	if declarations[i] != tc.wantDeclarations[i] {
+			// 		t.Errorf("want declaration %v, got %v", tc.wantDeclarations[i], declarations[i])
+			// 	}
+			// }
+
+			t.Error(Globals)
+			t.Error(Enums)
+			t.Error(Structs)
+			t.Error(Funcs)
 		})
 	}
 }

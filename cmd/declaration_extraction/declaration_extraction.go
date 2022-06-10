@@ -4,12 +4,14 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
+	"sync"
 	"unicode"
 )
 
@@ -352,80 +354,123 @@ func GetDeclarations(source []byte, Glbl []GlobalDeclaration, Enum []EnumDeclara
 	return declarations
 }
 
-func ExtractAllDeclarations(source *os.File) []string {
+func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDeclaration, []StructDeclaration, []FuncDeclaration, error) {
 
-	srcBytes, err := io.ReadAll(source)
-	fileName := filepath.Base(source.Name())
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	srcWithoutComments := ReplaceCommentsWithWhitespaces(srcBytes)
-	pkg := ExtractPackages(srcWithoutComments)
+	// var declarations []string
+	// var err error
+	var wg sync.WaitGroup
 
 	GlobalsCh := make(chan []GlobalDeclaration)
 	EnumsCh := make(chan []EnumDeclaration)
 	StructsCh := make(chan []StructDeclaration)
 	FuncsCh := make(chan []FuncDeclaration)
+	ErrCh := make(chan error)
 
-	go func() {
+	for i := range source {
 
-		glbls, err := ExtractGlobals(srcWithoutComments, fileName, pkg)
-		if err != nil {
-			log.Fatal(err)
-		}
+		source := source[i]
+		wg.Add(1)
 
-		GlobalsCh <- glbls
-		close(GlobalsCh)
+		go func(GlobalsCh chan<- []GlobalDeclaration, EnumsCh chan<- []EnumDeclaration, StructCh chan<- []StructDeclaration, FuncsCh chan<- []FuncDeclaration, wg *sync.WaitGroup) {
+			srcBytes, err := io.ReadAll(source)
+			fileName := filepath.Base(source.Name())
 
-	}()
+			if err != nil {
+				ErrCh <- err
+			}
 
-	go func() {
+			srcWithoutComments := ReplaceCommentsWithWhitespaces(srcBytes)
+			pkg := ExtractPackages(srcWithoutComments)
 
-		enums, err := ExtractEnums(srcWithoutComments, fileName, pkg)
-		if err != nil {
-			log.Fatal(err)
-		}
+			wg.Add(4)
 
-		EnumsCh <- enums
-		close(EnumsCh)
+			go func(GlobalsCh chan<- []GlobalDeclaration, wg *sync.WaitGroup) {
 
-	}()
+				glbls, err := ExtractGlobals(srcWithoutComments, fileName, pkg)
+				if err != nil {
+					log.Fatal(err)
+				}
 
-	go func() {
+				GlobalsCh <- glbls
 
-		structs, err := ExtractStructs(srcWithoutComments, fileName, pkg)
-		if err != nil {
-			log.Fatal(err)
-		}
+				wg.Done()
 
-		StructsCh <- structs
-		close(StructsCh)
+			}(GlobalsCh, wg)
 
-	}()
+			go func(EnumsCh chan<- []EnumDeclaration) {
 
-	go func() {
+				enums, err := ExtractEnums(srcWithoutComments, fileName, pkg)
+				if err != nil {
+					log.Fatal(err)
+				}
 
-		funs, err := ExtractFuncs(srcWithoutComments, fileName, pkg)
-		if err != nil {
-			log.Fatal(err)
-		}
+				EnumsCh <- enums
 
-		FuncsCh <- funs
+				wg.Done()
 
-	}()
+			}(EnumsCh)
+
+			go func(StructCh chan<- []StructDeclaration) {
+
+				structs, err := ExtractStructs(srcWithoutComments, fileName, pkg)
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				StructsCh <- structs
+
+				wg.Done()
+
+			}(StructCh)
+
+			go func(FuncsCh chan<- []FuncDeclaration) {
+
+				funs, err := ExtractFuncs(srcWithoutComments, fileName, pkg)
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				FuncsCh <- funs
+
+				wg.Done()
+
+			}(FuncsCh)
+
+			wg.Done()
+
+		}(GlobalsCh, EnumsCh, StructsCh, FuncsCh, &wg)
+
+	}
+
+	wg.Wait()
+	close(GlobalsCh)
+	close(EnumsCh)
+	close(StructsCh)
+	close(FuncsCh)
+
+	fmt.Print(<-GlobalsCh)
+	fmt.Print(<-EnumsCh)
+	fmt.Print(<-StructsCh)
+	fmt.Print(<-FuncsCh)
+
+	// srcBytes, err := io.ReadAll(source)
+	// fileName := filepath.Base(source.Name())
+
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
 
 	Globals := <-GlobalsCh
 	Enums := <-EnumsCh
 	Structs := <-StructsCh
 	Funcs := <-FuncsCh
+	err := <-ErrCh
 
-	if err := ReDeclarationCheck(Globals, Enums, Structs, Funcs); err != nil {
-		log.Fatal(err)
-	}
+	// if err := ReDeclarationCheck(Globals, Enums, Structs, Funcs); err != nil {
+	// 	log.Fatal(err)
+	// }
 
-	declarations := GetDeclarations(srcBytes, Globals, Enums, Structs, Funcs)
+	// declarations = GetDeclarations(srcBytes, Globals, Enums, Structs, Funcs)
 
-	return declarations
+	return Globals, Enums, Structs, Funcs, err
 }
