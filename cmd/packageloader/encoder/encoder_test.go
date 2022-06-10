@@ -7,12 +7,27 @@ import (
 )
 
 func TestSavePackage(t *testing.T) {
-	for _, v := range []string{"redis", "bolt"} {
-		bolt.DBPath = ".."
-		DATABASE = v
-		err := SavePackagesToDisk("Test", "../encoder/test_"+v+"/")
-		if err != nil {
-			t.Error(err)
-		}
+	tests := []struct {
+		Scenario string
+		Database string
+	}{
+		{
+			"Test with Redis database",
+			"redis",
+		},
+		{
+			"Test with Bolt database",
+			"bolt",
+		},
+	}
+	for _, testcase := range tests {
+		t.Run(testcase.Scenario, func(t *testing.T) {
+			bolt.DBPath = ".."
+			DATABASE = testcase.Database
+			err := SavePackagesToDisk("Test", "../encoder/test_"+testcase.Database+"/")
+			if err != nil {
+				t.Error(err)
+			}
+		})
 	}
 }

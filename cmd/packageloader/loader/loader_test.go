@@ -76,27 +76,45 @@ func TestGetImports(t *testing.T) {
 }
 
 func TestComparePackageNames(t *testing.T) {
-	testValues := []struct {
-		Path     string
-		Files    []fs.DirEntry
-		Expected bool
-		ExpValue string
-	}{{TEST_SRC_PATH, testFileList, false, ""}, {TEST_SRC_PATH + "testimport/", testFileList2, true, "testimport"}}
-	for _, testcase := range testValues {
-		CURRENT_PATH = testcase.Path
-		testSamePackage, testPackageName, _, err := comparePackageNames(testcase.Files, []string{})
-		if err != nil {
-			t.Error(err)
-		}
-		if testSamePackage != testcase.Expected {
-			t.Error("Expected", testcase.Expected, "got", testSamePackage)
-		}
-		if testSamePackage == false {
-			return
-		}
-		if testPackageName != testcase.ExpValue {
-			t.Error("Expected", testcase.ExpValue, "got", testPackageName)
-		}
+	tests := []struct {
+		Scenario      string
+		Path          string
+		Files         []fs.DirEntry
+		ExpectedBool  bool
+		ExpectedValue string
+	}{
+		{
+			"Test case for a folder with differing package names",
+			TEST_SRC_PATH,
+			testFileList,
+			false,
+			"",
+		},
+		{
+			"Test case for a folder with a single package name",
+			TEST_SRC_PATH + "testimport/",
+			testFileList2,
+			true,
+			"testimport",
+		},
+	}
+	for _, testcase := range tests {
+		t.Run(testcase.Scenario, func(t *testing.T) {
+			CURRENT_PATH = testcase.Path
+			testSamePackage, testPackageName, _, err := comparePackageNames(testcase.Files, []string{})
+			if err != nil {
+				t.Error(err)
+			}
+			if testSamePackage != testcase.ExpectedBool {
+				t.Error("Expected", testcase.ExpectedBool, "got", testSamePackage)
+			}
+			if testSamePackage == false {
+				return
+			}
+			if testPackageName != testcase.ExpectedValue {
+				t.Error("Expected", testcase.ExpectedValue, "got", testPackageName)
+			}
+		})
 	}
 }
 
@@ -130,34 +148,85 @@ func TestCommentsPackage(t *testing.T) {
 }
 
 func TestAddFiles(t *testing.T) {
-	for _, v := range []string{"redis", "bolt"} {
-		DATABASE = v
-		CURRENT_PATH = TEST_SRC_PATH
-		testPackage := Package{}
-		testPackage.addFiles(testFileList)
-		if len(testPackage.Files) != 2 {
-			t.Error("Expected 2 files, got", len(testPackage.Files))
-		}
+	tests := []struct {
+		Scenario          string
+		Database          string
+		WantNumberOfFiles int
+	}{
+		{
+			"Test with redis database",
+			"redis",
+			2,
+		},
+		{
+			"Test with bolt database",
+			"bolt",
+			2,
+		},
+	}
+	for _, testcase := range tests {
+		t.Run(testcase.Scenario, func(t *testing.T) {
+			DATABASE = testcase.Database
+			CURRENT_PATH = TEST_SRC_PATH
+			testPackage := Package{}
+			testPackage.addFiles(testFileList)
+			if len(testPackage.Files) != testcase.WantNumberOfFiles {
+				t.Error("Expected", testcase.WantNumberOfFiles, " files, got", len(testPackage.Files))
+			}
+		})
 	}
 }
 
 func TestAddPackagesIn(t *testing.T) {
-	for _, v := range []string{"redis", "bolt"} {
-		DATABASE = v
-		SRC_PATH = TEST_SRC_PATH2
-		IMPORTED_DIRECTORIES = []string{}
-		testPackageList := PackageList{}
-		testPackageList.addPackagesIn(SRC_PATH)
-		if len(testPackageList.Packages) != 2 {
-			t.Error("Expected 2 packages, got", len(testPackageList.Packages))
-		}
+	tests := []struct {
+		Scenario             string
+		Database             string
+		WantNumberOfPackages int
+	}{
+		{
+			"Test with redis database",
+			"redis",
+			2,
+		},
+		{
+			"Test with bolt database",
+			"bolt",
+			2,
+		},
+	}
+	for _, testcase := range tests {
+		t.Run(testcase.Scenario, func(t *testing.T) {
+			DATABASE = testcase.Database
+			SRC_PATH = TEST_SRC_PATH2
+			IMPORTED_DIRECTORIES = []string{}
+			testPackageList := PackageList{}
+			testPackageList.addPackagesIn(SRC_PATH)
+			if len(testPackageList.Packages) != testcase.WantNumberOfPackages {
+				t.Error("Expected", testcase.WantNumberOfPackages, "packages, got", len(testPackageList.Packages))
+			}
+		})
 	}
 }
 
 func TestLoad(t *testing.T) {
-	for _, v := range []string{"redis", "bolt"} {
-		DATABASE = v
-		IMPORTED_DIRECTORIES = []string{}
-		LoadPackages("TestValid", "test_folder/test_valid_program/")
+	tests := []struct {
+		Scenario string
+		Database string
+	}{
+		{
+			"Test with Redis database",
+			"redis",
+		},
+		{
+			"Test with Bolt database",
+			"bolt",
+		},
+	}
+	for _, testcase := range tests {
+		t.Run(testcase.Scenario, func(t *testing.T) {
+			DATABASE = testcase.Database
+			IMPORTED_DIRECTORIES = []string{}
+			LoadPackages("TestValid", "test_folder/test_valid_program/")
+		})
 	}
 }

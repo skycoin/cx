@@ -77,7 +77,6 @@ func Get(key string) ([]byte, error) {
 		}
 		return nil
 	})
-	log.Println(ret)
 	if err != nil {
 		return ret, err
 	}
