@@ -230,7 +230,7 @@ func PostfixExpressionFunCall(prgrm *ast.CXProgram, prevExprs []ast.CXExpression
 		// prevExprs[len(prevExprs) - 1].IsMethodCall = true
 
 	} else if lastPrevExpressionOperator == nil {
-		if opCode, ok := ast.OpCodes[prgrm.GetCXArgFromArray(ast.CXArgumentIndex(lastPrevExpression.GetOutputs(prgrm)[0].Meta)).Name]; ok {
+		if opCode, ok := ast.OpCodes[lastPrevExpression.GetOutputs(prgrm)[0].Name]; ok {
 			if pkg, err := prgrm.GetCurrentPackage(); err == nil {
 				prgrm.CXAtomicOps[firstPrevExpressionIdx].Package = ast.CXPackageIndex(pkg.Index)
 			}
@@ -361,7 +361,8 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		lastExpressionIdx = lastExpr.Index
 	}
 
-	leftExprIdx := prgrm.CXAtomicOps[lastExpressionIdx].GetOutputs(prgrm)[0].Meta
+	leftExprOutput := prgrm.CXAtomicOps[lastExpressionIdx].GetOutputs(prgrm)[0]
+	leftExprIdx := leftExprOutput.Meta
 
 	// then left is a first (e.g first.rest) and right is a rest
 	// let's check if left is a package
@@ -390,6 +391,7 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 				// then it's a native
 				// TODO: we'd be referring to the function itself, not a function call
 				// (functions as first-class objects)
+				leftExprOutput.Name = prgrm.CXArgs[leftExprIdx].Name + "." + ident
 				prgrm.CXArgs[leftExprIdx].Name = prgrm.CXArgs[leftExprIdx].Name + "." + ident
 
 				return prevExprs
@@ -399,18 +401,25 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		prgrm.CXArgs[leftExprIdx].Package = ast.CXPackageIndex(imp.Index)
 
 		if glbl, err := imp.GetGlobal(prgrm, ident); err == nil {
+			var glblArg *ast.CXArgument
+			if glbl.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				glblArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(glbl.Meta))
+			}
 			// then it's a global
 			// prevExprs[len(prevExprs)-1].ProgramOutput[0] = glbl
-			lastExpressionOutput := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(prgrm.CXAtomicOps[lastExpressionIdx].GetOutputs(prgrm)[0].Meta))
-			lastExpressionOutput.Name = glbl.Name
-			lastExpressionOutput.Type = glbl.Type
-			lastExpressionOutput.StructType = glbl.StructType
-			lastExpressionOutput.Size = glbl.Size
-			lastExpressionOutput.TotalSize = glbl.TotalSize
-			lastExpressionOutput.PointerTargetType = glbl.PointerTargetType
-			lastExpressionOutput.IsSlice = glbl.IsSlice
-			lastExpressionOutput.IsStruct = glbl.IsStruct
-			lastExpressionOutput.Package = glbl.Package
+			lastExpressionOutput := prgrm.CXAtomicOps[lastExpressionIdx].GetOutputs(prgrm)[0]
+			lastExpressionOutputArg := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(lastExpressionOutput.Meta))
+			lastExpressionOutputArg.Name = glblArg.Name
+			lastExpressionOutput.Name = glblArg.Name
+
+			lastExpressionOutputArg.Type = glblArg.Type
+			lastExpressionOutputArg.StructType = glblArg.StructType
+			lastExpressionOutputArg.Size = glblArg.Size
+			lastExpressionOutputArg.TotalSize = glblArg.TotalSize
+			lastExpressionOutputArg.PointerTargetType = glblArg.PointerTargetType
+			lastExpressionOutputArg.IsSlice = glblArg.IsSlice
+			lastExpressionOutputArg.IsStruct = glblArg.IsStruct
+			lastExpressionOutputArg.Package = glblArg.Package
 		} else if fn, err := imp.GetFunction(prgrm, ident); err == nil {
 			// then it's a function
 			// not sure about this next line

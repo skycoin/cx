@@ -176,7 +176,8 @@ func PrimaryStructLiteral(prgrm *ast.CXProgram, structName string, structFields 
 					panic(err)
 				}
 
-				cxAtomicOpOutputIdx := cxAtomicOp.GetOutputs(prgrm)[0].Meta
+				cxAtomicOpOutput := cxAtomicOp.GetOutputs(prgrm)[0]
+				cxAtomicOpOutputIdx := cxAtomicOpOutput.Meta
 				name := prgrm.CXArgs[cxAtomicOpOutputIdx].Name
 
 				field := ast.MakeArgument(name, CurrentFile, LineNo)
@@ -194,6 +195,8 @@ func PrimaryStructLiteral(prgrm *ast.CXProgram, structName string, structFields 
 				prgrm.CXArgs[cxAtomicOpOutputIdx].Size = strct.GetStructSize(prgrm)
 				prgrm.CXArgs[cxAtomicOpOutputIdx].TotalSize = strct.GetStructSize(prgrm)
 				prgrm.CXArgs[cxAtomicOpOutputIdx].Name = structName
+				cxAtomicOpOutput.Name = structName
+
 				fieldIdx := prgrm.AddCXArgInArray(field)
 				prgrm.CXArgs[cxAtomicOpOutputIdx].Fields = append(prgrm.CXArgs[cxAtomicOpOutputIdx].Fields, fieldIdx)
 
@@ -230,7 +233,8 @@ func PrimaryStructLiteralExternal(prgrm *ast.CXProgram, importName string, struc
 						panic(err)
 					}
 
-					cxAtomicOpOutputIdx := cxAtomicOp.GetOutputs(prgrm)[0].Meta
+					cxAtomicOpOutput := cxAtomicOp.GetOutputs(prgrm)[0]
+					cxAtomicOpOutputIdx := cxAtomicOpOutput.Meta
 					field := ast.MakeArgument("", CurrentFile, LineNo)
 					field.SetType(types.IDENTIFIER)
 					field.Name = prgrm.CXArgs[cxAtomicOpOutputIdx].Name
@@ -244,6 +248,8 @@ func PrimaryStructLiteralExternal(prgrm *ast.CXProgram, importName string, struc
 					prgrm.CXArgs[cxAtomicOpOutputIdx].Size = strct.GetStructSize(prgrm)
 					prgrm.CXArgs[cxAtomicOpOutputIdx].TotalSize = strct.GetStructSize(prgrm)
 					prgrm.CXArgs[cxAtomicOpOutputIdx].Name = structName
+					cxAtomicOpOutput.Name = structName
+
 					fieldIdx := prgrm.AddCXArgInArray(field)
 					prgrm.CXArgs[cxAtomicOpOutputIdx].Fields = append(prgrm.CXArgs[cxAtomicOpOutputIdx].Fields, fieldIdx)
 					result = append(result, expr)

@@ -34,10 +34,15 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 
 	// Treat the name a bit different whether it's defined already or not.
 	if glbl, err := pkg.GetGlobal(prgrm, declarator.Name); err == nil {
+		var glblIdx int
+		var glblArg *ast.CXArgument
 		// The name is already defined.
-		glblIdx := glbl.Index
+		if glbl.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			glblIdx = glbl.Meta
+			glblArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(glblIdx))
+		}
 
-		if glbl.Offset < 0 || glbl.Size == 0 || glbl.TotalSize == 0 {
+		if glbl.Offset < 0 || glblArg.Size == 0 || glblArg.TotalSize == 0 {
 			// then it was only added a reference to the symbol
 			var glblArg *ast.CXArgument
 			if declaration_specifiers.IsSlice { // TODO:PTR move branch in WritePrimary
@@ -69,13 +74,13 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 
 				prgrm.CXArgs[glblIdx] = *declaration_specifiers
 				prgrm.CXArgs[glblIdx].Index = glblIdx
+				glbl.Name = declaration_specifiers.Name
 
 				typeSig := prgrm.CXAtomicOps[initializerExpressionIdx].GetOutputs(prgrm)[0]
 				prgrm.CXAtomicOps[initializerExpressionIdx].AddInput(prgrm, typeSig)
 				prgrm.CXAtomicOps[initializerExpressionIdx].Outputs = nil
 
-				typeSig = ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(glblIdx)))
-				prgrm.CXAtomicOps[initializerExpressionIdx].AddOutput(prgrm, typeSig)
+				prgrm.CXAtomicOps[initializerExpressionIdx].AddOutput(prgrm, glbl)
 				opIdx := prgrm.AddNativeFunctionInArray(ast.Natives[constants.OP_IDENTITY])
 				prgrm.CXAtomicOps[initializerExpressionIdx].Operator = opIdx
 				prgrm.CXAtomicOps[initializerExpressionIdx].Package = prgrm.CXArgs[glblIdx].Package
@@ -91,6 +96,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 
 				prgrm.CXArgs[glblIdx] = *declaration_specifiers
 				prgrm.CXArgs[glblIdx].Index = glblIdx
+				glbl.Name = declaration_specifiers.Name
 
 				if initializer[len(initializer)-1].IsStructLiteral() {
 					outputStruct := &ast.CXStruct{}
@@ -107,8 +113,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 					)
 				} else {
 					prgrm.CXAtomicOps[initializerExpressionIdx].Outputs = nil
-					typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(glblIdx)))
-					prgrm.CXAtomicOps[initializerExpressionIdx].AddOutput(prgrm, typeSig)
+					prgrm.CXAtomicOps[initializerExpressionIdx].AddOutput(prgrm, glbl)
 				}
 				//add intialization statements, to array
 				prgrm.SysInitExprs = append(prgrm.SysInitExprs, initializer...)
@@ -121,6 +126,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 			declaration_specifiers.Package = prgrm.CXArgs[glblIdx].Package
 			prgrm.CXArgs[glblIdx] = *declaration_specifiers
 			prgrm.CXArgs[glblIdx].Index = glblIdx
+			glbl.Name = declaration_specifiers.Name
 		}
 	} else {
 		// then it hasn't been defined

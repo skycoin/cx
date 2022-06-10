@@ -357,7 +357,7 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 		// then it's a function call or an array access
 		prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, typeSig)
 
-		if IsTempVar(prgrm.GetCXArgFromArray(ast.CXArgumentIndex(prgrm.CXAtomicOps[lastLeftExpressionIdx].GetOutputs(prgrm)[0].Meta)).Name) {
+		if IsTempVar(prgrm.CXAtomicOps[lastLeftExpressionIdx].GetOutputs(prgrm)[0].Name) {
 			out = append(out, leftExprs...)
 		} else {
 			out = append(out, leftExprs[:len(leftExprs)-1]...)
@@ -372,7 +372,7 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 		// then it's a function call or an array access
 		prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, typeSig)
 
-		if IsTempVar(prgrm.GetCXArgFromArray(ast.CXArgumentIndex(prgrm.CXAtomicOps[lastRightExpressionIdx].GetOutputs(prgrm)[0].Meta)).Name) {
+		if IsTempVar(prgrm.CXAtomicOps[lastRightExpressionIdx].GetOutputs(prgrm)[0].Name) {
 			out = append(out, rightExprs...)
 		} else {
 			out = append(out, rightExprs[:len(rightExprs)-1]...)

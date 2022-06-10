@@ -109,11 +109,10 @@ func (pkg *CXPackage) GetStruct(prgrm *CXProgram, strctName string) (*CXStruct, 
 }
 
 // GetGlobal ...
-func (pkg *CXPackage) GetGlobal(prgrm *CXProgram, defName string) (*CXArgument, error) {
+func (pkg *CXPackage) GetGlobal(prgrm *CXProgram, defName string) (*CXTypeSignature, error) {
 	for _, field := range pkg.Globals.Fields {
 		if field.Name == defName && field.Type == TYPE_CXARGUMENT_DEPRECATE {
-			glbl := prgrm.GetCXArgFromArray(CXArgumentIndex(field.Meta))
-			return glbl, nil
+			return field, nil
 		}
 	}
 

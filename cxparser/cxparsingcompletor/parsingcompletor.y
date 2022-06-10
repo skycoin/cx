@@ -625,7 +625,7 @@ slice_literal_expression:
                                 }
 
                                 expressionOutput:=actions.AST.GetCXArgFromArray(ast.CXArgumentIndex(expression.GetOutputs(actions.AST)[0].Meta))
-				if expressionOutput.Name == actions.AST.GetCXArgFromArray(ast.CXArgumentIndex(lastExpression.GetInputs(actions.AST)[0].Meta)).Name {
+				if expressionOutput.Name == lastExpression.GetInputs(actions.AST)[0].Name {
 					expressionOutput.Lengths = append(expressionOutput.Lengths, 0)
 					expressionOutput.DeclarationSpecifiers = append(expressionOutput.DeclarationSpecifiers, constants.DECL_SLICE)
                                 }
@@ -993,7 +993,7 @@ struct_literal_expression:
                         if err != nil {
                                 panic(err)
                         }
-			$$ = actions.PrimaryStructLiteralExternal(actions.AST,actions.AST.GetCXArgFromArray(ast.CXArgumentIndex(cxAtomicOp.GetOutputs(actions.AST)[0].Meta)).Name, $3, $5)
+			$$ = actions.PrimaryStructLiteralExternal(actions.AST,cxAtomicOp.GetOutputs(actions.AST)[0].Name, $3, $5)
                 }
                 ;
 

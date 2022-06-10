@@ -39,6 +39,7 @@ func assignStructLiteralFields(prgrm *ast.CXProgram, toExprs []ast.CXExpression,
 			expressionOutputIdx = ast.CXArgumentIndex(expressionOutput.Meta)
 		}
 		prgrm.CXArgs[expressionOutputIdx].Name = structLiteralName
+		expressionOutput.Name = structLiteralName
 
 		toExpressionOutput := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(toExpression.GetOutputs(prgrm)[0].Meta))
 		if len(toExpressionOutput.Indexes) > 0 {
@@ -80,7 +81,7 @@ func StructLiteralAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, f
 	// If the last expression in `fromExprs` is declared as pointer
 	// then it means the whole struct literal needs to be passed by reference.
 	if !hasDeclSpec(prgrm.GetCXArgFromArray(ast.CXArgumentIndex(lastFromExpression.GetOutputs(prgrm)[0].Meta)).GetAssignmentElement(prgrm), constants.DECL_POINTER) {
-		return assignStructLiteralFields(prgrm, toExprs, fromExprs, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(toExpression.GetOutputs(prgrm)[0].Meta)).Name)
+		return assignStructLiteralFields(prgrm, toExprs, fromExprs, toExpression.GetOutputs(prgrm)[0].Name)
 	} else {
 		// And we also need an auxiliary variable to point to,
 		// otherwise we'd be trying to assign the fields to a nil value.
@@ -112,7 +113,7 @@ func StructLiteralAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, f
 		assignExpressionIdx := assignExpr.Index
 
 		prgrm.CXAtomicOps[assignExpressionIdx].Package = lastFromExpression.Package
-		out := ast.MakeArgument(prgrm.GetCXArgFromArray(ast.CXArgumentIndex(toExpression.GetOutputs(prgrm)[0].Meta)).Name, lastFromCXLine.FileName, lastFromCXLine.LineNumber)
+		out := ast.MakeArgument(toExpression.GetOutputs(prgrm)[0].Name, lastFromCXLine.FileName, lastFromCXLine.LineNumber)
 		out.Package = lastFromExpression.Package
 		outIdx := prgrm.AddCXArgInArray(out)
 
@@ -153,7 +154,8 @@ func ArrayLiteralAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fr
 		if expressionOutput.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			expressionOutputIdx = ast.CXArgumentIndex(expressionOutput.Meta)
 		}
-		prgrm.CXArgs[expressionOutputIdx].Name = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(toExpression.GetOutputs(prgrm)[0].Meta)).Name
+		prgrm.CXArgs[expressionOutputIdx].Name = toExpression.GetOutputs(prgrm)[0].Name
+		expressionOutput.Name = toExpression.GetOutputs(prgrm)[0].Name
 		prgrm.CXArgs[expressionOutputIdx].DereferenceOperations = append(prgrm.CXArgs[expressionOutputIdx].DereferenceOperations, constants.DEREF_ARRAY)
 	}
 
@@ -274,11 +276,11 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 
 		if fromExpressionOperator == nil {
 			// then it's a literal
-			sym = ast.MakeArgument(prgrm.GetCXArgFromArray(ast.CXArgumentIndex(toExpression.GetOutputs(prgrm)[0].Meta)).Name, CurrentFile, LineNo).SetType(prgrm.GetCXArgFromArray(ast.CXArgumentIndex(prgrm.CXAtomicOps[fromExpressionIdx].GetOutputs(prgrm)[0].Meta)).Type)
+			sym = ast.MakeArgument(toExpression.GetOutputs(prgrm)[0].Name, CurrentFile, LineNo).SetType(prgrm.GetCXArgFromArray(ast.CXArgumentIndex(prgrm.CXAtomicOps[fromExpressionIdx].GetOutputs(prgrm)[0].Meta)).Type)
 		} else {
 			outTypeArg := getOutputType(prgrm, &fromExprs[lastFromExpressionIdx])
 
-			sym = ast.MakeArgument(prgrm.GetCXArgFromArray(ast.CXArgumentIndex(toExpression.GetOutputs(prgrm)[0].Meta)).Name, CurrentFile, LineNo).SetType(outTypeArg.Type)
+			sym = ast.MakeArgument(toExpression.GetOutputs(prgrm)[0].Name, CurrentFile, LineNo).SetType(outTypeArg.Type)
 
 			if fromExprs[lastFromExpressionIdx].IsArrayLiteral() {
 				fromCXAtomicOpInputs := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(prgrm.CXAtomicOps[fromExpressionIdx].GetInputs(prgrm)[0].Meta))

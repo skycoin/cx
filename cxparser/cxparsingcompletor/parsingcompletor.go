@@ -1722,7 +1722,7 @@ yydefault:
 				}
 
 				expressionOutput := actions.AST.GetCXArgFromArray(ast.CXArgumentIndex(expression.GetOutputs(actions.AST)[0].Meta))
-				if expressionOutput.Name == actions.AST.GetCXArgFromArray(ast.CXArgumentIndex(lastExpression.GetInputs(actions.AST)[0].Meta)).Name {
+				if expressionOutput.Name == lastExpression.GetInputs(actions.AST)[0].Name {
 					expressionOutput.Lengths = append(expressionOutput.Lengths, 0)
 					expressionOutput.DeclarationSpecifiers = append(expressionOutput.DeclarationSpecifiers, constants.DECL_SLICE)
 				}
@@ -2137,7 +2137,7 @@ yydefault:
 			if err != nil {
 				panic(err)
 			}
-			yyVAL.expressions = actions.PrimaryStructLiteralExternal(actions.AST, actions.AST.GetCXArgFromArray(ast.CXArgumentIndex(cxAtomicOp.GetOutputs(actions.AST)[0].Meta)).Name, yyDollar[3].tok, yyDollar[5].expressions)
+			yyVAL.expressions = actions.PrimaryStructLiteralExternal(actions.AST, cxAtomicOp.GetOutputs(actions.AST)[0].Name, yyDollar[3].tok, yyDollar[5].expressions)
 		}
 	case 168:
 		yyDollar = yyS[yypt-3 : yypt+1]

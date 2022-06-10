@@ -828,7 +828,7 @@ func checkMatchParamTypes(prgrm *ast.CXProgram, expr *ast.CXExpression, expected
 		// FIXME: There are some expressions added by the cxgo where temporary variables are used.
 		// These temporary variables' types are not properly being set. That's why we use !cxcore.IsTempVar to
 		// exclude these cases for now.
-		if expressionOperator.AtomicOPCode == constants.OP_IDENTITY && !IsTempVar(prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expression.GetOutputs(prgrm)[0].Meta)).Name) {
+		if expressionOperator.AtomicOPCode == constants.OP_IDENTITY && !IsTempVar(expression.GetOutputs(prgrm)[0].Name) {
 			inpType := ast.GetFormattedType(prgrm, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expression.GetInputs(prgrm)[0].Meta)))
 			outType := ast.GetFormattedType(prgrm, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expression.GetOutputs(prgrm)[0].Meta)))
 
@@ -1238,10 +1238,10 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 		var inpIdx ast.CXArgumentIndex = -1
 		var outIdx ast.CXArgumentIndex = -1
 
-		if len(expression.GetInputs(prgrm)) > 0 && prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expression.GetInputs(prgrm)[0].Meta)).Name != "" {
+		if len(expression.GetInputs(prgrm)) > 0 && expression.GetInputs(prgrm)[0].Name != "" {
 			inpIdx = ast.CXArgumentIndex(expression.GetInputs(prgrm)[0].Meta)
 		}
-		if len(expression.GetOutputs(prgrm)) > 0 && prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expression.GetOutputs(prgrm)[0].Meta)).Name != "" {
+		if len(expression.GetOutputs(prgrm)) > 0 && expression.GetOutputs(prgrm)[0].Name != "" {
 			outIdx = ast.CXArgumentIndex(expression.GetOutputs(prgrm)[0].Meta)
 		}
 
@@ -1764,8 +1764,12 @@ func GetGlobalSymbol(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXArgument
 	_, err := lookupSymbol(prgrm, symPkg.Name, ident, symbols)
 	if err != nil {
 		if glbl, err := symPkg.GetGlobal(prgrm, ident); err == nil {
+			var glblArg *ast.CXArgument
+			if glbl.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				glblArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(glbl.Meta))
+			}
 			lastIdx := len(*symbols) - 1
-			(*symbols)[lastIdx][symPkg.Name+"."+ident] = glbl
+			(*symbols)[lastIdx][symPkg.Name+"."+ident] = glblArg
 		}
 	}
 }
