@@ -36,20 +36,20 @@ func main() {
 		path = path[2:]
 	}
 
+	database := "bolt"
 	if *redisFlag {
-		loader.DATABASE = "redis"
-		encoder.DATABASE = "redis"
+		database = "redis"
 	}
 
 	if *loadFlag {
-		err := loader.LoadPackages(programName, path)
+		err := loader.LoadPackages(programName, path, database)
 		if err != nil {
 			log.Fatal(err)
 		}
 		return
 	}
 	if *saveFlag {
-		err := encoder.SavePackagesToDisk(programName, path)
+		err := encoder.SavePackagesToDisk(programName, path, database)
 		if err != nil {
 			log.Fatal(err)
 		}

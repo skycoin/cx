@@ -8,16 +8,14 @@ import (
 	"github.com/skycoin/cx/cmd/packageloader/redis"
 )
 
-var DATABASE = "bolt"
-
-func SavePackagesToDisk(packageName string, path string) error {
+func SavePackagesToDisk(packageName string, path string, database string) error {
 	err := os.Mkdir(path, 0755)
 	if err != nil {
 		return err
 	}
 	var packageList loader.PackageList
 	var listBytes []byte
-	switch DATABASE {
+	switch database {
 	case "redis":
 		interfaceString, err := redis.Get(packageName)
 		if err != nil {
@@ -34,7 +32,7 @@ func SavePackagesToDisk(packageName string, path string) error {
 	for _, pack := range packageList.Packages {
 		var packageStruct loader.Package
 		var packageBytes []byte
-		switch DATABASE {
+		switch database {
 		case "redis":
 			interfaceString, err := redis.Get(pack)
 			if err != nil {
@@ -56,13 +54,13 @@ func SavePackagesToDisk(packageName string, path string) error {
 		path = path + "src/"
 		var filePath = path
 
-		SaveFilesToDisk(packageStruct, filePath)
+		SaveFilesToDisk(packageStruct, filePath, database)
 	}
 
 	for _, pack := range packageList.Packages {
 		var packageStruct loader.Package
 		var packageBytes []byte
-		switch DATABASE {
+		switch database {
 		case "redis":
 			interfaceString, err := redis.Get(pack)
 			if err != nil {
@@ -81,12 +79,12 @@ func SavePackagesToDisk(packageName string, path string) error {
 			continue
 		}
 		var filePath = path + packageStruct.PackageName + "/"
-		SaveFilesToDisk(packageStruct, filePath)
+		SaveFilesToDisk(packageStruct, filePath, database)
 	}
 	return nil
 }
 
-func SaveFilesToDisk(packageStruct loader.Package, filePath string) error {
+func SaveFilesToDisk(packageStruct loader.Package, filePath string, database string) error {
 	err := os.Mkdir(filePath, 0755)
 	if err != nil {
 		return err
@@ -94,7 +92,7 @@ func SaveFilesToDisk(packageStruct loader.Package, filePath string) error {
 	for _, file := range packageStruct.Files {
 		var fileStruct loader.File
 		var fileBytes []byte
-		switch DATABASE {
+		switch database {
 		case "redis":
 			interfaceString, err := redis.Get(file)
 			if err != nil {
