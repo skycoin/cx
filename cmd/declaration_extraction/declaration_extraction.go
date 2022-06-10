@@ -360,10 +360,10 @@ func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDecla
 	// var err error
 	var wg sync.WaitGroup
 
-	GlobalsCh := make(chan []GlobalDeclaration)
-	EnumsCh := make(chan []EnumDeclaration)
-	StructsCh := make(chan []StructDeclaration)
-	FuncsCh := make(chan []FuncDeclaration)
+	GlobalsCh := make(chan []GlobalDeclaration, 100)
+	EnumsCh := make(chan []EnumDeclaration, 100)
+	StructsCh := make(chan []StructDeclaration, 100)
+	FuncsCh := make(chan []FuncDeclaration, 100)
 	ErrCh := make(chan error)
 
 	for i := range source {
@@ -372,6 +372,11 @@ func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDecla
 		wg.Add(1)
 
 		go func(GlobalsCh chan<- []GlobalDeclaration, EnumsCh chan<- []EnumDeclaration, StructCh chan<- []StructDeclaration, FuncsCh chan<- []FuncDeclaration, wg *sync.WaitGroup) {
+
+			var extractsWg sync.WaitGroup
+
+			extractsWg.Add(4)
+
 			srcBytes, err := io.ReadAll(source)
 			fileName := filepath.Base(source.Name())
 
@@ -382,9 +387,7 @@ func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDecla
 			srcWithoutComments := ReplaceCommentsWithWhitespaces(srcBytes)
 			pkg := ExtractPackages(srcWithoutComments)
 
-			wg.Add(4)
-
-			go func(GlobalsCh chan<- []GlobalDeclaration, wg *sync.WaitGroup) {
+			go func(GlobalsCh chan<- []GlobalDeclaration, extractsWg *sync.WaitGroup) {
 
 				glbls, err := ExtractGlobals(srcWithoutComments, fileName, pkg)
 				if err != nil {
@@ -393,11 +396,14 @@ func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDecla
 
 				GlobalsCh <- glbls
 
-				wg.Done()
+				extractsWg.Done()
 
-			}(GlobalsCh, wg)
+				fmt.Printf("extractsWg: %v\n", extractsWg)
 
-			go func(EnumsCh chan<- []EnumDeclaration) {
+			}(GlobalsCh, &extractsWg)
+
+			go func(EnumsCh chan<- []EnumDeclaration, extractsWg *sync.WaitGroup) {
+				defer wg.Done()
 
 				enums, err := ExtractEnums(srcWithoutComments, fileName, pkg)
 				if err != nil {
@@ -406,11 +412,14 @@ func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDecla
 
 				EnumsCh <- enums
 
-				wg.Done()
+				extractsWg.Done()
 
-			}(EnumsCh)
+				fmt.Printf("extractsWg: %v\n", extractsWg)
 
-			go func(StructCh chan<- []StructDeclaration) {
+			}(EnumsCh, &extractsWg)
+
+			go func(StructCh chan<- []StructDeclaration, extractsWg *sync.WaitGroup) {
+				defer wg.Done()
 
 				structs, err := ExtractStructs(srcWithoutComments, fileName, pkg)
 				if err != nil {
@@ -419,11 +428,13 @@ func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDecla
 
 				StructsCh <- structs
 
-				wg.Done()
+				extractsWg.Done()
 
-			}(StructCh)
+				fmt.Printf("extractsWg: %v\n", extractsWg)
 
-			go func(FuncsCh chan<- []FuncDeclaration) {
+			}(StructCh, &extractsWg)
+
+			go func(FuncsCh chan<- []FuncDeclaration, extractsWg *sync.WaitGroup) {
 
 				funs, err := ExtractFuncs(srcWithoutComments, fileName, pkg)
 				if err != nil {
@@ -432,15 +443,24 @@ func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDecla
 
 				FuncsCh <- funs
 
-				wg.Done()
+				extractsWg.Done()
 
-			}(FuncsCh)
+				fmt.Printf("extractsWg: %v\n", extractsWg)
 
-			wg.Done()
+			}(FuncsCh, &extractsWg)
+
+			extractsWg.Wait()
+
+			fmt.Printf("extractsWg: %v\n", extractsWg)
+
+			fmt.Printf("wg: %v\n", wg)
 
 		}(GlobalsCh, EnumsCh, StructsCh, FuncsCh, &wg)
+		fmt.Printf("wg: %v\n", wg)
 
 	}
+
+	fmt.Printf("wg: %v\n", wg)
 
 	wg.Wait()
 	close(GlobalsCh)
