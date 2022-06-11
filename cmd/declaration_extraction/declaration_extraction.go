@@ -364,10 +364,14 @@ func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDecla
 
 	for i := range source {
 
+		wg.Add(1)
+
+		currentFile := source[i]
+
 		go func(glbls chan<- []GlobalDeclaration, enums chan<- []EnumDeclaration, strcts chan<- []StructDeclaration, funcs chan<- []FuncDeclaration, wg *sync.WaitGroup) {
 
-			src, err := io.ReadAll(source[i])
-			fileName := filepath.Base(source[i].Name())
+			src, err := io.ReadAll(currentFile)
+			fileName := filepath.Base(currentFile.Name())
 
 			if err != nil {
 				ErrCh <- err
@@ -382,19 +386,21 @@ func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDecla
 
 			go func() {
 
+				defer extractWg.Done()
+
 				glbl, err := ExtractGlobals(replaceComments, fileName, pkg)
 
 				if err != nil {
 					ErrCh <- err
 				}
 
-				extractWg.Done()
-
 				GlobalsCh <- glbl
 
 			}()
 
-			go func() {
+			go func(extractWg *sync.WaitGroup) {
+
+				defer extractWg.Done()
 
 				enum, err := ExtractEnums(replaceComments, fileName, pkg)
 
@@ -402,13 +408,13 @@ func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDecla
 					ErrCh <- err
 				}
 
-				extractWg.Done()
-
 				EnumsCh <- enum
 
-			}()
+			}(&extractWg)
 
-			go func() {
+			go func(extractWg *sync.WaitGroup) {
+
+				defer extractWg.Done()
 
 				strct, err := ExtractStructs(replaceComments, fileName, pkg)
 
@@ -416,13 +422,13 @@ func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDecla
 					ErrCh <- err
 				}
 
-				extractWg.Done()
-
 				StructsCh <- strct
 
-			}()
+			}(&extractWg)
 
-			go func() {
+			go func(extractWg *sync.WaitGroup) {
+
+				defer extractWg.Done()
 
 				funcs, err := ExtractFuncs(replaceComments, fileName, pkg)
 
@@ -430,18 +436,35 @@ func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDecla
 					ErrCh <- err
 				}
 
-				extractWg.Done()
-
 				FuncsCh <- funcs
 
-			}()
+			}(&extractWg)
 
 			extractWg.Wait()
 
 			wg.Done()
 
 		}(GlobalsCh, EnumsCh, StructsCh, FuncsCh, &wg)
+
 	}
+
+	wg.Wait()
+
+	close(GlobalsCh)
+	close(EnumsCh)
+	close(StructsCh)
+	close(FuncsCh)
+
+	Globals := <-GlobalsCh
+	Enums := <-EnumsCh
+	Structs := <-StructsCh
+	Funcs := <-FuncsCh
+
+	if err := ReDeclarationCheck(Globals, Enums, Structs, Funcs); err != nil {
+		ErrCh <- err
+	}
+
+	err := <-ErrCh
 
 	return Globals, Enums, Structs, Funcs, err
 }
