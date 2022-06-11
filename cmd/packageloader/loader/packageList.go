@@ -18,7 +18,7 @@ func (pl *PackageList) UnmarshalBinary(data []byte) error {
 }
 
 // Encode a package and put it in the specified package list
-func (packageList *PackageList) hashPackage(newPackage *Package, database string) error {
+func (packageList *PackageList) addPackage(newPackage *Package, database string) error {
 	hash, err := newPackage.getHash()
 	if err != nil {
 		return err

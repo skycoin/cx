@@ -36,9 +36,11 @@ func main() {
 		path = path[2:]
 	}
 
-	database := "bolt"
+	var database string
 	if *redisFlag {
 		database = "redis"
+	} else {
+		database = "bolt"
 	}
 
 	if *loadFlag {

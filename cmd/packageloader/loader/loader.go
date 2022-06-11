@@ -14,6 +14,7 @@ import (
 	"golang.org/x/crypto/blake2b"
 )
 
+var TESTINT = 0
 var SKIP_PACKAGES = []string{"al", "gl", "glfw", "time", "os", "gltext", "cx", "json", "cipher", "tcp"}
 
 func contains(list []string, element string) bool {
@@ -43,10 +44,9 @@ func LoadPackages(programName string, path string, database string) error {
 	if err != nil {
 		return err
 	}
-
-	importedPackages := []string{}
+	importedDirectories := []string{}
 	for _, path := range directoryList {
-		importedPackages, err = packageList.addPackages(srcPath, path, database, importedPackages)
+		importedDirectories, err = packageList.addPackages(srcPath, path, database, importedDirectories)
 		if err != nil {
 			return err
 		}
@@ -71,6 +71,7 @@ func (packageList *PackageList) addPackages(srcPath string, packagePath string, 
 	if contains(importedDirectories, packagePath) {
 		return importedDirectories, nil
 	}
+
 	newPackage := Package{}
 	imports := []string{}
 	fileList := []os.DirEntry{}
@@ -78,12 +79,14 @@ func (packageList *PackageList) addPackages(srcPath string, packagePath string, 
 	if err != nil {
 		return importedDirectories, err
 	}
+
 	for _, dirEntry := range files {
 		if dirEntry.Name()[len(dirEntry.Name())-2:] != "cx" {
 			continue
 		}
 		fileList = append(fileList, dirEntry)
 	}
+
 	if len(fileList) == 1 {
 		packageName, err := getPackageName(fileList[0], packagePath)
 		if err != nil {
@@ -108,15 +111,17 @@ func (packageList *PackageList) addPackages(srcPath string, packagePath string, 
 		}
 		newPackage.PackageName = packageName
 	}
-	newPackage.addFiles(fileList, packagePath, database)
-	packageList.hashPackage(&newPackage, database)
 
+	newPackage.addFiles(fileList, packagePath, database)
+	packageList.addPackage(&newPackage, database)
 	importedDirectories = append(importedDirectories, packagePath)
+
 	for _, importName := range imports {
-		if contains(SKIP_PACKAGES, importName) {
+		importPath := srcPath + importName + "/"
+		if contains(SKIP_PACKAGES, importName) || contains(importedDirectories, importPath) {
 			continue
 		}
-		packageList.addPackages(srcPath, srcPath+importName, database, importedDirectories)
+		return packageList.addPackages(srcPath, importPath, database, importedDirectories)
 	}
 	return importedDirectories, nil
 }
