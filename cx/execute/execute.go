@@ -146,10 +146,6 @@ func feedOSArgs(cxprogram *ast.CXProgram, args []string) error {
 	if osPkg, err := cxprogram.SelectPackage(constants.OS_PKG); err == nil {
 		argsOffset := types.Pointer(0)
 		if osGlbl, err := osPkg.GetGlobal(cxprogram, constants.OS_ARGS); err == nil {
-			var osGlblArg *ast.CXArgument
-			if osGlbl.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-				osGlblArg = cxprogram.GetCXArgFromArray(ast.CXArgumentIndex(osGlbl.Meta))
-			}
 			for _, arg := range args {
 				argOffset := types.AllocWrite_obj_data(cxprogram, cxprogram.Memory, []byte(arg))
 
@@ -157,7 +153,7 @@ func feedOSArgs(cxprogram *ast.CXProgram, args []string) error {
 				types.Write_ptr(argOffsetBytes[:], 0, argOffset)
 				argsOffset = ast.WriteToSlice(cxprogram, argsOffset, argOffsetBytes[:])
 			}
-			types.Write_ptr(cxprogram.Memory, ast.GetFinalOffset(cxprogram, 0, osGlblArg, nil), argsOffset)
+			types.Write_ptr(cxprogram.Memory, ast.GetFinalOffset(cxprogram, 0, nil, osGlbl), argsOffset)
 		}
 	}
 	return nil

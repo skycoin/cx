@@ -346,7 +346,7 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 					out = ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, inpExprCXLine.LineNumber).SetType(inpExprAtomicOpInput.Type)
 					out.StructType = inpExprAtomicOpInput.StructType
 					out.Size = inpExprAtomicOpInput.Size
-					out.TotalSize = ast.GetArgSize(prgrm, inpExprAtomicOpInput)
+					out.TotalSize = inpExprAtomicOpOperatorOutputs[0].GetSize(prgrm)
 					out.Type = inpExprAtomicOpInput.Type
 					out.PointerTargetType = inpExprAtomicOpInput.PointerTargetType
 					out.PreviouslyDeclared = true
@@ -367,7 +367,7 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 						}
 					} else {
 						out.Size = inpExprAtomicOpOperatorOutput.Size
-						out.TotalSize = ast.GetArgSize(prgrm, inpExprAtomicOpOperatorOutput)
+						out.TotalSize = inpExprAtomicOpOperatorOutputs[0].GetSize(prgrm)
 					}
 
 					out.Type = inpExprAtomicOpOperatorOutput.Type

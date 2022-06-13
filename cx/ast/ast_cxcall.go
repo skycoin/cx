@@ -40,17 +40,13 @@ func popStack(prgrm *CXProgram, call *CXCall) error {
 	lenOuts := len(cxAtomicOpOutputs)
 	callOperatorOutputs := call.Operator.GetOutputs(prgrm)
 	for i, output := range callOperatorOutputs {
-		var out *CXArgument
-		if output.Type == TYPE_CXARGUMENT_DEPRECATE {
-			out = prgrm.GetCXArgFromArray(CXArgumentIndex(output.Meta))
-		}
 		// Continuing if there is no receiving variable available.
 		if i >= lenOuts {
 			continue
 		}
 
 		types.WriteSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, returnFP, nil, cxAtomicOpOutputs[i]),
-			types.GetSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, output), GetArgSize(prgrm, out)))
+			types.GetSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, output), output.GetSize(prgrm)))
 	}
 
 	// return the stack pointer to its previous state
@@ -71,7 +67,7 @@ func wipeDeclarationMemory(prgrm *CXProgram, expr *CXExpression) error {
 	newCall := &prgrm.CallStack[prgrm.CallCounter]
 	newFP := newCall.FramePointer
 	cxAtomicOpOutputs := cxAtomicOp.GetOutputs(prgrm)
-	size := GetArgSize(prgrm, &prgrm.CXArgs[cxAtomicOpOutputs[0].Meta])
+	size := cxAtomicOpOutputs[0].GetSize(prgrm)
 	for c := types.Pointer(0); c < size; c++ {
 		prgrm.Memory[newFP+prgrm.CXArgs[cxAtomicOpOutputs[0].Meta].Offset+c] = 0
 	}
@@ -108,10 +104,10 @@ func processBuiltInOperators(prgrm *CXProgram, expr *CXExpression, globalInputs 
 			input = prgrm.GetCXArgFromArray(CXArgumentIndex(inputs[inputIndex].Meta))
 		}
 
-		offset := GetFinalOffset(prgrm, fp, input, nil)
+		offset := GetFinalOffset(prgrm, fp, nil, inputs[inputIndex])
 		value := &inputValues[inputIndex]
 		value.Arg = input
-		value.Size = GetArgSize(prgrm, input)
+		value.Size = inputs[inputIndex].GetSize(prgrm)
 		value.Offset = offset
 		value.Type = input.Type
 		if input.Type == types.POINTER {
@@ -128,10 +124,10 @@ func processBuiltInOperators(prgrm *CXProgram, expr *CXExpression, globalInputs 
 			output = prgrm.GetCXArgFromArray(CXArgumentIndex(outputs[outputIndex].Meta))
 		}
 
-		offset := GetFinalOffset(prgrm, fp, output, nil)
+		offset := GetFinalOffset(prgrm, fp, nil, outputs[outputIndex])
 		value := &outputValues[outputIndex]
 		value.Arg = output
-		value.Size = GetArgSize(prgrm, output)
+		value.Size = outputs[outputIndex].GetSize(prgrm)
 		value.Offset = offset
 		value.Type = output.Type
 		if output.Type == types.POINTER {
@@ -194,7 +190,7 @@ func processNonAtomicOperators(prgrm *CXProgram, expr *CXExpression, fp types.Po
 
 		var byts []byte
 
-		finalOffset := GetFinalOffset(prgrm, fp, inp, nil)
+		finalOffset := GetFinalOffset(prgrm, fp, nil, input)
 
 		if inp.PassBy == constants.PASSBY_REFERENCE {
 			// If we're referencing an inner element, like an element of a slice (&slc[0])
@@ -208,7 +204,7 @@ func processNonAtomicOperators(prgrm *CXProgram, expr *CXExpression, fp types.Po
 			byts = finalOffsetB[:]
 
 		} else {
-			size := GetArgSize(prgrm, inp)
+			size := input.GetSize(prgrm)
 			byts = prgrm.Memory[finalOffset : finalOffset+size]
 		}
 
