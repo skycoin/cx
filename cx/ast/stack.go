@@ -27,8 +27,12 @@ func (cxprogram *CXProgram) PrintStack() {
 		fmt.Printf(">>> %s()\n", op.Name)
 
 		opInputs := op.GetInputs(cxprogram)
-		for _, inpIdx := range opInputs {
-			inp := cxprogram.GetCXArgFromArray(inpIdx)
+		for _, input := range opInputs {
+			var inp *CXArgument
+			if input.Type == TYPE_CXARGUMENT_DEPRECATE {
+				inp = cxprogram.GetCXArgFromArray(CXArgumentIndex(input.Meta))
+			}
+
 			fmt.Println("ProgramInput")
 			fmt.Printf("\t%s : %s() : %s\n", stackValueHeader(inp.ArgDetails.FileName, inp.ArgDetails.FileLine), op.Name, GetPrintableValue(cxprogram, fp, inp))
 
@@ -40,8 +44,11 @@ func (cxprogram *CXProgram) PrintStack() {
 		}
 
 		opOutputs := op.GetOutputs(cxprogram)
-		for _, outIdx := range opOutputs {
-			out := cxprogram.GetCXArgFromArray(outIdx)
+		for _, output := range opOutputs {
+			var out *CXArgument
+			if output.Type == TYPE_CXARGUMENT_DEPRECATE {
+				out = cxprogram.GetCXArgFromArray(CXArgumentIndex(output.Meta))
+			}
 			fmt.Println("ProgramOutput")
 			fmt.Printf("\t%s : %s() : %s\n", stackValueHeader(out.ArgDetails.FileName, out.ArgDetails.FileLine), op.Name, GetPrintableValue(cxprogram, fp, out))
 
@@ -61,8 +68,12 @@ func (cxprogram *CXProgram) PrintStack() {
 			}
 
 			cxAtomicOpOperator := cxprogram.GetFunctionFromArray(cxAtomicOp.Operator)
-			for _, inpIdx := range cxAtomicOp.GetInputs(cxprogram) {
-				inp := cxprogram.GetCXArgFromArray(inpIdx)
+			for _, input := range cxAtomicOp.GetInputs(cxprogram) {
+				var inp *CXArgument
+				if input.Type == TYPE_CXARGUMENT_DEPRECATE {
+					inp = cxprogram.GetCXArgFromArray(CXArgumentIndex(input.Meta))
+				}
+
 				if inp.Name == "" || cxAtomicOpOperator == nil {
 					continue
 				}
@@ -90,8 +101,12 @@ func (cxprogram *CXProgram) PrintStack() {
 				dupNames = append(dupNames, inpPkg.Name+inp.Name)
 			}
 
-			for _, outIdx := range cxAtomicOp.GetOutputs(cxprogram) {
-				out := cxprogram.GetCXArgFromArray(outIdx)
+			for _, output := range cxAtomicOp.GetOutputs(cxprogram) {
+				var out *CXArgument
+				if output.Type == TYPE_CXARGUMENT_DEPRECATE {
+					out = cxprogram.GetCXArgFromArray(CXArgumentIndex(output.Meta))
+				}
+
 				if out.Name == "" || cxAtomicOpOperator == nil {
 					continue
 				}

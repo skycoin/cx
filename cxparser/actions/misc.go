@@ -251,8 +251,12 @@ func IsAllArgsBasicTypes(prgrm *ast.CXProgram, expr *ast.CXExpression) bool {
 		panic(err)
 	}
 
-	for _, inpIdx := range expression.GetInputs(prgrm) {
-		inp := prgrm.GetCXArgFromArray(inpIdx)
+	for _, input := range expression.GetInputs(prgrm) {
+		var inp *ast.CXArgument
+		if input.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			inp = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(input.Meta))
+		}
+
 		inpType := inp.Type
 		if inp.Type == types.POINTER {
 			inpType = inp.PointerTargetType

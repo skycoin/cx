@@ -345,9 +345,11 @@ func (cxprogram *CXProgram) AddPointerArgsToCXArgsArray(cxArgs []*CXArgument) []
 func (cxprogram *CXProgram) ConvertIndexTypeSignaturesToPointerArgs(idxs []CXTypeSignature) []*CXArgument {
 	var cxArgs []*CXArgument
 	for _, typeSignature := range idxs {
-		idx := typeSignature.Meta
-		arg := cxprogram.GetCXArgFromArray(CXArgumentIndex(idx))
-		cxArgs = append(cxArgs, arg)
+		if typeSignature.Type == TYPE_CXARGUMENT_DEPRECATE {
+			idx := typeSignature.Meta
+			arg := cxprogram.GetCXArgFromArray(CXArgumentIndex(idx))
+			cxArgs = append(cxArgs, arg)
+		}
 	}
 	return cxArgs
 }

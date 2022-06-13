@@ -39,15 +39,18 @@ func popStack(prgrm *CXProgram, call *CXCall) error {
 	cxAtomicOpOutputs := cxAtomicOp.GetOutputs(prgrm)
 	lenOuts := len(cxAtomicOpOutputs)
 	callOperatorOutputs := call.Operator.GetOutputs(prgrm)
-	for i, outIdx := range callOperatorOutputs {
+	for i, output := range callOperatorOutputs {
+		var out *CXArgument
+		if output.Type == TYPE_CXARGUMENT_DEPRECATE {
+			out = prgrm.GetCXArgFromArray(CXArgumentIndex(output.Meta))
+		}
 		// Continuing if there is no receiving variable available.
 		if i >= lenOuts {
 			continue
 		}
-		out := &prgrm.CXArgs[outIdx]
 
-		types.WriteSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, returnFP, &prgrm.CXArgs[cxAtomicOpOutputs[i]]),
-			types.GetSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, fp, out), GetArgSize(prgrm, out)))
+		types.WriteSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, returnFP, nil, &cxAtomicOpOutputs[i]),
+			types.GetSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, &output), GetArgSize(prgrm, out)))
 	}
 
 	// return the stack pointer to its previous state
@@ -68,9 +71,9 @@ func wipeDeclarationMemory(prgrm *CXProgram, expr *CXExpression) error {
 	newCall := &prgrm.CallStack[prgrm.CallCounter]
 	newFP := newCall.FramePointer
 	cxAtomicOpOutputs := cxAtomicOp.GetOutputs(prgrm)
-	size := GetArgSize(prgrm, &prgrm.CXArgs[cxAtomicOpOutputs[0]])
+	size := GetArgSize(prgrm, &prgrm.CXArgs[cxAtomicOpOutputs[0].Meta])
 	for c := types.Pointer(0); c < size; c++ {
-		prgrm.Memory[newFP+prgrm.CXArgs[cxAtomicOpOutputs[0]].Offset+c] = 0
+		prgrm.Memory[newFP+prgrm.CXArgs[cxAtomicOpOutputs[0].Meta].Offset+c] = 0
 	}
 
 	return nil
@@ -100,8 +103,12 @@ func processBuiltInOperators(prgrm *CXProgram, expr *CXExpression, globalInputs 
 
 	argIndex := 0
 	for inputIndex := 0; inputIndex < inputCount; inputIndex++ {
-		input := &prgrm.CXArgs[inputs[inputIndex]]
-		offset := GetFinalOffset(prgrm, fp, input)
+		var input *CXArgument
+		if inputs[inputIndex].Type == TYPE_CXARGUMENT_DEPRECATE {
+			input = prgrm.GetCXArgFromArray(CXArgumentIndex(inputs[inputIndex].Meta))
+		}
+
+		offset := GetFinalOffset(prgrm, fp, input, nil)
 		value := &inputValues[inputIndex]
 		value.Arg = input
 		value.Size = GetArgSize(prgrm, input)
@@ -116,8 +123,12 @@ func processBuiltInOperators(prgrm *CXProgram, expr *CXExpression, globalInputs 
 	}
 
 	for outputIndex := 0; outputIndex < outputCount; outputIndex++ {
-		output := &prgrm.CXArgs[outputs[outputIndex]]
-		offset := GetFinalOffset(prgrm, fp, output)
+		var output *CXArgument
+		if outputs[outputIndex].Type == TYPE_CXARGUMENT_DEPRECATE {
+			output = prgrm.GetCXArgFromArray(CXArgumentIndex(outputs[outputIndex].Meta))
+		}
+
+		offset := GetFinalOffset(prgrm, fp, output, nil)
 		value := &outputValues[outputIndex]
 		value.Arg = output
 		value.Size = GetArgSize(prgrm, output)
@@ -175,11 +186,15 @@ func processNonAtomicOperators(prgrm *CXProgram, expr *CXExpression, fp types.Po
 	}
 
 	newCallOperatorInputs := newCall.Operator.GetInputs(prgrm)
-	for i, inpIdx := range cxAtomicOp.GetInputs(prgrm) {
-		inp := &prgrm.CXArgs[inpIdx]
+	for i, input := range cxAtomicOp.GetInputs(prgrm) {
+		var inp *CXArgument
+		if input.Type == TYPE_CXARGUMENT_DEPRECATE {
+			inp = prgrm.GetCXArgFromArray(CXArgumentIndex(input.Meta))
+		}
+
 		var byts []byte
 
-		finalOffset := GetFinalOffset(prgrm, fp, inp)
+		finalOffset := GetFinalOffset(prgrm, fp, inp, nil)
 
 		if inp.PassBy == constants.PASSBY_REFERENCE {
 			// If we're referencing an inner element, like an element of a slice (&slc[0])
@@ -200,7 +215,7 @@ func processNonAtomicOperators(prgrm *CXProgram, expr *CXExpression, fp types.Po
 		// writing inputs to new stack frame
 		types.WriteSlice_byte(
 			prgrm.Memory,
-			GetFinalOffset(prgrm, newFP, &prgrm.CXArgs[newCallOperatorInputs[i]]),
+			GetFinalOffset(prgrm, newFP, nil, &newCallOperatorInputs[i]),
 			// newFP + newCall.Operator.ProgramInput[i].Offset,
 			// GetFinalOffset(prgrm.Memory, newFP, newCall.Operator.ProgramInput[i], MEM_WRITE),
 			byts)
