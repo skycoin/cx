@@ -620,7 +620,9 @@ func TestDeclarationExtraction_ExtractAllDeclarations(t *testing.T) {
 
 			file, err := os.Open(tc.testDir)
 
-			var files = []*os.File{file}
+			var files []*os.File
+
+			files = append(files, file)
 
 			if err != nil {
 				t.Fatal(err)

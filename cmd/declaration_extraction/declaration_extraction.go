@@ -355,156 +355,126 @@ func GetDeclarations(source []byte, Glbl []GlobalDeclaration, Enum []EnumDeclara
 
 func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDeclaration, []StructDeclaration, []FuncDeclaration, error) {
 
-	GlobalsCh := make(chan []GlobalDeclaration, len(source))
-	EnumsCh := make(chan []EnumDeclaration, len(source))
-	StructsCh := make(chan []StructDeclaration, len(source))
-	FuncsCh := make(chan []FuncDeclaration, len(source))
-	ErrCh := make(chan error, len(source))
+	//Variable declarations
+	var Globals []GlobalDeclaration
+	var Enums []EnumDeclaration
+	var Structs []StructDeclaration
+	var Funcs []FuncDeclaration
+
+	//Channel declarations
+	globalChannel := make(chan []GlobalDeclaration, len(source))
+	enumChannel := make(chan []EnumDeclaration, len(source))
+	structChannel := make(chan []StructDeclaration, len(source))
+	funcChannel := make(chan []FuncDeclaration, len(source))
+	errorChannel := make(chan error, len(source))
 
 	var wg sync.WaitGroup
 
-	for i := range source {
+	for _, currentFile := range source {
 
 		wg.Add(1)
 
-		currentFile := source[i]
+		go func(currentFile *os.File, globalChannel chan<- []GlobalDeclaration, enumChannel chan<- []EnumDeclaration, structChannel chan<- []StructDeclaration, funcChannel chan<- []FuncDeclaration, errorChannel chan<- error, wg *sync.WaitGroup) {
 
-		go func(curFile *os.File, GlblsCh chan<- []GlobalDeclaration, EnmsCh chan<- []EnumDeclaration, StrctsCh chan<- []StructDeclaration, FncsCh chan<- []FuncDeclaration, ErCh chan<- error, WG *sync.WaitGroup) {
+			defer wg.Done()
 
-			src, err := io.ReadAll(curFile)
-			fileName := curFile.Name()
-
+			srcBytes, err := io.ReadAll(currentFile)
 			if err != nil {
-				ErrCh <- err
+				errorChannel <- err
+				return
 			}
 
-			replaceComments := ReplaceCommentsWithWhitespaces(src)
+			fileName := currentFile.Name()
+			replaceComments := ReplaceCommentsWithWhitespaces(srcBytes)
 			pkg := ExtractPackages(replaceComments)
 
-			var extractWg sync.WaitGroup
+			wg.Add(4)
 
-			extractWg.Add(4)
+			go func(globalChannel chan<- []GlobalDeclaration, replaceComments []byte, fileName string, pkg string, wg *sync.WaitGroup) {
 
-			go func(ch chan<- []GlobalDeclaration, errch chan<- error, rplcComments []byte, filename string, pckg string, ewg *sync.WaitGroup) {
+				defer wg.Done()
 
-				// defer ewg.Done() // <====== Doesn't Work
-				ewg.Done()
-				globals, err := ExtractGlobals(rplcComments, filename, pckg)
+				globals, err := ExtractGlobals(replaceComments, fileName, pkg)
 
 				if err != nil {
-					errch <- err
+					errorChannel <- err
+					return
 				}
 
-				if len(globals) > 0 {
-					ch <- globals
-				}
+				globalChannel <- globals
 
-			}(GlblsCh, ErCh, replaceComments, fileName, pkg, &extractWg)
+			}(globalChannel, replaceComments, fileName, pkg, wg)
 
-			go func(ch chan<- []EnumDeclaration, errch chan<- error, rplcComments []byte, filename string, pckg string, ewg *sync.WaitGroup) {
+			go func(enumChannel chan<- []EnumDeclaration, replaceComments []byte, fileName string, pkg string, wg *sync.WaitGroup) {
 
-				// defer ewg.Done() // <====== Doesn't Work
-				ewg.Done()
-				enums, err := ExtractEnums(rplcComments, filename, pckg)
+				defer wg.Done()
+
+				enums, err := ExtractEnums(replaceComments, fileName, pkg)
 
 				if err != nil {
-					errch <- err
+					errorChannel <- err
+					return
 				}
 
-				if len(enums) > 0 {
-					ch <- enums
-				}
+				enumChannel <- enums
 
-			}(EnmsCh, ErCh, replaceComments, fileName, pkg, &extractWg)
+			}(enumChannel, replaceComments, fileName, pkg, wg)
 
-			go func(ch chan<- []StructDeclaration, errch chan<- error, rplcComments []byte, filename string, pckg string, ewg *sync.WaitGroup) {
+			go func(structChannel chan<- []StructDeclaration, replaceComments []byte, fileName string, pkg string, wg *sync.WaitGroup) {
 
-				// defer ewg.Done() // <====== Doesn't Work
-				ewg.Done()
-				structs, err := ExtractStructs(rplcComments, filename, pckg)
+				defer wg.Done()
+
+				structs, err := ExtractStructs(replaceComments, fileName, pkg)
 
 				if err != nil {
-					errch <- err
+					errorChannel <- err
+					return
 				}
 
-				if len(structs) > 0 {
-					ch <- structs
-				}
+				structChannel <- structs
 
-			}(StrctsCh, ErCh, replaceComments, fileName, pkg, &extractWg)
+			}(structChannel, replaceComments, fileName, pkg, wg)
 
-			go func(ch chan<- []FuncDeclaration, errch chan<- error, rplcComments []byte, filename string, pckg string, ewg *sync.WaitGroup) {
+			go func(funcChannel chan<- []FuncDeclaration, replaceComments []byte, fileName string, pkg string, wg *sync.WaitGroup) {
 
-				// defer ewg.Done() // <====== Doesn't Work
-				ewg.Done()
-				funcs, err := ExtractFuncs(rplcComments, filename, pckg)
+				defer wg.Done()
+
+				funcs, err := ExtractFuncs(replaceComments, fileName, pkg)
 
 				if err != nil {
-					errch <- err
+					errorChannel <- err
+					return
 				}
 
-				if len(funcs) > 0 {
-					ch <- funcs
-				}
+				funcChannel <- funcs
 
-			}(FncsCh, ErCh, replaceComments, fileName, pkg, &extractWg)
+			}(funcChannel, replaceComments, fileName, pkg, wg)
 
-			// fmt.Print(<-GlobalsCh, '\n')
-			// fmt.Print(<-EnumsCh, '\n')
-			// fmt.Print(<-StructsCh, '\n')
-			// fmt.Print(<-FuncsCh, '\n')
-			// extractWg.Wait()
-
-			extractWg.Wait()
-
-			WG.Done() // <====== Works here
-
-		}(currentFile, GlobalsCh, EnumsCh, StructsCh, FuncsCh, ErrCh, &wg)
-
+		}(currentFile, globalChannel, enumChannel, structChannel, funcChannel, errorChannel, &wg)
 	}
-
-	// ISSUES AND FINDINGS
-	//---------------------
-
-	// 1. Waitgroup.done in nested goroutine working causing
-	// the outer waitgroup to be waiting infinitely
-
-	// 2. channels are recieving values in the goroutines
-
-	// 3. tried passing values as variables and pointers
-
-	// 4. tried renaming the passed variables
-
-	// 5. tried placing waitgroup.done in different positions
-	// with and without defer
-
-	// 6. tried using errgroup.Group which by the way would be better
-	// error handling since you can return error instead of
-	// sending to channels
-
-	// 7. tried testing each goroutine to see which one isn't excuting
-	// all are writing to channel
-
-	// 8. There is always one inner goroutine that doesn't wg.Done
 
 	wg.Wait()
 
-	close(GlobalsCh)
-	close(EnumsCh)
-	close(StructsCh)
-	close(FuncsCh)
-	close(ErrCh)
+	close(globalChannel)
+	close(enumChannel)
+	close(structChannel)
+	close(funcChannel)
+	close(errorChannel)
 
-	Globals := <-GlobalsCh
-	Enums := <-EnumsCh
-	Structs := <-StructsCh
-	Funcs := <-FuncsCh
+	Globals = <-globalChannel
+	Enums = <-enumChannel
+	Structs = <-structChannel
+	Funcs = <-funcChannel
 
-	if err := ReDeclarationCheck(Globals, Enums, Structs, Funcs); err != nil {
-		ErrCh <- err
+	if err := <-errorChannel; err != nil {
+		return Globals, Enums, Structs, Funcs, err
 	}
 
-	err := <-ErrCh
+	reDeclarationCheck := ReDeclarationCheck(Globals, Enums, Structs, Funcs)
 
-	return Globals, Enums, Structs, Funcs, err
+	if reDeclarationCheck != nil {
+		return Globals, Enums, Structs, Funcs, reDeclarationCheck
+	}
+
+	return Globals, Enums, Structs, Funcs, nil
 }
