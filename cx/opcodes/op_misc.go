@@ -7,7 +7,11 @@ import (
 )
 
 func opIdentity(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	out1 := outputs[0].Arg
+	var out1 *ast.CXArgument
+	if outputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		out1 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(outputs[0].TypeSignature.Meta))
+	}
+
 	var elt *ast.CXArgument
 	if len(out1.Fields) > 0 {
 		elt = prgrm.GetCXArgFromArray(out1.Fields[len(out1.Fields)-1])

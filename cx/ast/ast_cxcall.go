@@ -106,7 +106,7 @@ func processBuiltInOperators(prgrm *CXProgram, expr *CXExpression, globalInputs 
 
 		offset := GetFinalOffset(prgrm, fp, nil, inputs[inputIndex])
 		value := &inputValues[inputIndex]
-		value.Arg = input
+		value.TypeSignature = inputs[inputIndex]
 		value.Size = inputs[inputIndex].GetSize(prgrm)
 		value.Offset = offset
 		value.Type = input.Type
@@ -126,7 +126,7 @@ func processBuiltInOperators(prgrm *CXProgram, expr *CXExpression, globalInputs 
 
 		offset := GetFinalOffset(prgrm, fp, nil, outputs[outputIndex])
 		value := &outputValues[outputIndex]
-		value.Arg = output
+		value.TypeSignature = outputs[outputIndex]
 		value.Size = outputs[outputIndex].GetSize(prgrm)
 		value.Offset = offset
 		value.Type = output.Type

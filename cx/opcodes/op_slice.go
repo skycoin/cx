@@ -8,7 +8,11 @@ import (
 
 //TODO: Rework
 func opSliceLen(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	elt := inputs[0].Arg.GetAssignmentElement(prgrm)
+	var inp0 *ast.CXArgument
+	if inputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		inp0 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inputs[0].TypeSignature.Meta))
+	}
+	elt := inp0.GetAssignmentElement(prgrm)
 
 	var sliceLen types.Pointer
 	if elt.IsSlice || elt.Type == types.AFF { //TODO: FIX
@@ -30,7 +34,19 @@ func opSliceLen(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 
 //TODO: Rework
 func opSliceAppend(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	inp0, inp1, out0 := inputs[0].Arg, inputs[1].Arg, outputs[0].Arg
+	var inp0, inp1, out0 *ast.CXArgument
+	if inputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		inp0 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inputs[0].TypeSignature.Meta))
+	}
+
+	if inputs[1].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		inp1 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inputs[1].TypeSignature.Meta))
+	}
+
+	if outputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		out0 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(outputs[0].TypeSignature.Meta))
+	}
+
 	sliceInputs := inputs[1:]
 	sliceInputsLen := types.Cast_int_to_ptr(len(sliceInputs))
 
@@ -69,7 +85,11 @@ func opSliceAppend(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXV
 	// could be on the heap and they could have been moved by the GC.
 
 	for i, input := range sliceInputs {
-		inp := input.Arg
+		var inp *ast.CXArgument
+		if input.TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			inp = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(input.TypeSignature.Meta))
+		}
+
 		inpType := inp.Type
 		if inp.Type == types.POINTER {
 			inpType = inp.PointerTargetType
@@ -92,7 +112,14 @@ func opSliceAppend(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXV
 
 //TODO: Rework
 func opSliceResize(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	inp0, out0 := inputs[0].Arg, outputs[0].Arg
+	var inp0, out0 *ast.CXArgument
+	if inputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		inp0 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inputs[0].TypeSignature.Meta))
+	}
+
+	if outputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		out0 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(outputs[0].TypeSignature.Meta))
+	}
 	fp := inputs[0].FramePointer
 
 	if inp0.Type != out0.Type || !inp0.GetAssignmentElement(prgrm).IsSlice || !out0.GetAssignmentElement(prgrm).IsSlice {
@@ -108,7 +135,19 @@ func opSliceResize(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXV
 
 //TODO: Rework
 func opSliceInsertElement(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	inp0, inp2, out0 := inputs[0].Arg, inputs[2].Arg, outputs[0].Arg
+	var inp0, inp2, out0 *ast.CXArgument
+	if inputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		inp0 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inputs[0].TypeSignature.Meta))
+	}
+
+	if inputs[2].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		inp2 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inputs[2].TypeSignature.Meta))
+	}
+
+	if outputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		out0 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(outputs[0].TypeSignature.Meta))
+	}
+
 	fp := inputs[0].FramePointer
 
 	inp0Type := inp0.Type
@@ -147,7 +186,15 @@ func opSliceInsertElement(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []
 
 //TODO: Rework
 func opSliceRemoveElement(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	inp0, out0 := inputs[0].Arg, outputs[0].Arg
+	var inp0, out0 *ast.CXArgument
+	if inputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		inp0 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inputs[0].TypeSignature.Meta))
+	}
+
+	if outputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		out0 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(outputs[0].TypeSignature.Meta))
+	}
+
 	fp := inputs[0].FramePointer
 
 	if inp0.Type != out0.Type || !inp0.GetAssignmentElement(prgrm).IsSlice || !out0.GetAssignmentElement(prgrm).IsSlice {
@@ -160,8 +207,16 @@ func opSliceRemoveElement(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []
 }
 
 func opSliceCopy(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	dstInput := inputs[0].Arg
-	srcInput := inputs[1].Arg
+	var dstInput *ast.CXArgument
+	if inputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		dstInput = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inputs[0].TypeSignature.Meta))
+	}
+
+	var srcInput *ast.CXArgument
+	if inputs[1].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		srcInput = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inputs[1].TypeSignature.Meta))
+	}
+
 	fp := inputs[0].FramePointer
 
 	dstOffset := ast.GetSliceOffset(prgrm, fp, dstInput)

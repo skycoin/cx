@@ -18,7 +18,11 @@ func AssertFailed() bool {
 //TODO: Rework
 func assert(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) (same bool) {
 	var byts1, byts2 []byte
-	if inputs[0].Arg.Type == types.STR || inputs[0].Arg.PointerTargetType == types.STR {
+	var inp0 *ast.CXArgument
+	if inputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		inp0 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inputs[0].TypeSignature.Meta))
+	}
+	if inp0.Type == types.STR || inp0.PointerTargetType == types.STR {
 		byts1 = []byte(inputs[0].Get_str(prgrm))
 		byts2 = []byte(inputs[1].Get_str(prgrm))
 	} else {

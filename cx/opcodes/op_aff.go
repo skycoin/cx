@@ -46,7 +46,11 @@ func GetInferActions(prgrm *ast.CXProgram, inp *ast.CXArgument, fp types.Pointer
 
 func opAffPrint(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	inp1 := inputs[0]
-	fmt.Println(GetInferActions(prgrm, inp1.Arg, inp1.FramePointer))
+	var input *ast.CXArgument
+	if inp1.TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		input = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inp1.TypeSignature.Meta))
+	}
+	fmt.Println(GetInferActions(prgrm, input, inp1.FramePointer))
 	// for _, aff := range GetInferActions(inp1, fp) {
 	// 	fmt.Println(aff)
 	// }
@@ -1144,7 +1148,14 @@ func readArgAff(prgrm *ast.CXProgram, aff string, tgtFn *ast.CXFunction) *ast.CX
 // }
 
 func opAffQuery(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	inp1, out1 := inputs[0].Arg, outputs[0].Arg
+	var inp1, out1 *ast.CXArgument
+	if inputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		inp1 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inputs[0].TypeSignature.Meta))
+	}
+
+	if outputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		out1 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(outputs[0].TypeSignature.Meta))
+	}
 
 	call := prgrm.GetCurrentCall()
 	expr := call.Operator.Expressions[call.Line]
