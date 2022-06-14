@@ -1,0 +1,10 @@
+package my_program
+
+var counter int
+
+var name string
+
+func main() {
+
+
+}

@@ -735,6 +735,148 @@ func TestDeclarationExtraction_ExtractAllDeclarations(t *testing.T) {
 				},
 			},
 		},
+		{
+			scenario: "Redeclared Global",
+			testDirs: []string{
+				"./test_files/multiple_files/helper.cx",
+				"./test_files/multiple_files/main.cx",
+				"./test_files/multiple_files/utility.cx",
+				"./test_files/multiple_files/worker.cx",
+			},
+			wantGlobals: []declaration_extraction.GlobalDeclaration{
+				{
+					PackageID:          "hello",
+					FileID:             "./test_files/test.cx",
+					StartOffset:        15,
+					Length:             16,
+					LineNumber:         2,
+					GlobalVariableName: "apple",
+				},
+				{
+					PackageID:          "hello",
+					FileID:             "./test_files/test.cx",
+					StartOffset:        37,
+					Length:             17,
+					LineNumber:         4,
+					GlobalVariableName: "banana",
+				},
+			},
+			wantEnums: []declaration_extraction.EnumDeclaration{
+				{
+					PackageID:        "hello",
+					FileID:           "./test_files/test.cx",
+					StartOffset:      383,
+					Length:           15,
+					LineNumber:       33,
+					Type:             "Direction",
+					Value:            0,
+					EnumVariableName: "North",
+				},
+				{
+					PackageID:        "hello",
+					FileID:           "./test_files/test.cx",
+					StartOffset:      408,
+					Length:           5,
+					LineNumber:       34,
+					Type:             "Direction",
+					Value:            1,
+					EnumVariableName: "South",
+				},
+				{
+					PackageID:        "hello",
+					FileID:           "./test_files/test.cx",
+					StartOffset:      416,
+					Length:           4,
+					LineNumber:       35,
+					Type:             "Direction",
+					Value:            2,
+					EnumVariableName: "East",
+				},
+				{
+					PackageID:        "hello",
+					FileID:           "./test_files/test.cx",
+					StartOffset:      423,
+					Length:           4,
+					LineNumber:       36,
+					Type:             "Direction",
+					Value:            3,
+					EnumVariableName: "West",
+				},
+				{
+					PackageID:        "hello",
+					FileID:           "./test_files/test.cx",
+					StartOffset:      444,
+					Length:           12,
+					LineNumber:       40,
+					Type:             "Number",
+					Value:            0,
+					EnumVariableName: "First",
+				},
+				{
+					PackageID:        "hello",
+					FileID:           "./test_files/test.cx",
+					StartOffset:      466,
+					Length:           6,
+					LineNumber:       41,
+					Type:             "Number",
+					Value:            1,
+					EnumVariableName: "Second",
+				},
+			},
+			wantStructs: []declaration_extraction.StructDeclaration{
+				{
+					PackageID:          "hello",
+					FileID:             "./test_files/test.cx",
+					StartOffset:        171,
+					Length:             18,
+					LineNumber:         14,
+					StructVariableName: "person",
+				},
+				{
+					PackageID:          "hello",
+					FileID:             "./test_files/test.cx",
+					StartOffset:        250,
+					Length:             39,
+					LineNumber:         21,
+					StructVariableName: "animal",
+				},
+				{
+					PackageID:          "hello",
+					FileID:             "./test_files/test.cx",
+					StartOffset:        351,
+					Length:             18,
+					LineNumber:         30,
+					StructVariableName: "Direction",
+				},
+			},
+			wantFuncs: []declaration_extraction.FuncDeclaration{
+				{
+					PackageID:        "hello",
+					FileID:           "./test_files/test.cx",
+					StartOffset:      212,
+					Length:           12,
+					LineNumber:       18,
+					FuncVariableName: "main",
+				},
+				{
+					PackageID:        "hello",
+					FileID:           "./test_files/test.cx",
+					StartOffset:      321,
+					Length:           19,
+					LineNumber:       26,
+					FuncVariableName: "functionTwo",
+				},
+				{
+					PackageID:        "hello",
+					FileID:           "./test_files/test.cx",
+					StartOffset:      479,
+					Length:           39,
+					LineNumber:       44,
+					FuncVariableName: "functionWithSingleReturn",
+				},
+			},
+			wantError: nil,
+		},
 	}
 
 	for _, tc := range tests {
@@ -779,7 +921,8 @@ func TestDeclarationExtraction_ExtractAllDeclarations(t *testing.T) {
 				}
 			}
 
-			if Err != tc.wantError {
+			if errors.Is(Err, tc.wantError) && Err != nil ||
+				(Err != nil && tc.wantError == nil) {
 				t.Errorf("want error %v, got %v", tc.wantError, Err)
 			}
 
