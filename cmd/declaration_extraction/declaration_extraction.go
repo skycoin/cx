@@ -387,59 +387,73 @@ func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDecla
 
 			go func(ch chan<- []GlobalDeclaration, errch chan<- error, rplcComments []byte, filename string, pckg string, ewg *sync.WaitGroup) {
 
-				defer ewg.Done() // <====== Doesn't Work
-
+				// defer ewg.Done() // <====== Doesn't Work
+				ewg.Done()
 				globals, err := ExtractGlobals(rplcComments, filename, pckg)
 
 				if err != nil {
 					errch <- err
 				}
 
-				ch <- globals // <====== Works
+				if len(globals) > 0 {
+					ch <- globals
+				}
 
 			}(GlblsCh, ErCh, replaceComments, fileName, pkg, &extractWg)
 
 			go func(ch chan<- []EnumDeclaration, errch chan<- error, rplcComments []byte, filename string, pckg string, ewg *sync.WaitGroup) {
 
-				defer ewg.Done() // <====== Doesn't Work
-
+				// defer ewg.Done() // <====== Doesn't Work
+				ewg.Done()
 				enums, err := ExtractEnums(rplcComments, filename, pckg)
 
 				if err != nil {
 					errch <- err
 				}
 
-				ch <- enums // <====== Works
+				if len(enums) > 0 {
+					ch <- enums
+				}
 
 			}(EnmsCh, ErCh, replaceComments, fileName, pkg, &extractWg)
 
 			go func(ch chan<- []StructDeclaration, errch chan<- error, rplcComments []byte, filename string, pckg string, ewg *sync.WaitGroup) {
 
-				defer ewg.Done() // <====== Doesn't Work
-
+				// defer ewg.Done() // <====== Doesn't Work
+				ewg.Done()
 				structs, err := ExtractStructs(rplcComments, filename, pckg)
 
 				if err != nil {
 					errch <- err
 				}
 
-				ch <- structs // <====== Works
+				if len(structs) > 0 {
+					ch <- structs
+				}
 
 			}(StrctsCh, ErCh, replaceComments, fileName, pkg, &extractWg)
 
 			go func(ch chan<- []FuncDeclaration, errch chan<- error, rplcComments []byte, filename string, pckg string, ewg *sync.WaitGroup) {
 
-				defer ewg.Done() // <====== Doesn't Work
-
+				// defer ewg.Done() // <====== Doesn't Work
+				ewg.Done()
 				funcs, err := ExtractFuncs(rplcComments, filename, pckg)
 
 				if err != nil {
 					errch <- err
 				}
 
-				ch <- funcs // <====== Works
+				if len(funcs) > 0 {
+					ch <- funcs
+				}
 
 			}(FncsCh, ErCh, replaceComments, fileName, pkg, &extractWg)
+
+			// fmt.Print(<-GlobalsCh, '\n')
+			// fmt.Print(<-EnumsCh, '\n')
+			// fmt.Print(<-StructsCh, '\n')
+			// fmt.Print(<-FuncsCh, '\n')
+			// extractWg.Wait()
 
 			extractWg.Wait()
 
@@ -479,6 +493,7 @@ func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDecla
 	close(EnumsCh)
 	close(StructsCh)
 	close(FuncsCh)
+	close(ErrCh)
 
 	Globals := <-GlobalsCh
 	Enums := <-EnumsCh
