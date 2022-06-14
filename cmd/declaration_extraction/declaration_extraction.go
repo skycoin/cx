@@ -12,41 +12,43 @@ import (
 	"unicode"
 )
 
+// All units for offset/length are in counted in bytes
+
 type GlobalDeclaration struct {
-	PackageID          string
-	FileID             string
-	StartOffset        int
-	Length             int
-	LineNumber         int
+	PackageID          string // name of package
+	FileID             string // name of file
+	StartOffset        int    // offset with in the file starting from 'var' of file
+	Length             int    // length of entire declaration i.e. 'var [name] [type]'
+	LineNumber         int    // line number of declaration
 	GlobalVariableName string // name of variable being declared
 }
 
 type EnumDeclaration struct {
-	PackageID        string
-	FileID           string
-	StartOffset      int
-	Length           int
-	LineNumber       int
-	Type             string
-	Value            int
+	PackageID        string // name of package
+	FileID           string // name of file
+	StartOffset      int    // offset with in the file starting from '[name of enum]' of file
+	Length           int    // length of entire declaration i.e. '[name] [type]' or '[name]'
+	LineNumber       int    // line number of declaration
+	Type             string // type of enum
+	Value            int    // value of enum
 	EnumVariableName string // name of variable being declared
 }
 
 type StructDeclaration struct {
-	PackageID          string
-	FileID             string
-	StartOffset        int
-	Length             int
-	LineNumber         int
+	PackageID          string // name of package
+	FileID             string // name of file
+	StartOffset        int    // offset with in the file starting from 'type'
+	Length             int    // length of entire declaration i.e. 'type [name] [type]'
+	LineNumber         int    // line number of declaration
 	StructVariableName string // name of variable being declared
 }
 
 type FuncDeclaration struct {
-	PackageID        string
-	FileID           string
-	StartOffset      int
-	Length           int
-	LineNumber       int
+	PackageID        string // name of package
+	FileID           string // name of file
+	StartOffset      int    // offset with in the file starting from 'func'
+	Length           int    // length of entire declaration i.e. 'func [name] ()' or 'func [name] ([params])' or 'func [name] ([params]) [returns]'
+	LineNumber       int    // line number of declaration
 	FuncVariableName string // name of variable being declared
 }
 
@@ -357,7 +359,7 @@ func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDecla
 	EnumsCh := make(chan []EnumDeclaration, len(source))
 	StructsCh := make(chan []StructDeclaration, len(source))
 	FuncsCh := make(chan []FuncDeclaration, len(source))
-	ErrCh := make(chan error)
+	ErrCh := make(chan error, len(source))
 
 	var wg sync.WaitGroup
 
@@ -367,10 +369,10 @@ func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDecla
 
 		currentFile := source[i]
 
-		go func(currentFile *os.File, GlobalsCh chan<- []GlobalDeclaration, EnumsCh chan<- []EnumDeclaration, strcts chan<- []StructDeclaration, funcs chan<- []FuncDeclaration, wg *sync.WaitGroup) {
+		go func(curFile *os.File, GlblsCh chan<- []GlobalDeclaration, EnmsCh chan<- []EnumDeclaration, StrctsCh chan<- []StructDeclaration, FncsCh chan<- []FuncDeclaration, ErCh chan<- error, WG *sync.WaitGroup) {
 
-			src, err := io.ReadAll(currentFile)
-			fileName := currentFile.Name()
+			src, err := io.ReadAll(curFile)
+			fileName := curFile.Name()
 
 			if err != nil {
 				ErrCh <- err
@@ -383,69 +385,93 @@ func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDecla
 
 			extractWg.Add(4)
 
-			go func(GlobalsCh chan<- []GlobalDeclaration, ErrCh chan<- error, replaceComments []byte, fileName string, pkg string, extractWg *sync.WaitGroup) {
+			go func(ch chan<- []GlobalDeclaration, errch chan<- error, rplcComments []byte, filename string, pckg string, ewg *sync.WaitGroup) {
 
-				defer extractWg.Done()
+				defer ewg.Done() // <====== Doesn't Work
 
-				globals, err := ExtractGlobals(replaceComments, fileName, pkg)
-
-				if err != nil {
-					ErrCh <- err
-				}
-
-				GlobalsCh <- globals
-
-			}(GlobalsCh, ErrCh, replaceComments, fileName, pkg, &extractWg)
-
-			go func(EnumsCh chan<- []EnumDeclaration, ErrCh chan<- error, replaceComments []byte, fileName string, pkg string, extractWg *sync.WaitGroup) {
-
-				enums, err := ExtractEnums(replaceComments, fileName, pkg)
+				globals, err := ExtractGlobals(rplcComments, filename, pckg)
 
 				if err != nil {
-					ErrCh <- err
+					errch <- err
 				}
 
-				EnumsCh <- enums
+				ch <- globals // <====== Works
 
-				extractWg.Done()
+			}(GlblsCh, ErCh, replaceComments, fileName, pkg, &extractWg)
 
-			}(EnumsCh, ErrCh, replaceComments, fileName, pkg, &extractWg)
+			go func(ch chan<- []EnumDeclaration, errch chan<- error, rplcComments []byte, filename string, pckg string, ewg *sync.WaitGroup) {
 
-			go func(StructsCh chan<- []StructDeclaration, ErrCh chan<- error, replaceComments []byte, fileName string, pkg string, extractWg *sync.WaitGroup) {
+				defer ewg.Done() // <====== Doesn't Work
 
-				structs, err := ExtractStructs(replaceComments, fileName, pkg)
+				enums, err := ExtractEnums(rplcComments, filename, pckg)
 
 				if err != nil {
-					ErrCh <- err
+					errch <- err
 				}
 
-				StructsCh <- structs
+				ch <- enums // <====== Works
 
-				extractWg.Done()
+			}(EnmsCh, ErCh, replaceComments, fileName, pkg, &extractWg)
 
-			}(StructsCh, ErrCh, replaceComments, fileName, pkg, &extractWg)
+			go func(ch chan<- []StructDeclaration, errch chan<- error, rplcComments []byte, filename string, pckg string, ewg *sync.WaitGroup) {
 
-			go func(FuncsCh chan<- []FuncDeclaration, ErrCh chan<- error, replaceComments []byte, fileName string, pkg string, extractWg *sync.WaitGroup) {
+				defer ewg.Done() // <====== Doesn't Work
 
-				funcs, err := ExtractFuncs(replaceComments, fileName, pkg)
+				structs, err := ExtractStructs(rplcComments, filename, pckg)
 
 				if err != nil {
-					ErrCh <- err
+					errch <- err
 				}
 
-				FuncsCh <- funcs
+				ch <- structs // <====== Works
 
-				extractWg.Done()
+			}(StrctsCh, ErCh, replaceComments, fileName, pkg, &extractWg)
 
-			}(FuncsCh, ErrCh, replaceComments, fileName, pkg, &extractWg)
+			go func(ch chan<- []FuncDeclaration, errch chan<- error, rplcComments []byte, filename string, pckg string, ewg *sync.WaitGroup) {
+
+				defer ewg.Done() // <====== Doesn't Work
+
+				funcs, err := ExtractFuncs(rplcComments, filename, pckg)
+
+				if err != nil {
+					errch <- err
+				}
+
+				ch <- funcs // <====== Works
+
+			}(FncsCh, ErCh, replaceComments, fileName, pkg, &extractWg)
 
 			extractWg.Wait()
 
-			wg.Done()
+			WG.Done() // <====== Works here
 
-		}(currentFile, GlobalsCh, EnumsCh, StructsCh, FuncsCh, &wg)
+		}(currentFile, GlobalsCh, EnumsCh, StructsCh, FuncsCh, ErrCh, &wg)
 
 	}
+
+	// ISSUES AND FINDINGS
+	//---------------------
+
+	// 1. Waitgroup.done in nested goroutine working causing
+	// the outer waitgroup to be waiting infinitely
+
+	// 2. channels are recieving values in the goroutines
+
+	// 3. tried passing values as variables and pointers
+
+	// 4. tried renaming the passed variables
+
+	// 5. tried placing waitgroup.done in different positions
+	// with and without defer
+
+	// 6. tried using errgroup.Group which by the way would be better
+	// error handling since you can return error instead of
+	// sending to channels
+
+	// 7. tried testing each goroutine to see which one isn't excuting
+	// all are writing to channel
+
+	// 8. There is always one inner goroutine that doesn't wg.Done
 
 	wg.Wait()
 
