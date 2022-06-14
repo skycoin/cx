@@ -736,7 +736,7 @@ func TestDeclarationExtraction_ExtractAllDeclarations(t *testing.T) {
 			},
 		},
 		{
-			scenario: "Redeclared Global",
+			scenario: "Mulitple files",
 			testDirs: []string{
 				"./test_files/multiple_files/helper.cx",
 				"./test_files/multiple_files/main.cx",
@@ -745,12 +745,12 @@ func TestDeclarationExtraction_ExtractAllDeclarations(t *testing.T) {
 			},
 			wantGlobals: []declaration_extraction.GlobalDeclaration{
 				{
-					PackageID:          "hello",
-					FileID:             "./test_files/test.cx",
-					StartOffset:        15,
-					Length:             16,
-					LineNumber:         2,
-					GlobalVariableName: "apple",
+					PackageID:          "my_program",
+					FileID:             "./test_files/multiple_files/main.cx",
+					StartOffset:        22,
+					Length:             15,
+					LineNumber:         3,
+					GlobalVariableName: "counter",
 				},
 				{
 					PackageID:          "hello",
@@ -896,6 +896,10 @@ func TestDeclarationExtraction_ExtractAllDeclarations(t *testing.T) {
 			}
 
 			Globals, Enums, Structs, Funcs, Err := declaration_extraction.ExtractAllDeclarations(files)
+
+			if len(Globals) == 0 && len(Enums) == 0 && len(Structs) == 0 && len(Funcs) == 0 {
+				t.Error("No Declarations found")
+			}
 
 			for i, global := range Globals {
 				if global != tc.wantGlobals[i] {

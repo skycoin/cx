@@ -2,6 +2,7 @@ package my_program
 
 /* var commentHere string */
 
-func my_utility ( worker *Worker) ([]int, error) {
+func my_utility( worker *Worker) ([]int, error) {
+
 
 } 

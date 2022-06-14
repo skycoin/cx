@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"regexp"
@@ -248,7 +249,7 @@ func ExtractFuncs(source []byte, fileName string, pkg string) ([]FuncDeclaration
 	var FuncDec []FuncDeclaration
 	var err error
 
-	reFunc := regexp.MustCompile(`func\s+([_a-zA-Z]\w*)\s+\(.*\)\s+\S+\w+|func\s+([_a-zA-Z]\w*)\s+\(.*\)`)
+	reFunc := regexp.MustCompile(`func\s+([_a-zA-Z]\w*)\s*\(.*\)\s+\S+\w+|func\s+([_a-zA-Z]\w*)\s*\(.*\)`)
 
 	reader := bytes.NewReader(source)
 	scanner := bufio.NewScanner(reader)
@@ -461,10 +462,51 @@ func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDecla
 	close(funcChannel)
 	close(errorChannel)
 
-	Globals = <-globalChannel
-	Enums = <-enumChannel
-	Structs = <-structChannel
-	Funcs = <-funcChannel
+	wg.Add(3)
+
+	go func() {
+
+		for global := range globalChannel {
+			Globals = append(Globals, global...)
+		}
+
+		wg.Done()
+
+	}()
+
+	go func() {
+
+		for enum := range enumChannel {
+			Enums = append(Enums, enum...)
+		}
+
+		wg.Done()
+	}()
+
+	go func() {
+
+		for strct := range structChannel {
+			Structs = append(Structs, strct...)
+		}
+
+		wg.Done()
+
+	}()
+
+	fmt.Print(<-funcChannel)
+	fmt.Print(<-funcChannel)
+	fmt.Print(<-funcChannel)
+	// go func() {
+
+	// 	for fun := range funcChannel {
+	// 		Funcs = append(Funcs, fun...)
+	// 	}
+
+	// 	wg.Done()
+
+	// }()
+
+	wg.Wait()
 
 	if err := <-errorChannel; err != nil {
 		return Globals, Enums, Structs, Funcs, err
