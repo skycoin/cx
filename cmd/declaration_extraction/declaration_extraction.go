@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
-	"fmt"
 	"io"
 	"os"
 	"regexp"
@@ -462,7 +461,7 @@ func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDecla
 	close(funcChannel)
 	close(errorChannel)
 
-	wg.Add(3)
+	wg.Add(4)
 
 	go func() {
 
@@ -493,18 +492,15 @@ func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDecla
 
 	}()
 
-	fmt.Print(<-funcChannel)
-	fmt.Print(<-funcChannel)
-	fmt.Print(<-funcChannel)
-	// go func() {
+	go func() {
 
-	// 	for fun := range funcChannel {
-	// 		Funcs = append(Funcs, fun...)
-	// 	}
+		for fun := range funcChannel {
+			Funcs = append(Funcs, fun...)
+		}
 
-	// 	wg.Done()
+		wg.Done()
 
-	// }()
+	}()
 
 	wg.Wait()
 
