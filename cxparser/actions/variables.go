@@ -32,6 +32,17 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 	}
 	declaration_specifiers.Package = ast.CXPackageIndex(pkg.Index)
 
+	if !declaration_specifiers.IsSlice && len(declaration_specifiers.Lengths) == 0 && declaration_specifiers.Type.IsPrimitive() {
+		DeclareGlobalInPackage_CXTYPESIGNATURE(prgrm, pkg, declarator, declaration_specifiers, initializer, doesInitialize)
+	} else {
+		DeclareGlobalInPackage_OLD(prgrm, pkg, declarator, declaration_specifiers, initializer, doesInitialize)
+	}
+
+}
+
+func DeclareGlobalInPackage_OLD(prgrm *ast.CXProgram, pkg *ast.CXPackage,
+	declarator *ast.CXArgument, declaration_specifiers *ast.CXArgument,
+	initializer []ast.CXExpression, doesInitialize bool) {
 	// Treat the name a bit different whether it's defined already or not.
 	if glbl, err := pkg.GetGlobal(prgrm, declarator.Name); err == nil {
 		var glblIdx int
@@ -214,6 +225,144 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 			pkg.AddGlobal(prgrm, declSpecIdx)
 		}
 	}
+}
+
+func DeclareGlobalInPackage_CXTYPESIGNATURE(prgrm *ast.CXProgram, pkg *ast.CXPackage,
+	declarator *ast.CXArgument, declaration_specifiers *ast.CXArgument,
+	initializer []ast.CXExpression, doesInitialize bool) {
+	// Treat the name a bit different whether it's defined already or not.
+	if glbl, err := pkg.GetGlobal(prgrm, declarator.Name); err == nil {
+		if glbl.Offset < 0 {
+			// then it was only added a reference to the symbol
+			var glblArg *ast.CXArgument
+			if declaration_specifiers.IsSlice { // TODO:PTR move branch in WritePrimary
+				glblArg = WritePrimary(prgrm, declaration_specifiers.Type,
+					make([]byte, types.POINTER_SIZE), true)
+			} else {
+				glblArg = WritePrimary(prgrm, declaration_specifiers.Type,
+					make([]byte, declaration_specifiers.TotalSize), false)
+			}
+
+			glbl.Offset = glblArg.Offset
+		}
+
+		glbl.Type = ast.TYPE_ATOMIC
+		glbl.Meta = int(declaration_specifiers.Type)
+		// glbl.Name=declaration_specifiers.Name
+
+		// Checking if something is supposed to be initialized
+		// and if `initializer` actually contains something.
+		// If `initializer` is `nil`, this means that an expression
+		// equivalent to nil was used, such as `[]i32{}`.
+		if doesInitialize && initializer != nil {
+			initializerExpressionIdx := initializer[len(initializer)-1].Index
+			initializerExpressionOperator := prgrm.GetFunctionFromArray(prgrm.CXAtomicOps[initializerExpressionIdx].Operator)
+			// then we just re-assign offsets
+			if initializerExpressionOperator == nil {
+				// then it's a literal
+
+				typeSig := prgrm.CXAtomicOps[initializerExpressionIdx].GetOutputs(prgrm)[0]
+				prgrm.CXAtomicOps[initializerExpressionIdx].AddInput(prgrm, typeSig)
+				prgrm.CXAtomicOps[initializerExpressionIdx].Outputs = nil
+
+				prgrm.CXAtomicOps[initializerExpressionIdx].AddOutput(prgrm, glbl)
+				opIdx := prgrm.AddNativeFunctionInArray(ast.Natives[constants.OP_IDENTITY])
+				prgrm.CXAtomicOps[initializerExpressionIdx].Operator = opIdx
+				prgrm.CXAtomicOps[initializerExpressionIdx].Package = ast.CXPackageIndex(pkg.Index)
+
+				//add intialization statements, to array
+				prgrm.SysInitExprs = append(prgrm.SysInitExprs, initializer...)
+			} else {
+				// then it's an expression
+
+				if initializer[len(initializer)-1].IsStructLiteral() {
+					outputStruct := &ast.CXStruct{}
+					outputStruct.AddField_TypeSignature(prgrm, glbl)
+					index := prgrm.AddCXAtomicOp(&ast.CXAtomicOperator{Outputs: outputStruct, Operator: -1, Function: -1})
+					initializer = StructLiteralAssignment(prgrm,
+						[]ast.CXExpression{
+							{
+								Index: index,
+								Type:  ast.CX_ATOMIC_OPERATOR,
+							},
+						},
+						initializer,
+					)
+				} else {
+					prgrm.CXAtomicOps[initializerExpressionIdx].Outputs = nil
+					prgrm.CXAtomicOps[initializerExpressionIdx].AddOutput(prgrm, glbl)
+				}
+				//add intialization statements, to array
+				prgrm.SysInitExprs = append(prgrm.SysInitExprs, initializer...)
+			}
+		}
+	} else {
+		// then it hasn't been defined
+		var glblArg *ast.CXArgument
+		if declaration_specifiers.IsSlice { // TODO:PTR move branch in WritePrimary
+			glblArg = WritePrimary(prgrm, declaration_specifiers.Type, make([]byte, types.POINTER_SIZE), true)
+		} else {
+			glblArg = WritePrimary(prgrm, declaration_specifiers.Type, make([]byte, declaration_specifiers.TotalSize), false)
+		}
+
+		var typeSignature *ast.CXTypeSignature
+		typeSignature.Name = declarator.Name
+		typeSignature.Offset = glblArg.Offset
+		typeSignature.Package = ast.CXPackageIndex(pkg.Index)
+		typeSignature.Type = ast.TYPE_ATOMIC
+		typeSignature.Meta = int(declaration_specifiers.Type)
+
+		// Checking if something is supposed to be initialized
+		// and if `initializer` actually contains something.
+		// If `initializer` is `nil`, this means that an expression
+		// equivalent to nil was used, such as `[]i32{}`.
+		if doesInitialize && initializer != nil {
+			initializerExpressionIdx := initializer[len(initializer)-1].Index
+			initializerExpressionOperator := prgrm.GetFunctionFromArray(prgrm.CXAtomicOps[initializerExpressionIdx].Operator)
+
+			if initializerExpressionOperator == nil {
+				// then it's a literal
+				opIdx := prgrm.AddNativeFunctionInArray(ast.Natives[constants.OP_IDENTITY])
+				prgrm.CXAtomicOps[initializerExpressionIdx].Operator = opIdx
+
+				typeSig := prgrm.CXAtomicOps[initializerExpressionIdx].GetOutputs(prgrm)[0]
+				prgrm.CXAtomicOps[initializerExpressionIdx].AddInput(prgrm, typeSig)
+				prgrm.CXAtomicOps[initializerExpressionIdx].Outputs = nil
+
+				prgrm.CXAtomicOps[initializerExpressionIdx].AddOutput(prgrm, typeSignature)
+
+				pkg.AddGlobal_TypeSignature(prgrm, typeSignature)
+				//add intialization statements, to array
+				prgrm.SysInitExprs = append(prgrm.SysInitExprs, initializer...)
+			} else {
+				// then it's an expression
+				if initializer[len(initializer)-1].IsStructLiteral() {
+					outputStruct := &ast.CXStruct{}
+					outputStruct.AddField_TypeSignature(prgrm, typeSignature)
+					index := prgrm.AddCXAtomicOp(&ast.CXAtomicOperator{Outputs: outputStruct, Operator: -1, Function: -1})
+					initializer = StructLiteralAssignment(prgrm,
+						[]ast.CXExpression{
+							{
+								Index: index,
+								Type:  ast.CX_ATOMIC_OPERATOR,
+							},
+						},
+						initializer,
+					)
+				} else {
+					prgrm.CXAtomicOps[initializerExpressionIdx].Outputs = nil
+					prgrm.CXAtomicOps[initializerExpressionIdx].AddOutput(prgrm, typeSignature)
+				}
+
+				pkg.AddGlobal_TypeSignature(prgrm, typeSignature)
+				//add intialization statements, to array
+				prgrm.SysInitExprs = append(prgrm.SysInitExprs, initializer...)
+			}
+		} else {
+			pkg.AddGlobal_TypeSignature(prgrm, typeSignature)
+		}
+	}
+
 }
 
 // DeclareLocal() creates a local variable inside a function.

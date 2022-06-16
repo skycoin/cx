@@ -241,6 +241,19 @@ func (pkg *CXPackage) AddGlobal(prgrm *CXProgram, defIdx CXArgumentIndex) *CXPac
 	return pkg
 }
 
+func (pkg *CXPackage) AddGlobal_TypeSignature(prgrm *CXProgram, typeSignature *CXTypeSignature) *CXPackage {
+	typeSignature.Package = CXPackageIndex(pkg.Index)
+	for _, field := range pkg.Globals.Fields {
+		if field.Name == typeSignature.Name {
+			return pkg
+		}
+	}
+
+	pkg.Globals.AddField_TypeSignature(prgrm, typeSignature)
+
+	return pkg
+}
+
 // RemoveGlobal ...
 // func (pkg *CXPackage) RemoveGlobal(prgrm *CXProgram, defName string) {
 // 	lenGlobals := len(pkg.Globals)
