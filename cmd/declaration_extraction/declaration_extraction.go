@@ -58,11 +58,12 @@ func scanLinesWithLineTerminator(data []byte, atEOF bool) (advance int, token []
 		return 0, nil, nil
 	}
 	if i := bytes.IndexAny(data, "\r\n"); i >= 0 {
+		advance = i + 1
 		if data[i] == '\n' {
 			// We have a line terminated by single newline.
-			return i + 1, data[0:i], nil
+			return i + 1, data[0:advance], nil
 		}
-		advance = i + 1
+
 		if len(data) > i+1 && data[i+1] == '\n' {
 			advance += 1
 		}
