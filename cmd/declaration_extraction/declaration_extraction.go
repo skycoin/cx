@@ -52,6 +52,30 @@ type FuncDeclaration struct {
 	FuncVariableName string // name of variable being declared
 }
 
+// Mostly bufio.ScanLines code:
+func scanLinesWithLineTerminator(data []byte, atEOF bool) (advance int, token []byte, err error) {
+	if atEOF && len(data) == 0 {
+		return 0, nil, nil
+	}
+	if i := bytes.IndexAny(data, "\r\n"); i >= 0 {
+		if data[i] == '\n' {
+			// We have a line terminated by single newline.
+			return i + 1, data[0:i], nil
+		}
+		advance = i + 1
+		if len(data) > i+1 && data[i+1] == '\n' {
+			advance += 1
+		}
+		return advance, data[0:advance], nil
+	}
+	// If we're at EOF, we have a final, non-terminated line. Return it.
+	if atEOF {
+		return len(data), data, nil
+	}
+	// Request more data.
+	return 0, nil, nil
+}
+
 func ReplaceCommentsWithWhitespaces(source []byte) []byte {
 
 	var sourceWithoutComments []byte = source
@@ -95,8 +119,9 @@ func ExtractGlobals(source []byte, fileName string, pkg string) ([]GlobalDeclara
 
 	reader := bytes.NewReader(source)
 	scanner := bufio.NewScanner(reader)
+	scanner.Split(scanLinesWithLineTerminator)
 
-	var bytes int
+	var currentOffset int
 	var lineno int
 	var inBlock int
 
@@ -115,13 +140,14 @@ func ExtractGlobals(source []byte, fileName string, pkg string) ([]GlobalDeclara
 			var tmp GlobalDeclaration
 			tmp.PackageID = pkg
 			tmp.FileID = fileName
-			tmp.StartOffset = bytes + match[0]
+			tmp.StartOffset = currentOffset + match[0]
 			tmp.Length = match[1] - match[0]
 			tmp.LineNumber = lineno
-			tmp.GlobalVariableName = string(source[match[2]+bytes : match[3]+bytes])
+			tmp.GlobalVariableName = string(source[match[2]+currentOffset : match[3]+currentOffset])
 			GlblDec = append(GlblDec, tmp)
 		}
-		bytes += len(line) + 2
+
+		currentOffset += len(line)
 	}
 	return GlblDec, err
 
@@ -140,12 +166,13 @@ func ExtractEnums(source []byte, fileName string, pkg string) ([]EnumDeclaration
 
 	reader := bytes.NewReader(source)
 	scanner := bufio.NewScanner(reader)
+	scanner.Split(scanLinesWithLineTerminator)
 
 	var EnumInit bool
 	var inPrts int
 	var Type string
 	var Index int
-	var bytes int
+	var currentOffset int
 	var lineno int
 
 	for scanner.Scan() {
@@ -155,7 +182,7 @@ func ExtractEnums(source []byte, fileName string, pkg string) ([]EnumDeclaration
 		if locs := reEnumInit.FindAllIndex(line, -1); locs != nil {
 			EnumInit = true
 			inPrts++
-			bytes += len(line) + 2
+			currentOffset += len(line)
 			continue
 		}
 
@@ -178,15 +205,15 @@ func ExtractEnums(source []byte, fileName string, pkg string) ([]EnumDeclaration
 
 			tmp.PackageID = pkg
 			tmp.FileID = fileName
-			tmp.StartOffset = match[0] + bytes
+			tmp.StartOffset = match[0] + currentOffset
 			tmp.Length = match[1] - match[0]
 			tmp.LineNumber = lineno
 
-			tmp.EnumVariableName = string(source[match[6]+bytes : match[7]+bytes])
+			tmp.EnumVariableName = string(source[match[6]+currentOffset : match[7]+currentOffset])
 
 			if match[2] != -1 {
-				Type = string(source[match[4]+bytes : match[5]+bytes])
-				tmp.EnumVariableName = string(source[match[2]+bytes : match[3]+bytes])
+				Type = string(source[match[4]+currentOffset : match[5]+currentOffset])
+				tmp.EnumVariableName = string(source[match[2]+currentOffset : match[3]+currentOffset])
 			}
 
 			tmp.Type = Type
@@ -196,7 +223,7 @@ func ExtractEnums(source []byte, fileName string, pkg string) ([]EnumDeclaration
 			Index++
 		}
 
-		bytes += len(line) + 2
+		currentOffset += len(line)
 	}
 
 	return EnumDec, err
@@ -212,8 +239,9 @@ func ExtractStructs(source []byte, fileName string, pkg string) ([]StructDeclara
 
 	reader := bytes.NewReader(source)
 	scanner := bufio.NewScanner(reader)
+	scanner.Split(scanLinesWithLineTerminator)
 
-	var bytes int
+	var currentOffset int
 	var lineno int
 
 	//Reading code line by line
@@ -228,16 +256,16 @@ func ExtractStructs(source []byte, fileName string, pkg string) ([]StructDeclara
 			tmp.PackageID = pkg
 			tmp.FileID = fileName
 
-			tmp.StartOffset = match[0] + bytes
+			tmp.StartOffset = match[0] + currentOffset
 			tmp.Length = match[1] - match[0]
-			tmp.StructVariableName = string(source[match[2]+bytes : match[3]+bytes])
+			tmp.StructVariableName = string(source[match[2]+currentOffset : match[3]+currentOffset])
 
 			tmp.LineNumber = lineno
 
 			StrctDec = append(StrctDec, tmp)
 
 		}
-		bytes += len(line) + 2
+		currentOffset += len(line)
 	}
 
 	return StrctDec, err
@@ -252,8 +280,9 @@ func ExtractFuncs(source []byte, fileName string, pkg string) ([]FuncDeclaration
 
 	reader := bytes.NewReader(source)
 	scanner := bufio.NewScanner(reader)
+	scanner.Split(scanLinesWithLineTerminator)
 
-	var bytes int
+	var currentOffset int
 	var lineno int
 
 	//Reading code line by line
@@ -268,13 +297,13 @@ func ExtractFuncs(source []byte, fileName string, pkg string) ([]FuncDeclaration
 			tmp.PackageID = pkg
 			tmp.FileID = fileName
 
-			tmp.StartOffset = match[0] + bytes
+			tmp.StartOffset = match[0] + currentOffset
 			tmp.Length = match[1] - match[0]
 
-			tmp.FuncVariableName = string(source[match[4]+bytes : match[5]+bytes])
+			tmp.FuncVariableName = string(source[match[4]+currentOffset : match[5]+currentOffset])
 
 			if match[2] != -1 {
-				tmp.FuncVariableName = string(source[match[2]+bytes : match[3]+bytes])
+				tmp.FuncVariableName = string(source[match[2]+currentOffset : match[3]+currentOffset])
 			}
 
 			tmp.LineNumber = lineno
@@ -282,7 +311,7 @@ func ExtractFuncs(source []byte, fileName string, pkg string) ([]FuncDeclaration
 			FuncDec = append(FuncDec, tmp)
 
 		}
-		bytes += len(line) + 2
+		currentOffset += len(line)
 	}
 
 	return FuncDec, err
