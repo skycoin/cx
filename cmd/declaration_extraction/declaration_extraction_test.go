@@ -5,10 +5,24 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/skycoin/cx/cmd/declaration_extraction"
 )
+
+func setOffset(offset int, lineNumber int) int {
+
+	var newOffset int = offset
+
+	runtimeOS := runtime.GOOS
+
+	if runtimeOS == "windows" {
+		newOffset += lineNumber - 1
+	}
+
+	return newOffset
+}
 
 func TestDeclarationExtraction_ReplaceCommentsWithWhitespaces(t *testing.T) {
 
@@ -105,7 +119,7 @@ func TestDeclarationExtraction_ExtractGlobal(t *testing.T) {
 				{
 					PackageID:          "hello",
 					FileID:             "test.cx",
-					StartOffset:        15,
+					StartOffset:        setOffset(14, 2),
 					Length:             16,
 					LineNumber:         2,
 					GlobalVariableName: "apple",
@@ -113,7 +127,7 @@ func TestDeclarationExtraction_ExtractGlobal(t *testing.T) {
 				{
 					PackageID:          "hello",
 					FileID:             "test.cx",
-					StartOffset:        37,
+					StartOffset:        setOffset(34, 4),
 					Length:             17,
 					LineNumber:         4,
 					GlobalVariableName: "banana",
@@ -160,7 +174,7 @@ func TestDeclarationExtraction_ExtractEnums(t *testing.T) {
 				{
 					PackageID:        "hello",
 					FileID:           "test.cx",
-					StartOffset:      383,
+					StartOffset:      setOffset(351, 33),
 					Length:           15,
 					LineNumber:       33,
 					Type:             "Direction",
@@ -170,7 +184,7 @@ func TestDeclarationExtraction_ExtractEnums(t *testing.T) {
 				{
 					PackageID:        "hello",
 					FileID:           "test.cx",
-					StartOffset:      408,
+					StartOffset:      setOffset(375, 34),
 					Length:           5,
 					LineNumber:       34,
 					Type:             "Direction",
@@ -180,7 +194,7 @@ func TestDeclarationExtraction_ExtractEnums(t *testing.T) {
 				{
 					PackageID:        "hello",
 					FileID:           "test.cx",
-					StartOffset:      416,
+					StartOffset:      setOffset(382, 35),
 					Length:           4,
 					LineNumber:       35,
 					Type:             "Direction",
@@ -190,7 +204,7 @@ func TestDeclarationExtraction_ExtractEnums(t *testing.T) {
 				{
 					PackageID:        "hello",
 					FileID:           "test.cx",
-					StartOffset:      423,
+					StartOffset:      setOffset(388, 36),
 					Length:           4,
 					LineNumber:       36,
 					Type:             "Direction",
@@ -200,7 +214,7 @@ func TestDeclarationExtraction_ExtractEnums(t *testing.T) {
 				{
 					PackageID:        "hello",
 					FileID:           "test.cx",
-					StartOffset:      444,
+					StartOffset:      setOffset(405, 40),
 					Length:           12,
 					LineNumber:       40,
 					Type:             "Number",
@@ -210,7 +224,7 @@ func TestDeclarationExtraction_ExtractEnums(t *testing.T) {
 				{
 					PackageID:        "hello",
 					FileID:           "test.cx",
-					StartOffset:      466,
+					StartOffset:      setOffset(426, 41),
 					Length:           6,
 					LineNumber:       41,
 					Type:             "Number",
@@ -226,7 +240,7 @@ func TestDeclarationExtraction_ExtractEnums(t *testing.T) {
 				{
 					PackageID:        "hello",
 					FileID:           "enum_in_parenthesis.cx",
-					StartOffset:      341,
+					StartOffset:      setOffset(309, 33),
 					Length:           15,
 					Type:             "Direction",
 					LineNumber:       33,
@@ -236,7 +250,7 @@ func TestDeclarationExtraction_ExtractEnums(t *testing.T) {
 				{
 					PackageID:        "hello",
 					FileID:           "enum_in_parenthesis.cx",
-					StartOffset:      366,
+					StartOffset:      setOffset(333, 34),
 					Length:           5,
 					LineNumber:       34,
 					Type:             "Direction",
@@ -246,7 +260,7 @@ func TestDeclarationExtraction_ExtractEnums(t *testing.T) {
 				{
 					PackageID:        "hello",
 					FileID:           "enum_in_parenthesis.cx",
-					StartOffset:      387,
+					StartOffset:      setOffset(353, 35),
 					Length:           4,
 					LineNumber:       35,
 					Type:             "Direction",
@@ -256,7 +270,7 @@ func TestDeclarationExtraction_ExtractEnums(t *testing.T) {
 				{
 					PackageID:        "hello",
 					FileID:           "enum_in_parenthesis.cx",
-					StartOffset:      394,
+					StartOffset:      setOffset(359, 36),
 					Length:           4,
 					LineNumber:       36,
 					Type:             "Direction",
@@ -266,7 +280,7 @@ func TestDeclarationExtraction_ExtractEnums(t *testing.T) {
 				{
 					PackageID:        "hello",
 					FileID:           "enum_in_parenthesis.cx",
-					StartOffset:      415,
+					StartOffset:      setOffset(376, 40),
 					Length:           12,
 					LineNumber:       40,
 					Type:             "Number",
@@ -276,7 +290,7 @@ func TestDeclarationExtraction_ExtractEnums(t *testing.T) {
 				{
 					PackageID:        "hello",
 					FileID:           "enum_in_parenthesis.cx",
-					StartOffset:      437,
+					StartOffset:      setOffset(397, 41),
 					Length:           6,
 					LineNumber:       41,
 					Type:             "Number",
@@ -325,7 +339,7 @@ func TestDeclarationExtraction_ExtractStructs(t *testing.T) {
 				{
 					PackageID:          "hello",
 					FileID:             "test.cx",
-					StartOffset:        171,
+					StartOffset:        setOffset(158, 14),
 					Length:             18,
 					LineNumber:         14,
 					StructVariableName: "person",
@@ -333,7 +347,7 @@ func TestDeclarationExtraction_ExtractStructs(t *testing.T) {
 				{
 					PackageID:          "hello",
 					FileID:             "test.cx",
-					StartOffset:        250,
+					StartOffset:        setOffset(230, 21),
 					Length:             39,
 					LineNumber:         21,
 					StructVariableName: "animal",
@@ -341,7 +355,7 @@ func TestDeclarationExtraction_ExtractStructs(t *testing.T) {
 				{
 					PackageID:          "hello",
 					FileID:             "test.cx",
-					StartOffset:        351,
+					StartOffset:        setOffset(322, 30),
 					Length:             18,
 					LineNumber:         30,
 					StructVariableName: "Direction",
@@ -388,7 +402,7 @@ func TestDeclarationExtraction_ExtractFuncs(t *testing.T) {
 				{
 					PackageID:        "hello",
 					FileID:           "test.cx",
-					StartOffset:      212,
+					StartOffset:      setOffset(195, 18),
 					Length:           12,
 					LineNumber:       18,
 					FuncVariableName: "main",
@@ -396,7 +410,7 @@ func TestDeclarationExtraction_ExtractFuncs(t *testing.T) {
 				{
 					PackageID:        "hello",
 					FileID:           "test.cx",
-					StartOffset:      321,
+					StartOffset:      setOffset(296, 26),
 					Length:           19,
 					LineNumber:       26,
 					FuncVariableName: "functionTwo",
@@ -404,7 +418,7 @@ func TestDeclarationExtraction_ExtractFuncs(t *testing.T) {
 				{
 					PackageID:        "hello",
 					FileID:           "test.cx",
-					StartOffset:      479,
+					StartOffset:      setOffset(436, 44),
 					Length:           39,
 					LineNumber:       44,
 					FuncVariableName: "functionWithSingleReturn",
@@ -503,9 +517,14 @@ func TestDeclarationExtraction_ReDeclarationCheck(t *testing.T) {
 
 			reDeclarationCheck := declaration_extraction.ReDeclarationCheck(globals, enums, structs, funcs)
 
-			if errors.Is(reDeclarationCheck, tc.wantReDclr) && reDeclarationCheck != nil ||
-				(reDeclarationCheck != nil && tc.wantReDclr == nil) {
-				t.Errorf("want redeclaration check %v, got %v", tc.wantReDclr, reDeclarationCheck)
+			if reDeclarationCheck != nil && tc.wantReDclr == nil {
+				t.Errorf("want error %v, got %v", tc.wantReDclr, reDeclarationCheck)
+			}
+
+			if reDeclarationCheck != nil && tc.wantReDclr != nil {
+				if reDeclarationCheck.Error() != tc.wantReDclr.Error() {
+					t.Errorf("want error %v, got %v", tc.wantReDclr, reDeclarationCheck)
+				}
 			}
 		})
 	}
@@ -680,7 +699,7 @@ func TestDeclarationExtraction_ExtractAllDeclarations(t *testing.T) {
 			wantEnums:   9,
 			wantStructs: 4,
 			wantFuncs:   6,
-			wantError:   errors.New("struct redeclared"),
+			wantError:   errors.New("func redeclared"),
 		},
 	}
 
@@ -722,10 +741,15 @@ func TestDeclarationExtraction_ExtractAllDeclarations(t *testing.T) {
 				t.Errorf("want func %v, got %v", tc.wantFuncs, len(Funcs))
 			}
 
-			if !errors.Is(Err, tc.wantError) {
+			if Err != nil && tc.wantError == nil {
 				t.Errorf("want error %v, got %v", tc.wantError, Err)
 			}
 
+			if Err != nil {
+				if Err.Error() != tc.wantError.Error() {
+					t.Errorf("want error %v, got %v", tc.wantError, Err)
+				}
+			}
 		})
 	}
 }
