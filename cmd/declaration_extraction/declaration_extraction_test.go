@@ -591,10 +591,10 @@ func TestDeclarationExtraction_ExtractAllDeclarations(t *testing.T) {
 	tests := []struct {
 		scenario    string
 		testDirs    []string
-		wantGlobals []declaration_extraction.GlobalDeclaration
-		wantEnums   []declaration_extraction.EnumDeclaration
-		wantStructs []declaration_extraction.StructDeclaration
-		wantFuncs   []declaration_extraction.FuncDeclaration
+		wantGlobals int
+		wantEnums   int
+		wantStructs int
+		wantFuncs   int
 		wantError   error
 	}{
 		{
@@ -602,138 +602,11 @@ func TestDeclarationExtraction_ExtractAllDeclarations(t *testing.T) {
 			testDirs: []string{
 				"./test_files/test.cx",
 			},
-			wantGlobals: []declaration_extraction.GlobalDeclaration{
-				{
-					PackageID:          "hello",
-					FileID:             "./test_files/test.cx",
-					StartOffset:        15,
-					Length:             16,
-					LineNumber:         2,
-					GlobalVariableName: "apple",
-				},
-				{
-					PackageID:          "hello",
-					FileID:             "./test_files/test.cx",
-					StartOffset:        37,
-					Length:             17,
-					LineNumber:         4,
-					GlobalVariableName: "banana",
-				},
-			},
-			wantEnums: []declaration_extraction.EnumDeclaration{
-				{
-					PackageID:        "hello",
-					FileID:           "./test_files/test.cx",
-					StartOffset:      383,
-					Length:           15,
-					LineNumber:       33,
-					Type:             "Direction",
-					Value:            0,
-					EnumVariableName: "North",
-				},
-				{
-					PackageID:        "hello",
-					FileID:           "./test_files/test.cx",
-					StartOffset:      408,
-					Length:           5,
-					LineNumber:       34,
-					Type:             "Direction",
-					Value:            1,
-					EnumVariableName: "South",
-				},
-				{
-					PackageID:        "hello",
-					FileID:           "./test_files/test.cx",
-					StartOffset:      416,
-					Length:           4,
-					LineNumber:       35,
-					Type:             "Direction",
-					Value:            2,
-					EnumVariableName: "East",
-				},
-				{
-					PackageID:        "hello",
-					FileID:           "./test_files/test.cx",
-					StartOffset:      423,
-					Length:           4,
-					LineNumber:       36,
-					Type:             "Direction",
-					Value:            3,
-					EnumVariableName: "West",
-				},
-				{
-					PackageID:        "hello",
-					FileID:           "./test_files/test.cx",
-					StartOffset:      444,
-					Length:           12,
-					LineNumber:       40,
-					Type:             "Number",
-					Value:            0,
-					EnumVariableName: "First",
-				},
-				{
-					PackageID:        "hello",
-					FileID:           "./test_files/test.cx",
-					StartOffset:      466,
-					Length:           6,
-					LineNumber:       41,
-					Type:             "Number",
-					Value:            1,
-					EnumVariableName: "Second",
-				},
-			},
-			wantStructs: []declaration_extraction.StructDeclaration{
-				{
-					PackageID:          "hello",
-					FileID:             "./test_files/test.cx",
-					StartOffset:        171,
-					Length:             18,
-					LineNumber:         14,
-					StructVariableName: "person",
-				},
-				{
-					PackageID:          "hello",
-					FileID:             "./test_files/test.cx",
-					StartOffset:        250,
-					Length:             39,
-					LineNumber:         21,
-					StructVariableName: "animal",
-				},
-				{
-					PackageID:          "hello",
-					FileID:             "./test_files/test.cx",
-					StartOffset:        351,
-					Length:             18,
-					LineNumber:         30,
-					StructVariableName: "Direction",
-				},
-			},
-			wantFuncs: []declaration_extraction.FuncDeclaration{
-				{
-					PackageID:        "hello",
-					FileID:           "./test_files/test.cx",
-					StartOffset:      212,
-					Length:           12,
-					LineNumber:       18,
-					FuncVariableName: "main",
-				},
-				{
-					PackageID:        "hello",
-					FileID:           "./test_files/test.cx",
-					StartOffset:      321,
-					Length:           19,
-					LineNumber:       26,
-					FuncVariableName: "functionTwo",
-				},
-				{
-					PackageID:        "hello",
-					FileID:           "./test_files/test.cx",
-					StartOffset:      479,
-					Length:           39,
-					LineNumber:       44,
-					FuncVariableName: "functionWithSingleReturn",
-				},
-			},
+			wantGlobals: 2,
+			wantEnums:   6,
+			wantStructs: 3,
+			wantFuncs:   3,
+			wantError:   nil,
 		},
 		{
 			scenario: "Mulitple files",
@@ -743,93 +616,11 @@ func TestDeclarationExtraction_ExtractAllDeclarations(t *testing.T) {
 				"./test_files/multiple_files/utility.cx",
 				"./test_files/multiple_files/worker.cx",
 			},
-			wantGlobals: []declaration_extraction.GlobalDeclaration{
-				{
-					PackageID:          "my_program",
-					FileID:             "./test_files/multiple_files/main.cx",
-					StartOffset:        22,
-					Length:             15,
-					LineNumber:         3,
-					GlobalVariableName: "counter",
-				},
-				{
-					PackageID:          "my_program",
-					FileID:             "./test_files/multiple_files/main.cx",
-					StartOffset:        41,
-					Length:             15,
-					LineNumber:         5,
-					GlobalVariableName: "name",
-				},
-			},
-			wantEnums: []declaration_extraction.EnumDeclaration{
-				{
-					PackageID:        "my_program",
-					FileID:           "./test_files/multiple_files/helper.cx",
-					StartOffset:      32,
-					Length:           14,
-					LineNumber:       4,
-					Type:             "string",
-					Value:            0,
-					EnumVariableName: "primary",
-				},
-				{
-					PackageID:        "my_program",
-					FileID:           "./test_files/multiple_files/helper.cx",
-					StartOffset:      56,
-					Length:           16,
-					LineNumber:       5,
-					Type:             "string",
-					Value:            1,
-					EnumVariableName: "secondary",
-				},
-				{
-					PackageID:        "my_program",
-					FileID:           "./test_files/multiple_files/helper.cx",
-					StartOffset:      75,
-					Length:           8,
-					LineNumber:       6,
-					Type:             "string",
-					Value:            2,
-					EnumVariableName: "tertiary",
-				},
-			},
-			wantStructs: []declaration_extraction.StructDeclaration{
-				{
-					PackageID:          "my_program",
-					FileID:             "./test_files/multiple_files/worker.cx",
-					StartOffset:        22,
-					Length:             18,
-					LineNumber:         3,
-					StructVariableName: "Worker",
-				},
-			},
-			wantFuncs: []declaration_extraction.FuncDeclaration{
-				{
-					PackageID:        "my_program",
-					FileID:           "./test_files/multiple_files/worker.cx",
-					StartOffset:      79,
-					Length:           54,
-					LineNumber:       8,
-					FuncVariableName: "justAnotherFunction",
-				},
-				{
-					PackageID:        "my_program",
-					FileID:           "./test_files/multiple_files/main.cx",
-					StartOffset:      60,
-					Length:           11,
-					LineNumber:       7,
-					FuncVariableName: "main",
-				},
-				{
-					PackageID:        "my_program",
-					FileID:           "./test_files/multiple_files/utility.cx",
-					StartOffset:      54,
-					Length:           39,
-					LineNumber:       5,
-					FuncVariableName: "my_utility",
-				},
-			},
-			wantError: nil,
+			wantGlobals: 2,
+			wantEnums:   3,
+			wantStructs: 1,
+			wantFuncs:   3,
+			wantError:   nil,
 		},
 	}
 
@@ -855,28 +646,20 @@ func TestDeclarationExtraction_ExtractAllDeclarations(t *testing.T) {
 				t.Error("No Declarations found")
 			}
 
-			for i, global := range Globals {
-				if global != tc.wantGlobals[i] {
-					t.Errorf("want global %v, got %v", tc.wantGlobals[i], global)
-				}
+			if len(Globals) != tc.wantGlobals {
+				t.Errorf("want global %v, got %v", tc.wantGlobals, len(Globals))
 			}
 
-			for i, enum := range Enums {
-				if enum != tc.wantEnums[i] {
-					t.Errorf("want enum %v, got %v", tc.wantEnums[i], enum)
-				}
+			if len(Enums) != tc.wantEnums {
+				t.Errorf("want enum %v, got %v", tc.wantEnums, len(Enums))
 			}
 
-			for i, strct := range Structs {
-				if strct != tc.wantStructs[i] {
-					t.Errorf("want struct %v, got %v", tc.wantStructs[i], strct)
-				}
+			if len(Structs) != tc.wantStructs {
+				t.Errorf("want struct %v, got %v", tc.wantStructs, len(Structs))
 			}
 
-			for i, fun := range Funcs {
-				if fun != tc.wantFuncs[i] {
-					t.Errorf("want func %v, got %v", tc.wantFuncs[i], fun)
-				}
+			if len(Funcs) != tc.wantFuncs {
+				t.Errorf("want func %v, got %v", tc.wantFuncs, len(Funcs))
 			}
 
 			if errors.Is(Err, tc.wantError) && Err != nil ||
