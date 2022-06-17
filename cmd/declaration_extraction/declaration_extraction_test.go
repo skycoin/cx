@@ -622,6 +622,66 @@ func TestDeclarationExtraction_ExtractAllDeclarations(t *testing.T) {
 			wantFuncs:   3,
 			wantError:   nil,
 		},
+		{
+			scenario: "Redeclared Global",
+			testDirs: []string{
+				"./test_files/multiple_files/helper.cx",
+				"./test_files/multiple_files/main.cx",
+				"./test_files/multiple_files/utility.cx",
+				"./test_files/multiple_files/worker.cx",
+				"./test_files/redeclaration_global.cx",
+			},
+			wantGlobals: 5,
+			wantEnums:   9,
+			wantStructs: 4,
+			wantFuncs:   5,
+			wantError:   errors.New("global redeclared"),
+		},
+		{
+			scenario: "Redeclared Enum",
+			testDirs: []string{
+				"./test_files/multiple_files/helper.cx",
+				"./test_files/multiple_files/main.cx",
+				"./test_files/multiple_files/utility.cx",
+				"./test_files/multiple_files/worker.cx",
+				"./test_files/redeclaration_enum.cx",
+			},
+			wantGlobals: 4,
+			wantEnums:   10,
+			wantStructs: 4,
+			wantFuncs:   5,
+			wantError:   errors.New("enum redeclared"),
+		},
+		{
+			scenario: "Redeclared Struct",
+			testDirs: []string{
+				"./test_files/multiple_files/helper.cx",
+				"./test_files/multiple_files/main.cx",
+				"./test_files/multiple_files/utility.cx",
+				"./test_files/multiple_files/worker.cx",
+				"./test_files/redeclaration_struct.cx",
+			},
+			wantGlobals: 4,
+			wantEnums:   9,
+			wantStructs: 5,
+			wantFuncs:   5,
+			wantError:   errors.New("struct redeclared"),
+		},
+		{
+			scenario: "Redeclared Func",
+			testDirs: []string{
+				"./test_files/multiple_files/helper.cx",
+				"./test_files/multiple_files/main.cx",
+				"./test_files/multiple_files/utility.cx",
+				"./test_files/multiple_files/worker.cx",
+				"./test_files/redeclaration_func.cx",
+			},
+			wantGlobals: 4,
+			wantEnums:   9,
+			wantStructs: 4,
+			wantFuncs:   6,
+			wantError:   errors.New("struct redeclared"),
+		},
 	}
 
 	for _, tc := range tests {
@@ -662,8 +722,7 @@ func TestDeclarationExtraction_ExtractAllDeclarations(t *testing.T) {
 				t.Errorf("want func %v, got %v", tc.wantFuncs, len(Funcs))
 			}
 
-			if errors.Is(Err, tc.wantError) && Err != nil ||
-				(Err != nil && tc.wantError == nil) {
+			if !errors.Is(Err, tc.wantError) {
 				t.Errorf("want error %v, got %v", tc.wantError, Err)
 			}
 

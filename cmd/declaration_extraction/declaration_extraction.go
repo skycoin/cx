@@ -52,16 +52,16 @@ type FuncDeclaration struct {
 	FuncVariableName string // name of variable being declared
 }
 
-// Mostly bufio.ScanLines code:
+// Modified ScanLines to include "\r\n" or "\n" in line
 func scanLinesWithLineTerminator(data []byte, atEOF bool) (advance int, token []byte, err error) {
 	if atEOF && len(data) == 0 {
 		return 0, nil, nil
 	}
 	if i := bytes.IndexAny(data, "\r\n"); i >= 0 {
-		advance = i + 1
+		advance = i + 1 // i + 1 includes the line termninator
 		if data[i] == '\n' {
 			// We have a line terminated by single newline.
-			return i + 1, data[0:advance], nil
+			return advance, data[0:advance], nil
 		}
 
 		if len(data) > i+1 && data[i+1] == '\n' {
