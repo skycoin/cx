@@ -81,7 +81,7 @@ func ReplaceCommentsWithWhitespaces(source []byte) []byte {
 
 	var sourceWithoutComments []byte = source
 
-	reComment := regexp.MustCompile(`//.*|/\*[\s\S]*?\*/`)
+	reComment := regexp.MustCompile(`//.*|/\*[\s\S]*?\*/|\"//.*\"`)
 
 	comments := reComment.FindAllIndex(source, -1)
 
@@ -99,6 +99,8 @@ func ReplaceCommentsWithWhitespaces(source []byte) []byte {
 
 func ExtractPackages(source []byte) string {
 	rePkgName := regexp.MustCompile(`(^|[\s])package[ \t]+([_a-zA-Z][_a-zA-Z0-9]*)`)
+
+	//Detects only the first package declaration
 
 	srcStr := rePkgName.FindString(string(source))
 	if srcStr != "" {

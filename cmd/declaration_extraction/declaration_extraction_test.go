@@ -36,6 +36,11 @@ func TestDeclarationExtraction_ReplaceCommentsWithWhitespaces(t *testing.T) {
 			testDir:             "./test_files/test.cx",
 			wantCommentReplaced: "./test_files/replaceCommentResult.cx",
 		},
+		{
+			scenario:            "Has quoted single line comment ",
+			testDir:             "./test_files/test_2.cx",
+			wantCommentReplaced: "./test_files/replaceCommentResult_2.cx",
+		},
 	}
 
 	for _, tc := range tests {
@@ -131,6 +136,20 @@ func TestDeclarationExtraction_ExtractGlobal(t *testing.T) {
 					Length:             17,
 					LineNumber:         4,
 					GlobalVariableName: "banana",
+				},
+			},
+		},
+		{
+			scenario: "Has Globals 2",
+			testDir:  "./test_files/test_2.cx",
+			wantGlobals: []declaration_extraction.GlobalDeclaration{
+				{
+					PackageID:          "test_2",
+					FileID:             "test_2.cx",
+					StartOffset:        setOffset(35, 7),
+					Length:             17,
+					LineNumber:         7,
+					GlobalVariableName: "global",
 				},
 			},
 		},
@@ -299,6 +318,52 @@ func TestDeclarationExtraction_ExtractEnums(t *testing.T) {
 				},
 			},
 		},
+		{
+			scenario: "Has Enums 2",
+			testDir:  "./test_files/test_2.cx",
+			wantEnums: []declaration_extraction.EnumDeclaration{
+				{
+					PackageID:        "test_2",
+					FileID:           "test_2.cx",
+					StartOffset:      setOffset(161, 21),
+					Length:           13,
+					LineNumber:       21,
+					Type:             "string",
+					Value:            0,
+					EnumVariableName: "Spring",
+				},
+				{
+					PackageID:        "test_2",
+					FileID:           "test_2.cx",
+					StartOffset:      setOffset(183, 22),
+					Length:           6,
+					LineNumber:       22,
+					Type:             "string",
+					Value:            1,
+					EnumVariableName: "Summer",
+				},
+				{
+					PackageID:        "test_2",
+					FileID:           "test_2.cx",
+					StartOffset:      setOffset(191, 23),
+					Length:           6,
+					LineNumber:       23,
+					Type:             "string",
+					Value:            2,
+					EnumVariableName: "Autumn",
+				},
+				{
+					PackageID:        "test_2",
+					FileID:           "test_2.cx",
+					StartOffset:      setOffset(199, 24),
+					Length:           6,
+					LineNumber:       24,
+					Type:             "string",
+					Value:            3,
+					EnumVariableName: "Winter",
+				},
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -359,6 +424,20 @@ func TestDeclarationExtraction_ExtractStructs(t *testing.T) {
 					Length:             18,
 					LineNumber:         30,
 					StructVariableName: "Direction",
+				},
+			},
+		},
+		{
+			scenario: "Has Struct 2",
+			testDir:  "./test_files/test_2.cx",
+			wantStructs: []declaration_extraction.StructDeclaration{
+				{
+					PackageID:          "test_2",
+					FileID:             "test_2.cx",
+					StartOffset:        setOffset(89, 15),
+					Length:             18,
+					LineNumber:         15,
+					StructVariableName: "object",
 				},
 			},
 		},
@@ -425,6 +504,28 @@ func TestDeclarationExtraction_ExtractFuncs(t *testing.T) {
 				},
 			},
 		},
+		{
+			scenario: "test_2",
+			testDir:  "./test_files/test_2.cx",
+			wantFuncs: []declaration_extraction.FuncDeclaration{
+				{
+					PackageID:        "test_2",
+					FileID:           "test_2.cx",
+					StartOffset:      setOffset(209, 27),
+					Length:           46,
+					LineNumber:       27,
+					FuncVariableName: "add",
+				},
+				{
+					PackageID:        "test_2",
+					FileID:           "test_2.cx",
+					StartOffset:      setOffset(299, 32),
+					Length:           11,
+					LineNumber:       32,
+					FuncVariableName: "main",
+				},
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -482,6 +583,11 @@ func TestDeclarationExtraction_ReDeclarationCheck(t *testing.T) {
 			scenario:   "Redeclared funcs",
 			testDir:    "./test_files/redeclaration_func.cx",
 			wantReDclr: errors.New("func redeclared"),
+		},
+		{
+			scenario:   "No Redeclarations 2",
+			testDir:    "./test_files/test_2.cx",
+			wantReDclr: nil,
 		},
 	}
 
@@ -557,6 +663,20 @@ func TestDeclarationExtraction_GetDeclarations(t *testing.T) {
 				"func functionWithSingleReturn () string",
 			},
 		},
+		{
+			scenario: "Has declarations 2",
+			testDir:  "./test_files/test_2.cx",
+			wantDeclarations: []string{
+				"var global string",
+				"Spring string",
+				"Summer",
+				"Autumn",
+				"Winter",
+				"type object struct",
+				"func add(obj *object, name string, number int)",
+				"func main()",
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -625,6 +745,17 @@ func TestDeclarationExtraction_ExtractAllDeclarations(t *testing.T) {
 			wantEnums:   6,
 			wantStructs: 3,
 			wantFuncs:   3,
+			wantError:   nil,
+		},
+		{
+			scenario: "Single file 2",
+			testDirs: []string{
+				"./test_files/test_2.cx",
+			},
+			wantGlobals: 1,
+			wantEnums:   4,
+			wantStructs: 1,
+			wantFuncs:   2,
 			wantError:   nil,
 		},
 		{
