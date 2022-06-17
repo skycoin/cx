@@ -95,7 +95,11 @@ func TestDeclarationExtraction_ExtractPackages(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			pkg := declaration_extraction.ExtractPackages(ReplaceCommentsWithWhitespaces)
+			pkg, err := declaration_extraction.ExtractPackages(ReplaceCommentsWithWhitespaces)
+
+			if err != nil {
+				t.Error(err)
+			}
 
 			if pkg != tc.wantPackage {
 				t.Errorf("want packages %v, got %v", tc.wantPackage, pkg)
@@ -139,11 +143,17 @@ func TestDeclarationExtraction_ExtractGlobal(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
 			srcBytes, err := os.ReadFile(tc.testDir)
-			ReplaceCommentsWithWhitespaces := declaration_extraction.ReplaceCommentsWithWhitespaces(srcBytes)
-			fileName := filepath.Base(tc.testDir)
-			pkg := declaration_extraction.ExtractPackages(ReplaceCommentsWithWhitespaces)
+
 			if err != nil {
 				t.Fatal(err)
+			}
+
+			ReplaceCommentsWithWhitespaces := declaration_extraction.ReplaceCommentsWithWhitespaces(srcBytes)
+			fileName := filepath.Base(tc.testDir)
+			pkg, err := declaration_extraction.ExtractPackages(ReplaceCommentsWithWhitespaces)
+
+			if err != nil {
+				t.Error(err)
 			}
 
 			globals, err := declaration_extraction.ExtractGlobals(ReplaceCommentsWithWhitespaces, fileName, pkg)
@@ -304,11 +314,16 @@ func TestDeclarationExtraction_ExtractEnums(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
 			srcBytes, err := os.ReadFile(tc.testDir)
-			ReplaceCommentsWithWhitespaces := declaration_extraction.ReplaceCommentsWithWhitespaces(srcBytes)
-			fileName := filepath.Base(tc.testDir)
-			pkg := declaration_extraction.ExtractPackages(ReplaceCommentsWithWhitespaces)
+
 			if err != nil {
 				t.Fatal(err)
+			}
+			ReplaceCommentsWithWhitespaces := declaration_extraction.ReplaceCommentsWithWhitespaces(srcBytes)
+			fileName := filepath.Base(tc.testDir)
+			pkg, err := declaration_extraction.ExtractPackages(ReplaceCommentsWithWhitespaces)
+
+			if err != nil {
+				t.Error(err)
 			}
 
 			enums, err := declaration_extraction.ExtractEnums(ReplaceCommentsWithWhitespaces, fileName, pkg)
@@ -367,11 +382,17 @@ func TestDeclarationExtraction_ExtractStructs(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
 			srcBytes, err := os.ReadFile(tc.testDir)
-			ReplaceCommentsWithWhitespaces := declaration_extraction.ReplaceCommentsWithWhitespaces(srcBytes)
-			fileName := filepath.Base(tc.testDir)
-			pkg := declaration_extraction.ExtractPackages(ReplaceCommentsWithWhitespaces)
+
 			if err != nil {
 				t.Fatal(err)
+			}
+
+			ReplaceCommentsWithWhitespaces := declaration_extraction.ReplaceCommentsWithWhitespaces(srcBytes)
+			fileName := filepath.Base(tc.testDir)
+			pkg, err := declaration_extraction.ExtractPackages(ReplaceCommentsWithWhitespaces)
+
+			if err != nil {
+				t.Error(err)
 			}
 
 			structs, err := declaration_extraction.ExtractStructs(ReplaceCommentsWithWhitespaces, fileName, pkg)
@@ -430,11 +451,17 @@ func TestDeclarationExtraction_ExtractFuncs(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
 			srcBytes, err := os.ReadFile(tc.testDir)
-			ReplaceCommentsWithWhitespaces := declaration_extraction.ReplaceCommentsWithWhitespaces(srcBytes)
-			fileName := filepath.Base(tc.testDir)
-			pkg := declaration_extraction.ExtractPackages(ReplaceCommentsWithWhitespaces)
+
 			if err != nil {
 				t.Fatal(err)
+			}
+
+			ReplaceCommentsWithWhitespaces := declaration_extraction.ReplaceCommentsWithWhitespaces(srcBytes)
+			fileName := filepath.Base(tc.testDir)
+			pkg, err := declaration_extraction.ExtractPackages(ReplaceCommentsWithWhitespaces)
+
+			if err != nil {
+				t.Error(err)
 			}
 
 			funcs, err := declaration_extraction.ExtractFuncs(ReplaceCommentsWithWhitespaces, fileName, pkg)
@@ -488,11 +515,17 @@ func TestDeclarationExtraction_ReDeclarationCheck(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
 			srcBytes, err := os.ReadFile(tc.testDir)
-			ReplaceCommentsWithWhitespaces := declaration_extraction.ReplaceCommentsWithWhitespaces(srcBytes)
-			fileName := filepath.Base(tc.testDir)
-			pkg := declaration_extraction.ExtractPackages(ReplaceCommentsWithWhitespaces)
+
 			if err != nil {
 				t.Fatal(err)
+			}
+
+			ReplaceCommentsWithWhitespaces := declaration_extraction.ReplaceCommentsWithWhitespaces(srcBytes)
+			fileName := filepath.Base(tc.testDir)
+			pkg, err := declaration_extraction.ExtractPackages(ReplaceCommentsWithWhitespaces)
+
+			if err != nil {
+				t.Error(err)
 			}
 
 			globals, err := declaration_extraction.ExtractGlobals(ReplaceCommentsWithWhitespaces, fileName, pkg)
@@ -562,11 +595,16 @@ func TestDeclarationExtraction_GetDeclarations(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
 			srcBytes, err := os.ReadFile(tc.testDir)
-			ReplaceCommentsWithWhitespaces := declaration_extraction.ReplaceCommentsWithWhitespaces(srcBytes)
-			fileName := filepath.Base(tc.testDir)
-			pkg := declaration_extraction.ExtractPackages(ReplaceCommentsWithWhitespaces)
 			if err != nil {
 				t.Fatal(err)
+			}
+
+			ReplaceCommentsWithWhitespaces := declaration_extraction.ReplaceCommentsWithWhitespaces(srcBytes)
+			fileName := filepath.Base(tc.testDir)
+			pkg, err := declaration_extraction.ExtractPackages(ReplaceCommentsWithWhitespaces)
+
+			if err != nil {
+				t.Error(err)
 			}
 
 			globals, err := declaration_extraction.ExtractGlobals(ReplaceCommentsWithWhitespaces, fileName, pkg)

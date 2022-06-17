@@ -7,7 +7,6 @@ import (
 	"io"
 	"os"
 	"regexp"
-	"strings"
 	"sync"
 	"unicode"
 )
@@ -97,15 +96,18 @@ func ReplaceCommentsWithWhitespaces(source []byte) []byte {
 	return sourceWithoutComments
 }
 
-func ExtractPackages(source []byte) string {
-	rePkgName := regexp.MustCompile(`(^|[\s])package[ \t]+([_a-zA-Z][_a-zA-Z0-9]*)`)
+func ExtractPackages(source []byte) (string, error) {
+	var err error
 
-	srcStr := rePkgName.FindString(string(source))
-	if srcStr != "" {
-		srcStr = strings.Split(srcStr, " ")[1]
+	rePkgName := regexp.MustCompile(`^[ \t]*package[ \t]+([_a-zA-Z][_a-zA-Z0-9]*)`)
+
+	srcStr := rePkgName.FindAllStringSubmatch(string(source), -1)
+	if len(srcStr) > 1 {
+		err = errors.New("multiple packages declared")
 	}
+	pkg := srcStr[0][1]
 
-	return srcStr
+	return pkg, err
 }
 
 func ExtractGlobals(source []byte, fileName string, pkg string) ([]GlobalDeclaration, error) {
@@ -416,7 +418,11 @@ func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDecla
 
 			fileName := currentFile.Name()
 			replaceComments := ReplaceCommentsWithWhitespaces(srcBytes)
-			pkg := ExtractPackages(replaceComments)
+			pkg, err := ExtractPackages(replaceComments)
+			if err != nil {
+				errorChannel <- err
+				return
+			}
 
 			wg.Add(4)
 
