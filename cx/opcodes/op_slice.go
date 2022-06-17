@@ -11,6 +11,8 @@ func opSliceLen(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 	var inp0 *ast.CXArgument
 	if inputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 		inp0 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inputs[0].TypeSignature.Meta))
+	} else {
+		panic("type is not type cx argument deprecate\n\n")
 	}
 	elt := inp0.GetAssignmentElement(prgrm)
 
@@ -37,14 +39,20 @@ func opSliceAppend(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXV
 	var inp0, inp1, out0 *ast.CXArgument
 	if inputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 		inp0 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inputs[0].TypeSignature.Meta))
+	} else {
+		panic("type is not type cx argument deprecate\n\n")
 	}
 
 	if inputs[1].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 		inp1 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inputs[1].TypeSignature.Meta))
+	} else {
+		panic("type is not type cx argument deprecate\n\n")
 	}
 
 	if outputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 		out0 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(outputs[0].TypeSignature.Meta))
+	} else {
+		panic("type is not type cx argument deprecate\n\n")
 	}
 
 	sliceInputs := inputs[1:]
@@ -88,6 +96,8 @@ func opSliceAppend(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXV
 		var inp *ast.CXArgument
 		if input.TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			inp = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(input.TypeSignature.Meta))
+		} else {
+			panic("type is not type cx argument deprecate\n\n")
 		}
 
 		inpType := inp.Type
@@ -115,10 +125,14 @@ func opSliceResize(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXV
 	var inp0, out0 *ast.CXArgument
 	if inputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 		inp0 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inputs[0].TypeSignature.Meta))
+	} else {
+		panic("type is not type cx argument deprecate\n\n")
 	}
 
 	if outputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 		out0 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(outputs[0].TypeSignature.Meta))
+	} else {
+		panic("type is not type cx argument deprecate\n\n")
 	}
 	fp := inputs[0].FramePointer
 
@@ -138,14 +152,20 @@ func opSliceInsertElement(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []
 	var inp0, inp2, out0 *ast.CXArgument
 	if inputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 		inp0 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inputs[0].TypeSignature.Meta))
+	} else {
+		panic("type is not type cx argument deprecate\n\n")
 	}
 
 	if inputs[2].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 		inp2 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inputs[2].TypeSignature.Meta))
+	} else {
+		panic("type is not type cx argument deprecate\n\n")
 	}
 
 	if outputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 		out0 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(outputs[0].TypeSignature.Meta))
+	} else {
+		panic("type is not type cx argument deprecate\n\n")
 	}
 
 	fp := inputs[0].FramePointer
@@ -189,10 +209,14 @@ func opSliceRemoveElement(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []
 	var inp0, out0 *ast.CXArgument
 	if inputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 		inp0 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inputs[0].TypeSignature.Meta))
+	} else {
+		panic("type is not type cx argument deprecate\n\n")
 	}
 
 	if outputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 		out0 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(outputs[0].TypeSignature.Meta))
+	} else {
+		panic("type is not type cx argument deprecate\n\n")
 	}
 
 	fp := inputs[0].FramePointer
@@ -210,11 +234,15 @@ func opSliceCopy(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVal
 	var dstInput *ast.CXArgument
 	if inputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 		dstInput = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inputs[0].TypeSignature.Meta))
+	} else {
+		panic("type is not type cx argument deprecate\n\n")
 	}
 
 	var srcInput *ast.CXArgument
 	if inputs[1].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 		srcInput = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inputs[1].TypeSignature.Meta))
+	} else {
+		panic("type is not type cx argument deprecate\n\n")
 	}
 
 	fp := inputs[0].FramePointer

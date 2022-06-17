@@ -404,6 +404,8 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 			var glblArg *ast.CXArgument
 			if glbl.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 				glblArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(glbl.Meta))
+			} else {
+				panic("type is not type cx argument deprecate\n\n")
 			}
 			// then it's a global
 			// prevExprs[len(prevExprs)-1].ProgramOutput[0] = glbl

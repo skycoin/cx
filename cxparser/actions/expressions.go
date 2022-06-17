@@ -79,6 +79,8 @@ func IterationExpressions(prgrm *ast.CXProgram,
 		var predicateIdx ast.CXArgumentIndex
 		if predicate.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			predicateIdx = ast.CXArgumentIndex(predicate.Meta)
+		} else {
+			panic("type is not type cx argument deprecate\n\n")
 		}
 
 		prgrm.CXArgs[predicateIdx].Package = ast.CXPackageIndex(pkg.Index)
@@ -489,6 +491,8 @@ func AssociateReturnExpressions(prgrm *ast.CXProgram, idx int, retExprs []ast.CX
 	var outParam *ast.CXArgument
 	if fnOutputs[idx].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 		outParam = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(fnOutputs[idx].Meta))
+	} else {
+		panic("type is not type cx argument deprecate\n\n")
 	}
 
 	out := ast.MakeArgument(outParam.Name, CurrentFile, LineNo)

@@ -48,6 +48,8 @@ func buildString(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVal
 			var inpArg *ast.CXArgument
 			if inp.TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 				inpArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inp.TypeSignature.Meta))
+			} else {
+				panic("type is not type cx argument deprecate\n\n")
 			}
 			switch nextCh {
 			case 's':
@@ -99,6 +101,8 @@ func buildString(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVal
 			var inpArg *ast.CXArgument
 			if inp.TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 				inpArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inp.TypeSignature.Meta))
+			} else {
+				panic("type is not type cx argument deprecate\n\n")
 			}
 
 			elt := inpArg.GetAssignmentElement(prgrm)

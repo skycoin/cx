@@ -49,6 +49,8 @@ func opAffPrint(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 	var input *ast.CXArgument
 	if inp1.TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 		input = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inp1.TypeSignature.Meta))
+	} else {
+		panic("type is not type cx argument deprecate\n\n")
 	}
 	fmt.Println(GetInferActions(prgrm, input, inp1.FramePointer))
 	// for _, aff := range GetInferActions(inp1, fp) {
@@ -181,6 +183,8 @@ func QueryArgument(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpress
 		for _, input := range exCXAtomicOp.GetInputs(prgrm) {
 			if input.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 				inputCXArgsIdxs = append(inputCXArgsIdxs, ast.CXArgumentIndex(input.Meta))
+			} else {
+				panic("type is not type cx argument deprecate\n\n")
 			}
 		}
 		queryParam(prgrm, fn, inputCXArgsIdxs, exCXAtomicOp.Label+".Input", argOffsetB, affOffset)
@@ -189,6 +193,8 @@ func QueryArgument(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpress
 		for _, output := range exCXAtomicOp.GetOutputs(prgrm) {
 			if output.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 				outputCXArgsIdxs = append(outputCXArgsIdxs, ast.CXArgumentIndex(output.Meta))
+			} else {
+				panic("type is not type cx argument deprecate\n\n")
 			}
 		}
 		queryParam(prgrm, fn, outputCXArgsIdxs, exCXAtomicOp.Label+".Output", argOffsetB, affOffset)
@@ -260,6 +266,8 @@ func getSignatureSlice(prgrm *ast.CXProgram, params []ast.CXArgumentIndex, param
 		if param.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			arg := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(param.Meta))
 			arrCXArgs = append(arrCXArgs, arg)
+		} else {
+			panic("type is not type cx argument deprecate\n\n")
 		}
 	}
 
@@ -1151,10 +1159,14 @@ func opAffQuery(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 	var inp1, out1 *ast.CXArgument
 	if inputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 		inp1 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inputs[0].TypeSignature.Meta))
+	} else {
+		panic("type is not type cx argument deprecate\n\n")
 	}
 
 	if outputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 		out1 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(outputs[0].TypeSignature.Meta))
+	} else {
+		panic("type is not type cx argument deprecate\n\n")
 	}
 
 	call := prgrm.GetCurrentCall()
@@ -1233,6 +1245,8 @@ func opAffQuery(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 					var predInp *ast.CXArgument
 					if fnInputs[0].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 						predInp = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(fnInputs[0].Meta))
+					} else {
+						panic("type is not type cx argument deprecate\n\n")
 					}
 
 					if predInp.Type == types.STRUCT {

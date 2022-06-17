@@ -255,6 +255,8 @@ func IsAllArgsBasicTypes(prgrm *ast.CXProgram, expr *ast.CXExpression) bool {
 		var inp *ast.CXArgument
 		if input.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			inp = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(input.Meta))
+		} else {
+			panic("type is not type cx argument deprecate\n\n")
 		}
 
 		inpType := inp.Type

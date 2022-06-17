@@ -390,6 +390,8 @@ func GetAccessibleArgsForFunctionByType(cxprogram *cxast.CXProgram, packageLocat
 			var arg *ast.CXArgument
 			if inputArg.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 				arg = cxprogram.GetCXArgFromArray(cxast.CXArgumentIndex(inputArg.Meta))
+			} else {
+				panic("type is not type cx argument deprecate\n\n")
 			}
 
 			if arg.IsStruct {

@@ -10,6 +10,8 @@ func opIdentity(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 	var out1 *ast.CXArgument
 	if outputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 		out1 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(outputs[0].TypeSignature.Meta))
+	} else {
+		panic("type is not type cx argument deprecate\n\n")
 	}
 
 	var elt *ast.CXArgument

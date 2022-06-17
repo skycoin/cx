@@ -51,6 +51,8 @@ func DeclareGlobalInPackage_OLD(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 		if glbl.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			glblIdx = glbl.Meta
 			glblArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(glblIdx))
+		} else {
+			panic("type is not type cx argument deprecate\n\n")
 		}
 
 		if glbl.Offset < 0 || glblArg.Size == 0 || glblArg.TotalSize == 0 {

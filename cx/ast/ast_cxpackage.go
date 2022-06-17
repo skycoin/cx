@@ -111,7 +111,7 @@ func (pkg *CXPackage) GetStruct(prgrm *CXProgram, strctName string) (*CXStruct, 
 // GetGlobal ...
 func (pkg *CXPackage) GetGlobal(prgrm *CXProgram, defName string) (*CXTypeSignature, error) {
 	for _, field := range pkg.Globals.Fields {
-		if field.Name == defName && field.Type == TYPE_CXARGUMENT_DEPRECATE {
+		if field.Name == defName {
 			return field, nil
 		}
 	}

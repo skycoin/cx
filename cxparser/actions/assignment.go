@@ -37,6 +37,8 @@ func assignStructLiteralFields(prgrm *ast.CXProgram, toExprs []ast.CXExpression,
 		var expressionOutputIdx ast.CXArgumentIndex
 		if expressionOutput.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			expressionOutputIdx = ast.CXArgumentIndex(expressionOutput.Meta)
+		} else {
+			panic("type is not type cx argument deprecate\n\n")
 		}
 		prgrm.CXArgs[expressionOutputIdx].Name = structLiteralName
 		expressionOutput.Name = structLiteralName
@@ -153,6 +155,8 @@ func ArrayLiteralAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fr
 		var expressionOutputIdx ast.CXArgumentIndex
 		if expressionOutput.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			expressionOutputIdx = ast.CXArgumentIndex(expressionOutput.Meta)
+		} else {
+			panic("type is not type cx argument deprecate\n\n")
 		}
 		prgrm.CXArgs[expressionOutputIdx].Name = toExpression.GetOutputs(prgrm)[0].Name
 		expressionOutput.Name = toExpression.GetOutputs(prgrm)[0].Name
@@ -317,6 +321,8 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 			var toExprAtomicOpOutputIdx ast.CXArgumentIndex
 			if toExprAtomicOpOutput.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 				toExprAtomicOpOutputIdx = ast.CXArgumentIndex(toExprAtomicOpOutput.Meta)
+			} else {
+				panic("type is not type cx argument deprecate\n\n")
 			}
 
 			prgrm.CXArgs[toExprAtomicOpOutputIdx].PreviouslyDeclared = true
@@ -373,6 +379,8 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 		var toExpressionOutputIdx ast.CXArgumentIndex
 		if toExpressionOutput.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			toExpressionOutputIdx = ast.CXArgumentIndex(toExpressionOutput.Meta)
+		} else {
+			panic("type is not type cx argument deprecate\n\n")
 		}
 		fromExpressionOutput := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(prgrm.CXAtomicOps[fromExpressionIdx].GetOutputs(prgrm)[0].Meta))
 
@@ -408,6 +416,8 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 			var toExpressionOutputIdx ast.CXArgumentIndex
 			if toExpressionOutput.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 				toExpressionOutputIdx = ast.CXArgumentIndex(toExpressionOutput.Meta)
+			} else {
+				panic("type is not type cx argument deprecate\n\n")
 			}
 			if fromExpressionOperator.AtomicOPCode != constants.OP_IDENTITY {
 				// it's a short variable declaration
@@ -425,6 +435,8 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 			var toExpressionOutputIdx ast.CXArgumentIndex
 			if toExpressionOutput.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 				toExpressionOutputIdx = ast.CXArgumentIndex(toExpressionOutput.Meta)
+			} else {
+				panic("type is not type cx argument deprecate\n\n")
 			}
 
 			prgrm.CXArgs[toExpressionOutputIdx].Size = fromCXAtomicOpOperatorOutput.Size

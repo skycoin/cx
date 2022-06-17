@@ -109,6 +109,8 @@ func calcFnSize(prgrm *cxast.CXProgram, fn *cxast.CXFunction) (size types.Pointe
 		var arg *ast.CXArgument
 		if input.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			arg = prgrm.GetCXArgFromArray(cxast.CXArgumentIndex(input.Meta))
+		} else {
+			panic("type is not type cx argument deprecate\n\n")
 		}
 		size += arg.TotalSize
 	}
@@ -118,6 +120,8 @@ func calcFnSize(prgrm *cxast.CXProgram, fn *cxast.CXFunction) (size types.Pointe
 		var arg *ast.CXArgument
 		if output.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			arg = prgrm.GetCXArgFromArray(cxast.CXArgumentIndex(output.Meta))
+		} else {
+			panic("type is not type cx argument deprecate\n\n")
 		}
 
 		size += arg.TotalSize
@@ -273,6 +277,8 @@ func findArgOptions(prgrm *cxast.CXProgram, expr *cxast.CXExpression, argTypeToF
 		var inp *ast.CXArgument
 		if input.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			inp = prgrm.GetCXArgFromArray(cxast.CXArgumentIndex(input.Meta))
+		} else {
+			panic("type is not type cx argument deprecate\n\n")
 		}
 
 		if inp.Type == argTypeToFind && inp.Name != "" {

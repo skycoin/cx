@@ -416,10 +416,14 @@ func getSlice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue)
 	var inp1, out0 *ast.CXArgument
 	if inputs[1].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 		inp1 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inputs[1].TypeSignature.Meta))
+	} else {
+		panic("type is not type cx argument deprecate\n\n")
 	}
 
 	if outputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 		out0 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(outputs[0].TypeSignature.Meta))
+	} else {
+		panic("type is not type cx argument deprecate\n\n")
 	}
 
 	if inp1.Type != out0.Type || !(inp1.GetAssignmentElement(prgrm)).IsSlice || !(out0.GetAssignmentElement(prgrm)).IsSlice {
