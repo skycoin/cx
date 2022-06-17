@@ -806,14 +806,6 @@ func TestDeclarationExtraction_ExtractAllDeclarations(t *testing.T) {
 			wantFuncs: []declaration_extraction.FuncDeclaration{
 				{
 					PackageID:        "my_program",
-					FileID:           "./test_files/mulitple_files/main.cx",
-					StartOffset:      60,
-					Length:           11,
-					LineNumber:       7,
-					FuncVariableName: "main",
-				},
-				{
-					PackageID:        "my_program",
 					FileID:           "./test_files/multiple_files/worker.cx",
 					StartOffset:      79,
 					Length:           54,
@@ -822,8 +814,16 @@ func TestDeclarationExtraction_ExtractAllDeclarations(t *testing.T) {
 				},
 				{
 					PackageID:        "my_program",
+					FileID:           "./test_files/multiple_files/main.cx",
+					StartOffset:      60,
+					Length:           11,
+					LineNumber:       7,
+					FuncVariableName: "main",
+				},
+				{
+					PackageID:        "my_program",
 					FileID:           "./test_files/multiple_files/utility.cx",
-					StartOffset:      59,
+					StartOffset:      54,
 					Length:           39,
 					LineNumber:       5,
 					FuncVariableName: "my_utility",
