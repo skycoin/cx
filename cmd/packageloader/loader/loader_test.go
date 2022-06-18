@@ -62,8 +62,7 @@ func TestGetPackageName(t *testing.T) {
 }
 
 func TestGetImports(t *testing.T) {
-	testImports := []string{}
-	testImports, err := loader.GetImports(testFileList[0], TEST_SRC_PATH, testImports)
+	testImports, err := loader.GetImports(testFileList[0], TEST_SRC_PATH)
 	if err != nil {
 		t.Error(err)
 	}
@@ -84,18 +83,18 @@ func TestComparePackageNames(t *testing.T) {
 		ExpectedValue string
 	}{
 		{
-			"Test case for a folder with differing package names",
-			TEST_SRC_PATH,
-			testFileList,
-			false,
-			"",
+			Scenario:      "Test case for a folder with differing package names",
+			Path:          TEST_SRC_PATH,
+			Files:         testFileList,
+			ExpectedBool:  false,
+			ExpectedValue: "",
 		},
 		{
-			"Test case for a folder with a single package name",
-			TEST_SRC_PATH + "testimport/",
-			testFileList2,
-			true,
-			"testimport",
+			Scenario:      "Test case for a folder with a single package name",
+			Path:          TEST_SRC_PATH + "testimport/",
+			Files:         testFileList2,
+			ExpectedBool:  true,
+			ExpectedValue: "testimport",
 		},
 	}
 	for _, testcase := range tests {
@@ -133,8 +132,7 @@ func TestCommentsPackage(t *testing.T) {
 			}
 		}
 		if f.Name() == "import_comment.cx" {
-			importList := []string{}
-			importList, err := loader.GetImports(f, "test_folder/test_various_files/", importList)
+			importList, err := loader.GetImports(f, "test_folder/test_various_files/")
 			if err != nil {
 				t.Error(err)
 			}
@@ -152,14 +150,14 @@ func TestAddFiles(t *testing.T) {
 		WantNumberOfFiles int
 	}{
 		{
-			"Test with redis database",
-			"redis",
-			2,
+			Scenario:          "Test with redis database",
+			Database:          "redis",
+			WantNumberOfFiles: 2,
 		},
 		{
-			"Test with bolt database",
-			"bolt",
-			2,
+			Scenario:          "Test with bolt database",
+			Database:          "bolt",
+			WantNumberOfFiles: 2,
 		},
 	}
 	for _, testcase := range tests {
@@ -180,14 +178,14 @@ func TestAddPackages(t *testing.T) {
 		WantNumberOfPackages int
 	}{
 		{
-			"Test with redis database",
-			"redis",
-			2,
+			Scenario:             "Test with redis database",
+			Database:             "redis",
+			WantNumberOfPackages: 2,
 		},
 		{
-			"Test with bolt database",
-			"bolt",
-			2,
+			Scenario:             "Test with bolt database",
+			Database:             "bolt",
+			WantNumberOfPackages: 2,
 		},
 	}
 	for _, testcase := range tests {
@@ -210,12 +208,12 @@ func TestLoad(t *testing.T) {
 		Database string
 	}{
 		{
-			"Test with Redis database",
-			"redis",
+			Scenario: "Test with Redis database",
+			Database: "redis",
 		},
 		{
-			"Test with Bolt database",
-			"bolt",
+			Scenario: "Test with Bolt database",
+			Database: "bolt",
 		},
 	}
 	for _, testcase := range tests {
