@@ -558,39 +558,39 @@ func TestDeclarationExtraction_ExtractFuncs(t *testing.T) {
 func TestDeclarationExtraction_ReDeclarationCheck(t *testing.T) {
 
 	tests := []struct {
-		scenario   string
-		testDir    string
-		wantReDclr error
+		scenario               string
+		testDir                string
+		wantReDeclarationError error
 	}{
 		{
-			scenario:   "No Redeclarations",
-			testDir:    "./test_files/test.cx",
-			wantReDclr: nil,
+			scenario:               "No Redeclarations",
+			testDir:                "./test_files/test.cx",
+			wantReDeclarationError: nil,
 		},
 		{
-			scenario:   "Redeclared globals",
-			testDir:    "./test_files/redeclaration_global.cx",
-			wantReDclr: errors.New("global redeclared"),
+			scenario:               "Redeclared globals",
+			testDir:                "./test_files/redeclaration_global.cx",
+			wantReDeclarationError: errors.New("global redeclared"),
 		},
 		{
-			scenario:   "Redeclared enums",
-			testDir:    "./test_files/redeclaration_enum.cx",
-			wantReDclr: errors.New("enum redeclared"),
+			scenario:               "Redeclared enums",
+			testDir:                "./test_files/redeclaration_enum.cx",
+			wantReDeclarationError: errors.New("enum redeclared"),
 		},
 		{
-			scenario:   "Redeclared structs",
-			testDir:    "./test_files/redeclaration_struct.cx",
-			wantReDclr: errors.New("struct redeclared"),
+			scenario:               "Redeclared structs",
+			testDir:                "./test_files/redeclaration_struct.cx",
+			wantReDeclarationError: errors.New("struct redeclared"),
 		},
 		{
-			scenario:   "Redeclared funcs",
-			testDir:    "./test_files/redeclaration_func.cx",
-			wantReDclr: errors.New("func redeclared"),
+			scenario:               "Redeclared funcs",
+			testDir:                "./test_files/redeclaration_func.cx",
+			wantReDeclarationError: errors.New("func redeclared"),
 		},
 		{
-			scenario:   "No Redeclarations 2",
-			testDir:    "./test_files/test_2.cx",
-			wantReDclr: nil,
+			scenario:               "No Redeclarations 2",
+			testDir:                "./test_files/test_2.cx",
+			wantReDeclarationError: nil,
 		},
 	}
 
@@ -624,15 +624,15 @@ func TestDeclarationExtraction_ReDeclarationCheck(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			reDeclarationCheck := declaration_extraction.ReDeclarationCheck(globals, enums, structs, funcs)
+			reDeclarationError := declaration_extraction.ReDeclarationCheck(globals, enums, structs, funcs)
 
-			if reDeclarationCheck != nil && tc.wantReDclr == nil {
-				t.Errorf("want error %v, got %v", tc.wantReDclr, reDeclarationCheck)
+			if reDeclarationError != nil && tc.wantReDeclarationError == nil {
+				t.Errorf("want error %v, got %v", tc.wantReDeclarationError, reDeclarationError)
 			}
 
-			if reDeclarationCheck != nil && tc.wantReDclr != nil {
-				if reDeclarationCheck.Error() != tc.wantReDclr.Error() {
-					t.Errorf("want error %v, got %v", tc.wantReDclr, reDeclarationCheck)
+			if reDeclarationError != nil && tc.wantReDeclarationError != nil {
+				if reDeclarationError.Error() != tc.wantReDeclarationError.Error() {
+					t.Errorf("want error %v, got %v", tc.wantReDeclarationError, reDeclarationError)
 				}
 			}
 		})

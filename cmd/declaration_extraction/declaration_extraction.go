@@ -124,7 +124,7 @@ func ExtractGlobals(source []byte, fileName string, pkg string) ([]GlobalDeclara
 
 	reader := bytes.NewReader(source)
 	scanner := bufio.NewScanner(reader)
-	scanner.Split(scanLinesWithLineTerminator)
+	scanner.Split(scanLinesWithLineTerminator) // set scanner SplitFunc to custom ScanLines func at line 55
 
 	var currentOffset int // offset of current line
 	var lineno int        // line number
@@ -163,8 +163,9 @@ func ExtractGlobals(source []byte, fileName string, pkg string) ([]GlobalDeclara
 			GlblDec = append(GlblDec, tmp)
 		}
 
-		currentOffset += len(line)
+		currentOffset += len(line) // increments the currentOffset by line len
 	}
+
 	return GlblDec, err
 
 }
@@ -182,7 +183,7 @@ func ExtractEnums(source []byte, fileName string, pkg string) ([]EnumDeclaration
 
 	reader := bytes.NewReader(source)
 	scanner := bufio.NewScanner(reader)
-	scanner.Split(scanLinesWithLineTerminator)
+	scanner.Split(scanLinesWithLineTerminator) // set scanner SplitFunc to custom ScanLines func at line 55
 
 	var EnumInit bool     // is in a enum declaration
 	var inPrts int        // parenthesis depth
@@ -201,7 +202,7 @@ func ExtractEnums(source []byte, fileName string, pkg string) ([]EnumDeclaration
 		if locs := reEnumInit.FindAllIndex(line, -1); locs != nil {
 			EnumInit = true
 			inPrts++
-			currentOffset += len(line)
+			currentOffset += len(line) // increments the currentOffset by line len
 			continue
 		}
 
@@ -230,7 +231,7 @@ func ExtractEnums(source []byte, fileName string, pkg string) ([]EnumDeclaration
 			tmp.PackageID = pkg
 			tmp.FileID = fileName
 
-			tmp.StartOffset = match[0] + currentOffset
+			tmp.StartOffset = match[0] + currentOffset // offset is current line offset + match index
 			tmp.Length = match[1] - match[0]
 			tmp.LineNumber = lineno
 
@@ -252,7 +253,7 @@ func ExtractEnums(source []byte, fileName string, pkg string) ([]EnumDeclaration
 			Index++
 		}
 
-		currentOffset += len(line)
+		currentOffset += len(line) // increments the currentOffset by line len
 	}
 
 	return EnumDec, err
@@ -268,7 +269,7 @@ func ExtractStructs(source []byte, fileName string, pkg string) ([]StructDeclara
 
 	reader := bytes.NewReader(source)
 	scanner := bufio.NewScanner(reader)
-	scanner.Split(scanLinesWithLineTerminator)
+	scanner.Split(scanLinesWithLineTerminator) // set scanner SplitFunc to custom ScanLines func at line 55
 
 	var currentOffset int // offset of current line
 	var lineno int        // line number
@@ -287,7 +288,7 @@ func ExtractStructs(source []byte, fileName string, pkg string) ([]StructDeclara
 			tmp.PackageID = pkg
 			tmp.FileID = fileName
 
-			tmp.StartOffset = match[0] + currentOffset
+			tmp.StartOffset = match[0] + currentOffset // offset is current line offset + match index
 			tmp.Length = match[1] - match[0]
 			tmp.StructVariableName = string(source[match[2]+currentOffset : match[3]+currentOffset])
 
@@ -296,7 +297,7 @@ func ExtractStructs(source []byte, fileName string, pkg string) ([]StructDeclara
 			StrctDec = append(StrctDec, tmp)
 
 		}
-		currentOffset += len(line)
+		currentOffset += len(line) // increments the currentOffset by line len
 	}
 
 	return StrctDec, err
@@ -311,7 +312,7 @@ func ExtractFuncs(source []byte, fileName string, pkg string) ([]FuncDeclaration
 
 	reader := bytes.NewReader(source)
 	scanner := bufio.NewScanner(reader)
-	scanner.Split(scanLinesWithLineTerminator)
+	scanner.Split(scanLinesWithLineTerminator) // set scanner SplitFunc to custom ScanLines func at line 55
 
 	var currentOffset int // offset of current line
 	var lineno int        // line number
@@ -330,7 +331,7 @@ func ExtractFuncs(source []byte, fileName string, pkg string) ([]FuncDeclaration
 			tmp.PackageID = pkg
 			tmp.FileID = fileName
 
-			tmp.StartOffset = match[0] + currentOffset
+			tmp.StartOffset = match[0] + currentOffset // offset is current line offset + match index
 			tmp.Length = match[1] - match[0]
 
 			// If func has multiple or no returns
@@ -348,14 +349,20 @@ func ExtractFuncs(source []byte, fileName string, pkg string) ([]FuncDeclaration
 			FuncDec = append(FuncDec, tmp)
 
 		}
-		currentOffset += len(line)
+
+		currentOffset += len(line) // increments the currentOffset by line len
 	}
 
 	return FuncDec, err
 }
 
 func ReDeclarationCheck(Glbl []GlobalDeclaration, Enum []EnumDeclaration, Strct []StructDeclaration, Func []FuncDeclaration) error {
+
 	var err error
+
+	// Checks for the first declaration redeclared
+	// in the order:
+	// Globals -> Enums -> Struct -> Func
 
 	for i := 0; i < len(Glbl); i++ {
 		for j := i + 1; j < len(Glbl); j++ {
@@ -398,6 +405,7 @@ func ReDeclarationCheck(Glbl []GlobalDeclaration, Enum []EnumDeclaration, Strct 
 }
 
 func GetDeclarations(source []byte, Glbl []GlobalDeclaration, Enum []EnumDeclaration, Strct []StructDeclaration, Func []FuncDeclaration) []string {
+
 	var declarations []string
 
 	for i := 0; i < len(Glbl); i++ {
@@ -522,12 +530,14 @@ func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDecla
 
 	wg.Wait()
 
+	// Close all channels for reading
 	close(globalChannel)
 	close(enumChannel)
 	close(structChannel)
 	close(funcChannel)
 	close(errorChannel)
 
+	//Read from channels concurrently
 	wg.Add(4)
 
 	go func() {
