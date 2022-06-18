@@ -7,7 +7,6 @@ import (
 	"io"
 	"os"
 	"regexp"
-	"strings"
 	"sync"
 	"unicode"
 )
@@ -100,14 +99,14 @@ func ReplaceCommentsWithWhitespaces(source []byte) []byte {
 func ExtractPackages(source []byte) string {
 	rePkgName := regexp.MustCompile(`(^|[\s])package[ \t]+([_a-zA-Z][_a-zA-Z0-9]*)`)
 
-	//Detects only the first package declaration
+	//Only extracts from the first line
+	firstLineTerminator := bytes.IndexByte(source, byte('\n'))
 
-	srcStr := rePkgName.FindString(string(source))
-	if srcStr != "" {
-		srcStr = strings.Split(srcStr, " ")[1]
-	}
+	line := source[0:firstLineTerminator]
 
-	return srcStr
+	pkg := rePkgName.FindStringSubmatch(string(line))[2]
+
+	return pkg
 }
 
 func ExtractGlobals(source []byte, fileName string, pkg string) ([]GlobalDeclaration, error) {
