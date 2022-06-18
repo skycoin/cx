@@ -1,10 +1,12 @@
-package loader
+package loader_test
 
 import (
 	"io/fs"
 	"log"
 	"os"
 	"testing"
+
+	"github.com/skycoin/cx/cmd/packageloader/loader"
 )
 
 var testFileList = []fs.DirEntry{}
@@ -41,16 +43,16 @@ func init() {
 
 func TestContains(t *testing.T) {
 	list := []string{"a", "b", "c"}
-	if !contains(list, "a") {
+	if !loader.Contains(list, "a") {
 		t.Error("Expected true, got false")
 	}
-	if contains(list, "d") {
+	if loader.Contains(list, "d") {
 		t.Error("Expected false, got true")
 	}
 }
 
 func TestGetPackageName(t *testing.T) {
-	testPackageName, err := getPackageName(testFileList[0], TEST_SRC_PATH)
+	testPackageName, err := loader.GetPackageName(testFileList[0], TEST_SRC_PATH)
 	if err != nil {
 		t.Error(err)
 	}
@@ -61,7 +63,7 @@ func TestGetPackageName(t *testing.T) {
 
 func TestGetImports(t *testing.T) {
 	testImports := []string{}
-	testImports, err := getImports(testFileList[0], TEST_SRC_PATH, testImports)
+	testImports, err := loader.GetImports(testFileList[0], TEST_SRC_PATH, testImports)
 	if err != nil {
 		t.Error(err)
 	}
@@ -98,7 +100,7 @@ func TestComparePackageNames(t *testing.T) {
 	}
 	for _, testcase := range tests {
 		t.Run(testcase.Scenario, func(t *testing.T) {
-			testSamePackage, testPackageName, _, err := comparePackageNames(testcase.Files, testcase.Path, []string{})
+			testSamePackage, testPackageName, _, err := loader.ComparePackageNames(testcase.Files, testcase.Path, []string{})
 			if err != nil {
 				t.Error(err)
 			}
@@ -122,7 +124,7 @@ func TestCommentsPackage(t *testing.T) {
 	}
 	for _, f := range files {
 		if f.Name() == "package_comment.cx" {
-			packageName, err := getPackageName(f, "test_folder/test_various_files/")
+			packageName, err := loader.GetPackageName(f, "test_folder/test_various_files/")
 			if err != nil {
 				t.Error(err)
 			}
@@ -132,7 +134,7 @@ func TestCommentsPackage(t *testing.T) {
 		}
 		if f.Name() == "import_comment.cx" {
 			importList := []string{}
-			importList, err := getImports(f, "test_folder/test_various_files/", importList)
+			importList, err := loader.GetImports(f, "test_folder/test_various_files/", importList)
 			if err != nil {
 				t.Error(err)
 			}
@@ -162,8 +164,8 @@ func TestAddFiles(t *testing.T) {
 	}
 	for _, testcase := range tests {
 		t.Run(testcase.Scenario, func(t *testing.T) {
-			testPackage := Package{}
-			testPackage.addFiles(testFileList, TEST_SRC_PATH, testcase.Database)
+			testPackage := loader.Package{}
+			loader.AddFiles(&testPackage, testFileList, TEST_SRC_PATH, testcase.Database)
 			if len(testPackage.Files) != testcase.WantNumberOfFiles {
 				t.Error("Expected", testcase.WantNumberOfFiles, " files, got", len(testPackage.Files))
 			}
@@ -190,8 +192,8 @@ func TestAddPackages(t *testing.T) {
 	}
 	for _, testcase := range tests {
 		t.Run(testcase.Scenario, func(t *testing.T) {
-			testPackageList := PackageList{}
-			_, err := testPackageList.addPackages(TEST_SRC_PATH2, TEST_SRC_PATH2, testcase.Database, []string{})
+			testPackageList := loader.PackageList{}
+			_, err := loader.AddPackages(&testPackageList, TEST_SRC_PATH2, TEST_SRC_PATH2, testcase.Database, []string{})
 			if err != nil {
 				t.Error(err)
 			}
@@ -218,7 +220,7 @@ func TestLoad(t *testing.T) {
 	}
 	for _, testcase := range tests {
 		t.Run(testcase.Scenario, func(t *testing.T) {
-			LoadPackages("TestValid", "test_folder/test_valid_program/", testcase.Database)
+			loader.LoadPackages("TestValid", "test_folder/test_valid_program/", testcase.Database)
 		})
 	}
 }

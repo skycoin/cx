@@ -5,7 +5,7 @@ build:
 test_loader:
 	go test ./loader -v -coverprofile cover.out
 	go tool cover -html=cover.out -o cover.html
-	open cover.html
+	xdg-open cover.html
 
 test_encoder:
 	make build
@@ -15,5 +15,5 @@ test_encoder:
 	./packageloader -load -name Test -path ./loader/test_folder/test_valid_program
 	go test ./encoder -v -coverprofile cover.out
 	go tool cover -html=cover.out -o cover.html
-	open cover.html
+	xdg-open cover.html
 	

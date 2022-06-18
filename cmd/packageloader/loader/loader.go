@@ -14,7 +14,6 @@ import (
 	"golang.org/x/crypto/blake2b"
 )
 
-var TESTINT = 0
 var SKIP_PACKAGES = []string{"al", "gl", "glfw", "time", "os", "gltext", "cx", "json", "cipher", "tcp"}
 
 func contains(list []string, element string) bool {
@@ -46,7 +45,7 @@ func LoadPackages(programName string, path string, database string) error {
 	}
 	importedDirectories := []string{}
 	for _, path := range directoryList {
-		importedDirectories, err = packageList.addPackages(srcPath, path, database, importedDirectories)
+		importedDirectories, err = addPackages(&packageList, srcPath, path, database, importedDirectories)
 		if err != nil {
 			return err
 		}
@@ -64,7 +63,7 @@ func LoadPackages(programName string, path string, database string) error {
 	return nil
 }
 
-func (packageList *PackageList) addPackages(srcPath string, packagePath string, database string, importedDirectories []string) ([]string, error) {
+func addPackages(packageList *PackageList, srcPath string, packagePath string, database string, importedDirectories []string) ([]string, error) {
 	if packagePath[len(packagePath)-1:] != "/" {
 		packagePath += "/"
 	}
@@ -92,7 +91,8 @@ func (packageList *PackageList) addPackages(srcPath string, packagePath string, 
 		if err != nil {
 			return importedDirectories, err
 		}
-		imports, err = getImports(fileList[0], packagePath, imports)
+		newImports, err := getImports(fileList[0], packagePath)
+		imports = append(imports, newImports...)
 		if err != nil {
 			return importedDirectories, err
 		}
@@ -112,7 +112,7 @@ func (packageList *PackageList) addPackages(srcPath string, packagePath string, 
 		newPackage.PackageName = packageName
 	}
 
-	newPackage.addFiles(fileList, packagePath, database)
+	addFiles(&newPackage, fileList, packagePath, database)
 	packageList.addPackage(&newPackage, database)
 	importedDirectories = append(importedDirectories, packagePath)
 
@@ -121,7 +121,7 @@ func (packageList *PackageList) addPackages(srcPath string, packagePath string, 
 		if contains(SKIP_PACKAGES, importName) || contains(importedDirectories, importPath) {
 			continue
 		}
-		return packageList.addPackages(srcPath, importPath, database, importedDirectories)
+		return addPackages(packageList, srcPath, importPath, database, importedDirectories)
 	}
 	return importedDirectories, nil
 }
@@ -132,7 +132,8 @@ func comparePackageNames(fileList []fs.DirEntry, packagePath string, imports []s
 	if err != nil {
 		return false, "", imports, err
 	}
-	imports, err = getImports(fileList[0], packagePath, imports)
+	newImports, err := getImports(fileList[0], packagePath)
+	imports = append(imports, newImports...)
 	if err != nil {
 		return false, "", imports, err
 	}
@@ -141,7 +142,8 @@ func comparePackageNames(fileList []fs.DirEntry, packagePath string, imports []s
 		if err != nil {
 			return false, "", imports, err
 		}
-		imports, err = getImports(fileList[i], packagePath, imports)
+		newImports, err := getImports(fileList[i], packagePath)
+		imports = append(imports, newImports...)
 		if err != nil {
 			return false, "", imports, err
 		}
@@ -182,7 +184,7 @@ func getPackageName(dirEntry fs.DirEntry, packagePath string) (string, error) {
 }
 
 // Get the import names in a cx file
-func getImports(dirEntry fs.DirEntry, importPath string, imports []string) ([]string, error) {
+func getImports(dirEntry fs.DirEntry, importPath string) (imports []string, err error) {
 	file, err := os.Open(importPath + dirEntry.Name())
 	if err != nil {
 		return imports, err
@@ -212,7 +214,7 @@ func getImports(dirEntry fs.DirEntry, importPath string, imports []string) ([]st
 }
 
 // Add the hashes of the files in fileList to the package
-func (newPackage *Package) addFiles(fileList []fs.DirEntry, packagePath string, database string) error {
+func addFiles(newPackage *Package, fileList []fs.DirEntry, packagePath string, database string) error {
 	for _, file := range fileList {
 		fileInfo, err := file.Info()
 		if err != nil {
