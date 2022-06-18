@@ -84,6 +84,7 @@ func ReplaceCommentsWithWhitespaces(source []byte) []byte {
 
 	comments := reComment.FindAllIndex(source, -1)
 
+	// Loops through each character and replaces with whitespcace
 	for i := range comments {
 		for loc := comments[i][0]; loc < comments[i][1]; loc++ {
 			if unicode.IsSpace(rune(sourceWithoutComments[loc])) {
@@ -99,11 +100,13 @@ func ReplaceCommentsWithWhitespaces(source []byte) []byte {
 func ExtractPackages(source []byte) string {
 	rePkgName := regexp.MustCompile(`(^|[\s])package[ \t]+([_a-zA-Z][_a-zA-Z0-9]*)`)
 
-	//Only extracts from the first line
+	// Only extracts from the first line
 	firstLineTerminator := bytes.IndexByte(source, byte('\n'))
 
+	// Gets the first line
 	line := source[0:firstLineTerminator]
 
+	// extract package name
 	pkg := rePkgName.FindStringSubmatch(string(line))[2]
 
 	return pkg
@@ -123,29 +126,40 @@ func ExtractGlobals(source []byte, fileName string, pkg string) ([]GlobalDeclara
 	scanner := bufio.NewScanner(reader)
 	scanner.Split(scanLinesWithLineTerminator)
 
-	var currentOffset int
-	var lineno int
-	var inBlock int
+	var currentOffset int // offset of current line
+	var lineno int        // line number
+	var inBlock int       // in Body { } depth
 
 	for scanner.Scan() {
+
 		line := scanner.Bytes()
 		lineno++
 
+		// if {  is found increment body depth
 		if locs := reBodyOpen.FindAllIndex(line, -1); locs != nil {
 			inBlock++
 		}
+
+		// if } is found decrement body depth
 		if locs := reBodyClose.FindAllIndex(line, -1); locs != nil {
 			inBlock--
 		}
 
+		// if match is found and body depth is 0
 		if match := reGlbl.FindSubmatchIndex(line); match != nil && inBlock == 0 {
+
 			var tmp GlobalDeclaration
+
 			tmp.PackageID = pkg
 			tmp.FileID = fileName
-			tmp.StartOffset = currentOffset + match[0]
+
+			tmp.StartOffset = currentOffset + match[0] // offset is current line offset + match index
 			tmp.Length = match[1] - match[0]
 			tmp.LineNumber = lineno
+
+			// gets the name directly with current line offset + submatch index
 			tmp.GlobalVariableName = string(source[match[2]+currentOffset : match[3]+currentOffset])
+
 			GlblDec = append(GlblDec, tmp)
 		}
 
@@ -170,17 +184,20 @@ func ExtractEnums(source []byte, fileName string, pkg string) ([]EnumDeclaration
 	scanner := bufio.NewScanner(reader)
 	scanner.Split(scanLinesWithLineTerminator)
 
-	var EnumInit bool
-	var inPrts int
-	var Type string
-	var Index int
-	var currentOffset int
-	var lineno int
+	var EnumInit bool     // is in a enum declaration
+	var inPrts int        // parenthesis depth
+	var Type string       // type for later enum declaration
+	var Index int         // index for enum declaration
+	var currentOffset int // offset of current line
+	var lineno int        // line number
 
 	for scanner.Scan() {
+
 		line := scanner.Bytes()
 		lineno++
 
+		// initialize enum, increment parenthesis depth and skip to next line
+		// if const ( is found
 		if locs := reEnumInit.FindAllIndex(line, -1); locs != nil {
 			EnumInit = true
 			inPrts++
@@ -188,36 +205,46 @@ func ExtractEnums(source []byte, fileName string, pkg string) ([]EnumDeclaration
 			continue
 		}
 
+		// if ( is found and enum initialized, increment parenthesis depth
 		if locs := rePrtsOpen.FindAllIndex(line, -1); locs != nil && EnumInit {
 			inPrts++
 		}
+
+		// if ) is found and enum intialized, decrement parenthesis depth
 		if locs := rePrtsClose.FindAllIndex(line, -1); locs != nil && EnumInit {
 			inPrts--
 		}
 
+		// if parenthesis depth is 0, reset all enum related variables
 		if inPrts == 0 {
 			EnumInit = false
 			Type = ""
 			Index = 0
 		}
 
+		// if match is found and enum initialized and parenthesis depth is 1
 		if match := reEnumDec.FindSubmatchIndex(line); match != nil && inPrts == 1 && EnumInit {
 
 			var tmp EnumDeclaration
 
 			tmp.PackageID = pkg
 			tmp.FileID = fileName
+
 			tmp.StartOffset = match[0] + currentOffset
 			tmp.Length = match[1] - match[0]
 			tmp.LineNumber = lineno
 
 			tmp.EnumVariableName = string(source[match[6]+currentOffset : match[7]+currentOffset])
 
+			// If there is type declaration for Enum declaration
+			// i.e. [enum] [type] = iota
+			// set the type to type in declaration
 			if match[2] != -1 {
 				Type = string(source[match[4]+currentOffset : match[5]+currentOffset])
 				tmp.EnumVariableName = string(source[match[2]+currentOffset : match[3]+currentOffset])
 			}
 
+			// otherwise set it to previous type
 			tmp.Type = Type
 
 			tmp.Value = Index
@@ -243,14 +270,16 @@ func ExtractStructs(source []byte, fileName string, pkg string) ([]StructDeclara
 	scanner := bufio.NewScanner(reader)
 	scanner.Split(scanLinesWithLineTerminator)
 
-	var currentOffset int
-	var lineno int
+	var currentOffset int // offset of current line
+	var lineno int        // line number
 
 	//Reading code line by line
 	for scanner.Scan() {
 		line := scanner.Bytes()
 		lineno++
 
+		// if struct declaration is found
+		// i.e. type [name] [type]
 		if match := reStruct.FindSubmatchIndex(line); match != nil {
 
 			var tmp StructDeclaration
@@ -284,14 +313,16 @@ func ExtractFuncs(source []byte, fileName string, pkg string) ([]FuncDeclaration
 	scanner := bufio.NewScanner(reader)
 	scanner.Split(scanLinesWithLineTerminator)
 
-	var currentOffset int
-	var lineno int
+	var currentOffset int // offset of current line
+	var lineno int        // line number
 
 	//Reading code line by line
 	for scanner.Scan() {
 		line := scanner.Bytes()
 		lineno++
 
+		// if function declaration is found
+		// i.e.  func [name] ([params]) ([returns])
 		if match := reFunc.FindSubmatchIndex(line); match != nil {
 
 			var tmp FuncDeclaration
@@ -302,8 +333,12 @@ func ExtractFuncs(source []byte, fileName string, pkg string) ([]FuncDeclaration
 			tmp.StartOffset = match[0] + currentOffset
 			tmp.Length = match[1] - match[0]
 
+			// If func has multiple or no returns
+			// i.e. func [name] ([params]) ([returns]) or func [name] ([params])
 			tmp.FuncVariableName = string(source[match[4]+currentOffset : match[5]+currentOffset])
 
+			// If func has one return
+			// i.e. func [name] ([params]) [return]
 			if match[2] != -1 {
 				tmp.FuncVariableName = string(source[match[2]+currentOffset : match[3]+currentOffset])
 			}
@@ -401,6 +436,7 @@ func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDecla
 
 	var wg sync.WaitGroup
 
+	// concurrent extractions start
 	for _, currentFile := range source {
 
 		wg.Add(1)
@@ -535,12 +571,14 @@ func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDecla
 
 	wg.Wait()
 
+	// there's an error, return values with first error
 	if err := <-errorChannel; err != nil {
 		return Globals, Enums, Structs, Funcs, err
 	}
 
 	reDeclarationCheck := ReDeclarationCheck(Globals, Enums, Structs, Funcs)
 
+	// there's declaration redeclared return values with error
 	if reDeclarationCheck != nil {
 		return Globals, Enums, Structs, Funcs, reDeclarationCheck
 	}

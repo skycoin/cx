@@ -11,12 +11,15 @@ import (
 	"github.com/skycoin/cx/cmd/declaration_extraction"
 )
 
+//Sets the offset for windows or other os
 func setOffset(offset int, lineNumber int) int {
 
+	//Input offset is the offset for linux/mac
 	var newOffset int = offset
 
 	runtimeOS := runtime.GOOS
 
+	//Determines runtime os and sets the offset accordingly
 	if runtimeOS == "windows" {
 		newOffset += lineNumber - 1
 	}
