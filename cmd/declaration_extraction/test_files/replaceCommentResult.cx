@@ -1,0 +1,46 @@
+package hello
+var apple string
+
+		var banana string
+
+                  
+                  
+
+  
+
+                     
+
+                 
+                     type person struct {
+	name string
+}
+
+func main () {
+	var local string
+
+	type animal                      struct {
+		kingdom string
+	}
+}
+
+	func functionTwo () {
+
+}
+
+type Direction int
+
+const (
+	North Direction = iota
+	South
+	East
+	West
+)
+
+const (
+	First Number = iota
+	Second
+)
+
+func functionWithSingleReturn () string {
+
+}

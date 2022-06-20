@@ -176,7 +176,7 @@ func PrimaryStructLiteral(prgrm *ast.CXProgram, structName string, structFields 
 					panic(err)
 				}
 
-				cxAtomicOpOutputIdx := cxAtomicOp.GetOutputs(prgrm)[0]
+				cxAtomicOpOutputIdx := cxAtomicOp.GetOutputs(prgrm)[0].Meta
 				name := prgrm.CXArgs[cxAtomicOpOutputIdx].Name
 
 				field := ast.MakeArgument(name, CurrentFile, LineNo)
@@ -230,7 +230,7 @@ func PrimaryStructLiteralExternal(prgrm *ast.CXProgram, importName string, struc
 						panic(err)
 					}
 
-					cxAtomicOpOutputIdx := cxAtomicOp.GetOutputs(prgrm)[0]
+					cxAtomicOpOutputIdx := cxAtomicOp.GetOutputs(prgrm)[0].Meta
 					field := ast.MakeArgument("", CurrentFile, LineNo)
 					field.SetType(types.IDENTIFIER)
 					field.Name = prgrm.CXArgs[cxAtomicOpOutputIdx].Name

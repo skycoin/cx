@@ -33,10 +33,14 @@ func assignStructLiteralFields(prgrm *ast.CXProgram, toExprs []ast.CXExpression,
 			panic(err)
 		}
 
-		expressionOutputIdx := expression.GetOutputs(prgrm)[0]
+		expressionOutput := expression.GetOutputs(prgrm)[0]
+		var expressionOutputIdx ast.CXArgumentIndex
+		if expressionOutput.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			expressionOutputIdx = ast.CXArgumentIndex(expressionOutput.Meta)
+		}
 		prgrm.CXArgs[expressionOutputIdx].Name = structLiteralName
 
-		toExpressionOutput := prgrm.GetCXArgFromArray(toExpression.GetOutputs(prgrm)[0])
+		toExpressionOutput := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(toExpression.GetOutputs(prgrm)[0].Meta))
 		if len(toExpressionOutput.Indexes) > 0 {
 			prgrm.CXArgs[expressionOutputIdx].Lengths = toExpressionOutput.Lengths
 			prgrm.CXArgs[expressionOutputIdx].Indexes = toExpressionOutput.Indexes
@@ -75,12 +79,12 @@ func StructLiteralAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, f
 
 	// If the last expression in `fromExprs` is declared as pointer
 	// then it means the whole struct literal needs to be passed by reference.
-	if !hasDeclSpec(prgrm.GetCXArgFromArray(lastFromExpression.GetOutputs(prgrm)[0]).GetAssignmentElement(prgrm), constants.DECL_POINTER) {
-		return assignStructLiteralFields(prgrm, toExprs, fromExprs, prgrm.GetCXArgFromArray(toExpression.GetOutputs(prgrm)[0]).Name)
+	if !hasDeclSpec(prgrm.GetCXArgFromArray(ast.CXArgumentIndex(lastFromExpression.GetOutputs(prgrm)[0].Meta)).GetAssignmentElement(prgrm), constants.DECL_POINTER) {
+		return assignStructLiteralFields(prgrm, toExprs, fromExprs, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(toExpression.GetOutputs(prgrm)[0].Meta)).Name)
 	} else {
 		// And we also need an auxiliary variable to point to,
 		// otherwise we'd be trying to assign the fields to a nil value.
-		outField := prgrm.GetCXArgFromArray(lastFromExpression.GetOutputs(prgrm)[0])
+		outField := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(lastFromExpression.GetOutputs(prgrm)[0].Meta))
 		auxName := generateTempVarName(constants.LOCAL_PREFIX)
 		aux := ast.MakeArgument(auxName, lastFromCXLine.FileName, lastFromCXLine.LineNumber)
 		aux.SetType(outField.Type)
@@ -108,7 +112,7 @@ func StructLiteralAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, f
 		assignExpressionIdx := assignExpr.Index
 
 		prgrm.CXAtomicOps[assignExpressionIdx].Package = lastFromExpression.Package
-		out := ast.MakeArgument(prgrm.GetCXArgFromArray(toExpression.GetOutputs(prgrm)[0]).Name, lastFromCXLine.FileName, lastFromCXLine.LineNumber)
+		out := ast.MakeArgument(prgrm.GetCXArgFromArray(ast.CXArgumentIndex(toExpression.GetOutputs(prgrm)[0].Meta)).Name, lastFromCXLine.FileName, lastFromCXLine.LineNumber)
 		out.Package = lastFromExpression.Package
 		outIdx := prgrm.AddCXArgInArray(out)
 
@@ -119,6 +123,7 @@ func StructLiteralAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, f
 		prgrm.CXAtomicOps[assignExpressionIdx].AddInput(prgrm, auxTypeSig)
 
 		fromExprs = append([]ast.CXExpression{*declExprCXLine, *declExpr}, fromExprs...)
+
 		return append(fromExprs, *assignExprCXLine, *assignExpr)
 	}
 }
@@ -143,8 +148,12 @@ func ArrayLiteralAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fr
 			panic(err)
 		}
 
-		expressionOutputIdx := expression.GetOutputs(prgrm)[0]
-		prgrm.CXArgs[expressionOutputIdx].Name = prgrm.GetCXArgFromArray(toExpression.GetOutputs(prgrm)[0]).Name
+		expressionOutput := expression.GetOutputs(prgrm)[0]
+		var expressionOutputIdx ast.CXArgumentIndex
+		if expressionOutput.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			expressionOutputIdx = ast.CXArgumentIndex(expressionOutput.Meta)
+		}
+		prgrm.CXArgs[expressionOutputIdx].Name = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(toExpression.GetOutputs(prgrm)[0].Meta)).Name
 		prgrm.CXArgs[expressionOutputIdx].DereferenceOperations = append(prgrm.CXArgs[expressionOutputIdx].DereferenceOperations, constants.DEREF_ARRAY)
 	}
 
@@ -173,15 +182,15 @@ func ShortAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression, exprCXLine *a
 
 	fromExpressionOperator := prgrm.GetFunctionFromArray(prgrm.CXAtomicOps[fromExpressionIdx].Operator)
 
-	typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(toExpression.GetOutputs(prgrm)[0]))
-	prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, typeSig)
-	prgrm.CXAtomicOps[expressionIdx].AddOutput(prgrm, typeSig)
+	typeSig := toExpression.GetOutputs(prgrm)[0]
+	prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, &typeSig)
+	prgrm.CXAtomicOps[expressionIdx].AddOutput(prgrm, &typeSig)
 
 	prgrm.CXAtomicOps[expressionIdx].Package = ast.CXPackageIndex(pkg.Index)
 
 	if fromExpressionOperator == nil {
-		typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(prgrm.CXAtomicOps[fromExpressionIdx].GetOutputs(prgrm)[0]))
-		prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, typeSig)
+		typeSig := prgrm.CXAtomicOps[fromExpressionIdx].GetOutputs(prgrm)[0]
+		prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, &typeSig)
 	} else {
 		sym := ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, LineNo).SetType(prgrm.GetCXArgFromArray(ast.CXArgumentIndex(prgrm.CXAtomicOps[fromExpressionIdx].GetInputs(prgrm)[0].Meta)).Type)
 		sym.Package = ast.CXPackageIndex(pkg.Index)
@@ -243,7 +252,7 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 	// And if that function call actually returns something. If not, throw an error.
 	if fromExpressionOperator != nil && len(fromExpressionOperatorOutputs) == 0 {
 		toExpressionOutputs := toExpression.GetOutputs(prgrm)
-		println(ast.CompilationError(prgrm.GetCXArgFromArray(toExpressionOutputs[0]).ArgDetails.FileName, prgrm.GetCXArgFromArray(toExpressionOutputs[0]).ArgDetails.FileLine), "trying to use an outputless operator in an assignment")
+		println(ast.CompilationError(prgrm.GetCXArgFromArray(ast.CXArgumentIndex(toExpressionOutputs[0].Meta)).ArgDetails.FileName, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(toExpressionOutputs[0].Meta)).ArgDetails.FileLine), "trying to use an outputless operator in an assignment")
 		os.Exit(constants.CX_COMPILATION_ERROR)
 	}
 
@@ -265,11 +274,11 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 
 		if fromExpressionOperator == nil {
 			// then it's a literal
-			sym = ast.MakeArgument(prgrm.GetCXArgFromArray(toExpression.GetOutputs(prgrm)[0]).Name, CurrentFile, LineNo).SetType(prgrm.GetCXArgFromArray(prgrm.CXAtomicOps[fromExpressionIdx].GetOutputs(prgrm)[0]).Type)
+			sym = ast.MakeArgument(prgrm.GetCXArgFromArray(ast.CXArgumentIndex(toExpression.GetOutputs(prgrm)[0].Meta)).Name, CurrentFile, LineNo).SetType(prgrm.GetCXArgFromArray(ast.CXArgumentIndex(prgrm.CXAtomicOps[fromExpressionIdx].GetOutputs(prgrm)[0].Meta)).Type)
 		} else {
 			outTypeArg := getOutputType(prgrm, &fromExprs[lastFromExpressionIdx])
 
-			sym = ast.MakeArgument(prgrm.GetCXArgFromArray(toExpression.GetOutputs(prgrm)[0]).Name, CurrentFile, LineNo).SetType(outTypeArg.Type)
+			sym = ast.MakeArgument(prgrm.GetCXArgFromArray(ast.CXArgumentIndex(toExpression.GetOutputs(prgrm)[0].Meta)).Name, CurrentFile, LineNo).SetType(outTypeArg.Type)
 
 			if fromExprs[lastFromExpressionIdx].IsArrayLiteral() {
 				fromCXAtomicOpInputs := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(prgrm.CXAtomicOps[fromExpressionIdx].GetInputs(prgrm)[0].Meta))
@@ -302,7 +311,12 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 				panic(err)
 			}
 
-			toExprAtomicOpOutputIdx := toExprAtomicOp.GetOutputs(prgrm)[0]
+			toExprAtomicOpOutput := toExprAtomicOp.GetOutputs(prgrm)[0]
+			var toExprAtomicOpOutputIdx ast.CXArgumentIndex
+			if toExprAtomicOpOutput.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				toExprAtomicOpOutputIdx = ast.CXArgumentIndex(toExprAtomicOpOutput.Meta)
+			}
+
 			prgrm.CXArgs[toExprAtomicOpOutputIdx].PreviouslyDeclared = true
 
 			prgrm.CXArgs[toExprAtomicOpOutputIdx].Type = sym.Type
@@ -353,8 +367,12 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 		opIdx := prgrm.AddNativeFunctionInArray(ast.Natives[constants.OP_IDENTITY])
 		prgrm.CXAtomicOps[fromExpressionIdx].Operator = opIdx
 
-		toExpressionOutputIdx := toExpression.GetOutputs(prgrm)[0]
-		fromExpressionOutput := prgrm.GetCXArgFromArray(prgrm.CXAtomicOps[fromExpressionIdx].GetOutputs(prgrm)[0])
+		toExpressionOutput := toExpression.GetOutputs(prgrm)[0]
+		var toExpressionOutputIdx ast.CXArgumentIndex
+		if toExpressionOutput.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			toExpressionOutputIdx = ast.CXArgumentIndex(toExpressionOutput.Meta)
+		}
+		fromExpressionOutput := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(prgrm.CXAtomicOps[fromExpressionIdx].GetOutputs(prgrm)[0].Meta))
 
 		prgrm.CXArgs[toExpressionOutputIdx].Size = fromExpressionOutput.Size
 		prgrm.CXArgs[toExpressionOutputIdx].TotalSize = fromExpressionOutput.TotalSize
@@ -384,7 +402,11 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 		if fromExpressionOperator.IsBuiltIn() {
 			// only assigning as if the operator had only one output defined
 
-			toExpressionOutputIdx := toExpression.GetOutputs(prgrm)[0]
+			toExpressionOutput := toExpression.GetOutputs(prgrm)[0]
+			var toExpressionOutputIdx ast.CXArgumentIndex
+			if toExpressionOutput.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				toExpressionOutputIdx = ast.CXArgumentIndex(toExpressionOutput.Meta)
+			}
 			if fromExpressionOperator.AtomicOPCode != constants.OP_IDENTITY {
 				// it's a short variable declaration
 				prgrm.CXArgs[toExpressionOutputIdx].Size = fromCXAtomicOpOperatorOutput.Size
@@ -397,7 +419,11 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 		} else {
 			// we'll delegate multiple-value returns to the 'expression' grammar rule
 			// only assigning as if the operator had only one output defined
-			toExpressionOutputIdx := toExpression.GetOutputs(prgrm)[0]
+			toExpressionOutput := toExpression.GetOutputs(prgrm)[0]
+			var toExpressionOutputIdx ast.CXArgumentIndex
+			if toExpressionOutput.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				toExpressionOutputIdx = ast.CXArgumentIndex(toExpressionOutput.Meta)
+			}
 
 			prgrm.CXArgs[toExpressionOutputIdx].Size = fromCXAtomicOpOperatorOutput.Size
 			prgrm.CXArgs[toExpressionOutputIdx].Type = fromCXAtomicOpOperatorOutput.Type

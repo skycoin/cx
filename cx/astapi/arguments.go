@@ -299,7 +299,7 @@ func MakeOutputExpressionAPointer(cxprogram *cxast.CXProgram, functionName strin
 		panic(err)
 	}
 
-	cxast.MakePointer(cxprogram.GetCXArgFromArray(cxAtomicOp.GetOutputs(cxprogram)[outputNumber]))
+	cxast.MakePointer(cxprogram.GetCXArgFromArray(cxast.CXArgumentIndex(cxAtomicOp.GetOutputs(cxprogram)[outputNumber].Meta)))
 	return nil
 }
 
