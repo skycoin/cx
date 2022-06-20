@@ -5,6 +5,10 @@ import (
 	"github.com/skycoin/cx/cx/types"
 )
 
+// TODO: rewrite slice api.
+// TODO: remove all offset > 0 tests.
+// TODO: panic(constants.CX_RUNTIME_*) instead of silent failure.
+
 // IsValidSliceIndex ...
 func IsValidSliceIndex(prgrm *CXProgram, offset types.Pointer, index types.Pointer, sizeofElement types.Pointer) bool {
 	sliceLen := GetSliceLen(prgrm, offset)
@@ -28,13 +32,19 @@ func GetSliceOffset(prgrm *CXProgram, fp types.Pointer, arg *CXArgument) types.P
 
 // GetSliceHeader ...
 func GetSliceHeader(prgrm *CXProgram, offset types.Pointer) []byte {
-	return prgrm.Memory[offset+types.OBJECT_HEADER_SIZE : offset+types.OBJECT_HEADER_SIZE+constants.SLICE_HEADER_SIZE]
+	if offset > 0 && offset.IsValid() {
+		return prgrm.Memory[offset+types.OBJECT_HEADER_SIZE : offset+types.OBJECT_HEADER_SIZE+constants.SLICE_HEADER_SIZE]
+	}
+	return nil
 }
 
 // GetSliceLen ...
 func GetSliceLen(prgrm *CXProgram, offset types.Pointer) types.Pointer {
-	sliceHeader := GetSliceHeader(prgrm, offset)
-	return types.Read_ptr(sliceHeader, types.POINTER_SIZE)
+	if offset > 0 && offset.IsValid() {
+		sliceHeader := GetSliceHeader(prgrm, offset)
+		return types.Read_ptr(sliceHeader, types.POINTER_SIZE)
+	}
+	return 0
 }
 
 // GetSlice ...
@@ -82,19 +92,25 @@ func SliceResizeEx(prgrm *CXProgram, outputSliceOffset types.Pointer, count type
 
 		outputSliceHeader = GetSliceHeader(prgrm, outputSliceOffset)
 		types.Write_ptr(outputSliceHeader, 0, newCap)
-		types.Write_ptr(outputSliceHeader, types.POINTER_SIZE, newLen)
 	}
 
+	if outputSliceHeader != nil {
+		types.Write_ptr(outputSliceHeader, types.POINTER_SIZE, newLen)
+	}
 	return outputSliceOffset
 }
 
 // SliceResize ...
 func SliceResize(prgrm *CXProgram, fp types.Pointer, out *CXArgument, inp *CXArgument, count types.Pointer, sizeofElement types.Pointer) types.Pointer {
-	outputSliceOffset := GetSliceOffset(prgrm, fp, out)
+	inputSliceOffset := GetSliceOffset(prgrm, fp, out)
+	outputSliceOffset := SliceResizeEx(prgrm, inputSliceOffset, count, sizeofElement)
 
-	outputSliceOffset = SliceResizeEx(prgrm, outputSliceOffset, count, sizeofElement)
-
-	SliceCopy(prgrm, fp, outputSliceOffset, inp, count, sizeofElement)
+	if outputSliceOffset != inputSliceOffset {
+		inputSliceLen := GetSliceLen(prgrm, inputSliceOffset)
+		if inputSliceLen > 0 {
+			SliceCopy(prgrm, fp, outputSliceOffset, inp, inputSliceLen, sizeofElement)
+		}
+	}
 
 	return outputSliceOffset
 }
@@ -107,8 +123,6 @@ func SliceCopyEx(prgrm *CXProgram, outputSliceOffset types.Pointer, inputSliceOf
 	}
 
 	if outputSliceOffset > 0 && outputSliceOffset.IsValid() {
-		outputSliceHeader := GetSliceHeader(prgrm, outputSliceOffset)
-		types.Write_ptr(outputSliceHeader, types.POINTER_SIZE, count)
 		outputSliceData := GetSliceData(prgrm, outputSliceOffset, sizeofElement)
 		if (outputSliceOffset != inputSliceOffset) && inputSliceLen > 0 {
 			copy(outputSliceData, GetSliceData(prgrm, inputSliceOffset, sizeofElement))
@@ -186,7 +200,8 @@ func SliceRemove(prgrm *CXProgram, fp types.Pointer, out *CXArgument, inp *CXArg
 
 	outputSliceData := GetSliceData(prgrm, outputSliceOffset, sizeofElement)
 	copy(outputSliceData[index*sizeofElement:], outputSliceData[(index+1)*sizeofElement:])
-	outputSliceOffset = SliceResize(prgrm, fp, out, inp, inputSliceLen-1, sizeofElement)
+	outputSliceHeader := GetSliceHeader(prgrm, outputSliceOffset)
+	types.Write_ptr(outputSliceHeader, types.POINTER_SIZE, inputSliceLen - 1)
 	return outputSliceOffset
 }
 
@@ -207,7 +222,7 @@ func WriteToSlice(prgrm *CXProgram, off types.Pointer, inp []byte) types.Pointer
 	newOff := SliceResizeEx(prgrm, off, inputSliceLen+1, inpLen)
 
 	// Copy the data from the old slice at `off` to `newOff`.
-	SliceCopyEx(prgrm, newOff, off, inputSliceLen+1, inpLen)
+	SliceCopyEx(prgrm, newOff, off, inputSliceLen, inpLen)
 
 	// Write the new slice element `inp` to the slice located at `newOff`.
 	SliceAppendWrite(prgrm, newOff, inp, inputSliceLen)
