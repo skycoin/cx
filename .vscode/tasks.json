@@ -1,0 +1,65 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "options": {
+        "env": {
+          "PATH": "C:\\msys64\\usr\\bin;C:\\msys64\\mingw64\\bin"
+        }
+     },
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "DEBUG",
+            "type": "shell",
+            "command": "C:/msys64/usr/bin/make.exe",
+            "args": [
+                "build-debug"
+            ],
+            "problemMatcher": [
+                "$go",
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "dependsOn": ["REMOVE_BIN"],
+        },
+        {
+            "label": "TESTS",
+            "type": "shell",
+            "command": "C:/msys64/usr/bin/make.exe",
+            "args": [
+                "build-debug"
+            ],
+            "problemMatcher": [
+                "$go",
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "dependsOn": ["REMOVE_BIN"],
+        },
+        {
+            "label": "CXFX",
+            "type": "shell",
+            "command": "C:/msys64/usr/bin/make.exe",
+            "args": [
+                "build-debug"
+            ],
+            "problemMatcher": [
+                "$go",
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "dependsOn": ["REMOVE_BIN"],
+        },
+        {
+            "label": "REMOVE_BIN",
+            "type": "shell",
+            "command": "make clean",
+        },
+    ]
+}

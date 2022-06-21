@@ -79,7 +79,7 @@ build-core: ## Build CX with CXFX support. Done via satisfying 'cxfx' build tag.
 	chmod +x ./bin/cx
 
 clean: ## Removes binaries.
-	rm -r ./bin/cx
+	rm -rf ./bin/cx
 
 install: configure-workspace ## Install CX from sources. Build dependencies
 	@echo 'NOTE:\tWe recommend you to test your CX installation by running "cx ./tests"'
