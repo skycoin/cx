@@ -5,60 +5,40 @@
     "version": "0.2.0",
     "configurations": [
 
-        /*
         {
-            "name": "Launch DEBUG",
-            "type": "go",
-            "request": "launch",
-            "mode": "debug",
-            "program": "cx/bin/cx",
-        },
-        */
-        /*
-        {
-            "name": "test 0",
+            "name": "DEBUG",
             "type": "go",
             "request": "launch",
             "mode": "exec",
             "program": "./bin/cx",
+            "preLaunchTask": "DEBUG",
+            "showLog": true,
             "args": [
-                "--cxpath", "../tests/test-workspace",
-                "../tests/test-workspace-b.cx" 
+                "--version",
+                "--cxpath", "./tests/test-workspace",
             ],
-            "showLog": true
         },
-        */
-        /*{
-            "name": "test 1",
-            "type": "go",
-            "request": "launch",
-            "mode": "exec",
-            "program": "./bin/cx",
-            "args": [
-                "../tests/issue-226.cx" 
-            ],
-            "showLog": true
-        },
-        */
-        /*
         {
-            "name": "cx-games",
+            "name": "TESTS",
             "type": "go",
             "request": "launch",
             "mode": "exec",
             "program": "./bin/cx",
+            "preLaunchTask": "TESTS",
+            "showLog": true,
             "args": [
-                "--debug-profile=100", "../../cx-games/2DFWork/.", "../../cx-games/CXtris/."
+                "--cxpath", "./tests/test-workspace",
+                "./tests/test-workspace-b.cx" 
             ],
-            "showLog": true
         },
-        */
         {
-            "name": "cxfx",
+            "name": "CXFX",
             "type": "go",
             "request": "launch",
             "mode": "exec",
             "program": "./bin/cx",
+            "preLaunchTask": "CXFX",
+            "showLog": true,
             "args": [
                 "--stack-size=32M",
                 "--heap-initial=512M",
@@ -138,7 +118,6 @@
                 //"${workspaceFolder}../../cxfx/games/skylight/src/menu.cx",
                 //"${workspaceFolder}../../cxfx/games/skylight/src/skylight.cx",
             ],
-            "showLog": true
         }
     ]
 }
