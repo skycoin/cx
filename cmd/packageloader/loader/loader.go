@@ -16,7 +16,7 @@ import (
 
 var SKIP_PACKAGES = []string{"al", "gl", "glfw", "time", "os", "gltext", "cx", "json", "cipher", "tcp"}
 
-func contains(list []string, element string) bool {
+func Contains(list []string, element string) bool {
 	for _, elem := range list {
 		if elem == element {
 			return true
@@ -40,6 +40,7 @@ func LoadPackages(programName string, path string, database string) error {
 		}
 		return nil
 	})
+
 	if err != nil {
 		return err
 	}
@@ -67,7 +68,7 @@ func addPackages(packageList *PackageList, srcPath string, packagePath string, d
 	if packagePath[len(packagePath)-1:] != "/" {
 		packagePath += "/"
 	}
-	if contains(importedDirectories, packagePath) {
+	if Contains(importedDirectories, packagePath) {
 		return importedDirectories, nil
 	}
 
@@ -118,7 +119,7 @@ func addPackages(packageList *PackageList, srcPath string, packagePath string, d
 
 	for _, importName := range imports {
 		importPath := srcPath + importName + "/"
-		if contains(SKIP_PACKAGES, importName) || contains(importedDirectories, importPath) {
+		if Contains(SKIP_PACKAGES, importName) || Contains(importedDirectories, importPath) {
 			continue
 		}
 		return addPackages(packageList, srcPath, importPath, database, importedDirectories)
