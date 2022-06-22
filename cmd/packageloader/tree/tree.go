@@ -18,10 +18,8 @@ func GetImportTree(packageName string, database string) (output string, err erro
 	}
 	packageList.UnmarshalBinary(listBytes)
 
-	var mainImports []string
-	var alreadyPrinted []string
-	var hasPackages bool
-	for i, packageString := range packageList.Packages {
+	var importMap = make(map[string][]string)
+	for _, packageString := range packageList.Packages {
 		var imports []string
 		var packageStruct loader.Package
 		packageBytes, err := GetStructBytes(packageString, database)
@@ -62,46 +60,45 @@ func GetImportTree(packageName string, database string) (output string, err erro
 				wordBefore = scanner.Text()
 			}
 		}
-
-		if packageStruct.PackageName == "main" {
-			mainImports = imports
+		importMap[packageStruct.PackageName] = imports
+	}
+	output += "main\n"
+	var layers = make(map[int]bool)
+	for i, mainImport := range importMap["main"] {
+		if i == len(importMap["main"])-1 {
+			output += "`--" + mainImport + "\n"
+			layers[0] = false
 		} else {
-			var isLast bool
-			hasPackages = true
-			if i == len(packageList.Packages)-1 {
-				output += "`--" + packageStruct.PackageName + "\n"
-				isLast = true
-			} else {
-				output += "|--" + packageStruct.PackageName + "\n"
-			}
-			alreadyPrinted = append(alreadyPrinted, packageStruct.PackageName)
-			for i, importString := range imports {
-				if isLast {
-					output += "   "
-				} else {
-					output += "|  "
-				}
-				if i == len(imports)-1 {
-					output += "`--" + importString + "\n"
-				} else {
-					output += "|--" + importString + "\n"
-				}
-			}
+			output += "|--" + mainImport + "\n"
+			layers[0] = true
 		}
+		output += AddDependenciesRecur(importMap, importMap[mainImport], 1, layers)
 	}
-	for i, importString := range mainImports {
-		if !loader.Contains(alreadyPrinted, importString) {
-			if !hasPackages {
-				if i == len(mainImports)-1 {
-					output = "`--" + importString + "\n" + output
-					continue
-				}
-			}
-			output = "|--" + importString + "\n" + output
-		}
-	}
-	output = "main\n" + output
 	return output, nil
+}
+
+func AddDependenciesRecur(importMap map[string][]string, dependencies []string, depth int, layers map[int]bool) (output string) {
+	if len(dependencies) == 0 {
+		return output
+	}
+	for i, dependencyImport := range dependencies {
+		for l := 0; l < depth; l++ {
+			if layers[l] {
+				output += "|  "
+			} else {
+				output += "   "
+			}
+		}
+		if i == len(dependencies)-1 {
+			output += "`--" + dependencyImport + "\n"
+			layers[depth] = false
+		} else {
+			output += "|--" + dependencyImport + "\n"
+			layers[depth] = true
+		}
+		output += AddDependenciesRecur(importMap, importMap[dependencyImport], depth+1, layers)
+	}
+	return output
 }
 
 func GetStructBytes(structName string, database string) ([]byte, error) {

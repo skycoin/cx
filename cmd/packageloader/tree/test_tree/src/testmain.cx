@@ -2,3 +2,4 @@ package main
 
 import "os"
 import "testimport2"
+import "testimport1"
