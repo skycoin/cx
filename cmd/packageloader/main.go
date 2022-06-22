@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/skycoin/cx/cmd/packageloader/encoder"
+	"github.com/skycoin/cx/cmd/packageloader/graph"
 	"github.com/skycoin/cx/cmd/packageloader/loader"
 	"github.com/skycoin/cx/cmd/packageloader/tree"
 )
@@ -15,6 +16,7 @@ func main() {
 	loadFlag := flag.Bool("load", false, "OPTION: Load a program to the database, with a given name to load it as and path to the program")
 	saveFlag := flag.Bool("save", false, "OPTION: Save a package to disk, with a given name to search on the database and a new directory path to save to")
 	treeFlag := flag.Bool("tree", false, "OPTION: Print the import dependency tree for a given program on the database")
+	graphFlag := flag.Bool("graph", false, "OPTION: Print the import dependencies for each module in a program on the database")
 	nameFlag := flag.String("name", "", "The name of the program to load or save")
 	pathFlag := flag.String("path", "", "The path to the program to load or save")
 	flag.Parse()
@@ -34,6 +36,15 @@ func main() {
 
 	if *treeFlag {
 		output, err := tree.GetImportTree(programName, database)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Print(output)
+		return
+	}
+
+	if *graphFlag {
+		output, err := graph.GetImportGraph(programName, database)
 		if err != nil {
 			log.Fatal(err)
 		}
