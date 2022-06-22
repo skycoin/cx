@@ -66,20 +66,26 @@ func GetImportTree(packageName string, database string) (output string, err erro
 		if packageStruct.PackageName == "main" {
 			mainImports = imports
 		} else {
+			var isLast bool
 			hasPackages = true
 			if i == len(packageList.Packages)-1 {
 				output += "`--" + packageStruct.PackageName + "\n"
-				break
+				isLast = true
+			} else {
+				output += "|--" + packageStruct.PackageName + "\n"
 			}
-			output += "|--" + packageStruct.PackageName + "\n"
 			alreadyPrinted = append(alreadyPrinted, packageStruct.PackageName)
-			output += "|  "
 			for i, importString := range imports {
+				if isLast {
+					output += "   "
+				} else {
+					output += "|  "
+				}
 				if i == len(imports)-1 {
 					output += "`--" + importString + "\n"
-					break
+				} else {
+					output += "|--" + importString + "\n"
 				}
-				output += "|--" + importString + "\n"
 			}
 		}
 	}
@@ -88,7 +94,7 @@ func GetImportTree(packageName string, database string) (output string, err erro
 			if !hasPackages {
 				if i == len(mainImports)-1 {
 					output = "`--" + importString + "\n" + output
-					break
+					continue
 				}
 			}
 			output = "|--" + importString + "\n" + output

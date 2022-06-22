@@ -16,4 +16,11 @@ test_encoder:
 	go test ./encoder -v -coverprofile cover.out
 	go tool cover -html=cover.out -o cover.html
 	xdg-open cover.html
-	
+
+test_tree:
+	make build
+	./packageloader -redis -load -name TestTree -path ./tree/test_tree
+	./packageloader -load -name TestTree -path ./tree/test_tree
+	go test ./tree -v -coverprofile cover.out
+	go tool cover -html=cover.out -o cover.html
+	xdg-open cover.html
