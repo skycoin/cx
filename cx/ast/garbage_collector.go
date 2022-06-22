@@ -39,7 +39,7 @@ func MarkAndCompact(prgrm *CXProgram) {
 			// If `ptr` has fields, we need to navigate the heap and mark its fields too.
 			if glbl.StructType != nil {
 				for _, typeSignature := range glbl.StructType.Fields {
-					var fld *CXArgument
+					var fld *CXArgument = &CXArgument{}
 					if typeSignature.Type == TYPE_CXARGUMENT_DEPRECATE {
 						fldIdx := typeSignature.Meta
 						fld = &prgrm.CXArgs[fldIdx]
@@ -95,7 +95,7 @@ func MarkAndCompact(prgrm *CXProgram) {
 					heapOffset := types.Read_ptr(prgrm.Memory, offset)
 					if heapOffset >= prgrm.Heap.StartsAt {
 						for _, typeSignature := range ptr.StructType.Fields {
-							var fld *CXArgument
+							var fld *CXArgument = &CXArgument{}
 							if typeSignature.Type == TYPE_CXARGUMENT_DEPRECATE {
 								fldIdx := typeSignature.Meta
 								fld = &prgrm.CXArgs[fldIdx]
@@ -251,7 +251,7 @@ func DisplaceReferences(prgrm *CXProgram, off types.Pointer, numPkgs int) {
 			// If it's a struct instance we need to displace each of its fields.
 			if glbl.StructType != nil {
 				for _, typeSignature := range glbl.StructType.Fields {
-					var fld *CXArgument
+					var fld *CXArgument = &CXArgument{}
 					if typeSignature.Type == TYPE_CXARGUMENT_DEPRECATE {
 						fldIdx := typeSignature.Meta
 						fld = &prgrm.CXArgs[fldIdx]
@@ -419,7 +419,7 @@ func updatePointers(prgrm *CXProgram, oldAddr, newAddr types.Pointer) {
 			// If `ptr` has fields, we need to navigate the heap and mark its fields too.
 			if glbl.StructType != nil {
 				for _, typeSignature := range glbl.StructType.Fields {
-					var fld *CXArgument
+					var fld *CXArgument = &CXArgument{}
 					if typeSignature.Type == TYPE_CXARGUMENT_DEPRECATE {
 						fldIdx := typeSignature.Meta
 						fld = &prgrm.CXArgs[fldIdx]
@@ -481,7 +481,7 @@ func updatePointers(prgrm *CXProgram, oldAddr, newAddr types.Pointer) {
 					if ptr.StructType != nil {
 						if heapOffset >= prgrm.Heap.StartsAt {
 							for _, typeSignature := range ptr.StructType.Fields {
-								var fld *CXArgument
+								var fld *CXArgument = &CXArgument{}
 								if typeSignature.Type == TYPE_CXARGUMENT_DEPRECATE {
 									fldIdx := typeSignature.Meta
 									fld = &prgrm.CXArgs[fldIdx]

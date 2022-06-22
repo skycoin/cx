@@ -99,7 +99,7 @@ func processBuiltInOperators(prgrm *CXProgram, expr *CXExpression, globalInputs 
 
 	argIndex := 0
 	for inputIndex := 0; inputIndex < inputCount; inputIndex++ {
-		var input *CXArgument
+		var input *CXArgument = &CXArgument{}
 		if inputs[inputIndex].Type == TYPE_CXARGUMENT_DEPRECATE {
 			input = prgrm.GetCXArgFromArray(CXArgumentIndex(inputs[inputIndex].Meta))
 		}
@@ -119,7 +119,7 @@ func processBuiltInOperators(prgrm *CXProgram, expr *CXExpression, globalInputs 
 	}
 
 	for outputIndex := 0; outputIndex < outputCount; outputIndex++ {
-		var output *CXArgument
+		var output *CXArgument = &CXArgument{}
 		if outputs[outputIndex].Type == TYPE_CXARGUMENT_DEPRECATE {
 			output = prgrm.GetCXArgFromArray(CXArgumentIndex(outputs[outputIndex].Meta))
 		}
@@ -183,7 +183,7 @@ func processNonAtomicOperators(prgrm *CXProgram, expr *CXExpression, fp types.Po
 
 	newCallOperatorInputs := newCall.Operator.GetInputs(prgrm)
 	for i, input := range cxAtomicOp.GetInputs(prgrm) {
-		var inp *CXArgument
+		var inp *CXArgument = &CXArgument{}
 		if input.Type == TYPE_CXARGUMENT_DEPRECATE {
 			inp = prgrm.GetCXArgFromArray(CXArgumentIndex(input.Meta))
 		}

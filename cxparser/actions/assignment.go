@@ -276,7 +276,7 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 		expr = ast.MakeAtomicOperatorExpression(prgrm, nil)
 		expressionIdx := expr.Index
 		prgrm.CXAtomicOps[expressionIdx].Package = ast.CXPackageIndex(pkg.Index)
-		var sym *ast.CXArgument
+		var sym *ast.CXArgument = &ast.CXArgument{}
 
 		if fromExpressionOperator == nil {
 			// then it's a literal

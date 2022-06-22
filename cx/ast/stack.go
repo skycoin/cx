@@ -28,7 +28,7 @@ func (cxprogram *CXProgram) PrintStack() {
 
 		opInputs := op.GetInputs(cxprogram)
 		for _, input := range opInputs {
-			var inp *CXArgument
+			var inp *CXArgument = &CXArgument{}
 			if input.Type == TYPE_CXARGUMENT_DEPRECATE {
 				inp = cxprogram.GetCXArgFromArray(CXArgumentIndex(input.Meta))
 			}
@@ -45,7 +45,7 @@ func (cxprogram *CXProgram) PrintStack() {
 
 		opOutputs := op.GetOutputs(cxprogram)
 		for _, output := range opOutputs {
-			var out *CXArgument
+			var out *CXArgument = &CXArgument{}
 			if output.Type == TYPE_CXARGUMENT_DEPRECATE {
 				out = cxprogram.GetCXArgFromArray(CXArgumentIndex(output.Meta))
 			}
@@ -69,7 +69,7 @@ func (cxprogram *CXProgram) PrintStack() {
 
 			cxAtomicOpOperator := cxprogram.GetFunctionFromArray(cxAtomicOp.Operator)
 			for _, input := range cxAtomicOp.GetInputs(cxprogram) {
-				var inp *CXArgument
+				var inp *CXArgument = &CXArgument{}
 				if input.Type == TYPE_CXARGUMENT_DEPRECATE {
 					inp = cxprogram.GetCXArgFromArray(CXArgumentIndex(input.Meta))
 				}
@@ -102,7 +102,7 @@ func (cxprogram *CXProgram) PrintStack() {
 			}
 
 			for _, output := range cxAtomicOp.GetOutputs(cxprogram) {
-				var out *CXArgument
+				var out *CXArgument = &CXArgument{}
 				if output.Type == TYPE_CXARGUMENT_DEPRECATE {
 					out = cxprogram.GetCXArgFromArray(CXArgumentIndex(output.Meta))
 				}

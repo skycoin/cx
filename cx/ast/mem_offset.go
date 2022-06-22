@@ -98,7 +98,7 @@ func GetDerefSizeSlice(prgrm *CXProgram, arg *CXArgument) types.Pointer {
 }
 
 func GetFinalOffset(prgrm *CXProgram, fp types.Pointer, oldArg *CXArgument, argTypeSig *CXTypeSignature) types.Pointer {
-	var arg *CXArgument
+	var arg *CXArgument = &CXArgument{}
 	if oldArg != nil {
 		arg = oldArg
 	} else if argTypeSig.Type == TYPE_CXARGUMENT_DEPRECATE {

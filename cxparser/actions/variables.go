@@ -46,7 +46,7 @@ func DeclareGlobalInPackage_OLD(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 	// Treat the name a bit different whether it's defined already or not.
 	if glbl, err := pkg.GetGlobal(prgrm, declarator.Name); err == nil {
 		var glblIdx int
-		var glblArg *ast.CXArgument
+		var glblArg *ast.CXArgument = &ast.CXArgument{}
 		// The name is already defined.
 		if glbl.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			glblIdx = glbl.Meta
@@ -57,7 +57,7 @@ func DeclareGlobalInPackage_OLD(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 
 		if glbl.Offset < 0 || glblArg.Size == 0 || glblArg.TotalSize == 0 {
 			// then it was only added a reference to the symbol
-			var glblArg *ast.CXArgument
+			var glblArg *ast.CXArgument = &ast.CXArgument{}
 			if declaration_specifiers.IsSlice { // TODO:PTR move branch in WritePrimary
 				glblArg = WritePrimary(prgrm, declaration_specifiers.Type,
 					make([]byte, types.POINTER_SIZE), true)
@@ -143,7 +143,7 @@ func DeclareGlobalInPackage_OLD(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 		}
 	} else {
 		// then it hasn't been defined
-		var glblArg *ast.CXArgument
+		var glblArg *ast.CXArgument = &ast.CXArgument{}
 		if declaration_specifiers.IsSlice { // TODO:PTR move branch in WritePrimary
 			glblArg = WritePrimary(prgrm, declaration_specifiers.Type, make([]byte, types.POINTER_SIZE), true)
 		} else {
@@ -236,7 +236,7 @@ func DeclareGlobalInPackage_CXTYPESIGNATURE(prgrm *ast.CXProgram, pkg *ast.CXPac
 	if glbl, err := pkg.GetGlobal(prgrm, declarator.Name); err == nil {
 		if glbl.Offset < 0 {
 			// then it was only added a reference to the symbol
-			var glblArg *ast.CXArgument
+			var glblArg *ast.CXArgument = &ast.CXArgument{}
 			if declaration_specifiers.IsSlice { // TODO:PTR move branch in WritePrimary
 				glblArg = WritePrimary(prgrm, declaration_specifiers.Type,
 					make([]byte, types.POINTER_SIZE), true)
@@ -300,7 +300,7 @@ func DeclareGlobalInPackage_CXTYPESIGNATURE(prgrm *ast.CXProgram, pkg *ast.CXPac
 		}
 	} else {
 		// then it hasn't been defined
-		var glblArg *ast.CXArgument
+		var glblArg *ast.CXArgument = &ast.CXArgument{}
 		if declaration_specifiers.IsSlice { // TODO:PTR move branch in WritePrimary
 			glblArg = WritePrimary(prgrm, declaration_specifiers.Type, make([]byte, types.POINTER_SIZE), true)
 		} else {

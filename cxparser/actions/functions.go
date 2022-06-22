@@ -326,7 +326,7 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 		} else {
 			// then it's a function call
 			if len(inpExprAtomicOp.GetOutputs(prgrm)) < 1 {
-				var out *ast.CXArgument
+				var out *ast.CXArgument = &ast.CXArgument{}
 
 				inpExprAtomicOpOperatorOutputs := inpExprAtomicOpOperator.GetOutputs(prgrm)
 				inpExprAtomicOpOperatorOutput := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inpExprAtomicOpOperatorOutputs[0].Meta))
@@ -401,7 +401,7 @@ func checkSameNativeType(prgrm *ast.CXProgram, expr *ast.CXExpression) error {
 	}
 
 	for _, input := range expression.GetInputs(prgrm) {
-		var inp *ast.CXArgument
+		var inp *ast.CXArgument = &ast.CXArgument{}
 		if input.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			inp = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(input.Meta))
 		} else {
@@ -474,7 +474,7 @@ func ProcessPointerStructs(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 	}
 
 	for _, argTypeSig := range append(expression.GetInputs(prgrm), expression.GetOutputs(prgrm)...) {
-		var arg *ast.CXArgument
+		var arg *ast.CXArgument = &ast.CXArgument{}
 		if argTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			arg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(argTypeSig.Meta))
 		} else {
@@ -998,7 +998,7 @@ func ProcessStringAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 	}
 	if isOpIdent {
 		for i, output := range expression.GetOutputs(prgrm) {
-			var out *ast.CXArgument
+			var out *ast.CXArgument = &ast.CXArgument{}
 			if output.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 				out = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(output.Meta))
 			} else {
@@ -1058,7 +1058,7 @@ func ProcessShortDeclaration(prgrm *ast.CXProgram, expr *ast.CXExpression, expre
 			panic(err)
 		}
 
-		var arg *ast.CXArgument
+		var arg *ast.CXArgument = &ast.CXArgument{}
 		if expr.IsMethodCall() {
 			arg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionOperatorOutputs[0].Meta))
 		} else {
@@ -1097,7 +1097,7 @@ func ProcessShortDeclaration(prgrm *ast.CXProgram, expr *ast.CXExpression, expre
 func ProcessSlice(prgrm *ast.CXProgram, inpIdx ast.CXArgumentIndex) {
 	inp := prgrm.GetCXArgFromArray(inpIdx)
 
-	var elt *ast.CXArgument
+	var elt *ast.CXArgument = &ast.CXArgument{}
 	if len(inp.Fields) > 0 {
 		elt = prgrm.GetCXArgFromArray(inp.Fields[len(inp.Fields)-1])
 	} else {
@@ -1132,8 +1132,8 @@ func ProcessSliceAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 	}
 
 	if isOpIdent {
-		var inp *ast.CXArgument
-		var out *ast.CXArgument
+		var inp *ast.CXArgument = &ast.CXArgument{}
+		var out *ast.CXArgument = &ast.CXArgument{}
 
 		inp = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expression.GetInputs(prgrm)[0].Meta)).GetAssignmentElement(prgrm)
 		out = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expression.GetOutputs(prgrm)[0].Meta)).GetAssignmentElement(prgrm)
@@ -1145,7 +1145,7 @@ func ProcessSliceAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 	if expressionOperator != nil && !expressionOperator.IsBuiltIn() {
 		// then it's a function call
 		for _, input := range expression.GetInputs(prgrm) {
-			var inp *ast.CXArgument
+			var inp *ast.CXArgument = &ast.CXArgument{}
 			if input.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 				inp = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(input.Meta))
 			} else {
@@ -1303,7 +1303,7 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 				}
 				// then we found an output
 				if len(prgrm.CXArgs[outIdx].Fields) > 0 {
-					var argOut *ast.CXArgument
+					var argOut *ast.CXArgument = &ast.CXArgument{}
 					if argOutTypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 						argOut = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(argOutTypeSignature.Meta))
 					} else {
@@ -1329,7 +1329,7 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 					prgrm.CXArgs[outIdx].Fields = prgrm.CXArgs[outIdx].Fields[:len(prgrm.CXArgs[outIdx].Fields)-1]
 				}
 			} else {
-				var argInp *ast.CXArgument
+				var argInp *ast.CXArgument = &ast.CXArgument{}
 				if argInpTypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 					argInp = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(argInpTypeSignature.Meta))
 				} else {
@@ -1371,7 +1371,7 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 						panic(err)
 					}
 
-					var argOut *ast.CXArgument
+					var argOut *ast.CXArgument = &ast.CXArgument{}
 					if argOutTypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 						argOut = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(argOutTypeSignature.Meta))
 					} else {
@@ -1417,7 +1417,7 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 				os.Exit(constants.CX_COMPILATION_ERROR)
 			}
 
-			var argOut *ast.CXArgument
+			var argOut *ast.CXArgument = &ast.CXArgument{}
 			if argOutTypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 				argOut = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(argOutTypeSignature.Meta))
 			} else {
@@ -1475,7 +1475,7 @@ func GiveOffset(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXTypeSignature
 
 		argTypeSignature, err := lookupSymbol(prgrm, symPkg.Name, sym.Name, symbols)
 		if err == nil {
-			var arg *ast.CXArgument
+			var arg *ast.CXArgument = &ast.CXArgument{}
 			if argTypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 				arg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(argTypeSignature.Meta))
 			} else {
@@ -1854,7 +1854,7 @@ func SetFinalSize(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXTypeSignatu
 
 	argTypeSignature, err := lookupSymbol(prgrm, symPkg.Name, sym.Name, symbols)
 	if err == nil {
-		var arg *ast.CXArgument
+		var arg *ast.CXArgument = &ast.CXArgument{}
 		if argTypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			arg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(argTypeSignature.Meta))
 		} else {

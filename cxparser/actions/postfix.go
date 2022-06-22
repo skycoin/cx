@@ -17,7 +17,7 @@ import (
 // 	prevExprs - the previous expressions that compose the postfix expression.
 //  postExprs - the array expressions.
 func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, postExprs []ast.CXExpression) []ast.CXExpression {
-	var elt *ast.CXArgument
+	var elt *ast.CXArgument = &ast.CXArgument{}
 
 	prevExpressionIdx := prevExprs[len(prevExprs)-1].Index
 	prevExpressionOperator := prgrm.GetFunctionFromArray(prgrm.CXAtomicOps[prevExpressionIdx].Operator)
@@ -401,7 +401,7 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		prgrm.CXArgs[leftExprIdx].Package = ast.CXPackageIndex(imp.Index)
 
 		if glbl, err := imp.GetGlobal(prgrm, ident); err == nil {
-			var glblArg *ast.CXArgument
+			var glblArg *ast.CXArgument = &ast.CXArgument{}
 			if glbl.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 				glblArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(glbl.Meta))
 			} else {

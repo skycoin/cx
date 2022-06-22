@@ -488,7 +488,7 @@ func AssociateReturnExpressions(prgrm *ast.CXProgram, idx int, retExprs []ast.CX
 	lastExpr := retExprs[len(retExprs)-1]
 
 	fnOutputs := fn.GetOutputs(prgrm)
-	var outParam *ast.CXArgument
+	var outParam *ast.CXArgument = &ast.CXArgument{}
 	if fnOutputs[idx].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 		outParam = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(fnOutputs[idx].Meta))
 	} else {
