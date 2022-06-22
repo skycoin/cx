@@ -87,7 +87,7 @@ install: configure-workspace ## Install CX from sources. Build dependencies
 
 test-parser: build-parser build test
 
-test:  ## Run CX test suite.
+test:  ## Run CX test suite. ## test travis
 ifndef CXVERSION
 	@echo "cx not found in $(PWD)/bin, please run make install first"
 else
