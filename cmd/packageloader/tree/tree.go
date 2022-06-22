@@ -18,7 +18,9 @@ func GetImportTree(packageName string, database string) (output string, err erro
 	}
 	packageList.UnmarshalBinary(listBytes)
 
-	output += "main\n"
+	var mainImports []string
+	var alreadyPrinted []string
+	var hasPackages bool
 	for i, packageString := range packageList.Packages {
 		var imports []string
 		var packageStruct loader.Package
@@ -62,15 +64,15 @@ func GetImportTree(packageName string, database string) (output string, err erro
 		}
 
 		if packageStruct.PackageName == "main" {
-			for _, importString := range imports {
-				output += "|--" + importString + "\n"
-			}
+			mainImports = imports
 		} else {
+			hasPackages = true
 			if i == len(packageList.Packages)-1 {
 				output += "`--" + packageStruct.PackageName + "\n"
 				break
 			}
 			output += "|--" + packageStruct.PackageName + "\n"
+			alreadyPrinted = append(alreadyPrinted, packageStruct.PackageName)
 			output += "|  "
 			for i, importString := range imports {
 				if i == len(imports)-1 {
@@ -81,7 +83,18 @@ func GetImportTree(packageName string, database string) (output string, err erro
 			}
 		}
 	}
-
+	for i, importString := range mainImports {
+		if !loader.Contains(alreadyPrinted, importString) {
+			if !hasPackages {
+				if i == len(mainImports)-1 {
+					output = "`--" + importString + "\n" + output
+					break
+				}
+			}
+			output = "|--" + importString + "\n" + output
+		}
+	}
+	output = "main\n" + output
 	return output, nil
 }
 
