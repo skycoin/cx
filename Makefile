@@ -92,7 +92,7 @@ ifndef CXVERSION
 	@echo "cx not found in $(PWD)/bin, please run make install first"
 else
 	# go test $(GO_OPTS) -race -tags base github.com/skycoin/cx/cxgo/
-	go run -mod=vendor ./cmd/cxtest/main.go --cxpath=$(PWD)/bin/cx --wdir=./tests --log=fail,stderr --disable-tests=gui
+	go run -mod=vendor ./cmd/cxtest/main.go --cxpath=$(PWD)/bin/cx --wdir=./tests --log=fail,stderr --disable-tests=gui,issue
 
 endif
 
