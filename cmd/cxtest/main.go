@@ -107,7 +107,7 @@ func Execute(c *cli.Context) error {
 		WorkingDir:     workingDir,
 		TestsMask:      testsMask,
 		LogMask:        logMask,
-		DefaultTimeout: 10 * time.Second,
+		DefaultTimeout: 300 * time.Second,
 	})
 
 	var start = time.Now().Unix()
@@ -294,9 +294,9 @@ func runTestCases(t *runner.TestRunner) {
 	t.RunEx("issue-61-a.cx", runner.CxSuccess, "Compilation error when using return value of a member method in a expression", runner.TestIssue, 0)
 	t.RunEx("issue-61-b.cx", runner.CxSuccess, "Compilation error when using return value of a member method in a expression", runner.TestIssue, 0)
 	t.Run("issue-309.cx", runner.CxSuccess, "Compilation error when left hand side of an assignment expression is a struct field")
-	t.RunEx("issue-60.cx", runner.CxSuccess, "Crash when INIT_HEAP_SIZE limit is reached ", runner.TestIssue, 0)
-	t.RunEx("issue-59-a.cx", runner.CxSuccess, "Crash in garbage collector when heap is resized", runner.TestIssue, 0)
-	t.RunEx("issue-59-b.cx", runner.CxSuccess, "Crash in garbage collector when heap is resized", runner.TestIssue, 0)
+	t.RunEx("--heap-initial=1M issue-60.cx", runner.CxSuccess, "Crash when INIT_HEAP_SIZE limit is reached ", runner.TestIssue, 0)
+	t.RunEx("--heap-initial=1M issue-59-a.cx", runner.CxSuccess, "Crash in garbage collector when heap is resized", runner.TestIssue, 0)
+	t.RunEx("--heap-initial=1M issue-59-b.cx", runner.CxSuccess, "Crash in garbage collector when heap is resized", runner.TestIssue, 0)
 	t.RunEx("issue-53-a.cx", runner.CxSuccess, "Issues with slice of type T where sizeof T is different than 4 ", runner.TestStable, 0)
 	t.RunEx("issue-53-b.cx", runner.CxSuccess, "Issues with slice of type T where sizeof T is different than 4 ", runner.TestStable, 0)
 	t.RunEx("issue-53-c.cx", runner.CxSuccess, "Issues with slice of type T where sizeof T is different than 4 ", runner.TestStable, 0)
