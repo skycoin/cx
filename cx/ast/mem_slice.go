@@ -102,7 +102,7 @@ func SliceResizeEx(prgrm *CXProgram, outputSliceOffset types.Pointer, count type
 
 // SliceResize ...
 func SliceResize(prgrm *CXProgram, fp types.Pointer, out *CXArgument, inp *CXArgument, count types.Pointer, sizeofElement types.Pointer) types.Pointer {
-	inputSliceOffset := GetSliceOffset(prgrm, fp, out)
+	inputSliceOffset := GetSliceOffset(prgrm, fp, inp)
 	outputSliceOffset := SliceResizeEx(prgrm, inputSliceOffset, count, sizeofElement)
 
 	if outputSliceOffset != inputSliceOffset {
@@ -164,7 +164,6 @@ func SliceAppendWriteByte(prgrm *CXProgram, outputSliceOffset types.Pointer, obj
 // SliceInsert ...
 func SliceInsert(prgrm *CXProgram, fp types.Pointer, out *CXArgument, inp *CXArgument, index types.Pointer, object []byte) types.Pointer {
 	inputSliceOffset := GetSliceOffset(prgrm, fp, inp)
-	// outputSliceOffset := GetSliceOffset(fp, out)
 
 	var inputSliceLen types.Pointer
 	if inputSliceOffset != 0 && inputSliceOffset.IsValid() {
