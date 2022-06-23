@@ -67,6 +67,8 @@ func GetImportGraph(packageName string, database string) (output string, err err
 		importIndexMap[packageStruct.PackageName] = len(indexList) - 1
 		importMap[packageStruct.PackageName] = imports
 	}
+	var otherImports []string
+	var otherImportIndex = len(indexList)
 	for i, module := range indexList {
 		output += "id=" + strconv.Itoa(i) + ", "
 		output += "module=" + module + ", "
@@ -75,11 +77,17 @@ func GetImportGraph(packageName string, database string) (output string, err err
 		for _, importString := range imports {
 			importIndex := importIndexMap[importString]
 			if importIndex == 0 {
+				tmp += strconv.Itoa(otherImportIndex) + ","
+				otherImports = append(otherImports, "id="+strconv.Itoa(otherImportIndex)+", module="+importString+", imports=,\n")
+				otherImportIndex++
 				continue
 			}
 			tmp += strconv.Itoa(importIndex) + ","
 		}
 		output += tmp + "\n"
+	}
+	for _, otherImport := range otherImports {
+		output += otherImport
 	}
 	return output, nil
 }
