@@ -28,15 +28,6 @@
             "label": "CMD_CX",
             "type": "shell",
             "command":"make",
-            // "linux": {
-            //     "command": "",
-            // },
-            // "osx": {
-            //     "command": "make",
-            // },
-            // "windows": {
-            //     "command": "C:/msys64/usr/bin/make.exe",
-            // },   
             "args": [
                 "build-debug"
             ],
@@ -53,15 +44,6 @@
             "label": "CMD_CXTEST",
             "type": "shell",
             "command":"make",
-            // "linux": {
-            //     "command": "",
-            // },
-            // "osx": {
-            //     "command": "make",
-            // },
-            // "windows": {
-            //     "command": "C:/msys64/usr/bin/make.exe",
-            // },   
             "args": [
                 "build-tests"
             ],
@@ -78,15 +60,6 @@
             "label": "TEST",
             "type": "shell",
             "command":"make",
-            // "linux": {
-            //     "command": "",
-            // },
-            // "osx": {
-            //     "command": "make",
-            // },
-            // "windows": {
-            //     "command": "C:/msys64/usr/bin/make.exe",
-            // },   
             "args": [
                 "build-debug"
             ],
@@ -103,15 +76,6 @@
             "label": "CXFX",
             "type": "shell",
             "command":"make",
-            // "linux": {
-            //     "command": "",
-            // },
-            // "osx": {
-            //     "command": "make",
-            // },
-            // "windows": {
-            //     "command": "C:/msys64/usr/bin/make.exe",
-            // },   
             "args": [
                 "build-debug"
             ],
