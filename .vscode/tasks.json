@@ -1,37 +1,42 @@
 {
     // See https://go.microsoft.com/fwlink/?LinkId=733558
     // for the documentation about the tasks.json format
-    "options": {
-        "linux": {
-            "env": {
+    "linux": {
+        "options": {
+           "env": {
                 "PATH": ""
             }
         },
-        "osx": {
+    },
+    "osx": {
+        "options": {
             "env": {
                 "PATH": "/bin"
             }
-        },
-        "windows": {
+         },
+    },
+    "windows": {
+        "options": {
             "env": {
                 "PATH": "C:\\msys64\\usr\\bin;C:\\msys64\\mingw64\\bin"
             }
-        },
-     },
+         },
+    },
     "version": "2.0.0",
     "tasks": [
         {
             "label": "CMD_CX",
             "type": "shell",
-            "linux": {
-                "command": "",
-            },
-            "osx": {
-                "command": "make",
-            },
-            "windows": {
-                "command": "C:/msys64/usr/bin/make.exe",
-            },   
+            "command":"make",
+            // "linux": {
+            //     "command": "",
+            // },
+            // "osx": {
+            //     "command": "make",
+            // },
+            // "windows": {
+            //     "command": "C:/msys64/usr/bin/make.exe",
+            // },   
             "args": [
                 "build-debug"
             ],
@@ -47,15 +52,16 @@
         {
             "label": "CMD_CXTEST",
             "type": "shell",
-            "linux": {
-                "command": "",
-            },
-            "osx": {
-                "command": "make",
-            },
-            "windows": {
-                "command": "C:/msys64/usr/bin/make.exe",
-            },   
+            "command":"make",
+            // "linux": {
+            //     "command": "",
+            // },
+            // "osx": {
+            //     "command": "make",
+            // },
+            // "windows": {
+            //     "command": "C:/msys64/usr/bin/make.exe",
+            // },   
             "args": [
                 "build-tests"
             ],
@@ -71,15 +77,16 @@
         {
             "label": "TEST",
             "type": "shell",
-            "linux": {
-                "command": "",
-            },
-            "osx": {
-                "command": "make",
-            },
-            "windows": {
-                "command": "C:/msys64/usr/bin/make.exe",
-            },   
+            "command":"make",
+            // "linux": {
+            //     "command": "",
+            // },
+            // "osx": {
+            //     "command": "make",
+            // },
+            // "windows": {
+            //     "command": "C:/msys64/usr/bin/make.exe",
+            // },   
             "args": [
                 "build-debug"
             ],
@@ -95,15 +102,16 @@
         {
             "label": "CXFX",
             "type": "shell",
-            "linux": {
-                "command": "",
-            },
-            "osx": {
-                "command": "make",
-            },
-            "windows": {
-                "command": "C:/msys64/usr/bin/make.exe",
-            },   
+            "command":"make",
+            // "linux": {
+            //     "command": "",
+            // },
+            // "osx": {
+            //     "command": "make",
+            // },
+            // "windows": {
+            //     "command": "C:/msys64/usr/bin/make.exe",
+            // },   
             "args": [
                 "build-debug"
             ],
