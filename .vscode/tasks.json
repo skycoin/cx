@@ -9,7 +9,7 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "DEBUG",
+            "label": "CMD_CX",
             "type": "shell",
             "command": "C:/msys64/usr/bin/make.exe",
             "args": [
@@ -25,7 +25,23 @@
             "dependsOn": ["REMOVE_BIN"],
         },
         {
-            "label": "TESTS",
+            "label": "CMD_CXTEST",
+            "type": "shell",
+            "command": "C:/msys64/usr/bin/make.exe",
+            "args": [
+                "build-tests"
+            ],
+            "problemMatcher": [
+                "$go",
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "dependsOn": ["REMOVE_BIN"],
+        },
+        {
+            "label": "TEST",
             "type": "shell",
             "command": "C:/msys64/usr/bin/make.exe",
             "args": [
