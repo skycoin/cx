@@ -6,7 +6,6 @@ import (
 
 	"github.com/skycoin/cx/cmd/declaration_extraction"
 	"github.com/skycoin/cx/cmd/type_checks"
-	cxpartialparsing "github.com/skycoin/cx/cxparser/cxpartialparsing"
 )
 
 func TestTypeChecks_ParseGlobals(t *testing.T) {
@@ -36,7 +35,9 @@ func TestTypeChecks_ParseGlobals(t *testing.T) {
 
 			type_checks.ParseGlobals(Globals)
 
-			cxpartialparsing.Program.PrintProgram()
+			t.Error(Globals)
+
+			// cxpartialparsing.Program.PrintProgram()
 
 		})
 	}

@@ -1,43 +1,46 @@
 package type_checks
 
 import (
+	"fmt"
+
 	"github.com/skycoin/cx/cmd/declaration_extraction"
 	"github.com/skycoin/cx/cx/ast"
-	"github.com/skycoin/cx/cxparser/actions"
 	cxpartialparsing "github.com/skycoin/cx/cxparser/cxpartialparsing"
 )
 
 func ParseGlobals(globals []declaration_extraction.GlobalDeclaration) {
 
-	for _, global := range globals {
+	fmt.Print("Works!")
 
-		// Get Package
-		pkg, err := cxpartialparsing.Program.GetPackage(global.PackageID)
+	// for _, global := range globals {
 
-		// If package not in AST
-		if err != nil {
+	// 	// Get Package
+	// 	pkg, err := cxpartialparsing.Program.GetPackage(global.PackageID)
 
-			newPkg := ast.MakePackage(global.PackageID)
-			pkgIdx := cxpartialparsing.Program.AddPackage(newPkg)
-			newPkg, err = cxpartialparsing.Program.GetPackageFromArray(pkgIdx)
+	// 	// If package not in AST
+	// 	if err != nil {
 
-			if err != nil {
-				// error handling
-			}
+	// 		newPkg := ast.MakePackage(global.PackageID)
+	// 		pkgIdx := cxpartialparsing.Program.AddPackage(newPkg)
+	// 		newPkg, err = cxpartialparsing.Program.GetPackageFromArray(pkgIdx)
 
-			pkg = newPkg
-		}
+	// 		if err != nil {
+	// 			// error handling
+	// 		}
 
-		// Make and add global to AST
-		globalArg := ast.MakeArgument(global.GlobalVariableName, global.FileID, global.LineNumber)
-		globalArg.Offset = global.StartOffset
-		globalArg.Package = ast.CXPackageIndex(pkg.Index)
+	// 		pkg = newPkg
+	// 	}
 
-		globalArgIdx := actions.AST.AddCXArgInArray(globalArg)
+	// // Make and add global to AST
+	// globalArg := ast.MakeArgument(global.GlobalVariableName, global.FileID, global.LineNumber)
+	// globalArg.Offset = types.InvalidPointer
+	// globalArg.Package = ast.CXPackageIndex(pkg.Index)
 
-		pkg.AddGlobal(actions.AST, globalArgIdx)
+	// globalArgIdx := actions.AST.AddCXArgInArray(globalArg)
 
-	}
+	// pkg.AddGlobal(actions.AST, globalArgIdx)
+
+	// }
 }
 
 // func ParseEnums(enums []declaration_extraction.EnumDeclaration) {
