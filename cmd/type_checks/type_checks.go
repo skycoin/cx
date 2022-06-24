@@ -5,42 +5,69 @@ import (
 
 	"github.com/skycoin/cx/cmd/declaration_extraction"
 	"github.com/skycoin/cx/cx/ast"
+	"github.com/skycoin/cx/cxparser/actions"
 	cxpartialparsing "github.com/skycoin/cx/cxparser/cxpartialparsing"
 )
+
+// ParseGlobals make the CXArguments and add them to the AST
+// 1. iterates over all the global declarations
+// 2. gets/makes the package
+// 3.
 
 func ParseGlobals(globals []declaration_extraction.GlobalDeclaration) {
 
 	fmt.Print("Works!")
 
-	// for _, global := range globals {
+	for _, global := range globals {
 
-	// 	// Get Package
-	// 	pkg, err := cxpartialparsing.Program.GetPackage(global.PackageID)
+		fmt.Print(global, "\n")
 
-	// 	// If package not in AST
-	// 	if err != nil {
+		// Get Package
+		pkg, err := cxpartialparsing.Program.GetPackage(global.PackageID)
 
-	// 		newPkg := ast.MakePackage(global.PackageID)
-	// 		pkgIdx := cxpartialparsing.Program.AddPackage(newPkg)
-	// 		newPkg, err = cxpartialparsing.Program.GetPackageFromArray(pkgIdx)
+		// If package not in AST
+		if err != nil {
 
-	// 		if err != nil {
-	// 			// error handling
-	// 		}
+			newPkg := ast.MakePackage(global.PackageID)
+			pkgIdx := cxpartialparsing.Program.AddPackage(newPkg)
+			newPkg, err := cxpartialparsing.Program.GetPackageFromArray(pkgIdx)
 
-	// 		pkg = newPkg
-	// 	}
+			if err != nil {
+				// error handling
+			}
 
-	// // Make and add global to AST
-	// globalArg := ast.MakeArgument(global.GlobalVariableName, global.FileID, global.LineNumber)
-	// globalArg.Offset = types.InvalidPointer
-	// globalArg.Package = ast.CXPackageIndex(pkg.Index)
+			pkg = newPkg
+		}
 
-	// globalArgIdx := actions.AST.AddCXArgInArray(globalArg)
+		// read bytes
+		// srcBytes, err := os.ReadFile(global.FileID)
 
-	// pkg.AddGlobal(actions.AST, globalArgIdx)
+		// if err != nil {
+		// 	// error handling
+		// }
 
-	// }
+		// globalDeclaration := srcBytes[global.StartOffset : global.StartOffset+global.Length]
+
+		// tokens := strings.Fields(string(globalDeclaration))
+
+		// // type wasn't definited in declaration
+		// if len(tokens) != 3 {
+		// 	// error handling
+		// }
+
+		// globalType := tokens[2]
+
+		// Make and add global to AST
+		globalArg := ast.MakeArgument(global.GlobalVariableName, global.FileID, global.LineNumber)
+		// globalArg.Offset = types.InvalidPointer
+		// globalArg.Type = types[]
+		globalArg.Package = ast.CXPackageIndex(pkg.Index)
+
+		globalArgIdx := actions.AST.AddCXArgInArray(globalArg)
+
+		pkg.AddGlobal(actions.AST, globalArgIdx)
+
+	}
 }
 
 // func ParseEnums(enums []declaration_extraction.EnumDeclaration) {
@@ -53,77 +80,77 @@ func ParseGlobals(globals []declaration_extraction.GlobalDeclaration) {
 // 	}
 // }
 
-func ParseStructs(structs []declaration_extraction.StructDeclaration) {
+// func ParseStructs(structs []declaration_extraction.StructDeclaration) {
 
-	// 1. iterate over all the structs
-	// 2. add the struct name from the declaration
-	// 3. search for fields
-	// 4. fields to ast
+// 	// 1. iterate over all the structs
+// 	// 2. add the struct name from the declaration
+// 	// 3. search for fields
+// 	// 4. fields to ast
 
-	for _, strct := range structs {
+// 	for _, strct := range structs {
 
-		pkg, err := cxpartialparsing.Program.GetPackage(strct.PackageID)
+// 		pkg, err := cxpartialparsing.Program.GetPackage(strct.PackageID)
 
-		if err != nil {
+// 		if err != nil {
 
-			newPkg := ast.MakePackage(pkg.Name)
-			pkgIdx := cxpartialparsing.Program.AddPackage(newPkg)
-			newPkg, err = cxpartialparsing.Program.GetPackageFromArray(pkgIdx)
+// 			newPkg := ast.MakePackage(pkg.Name)
+// 			pkgIdx := cxpartialparsing.Program.AddPackage(newPkg)
+// 			newPkg, err = cxpartialparsing.Program.GetPackageFromArray(pkgIdx)
 
-			if err != nil {
-				// error handling
-			}
+// 			if err != nil {
+// 				// error handling
+// 			}
 
-			pkg = newPkg
+// 			pkg = newPkg
 
-		}
+// 		}
 
-		structCX := ast.MakeStruct(strct.StructVariableName)
-		structCX.Package = ast.CXPackageIndex(pkg.Index)
+// 		structCX := ast.MakeStruct(strct.StructVariableName)
+// 		structCX.Package = ast.CXPackageIndex(pkg.Index)
 
-		cxpartialparsing.Program.AddStructInArray(structCX)
+// 		cxpartialparsing.Program.AddStructInArray(structCX)
 
-	}
-}
+// 	}
+// }
 
-func ParseFuncs(funcs []declaration_extraction.FuncDeclaration) {
+// func ParseFuncs(funcs []declaration_extraction.FuncDeclaration) {
 
-	// 1. iterate over all the funcs
-	// 2. extract inputs and outputs
-	// 3. get the id and expression
-	// 4. call function declaration
+// 	// 1. iterate over all the funcs
+// 	// 2. extract inputs and outputs
+// 	// 3. get the id and expression
+// 	// 4. call function declaration
 
-	for _, fun := range funcs {
+// 	for _, fun := range funcs {
 
-		pkg, err := cxpartialparsing.Program.GetPackage(fun.PackageID)
+// 		pkg, err := cxpartialparsing.Program.GetPackage(fun.PackageID)
 
-		if err != nil {
+// 		if err != nil {
 
-			newPkg := ast.MakePackage(fun.PackageID)
-			pkgIdx := cxpartialparsing.Program.AddPackage(newPkg)
-			newPkg, err = cxpartialparsing.Program.GetPackageFromArray(pkgIdx)
+// 			newPkg := ast.MakePackage(fun.PackageID)
+// 			pkgIdx := cxpartialparsing.Program.AddPackage(newPkg)
+// 			newPkg, err = cxpartialparsing.Program.GetPackageFromArray(pkgIdx)
 
-			if err != nil {
-				// error handling
-			}
+// 			if err != nil {
+// 				// error handling
+// 			}
 
-			pkg = newPkg
+// 			pkg = newPkg
 
-		}
+// 		}
 
-		// srcBytes, err := os.ReadFile(fun.FileID)
+// 		// srcBytes, err := os.ReadFile(fun.FileID)
 
-		if err != nil {
-			// error handling
-		}
+// 		if err != nil {
+// 			// error handling
+// 		}
 
-		// funcDeclaration := srcBytes[fun.StartOffset : fun.StartOffset+fun.Length]
+// 		// funcDeclaration := srcBytes[fun.StartOffset : fun.StartOffset+fun.Length]
 
-		funcCX := ast.MakeFunction(fun.FuncVariableName, fun.FileID, fun.LineNumber)
-		funcCX.Package = ast.CXPackageIndex(pkg.Index)
+// 		funcCX := ast.MakeFunction(fun.FuncVariableName, fun.FileID, fun.LineNumber)
+// 		funcCX.Package = ast.CXPackageIndex(pkg.Index)
 
-		cxpartialparsing.Program.AddFunctionInArray(funcCX)
+// 		cxpartialparsing.Program.AddFunctionInArray(funcCX)
 
-	}
+// 	}
 
-}
+// }

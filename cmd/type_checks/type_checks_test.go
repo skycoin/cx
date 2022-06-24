@@ -33,9 +33,9 @@ func TestTypeChecks_ParseGlobals(t *testing.T) {
 
 			Globals, err := declaration_extraction.ExtractGlobals(ReplaceCommentsWithWhitespaces, tc.testDir, pkg)
 
-			type_checks.ParseGlobals(Globals)
-
 			t.Error(Globals)
+
+			type_checks.ParseGlobals(Globals)
 
 			// cxpartialparsing.Program.PrintProgram()
 
