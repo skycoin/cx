@@ -1,10 +1,6 @@
 package type_checks
 
 import (
-	"bufio"
-	"log"
-	"os"
-
 	"github.com/skycoin/cx/cmd/declaration_extraction"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cxparser/actions"
@@ -60,21 +56,26 @@ func ParseStructs(structs []declaration_extraction.StructDeclaration) {
 
 	for _, strct := range structs {
 
-		src, err := os.Open(strct.FileID)
+		pkg, err := cxpartialparsing.Program.GetPackage(strct.PackageID)
 
 		if err != nil {
-			log.Fatal(err)
+
+			newPkg := ast.MakePackage(pkg.Name)
+			pkgIdx := cxpartialparsing.Program.AddPackage(newPkg)
+			newPkg, err = cxpartialparsing.Program.GetPackageFromArray(pkgIdx)
+
+			if err != nil {
+				// error handling
+			}
+
+			pkg = newPkg
+
 		}
 
-		var inBlock int
+		structCX := ast.MakeStruct(strct.StructVariableName)
+		structCX.Package = ast.CXPackageIndex(pkg.Index)
 
-		scanner = bufio.NewScanner(src)
-
-		for scanner.Scan() {
-			line := scanner
-		}
-
-		actions.DeclareStruct(program, strct.StructVariableName, nil)
+		cxpartialparsing.Program.AddStructInArray(structCX)
 
 	}
 }
