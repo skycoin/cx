@@ -80,30 +80,36 @@ func ParseStructs(structs []declaration_extraction.StructDeclaration) {
 	}
 }
 
-// func ParseFuncs(funcs []declaration_extraction.FuncDeclaration) error {
+func ParseFuncs(funcs []declaration_extraction.FuncDeclaration) {
 
-// 	// 1. iterate over all the funcs
-// 	// 2. extract inputs and outputs
-// 	// 3. get the id and expression
-// 	// 4. call function declaration
-// 	var err error
+	// 1. iterate over all the funcs
+	// 2. extract inputs and outputs
+	// 3. get the id and expression
+	// 4. call function declaration
 
-// 	for _, fun := range funcs {
+	for _, fun := range funcs {
 
-// 		srcBytes, err = os.ReadFile(fun.FileID)
+		pkg, err := cxpartialparsing.Program.GetPackage(fun.PackageID)
 
-// 		if err != nil {
-// 			continue
-// 		}
+		if err != nil {
 
-// 		fn := ast.MakeFunction(fun.FuncVariableName, fun.FileID, fun.LineNumber)
+			newPkg := ast.MakePackage(fun.PackageID)
+			pkgIdx := cxpartialparsing.Program.AddPackage(newPkg)
+			newPkg, err = cxpartialparsing.Program.GetPackageFromArray(pkgIdx)
 
-// 		fnIdx := actions.AST.AddFunctionInArray(fn)
+			if err != nil {
+				// error handling
+			}
 
-// 		declaration := srcBytes[fun.StartOffset:fun.StartOffset+fun.Length]
+			pkg = newPkg
 
-// 		actions.FunctionDeclaration(actions.AST, fnIdx)
+		}
 
-// 	}
+		funcCX := ast.MakeFunction(fun.FuncVariableName, fun.FileID, fun.LineNumber)
+		funcCX.Package = ast.CXPackageIndex(pkg.Index)
 
-// }
+		cxpartialparsing.Program.AddFunctionInArray(funcCX)
+
+	}
+
+}
