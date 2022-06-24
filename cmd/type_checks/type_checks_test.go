@@ -1,16 +1,42 @@
 package type_checks_test
 
-import "testing"
+import (
+	"os"
+	"testing"
+
+	"github.com/skycoin/cx/cmd/declaration_extraction"
+	"github.com/skycoin/cx/cmd/type_checks"
+	cxpartialparsing "github.com/skycoin/cx/cxparser/cxpartialparsing"
+)
 
 func TestTypeChecks_ParseGlobals(t *testing.T) {
 
 	tests := []struct {
 		scenario string
 		testDir  string
-	}{}
+	}{
+		{
+			scenario: "Has globals",
+			testDir:  "./test_files/test.cx",
+		},
+	}
 
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
+
+			srcBytes, err := os.ReadFile(tc.testDir)
+			if err != nil {
+				t.Error(err)
+			}
+
+			ReplaceCommentsWithWhitespaces := declaration_extraction.ReplaceCommentsWithWhitespaces(srcBytes)
+			pkg := declaration_extraction.ExtractPackages(ReplaceCommentsWithWhitespaces)
+
+			Globals, err := declaration_extraction.ExtractGlobals(ReplaceCommentsWithWhitespaces, tc.testDir, pkg)
+
+			type_checks.ParseGlobals(Globals)
+
+			cxpartialparsing.Program.PrintProgram()
 
 		})
 	}

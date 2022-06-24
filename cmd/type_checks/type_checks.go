@@ -11,8 +11,10 @@ func ParseGlobals(globals []declaration_extraction.GlobalDeclaration) {
 
 	for _, global := range globals {
 
+		// Get Package
 		pkg, err := cxpartialparsing.Program.GetPackage(global.PackageID)
 
+		// If package not in AST
 		if err != nil {
 
 			newPkg := ast.MakePackage(global.PackageID)
@@ -26,6 +28,7 @@ func ParseGlobals(globals []declaration_extraction.GlobalDeclaration) {
 			pkg = newPkg
 		}
 
+		// Make and add global to AST
 		globalArg := ast.MakeArgument(global.GlobalVariableName, global.FileID, global.LineNumber)
 		globalArg.Offset = global.StartOffset
 		globalArg.Package = ast.CXPackageIndex(pkg.Index)
@@ -104,6 +107,14 @@ func ParseFuncs(funcs []declaration_extraction.FuncDeclaration) {
 			pkg = newPkg
 
 		}
+
+		// srcBytes, err := os.ReadFile(fun.FileID)
+
+		if err != nil {
+			// error handling
+		}
+
+		// funcDeclaration := srcBytes[fun.StartOffset : fun.StartOffset+fun.Length]
 
 		funcCX := ast.MakeFunction(fun.FuncVariableName, fun.FileID, fun.LineNumber)
 		funcCX.Package = ast.CXPackageIndex(pkg.Index)
