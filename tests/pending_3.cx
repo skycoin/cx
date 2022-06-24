@@ -1,0 +1,16 @@
+package main
+
+type Struct struct {
+	a [8]i32
+}
+
+func main()() {
+	var s Struct
+
+	for i := 0; i < 8; i++ {
+		s.a[i] = 44
+	}
+	for i := 0; i < 8; i++ {
+		test(s.a[i], 44, "must print 44, memory is corrupt")
+	}
+}

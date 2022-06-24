@@ -6,6 +6,8 @@ y.output
 *~
 *#
 
+.vscode/*.log
+
 ## Temp files
 out.*
 cpu.prof

@@ -1,0 +1,46 @@
+package hello
+var apple string
+
+		var banana string
+
+/* var notVar bool
+multi line comment
+
+*/
+
+//single line comment
+
+//another comment
+/* comment infront */type person struct {
+	name string
+}
+
+func main () {
+	var local string
+
+	type animal /* comment between */struct {
+		kingdom string
+	}
+}
+
+	func functionTwo () {
+
+}
+
+type Direction int
+
+const (
+	North Direction = iota
+	South
+	East
+	West
+)
+
+const (
+	First Number = iota
+	Second
+)
+
+func functionWithSingleReturn () string {
+
+}

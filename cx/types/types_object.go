@@ -2,6 +2,9 @@ package types
 
 //"fmt"
 
+// TODO: rewrite api
+// TODO: cleanup object size mess: object size == object data size + OBJECT_HEADER_SIZE. 
+
 const MARK_SIZE = Pointer(1)
 const FORWARDING_ADDRESS_SIZE = POINTER_SIZE
 const OBJECT_GC_HEADER_SIZE = MARK_SIZE + FORWARDING_ADDRESS_SIZE
@@ -46,24 +49,26 @@ func Make_obj(data []byte) []byte {
 	size := Compute_obj_size(data)
 	obj := make([]byte, size)
 	//fmt.Printf("MAKE_OBJ SIZE %d, LEN_DATA %d, LEN_OBJ %d\n", size, len(data), len(obj))
-	Write_obj_data(obj, 0, data)
+	Write_obj_data(obj, 0, size, data)
 	return obj
 }
 
 func AllocWrite_obj_data(prgrm interface{}, memory []byte, obj []byte) Pointer {
-	heapOffset := Allocator(prgrm, Compute_obj_size(obj))
-	Write_obj_data(memory, heapOffset, obj)
+	size := Compute_obj_size(obj)
+	heapOffset := Allocator(prgrm, size)
+	Write_obj_data(memory, heapOffset, size, obj)
 	return heapOffset
 }
 
-func Write_obj_data(memory []byte, offset Pointer, obj []byte) {
-	size := Cast_int_to_ptr(len(obj))
+func Write_obj_data(memory []byte, offset Pointer, size Pointer, obj []byte) {
+	//size := Cast_int_to_ptr(len(obj))
 	Write_obj_size(memory, offset, size)
 	WriteSlice_byte(memory, offset+OBJECT_HEADER_SIZE, obj)
 }
 
 func Read_obj_data(memory []byte, offset Pointer) []byte {
 	size := Read_obj_size(memory, offset)
+	size -= OBJECT_HEADER_SIZE
 	obj := GetSlice_byte(memory, offset+OBJECT_HEADER_SIZE, size)
 	return obj
 }

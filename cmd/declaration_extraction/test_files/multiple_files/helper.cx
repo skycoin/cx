@@ -1,0 +1,7 @@
+package my_program
+
+const (
+	primary string = iota
+	secondary string
+	tertiary
+)

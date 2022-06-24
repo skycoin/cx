@@ -7,7 +7,9 @@ func AllocWrite_str_data(prgrm interface{}, memory []byte, str string) Pointer {
 }
 
 func Write_str_data(memory []byte, offset Pointer, value string) {
-	Write_obj_data(memory, offset, []byte(value))
+	bytes := []byte(value)
+	size := Compute_obj_size(bytes)
+	Write_obj_data(memory, offset, size, bytes)
 }
 
 func Read_str_data(memory []byte, offset Pointer) string {
@@ -27,7 +29,7 @@ func Read_str(memory []byte, offset Pointer) string {
 func Read_str_size(memory []byte, offset Pointer) Pointer {
 	heapOffset := Read_ptr(memory, offset)
 	if heapOffset > 0 && heapOffset.IsValid() {
-		return Read_obj_size(memory, heapOffset)
+		return Read_obj_size(memory, heapOffset) - OBJECT_HEADER_SIZE
 	}
 	return 0
 }
