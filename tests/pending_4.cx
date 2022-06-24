@@ -1,0 +1,7 @@
+package main
+
+// panic "string not terminated", must print an error instead
+func main()() {
+	var s str = "test
+}
+

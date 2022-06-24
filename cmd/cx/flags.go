@@ -28,6 +28,7 @@ type cxCmdFlags struct {
 
 	// Debug flags for the CX developers
 	debugLexer   bool
+	debugFileAccess bool
 	debugProfile int
 }
 
@@ -40,6 +41,7 @@ func defaultCmdFlags() cxCmdFlags {
 		printEnv:      false,
 		printVersion:  false,
 		debugLexer:    false,
+		debugFileAccess:false,
 		debugProfile:  0,
 	}
 }
@@ -88,6 +90,8 @@ func parseFlags(options *cxCmdFlags, args []string) {
 	// Debug flags
 	commandLine.BoolVar(&options.debugLexer, "debug-lexer", options.debugLexer, "Debug the lexer by printing all scanner tokens")
 	commandLine.BoolVar(&options.debugLexer, "Dl", options.debugLexer, "alias for -debug-lexer")
+	commandLine.BoolVar(&options.debugFileAccess, "debug-file-access", options.debugFileAccess, "Debug file accesses by printing open/close events") 
+	commandLine.BoolVar(&options.debugFileAccess, "Df", options.debugFileAccess, "alias for -debug-file-access") 
 	commandLine.IntVar(&options.debugProfile, "debug-profile", options.debugProfile, "Enable CPU+MEM profiling and set CPU profiling rate. Visualize .pprof files with \"go get github.com/google/pprof\" and \"pprof -http=:8080 file.pprof\"")
 	commandLine.IntVar(&options.debugProfile, "Dp", options.debugProfile, "alias for -debug-profile")
 
