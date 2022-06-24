@@ -449,7 +449,7 @@ func opGlAppend(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 
 	objLen := types.Cast_int_to_ptr(len(obj))
 	outputSliceOffset = ast.SliceResizeEx(prgrm, outputSliceOffset, inputSliceLen+objLen, 1)
-	ast.SliceCopyEx(prgrm, outputSliceOffset, inputSliceOffset, inputSliceLen+objLen, 1)
+	ast.SliceCopyEx(prgrm, outputSliceOffset, inputSliceOffset, inputSliceLen, 1)
 	ast.SliceAppendWriteByte(prgrm, outputSliceOffset, obj, inputSliceLen)
 	outputs[0].Set_ptr(prgrm, outputSliceOffset)
 }

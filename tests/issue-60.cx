@@ -4,7 +4,7 @@ package main
 
 func main()() {
 	var s []i32
-	var INIT_HEAP_SIZE i32 = 32 * (1 << 20) // TODO : should be tested against real cx/config.go::INIT_HEAP_SIZE
+	var INIT_HEAP_SIZE i32 = 2 << 20 // TODO : should be tested against real cx/config.go::INIT_HEAP_SIZE
 	for i := 0; i < INIT_HEAP_SIZE; i++ {
 		s = append(s, 1)
 	}

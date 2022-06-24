@@ -31,6 +31,7 @@ func (cxprogram *CXProgram) EnsureMinimumHeapSize() {
 	minHeapSize := MinHeapSize()
 	if currHeapSize < minHeapSize {
 		cxprogram.Memory = append(cxprogram.Memory, make([]byte, minHeapSize-currHeapSize)...)
+		cxprogram.Heap.Size = minHeapSize
 	}
 }
 

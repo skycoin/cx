@@ -6,6 +6,7 @@ import (
 
 	"github.com/skycoin/cx/cx/opcodes"
 	"github.com/skycoin/cx/cx/types"
+	"github.com/skycoin/cx/cx/util"
 
 	repl "github.com/skycoin/cx/cmd/cxrepl"
 	"github.com/skycoin/cx/cx/ast"
@@ -38,7 +39,6 @@ func Run(args []string) {
 		Checking if CXPATH is set, either by setting an environment variable
 		 or by setting the `--cxpath` flag.
 	*/
-
 	GetCXPath(options)
 
 	/*
@@ -46,7 +46,6 @@ func Run(args []string) {
 		if exits print help
 		$cx help
 	*/
-
 	if checkHelp(args) {
 		commandLine.PrintDefaults()
 		return
@@ -69,7 +68,6 @@ func Run(args []string) {
 		$cx --version
 		$cx -v
 	*/
-
 	if options.printVersion {
 		printVersion()
 		return
@@ -90,7 +88,6 @@ func Run(args []string) {
 		if exits print cx env
 		$cx --env
 	*/
-
 	if options.printEnv {
 		printEnv()
 		return
@@ -107,6 +104,15 @@ func Run(args []string) {
 	}
 
 	/*
+		options.debugFileAccess prints open/close file events"
+		$cx --debug-file-access
+		$cx -Df
+	*/
+	if options.debugFileAccess {
+		util.CXLogFile(true)
+	}
+
+	/*
 		options.initialHeap checks for flags string "heap-initial"
 		$cx --heap-initial
 	*/
@@ -118,7 +124,6 @@ func Run(args []string) {
 		options.maxHeap checks for flags string "maxHeap"
 		$cx --maxHeap
 	*/
-
 	if options.maxHeap != "" {
 		constants.MAX_HEAP_SIZE = parseMemoryString(options.maxHeap)
 		if constants.MAX_HEAP_SIZE < constants.INIT_HEAP_SIZE {
@@ -131,7 +136,6 @@ func Run(args []string) {
 		options.minHeapFreeRatio checks for flags string "--min-heap-free"
 		$cx --min-heap-free
 	*/
-
 	if options.minHeapFreeRatio != float64(0) {
 		constants.MIN_HEAP_FREE_RATIO = float32(options.minHeapFreeRatio)
 	}
