@@ -3,17 +3,12 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
-	"os"
-	"path/filepath"
-	"strings"
 
 	"github.com/skycoin/cx/cmd/packageloader/encoder"
 	"github.com/skycoin/cx/cmd/packageloader/graph"
 	"github.com/skycoin/cx/cmd/packageloader/loader"
 	"github.com/skycoin/cx/cmd/packageloader/tree"
-	"github.com/skycoin/cx/cx/util"
 )
 
 func main() {
@@ -66,7 +61,7 @@ func main() {
 	}
 
 	if *loadFlag {
-		_, sourceCodes, _ := ParseArgsForCX([]string{path}, true)
+		_, sourceCodes, _ := loader.ParseArgsForCX([]string{path}, true)
 		err := loader.LoadCXProgram(programName, sourceCodes, database)
 		if err != nil {
 			log.Fatal(err)
@@ -82,109 +77,4 @@ func main() {
 	}
 
 	log.Fatal("Wrong arguments provided. Type -help for more information")
-}
-
-func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCode []*os.File, fileNames []string) {
-	skip := false // flag for skipping arg
-
-	for _, arg := range args {
-
-		// skip arg if skip flag is specified
-		if skip {
-			skip = false
-			continue
-		}
-
-		// cli flags are either "--key=value" or "-key value"
-		// we have to skip both cases
-		if len(arg) > 1 && arg[0] == '-' {
-			if !strings.Contains(arg, "=") {
-				skip = true
-			}
-			continue
-		}
-
-		// cli cx flags are prefixed with "++"
-		if len(arg) > 2 && arg[:2] == "++" {
-			cxArgs = append(cxArgs, arg)
-			continue
-		}
-
-		fi, err := util.CXStatFile(arg)
-		if err != nil {
-			println(fmt.Sprintf("%s: source file or library not found", arg))
-			os.Exit(1)
-		}
-
-		switch mode := fi.Mode(); {
-		case mode.IsDir():
-			var fileList []string
-			var err error
-
-			// Checking if we want to check all subdirectories.
-			if alsoSubdirs {
-				fileList, err = filePathWalkDir(arg)
-			} else {
-				fileList, err = ioReadDir(arg)
-				// fileList, err = filePathWalkDir(arg)
-			}
-
-			if err != nil {
-				panic(err)
-			}
-
-			for _, path := range fileList {
-				file, err := util.CXOpenFile(path)
-
-				if err != nil {
-					println(fmt.Sprintf("%s: source file or library not found", arg))
-					os.Exit(1)
-				}
-
-				fiName := file.Name()
-				fiNameLen := len(fiName)
-
-				if fiNameLen > 2 && fiName[fiNameLen-3:] == ".cx" {
-					// only loading .cx files
-					sourceCode = append(sourceCode, file)
-					fileNames = append(fileNames, fiName)
-				}
-			}
-		case mode.IsRegular():
-			file, err := util.CXOpenFile(arg)
-
-			if err != nil {
-				panic(err)
-			}
-
-			fileNames = append(fileNames, file.Name())
-			sourceCode = append(sourceCode, file)
-		}
-	}
-
-	return cxArgs, sourceCode, fileNames
-}
-
-func filePathWalkDir(root string) ([]string, error) {
-	var files []string
-	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
-		if !info.IsDir() {
-			files = append(files, path)
-		}
-		return err
-	})
-	return files, err
-}
-
-func ioReadDir(root string) ([]string, error) {
-	var files []string
-	fileInfo, err := ioutil.ReadDir(root)
-	if err != nil {
-		return files, err
-	}
-
-	for _, file := range fileInfo {
-		files = append(files, fmt.Sprintf("%s/%s", root, file.Name()))
-	}
-	return files, nil
 }
