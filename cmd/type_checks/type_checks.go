@@ -121,44 +121,48 @@ func ParseStructs(structs []declaration_extraction.StructDeclaration) {
 	}
 }
 
-// func ParseFuncs(funcs []declaration_extraction.FuncDeclaration) {
+func ParseFuncs(funcs []declaration_extraction.FuncDeclaration) {
 
-// 	// 1. iterate over all the funcs
-// 	// 2. extract inputs and outputs
-// 	// 3. get the id and expression
-// 	// 4. call function declaration
+	// 1. iterate over all the funcs
+	// 2. extract inputs and outputs
+	// 3. get the id and expression
+	// 4. call function declaration
 
-// 	for _, fun := range funcs {
+	if actions.AST == nil {
+		actions.AST = cxinit.MakeProgram()
+	}
 
-// 		pkg, err := cxpartialparsing.Program.GetPackage(fun.PackageID)
+	for _, fun := range funcs {
 
-// 		if err != nil {
+		pkg, err := actions.AST.GetPackage(fun.PackageID)
 
-// 			newPkg := ast.MakePackage(fun.PackageID)
-// 			pkgIdx := cxpartialparsing.Program.AddPackage(newPkg)
-// 			newPkg, err = cxpartialparsing.Program.GetPackageFromArray(pkgIdx)
+		if err != nil {
 
-// 			if err != nil {
-// 				// error handling
-// 			}
+			newPkg := ast.MakePackage(fun.PackageID)
+			pkgIdx := actions.AST.AddPackage(newPkg)
+			newPkg, err = actions.AST.GetPackageFromArray(pkgIdx)
 
-// 			pkg = newPkg
+			if err != nil {
+				// error handling
+			}
 
-// 		}
+			pkg = newPkg
 
-// 		// srcBytes, err := os.ReadFile(fun.FileID)
+		}
 
-// 		if err != nil {
-// 			// error handling
-// 		}
+		// srcBytes, err := os.ReadFile(fun.FileID)
 
-// 		// funcDeclaration := srcBytes[fun.StartOffset : fun.StartOffset+fun.Length]
+		if err != nil {
+			// error handling
+		}
 
-// 		funcCX := ast.MakeFunction(fun.FuncVariableName, fun.FileID, fun.LineNumber)
-// 		funcCX.Package = ast.CXPackageIndex(pkg.Index)
+		// funcDeclaration := srcBytes[fun.StartOffset : fun.StartOffset+fun.Length]
 
-// 		cxpartialparsing.Program.AddFunctionInArray(funcCX)
+		funcCX := ast.MakeFunction(fun.FuncVariableName, fun.FileID, fun.LineNumber)
+		funcCX.Package = ast.CXPackageIndex(pkg.Index)
 
-// 	}
+		actions.AST.AddFunctionInArray(funcCX)
 
-// }
+	}
+
+}

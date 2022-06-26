@@ -86,7 +86,7 @@ func TestTypeChecks_ParseStructs(t *testing.T) {
 
 			type_checks.ParseStructs(structs)
 
-			fmt.Print(actions.AST.CXStructs)
+			fmt.Print(actions.AST.CXStructs, "\n")
 		})
 	}
 
@@ -97,11 +97,29 @@ func TestTypeChecks_ParseFuncs(t *testing.T) {
 	tests := []struct {
 		scenario string
 		testDir  string
-	}{}
+	}{
+		{
+			scenario: "Has funcs",
+			testDir:  "./test_files/test.cx",
+		},
+	}
 
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
 
+			srcBytes, err := os.ReadFile(tc.testDir)
+			if err != nil {
+				t.Error(err)
+			}
+
+			ReplaceCommentsWithWhitespaces := declaration_extraction.ReplaceCommentsWithWhitespaces(srcBytes)
+			pkg := declaration_extraction.ExtractPackages(ReplaceCommentsWithWhitespaces)
+
+			funcs, err := declaration_extraction.ExtractFuncs(srcBytes, tc.testDir, pkg)
+
+			type_checks.ParseFuncs(funcs)
+
+			fmt.Print(actions.AST.CXFunctions, "\n")
 		})
 	}
 
