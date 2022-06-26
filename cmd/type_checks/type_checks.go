@@ -1,12 +1,12 @@
 package type_checks
 
 import (
-	"fmt"
+	"log"
 
 	"github.com/skycoin/cx/cmd/declaration_extraction"
 	"github.com/skycoin/cx/cx/ast"
+	cxinit "github.com/skycoin/cx/cx/init"
 	"github.com/skycoin/cx/cxparser/actions"
-	cxpartialparsing "github.com/skycoin/cx/cxparser/cxpartialparsing"
 )
 
 // ParseGlobals make the CXArguments and add them to the AST
@@ -16,24 +16,28 @@ import (
 
 func ParseGlobals(globals []declaration_extraction.GlobalDeclaration) {
 
-	fmt.Print("Works!")
+	if actions.AST == nil {
+		actions.AST = cxinit.MakeProgram()
+	}
 
 	for _, global := range globals {
 
-		fmt.Print(global, "\n")
+		newPkg := ast.MakePackage(global.PackageID)
+		pkgIdx := actions.AST.AddPackage(newPkg)
+		newPkg, err := actions.AST.GetPackageFromArray(pkgIdx)
 
 		// Get Package
-		pkg, err := cxpartialparsing.Program.GetPackage(global.PackageID)
+		pkg, err := actions.AST.GetPackage(global.PackageID)
 
 		// If package not in AST
-		if err != nil {
+		if err != nil || pkg == nil {
 
 			newPkg := ast.MakePackage(global.PackageID)
-			pkgIdx := cxpartialparsing.Program.AddPackage(newPkg)
-			newPkg, err := cxpartialparsing.Program.GetPackageFromArray(pkgIdx)
+			pkgIdx := actions.AST.AddPackage(newPkg)
+			newPkg, err := actions.AST.GetPackageFromArray(pkgIdx)
 
 			if err != nil {
-				// error handling
+				log.Fatal(err)
 			}
 
 			pkg = newPkg
