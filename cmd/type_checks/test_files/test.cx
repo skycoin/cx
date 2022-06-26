@@ -23,7 +23,7 @@ func main () {
 	}
 }
 
-	func functionTwo () {
+	func functionTwo ( param1 string, param 2 int, param3 bool) {
 
 }
 
@@ -41,6 +41,6 @@ const (
 	Second
 )
 
-func functionWithSingleReturn () string {
+func functionWithSingleReturn (input int) string {
 
 }

@@ -1,11 +1,15 @@
 package type_checks
 
 import (
+	"bytes"
+	"fmt"
 	"log"
+	"os"
 
 	"github.com/skycoin/cx/cmd/declaration_extraction"
 	"github.com/skycoin/cx/cx/ast"
 	cxinit "github.com/skycoin/cx/cx/init"
+	"github.com/skycoin/cx/cx/types"
 	"github.com/skycoin/cx/cxparser/actions"
 )
 
@@ -63,8 +67,8 @@ func ParseGlobals(globals []declaration_extraction.GlobalDeclaration) {
 
 		// Make and add global to AST
 		globalArg := ast.MakeArgument(global.GlobalVariableName, global.FileID, global.LineNumber)
-		// globalArg.Offset = types.InvalidPointer
-		// globalArg.Type = types[]
+		globalArg.Offset = types.InvalidPointer
+		globalArg.SetType(0)
 		globalArg.Package = ast.CXPackageIndex(pkg.Index)
 
 		globalArgIdx := actions.AST.AddCXArgInArray(globalArg)
@@ -113,10 +117,17 @@ func ParseStructs(structs []declaration_extraction.StructDeclaration) {
 
 		}
 
+		// srcBytes, err := os.ReadFile(strct.FileID)
+
+		// if err != nil {
+		// 	// error handling
+		// }
+
 		structCX := ast.MakeStruct(strct.StructVariableName)
 		structCX.Package = ast.CXPackageIndex(pkg.Index)
+		// structCX = structCX.AddField()
 
-		actions.AST.AddStructInArray(structCX)
+		pkg.AddStruct(actions.AST, structCX)
 
 	}
 }
@@ -150,18 +161,40 @@ func ParseFuncs(funcs []declaration_extraction.FuncDeclaration) {
 
 		}
 
-		// srcBytes, err := os.ReadFile(fun.FileID)
+		srcBytes, err := os.ReadFile(fun.FileID)
 
 		if err != nil {
 			// error handling
 		}
 
-		// funcDeclaration := srcBytes[fun.StartOffset : fun.StartOffset+fun.Length]
+		// Get function
+		funcDeclaration := srcBytes[fun.StartOffset : fun.StartOffset+fun.Length]
+
+		paramParenthesisOpen := bytes.IndexAny(funcDeclaration, "(")
+		paramParenthesisClose := bytes.IndexAny(funcDeclaration, ")")
+
+		paramArray := bytes.Split(funcDeclaration[paramParenthesisOpen+1:paramParenthesisClose], []byte(","))
+
+		// returnParenthesisOpen := bytes.IndexAny(funcDeclaration[paramParenthesisClose:], "(")
+		// returnParenthesisClose := bytes.IndexAny(funcDeclaration[returnParenthesisOpen:], ")")
 
 		funcCX := ast.MakeFunction(fun.FuncVariableName, fun.FileID, fun.LineNumber)
-		funcCX.Package = ast.CXPackageIndex(pkg.Index)
 
-		actions.AST.AddFunctionInArray(funcCX)
+		for _, param := range paramArray {
+
+			if bytes.Compare(param, []byte("")) == 0 {
+				continue
+			}
+
+			tokens := bytes.Fields(param)
+			paramName := tokens[0]
+			paramArg := ast.MakeArgument(string(paramName), fun.FileID, fun.LineNumber)
+			funcCX = funcCX.AddInput(actions.AST, paramArg)
+
+			fmt.Print(string(param))
+		}
+
+		pkg.AddFunction(actions.AST, funcCX)
 
 	}
 

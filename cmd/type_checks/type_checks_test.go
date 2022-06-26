@@ -1,7 +1,6 @@
 package type_checks_test
 
 import (
-	"fmt"
 	"os"
 	"testing"
 
@@ -86,7 +85,7 @@ func TestTypeChecks_ParseStructs(t *testing.T) {
 
 			type_checks.ParseStructs(structs)
 
-			fmt.Print(actions.AST.CXStructs, "\n")
+			actions.AST.PrintProgram()
 		})
 	}
 
@@ -119,7 +118,7 @@ func TestTypeChecks_ParseFuncs(t *testing.T) {
 
 			type_checks.ParseFuncs(funcs)
 
-			fmt.Print(actions.AST.CXFunctions, "\n")
+			actions.AST.PrintProgram()
 		})
 	}
 
