@@ -84,38 +84,42 @@ func ParseGlobals(globals []declaration_extraction.GlobalDeclaration) {
 // 	}
 // }
 
-// func ParseStructs(structs []declaration_extraction.StructDeclaration) {
+func ParseStructs(structs []declaration_extraction.StructDeclaration) {
 
-// 	// 1. iterate over all the structs
-// 	// 2. add the struct name from the declaration
-// 	// 3. search for fields
-// 	// 4. fields to ast
+	// 1. iterate over all the structs
+	// 2. add the struct name from the declaration
+	// 3. search for fields
+	// 4. fields to ast
 
-// 	for _, strct := range structs {
+	if actions.AST == nil {
+		actions.AST = cxinit.MakeProgram()
+	}
 
-// 		pkg, err := cxpartialparsing.Program.GetPackage(strct.PackageID)
+	for _, strct := range structs {
 
-// 		if err != nil {
+		pkg, err := actions.AST.GetPackage(strct.PackageID)
 
-// 			newPkg := ast.MakePackage(pkg.Name)
-// 			pkgIdx := cxpartialparsing.Program.AddPackage(newPkg)
-// 			newPkg, err = cxpartialparsing.Program.GetPackageFromArray(pkgIdx)
+		if err != nil {
 
-// 			if err != nil {
-// 				// error handling
-// 			}
+			newPkg := ast.MakePackage(pkg.Name)
+			pkgIdx := actions.AST.AddPackage(newPkg)
+			newPkg, err = actions.AST.GetPackageFromArray(pkgIdx)
 
-// 			pkg = newPkg
+			if err != nil {
+				// error handling
+			}
 
-// 		}
+			pkg = newPkg
 
-// 		structCX := ast.MakeStruct(strct.StructVariableName)
-// 		structCX.Package = ast.CXPackageIndex(pkg.Index)
+		}
 
-// 		cxpartialparsing.Program.AddStructInArray(structCX)
+		structCX := ast.MakeStruct(strct.StructVariableName)
+		structCX.Package = ast.CXPackageIndex(pkg.Index)
 
-// 	}
-// }
+		actions.AST.AddStructInArray(structCX)
+
+	}
+}
 
 // func ParseFuncs(funcs []declaration_extraction.FuncDeclaration) {
 

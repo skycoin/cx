@@ -1,6 +1,7 @@
 package type_checks_test
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
@@ -63,11 +64,29 @@ func TestTypeChecks_ParseStructs(t *testing.T) {
 	tests := []struct {
 		scenario string
 		testDir  string
-	}{}
+	}{
+		{
+			scenario: "Has Structs",
+			testDir:  "./test_files/test.cx",
+		},
+	}
 
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
 
+			srcBytes, err := os.ReadFile(tc.testDir)
+			if err != nil {
+				t.Error(err)
+			}
+
+			ReplaceCommentsWithWhitespaces := declaration_extraction.ReplaceCommentsWithWhitespaces(srcBytes)
+			pkg := declaration_extraction.ExtractPackages(ReplaceCommentsWithWhitespaces)
+
+			structs, err := declaration_extraction.ExtractStructs(ReplaceCommentsWithWhitespaces, tc.testDir, pkg)
+
+			type_checks.ParseStructs(structs)
+
+			fmt.Print(actions.AST.CXStructs)
 		})
 	}
 
