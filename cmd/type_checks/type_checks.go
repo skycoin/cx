@@ -1,10 +1,12 @@
 package type_checks
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/skycoin/cx/cmd/declaration_extraction"
 	"github.com/skycoin/cx/cx/ast"
@@ -12,6 +14,18 @@ import (
 	"github.com/skycoin/cx/cx/types"
 	"github.com/skycoin/cx/cxparser/actions"
 )
+
+// Get the type.Code from cx/cx/types
+func getTypeCode(typeName string) types.Code {
+
+	for i := 0; i < 21; i++ { // hard coded atm
+		if types.Code(i).Name() == typeName {
+			return types.Code(i)
+		}
+	}
+
+	return types.Code(0)
+}
 
 // ParseGlobals make the CXArguments and add them to the AST
 // 1. iterates over all the global declarations
@@ -48,28 +62,27 @@ func ParseGlobals(globals []declaration_extraction.GlobalDeclaration) {
 		}
 
 		// read bytes
-		// srcBytes, err := os.ReadFile(global.FileID)
+		srcBytes, err := os.ReadFile(global.FileID)
 
-		// if err != nil {
-		// 	// error handling
-		// }
+		if err != nil {
+			// error handling
+		}
 
-		// globalDeclaration := srcBytes[global.StartOffset : global.StartOffset+global.Length]
+		globalDeclaration := srcBytes[global.StartOffset : global.StartOffset+global.Length]
 
-		// tokens := strings.Fields(string(globalDeclaration))
+		tokens := strings.Fields(string(globalDeclaration))
 
-		// // type wasn't definited in declaration
-		// if len(tokens) != 3 {
-		// 	// error handling
-		// }
-
-		// globalType := tokens[2]
+		// type wasn't definited in declaration
+		if len(tokens) != 3 {
+			// error handling
+		}
 
 		// Make and add global to AST
 		globalArg := ast.MakeArgument(global.GlobalVariableName, global.FileID, global.LineNumber)
 		globalArg.Offset = types.InvalidPointer
-		globalArg.SetType(0)
+
 		globalArg.Package = ast.CXPackageIndex(pkg.Index)
+		globalArg.SetType(getTypeCode(tokens[2]))
 
 		globalArgIdx := actions.AST.AddCXArgInArray(globalArg)
 
@@ -117,15 +130,77 @@ func ParseStructs(structs []declaration_extraction.StructDeclaration) {
 
 		}
 
-		// srcBytes, err := os.ReadFile(strct.FileID)
+		structCX := ast.MakeStruct(strct.StructVariableName)
+		structCX.Package = ast.CXPackageIndex(pkg.Index)
+
+		file, err := os.Open(strct.FileID)
 
 		// if err != nil {
 		// 	// error handling
 		// }
 
-		structCX := ast.MakeStruct(strct.StructVariableName)
-		structCX.Package = ast.CXPackageIndex(pkg.Index)
+		// srcBytes, err := io.ReadAll(file)
+
+		// strctDeclaration := srcBytes[strct.StartOffset : strct.StartOffset+strct.Length]
+
+		// if bytes.Compare(bytes.Fields(strctDeclaration)[2], []byte("struct")) == 0 {
+		// 	structCX.SetType(getTypeCode(string(bytes.Fields(strctDeclaration)[2])))
+		// }
+
+		scanner := bufio.NewScanner(file)
+
+		var inBlock int
+		var lineno int
+
+		for scanner.Scan() {
+
+			line := scanner.Bytes()
+			lineno++
+
+			if lineno < strct.LineNumber {
+				continue
+			}
+
+			if lineno == strct.LineNumber && bytes.IndexAny(line, "{") != -1 {
+				inBlock++
+				continue
+			}
+
+			if bytes.IndexAny(line, "}") != -1 {
+				inBlock--
+				break
+			}
+
+			if inBlock == 1 {
+				tokens := bytes.Fields(line)
+
+				if len(tokens) > 2 {
+					// syntax error
+					continue
+				}
+
+				if len(tokens) == 0 {
+					continue
+				}
+
+				fmt.Print(string(tokens[1]))
+
+				typeCode := getTypeCode(string(tokens[1]))
+
+				field := ast.MakeArgument(string(tokens[0]), strct.FileID, lineno)
+				field.SetType(typeCode)
+
+				structCX = structCX.AddField(actions.AST, field)
+
+				// var typ types.Code = types.
+			}
+		}
+
 		// structCX = structCX.AddField()
+
+		// for _, field := range fields {
+
+		// }
 
 		pkg.AddStruct(actions.AST, structCX)
 
@@ -178,6 +253,8 @@ func ParseFuncs(funcs []declaration_extraction.FuncDeclaration) {
 		// returnParenthesisOpen := bytes.IndexAny(funcDeclaration[paramParenthesisClose:], "(")
 		// returnParenthesisClose := bytes.IndexAny(funcDeclaration[returnParenthesisOpen:], ")")
 
+		returnArray := bytes.Split(funcDeclaration[paramParenthesisClose+1:], []byte(","))
+
 		funcCX := ast.MakeFunction(fun.FuncVariableName, fun.FileID, fun.LineNumber)
 
 		for _, param := range paramArray {
@@ -187,11 +264,24 @@ func ParseFuncs(funcs []declaration_extraction.FuncDeclaration) {
 			}
 
 			tokens := bytes.Fields(param)
-			paramName := tokens[0]
+			paramName := bytes.TrimSpace(tokens[0])
 			paramArg := ast.MakeArgument(string(paramName), fun.FileID, fun.LineNumber)
+			paramArg.SetType(getTypeCode(string(tokens[1])))
 			funcCX = funcCX.AddInput(actions.AST, paramArg)
 
-			fmt.Print(string(param))
+		}
+
+		for _, rturn := range returnArray {
+
+			if bytes.Compare(rturn, []byte("")) == 0 {
+				continue
+			}
+
+			rturn = bytes.TrimSpace(rturn)
+			returnArg := ast.MakeArgument("", fun.FileID, fun.LineNumber)
+			returnArg.SetType(getTypeCode(string(rturn)))
+			funcCX = funcCX.AddOutput(actions.AST, returnArg)
+
 		}
 
 		pkg.AddFunction(actions.AST, funcCX)

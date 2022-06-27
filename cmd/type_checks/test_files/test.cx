@@ -1,7 +1,7 @@
 package hello
-var apple string
+var apple str
 
-		var banana string
+		var banana str
 
 /* var notVar bool
 multi line comment
@@ -12,18 +12,20 @@ multi line comment
 
 //another comment
 /* comment infront */type person struct {
-	name string
+	name str
 }
 
 func main () {
-	var local string
+	var local str
 
 	type animal /* comment between */struct {
-		kingdom string
+		kingdom str
+
+		anotherField i32
 	}
 }
 
-	func functionTwo ( param1 string, param 2 int, param3 bool) {
+	func functionTwo ( param1 str, param2 i32, param3 bool) {
 
 }
 
@@ -41,6 +43,6 @@ const (
 	Second
 )
 
-func functionWithSingleReturn (input int) string {
+func functionWithSingleReturn (input i8) str {
 
 }
