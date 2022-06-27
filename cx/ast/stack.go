@@ -31,6 +31,8 @@ func (cxprogram *CXProgram) PrintStack() {
 			var inp *CXArgument = &CXArgument{}
 			if input.Type == TYPE_CXARGUMENT_DEPRECATE {
 				inp = cxprogram.GetCXArgFromArray(CXArgumentIndex(input.Meta))
+			} else {
+				panic("type is not cxargument deprecate")
 			}
 
 			fmt.Println("ProgramInput")
@@ -48,7 +50,10 @@ func (cxprogram *CXProgram) PrintStack() {
 			var out *CXArgument = &CXArgument{}
 			if output.Type == TYPE_CXARGUMENT_DEPRECATE {
 				out = cxprogram.GetCXArgFromArray(CXArgumentIndex(output.Meta))
+			} else {
+				panic("type is not cxargument deprecate")
 			}
+
 			fmt.Println("ProgramOutput")
 			fmt.Printf("\t%s : %s() : %s\n", stackValueHeader(out.ArgDetails.FileName, out.ArgDetails.FileLine), op.Name, GetPrintableValue(cxprogram, fp, out))
 
@@ -72,6 +77,8 @@ func (cxprogram *CXProgram) PrintStack() {
 				var inp *CXArgument = &CXArgument{}
 				if input.Type == TYPE_CXARGUMENT_DEPRECATE {
 					inp = cxprogram.GetCXArgFromArray(CXArgumentIndex(input.Meta))
+				} else {
+					panic("type is not cxargument deprecate")
 				}
 
 				if inp.Name == "" || cxAtomicOpOperator == nil {
@@ -105,6 +112,8 @@ func (cxprogram *CXProgram) PrintStack() {
 				var out *CXArgument = &CXArgument{}
 				if output.Type == TYPE_CXARGUMENT_DEPRECATE {
 					out = cxprogram.GetCXArgFromArray(CXArgumentIndex(output.Meta))
+				} else {
+					panic("type is not cxargument deprecate")
 				}
 
 				if out.Name == "" || cxAtomicOpOperator == nil {

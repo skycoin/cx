@@ -19,9 +19,13 @@ func MarkAndCompact(prgrm *CXProgram) {
 		}
 
 		for _, glblFld := range pkg.Globals.Fields {
-			// Assuming only all are TYPE_CXARGUMENT_DEPRECATE
-			// TODO: To be replaced
-			glbl := prgrm.GetCXArg(CXArgumentIndex(glblFld.Meta))
+			var glbl *CXArgument = &CXArgument{}
+			if glblFld.Type == TYPE_CXARGUMENT_DEPRECATE {
+				glbl = prgrm.GetCXArg(CXArgumentIndex(glblFld.Meta))
+			} else {
+				panic("type is not cxargument deprecate.")
+			}
+
 			if (glbl.IsString() || glbl.IsSlice || glbl.Type == types.STR) && glbl.StructType == nil {
 				// Getting the offset to the object in the heap
 				heapOffset := types.Read_ptr(prgrm.Memory, glbl.Offset)
@@ -241,9 +245,13 @@ func DisplaceReferences(prgrm *CXProgram, off types.Pointer, numPkgs int) {
 		// as any other object should be destroyed, as the program finished its
 		// execution.
 		for _, glblFld := range pkg.Globals.Fields {
-			// Assuming only all are TYPE_CXARGUMENT_DEPRECATE
-			// TODO: To be replaced
-			glbl := prgrm.GetCXArg(CXArgumentIndex(glblFld.Meta))
+			var glbl *CXArgument = &CXArgument{}
+			if glblFld.Type == TYPE_CXARGUMENT_DEPRECATE {
+				glbl = prgrm.GetCXArg(CXArgumentIndex(glblFld.Meta))
+			} else {
+				panic("type is not cxargument deprecate.")
+			}
+
 			if glbl.IsString() || glbl.IsStruct || glbl.IsSlice {
 				doDisplaceReferences(prgrm, &updated, glbl.Offset, off, glbl.Type, glbl.DeclarationSpecifiers[1:]) // TODO:PTR remove hardcoded offsets
 			}
@@ -399,9 +407,13 @@ func updatePointers(prgrm *CXProgram, oldAddr, newAddr types.Pointer) {
 		}
 
 		for _, glblFld := range pkg.Globals.Fields {
-			// Assuming only all are TYPE_CXARGUMENT_DEPRECATE
-			// TODO: To be replaced
-			glbl := prgrm.GetCXArg(CXArgumentIndex(glblFld.Meta))
+			var glbl *CXArgument = &CXArgument{}
+			if glblFld.Type == TYPE_CXARGUMENT_DEPRECATE {
+				glbl = prgrm.GetCXArg(CXArgumentIndex(glblFld.Meta))
+			} else {
+				panic("type is not cxargument deprecate.")
+			}
+
 			if (glbl.IsPointer() || glbl.IsSlice || glbl.Type == types.STR) && glbl.StructType == nil {
 				// Getting the offset to the object in the heap
 				heapOffset := types.Read_ptr(prgrm.Memory, glbl.Offset)

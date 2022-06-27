@@ -66,7 +66,13 @@ func IterationExpressions(prgrm *ast.CXProgram,
 	lastCondExpressionOperator := prgrm.GetFunctionFromArray(prgrm.CXAtomicOps[lastCondExpressionIdx].Operator)
 	lastCondExpressionOperatorOutputs := lastCondExpressionOperator.GetOutputs(prgrm)
 	if len(prgrm.CXAtomicOps[lastCondExpressionIdx].GetOutputs(prgrm)) < 1 {
-		predicate := ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, LineNo).SetType(prgrm.GetCXArgFromArray(ast.CXArgumentIndex(lastCondExpressionOperatorOutputs[0].Meta)).Type)
+		var lastCondExpressionOperatorOutputArg *ast.CXArgument = &ast.CXArgument{}
+		if lastCondExpressionOperatorOutputs[0].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			lastCondExpressionOperatorOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(lastCondExpressionOperatorOutputs[0].Meta))
+		} else {
+			panic("type is not cx argument deprecate\n\n")
+		}
+		predicate := ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, LineNo).SetType(lastCondExpressionOperatorOutputArg.Type)
 		predicate.Package = ast.CXPackageIndex(pkg.Index)
 		predicate.PreviouslyDeclared = true
 		predicateIdx := prgrm.AddCXArgInArray(predicate)
@@ -207,7 +213,15 @@ func SelectionExpressions(prgrm *ast.CXProgram, conditionExprs []ast.CXExpressio
 			prgrm.CXAtomicOps[lastCondExpressionIdx].Outputs = nil
 		} else {
 			lastCondExpressionOperatorOutputs := lastCondExpressionOperator.GetOutputs(prgrm)
-			predicate.SetType(prgrm.GetCXArgFromArray(ast.CXArgumentIndex(lastCondExpressionOperatorOutputs[0].Meta)).Type)
+
+			var lastCondExpressionOperatorOutputArg *ast.CXArgument = &ast.CXArgument{}
+			if lastCondExpressionOperatorOutputs[0].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				lastCondExpressionOperatorOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(lastCondExpressionOperatorOutputs[0].Meta))
+			} else {
+				panic("type is not cx argument deprecate\n\n")
+			}
+
+			predicate.SetType(lastCondExpressionOperatorOutputArg.Type)
 		}
 		predicate.PreviouslyDeclared = true
 
@@ -263,12 +277,26 @@ func resolveTypeForUnd(prgrm *ast.CXProgram, expr *ast.CXExpression) types.Code 
 	expressionInputs := expression.GetInputs(prgrm)
 	expressionOutputs := expression.GetOutputs(prgrm)
 	if len(expressionInputs) > 0 {
+		var expressionInputArg *ast.CXArgument = &ast.CXArgument{}
+		if expressionInputs[0].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			expressionInputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionInputs[0].Meta))
+		} else {
+			panic("type is not cx argument deprecate\n\n")
+		}
+
 		// it's a literal
-		return prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionInputs[0].Meta)).Type
+		return expressionInputArg.Type
 	}
 	if len(expressionOutputs) > 0 {
+		var expressionOutputArg *ast.CXArgument = &ast.CXArgument{}
+		if expressionOutputs[0].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			expressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionOutputs[0].Meta))
+		} else {
+			panic("type is not cx argument deprecate\n\n")
+		}
+
 		// it's an expression with an output
-		return prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionOutputs[0].Meta)).Type
+		return expressionOutputArg.Type
 	}
 	if expressionOperator == nil {
 		// the expression doesn't return anything
@@ -276,8 +304,15 @@ func resolveTypeForUnd(prgrm *ast.CXProgram, expr *ast.CXExpression) types.Code 
 	}
 	expressionOperatorOutputs := expressionOperator.GetOutputs(prgrm)
 	if len(expressionOperatorOutputs) > 0 {
+		var expressionOperatorOutputArg *ast.CXArgument = &ast.CXArgument{}
+		if expressionOperatorOutputs[0].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			expressionOperatorOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionOperatorOutputs[0].Meta))
+		} else {
+			panic("type is not cx argument deprecate\n\n")
+		}
+
 		// always return first output's type
-		return prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionOperatorOutputs[0].Meta)).Type
+		return expressionOperatorOutputArg.Type
 	}
 
 	// error
@@ -311,7 +346,14 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 	lastLeftExpressionOperator := prgrm.GetFunctionFromArray(prgrm.CXAtomicOps[lastLeftExpressionIdx].Operator)
 	lastLeftExpressionOperatorOutputs := lastLeftExpressionOperator.GetOutputs(prgrm)
 	if len(prgrm.CXAtomicOps[lastLeftExpressionIdx].GetOutputs(prgrm)) < 1 {
-		lastLeftExpressionOperatorOutput := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(lastLeftExpressionOperatorOutputs[0].Meta))
+		var lastLeftExpressionOperatorOutputArg *ast.CXArgument = &ast.CXArgument{}
+		if lastLeftExpressionOperatorOutputs[0].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			lastLeftExpressionOperatorOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(lastLeftExpressionOperatorOutputs[0].Meta))
+		} else {
+			panic("type is not cx argument deprecate\n\n")
+		}
+
+		lastLeftExpressionOperatorOutput := lastLeftExpressionOperatorOutputArg
 
 		out := ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, LineNo)
 		out.SetType(resolveTypeForUnd(prgrm, &leftExprs[len(leftExprs)-1]))
@@ -331,7 +373,14 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 	lastRightExpressionOperator := prgrm.GetFunctionFromArray(prgrm.CXAtomicOps[lastRightExpressionIdx].Operator)
 	lastRightExpressionOperatorOutputs := lastRightExpressionOperator.GetOutputs(prgrm)
 	if len(prgrm.CXAtomicOps[lastRightExpressionIdx].GetOutputs(prgrm)) < 1 {
-		lastRightExpressionOperatorOutput := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(lastRightExpressionOperatorOutputs[0].Meta))
+		var lastRightExpressionOperatorOutputArg *ast.CXArgument = &ast.CXArgument{}
+		if lastRightExpressionOperatorOutputs[0].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			lastRightExpressionOperatorOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(lastRightExpressionOperatorOutputs[0].Meta))
+		} else {
+			panic("type is not cx argument deprecate\n\n")
+		}
+
+		lastRightExpressionOperatorOutput := lastRightExpressionOperatorOutputArg
 
 		out := ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, LineNo)
 		out.SetType(resolveTypeForUnd(prgrm, &rightExprs[len(rightExprs)-1]))
@@ -354,7 +403,14 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 	// we can't know the type until we compile the full function
 	prgrm.CXAtomicOps[expressionIdx].Package = ast.CXPackageIndex(pkg.Index)
 
-	if len(prgrm.GetCXArgFromArray(ast.CXArgumentIndex(prgrm.CXAtomicOps[lastLeftExpressionIdx].GetOutputs(prgrm)[0].Meta)).Indexes) > 0 || lastLeftExpressionOperator != nil {
+	var lastLeftExpressionOutputArg *ast.CXArgument = &ast.CXArgument{}
+	if prgrm.CXAtomicOps[lastLeftExpressionIdx].GetOutputs(prgrm)[0].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		lastLeftExpressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(prgrm.CXAtomicOps[lastLeftExpressionIdx].GetOutputs(prgrm)[0].Meta))
+	} else {
+		panic("type is not cx argument deprecate\n\n")
+	}
+
+	if len(lastLeftExpressionOutputArg.Indexes) > 0 || lastLeftExpressionOperator != nil {
 		typeSig := prgrm.CXAtomicOps[lastLeftExpressionIdx].GetOutputs(prgrm)[0]
 		// then it's a function call or an array access
 		prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, typeSig)
@@ -369,7 +425,14 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 		prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, typeSig)
 	}
 
-	if len(prgrm.GetCXArgFromArray(ast.CXArgumentIndex(prgrm.CXAtomicOps[lastRightExpressionIdx].GetOutputs(prgrm)[0].Meta)).Indexes) > 0 || lastRightExpressionOperator != nil {
+	var lastRightExpressionOutputArg *ast.CXArgument = &ast.CXArgument{}
+	if prgrm.CXAtomicOps[lastRightExpressionIdx].GetOutputs(prgrm)[0].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		lastRightExpressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(prgrm.CXAtomicOps[lastRightExpressionIdx].GetOutputs(prgrm)[0].Meta))
+	} else {
+		panic("type is not cx argument deprecate\n\n")
+	}
+
+	if len(lastRightExpressionOutputArg.Indexes) > 0 || lastRightExpressionOperator != nil {
 		typeSig := prgrm.CXAtomicOps[lastRightExpressionIdx].GetOutputs(prgrm)[0]
 		// then it's a function call or an array access
 		prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, typeSig)
@@ -408,9 +471,16 @@ func UnaryExpression(prgrm *ast.CXProgram, op string, prevExprs []ast.CXExpressi
 		os.Exit(constants.CX_COMPILATION_ERROR)
 	}
 
+	var lastPrevExpressionOutputArg *ast.CXArgument = &ast.CXArgument{}
+	if lastPrevExpression.GetOutputs(prgrm)[0].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		lastPrevExpressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(lastPrevExpression.GetOutputs(prgrm)[0].Meta))
+	} else {
+		panic("type is not cx argument deprecate\n\n")
+	}
+
 	// Some properties need to be read from the base argument
 	// due to how we calculate dereferences at the moment.
-	lastPrevExpressionOutput := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(lastPrevExpression.GetOutputs(prgrm)[0].Meta))
+	lastPrevExpressionOutput := lastPrevExpressionOutputArg
 	baseOut := lastPrevExpressionOutput
 	exprOut := lastPrevExpressionOutput.GetAssignmentElement(prgrm)
 	switch op {

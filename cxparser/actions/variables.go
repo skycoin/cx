@@ -430,7 +430,14 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 			cxExprAtomicOpIdx := expr.Index
 			prgrm.CXAtomicOps[cxExprAtomicOpIdx].Package = ast.CXPackageIndex(pkg.Index)
 
-			initOut := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(initializerExpression.GetOutputs(prgrm)[0].Meta))
+			var initializerExpressionOutputArg *ast.CXArgument = &ast.CXArgument{}
+			if initializerExpression.GetOutputs(prgrm)[0].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				initializerExpressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(initializerExpression.GetOutputs(prgrm)[0].Meta))
+			} else {
+				panic("type is not cx argument deprecate\n\n")
+			}
+
+			initOut := initializerExpressionOutputArg
 			initOutIdx := ast.CXArgumentIndex(initializerExpression.GetOutputs(prgrm)[0].Meta)
 			// CX checks the output of an expression to determine if it's being passed
 			// by value or by reference, so we copy this property from the initializer's

@@ -873,10 +873,24 @@ func readArgAff(prgrm *ast.CXProgram, aff string, tgtFn *ast.CXFunction) *ast.CX
 	}
 
 	if argType == "Input" {
-		return prgrm.GetCXArgFromArray(ast.CXArgumentIndex(affExprAtomicOp.GetInputs(prgrm)[argIdx].Meta))
-	}
-	return prgrm.GetCXArgFromArray(ast.CXArgumentIndex(affExprAtomicOp.GetOutputs(prgrm)[argIdx].Meta))
+		var arg *ast.CXArgument = &ast.CXArgument{}
+		if affExprAtomicOp.GetInputs(prgrm)[argIdx].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			arg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(affExprAtomicOp.GetInputs(prgrm)[argIdx].Meta))
+		} else {
+			panic("type is not a cx argumetn deprecate\n\n")
+		}
 
+		return arg
+	}
+
+	var arg *ast.CXArgument = &ast.CXArgument{}
+	if affExprAtomicOp.GetOutputs(prgrm)[argIdx].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		arg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(affExprAtomicOp.GetOutputs(prgrm)[argIdx].Meta))
+	} else {
+		panic("type is not a cx argumetn deprecate\n\n")
+	}
+
+	return arg
 }
 
 // func opAffInform(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {

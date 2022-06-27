@@ -624,7 +624,14 @@ slice_literal_expression:
                                         panic(err)
                                 }
 
-                                expressionOutput:=actions.AST.GetCXArgFromArray(ast.CXArgumentIndex(expression.GetOutputs(actions.AST)[0].Meta))
+                                var expressionOutputArg *ast.CXArgument = &ast.CXArgument{}
+			        if expression.GetOutputs(actions.AST)[0].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				        expressionOutputArg = actions.AST.GetCXArgFromArray(ast.CXArgumentIndex(expression.GetOutputs(actions.AST)[0].Meta))
+			        } else {
+				        panic("type is not cx argument deprecate\n\n")
+			        }
+
+                                expressionOutput:= expressionOutputArg
 				if expressionOutput.Name == lastExpression.GetInputs(actions.AST)[0].Name {
 					expressionOutput.Lengths = append(expressionOutput.Lengths, 0)
 					expressionOutput.DeclarationSpecifiers = append(expressionOutput.DeclarationSpecifiers, constants.DECL_SLICE)
@@ -1183,7 +1190,14 @@ expression_statement:
 			if len($1) > 0 && lastFirstAtomicOpOperator == nil  && !$1[len($1) - 1].IsMethodCall() {
 				outs := lastFirstAtomicOp.GetOutputs(actions.AST)
 				if len(outs) > 0 {
-					println(ast.CompilationError(actions.AST.GetCXArgFromArray(ast.CXArgumentIndex(outs[0].Meta)).ArgDetails.FileName, actions.AST.GetCXArgFromArray(ast.CXArgumentIndex(outs[0].Meta)).ArgDetails.FileLine), "invalid expression")
+                                        var expressionOutputArg *ast.CXArgument = &ast.CXArgument{}
+			                if outs[0].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				                expressionOutputArg = actions.AST.GetCXArgFromArray(ast.CXArgumentIndex(outs[0].Meta))
+			                } else {
+				                panic("type is not cx argument deprecate\n\n")
+			                }
+
+					println(ast.CompilationError( expressionOutputArg.ArgDetails.FileName,  expressionOutputArg.ArgDetails.FileLine), "invalid expression")
 				} else {
 					println(ast.CompilationError(actions.CurrentFile, actions.LineNo), "invalid expression")
 				}
