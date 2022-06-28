@@ -67,10 +67,66 @@ func getPackageName(file *os.File) (string, error) {
 	return "", errors.New("file doesn't contain a package name")
 }
 
+func createImportMap(fileMap map[string][]*os.File) (importMap map[string][]string, err error) {
+	importMap = make(map[string][]string)
+	for packageName := range fileMap {
+		packageImports := []string{}
+		for _, file := range fileMap[packageName] {
+			newImports, err := getImports(file)
+			if err != nil {
+				return importMap, err
+			}
+			packageImports = append(packageImports, newImports...)
+		}
+		importMap[packageName] = packageImports
+	}
+	return importMap, nil
+}
+
+func getImports(file *os.File) (imports []string, err error) {
+	openFile, err := os.Open(file.Name())
+	if err != nil {
+		return imports, err
+	}
+	defer openFile.Close()
+
+	scanner := bufio.NewScanner(openFile)
+
+	for scanner.Scan() {
+		line := strings.Split(scanner.Text(), " ")
+		if line[0] == "import" {
+			imports = append(imports, line[1][1:len(line[1])-1])
+		}
+	}
+	return imports, nil
+}
+
+func checkForDependencyLoop(importMap map[string][]string) (err error) {
+	for packageName := range importMap {
+		for _, importName := range importMap[packageName] {
+			if importName == packageName {
+				return errors.New("Module " + packageName + " imports itself")
+			}
+			if Contains(importMap[importName], packageName) {
+				return errors.New("Dependency loop between modules " + packageName + " and " + importName)
+			}
+		}
+	}
+	return nil
+}
+
 func LoadCXProgram(programName string, sourceCode []*os.File, database string) (err error) {
 	fileMap, err := createFileMap(sourceCode)
 	if err != nil {
 		return err
+	}
+	importMap, err := createImportMap(fileMap)
+	if err != nil {
+		return err
+	}
+	err = checkForDependencyLoop(importMap)
+	if err != nil {
+		return
 	}
 
 	packageListStruct := PackageList{}
