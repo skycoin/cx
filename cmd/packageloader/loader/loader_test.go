@@ -9,6 +9,7 @@ import (
 
 const TEST_SRC_PATH_VALID = "test_folder/test_invalid_program/src/"
 const TEST_SRC_PATH_INVALID = "test_folder/test_valid_program/src/"
+const TEST_SRC_PATH_LOOP = "test_folder/test_loop_program/src/"
 const TEST_PACKAGE_FILE = "test_folder/test_various_files/package.cx"
 
 func TestContains(t *testing.T) {
@@ -42,6 +43,56 @@ func TestCreateFileMap(t *testing.T) {
 		t.Error(err)
 	}
 	//TODO: Find a way to reliably test this function
+}
+
+func TestCreateImportMap(t *testing.T) {
+	_, sourceCodes, _ := loader.ParseArgsForCX([]string{TEST_SRC_PATH_VALID}, true)
+	fileMap, err := loader.CreateFileMap(sourceCodes)
+	if err != nil {
+		t.Error(err)
+	}
+	_, err = loader.CreateImportMap(fileMap)
+	if err != nil {
+		t.Error(err)
+	}
+	//TODO: Find a way to reliably test this function
+}
+
+func TestCheckForDependencyLoop(t *testing.T) {
+	tests := []struct {
+		Scenario   string
+		FilesPath  string
+		ExpectsErr bool
+	}{
+		{
+			Scenario:   "Test with a program that doesn't contain a dependency loop",
+			FilesPath:  TEST_SRC_PATH_VALID,
+			ExpectsErr: false,
+		},
+		{
+			Scenario:   "Test with a program that contains a dependency loop",
+			FilesPath:  TEST_SRC_PATH_LOOP,
+			ExpectsErr: true,
+		},
+	}
+
+	for _, testcase := range tests {
+		t.Run(testcase.Scenario, func(t *testing.T) {
+			_, sourceCodes, _ := loader.ParseArgsForCX([]string{testcase.FilesPath}, true)
+			fileMap, err := loader.CreateFileMap(sourceCodes)
+			if err != nil {
+				t.Error(err)
+			}
+			importMap, err := loader.CreateImportMap(fileMap)
+			if err != nil {
+				t.Error(err)
+			}
+			err = loader.CheckForDependencyLoop(importMap)
+			if (err != nil) != testcase.ExpectsErr {
+				t.Error("Dependency check failed")
+			}
+		})
+	}
 }
 
 func TestFileStructFromFile(t *testing.T) {
