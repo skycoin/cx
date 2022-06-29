@@ -220,10 +220,13 @@ func PostfixExpressionEmptyFunCall(prgrm *ast.CXProgram, prevExprs []ast.CXExpre
 	firstPrevExpressionIdx := prevExprs[0].Index
 
 	var prevExpressionOutputArg *ast.CXArgument = &ast.CXArgument{}
-	if prevExpression.GetOutputs(prgrm)[0].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-		prevExpressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(prevExpression.GetOutputs(prgrm)[0].Meta))
-	} else {
-		panic("type is not cx argument deprecate\n\n")
+	if prevExpression.Outputs != nil {
+
+		if prevExpression.GetOutputs(prgrm)[0].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			prevExpressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(prevExpression.GetOutputs(prgrm)[0].Meta))
+		} else {
+			panic("type is not cx argument deprecate\n\n")
+		}
 	}
 
 	if prevExpression.Outputs != nil && len(prevExpressionOutputArg.Fields) > 0 {

@@ -364,7 +364,6 @@ func DeclareGlobalInPackage_CXTYPESIGNATURE(prgrm *ast.CXProgram, pkg *ast.CXPac
 			pkg.AddGlobal_TypeSignature(prgrm, typeSignature)
 		}
 	}
-
 }
 
 // DeclareLocal() creates a local variable inside a function.

@@ -152,12 +152,25 @@ func (cxprogram *CXProgram) AddNativeFunctionInArray(fn *CXNativeFunction) CXFun
 
 	// Add inputs to cx arg array
 	for _, argIn := range fn.Inputs {
-		argInIdx := cxprogram.AddCXArgInArray(argIn)
+		var newField *CXTypeSignature
 
-		newField := &CXTypeSignature{
-			Name: argIn.Name,
-			Type: TYPE_CXARGUMENT_DEPRECATE,
-			Meta: int(argInIdx),
+		// if atomic type
+		if !argIn.IsSlice && len(argIn.Lengths) == 0 && argIn.Type.IsPrimitive() {
+			newField = &CXTypeSignature{
+				Name:    argIn.Name,
+				Type:    TYPE_ATOMIC,
+				Meta:    int(argIn.Type),
+				Package: argIn.Package,
+			}
+		} else {
+			argInIdx := cxprogram.AddCXArgInArray(argIn)
+
+			newField = &CXTypeSignature{
+				Name:    argIn.Name,
+				Type:    TYPE_CXARGUMENT_DEPRECATE,
+				Meta:    int(argInIdx),
+				Package: argIn.Package,
+			}
 		}
 
 		fnNative.Inputs.Fields = append(fnNative.Inputs.Fields, newField)
@@ -165,12 +178,26 @@ func (cxprogram *CXProgram) AddNativeFunctionInArray(fn *CXNativeFunction) CXFun
 
 	// Add outputs to cx arg array
 	for _, argOut := range fn.Outputs {
-		argOutIdx := cxprogram.AddCXArgInArray(argOut)
+		var newField *CXTypeSignature
 
-		newField := &CXTypeSignature{
-			Name: argOut.Name,
-			Type: TYPE_CXARGUMENT_DEPRECATE,
-			Meta: int(argOutIdx),
+		// if atomic type
+		if !argOut.IsSlice && len(argOut.Lengths) == 0 && argOut.Type.IsPrimitive() {
+			newField = &CXTypeSignature{
+				Name:    argOut.Name,
+				Type:    TYPE_ATOMIC,
+				Meta:    int(argOut.Type),
+				Package: argOut.Package,
+			}
+		} else {
+			argOutIdx := cxprogram.AddCXArgInArray(argOut)
+
+			newField = &CXTypeSignature{
+				Name:    argOut.Name,
+				Type:    TYPE_CXARGUMENT_DEPRECATE,
+				Meta:    int(argOutIdx),
+				Package: argOut.Package,
+			}
+
 		}
 
 		fnNative.Outputs.Fields = append(fnNative.Outputs.Fields, newField)
