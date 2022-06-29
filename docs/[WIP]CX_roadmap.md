@@ -85,8 +85,8 @@ Objectives:
 - so functions in AST can be reduced completely to assembly language and executed natively eventually.
 
 ## CX Compiler Frontend
-- [ ] Stage 1: Package format - This is how we’re representing the file. Every file has a length, a name, and a hash. Every package is a list of files – file structs. And then, we have a list of the package structs. And then, we can serialize it and hash that to get the ID for the whole program.
-- [ ] Stage 2: Declaration Extraction
+- [x] Stage 1: Package format - This is how we’re representing the file. Every file has a length, a name, and a hash. Every package is a list of files – file structs. And then, we have a list of the package structs. And then, we can serialize it and hash that to get the ID for the whole program.
+- [x] Stage 2: Declaration Extraction
 - [ ] Stage 3: Type Checks
 - [ ] Stage 4: Function Body Extraction
 
@@ -103,7 +103,7 @@ Objectives:
 - [ ] CXS - CXShell
 
 ## CX Playground
-- [ ] Running server
+- [x] Running server
 - [ ] More Functionailities for CXPlayground
 
 ## Misc
