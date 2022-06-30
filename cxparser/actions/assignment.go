@@ -447,12 +447,19 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 			panic("type is not type cx argument deprecate\n\n")
 		}
 
-		prgrm.CXArgs[toExpressionOutputIdx].Size = fromExpressionOutputArg.Size
-		prgrm.CXArgs[toExpressionOutputIdx].TotalSize = fromExpressionOutputArg.TotalSize
-		prgrm.CXArgs[toExpressionOutputIdx].Type = fromExpressionOutputArg.Type
-		prgrm.CXArgs[toExpressionOutputIdx].PointerTargetType = fromExpressionOutputArg.PointerTargetType
-		prgrm.CXArgs[toExpressionOutputIdx].Lengths = fromExpressionOutputArg.Lengths
-		prgrm.CXArgs[toExpressionOutputIdx].PassBy = fromExpressionOutputArg.PassBy
+		// if fromExpressionOutputArg type is atomic then change the type signature to type atomic
+		if !fromExpressionOutputArg.IsSlice && len(fromExpressionOutputArg.Lengths) == 0 && fromExpressionOutputArg.Type.IsPrimitive() {
+			toExpressionOutput.Type = ast.TYPE_ATOMIC
+			toExpressionOutput.Meta = int(fromExpressionOutputArg.Type)
+			toExpressionOutput.Offset = prgrm.CXArgs[toExpressionOutputIdx].Offset
+		} else {
+			prgrm.CXArgs[toExpressionOutputIdx].Size = fromExpressionOutputArg.Size
+			prgrm.CXArgs[toExpressionOutputIdx].TotalSize = fromExpressionOutputArg.TotalSize
+			prgrm.CXArgs[toExpressionOutputIdx].Type = fromExpressionOutputArg.Type
+			prgrm.CXArgs[toExpressionOutputIdx].PointerTargetType = fromExpressionOutputArg.PointerTargetType
+			prgrm.CXArgs[toExpressionOutputIdx].Lengths = fromExpressionOutputArg.Lengths
+			prgrm.CXArgs[toExpressionOutputIdx].PassBy = fromExpressionOutputArg.PassBy
+		}
 
 		if fromExprs[lastFromExpressionIdx].IsMethodCall() {
 			newInputs := prgrm.CXAtomicOps[fromExpressionIdx].Outputs
@@ -470,6 +477,7 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 
 		return append(toExprs[:len(toExprs)-1], fromExprs...)
 	} else {
+
 		fromExpressionOperatorOutputs := fromExpressionOperator.GetOutputs(prgrm)
 		var fromCXAtomicOpOperatorOutput *ast.CXArgument = &ast.CXArgument{}
 		if fromExpressionOperatorOutputs[0].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
