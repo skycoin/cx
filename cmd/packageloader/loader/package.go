@@ -60,5 +60,6 @@ func (newPackage *Package) saveToDatabase(hash [64]byte, database string) error 
 		}
 		bolt.Add(fmt.Sprintf("%x", hash[:]), value)
 	}
+	PackageHashMap[newPackage.PackageName] = fmt.Sprintf("%x", hash[:])
 	return nil
 }
