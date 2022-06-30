@@ -15,16 +15,18 @@ import (
 	"github.com/skycoin/cx/cxparser/actions"
 )
 
-// Get the type.Code from cx/cx/types
-func getTypeCode(typeName string) types.Code {
+// Primitive Types Map
+var primitiveTypesMap map[string]types.Code = map[string]types.Code{
+	"bool": types.BOOL,
 
-	for i := 0; i < 21; i++ { // hard coded atm
-		if types.Code(i).Name() == typeName {
-			return types.Code(i)
-		}
-	}
+	"byte": types.I8,
+	"i32":  types.I32,
+	"i64":  types.I64,
 
-	return types.Code(0)
+	"f32": types.F32,
+	"f64": types.F64,
+
+	"str": types.STR,
 }
 
 // ParseGlobals make the CXArguments and add them to the AST
@@ -82,7 +84,7 @@ func ParseGlobals(globals []declaration_extraction.GlobalDeclaration) {
 		globalArg.Offset = types.InvalidPointer
 
 		globalArg.Package = ast.CXPackageIndex(pkg.Index)
-		globalArg.SetType(getTypeCode(tokens[2]))
+		globalArg.SetType(primitiveTypesMap[tokens[2]])
 
 		globalArgIdx := actions.AST.AddCXArgInArray(globalArg)
 
@@ -185,10 +187,9 @@ func ParseStructs(structs []declaration_extraction.StructDeclaration) {
 
 				fmt.Print(string(tokens[1]))
 
-				typeCode := getTypeCode(string(tokens[1]))
+				typeCode := primitiveTypesMap[string(tokens[1])]
 
 				field := ast.MakeArgument(string(tokens[0]), strct.FileID, lineno)
-				field.SetType(typeCode)
 
 				structCX = structCX.AddField(actions.AST, field)
 
@@ -266,7 +267,7 @@ func ParseFuncs(funcs []declaration_extraction.FuncDeclaration) {
 			tokens := bytes.Fields(param)
 			paramName := bytes.TrimSpace(tokens[0])
 			paramArg := ast.MakeArgument(string(paramName), fun.FileID, fun.LineNumber)
-			paramArg.SetType(getTypeCode(string(tokens[1])))
+			paramArg.SetType(primitiveTypesMap[string(tokens[1])])
 			funcCX = funcCX.AddInput(actions.AST, paramArg)
 
 		}
@@ -279,7 +280,7 @@ func ParseFuncs(funcs []declaration_extraction.FuncDeclaration) {
 
 			rturn = bytes.TrimSpace(rturn)
 			returnArg := ast.MakeArgument("", fun.FileID, fun.LineNumber)
-			returnArg.SetType(getTypeCode(string(rturn)))
+			returnArg.SetType(primitiveTypesMap[string(rturn)])
 			funcCX = funcCX.AddOutput(actions.AST, returnArg)
 
 		}
