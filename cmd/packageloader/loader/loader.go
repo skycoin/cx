@@ -3,20 +3,24 @@ package loader
 import (
 	"bufio"
 	"errors"
-	"io/fs"
+	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
+	"strings"
+	"sync"
 
 	"github.com/skycoin/cx/cmd/packageloader/bolt"
 	"github.com/skycoin/cx/cmd/packageloader/redis"
+	"github.com/skycoin/cx/cx/util"
 	"golang.org/x/crypto/blake2b"
 )
 
 var SKIP_PACKAGES = []string{"al", "gl", "glfw", "time", "os", "gltext", "cx", "json", "cipher", "tcp"}
+var FileHashMap = make(map[string]string)
+var PackageHashMap = make(map[string]string)
 
-func contains(list []string, element string) bool {
+func Contains(list []string, element string) bool {
 	for _, elem := range list {
 		if elem == element {
 			return true
@@ -25,214 +29,285 @@ func contains(list []string, element string) bool {
 	return false
 }
 
-func LoadPackages(programName string, path string, database string) error {
-	srcPath := path + "src/"
-
-	packageList := PackageList{}
-
-	directoryList := []string{}
-	err := filepath.WalkDir(srcPath, func(path string, info fs.DirEntry, err error) error {
+func createFileMap(files []*os.File) (fileMap map[string][]*os.File, err error) {
+	fileMap = make(map[string][]*os.File)
+	for _, file := range files {
+		path := strings.Split(file.Name(), "/")
+		packageName := path[len(path)-2]
+		filePackageName, err := getPackageName(file)
 		if err != nil {
-			return err
+			return fileMap, err
 		}
-		if info.IsDir() {
-			directoryList = append(directoryList, path)
+		if packageName == "src" {
+			if filePackageName == "main" {
+				fileMap["main"] = append(fileMap["main"], file)
+				continue
+			}
 		}
-		return nil
-	})
+		if filePackageName == packageName {
+			fileMap[packageName] = append(fileMap[packageName], file)
+		}
+	}
+	return fileMap, nil
+}
+
+func getPackageName(file *os.File) (string, error) {
+	openFile, err := os.Open(file.Name())
+	if err != nil {
+		return "", err
+	}
+	defer openFile.Close()
+
+	scanner := bufio.NewScanner(openFile)
+
+	for scanner.Scan() {
+		line := strings.Split(scanner.Text(), " ")
+		if line[0] == "package" {
+			return line[1], nil
+		}
+	}
+	return "", errors.New("file doesn't contain a package name")
+}
+
+func createImportMap(fileMap map[string][]*os.File) (importMap map[string][]string, err error) {
+	importMap = make(map[string][]string)
+	for packageName := range fileMap {
+		packageImports := []string{}
+		for _, file := range fileMap[packageName] {
+			newImports, err := getImports(file)
+			if err != nil {
+				return importMap, err
+			}
+			packageImports = append(packageImports, newImports...)
+		}
+		importMap[packageName] = packageImports
+	}
+	return importMap, nil
+}
+
+func getImports(file *os.File) (imports []string, err error) {
+	openFile, err := os.Open(file.Name())
+	if err != nil {
+		return imports, err
+	}
+	defer openFile.Close()
+
+	scanner := bufio.NewScanner(openFile)
+
+	for scanner.Scan() {
+		line := strings.Split(scanner.Text(), " ")
+		if line[0] == "import" {
+			imports = append(imports, line[1][1:len(line[1])-1])
+		}
+	}
+	return imports, nil
+}
+
+func checkForDependencyLoop(importMap map[string][]string) (err error) {
+	for packageName := range importMap {
+		for _, importName := range importMap[packageName] {
+			if importName == packageName {
+				return errors.New("Module " + packageName + " imports itself")
+			}
+			if Contains(importMap[importName], packageName) {
+				return errors.New("Dependency loop between modules " + packageName + " and " + importName)
+			}
+		}
+	}
+	return nil
+}
+
+func LoadCXProgram(programName string, sourceCode []*os.File, database string) (err error) {
+	fileMap, err := createFileMap(sourceCode)
 	if err != nil {
 		return err
 	}
-	importedDirectories := []string{}
-	for _, path := range directoryList {
-		importedDirectories, err = addPackages(&packageList, srcPath, path, database, importedDirectories)
-		if err != nil {
-			return err
-		}
+	importMap, err := createImportMap(fileMap)
+	if err != nil {
+		return err
 	}
+	err = checkForDependencyLoop(importMap)
+	if err != nil {
+		return
+	}
+
+	packageListStruct := PackageList{}
+	for key, files := range fileMap {
+		addNewPackage(&packageListStruct, key, files, database)
+	}
+
 	switch database {
 	case "redis":
-		redis.Add(programName, packageList)
+		redis.Add(programName, packageListStruct)
 	case "bolt":
-		value, err := packageList.MarshalBinary()
+		value, err := packageListStruct.MarshalBinary()
 		if err != nil {
 			return err
 		}
 		bolt.Add(programName, value)
 	}
+
 	return nil
 }
 
-func addPackages(packageList *PackageList, srcPath string, packagePath string, database string, importedDirectories []string) ([]string, error) {
-	if packagePath[len(packagePath)-1:] != "/" {
-		packagePath += "/"
-	}
-	if contains(importedDirectories, packagePath) {
-		return importedDirectories, nil
+func addNewPackage(packageListStruct *PackageList, packageName string, files []*os.File, database string) error {
+	packageStruct := Package{
+		PackageName: packageName,
 	}
 
-	newPackage := Package{}
-	imports := []string{}
-	fileList := []os.DirEntry{}
-	files, err := os.ReadDir(packagePath)
-	if err != nil {
-		return importedDirectories, err
+	var wg sync.WaitGroup
+	for _, file := range files {
+		wg.Add(1)
+		errs := make(chan error)
+		go func(file *os.File) {
+			defer wg.Done()
+			fileStruct, err := fileStructFromFile(file)
+			if err != nil {
+				errs <- err
+			}
+			err = packageStruct.appendFile(&fileStruct, database)
+			if err != nil {
+				errs <- err
+			}
+			close(errs)
+		}(file)
+		for err := range errs {
+			if err != nil {
+				return err
+			}
+		}
 	}
+	wg.Wait()
 
-	for _, dirEntry := range files {
-		if dirEntry.Name()[len(dirEntry.Name())-2:] != "cx" {
-			continue
-		}
-		fileList = append(fileList, dirEntry)
-	}
+	packageListStruct.appendPackage(&packageStruct, database)
 
-	if len(fileList) == 1 {
-		packageName, err := getPackageName(fileList[0], packagePath)
-		if err != nil {
-			return importedDirectories, err
-		}
-		newImports, err := getImports(fileList[0], packagePath)
-		imports = append(imports, newImports...)
-		if err != nil {
-			return importedDirectories, err
-		}
-		newPackage.PackageName = packageName
-	}
-	if len(fileList) > 1 {
-		samePackage := false
-		packageName := ""
-		samePackage, packageName, imports, err = comparePackageNames(fileList, packagePath, imports)
-		if err != nil {
-			return importedDirectories, err
-		}
-		if !samePackage {
-			log.Print("Files in directory " + packagePath + " are not all in the same newPackage.\nSource of the error: " + packageName)
-			return importedDirectories, errors.New("ErrMismatchedPackageFiles")
-		}
-		newPackage.PackageName = packageName
-	}
-
-	addFiles(&newPackage, fileList, packagePath, database)
-	packageList.addPackage(&newPackage, database)
-	importedDirectories = append(importedDirectories, packagePath)
-
-	for _, importName := range imports {
-		importPath := srcPath + importName + "/"
-		if contains(SKIP_PACKAGES, importName) || contains(importedDirectories, importPath) {
-			continue
-		}
-		return addPackages(packageList, srcPath, importPath, database, importedDirectories)
-	}
-	return importedDirectories, nil
-}
-
-// For a list of cx files, get their package names and return if they match, and add the imports
-func comparePackageNames(fileList []fs.DirEntry, packagePath string, imports []string) (bool, string, []string, error) {
-	packageName, err := getPackageName(fileList[0], packagePath)
-	if err != nil {
-		return false, "", imports, err
-	}
-	newImports, err := getImports(fileList[0], packagePath)
-	imports = append(imports, newImports...)
-	if err != nil {
-		return false, "", imports, err
-	}
-	for i := 1; i < len(fileList); i++ {
-		newPackageName, err := getPackageName(fileList[i], packagePath)
-		if err != nil {
-			return false, "", imports, err
-		}
-		newImports, err := getImports(fileList[i], packagePath)
-		imports = append(imports, newImports...)
-		if err != nil {
-			return false, "", imports, err
-		}
-		if newPackageName != packageName {
-			return false, newPackageName + "in" + fileList[i].Name(), imports, nil
-		}
-	}
-	return true, packageName, imports, nil
-}
-
-// Get the package name of a cx file
-func getPackageName(dirEntry fs.DirEntry, packagePath string) (string, error) {
-	file, err := os.Open(packagePath + dirEntry.Name())
-	if err != nil {
-		return "", err
-	}
-	defer file.Close()
-	scanner := bufio.NewScanner(file)
-	scanner.Split(bufio.ScanWords)
-
-	wordBefore := ""
-	for scanner.Scan() {
-		if scanner.Text() != "package" {
-			wordBefore = scanner.Text()
-			continue
-		}
-		if wordBefore == "//" {
-			wordBefore = scanner.Text()
-			continue
-		}
-		if scanner.Text() == "import" || scanner.Text() == "var" || scanner.Text() == "const" || scanner.Text() == "type" || scanner.Text() == "func" {
-			return "", errors.New("no package name found")
-		}
-		break
-	}
-	scanner.Scan()
-	return scanner.Text(), nil
-}
-
-// Get the import names in a cx file
-func getImports(dirEntry fs.DirEntry, importPath string) (imports []string, err error) {
-	file, err := os.Open(importPath + dirEntry.Name())
-	if err != nil {
-		return imports, err
-	}
-	defer file.Close()
-	scanner := bufio.NewScanner(file)
-	scanner.Split(bufio.ScanWords)
-
-	wordBefore := ""
-	for scanner.Scan() {
-		if scanner.Text() != "import" {
-			wordBefore = scanner.Text()
-			continue
-		}
-		if wordBefore == "//" {
-			wordBefore = scanner.Text()
-			continue
-		}
-		if scanner.Text() == "var" || scanner.Text() == "const" || scanner.Text() == "type" || scanner.Text() == "func" {
-			break
-		}
-		scanner.Scan()
-		imports = append(imports, scanner.Text()[1:len(scanner.Text())-1])
-		wordBefore = scanner.Text()
-	}
-	return imports, nil
-}
-
-// Add the hashes of the files in fileList to the package
-func addFiles(newPackage *Package, fileList []fs.DirEntry, packagePath string, database string) error {
-	for _, file := range fileList {
-		fileInfo, err := file.Info()
-		if err != nil {
-			return err
-		}
-
-		newFile := File{
-			FileName: file.Name(),
-			Length:   uint32(fileInfo.Size()),
-		}
-		byteArray, err := ioutil.ReadFile(packagePath + file.Name())
-		if err != nil {
-			return err
-		}
-		newFile.Content = byteArray
-		h := blake2b.Sum512(byteArray)
-		newFile.Blake2Hash = string(h[:])
-		newPackage.addFile(&newFile, database)
-	}
 	return nil
+}
+
+func fileStructFromFile(file *os.File) (File, error) {
+	path := strings.Split(file.Name(), "/")
+	fileName := path[len(path)-1]
+	fileInfo, err := file.Stat()
+	if err != nil {
+		return File{}, err
+	}
+	fileBytes, err := ioutil.ReadFile(file.Name())
+	if err != nil {
+		return File{}, err
+	}
+	fileHash := blake2b.Sum512(fileBytes)
+
+	fileStruct := File{
+		FileName:   fileName,
+		Length:     uint32(fileInfo.Size()),
+		Content:    fileBytes,
+		Blake2Hash: string(fileHash[:]),
+	}
+
+	return fileStruct, nil
+}
+
+func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCode []*os.File, fileNames []string) {
+	skip := false // flag for skipping arg
+
+	for _, arg := range args {
+
+		// skip arg if skip flag is specified
+		if skip {
+			skip = false
+			continue
+		}
+
+		// cli flags are either "--key=value" or "-key value"
+		// we have to skip both cases
+		if len(arg) > 1 && arg[0] == '-' {
+			if !strings.Contains(arg, "=") {
+				skip = true
+			}
+			continue
+		}
+
+		// cli cx flags are prefixed with "++"
+		if len(arg) > 2 && arg[:2] == "++" {
+			cxArgs = append(cxArgs, arg)
+			continue
+		}
+
+		fi, err := util.CXStatFile(arg)
+		if err != nil {
+			println(fmt.Sprintf("%s: source file or library not found", arg))
+			os.Exit(1)
+		}
+
+		switch mode := fi.Mode(); {
+		case mode.IsDir():
+			var fileList []string
+			var err error
+
+			// Checking if we want to check all subdirectories.
+			if alsoSubdirs {
+				fileList, err = filePathWalkDir(arg)
+			} else {
+				fileList, err = ioReadDir(arg)
+				// fileList, err = filePathWalkDir(arg)
+			}
+
+			if err != nil {
+				panic(err)
+			}
+
+			for _, path := range fileList {
+				file, err := util.CXOpenFile(path)
+
+				if err != nil {
+					println(fmt.Sprintf("%s: source file or library not found", arg))
+					os.Exit(1)
+				}
+
+				fiName := file.Name()
+				fiNameLen := len(fiName)
+
+				if fiNameLen > 2 && fiName[fiNameLen-3:] == ".cx" {
+					// only loading .cx files
+					sourceCode = append(sourceCode, file)
+					fileNames = append(fileNames, fiName)
+				}
+			}
+		case mode.IsRegular():
+			file, err := util.CXOpenFile(arg)
+
+			if err != nil {
+				panic(err)
+			}
+
+			fileNames = append(fileNames, file.Name())
+			sourceCode = append(sourceCode, file)
+		}
+	}
+
+	return cxArgs, sourceCode, fileNames
+}
+
+func filePathWalkDir(root string) ([]string, error) {
+	var files []string
+	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+		if !info.IsDir() {
+			files = append(files, path)
+		}
+		return err
+	})
+	return files, err
+}
+
+func ioReadDir(root string) ([]string, error) {
+	var files []string
+	fileInfo, err := ioutil.ReadDir(root)
+	if err != nil {
+		return files, err
+	}
+
+	for _, file := range fileInfo {
+		files = append(files, fmt.Sprintf("%s/%s", root, file.Name()))
+	}
+	return files, nil
 }
