@@ -43,6 +43,6 @@ const (
 	Second
 )
 
-func functionWithSingleReturn (input i8) str {
+func functionWithSingleReturn (input byte) str {
 
 }

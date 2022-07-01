@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"log"
 	"os"
 	"strings"
 
@@ -17,6 +16,7 @@ import (
 
 // Primitive Types Map
 var primitiveTypesMap map[string]types.Code = map[string]types.Code{
+
 	"bool": types.BOOL,
 
 	"byte": types.I8,
@@ -36,15 +36,13 @@ var primitiveTypesMap map[string]types.Code = map[string]types.Code{
 
 func ParseGlobals(globals []declaration_extraction.GlobalDeclaration) {
 
+	// Make program
 	if actions.AST == nil {
 		actions.AST = cxinit.MakeProgram()
 	}
 
+	// Range over global declarations and parse
 	for _, global := range globals {
-
-		newPkg := ast.MakePackage(global.PackageID)
-		pkgIdx := actions.AST.AddPackage(newPkg)
-		newPkg, err := actions.AST.GetPackageFromArray(pkgIdx)
 
 		// Get Package
 		pkg, err := actions.AST.GetPackage(global.PackageID)
@@ -57,7 +55,7 @@ func ParseGlobals(globals []declaration_extraction.GlobalDeclaration) {
 			newPkg, err := actions.AST.GetPackageFromArray(pkgIdx)
 
 			if err != nil {
-				log.Fatal(err)
+				panic(err)
 			}
 
 			pkg = newPkg
@@ -67,7 +65,7 @@ func ParseGlobals(globals []declaration_extraction.GlobalDeclaration) {
 		srcBytes, err := os.ReadFile(global.FileID)
 
 		if err != nil {
-			// error handling
+			panic(err)
 		}
 
 		globalDeclaration := srcBytes[global.StartOffset : global.StartOffset+global.Length]
@@ -75,8 +73,9 @@ func ParseGlobals(globals []declaration_extraction.GlobalDeclaration) {
 		tokens := strings.Fields(string(globalDeclaration))
 
 		// type wasn't definited in declaration
-		if len(tokens) != 3 {
+		if len(tokens) < 3 {
 			// error handling
+			fmt.Print("error no type was declared")
 		}
 
 		// Make and add global to AST
@@ -89,6 +88,8 @@ func ParseGlobals(globals []declaration_extraction.GlobalDeclaration) {
 		globalArgIdx := actions.AST.AddCXArgInArray(globalArg)
 
 		pkg.AddGlobal(actions.AST, globalArgIdx)
+
+		globalArg.DeclarationSpecifiers = actions.DeclareGlobalInPackage()
 
 	}
 }
@@ -190,6 +191,8 @@ func ParseStructs(structs []declaration_extraction.StructDeclaration) {
 				typeCode := primitiveTypesMap[string(tokens[1])]
 
 				field := ast.MakeArgument(string(tokens[0]), strct.FileID, lineno)
+
+				field.SetType(typeCode)
 
 				structCX = structCX.AddField(actions.AST, field)
 
