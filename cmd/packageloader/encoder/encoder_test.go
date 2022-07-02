@@ -12,12 +12,12 @@ func TestSavePackage(t *testing.T) {
 		Database string
 	}{
 		{
-			"Test with Redis database",
-			"redis",
+			Scenario: "Test with Redis database",
+			Database: "redis",
 		},
 		{
-			"Test with Bolt database",
-			"bolt",
+			Scenario: "Test with Bolt database",
+			Database: "bolt",
 		},
 	}
 	for _, testcase := range tests {

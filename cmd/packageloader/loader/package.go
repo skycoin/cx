@@ -25,7 +25,7 @@ func (p *Package) UnmarshalBinary(data []byte) error {
 }
 
 // Encode a file and put it in the specified package
-func (newPackage *Package) addFile(newFile *File, database string) error {
+func (newPackage *Package) appendFile(newFile *File, database string) error {
 	hash, err := newFile.getHash()
 	if err != nil {
 		return err
@@ -60,5 +60,6 @@ func (newPackage *Package) saveToDatabase(hash [64]byte, database string) error 
 		}
 		bolt.Add(fmt.Sprintf("%x", hash[:]), value)
 	}
+	PackageHashMap[newPackage.PackageName] = fmt.Sprintf("%x", hash[:])
 	return nil
 }

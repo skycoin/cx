@@ -1,8 +1,8 @@
 package loader
 
-var Contains = contains
-var AddPackages = addPackages
-var ComparePackageNames = comparePackageNames
+var CreateFileMap = createFileMap
+var CreateImportMap = createImportMap
+var CheckForDependencyLoop = checkForDependencyLoop
 var GetPackageName = getPackageName
-var GetImports = getImports
-var AddFiles = addFiles
+var AddNewPackage = addNewPackage
+var FileStructFromFile = fileStructFromFile

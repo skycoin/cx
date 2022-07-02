@@ -48,5 +48,6 @@ func (newFile *File) saveToDatabase(hash [64]byte, database string) error {
 		}
 		bolt.Add(fmt.Sprintf("%x", hash[:]), value)
 	}
+	FileHashMap[newFile.FileName] = fmt.Sprintf("%x", hash[:])
 	return nil
 }
