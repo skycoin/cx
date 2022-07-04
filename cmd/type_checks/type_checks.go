@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"regexp"
 	"strings"
 
 	"github.com/skycoin/cx/cmd/declaration_extraction"
@@ -264,7 +265,13 @@ func ParseFuncs(funcs []declaration_extraction.FuncDeclaration) {
 		// returnParenthesisOpen := bytes.IndexAny(funcDeclaration[paramParenthesisClose:], "(")
 		// returnParenthesisClose := bytes.IndexAny(funcDeclaration[returnParenthesisOpen:], ")")
 
-		returnArray := bytes.Split(funcDeclaration[paramParenthesisClose+1:], []byte(","))
+		reParenOpen := regexp.MustCompile(`\(`)
+		reParenClose := regexp.MustCompile(`\)`)
+
+		returnsRemoveParenOpen := reParenOpen.ReplaceAll(funcDeclaration[paramParenthesisClose+1:], []byte(""))
+		returnsRemoveParenClose := reParenClose.ReplaceAll(returnsRemoveParenOpen, []byte(""))
+
+		returnArray := bytes.Split(returnsRemoveParenClose, []byte(","))
 
 		funcCX := ast.MakeFunction(fun.FuncVariableName, fun.FileID, fun.LineNumber)
 
@@ -277,7 +284,7 @@ func ParseFuncs(funcs []declaration_extraction.FuncDeclaration) {
 			tokens := bytes.Fields(param)
 			paramName := bytes.TrimSpace(tokens[0])
 			paramArg := ast.MakeArgument(string(paramName), fun.FileID, fun.LineNumber)
-			paramArg.SetType(primitiveTypesMap[string(tokens[1])])
+			paramArg = paramArg.SetType(primitiveTypesMap[string(tokens[1])])
 			funcCX = funcCX.AddInput(actions.AST, paramArg)
 
 		}
@@ -288,9 +295,11 @@ func ParseFuncs(funcs []declaration_extraction.FuncDeclaration) {
 				continue
 			}
 
-			rturn = bytes.TrimSpace(rturn)
-			returnArg := ast.MakeArgument("", fun.FileID, fun.LineNumber)
-			returnArg.SetType(primitiveTypesMap[string(rturn)])
+			tokens := bytes.Fields(rturn)
+			fmt.Print(string(tokens[1]))
+			returnName := bytes.TrimSpace(tokens[0])
+			returnArg := ast.MakeArgument(string(returnName), fun.FileID, fun.LineNumber)
+			returnArg = returnArg.SetType(primitiveTypesMap[string(tokens[1])])
 			funcCX = funcCX.AddOutput(actions.AST, returnArg)
 
 		}

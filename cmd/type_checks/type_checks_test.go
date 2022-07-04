@@ -1,6 +1,7 @@
 package type_checks_test
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
@@ -115,6 +116,8 @@ func TestTypeChecks_ParseFuncs(t *testing.T) {
 			pkg := declaration_extraction.ExtractPackages(ReplaceCommentsWithWhitespaces)
 
 			funcs, err := declaration_extraction.ExtractFuncs(srcBytes, tc.testDir, pkg)
+
+			fmt.Print(funcs)
 
 			type_checks.ParseFuncs(funcs)
 
