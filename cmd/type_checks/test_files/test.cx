@@ -1,48 +1,38 @@
-package hello
-var apple str
+package main
 
-		var banana str
-
-/* var notVar bool
-multi line comment
-
-*/
-
-//single line comment
-
-//another comment
-/* comment infront */type person struct {
-	name str
-}
+var Bool bool = true
+var Byte i8 = 8B
+var I16 i16 = 16H
+var I32 i32 = 32
+var I64 i64 = 64L
+var UByte ui8 = 9UB
+var UI16 ui16 = 17UH
+var UI32 ui32 = 33U
+var UI64 ui64 = 65UL
+var F32 f32 = 0.32
+var F64 f64 = 0.64D
+var string str = "Hello World"
+var Affordance aff
 
 func main () {
-	var local str
 
-	type animal /* comment between */struct {
-		kingdom str
+	bool.print(Bool)
+	i8.print(Byte)
+	i16.print(I16)
+	i32.print(I32)
+	i64.print(I64)
+	ui8.print(UByte)
+	ui16.print(UI16)
+	ui32.print(UI32)
+	ui64.print(UI64)
+	f32.print(F32)
+	f64.print(F64)
+	str.print(string)
+	aff.print(Affordance)
 
-		anotherField i32
-	}
+	
 }
 
-	func functionTwo ( param1 str, param2 i32, param3 bool) {
-
-}
-
-type Direction int
-
-const (
-	North Direction = iota
-	South
-	East
-	West
-)
-
-const (
-	First Number = iota
-	Second
-)
-
-func functionWithSingleReturn (input byte) str {
-
+func add(a i32, b i32) i32 {
+	
 }
