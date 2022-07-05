@@ -559,6 +559,7 @@ func processTestExpression(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 	if err != nil {
 		panic(err)
 	}
+
 	expressionOperator := prgrm.GetFunctionFromArray(expression.Operator)
 
 	if expressionOperator != nil {
@@ -566,6 +567,7 @@ func processTestExpression(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 		if opCode == constants.OP_ASSERT || opCode == constants.OP_TEST || opCode == constants.OP_PANIC {
 			var expressionInputFirstArg *ast.CXArgument = &ast.CXArgument{}
 			if expression.GetInputs(prgrm)[0].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+
 				expressionInputFirstArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expression.GetInputs(prgrm)[0].Meta))
 			} else {
 				panic("type is not cx argument deprecate\n\n")
@@ -916,21 +918,15 @@ func checkMatchParamTypes(prgrm *ast.CXProgram, expr *ast.CXExpression, expected
 			var expressionInputArg *ast.CXArgument = &ast.CXArgument{}
 			if expression.GetInputs(prgrm)[0].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 				expressionInputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expression.GetInputs(prgrm)[0].Meta))
+				inpType = ast.GetFormattedType(prgrm, expressionInputArg)
 			} else {
-				panic("type is not cx argument deprecate\n\n")
+				// panic("type is not cx argument deprecate\n\n")
+				inpType = types.Code(expression.GetInputs(prgrm)[0].Meta).Name()
 			}
-
-			inpType = ast.GetFormattedType(prgrm, expressionInputArg)
 
 			// We use `isInputs` to only print the error once.
 			// Otherwise we'd print the error twice: once for the input and again for the output
 			if inpType != outType && isInputs {
-				var expressionOutputArg *ast.CXArgument = &ast.CXArgument{}
-				if expression.GetOutputs(prgrm)[0].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-					expressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expression.GetOutputs(prgrm)[0].Meta))
-				} else {
-					panic("type is not cx argument deprecate\n\n")
-				}
 				println(ast.CompilationError(receivedArg.ArgDetails.FileName, receivedArg.ArgDetails.FileLine), fmt.Sprintf("cannot assign value of type '%s' to identifier '%s' of type '%s'", inpType, expressionOutputArg.GetAssignmentElement(prgrm).Name, outType))
 			}
 		}
@@ -1020,20 +1016,20 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) {
 			var expressionInputArg *ast.CXArgument = &ast.CXArgument{}
 			if expression.GetInputs(prgrm)[i].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 				expressionInputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expression.GetInputs(prgrm)[i].Meta))
-			} else {
-				panic("type is not cx argument deprecate\n\n")
-			}
 
-			if expressionInputArg.GetAssignmentElement(prgrm).StructType != nil {
-				// then it's custom type
-				receivedType = expressionInputArg.GetAssignmentElement(prgrm).StructType.Name
-			} else {
-				// then it's native type
-				receivedType = expressionInputArg.GetAssignmentElement(prgrm).Type.Name()
+				if expressionInputArg.GetAssignmentElement(prgrm).StructType != nil {
+					// then it's custom type
+					receivedType = expressionInputArg.GetAssignmentElement(prgrm).StructType.Name
+				} else {
+					// then it's native type
+					receivedType = expressionInputArg.GetAssignmentElement(prgrm).Type.Name()
 
-				if expressionInputArg.GetAssignmentElement(prgrm).Type == types.POINTER {
-					receivedType = expressionInputArg.GetAssignmentElement(prgrm).PointerTargetType.Name()
+					if expressionInputArg.GetAssignmentElement(prgrm).Type == types.POINTER {
+						receivedType = expressionInputArg.GetAssignmentElement(prgrm).PointerTargetType.Name()
+					}
 				}
+			} else {
+				receivedType = types.Code(expression.GetInputs(prgrm)[i].Meta).Name()
 			}
 
 			if receivedType != expectedType {
@@ -1263,7 +1259,8 @@ func ProcessSliceAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 		if expression.GetInputs(prgrm)[0].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			expressionInputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expression.GetInputs(prgrm)[0].Meta))
 		} else {
-			panic("type is not cx argument deprecate\n\n")
+			// panic("type is not cx argument deprecate\n\n")
+			return
 		}
 
 		var expressionOutputArg *ast.CXArgument = &ast.CXArgument{}

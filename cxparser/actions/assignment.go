@@ -202,6 +202,7 @@ func ShortAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression, exprCXLine *a
 	fromExpressionOperator := prgrm.GetFunctionFromArray(prgrm.CXAtomicOps[fromExpressionIdx].Operator)
 
 	typeSig := toExpression.GetOutputs(prgrm)[0]
+
 	prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, typeSig)
 	prgrm.CXAtomicOps[expressionIdx].AddOutput(prgrm, typeSig)
 
@@ -440,9 +441,10 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 			panic("type is not type cx argument deprecate\n\n")
 		}
 
+		fromExpressionOutput := prgrm.CXAtomicOps[fromExpressionIdx].GetOutputs(prgrm)[0]
 		var fromExpressionOutputArg *ast.CXArgument = &ast.CXArgument{}
-		if prgrm.CXAtomicOps[fromExpressionIdx].GetOutputs(prgrm)[0].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-			fromExpressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(prgrm.CXAtomicOps[fromExpressionIdx].GetOutputs(prgrm)[0].Meta))
+		if fromExpressionOutput.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			fromExpressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(fromExpressionOutput.Meta))
 		} else {
 			panic("type is not type cx argument deprecate\n\n")
 		}
@@ -452,6 +454,12 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 			toExpressionOutput.Type = ast.TYPE_ATOMIC
 			toExpressionOutput.Meta = int(fromExpressionOutputArg.Type)
 			toExpressionOutput.Offset = prgrm.CXArgs[toExpressionOutputIdx].Offset
+
+			fromExpressionOutput.Name = toExpressionOutput.Name
+			fromExpressionOutput.Type = ast.TYPE_ATOMIC
+			fromExpressionOutput.Meta = int(fromExpressionOutputArg.Type)
+			fromExpressionOutput.Offset = fromExpressionOutputArg.Offset
+			fromExpressionOutput.Package = fromExpressionOutputArg.Package
 		} else {
 			prgrm.CXArgs[toExpressionOutputIdx].Size = fromExpressionOutputArg.Size
 			prgrm.CXArgs[toExpressionOutputIdx].TotalSize = fromExpressionOutputArg.TotalSize
@@ -477,7 +485,6 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 
 		return append(toExprs[:len(toExprs)-1], fromExprs...)
 	} else {
-
 		fromExpressionOperatorOutputs := fromExpressionOperator.GetOutputs(prgrm)
 		var fromCXAtomicOpOperatorOutput *ast.CXArgument = &ast.CXArgument{}
 		if fromExpressionOperatorOutputs[0].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
