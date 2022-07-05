@@ -18,7 +18,7 @@ type CXStruct struct {
 	Package CXPackageIndex // The package this struct belongs to
 
 	// Contents
-	Fields []*CXTypeSignature // The fields of the struct
+	Fields []CXTypeSignatureIndex // The fields of the struct
 }
 
 // ----------------------------------------------------------------
@@ -26,7 +26,8 @@ type CXStruct struct {
 
 // GetField ...
 func (strct *CXStruct) GetField(prgrm *CXProgram, name string) (*CXArgument, error) {
-	for _, typeSignature := range strct.Fields {
+	for _, typeSignatureIdx := range strct.Fields {
+		typeSignature := prgrm.GetCXTypeSignatureFromArray(typeSignatureIdx)
 		if typeSignature.Name == name {
 			// If type is struct
 			if typeSignature.Type == TYPE_STRUCT {
@@ -67,7 +68,8 @@ func MakeStruct(name string) *CXStruct {
 // AddField ...
 func (strct *CXStruct) AddField(prgrm *CXProgram, cxArgument *CXArgument) *CXStruct {
 	// Check if field already exist
-	for _, typeSignature := range strct.Fields {
+	for _, typeSignatureIdx := range strct.Fields {
+		typeSignature := prgrm.GetCXTypeSignatureFromArray(typeSignatureIdx)
 		if typeSignature.Name == cxArgument.Name {
 			// fldIdx := typeSignature.Meta
 			// fmt.Printf("%s : duplicate field", CompilationError(prgrm.CXArgs[fldIdx].ArgDetails.FileName, prgrm.CXArgs[fldIdx].ArgDetails.FileLine))
@@ -77,7 +79,8 @@ func (strct *CXStruct) AddField(prgrm *CXProgram, cxArgument *CXArgument) *CXStr
 	}
 
 	newCXTypeSignature := GetCXTypeSignatureRepresentationOfCXArg_ForStructs(prgrm, cxArgument)
-	strct.Fields = append(strct.Fields, newCXTypeSignature)
+	typeSignatureIdx := prgrm.AddCXTypeSignatureInArray(newCXTypeSignature)
+	strct.Fields = append(strct.Fields, typeSignatureIdx)
 
 	// TODO: Found out the effect and completely remove this.
 	// Dont remove this yet as removing this gives another error on cxfx
@@ -106,9 +109,11 @@ func (strct *CXStruct) AddField(prgrm *CXProgram, cxArgument *CXArgument) *CXStr
 }
 
 // AddField ...
-func (strct *CXStruct) AddField_TypeSignature(prgrm *CXProgram, field *CXTypeSignature) *CXStruct {
+func (strct *CXStruct) AddField_TypeSignature(prgrm *CXProgram, fieldIdx CXTypeSignatureIndex) *CXStruct {
 	// Check if field already exist
-	for _, typeSignature := range strct.Fields {
+	for _, typeSignatureIdx := range strct.Fields {
+		typeSignature := prgrm.GetCXTypeSignatureFromArray(typeSignatureIdx)
+		field := prgrm.GetCXTypeSignatureFromArray(fieldIdx)
 		if typeSignature.Name == field.Name {
 			// fldIdx := typeSignature.Meta
 			// fmt.Printf("%s : duplicate field", CompilationError(prgrm.CXArgs[fldIdx].ArgDetails.FileName, prgrm.CXArgs[fldIdx].ArgDetails.FileLine))
@@ -117,13 +122,13 @@ func (strct *CXStruct) AddField_TypeSignature(prgrm *CXProgram, field *CXTypeSig
 		}
 	}
 
-	strct.Fields = append(strct.Fields, field)
+	strct.Fields = append(strct.Fields, fieldIdx)
 
 	return strct
 }
 
-func (strct *CXStruct) AddField_CXAtomicOps(prgrm *CXProgram, field *CXTypeSignature) *CXStruct {
-	strct.Fields = append(strct.Fields, field)
+func (strct *CXStruct) AddField_CXAtomicOps(prgrm *CXProgram, fieldIdx CXTypeSignatureIndex) *CXStruct {
+	strct.Fields = append(strct.Fields, fieldIdx)
 
 	return strct
 }
@@ -132,7 +137,8 @@ func (strct *CXStruct) AddField_Globals_CXAtomicOps(prgrm *CXProgram, cxArgIdx C
 	cxArgument := prgrm.GetCXArgFromArray(cxArgIdx)
 
 	// Check if field already exist
-	for _, typeSignature := range strct.Fields {
+	for _, typeSignatureIdx := range strct.Fields {
+		typeSignature := prgrm.GetCXTypeSignatureFromArray(typeSignatureIdx)
 		if typeSignature.Name == cxArgument.Name {
 			// fldIdx := typeSignature.Meta
 			// fmt.Printf("%s : duplicate field", CompilationError(prgrm.CXArgs[fldIdx].ArgDetails.FileName, prgrm.CXArgs[fldIdx].ArgDetails.FileLine))
@@ -142,7 +148,8 @@ func (strct *CXStruct) AddField_Globals_CXAtomicOps(prgrm *CXProgram, cxArgIdx C
 	}
 
 	newCXTypeSignature := GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, cxArgument)
-	strct.Fields = append(strct.Fields, newCXTypeSignature)
+	newCXTypeSignatureIdx := prgrm.AddCXTypeSignatureInArray(newCXTypeSignature)
+	strct.Fields = append(strct.Fields, newCXTypeSignatureIdx)
 
 	return strct
 }
@@ -166,7 +173,8 @@ func (strct *CXStruct) AddField_Globals_CXAtomicOps(prgrm *CXProgram, cxArgIdx C
 
 func (strct *CXStruct) GetStructSize(prgrm *CXProgram) types.Pointer {
 	var structSize types.Pointer
-	for _, typeSignature := range strct.Fields {
+	for _, typeSignatureIdx := range strct.Fields {
+		typeSignature := prgrm.GetCXTypeSignatureFromArray(typeSignatureIdx)
 		structSize += typeSignature.GetSize(prgrm)
 	}
 

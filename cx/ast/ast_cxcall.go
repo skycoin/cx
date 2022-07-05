@@ -39,13 +39,15 @@ func popStack(prgrm *CXProgram, call *CXCall) error {
 	cxAtomicOpOutputs := cxAtomicOp.GetOutputs(prgrm)
 	lenOuts := len(cxAtomicOpOutputs)
 	callOperatorOutputs := call.Operator.GetOutputs(prgrm)
-	for i, output := range callOperatorOutputs {
+	for i, outputIdx := range callOperatorOutputs {
+		output := prgrm.GetCXTypeSignatureFromArray(outputIdx)
 		// Continuing if there is no receiving variable available.
 		if i >= lenOuts {
 			continue
 		}
 
-		types.WriteSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, returnFP, nil, cxAtomicOpOutputs[i]),
+		cxAtomicOpOutput := prgrm.GetCXTypeSignatureFromArray(cxAtomicOpOutputs[i])
+		types.WriteSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, returnFP, nil, cxAtomicOpOutput),
 			types.GetSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, output), output.GetSize(prgrm)))
 	}
 
@@ -67,9 +69,10 @@ func wipeDeclarationMemory(prgrm *CXProgram, expr *CXExpression) error {
 	newCall := &prgrm.CallStack[prgrm.CallCounter]
 	newFP := newCall.FramePointer
 	cxAtomicOpOutputs := cxAtomicOp.GetOutputs(prgrm)
-	size := cxAtomicOpOutputs[0].GetSize(prgrm)
+	cxAtomicOutput0 := prgrm.GetCXTypeSignatureFromArray(cxAtomicOpOutputs[0])
+	size := cxAtomicOutput0.GetSize(prgrm)
 	for c := types.Pointer(0); c < size; c++ {
-		prgrm.Memory[newFP+prgrm.CXArgs[cxAtomicOpOutputs[0].Meta].Offset+c] = 0
+		prgrm.Memory[newFP+prgrm.CXArgs[cxAtomicOutput0.Meta].Offset+c] = 0
 	}
 
 	return nil
@@ -100,14 +103,15 @@ func processBuiltInOperators(prgrm *CXProgram, expr *CXExpression, globalInputs 
 	argIndex := 0
 	for inputIndex := 0; inputIndex < inputCount; inputIndex++ {
 		var input *CXArgument = &CXArgument{}
-		if inputs[inputIndex].Type == TYPE_CXARGUMENT_DEPRECATE {
-			input = prgrm.GetCXArgFromArray(CXArgumentIndex(inputs[inputIndex].Meta))
+		inputTypeSignature := prgrm.GetCXTypeSignatureFromArray(inputs[inputIndex])
+		if inputTypeSignature.Type == TYPE_CXARGUMENT_DEPRECATE {
+			input = prgrm.GetCXArgFromArray(CXArgumentIndex(inputTypeSignature.Meta))
 		}
 
-		offset := GetFinalOffset(prgrm, fp, nil, inputs[inputIndex])
+		offset := GetFinalOffset(prgrm, fp, nil, inputTypeSignature)
 		value := &inputValues[inputIndex]
-		value.TypeSignature = inputs[inputIndex]
-		value.Size = inputs[inputIndex].GetSize(prgrm)
+		value.TypeSignature = inputTypeSignature
+		value.Size = inputTypeSignature.GetSize(prgrm)
 		value.Offset = offset
 		value.Type = input.Type
 		if input.Type == types.POINTER {
@@ -120,14 +124,15 @@ func processBuiltInOperators(prgrm *CXProgram, expr *CXExpression, globalInputs 
 
 	for outputIndex := 0; outputIndex < outputCount; outputIndex++ {
 		var output *CXArgument = &CXArgument{}
-		if outputs[outputIndex].Type == TYPE_CXARGUMENT_DEPRECATE {
-			output = prgrm.GetCXArgFromArray(CXArgumentIndex(outputs[outputIndex].Meta))
+		outputTypeSignature := prgrm.GetCXTypeSignatureFromArray(outputs[outputIndex])
+		if outputTypeSignature.Type == TYPE_CXARGUMENT_DEPRECATE {
+			output = prgrm.GetCXArgFromArray(CXArgumentIndex(outputTypeSignature.Meta))
 		}
 
-		offset := GetFinalOffset(prgrm, fp, nil, outputs[outputIndex])
+		offset := GetFinalOffset(prgrm, fp, nil, outputTypeSignature)
 		value := &outputValues[outputIndex]
-		value.TypeSignature = outputs[outputIndex]
-		value.Size = outputs[outputIndex].GetSize(prgrm)
+		value.TypeSignature = outputTypeSignature
+		value.Size = outputTypeSignature.GetSize(prgrm)
 		value.Offset = offset
 		value.Type = output.Type
 		if output.Type == types.POINTER {
@@ -182,7 +187,8 @@ func processNonAtomicOperators(prgrm *CXProgram, expr *CXExpression, fp types.Po
 	}
 
 	newCallOperatorInputs := newCall.Operator.GetInputs(prgrm)
-	for i, input := range cxAtomicOp.GetInputs(prgrm) {
+	for i, inputIdx := range cxAtomicOp.GetInputs(prgrm) {
+		input := prgrm.GetCXTypeSignatureFromArray(inputIdx)
 		var inp *CXArgument = &CXArgument{}
 		if input.Type == TYPE_CXARGUMENT_DEPRECATE {
 			inp = prgrm.GetCXArgFromArray(CXArgumentIndex(input.Meta))
@@ -208,10 +214,11 @@ func processNonAtomicOperators(prgrm *CXProgram, expr *CXExpression, fp types.Po
 			byts = prgrm.Memory[finalOffset : finalOffset+size]
 		}
 
+		newCallOperatorInputTypeSignature := prgrm.GetCXTypeSignatureFromArray(newCallOperatorInputs[i])
 		// writing inputs to new stack frame
 		types.WriteSlice_byte(
 			prgrm.Memory,
-			GetFinalOffset(prgrm, newFP, nil, newCallOperatorInputs[i]),
+			GetFinalOffset(prgrm, newFP, nil, newCallOperatorInputTypeSignature),
 			// newFP + newCall.Operator.ProgramInput[i].Offset,
 			// GetFinalOffset(prgrm.Memory, newFP, newCall.Operator.ProgramInput[i], MEM_WRITE),
 			byts)

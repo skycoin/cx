@@ -8,6 +8,8 @@ import (
 // CXTypeSignature_TYPE enum contains CXTypeSignature types.
 type CXTypeSignature_TYPE int
 
+type CXTypeSignatureIndex int
+
 const (
 	TYPE_UNUSED CXTypeSignature_TYPE = iota
 	TYPE_ATOMIC

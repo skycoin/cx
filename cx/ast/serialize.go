@@ -371,7 +371,8 @@ func serializePackageGlobals(prgrm *CXProgram, pkg *CXPackage, s *SerializedCXPr
 		sPkg := &s.Packages[pkgOff]
 
 		var glblArgs []*CXArgument
-		for _, glblFld := range pkg.Globals.Fields {
+		for _, glblFldIdx := range pkg.Globals.Fields {
+			glblFld := prgrm.GetCXTypeSignatureFromArray(glblFldIdx)
 			// Assuming only all are TYPE_CXARGUMENT_DEPRECATE
 			// TODO: To be replaced
 			glbl := prgrm.GetCXArg(CXArgumentIndex(glblFld.Meta))
@@ -1105,13 +1106,15 @@ func deserializeExpression(sExpr *serializedExpression, s *SerializedCXProgram, 
 		inputCXArgsArray := deserializeArguments(sExpr.InputsOffset, sExpr.InputsSize, s, prgrm)
 		for _, inputCXArg := range inputCXArgsArray {
 			typeSignature := GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, inputCXArg)
-			cxAtomicOp.AddInput(prgrm, typeSignature)
+			typeSignatureIdx := prgrm.AddCXTypeSignatureInArray(typeSignature)
+			cxAtomicOp.AddInput(prgrm, typeSignatureIdx)
 		}
 
 		outputCXArgsArray := deserializeArguments(sExpr.OutputsOffset, sExpr.OutputsSize, s, prgrm)
 		for _, outputCXArg := range outputCXArgsArray {
 			typeSignature := GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, outputCXArg)
-			cxAtomicOp.AddOutput(prgrm, typeSignature)
+			typeSignatureIdx := prgrm.AddCXTypeSignatureInArray(typeSignature)
+			cxAtomicOp.AddOutput(prgrm, typeSignatureIdx)
 		}
 
 		cxAtomicOp.Label = deserializeString(sExpr.LabelOffset, sExpr.LabelSize, s)

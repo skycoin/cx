@@ -79,10 +79,12 @@ func CallAffPredicate(prgrm *ast.CXProgram, fn *ast.CXFunction, predValue []byte
 		prgrm.Memory[newFP+c] = 0
 	}
 
+	newCallOperatorInputTypeSig := prgrm.GetCXTypeSignatureFromArray(newCallOperatorInputs[0])
+
 	// sending value to predicate function
 	types.WriteSlice_byte(
 		prgrm.Memory,
-		ast.GetFinalOffset(prgrm, newFP, nil, newCallOperatorInputs[0]),
+		ast.GetFinalOffset(prgrm, newFP, nil, newCallOperatorInputTypeSig),
 		predValue)
 
 	var inputs []ast.CXValue
@@ -99,11 +101,13 @@ func CallAffPredicate(prgrm *ast.CXProgram, fn *ast.CXFunction, predValue []byte
 		}
 	}
 
+	newCallOperatorOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(newCallOperatorOutputs[0])
+
 	prevCall.Line--
 	return types.GetSlice_byte(prgrm.Memory, ast.GetFinalOffset(prgrm,
 		newCall.FramePointer,
-		nil, newCallOperatorOutputs[0]),
-		newCallOperatorOutputs[0].GetSize(prgrm))[0]
+		nil, newCallOperatorOutputTypeSig),
+		newCallOperatorOutputTypeSig.GetSize(prgrm))[0]
 }
 
 // Used by QueryArgument to query inputs and then outputs from expressions.
@@ -180,7 +184,8 @@ func QueryArgument(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpress
 		}
 
 		var inputCXArgsIdxs []ast.CXArgumentIndex
-		for _, input := range exCXAtomicOp.GetInputs(prgrm) {
+		for _, inputIdx := range exCXAtomicOp.GetInputs(prgrm) {
+			input := prgrm.GetCXTypeSignatureFromArray(inputIdx)
 			if input.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 				inputCXArgsIdxs = append(inputCXArgsIdxs, ast.CXArgumentIndex(input.Meta))
 			} else {
@@ -190,7 +195,8 @@ func QueryArgument(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpress
 		queryParam(prgrm, fn, inputCXArgsIdxs, exCXAtomicOp.Label+".Input", argOffsetB, affOffset)
 
 		var outputCXArgsIdxs []ast.CXArgumentIndex
-		for _, output := range exCXAtomicOp.GetOutputs(prgrm) {
+		for _, outputIdx := range exCXAtomicOp.GetOutputs(prgrm) {
+			output := prgrm.GetCXTypeSignatureFromArray(outputIdx)
 			if output.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 				outputCXArgsIdxs = append(outputCXArgsIdxs, ast.CXArgumentIndex(output.Meta))
 			} else {
@@ -254,7 +260,7 @@ func QueryExpressions(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpr
 }
 
 // TODO: remove params arg
-func getSignatureSlice(prgrm *ast.CXProgram, params []ast.CXArgumentIndex, paramsTypeSig []*ast.CXTypeSignature) types.Pointer {
+func getSignatureSlice(prgrm *ast.CXProgram, params []ast.CXArgumentIndex, paramsTypeSig []ast.CXTypeSignatureIndex) types.Pointer {
 	var sliceOffset types.Pointer
 
 	var arrCXArgs []*ast.CXArgument
@@ -262,7 +268,8 @@ func getSignatureSlice(prgrm *ast.CXProgram, params []ast.CXArgumentIndex, param
 		param := prgrm.GetCXArgFromArray(paramIdx)
 		arrCXArgs = append(arrCXArgs, param)
 	}
-	for _, param := range paramsTypeSig {
+	for _, paramIdx := range paramsTypeSig {
+		param := prgrm.GetCXTypeSignatureFromArray(paramIdx)
 		if param.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			arg := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(param.Meta))
 			arrCXArgs = append(arrCXArgs, arg)
@@ -873,9 +880,11 @@ func readArgAff(prgrm *ast.CXProgram, aff string, tgtFn *ast.CXFunction) *ast.CX
 	}
 
 	if argType == "Input" {
+
+		affExprAtomicOpInputTypeSig := prgrm.GetCXTypeSignatureFromArray(affExprAtomicOp.GetInputs(prgrm)[argIdx])
 		var arg *ast.CXArgument = &ast.CXArgument{}
-		if affExprAtomicOp.GetInputs(prgrm)[argIdx].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-			arg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(affExprAtomicOp.GetInputs(prgrm)[argIdx].Meta))
+		if affExprAtomicOpInputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			arg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(affExprAtomicOpInputTypeSig.Meta))
 		} else {
 			panic("type is not a cx argumetn deprecate\n\n")
 		}
@@ -883,9 +892,10 @@ func readArgAff(prgrm *ast.CXProgram, aff string, tgtFn *ast.CXFunction) *ast.CX
 		return arg
 	}
 
+	affExprAtomicOpOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(affExprAtomicOp.GetOutputs(prgrm)[argIdx])
 	var arg *ast.CXArgument = &ast.CXArgument{}
-	if affExprAtomicOp.GetOutputs(prgrm)[argIdx].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-		arg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(affExprAtomicOp.GetOutputs(prgrm)[argIdx].Meta))
+	if affExprAtomicOpOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		arg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(affExprAtomicOpOutputTypeSig.Meta))
 	} else {
 		panic("type is not a cx argumetn deprecate\n\n")
 	}
@@ -1256,9 +1266,10 @@ func opAffQuery(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 					types.Write_ptr(prgrmOffsetB[:], 0, prgrmOffset)
 
 					fnInputs := fn.GetInputs(prgrm)
+					fnInputTypeSig := prgrm.GetCXTypeSignatureFromArray(fnInputs[0])
 					var predInp *ast.CXArgument
-					if fnInputs[0].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-						predInp = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(fnInputs[0].Meta))
+					if fnInputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+						predInp = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(fnInputTypeSig.Meta))
 					} else {
 						panic("type is not type cx argument deprecate\n\n")
 					}

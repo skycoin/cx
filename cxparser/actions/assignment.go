@@ -33,7 +33,9 @@ func assignStructLiteralFields(prgrm *ast.CXProgram, toExprs []ast.CXExpression,
 			panic(err)
 		}
 
-		expressionOutput := expression.GetOutputs(prgrm)[0]
+		expressionOutputTypeSigIdx := expression.GetOutputs(prgrm)[0]
+		expressionOutput := prgrm.GetCXTypeSignatureFromArray(expressionOutputTypeSigIdx)
+
 		var expressionOutputIdx ast.CXArgumentIndex
 		if expressionOutput.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			expressionOutputIdx = ast.CXArgumentIndex(expressionOutput.Meta)
@@ -43,9 +45,10 @@ func assignStructLiteralFields(prgrm *ast.CXProgram, toExprs []ast.CXExpression,
 		prgrm.CXArgs[expressionOutputIdx].Name = structLiteralName
 		expressionOutput.Name = structLiteralName
 
+		toExpressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(toExpression.GetOutputs(prgrm)[0])
 		var toExpressionOutput *ast.CXArgument = &ast.CXArgument{}
-		if toExpression.GetOutputs(prgrm)[0].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-			toExpressionOutput = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(toExpression.GetOutputs(prgrm)[0].Meta))
+		if toExpressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			toExpressionOutput = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(toExpressionOutputTypeSig.Meta))
 		} else {
 			panic("type is not type cx argument deprecate\n\n")
 		}
@@ -86,17 +89,20 @@ func StructLiteralAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, f
 
 	lastFromCXLine, _ := prgrm.GetPreviousCXLine(fromExprs, len(fromExprs)-1)
 
+	lastFromExpressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(lastFromExpression.GetOutputs(prgrm)[0])
 	var lastFromExpressionOutputArg *ast.CXArgument = &ast.CXArgument{}
-	if lastFromExpression.GetOutputs(prgrm)[0].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-		lastFromExpressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(lastFromExpression.GetOutputs(prgrm)[0].Meta))
+	if lastFromExpressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		lastFromExpressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(lastFromExpressionOutputTypeSig.Meta))
 	} else {
 		panic("type is not cx argument deprecate\n\n")
 	}
 
+	toExpressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(toExpression.GetOutputs(prgrm)[0])
+
 	// If the last expression in `fromExprs` is declared as pointer
 	// then it means the whole struct literal needs to be passed by reference.
 	if !hasDeclSpec(lastFromExpressionOutputArg.GetAssignmentElement(prgrm), constants.DECL_POINTER) {
-		return assignStructLiteralFields(prgrm, toExprs, fromExprs, toExpression.GetOutputs(prgrm)[0].Name)
+		return assignStructLiteralFields(prgrm, toExprs, fromExprs, toExpressionOutputTypeSig.Name)
 	} else {
 		// And we also need an auxiliary variable to point to,
 		// otherwise we'd be trying to assign the fields to a nil value.
@@ -119,7 +125,8 @@ func StructLiteralAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, f
 		prgrm.CXAtomicOps[declExpressionIdx].Package = lastFromExpression.Package
 
 		typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(auxIdx))
-		prgrm.CXAtomicOps[declExpressionIdx].AddOutput(prgrm, typeSig)
+		typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
+		prgrm.CXAtomicOps[declExpressionIdx].AddOutput(prgrm, typeSigIdx)
 
 		fromExprs = assignStructLiteralFields(prgrm, toExprs, fromExprs, auxName)
 
@@ -128,15 +135,17 @@ func StructLiteralAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, f
 		assignExpressionIdx := assignExpr.Index
 
 		prgrm.CXAtomicOps[assignExpressionIdx].Package = lastFromExpression.Package
-		out := ast.MakeArgument(toExpression.GetOutputs(prgrm)[0].Name, lastFromCXLine.FileName, lastFromCXLine.LineNumber)
+		out := ast.MakeArgument(toExpressionOutputTypeSig.Name, lastFromCXLine.FileName, lastFromCXLine.LineNumber)
 		out.Package = lastFromExpression.Package
 		outIdx := prgrm.AddCXArgInArray(out)
 
 		outTypeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(outIdx))
-		prgrm.CXAtomicOps[assignExpressionIdx].AddOutput(prgrm, outTypeSig)
+		outTypeSigIdx := prgrm.AddCXTypeSignatureInArray(outTypeSig)
+		prgrm.CXAtomicOps[assignExpressionIdx].AddOutput(prgrm, outTypeSigIdx)
 
 		auxTypeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(auxIdx))
-		prgrm.CXAtomicOps[assignExpressionIdx].AddInput(prgrm, auxTypeSig)
+		auxTypeSigIdx := prgrm.AddCXTypeSignatureInArray(auxTypeSig)
+		prgrm.CXAtomicOps[assignExpressionIdx].AddInput(prgrm, auxTypeSigIdx)
 
 		fromExprs = append([]ast.CXExpression{*declExprCXLine, *declExpr}, fromExprs...)
 
@@ -158,21 +167,24 @@ func ArrayLiteralAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fr
 		panic(err)
 	}
 
+	toExpressionOutput := prgrm.GetCXTypeSignatureFromArray(toExpression.GetOutputs(prgrm)[0])
+
 	for _, expr := range fromExprs {
 		expression, err := prgrm.GetCXAtomicOp(expr.Index)
 		if err != nil {
 			panic(err)
 		}
 
-		expressionOutput := expression.GetOutputs(prgrm)[0]
+		expressionOutput := prgrm.GetCXTypeSignatureFromArray(expression.GetOutputs(prgrm)[0])
 		var expressionOutputIdx ast.CXArgumentIndex
 		if expressionOutput.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			expressionOutputIdx = ast.CXArgumentIndex(expressionOutput.Meta)
 		} else {
 			panic("type is not type cx argument deprecate\n\n")
 		}
-		prgrm.CXArgs[expressionOutputIdx].Name = toExpression.GetOutputs(prgrm)[0].Name
-		expressionOutput.Name = toExpression.GetOutputs(prgrm)[0].Name
+
+		prgrm.CXArgs[expressionOutputIdx].Name = toExpressionOutput.Name
+		expressionOutput.Name = toExpressionOutput.Name
 		prgrm.CXArgs[expressionOutputIdx].DereferenceOperations = append(prgrm.CXArgs[expressionOutputIdx].DereferenceOperations, constants.DEREF_ARRAY)
 	}
 

@@ -173,7 +173,8 @@ func (cxprogram *CXProgram) AddNativeFunctionInArray(fn *CXNativeFunction) CXFun
 			}
 		}
 
-		fnNative.Inputs.Fields = append(fnNative.Inputs.Fields, newField)
+		newFieldIdx := cxprogram.AddCXTypeSignatureInArray(newField)
+		fnNative.Inputs.Fields = append(fnNative.Inputs.Fields, newFieldIdx)
 	}
 
 	// Add outputs to cx arg array
@@ -200,7 +201,8 @@ func (cxprogram *CXProgram) AddNativeFunctionInArray(fn *CXNativeFunction) CXFun
 
 		}
 
-		fnNative.Outputs.Fields = append(fnNative.Outputs.Fields, newField)
+		newFieldIdx := cxprogram.AddCXTypeSignatureInArray(newField)
+		fnNative.Outputs.Fields = append(fnNative.Outputs.Fields, newFieldIdx)
 	}
 
 	cxprogram.CXFunctions = append(cxprogram.CXFunctions, *fnNative)
@@ -290,13 +292,13 @@ func (cxprogram *CXProgram) AddCXAtomicOp(CXAtomicOp *CXAtomicOperator) int {
 
 // ----------------------------------------------------------------
 //                         `CXProgram` CXTypeSignatures handling
-func (cxprogram *CXProgram) AddCXTypeSignatureInArray(typeSignature *CXTypeSignature) int {
+func (cxprogram *CXProgram) AddCXTypeSignatureInArray(typeSignature *CXTypeSignature) CXTypeSignatureIndex {
 	cxprogram.CXTypeSignatures = append(cxprogram.CXTypeSignatures, *typeSignature)
 
-	return len(cxprogram.CXTypeSignatures) - 1
+	return CXTypeSignatureIndex(len(cxprogram.CXTypeSignatures) - 1)
 }
 
-func (cxprogram *CXProgram) GetCXTypeSignatureFromArray(index int) *CXTypeSignature {
+func (cxprogram *CXProgram) GetCXTypeSignatureFromArray(index CXTypeSignatureIndex) *CXTypeSignature {
 	if index == -1 {
 		return nil
 	}
@@ -369,9 +371,10 @@ func (cxprogram *CXProgram) AddPointerArgsToCXArgsArray(cxArgs []*CXArgument) []
 }
 
 // Temporary only for intitial new struct def implementation.
-func (cxprogram *CXProgram) ConvertIndexTypeSignaturesToPointerArgs(idxs []*CXTypeSignature) []*CXArgument {
+func (cxprogram *CXProgram) ConvertIndexTypeSignaturesToPointerArgs(idxs []CXTypeSignatureIndex) []*CXArgument {
 	var cxArgs []*CXArgument
-	for _, typeSignature := range idxs {
+	for _, typeSignatureIdx := range idxs {
+		typeSignature := cxprogram.GetCXTypeSignatureFromArray(typeSignatureIdx)
 		if typeSignature.Type == TYPE_CXARGUMENT_DEPRECATE {
 			idx := typeSignature.Meta
 			arg := cxprogram.GetCXArgFromArray(CXArgumentIndex(idx))
@@ -382,8 +385,8 @@ func (cxprogram *CXProgram) ConvertIndexTypeSignaturesToPointerArgs(idxs []*CXTy
 }
 
 // Temporary only for intitial new struct def implementation.
-func (cxprogram *CXProgram) AddPointerArgsToTypeSignaturesArray(cxArgs []*CXArgument) []*CXTypeSignature {
-	var cxTypeSignaturesIdxs []*CXTypeSignature
+func (cxprogram *CXProgram) AddPointerArgsToTypeSignaturesArray(cxArgs []*CXArgument) []CXTypeSignatureIndex {
+	var cxTypeSignaturesIdxs []CXTypeSignatureIndex
 	for _, cxArg := range cxArgs {
 		cxArgIdx := cxprogram.AddCXArgInArray(cxArg)
 
@@ -394,7 +397,8 @@ func (cxprogram *CXProgram) AddPointerArgsToTypeSignaturesArray(cxArgs []*CXArgu
 			Meta:   int(cxArgIdx),
 		}
 
-		cxTypeSignaturesIdxs = append(cxTypeSignaturesIdxs, newCXTypeSignature)
+		newCXTypeSignatureIdx := cxprogram.AddCXTypeSignatureInArray(newCXTypeSignature)
+		cxTypeSignaturesIdxs = append(cxTypeSignaturesIdxs, newCXTypeSignatureIdx)
 	}
 	return cxTypeSignaturesIdxs
 }

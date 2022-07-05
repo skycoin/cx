@@ -117,7 +117,8 @@ func (fn *CXFunction) GetExpressionByLine(line int) (*CXExpression, error) {
 // AddInput ...
 func (fn *CXFunction) AddInput(prgrm *CXProgram, param *CXArgument) *CXFunction {
 	fnInputs := fn.GetInputs(prgrm)
-	for _, input := range fnInputs {
+	for _, inputIdx := range fnInputs {
+		input := prgrm.GetCXTypeSignatureFromArray(inputIdx)
 		if input.Type == TYPE_CXARGUMENT_DEPRECATE {
 			inp := prgrm.GetCXArgFromArray(CXArgumentIndex(input.Meta))
 			if inp.Name == param.Name {
@@ -153,14 +154,15 @@ func (fn *CXFunction) AddInput(prgrm *CXProgram, param *CXArgument) *CXFunction 
 		fn.Inputs = &CXStruct{}
 	}
 
-	fn.Inputs.AddField_TypeSignature(prgrm, newField)
+	newFieldIdx := prgrm.AddCXTypeSignatureInArray(newField)
+	fn.Inputs.AddField_TypeSignature(prgrm, newFieldIdx)
 
 	return fn
 }
 
-func (fn *CXFunction) GetInputs(prgrm *CXProgram) []*CXTypeSignature {
+func (fn *CXFunction) GetInputs(prgrm *CXProgram) []CXTypeSignatureIndex {
 	if fn == nil || fn.Inputs == nil {
-		return []*CXTypeSignature{}
+		return []CXTypeSignatureIndex{}
 	}
 
 	return fn.Inputs.Fields
@@ -187,7 +189,8 @@ func (fn *CXFunction) GetInputs(prgrm *CXProgram) []*CXTypeSignature {
 // AddOutput ...
 func (fn *CXFunction) AddOutput(prgrm *CXProgram, param *CXArgument) *CXFunction {
 	fnOutputs := fn.GetOutputs(prgrm)
-	for _, output := range fnOutputs {
+	for _, outputIdx := range fnOutputs {
+		output := prgrm.GetCXTypeSignatureFromArray(outputIdx)
 		if output.Name == param.Name {
 			return fn
 		}
@@ -218,14 +221,16 @@ func (fn *CXFunction) AddOutput(prgrm *CXProgram, param *CXArgument) *CXFunction
 	if fn.Outputs == nil {
 		fn.Outputs = &CXStruct{}
 	}
-	fn.Outputs.AddField_TypeSignature(prgrm, newField)
+
+	newFieldIdx := prgrm.AddCXTypeSignatureInArray(newField)
+	fn.Outputs.AddField_TypeSignature(prgrm, newFieldIdx)
 
 	return fn
 }
 
-func (fn *CXFunction) GetOutputs(prgrm *CXProgram) []*CXTypeSignature {
+func (fn *CXFunction) GetOutputs(prgrm *CXProgram) []CXTypeSignatureIndex {
 	if fn == nil || fn.Outputs == nil {
-		return []*CXTypeSignature{}
+		return []CXTypeSignatureIndex{}
 	}
 
 	return fn.Outputs.Fields

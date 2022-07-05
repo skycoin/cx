@@ -52,9 +52,10 @@ func buildStrGlobals(prgrm *CXProgram, pkg *CXPackage, ast *string) {
 	}
 
 	for idx, glblIdx := range pkg.Globals.Fields {
+		glbl := prgrm.GetCXTypeSignatureFromArray(glblIdx)
 		// Assuming they are all TYPE_CXARGUMENT_DEPRECATE
 		// TODO: To be replaced
-		*ast += fmt.Sprintf("\t\t%d.- Global: %s %s\n", idx, prgrm.GetCXArg(CXArgumentIndex(glblIdx.Meta)).Name, GetFormattedType(prgrm, prgrm.GetCXArg(CXArgumentIndex(glblIdx.Meta))))
+		*ast += fmt.Sprintf("\t\t%d.- Global: %s %s\n", idx, prgrm.GetCXArg(CXArgumentIndex(glbl.Meta)).Name, GetFormattedType(prgrm, prgrm.GetCXArg(CXArgumentIndex(glbl.Meta))))
 	}
 }
 
@@ -70,7 +71,9 @@ func buildStrStructs(prgrm *CXProgram, pkg *CXPackage, ast *string) {
 		strct := prgrm.CXStructs[strctIdx]
 		*ast += fmt.Sprintf("\t\t%d.- Struct: %s\n", count, strct.Name)
 
-		for k, typeSignature := range strct.Fields {
+		for k, typeSignatureIdx := range strct.Fields {
+			typeSignature := prgrm.GetCXTypeSignatureFromArray(typeSignatureIdx)
+
 			if typeSignature.Type == TYPE_ATOMIC {
 				*ast += fmt.Sprintf("\t\t\t%d.- Field: %s %s\n",
 					k, typeSignature.Name, types.Code(typeSignature.Meta).Name())
@@ -174,13 +177,15 @@ func buildStrFunctions(prgrm *CXProgram, pkg *CXPackage, ast1 *string) {
 				// Then it's a variable declaration. These are represented
 				// by expressions without operators that only have outputs.
 				cxAtomicOpOutputs := cxAtomicOp.GetOutputs(prgrm)
+				cxAtomicOpOutputTypeSignature := prgrm.GetCXTypeSignatureFromArray(cxAtomicOpOutputs[len(cxAtomicOpOutputs)-1])
 				if len(cxAtomicOpOutputs) > 0 {
-					out := prgrm.GetCXArgFromArray(CXArgumentIndex(cxAtomicOpOutputs[len(cxAtomicOpOutputs)-1].Meta))
+					out := prgrm.GetCXArgFromArray(CXArgumentIndex(cxAtomicOpOutputTypeSignature.Meta))
 
+					cxAtomicOpOutput0TypeSig := prgrm.GetCXTypeSignatureFromArray(cxAtomicOpOutputs[0])
 					*ast1 += fmt.Sprintf("\t\t\t%d.- Declaration%s: %s %s\n",
 						k,
 						lbl,
-						prgrm.GetCXArgFromArray(CXArgumentIndex(cxAtomicOpOutputs[0].Meta)).Name,
+						prgrm.GetCXArgFromArray(CXArgumentIndex(cxAtomicOpOutput0TypeSig.Meta)).Name,
 						GetFormattedType(prgrm, out))
 				}
 			}
@@ -294,7 +299,8 @@ func getNonCollectionValue(prgrm *CXProgram, fp types.Pointer, arg, elt *CXArgum
 		lFlds := len(elt.StructType.Fields)
 		off := types.Pointer(0)
 		for c := 0; c < lFlds; c++ {
-			typeSignature := elt.StructType.Fields[c]
+			typeSignatureIdx := elt.StructType.Fields[c]
+			typeSignature := prgrm.GetCXTypeSignatureFromArray(typeSignatureIdx)
 			fldIdx := typeSignature.Meta
 			fld := prgrm.CXArgs[fldIdx]
 			if c == lFlds-1 {
@@ -344,7 +350,8 @@ func ReadSliceElements(prgrm *CXProgram, fp types.Pointer, arg, elt *CXArgument,
 		lFlds := len(elt.StructType.Fields)
 		off := types.Pointer(0)
 		for c := 0; c < lFlds; c++ {
-			typeSignature := elt.StructType.Fields[c]
+			typeSignatureIdx := elt.StructType.Fields[c]
+			typeSignature := prgrm.GetCXTypeSignatureFromArray(typeSignatureIdx)
 			fldIdx := typeSignature.Meta
 			fld := prgrm.CXArgs[fldIdx]
 			if c == lFlds-1 {
@@ -728,7 +735,9 @@ func GetFormattedType(prgrm *CXProgram, arg *CXArgument) string {
 // SignatureStringOfStruct returns the signature string of a struct.
 func SignatureStringOfStruct(prgrm *CXProgram, s *CXStruct) string {
 	fields := ""
-	for _, typeSignature := range s.Fields {
+	for _, typeSignatureIdx := range s.Fields {
+		typeSignature := prgrm.GetCXTypeSignatureFromArray(typeSignatureIdx)
+
 		if typeSignature.Type == TYPE_ATOMIC {
 			fields += fmt.Sprintf(" %s %s;", typeSignature.Name, types.Code(typeSignature.Meta).Name())
 			continue
