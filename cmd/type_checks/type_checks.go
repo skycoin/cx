@@ -254,53 +254,52 @@ func ParseFuncs(funcs []declaration_extraction.FuncDeclaration) {
 			// error handling
 		}
 
+		reParenOpen := regexp.MustCompile(`\(`)
+		reParenClose := regexp.MustCompile(`\)`)
+
 		// Get function
 		funcDeclaration := srcBytes[fun.StartOffset : fun.StartOffset+fun.Length]
 
-		paramParenthesisOpen := bytes.IndexAny(funcDeclaration, "(")
-		paramParenthesisClose := bytes.IndexAny(funcDeclaration, ")")
+		inputParenthesisOpen := reParenOpen.FindIndex(funcDeclaration)[0]
+		inputParenthesisClose := reParenClose.FindIndex(funcDeclaration)[0]
 
-		paramArray := bytes.Split(funcDeclaration[paramParenthesisOpen+1:paramParenthesisClose], []byte(","))
+		inputsArray := bytes.Split(funcDeclaration[inputParenthesisOpen+1:inputParenthesisClose], []byte(","))
 
 		// returnParenthesisOpen := bytes.IndexAny(funcDeclaration[paramParenthesisClose:], "(")
 		// returnParenthesisClose := bytes.IndexAny(funcDeclaration[returnParenthesisOpen:], ")")
 
-		reParenOpen := regexp.MustCompile(`\(`)
-		reParenClose := regexp.MustCompile(`\)`)
+		outputRemoveParenOpen := reParenOpen.ReplaceAll(funcDeclaration[inputParenthesisClose+1:], []byte(""))
+		outputRemoveParenClose := reParenClose.ReplaceAll(outputRemoveParenOpen, []byte(""))
 
-		returnsRemoveParenOpen := reParenOpen.ReplaceAll(funcDeclaration[paramParenthesisClose+1:], []byte(""))
-		returnsRemoveParenClose := reParenClose.ReplaceAll(returnsRemoveParenOpen, []byte(""))
-
-		returnArray := bytes.Split(returnsRemoveParenClose, []byte(","))
+		outputsArray := bytes.Split(outputRemoveParenClose, []byte(","))
 
 		funcCX := ast.MakeFunction(fun.FuncVariableName, fun.FileID, fun.LineNumber)
 
-		for _, param := range paramArray {
+		for _, input := range inputsArray {
 
-			if bytes.Compare(param, []byte("")) == 0 {
+			if bytes.Compare(input, []byte("")) == 0 {
 				continue
 			}
 
-			tokens := bytes.Fields(param)
-			paramName := bytes.TrimSpace(tokens[0])
-			paramArg := ast.MakeArgument(string(paramName), fun.FileID, fun.LineNumber)
-			paramArg = paramArg.SetType(primitiveTypesMap[string(tokens[1])])
-			funcCX = funcCX.AddInput(actions.AST, paramArg)
+			tokens := bytes.Fields(input)
+			inputName := bytes.TrimSpace(tokens[0])
+			inputArg := ast.MakeArgument(string(inputName), fun.FileID, fun.LineNumber)
+			inputArg = inputArg.SetType(primitiveTypesMap[string(tokens[1])])
+			funcCX = funcCX.AddInput(actions.AST, inputArg)
 
 		}
 
-		for _, rturn := range returnArray {
+		for _, output := range outputsArray {
 
-			if bytes.Compare(rturn, []byte("")) == 0 {
+			if bytes.Compare(output, []byte("")) == 0 {
 				continue
 			}
 
-			tokens := bytes.Fields(rturn)
-			fmt.Print(string(tokens[1]))
-			returnName := bytes.TrimSpace(tokens[0])
-			returnArg := ast.MakeArgument(string(returnName), fun.FileID, fun.LineNumber)
-			returnArg = returnArg.SetType(primitiveTypesMap[string(tokens[1])])
-			funcCX = funcCX.AddOutput(actions.AST, returnArg)
+			tokens := bytes.Fields(output)
+			outputName := bytes.TrimSpace(tokens[0])
+			outputArg := ast.MakeArgument(string(outputName), fun.FileID, fun.LineNumber)
+			outputArg = outputArg.SetType(primitiveTypesMap[string(tokens[1])])
+			funcCX = funcCX.AddOutput(actions.AST, outputArg)
 
 		}
 
