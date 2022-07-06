@@ -39,6 +39,7 @@ const (
 )
 
 type CXTypeSignature struct {
+	Index CXTypeSignatureIndex
 	// NameStringID int
 	Name    string // temporary
 	Offset  types.Pointer

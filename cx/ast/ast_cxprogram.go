@@ -293,9 +293,10 @@ func (cxprogram *CXProgram) AddCXAtomicOp(CXAtomicOp *CXAtomicOperator) int {
 // ----------------------------------------------------------------
 //                         `CXProgram` CXTypeSignatures handling
 func (cxprogram *CXProgram) AddCXTypeSignatureInArray(typeSignature *CXTypeSignature) CXTypeSignatureIndex {
+	typeSignature.Index = CXTypeSignatureIndex(len(cxprogram.CXTypeSignatures))
 	cxprogram.CXTypeSignatures = append(cxprogram.CXTypeSignatures, *typeSignature)
 
-	return CXTypeSignatureIndex(len(cxprogram.CXTypeSignatures) - 1)
+	return typeSignature.Index
 }
 
 func (cxprogram *CXProgram) GetCXTypeSignatureFromArray(index CXTypeSignatureIndex) *CXTypeSignature {

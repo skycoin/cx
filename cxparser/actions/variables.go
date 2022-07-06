@@ -93,7 +93,7 @@ func DeclareGlobalInPackage_OLD(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 				prgrm.CXAtomicOps[initializerExpressionIdx].AddInput(prgrm, typeSig)
 				prgrm.CXAtomicOps[initializerExpressionIdx].Outputs = nil
 
-				prgrm.CXAtomicOps[initializerExpressionIdx].AddOutput(prgrm, glbl)
+				prgrm.CXAtomicOps[initializerExpressionIdx].AddOutput(prgrm, glbl.Index)
 				opIdx := prgrm.AddNativeFunctionInArray(ast.Natives[constants.OP_IDENTITY])
 				prgrm.CXAtomicOps[initializerExpressionIdx].Operator = opIdx
 				prgrm.CXAtomicOps[initializerExpressionIdx].Package = prgrm.CXArgs[glblIdx].Package
@@ -126,7 +126,7 @@ func DeclareGlobalInPackage_OLD(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 					)
 				} else {
 					prgrm.CXAtomicOps[initializerExpressionIdx].Outputs = nil
-					prgrm.CXAtomicOps[initializerExpressionIdx].AddOutput(prgrm, glbl)
+					prgrm.CXAtomicOps[initializerExpressionIdx].AddOutput(prgrm, glbl.Index)
 				}
 				//add intialization statements, to array
 				prgrm.SysInitExprs = append(prgrm.SysInitExprs, initializer...)
@@ -170,13 +170,14 @@ func DeclareGlobalInPackage_OLD(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 				opIdx := prgrm.AddNativeFunctionInArray(ast.Natives[constants.OP_IDENTITY])
 				prgrm.CXAtomicOps[initializerExpressionIdx].Operator = opIdx
 
-				typeSig := prgrm.CXAtomicOps[initializerExpressionIdx].GetOutputs(prgrm)[0]
-				prgrm.CXAtomicOps[initializerExpressionIdx].AddInput(prgrm, typeSig)
+				typeSigIdx := prgrm.CXAtomicOps[initializerExpressionIdx].GetOutputs(prgrm)[0]
+				prgrm.CXAtomicOps[initializerExpressionIdx].AddInput(prgrm, typeSigIdx)
 				prgrm.CXAtomicOps[initializerExpressionIdx].Outputs = nil
 				declSpecIdx := prgrm.AddCXArgInArray(declaration_specifiers)
 
-				typeSig = ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(declSpecIdx))
-				prgrm.CXAtomicOps[initializerExpressionIdx].AddOutput(prgrm, typeSig)
+				typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(declSpecIdx))
+				typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
+				prgrm.CXAtomicOps[initializerExpressionIdx].AddOutput(prgrm, typeSigIdx)
 
 				pkg.AddGlobal(prgrm, declSpecIdx)
 				//add intialization statements, to array
@@ -208,7 +209,8 @@ func DeclareGlobalInPackage_OLD(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 				} else {
 					prgrm.CXAtomicOps[initializerExpressionIdx].Outputs = nil
 					typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(declSpecIdx))
-					prgrm.CXAtomicOps[initializerExpressionIdx].AddOutput(prgrm, typeSig)
+					typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
+					prgrm.CXAtomicOps[initializerExpressionIdx].AddOutput(prgrm, typeSigIdx)
 				}
 
 				pkg.AddGlobal(prgrm, declSpecIdx)
@@ -267,7 +269,7 @@ func DeclareGlobalInPackage_CXTYPESIGNATURE(prgrm *ast.CXProgram, pkg *ast.CXPac
 				prgrm.CXAtomicOps[initializerExpressionIdx].AddInput(prgrm, typeSig)
 				prgrm.CXAtomicOps[initializerExpressionIdx].Outputs = nil
 
-				prgrm.CXAtomicOps[initializerExpressionIdx].AddOutput(prgrm, glbl)
+				prgrm.CXAtomicOps[initializerExpressionIdx].AddOutput(prgrm, glbl.Index)
 				opIdx := prgrm.AddNativeFunctionInArray(ast.Natives[constants.OP_IDENTITY])
 				prgrm.CXAtomicOps[initializerExpressionIdx].Operator = opIdx
 				prgrm.CXAtomicOps[initializerExpressionIdx].Package = ast.CXPackageIndex(pkg.Index)
@@ -279,7 +281,7 @@ func DeclareGlobalInPackage_CXTYPESIGNATURE(prgrm *ast.CXProgram, pkg *ast.CXPac
 
 				if initializer[len(initializer)-1].IsStructLiteral() {
 					outputStruct := &ast.CXStruct{}
-					outputStruct.AddField_TypeSignature(prgrm, glbl)
+					outputStruct.AddField_TypeSignature(prgrm, glbl.Index)
 					index := prgrm.AddCXAtomicOp(&ast.CXAtomicOperator{Outputs: outputStruct, Operator: -1, Function: -1})
 					initializer = StructLiteralAssignment(prgrm,
 						[]ast.CXExpression{
@@ -292,7 +294,7 @@ func DeclareGlobalInPackage_CXTYPESIGNATURE(prgrm *ast.CXProgram, pkg *ast.CXPac
 					)
 				} else {
 					prgrm.CXAtomicOps[initializerExpressionIdx].Outputs = nil
-					prgrm.CXAtomicOps[initializerExpressionIdx].AddOutput(prgrm, glbl)
+					prgrm.CXAtomicOps[initializerExpressionIdx].AddOutput(prgrm, glbl.Index)
 				}
 				//add intialization statements, to array
 				prgrm.SysInitExprs = append(prgrm.SysInitExprs, initializer...)
@@ -313,7 +315,7 @@ func DeclareGlobalInPackage_CXTYPESIGNATURE(prgrm *ast.CXProgram, pkg *ast.CXPac
 		typeSignature.Package = ast.CXPackageIndex(pkg.Index)
 		typeSignature.Type = ast.TYPE_ATOMIC
 		typeSignature.Meta = int(declaration_specifiers.Type)
-
+		typeSignatureIdx := prgrm.AddCXTypeSignatureInArray(typeSignature)
 		// Checking if something is supposed to be initialized
 		// and if `initializer` actually contains something.
 		// If `initializer` is `nil`, this means that an expression
@@ -327,20 +329,20 @@ func DeclareGlobalInPackage_CXTYPESIGNATURE(prgrm *ast.CXProgram, pkg *ast.CXPac
 				opIdx := prgrm.AddNativeFunctionInArray(ast.Natives[constants.OP_IDENTITY])
 				prgrm.CXAtomicOps[initializerExpressionIdx].Operator = opIdx
 
-				typeSig := prgrm.CXAtomicOps[initializerExpressionIdx].GetOutputs(prgrm)[0]
-				prgrm.CXAtomicOps[initializerExpressionIdx].AddInput(prgrm, typeSig)
+				typeSigIdx := prgrm.CXAtomicOps[initializerExpressionIdx].GetOutputs(prgrm)[0]
+				prgrm.CXAtomicOps[initializerExpressionIdx].AddInput(prgrm, typeSigIdx)
 				prgrm.CXAtomicOps[initializerExpressionIdx].Outputs = nil
 
-				prgrm.CXAtomicOps[initializerExpressionIdx].AddOutput(prgrm, typeSignature)
+				prgrm.CXAtomicOps[initializerExpressionIdx].AddOutput(prgrm, typeSignatureIdx)
 
-				pkg.AddGlobal_TypeSignature(prgrm, typeSignature)
+				pkg.AddGlobal_TypeSignature(prgrm, typeSignatureIdx)
 				//add intialization statements, to array
 				prgrm.SysInitExprs = append(prgrm.SysInitExprs, initializer...)
 			} else {
 				// then it's an expression
 				if initializer[len(initializer)-1].IsStructLiteral() {
 					outputStruct := &ast.CXStruct{}
-					outputStruct.AddField_TypeSignature(prgrm, typeSignature)
+					outputStruct.AddField_TypeSignature(prgrm, typeSignatureIdx)
 					index := prgrm.AddCXAtomicOp(&ast.CXAtomicOperator{Outputs: outputStruct, Operator: -1, Function: -1})
 					initializer = StructLiteralAssignment(prgrm,
 						[]ast.CXExpression{
@@ -353,15 +355,15 @@ func DeclareGlobalInPackage_CXTYPESIGNATURE(prgrm *ast.CXProgram, pkg *ast.CXPac
 					)
 				} else {
 					prgrm.CXAtomicOps[initializerExpressionIdx].Outputs = nil
-					prgrm.CXAtomicOps[initializerExpressionIdx].AddOutput(prgrm, typeSignature)
+					prgrm.CXAtomicOps[initializerExpressionIdx].AddOutput(prgrm, typeSignatureIdx)
 				}
 
-				pkg.AddGlobal_TypeSignature(prgrm, typeSignature)
+				pkg.AddGlobal_TypeSignature(prgrm, typeSignatureIdx)
 				//add intialization statements, to array
 				prgrm.SysInitExprs = append(prgrm.SysInitExprs, initializer...)
 			}
 		} else {
-			pkg.AddGlobal_TypeSignature(prgrm, typeSignature)
+			pkg.AddGlobal_TypeSignature(prgrm, typeSignatureIdx)
 		}
 	}
 }
@@ -406,7 +408,8 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 	declarationSpecifiers = prgrm.GetCXArgFromArray(declSpecIdx)
 
 	typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(declSpecIdx))
-	prgrm.CXAtomicOps[expressionIdx].AddOutput(prgrm, typeSig)
+	typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
+	prgrm.CXAtomicOps[expressionIdx].AddOutput(prgrm, typeSigIdx)
 
 	// Checking if something is supposed to be initialized
 	// and if `initializer` actually contains something.
@@ -429,24 +432,27 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 			cxExprAtomicOpIdx := expr.Index
 			prgrm.CXAtomicOps[cxExprAtomicOpIdx].Package = ast.CXPackageIndex(pkg.Index)
 
+			initializerExpressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(initializerExpression.GetOutputs(prgrm)[0])
 			var initializerExpressionOutputArg *ast.CXArgument = &ast.CXArgument{}
-			if initializerExpression.GetOutputs(prgrm)[0].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-				initializerExpressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(initializerExpression.GetOutputs(prgrm)[0].Meta))
+			if initializerExpressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				initializerExpressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(initializerExpressionOutputTypeSig.Meta))
 			} else {
 				panic("type is not cx argument deprecate\n\n")
 			}
 
 			initOut := initializerExpressionOutputArg
-			initOutIdx := ast.CXArgumentIndex(initializerExpression.GetOutputs(prgrm)[0].Meta)
+			initOutIdx := ast.CXArgumentIndex(initializerExpressionOutputTypeSig.Meta)
 			// CX checks the output of an expression to determine if it's being passed
 			// by value or by reference, so we copy this property from the initializer's
 			// output, in case of something like var foo *i32 = &bar
 			prgrm.CXArgs[declSpecIdx].PassBy = initOut.PassBy
 
 			typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(declSpecIdx))
-			prgrm.CXAtomicOps[cxExprAtomicOpIdx].AddOutput(prgrm, typeSig)
+			typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
+			prgrm.CXAtomicOps[cxExprAtomicOpIdx].AddOutput(prgrm, typeSigIdx)
 			typeSig = ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(initOutIdx))
-			prgrm.CXAtomicOps[cxExprAtomicOpIdx].AddInput(prgrm, typeSig)
+			typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
+			prgrm.CXAtomicOps[cxExprAtomicOpIdx].AddInput(prgrm, typeSigIdx)
 
 			initializer[len(initializer)-1] = *exprCXLine
 			initializer = append(initializer, *expr)
@@ -466,10 +472,12 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 				// declSpecIdx := prgrm.AddCXArgInArray(declarationSpecifiers)
 				cxExprAtomicOp.Outputs.Fields = nil
 				typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(declSpecIdx))
-				cxExprAtomicOp.AddOutput(prgrm, typeSig)
+				typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
+				cxExprAtomicOp.AddOutput(prgrm, typeSigIdx)
 			} else {
 				typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(declSpecIdx))
-				cxExprAtomicOp.AddOutput(prgrm, typeSig)
+				typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
+				cxExprAtomicOp.AddOutput(prgrm, typeSigIdx)
 			}
 
 			return append([]ast.CXExpression{*declCXLine, *decl}, initializer...)
@@ -482,7 +490,8 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 		prgrm.CXAtomicOps[cxAtomicOpIdx].Package = ast.CXPackageIndex(pkg.Index)
 
 		typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(declSpecIdx))
-		prgrm.CXAtomicOps[cxAtomicOpIdx].AddOutput(prgrm, typeSig)
+		typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
+		prgrm.CXAtomicOps[cxAtomicOpIdx].AddOutput(prgrm, typeSigIdx)
 
 		return []ast.CXExpression{*exprCXLine, *expr}
 	}

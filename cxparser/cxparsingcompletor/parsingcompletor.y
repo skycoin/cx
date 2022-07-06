@@ -624,15 +624,17 @@ slice_literal_expression:
                                         panic(err)
                                 }
 
+                                expressionOutputTypeSig:=actions.AST.GetCXTypeSignatureFromArray(expression.GetOutputs(actions.AST)[0])
                                 var expressionOutputArg *ast.CXArgument = &ast.CXArgument{}
-			        if expression.GetOutputs(actions.AST)[0].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-				        expressionOutputArg = actions.AST.GetCXArgFromArray(ast.CXArgumentIndex(expression.GetOutputs(actions.AST)[0].Meta))
+			        if expressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				        expressionOutputArg = actions.AST.GetCXArgFromArray(ast.CXArgumentIndex(expressionOutputTypeSig.Meta))
 			        } else {
 				        panic("type is not cx argument deprecate\n\n")
 			        }
 
                                 expressionOutput:= expressionOutputArg
-				if expressionOutput.Name == lastExpression.GetInputs(actions.AST)[0].Name {
+                                lastExpressionInputTypeSig:=actions.AST.GetCXTypeSignatureFromArray(lastExpression.GetInputs(actions.AST)[0])
+				if expressionOutput.Name == lastExpressionInputTypeSig.Name {
 					expressionOutput.Lengths = append(expressionOutput.Lengths, 0)
 					expressionOutput.DeclarationSpecifiers = append(expressionOutput.DeclarationSpecifiers, constants.DECL_SLICE)
                                 }
@@ -1000,7 +1002,8 @@ struct_literal_expression:
                         if err != nil {
                                 panic(err)
                         }
-			$$ = actions.PrimaryStructLiteralExternal(actions.AST,cxAtomicOp.GetOutputs(actions.AST)[0].Name, $3, $5)
+                        cxAtomicOpOutputTypeSig:=actions.AST.GetCXTypeSignatureFromArray(cxAtomicOp.GetOutputs(actions.AST)[0])
+			$$ = actions.PrimaryStructLiteralExternal(actions.AST,cxAtomicOpOutputTypeSig.Name, $3, $5)
                 }
                 ;
 
@@ -1029,7 +1032,9 @@ assignment_expression:
                                                                         if err != nil {
                                                                                 panic(err)
                                                                         }
-                                                                        fromExpressionOutputIdx:=fromExpression.GetOutputs(actions.AST)[0].Meta
+
+                                                                        fromExpressionOutputTypeSig:=actions.AST.GetCXTypeSignatureFromArray(fromExpression.GetOutputs(actions.AST)[0])
+                                                                        fromExpressionOutputIdx:= fromExpressionOutputTypeSig.Meta
                                                                         actions.AST.CXArgs[fromExpressionOutputIdx].PreviouslyDeclared = true
                                                                 }
                                                         }
@@ -1048,7 +1053,9 @@ assignment_expression:
                                                                         if err != nil {
                                                                                 panic(err)
                                                                         }
-                                                                        fromExpressionOutputIdx:=fromExpression.GetOutputs(actions.AST)[0].Meta
+
+                                                                        fromExpressionOutputTypeSig:=actions.AST.GetCXTypeSignatureFromArray(fromExpression.GetOutputs(actions.AST)[0])
+                                                                        fromExpressionOutputIdx:=fromExpressionOutputTypeSig.Meta
                                                                         actions.AST.CXArgs[fromExpressionOutputIdx].PreviouslyDeclared = true
                                                                 }
                                                         }
@@ -1189,10 +1196,13 @@ expression_statement:
 
 			if len($1) > 0 && lastFirstAtomicOpOperator == nil  && !$1[len($1) - 1].IsMethodCall() {
 				outs := lastFirstAtomicOp.GetOutputs(actions.AST)
+                               
 				if len(outs) > 0 {
+                                        outTypeSig:=actions.AST.GetCXTypeSignatureFromArray(outs[0])
+
                                         var expressionOutputArg *ast.CXArgument = &ast.CXArgument{}
-			                if outs[0].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-				                expressionOutputArg = actions.AST.GetCXArgFromArray(ast.CXArgumentIndex(outs[0].Meta))
+			                if outTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				                expressionOutputArg = actions.AST.GetCXArgFromArray(ast.CXArgumentIndex(outTypeSig.Meta))
 			                } else {
 				                panic("type is not cx argument deprecate\n\n")
 			                }

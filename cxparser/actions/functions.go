@@ -182,7 +182,8 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fnIdx ast.CXFunctionIndex, inputs
 	AddExprsToFunction(prgrm, fnIdx, exprs)
 
 	var fnInputIdxs []ast.CXArgumentIndex
-	for _, fnInput := range fn.GetInputs(prgrm) {
+	for _, fnInputIdx := range fn.GetInputs(prgrm) {
+		fnInput := prgrm.GetCXTypeSignatureFromArray(fnInputIdx)
 		if fnInput.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			fnInputIdxs = append(fnInputIdxs, ast.CXArgumentIndex(fnInput.Meta))
 		} else {
@@ -192,7 +193,8 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fnIdx ast.CXFunctionIndex, inputs
 	ProcessFunctionParameters(prgrm, symbols, &symbolsScope, &offset, fnIdx, fnInputIdxs)
 
 	var fnOutputIdxs []ast.CXArgumentIndex
-	for _, fnOutput := range fn.GetOutputs(prgrm) {
+	for _, fnOutputIdx := range fn.GetOutputs(prgrm) {
+		fnOutput := prgrm.GetCXTypeSignatureFromArray(fnOutputIdx)
 		if fnOutput.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			fnOutputIdxs = append(fnOutputIdxs, ast.CXArgumentIndex(fnOutput.Meta))
 		} else {
@@ -256,7 +258,8 @@ func ProcessTypedOperator(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 		return
 	}
 	if ast.IsOperator(expressionOperator.AtomicOPCode) {
-		atomicType := prgrm.CXArgs[expression.GetInputs(prgrm)[0].Meta].GetType(prgrm)
+		expressionInputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetInputs(prgrm)[0])
+		atomicType := prgrm.CXArgs[expressionInputTypeSig.Meta].GetType(prgrm)
 		typedOp := ast.GetTypedOperator(atomicType, expressionOperator.AtomicOPCode)
 		if typedOp == nil {
 			return
@@ -280,9 +283,10 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 	}
 	expressionOperator := prgrm.GetFunctionFromArray(expression.Operator)
 	if expressionOperator == nil {
+		expressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetOutputs(prgrm)[0])
 		var expressionOutputArg *ast.CXArgument = &ast.CXArgument{}
-		if expression.GetOutputs(prgrm)[0].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-			expressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expression.GetOutputs(prgrm)[0].Meta))
+		if expressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			expressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionOutputTypeSig.Meta))
 		} else {
 			panic("type is not cx argument deprecate\n\n")
 		}
@@ -336,29 +340,32 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 				var out *ast.CXArgument = &ast.CXArgument{}
 
 				inpExprAtomicOpOperatorOutputs := inpExprAtomicOpOperator.GetOutputs(prgrm)
+				inpExprAtomicOpOperatorOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(inpExprAtomicOpOperatorOutputs[0])
 				var inpExprAtomicOpOperatorOutputArg *ast.CXArgument = &ast.CXArgument{}
-				if inpExprAtomicOpOperatorOutputs[0].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-					inpExprAtomicOpOperatorOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inpExprAtomicOpOperatorOutputs[0].Meta))
+				if inpExprAtomicOpOperatorOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+					inpExprAtomicOpOperatorOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inpExprAtomicOpOperatorOutputTypeSig.Meta))
 				} else {
 					panic("type is not cx argument deprecate\n\n")
 				}
 
 				inpExprAtomicOpOperatorOutput := inpExprAtomicOpOperatorOutputArg
 				if inpExprAtomicOpOperatorOutput.Type == types.UNDEFINED {
-					var inpExprAtomicOpOutputArg *ast.CXArgument = &ast.CXArgument{}
-					if inpExprAtomicOp.GetInputs(prgrm)[0].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-						inpExprAtomicOpOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inpExprAtomicOp.GetInputs(prgrm)[0].Meta))
+					inpExprAtomicOpInputTypeSig := prgrm.GetCXTypeSignatureFromArray(inpExprAtomicOp.GetInputs(prgrm)[0])
+
+					var inpExprAtomicOpInputArg *ast.CXArgument = &ast.CXArgument{}
+					if inpExprAtomicOpInputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+						inpExprAtomicOpInputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inpExprAtomicOpInputTypeSig.Meta))
 					} else {
 						panic("type is not cx argument deprecate\n\n")
 					}
 
 					// if undefined type, then adopt argument's type
-					inpExprAtomicOpInput := inpExprAtomicOpOutputArg
+					inpExprAtomicOpInput := inpExprAtomicOpInputArg
 
 					out = ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, inpExprCXLine.LineNumber).SetType(inpExprAtomicOpInput.Type)
 					out.StructType = inpExprAtomicOpInput.StructType
 					out.Size = inpExprAtomicOpInput.Size
-					out.TotalSize = inpExprAtomicOpOperatorOutputs[0].GetSize(prgrm)
+					out.TotalSize = inpExprAtomicOpOperatorOutputTypeSig.GetSize(prgrm)
 					out.Type = inpExprAtomicOpInput.Type
 					out.PointerTargetType = inpExprAtomicOpInput.PointerTargetType
 					out.PreviouslyDeclared = true
@@ -379,7 +386,7 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 						}
 					} else {
 						out.Size = inpExprAtomicOpOperatorOutput.Size
-						out.TotalSize = inpExprAtomicOpOperatorOutputs[0].GetSize(prgrm)
+						out.TotalSize = inpExprAtomicOpOperatorOutputTypeSig.GetSize(prgrm)
 					}
 
 					out.Type = inpExprAtomicOpOperatorOutput.Type
@@ -391,8 +398,9 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 				outIdx := prgrm.AddCXArgInArray(out)
 
 				typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(outIdx))
-				inpExprAtomicOp.AddOutput(prgrm, typeSig)
-				expression.AddInput(prgrm, typeSig)
+				typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
+				inpExprAtomicOp.AddOutput(prgrm, typeSigIdx)
+				expression.AddInput(prgrm, typeSigIdx)
 			}
 			if len(inpExprAtomicOp.GetOutputs(prgrm)) > 0 && inpExpr.IsArrayLiteral() {
 				typeSig := inpExprAtomicOp.GetOutputs(prgrm)[0]
@@ -416,25 +424,28 @@ func checkSameNativeType(prgrm *ast.CXProgram, expr *ast.CXExpression) error {
 		return errors.New("cannot perform arithmetic without operands")
 	}
 
+	expressionInputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetInputs(prgrm)[0])
 	var expressionInputArg *ast.CXArgument = &ast.CXArgument{}
-	if expression.GetInputs(prgrm)[0].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-		expressionInputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expression.GetInputs(prgrm)[0].Meta))
+	if expressionInputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		expressionInputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionInputTypeSig.Meta))
 	} else {
 		panic("type is not cx argument deprecate\n\n")
 	}
 
 	var typeCode types.Code
-	if expression.GetInputs(prgrm)[0].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+	if expressionInputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 		typeCode = expressionInputArg.Type
-	} else if expression.GetInputs(prgrm)[0].Type == ast.TYPE_ATOMIC {
-		typeCode = types.Code(expression.GetInputs(prgrm)[0].Meta)
+	} else if expressionInputTypeSig.Type == ast.TYPE_ATOMIC {
+		typeCode = types.Code(expressionInputTypeSig.Meta)
 	}
 
 	if expressionInputArg.Type == types.POINTER {
 		typeCode = expressionInputArg.PointerTargetType
 	}
 
-	for _, input := range expression.GetInputs(prgrm) {
+	for _, inputIdx := range expression.GetInputs(prgrm) {
+		input := prgrm.GetCXTypeSignatureFromArray(inputIdx)
+
 		var inp *ast.CXArgument = &ast.CXArgument{}
 		if input.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			inp = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(input.Meta))
@@ -477,7 +488,9 @@ func ProcessOperatorExpression(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 		}
 	}
 	if expr.IsUndType(prgrm) {
-		for _, output := range expression.GetOutputs(prgrm) {
+		for _, outputIdx := range expression.GetOutputs(prgrm) {
+			output := prgrm.GetCXTypeSignatureFromArray(outputIdx)
+
 			var outIdx ast.CXArgumentIndex
 			if output.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 				outIdx = ast.CXArgumentIndex(output.Meta)
@@ -488,9 +501,11 @@ func ProcessOperatorExpression(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 
 			size := types.Pointer(1)
 			if !ast.IsComparisonOperator(expressionOperator.AtomicOPCode) {
+				expressionInputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetInputs(prgrm)[0])
+
 				var expressionInputArg *ast.CXArgument = &ast.CXArgument{}
-				if expression.GetInputs(prgrm)[0].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-					expressionInputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expression.GetInputs(prgrm)[0].Meta))
+				if expressionInputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+					expressionInputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionInputTypeSig.Meta))
 				} else {
 					panic("type is not cx argument deprecate\n\n")
 				}
@@ -513,7 +528,9 @@ func ProcessPointerStructs(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 		panic(err)
 	}
 
-	for _, argTypeSig := range append(expression.GetInputs(prgrm), expression.GetOutputs(prgrm)...) {
+	for _, argTypeSigIdx := range append(expression.GetInputs(prgrm), expression.GetOutputs(prgrm)...) {
+		argTypeSig := prgrm.GetCXTypeSignatureFromArray(argTypeSigIdx)
+
 		var arg *ast.CXArgument = &ast.CXArgument{}
 		if argTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			arg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(argTypeSig.Meta))
@@ -565,17 +582,18 @@ func processTestExpression(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 	if expressionOperator != nil {
 		opCode := expressionOperator.AtomicOPCode
 		if opCode == constants.OP_ASSERT || opCode == constants.OP_TEST || opCode == constants.OP_PANIC {
+			expressionInputFirstTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetInputs(prgrm)[0])
 			var expressionInputFirstArg *ast.CXArgument = &ast.CXArgument{}
-			if expression.GetInputs(prgrm)[0].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-
-				expressionInputFirstArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expression.GetInputs(prgrm)[0].Meta))
+			if expressionInputFirstTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				expressionInputFirstArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionInputFirstTypeSig.Meta))
 			} else {
 				panic("type is not cx argument deprecate\n\n")
 			}
 
+			expressionInputSecondTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetInputs(prgrm)[1])
 			var expressionInputSecondArg *ast.CXArgument = &ast.CXArgument{}
-			if expression.GetInputs(prgrm)[1].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-				expressionInputSecondArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expression.GetInputs(prgrm)[1].Meta))
+			if expressionInputSecondTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				expressionInputSecondArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionInputSecondTypeSig.Meta))
 			} else {
 				panic("type is not cx argument deprecate\n\n")
 			}
@@ -617,10 +635,11 @@ func checkIndexType(prgrm *ast.CXProgram, idxIdx ast.CXArgumentIndex) {
 //  args - the expression arguments.
 //  expr - the expression.
 //  isInput - true if args are input arguments, false if they are output args.
-func ProcessExpressionArguments(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXTypeSignature, symbolsScope *map[string]bool, offset *types.Pointer, fnIdx ast.CXFunctionIndex, args []*ast.CXTypeSignature, expr *ast.CXExpression, isInput bool) {
+func ProcessExpressionArguments(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXTypeSignature, symbolsScope *map[string]bool, offset *types.Pointer, fnIdx ast.CXFunctionIndex, args []ast.CXTypeSignatureIndex, expr *ast.CXExpression, isInput bool) {
 	fn := prgrm.GetFunctionFromArray(fnIdx)
 
-	for _, typeSignature := range args {
+	for _, typeSignatureIdx := range args {
+		typeSignature := prgrm.GetCXTypeSignatureFromArray(typeSignatureIdx)
 		var argIdx ast.CXArgumentIndex
 		if typeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			argIdx = ast.CXArgumentIndex(typeSignature.Meta)
@@ -846,7 +865,7 @@ func AddExprsToFunction(prgrm *ast.CXProgram, fnIdx ast.CXFunctionIndex, exprs [
 	}
 }
 
-func checkMatchParamTypes(prgrm *ast.CXProgram, expr *ast.CXExpression, expected []ast.CXArgumentIndex, received []*ast.CXTypeSignature, isInputs bool) {
+func checkMatchParamTypes(prgrm *ast.CXProgram, expr *ast.CXExpression, expected []ast.CXArgumentIndex, received []ast.CXTypeSignatureIndex, isInputs bool) {
 	expression, err := prgrm.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		panic(err)
@@ -859,11 +878,13 @@ func checkMatchParamTypes(prgrm *ast.CXProgram, expr *ast.CXExpression, expected
 		expectedArg := prgrm.GetCXArgFromArray(inpIdx)
 
 		var receivedArg *ast.CXArgument = &ast.CXArgument{}
-		if received[i].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-			receivedArg = prgrm.GetCXArg(ast.CXArgumentIndex(received[i].Meta))
+
+		receivedTypeSig := prgrm.GetCXTypeSignatureFromArray(received[i])
+		if receivedTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			receivedArg = prgrm.GetCXArg(ast.CXArgumentIndex(receivedTypeSig.Meta))
 			receivedType = ast.GetFormattedType(prgrm, receivedArg)
 		} else {
-			receivedType = types.Code(received[i].Meta).Name()
+			receivedType = types.Code(receivedTypeSig.Meta).Name()
 		}
 
 		expectedType = ast.GetFormattedType(prgrm, expectedArg)
@@ -888,9 +909,10 @@ func checkMatchParamTypes(prgrm *ast.CXProgram, expr *ast.CXExpression, expected
 			if isInputs {
 				println(ast.CompilationError(receivedArg.ArgDetails.FileName, receivedArg.ArgDetails.FileLine), fmt.Sprintf("function '%s' expected input argument of type '%s'; '%s' was provided", opName, expectedType, receivedType))
 			} else {
+				expressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetOutputs(prgrm)[i])
 				var expressionOutputArg *ast.CXArgument = &ast.CXArgument{}
-				if expression.GetOutputs(prgrm)[i].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-					expressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expression.GetOutputs(prgrm)[i].Meta))
+				if expressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+					expressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionOutputTypeSig.Meta))
 				} else {
 					panic("type is not cx argument deprecate\n\n")
 				}
@@ -900,28 +922,33 @@ func checkMatchParamTypes(prgrm *ast.CXProgram, expr *ast.CXExpression, expected
 
 		}
 
+		var expressionOutputTypeSig *ast.CXTypeSignature
+		if expressionOperator.AtomicOPCode == constants.OP_IDENTITY {
+			expressionOutputTypeSig = prgrm.GetCXTypeSignatureFromArray(expression.GetOutputs(prgrm)[0])
+		}
 		// In the case of assignment we need to check that the input's type matches the output's type.
 		// FIXME: There are some expressions added by the cxgo where temporary variables are used.
 		// These temporary variables' types are not properly being set. That's why we use !cxcore.IsTempVar to
 		// exclude these cases for now.
-		if expressionOperator.AtomicOPCode == constants.OP_IDENTITY && !IsTempVar(expression.GetOutputs(prgrm)[0].Name) {
+		if expressionOperator.AtomicOPCode == constants.OP_IDENTITY && !IsTempVar(expressionOutputTypeSig.Name) {
 			var outType, inpType string
 			var expressionOutputArg *ast.CXArgument = &ast.CXArgument{}
-			if expression.GetOutputs(prgrm)[0].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-				expressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expression.GetOutputs(prgrm)[0].Meta))
+			if expressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				expressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionOutputTypeSig.Meta))
 				outType = ast.GetFormattedType(prgrm, expressionOutputArg)
 			} else {
 				// panic("type is not cx argument deprecate\n\n")
-				outType = types.Code(expression.GetOutputs(prgrm)[0].Meta).Name()
+				outType = types.Code(expressionOutputTypeSig.Meta).Name()
 			}
 
+			expressionInputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetInputs(prgrm)[0])
 			var expressionInputArg *ast.CXArgument = &ast.CXArgument{}
-			if expression.GetInputs(prgrm)[0].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-				expressionInputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expression.GetInputs(prgrm)[0].Meta))
+			if expressionInputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				expressionInputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionInputTypeSig.Meta))
 				inpType = ast.GetFormattedType(prgrm, expressionInputArg)
 			} else {
 				// panic("type is not cx argument deprecate\n\n")
-				inpType = types.Code(expression.GetInputs(prgrm)[0].Meta).Name()
+				inpType = types.Code(expressionInputTypeSig.Meta).Name()
 			}
 
 			// We use `isInputs` to only print the error once.
@@ -992,9 +1019,10 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) {
 			var expectedType string
 			var receivedType string
 
+			expressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetOutputs(prgrm)[i])
 			var expressionOutputArg *ast.CXArgument = &ast.CXArgument{}
-			if expression.GetOutputs(prgrm)[i].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-				expressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expression.GetOutputs(prgrm)[i].Meta))
+			if expressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				expressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionOutputTypeSig.Meta))
 
 				if expressionOutputArg.GetAssignmentElement(prgrm).StructType != nil {
 					// then it's custom type
@@ -1010,12 +1038,13 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) {
 				}
 			} else {
 				// panic("type is not cx argument deprecate\n\n")
-				expectedType = types.Code(expression.GetOutputs(prgrm)[i].Meta).Name()
+				expectedType = types.Code(expressionOutputTypeSig.Meta).Name()
 			}
 
+			expressionInputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetInputs(prgrm)[i])
 			var expressionInputArg *ast.CXArgument = &ast.CXArgument{}
-			if expression.GetInputs(prgrm)[i].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-				expressionInputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expression.GetInputs(prgrm)[i].Meta))
+			if expressionInputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				expressionInputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionInputTypeSig.Meta))
 
 				if expressionInputArg.GetAssignmentElement(prgrm).StructType != nil {
 					// then it's custom type
@@ -1029,7 +1058,7 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) {
 					}
 				}
 			} else {
-				receivedType = types.Code(expression.GetInputs(prgrm)[i].Meta).Name()
+				receivedType = types.Code(expressionInputTypeSig.Meta).Name()
 			}
 
 			if receivedType != expectedType {
@@ -1054,7 +1083,9 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) {
 
 		expressionOperatorOutputs := expressionOperator.GetOutputs(prgrm)
 		var expressionOperatorOutputsIdxs []ast.CXArgumentIndex
-		for _, output := range expressionOperatorOutputs {
+		for _, outputIdx := range expressionOperatorOutputs {
+			output := prgrm.GetCXTypeSignatureFromArray(outputIdx)
+
 			if output.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 				expressionOperatorOutputsIdxs = append(expressionOperatorOutputsIdxs, ast.CXArgumentIndex(output.Meta))
 			} else {
@@ -1083,7 +1114,9 @@ func ProcessStringAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 		isOpIdent = true
 	}
 	if isOpIdent {
-		for i, output := range expression.GetOutputs(prgrm) {
+		for i, outputIdx := range expression.GetOutputs(prgrm) {
+			output := prgrm.GetCXTypeSignatureFromArray(outputIdx)
+
 			var out *ast.CXArgument = &ast.CXArgument{}
 			if output.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 				out = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(output.Meta))
@@ -1093,9 +1126,10 @@ func ProcessStringAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 			}
 
 			if len(expression.GetInputs(prgrm)) > i {
+				expressionInputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetInputs(prgrm)[i])
 				var expressionInputArg *ast.CXArgument = &ast.CXArgument{}
-				if expression.GetInputs(prgrm)[i].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-					expressionInputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expression.GetInputs(prgrm)[i].Meta))
+				if expressionInputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+					expressionInputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionInputTypeSig.Meta))
 				} else {
 					panic("type is not cx argument deprecate\n\n")
 				}
@@ -1145,8 +1179,9 @@ func ProcessShortDeclaration(prgrm *ast.CXProgram, expr *ast.CXExpression, expre
 
 	var expressionOutputArg *ast.CXArgument = &ast.CXArgument{}
 	if len(expression.GetOutputs(prgrm)) > 0 {
-		if expression.GetOutputs(prgrm)[0].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-			expressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expression.GetOutputs(prgrm)[0].Meta))
+		expressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetOutputs(prgrm)[0])
+		if expressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			expressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionOutputTypeSig.Meta))
 		} else {
 			// panic("type is not cx argument deprecate\n\n")
 			return
@@ -1157,10 +1192,11 @@ func ProcessShortDeclaration(prgrm *ast.CXProgram, expr *ast.CXExpression, expre
 	if len(expression.GetOutputs(prgrm)) > 0 && len(expression.GetInputs(prgrm)) > 0 && expressionOutputArg.Type == types.IDENTIFIER && !expr.IsStructLiteral() && !isParseOp(prgrm, expr) {
 		expressionOperator := prgrm.GetFunctionFromArray(expression.Operator)
 		expressionOperatorOutputs := expressionOperator.GetOutputs(prgrm)
+		expressionOperatorOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(expressionOperatorOutputs[0])
 
 		var expressionOperatorOutputArg *ast.CXArgument = &ast.CXArgument{}
-		if expressionOperatorOutputs[0].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-			expressionOperatorOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionOperatorOutputs[0].Meta))
+		if expressionOperatorOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			expressionOperatorOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionOperatorOutputTypeSig.Meta))
 		} else {
 			panic("type is not cx argument deprecate\n\n")
 		}
@@ -1174,10 +1210,11 @@ func ProcessShortDeclaration(prgrm *ast.CXProgram, expr *ast.CXExpression, expre
 		if expr.IsMethodCall() {
 			arg = expressionOperatorOutputArg
 		} else {
+			expressionInputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetInputs(prgrm)[0])
 
 			var expressionInputArg *ast.CXArgument = &ast.CXArgument{}
-			if expression.GetInputs(prgrm)[0].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-				expressionInputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expression.GetInputs(prgrm)[0].Meta))
+			if expressionInputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				expressionInputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionInputTypeSig.Meta))
 			} else {
 				panic("type is not cx argument deprecate\n\n")
 			}
@@ -1185,10 +1222,10 @@ func ProcessShortDeclaration(prgrm *ast.CXProgram, expr *ast.CXExpression, expre
 			arg = expressionInputArg
 		}
 
-		prevExpressionOutput := prevExpression.GetOutputs(prgrm)[0]
+		prevExpressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(prevExpression.GetOutputs(prgrm)[0])
 		var prevExpressionOutputIdx ast.CXArgumentIndex
-		if prevExpressionOutput.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-			prevExpressionOutputIdx = ast.CXArgumentIndex(prevExpressionOutput.Meta)
+		if prevExpressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			prevExpressionOutputIdx = ast.CXArgumentIndex(prevExpressionOutputTypeSig.Meta)
 		} else {
 			panic("type is not type cx argument deprecate\n\n")
 		}
@@ -1198,10 +1235,10 @@ func ProcessShortDeclaration(prgrm *ast.CXProgram, expr *ast.CXExpression, expre
 		prgrm.CXArgs[prevExpressionOutputIdx].Size = arg.Size
 		prgrm.CXArgs[prevExpressionOutputIdx].TotalSize = arg.TotalSize
 
-		expressionOutput := expression.GetOutputs(prgrm)[0]
+		expressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetOutputs(prgrm)[0])
 		var expressionOutputIdx ast.CXArgumentIndex
-		if expressionOutput.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-			expressionOutputIdx = ast.CXArgumentIndex(expressionOutput.Meta)
+		if expressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			expressionOutputIdx = ast.CXArgumentIndex(expressionOutputTypeSig.Meta)
 		} else {
 			panic("type is not type cx argument deprecate\n\n")
 		}
@@ -1255,17 +1292,19 @@ func ProcessSliceAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 		var inp *ast.CXArgument = &ast.CXArgument{}
 		var out *ast.CXArgument = &ast.CXArgument{}
 
+		expressionInputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetInputs(prgrm)[0])
 		var expressionInputArg *ast.CXArgument = &ast.CXArgument{}
-		if expression.GetInputs(prgrm)[0].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-			expressionInputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expression.GetInputs(prgrm)[0].Meta))
+		if expressionInputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			expressionInputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionInputTypeSig.Meta))
 		} else {
 			// panic("type is not cx argument deprecate\n\n")
 			return
 		}
 
+		expressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetOutputs(prgrm)[0])
 		var expressionOutputArg *ast.CXArgument = &ast.CXArgument{}
-		if expression.GetOutputs(prgrm)[0].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-			expressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expression.GetOutputs(prgrm)[0].Meta))
+		if expressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			expressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionOutputTypeSig.Meta))
 		} else {
 			// panic("type is not cx argument deprecate\n\n")
 			return
@@ -1280,7 +1319,9 @@ func ProcessSliceAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 	}
 	if expressionOperator != nil && !expressionOperator.IsBuiltIn() {
 		// then it's a function call
-		for _, input := range expression.GetInputs(prgrm) {
+		for _, inputIdx := range expression.GetInputs(prgrm) {
+			input := prgrm.GetCXTypeSignatureFromArray(inputIdx)
+
 			var inp *ast.CXArgument = &ast.CXArgument{}
 			if input.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 				inp = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(input.Meta))
@@ -1409,11 +1450,14 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 		var inpIdx ast.CXArgumentIndex = -1
 		var outIdx ast.CXArgumentIndex = -1
 
-		if len(expression.GetInputs(prgrm)) > 0 && expression.GetInputs(prgrm)[0].Name != "" {
-			inpIdx = ast.CXArgumentIndex(expression.GetInputs(prgrm)[0].Meta)
+		expressionInputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetInputs(prgrm)[0])
+		if len(expression.GetInputs(prgrm)) > 0 && expressionInputTypeSig.Name != "" {
+			inpIdx = ast.CXArgumentIndex(expressionInputTypeSig.Meta)
 		}
-		if len(expression.GetOutputs(prgrm)) > 0 && expression.GetOutputs(prgrm)[0].Name != "" {
-			outIdx = ast.CXArgumentIndex(expression.GetOutputs(prgrm)[0].Meta)
+
+		expressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetOutputs(prgrm)[0])
+		if len(expression.GetOutputs(prgrm)) > 0 && expressionOutputTypeSig.Name != "" {
+			outIdx = ast.CXArgumentIndex(expressionOutputTypeSig.Meta)
 		}
 
 		if inpIdx != -1 {
@@ -1459,8 +1503,8 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 					}
 
 					typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, &prgrm.CXArgs[outIdx])
-
-					prgrm.CXAtomicOps[expr.Index].Inputs.Fields = append([]*ast.CXTypeSignature{typeSig}, prgrm.CXAtomicOps[expr.Index].Inputs.Fields...)
+					typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
+					prgrm.CXAtomicOps[expr.Index].Inputs.Fields = append([]ast.CXTypeSignatureIndex{typeSigIdx}, prgrm.CXAtomicOps[expr.Index].Inputs.Fields...)
 					prgrm.CXAtomicOps[expr.Index].Outputs.Fields = prgrm.CXAtomicOps[expr.Index].Outputs.Fields[1:]
 					prgrm.CXArgs[outIdx].Fields = prgrm.CXArgs[outIdx].Fields[:len(prgrm.CXArgs[outIdx].Fields)-1]
 				}
@@ -1581,7 +1625,8 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 				}
 
 				typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, &prgrm.CXArgs[outIdx])
-				newInputs := &ast.CXStruct{Fields: []*ast.CXTypeSignature{typeSig}}
+				typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
+				newInputs := &ast.CXStruct{Fields: []ast.CXTypeSignatureIndex{typeSigIdx}}
 				if prgrm.CXAtomicOps[expr.Index].Inputs != nil {
 					for _, typeSig := range prgrm.CXAtomicOps[expr.Index].Inputs.Fields {
 						newInputs.AddField_CXAtomicOps(prgrm, typeSig)
@@ -1644,19 +1689,20 @@ func ProcessTempVariable(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 	}
 
 	if expressionOperator != nil && (isOpIdent || ast.IsArithmeticOperator(expressionOperator.AtomicOPCode)) && len(expression.GetOutputs(prgrm)) > 0 && len(expression.GetInputs(prgrm)) > 0 {
-		outputArg := expression.GetOutputs(prgrm)[0]
+		outputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetOutputs(prgrm)[0])
 		var outputArgIdx ast.CXArgumentIndex
-		if outputArg.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-			outputArgIdx = ast.CXArgumentIndex(outputArg.Meta)
+		if outputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			outputArgIdx = ast.CXArgumentIndex(outputTypeSig.Meta)
 		} else {
 			// panic("type is not type cx argument deprecate\n\n")
 			return
 		}
 		name := prgrm.CXArgs[outputArgIdx].Name
 		if IsTempVar(name) {
+			expressionInputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetInputs(prgrm)[0])
 			var expressionInputArg *ast.CXArgument = &ast.CXArgument{}
-			if expression.GetInputs(prgrm)[0].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-				expressionInputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expression.GetInputs(prgrm)[0].Meta))
+			if expressionInputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				expressionInputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionInputTypeSig.Meta))
 			} else {
 				panic("type is not cx argument deprecate\n\n")
 			}
@@ -1845,10 +1891,11 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, sym *ast.CXArgument, arg *ast.CXA
 				if methodIdx, methodErr := strctPkg.GetMethod(prgrm, receiverType+"."+methodName, receiverType); methodErr == nil {
 					method := prgrm.GetFunctionFromArray(methodIdx)
 					methodOutputs := method.GetOutputs(prgrm)
+					methodOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(methodOutputs[0])
 
 					var methodOutputArg *ast.CXArgument = &ast.CXArgument{}
-					if methodOutputs[0].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-						methodOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(methodOutputs[0].Meta))
+					if methodOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+						methodOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(methodOutputTypeSig.Meta))
 					} else {
 						panic("type is not cx argument deprecate\n\n")
 					}
@@ -1870,7 +1917,9 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, sym *ast.CXArgument, arg *ast.CXA
 				strct = nameField.StructType
 			}
 
-			for _, typeSignature := range strct.Fields {
+			for _, typeSignatureIdx := range strct.Fields {
+				typeSignature := prgrm.GetCXTypeSignatureFromArray(typeSignatureIdx)
+
 				if nameField.Name == typeSignature.Name && typeSignature.Type == ast.TYPE_ATOMIC {
 					nameField.Type = types.Code(typeSignature.Meta)
 					nameField.StructType = nil
