@@ -1,7 +1,6 @@
 package type_checks_test
 
 import (
-	"fmt"
 	"os"
 	"testing"
 
@@ -36,8 +35,6 @@ func TestTypeChecks_ParseGlobals(t *testing.T) {
 			Globals, err := declaration_extraction.ExtractGlobals(ReplaceCommentsWithWhitespaces, tc.testDir, pkg)
 
 			type_checks.ParseGlobals(Globals)
-
-			actions.AST.PrintProgram()
 
 		})
 	}
@@ -86,7 +83,6 @@ func TestTypeChecks_ParseStructs(t *testing.T) {
 
 			type_checks.ParseStructs(structs)
 
-			actions.AST.PrintProgram()
 		})
 	}
 
@@ -116,8 +112,6 @@ func TestTypeChecks_ParseFuncs(t *testing.T) {
 			pkg := declaration_extraction.ExtractPackages(ReplaceCommentsWithWhitespaces)
 
 			funcs, err := declaration_extraction.ExtractFuncs(srcBytes, tc.testDir, pkg)
-
-			fmt.Print(funcs)
 
 			type_checks.ParseFuncs(funcs)
 

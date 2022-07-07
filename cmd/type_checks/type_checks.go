@@ -10,6 +10,7 @@ import (
 
 	"github.com/skycoin/cx/cmd/declaration_extraction"
 	"github.com/skycoin/cx/cx/ast"
+	"github.com/skycoin/cx/cx/constants"
 	cxinit "github.com/skycoin/cx/cx/init"
 	"github.com/skycoin/cx/cx/types"
 	"github.com/skycoin/cx/cxparser/actions"
@@ -89,15 +90,24 @@ func ParseGlobals(globals []declaration_extraction.GlobalDeclaration) {
 		// Make and add global to AST
 		globalArg := ast.MakeArgument(global.GlobalVariableName, global.FileID, global.LineNumber)
 		globalArg.Offset = types.InvalidPointer
-
 		globalArg.Package = ast.CXPackageIndex(pkg.Index)
-		globalArg.SetType(primitiveTypesMap[tokens[2]])
 
 		globalArgIdx := actions.AST.AddCXArgInArray(globalArg)
 
-		pkg.AddGlobal(actions.AST, globalArgIdx)
+		pkg = pkg.AddGlobal(actions.AST, globalArgIdx)
 
-		// globalArg.DeclarationSpecifiers = actions.DeclareGlobalInPackage()
+		// Global declaration and type setting
+		reArray := regexp.MustCompile(`\[([0-9]*)\]([_a-zA-Z0-9]*)`)
+
+		declarationSpecifier := actions.DeclarationSpecifiersBasic(primitiveTypesMap[tokens[2]])
+
+		if arrayDeclarationSpecifier := reArray.FindStringSubmatch(tokens[2]); arrayDeclarationSpecifier != nil {
+			declarationSpecifierBasic := actions.DeclarationSpecifiersBasic(primitiveTypesMap[arrayDeclarationSpecifier[2]])
+
+			declarationSpecifier = actions.DeclarationSpecifiers(declarationSpecifierBasic, []types.Pointer{0}, constants.DECL_ARRAY)
+		}
+
+		actions.DeclareGlobalInPackage(actions.AST, pkg, actions.AST.GetCXArg(globalArgIdx), declarationSpecifier, nil, false)
 
 	}
 }
@@ -193,8 +203,6 @@ func ParseStructs(structs []declaration_extraction.StructDeclaration) {
 				if len(tokens) == 0 {
 					continue
 				}
-
-				fmt.Print(string(tokens[1]))
 
 				typeCode := primitiveTypesMap[string(tokens[1])]
 
