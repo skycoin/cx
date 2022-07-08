@@ -330,10 +330,30 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 		inpExprCXLine, _ := prgrm.GetPreviousCXLine(args, i)
 
 		if inpExprAtomicOpOperator == nil {
+			typeSigIdx := inpExprAtomicOp.GetOutputs(prgrm)[0]
+			typeSig := prgrm.GetCXTypeSignatureFromArray(typeSigIdx)
 
-			typeSig := inpExprAtomicOp.GetOutputs(prgrm)[0]
+			// TODO: This is still to be improved
+			// Get its CX argument if its type cx arg deprecate
+			var typeSigArg *ast.CXArgument = &ast.CXArgument{}
+			if typeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				typeSigArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(typeSig.Meta))
+			}
+
+			// If type sig arg is not nil, check if it is an atomic type.
+			// If an atomic type, convert cx type signature to type atomic/
+			if typeSigArg != nil {
+				if !typeSigArg.IsSlice && len(typeSigArg.Lengths) == 0 && typeSigArg.Type.IsPrimitive() {
+					typeSig.Name = typeSigArg.Name
+					typeSig.Type = ast.TYPE_ATOMIC
+					typeSig.Meta = int(typeSigArg.Type)
+					typeSig.Offset = typeSigArg.Offset
+					typeSig.Package = typeSigArg.Package
+				}
+			}
+
 			// then it's a literal
-			expression.AddInput(prgrm, typeSig)
+			expression.AddInput(prgrm, typeSigIdx)
 		} else {
 			// then it's a function call
 			if len(inpExprAtomicOp.GetOutputs(prgrm)) < 1 {
@@ -409,6 +429,7 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 			nestedExprs = append(nestedExprs, inpExpr)
 		}
 	}
+
 	return append(nestedExprs, exprs...)
 }
 
