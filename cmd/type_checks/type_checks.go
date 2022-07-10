@@ -99,8 +99,10 @@ func ParseGlobals(globals []declaration_extraction.GlobalDeclaration) {
 		// Global declaration and type setting
 		reArray := regexp.MustCompile(`\[([0-9]*)\]([_a-zA-Z0-9]*)`)
 
+		//Default declaration specifier for primitive types
 		declarationSpecifier := actions.DeclarationSpecifiersBasic(primitiveTypesMap[tokens[2]])
 
+		//Declaration specifier for arrays
 		if arrayDeclarationSpecifier := reArray.FindStringSubmatch(tokens[2]); arrayDeclarationSpecifier != nil {
 			declarationSpecifierBasic := actions.DeclarationSpecifiersBasic(primitiveTypesMap[arrayDeclarationSpecifier[2]])
 
@@ -154,6 +156,8 @@ func ParseStructs(structs []declaration_extraction.StructDeclaration) {
 		structCX := ast.MakeStruct(strct.StructVariableName)
 		structCX.Package = ast.CXPackageIndex(pkg.Index)
 
+		pkg = pkg.AddStruct(actions.AST, structCX)
+
 		file, err := os.Open(strct.FileID)
 
 		// if err != nil {
@@ -167,6 +171,7 @@ func ParseStructs(structs []declaration_extraction.StructDeclaration) {
 		// if bytes.Compare(bytes.Fields(strctDeclaration)[2], []byte("struct")) == 0 {
 		// 	structCX.SetType(getTypeCode(string(bytes.Fields(strctDeclaration)[2])))
 		// }
+		var structFields []*ast.CXArgument
 
 		scanner := bufio.NewScanner(file)
 
@@ -204,25 +209,21 @@ func ParseStructs(structs []declaration_extraction.StructDeclaration) {
 					continue
 				}
 
-				typeCode := primitiveTypesMap[string(tokens[1])]
+				structFieldCXArg := ast.MakeArgument(string(tokens[0]), strct.FileID, strct.LineNumber)
+				structFieldCXArg = structFieldCXArg.SetPackage(pkg)
 
-				field := ast.MakeArgument(string(tokens[0]), strct.FileID, lineno)
+				structField := actions.DeclarationSpecifiersBasic(primitiveTypesMap[string(tokens[1])])
 
-				field.SetType(typeCode)
+				structField.Name = structFieldCXArg.Name
+				structField.Package = structFieldCXArg.Package
+				structField.IsLocalDeclaration = true
 
-				structCX = structCX.AddField(actions.AST, field)
+				structFields = append(structFields, structField)
 
-				// var typ types.Code = types.
 			}
 		}
 
-		// structCX = structCX.AddField()
-
-		// for _, field := range fields {
-
-		// }
-
-		pkg.AddStruct(actions.AST, structCX)
+		actions.DeclareStruct(actions.AST, strct.StructVariableName, structFields)
 
 	}
 }
