@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/skycoin/cx/cmd/declaration_extraction"
@@ -105,8 +106,13 @@ func ParseGlobals(globals []declaration_extraction.GlobalDeclaration) {
 		//Declaration specifier for arrays
 		if arrayDeclarationSpecifier := reArray.FindStringSubmatch(tokens[2]); arrayDeclarationSpecifier != nil {
 			declarationSpecifierBasic := actions.DeclarationSpecifiersBasic(primitiveTypesMap[arrayDeclarationSpecifier[2]])
+			numberOfElements, err := strconv.Atoi(arrayDeclarationSpecifier[1])
 
-			declarationSpecifier = actions.DeclarationSpecifiers(declarationSpecifierBasic, []types.Pointer{0}, constants.DECL_ARRAY)
+			if err != nil {
+				// error handling
+			}
+
+			declarationSpecifier = actions.DeclarationSpecifiers(declarationSpecifierBasic, []types.Pointer{types.Pointer(numberOfElements)}, constants.DECL_ARRAY)
 		}
 
 		actions.DeclareGlobalInPackage(actions.AST, pkg, actions.AST.GetCXArg(globalArgIdx), declarationSpecifier, nil, false)
