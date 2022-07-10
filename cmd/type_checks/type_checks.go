@@ -228,7 +228,7 @@ func ParseStructs(structs []declaration_extraction.StructDeclaration) {
 	}
 }
 
-func ParseFuncs(funcs []declaration_extraction.FuncDeclaration) {
+func ParseFuncHeaders(funcs []declaration_extraction.FuncDeclaration) {
 
 	// 1. iterate over all the funcs
 	// 2. extract inputs and outputs
@@ -257,6 +257,10 @@ func ParseFuncs(funcs []declaration_extraction.FuncDeclaration) {
 
 		}
 
+		funcCX := ast.MakeFunction(fun.FuncVariableName, fun.FileID, fun.LineNumber)
+
+		pkg.AddFunction(actions.AST, funcCX)
+
 		srcBytes, err := os.ReadFile(fun.FileID)
 
 		if err != nil {
@@ -282,7 +286,8 @@ func ParseFuncs(funcs []declaration_extraction.FuncDeclaration) {
 
 		outputsArray := bytes.Split(outputRemoveParenClose, []byte(","))
 
-		funcCX := ast.MakeFunction(fun.FuncVariableName, fun.FileID, fun.LineNumber)
+		inputArgsArray := []*ast.CXArgument{}
+		outputArgsArray := []*ast.CXArgument{}
 
 		for _, input := range inputsArray {
 
@@ -290,11 +295,19 @@ func ParseFuncs(funcs []declaration_extraction.FuncDeclaration) {
 				continue
 			}
 
+			// Tokenize the parameter further
 			tokens := bytes.Fields(input)
-			inputName := bytes.TrimSpace(tokens[0])
-			inputArg := ast.MakeArgument(string(inputName), fun.FileID, fun.LineNumber)
-			inputArg = inputArg.SetType(primitiveTypesMap[string(tokens[1])])
-			funcCX = funcCX.AddInput(actions.AST, inputArg)
+
+			// Declarator
+			inputArg := ast.MakeArgument(string(tokens[0]), fun.FileID, fun.LineNumber)
+			inputArg = inputArg.SetPackage(pkg)
+
+			// Declaration Specifier and Merge with Declarator
+			inputSpecifier := actions.DeclarationSpecifiersBasic(primitiveTypesMap[string(tokens[1])])
+			inputSpecifier.Name = inputArg.Name
+			inputSpecifier.Package = inputArg.Package
+
+			inputArgsArray = append(inputArgsArray, inputSpecifier)
 
 		}
 
@@ -304,15 +317,31 @@ func ParseFuncs(funcs []declaration_extraction.FuncDeclaration) {
 				continue
 			}
 
+			// Tokenize
 			tokens := bytes.Fields(output)
-			outputName := bytes.TrimSpace(tokens[0])
-			outputArg := ast.MakeArgument(string(outputName), fun.FileID, fun.LineNumber)
-			outputArg = outputArg.SetType(primitiveTypesMap[string(tokens[1])])
-			funcCX = funcCX.AddOutput(actions.AST, outputArg)
 
+			// Declarator
+			outputArg := ast.MakeArgument(string(tokens[0]), fun.FileID, fun.LineNumber)
+			outputArg = outputArg.SetPackage(pkg)
+
+			// Declaration Specifier
+			outputSpecifier := actions.DeclarationSpecifiersBasic(primitiveTypesMap[string(tokens[1])])
+			outputSpecifier.Name = outputArg.Name
+			outputSpecifier.Package = outputArg.Package
+
+			outputArgsArray = append(outputArgsArray, outputSpecifier)
 		}
 
-		pkg.AddFunction(actions.AST, funcCX)
+		funIdx := actions.FunctionHeader(actions.AST, fun.FuncVariableName, nil, false)
+		fun := actions.AST.GetFunctionFromArray(funIdx)
+
+		for _, inputArg := range inputArgsArray {
+			fun.AddInput(actions.AST, inputArg)
+		}
+
+		for _, outputArg := range outputArgsArray {
+			fun.AddOutput(actions.AST, outputArg)
+		}
 
 	}
 

@@ -14,7 +14,7 @@ var F64 f64 = 0.64D
 var string str = "Hello World"
 var Affordance aff
 
-var intArray [5]i32 = []i32{ 0, 1, 2, 3, 4, 5 }
+var intArray [5]i32
 // var stringPointer *str
 
 // var abc string	Var in comment
@@ -26,6 +26,10 @@ var intArray [5]i32 = []i32{ 0, 1, 2, 3, 4, 5 }
 type CustomType struct {
 	fieldA str
 	fieldB i32
+}
+
+func (customType *CustomType) setFieldA (string str) {
+	customType.fieldA = string
 }
 
 func main () {

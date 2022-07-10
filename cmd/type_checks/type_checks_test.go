@@ -88,7 +88,7 @@ func TestTypeChecks_ParseStructs(t *testing.T) {
 
 }
 
-func TestTypeChecks_ParseFuncs(t *testing.T) {
+func TestTypeChecks_ParseFuncHeaders(t *testing.T) {
 
 	tests := []struct {
 		scenario string
@@ -113,7 +113,7 @@ func TestTypeChecks_ParseFuncs(t *testing.T) {
 
 			funcs, err := declaration_extraction.ExtractFuncs(srcBytes, tc.testDir, pkg)
 
-			type_checks.ParseFuncs(funcs)
+			type_checks.ParseFuncHeaders(funcs)
 
 			actions.AST.PrintProgram()
 		})
