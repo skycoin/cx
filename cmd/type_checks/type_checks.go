@@ -114,7 +114,7 @@ func ParseGlobals(globals []declaration_extraction.GlobalDeclaration) {
 			declarationSpecifier = actions.DeclarationSpecifiers(declarationSpecifierBasic, []types.Pointer{types.Pointer(numberOfElements)}, constants.DECL_ARRAY)
 		}
 
-		actions.DeclareGlobalInPackage(actions.AST, pkg, actions.AST.GetCXArg(globalArgIdx), declarationSpecifier, nil, false)
+		actions.DeclareGlobalInPackage(actions.AST, pkg, actions.AST.GetCXArgFromArray(globalArgIdx), declarationSpecifier, nil, false)
 
 	}
 }
@@ -172,7 +172,7 @@ func ParseStructs(structs []declaration_extraction.StructDeclaration) {
 
 		strctDeclaration := srcBytes[strct.StartOffset : strct.StartOffset+strct.Length]
 
-		if bytes.Compare(bytes.Fields(strctDeclaration)[2], []byte("struct")) == 0 {
+		if !bytes.Contains(strctDeclaration, []byte("struct")) {
 			// not fields to be included
 			fmt.Printf("syntax error: expecting type struct, line %v", strct.LineNumber)
 			continue
