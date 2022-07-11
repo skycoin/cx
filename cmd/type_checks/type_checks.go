@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"io"
 	"os"
 	"regexp"
 	"strconv"
@@ -39,11 +40,9 @@ var primitiveTypesMap map[string]types.Code = map[string]types.Code{
 	"aff": types.AFF,
 }
 
-// ParseGlobals make the CXArguments and add them to the AST
-// 1. iterates over all the global declarations
-// 2. gets/makes the package
-// 3.
-
+// Parse Globals
+// - takes in globals from cx/cmd/declaration_extraction
+// - adds globals to AST
 func ParseGlobals(globals []declaration_extraction.GlobalDeclaration) {
 
 	// Make program
@@ -97,11 +96,11 @@ func ParseGlobals(globals []declaration_extraction.GlobalDeclaration) {
 
 		pkg = pkg.AddGlobal(actions.AST, globalArgIdx)
 
-		// Global declaration and type setting
-		reArray := regexp.MustCompile(`\[([0-9]*)\]([_a-zA-Z0-9]*)`)
-
 		//Default declaration specifier for primitive types
 		declarationSpecifier := actions.DeclarationSpecifiersBasic(primitiveTypesMap[tokens[2]])
+
+		// Global declaration and type setting
+		reArray := regexp.MustCompile(`\[([0-9]*)\]([_a-zA-Z0-9]*)`)
 
 		//Declaration specifier for arrays
 		if arrayDeclarationSpecifier := reArray.FindStringSubmatch(tokens[2]); arrayDeclarationSpecifier != nil {
@@ -130,13 +129,12 @@ func ParseGlobals(globals []declaration_extraction.GlobalDeclaration) {
 // 	}
 // }
 
+// Parse Structs
+// - takes in structs from cx/cmd/declaration_extraction
+// - adds structs to AST
 func ParseStructs(structs []declaration_extraction.StructDeclaration) {
 
-	// 1. iterate over all the structs
-	// 2. add the struct name from the declaration
-	// 3. search for fields
-	// 4. fields to ast
-
+	// Make porgram
 	if actions.AST == nil {
 		actions.AST = cxinit.MakeProgram()
 	}
@@ -166,17 +164,20 @@ func ParseStructs(structs []declaration_extraction.StructDeclaration) {
 
 		file, err := os.Open(strct.FileID)
 
-		// if err != nil {
-		// 	// error handling
-		// }
+		if err != nil {
+			// error handling
+		}
 
-		// srcBytes, err := io.ReadAll(file)
+		srcBytes, err := io.ReadAll(file)
 
-		// strctDeclaration := srcBytes[strct.StartOffset : strct.StartOffset+strct.Length]
+		strctDeclaration := srcBytes[strct.StartOffset : strct.StartOffset+strct.Length]
 
-		// if bytes.Compare(bytes.Fields(strctDeclaration)[2], []byte("struct")) == 0 {
-		// 	structCX.SetType(getTypeCode(string(bytes.Fields(strctDeclaration)[2])))
-		// }
+		if bytes.Compare(bytes.Fields(strctDeclaration)[2], []byte("struct")) == 0 {
+			// not fields to be included
+			fmt.Printf("syntax error: expecting type struct, line %v", strct.LineNumber)
+			continue
+		}
+
 		var structFields []*ast.CXArgument
 
 		scanner := bufio.NewScanner(file)
@@ -206,6 +207,11 @@ func ParseStructs(structs []declaration_extraction.StructDeclaration) {
 			if inBlock == 1 {
 				tokens := bytes.Fields(line)
 
+				if len(tokens) == 1 {
+					// syntax error
+					continue
+				}
+
 				if len(tokens) > 2 {
 					// syntax error
 					continue
@@ -215,13 +221,13 @@ func ParseStructs(structs []declaration_extraction.StructDeclaration) {
 					continue
 				}
 
-				structFieldCXArg := ast.MakeArgument(string(tokens[0]), strct.FileID, strct.LineNumber)
-				structFieldCXArg = structFieldCXArg.SetPackage(pkg)
+				structFieldArg := ast.MakeArgument(string(tokens[0]), strct.FileID, strct.LineNumber)
+				structFieldArg = structFieldArg.SetPackage(pkg)
 
 				structField := actions.DeclarationSpecifiersBasic(primitiveTypesMap[string(tokens[1])])
 
-				structField.Name = structFieldCXArg.Name
-				structField.Package = structFieldCXArg.Package
+				structField.Name = structFieldArg.Name
+				structField.Package = structFieldArg.Package
 				structField.IsLocalDeclaration = true
 
 				structFields = append(structFields, structField)
@@ -234,13 +240,12 @@ func ParseStructs(structs []declaration_extraction.StructDeclaration) {
 	}
 }
 
+// Parse Function Headers
+// - takes in funcs from cx/cmd/declaration_extraction
+// - adds func headers to AST
 func ParseFuncHeaders(funcs []declaration_extraction.FuncDeclaration) {
 
-	// 1. iterate over all the funcs
-	// 2. extract inputs and outputs
-	// 3. get the id and expression
-	// 4. call function declaration
-
+	// Make program
 	if actions.AST == nil {
 		actions.AST = cxinit.MakeProgram()
 	}
@@ -279,29 +284,32 @@ func ParseFuncHeaders(funcs []declaration_extraction.FuncDeclaration) {
 		// Get function
 		funcDeclaration := srcBytes[fun.StartOffset : fun.StartOffset+fun.Length]
 
+		// Input Extraction
 		inputParenthesisOpen := reParenOpen.FindIndex(funcDeclaration)[0]
 		inputParenthesisClose := reParenClose.FindIndex(funcDeclaration)[0]
 
-		inputsArray := bytes.Split(funcDeclaration[inputParenthesisOpen+1:inputParenthesisClose], []byte(","))
+		inputTokens := bytes.Split(funcDeclaration[inputParenthesisOpen+1:inputParenthesisClose], []byte(","))
 
-		// returnParenthesisOpen := bytes.IndexAny(funcDeclaration[paramParenthesisClose:], "(")
-		// returnParenthesisClose := bytes.IndexAny(funcDeclaration[returnParenthesisOpen:], ")")
-
+		// Output Extraction
 		outputRemoveParenOpen := reParenOpen.ReplaceAll(funcDeclaration[inputParenthesisClose+1:], []byte(""))
 		outputRemoveParenClose := reParenClose.ReplaceAll(outputRemoveParenOpen, []byte(""))
 
-		outputsArray := bytes.Split(outputRemoveParenClose, []byte(","))
+		outputTokens := bytes.Split(outputRemoveParenClose, []byte(","))
 
+		// Input and Output CXArgument Arrays
 		inputArgsArray := []*ast.CXArgument{}
 		outputArgsArray := []*ast.CXArgument{}
 
-		for _, input := range inputsArray {
+		// Extract Inputs and add to CXArgument Array
+		for _, input := range inputTokens {
 
+			// input token is empty
 			if bytes.Compare(input, []byte("")) == 0 {
 				continue
 			}
 
 			// Tokenize the parameter further
+			// [name] [type]
 			tokens := bytes.Fields(input)
 
 			// Declarator
@@ -317,13 +325,16 @@ func ParseFuncHeaders(funcs []declaration_extraction.FuncDeclaration) {
 
 		}
 
-		for _, output := range outputsArray {
+		// Extract Outputs and add to CXArgument array
+		for _, output := range outputTokens {
 
+			// output token is empty
 			if bytes.Compare(output, []byte("")) == 0 {
 				continue
 			}
 
 			// Tokenize
+			// [name] [type]
 			tokens := bytes.Fields(output)
 
 			// Declarator
