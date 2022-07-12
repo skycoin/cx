@@ -7,7 +7,7 @@ import (
 	"github.com/skycoin/cx/cmd/declaration_extraction"
 	"github.com/skycoin/cx/cmd/type_checks"
 	"github.com/skycoin/cx/cx/ast"
-	"github.com/skycoin/cx/cx/packages"
+	cxpackages "github.com/skycoin/cx/cx/packages"
 	"github.com/skycoin/cx/cx/types"
 	"github.com/skycoin/cx/cxparser/actions"
 )
@@ -173,12 +173,14 @@ func TestTypeChecks_ParseGlobals(t *testing.T) {
 			program := actions.AST
 
 			for _, pkgIdx := range program.Packages {
+
 				pkg, err := program.GetPackageFromArray(pkgIdx)
+
 				if err != nil {
-					panic(err)
+					t.Log(err)
 				}
 
-				if packages.IsDefaultPackage(pkg.Name) {
+				if cxpackages.IsDefaultPackage(pkg.Name) {
 					continue
 				}
 
@@ -222,12 +224,28 @@ func TestTypeChecks_ParseEnums(t *testing.T) {
 func TestTypeChecks_ParseStructs(t *testing.T) {
 
 	tests := []struct {
-		scenario string
-		testDir  string
+		scenario  string
+		testDir   string
+		structCXs []ast.CXStruct
 	}{
 		{
 			scenario: "Has Structs",
 			testDir:  "./test_files/test.cx",
+			structCXs: []ast.CXStruct{
+				{
+					Name:    "",
+					Index:   0,
+					Package: 1,
+					Fields: []ast.CXTypeSignature{
+						{
+							Name:   "",
+							Offset: 0,
+							Type:   ast.TYPE_ARRAY_ATOMIC,
+							Meta:   0,
+						},
+					},
+				},
+			},
 		},
 	}
 
@@ -246,6 +264,35 @@ func TestTypeChecks_ParseStructs(t *testing.T) {
 
 			type_checks.ParseStructs(structs)
 
+			var i int
+
+			program := actions.AST
+
+			for _, pkgIdx := range program.Packages {
+
+				pkg, err := program.GetPackageFromArray(pkgIdx)
+
+				if err != nil {
+					t.Log(err)
+				}
+
+				if cxpackages.IsDefaultPackage(pkg.Name) {
+					continue
+				}
+
+				for _, structIdx := range pkg.Structs {
+					gotStruct := program.CXStructs[structIdx]
+					wantStruct := tc.structCXs[i]
+
+					if gotStruct.Name != wantStruct.Name ||
+						gotStruct.Index != wantStruct.Index ||
+						gotStruct.Package != wantStruct.Package {
+						t.Errorf("want struct %v, got %v", wantStruct, gotStruct)
+					}
+
+					i++
+				}
+			}
 		})
 	}
 
@@ -277,8 +324,8 @@ func TestTypeChecks_ParseFuncHeaders(t *testing.T) {
 			funcs, err := declaration_extraction.ExtractFuncs(srcBytes, tc.testDir, pkg)
 
 			type_checks.ParseFuncHeaders(funcs)
-
 		})
 	}
 
+	actions.AST.PrintProgram()
 }

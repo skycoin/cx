@@ -199,9 +199,8 @@ func ParseStructs(structs []declaration_extraction.StructDeclaration) {
 				continue
 			}
 
-			if bytes.IndexAny(line, "}") != -1 {
+			if bytes.IndexAny(line, "}") != -1 && inBlock >= 1 {
 				inBlock--
-				break
 			}
 
 			if inBlock == 1 {
@@ -234,7 +233,7 @@ func ParseStructs(structs []declaration_extraction.StructDeclaration) {
 
 			}
 		}
-
+		fmt.Print(structFields)
 		actions.DeclareStruct(actions.AST, strct.StructVariableName, structFields)
 
 	}
