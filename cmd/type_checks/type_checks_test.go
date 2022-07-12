@@ -333,12 +333,43 @@ func TestTypeChecks_ParseStructs(t *testing.T) {
 func TestTypeChecks_ParseFuncHeaders(t *testing.T) {
 
 	tests := []struct {
-		scenario string
-		testDir  string
+		scenario    string
+		testDir     string
+		functionCXs []ast.CXFunction
 	}{
 		{
 			scenario: "Has funcs",
 			testDir:  "./test_files/test.cx",
+			functionCXs: []ast.CXFunction{
+				{
+					Name:  "main",
+					Index: 0,
+				},
+				{
+					Name: "",
+				},
+				{
+					Name:  "main",
+					Index: 0,
+				},
+				{
+					Name: "",
+				},
+				{
+					Name:  "main",
+					Index: 0,
+				},
+				{
+					Name: "",
+				},
+				{
+					Name:  "main",
+					Index: 0,
+				},
+				{
+					Name: "",
+				},
+			},
 		},
 	}
 
@@ -356,6 +387,59 @@ func TestTypeChecks_ParseFuncHeaders(t *testing.T) {
 			funcs, err := declaration_extraction.ExtractFuncs(srcBytes, tc.testDir, pkg)
 
 			type_checks.ParseFuncHeaders(funcs)
+
+			var i int
+
+			program := actions.AST
+
+			for _, pkgIdx := range program.Packages {
+
+				pkg, err := program.GetPackageFromArray(pkgIdx)
+
+				if err != nil {
+					t.Log(err)
+				}
+
+				for _, funcIdx := range pkg.Functions {
+
+					gotFunc := program.GetFunctionFromArray(funcIdx)
+					wantFunc := tc.functionCXs[i]
+
+					var err bool
+
+					if gotFunc.Name != wantFunc.Name ||
+						gotFunc.Index != wantFunc.Index ||
+						gotFunc.Package != wantFunc.Package {
+						err = true
+					}
+
+					for k, gotInput := range gotFunc.GetInputs(program) {
+						wantInput := wantFunc.GetInputs(program)[k]
+
+						if gotInput != wantInput {
+							err = true
+						}
+					}
+
+					for k, gotInput := range gotFunc.GetInputs(program) {
+						wantInput := wantFunc.GetInputs(program)[k]
+
+						if gotInput != wantInput {
+							err = true
+						}
+					}
+
+					if err {
+
+						t.Errorf("want func %v, got %v", wantFunc, gotFunc)
+						continue
+
+					}
+
+					i++
+				}
+			}
+
 		})
 	}
 
