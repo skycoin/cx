@@ -166,7 +166,11 @@ func ParseStructs(structs []declaration_extraction.StructDeclaration) {
 
 		if err != nil {
 			// error handling
+			fmt.Print(err)
 		}
+
+		bracesOpen := regexp.MustCompile("{")
+		bracesClose := regexp.MustCompile("}")
 
 		srcBytes, err := io.ReadAll(file)
 
@@ -180,7 +184,8 @@ func ParseStructs(structs []declaration_extraction.StructDeclaration) {
 
 		var structFields []*ast.CXArgument
 
-		scanner := bufio.NewScanner(file)
+		reader := bytes.NewReader(srcBytes)
+		scanner := bufio.NewScanner(reader)
 
 		var inBlock int
 		var lineno int
@@ -194,13 +199,23 @@ func ParseStructs(structs []declaration_extraction.StructDeclaration) {
 				continue
 			}
 
-			if lineno == strct.LineNumber && bytes.IndexAny(line, "{") != -1 {
+			if lineno == strct.LineNumber {
+
+				if bracesOpen.FindIndex(line) == nil {
+					fmt.Print("missing opening brace")
+					break
+				}
+
 				inBlock++
 				continue
 			}
 
-			if bytes.IndexAny(line, "}") != -1 && inBlock >= 1 {
+			if bracesClose.FindIndex(line) != nil {
 				inBlock--
+			}
+
+			if inBlock == 0 && lineno > strct.LineNumber {
+				break
 			}
 
 			if inBlock == 1 {
@@ -208,11 +223,13 @@ func ParseStructs(structs []declaration_extraction.StructDeclaration) {
 
 				if len(tokens) == 1 {
 					// syntax error
+					fmt.Printf("syntax error: missing type, line %v", lineno)
 					continue
 				}
 
 				if len(tokens) > 2 {
 					// syntax error
+					fmt.Printf("syntax error: unexpected %v, line %v", tokens[3], lineno)
 					continue
 				}
 
@@ -223,17 +240,17 @@ func ParseStructs(structs []declaration_extraction.StructDeclaration) {
 				structFieldArg := ast.MakeArgument(string(tokens[0]), strct.FileID, strct.LineNumber)
 				structFieldArg = structFieldArg.SetPackage(pkg)
 
-				structField := actions.DeclarationSpecifiersBasic(primitiveTypesMap[string(tokens[1])])
+				structFieldSpecifier := actions.DeclarationSpecifiersBasic(primitiveTypesMap[string(tokens[1])])
 
-				structField.Name = structFieldArg.Name
-				structField.Package = structFieldArg.Package
-				structField.IsLocalDeclaration = true
+				structFieldSpecifier.Name = structFieldArg.Name
+				structFieldSpecifier.Package = structFieldArg.Package
+				structFieldSpecifier.IsLocalDeclaration = true
 
-				structFields = append(structFields, structField)
+				structFields = append(structFields, structFieldSpecifier)
 
 			}
 		}
-		fmt.Print(structFields)
+
 		actions.DeclareStruct(actions.AST, strct.StructVariableName, structFields)
 
 	}

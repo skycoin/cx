@@ -75,3 +75,7 @@ func divide(c i32, d i32)(quotient i32, remainder f32) {
 func printer(message str)() {
 	str.print(message)
 }
+
+type AnotherType struct {
+	name string
+}

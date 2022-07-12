@@ -233,15 +233,34 @@ func TestTypeChecks_ParseStructs(t *testing.T) {
 			testDir:  "./test_files/test.cx",
 			structCXs: []ast.CXStruct{
 				{
-					Name:    "",
-					Index:   0,
+					Name:    "CustomType",
+					Index:   1,
 					Package: 1,
 					Fields: []ast.CXTypeSignature{
 						{
-							Name:   "",
-							Offset: 0,
-							Type:   ast.TYPE_ARRAY_ATOMIC,
-							Meta:   0,
+							Name:   "fieldA",
+							Offset: 8,
+							Type:   ast.TYPE_CXARGUMENT_DEPRECATE,
+							Meta:   28,
+						},
+						{
+							Name:   "fieldB",
+							Offset: 4,
+							Type:   ast.TYPE_ATOMIC,
+							Meta:   4,
+						},
+					},
+				},
+				{
+					Name:    "AnotherType",
+					Index:   2,
+					Package: 1,
+					Fields: []ast.CXTypeSignature{
+						{
+							Name:   "name",
+							Offset: 18446744073709551615,
+							Type:   ast.TYPE_CXARGUMENT_DEPRECATE,
+							Meta:   29,
 						},
 					},
 				},
@@ -284,9 +303,22 @@ func TestTypeChecks_ParseStructs(t *testing.T) {
 					gotStruct := program.CXStructs[structIdx]
 					wantStruct := tc.structCXs[i]
 
+					var err bool
+
 					if gotStruct.Name != wantStruct.Name ||
 						gotStruct.Index != wantStruct.Index ||
 						gotStruct.Package != wantStruct.Package {
+						err = true
+					}
+
+					for k, typeSignature := range gotStruct.Fields {
+						if typeSignature != wantStruct.Fields[k] {
+							err = true
+							break
+						}
+					}
+
+					if err {
 						t.Errorf("want struct %v, got %v", wantStruct, gotStruct)
 					}
 
@@ -327,5 +359,4 @@ func TestTypeChecks_ParseFuncHeaders(t *testing.T) {
 		})
 	}
 
-	actions.AST.PrintProgram()
 }
