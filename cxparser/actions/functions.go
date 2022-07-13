@@ -665,7 +665,8 @@ func ProcessExpressionArguments(prgrm *ast.CXProgram, symbols *[]map[string]*ast
 		if typeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			argIdx = ast.CXArgumentIndex(typeSignature.Meta)
 		} else {
-			panic(fmt.Sprintf("type is=%v\n\n", typeSignature.Type))
+			// panic(fmt.Sprintf("type is=%v\n\n", typeSignature.Type))
+			argIdx = -1
 		}
 
 		arg := prgrm.GetCXArgFromArray(argIdx)
@@ -679,7 +680,7 @@ func ProcessExpressionArguments(prgrm *ast.CXProgram, symbols *[]map[string]*ast
 			ProcessOperatorExpression(prgrm, expr)
 		}
 
-		if arg.PreviouslyDeclared {
+		if arg != nil && arg.PreviouslyDeclared {
 			UpdateSymbolsTable(prgrm, symbols, typeSignatureIdx, offset, false)
 		} else {
 			UpdateSymbolsTable(prgrm, symbols, typeSignatureIdx, offset, true)
@@ -693,19 +694,8 @@ func ProcessExpressionArguments(prgrm *ast.CXProgram, symbols *[]map[string]*ast
 
 		ProcessSlice(prgrm, argIdx)
 
-		for _, idxIdx := range arg.Indexes {
-			typeSigIdx := prgrm.AddCXTypeSignatureInArray(&ast.CXTypeSignature{
-				Type: ast.TYPE_CXARGUMENT_DEPRECATE,
-				Meta: int(idxIdx),
-			})
-
-			UpdateSymbolsTable(prgrm, symbols, typeSigIdx, offset, true)
-			GiveOffset(prgrm, symbols, typeSigIdx, true)
-			checkIndexType(prgrm, idxIdx)
-		}
-		for _, fldIdx := range arg.Fields {
-			fld := prgrm.GetCXArgFromArray(fldIdx)
-			for _, idxIdx := range fld.Indexes {
+		if arg != nil {
+			for _, idxIdx := range arg.Indexes {
 				typeSigIdx := prgrm.AddCXTypeSignatureInArray(&ast.CXTypeSignature{
 					Type: ast.TYPE_CXARGUMENT_DEPRECATE,
 					Meta: int(idxIdx),
@@ -713,6 +703,19 @@ func ProcessExpressionArguments(prgrm *ast.CXProgram, symbols *[]map[string]*ast
 
 				UpdateSymbolsTable(prgrm, symbols, typeSigIdx, offset, true)
 				GiveOffset(prgrm, symbols, typeSigIdx, true)
+				checkIndexType(prgrm, idxIdx)
+			}
+			for _, fldIdx := range arg.Fields {
+				fld := prgrm.GetCXArgFromArray(fldIdx)
+				for _, idxIdx := range fld.Indexes {
+					typeSigIdx := prgrm.AddCXTypeSignatureInArray(&ast.CXTypeSignature{
+						Type: ast.TYPE_CXARGUMENT_DEPRECATE,
+						Meta: int(idxIdx),
+					})
+
+					UpdateSymbolsTable(prgrm, symbols, typeSigIdx, offset, true)
+					GiveOffset(prgrm, symbols, typeSigIdx, true)
+				}
 			}
 		}
 
@@ -757,11 +760,13 @@ func isPointerAdded(prgrm *ast.CXProgram, fn *ast.CXFunction, sym *ast.CXArgumen
 //  typeSigIdx - the index of the type signature from the main CXTypeSignature array.
 func AddPointer(prgrm *ast.CXProgram, fn *ast.CXFunction, typeSigIdx ast.CXTypeSignatureIndex) {
 	typeSig := prgrm.GetCXTypeSignatureFromArray(typeSigIdx)
-	var sym *ast.CXArgument
+	var sym *ast.CXArgument = &ast.CXArgument{}
 	if typeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 		sym = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(typeSig.Meta))
 	} else {
-		panic("type is not cx arg deprecate\n\n)")
+		// panic("type is not cx arg deprecate\n\n)")
+		// TODO: atomic type for now doesnt have pointers
+		return
 	}
 
 	// Ignore if it's a global variable.
@@ -814,7 +819,9 @@ func CheckRedeclared(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXTypeSign
 	if typeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 		arg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(typeSig.Meta))
 	} else {
-		panic("type is not cx arg deprecate\n\n")
+		// panic("type is not cx arg deprecate\n\n")
+		// TODO: temporary put empty arg
+		arg = &ast.CXArgument{}
 	}
 
 	expression, err := prgrm.GetCXAtomicOp(expr.Index)
@@ -853,7 +860,8 @@ func ProcessLocalDeclaration(prgrm *ast.CXProgram, symbolsScope *map[string]bool
 	if typeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 		arg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(typeSig.Meta))
 	} else {
-		panic("type is not cx arg deprecate\n\n")
+		// panic("type is not cx arg deprecate\n\n")
+		return
 	}
 	typeSigPkg, err := prgrm.GetPackageFromArray(typeSig.Package)
 	if err != nil {
@@ -1299,6 +1307,10 @@ func ProcessShortDeclaration(prgrm *ast.CXProgram, expr *ast.CXExpression, expre
 
 // ProcessSlice sets DereferenceOperations if the arg is a slice.
 func ProcessSlice(prgrm *ast.CXProgram, inpIdx ast.CXArgumentIndex) {
+	if inpIdx == -1 {
+		return
+	}
+
 	inp := prgrm.GetCXArgFromArray(inpIdx)
 
 	var elt *ast.CXArgument = &ast.CXArgument{}
@@ -1430,11 +1442,13 @@ func lookupSymbol(prgrm *ast.CXProgram, pkgName, ident string, symbols *[]map[st
 func UpdateSymbolsTable(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXTypeSignature, typeSigIdx ast.CXTypeSignatureIndex, offset *types.Pointer, shouldExist bool) {
 	typeSig := prgrm.GetCXTypeSignatureFromArray(typeSigIdx)
 
-	var sym *ast.CXArgument
+	var sym *ast.CXArgument = &ast.CXArgument{}
 	if typeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 		sym = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(typeSig.Meta))
 	} else {
-		panic("type is not cx arg deprecate\n\n")
+		// panic("type is not cx arg deprecate\n\n")
+		// TODO: temporary return only
+		return
 	}
 
 	if typeSig.Name != "" {
@@ -1689,38 +1703,29 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 
 // GiveOffset
 func GiveOffset(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXTypeSignature, typeSigIdx ast.CXTypeSignatureIndex, shouldExist bool) {
-	typeSig := prgrm.GetCXTypeSignatureFromArray(typeSigIdx)
-	var sym *ast.CXArgument
-	if typeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-		sym = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(typeSig.Meta))
+	symTypeSig := prgrm.GetCXTypeSignatureFromArray(typeSigIdx)
+	var sym *ast.CXArgument = &ast.CXArgument{}
+	if symTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		sym = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(symTypeSig.Meta))
 	} else {
-		panic("type is not cx arg deprecate\n\n")
+		// panic("type is not cx arg deprecate\n\n")
+		sym = nil
 	}
 
-	if sym.Name != "" {
-		symPkg, err := prgrm.GetPackageFromArray(sym.Package)
+	if symTypeSig.Name != "" {
+		symPkg, err := prgrm.GetPackageFromArray(symTypeSig.Package)
 		if err != nil {
 			panic(err)
 		}
 
-		if !sym.IsLocalDeclaration {
-			GetGlobalSymbol(prgrm, symbols, symPkg, sym.Name)
+		if sym == nil || !sym.IsLocalDeclaration {
+			GetGlobalSymbol(prgrm, symbols, symPkg, symTypeSig.Name)
 		}
 
-		argTypeSignature, err := lookupSymbol(prgrm, symPkg.Name, sym.Name, symbols)
+		argTypeSignature, err := lookupSymbol(prgrm, symPkg.Name, symTypeSig.Name, symbols)
 		if err == nil {
-			var arg *ast.CXArgument = &ast.CXArgument{}
-			if argTypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-				arg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(argTypeSignature.Meta))
-			} else {
-				// panic("type is type cxargument deprecate\n\n")
-				// ProcessSymbolFields and CopyArgFields are only needed for struct types
-				// So we return from here
-				return
-			}
-
-			ProcessSymbolFields(prgrm, sym, arg)
-			CopyArgFields(prgrm, sym, arg)
+			ProcessSymbolFields(prgrm, symTypeSig, argTypeSignature)
+			CopyArgFields(prgrm, symTypeSig, argTypeSignature)
 		}
 	}
 }
@@ -1772,7 +1777,33 @@ func ProcessTempVariable(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 }
 
 // CopyArgFields copies 'arg' fields to 'sym' fields.
-func CopyArgFields(prgrm *ast.CXProgram, sym *ast.CXArgument, arg *ast.CXArgument) {
+func CopyArgFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast.CXTypeSignature) {
+	var arg *ast.CXArgument = &ast.CXArgument{}
+	if argTypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		arg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(argTypeSignature.Meta))
+	} else {
+		// panic("type is type cxargument deprecate-argTypeSig CopyArgField()\n\n")
+		arg = nil
+	}
+
+	var sym *ast.CXArgument = &ast.CXArgument{}
+	if symTypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		sym = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(symTypeSignature.Meta))
+	} else {
+		// panic("type is type cxargument deprecate-symgTypeSig CopyArgField()\n\n")
+		// panic(fmt.Sprintf("sym=%+v\n\narg=%+v\n\n", symTypeSignature, argTypeSignature))
+
+		sym = nil
+	}
+
+	if arg == nil || sym == nil {
+		symTypeSignature.Package = argTypeSignature.Package
+		symTypeSignature.Type = argTypeSignature.Type
+		symTypeSignature.Meta = argTypeSignature.Meta
+		symTypeSignature.Offset = argTypeSignature.Offset
+		return
+	}
+
 	sym.Offset = arg.Offset
 	sym.Type = arg.Type
 
@@ -1915,7 +1946,27 @@ func CopyArgFields(prgrm *ast.CXProgram, sym *ast.CXArgument, arg *ast.CXArgumen
 }
 
 // ProcessSymbolFields copies the correct field values for the sym.Fields from their struct fields.
-func ProcessSymbolFields(prgrm *ast.CXProgram, sym *ast.CXArgument, arg *ast.CXArgument) {
+func ProcessSymbolFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast.CXTypeSignature) {
+	var arg *ast.CXArgument = &ast.CXArgument{}
+	if argTypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		arg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(argTypeSignature.Meta))
+	} else {
+		// panic("type is type cxargument deprecate\n\n")
+		// ProcessSymbolFields is only needed for struct types
+		// So we return from here
+		return
+	}
+
+	var sym *ast.CXArgument = &ast.CXArgument{}
+	if symTypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		sym = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(symTypeSignature.Meta))
+	} else {
+		// panic("type is type cxargument deprecate\n\n")
+		// ProcessSymbolFields is only needed for struct types
+		// So we return from here
+		return
+	}
+
 	if len(sym.Fields) > 0 {
 		if arg.StructType == nil || len(arg.StructType.Fields) == 0 {
 			println(ast.CompilationError(sym.ArgDetails.FileName, sym.ArgDetails.FileLine), fmt.Sprintf("'%s' has no fields", sym.Name))
@@ -2102,11 +2153,14 @@ func GetGlobalSymbol(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXTypeSign
 // SetFinalSize sets the finalSize of 'sym'.
 func SetFinalSize(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXTypeSignature, typeSigIdx ast.CXTypeSignatureIndex) {
 	typeSig := prgrm.GetCXTypeSignatureFromArray(typeSigIdx)
-	var sym *ast.CXArgument
+	var sym *ast.CXArgument = &ast.CXArgument{}
 	if typeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 		sym = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(typeSig.Meta))
 	} else {
-		panic("type is not cx arg deprecate\n\n")
+		// panic("type is not cx arg deprecate\n\n")
+		// Final size of atomic type is its size which
+		// is already set. So we return from here
+		return
 	}
 
 	finalSize := sym.TotalSize

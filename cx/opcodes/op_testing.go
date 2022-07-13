@@ -21,13 +21,17 @@ func assert(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) (
 	var inp0 *ast.CXArgument
 	if inputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 		inp0 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inputs[0].TypeSignature.Meta))
+
+		if inp0.Type == types.STR || inp0.PointerTargetType == types.STR {
+			byts1 = []byte(inputs[0].Get_str(prgrm))
+			byts2 = []byte(inputs[1].Get_str(prgrm))
+		} else {
+			byts1 = inputs[0].Get_bytes(prgrm)
+			byts2 = inputs[1].Get_bytes(prgrm)
+		}
+
 	} else {
-		panic("type is not type cx argument deprecate\n\n")
-	}
-	if inp0.Type == types.STR || inp0.PointerTargetType == types.STR {
-		byts1 = []byte(inputs[0].Get_str(prgrm))
-		byts2 = []byte(inputs[1].Get_str(prgrm))
-	} else {
+		// panic("type is not type cx argument deprecate\n\n")
 		byts1 = inputs[0].Get_bytes(prgrm)
 		byts2 = inputs[1].Get_bytes(prgrm)
 	}
