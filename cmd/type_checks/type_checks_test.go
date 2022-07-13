@@ -342,32 +342,86 @@ func TestTypeChecks_ParseFuncHeaders(t *testing.T) {
 			testDir:  "./test_files/test.cx",
 			functionCXs: []ast.CXFunction{
 				{
-					Name:  "main",
-					Index: 0,
+					Name:     "main",
+					Index:    0,
+					Package:  1,
+					FileName: "./test_files/test.cx",
+					FileLine: 35,
 				},
 				{
-					Name: "",
+					Name:    "add",
+					Index:   1,
+					Package: 1,
+					Inputs: &ast.CXStruct{
+						Fields: []ast.CXTypeSignature{
+							{
+								Name: "a",
+								Type: ast.TYPE_CXARGUMENT_DEPRECATE,
+								Meta: 30,
+							},
+							{
+								Name: "b",
+								Type: ast.TYPE_CXARGUMENT_DEPRECATE,
+								Meta: 31,
+							},
+						},
+					},
+					Outputs: &ast.CXStruct{
+						Fields: []ast.CXTypeSignature{
+							{
+								Name: "answer",
+								Type: ast.TYPE_CXARGUMENT_DEPRECATE,
+								Meta: 32,
+							},
+						},
+					},
 				},
 				{
-					Name:  "main",
-					Index: 0,
+					Name:    "divide",
+					Index:   2,
+					Package: 1,
+					Inputs: &ast.CXStruct{
+						Fields: []ast.CXTypeSignature{
+							{
+								Name: "c",
+								Type: ast.TYPE_CXARGUMENT_DEPRECATE,
+								Meta: 33,
+							},
+							{
+								Name: "d",
+								Type: ast.TYPE_CXARGUMENT_DEPRECATE,
+								Meta: 34,
+							},
+						},
+					},
+					Outputs: &ast.CXStruct{
+						Fields: []ast.CXTypeSignature{
+							{
+								Name: "quotient",
+								Type: ast.TYPE_CXARGUMENT_DEPRECATE,
+								Meta: 35,
+							},
+							{
+								Name: "remainder",
+								Type: ast.TYPE_CXARGUMENT_DEPRECATE,
+								Meta: 36,
+							},
+						},
+					},
 				},
 				{
-					Name: "",
-				},
-				{
-					Name:  "main",
-					Index: 0,
-				},
-				{
-					Name: "",
-				},
-				{
-					Name:  "main",
-					Index: 0,
-				},
-				{
-					Name: "",
+					Name:    "printer",
+					Index:   3,
+					Package: 1,
+					Inputs: &ast.CXStruct{
+						Fields: []ast.CXTypeSignature{
+							{
+								Name: "message",
+								Type: ast.TYPE_CXARGUMENT_DEPRECATE,
+								Meta: 37,
+							},
+						},
+					},
 				},
 			},
 		},
@@ -405,35 +459,26 @@ func TestTypeChecks_ParseFuncHeaders(t *testing.T) {
 					gotFunc := program.GetFunctionFromArray(funcIdx)
 					wantFunc := tc.functionCXs[i]
 
-					var err bool
-
 					if gotFunc.Name != wantFunc.Name ||
 						gotFunc.Index != wantFunc.Index ||
 						gotFunc.Package != wantFunc.Package {
-						err = true
-					}
-
-					for k, gotInput := range gotFunc.GetInputs(program) {
-						wantInput := wantFunc.GetInputs(program)[k]
-
-						if gotInput != wantInput {
-							err = true
-						}
-					}
-
-					for k, gotInput := range gotFunc.GetInputs(program) {
-						wantInput := wantFunc.GetInputs(program)[k]
-
-						if gotInput != wantInput {
-							err = true
-						}
-					}
-
-					if err {
-
 						t.Errorf("want func %v, got %v", wantFunc, gotFunc)
-						continue
+					}
 
+					for k, gotInput := range gotFunc.GetInputs(program) {
+						wantInput := wantFunc.GetInputs(program)[k]
+
+						if gotInput != wantInput {
+							t.Errorf("want input %v, got %v", wantInput, gotInput)
+						}
+					}
+
+					for k, gotOutput := range gotFunc.GetOutputs(program) {
+						wantOutput := wantFunc.GetOutputs(program)[k]
+
+						if gotOutput != wantOutput {
+							t.Errorf("want output %v, got %v", wantOutput, gotOutput)
+						}
 					}
 
 					i++
