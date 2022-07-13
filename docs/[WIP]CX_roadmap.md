@@ -89,6 +89,7 @@ Objectives:
 - [x] Stage 2: Declaration Extraction
 - [ ] Stage 3: Type Checks
 - [ ] Stage 4: Function Body Extraction
+- [ ] Integration of Stage 1-4 to the compiling process
 
 ## CX App Store
 CX App Store will be a downloadable app for windows and mac. Once it is downloaded and installed, when ran, the app will start its own local web app server and automatically open up a web browser that redirects to that web app. It will show lists of CX programs/apps/games that the user can run. For example, the user clicks "CXPacman", it will then automatically open up an OpenGL window that runs the CXPacman game.
