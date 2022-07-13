@@ -168,8 +168,6 @@ func TestTypeChecks_ParseGlobals(t *testing.T) {
 
 			type_checks.ParseGlobals(Globals)
 
-			var i int
-
 			program := actions.AST
 
 			for _, pkgIdx := range program.Packages {
@@ -184,20 +182,29 @@ func TestTypeChecks_ParseGlobals(t *testing.T) {
 					continue
 				}
 
-				for _, globalIdx := range pkg.Globals.Fields {
-					global := program.GetCXArg(ast.CXArgumentIndex(globalIdx.Meta))
-					testGlobal := tc.globalsCXArgs[i]
+				for _, gotGlobalIdx := range pkg.Globals.Fields {
+					global := program.GetCXArg(ast.CXArgumentIndex(gotGlobalIdx.Meta))
 
-					if global.Name != testGlobal.Name ||
-						global.Index != testGlobal.Index ||
-						global.Package != testGlobal.Package ||
-						global.Type != testGlobal.Type ||
-						global.Size != testGlobal.Size ||
-						global.Offset != testGlobal.Offset {
+					var err bool = true
+					var testGlobal *ast.CXArgument
+					for j := range tc.globalsCXArgs {
+						testGlobal = tc.globalsCXArgs[j]
+
+						if global.Name == testGlobal.Name &&
+							global.Index == testGlobal.Index &&
+							global.Package == testGlobal.Package &&
+							global.Type == testGlobal.Type &&
+							global.Size == testGlobal.Size &&
+							global.Offset == testGlobal.Offset {
+							err = false
+							break
+						}
+					}
+
+					if err {
 						t.Errorf("want global %v, got %v", testGlobal, global)
 					}
 
-					i++
 				}
 			}
 
@@ -283,8 +290,6 @@ func TestTypeChecks_ParseStructs(t *testing.T) {
 
 			type_checks.ParseStructs(structs)
 
-			var i int
-
 			program := actions.AST
 
 			for _, pkgIdx := range program.Packages {
@@ -301,28 +306,30 @@ func TestTypeChecks_ParseStructs(t *testing.T) {
 
 				for _, structIdx := range pkg.Structs {
 					gotStruct := program.CXStructs[structIdx]
-					wantStruct := tc.structCXs[i]
 
-					var err bool
+					var err bool = true
+					var wantStruct ast.CXStruct
 
-					if gotStruct.Name != wantStruct.Name ||
-						gotStruct.Index != wantStruct.Index ||
-						gotStruct.Package != wantStruct.Package {
-						err = true
-					}
+					for j := range tc.structCXs {
+						wantStruct := tc.structCXs[j]
 
-					for k, typeSignature := range gotStruct.Fields {
-						if typeSignature != wantStruct.Fields[k] {
-							err = true
-							break
+						if gotStruct.Name == wantStruct.Name &&
+							gotStruct.Index == wantStruct.Index &&
+							gotStruct.Package == wantStruct.Package {
+							for k, typeSignature := range gotStruct.Fields {
+								if typeSignature == wantStruct.Fields[k] {
+									err = false
+									break
+								}
+							}
 						}
+
 					}
 
 					if err {
 						t.Errorf("want struct %v, got %v", wantStruct, gotStruct)
 					}
 
-					i++
 				}
 			}
 		})
@@ -457,31 +464,38 @@ func TestTypeChecks_ParseFuncHeaders(t *testing.T) {
 				for _, funcIdx := range pkg.Functions {
 
 					gotFunc := program.GetFunctionFromArray(funcIdx)
-					wantFunc := tc.functionCXs[i]
 
-					if gotFunc.Name != wantFunc.Name ||
-						gotFunc.Index != wantFunc.Index ||
-						gotFunc.Package != wantFunc.Package {
-						t.Errorf("want func %v, got %v", wantFunc, gotFunc)
-					}
+					var err bool = true
+					var wantFunc ast.CXFunction
 
-					for k, gotInput := range gotFunc.GetInputs(program) {
-						wantInput := wantFunc.GetInputs(program)[k]
+					for j := range tc.functionCXs {
+						wantFunc = tc.functionCXs[j]
 
-						if gotInput != wantInput {
-							t.Errorf("want input %v, got %v", wantInput, gotInput)
+						if gotFunc.Name == wantFunc.Name &&
+							gotFunc.Index == wantFunc.Index &&
+							gotFunc.Package == wantFunc.Package {
+
+							var IOErr bool = true
+							for k, gotInput := range gotFunc.GetInputs(program) {
+								wantInput := wantFunc.GetInputs(program)[k]
+
+								if gotInput == wantInput {
+									IOErr = false
+								}
+							}
+
+							for k, gotOutput := range gotFunc.GetOutputs(program) {
+								wantOutput := wantFunc.GetOutputs(program)[k]
+
+								if gotOutput == wantOutput {
+									t.Errorf("want output %v, got %v", wantOutput, gotOutput)
+								}
+							}
+
 						}
+
 					}
 
-					for k, gotOutput := range gotFunc.GetOutputs(program) {
-						wantOutput := wantFunc.GetOutputs(program)[k]
-
-						if gotOutput != wantOutput {
-							t.Errorf("want output %v, got %v", wantOutput, gotOutput)
-						}
-					}
-
-					i++
 				}
 			}
 
