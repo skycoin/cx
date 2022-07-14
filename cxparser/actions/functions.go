@@ -333,6 +333,8 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 			var typeSigArg *ast.CXArgument = &ast.CXArgument{}
 			if typeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 				typeSigArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(typeSig.Meta))
+			} else {
+				panic("type is not cx arg deprecate\n\n")
 			}
 
 			// If type sig arg is not nil, check if it is an atomic type.

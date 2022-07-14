@@ -476,7 +476,6 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 			toExpressionOutputTypeSig.Meta = int(fromExpressionOutputArg.Type)
 			toExpressionOutputTypeSig.Offset = prgrm.CXArgs[toExpressionOutputIdx].Offset
 
-			fromExpressionOutputTypeSig.Name = toExpressionOutputTypeSig.Name
 			fromExpressionOutputTypeSig.Type = ast.TYPE_ATOMIC
 			fromExpressionOutputTypeSig.Meta = int(fromExpressionOutputArg.Type)
 			fromExpressionOutputTypeSig.Offset = fromExpressionOutputArg.Offset
