@@ -136,7 +136,9 @@ func ParseStructs(structs []declaration_extraction.StructDeclaration) {
 
 	// Make porgram
 	if actions.AST == nil {
+		// fmt.Print(actions.AST, "\n")
 		actions.AST = cxinit.MakeProgram()
+		// fmt.Print("missing action API\n", &actions.AST, "\n")
 	}
 
 	for _, strct := range structs {
@@ -145,7 +147,7 @@ func ParseStructs(structs []declaration_extraction.StructDeclaration) {
 
 		if err != nil {
 
-			newPkg := ast.MakePackage(pkg.Name)
+			newPkg := ast.MakePackage(strct.PackageID)
 			pkgIdx := actions.AST.AddPackage(newPkg)
 			newPkg, err = actions.AST.GetPackageFromArray(pkgIdx)
 
@@ -166,7 +168,6 @@ func ParseStructs(structs []declaration_extraction.StructDeclaration) {
 
 		if err != nil {
 			// error handling
-			fmt.Print(err)
 		}
 
 		bracesOpen := regexp.MustCompile("{")

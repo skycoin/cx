@@ -151,10 +151,27 @@ func TestTypeChecks_ParseGlobals(t *testing.T) {
 				},
 			},
 		},
+		{
+			scenario: "Has globals 2",
+			testDir:  "./test_files/testFile.cx",
+			globalsCXArgs: []*ast.CXArgument{
+				{
+					Name:      "number",
+					Index:     0,
+					Package:   1,
+					Type:      types.I32,
+					Size:      4,
+					TotalSize: 4,
+					Offset:    1048576,
+				},
+			},
+		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
+
+			actions.AST = nil
 
 			srcBytes, err := os.ReadFile(tc.testDir)
 			if err != nil {
@@ -200,7 +217,6 @@ func TestTypeChecks_ParseGlobals(t *testing.T) {
 					i++
 				}
 			}
-
 		})
 	}
 
@@ -258,7 +274,7 @@ func TestTypeChecks_ParseStructs(t *testing.T) {
 					Fields: []ast.CXTypeSignature{
 						{
 							Name:   "name",
-							Offset: 18446744073709551615,
+							Offset: 8,
 							Type:   ast.TYPE_CXARGUMENT_DEPRECATE,
 							Meta:   29,
 						},
@@ -429,6 +445,8 @@ func TestTypeChecks_ParseFuncHeaders(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
+
+			actions.AST = nil
 
 			srcBytes, err := os.ReadFile(tc.testDir)
 			if err != nil {
