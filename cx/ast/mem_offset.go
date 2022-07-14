@@ -98,13 +98,17 @@ func GetDerefSizeSlice(prgrm *CXProgram, arg *CXArgument) types.Pointer {
 }
 
 func GetFinalOffset(prgrm *CXProgram, fp types.Pointer, oldArg *CXArgument, argTypeSig *CXTypeSignature) types.Pointer {
+	var finalOffset types.Pointer
+
 	var arg *CXArgument = &CXArgument{}
 	if oldArg != nil {
 		arg = oldArg
 	} else if argTypeSig.Type == TYPE_CXARGUMENT_DEPRECATE {
 		arg = &prgrm.CXArgs[argTypeSig.Meta]
+	} else if argTypeSig.Type == TYPE_ATOMIC {
+		return argTypeSig.Offset
 	}
-	finalOffset := arg.Offset
+	finalOffset = arg.Offset
 
 	//Todo: find way to eliminate this check
 	if finalOffset < prgrm.Stack.Size {
