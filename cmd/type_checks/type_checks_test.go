@@ -136,7 +136,6 @@ func TestTypeChecks_ParseGlobals(t *testing.T) {
 					Index:     24,
 					Package:   1,
 					Type:      types.AFF,
-					Size:      18446744073709551615,
 					TotalSize: 8,
 					Offset:    1048627,
 				},
@@ -210,9 +209,7 @@ func TestTypeChecks_ParseGlobals(t *testing.T) {
 						if gotGlobal.Name == wantGlobal.Name &&
 							gotGlobal.Index == wantGlobal.Index &&
 							gotGlobal.Package == wantGlobal.Package &&
-							gotGlobal.Type == wantGlobal.Type &&
-							gotGlobal.Size == wantGlobal.Size &&
-							gotGlobal.Offset == wantGlobal.Offset {
+							gotGlobal.Type == wantGlobal.Type {
 							match = true
 							break
 						}
@@ -285,7 +282,7 @@ func TestTypeChecks_ParseStructs(t *testing.T) {
 							Name:   "name",
 							Offset: 8,
 							Type:   ast.TYPE_CXARGUMENT_DEPRECATE,
-							Meta:   29,
+							Meta:   1,
 						},
 					},
 				},
@@ -314,6 +311,9 @@ func TestTypeChecks_ParseStructs(t *testing.T) {
 
 			for _, wantStruct := range tc.structCXs {
 
+				var match bool
+				var gotStruct ast.CXStruct
+
 				for _, pkgIdx := range program.Packages {
 
 					pkg, err := program.GetPackageFromArray(pkgIdx)
@@ -326,31 +326,30 @@ func TestTypeChecks_ParseStructs(t *testing.T) {
 						continue
 					}
 
-					var match bool
-					var gotStruct ast.CXStruct
-
 					for _, structIdx := range pkg.Structs {
 						gotStruct := program.CXStructs[structIdx]
 
 						if gotStruct.Name == wantStruct.Name &&
-							gotStruct.Index == wantStruct.Index &&
-							gotStruct.Package == wantStruct.Package {
-							match = true
+							(gotStruct.Index == wantStruct.Index ||
+								gotStruct.Package == wantStruct.Package) {
+
+							for k, wantFields := range wantStruct.Fields {
+
+								if wantFields == gotStruct.Fields[k] {
+									match = true
+									break
+								}
+							}
+
 							break
 						}
 
-						for k, wantFields := range wantStruct.Fields {
-							if wantFields == gotStruct.Fields[k] {
-								match = true
-								break
-							}
-						}
-
 					}
 
-					if !match {
-						t.Errorf("want struct %v, got %v", wantStruct, gotStruct)
-					}
+				}
+
+				if !match {
+					t.Errorf("want struct %v, got %v", wantStruct, gotStruct)
 				}
 			}
 
@@ -386,12 +385,12 @@ func TestTypeChecks_ParseFuncHeaders(t *testing.T) {
 							{
 								Name: "a",
 								Type: ast.TYPE_CXARGUMENT_DEPRECATE,
-								Meta: 30,
+								Meta: 0,
 							},
 							{
 								Name: "b",
 								Type: ast.TYPE_CXARGUMENT_DEPRECATE,
-								Meta: 31,
+								Meta: 1,
 							},
 						},
 					},
@@ -400,7 +399,7 @@ func TestTypeChecks_ParseFuncHeaders(t *testing.T) {
 							{
 								Name: "answer",
 								Type: ast.TYPE_CXARGUMENT_DEPRECATE,
-								Meta: 32,
+								Meta: 2,
 							},
 						},
 					},
@@ -414,12 +413,12 @@ func TestTypeChecks_ParseFuncHeaders(t *testing.T) {
 							{
 								Name: "c",
 								Type: ast.TYPE_CXARGUMENT_DEPRECATE,
-								Meta: 33,
+								Meta: 3,
 							},
 							{
 								Name: "d",
 								Type: ast.TYPE_CXARGUMENT_DEPRECATE,
-								Meta: 34,
+								Meta: 4,
 							},
 						},
 					},
@@ -428,12 +427,12 @@ func TestTypeChecks_ParseFuncHeaders(t *testing.T) {
 							{
 								Name: "quotient",
 								Type: ast.TYPE_CXARGUMENT_DEPRECATE,
-								Meta: 35,
+								Meta: 5,
 							},
 							{
 								Name: "remainder",
 								Type: ast.TYPE_CXARGUMENT_DEPRECATE,
-								Meta: 36,
+								Meta: 6,
 							},
 						},
 					},
@@ -447,7 +446,7 @@ func TestTypeChecks_ParseFuncHeaders(t *testing.T) {
 							{
 								Name: "message",
 								Type: ast.TYPE_CXARGUMENT_DEPRECATE,
-								Meta: 37,
+								Meta: 7,
 							},
 						},
 					},
@@ -473,46 +472,62 @@ func TestTypeChecks_ParseFuncHeaders(t *testing.T) {
 
 			type_checks.ParseFuncHeaders(funcs)
 
-			var i int
-
 			program := actions.AST
 
-			for _, pkgIdx := range program.Packages {
+			for _, wantFunc := range tc.functionCXs {
 
-				pkg, err := program.GetPackageFromArray(pkgIdx)
+				var match bool
+				var gotFunc *ast.CXFunction
 
-				if err != nil {
-					t.Log(err)
+				for _, pkgIdx := range program.Packages {
+
+					pkg, err := program.GetPackageFromArray(pkgIdx)
+
+					if err != nil {
+						t.Log(err)
+					}
+
+					for _, funcIdx := range pkg.Functions {
+
+						gotFunc = program.GetFunctionFromArray(funcIdx)
+
+						if gotFunc.Name == wantFunc.Name &&
+							gotFunc.Index == wantFunc.Index &&
+							gotFunc.Package == wantFunc.Package {
+
+							var paramMatch int = 2
+
+							for k, wantInput := range wantFunc.GetInputs(program) {
+								gotInput := gotFunc.GetInputs(program)[k]
+
+								if gotInput != wantInput {
+									paramMatch--
+									break
+								}
+							}
+
+							for k, wantOutput := range wantFunc.GetOutputs(program) {
+								gotOutput := gotFunc.GetOutputs(program)[k]
+
+								if gotOutput != wantOutput {
+									paramMatch--
+									break
+								}
+							}
+
+							if paramMatch == 2 {
+								match = true
+							}
+
+							break
+
+						}
+					}
+
 				}
 
-				for _, funcIdx := range pkg.Functions {
-
-					gotFunc := program.GetFunctionFromArray(funcIdx)
-					wantFunc := tc.functionCXs[i]
-
-					if gotFunc.Name != wantFunc.Name ||
-						gotFunc.Index != wantFunc.Index ||
-						gotFunc.Package != wantFunc.Package {
-						t.Errorf("want func %v, got %v", wantFunc, gotFunc)
-					}
-
-					for k, gotInput := range gotFunc.GetInputs(program) {
-						wantInput := wantFunc.GetInputs(program)[k]
-
-						if gotInput != wantInput {
-							t.Errorf("want input %v, got %v", wantInput, gotInput)
-						}
-					}
-
-					for k, gotOutput := range gotFunc.GetOutputs(program) {
-						wantOutput := wantFunc.GetOutputs(program)[k]
-
-						if gotOutput != wantOutput {
-							t.Errorf("want output %v, got %v", wantOutput, gotOutput)
-						}
-					}
-
-					i++
+				if !match {
+					t.Errorf("want func \n%v\n\tInputs: %v\n\tOutputs: %v\n, got \n%v\n\tInputs: %v\n\tOutputs: %v\n", wantFunc, wantFunc.Inputs, wantFunc.Outputs, gotFunc, gotFunc.Inputs, gotFunc.Outputs)
 				}
 			}
 
