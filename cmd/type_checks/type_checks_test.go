@@ -185,37 +185,45 @@ func TestTypeChecks_ParseGlobals(t *testing.T) {
 
 			type_checks.ParseGlobals(Globals)
 
-			var i int
-
 			program := actions.AST
 
-			for _, pkgIdx := range program.Packages {
+			for _, wantGlobal := range tc.globalsCXArgs {
 
-				pkg, err := program.GetPackageFromArray(pkgIdx)
+				for _, pkgIdx := range program.Packages {
 
-				if err != nil {
-					t.Log(err)
-				}
+					pkg, err := program.GetPackageFromArray(pkgIdx)
 
-				if cxpackages.IsDefaultPackage(pkg.Name) {
-					continue
-				}
-
-				for _, globalIdx := range pkg.Globals.Fields {
-					global := program.GetCXArg(ast.CXArgumentIndex(globalIdx.Meta))
-					testGlobal := tc.globalsCXArgs[i]
-
-					if global.Name != testGlobal.Name ||
-						global.Index != testGlobal.Index ||
-						global.Package != testGlobal.Package ||
-						global.Type != testGlobal.Type ||
-						global.Size != testGlobal.Size ||
-						global.Offset != testGlobal.Offset {
-						t.Errorf("want global %v, got %v", testGlobal, global)
+					if err != nil {
+						t.Log(err)
 					}
 
-					i++
+					if cxpackages.IsDefaultPackage(pkg.Name) {
+						continue
+					}
+
+					var match bool
+					var gotGlobal *ast.CXArgument
+
+					for _, globalIdx := range pkg.Globals.Fields {
+						gotGlobal = program.GetCXArg(ast.CXArgumentIndex(globalIdx.Meta))
+
+						if gotGlobal.Name == wantGlobal.Name &&
+							gotGlobal.Index == wantGlobal.Index &&
+							gotGlobal.Package == wantGlobal.Package &&
+							gotGlobal.Type == wantGlobal.Type &&
+							gotGlobal.Size == wantGlobal.Size &&
+							gotGlobal.Offset == wantGlobal.Offset {
+							match = true
+						}
+
+					}
+
+					if !match {
+						t.Errorf("want global %v, got %v", wantGlobal, gotGlobal.ArgDetails)
+
+					}
 				}
+
 			}
 		})
 	}
