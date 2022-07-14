@@ -214,12 +214,13 @@ func TestTypeChecks_ParseGlobals(t *testing.T) {
 							gotGlobal.Size == wantGlobal.Size &&
 							gotGlobal.Offset == wantGlobal.Offset {
 							match = true
+							break
 						}
 
 					}
 
 					if !match {
-						t.Errorf("want global %v, got %v", wantGlobal, gotGlobal.ArgDetails)
+						t.Errorf("want global %v, got %v", wantGlobal, gotGlobal)
 
 					}
 				}
@@ -295,6 +296,8 @@ func TestTypeChecks_ParseStructs(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
 
+			actions.AST = nil
+
 			srcBytes, err := os.ReadFile(tc.testDir)
 			if err != nil {
 				t.Error(err)
@@ -307,48 +310,50 @@ func TestTypeChecks_ParseStructs(t *testing.T) {
 
 			type_checks.ParseStructs(structs)
 
-			var i int
-
 			program := actions.AST
 
-			for _, pkgIdx := range program.Packages {
+			for _, wantStruct := range tc.structCXs {
 
-				pkg, err := program.GetPackageFromArray(pkgIdx)
+				for _, pkgIdx := range program.Packages {
 
-				if err != nil {
-					t.Log(err)
-				}
+					pkg, err := program.GetPackageFromArray(pkgIdx)
 
-				if cxpackages.IsDefaultPackage(pkg.Name) {
-					continue
-				}
-
-				for _, structIdx := range pkg.Structs {
-					gotStruct := program.CXStructs[structIdx]
-					wantStruct := tc.structCXs[i]
-
-					var err bool
-
-					if gotStruct.Name != wantStruct.Name ||
-						gotStruct.Index != wantStruct.Index ||
-						gotStruct.Package != wantStruct.Package {
-						err = true
+					if err != nil {
+						t.Log(err)
 					}
 
-					for k, typeSignature := range gotStruct.Fields {
-						if typeSignature != wantStruct.Fields[k] {
-							err = true
+					if cxpackages.IsDefaultPackage(pkg.Name) {
+						continue
+					}
+
+					var match bool
+					var gotStruct ast.CXStruct
+
+					for _, structIdx := range pkg.Structs {
+						gotStruct := program.CXStructs[structIdx]
+
+						if gotStruct.Name == wantStruct.Name &&
+							gotStruct.Index == wantStruct.Index &&
+							gotStruct.Package == wantStruct.Package {
+							match = true
 							break
 						}
+
+						for k, wantFields := range wantStruct.Fields {
+							if wantFields == gotStruct.Fields[k] {
+								match = true
+								break
+							}
+						}
+
 					}
 
-					if err {
+					if !match {
 						t.Errorf("want struct %v, got %v", wantStruct, gotStruct)
 					}
-
-					i++
 				}
 			}
+
 		})
 	}
 
