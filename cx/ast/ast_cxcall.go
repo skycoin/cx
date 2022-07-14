@@ -102,42 +102,51 @@ func processBuiltInOperators(prgrm *CXProgram, expr *CXExpression, globalInputs 
 
 	argIndex := 0
 	for inputIndex := 0; inputIndex < inputCount; inputIndex++ {
-		var input *CXArgument = &CXArgument{}
 		inputTypeSignature := prgrm.GetCXTypeSignatureFromArray(inputs[inputIndex])
-		if inputTypeSignature.Type == TYPE_CXARGUMENT_DEPRECATE {
-			input = prgrm.GetCXArgFromArray(CXArgumentIndex(inputTypeSignature.Meta))
-		}
-
-		offset := GetFinalOffset(prgrm, fp, nil, inputTypeSignature)
 		value := &inputValues[inputIndex]
 		value.TypeSignature = inputTypeSignature
 		value.Size = inputTypeSignature.GetSize(prgrm)
+		offset := GetFinalOffset(prgrm, fp, nil, inputTypeSignature)
 		value.Offset = offset
-		value.Type = input.Type
-		if input.Type == types.POINTER {
-			value.Type = input.PointerTargetType
+
+		var input *CXArgument = &CXArgument{}
+		if inputTypeSignature.Type == TYPE_CXARGUMENT_DEPRECATE {
+			input = prgrm.GetCXArgFromArray(CXArgumentIndex(inputTypeSignature.Meta))
+
+			value.Type = input.Type
+			if input.Type == types.POINTER {
+				value.Type = input.PointerTargetType
+			}
+		} else if inputTypeSignature.Type == TYPE_ATOMIC {
+			value.Type = types.Code(inputTypeSignature.Meta)
 		}
+
 		value.FramePointer = fp
 		value.Expr = expr
 		argIndex++
 	}
 
 	for outputIndex := 0; outputIndex < outputCount; outputIndex++ {
-		var output *CXArgument = &CXArgument{}
 		outputTypeSignature := prgrm.GetCXTypeSignatureFromArray(outputs[outputIndex])
-		if outputTypeSignature.Type == TYPE_CXARGUMENT_DEPRECATE {
-			output = prgrm.GetCXArgFromArray(CXArgumentIndex(outputTypeSignature.Meta))
-		}
 
-		offset := GetFinalOffset(prgrm, fp, nil, outputTypeSignature)
 		value := &outputValues[outputIndex]
 		value.TypeSignature = outputTypeSignature
 		value.Size = outputTypeSignature.GetSize(prgrm)
+		offset := GetFinalOffset(prgrm, fp, nil, outputTypeSignature)
 		value.Offset = offset
-		value.Type = output.Type
-		if output.Type == types.POINTER {
-			value.Type = output.PointerTargetType
+
+		var output *CXArgument = &CXArgument{}
+		if outputTypeSignature.Type == TYPE_CXARGUMENT_DEPRECATE {
+			output = prgrm.GetCXArgFromArray(CXArgumentIndex(outputTypeSignature.Meta))
+
+			value.Type = output.Type
+			if output.Type == types.POINTER {
+				value.Type = output.PointerTargetType
+			}
+		} else if outputTypeSignature.Type == TYPE_ATOMIC {
+			value.Type = types.Code(outputTypeSignature.Meta)
 		}
+
 		value.FramePointer = fp
 		value.Expr = expr
 		argIndex++
