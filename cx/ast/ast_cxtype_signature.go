@@ -285,7 +285,7 @@ func GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm *CXPro
 	newCXTypeSignature.Meta = int(fldIdx)
 	// }
 
-	newCXTypeSignature.Offset = newCXTypeSignature.GetSize(prgrm)
+	// newCXTypeSignature.Offset = newCXTypeSignature.GetSize(prgrm)
 
 	return &newCXTypeSignature
 }
