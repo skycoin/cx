@@ -510,47 +510,67 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 		var fromCXAtomicOpOperatorOutput *ast.CXArgument = &ast.CXArgument{}
 		if fromExpressionOperatorOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			fromCXAtomicOpOperatorOutput = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(fromExpressionOperatorOutputTypeSig.Meta))
-		} else {
-			panic("type is not cx argument deprecate\n\n")
-		}
 
-		if fromExpressionOperator.IsBuiltIn() {
-			// only assigning as if the operator had only one output defined
+			if fromExpressionOperator.IsBuiltIn() {
+				// only assigning as if the operator had only one output defined
 
-			toExpressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(toExpression.GetOutputs(prgrm)[0])
+				toExpressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(toExpression.GetOutputs(prgrm)[0])
 
-			var toExpressionOutputIdx ast.CXArgumentIndex
-			if toExpressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-				toExpressionOutputIdx = ast.CXArgumentIndex(toExpressionOutputTypeSig.Meta)
+				var toExpressionOutputIdx ast.CXArgumentIndex
+				if toExpressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+					toExpressionOutputIdx = ast.CXArgumentIndex(toExpressionOutputTypeSig.Meta)
+				} else {
+					panic("type is not type cx argument deprecate\n\n")
+				}
+				if fromExpressionOperator.AtomicOPCode != constants.OP_IDENTITY {
+					// it's a short variable declaration
+					prgrm.CXArgs[toExpressionOutputIdx].Size = fromCXAtomicOpOperatorOutput.Size
+					prgrm.CXArgs[toExpressionOutputIdx].Type = fromCXAtomicOpOperatorOutput.Type
+					prgrm.CXArgs[toExpressionOutputIdx].PointerTargetType = fromCXAtomicOpOperatorOutput.PointerTargetType
+					prgrm.CXArgs[toExpressionOutputIdx].Lengths = fromCXAtomicOpOperatorOutput.Lengths
+				}
+
+				prgrm.CXArgs[toExpressionOutputIdx].PassBy = fromCXAtomicOpOperatorOutput.PassBy
 			} else {
-				panic("type is not type cx argument deprecate\n\n")
-			}
-			if fromExpressionOperator.AtomicOPCode != constants.OP_IDENTITY {
-				// it's a short variable declaration
+				// we'll delegate multiple-value returns to the 'expression' grammar rule
+				// only assigning as if the operator had only one output defined
+				toExpressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(toExpression.GetOutputs(prgrm)[0])
+
+				var toExpressionOutputIdx ast.CXArgumentIndex
+				if toExpressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+					toExpressionOutputIdx = ast.CXArgumentIndex(toExpressionOutputTypeSig.Meta)
+				} else {
+					panic("type is not type cx argument deprecate\n\n")
+				}
+
 				prgrm.CXArgs[toExpressionOutputIdx].Size = fromCXAtomicOpOperatorOutput.Size
 				prgrm.CXArgs[toExpressionOutputIdx].Type = fromCXAtomicOpOperatorOutput.Type
 				prgrm.CXArgs[toExpressionOutputIdx].PointerTargetType = fromCXAtomicOpOperatorOutput.PointerTargetType
 				prgrm.CXArgs[toExpressionOutputIdx].Lengths = fromCXAtomicOpOperatorOutput.Lengths
+				prgrm.CXArgs[toExpressionOutputIdx].PassBy = fromCXAtomicOpOperatorOutput.PassBy
 			}
-
-			prgrm.CXArgs[toExpressionOutputIdx].PassBy = fromCXAtomicOpOperatorOutput.PassBy
 		} else {
-			// we'll delegate multiple-value returns to the 'expression' grammar rule
-			// only assigning as if the operator had only one output defined
-			toExpressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(toExpression.GetOutputs(prgrm)[0])
+			// panic("type is not cx argument deprecate\n\n")
 
-			var toExpressionOutputIdx ast.CXArgumentIndex
-			if toExpressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-				toExpressionOutputIdx = ast.CXArgumentIndex(toExpressionOutputTypeSig.Meta)
+			if fromExpressionOperator.IsBuiltIn() {
+				// only assigning as if the operator had only one output defined
+
+				toExpressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(toExpression.GetOutputs(prgrm)[0])
+				if fromExpressionOperator.AtomicOPCode != constants.OP_IDENTITY {
+					// it's a short variable declaration
+
+					toExpressionOutputTypeSig.Type = ast.TYPE_ATOMIC
+					toExpressionOutputTypeSig.Meta = fromExpressionOperatorOutputTypeSig.Meta
+				}
+
 			} else {
-				panic("type is not type cx argument deprecate\n\n")
-			}
+				// we'll delegate multiple-value returns to the 'expression' grammar rule
+				// only assigning as if the operator had only one output defined
+				toExpressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(toExpression.GetOutputs(prgrm)[0])
 
-			prgrm.CXArgs[toExpressionOutputIdx].Size = fromCXAtomicOpOperatorOutput.Size
-			prgrm.CXArgs[toExpressionOutputIdx].Type = fromCXAtomicOpOperatorOutput.Type
-			prgrm.CXArgs[toExpressionOutputIdx].PointerTargetType = fromCXAtomicOpOperatorOutput.PointerTargetType
-			prgrm.CXArgs[toExpressionOutputIdx].Lengths = fromCXAtomicOpOperatorOutput.Lengths
-			prgrm.CXArgs[toExpressionOutputIdx].PassBy = fromCXAtomicOpOperatorOutput.PassBy
+				toExpressionOutputTypeSig.Type = ast.TYPE_ATOMIC
+				toExpressionOutputTypeSig.Meta = fromExpressionOperatorOutputTypeSig.Meta
+			}
 		}
 
 		prgrm.CXAtomicOps[fromExpressionIdx].Outputs = toLastExpr.Outputs
