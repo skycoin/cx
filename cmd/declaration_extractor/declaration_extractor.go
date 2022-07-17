@@ -127,8 +127,7 @@ func ExtractGlobals(source []byte, fileName string, pkg string) ([]GlobalDeclara
 	var err error
 
 	//Regexs
-	reGlbl := regexp.MustCompile("var")
-	reGlblName := regexp.MustCompile(`(^|[\s])var\s([_a-zA-Z][_a-zA-Z0-9]*)`)
+	reGlbl := regexp.MustCompile(`var\s([_a-zA-Z][_a-zA-Z0-9]*)\s+[\[_a-zA-Z][\]_a-zA-Z0-9]*`)
 	reBodyOpen := regexp.MustCompile("{")
 	reBodyClose := regexp.MustCompile("}")
 
@@ -156,11 +155,7 @@ func ExtractGlobals(source []byte, fileName string, pkg string) ([]GlobalDeclara
 		}
 
 		// if match is found and body depth is 0
-		if match := reGlbl.FindIndex(line); match != nil && inBlock == 0 {
-
-			if match := reGlblName.FindIndex(line); match == nil {
-				continue
-			}
+		if match := reGlbl.FindSubmatchIndex(line); match != nil && inBlock == 0 {
 
 			var tmp GlobalDeclaration
 
