@@ -1,4 +1,4 @@
-package declaration_extraction_test
+package declaration_extractor_test
 
 import (
 	"bytes"
@@ -8,7 +8,7 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/skycoin/cx/cmd/declaration_extraction"
+	"github.com/skycoin/cx/cmd/declaration_extractor"
 )
 
 //Sets the offset for windows or other os
@@ -56,7 +56,7 @@ func TestDeclarationExtraction_ReplaceCommentsWithWhitespaces(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			commentReplaced := declaration_extraction.ReplaceCommentsWithWhitespaces(srcBytes)
+			commentReplaced := declaration_extractor.ReplaceCommentsWithWhitespaces(srcBytes)
 
 			if len(srcBytes) != len(commentReplaced) {
 				t.Errorf("Length not the same: orginal %vbytes, replaced %vbytes", len(srcBytes), len(commentReplaced))
@@ -98,12 +98,12 @@ func TestDeclarationExtraction_ExtractPackages(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
 			srcBytes, err := os.ReadFile(tc.testDir)
-			ReplaceCommentsWithWhitespaces := declaration_extraction.ReplaceCommentsWithWhitespaces(srcBytes)
+			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(srcBytes)
 
 			if err != nil {
 				t.Fatal(err)
 			}
-			pkg := declaration_extraction.ExtractPackages(ReplaceCommentsWithWhitespaces)
+			pkg := declaration_extractor.ExtractPackages(ReplaceCommentsWithWhitespaces)
 
 			if pkg != tc.wantPackage {
 				t.Errorf("want packages %v, got %v", tc.wantPackage, pkg)
@@ -118,12 +118,12 @@ func TestDeclarationExtraction_ExtractGlobal(t *testing.T) {
 	tests := []struct {
 		scenario    string
 		testDir     string
-		wantGlobals []declaration_extraction.GlobalDeclaration
+		wantGlobals []declaration_extractor.GlobalDeclaration
 	}{
 		{
 			scenario: "Has globals",
 			testDir:  "./test_files/test.cx",
-			wantGlobals: []declaration_extraction.GlobalDeclaration{
+			wantGlobals: []declaration_extractor.GlobalDeclaration{
 				{
 					PackageID:          "hello",
 					FileID:             "test.cx",
@@ -145,7 +145,7 @@ func TestDeclarationExtraction_ExtractGlobal(t *testing.T) {
 		{
 			scenario: "Has Globals 2",
 			testDir:  "./test_files/test_2.cx",
-			wantGlobals: []declaration_extraction.GlobalDeclaration{
+			wantGlobals: []declaration_extractor.GlobalDeclaration{
 				{
 					PackageID:          "test_2",
 					FileID:             "test_2.cx",
@@ -161,14 +161,14 @@ func TestDeclarationExtraction_ExtractGlobal(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
 			srcBytes, err := os.ReadFile(tc.testDir)
-			ReplaceCommentsWithWhitespaces := declaration_extraction.ReplaceCommentsWithWhitespaces(srcBytes)
+			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(srcBytes)
 			fileName := filepath.Base(tc.testDir)
-			pkg := declaration_extraction.ExtractPackages(ReplaceCommentsWithWhitespaces)
+			pkg := declaration_extractor.ExtractPackages(ReplaceCommentsWithWhitespaces)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			globals, err := declaration_extraction.ExtractGlobals(ReplaceCommentsWithWhitespaces, fileName, pkg)
+			globals, err := declaration_extractor.ExtractGlobals(ReplaceCommentsWithWhitespaces, fileName, pkg)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -187,12 +187,12 @@ func TestDeclarationExtraction_ExtractEnums(t *testing.T) {
 	tests := []struct {
 		scenario  string
 		testDir   string
-		wantEnums []declaration_extraction.EnumDeclaration
+		wantEnums []declaration_extractor.EnumDeclaration
 	}{
 		{
 			scenario: "Has enums",
 			testDir:  "./test_files/test.cx",
-			wantEnums: []declaration_extraction.EnumDeclaration{
+			wantEnums: []declaration_extractor.EnumDeclaration{
 				{
 					PackageID:   "hello",
 					FileID:      "test.cx",
@@ -258,7 +258,7 @@ func TestDeclarationExtraction_ExtractEnums(t *testing.T) {
 		{
 			scenario: "Has enums and nested parenthesis",
 			testDir:  "./test_files/enum_in_parenthesis.cx",
-			wantEnums: []declaration_extraction.EnumDeclaration{
+			wantEnums: []declaration_extractor.EnumDeclaration{
 				{
 					PackageID:   "hello",
 					FileID:      "enum_in_parenthesis.cx",
@@ -324,7 +324,7 @@ func TestDeclarationExtraction_ExtractEnums(t *testing.T) {
 		{
 			scenario: "Has Enums 2",
 			testDir:  "./test_files/test_2.cx",
-			wantEnums: []declaration_extraction.EnumDeclaration{
+			wantEnums: []declaration_extractor.EnumDeclaration{
 				{
 					PackageID:   "test_2",
 					FileID:      "test_2.cx",
@@ -372,14 +372,14 @@ func TestDeclarationExtraction_ExtractEnums(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
 			srcBytes, err := os.ReadFile(tc.testDir)
-			ReplaceCommentsWithWhitespaces := declaration_extraction.ReplaceCommentsWithWhitespaces(srcBytes)
+			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(srcBytes)
 			fileName := filepath.Base(tc.testDir)
-			pkg := declaration_extraction.ExtractPackages(ReplaceCommentsWithWhitespaces)
+			pkg := declaration_extractor.ExtractPackages(ReplaceCommentsWithWhitespaces)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			enums, err := declaration_extraction.ExtractEnums(ReplaceCommentsWithWhitespaces, fileName, pkg)
+			enums, err := declaration_extractor.ExtractEnums(ReplaceCommentsWithWhitespaces, fileName, pkg)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -398,12 +398,12 @@ func TestDeclarationExtraction_ExtractStructs(t *testing.T) {
 	tests := []struct {
 		scenario    string
 		testDir     string
-		wantStructs []declaration_extraction.StructDeclaration
+		wantStructs []declaration_extractor.StructDeclaration
 	}{
 		{
 			scenario: "Has structs",
 			testDir:  "./test_files/test.cx",
-			wantStructs: []declaration_extraction.StructDeclaration{
+			wantStructs: []declaration_extractor.StructDeclaration{
 				{
 					PackageID:   "hello",
 					FileID:      "test.cx",
@@ -433,7 +433,7 @@ func TestDeclarationExtraction_ExtractStructs(t *testing.T) {
 		{
 			scenario: "Has Struct 2",
 			testDir:  "./test_files/test_2.cx",
-			wantStructs: []declaration_extraction.StructDeclaration{
+			wantStructs: []declaration_extractor.StructDeclaration{
 				{
 					PackageID:   "test_2",
 					FileID:      "test_2.cx",
@@ -449,14 +449,14 @@ func TestDeclarationExtraction_ExtractStructs(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
 			srcBytes, err := os.ReadFile(tc.testDir)
-			ReplaceCommentsWithWhitespaces := declaration_extraction.ReplaceCommentsWithWhitespaces(srcBytes)
+			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(srcBytes)
 			fileName := filepath.Base(tc.testDir)
-			pkg := declaration_extraction.ExtractPackages(ReplaceCommentsWithWhitespaces)
+			pkg := declaration_extractor.ExtractPackages(ReplaceCommentsWithWhitespaces)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			structs, err := declaration_extraction.ExtractStructs(ReplaceCommentsWithWhitespaces, fileName, pkg)
+			structs, err := declaration_extractor.ExtractStructs(ReplaceCommentsWithWhitespaces, fileName, pkg)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -475,12 +475,12 @@ func TestDeclarationExtraction_ExtractFuncs(t *testing.T) {
 	tests := []struct {
 		scenario  string
 		testDir   string
-		wantFuncs []declaration_extraction.FuncDeclaration
+		wantFuncs []declaration_extractor.FuncDeclaration
 	}{
 		{
 			scenario: "Has funcs",
 			testDir:  "./test_files/test.cx",
-			wantFuncs: []declaration_extraction.FuncDeclaration{
+			wantFuncs: []declaration_extractor.FuncDeclaration{
 				{
 					PackageID:   "hello",
 					FileID:      "test.cx",
@@ -510,7 +510,7 @@ func TestDeclarationExtraction_ExtractFuncs(t *testing.T) {
 		{
 			scenario: "test_2",
 			testDir:  "./test_files/test_2.cx",
-			wantFuncs: []declaration_extraction.FuncDeclaration{
+			wantFuncs: []declaration_extractor.FuncDeclaration{
 				{
 					PackageID:   "test_2",
 					FileID:      "test_2.cx",
@@ -534,14 +534,14 @@ func TestDeclarationExtraction_ExtractFuncs(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
 			srcBytes, err := os.ReadFile(tc.testDir)
-			ReplaceCommentsWithWhitespaces := declaration_extraction.ReplaceCommentsWithWhitespaces(srcBytes)
+			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(srcBytes)
 			fileName := filepath.Base(tc.testDir)
-			pkg := declaration_extraction.ExtractPackages(ReplaceCommentsWithWhitespaces)
+			pkg := declaration_extractor.ExtractPackages(ReplaceCommentsWithWhitespaces)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			funcs, err := declaration_extraction.ExtractFuncs(ReplaceCommentsWithWhitespaces, fileName, pkg)
+			funcs, err := declaration_extractor.ExtractFuncs(ReplaceCommentsWithWhitespaces, fileName, pkg)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -597,34 +597,34 @@ func TestDeclarationExtraction_ReDeclarationCheck(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
 			srcBytes, err := os.ReadFile(tc.testDir)
-			ReplaceCommentsWithWhitespaces := declaration_extraction.ReplaceCommentsWithWhitespaces(srcBytes)
+			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(srcBytes)
 			fileName := filepath.Base(tc.testDir)
-			pkg := declaration_extraction.ExtractPackages(ReplaceCommentsWithWhitespaces)
+			pkg := declaration_extractor.ExtractPackages(ReplaceCommentsWithWhitespaces)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			globals, err := declaration_extraction.ExtractGlobals(ReplaceCommentsWithWhitespaces, fileName, pkg)
+			globals, err := declaration_extractor.ExtractGlobals(ReplaceCommentsWithWhitespaces, fileName, pkg)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			enums, err := declaration_extraction.ExtractEnums(ReplaceCommentsWithWhitespaces, fileName, pkg)
+			enums, err := declaration_extractor.ExtractEnums(ReplaceCommentsWithWhitespaces, fileName, pkg)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			structs, err := declaration_extraction.ExtractStructs(ReplaceCommentsWithWhitespaces, fileName, pkg)
+			structs, err := declaration_extractor.ExtractStructs(ReplaceCommentsWithWhitespaces, fileName, pkg)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			funcs, err := declaration_extraction.ExtractFuncs(ReplaceCommentsWithWhitespaces, fileName, pkg)
+			funcs, err := declaration_extractor.ExtractFuncs(ReplaceCommentsWithWhitespaces, fileName, pkg)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			reDeclarationError := declaration_extraction.ReDeclarationCheck(globals, enums, structs, funcs)
+			reDeclarationError := declaration_extractor.ReDeclarationCheck(globals, enums, structs, funcs)
 
 			if reDeclarationError != nil && tc.wantReDeclarationError == nil {
 				t.Errorf("want error %v, got %v", tc.wantReDeclarationError, reDeclarationError)
@@ -685,38 +685,38 @@ func TestDeclarationExtraction_GetDeclarations(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
 			srcBytes, err := os.ReadFile(tc.testDir)
-			ReplaceCommentsWithWhitespaces := declaration_extraction.ReplaceCommentsWithWhitespaces(srcBytes)
+			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(srcBytes)
 			fileName := filepath.Base(tc.testDir)
-			pkg := declaration_extraction.ExtractPackages(ReplaceCommentsWithWhitespaces)
+			pkg := declaration_extractor.ExtractPackages(ReplaceCommentsWithWhitespaces)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			globals, err := declaration_extraction.ExtractGlobals(ReplaceCommentsWithWhitespaces, fileName, pkg)
+			globals, err := declaration_extractor.ExtractGlobals(ReplaceCommentsWithWhitespaces, fileName, pkg)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			enums, err := declaration_extraction.ExtractEnums(ReplaceCommentsWithWhitespaces, fileName, pkg)
+			enums, err := declaration_extractor.ExtractEnums(ReplaceCommentsWithWhitespaces, fileName, pkg)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			structs, err := declaration_extraction.ExtractStructs(ReplaceCommentsWithWhitespaces, fileName, pkg)
+			structs, err := declaration_extractor.ExtractStructs(ReplaceCommentsWithWhitespaces, fileName, pkg)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			funcs, err := declaration_extraction.ExtractFuncs(ReplaceCommentsWithWhitespaces, fileName, pkg)
+			funcs, err := declaration_extractor.ExtractFuncs(ReplaceCommentsWithWhitespaces, fileName, pkg)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			if declaration_extraction.ReDeclarationCheck(globals, enums, structs, funcs) != nil {
+			if declaration_extractor.ReDeclarationCheck(globals, enums, structs, funcs) != nil {
 				t.Fatal(err)
 			}
 
-			declarations := declaration_extraction.GetDeclarations(srcBytes, globals, enums, structs, funcs)
+			declarations := declaration_extractor.GetDeclarations(srcBytes, globals, enums, structs, funcs)
 
 			for i := range declarations {
 				if declarations[i] != tc.wantDeclarations[i] {
@@ -853,7 +853,7 @@ func TestDeclarationExtraction_ExtractAllDeclarations(t *testing.T) {
 				files = append(files, file)
 			}
 
-			Globals, Enums, Structs, Funcs, Err := declaration_extraction.ExtractAllDeclarations(files)
+			Globals, Enums, Structs, Funcs, Err := declaration_extractor.ExtractAllDeclarations(files)
 
 			if len(Globals) == 0 && len(Enums) == 0 && len(Structs) == 0 && len(Funcs) == 0 {
 				t.Error("No Declarations found")
