@@ -23,32 +23,41 @@ type GlobalDeclaration struct {
 }
 
 type EnumDeclaration struct {
-	PackageID        string // name of package
-	FileID           string // name of file
-	StartOffset      int    // offset with in the file starting from '[name of enum]' of file
-	Length           int    // length of entire declaration i.e. '[name] [type]' or '[name]'
-	LineNumber       int    // line number of declaration
-	Type             string // type of enum
-	Value            int    // value of enum
-	EnumVariableName string // name of variable being declared
+	PackageID   string // name of package
+	FileID      string // name of file
+	StartOffset int    // offset with in the file starting from '[name of enum]' of file
+	Length      int    // length of entire declaration i.e. '[name] [type]' or '[name]'
+	LineNumber  int    // line number of declaration
+	Type        string // type of enum
+	Value       int    // value of enum
+	EnumName    string // name of enum being declared
 }
 
 type StructDeclaration struct {
-	PackageID          string // name of package
-	FileID             string // name of file
-	StartOffset        int    // offset with in the file starting from 'type'
-	Length             int    // length of entire declaration i.e. 'type [name] [type]'
-	LineNumber         int    // line number of declaration
-	StructVariableName string // name of variable being declared
+	PackageID   string // name of package
+	FileID      string // name of file
+	StartOffset int    // offset with in the file starting from 'type'
+	Length      int    // length of entire declaration i.e. 'type [name] [type]'
+	LineNumber  int    // line number of declaration
+	StructName  string // name of struct being declared
+}
+
+type StructField struct {
+	PackageID       string // name of package
+	FileID          string // name of file
+	StartOffset     int    // offset with in the file starting from [name]
+	Length          int    // length of entire declaration i.e. '[name] [type]'
+	LineNumber      int    // line number of declaration
+	StructFieldName string // name of variable being declared
 }
 
 type FuncDeclaration struct {
-	PackageID        string // name of package
-	FileID           string // name of file
-	StartOffset      int    // offset with in the file starting from 'func'
-	Length           int    // length of entire declaration i.e. 'func [name] ()' or 'func [name] ([params])' or 'func [name] ([params]) [returns]'
-	LineNumber       int    // line number of declaration
-	FuncVariableName string // name of variable being declared
+	PackageID   string // name of package
+	FileID      string // name of file
+	StartOffset int    // offset with in the file starting from 'func'
+	Length      int    // length of entire declaration i.e. 'func [name] ()' or 'func [name] ([params])' or 'func [name] ([params]) [returns]'
+	LineNumber  int    // line number of declaration
+	FuncName    string // name of function being declared
 }
 
 // Modified ScanLines to include "\r\n" or "\n" in line
@@ -235,14 +244,14 @@ func ExtractEnums(source []byte, fileName string, pkg string) ([]EnumDeclaration
 			tmp.Length = match[1] - match[0]
 			tmp.LineNumber = lineno
 
-			tmp.EnumVariableName = string(source[match[6]+currentOffset : match[7]+currentOffset])
+			tmp.EnumName = string(source[match[6]+currentOffset : match[7]+currentOffset])
 
 			// If there is type declaration for Enum declaration
 			// i.e. [enum] [type] = iota
 			// set the type to type in declaration
 			if match[2] != -1 {
 				Type = string(source[match[4]+currentOffset : match[5]+currentOffset])
-				tmp.EnumVariableName = string(source[match[2]+currentOffset : match[3]+currentOffset])
+				tmp.EnumName = string(source[match[2]+currentOffset : match[3]+currentOffset])
 			}
 
 			// otherwise set it to previous type
@@ -290,7 +299,7 @@ func ExtractStructs(source []byte, fileName string, pkg string) ([]StructDeclara
 
 			tmp.StartOffset = match[0] + currentOffset // offset is current line offset + match index
 			tmp.Length = match[1] - match[0]
-			tmp.StructVariableName = string(source[match[2]+currentOffset : match[3]+currentOffset])
+			tmp.StructName = string(source[match[2]+currentOffset : match[3]+currentOffset])
 
 			tmp.LineNumber = lineno
 
@@ -336,12 +345,12 @@ func ExtractFuncs(source []byte, fileName string, pkg string) ([]FuncDeclaration
 
 			// If func has multiple or no returns
 			// i.e. func [name] ([params]) ([returns]) or func [name] ([params])
-			tmp.FuncVariableName = string(source[match[4]+currentOffset : match[5]+currentOffset])
+			tmp.FuncName = string(source[match[4]+currentOffset : match[5]+currentOffset])
 
 			// If func has one return
 			// i.e. func [name] ([params]) [return]
 			if match[2] != -1 {
-				tmp.FuncVariableName = string(source[match[2]+currentOffset : match[3]+currentOffset])
+				tmp.FuncName = string(source[match[2]+currentOffset : match[3]+currentOffset])
 			}
 
 			tmp.LineNumber = lineno
@@ -375,7 +384,7 @@ func ReDeclarationCheck(Glbl []GlobalDeclaration, Enum []EnumDeclaration, Strct 
 
 	for i := 0; i < len(Enum); i++ {
 		for j := i + 1; j < len(Enum); j++ {
-			if Enum[i].EnumVariableName == Enum[j].EnumVariableName {
+			if Enum[i].EnumName == Enum[j].EnumName {
 				err = errors.New("enum redeclared")
 				return err
 			}
@@ -384,7 +393,7 @@ func ReDeclarationCheck(Glbl []GlobalDeclaration, Enum []EnumDeclaration, Strct 
 
 	for i := 0; i < len(Strct); i++ {
 		for j := i + 1; j < len(Strct); j++ {
-			if Strct[i].StructVariableName == Strct[j].StructVariableName {
+			if Strct[i].StructName == Strct[j].StructName {
 				err = errors.New("struct redeclared")
 				return err
 			}
@@ -393,7 +402,7 @@ func ReDeclarationCheck(Glbl []GlobalDeclaration, Enum []EnumDeclaration, Strct 
 
 	for i := 0; i < len(Func); i++ {
 		for j := i + 1; j < len(Func); j++ {
-			if Func[i].FuncVariableName == Func[j].FuncVariableName {
+			if Func[i].FuncName == Func[j].FuncName {
 				err = errors.New("func redeclared")
 				return err
 			}
