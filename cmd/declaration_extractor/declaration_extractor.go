@@ -34,12 +34,13 @@ type EnumDeclaration struct {
 }
 
 type StructDeclaration struct {
-	PackageID   string // name of package
-	FileID      string // name of file
-	StartOffset int    // offset with in the file starting from 'type'
-	Length      int    // length of entire declaration i.e. 'type [name] [type]'
-	LineNumber  int    // line number of declaration
-	StructName  string // name of struct being declared
+	PackageID    string         // name of package
+	FileID       string         // name of file
+	StartOffset  int            // offset with in the file starting from 'type'
+	Length       int            // length of entire declaration i.e. 'type [name] [type]'
+	LineNumber   int            // line number of declaration
+	StructName   string         // name of struct being declared
+	StructFields []*StructField // array of fields
 }
 
 type StructField struct {
