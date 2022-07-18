@@ -53,9 +53,12 @@ func buildStrGlobals(prgrm *CXProgram, pkg *CXPackage, ast *string) {
 
 	for idx, glblIdx := range pkg.Globals.Fields {
 		glbl := prgrm.GetCXTypeSignatureFromArray(glblIdx)
-		// Assuming they are all TYPE_CXARGUMENT_DEPRECATE
-		// TODO: To be replaced
-		*ast += fmt.Sprintf("\t\t%d.- Global: %s %s\n", idx, prgrm.GetCXArg(CXArgumentIndex(glbl.Meta)).Name, GetFormattedType(prgrm, prgrm.GetCXArg(CXArgumentIndex(glbl.Meta))))
+		if glbl.Type == TYPE_CXARGUMENT_DEPRECATE {
+			*ast += fmt.Sprintf("\t\t%d.- Global: %s %s\n", idx, prgrm.GetCXArg(CXArgumentIndex(glbl.Meta)).Name, GetFormattedType(prgrm, prgrm.GetCXArg(CXArgumentIndex(glbl.Meta))))
+		} else if glbl.Type == TYPE_ATOMIC {
+			*ast += fmt.Sprintf("\t\t%d.- Global: %s %s\n", idx, glbl.Name, types.Code(glbl.Meta).Name())
+		}
+
 	}
 }
 
@@ -74,15 +77,15 @@ func buildStrStructs(prgrm *CXProgram, pkg *CXPackage, ast *string) {
 		for k, typeSignatureIdx := range strct.Fields {
 			typeSignature := prgrm.GetCXTypeSignatureFromArray(typeSignatureIdx)
 
-			if typeSignature.Type == TYPE_ATOMIC {
+			if typeSignature.Type == TYPE_CXARGUMENT_DEPRECATE {
+				fldIdx := typeSignature.Meta
+				fld := prgrm.CXArgs[fldIdx]
+				*ast += fmt.Sprintf("\t\t\t%d.- Field: %s %s\n",
+					k, fld.Name, GetFormattedType(prgrm, &fld))
+			} else if typeSignature.Type == TYPE_ATOMIC {
 				*ast += fmt.Sprintf("\t\t\t%d.- Field: %s %s\n",
 					k, typeSignature.Name, types.Code(typeSignature.Meta).Name())
-				continue
 			}
-			fldIdx := typeSignature.Meta
-			fld := prgrm.CXArgs[fldIdx]
-			*ast += fmt.Sprintf("\t\t\t%d.- Field: %s %s\n",
-				k, fld.Name, GetFormattedType(prgrm, &fld))
 		}
 
 		count++
@@ -113,11 +116,8 @@ func buildStrFunctions(prgrm *CXProgram, pkg *CXPackage, ast1 *string) {
 		var inps bytes.Buffer
 		var outs bytes.Buffer
 
-		inputCXArgs := prgrm.ConvertIndexTypeSignaturesToPointerArgs(fn.GetInputs(prgrm))
-		getFormattedParam(prgrm, inputCXArgs, pkg, &inps)
-
-		outputCxArgs := prgrm.ConvertIndexTypeSignaturesToPointerArgs(fn.GetOutputs(prgrm))
-		getFormattedParam(prgrm, outputCxArgs, pkg, &outs)
+		getFormattedParam(prgrm, fn.GetInputs(prgrm), pkg, &inps)
+		getFormattedParam(prgrm, fn.GetOutputs(prgrm), pkg, &outs)
 
 		*ast1 += fmt.Sprintf("\t\t%d.- Function: %s (%s) (%s)\n",
 			j, fn.Name, inps.String(), outs.String())
@@ -151,8 +151,8 @@ func buildStrFunctions(prgrm *CXProgram, pkg *CXPackage, ast1 *string) {
 				}
 			}
 
-			getFormattedParam(prgrm, prgrm.ConvertIndexTypeSignaturesToPointerArgs(cxAtomicOp.GetInputs(prgrm)), pkg, &inps)
-			getFormattedParam(prgrm, prgrm.ConvertIndexTypeSignaturesToPointerArgs(cxAtomicOp.GetOutputs(prgrm)), pkg, &outs)
+			getFormattedParam(prgrm, cxAtomicOp.GetInputs(prgrm), pkg, &inps)
+			getFormattedParam(prgrm, cxAtomicOp.GetOutputs(prgrm), pkg, &outs)
 
 			if expr.Type == CX_LINE {
 				cxLine, _ := prgrm.GetCXLine(expr.Index)
@@ -226,21 +226,52 @@ func BuildStrPackages(prgrm *CXProgram, ast *string) {
 // name of a `CXExpression`'s input and output parameters (`CXArgument`s). Examples
 // of these formattings are "pkg.foo[0]", "&*foo.field1". The result is written to
 // `buf`.
-func getFormattedParam(prgrm *CXProgram, params []*CXArgument, pkg *CXPackage, buf *bytes.Buffer) {
-	for i, param := range params {
-		elt := param.GetAssignmentElement(prgrm)
+func getFormattedParam(prgrm *CXProgram, paramTypeSigIdxs []CXTypeSignatureIndex, pkg *CXPackage, buf *bytes.Buffer) {
+	for i, paramTypeSigIdx := range paramTypeSigIdxs {
+		paramTypeSig := prgrm.GetCXTypeSignatureFromArray(paramTypeSigIdx)
 
-		// Checking if this argument comes from an imported package.
-		externalPkg := false
-		if CXPackageIndex(pkg.Index) != param.Package {
-			externalPkg = true
-		}
+		if paramTypeSig.Type == TYPE_CXARGUMENT_DEPRECATE {
+			param := prgrm.GetCXArgFromArray(CXArgumentIndex(paramTypeSig.Meta))
 
-		if i == len(params)-1 {
+			elt := param.GetAssignmentElement(prgrm)
+
+			// Checking if this argument comes from an imported package.
+			externalPkg := false
+			if CXPackageIndex(pkg.Index) != param.Package {
+				externalPkg = true
+			}
+
 			buf.WriteString(fmt.Sprintf("%s %s", GetFormattedName(prgrm, param, externalPkg, pkg), GetFormattedType(prgrm, elt)))
-		} else {
-			buf.WriteString(fmt.Sprintf("%s %s, ", GetFormattedName(prgrm, param, externalPkg, pkg), GetFormattedType(prgrm, elt)))
+
+			if i != len(paramTypeSigIdxs)-1 {
+				buf.WriteString(", ")
+			}
+		} else if paramTypeSig.Type == TYPE_ATOMIC {
+			// Checking if this argument comes from an imported package.
+			externalPkg := false
+			if CXPackageIndex(pkg.Index) != paramTypeSig.Package {
+				externalPkg = true
+			}
+
+			name := paramTypeSig.Name
+
+			// If it's a literal, just override the name with LITERAL_PLACEHOLDER.
+			if paramTypeSig.Name == "" {
+				name = constants.LITERAL_PLACEHOLDER
+			}
+
+			// TODO: Check if external pkg and pkg name shown are correct
+			if externalPkg {
+				name = fmt.Sprintf("%s.%s", pkg.Name, name)
+			}
+
+			buf.WriteString(fmt.Sprintf("%s %s", name, types.Code(paramTypeSig.Meta).Name()))
+
+			if i != len(paramTypeSigIdxs)-1 {
+				buf.WriteString(", ")
+			}
 		}
+
 	}
 }
 
@@ -249,11 +280,8 @@ func SignatureStringOfFunction(prgrm *CXProgram, pkg *CXPackage, f *CXFunction) 
 	var ins bytes.Buffer
 	var outs bytes.Buffer
 
-	inputCXArgs := prgrm.ConvertIndexTypeSignaturesToPointerArgs(f.GetInputs(prgrm))
-	getFormattedParam(prgrm, inputCXArgs, pkg, &ins)
-
-	outputCXArgs := prgrm.ConvertIndexTypeSignaturesToPointerArgs(f.GetOutputs(prgrm))
-	getFormattedParam(prgrm, outputCXArgs, pkg, &outs)
+	getFormattedParam(prgrm, f.GetInputs(prgrm), pkg, &ins)
+	getFormattedParam(prgrm, f.GetOutputs(prgrm), pkg, &outs)
 
 	return fmt.Sprintf("func %s(%s) (%s)",
 		f.Name, ins.String(), outs.String())
