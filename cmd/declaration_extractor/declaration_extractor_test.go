@@ -420,14 +420,6 @@ func TestDeclarationExtraction_ExtractStructs(t *testing.T) {
 					LineNumber:  21,
 					StructName:  "animal",
 				},
-				{
-					PackageID:   "hello",
-					FileID:      "test.cx",
-					StartOffset: setOffset(322, 30),
-					Length:      18,
-					LineNumber:  30,
-					StructName:  "Direction",
-				},
 			},
 		},
 		{
@@ -461,35 +453,26 @@ func TestDeclarationExtraction_ExtractStructs(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			for _, gotStruct := range gotStructs {
+			for _, wantStruct := range tc.wantStructs {
 
-				t.Error(gotStruct, *gotStruct.StructFields[0])
+				var match bool
 
-				if len(gotStruct.StructFields) > 1 {
-					t.Error(*gotStruct.StructFields[1])
+				var gotStruct declaration_extractor.StructDeclaration
+
+				for _, gotStruct := range gotStructs {
+
+					if gotStruct.StructName == wantStruct.StructName {
+						match = true
+						break
+					}
+
 				}
+
+				if !match {
+					t.Errorf("want struct: %v\n\t%v\ngot:%v\n\t%v", wantStruct, wantStruct.StructFields, gotStruct, gotStruct.StructFields)
+				}
+
 			}
-
-			// for _, wantStruct := range tc.wantStructs {
-
-			// 	var match bool
-
-			// 	var gotStruct declaration_extractor.StructDeclaration
-
-			// 	for _, gotStruct := range gotStructs {
-
-			// 		if gotStruct.StructName == wantStruct.StructName {
-			// 			match = true
-			// 			break
-			// 		}
-
-			// 	}
-
-			// 	if !match {
-			// 		t.Errorf("want struct: %v\n\t%v\ngot:%v\n\t%v", wantStruct, wantStruct.StructFields, gotStruct, gotStruct.StructFields)
-			// 	}
-
-			// }
 		})
 	}
 }
