@@ -464,6 +464,10 @@ func TestDeclarationExtraction_ExtractStructs(t *testing.T) {
 			for _, gotStruct := range gotStructs {
 
 				t.Error(gotStruct, *gotStruct.StructFields[0])
+
+				if len(gotStruct.StructFields) > 1 {
+					t.Error(*gotStruct.StructFields[1])
+				}
 			}
 
 			// for _, wantStruct := range tc.wantStructs {
@@ -476,7 +480,9 @@ func TestDeclarationExtraction_ExtractStructs(t *testing.T) {
 
 			// 		if gotStruct.StructName == wantStruct.StructName {
 			// 			match = true
+			// 			break
 			// 		}
+
 			// 	}
 
 			// 	if !match {

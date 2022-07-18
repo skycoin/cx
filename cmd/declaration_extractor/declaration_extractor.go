@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
-	"fmt"
 	"io"
 	"os"
 	"regexp"
@@ -275,19 +274,20 @@ func ExtractStructs(source []byte, fileName string, pkg string) ([]StructDeclara
 	var StrctDec []StructDeclaration
 	var err error
 
-	reStruct := regexp.MustCompile(`type\s+([_a-zA-Z][_a-zA-Z0-9]*)\s+struct\s*{`)
-	reStructClose := regexp.MustCompile("}")
+	reStructHeader := regexp.MustCompile(`type\s+([_a-zA-Z][_a-zA-Z0-9]*)\s+struct`)
+	reLeftBrace := regexp.MustCompile("{")
+	reRightBrace := regexp.MustCompile("}")
 	reStructField := regexp.MustCompile(`([_a-zA-Z][_a-zA-Z0-9]+)\s+[_a-zA-Z][_a-zA-Z0-9]+`)
 
 	reader := bytes.NewReader(source)
 	scanner := bufio.NewScanner(reader)
 	scanner.Split(scanLinesWithLineTerminator) // set scanner SplitFunc to custom ScanLines func at line 55
 
-	var currentOffset int                    // offset of current line
-	var lineno int                           // line number
-	var inBlock int                          // inBlock
-	var structDeclaration *StructDeclaration // temporary variable for Struct Declaration
-	var structFieldsArray []*StructField     // struct fields
+	var currentOffset int                   // offset of current line
+	var lineno int                          // line number
+	var inBlock int                         // inBlock
+	var structDeclaration StructDeclaration // temporary variable for Struct Declaration
+	var structFieldsArray []*StructField    // struct fields
 
 	//Reading code line by line
 	for scanner.Scan() {
@@ -296,7 +296,7 @@ func ExtractStructs(source []byte, fileName string, pkg string) ([]StructDeclara
 
 		// if struct declaration is found
 		// i.e. type [name] [type]
-		if match := reStruct.FindSubmatchIndex(line); match != nil {
+		if match := reStructHeader.FindSubmatchIndex(line); match != nil && reLeftBrace.FindIndex(line)[0] > match[0] {
 
 			structDeclaration.PackageID = pkg
 			structDeclaration.FileID = fileName
@@ -311,12 +311,12 @@ func ExtractStructs(source []byte, fileName string, pkg string) ([]StructDeclara
 
 		}
 
-		if match := reStructClose.FindIndex(line); match != nil && inBlock == 1 {
+		if match := reRightBrace.FindIndex(line); match != nil && inBlock == 1 {
 
 			inBlock--
 			structDeclaration.StructFields = structFieldsArray
 			StrctDec = append(StrctDec, structDeclaration)
-			structDeclaration = make(StructDeclaration)
+			structFieldsArray = []*StructField{}
 		}
 
 		if inBlock == 1 && structDeclaration.LineNumber < lineno {
@@ -336,7 +336,6 @@ func ExtractStructs(source []byte, fileName string, pkg string) ([]StructDeclara
 			if len(tokens) == 2 {
 
 				match := reStructField.FindSubmatchIndex(line)
-				fmt.Print(match)
 
 				structField.StartOffset = match[0] + currentOffset
 				structField.Length = match[1] - match[0]
