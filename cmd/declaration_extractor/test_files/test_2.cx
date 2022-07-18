@@ -1,9 +1,5 @@
 package test_2
 
-import (
-	"fmt"
-)
-
 var global string
 
 /*
@@ -18,7 +14,7 @@ type object struct {
 }
 
 const (
-	Spring string = iota
+	Spring str = iota
 	Summer
 	Autumn
 	Winter
