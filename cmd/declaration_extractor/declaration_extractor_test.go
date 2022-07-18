@@ -456,16 +456,34 @@ func TestDeclarationExtraction_ExtractStructs(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			structs, err := declaration_extractor.ExtractStructs(ReplaceCommentsWithWhitespaces, fileName, pkg)
+			gotStructs, err := declaration_extractor.ExtractStructs(ReplaceCommentsWithWhitespaces, fileName, pkg)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			for i := range structs {
-				if structs[i] != tc.wantStructs[i] {
-					t.Errorf("want structs %v, got %v", tc.wantStructs[i], structs[i])
-				}
+			for _, gotStruct := range gotStructs {
+
+				t.Error(gotStruct, *gotStruct.StructFields[0])
 			}
+
+			// for _, wantStruct := range tc.wantStructs {
+
+			// 	var match bool
+
+			// 	var gotStruct declaration_extractor.StructDeclaration
+
+			// 	for _, gotStruct := range gotStructs {
+
+			// 		if gotStruct.StructName == wantStruct.StructName {
+			// 			match = true
+			// 		}
+			// 	}
+
+			// 	if !match {
+			// 		t.Errorf("want struct: %v\n\t%v\ngot:%v\n\t%v", wantStruct, wantStruct.StructFields, gotStruct, gotStruct.StructFields)
+			// 	}
+
+			// }
 		})
 	}
 }
