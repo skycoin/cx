@@ -228,32 +228,32 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fnIdx ast.CXFunctionIndex, inputs
 	fn.LineCount = len(fn.Expressions)
 	fn.Size = offset
 
-	errStr := "\n"
-	for i, _ := range exprs {
-		expr, _ := prgrm.GetCXAtomicOpFromExpressions(exprs, i)
+	// errStr := "\n"
+	// for i, _ := range exprs {
+	// 	expr, _ := prgrm.GetCXAtomicOpFromExpressions(exprs, i)
 
-		for x, inp := range expr.GetInputs(prgrm) {
-			typeSig := prgrm.GetCXTypeSignatureFromArray(inp)
-			if typeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-				errStr += fmt.Sprintf("expr[%v] inp[%v] = %+v\n\n", i, x, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(typeSig.Meta)))
-			} else {
-				errStr += fmt.Sprintf("expr[%v] inp[%v] = %+v\n", i, x, typeSig)
-			}
+	// 	for x, inp := range expr.GetInputs(prgrm) {
+	// 		typeSig := prgrm.GetCXTypeSignatureFromArray(inp)
+	// 		if typeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+	// 			errStr += fmt.Sprintf("expr[%v] inp[%v] = %+v\n\n", i, x, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(typeSig.Meta)))
+	// 		} else {
+	// 			errStr += fmt.Sprintf("expr[%v] inp[%v] = %+v\n", i, x, typeSig)
+	// 		}
 
-		}
+	// 	}
 
-		for y, out := range expr.GetOutputs(prgrm) {
-			typeSig := prgrm.GetCXTypeSignatureFromArray(out)
+	// 	for y, out := range expr.GetOutputs(prgrm) {
+	// 		typeSig := prgrm.GetCXTypeSignatureFromArray(out)
 
-			if typeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-				errStr += fmt.Sprintf("expr[%v] out[%v] = %+v\n\n", i, y, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(typeSig.Meta)))
-			} else {
-				errStr += fmt.Sprintf("expr[%v] out[%v] = %+v\n", i, y, typeSig)
+	// 		if typeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+	// 			errStr += fmt.Sprintf("expr[%v] out[%v] = %+v\n\n", i, y, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(typeSig.Meta)))
+	// 		} else {
+	// 			errStr += fmt.Sprintf("expr[%v] out[%v] = %+v\n", i, y, typeSig)
 
-			}
-		}
-	}
-	panic(errStr)
+	// 		}
+	// 	}
+	// }
+	// panic(errStr)
 }
 
 // ProcessTypedOperator gets the proper typed operator for the expression.
@@ -710,7 +710,10 @@ func ProcessExpressionArguments(prgrm *ast.CXProgram, symbols *[]map[string]*ast
 			ProcessOperatorExpression(prgrm, expr)
 		}
 
-		if arg != nil && arg.PreviouslyDeclared {
+		// TODO: Check how to remove PreviouslyDeclared field
+		// maybe its only used by temp variables
+		// TempVar always have PreviouslyDeclared=true
+		if arg != nil && arg.PreviouslyDeclared || IsTempVar(typeSignature.Name) {
 			UpdateSymbolsTable(prgrm, symbols, typeSignatureIdx, offset, false)
 		} else {
 			UpdateSymbolsTable(prgrm, symbols, typeSignatureIdx, offset, true)
@@ -1489,7 +1492,7 @@ func UpdateSymbolsTable(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXTypeS
 	} else {
 		// panic("type is not cx arg deprecate\n\n")
 		// TODO: temporary return only
-		return
+		sym = nil
 	}
 
 	if typeSig.Name != "" {
@@ -1498,9 +1501,13 @@ func UpdateSymbolsTable(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXTypeS
 			panic(err)
 		}
 
-		if !sym.IsLocalDeclaration {
-			GetGlobalSymbol(prgrm, symbols, typeSigPkg, typeSig.Name)
-		}
+		// TODO: find a way to know if it is global or
+		// not a global for type signature
+		// or maybe we dont have to put condition here.
+		// So it will just add to symbols if it is found in globals.
+		// if (sym != nil && !sym.IsLocalDeclaration) || sym == nil {
+		GetGlobalSymbol(prgrm, symbols, typeSigPkg, typeSig.Name)
+		// }
 
 		lastIdx := len(*symbols) - 1
 		fullName := typeSigPkg.Name + "." + typeSig.Name
@@ -1511,7 +1518,8 @@ func UpdateSymbolsTable(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXTypeS
 
 		// then it wasn't found in any scope
 		if err != nil && shouldExist {
-			println(ast.CompilationError(sym.ArgDetails.FileName, sym.ArgDetails.FileLine), "identifier '"+typeSig.Name+"' does not exist")
+			// println(ast.CompilationError(sym.ArgDetails.FileName, sym.ArgDetails.FileLine), "identifier '"+typeSig.Name+"' does not exist")
+			println(ast.CompilationError("", 0), "identifier '"+typeSig.Name+"' does not exist")
 		}
 
 		// then it was already added in the innermost scope
@@ -1521,14 +1529,18 @@ func UpdateSymbolsTable(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXTypeS
 
 		// then it is a new declaration
 		if !shouldExist && !found {
-			// *symbols = append(*symbols, make(map[string]*ast.CXArgument))
-			// lastIdx = len(*symbols) - 1
-
 			// then it was declared in an outer scope
-			sym.Offset = *offset
+			// sym.Offset = *offset
 
 			(*symbols)[lastIdx][fullName] = typeSig
-			*offset += ast.GetArgSize(prgrm, sym)
+
+			if sym != nil {
+				sym.Offset = *offset
+				*offset += ast.GetArgSize(prgrm, sym)
+			} else {
+				typeSig.Offset = *offset
+				*offset += typeSig.GetSize(prgrm)
+			}
 		}
 	}
 }
