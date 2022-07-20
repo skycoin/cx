@@ -334,7 +334,7 @@ parameter_declaration:
                 {
 			$2.Name = $1.Name
 			$2.Package = $1.Package
-			$2.IsLocalDeclaration = true
+
 			$$ = $2
                 }
                 ;

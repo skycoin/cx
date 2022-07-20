@@ -1363,7 +1363,7 @@ yydefault:
 		{
 			yyDollar[2].argument.Name = yyDollar[1].argument.Name
 			yyDollar[2].argument.Package = yyDollar[1].argument.Package
-			yyDollar[2].argument.IsLocalDeclaration = true
+
 			yyVAL.argument = yyDollar[2].argument
 		}
 	case 31:

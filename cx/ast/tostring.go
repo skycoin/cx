@@ -727,31 +727,31 @@ func GetFormattedType(prgrm *CXProgram, arg *CXArgument) string {
 
 				// If it's a function, let's add the inputs and outputs.
 				if elt.Type == types.FUNC {
-					if elt.IsLocalDeclaration {
-						// Then it's a local variable, which can be assigned to a
-						// lambda function, for example.
-						typ += formatParameters(prgrm, prgrm.ConvertIndexArgsToPointerArgs(elt.Inputs))
-						typ += formatParameters(prgrm, prgrm.ConvertIndexArgsToPointerArgs(elt.Outputs))
-					} else {
-						// Then it refers to a named function defined in a package.
-						pkg, err := prgrm.GetPackageFromArray(arg.Package)
-						if err != nil {
-							println(CompilationError(elt.ArgDetails.FileName, elt.ArgDetails.FileLine), err.Error())
-							os.Exit(constants.CX_COMPILATION_ERROR)
-						}
-
-						fn, err := pkg.GetFunction(prgrm, elt.Name)
-						if err == nil {
-							// println(CompilationError(elt.FileName, elt.FileLine), err.ProgramError())
-							// os.Exit(CX_COMPILATION_ERROR)
-							// Adding list of inputs and outputs types.
-							inputCXArgs := prgrm.ConvertIndexTypeSignaturesToPointerArgs(fn.GetInputs(prgrm))
-							typ += formatParameters(prgrm, inputCXArgs)
-
-							outputCXArgs := prgrm.ConvertIndexTypeSignaturesToPointerArgs(fn.GetOutputs(prgrm))
-							typ += formatParameters(prgrm, outputCXArgs)
-						}
+					// if elt.IsLocalDeclaration {
+					// Then it's a local variable, which can be assigned to a
+					// lambda function, for example.
+					// typ += formatParameters(prgrm, prgrm.ConvertIndexArgsToPointerArgs(elt.Inputs))
+					// typ += formatParameters(prgrm, prgrm.ConvertIndexArgsToPointerArgs(elt.Outputs))
+					// } else {
+					// Then it refers to a named function defined in a package.
+					pkg, err := prgrm.GetPackageFromArray(arg.Package)
+					if err != nil {
+						println(CompilationError(elt.ArgDetails.FileName, elt.ArgDetails.FileLine), err.Error())
+						os.Exit(constants.CX_COMPILATION_ERROR)
 					}
+
+					fn, err := pkg.GetFunction(prgrm, elt.Name)
+					if err == nil {
+						// println(CompilationError(elt.FileName, elt.FileLine), err.ProgramError())
+						// os.Exit(CX_COMPILATION_ERROR)
+						// Adding list of inputs and outputs types.
+						inputCXArgs := prgrm.ConvertIndexTypeSignaturesToPointerArgs(fn.GetInputs(prgrm))
+						typ += formatParameters(prgrm, inputCXArgs)
+
+						outputCXArgs := prgrm.ConvertIndexTypeSignaturesToPointerArgs(fn.GetOutputs(prgrm))
+						typ += formatParameters(prgrm, outputCXArgs)
+					}
+					// }
 				}
 			}
 		}

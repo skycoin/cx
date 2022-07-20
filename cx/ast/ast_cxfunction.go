@@ -22,6 +22,8 @@ type CXFunction struct {
 	Outputs     *CXStruct      // Output parameters from the function
 	Expressions []CXExpression // Expressions, including control flow statements, in the function
 
+	LocalVariables []string // contains the name of its local variables
+
 	//TODO: Better Comment for this
 	LineCount int // number of expressions, pre-computed for performance
 
@@ -68,6 +70,7 @@ func MakeFunction(name string, fileName string, fileLine int) *CXFunction {
 		Inputs: &CXStruct{
 			Name: name + "_Input",
 		},
+		LocalVariables: []string{},
 	}
 }
 
@@ -302,6 +305,22 @@ func (fn *CXFunction) RemoveExpression(line int) {
 			fn.Expressions = append(fn.Expressions[:line], fn.Expressions[line+1:]...)
 		}
 	}
+}
+
+func (fn *CXFunction) AddLocalVariableName(name string) error {
+	fn.LocalVariables = append(fn.LocalVariables, name)
+
+	return nil
+}
+
+func (fn *CXFunction) IsLocalVariable(name string) bool {
+	for _, localVar := range fn.LocalVariables {
+		if name == localVar {
+			return true
+		}
+	}
+
+	return false
 }
 
 // ----------------------------------------------------------------

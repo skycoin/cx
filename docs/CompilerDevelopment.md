@@ -84,7 +84,6 @@ The atomic unit of data in a program is the [CXArgument](https://github.com/skyc
 * StructType - a CXStruct representing the custom type this variable might be (if struct).
 * Package - the CXPackage this CXArgument resides in.
 * IsSlice, IsStruct - name says it all.
-* IsLocalDeclaration - is this CXArgument bounded in lifetime by scope (as opposed to being a global variable)?
 * IsShortDeclaration - is this CXArgument the result of a `CASSIGN` operation (`:=`)?
 * IsInnerReference - is this CXArgument a reference to the field or element of another CXArgument? (`&array[0]` or `&struct.field`)
 * PreviouslyDeclared - used by compiler to check if this variable has been declared yet or not, or if there are duplicate declarations.

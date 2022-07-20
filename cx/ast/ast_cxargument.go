@@ -133,7 +133,6 @@ type CXArgument struct {
 	StructType         *CXStruct
 	IsSlice            bool
 	IsStruct           bool
-	IsLocalDeclaration bool
 	IsInnerReference   bool // for example: &slice[0] or &struct.field
 	PreviouslyDeclared bool
 }
@@ -161,7 +160,6 @@ All "Is" can be removed
 - but use int lookup
 	IsSlice               bool
 	IsStruct              bool
-	IsLocalDeclaration    bool
 	IsInnerReference      bool // for example: &slice[0] or &struct.field
 
 */
@@ -340,7 +338,7 @@ func Slice(typeCode types.Code) *CXArgument {
 // Param ...
 func Param(typeCode types.Code) *CXArgument {
 	arg := MakeArgument("", "", -1).SetType(typeCode)
-	arg.IsLocalDeclaration = true
+	// arg.IsLocalDeclaration = true
 	return arg
 }
 

@@ -386,7 +386,15 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 		return nil
 	}
 
-	declarationSpecifiers.IsLocalDeclaration = true
+	currFn, err := prgrm.GetCurrentFunction()
+	if err != nil {
+		// TODO: improve error handling
+		panic("error getting current function")
+	}
+	err = currFn.AddLocalVariableName(declarationSpecifiers.Name)
+	if err != nil {
+		panic("error adding local variable")
+	}
 
 	pkg, err := prgrm.GetCurrentPackage()
 	if err != nil {

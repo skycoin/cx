@@ -38,6 +38,7 @@ func FunctionHeader(prgrm *ast.CXProgram, fnName string, receiver []*ast.CXArgum
 				fn := ast.MakeFunction(fnName, CurrentFile, LineNo)
 				fn.AddInput(prgrm, receiver[0])
 				_, fnIdx := pkg.AddFunction(prgrm, fn)
+				pkg.CurrentFunction = fnIdx
 
 				return fnIdx
 			}
@@ -52,6 +53,7 @@ func FunctionHeader(prgrm *ast.CXProgram, fnName string, receiver []*ast.CXArgum
 			} else {
 				fn := ast.MakeFunction(fnName, CurrentFile, LineNo)
 				_, fnIdx := pkg.AddFunction(prgrm, fn)
+				pkg.CurrentFunction = fnIdx
 
 				return fnIdx
 			}
@@ -85,10 +87,12 @@ func FunctionAddParameters(prgrm *ast.CXProgram, fnIdx ast.CXFunctionIndex, inpu
 	fn.Outputs = nil
 
 	for _, inp := range inputs {
+		fn.AddLocalVariableName(inp.Name)
 		fn.AddInput(prgrm, inp)
 	}
 
 	for _, out := range outputs {
+		fn.AddLocalVariableName(out.Name)
 		fn.AddOutput(prgrm, out)
 	}
 }
@@ -887,24 +891,26 @@ func CheckRedeclared(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXTypeSign
 // 				   scopes, local being function constrained variables,
 // 				   and global being global variables.
 //  argIdx - index from the main CXArg array.
+// TODO: Deprecate.
+// This wont be needed because of the removal of IsLocalDeclaration.
 func ProcessLocalDeclaration(prgrm *ast.CXProgram, symbolsScope *map[string]bool, typeSigIdx ast.CXTypeSignatureIndex) {
-	typeSig := prgrm.GetCXTypeSignatureFromArray(typeSigIdx)
-	var arg *ast.CXArgument
-	if typeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-		arg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(typeSig.Meta))
-	} else {
-		// panic("type is not cx arg deprecate\n\n")
-		return
-	}
-	typeSigPkg, err := prgrm.GetPackageFromArray(typeSig.Package)
-	if err != nil {
-		panic(err)
-	}
+	// typeSig := prgrm.GetCXTypeSignatureFromArray(typeSigIdx)
+	// var arg *ast.CXArgument
+	// if typeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+	// 	arg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(typeSig.Meta))
+	// } else {
+	// 	// panic("type is not cx arg deprecate\n\n")
+	// 	return
+	// }
+	// typeSigPkg, err := prgrm.GetPackageFromArray(typeSig.Package)
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-	if arg.IsLocalDeclaration {
-		(*symbolsScope)[typeSigPkg.Name+"."+typeSig.Name] = true
-	}
-	arg.IsLocalDeclaration = (*symbolsScope)[typeSigPkg.Name+"."+typeSig.Name]
+	// if arg.IsLocalDeclaration {
+	// 	(*symbolsScope)[typeSigPkg.Name+"."+typeSig.Name] = true
+	// }
+	// arg.IsLocalDeclaration = (*symbolsScope)[typeSigPkg.Name+"."+typeSig.Name]
 }
 
 // ProcessGoTos sets the ThenLines value if the expression is a goto.
@@ -1501,13 +1507,14 @@ func UpdateSymbolsTable(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXTypeS
 			panic(err)
 		}
 
-		// TODO: find a way to know if it is global or
-		// not a global for type signature
-		// or maybe we dont have to put condition here.
-		// So it will just add to symbols if it is found in globals.
-		// if (sym != nil && !sym.IsLocalDeclaration) || sym == nil {
-		GetGlobalSymbol(prgrm, symbols, typeSigPkg, typeSig.Name)
-		// }
+		currFn, err := prgrm.GetCurrentFunction()
+		if err != nil {
+			panic("error getting current function")
+		}
+
+		if !currFn.IsLocalVariable(typeSig.Name) {
+			GetGlobalSymbol(prgrm, symbols, typeSigPkg, typeSig.Name)
+		}
 
 		lastIdx := len(*symbols) - 1
 		fullName := typeSigPkg.Name + "." + typeSig.Name
@@ -1757,13 +1764,6 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 // GiveOffset
 func GiveOffset(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXTypeSignature, typeSigIdx ast.CXTypeSignatureIndex, shouldExist bool) {
 	symTypeSig := prgrm.GetCXTypeSignatureFromArray(typeSigIdx)
-	var sym *ast.CXArgument = &ast.CXArgument{}
-	if symTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-		sym = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(symTypeSig.Meta))
-	} else {
-		// panic("type is not cx arg deprecate\n\n")
-		sym = nil
-	}
 
 	if symTypeSig.Name != "" {
 		symPkg, err := prgrm.GetPackageFromArray(symTypeSig.Package)
@@ -1771,7 +1771,13 @@ func GiveOffset(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXTypeSignature
 			panic(err)
 		}
 
-		if sym == nil || !sym.IsLocalDeclaration {
+		currFn, err := prgrm.GetCurrentFunction()
+		if err != nil {
+			// TODO: improve error handling
+			panic("error getting current function")
+		}
+
+		if !currFn.IsLocalVariable(symTypeSig.Name) {
 			GetGlobalSymbol(prgrm, symbols, symPkg, symTypeSig.Name)
 		}
 

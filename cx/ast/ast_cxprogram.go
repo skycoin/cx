@@ -144,15 +144,22 @@ func (cxprogram *CXProgram) AddFunctionInArray(fn *CXFunction) CXFunctionIndex {
 
 func (cxprogram *CXProgram) AddNativeFunctionInArray(fn *CXNativeFunction) CXFunctionIndex {
 	fnNative := &CXFunction{
-		Index:        len(cxprogram.CXFunctions),
-		AtomicOPCode: fn.AtomicOPCode,
-		Inputs:       &CXStruct{},
-		Outputs:      &CXStruct{},
+		Index:          len(cxprogram.CXFunctions),
+		AtomicOPCode:   fn.AtomicOPCode,
+		Inputs:         &CXStruct{},
+		Outputs:        &CXStruct{},
+		LocalVariables: []string{},
 	}
 
 	// Add inputs to cx arg array
 	for _, argIn := range fn.Inputs {
 		var newField *CXTypeSignature
+
+		err := fnNative.AddLocalVariableName(argIn.Name)
+		if err != nil {
+			// TODO: improve error handling
+			panic("error adding local variable name")
+		}
 
 		// if atomic type
 		if IsTypeAtomic(argIn) {
@@ -180,6 +187,12 @@ func (cxprogram *CXProgram) AddNativeFunctionInArray(fn *CXNativeFunction) CXFun
 	// Add outputs to cx arg array
 	for _, argOut := range fn.Outputs {
 		var newField *CXTypeSignature
+
+		err := fnNative.AddLocalVariableName(argOut.Name)
+		if err != nil {
+			// TODO: improve error handling
+			panic("error adding local variable name")
+		}
 
 		// if atomic type
 		if IsTypeAtomic(argOut) {
