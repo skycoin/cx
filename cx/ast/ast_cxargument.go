@@ -388,3 +388,10 @@ func MakeGlobal(name string, typeCode types.Code, fileName string, fileLine int)
 	globals.HeapOffset += size
 	return global
 }
+
+// ------------------------------------------------------------------------------------------
+//           Special functions to determine its type (atomic, array etomic, etc)
+
+func IsTypeAtomic(arg *CXArgument) bool {
+	return !arg.IsSlice && len(arg.Lengths) == 0 && arg.Type.IsPrimitive()
+}

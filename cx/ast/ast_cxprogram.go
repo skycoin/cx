@@ -155,7 +155,7 @@ func (cxprogram *CXProgram) AddNativeFunctionInArray(fn *CXNativeFunction) CXFun
 		var newField *CXTypeSignature
 
 		// if atomic type
-		if !argIn.IsSlice && len(argIn.Lengths) == 0 && argIn.Type.IsPrimitive() {
+		if IsTypeAtomic(argIn) {
 			newField = &CXTypeSignature{
 				Name:    argIn.Name,
 				Type:    TYPE_ATOMIC,
@@ -182,7 +182,7 @@ func (cxprogram *CXProgram) AddNativeFunctionInArray(fn *CXNativeFunction) CXFun
 		var newField *CXTypeSignature
 
 		// if atomic type
-		if !argOut.IsSlice && len(argOut.Lengths) == 0 && argOut.Type.IsPrimitive() {
+		if IsTypeAtomic(argOut) {
 			newField = &CXTypeSignature{
 				Name:    argOut.Name,
 				Type:    TYPE_ATOMIC,

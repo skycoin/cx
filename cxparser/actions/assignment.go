@@ -471,7 +471,7 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 		}
 
 		// if fromExpressionOutputArg type is atomic then change the type signature to type atomic
-		if !fromExpressionOutputArg.IsSlice && len(fromExpressionOutputArg.Lengths) == 0 && fromExpressionOutputArg.Type.IsPrimitive() {
+		if ast.IsTypeAtomic(fromExpressionOutputArg) {
 			toExpressionOutputTypeSig.Type = ast.TYPE_ATOMIC
 			toExpressionOutputTypeSig.Meta = int(fromExpressionOutputArg.Type)
 			toExpressionOutputTypeSig.Offset = prgrm.CXArgs[toExpressionOutputIdx].Offset

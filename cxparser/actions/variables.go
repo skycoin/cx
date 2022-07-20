@@ -32,7 +32,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 	}
 	declaration_specifiers.Package = ast.CXPackageIndex(pkg.Index)
 
-	if !declaration_specifiers.IsSlice && len(declaration_specifiers.Lengths) == 0 && declaration_specifiers.Type.IsPrimitive() {
+	if ast.IsTypeAtomic(declaration_specifiers) {
 		DeclareGlobalInPackage_CXTYPESIGNATURE(prgrm, pkg, declarator, declaration_specifiers, initializer, doesInitialize)
 	} else {
 		DeclareGlobalInPackage_OLD(prgrm, pkg, declarator, declaration_specifiers, initializer, doesInitialize)

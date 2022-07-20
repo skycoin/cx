@@ -132,7 +132,7 @@ func (fn *CXFunction) AddInput(prgrm *CXProgram, param *CXArgument) *CXFunction 
 
 	var newField *CXTypeSignature
 	// if atomic type
-	if !param.IsSlice && len(param.Lengths) == 0 && param.Type.IsPrimitive() {
+	if IsTypeAtomic(param) {
 		newField = &CXTypeSignature{
 			Name:    param.Name,
 			Type:    TYPE_ATOMIC,
@@ -200,7 +200,7 @@ func (fn *CXFunction) AddOutput(prgrm *CXProgram, param *CXArgument) *CXFunction
 
 	var newField *CXTypeSignature
 	// if atomic type
-	if !param.IsSlice && len(param.Lengths) == 0 && param.Type.IsPrimitive() {
+	if IsTypeAtomic(param) {
 		newField = &CXTypeSignature{
 			Name:    param.Name,
 			Type:    TYPE_ATOMIC,

@@ -360,7 +360,7 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 			// If type sig arg is not nil, check if it is an atomic type.
 			// If an atomic type, convert cx type signature to type atomic/
 			if typeSigArg != nil {
-				if !typeSigArg.IsSlice && len(typeSigArg.Lengths) == 0 && typeSigArg.Type.IsPrimitive() {
+				if ast.IsTypeAtomic(typeSigArg) {
 					typeSig.Name = typeSigArg.Name
 					typeSig.Type = ast.TYPE_ATOMIC
 					typeSig.Meta = int(typeSigArg.Type)
@@ -645,7 +645,7 @@ func processTestExpression(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 			if expressionInputSecondTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 				expressionInputSecondArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionInputSecondTypeSig.Meta))
 				inp2Type = ast.GetFormattedType(prgrm, expressionInputSecondArg)
-			} else if expressionInputFirstTypeSig.Type == ast.TYPE_ATOMIC {
+			} else if expressionInputSecondTypeSig.Type == ast.TYPE_ATOMIC {
 				// panic("type is not cx argument deprecate\n\n")
 				inp2Type = types.Code(expressionInputSecondTypeSig.Meta).Name()
 			}

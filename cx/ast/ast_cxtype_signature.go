@@ -194,7 +194,7 @@ func GetCXTypeSignatureRepresentationOfCXArg_ForStructs(prgrm *CXProgram, cxArgu
 
 	fieldType := cxArgument.Type
 	// If atomic type. i.e. i8, i16, i32, f32, etc.
-	if !cxArgument.IsSlice && len(cxArgument.Lengths) == 0 && fieldType.IsPrimitive() {
+	if IsTypeAtomic(cxArgument) {
 		newCXTypeSignature.Type = TYPE_ATOMIC
 		newCXTypeSignature.Meta = int(fieldType)
 
