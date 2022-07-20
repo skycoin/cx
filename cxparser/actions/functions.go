@@ -138,7 +138,7 @@ func ProcessFunctionParameters(prgrm *ast.CXProgram, symbols *[]map[string]*ast.
 
 	for _, paramIdx := range params {
 		UpdateSymbolsTable(prgrm, symbols, paramIdx, offset, false)
-		GiveOffset(prgrm, symbols, paramIdx, false)
+		GiveOffset(prgrm, symbols, paramIdx)
 		SetFinalSize(prgrm, symbols, paramIdx)
 
 		AddPointer(prgrm, fn, paramIdx)
@@ -710,12 +710,7 @@ func ProcessExpressionArguments(prgrm *ast.CXProgram, symbols *[]map[string]*ast
 			UpdateSymbolsTable(prgrm, symbols, typeSignatureIdx, offset, true)
 		}
 
-		if isInput {
-			GiveOffset(prgrm, symbols, typeSignatureIdx, true)
-		} else {
-			GiveOffset(prgrm, symbols, typeSignatureIdx, false)
-		}
-
+		GiveOffset(prgrm, symbols, typeSignatureIdx)
 		ProcessSlice(prgrm, argIdx)
 
 		if arg != nil {
@@ -726,7 +721,7 @@ func ProcessExpressionArguments(prgrm *ast.CXProgram, symbols *[]map[string]*ast
 				})
 
 				UpdateSymbolsTable(prgrm, symbols, typeSigIdx, offset, true)
-				GiveOffset(prgrm, symbols, typeSigIdx, true)
+				GiveOffset(prgrm, symbols, typeSigIdx)
 				checkIndexType(prgrm, idxIdx)
 			}
 			for _, fldIdx := range arg.Fields {
@@ -738,7 +733,7 @@ func ProcessExpressionArguments(prgrm *ast.CXProgram, symbols *[]map[string]*ast
 					})
 
 					UpdateSymbolsTable(prgrm, symbols, typeSigIdx, offset, true)
-					GiveOffset(prgrm, symbols, typeSigIdx, true)
+					GiveOffset(prgrm, symbols, typeSigIdx)
 				}
 			}
 		}
@@ -1718,7 +1713,7 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 }
 
 // GiveOffset
-func GiveOffset(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXTypeSignature, typeSigIdx ast.CXTypeSignatureIndex, shouldExist bool) {
+func GiveOffset(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXTypeSignature, typeSigIdx ast.CXTypeSignatureIndex) {
 	symTypeSig := prgrm.GetCXTypeSignatureFromArray(typeSigIdx)
 
 	if symTypeSig.Name != "" {
