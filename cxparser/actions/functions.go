@@ -129,14 +129,11 @@ func CheckUndValidTypes(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 // 			  the scoping of the  CXArguments. Each element in the slice
 // 			  corresponds to a different scope. The innermost scope is
 // 			  the last element of the slice.
-//  symbolsScope - only handles the difference between local and global
-// 				   scopes, local being function constrained variables,
-// 				   and global being global variables.
 //  offset - offset to use by statements (excluding inputs, outputs
 // 			 and receiver).
 //  fnIdx - the index of the function in the main CXFunction array.
 //  params - function parameters to be processed.
-func ProcessFunctionParameters(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXTypeSignature, symbolsScope *map[string]bool, offset *types.Pointer, fnIdx ast.CXFunctionIndex, params []ast.CXTypeSignatureIndex) {
+func ProcessFunctionParameters(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXTypeSignature, offset *types.Pointer, fnIdx ast.CXFunctionIndex, params []ast.CXTypeSignatureIndex) {
 	fn := prgrm.GetFunctionFromArray(fnIdx)
 
 	for _, paramIdx := range params {
@@ -180,18 +177,14 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fnIdx ast.CXFunctionIndex, inputs
 	symbols = &tmp
 	*symbols = append(*symbols, make(map[string]*ast.CXTypeSignature))
 
-	// symbolsScope only handles the difference between local and global scopes
-	// local being function constrained variables, and global being global variables.
-	var symbolsScope map[string]bool = make(map[string]bool)
-
 	fn := prgrm.GetFunctionFromArray(fnIdx)
 
 	FunctionAddParameters(prgrm, fnIdx, inputs, outputs)
 	ProcessGoTos(prgrm, exprs)
 	AddExprsToFunction(prgrm, fnIdx, exprs)
 
-	ProcessFunctionParameters(prgrm, symbols, &symbolsScope, &offset, fnIdx, fn.GetInputs(prgrm))
-	ProcessFunctionParameters(prgrm, symbols, &symbolsScope, &offset, fnIdx, fn.GetOutputs(prgrm))
+	ProcessFunctionParameters(prgrm, symbols, &offset, fnIdx, fn.GetInputs(prgrm))
+	ProcessFunctionParameters(prgrm, symbols, &offset, fnIdx, fn.GetOutputs(prgrm))
 
 	for i, expr := range fn.Expressions {
 		if expr.Type == ast.CX_LINE {
@@ -208,8 +201,8 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fnIdx ast.CXFunctionIndex, inputs
 
 		ProcessMethodCall(prgrm, &expr, symbols)
 
-		ProcessExpressionArguments(prgrm, symbols, &symbolsScope, &offset, fnIdx, exprAtomicOp.GetInputs(prgrm), &expr, true)
-		ProcessExpressionArguments(prgrm, symbols, &symbolsScope, &offset, fnIdx, exprAtomicOp.GetOutputs(prgrm), &expr, false)
+		ProcessExpressionArguments(prgrm, symbols, &offset, fnIdx, exprAtomicOp.GetInputs(prgrm), &expr, true)
+		ProcessExpressionArguments(prgrm, symbols, &offset, fnIdx, exprAtomicOp.GetOutputs(prgrm), &expr, false)
 
 		ProcessPointerStructs(prgrm, &expr)
 		ProcessTempVariable(prgrm, &expr)
@@ -679,16 +672,13 @@ func checkIndexType(prgrm *ast.CXProgram, idxIdx ast.CXArgumentIndex) {
 // 			  the scoping of the  CXArguments. Each element in the slice
 // 			  corresponds to a different scope. The innermost scope is
 // 			  the last element of the slice.
-//  symbolsScope - only handles the difference between local and global
-// 				   scopes, local being function constrained variables,
-// 				   and global being global variables.
 //  offset - offset to use by statements (excluding inputs, outputs
 // 			 and receiver).
 //  fnIdx - the index of the function in the main CXFunction array.
 //  args - the expression arguments.
 //  expr - the expression.
 //  isInput - true if args are input arguments, false if they are output args.
-func ProcessExpressionArguments(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXTypeSignature, symbolsScope *map[string]bool, offset *types.Pointer, fnIdx ast.CXFunctionIndex, args []ast.CXTypeSignatureIndex, expr *ast.CXExpression, isInput bool) {
+func ProcessExpressionArguments(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXTypeSignature, offset *types.Pointer, fnIdx ast.CXFunctionIndex, args []ast.CXTypeSignatureIndex, expr *ast.CXExpression, isInput bool) {
 	fn := prgrm.GetFunctionFromArray(fnIdx)
 
 	for _, typeSignatureIdx := range args {
