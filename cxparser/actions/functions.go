@@ -140,8 +140,6 @@ func ProcessFunctionParameters(prgrm *ast.CXProgram, symbols *[]map[string]*ast.
 	fn := prgrm.GetFunctionFromArray(fnIdx)
 
 	for _, paramIdx := range params {
-		ProcessLocalDeclaration(prgrm, symbolsScope, paramIdx)
-
 		UpdateSymbolsTable(prgrm, symbols, paramIdx, offset, false)
 		GiveOffset(prgrm, symbols, paramIdx, false)
 		SetFinalSize(prgrm, symbols, paramIdx)
@@ -704,7 +702,6 @@ func ProcessExpressionArguments(prgrm *ast.CXProgram, symbols *[]map[string]*ast
 		}
 
 		arg := prgrm.GetCXArgFromArray(argIdx)
-		ProcessLocalDeclaration(prgrm, symbolsScope, typeSignatureIdx)
 
 		if !isInput {
 			CheckRedeclared(prgrm, symbols, expr, typeSignatureIdx)
@@ -880,37 +877,6 @@ func CheckRedeclared(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXTypeSign
 			println(ast.CompilationError(arg.ArgDetails.FileName, arg.ArgDetails.FileLine), fmt.Sprintf("'%s' redeclared", typeSig.Name))
 		}
 	}
-}
-
-// ProcessLocalDeclaration sets symbolsScope to true if the arg is a
-// local declaration.
-//
-// Input arguments description:
-// 	prgrm - a CXProgram that contains all the data and arrays of the program.
-//  symbolsScope - only handles the difference between local and global
-// 				   scopes, local being function constrained variables,
-// 				   and global being global variables.
-//  argIdx - index from the main CXArg array.
-// TODO: Deprecate.
-// This wont be needed because of the removal of IsLocalDeclaration.
-func ProcessLocalDeclaration(prgrm *ast.CXProgram, symbolsScope *map[string]bool, typeSigIdx ast.CXTypeSignatureIndex) {
-	// typeSig := prgrm.GetCXTypeSignatureFromArray(typeSigIdx)
-	// var arg *ast.CXArgument
-	// if typeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-	// 	arg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(typeSig.Meta))
-	// } else {
-	// 	// panic("type is not cx arg deprecate\n\n")
-	// 	return
-	// }
-	// typeSigPkg, err := prgrm.GetPackageFromArray(typeSig.Package)
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	// if arg.IsLocalDeclaration {
-	// 	(*symbolsScope)[typeSigPkg.Name+"."+typeSig.Name] = true
-	// }
-	// arg.IsLocalDeclaration = (*symbolsScope)[typeSigPkg.Name+"."+typeSig.Name]
 }
 
 // ProcessGoTos sets the ThenLines value if the expression is a goto.
