@@ -33,7 +33,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 	declaration_specifiers.Package = ast.CXPackageIndex(pkg.Index)
 
 	if ast.IsTypeAtomic(declaration_specifiers) {
-		DeclareGlobalInPackage_CXTYPESIGNATURE(prgrm, pkg, declarator, declaration_specifiers, initializer, doesInitialize)
+		DeclareGlobalInPackage_TYPE_ATOMIC(prgrm, pkg, declarator, declaration_specifiers, initializer, doesInitialize)
 	} else {
 		DeclareGlobalInPackage_OLD(prgrm, pkg, declarator, declaration_specifiers, initializer, doesInitialize)
 	}
@@ -231,7 +231,7 @@ func DeclareGlobalInPackage_OLD(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 	}
 }
 
-func DeclareGlobalInPackage_CXTYPESIGNATURE(prgrm *ast.CXProgram, pkg *ast.CXPackage,
+func DeclareGlobalInPackage_TYPE_ATOMIC(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 	declarator *ast.CXArgument, declaration_specifiers *ast.CXArgument,
 	initializer []ast.CXExpression, doesInitialize bool) {
 	// Treat the name a bit different whether it's defined already or not.
@@ -310,7 +310,7 @@ func DeclareGlobalInPackage_CXTYPESIGNATURE(prgrm *ast.CXProgram, pkg *ast.CXPac
 			glblArg = WritePrimary(prgrm, declaration_specifiers.Type, make([]byte, declaration_specifiers.TotalSize), false)
 		}
 
-		var typeSignature *ast.CXTypeSignature
+		var typeSignature *ast.CXTypeSignature = &ast.CXTypeSignature{}
 		typeSignature.Name = declarator.Name
 		typeSignature.Offset = glblArg.Offset
 		typeSignature.Package = ast.CXPackageIndex(pkg.Index)
@@ -391,11 +391,20 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 		// TODO: improve error handling
 		panic("error getting current function")
 	}
-	err = currFn.AddLocalVariableName(declarationSpecifiers.Name)
+	err = currFn.AddLocalVariableName(declarator.Name)
 	if err != nil {
 		panic("error adding local variable")
 	}
 
+	if ast.IsTypeAtomic(declarationSpecifiers) {
+		return DeclareLocal_TYPE_ATOMIC(prgrm, declarator, declarationSpecifiers, initializer, doesInitialize)
+	} else {
+		return DeclareLocal_OLD(prgrm, declarator, declarationSpecifiers, initializer, doesInitialize)
+	}
+}
+
+func DeclareLocal_OLD(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationSpecifiers *ast.CXArgument,
+	initializer []ast.CXExpression, doesInitialize bool) []ast.CXExpression {
 	pkg, err := prgrm.GetCurrentPackage()
 	if err != nil {
 		panic(err)
@@ -501,6 +510,90 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 		typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(declSpecIdx))
 		typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
 		prgrm.CXAtomicOps[cxAtomicOpIdx].AddOutput(prgrm, typeSigIdx)
+
+		return []ast.CXExpression{*exprCXLine, *expr}
+	}
+}
+
+func DeclareLocal_TYPE_ATOMIC(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationSpecifiers *ast.CXArgument,
+	initializer []ast.CXExpression, doesInitialize bool) []ast.CXExpression {
+	pkg, err := prgrm.GetCurrentPackage()
+	if err != nil {
+		panic(err)
+	}
+
+	declCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
+	// Declaration expression to handle the inline initialization.
+	// For example, `var foo i32 = 11` needs to be divided into two expressions:
+	// one that declares `foo`, and another that assigns 11 to `foo`
+	decl := ast.MakeAtomicOperatorExpression(prgrm, nil)
+	expressionIdx := decl.Index
+	prgrm.CXAtomicOps[expressionIdx].Package = ast.CXPackageIndex(pkg.Index)
+
+	var typeSignature *ast.CXTypeSignature = &ast.CXTypeSignature{}
+	typeSignature.Name = declarator.Name
+	typeSignature.Offset = 0
+	typeSignature.Package = ast.CXPackageIndex(pkg.Index)
+	typeSignature.Type = ast.TYPE_ATOMIC
+	typeSignature.Meta = int(declarationSpecifiers.Type)
+	typeSignatureIdx := prgrm.AddCXTypeSignatureInArray(typeSignature)
+
+	prgrm.CXAtomicOps[expressionIdx].AddOutput(prgrm, typeSignatureIdx)
+
+	// Checking if something is supposed to be initialized
+	// and if `initializer` actually contains something.
+	// If `initializer` is `nil`, this means that an expression
+	// equivalent to nil was used, such as `[]i32{}`.
+	if doesInitialize && initializer != nil {
+		initializerExpression, err := prgrm.GetCXAtomicOpFromExpressions(initializer, len(initializer)-1)
+		if err != nil {
+			panic(err)
+		}
+		initializerExpressionOperator := prgrm.GetFunctionFromArray(initializerExpression.Operator)
+		// THEN it's a literal, e.g. var foo i32 = 10;
+		// ELSE it's an expression with an operator
+		if initializerExpressionOperator == nil {
+			exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
+
+			// we need to create an expression that links the initializer expressions
+			// with the declared variable
+			expr := ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_IDENTITY])
+			cxExprAtomicOpIdx := expr.Index
+			prgrm.CXAtomicOps[cxExprAtomicOpIdx].Package = ast.CXPackageIndex(pkg.Index)
+
+			prgrm.CXAtomicOps[cxExprAtomicOpIdx].AddOutput(prgrm, typeSignatureIdx)
+			prgrm.CXAtomicOps[cxExprAtomicOpIdx].AddInput(prgrm, initializerExpression.GetOutputs(prgrm)[0])
+
+			initializer[len(initializer)-1] = *exprCXLine
+			initializer = append(initializer, *expr)
+
+			return append([]ast.CXExpression{*declCXLine, *decl}, initializer...)
+		} else {
+			expr := initializer[len(initializer)-1]
+			cxExprAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
+			if err != nil {
+				panic(err)
+			}
+
+			// THEN the expression has outputs created from the result of
+			// handling a dot notation initializer, and it needs to be replaced
+			// ELSE we simply add it using `AddOutput`
+			if len(cxExprAtomicOp.GetOutputs(prgrm)) > 0 {
+				cxExprAtomicOp.Outputs.Fields = nil
+			}
+
+			cxExprAtomicOp.AddOutput(prgrm, typeSignatureIdx)
+
+			return append([]ast.CXExpression{*declCXLine, *decl}, initializer...)
+		}
+	} else {
+		exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
+		// There is no initialization.
+		expr := ast.MakeAtomicOperatorExpression(prgrm, nil)
+		cxAtomicOpIdx := expr.Index
+		prgrm.CXAtomicOps[cxAtomicOpIdx].Package = ast.CXPackageIndex(pkg.Index)
+
+		prgrm.CXAtomicOps[cxAtomicOpIdx].AddOutput(prgrm, typeSignatureIdx)
 
 		return []ast.CXExpression{*exprCXLine, *expr}
 	}

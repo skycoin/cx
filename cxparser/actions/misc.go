@@ -256,16 +256,18 @@ func IsAllArgsBasicTypes(prgrm *ast.CXProgram, expr *ast.CXExpression) bool {
 	for _, inputIdx := range expression.GetInputs(prgrm) {
 		input := prgrm.GetCXTypeSignatureFromArray(inputIdx)
 
+		var inpType types.Code
+
 		var inp *ast.CXArgument = &ast.CXArgument{}
 		if input.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			inp = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(input.Meta))
-		} else {
-			panic("type is not type cx argument deprecate\n\n")
-		}
 
-		inpType := inp.Type
-		if inp.Type == types.POINTER {
-			inpType = inp.PointerTargetType
+			inpType = inp.Type
+			if inp.Type == types.POINTER {
+				inpType = inp.PointerTargetType
+			}
+		} else if input.Type == ast.TYPE_ATOMIC {
+			inpType = types.Code(input.Meta)
 		}
 
 		// TODO: Check why STR is considered as basic type.

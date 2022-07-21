@@ -223,32 +223,36 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fnIdx ast.CXFunctionIndex, inputs
 	fn.LineCount = len(fn.Expressions)
 	fn.Size = offset
 
-	// errStr := "\n"
-	// for i, _ := range exprs {
-	// 	expr, _ := prgrm.GetCXAtomicOpFromExpressions(exprs, i)
+	// if fn.Name == "addThis" {
+	// 	errStr := "\n"
+	// 	for i := range exprs {
+	// 		expr, _ := prgrm.GetCXAtomicOpFromExpressions(exprs, i)
 
-	// 	for x, inp := range expr.GetInputs(prgrm) {
-	// 		typeSig := prgrm.GetCXTypeSignatureFromArray(inp)
-	// 		if typeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-	// 			errStr += fmt.Sprintf("expr[%v] inp[%v] = %+v\n\n", i, x, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(typeSig.Meta)))
-	// 		} else {
-	// 			errStr += fmt.Sprintf("expr[%v] inp[%v] = %+v\n", i, x, typeSig)
-	// 		}
-
-	// 	}
-
-	// 	for y, out := range expr.GetOutputs(prgrm) {
-	// 		typeSig := prgrm.GetCXTypeSignatureFromArray(out)
-
-	// 		if typeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-	// 			errStr += fmt.Sprintf("expr[%v] out[%v] = %+v\n\n", i, y, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(typeSig.Meta)))
-	// 		} else {
-	// 			errStr += fmt.Sprintf("expr[%v] out[%v] = %+v\n", i, y, typeSig)
+	// 		for x, inp := range expr.GetInputs(prgrm) {
+	// 			errStr += fmt.Sprintf("operator=%v  ", expr.Operator)
+	// 			typeSig := prgrm.GetCXTypeSignatureFromArray(inp)
+	// 			if typeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+	// 				errStr += fmt.Sprintf("expr[%v] inp[%v] = %+v\n\n", i, x, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(typeSig.Meta)))
+	// 			} else {
+	// 				errStr += fmt.Sprintf("expr[%v] inp[%v] = %+v\n", i, x, typeSig)
+	// 			}
 
 	// 		}
+
+	// 		for y, out := range expr.GetOutputs(prgrm) {
+	// 			errStr += fmt.Sprintf("operator=%v  ", expr.Operator)
+	// 			typeSig := prgrm.GetCXTypeSignatureFromArray(out)
+
+	// 			if typeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+	// 				errStr += fmt.Sprintf("expr[%v] out[%v] = %+v\n\n", i, y, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(typeSig.Meta)))
+	// 			} else {
+	// 				errStr += fmt.Sprintf("expr[%v] out[%v] = %+v\n", i, y, typeSig)
+
+	// 			}
+	// 		}
 	// 	}
+	// 	panic(errStr)
 	// }
-	// panic(errStr)
 }
 
 // ProcessTypedOperator gets the proper typed operator for the expression.
@@ -465,39 +469,32 @@ func checkSameNativeType(prgrm *ast.CXProgram, expr *ast.CXExpression) error {
 		return errors.New("cannot perform arithmetic without operands")
 	}
 
-	expressionInputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetInputs(prgrm)[0])
-	var expressionInputArg *ast.CXArgument = &ast.CXArgument{}
-	if expressionInputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-		expressionInputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionInputTypeSig.Meta))
-	} else {
-		panic("type is not cx argument deprecate\n\n")
-	}
-
 	var typeCode types.Code
+	expressionInputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetInputs(prgrm)[0])
 	if expressionInputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		expressionInputArg := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionInputTypeSig.Meta))
+
 		typeCode = expressionInputArg.Type
+		if expressionInputArg.Type == types.POINTER {
+			typeCode = expressionInputArg.PointerTargetType
+		}
 	} else if expressionInputTypeSig.Type == ast.TYPE_ATOMIC {
 		typeCode = types.Code(expressionInputTypeSig.Meta)
-	}
-
-	if expressionInputArg.Type == types.POINTER {
-		typeCode = expressionInputArg.PointerTargetType
 	}
 
 	for _, inputIdx := range expression.GetInputs(prgrm) {
 		input := prgrm.GetCXTypeSignatureFromArray(inputIdx)
 
-		var inp *ast.CXArgument = &ast.CXArgument{}
+		var inpType types.Code
 		if input.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-			inp = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(input.Meta))
-		} else {
-			panic("type is not type cx argument deprecate\n\n")
-		}
+			inp := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(input.Meta))
 
-		inpType := inp.Type
-
-		if inp.Type == types.POINTER {
-			inpType = inp.PointerTargetType
+			inpType = inp.Type
+			if inp.Type == types.POINTER {
+				inpType = inp.PointerTargetType
+			}
+		} else if input.Type == ast.TYPE_ATOMIC {
+			inpType = types.Code(input.Meta)
 		}
 
 		if inpType != typeCode {
@@ -535,25 +532,28 @@ func ProcessOperatorExpression(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 			var outIdx ast.CXArgumentIndex
 			if output.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 				outIdx = ast.CXArgumentIndex(output.Meta)
-			} else {
-				panic("type is not type cx argument deprecate\n\n")
-			}
-			out := prgrm.GetCXArgFromArray(outIdx)
 
-			size := types.Pointer(1)
-			if !ast.IsComparisonOperator(expressionOperator.AtomicOPCode) {
-				expressionInputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetInputs(prgrm)[0])
+				out := prgrm.GetCXArgFromArray(outIdx)
 
-				var expressionInputArg *ast.CXArgument = &ast.CXArgument{}
-				if expressionInputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-					expressionInputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionInputTypeSig.Meta))
-				} else {
-					panic("type is not cx argument deprecate\n\n")
+				size := types.Pointer(1)
+				if !ast.IsComparisonOperator(expressionOperator.AtomicOPCode) {
+					expressionInputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetInputs(prgrm)[0])
+
+					var expressionInputArg *ast.CXArgument = &ast.CXArgument{}
+					if expressionInputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+						expressionInputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionInputTypeSig.Meta))
+
+						size = ast.GetArgSize(prgrm, expressionInputArg.GetAssignmentElement(prgrm))
+					} else if expressionInputTypeSig.Type == ast.TYPE_ATOMIC {
+						size = expressionInputTypeSig.GetSize(prgrm)
+					}
 				}
-				size = ast.GetArgSize(prgrm, expressionInputArg.GetAssignmentElement(prgrm))
+
+				out.Size = size
+				out.TotalSize = size
+			} else if output.Type == ast.TYPE_ATOMIC {
+				continue
 			}
-			out.Size = size
-			out.TotalSize = size
 		}
 	}
 }
@@ -704,7 +704,7 @@ func ProcessExpressionArguments(prgrm *ast.CXProgram, symbols *[]map[string]*ast
 		// TODO: Check how to remove PreviouslyDeclared field
 		// maybe its only used by temp variables
 		// TempVar always have PreviouslyDeclared=true
-		if arg != nil && arg.PreviouslyDeclared || IsTempVar(typeSignature.Name) {
+		if arg != nil && arg.PreviouslyDeclared || IsTempVar(typeSignature.Name) || fn.IsLocalVariable(typeSignature.Name) {
 			UpdateSymbolsTable(prgrm, symbols, typeSignatureIdx, offset, false)
 		} else {
 			UpdateSymbolsTable(prgrm, symbols, typeSignatureIdx, offset, true)

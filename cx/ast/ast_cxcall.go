@@ -69,10 +69,17 @@ func wipeDeclarationMemory(prgrm *CXProgram, expr *CXExpression) error {
 	newCall := &prgrm.CallStack[prgrm.CallCounter]
 	newFP := newCall.FramePointer
 	cxAtomicOpOutputs := cxAtomicOp.GetOutputs(prgrm)
-	cxAtomicOutput0 := prgrm.GetCXTypeSignatureFromArray(cxAtomicOpOutputs[0])
-	size := cxAtomicOutput0.GetSize(prgrm)
+	cxAtomicOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(cxAtomicOpOutputs[0])
+	size := cxAtomicOutputTypeSig.GetSize(prgrm)
+	var offset types.Pointer
+	if cxAtomicOutputTypeSig.Type == TYPE_CXARGUMENT_DEPRECATE {
+		offset = prgrm.CXArgs[cxAtomicOutputTypeSig.Meta].Offset
+	} else if cxAtomicOutputTypeSig.Type == TYPE_ATOMIC {
+		offset = cxAtomicOutputTypeSig.Offset
+	}
+
 	for c := types.Pointer(0); c < size; c++ {
-		prgrm.Memory[newFP+prgrm.CXArgs[cxAtomicOutput0.Meta].Offset+c] = 0
+		prgrm.Memory[newFP+offset+c] = 0
 	}
 
 	return nil

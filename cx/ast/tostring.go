@@ -179,14 +179,20 @@ func buildStrFunctions(prgrm *CXProgram, pkg *CXPackage, ast1 *string) {
 				cxAtomicOpOutputs := cxAtomicOp.GetOutputs(prgrm)
 				cxAtomicOpOutputTypeSignature := prgrm.GetCXTypeSignatureFromArray(cxAtomicOpOutputs[len(cxAtomicOpOutputs)-1])
 				if len(cxAtomicOpOutputs) > 0 {
-					out := prgrm.GetCXArgFromArray(CXArgumentIndex(cxAtomicOpOutputTypeSignature.Meta))
-
-					cxAtomicOpOutput0TypeSig := prgrm.GetCXTypeSignatureFromArray(cxAtomicOpOutputs[0])
-					*ast1 += fmt.Sprintf("\t\t\t%d.- Declaration%s: %s %s\n",
-						k,
-						lbl,
-						prgrm.GetCXArgFromArray(CXArgumentIndex(cxAtomicOpOutput0TypeSig.Meta)).Name,
-						GetFormattedType(prgrm, out))
+					if cxAtomicOpOutputTypeSignature.Type == TYPE_CXARGUMENT_DEPRECATE {
+						out := prgrm.GetCXArgFromArray(CXArgumentIndex(cxAtomicOpOutputTypeSignature.Meta))
+						*ast1 += fmt.Sprintf("\t\t\t%d.- Declaration%s: %s %s\n",
+							k,
+							lbl,
+							cxAtomicOpOutputTypeSignature.Name,
+							GetFormattedType(prgrm, out))
+					} else if cxAtomicOpOutputTypeSignature.Type == TYPE_ATOMIC {
+						*ast1 += fmt.Sprintf("\t\t\t%d.- Declaration%s: %s %s\n",
+							k,
+							lbl,
+							cxAtomicOpOutputTypeSignature.Name,
+							types.Code(cxAtomicOpOutputTypeSignature.Meta).Name())
+					}
 				}
 			}
 		}
