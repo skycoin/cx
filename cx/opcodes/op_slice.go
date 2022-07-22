@@ -36,21 +36,34 @@ func opSliceLen(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 
 //TODO: Rework
 func opSliceAppend(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	var inp0, inp1, out0 *ast.CXArgument
+	var inp0, out0 *ast.CXArgument
+	var inp0Type, inp1Type, out0Type types.Code
 	if inputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 		inp0 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inputs[0].TypeSignature.Meta))
+		inp0Type = inp0.Type
+		if inp0.Type == types.POINTER {
+			inp0Type = inp0.PointerTargetType
+		}
 	} else {
 		panic("type is not type cx argument deprecate\n\n")
 	}
 
 	if inputs[1].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-		inp1 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inputs[1].TypeSignature.Meta))
-	} else {
-		panic("type is not type cx argument deprecate\n\n")
+		inp1 := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inputs[1].TypeSignature.Meta))
+		inp1Type = inp1.Type
+		if inp1.Type == types.POINTER {
+			inp1Type = inp1.PointerTargetType
+		}
+	} else if inputs[1].TypeSignature.Type == ast.TYPE_ATOMIC {
+		inp1Type = types.Code(inputs[1].TypeSignature.Meta)
 	}
 
 	if outputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 		out0 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(outputs[0].TypeSignature.Meta))
+		out0Type = out0.Type
+		if out0.Type == types.POINTER {
+			out0Type = out0.PointerTargetType
+		}
 	} else {
 		panic("type is not type cx argument deprecate\n\n")
 	}
@@ -60,21 +73,6 @@ func opSliceAppend(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXV
 
 	eltInp0 := inp0.GetAssignmentElement(prgrm)
 	eltOut0 := out0.GetAssignmentElement(prgrm)
-
-	inp0Type := inp0.Type
-	inp1Type := inp1.Type
-	out0Type := out0.Type
-	if inp0.Type == types.POINTER {
-		inp0Type = inp0.PointerTargetType
-	}
-
-	if inp1.Type == types.POINTER {
-		inp1Type = inp1.PointerTargetType
-	}
-
-	if out0.Type == types.POINTER {
-		out0Type = out0.PointerTargetType
-	}
 
 	if inp0Type != inp1Type || inp0Type != out0Type || !eltInp0.IsSlice || !eltOut0.IsSlice {
 		panic(constants.CX_RUNTIME_INVALID_ARGUMENT)
@@ -94,15 +92,15 @@ func opSliceAppend(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXV
 
 	for i, input := range sliceInputs {
 		var inp *ast.CXArgument
+		var inpType types.Code
 		if input.TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			inp = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(input.TypeSignature.Meta))
-		} else {
-			panic("type is not type cx argument deprecate\n\n")
-		}
-
-		inpType := inp.Type
-		if inp.Type == types.POINTER {
-			inpType = inp.PointerTargetType
+			inpType = inp.Type
+			if inp.Type == types.POINTER {
+				inpType = inp.PointerTargetType
+			}
+		} else if input.TypeSignature.Type == ast.TYPE_ATOMIC {
+			inpType = types.Code(input.TypeSignature.Meta)
 		}
 
 		if inp0Type != inpType {
