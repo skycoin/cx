@@ -185,28 +185,32 @@ func PrimaryStructLiteral(prgrm *ast.CXProgram, structName string, structFields 
 				}
 
 				cxAtomicOpOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(cxAtomicOp.GetOutputs(prgrm)[0])
-				cxAtomicOpOutputIdx := cxAtomicOpOutputTypeSig.Meta
-				name := prgrm.CXArgs[cxAtomicOpOutputIdx].Name
+				if cxAtomicOpOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+					cxAtomicOpOutputIdx := cxAtomicOpOutputTypeSig.Meta
+					name := prgrm.CXArgs[cxAtomicOpOutputIdx].Name
 
-				field := ast.MakeArgument(name, CurrentFile, LineNo)
-				field.Type = prgrm.CXArgs[cxAtomicOpOutputIdx].Type
-				field.PointerTargetType = prgrm.CXArgs[cxAtomicOpOutputIdx].PointerTargetType
-				expr.ExpressionType = ast.CXEXPR_STRUCT_LITERAL
+					field := ast.MakeArgument(name, CurrentFile, LineNo)
+					field.Type = prgrm.CXArgs[cxAtomicOpOutputIdx].Type
+					field.PointerTargetType = prgrm.CXArgs[cxAtomicOpOutputIdx].PointerTargetType
+					expr.ExpressionType = ast.CXEXPR_STRUCT_LITERAL
 
-				prgrm.CXArgs[cxAtomicOpOutputIdx].Package = ast.CXPackageIndex(pkg.Index)
+					prgrm.CXArgs[cxAtomicOpOutputIdx].Package = ast.CXPackageIndex(pkg.Index)
 
-				if prgrm.CXArgs[cxAtomicOpOutputIdx].StructType == nil {
-					prgrm.CXArgs[cxAtomicOpOutputIdx].StructType = strct
+					if prgrm.CXArgs[cxAtomicOpOutputIdx].StructType == nil {
+						prgrm.CXArgs[cxAtomicOpOutputIdx].StructType = strct
+					}
+					field.StructType = strct
+
+					prgrm.CXArgs[cxAtomicOpOutputIdx].Size = strct.GetStructSize(prgrm)
+					prgrm.CXArgs[cxAtomicOpOutputIdx].TotalSize = strct.GetStructSize(prgrm)
+					prgrm.CXArgs[cxAtomicOpOutputIdx].Name = structName
+					cxAtomicOpOutputTypeSig.Name = structName
+
+					fieldIdx := prgrm.AddCXArgInArray(field)
+					prgrm.CXArgs[cxAtomicOpOutputIdx].Fields = append(prgrm.CXArgs[cxAtomicOpOutputIdx].Fields, fieldIdx)
+				} else if cxAtomicOpOutputTypeSig.Type == ast.TYPE_ATOMIC {
+					panic("type signature is type atomic")
 				}
-				field.StructType = strct
-
-				prgrm.CXArgs[cxAtomicOpOutputIdx].Size = strct.GetStructSize(prgrm)
-				prgrm.CXArgs[cxAtomicOpOutputIdx].TotalSize = strct.GetStructSize(prgrm)
-				prgrm.CXArgs[cxAtomicOpOutputIdx].Name = structName
-				cxAtomicOpOutputTypeSig.Name = structName
-
-				fieldIdx := prgrm.AddCXArgInArray(field)
-				prgrm.CXArgs[cxAtomicOpOutputIdx].Fields = append(prgrm.CXArgs[cxAtomicOpOutputIdx].Fields, fieldIdx)
 
 				result = append(result, expr)
 			}
@@ -242,24 +246,29 @@ func PrimaryStructLiteralExternal(prgrm *ast.CXProgram, importName string, struc
 					}
 
 					cxAtomicOpOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(cxAtomicOp.GetOutputs(prgrm)[0])
-					cxAtomicOpOutputIdx := cxAtomicOpOutputTypeSig.Meta
-					field := ast.MakeArgument("", CurrentFile, LineNo)
-					field.SetType(types.IDENTIFIER)
-					field.Name = prgrm.CXArgs[cxAtomicOpOutputIdx].Name
+					if cxAtomicOpOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+						cxAtomicOpOutputIdx := cxAtomicOpOutputTypeSig.Meta
+						field := ast.MakeArgument("", CurrentFile, LineNo)
+						field.SetType(types.IDENTIFIER)
+						field.Name = prgrm.CXArgs[cxAtomicOpOutputIdx].Name
 
-					expr.ExpressionType = ast.CXEXPR_STRUCT_LITERAL
+						expr.ExpressionType = ast.CXEXPR_STRUCT_LITERAL
 
-					prgrm.CXArgs[cxAtomicOpOutputIdx].Package = ast.CXPackageIndex(pkg.Index)
-					// expr.ProgramOutput[0].Program = prgrm
+						prgrm.CXArgs[cxAtomicOpOutputIdx].Package = ast.CXPackageIndex(pkg.Index)
+						// expr.ProgramOutput[0].Program = prgrm
 
-					prgrm.CXArgs[cxAtomicOpOutputIdx].StructType = strct
-					prgrm.CXArgs[cxAtomicOpOutputIdx].Size = strct.GetStructSize(prgrm)
-					prgrm.CXArgs[cxAtomicOpOutputIdx].TotalSize = strct.GetStructSize(prgrm)
-					prgrm.CXArgs[cxAtomicOpOutputIdx].Name = structName
-					cxAtomicOpOutputTypeSig.Name = structName
+						prgrm.CXArgs[cxAtomicOpOutputIdx].StructType = strct
+						prgrm.CXArgs[cxAtomicOpOutputIdx].Size = strct.GetStructSize(prgrm)
+						prgrm.CXArgs[cxAtomicOpOutputIdx].TotalSize = strct.GetStructSize(prgrm)
+						prgrm.CXArgs[cxAtomicOpOutputIdx].Name = structName
+						cxAtomicOpOutputTypeSig.Name = structName
 
-					fieldIdx := prgrm.AddCXArgInArray(field)
-					prgrm.CXArgs[cxAtomicOpOutputIdx].Fields = append(prgrm.CXArgs[cxAtomicOpOutputIdx].Fields, fieldIdx)
+						fieldIdx := prgrm.AddCXArgInArray(field)
+						prgrm.CXArgs[cxAtomicOpOutputIdx].Fields = append(prgrm.CXArgs[cxAtomicOpOutputIdx].Fields, fieldIdx)
+					} else if cxAtomicOpOutputTypeSig.Type == ast.TYPE_ATOMIC {
+						panic("type signature is type atomic")
+					}
+
 					result = append(result, expr)
 				}
 			} else {

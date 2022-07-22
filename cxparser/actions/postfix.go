@@ -109,10 +109,14 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 
 		if postExpressionOperator == nil {
 			postExpressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(prgrm.CXAtomicOps[postExpressionIdx].GetOutputs(prgrm)[0])
+			if postExpressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				// expr.AddInput(postExprs[len(postExprs)-1].ProgramOutput[0])
+				indexIdx := ast.CXArgumentIndex(postExpressionOutputTypeSig.Meta)
+				prgrm.CXArgs[fldIdx].Indexes = append(prgrm.CXArgs[fldIdx].Indexes, indexIdx)
+			} else if postExpressionOutputTypeSig.Type == ast.TYPE_ATOMIC {
+				panic("type signature is type atomic")
+			}
 
-			// expr.AddInput(postExprs[len(postExprs)-1].ProgramOutput[0])
-			indexIdx := ast.CXArgumentIndex(postExpressionOutputTypeSig.Meta)
-			prgrm.CXArgs[fldIdx].Indexes = append(prgrm.CXArgs[fldIdx].Indexes, indexIdx)
 		} else {
 			postExpressionOperatorOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(postExpressionOperatorOutputs[0])
 			var postExpressionOperatorOutputArg *ast.CXArgument = &ast.CXArgument{}
@@ -173,11 +177,20 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 			prevExprs = append(postExprs, prevExprs...)
 		} else {
 			prevOutsTypeSig := prgrm.GetCXTypeSignatureFromArray(prevExpression.GetOutputs(prgrm)[0])
-			prevOutsIdx := ast.CXArgumentIndex(prevOutsTypeSig.Meta)
+			if prevOutsTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				prevOutsIdx := ast.CXArgumentIndex(prevOutsTypeSig.Meta)
 
-			postOutsTypeSig := prgrm.GetCXTypeSignatureFromArray(prgrm.CXAtomicOps[postExpressionIdx].GetOutputs(prgrm)[0])
-			postOutsIdx := ast.CXArgumentIndex(postOutsTypeSig.Meta)
-			prgrm.CXArgs[prevOutsIdx].Indexes = append(prgrm.CXArgs[prevOutsIdx].Indexes, postOutsIdx)
+				postOutsTypeSig := prgrm.GetCXTypeSignatureFromArray(prgrm.CXAtomicOps[postExpressionIdx].GetOutputs(prgrm)[0])
+				if postOutsTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+					postOutsIdx := ast.CXArgumentIndex(postOutsTypeSig.Meta)
+					prgrm.CXArgs[prevOutsIdx].Indexes = append(prgrm.CXArgs[prevOutsIdx].Indexes, postOutsIdx)
+				} else if postOutsTypeSig.Type == ast.TYPE_ATOMIC {
+					panic("type is not cx argument deprecate\n\n")
+				}
+			} else if prevOutsTypeSig.Type == ast.TYPE_ATOMIC {
+				panic("type is not cx argument deprecate\n\n")
+			}
+
 		}
 	}
 
@@ -455,35 +468,51 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		panic(err)
 	}
 
-	if imp, err := pkg.GetImport(prgrm, prgrm.CXArgs[leftExprIdx].Name); err == nil {
+	if imp, err := pkg.GetImport(prgrm, leftExprOutputTypeSig.Name); err == nil {
 		// the external property will be propagated to the following arguments
 		// this way we avoid considering these arguments as module names
 
-		if cxpackages.IsDefaultPackage(prgrm.CXArgs[leftExprIdx].Name) {
-			//TODO: constants.ConstCodes[prgrm.CXArgs[leftExprIdx].Name+"."+ident]
+		if cxpackages.IsDefaultPackage(leftExprOutputTypeSig.Name) {
+			//TODO: constants.ConstCodes[leftExprOutputTypeSig.Name+"."+ident]
 			//TODO: only play ConstCodes are used
 			//Is used for constant declaration? But only for core packages?
-			if code, ok := ConstCodes[prgrm.CXArgs[leftExprIdx].Name+"."+ident]; ok {
+			if code, ok := ConstCodes[leftExprOutputTypeSig.Name+"."+ident]; ok {
 				constant := Constants[code]
 				valArg := WritePrimary(prgrm, constant.Type, constant.Value, false)
 
 				// TODO: to be removed and implemented with correct process to change the index
 				lastExpressionOutputFieldTypeSig := prgrm.GetCXTypeSignatureFromArray(prgrm.CXAtomicOps[lastExpressionIdx].Outputs.Fields[0])
-				lastExpressionOutputFieldTypeSig.Meta = valArg.Index
+				if lastExpressionOutputFieldTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+					lastExpressionOutputFieldTypeSig.Meta = valArg.Index
+				} else if lastExpressionOutputFieldTypeSig.Type == ast.TYPE_ATOMIC {
+					// TODO: Review if this is the correct one
+					typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, valArg)
+					typeSig.Offset = valArg.Offset
+					typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
+
+					prgrm.CXAtomicOps[lastExpressionIdx].Outputs.Fields[0] = typeSigIdx
+				}
 
 				return prevExprs
-			} else if _, ok := ast.OpCodes[prgrm.CXArgs[leftExprIdx].Name+"."+ident]; ok {
+			} else if _, ok := ast.OpCodes[leftExprOutputTypeSig.Name+"."+ident]; ok {
 				// then it's a native
 				// TODO: we'd be referring to the function itself, not a function call
 				// (functions as first-class objects)
-				leftExprOutputTypeSig.Name = prgrm.CXArgs[leftExprIdx].Name + "." + ident
-				prgrm.CXArgs[leftExprIdx].Name = prgrm.CXArgs[leftExprIdx].Name + "." + ident
+				leftExprOutputTypeSig.Name = leftExprOutputTypeSig.Name + "." + ident
+				leftExprOutputTypeSig.Name = leftExprOutputTypeSig.Name + "." + ident
+				if leftExprOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+					prgrm.CXArgs[leftExprIdx].Name = leftExprOutputTypeSig.Name + "." + ident
+				}
 
 				return prevExprs
 			}
 		}
 
-		prgrm.CXArgs[leftExprIdx].Package = ast.CXPackageIndex(imp.Index)
+		leftExprOutputTypeSig.Package = ast.CXPackageIndex(imp.Index)
+		if leftExprOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			prgrm.CXArgs[leftExprIdx].Package = ast.CXPackageIndex(imp.Index)
+
+		}
 
 		if glbl, err := imp.GetGlobal(prgrm, ident); err == nil {
 			var glblArg *ast.CXArgument = &ast.CXArgument{}
@@ -537,25 +566,30 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		}
 	} else {
 		// then left is not a package name
-		if cxpackages.IsDefaultPackage(prgrm.CXArgs[leftExprIdx].Name) {
+		if cxpackages.IsDefaultPackage(leftExprOutputTypeSig.Name) {
 			println(ast.CompilationError(prgrm.CXArgs[leftExprIdx].ArgDetails.FileName, prgrm.CXArgs[leftExprIdx].ArgDetails.FileLine),
 				fmt.Sprintf("identifier '%s' does not exist",
-					prgrm.CXArgs[leftExprIdx].Name))
+					leftExprOutputTypeSig.Name))
 			os.Exit(constants.CX_COMPILATION_ERROR)
 		}
 		// then it's a struct
-		prgrm.CXArgs[leftExprIdx].IsStruct = true
+		if leftExprOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			prgrm.CXArgs[leftExprIdx].IsStruct = true
+		}
 
 		leftExprField := ast.MakeArgument(ident, CurrentFile, LineNo)
-		leftPkg, err := prgrm.GetPackageFromArray(prgrm.CXArgs[leftExprIdx].Package)
+		leftPkg, err := prgrm.GetPackageFromArray(leftExprOutputTypeSig.Package)
 		if err != nil {
 			panic(err)
 		}
 		leftExprField.SetType(types.IDENTIFIER)
 		leftExprField.SetPackage(leftPkg)
 
-		leftExprFieldIdx := prgrm.AddCXArgInArray(leftExprField)
-		prgrm.CXArgs[leftExprIdx].Fields = append(prgrm.CXArgs[leftExprIdx].Fields, leftExprFieldIdx)
+		if leftExprOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			leftExprFieldIdx := prgrm.AddCXArgInArray(leftExprField)
+			prgrm.CXArgs[leftExprIdx].Fields = append(prgrm.CXArgs[leftExprIdx].Fields, leftExprFieldIdx)
+		}
+
 	}
 
 	return prevExprs

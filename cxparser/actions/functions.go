@@ -273,12 +273,21 @@ func ProcessTypedOperator(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 	}
 	if ast.IsOperator(expressionOperator.AtomicOPCode) {
 		expressionInputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetInputs(prgrm)[0])
-		atomicType := prgrm.CXArgs[expressionInputTypeSig.Meta].GetType(prgrm)
+
+		var atomicType types.Code
+		if expressionInputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			atomicType = prgrm.CXArgs[expressionInputTypeSig.Meta].GetType(prgrm)
+		} else if expressionInputTypeSig.Type == ast.TYPE_ATOMIC {
+			atomicType = types.Code(expressionInputTypeSig.Meta)
+		}
+
 		typedOp := ast.GetTypedOperator(atomicType, expressionOperator.AtomicOPCode)
 		if typedOp == nil {
 			return
 		}
+
 		expressionOperator.AtomicOPCode = typedOp.AtomicOPCode
+
 	}
 }
 
@@ -926,7 +935,7 @@ func checkMatchParamTypes(prgrm *ast.CXProgram, expr *ast.CXExpression, expected
 			expectedArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expectedTypeSig.Meta))
 
 			expectedType = ast.GetFormattedType(prgrm, expectedArg)
-		} else {
+		} else if expectedTypeSig.Type == ast.TYPE_ATOMIC {
 			// panic("type is not cx arg deprecate\n\n")
 			expectedArg = &ast.CXArgument{}
 
@@ -938,7 +947,7 @@ func checkMatchParamTypes(prgrm *ast.CXProgram, expr *ast.CXExpression, expected
 		if receivedTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			receivedArg = prgrm.GetCXArg(ast.CXArgumentIndex(receivedTypeSig.Meta))
 			receivedType = ast.GetFormattedType(prgrm, receivedArg)
-		} else {
+		} else if receivedTypeSig.Type == ast.TYPE_ATOMIC {
 			receivedType = types.Code(receivedTypeSig.Meta).Name()
 		}
 
