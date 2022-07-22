@@ -405,10 +405,11 @@ func (cxprogram *CXProgram) AddPointerArgsToTypeSignaturesArray(cxArgs []*CXArgu
 		cxArgIdx := cxprogram.AddCXArgInArray(cxArg)
 
 		newCXTypeSignature := &CXTypeSignature{
-			Name:   cxArg.Name,
-			Offset: cxArg.Offset,
-			Type:   TYPE_CXARGUMENT_DEPRECATE,
-			Meta:   int(cxArgIdx),
+			Name:    cxArg.Name,
+			Package: cxArg.Package,
+			Offset:  cxArg.Offset,
+			Type:    TYPE_CXARGUMENT_DEPRECATE,
+			Meta:    int(cxArgIdx),
 		}
 
 		newCXTypeSignatureIdx := cxprogram.AddCXTypeSignatureInArray(newCXTypeSignature)

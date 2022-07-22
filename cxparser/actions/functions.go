@@ -724,9 +724,12 @@ func ProcessExpressionArguments(prgrm *ast.CXProgram, symbols *[]map[string]*ast
 
 		if arg != nil {
 			for _, idxIdx := range arg.Indexes {
+				idxIdxArg := prgrm.GetCXArgFromArray(idxIdx)
 				typeSigIdx := prgrm.AddCXTypeSignatureInArray(&ast.CXTypeSignature{
-					Type: ast.TYPE_CXARGUMENT_DEPRECATE,
-					Meta: int(idxIdx),
+					Name:    idxIdxArg.Name,
+					Package: idxIdxArg.Package,
+					Type:    ast.TYPE_CXARGUMENT_DEPRECATE,
+					Meta:    int(idxIdx),
 				})
 
 				UpdateSymbolsTable(prgrm, symbols, typeSigIdx, offset, true)
@@ -736,9 +739,12 @@ func ProcessExpressionArguments(prgrm *ast.CXProgram, symbols *[]map[string]*ast
 			for _, fldIdx := range arg.Fields {
 				fld := prgrm.GetCXArgFromArray(fldIdx)
 				for _, idxIdx := range fld.Indexes {
+					idxIdxArg := prgrm.GetCXArgFromArray(idxIdx)
 					typeSigIdx := prgrm.AddCXTypeSignatureInArray(&ast.CXTypeSignature{
-						Type: ast.TYPE_CXARGUMENT_DEPRECATE,
-						Meta: int(idxIdx),
+						Name:    idxIdxArg.Name,
+						Package: idxIdxArg.Package,
+						Type:    ast.TYPE_CXARGUMENT_DEPRECATE,
+						Meta:    int(idxIdx),
 					})
 
 					UpdateSymbolsTable(prgrm, symbols, typeSigIdx, offset, true)
