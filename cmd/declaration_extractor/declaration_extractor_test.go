@@ -119,40 +119,27 @@ func TestDeclarationExtraction_ExtractGlobal(t *testing.T) {
 		scenario    string
 		testDir     string
 		wantGlobals []declaration_extractor.GlobalDeclaration
+		wantErr     error
 	}{
 		{
-			scenario: "Has globals",
-			testDir:  "./test_files/test.cx",
+			scenario: "Has Globals",
+			testDir:  "./test_files/ExtractGlobals/HasGlobals.cx",
 			wantGlobals: []declaration_extractor.GlobalDeclaration{
 				{
-					PackageID:          "hello",
-					FileID:             "test.cx",
-					StartOffset:        setOffset(14, 2),
-					Length:             16,
-					LineNumber:         2,
-					GlobalVariableName: "apple",
+					PackageID:          "main",
+					FileID:             "./test_files/ExtractGlobals/HasGlobals.cx",
+					StartOffset:        setOffset(0, 0),
+					Length:             0,
+					LineNumber:         0,
+					GlobalVariableName: "",
 				},
 				{
-					PackageID:          "hello",
-					FileID:             "test.cx",
-					StartOffset:        setOffset(34, 4),
-					Length:             17,
-					LineNumber:         4,
-					GlobalVariableName: "banana",
-				},
-			},
-		},
-		{
-			scenario: "Has Globals 2",
-			testDir:  "./test_files/test_2.cx",
-			wantGlobals: []declaration_extractor.GlobalDeclaration{
-				{
-					PackageID:          "test_2",
-					FileID:             "test_2.cx",
-					StartOffset:        setOffset(35, 7),
-					Length:             17,
-					LineNumber:         7,
-					GlobalVariableName: "global",
+					PackageID:          "main",
+					FileID:             "./test_files/ExtractGlobals/HasGlobals.cx",
+					StartOffset:        setOffset(0, 0),
+					Length:             0,
+					LineNumber:         0,
+					GlobalVariableName: "",
 				},
 			},
 		},

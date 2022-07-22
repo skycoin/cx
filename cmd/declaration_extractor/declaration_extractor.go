@@ -123,11 +123,11 @@ func ExtractPackages(source []byte) string {
 
 func ExtractGlobals(source []byte, fileName string, pkg string) ([]GlobalDeclaration, error) {
 
-	var GlblDec []GlobalDeclaration
-	var err error
+	var GlobalDeclarationsArray []GlobalDeclaration
 
 	//Regexs
-	reGlbl := regexp.MustCompile(`var\s([_a-zA-Z][_a-zA-Z0-9]*)\s+[\[_a-zA-Z][\]_a-zA-Z0-9]*`)
+	reGlobal := regexp.MustCompile("var")
+	reGlobalName := regexp.MustCompile(`var\s([_a-zA-Z][_a-zA-Z0-9]*)\s+[\[_a-zA-Z][\]_a-zA-Z0-9]*`)
 	reBodyOpen := regexp.MustCompile("{")
 	reBodyClose := regexp.MustCompile("}")
 
@@ -155,27 +155,51 @@ func ExtractGlobals(source []byte, fileName string, pkg string) ([]GlobalDeclara
 		}
 
 		// if match is found and body depth is 0
-		if match := reGlbl.FindSubmatchIndex(line); match != nil && inBlock == 0 {
+		if reGlobal.FindAllIndex(line, -1) != nil {
 
-			var tmp GlobalDeclaration
+			tokens := bytes.Fields(line)
 
-			tmp.PackageID = pkg
-			tmp.FileID = fileName
+			if len(tokens) == 1 {
+				return GlobalDeclarationsArray, errors.New("global variable name undefined")
+			}
 
-			tmp.StartOffset = currentOffset + match[0] // offset is current line offset + match index
-			tmp.Length = match[1] - match[0]
-			tmp.LineNumber = lineno
+			if len(tokens) == 2 {
+				return GlobalDeclarationsArray, errors.New("global variable type undefined")
+			}
 
-			// gets the name directly with current line offset + submatch index
-			tmp.GlobalVariableName = string(source[match[2]+currentOffset : match[3]+currentOffset])
+			if len(tokens) > 3 {
+				return GlobalDeclarationsArray, errors.New("unexpected token")
+			}
 
-			GlblDec = append(GlblDec, tmp)
+			if len(tokens) == 3 {
+
+				if !bytes.Equal(tokens[0], []byte("var")) {
+					return GlobalDeclarationsArray, errors.New("unexpected token")
+				}
+
+				if match := reGlobalName.FindSubmatchIndex(line); match != nil && inBlock == 0 {
+
+					var tmp GlobalDeclaration
+
+					tmp.PackageID = pkg
+					tmp.FileID = fileName
+
+					tmp.StartOffset = currentOffset + match[0] // offset is current line offset + match index
+					tmp.Length = match[1] - match[0]
+					tmp.LineNumber = lineno
+
+					// gets the name directly with current line offset + submatch index
+					tmp.GlobalVariableName = string(source[match[2]+currentOffset : match[3]+currentOffset])
+
+					GlobalDeclarationsArray = append(GlobalDeclarationsArray, tmp)
+				}
+			}
 		}
 
 		currentOffset += len(line) // increments the currentOffset by line len
 	}
 
-	return GlblDec, err
+	return GlobalDeclarationsArray, nil
 
 }
 

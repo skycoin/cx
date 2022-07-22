@@ -1,0 +1,12 @@
+package main
+
+var string str
+
+var integer i32 = 5
+
+func main() {
+    string = "hello world"
+    str.print(string)
+
+    i32.print(integer)
+}
