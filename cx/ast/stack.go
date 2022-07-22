@@ -120,35 +120,60 @@ func (cxprogram *CXProgram) PrintStack() {
 				var out *CXArgument = &CXArgument{}
 				if output.Type == TYPE_CXARGUMENT_DEPRECATE {
 					out = cxprogram.GetCXArgFromArray(CXArgumentIndex(output.Meta))
-				} else {
-					panic("type is not cxargument deprecate")
-				}
 
-				if out.Name == "" || cxAtomicOpOperator == nil {
-					continue
-				}
-
-				outPkg, err := cxprogram.GetPackageFromArray(out.Package)
-				if err != nil {
-					panic(err)
-				}
-				var dup bool
-				for _, name := range dupNames {
-					if name == outPkg.Name+out.Name {
-						dup = true
-						break
+					if out.Name == "" || cxAtomicOpOperator == nil {
+						continue
 					}
+
+					outPkg, err := cxprogram.GetPackageFromArray(out.Package)
+					if err != nil {
+						panic(err)
+					}
+					var dup bool
+					for _, name := range dupNames {
+						if name == outPkg.Name+out.Name {
+							dup = true
+							break
+						}
+					}
+					if dup {
+						continue
+					}
+
+					// fmt.Println("\t", out.Name, "\t", ":", "\t", GetPrintableValue(fp, out))
+					// exprs += fmt.Sprintln("\t", stackValueHeader(out.FileName, out.FileLine), ":", GetPrintableValue(fp, out))
+
+					exprs += fmt.Sprintf("\t%s : %s() : %s\n", stackValueHeader(out.ArgDetails.FileName, out.ArgDetails.FileLine), cxAtomicOp.GetOperatorName(cxprogram), GetPrintableValue(cxprogram, fp, out))
+
+					dupNames = append(dupNames, outPkg.Name+out.Name)
+				} else if output.Type == TYPE_ATOMIC {
+					if output.Name == "" || cxAtomicOpOperator == nil {
+						continue
+					}
+
+					outputPkg, err := cxprogram.GetPackageFromArray(output.Package)
+					if err != nil {
+						panic(err)
+					}
+
+					var dup bool
+					for _, name := range dupNames {
+						if name == outputPkg.Name+output.Name {
+							dup = true
+							break
+						}
+					}
+					if dup {
+						continue
+					}
+
+					// TODO: Make GetPrintableValue() and other functions receive CXTypeSignature instead of CXArgument
+					exprs += fmt.Sprintf("\t%s : %s() : %s\n", stackValueHeader(out.ArgDetails.FileName, out.ArgDetails.FileLine), cxAtomicOp.GetOperatorName(cxprogram), GetPrintableValue(cxprogram, fp, out))
+
+					dupNames = append(dupNames, outputPkg.Name+output.Name)
+
 				}
-				if dup {
-					continue
-				}
 
-				// fmt.Println("\t", out.Name, "\t", ":", "\t", GetPrintableValue(fp, out))
-				// exprs += fmt.Sprintln("\t", stackValueHeader(out.FileName, out.FileLine), ":", GetPrintableValue(fp, out))
-
-				exprs += fmt.Sprintf("\t%s : %s() : %s\n", stackValueHeader(out.ArgDetails.FileName, out.ArgDetails.FileLine), cxAtomicOp.GetOperatorName(cxprogram), GetPrintableValue(cxprogram, fp, out))
-
-				dupNames = append(dupNames, outPkg.Name+out.Name)
 			}
 		}
 
