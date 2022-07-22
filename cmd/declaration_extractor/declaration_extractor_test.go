@@ -407,10 +407,18 @@ func TestDeclarationExtraction_ExtractStructs(t *testing.T) {
 				{
 					PackageID:   "hello",
 					FileID:      "test.cx",
-					StartOffset: setOffset(158, 14),
+					StartOffset: setOffset(152, 14),
 					Length:      18,
 					LineNumber:  14,
 					StructName:  "person",
+					StructFields: []*declaration_extractor.StructField{
+						{
+							StructFieldName: "name",
+							StartOffset:     setOffset(174, 15),
+							Length:          8,
+							LineNumber:      15,
+						},
+					},
 				},
 				{
 					PackageID:   "hello",
@@ -419,6 +427,10 @@ func TestDeclarationExtraction_ExtractStructs(t *testing.T) {
 					Length:      39,
 					LineNumber:  21,
 					StructName:  "animal",
+					StructFields: []*declaration_extractor.StructField{
+						{},
+						{},
+					},
 				},
 			},
 		},
@@ -457,19 +469,50 @@ func TestDeclarationExtraction_ExtractStructs(t *testing.T) {
 
 				var match bool
 
-				var gotStruct declaration_extractor.StructDeclaration
+				var gotStructF declaration_extractor.StructDeclaration
 
 				for _, gotStruct := range gotStructs {
 
+					gotStructF = gotStruct
+
 					if gotStruct.StructName == wantStruct.StructName {
-						match = true
+						if gotStruct.FileID == wantStruct.FileID &&
+							gotStruct.Length == wantStruct.Length &&
+							gotStruct.LineNumber == wantStruct.LineNumber &&
+							gotStruct.PackageID == wantStruct.PackageID {
+
+							var fieldMatch bool = true
+
+							for k, wantField := range wantStruct.StructFields {
+
+								if gotStruct.StructFields[k] != wantField {
+									fieldMatch = false
+									break
+								}
+
+							}
+
+							if fieldMatch {
+								match = true
+								break
+							}
+							t.Error(gotStruct)
+
+						}
 						break
 					}
 
 				}
 
 				if !match {
-					t.Errorf("want struct: %v\n\t%v\ngot:%v\n\t%v", wantStruct, wantStruct.StructFields, gotStruct, gotStruct.StructFields)
+					t.Errorf("want struct %v", wantStruct)
+					for _, wantField := range wantStruct.StructFields {
+						t.Error(wantField)
+					}
+					t.Errorf("got %v", gotStructF)
+					for _, gotField := range gotStructF.StructFields {
+						t.Error(gotField)
+					}
 				}
 
 			}
