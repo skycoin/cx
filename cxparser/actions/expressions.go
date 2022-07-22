@@ -69,13 +69,15 @@ func IterationExpressions(prgrm *ast.CXProgram,
 	if len(prgrm.CXAtomicOps[lastCondExpressionIdx].GetOutputs(prgrm)) < 1 {
 		lastCondExpressionOperatorOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(lastCondExpressionOperatorOutputs[0])
 
-		var lastCondExpressionOperatorOutputArg *ast.CXArgument = &ast.CXArgument{}
+		var lastCondExpressionOperatorOutputType types.Code
 		if lastCondExpressionOperatorOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-			lastCondExpressionOperatorOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(lastCondExpressionOperatorOutputTypeSig.Meta))
-		} else {
-			panic("type is not cx argument deprecate\n\n")
+			lastCondExpressionOperatorOutputArg := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(lastCondExpressionOperatorOutputTypeSig.Meta))
+			lastCondExpressionOperatorOutputType = lastCondExpressionOperatorOutputArg.Type
+		} else if lastCondExpressionOperatorOutputTypeSig.Type == ast.TYPE_ATOMIC {
+			lastCondExpressionOperatorOutputType = types.Code(lastCondExpressionOperatorOutputTypeSig.Meta)
 		}
-		predicate := ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, LineNo).SetType(lastCondExpressionOperatorOutputArg.Type)
+
+		predicate := ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, LineNo).SetType(lastCondExpressionOperatorOutputType)
 		predicate.Package = ast.CXPackageIndex(pkg.Index)
 		predicate.PreviouslyDeclared = true
 		predicateIdx := prgrm.AddCXArgInArray(predicate)
