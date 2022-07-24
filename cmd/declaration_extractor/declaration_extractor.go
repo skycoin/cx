@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"regexp"
@@ -159,41 +160,28 @@ func ExtractGlobals(source []byte, fileName string, pkg string) ([]GlobalDeclara
 
 			tokens := bytes.Fields(line)
 
-			if len(tokens) == 1 {
-				return GlobalDeclarationsArray, errors.New("global variable name undefined")
+			if !bytes.Equal(tokens[0], []byte("var")) {
+				col := bytes.Index(line, tokens[0])
+				return GlobalDeclarationsArray, fmt.Errorf("%d:%d %s", lineno, col, "syntax error: unexpected IDENTIFIER")
 			}
 
-			if len(tokens) == 2 {
-				return GlobalDeclarationsArray, errors.New("global variable type undefined")
+			if match := reGlobalName.FindSubmatchIndex(line); match != nil && inBlock == 0 {
+
+				var tmp GlobalDeclaration
+
+				tmp.PackageID = pkg
+				tmp.FileID = fileName
+
+				tmp.StartOffset = match[0] + currentOffset // offset is match index + current line offset
+				tmp.Length = match[1] - match[0]
+				tmp.LineNumber = lineno
+
+				// gets the name directly with submatch index + current line offset
+				tmp.GlobalVariableName = string(source[match[2]+currentOffset : match[3]+currentOffset])
+
+				GlobalDeclarationsArray = append(GlobalDeclarationsArray, tmp)
 			}
 
-			if len(tokens) > 3 {
-				return GlobalDeclarationsArray, errors.New("unexpected token")
-			}
-
-			if len(tokens) == 3 {
-
-				if !bytes.Equal(tokens[0], []byte("var")) {
-					return GlobalDeclarationsArray, errors.New("unexpected token")
-				}
-
-				if match := reGlobalName.FindSubmatchIndex(line); match != nil && inBlock == 0 {
-
-					var tmp GlobalDeclaration
-
-					tmp.PackageID = pkg
-					tmp.FileID = fileName
-
-					tmp.StartOffset = currentOffset + match[0] // offset is current line offset + match index
-					tmp.Length = match[1] - match[0]
-					tmp.LineNumber = lineno
-
-					// gets the name directly with current line offset + submatch index
-					tmp.GlobalVariableName = string(source[match[2]+currentOffset : match[3]+currentOffset])
-
-					GlobalDeclarationsArray = append(GlobalDeclarationsArray, tmp)
-				}
-			}
 		}
 
 		currentOffset += len(line) // increments the currentOffset by line len
