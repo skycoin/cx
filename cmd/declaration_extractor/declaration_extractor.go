@@ -122,11 +122,13 @@ func ExtractPackages(source []byte) string {
 	return pkg
 }
 
-func ExtractGlobals(source []byte, fileName string, pkg string) ([]GlobalDeclaration, error) {
+func ExtractGlobals(source []byte, fileName string) ([]GlobalDeclaration, error) {
 
 	var GlobalDeclarationsArray []GlobalDeclaration
+	var pkg string
 
 	//Regexs
+	rePkgName := regexp.MustCompile(`(^|[\s])package[ \t]+([_a-zA-Z][_a-zA-Z0-9]*)`)
 	reGlobal := regexp.MustCompile("var")
 	reGlobalName := regexp.MustCompile(`var\s([_a-zA-Z][_a-zA-Z0-9]*)\s+[\[_a-zA-Z][\]_a-zA-Z0-9]*`)
 	reBodyOpen := regexp.MustCompile("{")
@@ -144,6 +146,8 @@ func ExtractGlobals(source []byte, fileName string, pkg string) ([]GlobalDeclara
 
 		line := scanner.Bytes()
 		lineno++
+
+		if rePkgName
 
 		// if {  is found increment body depth
 		if locs := reBodyOpen.FindAllIndex(line, -1); locs != nil {
