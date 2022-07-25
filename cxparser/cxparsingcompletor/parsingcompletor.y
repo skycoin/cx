@@ -347,7 +347,7 @@ direct_declarator:
                 {
 			if pkg, err := actions.AST.GetCurrentPackage(); err == nil {
 				arg := ast.MakeArgument("", actions.CurrentFile, actions.LineNo)
-                arg.SetType(types.UNDEFINED)
+				arg.SetType(types.UNDEFINED)
 				arg.Name = $1
 				arg.Package = ast.CXPackageIndex(pkg.Index)
 				$$ = arg
