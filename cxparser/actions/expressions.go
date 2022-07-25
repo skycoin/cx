@@ -233,6 +233,7 @@ func SelectionExpressions(prgrm *ast.CXProgram, conditionExprs []ast.CXExpressio
 			predicate.SetType(lastCondExpressionOperatorOutputArg.Type)
 		}
 		predicate.PreviouslyDeclared = true
+		predicate.Package = ast.CXPackageIndex(pkg.Index)
 
 		predicateIdx := prgrm.AddCXArgInArray(predicate)
 		predicateTypeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(predicateIdx))
@@ -392,26 +393,34 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 	if len(prgrm.CXAtomicOps[lastRightExpressionIdx].GetOutputs(prgrm)) < 1 {
 		lastRightExpressionOperatorOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(lastRightExpressionOperatorOutputs[0])
 		var lastRightExpressionOperatorOutputArg *ast.CXArgument = &ast.CXArgument{}
+
+		var typeSigIdx ast.CXTypeSignatureIndex
 		if lastRightExpressionOperatorOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			lastRightExpressionOperatorOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(lastRightExpressionOperatorOutputTypeSig.Meta))
-		} else {
-			panic("type is not cx argument deprecate\n\n")
+
+			out := ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, LineNo)
+			out.SetType(resolveTypeForUnd(prgrm, &rightExprs[len(rightExprs)-1]))
+			out.Size = lastRightExpressionOperatorOutputArg.Size
+			out.TotalSize = lastRightExpressionOperatorOutputTypeSig.GetSize(prgrm)
+			out.Type = lastRightExpressionOperatorOutputArg.Type
+			out.PointerTargetType = lastRightExpressionOperatorOutputArg.PointerTargetType
+			out.Package = ast.CXPackageIndex(pkg.Index)
+			out.PreviouslyDeclared = true
+
+			outIdx := prgrm.AddCXArgInArray(out)
+			typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(outIdx))
+			typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
+		} else if lastRightExpressionOperatorOutputTypeSig.Type == ast.TYPE_ATOMIC {
+			typeSig := &ast.CXTypeSignature{}
+			typeSig.Name = lastRightExpressionOperatorOutputTypeSig.Name
+			typeSig.Package = lastRightExpressionOperatorOutputTypeSig.Package
+			typeSig.Type = ast.TYPE_ATOMIC
+			typeSig.Meta = lastRightExpressionOperatorOutputTypeSig.Meta
+			typeSig.Offset = lastRightExpressionOperatorOutputTypeSig.Offset
+
+			typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
 		}
 
-		lastRightExpressionOperatorOutput := lastRightExpressionOperatorOutputArg
-
-		out := ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, LineNo)
-		out.SetType(resolveTypeForUnd(prgrm, &rightExprs[len(rightExprs)-1]))
-		out.Size = lastRightExpressionOperatorOutput.Size
-		out.TotalSize = lastRightExpressionOperatorOutputTypeSig.GetSize(prgrm)
-		out.Type = lastRightExpressionOperatorOutput.Type
-		out.PointerTargetType = lastRightExpressionOperatorOutput.PointerTargetType
-		out.Package = ast.CXPackageIndex(pkg.Index)
-		out.PreviouslyDeclared = true
-
-		outIdx := prgrm.AddCXArgInArray(out)
-		typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(outIdx))
-		typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
 		prgrm.CXAtomicOps[lastRightExpressionIdx].AddOutput(prgrm, typeSigIdx)
 	}
 
@@ -449,8 +458,8 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 	var lastRightExpressionOutputArg *ast.CXArgument = &ast.CXArgument{}
 	if lastRightExpressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 		lastRightExpressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(lastRightExpressionOutputTypeSig.Meta))
-	} else {
-		panic("type is not cx argument deprecate\n\n")
+	} else if lastRightExpressionOutputTypeSig.Type == ast.TYPE_ATOMIC {
+		lastRightExpressionOutputArg = &ast.CXArgument{}
 	}
 
 	if len(lastRightExpressionOutputArg.Indexes) > 0 || lastRightExpressionOperator != nil {

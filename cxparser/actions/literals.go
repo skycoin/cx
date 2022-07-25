@@ -101,6 +101,7 @@ func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []a
 				out.Size = outArg.Size
 				out.TotalSize = ast.GetArgSize(prgrm, outArg)
 				out.PreviouslyDeclared = true
+				out.Package = ast.CXPackageIndex(pkg.Index)
 				outIdx := prgrm.AddCXArgInArray(out)
 
 				exprAtomicOp.Outputs = nil

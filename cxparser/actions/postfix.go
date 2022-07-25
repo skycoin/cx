@@ -47,6 +47,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		out.Lengths = prevExpressionOperatorOutput.Lengths
 		out.IsSlice = prevExpressionOperatorOutput.IsSlice
 		out.PreviouslyDeclared = true
+		out.Package = prevExpressionOperatorOutput.Package
 		outIdx := prgrm.AddCXArgInArray(out)
 
 		typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(outIdx))
