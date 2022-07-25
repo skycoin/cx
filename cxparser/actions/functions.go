@@ -311,12 +311,11 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 		if expressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			expressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionOutputTypeSig.Meta))
 		} else {
-			panic("type is not cx argument deprecate\n\n")
+			expressionOutputArg = &ast.CXArgument{}
 		}
 
-		cxAtomicOpOutput := expressionOutputArg
-		opName := cxAtomicOpOutput.Name
-		opPkgIdx := cxAtomicOpOutput.Package
+		opName := expressionOutputTypeSig.Name
+		opPkgIdx := expressionOutputTypeSig.Package
 
 		opPkg, err := prgrm.GetPackageFromArray(opPkgIdx)
 		if err != nil {
@@ -325,7 +324,7 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 
 		if op, err := prgrm.GetFunction(opName, opPkg.Name); err == nil {
 			expression.Operator = ast.CXFunctionIndex(op.Index)
-		} else if cxAtomicOpOutput.Fields == nil {
+		} else if expressionOutputArg.Fields == nil {
 			// then it's not a possible method call
 			println(ast.CompilationError(CurrentFile, LineNo), err.Error())
 			return nil
@@ -333,7 +332,7 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 			exprs[len(exprs)-1].ExpressionType = ast.CXEXPR_METHOD_CALL
 		}
 
-		if len(expression.GetOutputs(prgrm)) > 0 && cxAtomicOpOutput.Fields == nil {
+		if len(expression.GetOutputs(prgrm)) > 0 && expressionOutputArg.Fields == nil {
 			expression.Outputs = nil
 		}
 	}
@@ -361,13 +360,8 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 			var typeSigArg *ast.CXArgument = &ast.CXArgument{}
 			if typeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 				typeSigArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(typeSig.Meta))
-			} else {
-				panic("type is not cx arg deprecate\n\n")
-			}
 
-			// If type sig arg is not nil, check if it is an atomic type.
-			// If an atomic type, convert cx type signature to type atomic/
-			if typeSigArg != nil {
+				// If an atomic type, convert cx type signature to type atomic/
 				if ast.IsTypeAtomic(typeSigArg) {
 					typeSig.Name = typeSigArg.Name
 					typeSig.Type = ast.TYPE_ATOMIC
@@ -375,6 +369,8 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 					typeSig.Offset = typeSigArg.Offset
 					typeSig.Package = typeSigArg.Package
 				}
+			} else if typeSig.Type == ast.TYPE_ATOMIC {
+				// do nothing
 			}
 
 			// then it's a literal
@@ -390,57 +386,69 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 				if inpExprAtomicOpOperatorOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 					inpExprAtomicOpOperatorOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inpExprAtomicOpOperatorOutputTypeSig.Meta))
 
-					inpExprAtomicOpOperatorOutput := inpExprAtomicOpOperatorOutputArg
-					if inpExprAtomicOpOperatorOutput.Type == types.UNDEFINED {
+					var typeSigIdx ast.CXTypeSignatureIndex
+
+					// if undefined type, then adopt argument's type
+					if inpExprAtomicOpOperatorOutputArg.Type == types.UNDEFINED {
 						inpExprAtomicOpInputTypeSig := prgrm.GetCXTypeSignatureFromArray(inpExprAtomicOp.GetInputs(prgrm)[0])
 
 						var inpExprAtomicOpInputArg *ast.CXArgument = &ast.CXArgument{}
 						if inpExprAtomicOpInputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 							inpExprAtomicOpInputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inpExprAtomicOpInputTypeSig.Meta))
-						} else {
-							panic("type is not cx argument deprecate\n\n")
+
+							out = ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, inpExprCXLine.LineNumber).SetType(inpExprAtomicOpInputArg.Type)
+							out.StructType = inpExprAtomicOpInputArg.StructType
+							out.Size = inpExprAtomicOpInputArg.Size
+							out.TotalSize = inpExprAtomicOpOperatorOutputTypeSig.GetSize(prgrm)
+							out.Type = inpExprAtomicOpInputArg.Type
+							out.PointerTargetType = inpExprAtomicOpInputArg.PointerTargetType
+							out.PreviouslyDeclared = true
+
+							out.Package = inpExprAtomicOp.Package
+							outIdx := prgrm.AddCXArgInArray(out)
+							typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(outIdx))
+							typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
+						} else if inpExprAtomicOpInputTypeSig.Type == ast.TYPE_ATOMIC {
+							outTypeSig := &ast.CXTypeSignature{}
+							outTypeSig.Name = generateTempVarName(constants.LOCAL_PREFIX)
+							outTypeSig.Type = ast.TYPE_ATOMIC
+							outTypeSig.Meta = inpExprAtomicOpInputTypeSig.Meta
+							outTypeSig.Package = inpExprAtomicOpInputTypeSig.Package
+							outTypeSig.Offset = inpExprAtomicOpInputTypeSig.Offset
+
+							typeSigIdx = prgrm.AddCXTypeSignatureInArray(outTypeSig)
 						}
 
-						// if undefined type, then adopt argument's type
-						inpExprAtomicOpInput := inpExprAtomicOpInputArg
-
-						out = ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, inpExprCXLine.LineNumber).SetType(inpExprAtomicOpInput.Type)
-						out.StructType = inpExprAtomicOpInput.StructType
-						out.Size = inpExprAtomicOpInput.Size
-						out.TotalSize = inpExprAtomicOpOperatorOutputTypeSig.GetSize(prgrm)
-						out.Type = inpExprAtomicOpInput.Type
-						out.PointerTargetType = inpExprAtomicOpInput.PointerTargetType
-						out.PreviouslyDeclared = true
 					} else {
-						out = ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, inpExprCXLine.LineNumber).SetType(inpExprAtomicOpOperatorOutput.Type)
-						out.DeclarationSpecifiers = inpExprAtomicOpOperatorOutput.DeclarationSpecifiers
+						out = ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, inpExprCXLine.LineNumber).SetType(inpExprAtomicOpOperatorOutputArg.Type)
+						out.DeclarationSpecifiers = inpExprAtomicOpOperatorOutputArg.DeclarationSpecifiers
 
-						out.StructType = inpExprAtomicOpOperatorOutput.StructType
+						out.StructType = inpExprAtomicOpOperatorOutputArg.StructType
 
-						if inpExprAtomicOpOperatorOutput.StructType != nil {
+						if inpExprAtomicOpOperatorOutputArg.StructType != nil {
 							inpExprPkg, err := prgrm.GetPackageFromArray(inpExprAtomicOp.Package)
 							if err != nil {
 								panic(err)
 							}
-							if strct, err := inpExprPkg.GetStruct(prgrm, inpExprAtomicOpOperatorOutput.StructType.Name); err == nil {
+							if strct, err := inpExprPkg.GetStruct(prgrm, inpExprAtomicOpOperatorOutputArg.StructType.Name); err == nil {
 								out.Size = strct.GetStructSize(prgrm)
 								out.TotalSize = strct.GetStructSize(prgrm)
 							}
 						} else {
-							out.Size = inpExprAtomicOpOperatorOutput.Size
+							out.Size = inpExprAtomicOpOperatorOutputArg.Size
 							out.TotalSize = inpExprAtomicOpOperatorOutputTypeSig.GetSize(prgrm)
 						}
 
-						out.Type = inpExprAtomicOpOperatorOutput.Type
-						out.PointerTargetType = inpExprAtomicOpOperatorOutput.PointerTargetType
+						out.Type = inpExprAtomicOpOperatorOutputArg.Type
+						out.PointerTargetType = inpExprAtomicOpOperatorOutputArg.PointerTargetType
 						out.PreviouslyDeclared = true
+
+						out.Package = inpExprAtomicOp.Package
+						outIdx := prgrm.AddCXArgInArray(out)
+						typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(outIdx))
+						typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
 					}
 
-					out.Package = inpExprAtomicOp.Package
-					outIdx := prgrm.AddCXArgInArray(out)
-
-					typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(outIdx))
-					typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
 					inpExprAtomicOp.AddOutput(prgrm, typeSigIdx)
 					expression.AddInput(prgrm, typeSigIdx)
 				} else if inpExprAtomicOpOperatorOutputTypeSig.Type == ast.TYPE_ATOMIC {
