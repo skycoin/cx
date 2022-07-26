@@ -593,17 +593,26 @@ func AssociateReturnExpressions(prgrm *ast.CXProgram, idx int, retExprs []ast.CX
 	fnOutputs := fn.GetOutputs(prgrm)
 	fnOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(fnOutputs[idx])
 	var outParam *ast.CXArgument = &ast.CXArgument{}
+	var typeSigIdx ast.CXTypeSignatureIndex
 	if fnOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 		outParam = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(fnOutputTypeSig.Meta))
-	} else {
-		panic("type is not type cx argument deprecate\n\n")
-	}
 
-	out := ast.MakeArgument(outParam.Name, CurrentFile, LineNo)
-	out.SetType(outParam.Type)
-	out.StructType = outParam.StructType
-	out.PreviouslyDeclared = true
-	outIdx := prgrm.AddCXArgInArray(out)
+		out := ast.MakeArgument(outParam.Name, CurrentFile, LineNo)
+		out.SetType(outParam.Type)
+		out.StructType = outParam.StructType
+		out.PreviouslyDeclared = true
+		outIdx := prgrm.AddCXArgInArray(out)
+		typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(outIdx))
+		typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
+	} else if fnOutputTypeSig.Type == ast.TYPE_ATOMIC {
+		newCXTypeSig := &ast.CXTypeSignature{}
+		newCXTypeSig.Name = fnOutputTypeSig.Name
+		newCXTypeSig.Package = fnOutputTypeSig.Package
+		newCXTypeSig.Type = ast.TYPE_ATOMIC
+		newCXTypeSig.Meta = int(fnOutputTypeSig.Type)
+		newCXTypeSig.Offset = fnOutputTypeSig.Offset
+		typeSigIdx = prgrm.AddCXTypeSignatureInArray(newCXTypeSig)
+	}
 
 	lastExpression, err := prgrm.GetCXAtomicOp(lastExpr.Index)
 	if err != nil {
@@ -617,8 +626,7 @@ func AssociateReturnExpressions(prgrm *ast.CXProgram, idx int, retExprs []ast.CX
 
 		lastExpression.Inputs = lastExpression.Outputs
 		lastExpression.Outputs = nil
-		typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(outIdx))
-		typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
+
 		lastExpression.AddOutput(prgrm, typeSigIdx)
 		return retExprs
 	} else if len(lastExpression.GetOutputs(prgrm)) > 0 {
@@ -631,14 +639,10 @@ func AssociateReturnExpressions(prgrm *ast.CXProgram, idx int, retExprs []ast.CX
 
 		exprOutTypeSig := lastExpression.GetOutputs(prgrm)[0]
 		expression.AddInput(prgrm, exprOutTypeSig)
-		typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(outIdx))
-		typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
 		expression.AddOutput(prgrm, typeSigIdx)
 
 		return append(retExprs, *exprCXLine, *expr)
 	} else {
-		typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(outIdx))
-		typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
 		lastExpression.AddOutput(prgrm, typeSigIdx)
 		return retExprs
 	}
