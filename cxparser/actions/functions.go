@@ -1777,30 +1777,36 @@ func ProcessTempVariable(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 
 	if expressionOperator != nil && (isOpIdent || ast.IsArithmeticOperator(expressionOperator.AtomicOPCode)) && len(expression.GetOutputs(prgrm)) > 0 && len(expression.GetInputs(prgrm)) > 0 {
 		outputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetOutputs(prgrm)[0])
-		var outputArgIdx ast.CXArgumentIndex
-		if outputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-			outputArgIdx = ast.CXArgumentIndex(outputTypeSig.Meta)
-		} else {
-			// panic("type is not type cx argument deprecate\n\n")
-			return
-		}
-		name := prgrm.CXArgs[outputArgIdx].Name
-		if IsTempVar(name) {
-			expressionInputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetInputs(prgrm)[0])
-			var expressionInputArg *ast.CXArgument = &ast.CXArgument{}
-			if expressionInputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-				expressionInputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionInputTypeSig.Meta))
-			} else {
-				panic("type is not cx argument deprecate\n\n")
+		if IsTempVar(outputTypeSig.Name) {
+			if outputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				outputArgIdx := ast.CXArgumentIndex(outputTypeSig.Meta)
+
+				expressionInputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetInputs(prgrm)[0])
+				if expressionInputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+					expressionInputArg := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionInputTypeSig.Meta))
+
+					expressionInput := expressionInputArg
+					// then it's a temporary variable and it needs to adopt its input's type
+					prgrm.CXArgs[outputArgIdx].Type = expressionInput.Type
+					prgrm.CXArgs[outputArgIdx].PointerTargetType = expressionInput.PointerTargetType
+					prgrm.CXArgs[outputArgIdx].Size = expressionInput.Size
+					prgrm.CXArgs[outputArgIdx].TotalSize = expressionInput.TotalSize
+					prgrm.CXArgs[outputArgIdx].PreviouslyDeclared = true
+				} else if expressionInputTypeSig.Type == ast.TYPE_ATOMIC {
+					prgrm.CXArgs[outputArgIdx].Type = types.Code(expressionInputTypeSig.Meta)
+					prgrm.CXArgs[outputArgIdx].Size = types.Code(expressionInputTypeSig.Meta).Size()
+					prgrm.CXArgs[outputArgIdx].TotalSize = types.Code(expressionInputTypeSig.Meta).Size()
+				}
+			} else if outputTypeSig.Type == ast.TYPE_ATOMIC {
+				expressionInputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetInputs(prgrm)[0])
+				if expressionInputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+					panic(fmt.Sprintf("1.output=%+v\n\ninput=%+v\n\n", outputTypeSig, expressionInputTypeSig))
+				} else if expressionInputTypeSig.Type == ast.TYPE_ATOMIC {
+					panic(fmt.Sprintf("2.output=%+v\n\ninput=%+v\n\n", outputTypeSig, expressionInputTypeSig))
+				}
+
 			}
 
-			expressionInput := expressionInputArg
-			// then it's a temporary variable and it needs to adopt its input's type
-			prgrm.CXArgs[outputArgIdx].Type = expressionInput.Type
-			prgrm.CXArgs[outputArgIdx].PointerTargetType = expressionInput.PointerTargetType
-			prgrm.CXArgs[outputArgIdx].Size = expressionInput.Size
-			prgrm.CXArgs[outputArgIdx].TotalSize = expressionInput.TotalSize
-			prgrm.CXArgs[outputArgIdx].PreviouslyDeclared = true
 		}
 	}
 }
@@ -1825,7 +1831,8 @@ func CopyArgFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast
 		sym = nil
 	}
 
-	if arg == nil || sym == nil {
+	// TODO: check if this needs a change
+	if sym == nil || arg == nil {
 		symTypeSignature.Package = argTypeSignature.Package
 		symTypeSignature.Type = argTypeSignature.Type
 		symTypeSignature.Meta = argTypeSignature.Meta

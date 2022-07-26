@@ -263,15 +263,14 @@ func getOutputType(prgrm *ast.CXProgram, expr *ast.CXExpression) *ast.CXArgument
 	expressionOperator := prgrm.GetFunctionFromArray(expression.Operator)
 	expressionOperatorOutputs := expressionOperator.GetOutputs(prgrm)
 	expressionOperatorOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(expressionOperatorOutputs[0])
-	var expressionOperatorOutputArg *ast.CXArgument = &ast.CXArgument{}
 	if expressionOperatorOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-		expressionOperatorOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionOperatorOutputTypeSig.Meta))
-	} else {
-		panic("type is not cx argument deprecate\n\n")
-	}
+		expressionOperatorOutputArg := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionOperatorOutputTypeSig.Meta))
 
-	if expressionOperatorOutputArg.Type != types.UNDEFINED {
-		return expressionOperatorOutputArg
+		if expressionOperatorOutputArg.Type != types.UNDEFINED {
+			return expressionOperatorOutputArg
+		}
+	} else if expressionOperatorOutputTypeSig.Type == ast.TYPE_ATOMIC {
+		panic("type is not cx argument deprecate\n\n")
 	}
 
 	expressionInputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetInputs(prgrm)[0])

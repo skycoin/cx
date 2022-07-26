@@ -223,14 +223,13 @@ func SelectionExpressions(prgrm *ast.CXProgram, conditionExprs []ast.CXExpressio
 			lastCondExpressionOperatorOutputs := lastCondExpressionOperator.GetOutputs(prgrm)
 			lastCondExpressionOperatorOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(lastCondExpressionOperatorOutputs[0])
 
-			var lastCondExpressionOperatorOutputArg *ast.CXArgument = &ast.CXArgument{}
 			if lastCondExpressionOperatorOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-				lastCondExpressionOperatorOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(lastCondExpressionOperatorOutputTypeSig.Meta))
-			} else {
-				panic("type is not cx argument deprecate\n\n")
+				lastCondExpressionOperatorOutputArg := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(lastCondExpressionOperatorOutputTypeSig.Meta))
+				predicate.SetType(lastCondExpressionOperatorOutputArg.Type)
+			} else if lastCondExpressionOperatorOutputTypeSig.Type == ast.TYPE_ATOMIC {
+				predicate.SetType(types.Code(lastCondExpressionOperatorOutputTypeSig.Meta))
 			}
 
-			predicate.SetType(lastCondExpressionOperatorOutputArg.Type)
 		}
 		predicate.PreviouslyDeclared = true
 		predicate.Package = ast.CXPackageIndex(pkg.Index)
