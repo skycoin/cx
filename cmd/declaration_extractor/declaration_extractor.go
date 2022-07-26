@@ -128,6 +128,7 @@ func ExtractGlobals(source []byte, fileName string) ([]GlobalDeclaration, error)
 	var pkg string
 
 	//Regexs
+	rePkg := regexp.MustCompile("package")
 	rePkgName := regexp.MustCompile(`(^|[\s])package[ \t]+([_a-zA-Z][_a-zA-Z0-9]*)`)
 	reGlobal := regexp.MustCompile("var")
 	reGlobalName := regexp.MustCompile(`var\s([_a-zA-Z][_a-zA-Z0-9]*)\s+[\[_a-zA-Z][\]_a-zA-Z0-9]*`)
@@ -147,7 +148,32 @@ func ExtractGlobals(source []byte, fileName string) ([]GlobalDeclaration, error)
 		line := scanner.Bytes()
 		lineno++
 
-		if rePkgName
+		if rePkg.FindIndex(line) != nil {
+			tokens := bytes.Fields(line)
+
+			if !bytes.Equal(tokens[0], []byte("package")) {
+				col := bytes.IndexAny(line, string(tokens[0]))
+
+				return GlobalDeclarationsArray, fmt.Errorf("%d:%d %s", lineno, col, "syntax error: unexpected IDENTIFIER")
+			}
+
+			if len(tokens) == 1 {
+				col := bytes.LastIndex(line, tokens[0])
+
+				return GlobalDeclarationsArray, fmt.Errorf("%d:%d %s", lineno, col, "syntax error: unexpected IDENTIFIER")
+			}
+
+			if len(tokens) > 2 {
+				col := bytes.IndexAny(line, string(tokens[2]))
+
+				return GlobalDeclarationsArray, fmt.Errorf("%d:%d %s", lineno, col, "syntax error: unexpected IDENTIFIER")
+			}
+
+			if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
+				pkg = match[2]
+			}
+
+		}
 
 		// if {  is found increment body depth
 		if locs := reBodyOpen.FindAllIndex(line, -1); locs != nil {
@@ -534,7 +560,7 @@ func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDecla
 
 				defer wg.Done()
 
-				globals, err := ExtractGlobals(replaceComments, fileName, pkg)
+				globals, err := ExtractGlobals(replaceComments, fileName)
 
 				if err != nil {
 					errorChannel <- err

@@ -150,12 +150,11 @@ func TestDeclarationExtraction_ExtractGlobal(t *testing.T) {
 			srcBytes, err := os.ReadFile(tc.testDir)
 			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(srcBytes)
 			fileName := filepath.Base(tc.testDir)
-			pkg := declaration_extractor.ExtractPackages(ReplaceCommentsWithWhitespaces)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			globals, err := declaration_extractor.ExtractGlobals(ReplaceCommentsWithWhitespaces, fileName, pkg)
+			globals, err := declaration_extractor.ExtractGlobals(ReplaceCommentsWithWhitespaces, fileName)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -641,7 +640,7 @@ func TestDeclarationExtraction_ReDeclarationCheck(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			globals, err := declaration_extractor.ExtractGlobals(ReplaceCommentsWithWhitespaces, fileName, pkg)
+			globals, err := declaration_extractor.ExtractGlobals(ReplaceCommentsWithWhitespaces, fileName)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -729,7 +728,7 @@ func TestDeclarationExtraction_GetDeclarations(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			globals, err := declaration_extractor.ExtractGlobals(ReplaceCommentsWithWhitespaces, fileName, pkg)
+			globals, err := declaration_extractor.ExtractGlobals(ReplaceCommentsWithWhitespaces, fileName)
 			if err != nil {
 				t.Fatal(err)
 			}
