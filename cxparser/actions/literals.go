@@ -193,14 +193,13 @@ func PrimaryStructLiteral(prgrm *ast.CXProgram, structName string, structFields 
 					field := ast.MakeArgument(name, CurrentFile, LineNo)
 					field.Type = prgrm.CXArgs[cxAtomicOpOutputIdx].Type
 					field.PointerTargetType = prgrm.CXArgs[cxAtomicOpOutputIdx].PointerTargetType
-					expr.ExpressionType = ast.CXEXPR_STRUCT_LITERAL
+					field.StructType = strct
 
 					prgrm.CXArgs[cxAtomicOpOutputIdx].Package = ast.CXPackageIndex(pkg.Index)
 
 					if prgrm.CXArgs[cxAtomicOpOutputIdx].StructType == nil {
 						prgrm.CXArgs[cxAtomicOpOutputIdx].StructType = strct
 					}
-					field.StructType = strct
 
 					prgrm.CXArgs[cxAtomicOpOutputIdx].Size = strct.GetStructSize(prgrm)
 					prgrm.CXArgs[cxAtomicOpOutputIdx].TotalSize = strct.GetStructSize(prgrm)
@@ -210,9 +209,34 @@ func PrimaryStructLiteral(prgrm *ast.CXProgram, structName string, structFields 
 					fieldIdx := prgrm.AddCXArgInArray(field)
 					prgrm.CXArgs[cxAtomicOpOutputIdx].Fields = append(prgrm.CXArgs[cxAtomicOpOutputIdx].Fields, fieldIdx)
 				} else if cxAtomicOpOutputTypeSig.Type == ast.TYPE_ATOMIC {
-					panic("type signature is type atomic")
+					// panic("type is not cx arg deprecate")
+					// TODO: give proper change when we implement type_structs
+					// Looks like we have to convert the arg to type cx arg deprecate again
+
+					newCXArg := &ast.CXArgument{ArgDetails: &ast.CXArgumentDebug{}}
+					newCXArg.Type = types.Code(cxAtomicOpOutputTypeSig.Meta)
+					newCXArg.Package = ast.CXPackageIndex(pkg.Index)
+					newCXArg.Offset = cxAtomicOpOutputTypeSig.Offset
+
+					newCXArg.StructType = strct
+					newCXArg.Size = strct.GetStructSize(prgrm)
+					newCXArg.TotalSize = strct.GetStructSize(prgrm)
+					newCXArg.Name = structName
+
+					field := ast.MakeArgument(cxAtomicOpOutputTypeSig.Name, CurrentFile, LineNo)
+					field.Type = types.Code(cxAtomicOpOutputTypeSig.Meta)
+					field.StructType = strct
+					fieldIdx := prgrm.AddCXArgInArray(field)
+
+					newCXArg.Fields = append(newCXArg.Fields, fieldIdx)
+					newCXArgIdx := prgrm.AddCXArgInArray(newCXArg)
+
+					cxAtomicOpOutputTypeSig.Name = structName
+					cxAtomicOpOutputTypeSig.Type = ast.TYPE_CXARGUMENT_DEPRECATE
+					cxAtomicOpOutputTypeSig.Meta = int(newCXArgIdx)
 				}
 
+				expr.ExpressionType = ast.CXEXPR_STRUCT_LITERAL
 				result = append(result, expr)
 			}
 		} else {
