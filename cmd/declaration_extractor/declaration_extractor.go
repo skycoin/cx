@@ -129,7 +129,7 @@ func ExtractGlobals(source []byte, fileName string) ([]GlobalDeclaration, error)
 
 	//Regexs
 	rePkg := regexp.MustCompile("package")
-	rePkgName := regexp.MustCompile(`(^|[\s])package[ \t]+([_a-zA-Z][_a-zA-Z0-9]*)`)
+	rePkgName := regexp.MustCompile(`(^|[\s])package\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
 	reGlobal := regexp.MustCompile("var")
 	reGlobalName := regexp.MustCompile(`var\s([_a-zA-Z][_a-zA-Z0-9]*)\s+[\[_a-zA-Z][\]_a-zA-Z0-9]*`)
 	reBodyOpen := regexp.MustCompile("{")
@@ -148,6 +148,7 @@ func ExtractGlobals(source []byte, fileName string) ([]GlobalDeclaration, error)
 		line := scanner.Bytes()
 		lineno++
 
+		// Package declaration extraction
 		if rePkg.FindIndex(line) != nil {
 			tokens := bytes.Fields(line)
 
@@ -221,12 +222,14 @@ func ExtractGlobals(source []byte, fileName string) ([]GlobalDeclaration, error)
 
 }
 
-func ExtractEnums(source []byte, fileName string, pkg string) ([]EnumDeclaration, error) {
+func ExtractEnums(source []byte, fileName string) ([]EnumDeclaration, error) {
 
-	var EnumDec []EnumDeclaration
-	var err error
+	var EnumDeclarationsArray []EnumDeclaration
+	var pkg string
 
 	//Regexes
+	rePkg := regexp.MustCompile("package")
+	rePkgName := regexp.MustCompile(`(^|[\s])package\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
 	reEnumInit := regexp.MustCompile(`const\s+\(`)
 	rePrtsOpen := regexp.MustCompile(`\(`)
 	rePrtsClose := regexp.MustCompile(`\)`)
@@ -247,6 +250,34 @@ func ExtractEnums(source []byte, fileName string, pkg string) ([]EnumDeclaration
 
 		line := scanner.Bytes()
 		lineno++
+
+		// Package declaration extraction
+		if rePkg.FindIndex(line) != nil {
+			tokens := bytes.Fields(line)
+
+			if !bytes.Equal(tokens[0], []byte("package")) {
+				col := bytes.IndexAny(line, string(tokens[0]))
+
+				return EnumDeclarationsArray, fmt.Errorf("%d:%d %s", lineno, col, "syntax error: unexpected IDENTIFIER")
+			}
+
+			if len(tokens) == 1 {
+				col := bytes.LastIndex(line, tokens[0])
+
+				return EnumDeclarationsArray, fmt.Errorf("%d:%d %s", lineno, col, "syntax error: unexpected IDENTIFIER")
+			}
+
+			if len(tokens) > 2 {
+				col := bytes.IndexAny(line, string(tokens[2]))
+
+				return EnumDeclarationsArray, fmt.Errorf("%d:%d %s", lineno, col, "syntax error: unexpected IDENTIFIER")
+			}
+
+			if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
+				pkg = match[2]
+			}
+
+		}
 
 		// initialize enum, increment parenthesis depth and skip to next line
 		// if const ( is found
@@ -300,14 +331,14 @@ func ExtractEnums(source []byte, fileName string, pkg string) ([]EnumDeclaration
 			tmp.Type = Type
 
 			tmp.Value = Index
-			EnumDec = append(EnumDec, tmp)
+			EnumDeclarationsArray = append(EnumDeclarationsArray, tmp)
 			Index++
 		}
 
 		currentOffset += len(line) // increments the currentOffset by line len
 	}
 
-	return EnumDec, err
+	return EnumDeclarationsArray, nil
 
 }
 
@@ -575,7 +606,7 @@ func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDecla
 
 				defer wg.Done()
 
-				enums, err := ExtractEnums(replaceComments, fileName, pkg)
+				enums, err := ExtractEnums(replaceComments, fileName)
 
 				if err != nil {
 					errorChannel <- err

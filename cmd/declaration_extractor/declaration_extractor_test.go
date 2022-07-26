@@ -360,12 +360,11 @@ func TestDeclarationExtraction_ExtractEnums(t *testing.T) {
 			srcBytes, err := os.ReadFile(tc.testDir)
 			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(srcBytes)
 			fileName := filepath.Base(tc.testDir)
-			pkg := declaration_extractor.ExtractPackages(ReplaceCommentsWithWhitespaces)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			enums, err := declaration_extractor.ExtractEnums(ReplaceCommentsWithWhitespaces, fileName, pkg)
+			enums, err := declaration_extractor.ExtractEnums(ReplaceCommentsWithWhitespaces, fileName)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -645,7 +644,7 @@ func TestDeclarationExtraction_ReDeclarationCheck(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			enums, err := declaration_extractor.ExtractEnums(ReplaceCommentsWithWhitespaces, fileName, pkg)
+			enums, err := declaration_extractor.ExtractEnums(ReplaceCommentsWithWhitespaces, fileName)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -733,7 +732,7 @@ func TestDeclarationExtraction_GetDeclarations(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			enums, err := declaration_extractor.ExtractEnums(ReplaceCommentsWithWhitespaces, fileName, pkg)
+			enums, err := declaration_extractor.ExtractEnums(ReplaceCommentsWithWhitespaces, fileName)
 			if err != nil {
 				t.Fatal(err)
 			}
