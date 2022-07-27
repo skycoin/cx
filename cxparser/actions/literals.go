@@ -94,7 +94,15 @@ func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []a
 				// We need to create a temporary variable to hold the result of the
 				// nested expressions. Then use that variable as part of the slice literal.
 				out := ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), exprCXLine.FileName, exprCXLine.LineNumber)
-				outArg := getOutputType(prgrm, &expr)
+				outTypeSig := getOutputType(prgrm, &expr)
+
+				var outArg *ast.CXArgument
+				if outTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+					outArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(outTypeSig.Meta))
+				} else if outTypeSig.Type == ast.TYPE_ATOMIC {
+					panic("type is cx arg deprecate")
+				}
+
 				out.SetType(outArg.Type)
 				out.PointerTargetType = outArg.PointerTargetType
 				out.StructType = outArg.StructType

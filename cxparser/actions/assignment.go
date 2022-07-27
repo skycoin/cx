@@ -250,12 +250,12 @@ func ShortAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression, exprCXLine *a
 	}
 }
 
-// getOutputType tries to determine what's the argument that holds the type that should be
+// getOutputType tries to determine the expr's type that should be
 // returned by a function call.
 // This function is needed because CX has some standard library functions that return cxcore.TYPE_UNDEFINED
 // arguments. In these cases, the output type depends on its input arguments' type. In the rest of
 // the cases, we can simply use the function's return type.
-func getOutputType(prgrm *ast.CXProgram, expr *ast.CXExpression) *ast.CXArgument {
+func getOutputType(prgrm *ast.CXProgram, expr *ast.CXExpression) *ast.CXTypeSignature {
 	expression, err := prgrm.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		panic(err)
@@ -267,21 +267,15 @@ func getOutputType(prgrm *ast.CXProgram, expr *ast.CXExpression) *ast.CXArgument
 		expressionOperatorOutputArg := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionOperatorOutputTypeSig.Meta))
 
 		if expressionOperatorOutputArg.Type != types.UNDEFINED {
-			return expressionOperatorOutputArg
+			return expressionOperatorOutputTypeSig
 		}
 	} else if expressionOperatorOutputTypeSig.Type == ast.TYPE_ATOMIC {
-		panic("type is not cx argument deprecate\n\n")
+		return expressionOperatorOutputTypeSig
 	}
 
 	expressionInputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetInputs(prgrm)[0])
-	var expressionInputArg *ast.CXArgument = &ast.CXArgument{}
-	if expressionInputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-		expressionInputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionInputTypeSig.Meta))
-	} else {
-		panic("type is not cx argument deprecate\n\n")
-	}
 
-	return expressionInputArg
+	return expressionInputTypeSig
 }
 
 // Assignment handles assignment statements with different operators,
@@ -351,9 +345,19 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 			// then it's a literal
 			sym = ast.MakeArgument(toExpressionOutputTypeSig.Name, CurrentFile, LineNo).SetType(fromExpressionOutputArg.Type)
 		} else {
-			outTypeArg := getOutputType(prgrm, &fromExprs[lastFromExpressionIdx])
+			outTypeSig := getOutputType(prgrm, &fromExprs[lastFromExpressionIdx])
+			var outType types.Code
+			var outTypeIsSlice bool
+			if outTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				outTypeArg := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(outTypeSig.Meta))
+				outType = outTypeArg.Type
+				outTypeIsSlice = outTypeArg.IsSlice
+			} else if outTypeSig.Type == ast.TYPE_ATOMIC {
+				outType = types.Code(outTypeSig.Meta)
+				outTypeIsSlice = false
+			}
 
-			sym = ast.MakeArgument(toExpressionOutputTypeSig.Name, CurrentFile, LineNo).SetType(outTypeArg.Type)
+			sym = ast.MakeArgument(toExpressionOutputTypeSig.Name, CurrentFile, LineNo).SetType(outType)
 
 			if fromExprs[lastFromExpressionIdx].IsArrayLiteral() {
 				fromExpressionInputTypeSig := prgrm.GetCXTypeSignatureFromArray(prgrm.CXAtomicOps[fromExpressionIdx].GetInputs(prgrm)[0])
@@ -369,13 +373,13 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 				sym.TotalSize = fromCXAtomicOpInputs.TotalSize
 				sym.Lengths = fromCXAtomicOpInputs.Lengths
 			}
-			if outTypeArg.IsSlice {
+			if outTypeIsSlice {
 				// if from[idx].Operator.ProgramOutput[0].IsSlice {
 				sym.Lengths = append([]types.Pointer{0}, sym.Lengths...)
 				sym.DeclarationSpecifiers = append(sym.DeclarationSpecifiers, constants.DECL_SLICE)
 			}
 
-			sym.IsSlice = outTypeArg.IsSlice
+			sym.IsSlice = outTypeIsSlice
 			// sym.IsSlice = from[idx].Operator.ProgramOutput[0].IsSlice
 		}
 		sym.Package = ast.CXPackageIndex(pkg.Index)
