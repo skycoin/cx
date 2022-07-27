@@ -464,7 +464,7 @@ func ExtractFuncs(source []byte, fileName string) ([]FuncDeclaration, error) {
 	// Regexes
 	rePkg := regexp.MustCompile("package")
 	rePkgName := regexp.MustCompile(`(^|[\s])package\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
-	reFunc := regexp.MustCompile(`func\s+([_a-zA-Z]\w*)\s*\(.*\)\s+\S+\w+|func\s+([_a-zA-Z]\w*)\s*\(.*\)`)
+	reFunc := regexp.MustCompile(`func`)
 
 	reader := bytes.NewReader(source)
 	scanner := bufio.NewScanner(reader)
@@ -502,6 +502,25 @@ func ExtractFuncs(source []byte, fileName string) ([]FuncDeclaration, error) {
 
 			if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
 				pkg = match[2]
+			}
+
+		}
+
+		if reFunc.FindIndex(line) != nil {
+
+			var paramList []int
+			var inParenthesis bool
+
+			for _, char := range line {
+
+				if char == byte('(') &&  {
+
+				}
+
+				if char == byte(')') {
+
+				}
+
 			}
 
 		}
