@@ -342,10 +342,10 @@ func ExtractEnums(source []byte, fileName string) ([]EnumDeclaration, error) {
 
 }
 
-func ExtractStructs(source []byte, fileName string, pkg string) ([]StructDeclaration, error) {
+func ExtractStructs(source []byte, fileName string) ([]StructDeclaration, error) {
 
-	var StrctDec []StructDeclaration
-	var err error
+	var StructDeclarationsArray []StructDeclaration
+	var pkg string
 
 	reStructHeader := regexp.MustCompile(`type\s+([_a-zA-Z][_a-zA-Z0-9]*)\s+struct`)
 	reLeftBrace := regexp.MustCompile("{")
@@ -388,7 +388,7 @@ func ExtractStructs(source []byte, fileName string, pkg string) ([]StructDeclara
 
 			inBlock--
 			structDeclaration.StructFields = structFieldsArray
-			StrctDec = append(StrctDec, structDeclaration)
+			StructDeclarationsArray = append(StructDeclarationsArray, structDeclaration)
 			structFieldsArray = []*StructField{}
 		}
 
@@ -397,11 +397,11 @@ func ExtractStructs(source []byte, fileName string, pkg string) ([]StructDeclara
 			tokens := strings.Fields(string(line))
 
 			if len(tokens) == 1 {
-				return StrctDec, errors.New("missing type")
+				return StructDeclarationsArray, errors.New("missing type")
 			}
 
 			if len(tokens) > 2 {
-				return StrctDec, errors.New("unexpected token")
+				return StructDeclarationsArray, errors.New("unexpected token")
 			}
 
 			var structField StructField
@@ -422,7 +422,7 @@ func ExtractStructs(source []byte, fileName string, pkg string) ([]StructDeclara
 		currentOffset += len(line) // increments the currentOffset by line len
 	}
 
-	return StrctDec, err
+	return StructDeclarationsArray, nil
 }
 
 func ExtractFuncs(source []byte, fileName string, pkg string) ([]FuncDeclaration, error) {
@@ -621,7 +621,7 @@ func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDecla
 
 				defer wg.Done()
 
-				structs, err := ExtractStructs(replaceComments, fileName, pkg)
+				structs, err := ExtractStructs(replaceComments, fileName)
 
 				if err != nil {
 					errorChannel <- err
