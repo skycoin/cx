@@ -570,12 +570,11 @@ func TestDeclarationExtraction_ExtractFuncs(t *testing.T) {
 			srcBytes, err := os.ReadFile(tc.testDir)
 			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(srcBytes)
 			fileName := filepath.Base(tc.testDir)
-			pkg := declaration_extractor.ExtractPackages(ReplaceCommentsWithWhitespaces)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			funcs, err := declaration_extractor.ExtractFuncs(ReplaceCommentsWithWhitespaces, fileName, pkg)
+			funcs, err := declaration_extractor.ExtractFuncs(ReplaceCommentsWithWhitespaces, fileName)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -633,7 +632,6 @@ func TestDeclarationExtraction_ReDeclarationCheck(t *testing.T) {
 			srcBytes, err := os.ReadFile(tc.testDir)
 			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(srcBytes)
 			fileName := filepath.Base(tc.testDir)
-			pkg := declaration_extractor.ExtractPackages(ReplaceCommentsWithWhitespaces)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -653,7 +651,7 @@ func TestDeclarationExtraction_ReDeclarationCheck(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			funcs, err := declaration_extractor.ExtractFuncs(ReplaceCommentsWithWhitespaces, fileName, pkg)
+			funcs, err := declaration_extractor.ExtractFuncs(ReplaceCommentsWithWhitespaces, fileName)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -721,7 +719,6 @@ func TestDeclarationExtraction_GetDeclarations(t *testing.T) {
 			srcBytes, err := os.ReadFile(tc.testDir)
 			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(srcBytes)
 			fileName := filepath.Base(tc.testDir)
-			pkg := declaration_extractor.ExtractPackages(ReplaceCommentsWithWhitespaces)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -741,7 +738,7 @@ func TestDeclarationExtraction_GetDeclarations(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			funcs, err := declaration_extractor.ExtractFuncs(ReplaceCommentsWithWhitespaces, fileName, pkg)
+			funcs, err := declaration_extractor.ExtractFuncs(ReplaceCommentsWithWhitespaces, fileName)
 			if err != nil {
 				t.Fatal(err)
 			}

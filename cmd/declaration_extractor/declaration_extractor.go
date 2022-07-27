@@ -347,6 +347,9 @@ func ExtractStructs(source []byte, fileName string) ([]StructDeclaration, error)
 	var StructDeclarationsArray []StructDeclaration
 	var pkg string
 
+	// Package
+	rePkg := regexp.MustCompile("package")
+	rePkgName := regexp.MustCompile(`(^|[\s])package\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
 	reStructHeader := regexp.MustCompile(`type\s+([_a-zA-Z][_a-zA-Z0-9]*)\s+struct`)
 	reLeftBrace := regexp.MustCompile("{")
 	reRightBrace := regexp.MustCompile("}")
@@ -366,6 +369,34 @@ func ExtractStructs(source []byte, fileName string) ([]StructDeclaration, error)
 	for scanner.Scan() {
 		line := scanner.Bytes()
 		lineno++
+
+		// Package declaration extraction
+		if rePkg.FindIndex(line) != nil {
+			tokens := bytes.Fields(line)
+
+			if !bytes.Equal(tokens[0], []byte("package")) {
+				col := bytes.IndexAny(line, string(tokens[0]))
+
+				return StructDeclarationsArray, fmt.Errorf("%d:%d %s", lineno, col, "syntax error: unexpected IDENTIFIER")
+			}
+
+			if len(tokens) == 1 {
+				col := bytes.LastIndex(line, tokens[0])
+
+				return StructDeclarationsArray, fmt.Errorf("%d:%d %s", lineno, col, "syntax error: unexpected IDENTIFIER")
+			}
+
+			if len(tokens) > 2 {
+				col := bytes.IndexAny(line, string(tokens[2]))
+
+				return StructDeclarationsArray, fmt.Errorf("%d:%d %s", lineno, col, "syntax error: unexpected IDENTIFIER")
+			}
+
+			if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
+				pkg = match[2]
+			}
+
+		}
 
 		// if struct declaration is found
 		// i.e. type [name] [type]
@@ -425,11 +456,14 @@ func ExtractStructs(source []byte, fileName string) ([]StructDeclaration, error)
 	return StructDeclarationsArray, nil
 }
 
-func ExtractFuncs(source []byte, fileName string, pkg string) ([]FuncDeclaration, error) {
+func ExtractFuncs(source []byte, fileName string) ([]FuncDeclaration, error) {
 
-	var FuncDec []FuncDeclaration
-	var err error
+	var FuncDeclarationsArray []FuncDeclaration
+	var pkg string
 
+	// Regexes
+	rePkg := regexp.MustCompile("package")
+	rePkgName := regexp.MustCompile(`(^|[\s])package\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
 	reFunc := regexp.MustCompile(`func\s+([_a-zA-Z]\w*)\s*\(.*\)\s+\S+\w+|func\s+([_a-zA-Z]\w*)\s*\(.*\)`)
 
 	reader := bytes.NewReader(source)
@@ -443,6 +477,34 @@ func ExtractFuncs(source []byte, fileName string, pkg string) ([]FuncDeclaration
 	for scanner.Scan() {
 		line := scanner.Bytes()
 		lineno++
+
+		// Package declaration extraction
+		if rePkg.FindIndex(line) != nil {
+			tokens := bytes.Fields(line)
+
+			if !bytes.Equal(tokens[0], []byte("package")) {
+				col := bytes.IndexAny(line, string(tokens[0]))
+
+				return FuncDeclarationsArray, fmt.Errorf("%d:%d %s", lineno, col, "syntax error: unexpected IDENTIFIER")
+			}
+
+			if len(tokens) == 1 {
+				col := bytes.LastIndex(line, tokens[0])
+
+				return FuncDeclarationsArray, fmt.Errorf("%d:%d %s", lineno, col, "syntax error: unexpected IDENTIFIER")
+			}
+
+			if len(tokens) > 2 {
+				col := bytes.IndexAny(line, string(tokens[2]))
+
+				return FuncDeclarationsArray, fmt.Errorf("%d:%d %s", lineno, col, "syntax error: unexpected IDENTIFIER")
+			}
+
+			if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
+				pkg = match[2]
+			}
+
+		}
 
 		// if function declaration is found
 		// i.e.  func [name] ([params]) ([returns])
@@ -468,14 +530,14 @@ func ExtractFuncs(source []byte, fileName string, pkg string) ([]FuncDeclaration
 
 			tmp.LineNumber = lineno
 
-			FuncDec = append(FuncDec, tmp)
+			FuncDeclarationsArray = append(FuncDeclarationsArray, tmp)
 
 		}
 
 		currentOffset += len(line) // increments the currentOffset by line len
 	}
 
-	return FuncDec, err
+	return FuncDeclarationsArray, nil
 }
 
 func ReDeclarationCheck(Glbl []GlobalDeclaration, Enum []EnumDeclaration, Strct []StructDeclaration, Func []FuncDeclaration) error {
@@ -636,7 +698,7 @@ func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDecla
 
 				defer wg.Done()
 
-				funcs, err := ExtractFuncs(replaceComments, fileName, pkg)
+				funcs, err := ExtractFuncs(replaceComments, fileName)
 
 				if err != nil {
 					errorChannel <- err
