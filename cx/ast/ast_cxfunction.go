@@ -159,6 +159,7 @@ func (fn *CXFunction) AddInput(prgrm *CXProgram, param *CXArgument) *CXFunction 
 
 	newFieldIdx := prgrm.AddCXTypeSignatureInArray(newField)
 	fn.Inputs.AddField_TypeSignature(prgrm, newFieldIdx)
+	fn.AddLocalVariableName(param.Name)
 
 	return fn
 }
@@ -227,6 +228,7 @@ func (fn *CXFunction) AddOutput(prgrm *CXProgram, param *CXArgument) *CXFunction
 
 	newFieldIdx := prgrm.AddCXTypeSignatureInArray(newField)
 	fn.Outputs.AddField_TypeSignature(prgrm, newFieldIdx)
+	fn.AddLocalVariableName(param.Name)
 
 	return fn
 }
