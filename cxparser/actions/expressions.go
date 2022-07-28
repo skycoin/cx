@@ -362,27 +362,34 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 	lastLeftExpressionOperatorOutputs := lastLeftExpressionOperator.GetOutputs(prgrm)
 	if len(prgrm.CXAtomicOps[lastLeftExpressionIdx].GetOutputs(prgrm)) < 1 {
 		lastLeftExpressionOperatorOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(lastLeftExpressionOperatorOutputs[0])
-		var lastLeftExpressionOperatorOutputArg *ast.CXArgument = &ast.CXArgument{}
+
+		var typeSigIdx ast.CXTypeSignatureIndex
 		if lastLeftExpressionOperatorOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-			lastLeftExpressionOperatorOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(lastLeftExpressionOperatorOutputTypeSig.Meta))
-		} else {
-			panic("type is not cx argument deprecate\n\n")
+			lastLeftExpressionOperatorOutputArg := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(lastLeftExpressionOperatorOutputTypeSig.Meta))
+
+			out := ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, LineNo)
+			out.SetType(resolveTypeForUnd(prgrm, &leftExprs[len(leftExprs)-1]))
+			out.Size = lastLeftExpressionOperatorOutputArg.Size
+			out.TotalSize = lastLeftExpressionOperatorOutputTypeSig.GetSize(prgrm)
+			out.Type = lastLeftExpressionOperatorOutputArg.Type
+			out.PointerTargetType = lastLeftExpressionOperatorOutputArg.PointerTargetType
+			out.Package = ast.CXPackageIndex(pkg.Index)
+			out.PreviouslyDeclared = true
+
+			outIdx := prgrm.AddCXArgInArray(out)
+			typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(outIdx))
+			typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
+		} else if lastLeftExpressionOperatorOutputTypeSig.Type == ast.TYPE_ATOMIC {
+			typeSig := &ast.CXTypeSignature{}
+			typeSig.Name = generateTempVarName(constants.LOCAL_PREFIX)
+			typeSig.Package = lastLeftExpressionOperatorOutputTypeSig.Package
+			typeSig.Type = ast.TYPE_ATOMIC
+			typeSig.Meta = lastLeftExpressionOperatorOutputTypeSig.Meta
+			typeSig.Offset = lastLeftExpressionOperatorOutputTypeSig.Offset
+
+			typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
 		}
 
-		lastLeftExpressionOperatorOutput := lastLeftExpressionOperatorOutputArg
-
-		out := ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, LineNo)
-		out.SetType(resolveTypeForUnd(prgrm, &leftExprs[len(leftExprs)-1]))
-		out.Size = lastLeftExpressionOperatorOutput.Size
-		out.TotalSize = lastLeftExpressionOperatorOutputTypeSig.GetSize(prgrm)
-		out.Type = lastLeftExpressionOperatorOutput.Type
-		out.PointerTargetType = lastLeftExpressionOperatorOutput.PointerTargetType
-		out.Package = ast.CXPackageIndex(pkg.Index)
-		out.PreviouslyDeclared = true
-
-		outIdx := prgrm.AddCXArgInArray(out)
-		typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(outIdx))
-		typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
 		prgrm.CXAtomicOps[lastLeftExpressionIdx].AddOutput(prgrm, typeSigIdx)
 	}
 
@@ -411,7 +418,7 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 			typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
 		} else if lastRightExpressionOperatorOutputTypeSig.Type == ast.TYPE_ATOMIC {
 			typeSig := &ast.CXTypeSignature{}
-			typeSig.Name = lastRightExpressionOperatorOutputTypeSig.Name
+			typeSig.Name = generateTempVarName(constants.LOCAL_PREFIX)
 			typeSig.Package = lastRightExpressionOperatorOutputTypeSig.Package
 			typeSig.Type = ast.TYPE_ATOMIC
 			typeSig.Meta = lastRightExpressionOperatorOutputTypeSig.Meta
@@ -434,8 +441,8 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 	var lastLeftExpressionOutputArg *ast.CXArgument = &ast.CXArgument{}
 	if lastLeftExpressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 		lastLeftExpressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(lastLeftExpressionOutputTypeSig.Meta))
-	} else {
-		panic("type is not cx argument deprecate\n\n")
+	} else if lastLeftExpressionOutputTypeSig.Type == ast.TYPE_ATOMIC {
+		lastLeftExpressionOutputArg = &ast.CXArgument{}
 	}
 
 	if len(lastLeftExpressionOutputArg.Indexes) > 0 || lastLeftExpressionOperator != nil {
