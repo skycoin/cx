@@ -224,31 +224,47 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fnIdx ast.CXFunctionIndex, inputs
 	fn.Size = offset
 
 	// errStr := "\n"
-	// for i := range exprs {
-	// 	expr, _ := prgrm.GetCXAtomicOpFromExpressions(exprs, i)
-
-	// 	for x, inp := range expr.GetInputs(prgrm) {
-	// 		typeSig := prgrm.GetCXTypeSignatureFromArray(inp)
-	// 		if typeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-	// 			errStr += fmt.Sprintf("expr[%v] inp[%v] = %+v\n\n", i, x, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(typeSig.Meta)))
+	// for i, symbol := range *symbols {
+	// 	for _, val := range symbol {
+	// 		if val.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+	// 			errStr += fmt.Sprintf("symbol[%v]=%+v\n", i, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(val.Meta)))
 	// 		} else {
-	// 			errStr += fmt.Sprintf("expr[%v] inp[%v] = %+v\n", i, x, typeSig)
-	// 		}
-
-	// 	}
-
-	// 	for y, out := range expr.GetOutputs(prgrm) {
-	// 		typeSig := prgrm.GetCXTypeSignatureFromArray(out)
-
-	// 		if typeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-	// 			errStr += fmt.Sprintf("expr[%v] out[%v] = %+v\n\n", i, y, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(typeSig.Meta)))
-	// 		} else {
-	// 			errStr += fmt.Sprintf("expr[%v] out[%v] = %+v\n", i, y, typeSig)
+	// 			errStr += fmt.Sprintf("symbol[%v]=%+v\n", i, val)
 
 	// 		}
 	// 	}
+
 	// }
 	// panic(errStr)
+
+	// if fn.Name == "main" {
+	// 	errStr := "\n"
+	// 	for i := range exprs {
+	// 		expr, _ := prgrm.GetCXAtomicOpFromExpressions(exprs, i)
+
+	// 		for x, inp := range expr.GetInputs(prgrm) {
+	// 			typeSig := prgrm.GetCXTypeSignatureFromArray(inp)
+	// 			if typeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+	// 				errStr += fmt.Sprintf("expr[%v] inp[%v] = %+v\n\n", i, x, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(typeSig.Meta)))
+	// 			} else {
+	// 				errStr += fmt.Sprintf("expr[%v] inp[%v] = %+v\n", i, x, typeSig)
+	// 			}
+
+	// 		}
+
+	// 		for y, out := range expr.GetOutputs(prgrm) {
+	// 			typeSig := prgrm.GetCXTypeSignatureFromArray(out)
+
+	// 			if typeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+	// 				errStr += fmt.Sprintf("expr[%v] out[%v] = %+v\n\n", i, y, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(typeSig.Meta)))
+	// 			} else {
+	// 				errStr += fmt.Sprintf("expr[%v] out[%v] = %+v\n", i, y, typeSig)
+
+	// 			}
+	// 		}
+	// 	}
+	// 	panic(errStr)
+	// }
 }
 
 // ProcessTypedOperator gets the proper typed operator for the expression.
@@ -1251,19 +1267,19 @@ func ProcessShortDeclaration(prgrm *ast.CXProgram, expr *ast.CXExpression, expre
 		panic(err)
 	}
 
-	var expressionOutputArg *ast.CXArgument = &ast.CXArgument{}
+	var expressionOutputArgType types.Code
 	if len(expression.GetOutputs(prgrm)) > 0 {
 		expressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetOutputs(prgrm)[0])
 		if expressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-			expressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionOutputTypeSig.Meta))
+			expressionOutputArg := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionOutputTypeSig.Meta))
+			expressionOutputArgType = expressionOutputArg.Type
 		} else {
-			// panic("type is not cx argument deprecate\n\n")
-			return
+			expressionOutputArgType = types.Code(expressionOutputTypeSig.Meta)
 		}
 	}
 
 	// process short declaration
-	if len(expression.GetOutputs(prgrm)) > 0 && len(expression.GetInputs(prgrm)) > 0 && expressionOutputArg.Type == types.IDENTIFIER && !expr.IsStructLiteral() && !isParseOp(prgrm, expr) {
+	if len(expression.GetOutputs(prgrm)) > 0 && len(expression.GetInputs(prgrm)) > 0 && expressionOutputArgType == types.IDENTIFIER && !expr.IsStructLiteral() && !isParseOp(prgrm, expr) {
 		expressionOperator := prgrm.GetFunctionFromArray(expression.Operator)
 		expressionOperatorOutputs := expressionOperator.GetOutputs(prgrm)
 		expressionOperatorOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(expressionOperatorOutputs[0])
@@ -1300,14 +1316,14 @@ func ProcessShortDeclaration(prgrm *ast.CXProgram, expr *ast.CXExpression, expre
 		var prevExpressionOutputIdx ast.CXArgumentIndex
 		if prevExpressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			prevExpressionOutputIdx = ast.CXArgumentIndex(prevExpressionOutputTypeSig.Meta)
-		} else {
-			panic("type is not type cx argument deprecate\n\n")
-		}
 
-		prgrm.CXArgs[prevExpressionOutputIdx].Type = arg.Type
-		prgrm.CXArgs[prevExpressionOutputIdx].PointerTargetType = arg.PointerTargetType
-		prgrm.CXArgs[prevExpressionOutputIdx].Size = arg.Size
-		prgrm.CXArgs[prevExpressionOutputIdx].TotalSize = arg.TotalSize
+			prgrm.CXArgs[prevExpressionOutputIdx].Type = arg.Type
+			prgrm.CXArgs[prevExpressionOutputIdx].PointerTargetType = arg.PointerTargetType
+			prgrm.CXArgs[prevExpressionOutputIdx].Size = arg.Size
+			prgrm.CXArgs[prevExpressionOutputIdx].TotalSize = arg.TotalSize
+		} else {
+			prevExpressionOutputTypeSig.Meta = int(arg.Type)
+		}
 
 		expressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetOutputs(prgrm)[0])
 		var expressionOutputIdx ast.CXArgumentIndex
@@ -1465,6 +1481,10 @@ func UpdateSymbolsTable(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXTypeS
 	var sym *ast.CXArgument = &ast.CXArgument{}
 	if typeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 		sym = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(typeSig.Meta))
+
+		if sym.Type == types.UNDEFINED {
+			return
+		}
 	} else {
 		// panic("type is not cx arg deprecate\n\n")
 		// TODO: temporary return only
@@ -1837,8 +1857,19 @@ func CopyArgFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast
 		symTypeSignature.Type = argTypeSignature.Type
 		symTypeSignature.Meta = argTypeSignature.Meta
 		symTypeSignature.Offset = argTypeSignature.Offset
+
 		return
 	}
+	// } else if sym != nil && arg == nil {
+	// 	sym.Type = types.Code(argTypeSignature.Meta)
+	// 	sym.Offset = argTypeSignature.Offset
+	// 	return
+	// } else if sym == nil && arg != nil {
+	// 	// panic(fmt.Sprintf("sym=%+v\n\narg=%+v\n\n", symTypeSignature, arg))
+	// 	// symTypeSignature.Meta = int(arg.Type)
+	// 	// symTypeSignature.Offset = arg.Offset
+	// 	return
+	// }
 
 	sym.Offset = arg.Offset
 	sym.Type = arg.Type
