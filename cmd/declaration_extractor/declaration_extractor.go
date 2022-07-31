@@ -107,21 +107,6 @@ func ReplaceCommentsWithWhitespaces(source []byte) []byte {
 	return sourceWithoutComments
 }
 
-func ExtractPackages(source []byte) string {
-	rePkgName := regexp.MustCompile(`(^|[\s])package[ \t]+([_a-zA-Z][_a-zA-Z0-9]*)`)
-
-	// Only extracts from the first line
-	firstLineTerminator := bytes.IndexByte(source, byte('\n'))
-
-	// Gets the first line
-	line := source[0:firstLineTerminator]
-
-	// extract package name
-	pkg := rePkgName.FindStringSubmatch(string(line))[2]
-
-	return pkg
-}
-
 func ExtractGlobals(source []byte, fileName string) ([]GlobalDeclaration, error) {
 
 	var GlobalDeclarationsArray []GlobalDeclaration
@@ -682,11 +667,10 @@ func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDecla
 
 			fileName := currentFile.Name()
 			replaceComments := ReplaceCommentsWithWhitespaces(srcBytes)
-			pkg := ExtractPackages(replaceComments)
 
 			wg.Add(4)
 
-			go func(globalChannel chan<- []GlobalDeclaration, replaceComments []byte, fileName string, pkg string, wg *sync.WaitGroup) {
+			go func(globalChannel chan<- []GlobalDeclaration, replaceComments []byte, fileName string, wg *sync.WaitGroup) {
 
 				defer wg.Done()
 
@@ -699,9 +683,9 @@ func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDecla
 
 				globalChannel <- globals
 
-			}(globalChannel, replaceComments, fileName, pkg, wg)
+			}(globalChannel, replaceComments, fileName, wg)
 
-			go func(enumChannel chan<- []EnumDeclaration, replaceComments []byte, fileName string, pkg string, wg *sync.WaitGroup) {
+			go func(enumChannel chan<- []EnumDeclaration, replaceComments []byte, fileName string, wg *sync.WaitGroup) {
 
 				defer wg.Done()
 
@@ -714,9 +698,9 @@ func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDecla
 
 				enumChannel <- enums
 
-			}(enumChannel, replaceComments, fileName, pkg, wg)
+			}(enumChannel, replaceComments, fileName, wg)
 
-			go func(structChannel chan<- []StructDeclaration, replaceComments []byte, fileName string, pkg string, wg *sync.WaitGroup) {
+			go func(structChannel chan<- []StructDeclaration, replaceComments []byte, fileName string, wg *sync.WaitGroup) {
 
 				defer wg.Done()
 
@@ -729,9 +713,9 @@ func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDecla
 
 				structChannel <- structs
 
-			}(structChannel, replaceComments, fileName, pkg, wg)
+			}(structChannel, replaceComments, fileName, wg)
 
-			go func(funcChannel chan<- []FuncDeclaration, replaceComments []byte, fileName string, pkg string, wg *sync.WaitGroup) {
+			go func(funcChannel chan<- []FuncDeclaration, replaceComments []byte, fileName string, wg *sync.WaitGroup) {
 
 				defer wg.Done()
 
@@ -744,7 +728,7 @@ func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDecla
 
 				funcChannel <- funcs
 
-			}(funcChannel, replaceComments, fileName, pkg, wg)
+			}(funcChannel, replaceComments, fileName, wg)
 
 		}(currentFile, globalChannel, enumChannel, structChannel, funcChannel, errorChannel, &wg)
 	}

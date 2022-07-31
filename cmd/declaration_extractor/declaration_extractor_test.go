@@ -81,38 +81,6 @@ func TestDeclarationExtraction_ReplaceCommentsWithWhitespaces(t *testing.T) {
 	}
 }
 
-func TestDeclarationExtraction_ExtractPackages(t *testing.T) {
-
-	tests := []struct {
-		scenario    string
-		testDir     string
-		wantPackage string
-	}{
-		{
-			scenario:    "Has package",
-			testDir:     "./test_files/test.cx",
-			wantPackage: "hello",
-		},
-	}
-
-	for _, tc := range tests {
-		t.Run(tc.scenario, func(t *testing.T) {
-			srcBytes, err := os.ReadFile(tc.testDir)
-			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(srcBytes)
-
-			if err != nil {
-				t.Fatal(err)
-			}
-			pkg := declaration_extractor.ExtractPackages(ReplaceCommentsWithWhitespaces)
-
-			if pkg != tc.wantPackage {
-				t.Errorf("want packages %v, got %v", tc.wantPackage, pkg)
-			}
-
-		})
-	}
-}
-
 func TestDeclarationExtraction_ExtractGlobal(t *testing.T) {
 
 	tests := []struct {
