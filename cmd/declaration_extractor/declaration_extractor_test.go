@@ -81,7 +81,7 @@ func TestDeclarationExtraction_ReplaceCommentsWithWhitespaces(t *testing.T) {
 	}
 }
 
-func TestDeclarationExtraction_ExtractGlobal(t *testing.T) {
+func TestDeclarationExtraction_ExtractGlobals(t *testing.T) {
 
 	tests := []struct {
 		scenario    string
@@ -96,20 +96,44 @@ func TestDeclarationExtraction_ExtractGlobal(t *testing.T) {
 				{
 					PackageID:          "main",
 					FileID:             "./test_files/ExtractGlobals/HasGlobals.cx",
-					StartOffset:        setOffset(0, 0),
-					Length:             0,
-					LineNumber:         0,
-					GlobalVariableName: "",
+					StartOffset:        setOffset(222, 15),
+					Length:             12,
+					LineNumber:         15,
+					GlobalVariableName: "fooV",
 				},
 				{
 					PackageID:          "main",
 					FileID:             "./test_files/ExtractGlobals/HasGlobals.cx",
-					StartOffset:        setOffset(0, 0),
-					Length:             0,
-					LineNumber:         0,
-					GlobalVariableName: "",
+					StartOffset:        setOffset(253, 16),
+					Length:             12,
+					LineNumber:         16,
+					GlobalVariableName: "fooA",
+				},
+				{
+					PackageID:          "main",
+					FileID:             "./test_files/ExtractGlobals/HasGlobals.cx",
+					StartOffset:        setOffset(270, 17),
+					Length:             12,
+					LineNumber:         17,
+					GlobalVariableName: "fooR",
 				},
 			},
+			wantErr: nil,
+		},
+		{
+			scenario: "Has Globals 2",
+			testDir:  "./test_files/ExtractGlobals/HasGlobals2.cx",
+			wantGlobals: []declaration_extractor.GlobalDeclaration{
+				{
+					PackageID:          "main",
+					FileID:             "./test_files/ExtractGlobals/HasGlobals2.cx",
+					StartOffset:        setOffset(153, 12),
+					Length:             12,
+					LineNumber:         12,
+					GlobalVariableName: "fooV",
+				},
+			},
+			wantErr: nil,
 		},
 	}
 
@@ -117,20 +141,40 @@ func TestDeclarationExtraction_ExtractGlobal(t *testing.T) {
 		t.Run(tc.scenario, func(t *testing.T) {
 			srcBytes, err := os.ReadFile(tc.testDir)
 			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(srcBytes)
-			fileName := filepath.Base(tc.testDir)
+			fileName := tc.testDir
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			globals, err := declaration_extractor.ExtractGlobals(ReplaceCommentsWithWhitespaces, fileName)
+			gotGlobals, err := declaration_extractor.ExtractGlobals(ReplaceCommentsWithWhitespaces, fileName)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			for i := range globals {
-				if globals[i] != tc.wantGlobals[i] {
-					t.Errorf("want globals %v, got %v", tc.wantGlobals[i], globals[i])
+			for _, wantGlobal := range tc.wantGlobals {
+
+				var match bool = false
+				var gotGlobalF declaration_extractor.GlobalDeclaration
+
+				for _, gotGlobal := range gotGlobals {
+
+					if gotGlobal.GlobalVariableName == wantGlobal.GlobalVariableName {
+
+						if gotGlobal == wantGlobal {
+							match = true
+						}
+
+						gotGlobalF = gotGlobal
+
+						break
+					}
+
 				}
+
+				if !match {
+					t.Errorf("want global %v, got %v", wantGlobal, gotGlobalF)
+				}
+
 			}
 		})
 	}

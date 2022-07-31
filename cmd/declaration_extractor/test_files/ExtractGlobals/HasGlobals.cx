@@ -1,12 +1,72 @@
+/*
+This example explains, how global variables  behave and 
+how we can recall them in the different functions in main package
+*/
+
+
+
+// initilization of main package 
+//
 package main
 
-var string str
 
-var integer i32 = 5
+// Decelation of Global variables 
+//
+var fooV i32 = i32.add(10, 20)
+var fooA i32 = 5
+var fooR i32
 
-func main() {
-    string = "hello world"
-    str.print(string)
+//funtion to add 1 in the assign variable with no return 
+//
+func sum (num i32) {	
+	fooR = i32.add(num, 1)
+}
 
-    i32.print(integer)
+// function to subtract 1 from the global variable and return the result 
+//
+func subtract () (fooR i32){
+	
+	fooR = i32.sub(fooA, 1)
+}
+
+// function to print the global varible 
+//
+func PrintfooA(){
+
+	i32.print(fooV)
+}
+
+// main function 
+//
+func main () {
+	// declare a new variable
+	//
+	var bar i32 = 20
+
+	// call the sum func to add one in the bar 
+	//
+	sum(bar)
+
+	//print the globle variable
+	//
+	i32.print(fooR)
+
+	// call sum and send a globle variable
+	//
+	sum(fooA)
+
+	//print the return global variable 
+	//
+	i32.print(fooR)
+
+	// call subtract which use globle variable and return 
+	//
+	var fooL i32 = subtract()
+
+	// print 
+	i32.print(fooL)
+
+	//print the global variable 
+	//
+	PrintfooA()
 }
