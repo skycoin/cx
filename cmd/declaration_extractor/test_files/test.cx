@@ -21,6 +21,10 @@ func main () {
 	type animal /* comment between */struct {
 		kingdom str
 	}
+
+	func (a *animal) add (dfs int) (asd str) {
+		
+	}
 }
 
 	func functionTwo () {

@@ -580,9 +580,7 @@ func TestDeclarationExtraction_ExtractFuncs(t *testing.T) {
 			}
 
 			for i := range funcs {
-				if funcs[i] != tc.wantFuncs[i] {
-					t.Errorf("want funcs %v, got %v", tc.wantFuncs[i], funcs[i])
-				}
+				t.Errorf("got %v", funcs[i])
 			}
 		})
 	}

@@ -4,6 +4,10 @@ func addition (number1 i32, number2 i32) (result i32) {
     result = number1 + number2
 }
 
+func minus (number1 i32, number2 i32) (result i32) {
+    return number1 + number2
+}
+
 type Player struct {
     name str
 }
