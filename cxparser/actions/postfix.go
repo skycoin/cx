@@ -516,34 +516,54 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		}
 
 		if glbl, err := imp.GetGlobal(prgrm, ident); err == nil {
-			var glblArg *ast.CXArgument = &ast.CXArgument{}
 			if glbl.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-				glblArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(glbl.Meta))
-			} else {
-				panic("type is not type cx argument deprecate\n\n")
+				glblArg := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(glbl.Meta))
+
+				// then it's a global
+				// prevExprs[len(prevExprs)-1].ProgramOutput[0] = glbl
+				lastExpressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(prgrm.CXAtomicOps[lastExpressionIdx].GetOutputs(prgrm)[0])
+
+				var lastExpressionOutputArg *ast.CXArgument = &ast.CXArgument{}
+				if lastExpressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+					lastExpressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(lastExpressionOutputTypeSig.Meta))
+				} else {
+					panic("type is not cx argument deprecate\n\n")
+				}
+
+				lastExpressionOutputArg.Name = glblArg.Name
+				lastExpressionOutputTypeSig.Name = glblArg.Name
+
+				lastExpressionOutputArg.Type = glblArg.Type
+				lastExpressionOutputArg.StructType = glblArg.StructType
+				lastExpressionOutputArg.Size = glblArg.Size
+				lastExpressionOutputArg.TotalSize = glblArg.TotalSize
+				lastExpressionOutputArg.PointerTargetType = glblArg.PointerTargetType
+				lastExpressionOutputArg.IsSlice = glblArg.IsSlice
+				lastExpressionOutputArg.IsStruct = glblArg.IsStruct
+				lastExpressionOutputArg.Package = glblArg.Package
+			} else if glbl.Type == ast.TYPE_ATOMIC {
+				// then it's a global
+				// prevExprs[len(prevExprs)-1].ProgramOutput[0] = glbl
+				lastExpressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(prgrm.CXAtomicOps[lastExpressionIdx].GetOutputs(prgrm)[0])
+
+				var lastExpressionOutputArg *ast.CXArgument = &ast.CXArgument{}
+				if lastExpressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+					lastExpressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(lastExpressionOutputTypeSig.Meta))
+				} else {
+					panic("type is not cx argument deprecate\n\n")
+				}
+
+				lastExpressionOutputArg.Name = glbl.Name
+				lastExpressionOutputTypeSig.Name = glbl.Name
+
+				lastExpressionOutputArg.Type = types.Code(glbl.Meta)
+				lastExpressionOutputArg.Offset = glbl.Offset
+				lastExpressionOutputArg.Size = types.Code(glbl.Meta).Size()
+				lastExpressionOutputArg.TotalSize = types.Code(glbl.Meta).Size()
+
+				lastExpressionOutputArg.Package = glbl.Package
 			}
-			// then it's a global
-			// prevExprs[len(prevExprs)-1].ProgramOutput[0] = glbl
-			lastExpressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(prgrm.CXAtomicOps[lastExpressionIdx].GetOutputs(prgrm)[0])
 
-			var lastExpressionOutputArg *ast.CXArgument = &ast.CXArgument{}
-			if lastExpressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-				lastExpressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(lastExpressionOutputTypeSig.Meta))
-			} else {
-				panic("type is not cx argument deprecate\n\n")
-			}
-
-			lastExpressionOutputArg.Name = glblArg.Name
-			lastExpressionOutputTypeSig.Name = glblArg.Name
-
-			lastExpressionOutputArg.Type = glblArg.Type
-			lastExpressionOutputArg.StructType = glblArg.StructType
-			lastExpressionOutputArg.Size = glblArg.Size
-			lastExpressionOutputArg.TotalSize = glblArg.TotalSize
-			lastExpressionOutputArg.PointerTargetType = glblArg.PointerTargetType
-			lastExpressionOutputArg.IsSlice = glblArg.IsSlice
-			lastExpressionOutputArg.IsStruct = glblArg.IsStruct
-			lastExpressionOutputArg.Package = glblArg.Package
 		} else if fn, err := imp.GetFunction(prgrm, ident); err == nil {
 			// then it's a function
 			// not sure about this next line
