@@ -177,6 +177,12 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fnIdx ast.CXFunctionIndex, inputs
 	symbols = &tmp
 	*symbols = append(*symbols, make(map[string]*ast.CXTypeSignature))
 
+	pkg, err := prgrm.GetCurrentPackage()
+	if err != nil {
+		panic(err)
+	}
+
+	pkg.CurrentFunction = fnIdx
 	fn := prgrm.GetFunctionFromArray(fnIdx)
 
 	FunctionAddParameters(prgrm, fnIdx, inputs, outputs)
@@ -223,21 +229,20 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fnIdx ast.CXFunctionIndex, inputs
 	fn.LineCount = len(fn.Expressions)
 	fn.Size = offset
 
-	// errStr := "\n"
-	// for i, symbol := range *symbols {
-	// 	for _, val := range symbol {
-	// 		if val.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-	// 			errStr += fmt.Sprintf("symbol[%v]=%+v\n", i, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(val.Meta)))
-	// 		} else {
-	// 			errStr += fmt.Sprintf("symbol[%v]=%+v\n", i, val)
+	// 	errStr := "\n"
+	// 	for i, symbol := range *symbols {
+	// 		for _, val := range symbol {
+	// 			if val.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+	// 				errStr += fmt.Sprintf("symbol[%v]=%+v\n", i, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(val.Meta)))
+	// 			} else {
+	// 				errStr += fmt.Sprintf("symbol[%v]=%+v\n", i, val)
 
+	// 			}
 	// 		}
+
 	// 	}
+	// 	panic(errStr)
 
-	// }
-	// panic(errStr)
-
-	// if fn.Name == "main" {
 	// 	errStr := "\n"
 	// 	for i := range exprs {
 	// 		expr, _ := prgrm.GetCXAtomicOpFromExpressions(exprs, i)
@@ -264,7 +269,6 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fnIdx ast.CXFunctionIndex, inputs
 	// 		}
 	// 	}
 	// 	panic(errStr)
-	// }
 }
 
 // ProcessTypedOperator gets the proper typed operator for the expression.
