@@ -11,6 +11,12 @@ import (
 	"github.com/skycoin/cx/cx/types"
 )
 
+type SymbolsData struct {
+	varCount     int
+	symbols      []*ast.CXTypeSignature
+	symbolsIndex []map[string]int
+}
+
 // FunctionHeader takes a function name ('fnName') and either creates the
 // function if it's not known before or returns the already existing function
 // if it is.
@@ -133,13 +139,13 @@ func CheckUndValidTypes(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 // 			 and receiver).
 //  fnIdx - the index of the function in the main CXFunction array.
 //  params - function parameters to be processed.
-func ProcessFunctionParameters(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXTypeSignature, offset *types.Pointer, fnIdx ast.CXFunctionIndex, params []ast.CXTypeSignatureIndex) {
+func ProcessFunctionParameters(prgrm *ast.CXProgram, symbolsData *SymbolsData, offset *types.Pointer, fnIdx ast.CXFunctionIndex, params []ast.CXTypeSignatureIndex) {
 	fn := prgrm.GetFunctionFromArray(fnIdx)
 
 	for _, paramIdx := range params {
-		UpdateSymbolsTable(prgrm, symbols, paramIdx, offset, false)
-		GiveOffset(prgrm, symbols, paramIdx)
-		SetFinalSize(prgrm, symbols, paramIdx)
+		UpdateSymbolsTable(prgrm, symbolsData, paramIdx, offset, false)
+		GiveOffset(prgrm, symbolsData, paramIdx)
+		SetFinalSize(prgrm, symbolsData, paramIdx)
 
 		AddPointer(prgrm, fn, paramIdx)
 
@@ -168,14 +174,19 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fnIdx ast.CXFunctionIndex, inputs
 	// getting offset to use by statements (excluding inputs, outputs and receiver).
 	var offset types.Pointer
 
-	// symbols is a slice of string-CXArg map which corresponds to
-	// the scoping of the  CXArguments. Each element in the slice
-	// corresponds to a different scope. The innermost scope is
-	// the last element of the slice.
-	var symbols *[]map[string]*ast.CXTypeSignature
-	tmp := make([]map[string]*ast.CXTypeSignature, 0)
-	symbols = &tmp
-	*symbols = append(*symbols, make(map[string]*ast.CXTypeSignature))
+	symIndex := make([]map[string]int, 0)
+	symIndex = append(symIndex, make(map[string]int))
+
+	symbolsData := &SymbolsData{
+		varCount: 1,
+
+		// symbols is a slice of string-CXArg map which corresponds to
+		// the scoping of the  CXArguments. Each element in the slice
+		// corresponds to a different scope. The innermost scope is
+		// the last element of the slice.
+		symbolsIndex: symIndex,
+		symbols:      make([]*ast.CXTypeSignature, 0),
+	}
 
 	pkg, err := prgrm.GetCurrentPackage()
 	if err != nil {
@@ -189,8 +200,8 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fnIdx ast.CXFunctionIndex, inputs
 	ProcessGoTos(prgrm, exprs)
 	AddExprsToFunction(prgrm, fnIdx, exprs)
 
-	ProcessFunctionParameters(prgrm, symbols, &offset, fnIdx, fn.GetInputs(prgrm))
-	ProcessFunctionParameters(prgrm, symbols, &offset, fnIdx, fn.GetOutputs(prgrm))
+	ProcessFunctionParameters(prgrm, symbolsData, &offset, fnIdx, fn.GetInputs(prgrm))
+	ProcessFunctionParameters(prgrm, symbolsData, &offset, fnIdx, fn.GetOutputs(prgrm))
 
 	for i, expr := range fn.Expressions {
 		if expr.Type == ast.CX_LINE {
@@ -202,13 +213,13 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fnIdx ast.CXFunctionIndex, inputs
 		}
 
 		if expr.IsScopeNew() {
-			*symbols = append(*symbols, make(map[string]*ast.CXTypeSignature))
+			symbolsData.symbolsIndex = append(symbolsData.symbolsIndex, make(map[string]int))
 		}
 
-		ProcessMethodCall(prgrm, &expr, symbols)
+		ProcessMethodCall(prgrm, &expr, symbolsData)
 
-		ProcessExpressionArguments(prgrm, symbols, &offset, fnIdx, exprAtomicOp.GetInputs(prgrm), &expr, true)
-		ProcessExpressionArguments(prgrm, symbols, &offset, fnIdx, exprAtomicOp.GetOutputs(prgrm), &expr, false)
+		ProcessExpressionArguments(prgrm, symbolsData, &offset, fnIdx, exprAtomicOp.GetInputs(prgrm), &expr, true)
+		ProcessExpressionArguments(prgrm, symbolsData, &offset, fnIdx, exprAtomicOp.GetOutputs(prgrm), &expr, false)
 
 		ProcessPointerStructs(prgrm, &expr)
 		ProcessTempVariable(prgrm, &expr)
@@ -222,7 +233,7 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fnIdx ast.CXFunctionIndex, inputs
 		CheckUndValidTypes(prgrm, &expr)
 		ProcessTypedOperator(prgrm, &expr)
 		if expr.IsScopeDel() {
-			*symbols = (*symbols)[:len(*symbols)-1]
+			symbolsData.symbolsIndex = (symbolsData.symbolsIndex)[:len(symbolsData.symbolsIndex)-1]
 		}
 	}
 
@@ -711,7 +722,7 @@ func checkIndexType(prgrm *ast.CXProgram, idxIdx ast.CXArgumentIndex) {
 //  args - the expression arguments.
 //  expr - the expression.
 //  isInput - true if args are input arguments, false if they are output args.
-func ProcessExpressionArguments(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXTypeSignature, offset *types.Pointer, fnIdx ast.CXFunctionIndex, args []ast.CXTypeSignatureIndex, expr *ast.CXExpression, isInput bool) {
+func ProcessExpressionArguments(prgrm *ast.CXProgram, symbolsData *SymbolsData, offset *types.Pointer, fnIdx ast.CXFunctionIndex, args []ast.CXTypeSignatureIndex, expr *ast.CXExpression, isInput bool) {
 	fn := prgrm.GetFunctionFromArray(fnIdx)
 
 	for _, typeSignatureIdx := range args {
@@ -727,7 +738,7 @@ func ProcessExpressionArguments(prgrm *ast.CXProgram, symbols *[]map[string]*ast
 		arg := prgrm.GetCXArgFromArray(argIdx)
 
 		if !isInput {
-			CheckRedeclared(prgrm, symbols, expr, typeSignatureIdx)
+			CheckRedeclared(prgrm, symbolsData, expr, typeSignatureIdx)
 		}
 
 		if !isInput {
@@ -738,12 +749,12 @@ func ProcessExpressionArguments(prgrm *ast.CXProgram, symbols *[]map[string]*ast
 		// maybe its only used by temp variables
 		// TempVar always have PreviouslyDeclared=true
 		if arg != nil && arg.PreviouslyDeclared || IsTempVar(typeSignature.Name) || fn.IsLocalVariable(typeSignature.Name) {
-			UpdateSymbolsTable(prgrm, symbols, typeSignatureIdx, offset, false)
+			UpdateSymbolsTable(prgrm, symbolsData, typeSignatureIdx, offset, false)
 		} else {
-			UpdateSymbolsTable(prgrm, symbols, typeSignatureIdx, offset, true)
+			UpdateSymbolsTable(prgrm, symbolsData, typeSignatureIdx, offset, true)
 		}
 
-		GiveOffset(prgrm, symbols, typeSignatureIdx)
+		GiveOffset(prgrm, symbolsData, typeSignatureIdx)
 		ProcessSlice(prgrm, argIdx)
 
 		if arg != nil {
@@ -756,8 +767,8 @@ func ProcessExpressionArguments(prgrm *ast.CXProgram, symbols *[]map[string]*ast
 					Meta:    int(idxIdx),
 				})
 
-				UpdateSymbolsTable(prgrm, symbols, typeSigIdx, offset, true)
-				GiveOffset(prgrm, symbols, typeSigIdx)
+				UpdateSymbolsTable(prgrm, symbolsData, typeSigIdx, offset, true)
+				GiveOffset(prgrm, symbolsData, typeSigIdx)
 				checkIndexType(prgrm, idxIdx)
 			}
 			for _, fldIdx := range arg.Fields {
@@ -771,13 +782,13 @@ func ProcessExpressionArguments(prgrm *ast.CXProgram, symbols *[]map[string]*ast
 						Meta:    int(idxIdx),
 					})
 
-					UpdateSymbolsTable(prgrm, symbols, typeSigIdx, offset, true)
-					GiveOffset(prgrm, symbols, typeSigIdx)
+					UpdateSymbolsTable(prgrm, symbolsData, typeSigIdx, offset, true)
+					GiveOffset(prgrm, symbolsData, typeSigIdx)
 				}
 			}
 		}
 
-		SetFinalSize(prgrm, symbols, typeSignatureIdx)
+		SetFinalSize(prgrm, symbolsData, typeSignatureIdx)
 
 		AddPointer(prgrm, fn, typeSignatureIdx)
 	}
@@ -871,7 +882,7 @@ func AddPointer(prgrm *ast.CXProgram, fn *ast.CXFunction, typeSigIdx ast.CXTypeS
 // 			  the last element of the slice.
 //  expr - the expression.
 //  typeSigIdx - the index of the type signature from the main CXTypeSignature array.
-func CheckRedeclared(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXTypeSignature, expr *ast.CXExpression, typeSigIdx ast.CXTypeSignatureIndex) {
+func CheckRedeclared(prgrm *ast.CXProgram, symbolsData *SymbolsData, expr *ast.CXExpression, typeSigIdx ast.CXTypeSignatureIndex) {
 	typeSig := prgrm.GetCXTypeSignatureFromArray(typeSigIdx)
 	var arg *ast.CXArgument
 	if typeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
@@ -889,14 +900,14 @@ func CheckRedeclared(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXTypeSign
 	expressionOperator := prgrm.GetFunctionFromArray(expression.Operator)
 
 	if expressionOperator == nil && len(expression.GetOutputs(prgrm)) > 0 && len(expression.GetInputs(prgrm)) == 0 {
-		lastIdx := len(*symbols) - 1
+		lastIdx := len(symbolsData.symbolsIndex) - 1
 
 		symPkg, err := prgrm.GetPackageFromArray(typeSig.Package)
 		if err != nil {
 			panic(err)
 		}
 
-		_, found := (*symbols)[lastIdx][symPkg.Name+"."+typeSig.Name]
+		_, found := (symbolsData.symbolsIndex)[lastIdx][symPkg.Name+"."+typeSig.Name]
 		if found {
 			println(ast.CompilationError(arg.ArgDetails.FileName, arg.ArgDetails.FileLine), fmt.Sprintf("'%s' redeclared", typeSig.Name))
 		}
@@ -1440,11 +1451,11 @@ func ProcessSliceAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 }
 
 // lookupSymbol searches for `ident` in `symbols`, starting from the innermost scope.
-func lookupSymbol(prgrm *ast.CXProgram, pkgName, ident string, symbols *[]map[string]*ast.CXTypeSignature) (*ast.CXTypeSignature, error) {
-	fullName := pkgName + "." + ident
-	for c := len(*symbols) - 1; c >= 0; c-- {
-		if sym, found := (*symbols)[c][fullName]; found {
-			return sym, nil
+func lookupSymbol(prgrm *ast.CXProgram, pkgName, ident string, symbolsData *SymbolsData) (*ast.CXTypeSignature, error) {
+	fullName := pkgName + "." + StripNameNumber(ident)
+	for c := len(symbolsData.symbolsIndex) - 1; c >= 0; c-- {
+		if symIdx, found := (symbolsData.symbolsIndex)[c][fullName]; found {
+			return symbolsData.symbols[symIdx], nil
 		}
 	}
 
@@ -1479,7 +1490,7 @@ func lookupSymbol(prgrm *ast.CXProgram, pkgName, ident string, symbols *[]map[st
 }
 
 // UpdateSymbolsTable adds `sym` to the innermost scope (last element of slice) in `symbols`.
-func UpdateSymbolsTable(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXTypeSignature, typeSigIdx ast.CXTypeSignatureIndex, offset *types.Pointer, shouldExist bool) {
+func UpdateSymbolsTable(prgrm *ast.CXProgram, symbolsData *SymbolsData, typeSigIdx ast.CXTypeSignatureIndex, offset *types.Pointer, shouldExist bool) {
 	typeSig := prgrm.GetCXTypeSignatureFromArray(typeSigIdx)
 
 	var sym *ast.CXArgument = &ast.CXArgument{}
@@ -1507,15 +1518,15 @@ func UpdateSymbolsTable(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXTypeS
 		}
 
 		if !currFn.IsLocalVariable(typeSig.Name) {
-			GetGlobalSymbol(prgrm, symbols, typeSigPkg, typeSig.Name)
+			GetGlobalSymbol(prgrm, symbolsData, typeSigPkg, typeSig.Name)
 		}
 
-		lastIdx := len(*symbols) - 1
-		fullName := typeSigPkg.Name + "." + typeSig.Name
+		lastIdx := len(symbolsData.symbolsIndex) - 1
+		fullName := typeSigPkg.Name + "." + StripNameNumber(typeSig.Name)
 
 		// outerSym, err := lookupSymbol(sym.Package.Name, sym.Name, symbols)
-		_, err = lookupSymbol(prgrm, typeSigPkg.Name, typeSig.Name, symbols)
-		_, found := (*symbols)[lastIdx][fullName]
+		_, err = lookupSymbol(prgrm, typeSigPkg.Name, typeSig.Name, symbolsData)
+		_, found := (symbolsData.symbolsIndex)[lastIdx][fullName]
 
 		// then it wasn't found in any scope
 		if err != nil && shouldExist {
@@ -1530,12 +1541,18 @@ func UpdateSymbolsTable(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXTypeS
 
 		// then it is a new declaration
 		if !shouldExist && !found {
-			// then it was declared in an outer scope
-			// sym.Offset = *offset
+			if !IsTempVar(typeSig.Name) {
+				// Change name to n:varname format
+				typeSig.Name = fmt.Sprintf("%v:%s", symbolsData.varCount, typeSig.Name)
+				symbolsData.varCount++
+			}
 
-			(*symbols)[lastIdx][fullName] = typeSig
+			symbolsData.symbols = append(symbolsData.symbols, typeSig)
+			// add name to symbols
+			symbolsData.symbolsIndex[lastIdx][fullName] = len(symbolsData.symbols) - 1
 
 			if sym != nil {
+				sym.Name = typeSig.Name
 				sym.Offset = *offset
 				*offset += ast.GetArgSize(prgrm, sym)
 			} else {
@@ -1555,7 +1572,7 @@ func UpdateSymbolsTable(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXTypeS
 // 			  the scoping of the  CXArguments. Each element in the slice
 // 			  corresponds to a different scope. The innermost scope is
 // 			  the last element of the slice.
-func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]map[string]*ast.CXTypeSignature) {
+func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbolsData *SymbolsData) {
 	expression, err := prgrm.GetCXAtomicOp(expr.Index)
 	if err != nil {
 		panic(err)
@@ -1581,7 +1598,7 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 				panic(err)
 			}
 
-			if argInpTypeSignature, err := lookupSymbol(prgrm, inpPkg.Name, prgrm.CXArgs[inpIdx].Name, symbols); err != nil {
+			if argInpTypeSignature, err := lookupSymbol(prgrm, inpPkg.Name, prgrm.CXArgs[inpIdx].Name, symbolsData); err != nil {
 				if outIdx == -1 {
 					panic("")
 				}
@@ -1591,7 +1608,7 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 					panic(err)
 				}
 
-				argOutTypeSignature, err := lookupSymbol(prgrm, outPkg.Name, prgrm.CXArgs[outIdx].Name, symbols)
+				argOutTypeSignature, err := lookupSymbol(prgrm, outPkg.Name, prgrm.CXArgs[outIdx].Name, symbolsData)
 				if err != nil {
 					println(ast.CompilationError(prgrm.CXArgs[outIdx].ArgDetails.FileName, prgrm.CXArgs[outIdx].ArgDetails.FileLine), fmt.Sprintf("identifier '%s' does not exist", prgrm.CXArgs[outIdx].Name))
 					os.Exit(constants.CX_COMPILATION_ERROR)
@@ -1661,7 +1678,7 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 					if err != nil {
 						panic(err)
 					}
-					argOutTypeSignature, err := lookupSymbol(prgrm, outPkg.Name, prgrm.CXArgs[outIdx].Name, symbols)
+					argOutTypeSignature, err := lookupSymbol(prgrm, outPkg.Name, prgrm.CXArgs[outIdx].Name, symbolsData)
 					if err != nil {
 						panic(err)
 					}
@@ -1706,7 +1723,7 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 				panic(err)
 			}
 
-			argOutTypeSignature, err := lookupSymbol(prgrm, outPkg.Name, prgrm.CXArgs[outIdx].Name, symbols)
+			argOutTypeSignature, err := lookupSymbol(prgrm, outPkg.Name, prgrm.CXArgs[outIdx].Name, symbolsData)
 			if err != nil {
 				println(ast.CompilationError(prgrm.CXArgs[outIdx].ArgDetails.FileName, prgrm.CXArgs[outIdx].ArgDetails.FileLine), fmt.Sprintf("identifier '%s' does not exist", prgrm.CXArgs[outIdx].Name))
 				os.Exit(constants.CX_COMPILATION_ERROR)
@@ -1756,7 +1773,7 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbols *[]
 }
 
 // GiveOffset
-func GiveOffset(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXTypeSignature, typeSigIdx ast.CXTypeSignatureIndex) {
+func GiveOffset(prgrm *ast.CXProgram, symbolsData *SymbolsData, typeSigIdx ast.CXTypeSignatureIndex) {
 	symTypeSig := prgrm.GetCXTypeSignatureFromArray(typeSigIdx)
 
 	if symTypeSig.Name != "" {
@@ -1772,10 +1789,10 @@ func GiveOffset(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXTypeSignature
 		}
 
 		if !currFn.IsLocalVariable(symTypeSig.Name) {
-			GetGlobalSymbol(prgrm, symbols, symPkg, symTypeSig.Name)
+			GetGlobalSymbol(prgrm, symbolsData, symPkg, symTypeSig.Name)
 		}
 
-		argTypeSignature, err := lookupSymbol(prgrm, symPkg.Name, symTypeSig.Name, symbols)
+		argTypeSignature, err := lookupSymbol(prgrm, symPkg.Name, symTypeSig.Name, symbolsData)
 		if err == nil {
 			ProcessSymbolFields(prgrm, symTypeSig, argTypeSignature)
 			CopyArgFields(prgrm, symTypeSig, argTypeSignature)
@@ -1857,6 +1874,7 @@ func CopyArgFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast
 
 	// TODO: check if this needs a change
 	if sym == nil || arg == nil {
+		symTypeSignature.Name = argTypeSignature.Name
 		symTypeSignature.Package = argTypeSignature.Package
 		symTypeSignature.Type = argTypeSignature.Type
 		symTypeSignature.Meta = argTypeSignature.Meta
@@ -1875,6 +1893,7 @@ func CopyArgFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast
 	// 	return
 	// }
 
+	sym.Name = arg.Name
 	sym.Offset = arg.Offset
 	sym.Type = arg.Type
 
@@ -2211,18 +2230,21 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignatur
 }
 
 // GetGlobalSymbol tries to retrieve `ident` from `symPkg`'s globals if `ident` is not found in the local scope.
-func GetGlobalSymbol(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXTypeSignature, symPkg *ast.CXPackage, ident string) {
-	_, err := lookupSymbol(prgrm, symPkg.Name, ident, symbols)
+func GetGlobalSymbol(prgrm *ast.CXProgram, symbolsData *SymbolsData, symPkg *ast.CXPackage, ident string) {
+	_, err := lookupSymbol(prgrm, symPkg.Name, ident, symbolsData)
 	if err != nil {
 		if glbl, err := symPkg.GetGlobal(prgrm, ident); err == nil {
-			lastIdx := len(*symbols) - 1
-			(*symbols)[lastIdx][symPkg.Name+"."+ident] = glbl
+			lastIdx := len(*&symbolsData.symbolsIndex) - 1
+
+			// add name to symbols
+			symbolsData.symbols = append(symbolsData.symbols, glbl)
+			(symbolsData.symbolsIndex)[lastIdx][symPkg.Name+"."+ident] = len(symbolsData.symbols) - 1
 		}
 	}
 }
 
 // SetFinalSize sets the finalSize of 'sym'.
-func SetFinalSize(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXTypeSignature, typeSigIdx ast.CXTypeSignatureIndex) {
+func SetFinalSize(prgrm *ast.CXProgram, symbolsData *SymbolsData, typeSigIdx ast.CXTypeSignatureIndex) {
 	typeSig := prgrm.GetCXTypeSignatureFromArray(typeSigIdx)
 	var sym *ast.CXArgument = &ast.CXArgument{}
 	if typeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
@@ -2241,7 +2263,7 @@ func SetFinalSize(prgrm *ast.CXProgram, symbols *[]map[string]*ast.CXTypeSignatu
 		panic(err)
 	}
 
-	argTypeSignature, err := lookupSymbol(prgrm, symPkg.Name, sym.Name, symbols)
+	argTypeSignature, err := lookupSymbol(prgrm, symPkg.Name, sym.Name, symbolsData)
 	if err == nil {
 		var arg *ast.CXArgument = &ast.CXArgument{}
 		if argTypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
