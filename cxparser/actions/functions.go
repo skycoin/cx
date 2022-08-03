@@ -180,8 +180,8 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fnIdx ast.CXFunctionIndex, inputs
 	symbolsData := &SymbolsData{
 		varCount: 1,
 
-		// symbols is a slice of string-CXArg map which corresponds to
-		// the scoping of the  CXArguments. Each element in the slice
+		// symbols is a slice of string-int map which corresponds to
+		// the scoping of the local variables. Each element in the slice
 		// corresponds to a different scope. The innermost scope is
 		// the last element of the slice.
 		symbolsIndex: symIndex,
