@@ -146,9 +146,9 @@ func TestDeclarationExtraction_ExtractGlobals(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			gotGlobals, err := declaration_extractor.ExtractGlobals(ReplaceCommentsWithWhitespaces, fileName)
-			if err != nil {
-				t.Fatal(err)
+			gotGlobals, gotErr := declaration_extractor.ExtractGlobals(ReplaceCommentsWithWhitespaces, fileName)
+			if gotErr != tc.wantErr {
+				t.Errorf("want err %v, got %v", tc.wantErr, gotErr)
 			}
 
 			for _, wantGlobal := range tc.wantGlobals {
