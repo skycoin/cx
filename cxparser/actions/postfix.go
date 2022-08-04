@@ -109,11 +109,10 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		fldIdx := prevExpressionArg.Fields[len(prevExpressionArg.Fields)-1]
 
 		if postExpressionOperator == nil {
-			postExpressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(prgrm.CXAtomicOps[postExpressionIdx].GetOutputs(prgrm)[0])
+			postExpressionOutputIndex := prgrm.CXAtomicOps[postExpressionIdx].GetOutputs(prgrm)[0]
+			postExpressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(postExpressionOutputIndex)
 			if postExpressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-				// expr.AddInput(postExprs[len(postExprs)-1].ProgramOutput[0])
-				indexIdx := ast.CXArgumentIndex(postExpressionOutputTypeSig.Meta)
-				prgrm.CXArgs[fldIdx].Indexes = append(prgrm.CXArgs[fldIdx].Indexes, indexIdx)
+				prgrm.CXArgs[fldIdx].Indexes = append(prgrm.CXArgs[fldIdx].Indexes, postExpressionOutputIndex)
 			} else if postExpressionOutputTypeSig.Type == ast.TYPE_ATOMIC {
 				panic("type signature is type atomic")
 			}
@@ -137,7 +136,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 
 			prevExprs = append(postExprs, prevExprs...)
 
-			prgrm.CXArgs[fldIdx].Indexes = append(prgrm.CXArgs[fldIdx].Indexes, symIdx)
+			prgrm.CXArgs[fldIdx].Indexes = append(prgrm.CXArgs[fldIdx].Indexes, typeSigIdx)
 		}
 	} else {
 		if len(prgrm.CXAtomicOps[postExpressionIdx].GetOutputs(prgrm)) < 1 {
@@ -172,7 +171,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 			}
 
 			prevExpressionOutput := prevExpressionOutputArg
-			prevExpressionOutput.Indexes = append(prevExpressionOutput.Indexes, idxSymIdx)
+			prevExpressionOutput.Indexes = append(prevExpressionOutput.Indexes, typeSigIdx)
 
 			// we push the index expression
 			prevExprs = append(postExprs, prevExprs...)
@@ -181,10 +180,10 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 			if prevOutsTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 				prevOutsIdx := ast.CXArgumentIndex(prevOutsTypeSig.Meta)
 
-				postOutsTypeSig := prgrm.GetCXTypeSignatureFromArray(prgrm.CXAtomicOps[postExpressionIdx].GetOutputs(prgrm)[0])
+				postOutsIndex := prgrm.CXAtomicOps[postExpressionIdx].GetOutputs(prgrm)[0]
+				postOutsTypeSig := prgrm.GetCXTypeSignatureFromArray(postOutsIndex)
 				if postOutsTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-					postOutsIdx := ast.CXArgumentIndex(postOutsTypeSig.Meta)
-					prgrm.CXArgs[prevOutsIdx].Indexes = append(prgrm.CXArgs[prevOutsIdx].Indexes, postOutsIdx)
+					prgrm.CXArgs[prevOutsIdx].Indexes = append(prgrm.CXArgs[prevOutsIdx].Indexes, postOutsIndex)
 				} else if postOutsTypeSig.Type == ast.TYPE_ATOMIC {
 					panic("type is not cx argument deprecate\n\n")
 				}

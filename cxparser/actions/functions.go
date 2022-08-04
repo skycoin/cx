@@ -697,12 +697,20 @@ func processTestExpression(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 }
 
 // checkIndexType throws an error if the type of `idx` is not `i32` or `i64`.
-func checkIndexType(prgrm *ast.CXProgram, idxIdx ast.CXArgumentIndex) {
-	idx := prgrm.GetCXArgFromArray(idxIdx)
+func checkIndexType(prgrm *ast.CXProgram, idxIdx ast.CXTypeSignatureIndex) {
+	idxTypeSig := prgrm.GetCXTypeSignatureFromArray(idxIdx)
+	var idxType string
+	var idx *ast.CXArgument
+	if idxTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		idx = prgrm.GetCXArg(ast.CXArgumentIndex(idxTypeSig.Meta))
+		idxType = ast.GetFormattedType(prgrm, idx)
+	} else if idxTypeSig.Type == ast.TYPE_ATOMIC {
+		idx = nil
+		idxType = types.Code(idxTypeSig.Meta).Name()
+	}
 
-	typ := ast.GetFormattedType(prgrm, idx)
-	if typ != "i32" && typ != "i64" {
-		println(ast.CompilationError(idx.ArgDetails.FileName, idx.ArgDetails.FileLine), fmt.Sprintf("wrong index type; expected either 'i32' or 'i64', got '%s'", typ))
+	if idxType != "i32" && idxType != "i64" {
+		println(ast.CompilationError(idx.ArgDetails.FileName, idx.ArgDetails.FileLine), fmt.Sprintf("wrong index type; expected either 'i32' or 'i64', got '%s'", idxType))
 	}
 }
 
@@ -748,6 +756,7 @@ func ProcessExpressionArguments(prgrm *ast.CXProgram, symbolsData *SymbolsData, 
 		// TODO: Check how to remove PreviouslyDeclared field
 		// maybe its only used by temp variables
 		// TempVar always have PreviouslyDeclared=true
+
 		if arg != nil && arg.PreviouslyDeclared || IsTempVar(typeSignature.Name) || fn.IsLocalVariable(typeSignature.Name) {
 			UpdateSymbolsTable(prgrm, symbolsData, typeSignatureIdx, offset, false)
 		} else {
@@ -759,32 +768,15 @@ func ProcessExpressionArguments(prgrm *ast.CXProgram, symbolsData *SymbolsData, 
 
 		if arg != nil {
 			for _, idxIdx := range arg.Indexes {
-				idxIdxArg := prgrm.GetCXArgFromArray(idxIdx)
-				typeSigIdx := prgrm.AddCXTypeSignatureInArray(&ast.CXTypeSignature{
-					Name:    idxIdxArg.Name,
-					Package: idxIdxArg.Package,
-					Type:    ast.TYPE_CXARGUMENT_DEPRECATE,
-					Meta:    int(idxIdx),
-				})
-
-				UpdateSymbolsTable(prgrm, symbolsData, typeSigIdx, offset, true)
-				GiveOffset(prgrm, symbolsData, typeSigIdx)
+				UpdateSymbolsTable(prgrm, symbolsData, idxIdx, offset, true)
+				GiveOffset(prgrm, symbolsData, idxIdx)
 				checkIndexType(prgrm, idxIdx)
 			}
 			for _, fldIdx := range arg.Fields {
 				fld := prgrm.GetCXArgFromArray(fldIdx)
 				for _, idxIdx := range fld.Indexes {
-					idxIdxArg := prgrm.GetCXArgFromArray(idxIdx)
-
-					typeSigIdx := prgrm.AddCXTypeSignatureInArray(&ast.CXTypeSignature{
-						Name:    idxIdxArg.Name,
-						Package: idxIdxArg.Package,
-						Type:    ast.TYPE_CXARGUMENT_DEPRECATE,
-						Meta:    int(idxIdx),
-					})
-
-					UpdateSymbolsTable(prgrm, symbolsData, typeSigIdx, offset, true)
-					GiveOffset(prgrm, symbolsData, typeSigIdx)
+					UpdateSymbolsTable(prgrm, symbolsData, idxIdx, offset, true)
+					GiveOffset(prgrm, symbolsData, idxIdx)
 				}
 			}
 		}
@@ -1497,8 +1489,7 @@ func UpdateSymbolsTable(prgrm *ast.CXProgram, symbolsData *SymbolsData, typeSigI
 	var sym *ast.CXArgument = &ast.CXArgument{}
 	if typeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 		sym = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(typeSig.Meta))
-
-		if sym.Type == types.UNDEFINED {
+		if sym.Type == types.UNDEFINED && !IsTempVar(typeSig.Name) {
 			return
 		}
 	} else {

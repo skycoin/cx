@@ -374,9 +374,21 @@ func ArrayLiteralExpression(prgrm *ast.CXProgram, arraySizes []types.Pointer, ty
 			sym.PreviouslyDeclared = true
 
 			idxArg := WritePrimary(prgrm, types.I32, encoder.Serialize(int32(endPointsCounter)), false)
+			// index is always i32
+			// hence, always an atomic type
+
+			indexTypeSignature := &ast.CXTypeSignature{
+				Name:    idxArg.Name,
+				Type:    ast.TYPE_ATOMIC,
+				Meta:    int(idxArg.Type),
+				Offset:  idxArg.Offset, // important for this
+				Package: idxArg.Package,
+			}
+
+			indexTypeSignatureIdx := prgrm.AddCXTypeSignatureInArray(indexTypeSignature)
 			endPointsCounter++
 
-			sym.Indexes = append(sym.Indexes, ast.CXArgumentIndex(idxArg.Index))
+			sym.Indexes = append(sym.Indexes, indexTypeSignatureIdx)
 			sym.DereferenceOperations = append(sym.DereferenceOperations, constants.DEREF_ARRAY)
 			sym.Lengths = arraySizes
 			sym.TotalSize = sym.Size * TotalLength(sym.Lengths)

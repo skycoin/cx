@@ -640,7 +640,7 @@ func getFormattedDerefs(prgrm *CXProgram, arg *CXArgument, includePkg bool, pkg 
 
 	// Checking if we have indexing operations, e.g. foo[2][1]
 	for _, idxIdx := range arg.Indexes {
-		idx := prgrm.GetCXArgFromArray(idxIdx)
+		idx := prgrm.GetCXTypeSignatureFromArray(idxIdx)
 		// Checking if the value is in data segment.
 		// If this is the case, we can safely display it.
 		idxValue := ""
