@@ -775,6 +775,7 @@ func ProcessExpressionArguments(prgrm *ast.CXProgram, symbolsData *SymbolsData, 
 				fld := prgrm.GetCXArgFromArray(fldIdx)
 				for _, idxIdx := range fld.Indexes {
 					idxIdxArg := prgrm.GetCXArgFromArray(idxIdx)
+
 					typeSigIdx := prgrm.AddCXTypeSignatureInArray(&ast.CXTypeSignature{
 						Name:    idxIdxArg.Name,
 						Package: idxIdxArg.Package,
@@ -1841,9 +1842,10 @@ func ProcessTempVariable(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 			} else if outputTypeSig.Type == ast.TYPE_ATOMIC {
 				expressionInputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetInputs(prgrm)[0])
 				if expressionInputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-					panic(fmt.Sprintf("1.output=%+v\n\ninput=%+v\n\n", outputTypeSig, expressionInputTypeSig))
+					expressionInputArg := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionInputTypeSig.Meta))
+					outputTypeSig.Meta = int(expressionInputArg.Type)
 				} else if expressionInputTypeSig.Type == ast.TYPE_ATOMIC {
-					panic(fmt.Sprintf("2.output=%+v\n\ninput=%+v\n\n", outputTypeSig, expressionInputTypeSig))
+					outputTypeSig.Meta = expressionInputTypeSig.Meta
 				}
 
 			}
@@ -1882,14 +1884,21 @@ func CopyArgFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast
 
 		return
 	}
-	// } else if sym != nil && arg == nil {
-	// 	sym.Type = types.Code(argTypeSignature.Meta)
-	// 	sym.Offset = argTypeSignature.Offset
+	// else if sym != nil && arg == nil {
+	// 	symTypeSignature.Name = argTypeSignature.Name
+	// 	symTypeSignature.Package = argTypeSignature.Package
+	// 	symTypeSignature.Type = argTypeSignature.Type
+	// 	symTypeSignature.Meta = argTypeSignature.Meta
+	// 	symTypeSignature.Offset = argTypeSignature.Offset
+
 	// 	return
 	// } else if sym == nil && arg != nil {
-	// 	// panic(fmt.Sprintf("sym=%+v\n\narg=%+v\n\n", symTypeSignature, arg))
-	// 	// symTypeSignature.Meta = int(arg.Type)
-	// 	// symTypeSignature.Offset = arg.Offset
+	// 	symTypeSignature.Name = arg.Name
+	// 	symTypeSignature.Package = arg.Package
+	// 	symTypeSignature.Type = ast.TYPE_ATOMIC
+	// 	symTypeSignature.Meta = int(arg.Type)
+	// 	symTypeSignature.Offset = arg.Offset
+
 	// 	return
 	// }
 
