@@ -496,30 +496,67 @@ func ExtractFuncs(source []byte, fileName string) ([]FuncDeclaration, error) {
 			var funcDeclaration FuncDeclaration
 			funcDeclaration.PackageID = pkg
 			funcDeclaration.FileID = fileName
-			funcDeclaration.StartOffset = match[0]
+			funcDeclaration.StartOffset = match[0] + currentOffset
 			funcDeclaration.LineNumber = lineno
 
 			reFuncRegular := regexp.MustCompile(`func\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
-			reFuncMethod := regexp.MustCompile(`func\s*\(\s*[_a-zA-Z][_a-zA-Z0-9]*\s+\*\s*[_a-zA-Z][_a-zA-Z0-9]*\s*\)\s*([_a-zA-Z][_a-zA-Z0-9]*)`)
+			reFuncMethod := regexp.MustCompile(`func\s*\(\s*[_a-zA-Z][_a-zA-Z0-9]*\s+\*{0,1}\s*[_a-zA-Z][_a-zA-Z0-9]*\s*\)\s*([_a-zA-Z][_a-zA-Z0-9]*)`)
 
 			funcRegular := reFuncRegular.FindSubmatchIndex(line)
 			funcMethod := reFuncMethod.FindSubmatchIndex(line)
+			var funcNameIdx int
+
+			if funcRegular == nil && funcMethod == nil {
+				return FuncDeclarationsArray, fmt.Errorf("func err")
+			}
 
 			if funcRegular != nil {
 				funcDeclaration.FuncName = string(line[funcRegular[2]:funcRegular[3]])
+				funcNameIdx = funcRegular[1]
 			}
 
 			if funcMethod != nil {
 				funcDeclaration.FuncName = string(line[funcMethod[2]:funcMethod[3]])
+				funcNameIdx = funcMethod[1]
 			}
 
-			reParam := regexp.MustCompile(`\((.*)\)`)
+			reInParen := regexp.MustCompile(`\((.*)\)`)
 
-			params := reParam.FindAllSubmatchIndex(line)
+			inParens := reInParen.FindAllSubmatchIndex(line[funcNameIdx:], -1)
 
-			if params == nil || len(params) > 2 {
-				return FuncDeclarationsArray, fmt.Errorf("err")
+			if inParens == nil || len(inParens) > 2 {
+				return FuncDeclarationsArray, fmt.Errorf("parenthesis error")
 			}
+
+			var lastIndex int
+
+			for _, inParen := range inParens {
+
+				inParenByte := line[inParen[2]+funcNameIdx : inParen[3]+funcNameIdx]
+
+				if bytes.Equal(inParenByte, []byte("")) {
+					continue
+				}
+
+				tokens := bytes.Split(inParenByte, []byte(","))
+
+				for _, token := range tokens {
+
+					reParam := regexp.MustCompile(`[_a-zA-Z][_a-zA-Z0-9]*\s+\*{0,1}\s*[_a-zA-Z][_a-zA-Z0-9]*`)
+
+					if param := reParam.FindIndex(token); param == nil {
+						return FuncDeclarationsArray, fmt.Errorf("param err")
+					}
+
+				}
+
+				lastIndex = inParen[1]
+
+			}
+
+			funcDeclaration.Length = (lastIndex + funcNameIdx) - match[0]
+
+			FuncDeclarationsArray = append(FuncDeclarationsArray, funcDeclaration)
 
 		}
 

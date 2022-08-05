@@ -587,13 +587,12 @@ func TestDeclarationExtraction_ExtractFuncs(t *testing.T) {
 			}
 
 			funcs, err := declaration_extractor.ExtractFuncs(ReplaceCommentsWithWhitespaces, fileName)
-			if err != nil {
-				t.Fatal(err)
-			}
 
 			for i := range funcs {
 				t.Errorf("got %v", funcs[i])
 			}
+
+			t.Error(err)
 		})
 	}
 }
