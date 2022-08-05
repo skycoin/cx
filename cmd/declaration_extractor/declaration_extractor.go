@@ -491,70 +491,14 @@ func ExtractFuncs(source []byte, fileName string) ([]FuncDeclaration, error) {
 
 		}
 
-		if funcMatch := reFunc.FindIndex(line); funcMatch != nil {
-
-			var funcDeclaration FuncDeclaration
-
-			// firstParamOpen := bytes.Index(line, []byte("("))
-
-			firstParamClose := bytes.Index(line, []byte(")"))
+		if match := reFunc.FindIndex(line); match != nil {
 
 			reFuncRegular := regexp.MustCompile(`func\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
+			reFuncMethod := regexp.MustCompile(`func\s*\(\s*[_a-zA-Z][_a-zA-Z0-9]*\s+\*\s*[_a-zA-Z][_a-zA-Z0-9]*\s*\)\s*([_a-zA-Z][_a-zA-Z0-9]*)`)
 
-			reFuncMethod := regexp.MustCompile(`func\s+\([_a-zA-Z][_a-zA-Z0-9]*\s+\*\s*[_a-zA-Z][_a-zA-Z0-9]*\)`)
-
-			if funcRegular := reFuncRegular.FindStringSubmatch(string(line[:firstParamClose])); funcRegular != nil {
-
-				funcDeclaration.FuncName = funcRegular[1]
-
-				// reFuncRegularParams := regexp.MustCompile(`\(`)
-
-			}
-
-			if funcMethod := reFuncMethod.FindStringSubmatch(string(line[:firstParamClose])); funcMethod != nil {
-
-				reFuncMethodName := regexp.MustCompile(`[_a-zA-Z][_a-zA-Z0-9]*`)
-
-				funcMethodName := reFuncMethodName.FindString(string(line[firstParamClose:]))
-
-				funcDeclaration.FuncName = funcMethodName
-			}
-
-			funcDeclaration.FileID = fileName
-			funcDeclaration.PackageID = pkg
-			funcDeclaration.StartOffset = funcMatch[0]
-
-			FuncDeclarationsArray = append(FuncDeclarationsArray, funcDeclaration)
+			if funcRegular := reFuncRegular.FindAllIndex()
 
 		}
-
-		// // if function declaration is found
-		// // i.e.  func [name] ([params]) ([returns])
-		// if match := reFunc.FindSubmatchIndex(line); match != nil {
-
-		// 	var tmp FuncDeclaration
-
-		// 	tmp.PackageID = pkg
-		// 	tmp.FileID = fileName
-
-		// 	tmp.StartOffset = match[0] + currentOffset // offset is current line offset + match index
-		// 	tmp.Length = match[1] - match[0]
-
-		// 	// If func has multiple or no returns
-		// 	// i.e. func [name] ([params]) ([returns]) or func [name] ([params])
-		// 	tmp.FuncName = string(source[match[4]+currentOffset : match[5]+currentOffset])
-
-		// 	// If func has one return
-		// 	// i.e. func [name] ([params]) [return]
-		// 	if match[2] != -1 {
-		// 		tmp.FuncName = string(source[match[2]+currentOffset : match[3]+currentOffset])
-		// 	}
-
-		// 	tmp.LineNumber = lineno
-
-		// 	FuncDeclarationsArray = append(FuncDeclarationsArray, tmp)
-
-		// }
 
 		currentOffset += len(line) // increments the currentOffset by line len
 	}
