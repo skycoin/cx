@@ -493,10 +493,33 @@ func ExtractFuncs(source []byte, fileName string) ([]FuncDeclaration, error) {
 
 		if match := reFunc.FindIndex(line); match != nil {
 
+			var funcDeclaration FuncDeclaration
+			funcDeclaration.PackageID = pkg
+			funcDeclaration.FileID = fileName
+			funcDeclaration.StartOffset = match[0]
+			funcDeclaration.LineNumber = lineno
+
 			reFuncRegular := regexp.MustCompile(`func\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
 			reFuncMethod := regexp.MustCompile(`func\s*\(\s*[_a-zA-Z][_a-zA-Z0-9]*\s+\*\s*[_a-zA-Z][_a-zA-Z0-9]*\s*\)\s*([_a-zA-Z][_a-zA-Z0-9]*)`)
 
-			if funcRegular := reFuncRegular.FindAllIndex()
+			funcRegular := reFuncRegular.FindSubmatchIndex(line)
+			funcMethod := reFuncMethod.FindSubmatchIndex(line)
+
+			if funcRegular != nil {
+				funcDeclaration.FuncName = string(line[funcRegular[2]:funcRegular[3]])
+			}
+
+			if funcMethod != nil {
+				funcDeclaration.FuncName = string(line[funcMethod[2]:funcMethod[3]])
+			}
+
+			reParam := regexp.MustCompile(`\((.*)\)`)
+
+			params := reParam.FindAllSubmatchIndex(line)
+
+			if params == nil || len(params) > 2 {
+				return FuncDeclarationsArray, fmt.Errorf("err")
+			}
 
 		}
 
