@@ -520,7 +520,7 @@ func ExtractFuncs(source []byte, fileName string) ([]FuncDeclaration, error) {
 				funcNameIdx = funcMethod[1]
 			}
 
-			reInParen := regexp.MustCompile(`\((.*)\)`)
+			reInParen := regexp.MustCompile(`\(([\w\s\*\,]*)\)`)
 
 			inParens := reInParen.FindAllSubmatchIndex(line[funcNameIdx:], -1)
 
@@ -528,33 +528,38 @@ func ExtractFuncs(source []byte, fileName string) ([]FuncDeclaration, error) {
 				return FuncDeclarationsArray, fmt.Errorf("parenthesis error")
 			}
 
-			var lastIndex int
-
 			for _, inParen := range inParens {
 
 				inParenByte := line[inParen[2]+funcNameIdx : inParen[3]+funcNameIdx]
 
-				if bytes.Equal(inParenByte, []byte("")) {
+				reNotEmptyParen := regexp.MustCompile(`\S+`)
+
+				if reNotEmptyParen.FindIndex(inParenByte) == nil {
 					continue
 				}
 
-				tokens := bytes.Split(inParenByte, []byte(","))
+				params := bytes.Split(inParenByte, []byte(","))
 
-				for _, token := range tokens {
+				for _, param := range params {
+
+					tokens := bytes.Fields(param)
 
 					reParam := regexp.MustCompile(`[_a-zA-Z][_a-zA-Z0-9]*\s+\*{0,1}\s*[_a-zA-Z][_a-zA-Z0-9]*`)
 
-					if param := reParam.FindIndex(token); param == nil {
+					if len(tokens) != 2 && len(tokens) != 3 {
 						return FuncDeclarationsArray, fmt.Errorf("param err")
 					}
 
+					if reParam.FindIndex(param) == nil {
+						return FuncDeclarationsArray, fmt.Errorf("param err")
+					}
 				}
-
-				lastIndex = inParen[1]
 
 			}
 
-			funcDeclaration.Length = (lastIndex + funcNameIdx) - match[0]
+			lastIndex := bytes.LastIndex(line, []byte(")"))
+
+			funcDeclaration.Length = lastIndex - match[0] + 1
 
 			FuncDeclarationsArray = append(FuncDeclarationsArray, funcDeclaration)
 
