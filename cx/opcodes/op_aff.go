@@ -27,8 +27,8 @@ var ofMessages = map[string]string{
 }
 
 // GetInferActions ...
-func GetInferActions(prgrm *ast.CXProgram, inp *ast.CXArgument, fp types.Pointer) []string {
-	inpOffset := ast.GetFinalOffset(prgrm, fp, inp, nil)
+func GetInferActions(prgrm *ast.CXProgram, inp *ast.CXTypeSignature, fp types.Pointer) []string {
+	inpOffset := ast.GetFinalOffset(prgrm, fp, nil, inp)
 
 	off := types.Read_ptr(prgrm.Memory, inpOffset)
 
@@ -46,13 +46,8 @@ func GetInferActions(prgrm *ast.CXProgram, inp *ast.CXArgument, fp types.Pointer
 
 func opAffPrint(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	inp1 := inputs[0]
-	var input *ast.CXArgument
-	if inp1.TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-		input = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inp1.TypeSignature.Meta))
-	} else {
-		panic("type is not type cx argument deprecate\n\n")
-	}
-	fmt.Println(GetInferActions(prgrm, input, inp1.FramePointer))
+
+	fmt.Println(GetInferActions(prgrm, inp1.TypeSignature, inp1.FramePointer))
 	// for _, aff := range GetInferActions(inp1, fp) {
 	// 	fmt.Println(aff)
 	// }
@@ -490,7 +485,7 @@ func QueryProgram(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpressi
 	}
 }
 
-func getTarget(prgrm *ast.CXProgram, inp2 *ast.CXArgument, fp types.Pointer, tgtElt *string, tgtArgType *string, tgtArgIndex *int,
+func getTarget(prgrm *ast.CXProgram, inp2 *ast.CXTypeSignature, fp types.Pointer, tgtElt *string, tgtArgType *string, tgtArgIndex *int,
 	tgtPkg *ast.CXPackage, tgtFn *ast.CXFunction, tgtExpr *ast.CXExpression) {
 	for _, aff := range GetInferActions(prgrm, inp2, fp) {
 		switch aff {
@@ -555,7 +550,7 @@ func getTarget(prgrm *ast.CXProgram, inp2 *ast.CXArgument, fp types.Pointer, tgt
 	}
 }
 
-func getAffordances(prgrm *ast.CXProgram, inp1 *ast.CXArgument, fp types.Pointer,
+func getAffordances(prgrm *ast.CXProgram, inp1 *ast.CXTypeSignature, fp types.Pointer,
 	tgtElt string, tgtArgType string, tgtArgIndex int,
 	tgtPkg *ast.CXPackage, tgtFn *ast.CXFunction, tgtExpr *ast.CXExpression,
 	affMsgs map[string]string,
@@ -1180,29 +1175,16 @@ func readArgAff(prgrm *ast.CXProgram, aff string, tgtFn *ast.CXFunction) *ast.CX
 // }
 
 func opAffQuery(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	var inp1, out1 *ast.CXArgument
-	if inputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-		inp1 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inputs[0].TypeSignature.Meta))
-	} else {
-		panic("type is not type cx argument deprecate\n\n")
-	}
-
-	if outputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-		out1 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(outputs[0].TypeSignature.Meta))
-	} else {
-		panic("type is not type cx argument deprecate\n\n")
-	}
-
 	call := prgrm.GetCurrentCall()
 	expr := call.Operator.Expressions[call.Line]
 	fp := inputs[0].FramePointer
 
-	out1Offset := ast.GetFinalOffset(prgrm, fp, out1, nil)
+	out1Offset := ast.GetFinalOffset(prgrm, fp, nil, outputs[0].TypeSignature)
 
 	var affOffset types.Pointer
 
 	var cmd string
-	for _, rule := range GetInferActions(prgrm, inp1, fp) {
+	for _, rule := range GetInferActions(prgrm, inputs[0].TypeSignature, fp) {
 		switch rule {
 		case "filter":
 			cmd = "filter"
@@ -1211,7 +1193,7 @@ func opAffQuery(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 		default:
 			switch cmd {
 			case "filter":
-				inp1Pkg, err := prgrm.GetPackageFromArray(inp1.Package)
+				inp1Pkg, err := prgrm.GetPackageFromArray(inputs[0].TypeSignature.Package)
 				if err != nil {
 					panic(err)
 				}

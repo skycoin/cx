@@ -439,13 +439,7 @@ func opGlAppend(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 	outputSlicePointer := outputs[0].Offset
 	outputSliceOffset := types.Read_ptr(prgrm.Memory, outputSlicePointer)
 
-	var input *ast.CXArgument
-	if inputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-		input = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inputs[0].TypeSignature.Meta))
-	} else {
-		panic("type is not type cx argument deprecate\n\n")
-	}
-	inputSliceOffset := ast.GetSliceOffset(prgrm, inputs[0].FramePointer, input)
+	inputSliceOffset := ast.GetSliceOffset(prgrm, inputs[0].FramePointer, inputs[0].TypeSignature)
 	var inputSliceLen types.Pointer
 	if inputSliceOffset != 0 {
 		inputSliceLen = ast.GetSliceLen(prgrm, inputSliceOffset)

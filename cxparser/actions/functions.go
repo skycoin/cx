@@ -1047,7 +1047,8 @@ func checkMatchParamTypes(prgrm *ast.CXProgram, expr *ast.CXExpression, expected
 				// We use `isInputs` to only print the error once.
 				// Otherwise we'd print the error twice: once for the input and again for the output
 				if inpType != outType && isInputs {
-					println(ast.CompilationError(receivedArg.ArgDetails.FileName, receivedArg.ArgDetails.FileLine), fmt.Sprintf("cannot assign value of type '%s' to identifier '%s' of type '%s'", inpType, expressionOutputArg.GetAssignmentElement(prgrm).Name, outType))
+					// println(ast.CompilationError(receivedArg.ArgDetails.FileName, receivedArg.ArgDetails.FileLine), fmt.Sprintf("cannot assign value of type '%s' to identifier '%s' of type '%s'", inpType, expressionOutputArg.GetAssignmentElement(prgrm).Name, outType))
+					println(ast.CompilationError("", 0), fmt.Sprintf("cannot assign value of type '%s' to identifier '%s' of type '%s'", inpType, expressionOutputArg.GetAssignmentElement(prgrm).Name, outType))
 				}
 			} else {
 				// panic("type is not cx argument deprecate\n\n")
@@ -1140,7 +1141,7 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) {
 						receivedType = expressionInputArg.GetAssignmentElement(prgrm).PointerTargetType.Name()
 					}
 				}
-			} else {
+			} else if expressionInputTypeSig.Type == ast.TYPE_ATOMIC {
 				receivedType = types.Code(expressionInputTypeSig.Meta).Name()
 			}
 
@@ -1169,7 +1170,7 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) {
 						println(ast.CompilationError(expressionOutputArg.ArgDetails.FileName, expressionOutputArg.ArgDetails.FileLine), fmt.Sprintf("trying to assign argument of type '%s' to symbol '%s' of type '%s'", receivedType, expressionOutputArg.GetAssignmentElement(prgrm).Name, expectedType))
 					}
 				}
-			} else {
+			} else if expressionOutputTypeSig.Type == ast.TYPE_ATOMIC {
 				// panic("type is not cx argument deprecate\n\n")
 				expectedType = types.Code(expressionOutputTypeSig.Meta).Name()
 

@@ -25,8 +25,7 @@ func opIdentity(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 			// Pass by value
 			outputs[0].Set_bytes(prgrm, inputs[0].Get_bytes(prgrm))
 		}
-	} else {
-		// panic("type is not type cx argument deprecate\n\n")
+	} else if outputs[0].TypeSignature.Type == ast.TYPE_ATOMIC {
 		// TODO: type atomic for now so automatically
 		// pass by value
 		outputs[0].Set_bytes(prgrm, inputs[0].Get_bytes(prgrm))

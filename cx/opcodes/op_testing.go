@@ -30,8 +30,7 @@ func assert(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) (
 			byts2 = inputs[1].Get_bytes(prgrm)
 		}
 
-	} else {
-		// panic("type is not type cx argument deprecate\n\n")
+	} else if inputs[0].TypeSignature.Type == ast.TYPE_ATOMIC {
 		byts1 = inputs[0].Get_bytes(prgrm)
 		byts2 = inputs[1].Get_bytes(prgrm)
 	}

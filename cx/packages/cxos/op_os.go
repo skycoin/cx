@@ -433,7 +433,7 @@ func getSlice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue)
 	count = inputs[2].Get_ptr(prgrm)
 	outputSlicePointer = outputs[0].Offset
 	sizeofElement = (inp1.GetAssignmentElement(prgrm)).Size
-	outputSliceOffset = ast.SliceResize(prgrm, outputs[0].FramePointer, out0, inp1, count, sizeofElement)
+	outputSliceOffset = ast.SliceResize(prgrm, outputs[0].FramePointer, outputs[0].TypeSignature, inputs[1].TypeSignature, count, sizeofElement)
 	return
 }
 

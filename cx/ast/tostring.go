@@ -335,14 +335,20 @@ func getNonCollectionValue(prgrm *CXProgram, fp types.Pointer, arg, elt *CXArgum
 		for c := 0; c < lFlds; c++ {
 			typeSignatureIdx := elt.StructType.Fields[c]
 			typeSignature := prgrm.GetCXTypeSignatureFromArray(typeSignatureIdx)
-			fldIdx := typeSignature.Meta
-			fld := prgrm.CXArgs[fldIdx]
-			if c == lFlds-1 {
-				val += fmt.Sprintf("%s: %s", fld.Name, GetPrintableValue(prgrm, fp+arg.Offset+off, &fld))
-			} else {
-				val += fmt.Sprintf("%s: %s, ", fld.Name, GetPrintableValue(prgrm, fp+arg.Offset+off, &fld))
+			var fldTotalSize types.Pointer
+			if typeSignature.Type == TYPE_CXARGUMENT_DEPRECATE {
+				fldIdx := typeSignature.Meta
+				fldTotalSize = prgrm.CXArgs[fldIdx].TotalSize
+			} else if typeSignature.Type == TYPE_ATOMIC {
+				fldTotalSize = types.Code(typeSignature.Type).Size()
 			}
-			off += fld.TotalSize
+
+			if c == lFlds-1 {
+				val += fmt.Sprintf("%s: %s", typeSignature.Name, GetPrintableValue(prgrm, fp+arg.Offset+off, typeSignature))
+			} else {
+				val += fmt.Sprintf("%s: %s, ", typeSignature.Name, GetPrintableValue(prgrm, fp+arg.Offset+off, typeSignature))
+			}
+			off += fldTotalSize
 		}
 		val += "}"
 		return val
@@ -386,14 +392,21 @@ func ReadSliceElements(prgrm *CXProgram, fp types.Pointer, arg, elt *CXArgument,
 		for c := 0; c < lFlds; c++ {
 			typeSignatureIdx := elt.StructType.Fields[c]
 			typeSignature := prgrm.GetCXTypeSignatureFromArray(typeSignatureIdx)
-			fldIdx := typeSignature.Meta
-			fld := prgrm.CXArgs[fldIdx]
-			if c == lFlds-1 {
-				val += fmt.Sprintf("%s: %s", fld.Name, GetPrintableValue(prgrm, fp+arg.Offset+off, &fld))
-			} else {
-				val += fmt.Sprintf("%s: %s, ", fld.Name, GetPrintableValue(prgrm, fp+arg.Offset+off, &fld))
+
+			var fldTotalSize types.Pointer
+			if typeSignature.Type == TYPE_CXARGUMENT_DEPRECATE {
+				fldIdx := typeSignature.Meta
+				fldTotalSize = prgrm.CXArgs[fldIdx].TotalSize
+			} else if typeSignature.Type == TYPE_ATOMIC {
+				fldTotalSize = types.Code(typeSignature.Type).Size()
 			}
-			off += fld.TotalSize
+
+			if c == lFlds-1 {
+				val += fmt.Sprintf("%s: %s", typeSignature.Name, GetPrintableValue(prgrm, fp+arg.Offset+off, typeSignature))
+			} else {
+				val += fmt.Sprintf("%s: %s, ", typeSignature.Name, GetPrintableValue(prgrm, fp+arg.Offset+off, typeSignature))
+			}
+			off += fldTotalSize
 		}
 		val += "}"
 		return val
@@ -401,105 +414,113 @@ func ReadSliceElements(prgrm *CXProgram, fp types.Pointer, arg, elt *CXArgument,
 }
 
 // GetPrintableValue ...
-func GetPrintableValue(prgrm *CXProgram, fp types.Pointer, arg *CXArgument) string {
+func GetPrintableValue(prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSignature) string {
+	var arg, elt *CXArgument
 	var typ string
-	elt := arg.GetAssignmentElement(prgrm)
-	if elt.StructType != nil {
-		// then it's struct type
-		typ = elt.StructType.Name
-	} else {
-		// then it's native type
-		typ = elt.Type.Name()
-	}
+	if argTypeSig.Type == TYPE_CXARGUMENT_DEPRECATE {
+		arg = prgrm.GetCXArgFromArray(CXArgumentIndex(argTypeSig.Meta))
 
-	if len(elt.Lengths) > 0 {
-		var val string
-		if len(elt.Lengths) == 1 {
-			val = "["
+		elt = arg.GetAssignmentElement(prgrm)
+		if elt.StructType != nil {
+			// then it's struct type
+			typ = elt.StructType.Name
+		} else {
+			// then it's native type
+			typ = elt.Type.Name()
+		}
 
-			if arg.IsSlice {
-				// for slices
-				sliceOffset := GetSliceOffset(prgrm, fp, arg)
+		if len(elt.Lengths) > 0 {
+			var val string
+			if len(elt.Lengths) == 1 {
+				val = "["
 
-				sliceData := GetSlice(prgrm, sliceOffset, elt.Size)
-				if len(sliceData) != 0 {
-					sliceLen := types.Read_ptr(sliceData, 0)
-					for c := types.Pointer(0); c < sliceLen; c++ {
-						if c == sliceLen-1 {
-							val += ReadSliceElements(prgrm, sliceOffset+constants.SLICE_HEADER_SIZE+types.OBJECT_HEADER_SIZE+c*elt.Size, arg, elt, sliceData[types.POINTER_SIZE+c*elt.Size:], elt.Size, typ)
+				if arg.IsSlice {
+					// for slices
+					sliceOffset := GetSliceOffset(prgrm, fp, argTypeSig)
+
+					sliceData := GetSlice(prgrm, sliceOffset, elt.Size)
+					if len(sliceData) != 0 {
+						sliceLen := types.Read_ptr(sliceData, 0)
+						for c := types.Pointer(0); c < sliceLen; c++ {
+							if c == sliceLen-1 {
+								val += ReadSliceElements(prgrm, sliceOffset+constants.SLICE_HEADER_SIZE+types.OBJECT_HEADER_SIZE+c*elt.Size, arg, elt, sliceData[types.POINTER_SIZE+c*elt.Size:], elt.Size, typ)
+							} else {
+								val += ReadSliceElements(prgrm, sliceOffset+constants.SLICE_HEADER_SIZE+types.OBJECT_HEADER_SIZE+c*elt.Size, arg, elt, sliceData[types.POINTER_SIZE+c*elt.Size:], elt.Size, typ) + ", "
+							}
+
+						}
+					}
+
+				} else {
+					// for Arrays
+					for c := types.Pointer(0); c < elt.Lengths[0]; c++ {
+						if c == elt.Lengths[0]-1 {
+							val += getNonCollectionValue(prgrm, fp+c*elt.Size, arg, elt, typ)
 						} else {
-							val += ReadSliceElements(prgrm, sliceOffset+constants.SLICE_HEADER_SIZE+types.OBJECT_HEADER_SIZE+c*elt.Size, arg, elt, sliceData[types.POINTER_SIZE+c*elt.Size:], elt.Size, typ) + ", "
+							val += getNonCollectionValue(prgrm, fp+c*elt.Size, arg, elt, typ) + ", "
 						}
 
 					}
 				}
 
+				val += "]"
 			} else {
-				// for Arrays
-				for c := types.Pointer(0); c < elt.Lengths[0]; c++ {
-					if c == elt.Lengths[0]-1 {
+				// 5, 4, 1
+				val = ""
+
+				finalSize := types.Pointer(1)
+				for _, l := range elt.Lengths {
+					finalSize *= l
+				}
+
+				lens := make([]types.Pointer, len(elt.Lengths))
+				copy(lens, elt.Lengths)
+
+				for c := 0; c < len(lens); c++ {
+					for i := 0; i < len(lens[c+1:]); i++ {
+						lens[c] *= lens[c+i]
+					}
+				}
+
+				for range lens {
+					val += "["
+				}
+
+				// adding first element because of formatting reasons
+				val += getNonCollectionValue(prgrm, fp, arg, elt, typ)
+				for c := types.Pointer(1); c < finalSize; c++ {
+					closeCount := 0
+					for _, l := range lens {
+						if c%l == 0 && c != 0 {
+							// val += "] ["
+							closeCount++
+						}
+					}
+
+					if closeCount > 0 {
+						for i := 0; i < closeCount; i++ {
+							val += "]"
+						}
+						val += " "
+						for i := 0; i < closeCount; i++ {
+							val += "["
+						}
+
 						val += getNonCollectionValue(prgrm, fp+c*elt.Size, arg, elt, typ)
 					} else {
-						val += getNonCollectionValue(prgrm, fp+c*elt.Size, arg, elt, typ) + ", "
+						val += " " + getNonCollectionValue(prgrm, fp+c*elt.Size, arg, elt, typ)
 					}
-
+				}
+				for range lens {
+					val += "]"
 				}
 			}
 
-			val += "]"
-		} else {
-			// 5, 4, 1
-			val = ""
-
-			finalSize := types.Pointer(1)
-			for _, l := range elt.Lengths {
-				finalSize *= l
-			}
-
-			lens := make([]types.Pointer, len(elt.Lengths))
-			copy(lens, elt.Lengths)
-
-			for c := 0; c < len(lens); c++ {
-				for i := 0; i < len(lens[c+1:]); i++ {
-					lens[c] *= lens[c+i]
-				}
-			}
-
-			for range lens {
-				val += "["
-			}
-
-			// adding first element because of formatting reasons
-			val += getNonCollectionValue(prgrm, fp, arg, elt, typ)
-			for c := types.Pointer(1); c < finalSize; c++ {
-				closeCount := 0
-				for _, l := range lens {
-					if c%l == 0 && c != 0 {
-						// val += "] ["
-						closeCount++
-					}
-				}
-
-				if closeCount > 0 {
-					for i := 0; i < closeCount; i++ {
-						val += "]"
-					}
-					val += " "
-					for i := 0; i < closeCount; i++ {
-						val += "["
-					}
-
-					val += getNonCollectionValue(prgrm, fp+c*elt.Size, arg, elt, typ)
-				} else {
-					val += " " + getNonCollectionValue(prgrm, fp+c*elt.Size, arg, elt, typ)
-				}
-			}
-			for range lens {
-				val += "]"
-			}
+			return val
 		}
-
-		return val
+	} else if argTypeSig.Type == TYPE_ATOMIC {
+		// what to do with type atomic
+		panic("type is not cx argument deprecate")
 	}
 
 	return getNonCollectionValue(prgrm, fp, arg, elt, typ)
