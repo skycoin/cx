@@ -1576,12 +1576,12 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbolsData
 		var outIdx ast.CXArgumentIndex = -1
 
 		expressionInputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetInputs(prgrm)[0])
-		if len(expression.GetInputs(prgrm)) > 0 && expressionInputTypeSig.Name != "" {
+		if len(expression.GetInputs(prgrm)) > 0 && expressionInputTypeSig.Name != "" && expressionInputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			inpIdx = ast.CXArgumentIndex(expressionInputTypeSig.Meta)
 		}
 
 		expressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetOutputs(prgrm)[0])
-		if len(expression.GetOutputs(prgrm)) > 0 && expressionOutputTypeSig.Name != "" {
+		if len(expression.GetOutputs(prgrm)) > 0 && expressionOutputTypeSig.Name != "" && expressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			outIdx = ast.CXArgumentIndex(expressionOutputTypeSig.Meta)
 		}
 
@@ -1637,12 +1637,12 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbolsData
 				var argInp *ast.CXArgument = &ast.CXArgument{}
 				if argInpTypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 					argInp = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(argInpTypeSignature.Meta))
-				} else {
-					panic("type is cx argument deprecate\n\n")
+				} else if argInpTypeSignature.Type == ast.TYPE_ATOMIC {
+					argInp = nil
 				}
 
 				// then we found an input
-				if len(prgrm.CXArgs[inpIdx].Fields) > 0 {
+				if len(prgrm.CXArgs[inpIdx].Fields) > 0 && argInp != nil {
 					strct := argInp.StructType
 
 					for _, fldIdx := range prgrm.CXArgs[inpIdx].Fields {
@@ -1677,15 +1677,18 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbolsData
 					}
 
 					var argOut *ast.CXArgument = &ast.CXArgument{}
+					var argOutType string
 					if argOutTypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 						argOut = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(argOutTypeSignature.Meta))
-					} else {
-						panic("type is cx argument deprecate\n\n")
+						argOutType = argOut.Type.Name()
+					} else if argOutTypeSignature.Type == ast.TYPE_ATOMIC {
+						argOut = &ast.CXArgument{StructType: nil, ArgDetails: &ast.CXArgumentDebug{}}
+						argOutType = types.Code(argOutTypeSignature.Meta).Name()
 					}
 
 					strct := argOut.StructType
 					if strct == nil {
-						println(ast.CompilationError(argOut.ArgDetails.FileName, argOut.ArgDetails.FileLine), fmt.Sprintf("illegal method call or field access on identifier '%s' of primitive type '%s'", argOut.Name, argOut.Type.Name()))
+						println(ast.CompilationError(argOut.ArgDetails.FileName, argOut.ArgDetails.FileLine), fmt.Sprintf("illegal method call or field access on identifier '%s' of primitive type '%s'", argOutTypeSignature.Name, argOutType))
 						os.Exit(constants.CX_COMPILATION_ERROR)
 					}
 
