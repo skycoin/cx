@@ -33,18 +33,18 @@ func (cxprogram *CXProgram) PrintStack() {
 			var inp *CXArgument = &CXArgument{}
 			if input.Type == TYPE_CXARGUMENT_DEPRECATE {
 				inp = cxprogram.GetCXArgFromArray(CXArgumentIndex(input.Meta))
-			} else {
-				panic("type is not cxargument deprecate")
+			} else if input.Type == TYPE_ATOMIC {
+				inp = &CXArgument{}
 			}
 
 			fmt.Println("ProgramInput")
-			fmt.Printf("\t%s : %s() : %s\n", stackValueHeader(inp.ArgDetails.FileName, inp.ArgDetails.FileLine), op.Name, GetPrintableValue(cxprogram, fp, inp))
+			fmt.Printf("\t%s : %s() : %s\n", stackValueHeader(inp.ArgDetails.FileName, inp.ArgDetails.FileLine), op.Name, GetPrintableValue(cxprogram, fp, input))
 
-			inpPkg, err := cxprogram.GetPackageFromArray(inp.Package)
+			inpPkg, err := cxprogram.GetPackageFromArray(input.Package)
 			if err != nil {
 				panic(err)
 			}
-			dupNames = append(dupNames, inpPkg.Name+inp.Name)
+			dupNames = append(dupNames, inpPkg.Name+input.Name)
 		}
 
 		opOutputs := op.GetOutputs(cxprogram)
@@ -54,18 +54,18 @@ func (cxprogram *CXProgram) PrintStack() {
 			var out *CXArgument = &CXArgument{}
 			if output.Type == TYPE_CXARGUMENT_DEPRECATE {
 				out = cxprogram.GetCXArgFromArray(CXArgumentIndex(output.Meta))
-			} else {
-				panic("type is not cxargument deprecate")
+			} else if output.Type == TYPE_ATOMIC {
+				out = &CXArgument{}
 			}
 
 			fmt.Println("ProgramOutput")
-			fmt.Printf("\t%s : %s() : %s\n", stackValueHeader(out.ArgDetails.FileName, out.ArgDetails.FileLine), op.Name, GetPrintableValue(cxprogram, fp, out))
+			fmt.Printf("\t%s : %s() : %s\n", stackValueHeader(out.ArgDetails.FileName, out.ArgDetails.FileLine), op.Name, GetPrintableValue(cxprogram, fp, output))
 
-			outPkg, err := cxprogram.GetPackageFromArray(out.Package)
+			outPkg, err := cxprogram.GetPackageFromArray(output.Package)
 			if err != nil {
 				panic(err)
 			}
-			dupNames = append(dupNames, outPkg.Name+out.Name)
+			dupNames = append(dupNames, outPkg.Name+output.Name)
 		}
 
 		// fmt.Println("Expressions")
@@ -83,21 +83,21 @@ func (cxprogram *CXProgram) PrintStack() {
 				var inp *CXArgument = &CXArgument{}
 				if input.Type == TYPE_CXARGUMENT_DEPRECATE {
 					inp = cxprogram.GetCXArgFromArray(CXArgumentIndex(input.Meta))
-				} else {
-					panic("type is not cxargument deprecate")
+				} else if input.Type == TYPE_ATOMIC {
+					inp = &CXArgument{}
 				}
 
-				if inp.Name == "" || cxAtomicOpOperator == nil {
+				if input.Name == "" || cxAtomicOpOperator == nil {
 					continue
 				}
 
-				inpPkg, err := cxprogram.GetPackageFromArray(inp.Package)
+				inpPkg, err := cxprogram.GetPackageFromArray(input.Package)
 				if err != nil {
 					panic(err)
 				}
 				var dup bool
 				for _, name := range dupNames {
-					if name == inpPkg.Name+inp.Name {
+					if name == inpPkg.Name+input.Name {
 						dup = true
 						break
 					}
@@ -109,9 +109,9 @@ func (cxprogram *CXProgram) PrintStack() {
 				// fmt.Println("\t", inp.Name, "\t", ":", "\t", GetPrintableValue(fp, inp))
 				// exprs += fmt.Sprintln("\t", stackValueHeader(inp.FileName, inp.FileLine), "\t", ":", "\t", GetPrintableValue(fp, inp))
 
-				exprs += fmt.Sprintf("\t%s : %s() : %s\n", stackValueHeader(inp.ArgDetails.FileName, inp.ArgDetails.FileLine), cxAtomicOp.GetOperatorName(cxprogram), GetPrintableValue(cxprogram, fp, inp))
+				exprs += fmt.Sprintf("\t%s : %s() : %s\n", stackValueHeader(inp.ArgDetails.FileName, inp.ArgDetails.FileLine), cxAtomicOp.GetOperatorName(cxprogram), GetPrintableValue(cxprogram, fp, input))
 
-				dupNames = append(dupNames, inpPkg.Name+inp.Name)
+				dupNames = append(dupNames, inpPkg.Name+input.Name)
 			}
 
 			for _, outputIdx := range cxAtomicOp.GetOutputs(cxprogram) {
@@ -143,7 +143,7 @@ func (cxprogram *CXProgram) PrintStack() {
 					// fmt.Println("\t", out.Name, "\t", ":", "\t", GetPrintableValue(fp, out))
 					// exprs += fmt.Sprintln("\t", stackValueHeader(out.FileName, out.FileLine), ":", GetPrintableValue(fp, out))
 
-					exprs += fmt.Sprintf("\t%s : %s() : %s\n", stackValueHeader(out.ArgDetails.FileName, out.ArgDetails.FileLine), cxAtomicOp.GetOperatorName(cxprogram), GetPrintableValue(cxprogram, fp, out))
+					exprs += fmt.Sprintf("\t%s : %s() : %s\n", stackValueHeader(out.ArgDetails.FileName, out.ArgDetails.FileLine), cxAtomicOp.GetOperatorName(cxprogram), GetPrintableValue(cxprogram, fp, output))
 
 					dupNames = append(dupNames, outPkg.Name+out.Name)
 				} else if output.Type == TYPE_ATOMIC {
@@ -168,7 +168,7 @@ func (cxprogram *CXProgram) PrintStack() {
 					}
 
 					// TODO: Make GetPrintableValue() and other functions receive CXTypeSignature instead of CXArgument
-					exprs += fmt.Sprintf("\t%s : %s() : %s\n", stackValueHeader(out.ArgDetails.FileName, out.ArgDetails.FileLine), cxAtomicOp.GetOperatorName(cxprogram), GetPrintableValue(cxprogram, fp, out))
+					exprs += fmt.Sprintf("\t%s : %s() : %s\n", stackValueHeader(out.ArgDetails.FileName, out.ArgDetails.FileLine), cxAtomicOp.GetOperatorName(cxprogram), GetPrintableValue(cxprogram, fp, output))
 
 					dupNames = append(dupNames, outputPkg.Name+output.Name)
 
