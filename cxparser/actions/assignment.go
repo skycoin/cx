@@ -473,24 +473,12 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 			panic("type is not type cx argument deprecate\n\n")
 		}
 
-		// if fromExpressionOutputArg type is atomic then change the type signature to type atomic
-		if ast.IsTypeAtomic(fromExpressionOutputArg) {
-			toExpressionOutputTypeSig.Type = ast.TYPE_ATOMIC
-			toExpressionOutputTypeSig.Meta = int(fromExpressionOutputArg.Type)
-			toExpressionOutputTypeSig.Offset = prgrm.CXArgs[toExpressionOutputIdx].Offset
-
-			fromExpressionOutputTypeSig.Type = ast.TYPE_ATOMIC
-			fromExpressionOutputTypeSig.Meta = int(fromExpressionOutputArg.Type)
-			fromExpressionOutputTypeSig.Offset = fromExpressionOutputArg.Offset
-			fromExpressionOutputTypeSig.Package = fromExpressionOutputArg.Package
-		} else {
-			prgrm.CXArgs[toExpressionOutputIdx].Size = fromExpressionOutputArg.Size
-			prgrm.CXArgs[toExpressionOutputIdx].TotalSize = fromExpressionOutputArg.TotalSize
-			prgrm.CXArgs[toExpressionOutputIdx].Type = fromExpressionOutputArg.Type
-			prgrm.CXArgs[toExpressionOutputIdx].PointerTargetType = fromExpressionOutputArg.PointerTargetType
-			prgrm.CXArgs[toExpressionOutputIdx].Lengths = fromExpressionOutputArg.Lengths
-			prgrm.CXArgs[toExpressionOutputIdx].PassBy = fromExpressionOutputArg.PassBy
-		}
+		prgrm.CXArgs[toExpressionOutputIdx].Size = fromExpressionOutputArg.Size
+		prgrm.CXArgs[toExpressionOutputIdx].TotalSize = fromExpressionOutputArg.TotalSize
+		prgrm.CXArgs[toExpressionOutputIdx].Type = fromExpressionOutputArg.Type
+		prgrm.CXArgs[toExpressionOutputIdx].PointerTargetType = fromExpressionOutputArg.PointerTargetType
+		prgrm.CXArgs[toExpressionOutputIdx].Lengths = fromExpressionOutputArg.Lengths
+		prgrm.CXArgs[toExpressionOutputIdx].PassBy = fromExpressionOutputArg.PassBy
 
 		if fromExprs[lastFromExpressionIdx].IsMethodCall() {
 			newInputs := prgrm.CXAtomicOps[fromExpressionIdx].Outputs
