@@ -499,7 +499,6 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 				// TODO: we'd be referring to the function itself, not a function call
 				// (functions as first-class objects)
 				leftExprOutputTypeSig.Name = leftExprOutputTypeSig.Name + "." + ident
-				leftExprOutputTypeSig.Name = leftExprOutputTypeSig.Name + "." + ident
 				if leftExprOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 					prgrm.CXArgs[leftExprIdx].Name = leftExprOutputTypeSig.Name + "." + ident
 				}
@@ -511,7 +510,6 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		leftExprOutputTypeSig.Package = ast.CXPackageIndex(imp.Index)
 		if leftExprOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			prgrm.CXArgs[leftExprIdx].Package = ast.CXPackageIndex(imp.Index)
-
 		}
 
 		if glbl, err := imp.GetGlobal(prgrm, ident); err == nil {
@@ -577,8 +575,7 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 				panic("type is not cx argument deprecate\n\n")
 			}
 
-			lastExpressionOutput := lastExpressionOutputArg
-			lastExpressionOutput.StructType = strct
+			lastExpressionOutputArg.StructType = strct
 		} else {
 			// panic(err)
 			fmt.Println(err)
@@ -592,10 +589,9 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 					leftExprOutputTypeSig.Name))
 			os.Exit(constants.CX_COMPILATION_ERROR)
 		}
+
 		// then it's a struct
-		if leftExprOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-			prgrm.CXArgs[leftExprIdx].IsStruct = true
-		}
+		prgrm.CXArgs[leftExprIdx].IsStruct = true
 
 		leftExprField := ast.MakeArgument(ident, CurrentFile, LineNo)
 		leftPkg, err := prgrm.GetPackageFromArray(leftExprOutputTypeSig.Package)
@@ -608,6 +604,8 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		if leftExprOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			leftExprFieldIdx := prgrm.AddCXArgInArray(leftExprField)
 			prgrm.CXArgs[leftExprIdx].Fields = append(prgrm.CXArgs[leftExprIdx].Fields, leftExprFieldIdx)
+		} else if leftExprOutputTypeSig.Type == ast.TYPE_ATOMIC {
+			panic("type is not cx arg deprecate")
 		}
 
 	}

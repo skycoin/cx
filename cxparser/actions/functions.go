@@ -1072,8 +1072,7 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) {
 		panic(err)
 	}
 	expressionOperator := prgrm.GetFunctionFromArray(expression.Operator)
-	// TODO: remove the use of ConvertIndexTypeSignaturesToPointerArgs()
-	expressionOperatorInputs := prgrm.ConvertIndexTypeSignaturesToPointerArgs(expressionOperator.GetInputs(prgrm))
+	expressionOperatorInputs := expressionOperator.GetInputs(prgrm)
 
 	exprCXLine, _ := prgrm.GetPreviousCXLine(exprs, currIndex)
 
@@ -1082,7 +1081,14 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) {
 
 		// checking if number of inputs is less than the required number of inputs
 		if len(expression.GetInputs(prgrm)) != len(expressionOperatorInputs) {
-			if !(len(expressionOperatorInputs) > 0 && expressionOperatorInputs[len(expressionOperatorInputs)-1].Type != types.UNDEFINED) {
+			expressionOperatorInputArg := &ast.CXArgument{}
+			expressionTypeSigIdx := expressionOperatorInputs[len(expressionOperatorInputs)-1]
+			expressionTypeSig := prgrm.GetCXTypeSignatureFromArray(expressionTypeSigIdx)
+			if expressionTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				expressionOperatorInputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionTypeSig.Meta))
+			}
+
+			if !(len(expressionOperatorInputs) > 0 && expressionOperatorInputArg.Type != types.UNDEFINED) {
 				// if the last input is of type cxcore.TYPE_UNDEFINED then it might be a variadic function, such as printf
 			} else {
 				// then we need to be strict in the number of inputs
@@ -1289,36 +1295,43 @@ func ProcessShortDeclaration(prgrm *ast.CXProgram, expr *ast.CXExpression, expre
 
 	// process short declaration
 	if len(expression.GetOutputs(prgrm)) > 0 && len(expression.GetInputs(prgrm)) > 0 && expressionOutputArgType == types.IDENTIFIER && !expr.IsStructLiteral() && !isParseOp(prgrm, expr) {
-		expressionOperator := prgrm.GetFunctionFromArray(expression.Operator)
-		expressionOperatorOutputs := expressionOperator.GetOutputs(prgrm)
-		expressionOperatorOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(expressionOperatorOutputs[0])
-
-		var expressionOperatorOutputArg *ast.CXArgument = &ast.CXArgument{}
-		if expressionOperatorOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-			expressionOperatorOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionOperatorOutputTypeSig.Meta))
-		} else {
-			panic("type is not cx argument deprecate\n\n")
-		}
-
 		prevExpression, err := prgrm.GetPreviousCXAtomicOpFromExpressions(expressions, idx-1)
 		if err != nil {
 			panic(err)
 		}
 
-		var arg *ast.CXArgument = &ast.CXArgument{}
+		var argType, argPointerTargetType types.Code
+		var argSize, argTotalSize types.Pointer
 		if expr.IsMethodCall() {
-			arg = expressionOperatorOutputArg
-		} else {
-			expressionInputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetInputs(prgrm)[0])
+			expressionOperator := prgrm.GetFunctionFromArray(expression.Operator)
+			expressionOperatorOutputs := expressionOperator.GetOutputs(prgrm)
+			expressionOperatorOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(expressionOperatorOutputs[0])
 
-			var expressionInputArg *ast.CXArgument = &ast.CXArgument{}
-			if expressionInputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-				expressionInputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionInputTypeSig.Meta))
-			} else {
-				panic("type is not cx argument deprecate\n\n")
+			if expressionOperatorOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				expressionOperatorOutputArg := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionOperatorOutputTypeSig.Meta))
+				argType = expressionOperatorOutputArg.Type
+				argPointerTargetType = expressionOperatorOutputArg.PointerTargetType
+				argSize = expressionOperatorOutputArg.Size
+				argTotalSize = expressionOperatorOutputArg.TotalSize
+			} else if expressionOperatorOutputTypeSig.Type == ast.TYPE_ATOMIC {
+				argType = types.Code(expressionOperatorOutputTypeSig.Meta)
+				argSize = types.Code(expressionOperatorOutputTypeSig.Meta).Size()
+				argTotalSize = types.Code(expressionOperatorOutputTypeSig.Meta).Size()
 			}
 
-			arg = expressionInputArg
+		} else {
+			expressionInputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetInputs(prgrm)[0])
+			if expressionInputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				expressionInputArg := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionInputTypeSig.Meta))
+				argType = expressionInputArg.Type
+				argPointerTargetType = expressionInputArg.PointerTargetType
+				argSize = expressionInputArg.Size
+				argTotalSize = expressionInputArg.TotalSize
+			} else if expressionInputTypeSig.Type == ast.TYPE_ATOMIC {
+				argType = types.Code(expressionInputTypeSig.Meta)
+				argSize = types.Code(expressionInputTypeSig.Meta).Size()
+				argTotalSize = types.Code(expressionInputTypeSig.Meta).Size()
+			}
 		}
 
 		prevExpressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(prevExpression.GetOutputs(prgrm)[0])
@@ -1326,26 +1339,25 @@ func ProcessShortDeclaration(prgrm *ast.CXProgram, expr *ast.CXExpression, expre
 		if prevExpressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			prevExpressionOutputIdx = ast.CXArgumentIndex(prevExpressionOutputTypeSig.Meta)
 
-			prgrm.CXArgs[prevExpressionOutputIdx].Type = arg.Type
-			prgrm.CXArgs[prevExpressionOutputIdx].PointerTargetType = arg.PointerTargetType
-			prgrm.CXArgs[prevExpressionOutputIdx].Size = arg.Size
-			prgrm.CXArgs[prevExpressionOutputIdx].TotalSize = arg.TotalSize
-		} else {
-			prevExpressionOutputTypeSig.Meta = int(arg.Type)
+			prgrm.CXArgs[prevExpressionOutputIdx].Type = argType
+			prgrm.CXArgs[prevExpressionOutputIdx].PointerTargetType = argPointerTargetType
+			prgrm.CXArgs[prevExpressionOutputIdx].Size = argSize
+			prgrm.CXArgs[prevExpressionOutputIdx].TotalSize = argTotalSize
+		} else if prevExpressionOutputTypeSig.Type == ast.TYPE_ATOMIC {
+			prevExpressionOutputTypeSig.Meta = int(argType)
 		}
 
 		expressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetOutputs(prgrm)[0])
-		var expressionOutputIdx ast.CXArgumentIndex
 		if expressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-			expressionOutputIdx = ast.CXArgumentIndex(expressionOutputTypeSig.Meta)
-		} else {
-			panic("type is not type cx argument deprecate\n\n")
-		}
+			expressionOutputIdx := ast.CXArgumentIndex(expressionOutputTypeSig.Meta)
 
-		prgrm.CXArgs[expressionOutputIdx].Type = arg.Type
-		prgrm.CXArgs[expressionOutputIdx].PointerTargetType = arg.PointerTargetType
-		prgrm.CXArgs[expressionOutputIdx].Size = arg.Size
-		prgrm.CXArgs[expressionOutputIdx].TotalSize = arg.TotalSize
+			prgrm.CXArgs[expressionOutputIdx].Type = argType
+			prgrm.CXArgs[expressionOutputIdx].PointerTargetType = argPointerTargetType
+			prgrm.CXArgs[expressionOutputIdx].Size = argSize
+			prgrm.CXArgs[expressionOutputIdx].TotalSize = argTotalSize
+		} else if expressionOutputTypeSig.Type == ast.TYPE_ATOMIC {
+			expressionOutputTypeSig.Meta = int(argType)
+		}
 	}
 }
 
