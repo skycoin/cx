@@ -36,6 +36,10 @@ func (op *CXAtomicOperator) AddInput(prgrm *CXProgram, typeSignatureIdx CXTypeSi
 	}
 
 	typeSignature := prgrm.GetCXTypeSignatureFromArray(typeSignatureIdx)
+	if typeSignature.Package == -1 {
+		typeSignature.Package = op.Package
+	}
+
 	// Add Package if arg has no package
 	if typeSignature.Type == TYPE_CXARGUMENT_DEPRECATE {
 		arg := prgrm.GetCXArgFromArray(CXArgumentIndex(typeSignature.Meta))
@@ -71,6 +75,9 @@ func (op *CXAtomicOperator) AddOutput(prgrm *CXProgram, typeSignatureIdx CXTypeS
 	}
 
 	typeSignature := prgrm.GetCXTypeSignatureFromArray(typeSignatureIdx)
+	if typeSignature.Package == -1 {
+		typeSignature.Package = op.Package
+	}
 
 	// Add Package if arg has no package
 	if typeSignature.Type == TYPE_CXARGUMENT_DEPRECATE {
