@@ -140,26 +140,33 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		}
 	} else {
 		if len(prgrm.CXAtomicOps[postExpressionIdx].GetOutputs(prgrm)) < 1 {
-			postExpressionOperatorOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(postExpressionOperatorOutputs[0])
-			var postExpressionOperatorOutputArg *ast.CXArgument = &ast.CXArgument{}
-			if postExpressionOperatorOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-				postExpressionOperatorOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(postExpressionOperatorOutputTypeSig.Meta))
-			} else {
-				panic("type is not cx argument deprecate\n\n")
-			}
-
 			// then it's an expression (e.g. i32.add(0, 0))
 			// we create a gensym for it
-			idxSym := ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, LineNo).SetType(postExpressionOperatorOutputArg.Type)
-			idxSym.Size = postExpressionOperatorOutputArg.Size
-			idxSym.TotalSize = postExpressionOperatorOutputTypeSig.GetSize(prgrm)
 
-			idxSym.Package = prgrm.CXAtomicOps[postExpressionIdx].Package
-			idxSym.PreviouslyDeclared = true
+			postExpressionOperatorOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(postExpressionOperatorOutputs[0])
+			var typeSigIdx ast.CXTypeSignatureIndex
+			if postExpressionOperatorOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				postExpressionOperatorOutputArg := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(postExpressionOperatorOutputTypeSig.Meta))
+				idxSym := ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, LineNo).SetType(postExpressionOperatorOutputArg.Type)
+				idxSym.Size = postExpressionOperatorOutputArg.Size
+				idxSym.TotalSize = postExpressionOperatorOutputTypeSig.GetSize(prgrm)
 
-			idxSymIdx := prgrm.AddCXArgInArray(idxSym)
-			typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(idxSymIdx))
-			typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
+				idxSym.Package = prgrm.CXAtomicOps[postExpressionIdx].Package
+				idxSym.PreviouslyDeclared = true
+
+				idxSymIdx := prgrm.AddCXArgInArray(idxSym)
+				typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(idxSymIdx))
+				typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
+			} else if postExpressionOperatorOutputTypeSig.Type == ast.TYPE_ATOMIC {
+				newTypeSig := &ast.CXTypeSignature{}
+				newTypeSig.Name = generateTempVarName(constants.LOCAL_PREFIX)
+				newTypeSig.Package = prgrm.CXAtomicOps[postExpressionIdx].Package
+				newTypeSig.Type = postExpressionOperatorOutputTypeSig.Type
+				newTypeSig.Meta = postExpressionOperatorOutputTypeSig.Meta
+				newTypeSig.Offset = postExpressionOperatorOutputTypeSig.Offset
+				typeSigIdx = prgrm.AddCXTypeSignatureInArray(newTypeSig)
+			}
+
 			prgrm.CXAtomicOps[postExpressionIdx].AddOutput(prgrm, typeSigIdx)
 
 			prevExpressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(prevExpression.GetOutputs(prgrm)[0])
