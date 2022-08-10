@@ -290,28 +290,32 @@ func resolveTypeForUnd(prgrm *ast.CXProgram, expr *ast.CXExpression) types.Code 
 	if len(expressionInputs) > 0 {
 		expressionInputTypeSig := prgrm.GetCXTypeSignatureFromArray(expressionInputs[0])
 
-		var expressionInputArg *ast.CXArgument = &ast.CXArgument{}
+		var expressionInputArgType types.Code
 		if expressionInputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-			expressionInputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionInputTypeSig.Meta))
-		} else {
-			panic("type is not cx argument deprecate\n\n")
+			expressionInputArg := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionInputTypeSig.Meta))
+			expressionInputArgType = expressionInputArg.Type
+		} else if expressionInputTypeSig.Type == ast.TYPE_ATOMIC {
+			expressionInputArgType = types.Code(expressionInputTypeSig.Meta)
 		}
 
 		// it's a literal
-		return expressionInputArg.Type
+		return expressionInputArgType
 	}
+
 	if len(expressionOutputs) > 0 {
 		expressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(expressionOutputs[0])
-		var expressionOutputArg *ast.CXArgument = &ast.CXArgument{}
+		var expressionOutputArgType types.Code
 		if expressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-			expressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionOutputTypeSig.Meta))
-		} else {
-			panic("type is not cx argument deprecate\n\n")
+			expressionOutputArg := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionOutputTypeSig.Meta))
+			expressionOutputArgType = expressionOutputArg.Type
+		} else if expressionOutputTypeSig.Type == ast.TYPE_ATOMIC {
+			expressionOutputArgType = types.Code(expressionOutputTypeSig.Meta)
 		}
 
 		// it's an expression with an output
-		return expressionOutputArg.Type
+		return expressionOutputArgType
 	}
+
 	if expressionOperator == nil {
 		// the expression doesn't return anything
 		return -1
@@ -319,15 +323,17 @@ func resolveTypeForUnd(prgrm *ast.CXProgram, expr *ast.CXExpression) types.Code 
 	expressionOperatorOutputs := expressionOperator.GetOutputs(prgrm)
 	if len(expressionOperatorOutputs) > 0 {
 		expressionOperatorOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(expressionOperatorOutputs[0])
-		var expressionOperatorOutputArg *ast.CXArgument = &ast.CXArgument{}
+
+		var expressionOperatorOutputArgType types.Code
 		if expressionOperatorOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-			expressionOperatorOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionOperatorOutputTypeSig.Meta))
-		} else {
-			panic("type is not cx argument deprecate\n\n")
+			expressionOperatorOutputArg := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionOperatorOutputTypeSig.Meta))
+			expressionOperatorOutputArgType = expressionOperatorOutputArg.Type
+		} else if expressionOperatorOutputTypeSig.Type == ast.TYPE_ATOMIC {
+			expressionOperatorOutputArgType = types.Code(expressionOperatorOutputTypeSig.Meta)
 		}
 
 		// always return first output's type
-		return expressionOperatorOutputArg.Type
+		return expressionOperatorOutputArgType
 	}
 
 	// error
