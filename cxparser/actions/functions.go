@@ -1586,15 +1586,18 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbolsData
 	if expr.IsMethodCall() {
 		var inpIdx ast.CXArgumentIndex = -1
 		var outIdx ast.CXArgumentIndex = -1
-
-		expressionInputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetInputs(prgrm)[0])
-		if len(expression.GetInputs(prgrm)) > 0 && expressionInputTypeSig.Name != "" && expressionInputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-			inpIdx = ast.CXArgumentIndex(expressionInputTypeSig.Meta)
+		if len(expression.GetInputs(prgrm)) > 0 {
+			expressionInputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetInputs(prgrm)[0])
+			if expressionInputTypeSig.Name != "" && expressionInputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				inpIdx = ast.CXArgumentIndex(expressionInputTypeSig.Meta)
+			}
 		}
 
-		expressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetOutputs(prgrm)[0])
-		if len(expression.GetOutputs(prgrm)) > 0 && expressionOutputTypeSig.Name != "" && expressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-			outIdx = ast.CXArgumentIndex(expressionOutputTypeSig.Meta)
+		if len(expression.GetOutputs(prgrm)) > 0 {
+			expressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetOutputs(prgrm)[0])
+			if expressionOutputTypeSig.Name != "" && expressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				outIdx = ast.CXArgumentIndex(expressionOutputTypeSig.Meta)
+			}
 		}
 
 		if inpIdx != -1 {
