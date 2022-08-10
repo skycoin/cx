@@ -243,30 +243,34 @@ func PostfixExpressionEmptyFunCall(prgrm *ast.CXProgram, prevExprs []ast.CXExpre
 	prevExpressionOperator := prgrm.GetFunctionFromArray(prevExpression.Operator)
 
 	firstPrevExpressionIdx := prevExprs[0].Index
-	prevExpressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(prevExpression.GetOutputs(prgrm)[0])
 
-	var prevExpressionOutputArg *ast.CXArgument = &ast.CXArgument{}
 	if prevExpression.Outputs != nil {
-		if prevExpressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-			prevExpressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(prevExpressionOutputTypeSig.Meta))
-		} else {
-			panic("type is not cx argument deprecate\n\n")
-		}
-	}
+		prevExpressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(prevExpression.GetOutputs(prgrm)[0])
 
-	if prevExpression.Outputs != nil && len(prevExpressionOutputArg.Fields) > 0 {
-		// then it's a method call or function in field
-		// prevExprs[len(prevExprs) - 1].IsMethodCall = true
-		// expr.IsMethodCall = true
-		// // method name
-		// expr.Operator = MakeFunction(expr.ProgramOutput[0].Fields[0].Name)
-		// inp := cxcore.MakeArgument(expr.ProgramOutput[0].Name, CurrentFile, LineNo)
-		// inp.Package = expr.Package
-		// inp.Type = expr.ProgramOutput[0].Type
-		// inp.StructType = expr.ProgramOutput[0].StructType
-		// expr.ProgramInput = append(expr.ProgramInput, inp)
+		var prevExpressionOutputArg *ast.CXArgument = &ast.CXArgument{}
+		if prevExpression.Outputs != nil {
+			if prevExpressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				prevExpressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(prevExpressionOutputTypeSig.Meta))
+			} else {
+				panic("type is not cx argument deprecate\n\n")
+			}
+		}
+
+		if len(prevExpressionOutputArg.Fields) > 0 {
+			// then it's a method call or function in field
+			// prevExprs[len(prevExprs) - 1].IsMethodCall = true
+			// expr.IsMethodCall = true
+			// // method name
+			// expr.Operator = MakeFunction(expr.ProgramOutput[0].Fields[0].Name)
+			// inp := cxcore.MakeArgument(expr.ProgramOutput[0].Name, CurrentFile, LineNo)
+			// inp.Package = expr.Package
+			// inp.Type = expr.ProgramOutput[0].Type
+			// inp.StructType = expr.ProgramOutput[0].StructType
+			// expr.ProgramInput = append(expr.ProgramInput, inp)
+		}
 
 	} else if prevExpressionOperator == nil {
+		prevExpressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(prevExpression.GetOutputs(prgrm)[0])
 		if opCode, ok := ast.OpCodes[prevExpressionOutputTypeSig.Name]; ok {
 			if pkg, err := prgrm.GetCurrentPackage(); err == nil {
 				prgrm.CXAtomicOps[firstPrevExpressionIdx].Package = ast.CXPackageIndex(pkg.Index)
