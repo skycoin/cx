@@ -756,8 +756,16 @@ func ProcessExpressionArguments(prgrm *ast.CXProgram, symbolsData *SymbolsData, 
 		// TODO: Check how to remove PreviouslyDeclared field
 		// maybe its only used by temp variables
 		// TempVar always have PreviouslyDeclared=true
+		isLocalVar := fn.IsLocalVariable(typeSignature.Name)
+		if arg != nil && arg.PreviouslyDeclared || IsTempVar(typeSignature.Name) || isLocalVar {
+			// We remove it from local var array since it is already added to the symbols
+			if isLocalVar {
+				err := fn.RemoveLocalVariableFromArray(typeSignature.Name)
+				if err != nil {
+					panic(err)
+				}
+			}
 
-		if arg != nil && arg.PreviouslyDeclared || IsTempVar(typeSignature.Name) || fn.IsLocalVariable(typeSignature.Name) {
 			UpdateSymbolsTable(prgrm, symbolsData, typeSignatureIdx, offset, false)
 		} else {
 			UpdateSymbolsTable(prgrm, symbolsData, typeSignatureIdx, offset, true)

@@ -22,7 +22,10 @@ type CXFunction struct {
 	Outputs     *CXStruct      // Output parameters from the function
 	Expressions []CXExpression // Expressions, including control flow statements, in the function
 
-	LocalVariables []string // contains the name of its local variables
+	// contains the name of its local variables
+	// Used to determine if the variables are to be added to the symbols array
+	// Used for local scoping
+	LocalVariables []string
 
 	//TODO: Better Comment for this
 	LineCount int // number of expressions, pre-computed for performance
@@ -323,6 +326,17 @@ func (fn *CXFunction) IsLocalVariable(name string) bool {
 	}
 
 	return false
+}
+
+func (fn *CXFunction) RemoveLocalVariableFromArray(name string) error {
+	for idx, localVar := range fn.LocalVariables {
+		if name == localVar {
+			fn.LocalVariables = append(fn.LocalVariables[:idx], fn.LocalVariables[idx+1:]...)
+			return nil
+		}
+	}
+
+	return nil
 }
 
 // ----------------------------------------------------------------
