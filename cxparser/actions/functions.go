@@ -705,7 +705,7 @@ func checkIndexType(prgrm *ast.CXProgram, idxIdx ast.CXTypeSignatureIndex) {
 		idx = prgrm.GetCXArg(ast.CXArgumentIndex(idxTypeSig.Meta))
 		idxType = ast.GetFormattedType(prgrm, idx)
 	} else if idxTypeSig.Type == ast.TYPE_ATOMIC {
-		idx = nil
+		idx = &ast.CXArgument{ArgDetails: &ast.CXArgumentDebug{}}
 		idxType = types.Code(idxTypeSig.Meta).Name()
 	}
 
@@ -883,7 +883,7 @@ func CheckRedeclared(prgrm *ast.CXProgram, symbolsData *SymbolsData, expr *ast.C
 	} else {
 		// panic("type is not cx arg deprecate\n\n")
 		// TODO: temporary put empty arg
-		arg = &ast.CXArgument{}
+		arg = &ast.CXArgument{ArgDetails: &ast.CXArgumentDebug{}}
 	}
 
 	expression, err := prgrm.GetCXAtomicOp(expr.Index)
@@ -982,6 +982,7 @@ func checkMatchParamTypes(prgrm *ast.CXProgram, expr *ast.CXExpression, expected
 			receivedArg = prgrm.GetCXArg(ast.CXArgumentIndex(receivedTypeSig.Meta))
 			receivedType = ast.GetFormattedType(prgrm, receivedArg)
 		} else if receivedTypeSig.Type == ast.TYPE_ATOMIC {
+			receivedArg = &ast.CXArgument{ArgDetails: &ast.CXArgumentDebug{}}
 			receivedType = types.Code(receivedTypeSig.Meta).Name()
 		}
 
@@ -1009,8 +1010,8 @@ func checkMatchParamTypes(prgrm *ast.CXProgram, expr *ast.CXExpression, expected
 				var expressionOutputArg *ast.CXArgument = &ast.CXArgument{}
 				if expressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 					expressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionOutputTypeSig.Meta))
-				} else {
-					panic("type is not cx argument deprecate\n\n")
+				} else if expressionOutputTypeSig.Type == ast.TYPE_ATOMIC {
+					expressionOutputArg = &ast.CXArgument{ArgDetails: &ast.CXArgumentDebug{}}
 				}
 
 				println(ast.CompilationError(expressionOutputArg.ArgDetails.FileName, expressionOutputArg.ArgDetails.FileLine), fmt.Sprintf("function '%s' expected receiving variable of type '%s'; '%s' was provided", opName, expectedType, receivedType))
