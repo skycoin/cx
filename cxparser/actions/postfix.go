@@ -495,6 +495,8 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 				lastExpressionOutputFieldTypeSig := prgrm.GetCXTypeSignatureFromArray(prgrm.CXAtomicOps[lastExpressionIdx].Outputs.Fields[0])
 				if lastExpressionOutputFieldTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 					lastExpressionOutputFieldTypeSig.Meta = valArg.Index
+					lastExpressionOutputFieldTypeSig.Name = valArg.Name
+					lastExpressionOutputFieldTypeSig.Offset = valArg.Offset
 				} else if lastExpressionOutputFieldTypeSig.Type == ast.TYPE_ATOMIC {
 					// TODO: Review if this is the correct one
 					typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, valArg)
