@@ -1091,10 +1091,12 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) {
 		// checking if number of inputs is less than the required number of inputs
 		if len(expression.GetInputs(prgrm)) != len(expressionOperatorInputs) {
 			expressionOperatorInputArg := &ast.CXArgument{}
-			expressionTypeSigIdx := expressionOperatorInputs[len(expressionOperatorInputs)-1]
-			expressionTypeSig := prgrm.GetCXTypeSignatureFromArray(expressionTypeSigIdx)
-			if expressionTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-				expressionOperatorInputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionTypeSig.Meta))
+			if len(expressionOperatorInputs) > 0 {
+				expressionTypeSigIdx := expressionOperatorInputs[len(expressionOperatorInputs)-1]
+				expressionTypeSig := prgrm.GetCXTypeSignatureFromArray(expressionTypeSigIdx)
+				if expressionTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+					expressionOperatorInputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionTypeSig.Meta))
+				}
 			}
 
 			if !(len(expressionOperatorInputs) > 0 && expressionOperatorInputArg.Type != types.UNDEFINED) {
