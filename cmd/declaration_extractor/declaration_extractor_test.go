@@ -186,182 +186,71 @@ func TestDeclarationExtractor_ExtractEnums(t *testing.T) {
 		scenario  string
 		testDir   string
 		wantEnums []declaration_extractor.EnumDeclaration
+		wantErr   error
 	}{
 		{
-			scenario: "Has enums",
-			testDir:  "./test_files/test.cx",
+			scenario: "HasEnums.cx",
+			testDir:  "./test_files/ExtractEnums/HasEnums.cx",
 			wantEnums: []declaration_extractor.EnumDeclaration{
 				{
-					PackageID:   "hello",
-					FileID:      "test.cx",
-					StartOffset: setOffset(351, 33),
-					Length:      15,
-					LineNumber:  33,
-					Type:        "Direction",
+					PackageID:   "main",
+					FileID:      "./test_files/ExtractEnums/HasEnums.cx",
+					StartOffset: setOffset(26, 4),
+					Length:      10,
+					LineNumber:  4,
+					Type:        "int",
 					Value:       0,
-					EnumName:    "North",
-				},
-				{
-					PackageID:   "hello",
-					FileID:      "test.cx",
-					StartOffset: setOffset(375, 34),
-					Length:      5,
-					LineNumber:  34,
-					Type:        "Direction",
-					Value:       1,
-					EnumName:    "South",
-				},
-				{
-					PackageID:   "hello",
-					FileID:      "test.cx",
-					StartOffset: setOffset(382, 35),
-					Length:      4,
-					LineNumber:  35,
-					Type:        "Direction",
-					Value:       2,
-					EnumName:    "East",
-				},
-				{
-					PackageID:   "hello",
-					FileID:      "test.cx",
-					StartOffset: setOffset(388, 36),
-					Length:      4,
-					LineNumber:  36,
-					Type:        "Direction",
-					Value:       3,
-					EnumName:    "West",
-				},
-				{
-					PackageID:   "hello",
-					FileID:      "test.cx",
-					StartOffset: setOffset(405, 40),
-					Length:      12,
-					LineNumber:  40,
-					Type:        "Number",
-					Value:       0,
-					EnumName:    "First",
-				},
-				{
-					PackageID:   "hello",
-					FileID:      "test.cx",
-					StartOffset: setOffset(426, 41),
-					Length:      6,
-					LineNumber:  41,
-					Type:        "Number",
-					Value:       1,
-					EnumName:    "Second",
-				},
-			},
-		},
-		{
-			scenario: "Has enums and nested parenthesis",
-			testDir:  "./test_files/enum_in_parenthesis.cx",
-			wantEnums: []declaration_extractor.EnumDeclaration{
-				{
-					PackageID:   "hello",
-					FileID:      "enum_in_parenthesis.cx",
-					StartOffset: setOffset(309, 33),
-					Length:      15,
-					Type:        "Direction",
-					LineNumber:  33,
-					Value:       0,
-					EnumName:    "North",
-				},
-				{
-					PackageID:   "hello",
-					FileID:      "enum_in_parenthesis.cx",
-					StartOffset: setOffset(333, 34),
-					Length:      5,
-					LineNumber:  34,
-					Type:        "Direction",
-					Value:       1,
-					EnumName:    "South",
-				},
-				{
-					PackageID:   "hello",
-					FileID:      "enum_in_parenthesis.cx",
-					StartOffset: setOffset(353, 35),
-					Length:      4,
-					LineNumber:  35,
-					Type:        "Direction",
-					Value:       2,
-					EnumName:    "East",
-				},
-				{
-					PackageID:   "hello",
-					FileID:      "enum_in_parenthesis.cx",
-					StartOffset: setOffset(359, 36),
-					Length:      4,
-					LineNumber:  36,
-					Type:        "Direction",
-					Value:       3,
-					EnumName:    "West",
-				},
-				{
-					PackageID:   "hello",
-					FileID:      "enum_in_parenthesis.cx",
-					StartOffset: setOffset(376, 40),
-					Length:      12,
-					LineNumber:  40,
-					Type:        "Number",
-					Value:       0,
-					EnumName:    "First",
-				},
-				{
-					PackageID:   "hello",
-					FileID:      "enum_in_parenthesis.cx",
-					StartOffset: setOffset(397, 41),
-					Length:      6,
-					LineNumber:  41,
-					Type:        "Number",
-					Value:       1,
-					EnumName:    "Second",
-				},
-			},
-		},
-		{
-			scenario: "Has Enums 2",
-			testDir:  "./test_files/test_2.cx",
-			wantEnums: []declaration_extractor.EnumDeclaration{
-				{
-					PackageID:   "test_2",
-					FileID:      "test_2.cx",
-					StartOffset: setOffset(161, 21),
-					Length:      13,
-					LineNumber:  21,
-					Type:        "string",
-					Value:       0,
-					EnumName:    "Spring",
-				},
-				{
-					PackageID:   "test_2",
-					FileID:      "test_2.cx",
-					StartOffset: setOffset(183, 22),
-					Length:      6,
-					LineNumber:  22,
-					Type:        "string",
-					Value:       1,
 					EnumName:    "Summer",
 				},
 				{
-					PackageID:   "test_2",
-					FileID:      "test_2.cx",
-					StartOffset: setOffset(191, 23),
+					PackageID:   "main",
+					FileID:      "./test_files/ExtractEnums/HasEnums.cx",
+					StartOffset: setOffset(45, 5),
 					Length:      6,
-					LineNumber:  23,
-					Type:        "string",
-					Value:       2,
+					LineNumber:  5,
+					Type:        "int",
+					Value:       1,
 					EnumName:    "Autumn",
 				},
 				{
-					PackageID:   "test_2",
-					FileID:      "test_2.cx",
-					StartOffset: setOffset(199, 24),
+					PackageID:   "main",
+					FileID:      "./test_files/ExtractEnums/HasEnums.cx",
+					StartOffset: setOffset(53, 6),
 					Length:      6,
-					LineNumber:  24,
-					Type:        "string",
-					Value:       3,
+					LineNumber:  6,
+					Type:        "int",
+					Value:       2,
 					EnumName:    "Winter",
+				},
+				{
+					PackageID:   "main",
+					FileID:      "./test_files/ExtractEnums/HasEnums.cx",
+					StartOffset: setOffset(61, 7),
+					Length:      6,
+					LineNumber:  7,
+					Type:        "int",
+					Value:       3,
+					EnumName:    "Spring",
+				},
+				{
+					PackageID:   "main",
+					FileID:      "./test_files/ExtractEnums/HasEnums.cx",
+					StartOffset: setOffset(83, 11),
+					Length:      6,
+					LineNumber:  11,
+					Type:        "",
+					Value:       0,
+					EnumName:    "Apples",
+				},
+				{
+					PackageID:   "main",
+					FileID:      "./test_files/ExtractEnums/HasEnums.cx",
+					StartOffset: setOffset(99, 12),
+					Length:      7,
+					LineNumber:  12,
+					Type:        "",
+					Value:       1,
+					EnumName:    "Oranges",
 				},
 			},
 		},
@@ -371,20 +260,33 @@ func TestDeclarationExtractor_ExtractEnums(t *testing.T) {
 		t.Run(tc.scenario, func(t *testing.T) {
 			srcBytes, err := os.ReadFile(tc.testDir)
 			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(srcBytes)
-			fileName := filepath.Base(tc.testDir)
+
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			enums, err := declaration_extractor.ExtractEnums(ReplaceCommentsWithWhitespaces, fileName)
-			if err != nil {
-				t.Fatal(err)
-			}
+			gotEnums, gotErr := declaration_extractor.ExtractEnums(ReplaceCommentsWithWhitespaces, tc.testDir)
 
-			for i := range enums {
-				if enums[i] != tc.wantEnums[i] {
-					t.Errorf("want enums %v, got %v", tc.wantEnums[i], enums[i])
+			for _, wantEnum := range tc.wantEnums {
+				var match bool
+				var gotEnumF declaration_extractor.EnumDeclaration
+				for _, gotEnum := range gotEnums {
+					if gotEnum.EnumName == wantEnum.EnumName {
+						if gotEnum == wantEnum {
+							match = true
+						}
+						gotEnumF = gotEnum
+						break
+					}
 				}
+
+				if !match {
+					t.Errorf("want enum %v, got %v", wantEnum, gotEnumF)
+				}
+			}
+
+			if gotErr != tc.wantErr {
+				t.Errorf("want err %v, got %v", tc.wantErr, gotErr)
 			}
 		})
 	}

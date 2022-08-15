@@ -1,9 +1,15 @@
 package main
 
-package hello
+const (
+    Summer int = iota
+	Autumn
+	Winter
+	Spring
+)
 
 const (
-    
+    Apples  = 0
+    Oranges = 1
 )
 
 func main () {
