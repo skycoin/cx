@@ -12,18 +12,9 @@ type Player struct {
     name str
 }
 
-type Referee struct {
-    name str
-}
-
 func (p *Player) printName () {
     str.print("Player information")
     str.print((*p).name)
-}
-
-func (r *Referee) printName () {
-    str.print("Referee information")
-    str.print((*r).name)
 }
 
 func main () {
@@ -33,10 +24,6 @@ func main () {
 
     var p Player
     p.name = "Michael"
-    
-    var r Referee
-    r.name = "Edward"
 
     p.printName()
-    r.printName()
 }

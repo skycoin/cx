@@ -542,17 +542,14 @@ func ExtractFuncs(source []byte, fileName string) ([]FuncDeclaration, error) {
 
 				for _, param := range params {
 
-					tokens := bytes.Fields(param)
+					removeSpace := bytes.TrimSpace(param)
 
 					reParam := regexp.MustCompile(`[_a-zA-Z][_a-zA-Z0-9]*\s+\*{0,1}\s*[_a-zA-Z][_a-zA-Z0-9]*`)
 
-					if len(tokens) != 2 && len(tokens) != 3 {
+					if len(reParam.Find(removeSpace)) != len(removeSpace) {
 						return FuncDeclarationsArray, fmt.Errorf("param err")
 					}
 
-					if reParam.FindIndex(param) == nil {
-						return FuncDeclarationsArray, fmt.Errorf("param err")
-					}
 				}
 
 			}

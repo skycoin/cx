@@ -27,7 +27,7 @@ func setOffset(offset int, lineNumber int) int {
 	return newOffset
 }
 
-func TestDeclarationExtraction_ReplaceCommentsWithWhitespaces(t *testing.T) {
+func TestDeclarationExtractor_ReplaceCommentsWithWhitespaces(t *testing.T) {
 
 	tests := []struct {
 		scenario            string
@@ -81,7 +81,7 @@ func TestDeclarationExtraction_ReplaceCommentsWithWhitespaces(t *testing.T) {
 	}
 }
 
-func TestDeclarationExtraction_ExtractGlobals(t *testing.T) {
+func TestDeclarationExtractor_ExtractGlobals(t *testing.T) {
 
 	tests := []struct {
 		scenario    string
@@ -180,7 +180,7 @@ func TestDeclarationExtraction_ExtractGlobals(t *testing.T) {
 	}
 }
 
-func TestDeclarationExtraction_ExtractEnums(t *testing.T) {
+func TestDeclarationExtractor_ExtractEnums(t *testing.T) {
 
 	tests := []struct {
 		scenario  string
@@ -390,7 +390,7 @@ func TestDeclarationExtraction_ExtractEnums(t *testing.T) {
 	}
 }
 
-func TestDeclarationExtraction_ExtractStructs(t *testing.T) {
+func TestDeclarationExtractor_ExtractStructs(t *testing.T) {
 
 	tests := []struct {
 		scenario    string
@@ -516,62 +516,49 @@ func TestDeclarationExtraction_ExtractStructs(t *testing.T) {
 	}
 }
 
-func TestDeclarationExtraction_ExtractFuncs(t *testing.T) {
+func TestDeclarationExtractor_ExtractFuncs(t *testing.T) {
 
 	tests := []struct {
 		scenario  string
 		testDir   string
 		wantFuncs []declaration_extractor.FuncDeclaration
+		wantErr   error
 	}{
 		{
 			scenario: "Has funcs",
-			testDir:  "./test_files/test.cx",
+			testDir:  "./test_files/ExtractFuncs/HasFuncs.cx",
 			wantFuncs: []declaration_extractor.FuncDeclaration{
 				{
-					PackageID:   "hello",
-					FileID:      "test.cx",
-					StartOffset: setOffset(195, 18),
+					PackageID:   "main",
+					FileID:      "./test_files/ExtractFuncs/HasFuncs.cx",
+					StartOffset: setOffset(322, 20),
 					Length:      12,
-					LineNumber:  18,
+					LineNumber:  20,
 					FuncName:    "main",
 				},
 				{
-					PackageID:   "hello",
-					FileID:      "test.cx",
-					StartOffset: setOffset(296, 26),
-					Length:      19,
-					LineNumber:  26,
-					FuncName:    "functionTwo",
+					PackageID:   "main",
+					FileID:      "./test_files/ExtractFuncs/HasFuncs.cx",
+					StartOffset: setOffset(14, 3),
+					Length:      53,
+					LineNumber:  3,
+					FuncName:    "addition",
 				},
 				{
-					PackageID:   "hello",
-					FileID:      "test.cx",
-					StartOffset: setOffset(436, 44),
-					Length:      39,
-					LineNumber:  44,
-					FuncName:    "functionWithSingleReturn",
-				},
-			},
-		},
-		{
-			scenario: "test_2",
-			testDir:  "./test_files/test_2.cx",
-			wantFuncs: []declaration_extractor.FuncDeclaration{
-				{
-					PackageID:   "test_2",
-					FileID:      "test_2.cx",
-					StartOffset: setOffset(209, 27),
-					Length:      46,
-					LineNumber:  27,
-					FuncName:    "add",
+					PackageID:   "main",
+					FileID:      "./test_files/ExtractFuncs/HasFuncs.cx",
+					StartOffset: setOffset(104, 7),
+					Length:      50,
+					LineNumber:  7,
+					FuncName:    "minus",
 				},
 				{
-					PackageID:   "test_2",
-					FileID:      "test_2.cx",
-					StartOffset: setOffset(299, 32),
-					Length:      11,
-					LineNumber:  32,
-					FuncName:    "main",
+					PackageID:   "main",
+					FileID:      "./test_files/ExtractFuncs/HasFuncs.cx",
+					StartOffset: setOffset(226, 15),
+					Length:      29,
+					LineNumber:  15,
+					FuncName:    "printName",
 				},
 			},
 		},
@@ -581,23 +568,38 @@ func TestDeclarationExtraction_ExtractFuncs(t *testing.T) {
 		t.Run(tc.scenario, func(t *testing.T) {
 			srcBytes, err := os.ReadFile(tc.testDir)
 			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(srcBytes)
-			fileName := filepath.Base(tc.testDir)
+			fileName := tc.testDir
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			funcs, err := declaration_extractor.ExtractFuncs(ReplaceCommentsWithWhitespaces, fileName)
+			gotFuncs, gotErr := declaration_extractor.ExtractFuncs(ReplaceCommentsWithWhitespaces, fileName)
 
-			for i := range funcs {
-				t.Errorf("got %v", funcs[i])
+			for _, wantFunc := range tc.wantFuncs {
+				var match bool
+				var gotFuncF declaration_extractor.FuncDeclaration
+				for _, gotFunc := range gotFuncs {
+					if gotFunc.FuncName == wantFunc.FuncName {
+						if gotFunc == wantFunc {
+							match = true
+						}
+						gotFuncF = gotFunc
+						break
+					}
+				}
+				if !match {
+					t.Errorf("want func %v, got %v", wantFunc, gotFuncF)
+				}
 			}
 
-			t.Error(err)
+			if gotErr != tc.wantErr {
+				t.Errorf("want error %v, got %v", tc.wantErr, gotErr)
+			}
 		})
 	}
 }
 
-func TestDeclarationExtraction_ReDeclarationCheck(t *testing.T) {
+func TestDeclarationExtractor_ReDeclarationCheck(t *testing.T) {
 
 	tests := []struct {
 		scenario               string
@@ -680,7 +682,7 @@ func TestDeclarationExtraction_ReDeclarationCheck(t *testing.T) {
 	}
 }
 
-func TestDeclarationExtraction_GetDeclarations(t *testing.T) {
+func TestDeclarationExtractor_GetDeclarations(t *testing.T) {
 
 	tests := []struct {
 		scenario         string
@@ -768,7 +770,7 @@ func TestDeclarationExtraction_GetDeclarations(t *testing.T) {
 	}
 }
 
-func TestDeclarationExtraction_ExtractAllDeclarations(t *testing.T) {
+func TestDeclarationExtractor_ExtractAllDeclarations(t *testing.T) {
 
 	tests := []struct {
 		scenario    string
