@@ -36,13 +36,8 @@ func TestDeclarationExtractor_ReplaceCommentsWithWhitespaces(t *testing.T) {
 	}{
 		{
 			scenario:            "Has comments",
-			testDir:             "./test_files/test.cx",
-			wantCommentReplaced: "./test_files/replaceCommentResult.cx",
-		},
-		{
-			scenario:            "Has quoted single line comment ",
-			testDir:             "./test_files/test_2.cx",
-			wantCommentReplaced: "./test_files/replaceCommentResult_2.cx",
+			testDir:             "./test_files/ReplaceCommentsWithWhitespaces/HasComments.cx",
+			wantCommentReplaced: "./test_files/ReplaceCommentsWithWhitespaces/HasCommentsResult.cx",
 		},
 	}
 
