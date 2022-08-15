@@ -143,6 +143,15 @@ func ProcessFunctionParameters(prgrm *ast.CXProgram, symbolsData *SymbolsData, o
 	fn := prgrm.GetFunctionFromArray(fnIdx)
 
 	for _, paramIdx := range params {
+		typeSignature := prgrm.GetCXTypeSignatureFromArray(paramIdx)
+		// We remove it from local var array since it is already added to the symbols
+		if fn.IsLocalVariable(typeSignature.Name) {
+			err := fn.RemoveLocalVariableFromArray(typeSignature.Name)
+			if err != nil {
+				panic(err)
+			}
+		}
+
 		UpdateSymbolsTable(prgrm, symbolsData, paramIdx, offset, false)
 		GiveOffset(prgrm, symbolsData, paramIdx)
 		SetFinalSize(prgrm, symbolsData, paramIdx)
