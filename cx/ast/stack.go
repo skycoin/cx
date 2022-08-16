@@ -78,13 +78,14 @@ func (cxprogram *CXProgram) PrintStack() {
 
 			cxAtomicOpOperator := cxprogram.GetFunctionFromArray(cxAtomicOp.Operator)
 			for _, inputIdx := range cxAtomicOp.GetInputs(cxprogram) {
+
 				input := cxprogram.GetCXTypeSignatureFromArray(inputIdx)
 
 				var inp *CXArgument = &CXArgument{}
 				if input.Type == TYPE_CXARGUMENT_DEPRECATE {
 					inp = cxprogram.GetCXArgFromArray(CXArgumentIndex(input.Meta))
 				} else if input.Type == TYPE_ATOMIC {
-					inp = &CXArgument{}
+					inp = &CXArgument{ArgDetails: &CXArgumentDebug{}}
 				}
 
 				if input.Name == "" || cxAtomicOpOperator == nil {
@@ -97,7 +98,7 @@ func (cxprogram *CXProgram) PrintStack() {
 				}
 				var dup bool
 				for _, name := range dupNames {
-					if name == inpPkg.Name+input.Name {
+					if name == inpPkg.Name+inp.Name {
 						dup = true
 						break
 					}
@@ -108,10 +109,9 @@ func (cxprogram *CXProgram) PrintStack() {
 
 				// fmt.Println("\t", inp.Name, "\t", ":", "\t", GetPrintableValue(fp, inp))
 				// exprs += fmt.Sprintln("\t", stackValueHeader(inp.FileName, inp.FileLine), "\t", ":", "\t", GetPrintableValue(fp, inp))
-
 				exprs += fmt.Sprintf("\t%s : %s() : %s\n", stackValueHeader(inp.ArgDetails.FileName, inp.ArgDetails.FileLine), cxAtomicOp.GetOperatorName(cxprogram), GetPrintableValue(cxprogram, fp, input))
 
-				dupNames = append(dupNames, inpPkg.Name+input.Name)
+				dupNames = append(dupNames, inpPkg.Name+inp.Name)
 			}
 
 			for _, outputIdx := range cxAtomicOp.GetOutputs(cxprogram) {
