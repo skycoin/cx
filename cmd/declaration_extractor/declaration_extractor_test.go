@@ -504,28 +504,28 @@ func TestDeclarationExtractor_ReDeclarationCheck(t *testing.T) {
 		wantReDeclarationError error
 	}{
 		{
-			scenario:               "No Redeclarations",
-			testDir:                "./test_files/test.cx",
+			scenario:               "No Redeclaration",
+			testDir:                "./test_files/ReDeclarationCheck/NoRedeclaration.cx",
 			wantReDeclarationError: nil,
 		},
 		{
 			scenario:               "Redeclared globals",
-			testDir:                "./test_files/redeclaration_global.cx",
+			testDir:                "./test_files/ReDeclarationCheck/RedeclaredGlobals.cx",
 			wantReDeclarationError: errors.New("global redeclared"),
 		},
 		{
 			scenario:               "Redeclared enums",
-			testDir:                "./test_files/redeclaration_enum.cx",
+			testDir:                "./test_files/ReDeclarationCheck/RedeclaredEnums.cx",
 			wantReDeclarationError: errors.New("enum redeclared"),
 		},
 		{
 			scenario:               "Redeclared structs",
-			testDir:                "./test_files/redeclaration_struct.cx",
+			testDir:                "./test_files/ReDeclarationCheck/RedeclaredStructs.cx",
 			wantReDeclarationError: errors.New("struct redeclared"),
 		},
 		{
 			scenario:               "Redeclared funcs",
-			testDir:                "./test_files/redeclaration_func.cx",
+			testDir:                "./test_files/ReDeclarationCheck/RedeclaredFuncs.cx",
 			wantReDeclarationError: errors.New("func redeclared"),
 		},
 		{
@@ -564,15 +564,16 @@ func TestDeclarationExtractor_ReDeclarationCheck(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			reDeclarationError := declaration_extractor.ReDeclarationCheck(globals, enums, structs, funcs)
+			gotReDeclarationError := declaration_extractor.ReDeclarationCheck(globals, enums, structs, funcs)
 
-			if reDeclarationError != nil && tc.wantReDeclarationError == nil {
-				t.Errorf("want error %v, got %v", tc.wantReDeclarationError, reDeclarationError)
+			if (gotReDeclarationError != nil && tc.wantReDeclarationError == nil) ||
+				(gotReDeclarationError == nil && tc.wantReDeclarationError != nil) {
+				t.Errorf("want error %v, got %v", tc.wantReDeclarationError, gotReDeclarationError)
 			}
 
-			if reDeclarationError != nil && tc.wantReDeclarationError != nil {
-				if reDeclarationError.Error() != tc.wantReDeclarationError.Error() {
-					t.Errorf("want error %v, got %v", tc.wantReDeclarationError, reDeclarationError)
+			if gotReDeclarationError != nil && tc.wantReDeclarationError != nil {
+				if gotReDeclarationError.Error() != tc.wantReDeclarationError.Error() {
+					t.Errorf("want error %v, got %v", tc.wantReDeclarationError, gotReDeclarationError)
 				}
 			}
 		})
