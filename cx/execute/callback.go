@@ -33,7 +33,8 @@ func Callback(cxprogram *ast.CXProgram, fn *ast.CXFunction, inputs [][]byte) (ou
 
 	newCallOperatorInputs := newCall.Operator.GetInputs(cxprogram)
 	for i, inp := range inputs {
-		types.WriteSlice_byte(cxprogram.Memory, ast.GetFinalOffset(cxprogram, newFP, nil, &newCallOperatorInputs[i]), inp)
+		newCallOperatorInputTypeSig := cxprogram.GetCXTypeSignatureFromArray(newCallOperatorInputs[i])
+		types.WriteSlice_byte(cxprogram.Memory, ast.GetFinalOffset(cxprogram, newFP, nil, newCallOperatorInputTypeSig), inp)
 	}
 
 	var maxOps = 0
@@ -48,15 +49,12 @@ func Callback(cxprogram *ast.CXProgram, fn *ast.CXFunction, inputs [][]byte) (ou
 	cxprogram.CallStack[cxprogram.CallCounter].Line = line
 
 	fnOutputs := fn.GetOutputs(cxprogram)
-	for _, output := range fnOutputs {
-		var out *ast.CXArgument
-		if output.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-			out = cxprogram.GetCXArgFromArray(ast.CXArgumentIndex(output.Meta))
-		}
+	for _, outputIdx := range fnOutputs {
+		output := cxprogram.GetCXTypeSignatureFromArray(outputIdx)
 
 		// Making a copy of the bytes, so if we modify the bytes being held by `outputs`
 		// we don't modify the program memory.
-		mem := types.GetSlice_byte(cxprogram.Memory, ast.GetFinalOffset(cxprogram, newFP, out, nil), ast.GetArgSize(cxprogram, out))
+		mem := types.GetSlice_byte(cxprogram.Memory, ast.GetFinalOffset(cxprogram, newFP, nil, output), output.GetSize(cxprogram))
 		cop := make([]byte, len(mem))
 		copy(cop, mem)
 		outputs = append(outputs, cop)

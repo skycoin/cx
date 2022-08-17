@@ -227,6 +227,7 @@ function_header:
 			if pkg, err := Program.GetCurrentPackage(); err == nil {
 				fn := ast.MakeFunction($2, CurrentFileName, lineNo)
 				_,fnIdx:=pkg.AddFunction(Program,fn)
+                                pkg.CurrentFunction=fnIdx
 
                                 $$ = fnIdx
 			} else {
@@ -246,6 +247,9 @@ function_header:
 				_,fnIdx:=pkg.AddFunction(Program,fn)
                                 newFn:=Program.GetFunctionFromArray(fnIdx)
                                 newFn.AddInput(Program,$3[0])
+                                
+                                pkg.CurrentFunction=fnIdx
+
                                 $$ = fnIdx
 			} else {
 				panic(err)
@@ -292,7 +296,7 @@ parameter_declaration:
                 {
 			$2.Name = $1.Name
 			$2.Package = $1.Package
-			$2.IsLocalDeclaration = true
+                        
 			$$ = $2
                 }
                 ;

@@ -38,7 +38,8 @@ func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []a
 
 	slcVarIdx := prgrm.AddCXArgInArray(slcVar)
 	typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(slcVarIdx))
-	prgrm.CXAtomicOps[slcVarExprAtomicOpIdx].AddOutput(prgrm, typeSig)
+	typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
+	prgrm.CXAtomicOps[slcVarExprAtomicOpIdx].AddOutput(prgrm, typeSigIdx)
 
 	result = append(result, *slcVarExprCXLine, *slcVarExpr)
 
@@ -76,7 +77,8 @@ func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []a
 
 			prgrm.CXAtomicOps[symExprAtomicOpIdx].Package = ast.CXPackageIndex(pkg.Index)
 			typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(symOutIdx))
-			prgrm.CXAtomicOps[symExprAtomicOpIdx].AddOutput(prgrm, typeSig)
+			typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
+			prgrm.CXAtomicOps[symExprAtomicOpIdx].AddOutput(prgrm, typeSigIdx)
 
 			if exprAtomicOpOperator == nil {
 				// then it's a literal
@@ -85,24 +87,35 @@ func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []a
 
 				prgrm.CXAtomicOps[symExprAtomicOpIdx].Inputs = nil
 				typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(symInpIdx))
-				prgrm.CXAtomicOps[symExprAtomicOpIdx].AddInput(prgrm, typeSig)
+				typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
+				prgrm.CXAtomicOps[symExprAtomicOpIdx].AddInput(prgrm, typeSigIdx)
 				prgrm.CXAtomicOps[symExprAtomicOpIdx].Inputs.Fields = append(prgrm.CXAtomicOps[symExprAtomicOpIdx].Inputs.Fields, exprAtomicOp.Outputs.Fields...)
 			} else {
 				// We need to create a temporary variable to hold the result of the
 				// nested expressions. Then use that variable as part of the slice literal.
 				out := ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), exprCXLine.FileName, exprCXLine.LineNumber)
-				outArg := getOutputType(prgrm, &expr)
+				outTypeSig := getOutputType(prgrm, &expr)
+
+				var outArg *ast.CXArgument
+				if outTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+					outArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(outTypeSig.Meta))
+				} else if outTypeSig.Type == ast.TYPE_ATOMIC {
+					panic("type is cx arg deprecate")
+				}
+
 				out.SetType(outArg.Type)
 				out.PointerTargetType = outArg.PointerTargetType
 				out.StructType = outArg.StructType
 				out.Size = outArg.Size
 				out.TotalSize = ast.GetArgSize(prgrm, outArg)
 				out.PreviouslyDeclared = true
+				out.Package = ast.CXPackageIndex(pkg.Index)
 				outIdx := prgrm.AddCXArgInArray(out)
 
 				exprAtomicOp.Outputs = nil
 				typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(outIdx))
-				exprAtomicOp.AddOutput(prgrm, typeSig)
+				typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
+				exprAtomicOp.AddOutput(prgrm, typeSigIdx)
 
 				result = append(result, expr)
 				opIdx := prgrm.AddNativeFunctionInArray(ast.Natives[constants.OP_APPEND])
@@ -110,9 +123,11 @@ func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []a
 
 				prgrm.CXAtomicOps[symExprAtomicOpIdx].Inputs = nil
 				typeSig = ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(symInpIdx))
-				prgrm.CXAtomicOps[symExprAtomicOpIdx].AddInput(prgrm, typeSig)
+				typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
+				prgrm.CXAtomicOps[symExprAtomicOpIdx].AddInput(prgrm, typeSigIdx)
 				typeSig = ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(outIdx))
-				prgrm.CXAtomicOps[symExprAtomicOpIdx].AddInput(prgrm, typeSig)
+				typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
+				prgrm.CXAtomicOps[symExprAtomicOpIdx].AddInput(prgrm, typeSigIdx)
 			}
 			result = append(result, *symExprExprCXLine, *symExpr)
 		} else {
@@ -146,9 +161,11 @@ func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []a
 
 	symExprAtomicOp.Package = ast.CXPackageIndex(pkg.Index)
 	typeSig = ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(symOutputIdx))
-	symExprAtomicOp.AddOutput(prgrm, typeSig)
+	typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
+	symExprAtomicOp.AddOutput(prgrm, typeSigIdx)
 	typeSig = ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(symInputIdx))
-	symExprAtomicOp.AddInput(prgrm, typeSig)
+	typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
+	symExprAtomicOp.AddInput(prgrm, typeSigIdx)
 
 	// marking the output so multidimensional arrays identify the expressions
 	result = append(result, *symExprExprCXLine, *symExpr)
@@ -176,27 +193,58 @@ func PrimaryStructLiteral(prgrm *ast.CXProgram, structName string, structFields 
 					panic(err)
 				}
 
-				cxAtomicOpOutputIdx := cxAtomicOp.GetOutputs(prgrm)[0].Meta
-				name := prgrm.CXArgs[cxAtomicOpOutputIdx].Name
+				cxAtomicOpOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(cxAtomicOp.GetOutputs(prgrm)[0])
+				if cxAtomicOpOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+					cxAtomicOpOutputIdx := cxAtomicOpOutputTypeSig.Meta
+					name := prgrm.CXArgs[cxAtomicOpOutputIdx].Name
 
-				field := ast.MakeArgument(name, CurrentFile, LineNo)
-				field.Type = prgrm.CXArgs[cxAtomicOpOutputIdx].Type
-				field.PointerTargetType = prgrm.CXArgs[cxAtomicOpOutputIdx].PointerTargetType
-				expr.ExpressionType = ast.CXEXPR_STRUCT_LITERAL
+					field := ast.MakeArgument(name, CurrentFile, LineNo)
+					field.Type = prgrm.CXArgs[cxAtomicOpOutputIdx].Type
+					field.PointerTargetType = prgrm.CXArgs[cxAtomicOpOutputIdx].PointerTargetType
+					field.StructType = strct
 
-				prgrm.CXArgs[cxAtomicOpOutputIdx].Package = ast.CXPackageIndex(pkg.Index)
+					prgrm.CXArgs[cxAtomicOpOutputIdx].Package = ast.CXPackageIndex(pkg.Index)
 
-				if prgrm.CXArgs[cxAtomicOpOutputIdx].StructType == nil {
-					prgrm.CXArgs[cxAtomicOpOutputIdx].StructType = strct
+					if prgrm.CXArgs[cxAtomicOpOutputIdx].StructType == nil {
+						prgrm.CXArgs[cxAtomicOpOutputIdx].StructType = strct
+					}
+
+					prgrm.CXArgs[cxAtomicOpOutputIdx].Size = strct.GetStructSize(prgrm)
+					prgrm.CXArgs[cxAtomicOpOutputIdx].TotalSize = strct.GetStructSize(prgrm)
+					prgrm.CXArgs[cxAtomicOpOutputIdx].Name = structName
+					cxAtomicOpOutputTypeSig.Name = structName
+
+					fieldIdx := prgrm.AddCXArgInArray(field)
+					prgrm.CXArgs[cxAtomicOpOutputIdx].Fields = append(prgrm.CXArgs[cxAtomicOpOutputIdx].Fields, fieldIdx)
+				} else if cxAtomicOpOutputTypeSig.Type == ast.TYPE_ATOMIC {
+					// panic("type is not cx arg deprecate")
+					// TODO: give proper change when we implement type_structs
+					// Looks like we have to convert the arg to type cx arg deprecate again
+
+					newCXArg := &ast.CXArgument{ArgDetails: &ast.CXArgumentDebug{}}
+					newCXArg.Type = types.Code(cxAtomicOpOutputTypeSig.Meta)
+					newCXArg.Package = ast.CXPackageIndex(pkg.Index)
+					newCXArg.Offset = cxAtomicOpOutputTypeSig.Offset
+
+					newCXArg.StructType = strct
+					newCXArg.Size = strct.GetStructSize(prgrm)
+					newCXArg.TotalSize = strct.GetStructSize(prgrm)
+					newCXArg.Name = structName
+
+					field := ast.MakeArgument(cxAtomicOpOutputTypeSig.Name, CurrentFile, LineNo)
+					field.Type = types.Code(cxAtomicOpOutputTypeSig.Meta)
+					field.StructType = strct
+					fieldIdx := prgrm.AddCXArgInArray(field)
+
+					newCXArg.Fields = append(newCXArg.Fields, fieldIdx)
+					newCXArgIdx := prgrm.AddCXArgInArray(newCXArg)
+
+					cxAtomicOpOutputTypeSig.Name = structName
+					cxAtomicOpOutputTypeSig.Type = ast.TYPE_CXARGUMENT_DEPRECATE
+					cxAtomicOpOutputTypeSig.Meta = int(newCXArgIdx)
 				}
-				field.StructType = strct
 
-				prgrm.CXArgs[cxAtomicOpOutputIdx].Size = strct.GetStructSize(prgrm)
-				prgrm.CXArgs[cxAtomicOpOutputIdx].TotalSize = strct.GetStructSize(prgrm)
-				prgrm.CXArgs[cxAtomicOpOutputIdx].Name = structName
-				fieldIdx := prgrm.AddCXArgInArray(field)
-				prgrm.CXArgs[cxAtomicOpOutputIdx].Fields = append(prgrm.CXArgs[cxAtomicOpOutputIdx].Fields, fieldIdx)
-
+				expr.ExpressionType = ast.CXEXPR_STRUCT_LITERAL
 				result = append(result, expr)
 			}
 		} else {
@@ -230,22 +278,30 @@ func PrimaryStructLiteralExternal(prgrm *ast.CXProgram, importName string, struc
 						panic(err)
 					}
 
-					cxAtomicOpOutputIdx := cxAtomicOp.GetOutputs(prgrm)[0].Meta
-					field := ast.MakeArgument("", CurrentFile, LineNo)
-					field.SetType(types.IDENTIFIER)
-					field.Name = prgrm.CXArgs[cxAtomicOpOutputIdx].Name
+					cxAtomicOpOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(cxAtomicOp.GetOutputs(prgrm)[0])
+					if cxAtomicOpOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+						cxAtomicOpOutputIdx := cxAtomicOpOutputTypeSig.Meta
+						field := ast.MakeArgument("", CurrentFile, LineNo)
+						field.SetType(types.IDENTIFIER)
+						field.Name = prgrm.CXArgs[cxAtomicOpOutputIdx].Name
 
-					expr.ExpressionType = ast.CXEXPR_STRUCT_LITERAL
+						expr.ExpressionType = ast.CXEXPR_STRUCT_LITERAL
 
-					prgrm.CXArgs[cxAtomicOpOutputIdx].Package = ast.CXPackageIndex(pkg.Index)
-					// expr.ProgramOutput[0].Program = prgrm
+						prgrm.CXArgs[cxAtomicOpOutputIdx].Package = ast.CXPackageIndex(pkg.Index)
+						// expr.ProgramOutput[0].Program = prgrm
 
-					prgrm.CXArgs[cxAtomicOpOutputIdx].StructType = strct
-					prgrm.CXArgs[cxAtomicOpOutputIdx].Size = strct.GetStructSize(prgrm)
-					prgrm.CXArgs[cxAtomicOpOutputIdx].TotalSize = strct.GetStructSize(prgrm)
-					prgrm.CXArgs[cxAtomicOpOutputIdx].Name = structName
-					fieldIdx := prgrm.AddCXArgInArray(field)
-					prgrm.CXArgs[cxAtomicOpOutputIdx].Fields = append(prgrm.CXArgs[cxAtomicOpOutputIdx].Fields, fieldIdx)
+						prgrm.CXArgs[cxAtomicOpOutputIdx].StructType = strct
+						prgrm.CXArgs[cxAtomicOpOutputIdx].Size = strct.GetStructSize(prgrm)
+						prgrm.CXArgs[cxAtomicOpOutputIdx].TotalSize = strct.GetStructSize(prgrm)
+						prgrm.CXArgs[cxAtomicOpOutputIdx].Name = structName
+						cxAtomicOpOutputTypeSig.Name = structName
+
+						fieldIdx := prgrm.AddCXArgInArray(field)
+						prgrm.CXArgs[cxAtomicOpOutputIdx].Fields = append(prgrm.CXArgs[cxAtomicOpOutputIdx].Fields, fieldIdx)
+					} else if cxAtomicOpOutputTypeSig.Type == ast.TYPE_ATOMIC {
+						panic("type signature is type atomic")
+					}
+
 					result = append(result, expr)
 				}
 			} else {
@@ -293,7 +349,8 @@ func ArrayLiteralExpression(prgrm *ast.CXProgram, arraySizes []types.Pointer, ty
 	arrVarIdx := prgrm.AddCXArgInArray(arrVar)
 
 	typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(arrVarIdx))
-	prgrm.CXAtomicOps[arrVarExprAtomicOpIdx].AddOutput(prgrm, typeSig)
+	typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
+	prgrm.CXAtomicOps[arrVarExprAtomicOpIdx].AddOutput(prgrm, typeSigIdx)
 
 	result = append(result, *arrVarExprCXLine, *arrVarExpr)
 
@@ -317,9 +374,21 @@ func ArrayLiteralExpression(prgrm *ast.CXProgram, arraySizes []types.Pointer, ty
 			sym.PreviouslyDeclared = true
 
 			idxArg := WritePrimary(prgrm, types.I32, encoder.Serialize(int32(endPointsCounter)), false)
+			// index is always i32
+			// hence, always an atomic type
+
+			indexTypeSignature := &ast.CXTypeSignature{
+				Name:    idxArg.Name,
+				Type:    ast.TYPE_ATOMIC,
+				Meta:    int(idxArg.Type),
+				Offset:  idxArg.Offset, // important for this
+				Package: idxArg.Package,
+			}
+
+			indexTypeSignatureIdx := prgrm.AddCXTypeSignatureInArray(indexTypeSignature)
 			endPointsCounter++
 
-			sym.Indexes = append(sym.Indexes, ast.CXArgumentIndex(idxArg.Index))
+			sym.Indexes = append(sym.Indexes, indexTypeSignatureIdx)
 			sym.DereferenceOperations = append(sym.DereferenceOperations, constants.DEREF_ARRAY)
 			sym.Lengths = arraySizes
 			sym.TotalSize = sym.Size * TotalLength(sym.Lengths)
@@ -330,7 +399,8 @@ func ArrayLiteralExpression(prgrm *ast.CXProgram, arraySizes []types.Pointer, ty
 			symExprAtomicOpIdx := symExpr.Index
 
 			typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(symIdx))
-			prgrm.CXAtomicOps[symExprAtomicOpIdx].AddOutput(prgrm, typeSig)
+			typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
+			prgrm.CXAtomicOps[symExprAtomicOpIdx].AddOutput(prgrm, typeSigIdx)
 
 			if expressionOperator == nil {
 				// then it's a literal
@@ -342,8 +412,9 @@ func ArrayLiteralExpression(prgrm *ast.CXProgram, arraySizes []types.Pointer, ty
 				prgrm.CXAtomicOps[symExprAtomicOpIdx].Inputs = expression.Inputs
 
 				typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(symIdx))
+				typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
 				// hack to get the correct lengths below
-				expression.AddOutput(prgrm, typeSig)
+				expression.AddOutput(prgrm, typeSigIdx)
 			}
 			result = append(result, *symExprCXLine, *symExpr)
 		} else {
@@ -377,9 +448,12 @@ func ArrayLiteralExpression(prgrm *ast.CXProgram, arraySizes []types.Pointer, ty
 	prgrm.CXAtomicOps[symExprAtomicOpIdx].Package = ast.CXPackageIndex(pkg.Index)
 
 	typeSig = ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(symOutputIdx))
-	prgrm.CXAtomicOps[symExprAtomicOpIdx].AddOutput(prgrm, typeSig)
+	typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
+	prgrm.CXAtomicOps[symExprAtomicOpIdx].AddOutput(prgrm, typeSigIdx)
+
 	typeSig = ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(symInputIdx))
-	prgrm.CXAtomicOps[symExprAtomicOpIdx].AddInput(prgrm, typeSig)
+	typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
+	prgrm.CXAtomicOps[symExprAtomicOpIdx].AddInput(prgrm, typeSigIdx)
 
 	// symOutput.SynonymousTo = symInput.Name
 
@@ -415,7 +489,9 @@ func StructLiteralFields(prgrm *ast.CXProgram, structName string) ast.CXExpressi
 	}
 
 	typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(argIdx))
-	expression.AddOutput(prgrm, typeSig)
+	typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
+	expression.AddOutput(prgrm, typeSigIdx)
+
 	expression.Package = ast.CXPackageIndex(pkg.Index)
 	return *expr
 }

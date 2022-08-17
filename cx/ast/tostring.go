@@ -52,9 +52,13 @@ func buildStrGlobals(prgrm *CXProgram, pkg *CXPackage, ast *string) {
 	}
 
 	for idx, glblIdx := range pkg.Globals.Fields {
-		// Assuming they are all TYPE_CXARGUMENT_DEPRECATE
-		// TODO: To be replaced
-		*ast += fmt.Sprintf("\t\t%d.- Global: %s %s\n", idx, prgrm.GetCXArg(CXArgumentIndex(glblIdx.Meta)).Name, GetFormattedType(prgrm, prgrm.GetCXArg(CXArgumentIndex(glblIdx.Meta))))
+		glbl := prgrm.GetCXTypeSignatureFromArray(glblIdx)
+		if glbl.Type == TYPE_CXARGUMENT_DEPRECATE {
+			*ast += fmt.Sprintf("\t\t%d.- Global: %s %s\n", idx, prgrm.GetCXArg(CXArgumentIndex(glbl.Meta)).Name, GetFormattedType(prgrm, prgrm.GetCXArg(CXArgumentIndex(glbl.Meta))))
+		} else if glbl.Type == TYPE_ATOMIC {
+			*ast += fmt.Sprintf("\t\t%d.- Global: %s %s\n", idx, glbl.Name, types.Code(glbl.Meta).Name())
+		}
+
 	}
 }
 
@@ -70,16 +74,18 @@ func buildStrStructs(prgrm *CXProgram, pkg *CXPackage, ast *string) {
 		strct := prgrm.CXStructs[strctIdx]
 		*ast += fmt.Sprintf("\t\t%d.- Struct: %s\n", count, strct.Name)
 
-		for k, typeSignature := range strct.Fields {
-			if typeSignature.Type == TYPE_ATOMIC {
+		for k, typeSignatureIdx := range strct.Fields {
+			typeSignature := prgrm.GetCXTypeSignatureFromArray(typeSignatureIdx)
+
+			if typeSignature.Type == TYPE_CXARGUMENT_DEPRECATE {
+				fldIdx := typeSignature.Meta
+				fld := prgrm.CXArgs[fldIdx]
+				*ast += fmt.Sprintf("\t\t\t%d.- Field: %s %s\n",
+					k, fld.Name, GetFormattedType(prgrm, &fld))
+			} else if typeSignature.Type == TYPE_ATOMIC {
 				*ast += fmt.Sprintf("\t\t\t%d.- Field: %s %s\n",
 					k, typeSignature.Name, types.Code(typeSignature.Meta).Name())
-				continue
 			}
-			fldIdx := typeSignature.Meta
-			fld := prgrm.CXArgs[fldIdx]
-			*ast += fmt.Sprintf("\t\t\t%d.- Field: %s %s\n",
-				k, fld.Name, GetFormattedType(prgrm, &fld))
 		}
 
 		count++
@@ -110,11 +116,8 @@ func buildStrFunctions(prgrm *CXProgram, pkg *CXPackage, ast1 *string) {
 		var inps bytes.Buffer
 		var outs bytes.Buffer
 
-		inputCXArgs := prgrm.ConvertIndexTypeSignaturesToPointerArgs(fn.GetInputs(prgrm))
-		getFormattedParam(prgrm, inputCXArgs, pkg, &inps)
-
-		outputCxArgs := prgrm.ConvertIndexTypeSignaturesToPointerArgs(fn.GetOutputs(prgrm))
-		getFormattedParam(prgrm, outputCxArgs, pkg, &outs)
+		getFormattedParam(prgrm, fn.GetInputs(prgrm), pkg, &inps)
+		getFormattedParam(prgrm, fn.GetOutputs(prgrm), pkg, &outs)
 
 		*ast1 += fmt.Sprintf("\t\t%d.- Function: %s (%s) (%s)\n",
 			j, fn.Name, inps.String(), outs.String())
@@ -148,8 +151,8 @@ func buildStrFunctions(prgrm *CXProgram, pkg *CXPackage, ast1 *string) {
 				}
 			}
 
-			getFormattedParam(prgrm, prgrm.ConvertIndexTypeSignaturesToPointerArgs(cxAtomicOp.GetInputs(prgrm)), pkg, &inps)
-			getFormattedParam(prgrm, prgrm.ConvertIndexTypeSignaturesToPointerArgs(cxAtomicOp.GetOutputs(prgrm)), pkg, &outs)
+			getFormattedParam(prgrm, cxAtomicOp.GetInputs(prgrm), pkg, &inps)
+			getFormattedParam(prgrm, cxAtomicOp.GetOutputs(prgrm), pkg, &outs)
 
 			if expr.Type == CX_LINE {
 				cxLine, _ := prgrm.GetCXLine(expr.Index)
@@ -174,14 +177,22 @@ func buildStrFunctions(prgrm *CXProgram, pkg *CXPackage, ast1 *string) {
 				// Then it's a variable declaration. These are represented
 				// by expressions without operators that only have outputs.
 				cxAtomicOpOutputs := cxAtomicOp.GetOutputs(prgrm)
+				cxAtomicOpOutputTypeSignature := prgrm.GetCXTypeSignatureFromArray(cxAtomicOpOutputs[len(cxAtomicOpOutputs)-1])
 				if len(cxAtomicOpOutputs) > 0 {
-					out := prgrm.GetCXArgFromArray(CXArgumentIndex(cxAtomicOpOutputs[len(cxAtomicOpOutputs)-1].Meta))
-
-					*ast1 += fmt.Sprintf("\t\t\t%d.- Declaration%s: %s %s\n",
-						k,
-						lbl,
-						prgrm.GetCXArgFromArray(CXArgumentIndex(cxAtomicOpOutputs[0].Meta)).Name,
-						GetFormattedType(prgrm, out))
+					if cxAtomicOpOutputTypeSignature.Type == TYPE_CXARGUMENT_DEPRECATE {
+						out := prgrm.GetCXArgFromArray(CXArgumentIndex(cxAtomicOpOutputTypeSignature.Meta))
+						*ast1 += fmt.Sprintf("\t\t\t%d.- Declaration%s: %s %s\n",
+							k,
+							lbl,
+							cxAtomicOpOutputTypeSignature.Name,
+							GetFormattedType(prgrm, out))
+					} else if cxAtomicOpOutputTypeSignature.Type == TYPE_ATOMIC {
+						*ast1 += fmt.Sprintf("\t\t\t%d.- Declaration%s: %s %s\n",
+							k,
+							lbl,
+							cxAtomicOpOutputTypeSignature.Name,
+							types.Code(cxAtomicOpOutputTypeSignature.Meta).Name())
+					}
 				}
 			}
 		}
@@ -221,21 +232,52 @@ func BuildStrPackages(prgrm *CXProgram, ast *string) {
 // name of a `CXExpression`'s input and output parameters (`CXArgument`s). Examples
 // of these formattings are "pkg.foo[0]", "&*foo.field1". The result is written to
 // `buf`.
-func getFormattedParam(prgrm *CXProgram, params []*CXArgument, pkg *CXPackage, buf *bytes.Buffer) {
-	for i, param := range params {
-		elt := param.GetAssignmentElement(prgrm)
+func getFormattedParam(prgrm *CXProgram, paramTypeSigIdxs []CXTypeSignatureIndex, pkg *CXPackage, buf *bytes.Buffer) {
+	for i, paramTypeSigIdx := range paramTypeSigIdxs {
+		paramTypeSig := prgrm.GetCXTypeSignatureFromArray(paramTypeSigIdx)
 
-		// Checking if this argument comes from an imported package.
-		externalPkg := false
-		if CXPackageIndex(pkg.Index) != param.Package {
-			externalPkg = true
-		}
+		if paramTypeSig.Type == TYPE_CXARGUMENT_DEPRECATE {
+			param := prgrm.GetCXArgFromArray(CXArgumentIndex(paramTypeSig.Meta))
 
-		if i == len(params)-1 {
+			elt := param.GetAssignmentElement(prgrm)
+
+			// Checking if this argument comes from an imported package.
+			externalPkg := false
+			if CXPackageIndex(pkg.Index) != param.Package {
+				externalPkg = true
+			}
+
 			buf.WriteString(fmt.Sprintf("%s %s", GetFormattedName(prgrm, param, externalPkg, pkg), GetFormattedType(prgrm, elt)))
-		} else {
-			buf.WriteString(fmt.Sprintf("%s %s, ", GetFormattedName(prgrm, param, externalPkg, pkg), GetFormattedType(prgrm, elt)))
+
+			if i != len(paramTypeSigIdxs)-1 {
+				buf.WriteString(", ")
+			}
+		} else if paramTypeSig.Type == TYPE_ATOMIC {
+			// Checking if this argument comes from an imported package.
+			externalPkg := false
+			if CXPackageIndex(pkg.Index) != paramTypeSig.Package {
+				externalPkg = true
+			}
+
+			name := paramTypeSig.Name
+
+			// If it's a literal, just override the name with LITERAL_PLACEHOLDER.
+			if paramTypeSig.Name == "" {
+				name = constants.LITERAL_PLACEHOLDER
+			}
+
+			// TODO: Check if external pkg and pkg name shown are correct
+			if externalPkg {
+				name = fmt.Sprintf("%s.%s", pkg.Name, name)
+			}
+
+			buf.WriteString(fmt.Sprintf("%s %s", name, types.Code(paramTypeSig.Meta).Name()))
+
+			if i != len(paramTypeSigIdxs)-1 {
+				buf.WriteString(", ")
+			}
 		}
+
 	}
 }
 
@@ -244,11 +286,8 @@ func SignatureStringOfFunction(prgrm *CXProgram, pkg *CXPackage, f *CXFunction) 
 	var ins bytes.Buffer
 	var outs bytes.Buffer
 
-	inputCXArgs := prgrm.ConvertIndexTypeSignaturesToPointerArgs(f.GetInputs(prgrm))
-	getFormattedParam(prgrm, inputCXArgs, pkg, &ins)
-
-	outputCXArgs := prgrm.ConvertIndexTypeSignaturesToPointerArgs(f.GetOutputs(prgrm))
-	getFormattedParam(prgrm, outputCXArgs, pkg, &outs)
+	getFormattedParam(prgrm, f.GetInputs(prgrm), pkg, &ins)
+	getFormattedParam(prgrm, f.GetOutputs(prgrm), pkg, &outs)
 
 	return fmt.Sprintf("func %s(%s) (%s)",
 		f.Name, ins.String(), outs.String())
@@ -294,15 +333,22 @@ func getNonCollectionValue(prgrm *CXProgram, fp types.Pointer, arg, elt *CXArgum
 		lFlds := len(elt.StructType.Fields)
 		off := types.Pointer(0)
 		for c := 0; c < lFlds; c++ {
-			typeSignature := elt.StructType.Fields[c]
-			fldIdx := typeSignature.Meta
-			fld := prgrm.CXArgs[fldIdx]
-			if c == lFlds-1 {
-				val += fmt.Sprintf("%s: %s", fld.Name, GetPrintableValue(prgrm, fp+arg.Offset+off, &fld))
-			} else {
-				val += fmt.Sprintf("%s: %s, ", fld.Name, GetPrintableValue(prgrm, fp+arg.Offset+off, &fld))
+			typeSignatureIdx := elt.StructType.Fields[c]
+			typeSignature := prgrm.GetCXTypeSignatureFromArray(typeSignatureIdx)
+			var fldTotalSize types.Pointer
+			if typeSignature.Type == TYPE_CXARGUMENT_DEPRECATE {
+				fldIdx := typeSignature.Meta
+				fldTotalSize = prgrm.CXArgs[fldIdx].TotalSize
+			} else if typeSignature.Type == TYPE_ATOMIC {
+				fldTotalSize = types.Code(typeSignature.Type).Size()
 			}
-			off += fld.TotalSize
+
+			if c == lFlds-1 {
+				val += fmt.Sprintf("%s: %s", typeSignature.Name, GetPrintableValue(prgrm, fp+arg.Offset+off, typeSignature))
+			} else {
+				val += fmt.Sprintf("%s: %s, ", typeSignature.Name, GetPrintableValue(prgrm, fp+arg.Offset+off, typeSignature))
+			}
+			off += fldTotalSize
 		}
 		val += "}"
 		return val
@@ -344,15 +390,23 @@ func ReadSliceElements(prgrm *CXProgram, fp types.Pointer, arg, elt *CXArgument,
 		lFlds := len(elt.StructType.Fields)
 		off := types.Pointer(0)
 		for c := 0; c < lFlds; c++ {
-			typeSignature := elt.StructType.Fields[c]
-			fldIdx := typeSignature.Meta
-			fld := prgrm.CXArgs[fldIdx]
-			if c == lFlds-1 {
-				val += fmt.Sprintf("%s: %s", fld.Name, GetPrintableValue(prgrm, fp+arg.Offset+off, &fld))
-			} else {
-				val += fmt.Sprintf("%s: %s, ", fld.Name, GetPrintableValue(prgrm, fp+arg.Offset+off, &fld))
+			typeSignatureIdx := elt.StructType.Fields[c]
+			typeSignature := prgrm.GetCXTypeSignatureFromArray(typeSignatureIdx)
+
+			var fldTotalSize types.Pointer
+			if typeSignature.Type == TYPE_CXARGUMENT_DEPRECATE {
+				fldIdx := typeSignature.Meta
+				fldTotalSize = prgrm.CXArgs[fldIdx].TotalSize
+			} else if typeSignature.Type == TYPE_ATOMIC {
+				fldTotalSize = types.Code(typeSignature.Type).Size()
 			}
-			off += fld.TotalSize
+
+			if c == lFlds-1 {
+				val += fmt.Sprintf("%s: %s", typeSignature.Name, GetPrintableValue(prgrm, fp+arg.Offset+off, typeSignature))
+			} else {
+				val += fmt.Sprintf("%s: %s, ", typeSignature.Name, GetPrintableValue(prgrm, fp+arg.Offset+off, typeSignature))
+			}
+			off += fldTotalSize
 		}
 		val += "}"
 		return val
@@ -360,105 +414,113 @@ func ReadSliceElements(prgrm *CXProgram, fp types.Pointer, arg, elt *CXArgument,
 }
 
 // GetPrintableValue ...
-func GetPrintableValue(prgrm *CXProgram, fp types.Pointer, arg *CXArgument) string {
+func GetPrintableValue(prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSignature) string {
+	var arg, elt *CXArgument
 	var typ string
-	elt := arg.GetAssignmentElement(prgrm)
-	if elt.StructType != nil {
-		// then it's struct type
-		typ = elt.StructType.Name
-	} else {
-		// then it's native type
-		typ = elt.Type.Name()
-	}
+	if argTypeSig.Type == TYPE_CXARGUMENT_DEPRECATE {
+		arg = prgrm.GetCXArgFromArray(CXArgumentIndex(argTypeSig.Meta))
 
-	if len(elt.Lengths) > 0 {
-		var val string
-		if len(elt.Lengths) == 1 {
-			val = "["
+		elt = arg.GetAssignmentElement(prgrm)
+		if elt.StructType != nil {
+			// then it's struct type
+			typ = elt.StructType.Name
+		} else {
+			// then it's native type
+			typ = elt.Type.Name()
+		}
 
-			if arg.IsSlice {
-				// for slices
-				sliceOffset := GetSliceOffset(prgrm, fp, arg)
+		if len(elt.Lengths) > 0 {
+			var val string
+			if len(elt.Lengths) == 1 {
+				val = "["
 
-				sliceData := GetSlice(prgrm, sliceOffset, elt.Size)
-				if len(sliceData) != 0 {
-					sliceLen := types.Read_ptr(sliceData, 0)
-					for c := types.Pointer(0); c < sliceLen; c++ {
-						if c == sliceLen-1 {
-							val += ReadSliceElements(prgrm, sliceOffset+constants.SLICE_HEADER_SIZE+types.OBJECT_HEADER_SIZE+c*elt.Size, arg, elt, sliceData[types.POINTER_SIZE+c*elt.Size:], elt.Size, typ)
+				if arg.IsSlice {
+					// for slices
+					sliceOffset := GetSliceOffset(prgrm, fp, argTypeSig)
+
+					sliceData := GetSlice(prgrm, sliceOffset, elt.Size)
+					if len(sliceData) != 0 {
+						sliceLen := types.Read_ptr(sliceData, 0)
+						for c := types.Pointer(0); c < sliceLen; c++ {
+							if c == sliceLen-1 {
+								val += ReadSliceElements(prgrm, sliceOffset+constants.SLICE_HEADER_SIZE+types.OBJECT_HEADER_SIZE+c*elt.Size, arg, elt, sliceData[types.POINTER_SIZE+c*elt.Size:], elt.Size, typ)
+							} else {
+								val += ReadSliceElements(prgrm, sliceOffset+constants.SLICE_HEADER_SIZE+types.OBJECT_HEADER_SIZE+c*elt.Size, arg, elt, sliceData[types.POINTER_SIZE+c*elt.Size:], elt.Size, typ) + ", "
+							}
+
+						}
+					}
+
+				} else {
+					// for Arrays
+					for c := types.Pointer(0); c < elt.Lengths[0]; c++ {
+						if c == elt.Lengths[0]-1 {
+							val += getNonCollectionValue(prgrm, fp+c*elt.Size, arg, elt, typ)
 						} else {
-							val += ReadSliceElements(prgrm, sliceOffset+constants.SLICE_HEADER_SIZE+types.OBJECT_HEADER_SIZE+c*elt.Size, arg, elt, sliceData[types.POINTER_SIZE+c*elt.Size:], elt.Size, typ) + ", "
+							val += getNonCollectionValue(prgrm, fp+c*elt.Size, arg, elt, typ) + ", "
 						}
 
 					}
 				}
 
+				val += "]"
 			} else {
-				// for Arrays
-				for c := types.Pointer(0); c < elt.Lengths[0]; c++ {
-					if c == elt.Lengths[0]-1 {
+				// 5, 4, 1
+				val = ""
+
+				finalSize := types.Pointer(1)
+				for _, l := range elt.Lengths {
+					finalSize *= l
+				}
+
+				lens := make([]types.Pointer, len(elt.Lengths))
+				copy(lens, elt.Lengths)
+
+				for c := 0; c < len(lens); c++ {
+					for i := 0; i < len(lens[c+1:]); i++ {
+						lens[c] *= lens[c+i]
+					}
+				}
+
+				for range lens {
+					val += "["
+				}
+
+				// adding first element because of formatting reasons
+				val += getNonCollectionValue(prgrm, fp, arg, elt, typ)
+				for c := types.Pointer(1); c < finalSize; c++ {
+					closeCount := 0
+					for _, l := range lens {
+						if c%l == 0 && c != 0 {
+							// val += "] ["
+							closeCount++
+						}
+					}
+
+					if closeCount > 0 {
+						for i := 0; i < closeCount; i++ {
+							val += "]"
+						}
+						val += " "
+						for i := 0; i < closeCount; i++ {
+							val += "["
+						}
+
 						val += getNonCollectionValue(prgrm, fp+c*elt.Size, arg, elt, typ)
 					} else {
-						val += getNonCollectionValue(prgrm, fp+c*elt.Size, arg, elt, typ) + ", "
+						val += " " + getNonCollectionValue(prgrm, fp+c*elt.Size, arg, elt, typ)
 					}
-
+				}
+				for range lens {
+					val += "]"
 				}
 			}
 
-			val += "]"
-		} else {
-			// 5, 4, 1
-			val = ""
-
-			finalSize := types.Pointer(1)
-			for _, l := range elt.Lengths {
-				finalSize *= l
-			}
-
-			lens := make([]types.Pointer, len(elt.Lengths))
-			copy(lens, elt.Lengths)
-
-			for c := 0; c < len(lens); c++ {
-				for i := 0; i < len(lens[c+1:]); i++ {
-					lens[c] *= lens[c+i]
-				}
-			}
-
-			for range lens {
-				val += "["
-			}
-
-			// adding first element because of formatting reasons
-			val += getNonCollectionValue(prgrm, fp, arg, elt, typ)
-			for c := types.Pointer(1); c < finalSize; c++ {
-				closeCount := 0
-				for _, l := range lens {
-					if c%l == 0 && c != 0 {
-						// val += "] ["
-						closeCount++
-					}
-				}
-
-				if closeCount > 0 {
-					for i := 0; i < closeCount; i++ {
-						val += "]"
-					}
-					val += " "
-					for i := 0; i < closeCount; i++ {
-						val += "["
-					}
-
-					val += getNonCollectionValue(prgrm, fp+c*elt.Size, arg, elt, typ)
-				} else {
-					val += " " + getNonCollectionValue(prgrm, fp+c*elt.Size, arg, elt, typ)
-				}
-			}
-			for range lens {
-				val += "]"
-			}
+			return val
 		}
-
-		return val
+	} else if argTypeSig.Type == TYPE_ATOMIC {
+		// what to do with type atomic
+		panic("type is not cx argument deprecate")
 	}
 
 	return getNonCollectionValue(prgrm, fp, arg, elt, typ)
@@ -599,7 +661,7 @@ func getFormattedDerefs(prgrm *CXProgram, arg *CXArgument, includePkg bool, pkg 
 
 	// Checking if we have indexing operations, e.g. foo[2][1]
 	for _, idxIdx := range arg.Indexes {
-		idx := prgrm.GetCXArgFromArray(idxIdx)
+		idx := prgrm.GetCXTypeSignatureFromArray(idxIdx)
 		// Checking if the value is in data segment.
 		// If this is the case, we can safely display it.
 		idxValue := ""
@@ -692,31 +754,31 @@ func GetFormattedType(prgrm *CXProgram, arg *CXArgument) string {
 
 				// If it's a function, let's add the inputs and outputs.
 				if elt.Type == types.FUNC {
-					if elt.IsLocalDeclaration {
-						// Then it's a local variable, which can be assigned to a
-						// lambda function, for example.
-						typ += formatParameters(prgrm, prgrm.ConvertIndexArgsToPointerArgs(elt.Inputs))
-						typ += formatParameters(prgrm, prgrm.ConvertIndexArgsToPointerArgs(elt.Outputs))
-					} else {
-						// Then it refers to a named function defined in a package.
-						pkg, err := prgrm.GetPackageFromArray(arg.Package)
-						if err != nil {
-							println(CompilationError(elt.ArgDetails.FileName, elt.ArgDetails.FileLine), err.Error())
-							os.Exit(constants.CX_COMPILATION_ERROR)
-						}
-
-						fn, err := pkg.GetFunction(prgrm, elt.Name)
-						if err == nil {
-							// println(CompilationError(elt.FileName, elt.FileLine), err.ProgramError())
-							// os.Exit(CX_COMPILATION_ERROR)
-							// Adding list of inputs and outputs types.
-							inputCXArgs := prgrm.ConvertIndexTypeSignaturesToPointerArgs(fn.GetInputs(prgrm))
-							typ += formatParameters(prgrm, inputCXArgs)
-
-							outputCXArgs := prgrm.ConvertIndexTypeSignaturesToPointerArgs(fn.GetOutputs(prgrm))
-							typ += formatParameters(prgrm, outputCXArgs)
-						}
+					// if elt.IsLocalDeclaration {
+					// Then it's a local variable, which can be assigned to a
+					// lambda function, for example.
+					// typ += formatParameters(prgrm, prgrm.ConvertIndexArgsToPointerArgs(elt.Inputs))
+					// typ += formatParameters(prgrm, prgrm.ConvertIndexArgsToPointerArgs(elt.Outputs))
+					// } else {
+					// Then it refers to a named function defined in a package.
+					pkg, err := prgrm.GetPackageFromArray(arg.Package)
+					if err != nil {
+						println(CompilationError(elt.ArgDetails.FileName, elt.ArgDetails.FileLine), err.Error())
+						os.Exit(constants.CX_COMPILATION_ERROR)
 					}
+
+					fn, err := pkg.GetFunction(prgrm, elt.Name)
+					if err == nil {
+						// println(CompilationError(elt.FileName, elt.FileLine), err.ProgramError())
+						// os.Exit(CX_COMPILATION_ERROR)
+						// Adding list of inputs and outputs types.
+						inputCXArgs := prgrm.ConvertIndexTypeSignaturesToPointerArgs(fn.GetInputs(prgrm))
+						typ += formatParameters(prgrm, inputCXArgs)
+
+						outputCXArgs := prgrm.ConvertIndexTypeSignaturesToPointerArgs(fn.GetOutputs(prgrm))
+						typ += formatParameters(prgrm, outputCXArgs)
+					}
+					// }
 				}
 			}
 		}
@@ -728,7 +790,9 @@ func GetFormattedType(prgrm *CXProgram, arg *CXArgument) string {
 // SignatureStringOfStruct returns the signature string of a struct.
 func SignatureStringOfStruct(prgrm *CXProgram, s *CXStruct) string {
 	fields := ""
-	for _, typeSignature := range s.Fields {
+	for _, typeSignatureIdx := range s.Fields {
+		typeSignature := prgrm.GetCXTypeSignatureFromArray(typeSignatureIdx)
+
 		if typeSignature.Type == TYPE_ATOMIC {
 			fields += fmt.Sprintf(" %s %s;", typeSignature.Name, types.Code(typeSignature.Meta).Name())
 			continue

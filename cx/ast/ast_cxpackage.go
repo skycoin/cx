@@ -66,8 +66,10 @@ func (pkg *CXPackage) GetMethod(prgrm *CXProgram, fnName string, receiverType st
 	if fnIdx, ok := pkg.Functions[fnName]; ok {
 		fn := prgrm.GetFunctionFromArray(fnIdx)
 		fnInputs := fn.GetInputs(prgrm)
-		fnInputTypeSig := fnInputs[0]
-		var fnInput *CXArgument
+		fnInputTypeSigIdx := fnInputs[0]
+		fnInputTypeSig := prgrm.GetCXTypeSignatureFromArray(fnInputTypeSigIdx)
+
+		var fnInput *CXArgument = &CXArgument{}
 		if fnInputTypeSig.Type == TYPE_CXARGUMENT_DEPRECATE {
 			fnInput = prgrm.GetCXArgFromArray(CXArgumentIndex(fnInputTypeSig.Meta))
 		}
@@ -109,11 +111,11 @@ func (pkg *CXPackage) GetStruct(prgrm *CXProgram, strctName string) (*CXStruct, 
 }
 
 // GetGlobal ...
-func (pkg *CXPackage) GetGlobal(prgrm *CXProgram, defName string) (*CXArgument, error) {
-	for _, field := range pkg.Globals.Fields {
-		if field.Name == defName && field.Type == TYPE_CXARGUMENT_DEPRECATE {
-			glbl := prgrm.GetCXArgFromArray(CXArgumentIndex(field.Meta))
-			return glbl, nil
+func (pkg *CXPackage) GetGlobal(prgrm *CXProgram, defName string) (*CXTypeSignature, error) {
+	for _, fieldIdx := range pkg.Globals.Fields {
+		field := prgrm.GetCXTypeSignatureFromArray(fieldIdx)
+		if field.Name == defName {
+			return field, nil
 		}
 	}
 
@@ -231,13 +233,29 @@ func (pkg *CXPackage) AddGlobal(prgrm *CXProgram, defIdx CXArgumentIndex) *CXPac
 	defArg := prgrm.GetCXArgFromArray(defIdx)
 	prgrm.CXArgs[defIdx].Package = CXPackageIndex(pkg.Index)
 
-	for _, field := range pkg.Globals.Fields {
+	for _, fieldIdx := range pkg.Globals.Fields {
+		field := prgrm.GetCXTypeSignatureFromArray(fieldIdx)
 		if field.Name == defArg.Name && field.Type == TYPE_CXARGUMENT_DEPRECATE {
 			return pkg
 		}
 	}
 
 	pkg.Globals.AddField_Globals_CXAtomicOps(prgrm, defIdx)
+
+	return pkg
+}
+
+func (pkg *CXPackage) AddGlobal_TypeSignature(prgrm *CXProgram, typeSignatureIdx CXTypeSignatureIndex) *CXPackage {
+	typeSignature := prgrm.GetCXTypeSignatureFromArray(typeSignatureIdx)
+	typeSignature.Package = CXPackageIndex(pkg.Index)
+	for _, fieldIdx := range pkg.Globals.Fields {
+		field := prgrm.GetCXTypeSignatureFromArray(fieldIdx)
+		if field.Name == typeSignature.Name {
+			return pkg
+		}
+	}
+
+	pkg.Globals.AddField_TypeSignature(prgrm, typeSignatureIdx)
 
 	return pkg
 }

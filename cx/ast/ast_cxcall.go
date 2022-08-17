@@ -39,18 +39,16 @@ func popStack(prgrm *CXProgram, call *CXCall) error {
 	cxAtomicOpOutputs := cxAtomicOp.GetOutputs(prgrm)
 	lenOuts := len(cxAtomicOpOutputs)
 	callOperatorOutputs := call.Operator.GetOutputs(prgrm)
-	for i, output := range callOperatorOutputs {
-		var out *CXArgument
-		if output.Type == TYPE_CXARGUMENT_DEPRECATE {
-			out = prgrm.GetCXArgFromArray(CXArgumentIndex(output.Meta))
-		}
+	for i, outputIdx := range callOperatorOutputs {
+		output := prgrm.GetCXTypeSignatureFromArray(outputIdx)
 		// Continuing if there is no receiving variable available.
 		if i >= lenOuts {
 			continue
 		}
 
-		types.WriteSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, returnFP, nil, &cxAtomicOpOutputs[i]),
-			types.GetSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, &output), GetArgSize(prgrm, out)))
+		cxAtomicOpOutput := prgrm.GetCXTypeSignatureFromArray(cxAtomicOpOutputs[i])
+		types.WriteSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, returnFP, nil, cxAtomicOpOutput),
+			types.GetSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, output), output.GetSize(prgrm)))
 	}
 
 	// return the stack pointer to its previous state
@@ -71,9 +69,17 @@ func wipeDeclarationMemory(prgrm *CXProgram, expr *CXExpression) error {
 	newCall := &prgrm.CallStack[prgrm.CallCounter]
 	newFP := newCall.FramePointer
 	cxAtomicOpOutputs := cxAtomicOp.GetOutputs(prgrm)
-	size := GetArgSize(prgrm, &prgrm.CXArgs[cxAtomicOpOutputs[0].Meta])
+	cxAtomicOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(cxAtomicOpOutputs[0])
+	size := cxAtomicOutputTypeSig.GetSize(prgrm)
+	var offset types.Pointer
+	if cxAtomicOutputTypeSig.Type == TYPE_CXARGUMENT_DEPRECATE {
+		offset = prgrm.CXArgs[cxAtomicOutputTypeSig.Meta].Offset
+	} else if cxAtomicOutputTypeSig.Type == TYPE_ATOMIC {
+		offset = cxAtomicOutputTypeSig.Offset
+	}
+
 	for c := types.Pointer(0); c < size; c++ {
-		prgrm.Memory[newFP+prgrm.CXArgs[cxAtomicOpOutputs[0].Meta].Offset+c] = 0
+		prgrm.Memory[newFP+offset+c] = 0
 	}
 
 	return nil
@@ -103,40 +109,51 @@ func processBuiltInOperators(prgrm *CXProgram, expr *CXExpression, globalInputs 
 
 	argIndex := 0
 	for inputIndex := 0; inputIndex < inputCount; inputIndex++ {
-		var input *CXArgument
-		if inputs[inputIndex].Type == TYPE_CXARGUMENT_DEPRECATE {
-			input = prgrm.GetCXArgFromArray(CXArgumentIndex(inputs[inputIndex].Meta))
+		inputTypeSignature := prgrm.GetCXTypeSignatureFromArray(inputs[inputIndex])
+		value := &inputValues[inputIndex]
+		value.TypeSignature = inputTypeSignature
+		value.Size = inputTypeSignature.GetSize(prgrm)
+		offset := GetFinalOffset(prgrm, fp, nil, inputTypeSignature)
+		value.Offset = offset
+
+		var input *CXArgument = &CXArgument{}
+		if inputTypeSignature.Type == TYPE_CXARGUMENT_DEPRECATE {
+			input = prgrm.GetCXArgFromArray(CXArgumentIndex(inputTypeSignature.Meta))
+
+			value.Type = input.Type
+			if input.Type == types.POINTER {
+				value.Type = input.PointerTargetType
+			}
+		} else if inputTypeSignature.Type == TYPE_ATOMIC {
+			value.Type = types.Code(inputTypeSignature.Meta)
 		}
 
-		offset := GetFinalOffset(prgrm, fp, input, nil)
-		value := &inputValues[inputIndex]
-		value.Arg = input
-		value.Size = GetArgSize(prgrm, input)
-		value.Offset = offset
-		value.Type = input.Type
-		if input.Type == types.POINTER {
-			value.Type = input.PointerTargetType
-		}
 		value.FramePointer = fp
 		value.Expr = expr
 		argIndex++
 	}
 
 	for outputIndex := 0; outputIndex < outputCount; outputIndex++ {
-		var output *CXArgument
-		if outputs[outputIndex].Type == TYPE_CXARGUMENT_DEPRECATE {
-			output = prgrm.GetCXArgFromArray(CXArgumentIndex(outputs[outputIndex].Meta))
+		outputTypeSignature := prgrm.GetCXTypeSignatureFromArray(outputs[outputIndex])
+
+		value := &outputValues[outputIndex]
+		value.TypeSignature = outputTypeSignature
+		value.Size = outputTypeSignature.GetSize(prgrm)
+		offset := GetFinalOffset(prgrm, fp, nil, outputTypeSignature)
+		value.Offset = offset
+
+		var output *CXArgument = &CXArgument{}
+		if outputTypeSignature.Type == TYPE_CXARGUMENT_DEPRECATE {
+			output = prgrm.GetCXArgFromArray(CXArgumentIndex(outputTypeSignature.Meta))
+
+			value.Type = output.Type
+			if output.Type == types.POINTER {
+				value.Type = output.PointerTargetType
+			}
+		} else if outputTypeSignature.Type == TYPE_ATOMIC {
+			value.Type = types.Code(outputTypeSignature.Meta)
 		}
 
-		offset := GetFinalOffset(prgrm, fp, output, nil)
-		value := &outputValues[outputIndex]
-		value.Arg = output
-		value.Size = GetArgSize(prgrm, output)
-		value.Offset = offset
-		value.Type = output.Type
-		if output.Type == types.POINTER {
-			value.Type = output.PointerTargetType
-		}
 		value.FramePointer = fp
 		value.Expr = expr
 		argIndex++
@@ -186,15 +203,16 @@ func processNonAtomicOperators(prgrm *CXProgram, expr *CXExpression, fp types.Po
 	}
 
 	newCallOperatorInputs := newCall.Operator.GetInputs(prgrm)
-	for i, input := range cxAtomicOp.GetInputs(prgrm) {
-		var inp *CXArgument
+	for i, inputIdx := range cxAtomicOp.GetInputs(prgrm) {
+		input := prgrm.GetCXTypeSignatureFromArray(inputIdx)
+		var inp *CXArgument = &CXArgument{}
 		if input.Type == TYPE_CXARGUMENT_DEPRECATE {
 			inp = prgrm.GetCXArgFromArray(CXArgumentIndex(input.Meta))
 		}
 
 		var byts []byte
 
-		finalOffset := GetFinalOffset(prgrm, fp, inp, nil)
+		finalOffset := GetFinalOffset(prgrm, fp, nil, input)
 
 		if inp.PassBy == constants.PASSBY_REFERENCE {
 			// If we're referencing an inner element, like an element of a slice (&slc[0])
@@ -208,14 +226,15 @@ func processNonAtomicOperators(prgrm *CXProgram, expr *CXExpression, fp types.Po
 			byts = finalOffsetB[:]
 
 		} else {
-			size := GetArgSize(prgrm, inp)
+			size := input.GetSize(prgrm)
 			byts = prgrm.Memory[finalOffset : finalOffset+size]
 		}
 
+		newCallOperatorInputTypeSignature := prgrm.GetCXTypeSignatureFromArray(newCallOperatorInputs[i])
 		// writing inputs to new stack frame
 		types.WriteSlice_byte(
 			prgrm.Memory,
-			GetFinalOffset(prgrm, newFP, nil, &newCallOperatorInputs[i]),
+			GetFinalOffset(prgrm, newFP, nil, newCallOperatorInputTypeSignature),
 			// newFP + newCall.Operator.ProgramInput[i].Offset,
 			// GetFinalOffset(prgrm.Memory, newFP, newCall.Operator.ProgramInput[i], MEM_WRITE),
 			byts)

@@ -334,7 +334,7 @@ parameter_declaration:
                 {
 			$2.Name = $1.Name
 			$2.Package = $1.Package
-			$2.IsLocalDeclaration = true
+
 			$$ = $2
                 }
                 ;
@@ -347,7 +347,7 @@ direct_declarator:
                 {
 			if pkg, err := actions.AST.GetCurrentPackage(); err == nil {
 				arg := ast.MakeArgument("", actions.CurrentFile, actions.LineNo)
-                arg.SetType(types.UNDEFINED)
+				arg.SetType(types.UNDEFINED)
 				arg.Name = $1
 				arg.Package = ast.CXPackageIndex(pkg.Index)
 				$$ = arg
@@ -624,8 +624,17 @@ slice_literal_expression:
                                         panic(err)
                                 }
 
-                                expressionOutput:=actions.AST.GetCXArgFromArray(ast.CXArgumentIndex(expression.GetOutputs(actions.AST)[0].Meta))
-				if expressionOutput.Name == actions.AST.GetCXArgFromArray(ast.CXArgumentIndex(lastExpression.GetInputs(actions.AST)[0].Meta)).Name {
+                                expressionOutputTypeSig:=actions.AST.GetCXTypeSignatureFromArray(expression.GetOutputs(actions.AST)[0])
+                                var expressionOutputArg *ast.CXArgument = &ast.CXArgument{}
+			        if expressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				        expressionOutputArg = actions.AST.GetCXArgFromArray(ast.CXArgumentIndex(expressionOutputTypeSig.Meta))
+			        } else {
+				        panic("type is not cx argument deprecate\n\n")
+			        }
+
+                                expressionOutput:= expressionOutputArg
+                                lastExpressionInputTypeSig:=actions.AST.GetCXTypeSignatureFromArray(lastExpression.GetInputs(actions.AST)[0])
+				if expressionOutput.Name == lastExpressionInputTypeSig.Name {
 					expressionOutput.Lengths = append(expressionOutput.Lengths, 0)
 					expressionOutput.DeclarationSpecifiers = append(expressionOutput.DeclarationSpecifiers, constants.DECL_SLICE)
                                 }
@@ -993,7 +1002,8 @@ struct_literal_expression:
                         if err != nil {
                                 panic(err)
                         }
-			$$ = actions.PrimaryStructLiteralExternal(actions.AST,actions.AST.GetCXArgFromArray(ast.CXArgumentIndex(cxAtomicOp.GetOutputs(actions.AST)[0].Meta)).Name, $3, $5)
+                        cxAtomicOpOutputTypeSig:=actions.AST.GetCXTypeSignatureFromArray(cxAtomicOp.GetOutputs(actions.AST)[0])
+			$$ = actions.PrimaryStructLiteralExternal(actions.AST,cxAtomicOpOutputTypeSig.Name, $3, $5)
                 }
                 ;
 
@@ -1022,7 +1032,9 @@ assignment_expression:
                                                                         if err != nil {
                                                                                 panic(err)
                                                                         }
-                                                                        fromExpressionOutputIdx:=fromExpression.GetOutputs(actions.AST)[0].Meta
+
+                                                                        fromExpressionOutputTypeSig:=actions.AST.GetCXTypeSignatureFromArray(fromExpression.GetOutputs(actions.AST)[0])
+                                                                        fromExpressionOutputIdx:= fromExpressionOutputTypeSig.Meta
                                                                         actions.AST.CXArgs[fromExpressionOutputIdx].PreviouslyDeclared = true
                                                                 }
                                                         }
@@ -1041,7 +1053,9 @@ assignment_expression:
                                                                         if err != nil {
                                                                                 panic(err)
                                                                         }
-                                                                        fromExpressionOutputIdx:=fromExpression.GetOutputs(actions.AST)[0].Meta
+
+                                                                        fromExpressionOutputTypeSig:=actions.AST.GetCXTypeSignatureFromArray(fromExpression.GetOutputs(actions.AST)[0])
+                                                                        fromExpressionOutputIdx:=fromExpressionOutputTypeSig.Meta
                                                                         actions.AST.CXArgs[fromExpressionOutputIdx].PreviouslyDeclared = true
                                                                 }
                                                         }
@@ -1182,8 +1196,18 @@ expression_statement:
 
 			if len($1) > 0 && lastFirstAtomicOpOperator == nil  && !$1[len($1) - 1].IsMethodCall() {
 				outs := lastFirstAtomicOp.GetOutputs(actions.AST)
+                               
 				if len(outs) > 0 {
-					println(ast.CompilationError(actions.AST.GetCXArgFromArray(ast.CXArgumentIndex(outs[0].Meta)).ArgDetails.FileName, actions.AST.GetCXArgFromArray(ast.CXArgumentIndex(outs[0].Meta)).ArgDetails.FileLine), "invalid expression")
+                                        outTypeSig:=actions.AST.GetCXTypeSignatureFromArray(outs[0])
+
+                                        var expressionOutputArg *ast.CXArgument = &ast.CXArgument{}
+			                if outTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				                expressionOutputArg = actions.AST.GetCXArgFromArray(ast.CXArgumentIndex(outTypeSig.Meta))
+			                } else {
+				                panic("type is not cx argument deprecate\n\n")
+			                }
+
+					println(ast.CompilationError( expressionOutputArg.ArgDetails.FileName,  expressionOutputArg.ArgDetails.FileLine), "invalid expression")
 				} else {
 					println(ast.CompilationError(actions.CurrentFile, actions.LineNo), "invalid expression")
 				}

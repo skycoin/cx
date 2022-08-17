@@ -80,7 +80,7 @@ type CXArgument struct {
 	// `CXArgument` is an index or a slice. The elements of
 	// `Indexes` can be any `CXArgument` (for example, literals
 	// and variables).
-	Indexes []CXArgumentIndex
+	Indexes []CXTypeSignatureIndex
 
 	// Fields stores what fields are being accessed from the
 	// `CXArgument` and in what order. Whenever a `DEREF_FIELD` in
@@ -133,7 +133,6 @@ type CXArgument struct {
 	StructType         *CXStruct
 	IsSlice            bool
 	IsStruct           bool
-	IsLocalDeclaration bool
 	IsInnerReference   bool // for example: &slice[0] or &struct.field
 	PreviouslyDeclared bool
 }
@@ -161,7 +160,6 @@ All "Is" can be removed
 - but use int lookup
 	IsSlice               bool
 	IsStruct              bool
-	IsLocalDeclaration    bool
 	IsInnerReference      bool // for example: &slice[0] or &struct.field
 
 */
@@ -340,7 +338,7 @@ func Slice(typeCode types.Code) *CXArgument {
 // Param ...
 func Param(typeCode types.Code) *CXArgument {
 	arg := MakeArgument("", "", -1).SetType(typeCode)
-	arg.IsLocalDeclaration = true
+	// arg.IsLocalDeclaration = true
 	return arg
 }
 
@@ -387,4 +385,11 @@ func MakeGlobal(name string, typeCode types.Code, fileName string, fileLine int)
 	}
 	globals.HeapOffset += size
 	return global
+}
+
+// ------------------------------------------------------------------------------------------
+//           Special functions to determine its type (atomic, array etomic, etc)
+
+func IsTypeAtomic(arg *CXArgument) bool {
+	return arg.Type.IsPrimitive() && !arg.IsSlice && len(arg.Lengths) == 0 && len(arg.Fields) == 0 && len(arg.DeclarationSpecifiers) == 0
 }

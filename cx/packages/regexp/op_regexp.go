@@ -23,7 +23,7 @@ func regexpCompile(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXV
 
 	// Output structure `Regexp`.
 	reg := ast.CXArgument{}
-	err := copier.Copy(&reg, outputs[0].Arg)
+	err := copier.Copy(&reg, outputs[0].TypeSignature)
 	if err != nil {
 		panic(err)
 	}
@@ -91,7 +91,7 @@ func opRegexpCompile(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.C
 func opRegexpFind(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	// Output structure `Regexp`.
 	reg := ast.CXArgument{}
-	err := copier.Copy(&reg, inputs[0].Arg)
+	err := copier.Copy(&reg, inputs[0].TypeSignature)
 	if err != nil {
 		panic(err)
 	}
