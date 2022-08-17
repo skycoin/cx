@@ -603,6 +603,18 @@ func ReDeclarationCheck(Glbl []GlobalDeclaration, Enum []EnumDeclaration, Strct 
 		}
 	}
 
+	for _, structDeclaration := range Strct {
+		StructFields := structDeclaration.StructFields
+		for i := 0; i < len(StructFields); i++ {
+			for j := i + 1; j < len(StructFields); j++ {
+				if StructFields[i].StructFieldName == StructFields[j].StructFieldName {
+					err = errors.New("struct field redeclared")
+					return err
+				}
+			}
+		}
+	}
+
 	for i := 0; i < len(Func); i++ {
 		for j := i + 1; j < len(Func); j++ {
 			if Func[i].FuncName == Func[j].FuncName {

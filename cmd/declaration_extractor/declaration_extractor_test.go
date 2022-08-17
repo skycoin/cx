@@ -509,29 +509,29 @@ func TestDeclarationExtractor_ReDeclarationCheck(t *testing.T) {
 			wantReDeclarationError: nil,
 		},
 		{
-			scenario:               "Redeclared globals",
-			testDir:                "./test_files/ReDeclarationCheck/RedeclaredGlobals.cx",
+			scenario:               "Redeclared global",
+			testDir:                "./test_files/ReDeclarationCheck/RedeclaredGlobal.cx",
 			wantReDeclarationError: errors.New("global redeclared"),
 		},
 		{
-			scenario:               "Redeclared enums",
-			testDir:                "./test_files/ReDeclarationCheck/RedeclaredEnums.cx",
+			scenario:               "Redeclared enum",
+			testDir:                "./test_files/ReDeclarationCheck/RedeclaredEnum.cx",
 			wantReDeclarationError: errors.New("enum redeclared"),
 		},
 		{
-			scenario:               "Redeclared structs",
-			testDir:                "./test_files/ReDeclarationCheck/RedeclaredStructs.cx",
+			scenario:               "Redeclared struct",
+			testDir:                "./test_files/ReDeclarationCheck/RedeclaredStruct.cx",
 			wantReDeclarationError: errors.New("struct redeclared"),
 		},
 		{
-			scenario:               "Redeclared funcs",
-			testDir:                "./test_files/ReDeclarationCheck/RedeclaredFuncs.cx",
-			wantReDeclarationError: errors.New("func redeclared"),
+			scenario:               "Redeclared struct field",
+			testDir:                "./test_files/ReDeclarationCheck/RedeclaredStructField.cx",
+			wantReDeclarationError: errors.New("struct field redeclared"),
 		},
 		{
-			scenario:               "No Redeclarations 2",
-			testDir:                "./test_files/test_2.cx",
-			wantReDeclarationError: nil,
+			scenario:               "Redeclared func",
+			testDir:                "./test_files/ReDeclarationCheck/RedeclaredFunc.cx",
+			wantReDeclarationError: errors.New("func redeclared"),
 		},
 	}
 
