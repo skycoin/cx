@@ -511,9 +511,10 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 				// then it's a native
 				// TODO: we'd be referring to the function itself, not a function call
 				// (functions as first-class objects)
-				leftExprOutputTypeSig.Name = leftExprOutputTypeSig.Name + "." + ident
+				leftExprOutputTypeSigName := leftExprOutputTypeSig.Name + "." + ident
+				leftExprOutputTypeSig.Name = leftExprOutputTypeSigName
 				if leftExprOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-					prgrm.CXArgs[leftExprIdx].Name = leftExprOutputTypeSig.Name + "." + ident
+					prgrm.CXArgs[leftExprIdx].Name = leftExprOutputTypeSigName
 				}
 
 				return prevExprs
