@@ -20,8 +20,32 @@
     - [ ] CX_GLOBAL_DEF
 
 ## Struct Definition
-- [ ] Complete new CXStruct definition specifications.
-- [ ] Implement new CXStruct definition.
+- [ ] Complete new CXStruct definition specifications
+- [ ] Complete new CXTypeSignature definition specifications.
+- [ ] CXStruct Implementation
+    - [x] CXStruct for function Inputs
+    - [x] CXStruct for function Outputs
+    - [ ] CXStruct for function variable layout
+    - [ ] CXStruct for struct definitions
+- [ ] CXTypeSignature Implementation
+    - [x] atomic
+    - [ ] PointerAtomic
+    - [ ] ArrayAtomic
+    - [ ] ArrayPointerAtomic
+    - [ ] SliceAtomic
+    - [ ] SlicePointerAtomic
+    - [ ] Struct
+    - [ ] PointerStruct
+    - [ ] ArrayStruct
+    - [ ] ArrayPointerStruct
+    - [ ] SliceStruct
+    - [ ] SlicePointerStruct
+    - [ ] Complex
+    - [ ] PointerComplex
+    - [ ] ArrayComplex
+    - [ ] ArrayPointerComplex
+    - [ ] SliceComplex
+    - [ ] SlicePointerComplex
 
 Objectives:
 - To eliminate CxArguments and replace with CXTypeSignature, we need int id codes for types (enum)
