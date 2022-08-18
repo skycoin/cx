@@ -421,17 +421,19 @@ func ExtractStructs(source []byte, fileName string) ([]StructDeclaration, error)
 			}
 
 			var structField StructField
+			matchStructField := reStructField.FindSubmatchIndex(line)
 
-			if len(tokens) == 2 {
+			fmt.Print(matchStructField)
 
-				match := reStructField.FindSubmatchIndex(line)
-
-				structField.StartOffset = match[0] + currentOffset
-				structField.Length = match[1] - match[0]
-				structField.LineNumber = lineno
-				structField.StructFieldName = string(source[match[2]+currentOffset : match[3]+currentOffset])
-				structFieldsArray = append(structFieldsArray, &structField)
+			if len(tokens) == 2 && matchStructField != nil {
+				return StructDeclarationsArray, errors.New("unexpected token")
 			}
+
+			structField.StartOffset = matchStructField[0] + currentOffset
+			structField.Length = matchStructField[1] - matchStructField[0]
+			structField.LineNumber = lineno
+			structField.StructFieldName = string(source[matchStructField[2]+currentOffset : matchStructField[3]+currentOffset])
+			structFieldsArray = append(structFieldsArray, &structField)
 
 		}
 

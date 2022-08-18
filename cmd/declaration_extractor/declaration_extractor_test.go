@@ -293,10 +293,11 @@ func TestDeclarationExtractor_ExtractStructs(t *testing.T) {
 		scenario    string
 		testDir     string
 		wantStructs []declaration_extractor.StructDeclaration
+		wantErr     error
 	}{
 		{
 			scenario: "Has structs",
-			testDir:  "./test_files/test.cx",
+			testDir:  "./test_files/ExtractStructs/HasStructs.cx",
 			wantStructs: []declaration_extractor.StructDeclaration{
 				{
 					PackageID:   "hello",
@@ -330,7 +331,7 @@ func TestDeclarationExtractor_ExtractStructs(t *testing.T) {
 		},
 		{
 			scenario: "Has Struct 2",
-			testDir:  "./test_files/test_2.cx",
+			testDir:  "./test_files/ExtractStructs/HasStructs2.cx",
 			wantStructs: []declaration_extractor.StructDeclaration{
 				{
 					PackageID:   "test_2",
@@ -353,7 +354,7 @@ func TestDeclarationExtractor_ExtractStructs(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			gotStructs, err := declaration_extractor.ExtractStructs(ReplaceCommentsWithWhitespaces, fileName)
+			gotStructs, gotErr := declaration_extractor.ExtractStructs(ReplaceCommentsWithWhitespaces, fileName)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -407,7 +408,10 @@ func TestDeclarationExtractor_ExtractStructs(t *testing.T) {
 						t.Error(gotField)
 					}
 				}
+			}
 
+			if gotErr != tc.wantErr {
+				t.Errorf("want err %v, got %v", gotErr, tc.wantErr)
 			}
 		})
 	}
