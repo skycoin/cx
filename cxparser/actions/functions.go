@@ -144,6 +144,8 @@ func ProcessFunctionParameters(prgrm *ast.CXProgram, symbolsData *SymbolsData, o
 
 	for _, paramIdx := range params {
 		typeSignature := prgrm.GetCXTypeSignatureFromArray(paramIdx)
+
+		UpdateSymbolsTable(prgrm, symbolsData, paramIdx, offset, false)
 		// We remove it from local var array since it is already added to the symbols
 		if fn.IsLocalVariable(typeSignature.Name) {
 			err := fn.RemoveLocalVariableFromArray(typeSignature.Name)
@@ -152,7 +154,6 @@ func ProcessFunctionParameters(prgrm *ast.CXProgram, symbolsData *SymbolsData, o
 			}
 		}
 
-		UpdateSymbolsTable(prgrm, symbolsData, paramIdx, offset, false)
 		GiveOffset(prgrm, symbolsData, paramIdx)
 		SetFinalSize(prgrm, symbolsData, paramIdx)
 
@@ -767,6 +768,7 @@ func ProcessExpressionArguments(prgrm *ast.CXProgram, symbolsData *SymbolsData, 
 		// TempVar always have PreviouslyDeclared=true
 		isLocalVar := fn.IsLocalVariable(typeSignature.Name)
 		if (arg != nil && arg.PreviouslyDeclared) || IsTempVar(typeSignature.Name) || (arg == nil && isLocalVar) {
+			UpdateSymbolsTable(prgrm, symbolsData, typeSignatureIdx, offset, false)
 			// We remove it from local var array since it is already added to the symbols
 			if isLocalVar {
 				err := fn.RemoveLocalVariableFromArray(typeSignature.Name)
@@ -774,7 +776,6 @@ func ProcessExpressionArguments(prgrm *ast.CXProgram, symbolsData *SymbolsData, 
 					panic(err)
 				}
 			}
-			UpdateSymbolsTable(prgrm, symbolsData, typeSignatureIdx, offset, false)
 		} else {
 			UpdateSymbolsTable(prgrm, symbolsData, typeSignatureIdx, offset, true)
 		}
@@ -1491,7 +1492,6 @@ func lookupSymbol(prgrm *ast.CXProgram, pkgName, ident string, symbolsData *Symb
 	}
 
 	notFound := errors.New("identifier '" + ident + "' does not exist")
-
 	// We're not checking for that error
 	fn, err := pkg.GetFunction(prgrm, ident)
 	if err != nil {
