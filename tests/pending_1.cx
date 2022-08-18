@@ -2,6 +2,7 @@ package main
 
 // Printf arguments should be enforced at compile-time.
 func main()() {
-	printf("Must print '4.12' but prints '%d'\n", 4.12)
+	printf("Must print '4.12' but prints '%d'\n", 4.12) // this doesn't '%d'
+	printf("Must print '4.12' but prints '%v'\n", 4.12) // this works '%v'
 }
 
