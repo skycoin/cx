@@ -300,31 +300,59 @@ func TestDeclarationExtractor_ExtractStructs(t *testing.T) {
 			testDir:  "./test_files/ExtractStructs/HasStructs.cx",
 			wantStructs: []declaration_extractor.StructDeclaration{
 				{
-					PackageID:   "hello",
-					FileID:      "test.cx",
-					StartOffset: setOffset(152, 14),
-					Length:      18,
-					LineNumber:  14,
-					StructName:  "person",
+					PackageID:   "main",
+					FileID:      "./test_files/ExtractStructs/HasStructs.cx",
+					StartOffset: 58,
+					Length:      17,
+					LineNumber:  5,
+					StructName:  "Point",
 					StructFields: []*declaration_extractor.StructField{
 						{
-							StructFieldName: "name",
-							StartOffset:     setOffset(174, 15),
-							Length:          8,
-							LineNumber:      15,
+							StructFieldName: "x",
+							StartOffset:     79,
+							Length:          5,
+							LineNumber:      6,
+						},
+						{
+							StructFieldName: "y",
+							StartOffset:     86,
+							Length:          5,
+							LineNumber:      7,
 						},
 					},
 				},
 				{
-					PackageID:   "hello",
-					FileID:      "test.cx",
-					StartOffset: setOffset(230, 21),
-					Length:      39,
-					LineNumber:  21,
-					StructName:  "animal",
+					PackageID:   "main",
+					FileID:      "./test_files/ExtractStructs/HasStructs.cx",
+					StartOffset: 121,
+					Length:      19,
+					LineNumber:  11,
+					StructName:  "Strings",
 					StructFields: []*declaration_extractor.StructField{
-						{},
-						{},
+						{
+							StructFieldName: "lBound",
+							StartOffset:     144,
+							Length:          10,
+							LineNumber:      12,
+						},
+						{
+							StructFieldName: "string",
+							StartOffset:     156,
+							Length:          10,
+							LineNumber:      13,
+						},
+						{
+							StructFieldName: "stringA",
+							StartOffset:     168,
+							Length:          13,
+							LineNumber:      14,
+						},
+						{
+							StructFieldName: "rBound",
+							StartOffset:     183,
+							Length:          10,
+							LineNumber:      15,
+						},
 					},
 				},
 			},
@@ -334,12 +362,42 @@ func TestDeclarationExtractor_ExtractStructs(t *testing.T) {
 			testDir:  "./test_files/ExtractStructs/HasStructs2.cx",
 			wantStructs: []declaration_extractor.StructDeclaration{
 				{
-					PackageID:   "test_2",
-					FileID:      "test_2.cx",
-					StartOffset: setOffset(89, 15),
+					PackageID:   "main",
+					FileID:      "./test_files/ExtractStructs/HasStructs2.cx",
+					StartOffset: 14,
+					Length:      17,
+					LineNumber:  3,
+					StructName:  "Point",
+					StructFields: []*declaration_extractor.StructField{
+						{
+							StructFieldName: "x",
+							StartOffset:     35,
+							Length:          5,
+							LineNumber:      4,
+						},
+						{
+							StructFieldName: "y",
+							StartOffset:     42,
+							Length:          5,
+							LineNumber:      5,
+						},
+					},
+				},
+				{
+					PackageID:   "main",
+					FileID:      "./test_files/ExtractStructs/HasStructs2.cx",
+					StartOffset: 51,
 					Length:      18,
-					LineNumber:  15,
-					StructName:  "object",
+					LineNumber:  8,
+					StructName:  "Canvas",
+					StructFields: []*declaration_extractor.StructField{
+						{
+							StructFieldName: "points",
+							StartOffset:     73,
+							Length:          16,
+							LineNumber:      9,
+						},
+					},
 				},
 			},
 		},
@@ -349,17 +407,18 @@ func TestDeclarationExtractor_ExtractStructs(t *testing.T) {
 		t.Run(tc.scenario, func(t *testing.T) {
 			srcBytes, err := os.ReadFile(tc.testDir)
 			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(srcBytes)
-			fileName := filepath.Base(tc.testDir)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			gotStructs, gotErr := declaration_extractor.ExtractStructs(ReplaceCommentsWithWhitespaces, fileName)
+			gotStructs, gotErr := declaration_extractor.ExtractStructs(ReplaceCommentsWithWhitespaces, tc.testDir)
 			if err != nil {
 				t.Fatal(err)
 			}
 
 			for _, wantStruct := range tc.wantStructs {
+
+				wantStruct.StartOffset = setOffset(wantStruct.StartOffset, wantStruct.LineNumber)
 
 				var match bool
 
@@ -367,10 +426,12 @@ func TestDeclarationExtractor_ExtractStructs(t *testing.T) {
 
 				for _, gotStruct := range gotStructs {
 
-					gotStructF = gotStruct
-
 					if gotStruct.StructName == wantStruct.StructName {
+
+						gotStructF = gotStruct
+
 						if gotStruct.FileID == wantStruct.FileID &&
+							gotStruct.StartOffset == wantStruct.StartOffset &&
 							gotStruct.Length == wantStruct.Length &&
 							gotStruct.LineNumber == wantStruct.LineNumber &&
 							gotStruct.PackageID == wantStruct.PackageID {
@@ -379,7 +440,7 @@ func TestDeclarationExtractor_ExtractStructs(t *testing.T) {
 
 							for k, wantField := range wantStruct.StructFields {
 
-								if gotStruct.StructFields[k] != wantField {
+								if *gotStruct.StructFields[k] != *wantField {
 									fieldMatch = false
 									break
 								}
@@ -388,10 +449,8 @@ func TestDeclarationExtractor_ExtractStructs(t *testing.T) {
 
 							if fieldMatch {
 								match = true
-								break
 							}
-							t.Error(gotStruct)
-
+							break
 						}
 						break
 					}
@@ -411,7 +470,7 @@ func TestDeclarationExtractor_ExtractStructs(t *testing.T) {
 			}
 
 			if gotErr != tc.wantErr {
-				t.Errorf("want err %v, got %v", gotErr, tc.wantErr)
+				t.Errorf("want err %v, got %v", tc.wantErr, gotErr)
 			}
 		})
 	}

@@ -8,7 +8,6 @@ import (
 	"io"
 	"os"
 	"regexp"
-	"strings"
 	"sync"
 	"unicode"
 )
@@ -333,12 +332,13 @@ func ExtractStructs(source []byte, fileName string) ([]StructDeclaration, error)
 	var pkg string
 
 	// Package
+	reNotSpace := regexp.MustCompile(`\S+`)
 	rePkg := regexp.MustCompile("package")
 	rePkgName := regexp.MustCompile(`(^|[\s])package\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
 	reStructHeader := regexp.MustCompile(`type\s+([_a-zA-Z][_a-zA-Z0-9]*)\s+struct`)
 	reLeftBrace := regexp.MustCompile("{")
 	reRightBrace := regexp.MustCompile("}")
-	reStructField := regexp.MustCompile(`([_a-zA-Z][_a-zA-Z0-9]+)\s+[_a-zA-Z][_a-zA-Z0-9]+`)
+	reStructField := regexp.MustCompile(`([_a-zA-Z][_a-zA-Z0-9]*)\s+(?:\[\d*\]\s*){0,1}[_a-zA-Z][_a-zA-Z0-9]*`)
 
 	reader := bytes.NewReader(source)
 	scanner := bufio.NewScanner(reader)
@@ -410,31 +410,20 @@ func ExtractStructs(source []byte, fileName string) ([]StructDeclaration, error)
 
 		if inBlock == 1 && structDeclaration.LineNumber < lineno {
 
-			tokens := strings.Fields(string(line))
-
-			if len(tokens) == 1 {
-				return StructDeclarationsArray, errors.New("missing type")
-			}
-
-			if len(tokens) > 2 {
-				return StructDeclarationsArray, errors.New("unexpected token")
-			}
-
 			var structField StructField
 			matchStructField := reStructField.FindSubmatchIndex(line)
 
-			fmt.Print(matchStructField)
-
-			if len(tokens) == 2 && matchStructField != nil {
-				return StructDeclarationsArray, errors.New("unexpected token")
+			if (matchStructField == nil || len(bytes.TrimSpace(line)) != matchStructField[1]-matchStructField[0]) && reNotSpace.FindIndex(line) != nil {
+				return StructDeclarationsArray, fmt.Errorf("%v:syntax error:struct field", lineno)
 			}
 
-			structField.StartOffset = matchStructField[0] + currentOffset
-			structField.Length = matchStructField[1] - matchStructField[0]
-			structField.LineNumber = lineno
-			structField.StructFieldName = string(source[matchStructField[2]+currentOffset : matchStructField[3]+currentOffset])
-			structFieldsArray = append(structFieldsArray, &structField)
-
+			if matchStructField != nil {
+				structField.StartOffset = matchStructField[0] + currentOffset
+				structField.Length = matchStructField[1] - matchStructField[0]
+				structField.LineNumber = lineno
+				structField.StructFieldName = string(source[matchStructField[2]+currentOffset : matchStructField[3]+currentOffset])
+				structFieldsArray = append(structFieldsArray, &structField)
+			}
 		}
 
 		currentOffset += len(line) // increments the currentOffset by line len
