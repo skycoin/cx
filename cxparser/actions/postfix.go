@@ -247,34 +247,31 @@ func PostfixExpressionEmptyFunCall(prgrm *ast.CXProgram, prevExprs []ast.CXExpre
 	if err != nil {
 		panic(err)
 	}
+
 	prevExpressionOperator := prgrm.GetFunctionFromArray(prevExpression.Operator)
 
-	firstPrevExpressionIdx := prevExprs[0].Index
+	var firstPrevExpressionIdx int
+	for i := 0; i < len(prevExprs); i++ {
+		if prevExprs[i].Type == ast.CX_ATOMIC_OPERATOR {
+			firstPrevExpressionIdx = prevExprs[i].Index
+			break
+		}
+	}
 
+	var prevExpressionOutputArg *ast.CXArgument = &ast.CXArgument{}
 	if prevExpression.Outputs != nil {
 		prevExpressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(prevExpression.GetOutputs(prgrm)[0])
-
-		var prevExpressionOutputArg *ast.CXArgument = &ast.CXArgument{}
 		if prevExpression.Outputs != nil {
 			if prevExpressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 				prevExpressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(prevExpressionOutputTypeSig.Meta))
 			} else {
-				panic("type is not cx argument deprecate\n\n")
+				prevExpressionOutputArg = &ast.CXArgument{}
 			}
 		}
+	}
 
-		if len(prevExpressionOutputArg.Fields) > 0 {
-			// then it's a method call or function in field
-			// prevExprs[len(prevExprs) - 1].IsMethodCall = true
-			// expr.IsMethodCall = true
-			// // method name
-			// expr.Operator = MakeFunction(expr.ProgramOutput[0].Fields[0].Name)
-			// inp := cxcore.MakeArgument(expr.ProgramOutput[0].Name, CurrentFile, LineNo)
-			// inp.Package = expr.Package
-			// inp.Type = expr.ProgramOutput[0].Type
-			// inp.StructType = expr.ProgramOutput[0].StructType
-			// expr.ProgramInput = append(expr.ProgramInput, inp)
-		}
+	if prevExpression.Outputs != nil && len(prevExpressionOutputArg.Fields) > 0 {
+		// then it's a method call or function in field
 
 	} else if prevExpressionOperator == nil {
 		prevExpressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(prevExpression.GetOutputs(prgrm)[0])
