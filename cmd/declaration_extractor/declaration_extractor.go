@@ -118,6 +118,7 @@ func ExtractGlobals(source []byte, fileName string) ([]GlobalDeclaration, error)
 	reGlobalName := regexp.MustCompile(`var\s([_a-zA-Z][_a-zA-Z0-9]*)\s+[\[_a-zA-Z][\]_a-zA-Z0-9]*`)
 	reBodyOpen := regexp.MustCompile("{")
 	reBodyClose := regexp.MustCompile("}")
+	reNotSpace := regexp.MustCompile(`\S+`)
 
 	reader := bytes.NewReader(source)
 	scanner := bufio.NewScanner(reader)
@@ -134,29 +135,14 @@ func ExtractGlobals(source []byte, fileName string) ([]GlobalDeclaration, error)
 
 		// Package declaration extraction
 		if rePkg.FindIndex(line) != nil {
-			tokens := bytes.Fields(line)
 
-			if !bytes.Equal(tokens[0], []byte("package")) {
-				col := bytes.IndexAny(line, string(tokens[0]))
+			matchPkg := rePkgName.FindSubmatch(line)
 
-				return GlobalDeclarationsArray, fmt.Errorf("%d:%d %s", lineno, col, "syntax error: unexpected IDENTIFIER")
+			if !bytes.Equal(matchPkg[0], bytes.TrimSpace(line)) && reNotSpace.Find(line) != nil {
+				return GlobalDeclarationsArray, fmt.Errorf("%v: %v: syntax error: package declaration", fileName, lineno)
 			}
 
-			if len(tokens) == 1 {
-				col := bytes.LastIndex(line, tokens[0])
-
-				return GlobalDeclarationsArray, fmt.Errorf("%d:%d %s", lineno, col, "syntax error: unexpected IDENTIFIER")
-			}
-
-			if len(tokens) > 2 {
-				col := bytes.IndexAny(line, string(tokens[2]))
-
-				return GlobalDeclarationsArray, fmt.Errorf("%d:%d %s", lineno, col, "syntax error: unexpected IDENTIFIER")
-			}
-
-			if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
-				pkg = match[2]
-			}
+			pkg = string(matchPkg[1])
 
 		}
 
@@ -218,6 +204,7 @@ func ExtractEnums(source []byte, fileName string) ([]EnumDeclaration, error) {
 	rePrtsOpen := regexp.MustCompile(`\(`)
 	rePrtsClose := regexp.MustCompile(`\)`)
 	reEnumDec := regexp.MustCompile(`([_a-zA-Z][_a-zA-Z0-9]*)\s+([_a-zA-Z][_a-zA-Z0-9]*)|([_a-zA-Z][_a-zA-Z0-9]*)`)
+	reNotSpace := regexp.MustCompile(`\S+`)
 
 	reader := bytes.NewReader(source)
 	scanner := bufio.NewScanner(reader)
@@ -237,29 +224,14 @@ func ExtractEnums(source []byte, fileName string) ([]EnumDeclaration, error) {
 
 		// Package declaration extraction
 		if rePkg.FindIndex(line) != nil {
-			tokens := bytes.Fields(line)
 
-			if !bytes.Equal(tokens[0], []byte("package")) {
-				col := bytes.IndexAny(line, string(tokens[0]))
+			matchPkg := rePkgName.FindSubmatch(line)
 
-				return EnumDeclarationsArray, fmt.Errorf("%d:%d %s", lineno, col, "syntax error: unexpected IDENTIFIER")
+			if !bytes.Equal(matchPkg[0], bytes.TrimSpace(line)) && reNotSpace.Find(line) != nil {
+				return EnumDeclarationsArray, fmt.Errorf("%v: %v: syntax error: package declaration", fileName, lineno)
 			}
 
-			if len(tokens) == 1 {
-				col := bytes.LastIndex(line, tokens[0])
-
-				return EnumDeclarationsArray, fmt.Errorf("%d:%d %s", lineno, col, "syntax error: unexpected IDENTIFIER")
-			}
-
-			if len(tokens) > 2 {
-				col := bytes.IndexAny(line, string(tokens[2]))
-
-				return EnumDeclarationsArray, fmt.Errorf("%d:%d %s", lineno, col, "syntax error: unexpected IDENTIFIER")
-			}
-
-			if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
-				pkg = match[2]
-			}
+			pkg = string(matchPkg[1])
 
 		}
 
@@ -357,29 +329,14 @@ func ExtractStructs(source []byte, fileName string) ([]StructDeclaration, error)
 
 		// Package declaration extraction
 		if rePkg.FindIndex(line) != nil {
-			tokens := bytes.Fields(line)
 
-			if !bytes.Equal(tokens[0], []byte("package")) {
-				col := bytes.IndexAny(line, string(tokens[0]))
+			matchPkg := rePkgName.FindSubmatch(line)
 
-				return StructDeclarationsArray, fmt.Errorf("%d:%d %s", lineno, col, "syntax error: unexpected IDENTIFIER")
+			if !bytes.Equal(matchPkg[0], bytes.TrimSpace(line)) && reNotSpace.Find(line) != nil {
+				return StructDeclarationsArray, fmt.Errorf("%v: %v: syntax error: package declaration", fileName, lineno)
 			}
 
-			if len(tokens) == 1 {
-				col := bytes.LastIndex(line, tokens[0])
-
-				return StructDeclarationsArray, fmt.Errorf("%d:%d %s", lineno, col, "syntax error: unexpected IDENTIFIER")
-			}
-
-			if len(tokens) > 2 {
-				col := bytes.IndexAny(line, string(tokens[2]))
-
-				return StructDeclarationsArray, fmt.Errorf("%d:%d %s", lineno, col, "syntax error: unexpected IDENTIFIER")
-			}
-
-			if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
-				pkg = match[2]
-			}
+			pkg = string(matchPkg[1])
 
 		}
 
@@ -415,7 +372,7 @@ func ExtractStructs(source []byte, fileName string) ([]StructDeclaration, error)
 			matchStructField := reStructField.FindSubmatch(line)
 			matchStructFieldIdx := reStructField.FindSubmatchIndex(line)
 
-			if !bytes.Equal(matchStructField[0], bytes.TrimSpace(line)) && reNotSpace.FindIndex(line) != nil {
+			if !bytes.Equal(matchStructField[0], bytes.TrimSpace(line)) && reNotSpace.Find(line) != nil {
 				return StructDeclarationsArray, fmt.Errorf("%v:%v: syntax error:struct field", fileName, lineno)
 			}
 
@@ -443,6 +400,7 @@ func ExtractFuncs(source []byte, fileName string) ([]FuncDeclaration, error) {
 	rePkg := regexp.MustCompile("package")
 	rePkgName := regexp.MustCompile(`(^|[\s])package\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
 	reFunc := regexp.MustCompile(`func`)
+	reNotSpace := regexp.MustCompile(`\S+`)
 
 	reader := bytes.NewReader(source)
 	scanner := bufio.NewScanner(reader)
@@ -458,29 +416,14 @@ func ExtractFuncs(source []byte, fileName string) ([]FuncDeclaration, error) {
 
 		// Package declaration extraction
 		if rePkg.FindIndex(line) != nil {
-			tokens := bytes.Fields(line)
 
-			if !bytes.Equal(tokens[0], []byte("package")) {
-				col := bytes.IndexAny(line, string(tokens[0]))
+			matchPkg := rePkgName.FindSubmatch(line)
 
-				return FuncDeclarationsArray, fmt.Errorf("%d:%d %s", lineno, col, "syntax error: unexpected IDENTIFIER")
+			if !bytes.Equal(matchPkg[0], bytes.TrimSpace(line)) && reNotSpace.Find(line) != nil {
+				return FuncDeclarationsArray, fmt.Errorf("%v: %v: syntax error: package declaration", fileName, lineno)
 			}
 
-			if len(tokens) == 1 {
-				col := bytes.LastIndex(line, tokens[0])
-
-				return FuncDeclarationsArray, fmt.Errorf("%d:%d %s", lineno, col, "syntax error: unexpected IDENTIFIER")
-			}
-
-			if len(tokens) > 2 {
-				col := bytes.IndexAny(line, string(tokens[2]))
-
-				return FuncDeclarationsArray, fmt.Errorf("%d:%d %s", lineno, col, "syntax error: unexpected IDENTIFIER")
-			}
-
-			if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
-				pkg = match[2]
-			}
+			pkg = string(matchPkg[1])
 
 		}
 
