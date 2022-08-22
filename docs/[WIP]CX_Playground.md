@@ -1,8 +1,8 @@
 # CX Playground 
 
-- [ ] API: Show Abstract Syntax Tree(AST)
-- [ ] API: Start program
-- [ ] API: Stop Program
+- [x] API: Show Abstract Syntax Tree(AST)
+- [x] API: Start program
+- [x] API: Stop Program
 - [ ] API: Set Break Points
 - [ ] API: Memory usage and instructions
 - [ ] Get Outputs (logs)
