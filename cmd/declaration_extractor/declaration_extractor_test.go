@@ -92,7 +92,7 @@ func TestDeclarationExtractor_ExtractGlobals(t *testing.T) {
 					PackageID:          "main",
 					FileID:             "./test_files/ExtractGlobals/HasGlobals.cx",
 					StartOffset:        setOffset(222, 15),
-					Length:             12,
+					Length:             30,
 					LineNumber:         15,
 					GlobalVariableName: "fooV",
 				},
@@ -100,7 +100,7 @@ func TestDeclarationExtractor_ExtractGlobals(t *testing.T) {
 					PackageID:          "main",
 					FileID:             "./test_files/ExtractGlobals/HasGlobals.cx",
 					StartOffset:        setOffset(253, 16),
-					Length:             12,
+					Length:             16,
 					LineNumber:         16,
 					GlobalVariableName: "fooA",
 				},
@@ -123,7 +123,7 @@ func TestDeclarationExtractor_ExtractGlobals(t *testing.T) {
 					PackageID:          "main",
 					FileID:             "./test_files/ExtractGlobals/HasGlobals2.cx",
 					StartOffset:        setOffset(153, 12),
-					Length:             12,
+					Length:             56,
 					LineNumber:         12,
 					GlobalVariableName: "fooV",
 				},
@@ -158,7 +158,6 @@ func TestDeclarationExtractor_ExtractGlobals(t *testing.T) {
 						if gotGlobal == wantGlobal {
 							match = true
 						}
-
 						gotGlobalF = gotGlobal
 
 						break

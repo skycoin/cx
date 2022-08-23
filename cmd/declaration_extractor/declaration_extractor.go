@@ -113,12 +113,11 @@ func ExtractGlobals(source []byte, fileName string) ([]GlobalDeclaration, error)
 
 	//Regexs
 	rePkg := regexp.MustCompile("package")
-	rePkgName := regexp.MustCompile(`(^|[\s])package\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
+	rePkgName := regexp.MustCompile(`package\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
 	reGlobal := regexp.MustCompile("var")
-	reGlobalName := regexp.MustCompile(`var\s([_a-zA-Z][_a-zA-Z0-9]*)\s+[\[_a-zA-Z][\]_a-zA-Z0-9]*`)
+	reGlobalName := regexp.MustCompile(`var\s([_a-zA-Z][_a-zA-Z0-9]*)\s+[\[_a-zA-Z][\]_a-zA-Z0-9]*(?:\s*\=\s*[\s\S]+\S+){0,1}`)
 	reBodyOpen := regexp.MustCompile("{")
 	reBodyClose := regexp.MustCompile("}")
-	reNotSpace := regexp.MustCompile(`\S+`)
 
 	reader := bytes.NewReader(source)
 	scanner := bufio.NewScanner(reader)
@@ -138,7 +137,7 @@ func ExtractGlobals(source []byte, fileName string) ([]GlobalDeclaration, error)
 
 			matchPkg := rePkgName.FindSubmatch(line)
 
-			if !bytes.Equal(matchPkg[0], bytes.TrimSpace(line)) && reNotSpace.Find(line) != nil {
+			if !bytes.Equal(matchPkg[0], bytes.TrimSpace(line)) {
 				return GlobalDeclarationsArray, fmt.Errorf("%v: %v: syntax error: package declaration", fileName, lineno)
 			}
 
@@ -159,26 +158,26 @@ func ExtractGlobals(source []byte, fileName string) ([]GlobalDeclaration, error)
 		// if match is found and body depth is 0
 		if reGlobal.FindAllIndex(line, -1) != nil {
 
-			tokens := bytes.Fields(line)
+			matchGlobal := reGlobalName.FindSubmatch(line)
+			matchGlobalIdx := reGlobalName.FindIndex(line)
 
-			if !bytes.Equal(tokens[0], []byte("var")) {
-				col := bytes.Index(line, tokens[0])
-				return GlobalDeclarationsArray, fmt.Errorf("%d:%d %s", lineno, col, "syntax error: unexpected IDENTIFIER")
+			if matchGlobal == nil || !bytes.Equal(matchGlobal[0], bytes.TrimSpace(line)) {
+				return GlobalDeclarationsArray, fmt.Errorf("%v:%v: syntax error: global declaration", fileName, lineno)
 			}
 
-			if match := reGlobalName.FindSubmatchIndex(line); match != nil && inBlock == 0 {
+			if inBlock == 0 {
 
 				var tmp GlobalDeclaration
 
 				tmp.PackageID = pkg
 				tmp.FileID = fileName
 
-				tmp.StartOffset = match[0] + currentOffset // offset is match index + current line offset
-				tmp.Length = match[1] - match[0]
+				tmp.StartOffset = matchGlobalIdx[0] + currentOffset // offset is match index + current line offset
+				tmp.Length = matchGlobalIdx[1] - matchGlobalIdx[0]
 				tmp.LineNumber = lineno
 
 				// gets the name directly with submatch index + current line offset
-				tmp.GlobalVariableName = string(source[match[2]+currentOffset : match[3]+currentOffset])
+				tmp.GlobalVariableName = string(matchGlobal[1])
 
 				GlobalDeclarationsArray = append(GlobalDeclarationsArray, tmp)
 			}
@@ -199,12 +198,12 @@ func ExtractEnums(source []byte, fileName string) ([]EnumDeclaration, error) {
 
 	//Regexes
 	rePkg := regexp.MustCompile("package")
-	rePkgName := regexp.MustCompile(`(^|[\s])package\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
+	rePkgName := regexp.MustCompile(`package\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
 	reEnumInit := regexp.MustCompile(`const\s+\(`)
 	rePrtsOpen := regexp.MustCompile(`\(`)
 	rePrtsClose := regexp.MustCompile(`\)`)
 	reEnumDec := regexp.MustCompile(`([_a-zA-Z][_a-zA-Z0-9]*)\s+([_a-zA-Z][_a-zA-Z0-9]*)|([_a-zA-Z][_a-zA-Z0-9]*)`)
-	reNotSpace := regexp.MustCompile(`\S+`)
+	// reNotSpace := regexp.MustCompile(`\S+`)
 
 	reader := bytes.NewReader(source)
 	scanner := bufio.NewScanner(reader)
@@ -227,7 +226,7 @@ func ExtractEnums(source []byte, fileName string) ([]EnumDeclaration, error) {
 
 			matchPkg := rePkgName.FindSubmatch(line)
 
-			if !bytes.Equal(matchPkg[0], bytes.TrimSpace(line)) && reNotSpace.Find(line) != nil {
+			if !bytes.Equal(matchPkg[0], bytes.TrimSpace(line)) {
 				return EnumDeclarationsArray, fmt.Errorf("%v: %v: syntax error: package declaration", fileName, lineno)
 			}
 
@@ -306,7 +305,7 @@ func ExtractStructs(source []byte, fileName string) ([]StructDeclaration, error)
 	// Package
 	reNotSpace := regexp.MustCompile(`\S+`)
 	rePkg := regexp.MustCompile("package")
-	rePkgName := regexp.MustCompile(`(^|[\s])package\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
+	rePkgName := regexp.MustCompile(`package\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
 	reStructHeader := regexp.MustCompile(`type\s+([_a-zA-Z][_a-zA-Z0-9]*)\s+struct`)
 	reLeftBrace := regexp.MustCompile("{")
 	reRightBrace := regexp.MustCompile("}")
@@ -332,7 +331,7 @@ func ExtractStructs(source []byte, fileName string) ([]StructDeclaration, error)
 
 			matchPkg := rePkgName.FindSubmatch(line)
 
-			if !bytes.Equal(matchPkg[0], bytes.TrimSpace(line)) && reNotSpace.Find(line) != nil {
+			if !bytes.Equal(matchPkg[0], bytes.TrimSpace(line)) {
 				return StructDeclarationsArray, fmt.Errorf("%v: %v: syntax error: package declaration", fileName, lineno)
 			}
 
@@ -398,7 +397,7 @@ func ExtractFuncs(source []byte, fileName string) ([]FuncDeclaration, error) {
 
 	// Regexes
 	rePkg := regexp.MustCompile("package")
-	rePkgName := regexp.MustCompile(`(^|[\s])package\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
+	rePkgName := regexp.MustCompile(`package\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
 	reFunc := regexp.MustCompile(`func`)
 	reNotSpace := regexp.MustCompile(`\S+`)
 
