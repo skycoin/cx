@@ -136,6 +136,19 @@ func (typeSignature *CXTypeSignature) GetCXArgFormat(prgrm *CXProgram) *CXArgume
 			arg.DeclarationSpecifiers = []int{constants.DECL_BASIC}
 		}
 
+	} else if typeSignature.Type == TYPE_POINTER_ATOMIC {
+		arg.Type = types.POINTER
+		arg.PointerTargetType = types.Code(typeSignature.Meta)
+		arg.StructType = nil
+		arg.Size = types.POINTER.Size()
+		arg.TotalSize = types.POINTER.Size()
+
+		// TODO: this should not be needed.
+		if len(arg.DeclarationSpecifiers) > 0 {
+			arg.DeclarationSpecifiers = append([]int{constants.DECL_BASIC, constants.DECL_POINTER}, arg.DeclarationSpecifiers[1:]...)
+		} else {
+			arg.DeclarationSpecifiers = []int{constants.DECL_POINTER}
+		}
 	} else if typeSignature.Type == TYPE_ARRAY_ATOMIC {
 		typeSignatureArray := prgrm.GetTypeSignatureArrayFromArray(typeSignature.Meta)
 		arg.Type = types.Code(typeSignatureArray.Type)
@@ -199,12 +212,12 @@ func GetCXTypeSignatureRepresentationOfCXArg_ForStructs(prgrm *CXProgram, cxArgu
 		newCXTypeSignature.Meta = int(fieldType)
 
 		// If pointer atomic, i.e. *i32, *f32, etc.
-	} else if fieldType == types.POINTER && cxArgument.PointerTargetType.IsPrimitive() {
+	} else if IsTypePointerAtomic(cxArgument) {
 		newCXTypeSignature.Type = TYPE_POINTER_ATOMIC
 		newCXTypeSignature.Meta = int(cxArgument.PointerTargetType)
 
 		// If simple array atomic type, i.e. [5]i32, [2]f64, etc.
-	} else if !cxArgument.IsSlice && len(cxArgument.Lengths) == 1 && len(cxArgument.Indexes) == 0 && fieldType.IsPrimitive() {
+	} else if IsTypeArrayAtomic(cxArgument) {
 		newCXTypeSignature.Type = TYPE_ARRAY_ATOMIC
 
 		typeSignatureForArray := &CXTypeSignature_Array{
@@ -216,12 +229,12 @@ func GetCXTypeSignatureRepresentationOfCXArg_ForStructs(prgrm *CXProgram, cxArgu
 		newCXTypeSignature.Meta = typeSignatureForArrayIdx
 
 		// If slice atomic type, i.e. []i32, []f64, etc.
-	} else if cxArgument.IsSlice && len(cxArgument.Lengths) == 1 && (fieldType.IsPrimitive() || fieldType == types.STR) {
+	} else if IsTypeSliceAtomic(cxArgument) {
 		newCXTypeSignature.Type = TYPE_SLICE_ATOMIC
 		newCXTypeSignature.Meta = int(fieldType)
 
 		// If type is struct
-	} else if !cxArgument.IsSlice && len(cxArgument.Lengths) == 0 && fieldType == types.STRUCT {
+	} else if IsTypeStruct(cxArgument) {
 		newCXTypeSignature.Type = TYPE_STRUCT
 		newCXTypeSignature.Meta = cxArgument.StructType.Index
 	} else {

@@ -107,6 +107,14 @@ func GetFinalOffset(prgrm *CXProgram, fp types.Pointer, oldArg *CXArgument, argT
 		arg = &prgrm.CXArgs[argTypeSig.Meta]
 	} else if argTypeSig.Type == TYPE_ATOMIC {
 		return argTypeSig.Offset
+	} else if argTypeSig.Type == TYPE_POINTER_ATOMIC {
+		finalOffset = types.Read_ptr(prgrm.Memory, argTypeSig.Offset)
+		if finalOffset.IsValid() && finalOffset >= prgrm.Heap.StartsAt {
+			// then it's an object
+			finalOffset += types.OBJECT_HEADER_SIZE
+		}
+
+		return finalOffset
 	}
 	finalOffset = arg.Offset
 

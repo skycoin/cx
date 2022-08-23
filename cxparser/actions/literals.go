@@ -99,7 +99,7 @@ func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []a
 				var outArg *ast.CXArgument
 				if outTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 					outArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(outTypeSig.Meta))
-				} else if outTypeSig.Type == ast.TYPE_ATOMIC {
+				} else if outTypeSig.Type == ast.TYPE_ATOMIC || outTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 					panic("type is cx arg deprecate")
 				}
 
@@ -217,12 +217,35 @@ func PrimaryStructLiteral(prgrm *ast.CXProgram, structName string, structFields 
 					fieldIdx := prgrm.AddCXArgInArray(field)
 					prgrm.CXArgs[cxAtomicOpOutputIdx].Fields = append(prgrm.CXArgs[cxAtomicOpOutputIdx].Fields, fieldIdx)
 				} else if cxAtomicOpOutputTypeSig.Type == ast.TYPE_ATOMIC {
-					// panic("type is not cx arg deprecate")
 					// TODO: give proper change when we implement type_structs
 					// Looks like we have to convert the arg to type cx arg deprecate again
-
 					newCXArg := &ast.CXArgument{ArgDetails: &ast.CXArgumentDebug{}}
 					newCXArg.Type = types.Code(cxAtomicOpOutputTypeSig.Meta)
+					newCXArg.Package = ast.CXPackageIndex(pkg.Index)
+					newCXArg.Offset = cxAtomicOpOutputTypeSig.Offset
+
+					newCXArg.StructType = strct
+					newCXArg.Size = strct.GetStructSize(prgrm)
+					newCXArg.TotalSize = strct.GetStructSize(prgrm)
+					newCXArg.Name = structName
+
+					field := ast.MakeArgument(cxAtomicOpOutputTypeSig.Name, CurrentFile, LineNo)
+					field.Type = types.Code(cxAtomicOpOutputTypeSig.Meta)
+					field.StructType = strct
+					fieldIdx := prgrm.AddCXArgInArray(field)
+
+					newCXArg.Fields = append(newCXArg.Fields, fieldIdx)
+					newCXArgIdx := prgrm.AddCXArgInArray(newCXArg)
+
+					cxAtomicOpOutputTypeSig.Name = structName
+					cxAtomicOpOutputTypeSig.Type = ast.TYPE_CXARGUMENT_DEPRECATE
+					cxAtomicOpOutputTypeSig.Meta = int(newCXArgIdx)
+				} else if cxAtomicOpOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
+					// TODO: give proper change when we implement type_structs
+					// Looks like we have to convert the arg to type cx arg deprecate again
+					newCXArg := &ast.CXArgument{ArgDetails: &ast.CXArgumentDebug{}}
+					newCXArg.Type = types.POINTER
+					newCXArg.PointerTargetType = types.Code(cxAtomicOpOutputTypeSig.Meta)
 					newCXArg.Package = ast.CXPackageIndex(pkg.Index)
 					newCXArg.Offset = cxAtomicOpOutputTypeSig.Offset
 
@@ -298,7 +321,7 @@ func PrimaryStructLiteralExternal(prgrm *ast.CXProgram, importName string, struc
 
 						fieldIdx := prgrm.AddCXArgInArray(field)
 						prgrm.CXArgs[cxAtomicOpOutputIdx].Fields = append(prgrm.CXArgs[cxAtomicOpOutputIdx].Fields, fieldIdx)
-					} else if cxAtomicOpOutputTypeSig.Type == ast.TYPE_ATOMIC {
+					} else if cxAtomicOpOutputTypeSig.Type == ast.TYPE_ATOMIC || cxAtomicOpOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 						panic("type signature is type atomic")
 					}
 

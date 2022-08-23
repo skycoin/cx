@@ -33,7 +33,7 @@ func (cxprogram *CXProgram) PrintStack() {
 			var inp *CXArgument = &CXArgument{}
 			if input.Type == TYPE_CXARGUMENT_DEPRECATE {
 				inp = cxprogram.GetCXArgFromArray(CXArgumentIndex(input.Meta))
-			} else if input.Type == TYPE_ATOMIC {
+			} else if input.Type == TYPE_ATOMIC || input.Type == TYPE_POINTER_ATOMIC {
 				inp = &CXArgument{}
 			}
 
@@ -54,7 +54,7 @@ func (cxprogram *CXProgram) PrintStack() {
 			var out *CXArgument = &CXArgument{}
 			if output.Type == TYPE_CXARGUMENT_DEPRECATE {
 				out = cxprogram.GetCXArgFromArray(CXArgumentIndex(output.Meta))
-			} else if output.Type == TYPE_ATOMIC {
+			} else if output.Type == TYPE_ATOMIC || output.Type == TYPE_POINTER_ATOMIC {
 				out = &CXArgument{}
 			}
 
@@ -84,7 +84,7 @@ func (cxprogram *CXProgram) PrintStack() {
 				var inp *CXArgument = &CXArgument{}
 				if input.Type == TYPE_CXARGUMENT_DEPRECATE {
 					inp = cxprogram.GetCXArgFromArray(CXArgumentIndex(input.Meta))
-				} else if input.Type == TYPE_ATOMIC {
+				} else if input.Type == TYPE_ATOMIC || input.Type == TYPE_POINTER_ATOMIC {
 					inp = &CXArgument{ArgDetails: &CXArgumentDebug{}}
 				}
 
@@ -146,7 +146,7 @@ func (cxprogram *CXProgram) PrintStack() {
 					exprs += fmt.Sprintf("\t%s : %s() : %s\n", stackValueHeader(out.ArgDetails.FileName, out.ArgDetails.FileLine), cxAtomicOp.GetOperatorName(cxprogram), GetPrintableValue(cxprogram, fp, output))
 
 					dupNames = append(dupNames, outPkg.Name+out.Name)
-				} else if output.Type == TYPE_ATOMIC {
+				} else if output.Type == TYPE_ATOMIC || output.Type == TYPE_POINTER_ATOMIC {
 					if output.Name == "" || cxAtomicOpOperator == nil {
 						continue
 					}

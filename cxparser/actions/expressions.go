@@ -75,6 +75,8 @@ func IterationExpressions(prgrm *ast.CXProgram,
 			lastCondExpressionOperatorOutputType = lastCondExpressionOperatorOutputArg.Type
 		} else if lastCondExpressionOperatorOutputTypeSig.Type == ast.TYPE_ATOMIC {
 			lastCondExpressionOperatorOutputType = types.Code(lastCondExpressionOperatorOutputTypeSig.Meta)
+		} else if lastCondExpressionOperatorOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
+			lastCondExpressionOperatorOutputType = types.POINTER
 		}
 
 		predicate := ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, LineNo).SetType(lastCondExpressionOperatorOutputType)
@@ -223,13 +225,16 @@ func SelectionExpressions(prgrm *ast.CXProgram, conditionExprs []ast.CXExpressio
 			lastCondExpressionOperatorOutputs := lastCondExpressionOperator.GetOutputs(prgrm)
 			lastCondExpressionOperatorOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(lastCondExpressionOperatorOutputs[0])
 
+			var lastCondExpressionOperatorOutputArgType types.Code
 			if lastCondExpressionOperatorOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 				lastCondExpressionOperatorOutputArg := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(lastCondExpressionOperatorOutputTypeSig.Meta))
-				predicate.SetType(lastCondExpressionOperatorOutputArg.Type)
+				lastCondExpressionOperatorOutputArgType = lastCondExpressionOperatorOutputArg.Type
 			} else if lastCondExpressionOperatorOutputTypeSig.Type == ast.TYPE_ATOMIC {
-				predicate.SetType(types.Code(lastCondExpressionOperatorOutputTypeSig.Meta))
+				lastCondExpressionOperatorOutputArgType = types.Code(lastCondExpressionOperatorOutputTypeSig.Meta)
+			} else if lastCondExpressionOperatorOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
+				lastCondExpressionOperatorOutputArgType = types.POINTER
 			}
-
+			predicate.SetType(lastCondExpressionOperatorOutputArgType)
 		}
 		predicate.PreviouslyDeclared = true
 		predicate.Package = ast.CXPackageIndex(pkg.Index)
@@ -296,6 +301,8 @@ func resolveTypeForUnd(prgrm *ast.CXProgram, expr *ast.CXExpression) types.Code 
 			expressionInputArgType = expressionInputArg.Type
 		} else if expressionInputTypeSig.Type == ast.TYPE_ATOMIC {
 			expressionInputArgType = types.Code(expressionInputTypeSig.Meta)
+		} else if expressionInputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
+			expressionInputArgType = types.POINTER
 		}
 
 		// it's a literal
@@ -310,6 +317,8 @@ func resolveTypeForUnd(prgrm *ast.CXProgram, expr *ast.CXExpression) types.Code 
 			expressionOutputArgType = expressionOutputArg.Type
 		} else if expressionOutputTypeSig.Type == ast.TYPE_ATOMIC {
 			expressionOutputArgType = types.Code(expressionOutputTypeSig.Meta)
+		} else if expressionOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
+			expressionOutputArgType = types.POINTER
 		}
 
 		// it's an expression with an output
@@ -330,6 +339,8 @@ func resolveTypeForUnd(prgrm *ast.CXProgram, expr *ast.CXExpression) types.Code 
 			expressionOperatorOutputArgType = expressionOperatorOutputArg.Type
 		} else if expressionOperatorOutputTypeSig.Type == ast.TYPE_ATOMIC {
 			expressionOperatorOutputArgType = types.Code(expressionOperatorOutputTypeSig.Meta)
+		} else if expressionOperatorOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
+			expressionOperatorOutputArgType = types.POINTER
 		}
 
 		// always return first output's type
@@ -394,6 +405,15 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 			typeSig.Offset = lastLeftExpressionOperatorOutputTypeSig.Offset
 
 			typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
+		} else if lastLeftExpressionOperatorOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
+			typeSig := &ast.CXTypeSignature{}
+			typeSig.Name = generateTempVarName(constants.LOCAL_PREFIX)
+			typeSig.Package = lastLeftExpressionOperatorOutputTypeSig.Package
+			typeSig.Type = ast.TYPE_POINTER_ATOMIC
+			typeSig.Meta = lastLeftExpressionOperatorOutputTypeSig.Meta
+			typeSig.Offset = lastLeftExpressionOperatorOutputTypeSig.Offset
+
+			typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
 		}
 
 		prgrm.CXAtomicOps[lastLeftExpressionIdx].AddOutput(prgrm, typeSigIdx)
@@ -431,6 +451,15 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 			typeSig.Offset = lastRightExpressionOperatorOutputTypeSig.Offset
 
 			typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
+		} else if lastRightExpressionOperatorOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
+			typeSig := &ast.CXTypeSignature{}
+			typeSig.Name = generateTempVarName(constants.LOCAL_PREFIX)
+			typeSig.Package = lastRightExpressionOperatorOutputTypeSig.Package
+			typeSig.Type = ast.TYPE_POINTER_ATOMIC
+			typeSig.Meta = lastRightExpressionOperatorOutputTypeSig.Meta
+			typeSig.Offset = lastRightExpressionOperatorOutputTypeSig.Offset
+
+			typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
 		}
 
 		prgrm.CXAtomicOps[lastRightExpressionIdx].AddOutput(prgrm, typeSigIdx)
@@ -447,7 +476,7 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 	var lastLeftExpressionOutputArg *ast.CXArgument = &ast.CXArgument{}
 	if lastLeftExpressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 		lastLeftExpressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(lastLeftExpressionOutputTypeSig.Meta))
-	} else if lastLeftExpressionOutputTypeSig.Type == ast.TYPE_ATOMIC {
+	} else if lastLeftExpressionOutputTypeSig.Type == ast.TYPE_ATOMIC || lastLeftExpressionOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 		lastLeftExpressionOutputArg = &ast.CXArgument{}
 	}
 
@@ -470,7 +499,7 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 	var lastRightExpressionOutputArg *ast.CXArgument = &ast.CXArgument{}
 	if lastRightExpressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 		lastRightExpressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(lastRightExpressionOutputTypeSig.Meta))
-	} else if lastRightExpressionOutputTypeSig.Type == ast.TYPE_ATOMIC {
+	} else if lastRightExpressionOutputTypeSig.Type == ast.TYPE_ATOMIC || lastRightExpressionOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 		lastRightExpressionOutputArg = &ast.CXArgument{}
 	}
 
@@ -621,6 +650,14 @@ func AssociateReturnExpressions(prgrm *ast.CXProgram, idx int, retExprs []ast.CX
 		newCXTypeSig.Name = fnOutputTypeSig.Name
 		newCXTypeSig.Package = fnOutputTypeSig.Package
 		newCXTypeSig.Type = ast.TYPE_ATOMIC
+		newCXTypeSig.Meta = int(fnOutputTypeSig.Type)
+		newCXTypeSig.Offset = fnOutputTypeSig.Offset
+		typeSigIdx = prgrm.AddCXTypeSignatureInArray(newCXTypeSig)
+	} else if fnOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
+		newCXTypeSig := &ast.CXTypeSignature{}
+		newCXTypeSig.Name = fnOutputTypeSig.Name
+		newCXTypeSig.Package = fnOutputTypeSig.Package
+		newCXTypeSig.Type = ast.TYPE_POINTER_ATOMIC
 		newCXTypeSig.Meta = int(fnOutputTypeSig.Type)
 		newCXTypeSig.Offset = fnOutputTypeSig.Offset
 		typeSigIdx = prgrm.AddCXTypeSignatureInArray(newCXTypeSig)

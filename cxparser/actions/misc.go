@@ -268,6 +268,8 @@ func IsAllArgsBasicTypes(prgrm *ast.CXProgram, expr *ast.CXExpression) bool {
 			}
 		} else if input.Type == ast.TYPE_ATOMIC {
 			inpType = types.Code(input.Meta)
+		} else if input.Type == ast.TYPE_POINTER_ATOMIC {
+			inpType = types.Code(input.Meta)
 		}
 
 		// TODO: Check why STR is considered as basic type.

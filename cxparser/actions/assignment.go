@@ -269,7 +269,7 @@ func getOutputType(prgrm *ast.CXProgram, expr *ast.CXExpression) *ast.CXTypeSign
 		if expressionOperatorOutputArg.Type != types.UNDEFINED {
 			return expressionOperatorOutputTypeSig
 		}
-	} else if expressionOperatorOutputTypeSig.Type == ast.TYPE_ATOMIC {
+	} else if expressionOperatorOutputTypeSig.Type == ast.TYPE_ATOMIC || expressionOperatorOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 		return expressionOperatorOutputTypeSig
 	}
 
@@ -354,6 +354,11 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 				outTypeIsSlice = outTypeArg.IsSlice
 			} else if outTypeSig.Type == ast.TYPE_ATOMIC {
 				outType = types.Code(outTypeSig.Meta)
+				outTypeIsSlice = false
+			} else if outTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
+				// TODO: recheck if this should be pointer
+				// or the atomic type its pointing to.
+				outType = types.POINTER
 				outTypeIsSlice = false
 			}
 

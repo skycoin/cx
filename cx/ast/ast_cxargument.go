@@ -393,3 +393,19 @@ func MakeGlobal(name string, typeCode types.Code, fileName string, fileLine int)
 func IsTypeAtomic(arg *CXArgument) bool {
 	return arg.Type.IsPrimitive() && !arg.IsSlice && len(arg.Lengths) == 0 && len(arg.Fields) == 0 && len(arg.DeclarationSpecifiers) == 0
 }
+
+func IsTypePointerAtomic(arg *CXArgument) bool {
+	return arg.Type == types.POINTER && arg.PointerTargetType.IsPrimitive() && !arg.IsSlice && len(arg.Lengths) == 0 && len(arg.Fields) == 0
+}
+
+func IsTypeArrayAtomic(arg *CXArgument) bool {
+	return !arg.IsSlice && len(arg.Lengths) == 1 && len(arg.Indexes) == 0 && arg.Type.IsPrimitive()
+}
+
+func IsTypeSliceAtomic(arg *CXArgument) bool {
+	return arg.IsSlice && len(arg.Lengths) == 1 && (arg.Type.IsPrimitive() || arg.Type == types.STR)
+}
+
+func IsTypeStruct(arg *CXArgument) bool {
+	return !arg.IsSlice && len(arg.Lengths) == 0 && arg.Type == types.STRUCT
+}
