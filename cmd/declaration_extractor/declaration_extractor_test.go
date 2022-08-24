@@ -3,6 +3,7 @@ package declaration_extractor_test
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -491,7 +492,7 @@ func TestDeclarationExtractor_ExtractFuncs(t *testing.T) {
 					PackageID:   "main",
 					FileID:      "./test_files/ExtractFuncs/HasFuncs.cx",
 					StartOffset: setOffset(322, 20),
-					Length:      12,
+					Length:      14,
 					LineNumber:  20,
 					FuncName:    "main",
 				},
@@ -499,7 +500,7 @@ func TestDeclarationExtractor_ExtractFuncs(t *testing.T) {
 					PackageID:   "main",
 					FileID:      "./test_files/ExtractFuncs/HasFuncs.cx",
 					StartOffset: setOffset(14, 3),
-					Length:      53,
+					Length:      55,
 					LineNumber:  3,
 					FuncName:    "addition",
 				},
@@ -507,7 +508,7 @@ func TestDeclarationExtractor_ExtractFuncs(t *testing.T) {
 					PackageID:   "main",
 					FileID:      "./test_files/ExtractFuncs/HasFuncs.cx",
 					StartOffset: setOffset(104, 7),
-					Length:      50,
+					Length:      52,
 					LineNumber:  7,
 					FuncName:    "minus",
 				},
@@ -515,7 +516,7 @@ func TestDeclarationExtractor_ExtractFuncs(t *testing.T) {
 					PackageID:   "main",
 					FileID:      "./test_files/ExtractFuncs/HasFuncs.cx",
 					StartOffset: setOffset(226, 15),
-					Length:      29,
+					Length:      31,
 					LineNumber:  15,
 					FuncName:    "printName",
 				},
@@ -533,6 +534,8 @@ func TestDeclarationExtractor_ExtractFuncs(t *testing.T) {
 			}
 
 			gotFuncs, gotErr := declaration_extractor.ExtractFuncs(ReplaceCommentsWithWhitespaces, fileName)
+
+			fmt.Print(gotFuncs)
 
 			for _, wantFunc := range tc.wantFuncs {
 				var match bool

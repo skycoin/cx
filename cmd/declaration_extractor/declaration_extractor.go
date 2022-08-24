@@ -434,25 +434,35 @@ func ExtractFuncs(source []byte, fileName string) ([]FuncDeclaration, error) {
 			funcDeclaration.StartOffset = match[0] + currentOffset
 			funcDeclaration.LineNumber = lineno
 
-			reFuncRegular := regexp.MustCompile(`func\s+([_a-zA-Z]\w*)(?:\s*\(\s*(?:(?:[_a-zA-Z]\w*\s+\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]){0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*\s*,\s*)+[_a-zA-Z]\w*\s+\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]){0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*|[_a-zA-Z]\w*\s+\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]){0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*)\s*\)){1,2}`)
-			reFuncMethod := regexp.MustCompile(`func\s*\(\s*[_a-zA-Z]\w*\s+\*{0,1}(?:\[(?:[1-9]\d+|[0-9]){0,1}\]){0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*\s*\)\s*([_a-zA-Z]\w*)(?:\s*\(\s*(?:(?:[_a-zA-Z]\w*\s+\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]){0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*\s*,\s*)+[_a-zA-Z]\w*\s+\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]){0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*|[_a-zA-Z]\w*\s+\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]){0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*)\s*\)){1,2}`)
+			reFuncRegular := regexp.MustCompile(`func\s+([_a-zA-Z]\w*)(?:\s*\(\s*(?:(?:[_a-zA-Z]\w*\s+\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]){0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*\s*,\s*)+[_a-zA-Z]\w*\s+\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]){0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*|(?:[_a-zA-Z]\w*\s+\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]){0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*){0,1})\s*\)){1,2}(?:\s*{){0,1}`)
+			reFuncMethod := regexp.MustCompile(`func\s*\(\s*[_a-zA-Z]\w*\s+\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]){0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*\s*\)\s*([_a-zA-Z]\w*)(?:\s*\(\s*(?:(?:[_a-zA-Z]\w*\s+\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]){0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*\s*,\s*)+[_a-zA-Z]\w*\s+\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]){0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*|(?:[_a-zA-Z]\w*\s+\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]){0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*)){0,1}\s*\)){1,2}(?:\s*{){0,1}`)
 			// reParam := regexp.MustCompile(`(?:[_a-zA-Z]\w*\s+\*{0,1}\s*(?:\[\d*\]){0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*){0,1}\s*,\s*)+[_a-zA-Z]\w*\s+\*{0,1}\s*(?:\[\d*\]){0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*){0,1}|[_a-zA-Z]\w*\s+\*{0,1}\s*(?:\[\d*\]){0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*){0,1}`)
 
-			funcRegular := reFuncRegular.FindSubmatchIndex(line)
-			funcMethod := reFuncMethod.FindSubmatchIndex(line)
+			funcRegular := reFuncRegular.FindSubmatch(line)
+			funcRegularIdx := reFuncRegular.FindSubmatchIndex(line)
+			funcMethod := reFuncMethod.FindSubmatch(line)
+			funcMethodIdx := reFuncMethod.FindSubmatchIndex(line)
 
 			if funcRegular == nil && funcMethod == nil {
 				return FuncDeclarationsArray, fmt.Errorf("func err")
 			}
 
 			if funcRegular != nil {
-				funcDeclaration.FuncName = string(line[funcRegular[2]:funcRegular[3]])
-				funcDeclaration.Length = funcRegular[1] - funcRegular[0]
+				if !bytes.Equal(funcRegular[0], bytes.TrimSpace(line)) {
+					return FuncDeclarationsArray, fmt.Errorf("%v: %v: syntax error: func declaration", fileName, lineno)
+				}
+
+				funcDeclaration.FuncName = string(funcRegular[1])
+				funcDeclaration.Length = funcRegularIdx[1] - funcRegularIdx[0]
 			}
 
 			if funcMethod != nil {
-				funcDeclaration.FuncName = string(line[funcMethod[2]:funcMethod[3]])
-				funcDeclaration.Length = funcMethod[1] - funcMethod[0]
+				if !bytes.Equal(funcMethod[0], bytes.TrimSpace(line)) {
+					return FuncDeclarationsArray, fmt.Errorf("%v: %v: syntax error: func declaration", fileName, lineno)
+				}
+
+				funcDeclaration.FuncName = string(funcMethod[1])
+				funcDeclaration.Length = funcMethodIdx[1] - funcMethodIdx[0]
 			}
 
 			FuncDeclarationsArray = append(FuncDeclarationsArray, funcDeclaration)
