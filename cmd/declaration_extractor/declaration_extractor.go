@@ -444,7 +444,7 @@ func ExtractFuncs(source []byte, fileName string) ([]FuncDeclaration, error) {
 			funcMethodIdx := reFuncMethod.FindSubmatchIndex(line)
 
 			if funcRegular == nil && funcMethod == nil {
-				return FuncDeclarationsArray, fmt.Errorf("func err")
+				return FuncDeclarationsArray, fmt.Errorf("%v: %v: syntax error: func declaration", fileName, lineno)
 			}
 
 			if funcRegular != nil {
