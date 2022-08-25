@@ -153,32 +153,13 @@ func (cxprogram *CXProgram) AddNativeFunctionInArray(fn *CXNativeFunction) CXFun
 
 	// Add inputs to cx arg array
 	for _, argIn := range fn.Inputs {
-		var newField *CXTypeSignature
-
 		err := fnNative.AddLocalVariableName(argIn.Name)
 		if err != nil {
 			// TODO: improve error handling
 			panic("error adding local variable name")
 		}
 
-		// if atomic type
-		if IsTypeAtomic(argIn) {
-			newField = &CXTypeSignature{
-				Name:    argIn.Name,
-				Type:    TYPE_ATOMIC,
-				Meta:    int(argIn.Type),
-				Package: argIn.Package,
-			}
-		} else {
-			argInIdx := cxprogram.AddCXArgInArray(argIn)
-
-			newField = &CXTypeSignature{
-				Name:    argIn.Name,
-				Type:    TYPE_CXARGUMENT_DEPRECATE,
-				Meta:    int(argInIdx),
-				Package: argIn.Package,
-			}
-		}
+		newField := GetCXTypeSignatureRepresentationOfCXArg(cxprogram, argIn)
 
 		newFieldIdx := cxprogram.AddCXTypeSignatureInArray(newField)
 		fnNative.Inputs.Fields = append(fnNative.Inputs.Fields, newFieldIdx)
@@ -186,34 +167,13 @@ func (cxprogram *CXProgram) AddNativeFunctionInArray(fn *CXNativeFunction) CXFun
 
 	// Add outputs to cx arg array
 	for _, argOut := range fn.Outputs {
-		var newField *CXTypeSignature
-
 		err := fnNative.AddLocalVariableName(argOut.Name)
 		if err != nil {
 			// TODO: improve error handling
 			panic("error adding local variable name")
 		}
 
-		// if atomic type
-		if IsTypeAtomic(argOut) {
-			newField = &CXTypeSignature{
-				Name:    argOut.Name,
-				Type:    TYPE_ATOMIC,
-				Meta:    int(argOut.Type),
-				Package: argOut.Package,
-			}
-		} else {
-			argOutIdx := cxprogram.AddCXArgInArray(argOut)
-
-			newField = &CXTypeSignature{
-				Name:    argOut.Name,
-				Type:    TYPE_CXARGUMENT_DEPRECATE,
-				Meta:    int(argOutIdx),
-				Package: argOut.Package,
-			}
-
-		}
-
+		newField := GetCXTypeSignatureRepresentationOfCXArg(cxprogram, argOut)
 		newFieldIdx := cxprogram.AddCXTypeSignatureInArray(newField)
 		fnNative.Outputs.Fields = append(fnNative.Outputs.Fields, newFieldIdx)
 	}

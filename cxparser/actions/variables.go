@@ -175,7 +175,7 @@ func DeclareGlobalInPackage_OLD(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 				prgrm.CXAtomicOps[initializerExpressionIdx].Outputs = nil
 				declSpecIdx := prgrm.AddCXArgInArray(declaration_specifiers)
 
-				typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(declSpecIdx))
+				typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(declSpecIdx))
 				typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
 				prgrm.CXAtomicOps[initializerExpressionIdx].AddOutput(prgrm, typeSigIdx)
 
@@ -208,7 +208,7 @@ func DeclareGlobalInPackage_OLD(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 					)
 				} else {
 					prgrm.CXAtomicOps[initializerExpressionIdx].Outputs = nil
-					typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(declSpecIdx))
+					typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(declSpecIdx))
 					typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
 					prgrm.CXAtomicOps[initializerExpressionIdx].AddOutput(prgrm, typeSigIdx)
 				}
@@ -236,19 +236,17 @@ func DeclareGlobalInPackage_TYPE_ATOMIC(prgrm *ast.CXProgram, pkg *ast.CXPackage
 	initializer []ast.CXExpression, doesInitialize bool) {
 	// Treat the name a bit different whether it's defined already or not.
 	if glbl, err := pkg.GetGlobal(prgrm, declarator.Name); err == nil {
-		if glbl.Offset <= 0 {
-			// then it was only added a reference to the symbol
-			var glblArg *ast.CXArgument = &ast.CXArgument{}
-			if declaration_specifiers.IsSlice { // TODO:PTR move branch in WritePrimary
-				glblArg = WritePrimary(prgrm, declaration_specifiers.Type,
-					make([]byte, types.POINTER_SIZE), true)
-			} else {
-				glblArg = WritePrimary(prgrm, declaration_specifiers.Type,
-					make([]byte, declaration_specifiers.TotalSize), false)
-			}
-
-			glbl.Offset = glblArg.Offset
+		// then it was only added a reference to the symbol
+		var glblArg *ast.CXArgument = &ast.CXArgument{}
+		if declaration_specifiers.IsSlice { // TODO:PTR move branch in WritePrimary
+			glblArg = WritePrimary(prgrm, declaration_specifiers.Type,
+				make([]byte, types.POINTER_SIZE), true)
+		} else {
+			glblArg = WritePrimary(prgrm, declaration_specifiers.Type,
+				make([]byte, declaration_specifiers.TotalSize), false)
 		}
+
+		glbl.Offset = glblArg.Offset
 
 		glbl.Type = ast.TYPE_ATOMIC
 		glbl.Meta = int(declaration_specifiers.Type)
@@ -425,7 +423,7 @@ func DeclareLocal_OLD(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarat
 	declSpecIdx := prgrm.AddCXArgInArray(declarationSpecifiers)
 	declarationSpecifiers = prgrm.GetCXArgFromArray(declSpecIdx)
 
-	typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(declSpecIdx))
+	typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(declSpecIdx))
 	typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
 	prgrm.CXAtomicOps[expressionIdx].AddOutput(prgrm, typeSigIdx)
 
@@ -465,10 +463,10 @@ func DeclareLocal_OLD(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarat
 			// output, in case of something like var foo *i32 = &bar
 			prgrm.CXArgs[declSpecIdx].PassBy = initOut.PassBy
 
-			typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(declSpecIdx))
+			typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(declSpecIdx))
 			typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
 			prgrm.CXAtomicOps[cxExprAtomicOpIdx].AddOutput(prgrm, typeSigIdx)
-			typeSig = ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(initOutIdx))
+			typeSig = ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(initOutIdx))
 			typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
 			prgrm.CXAtomicOps[cxExprAtomicOpIdx].AddInput(prgrm, typeSigIdx)
 
@@ -489,11 +487,11 @@ func DeclareLocal_OLD(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarat
 			if len(cxExprAtomicOp.GetOutputs(prgrm)) > 0 {
 				// declSpecIdx := prgrm.AddCXArgInArray(declarationSpecifiers)
 				cxExprAtomicOp.Outputs.Fields = nil
-				typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(declSpecIdx))
+				typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(declSpecIdx))
 				typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
 				cxExprAtomicOp.AddOutput(prgrm, typeSigIdx)
 			} else {
-				typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(declSpecIdx))
+				typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(declSpecIdx))
 				typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
 				cxExprAtomicOp.AddOutput(prgrm, typeSigIdx)
 			}
@@ -507,7 +505,7 @@ func DeclareLocal_OLD(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarat
 		cxAtomicOpIdx := expr.Index
 		prgrm.CXAtomicOps[cxAtomicOpIdx].Package = ast.CXPackageIndex(pkg.Index)
 
-		typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(declSpecIdx))
+		typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(declSpecIdx))
 		typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
 		prgrm.CXAtomicOps[cxAtomicOpIdx].AddOutput(prgrm, typeSigIdx)
 

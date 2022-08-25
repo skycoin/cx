@@ -30,11 +30,11 @@ func (cxprogram *CXProgram) PrintStack() {
 		for _, inputIdx := range opInputs {
 			input := cxprogram.GetCXTypeSignatureFromArray(inputIdx)
 
-			var inp *CXArgument = &CXArgument{}
+			var inp *CXArgument = &CXArgument{ArgDetails: &CXArgumentDebug{}}
 			if input.Type == TYPE_CXARGUMENT_DEPRECATE {
 				inp = cxprogram.GetCXArgFromArray(CXArgumentIndex(input.Meta))
 			} else if input.Type == TYPE_ATOMIC || input.Type == TYPE_POINTER_ATOMIC {
-				inp = &CXArgument{}
+				inp = &CXArgument{ArgDetails: &CXArgumentDebug{}}
 			}
 
 			fmt.Println("ProgramInput")
@@ -51,11 +51,11 @@ func (cxprogram *CXProgram) PrintStack() {
 		for _, outputIdx := range opOutputs {
 			output := cxprogram.GetCXTypeSignatureFromArray(outputIdx)
 
-			var out *CXArgument = &CXArgument{}
+			var out *CXArgument = &CXArgument{ArgDetails: &CXArgumentDebug{}}
 			if output.Type == TYPE_CXARGUMENT_DEPRECATE {
 				out = cxprogram.GetCXArgFromArray(CXArgumentIndex(output.Meta))
 			} else if output.Type == TYPE_ATOMIC || output.Type == TYPE_POINTER_ATOMIC {
-				out = &CXArgument{}
+				out = &CXArgument{ArgDetails: &CXArgumentDebug{}}
 			}
 
 			fmt.Println("ProgramOutput")
@@ -81,7 +81,7 @@ func (cxprogram *CXProgram) PrintStack() {
 
 				input := cxprogram.GetCXTypeSignatureFromArray(inputIdx)
 
-				var inp *CXArgument = &CXArgument{}
+				var inp *CXArgument = &CXArgument{ArgDetails: &CXArgumentDebug{}}
 				if input.Type == TYPE_CXARGUMENT_DEPRECATE {
 					inp = cxprogram.GetCXArgFromArray(CXArgumentIndex(input.Meta))
 				} else if input.Type == TYPE_ATOMIC || input.Type == TYPE_POINTER_ATOMIC {
@@ -117,7 +117,7 @@ func (cxprogram *CXProgram) PrintStack() {
 			for _, outputIdx := range cxAtomicOp.GetOutputs(cxprogram) {
 				output := cxprogram.GetCXTypeSignatureFromArray(outputIdx)
 
-				var out *CXArgument = &CXArgument{}
+				var out *CXArgument = &CXArgument{ArgDetails: &CXArgumentDebug{}}
 				if output.Type == TYPE_CXARGUMENT_DEPRECATE {
 					out = cxprogram.GetCXArgFromArray(CXArgumentIndex(output.Meta))
 

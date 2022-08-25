@@ -51,7 +51,7 @@ func IterationExpressions(prgrm *ast.CXProgram,
 	downLines := 0
 
 	trueArg := WritePrimary(prgrm, types.BOOL, encoder.Serialize(true), false)
-	typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, trueArg)
+	typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, trueArg)
 	typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
 	prgrm.CXAtomicOps[upExpressionIdx].AddInput(prgrm, typeSigIdx)
 	prgrm.CXAtomicOps[upExpressionIdx].ThenLines = upLines
@@ -70,22 +70,33 @@ func IterationExpressions(prgrm *ast.CXProgram,
 		lastCondExpressionOperatorOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(lastCondExpressionOperatorOutputs[0])
 
 		var lastCondExpressionOperatorOutputType types.Code
+		var typeSigIdx ast.CXTypeSignatureIndex
 		if lastCondExpressionOperatorOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			lastCondExpressionOperatorOutputArg := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(lastCondExpressionOperatorOutputTypeSig.Meta))
 			lastCondExpressionOperatorOutputType = lastCondExpressionOperatorOutputArg.Type
+			predicate := ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, LineNo).SetType(lastCondExpressionOperatorOutputType)
+			predicate.Package = ast.CXPackageIndex(pkg.Index)
+			predicate.PreviouslyDeclared = true
+			predicateIdx := prgrm.AddCXArgInArray(predicate)
+
+			typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(predicateIdx))
+			typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
 		} else if lastCondExpressionOperatorOutputTypeSig.Type == ast.TYPE_ATOMIC {
-			lastCondExpressionOperatorOutputType = types.Code(lastCondExpressionOperatorOutputTypeSig.Meta)
+			var newTypeSig ast.CXTypeSignature
+			newTypeSig = *lastCondExpressionOperatorOutputTypeSig
+			newTypeSig.Name = generateTempVarName(constants.LOCAL_PREFIX)
+			newTypeSig.Package = ast.CXPackageIndex(pkg.Index)
+			newTypeSig.Offset = types.Pointer(0)
+			typeSigIdx = prgrm.AddCXTypeSignatureInArray(&newTypeSig)
 		} else if lastCondExpressionOperatorOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
-			lastCondExpressionOperatorOutputType = types.POINTER
+			var newTypeSig ast.CXTypeSignature
+			newTypeSig = *lastCondExpressionOperatorOutputTypeSig
+			newTypeSig.Name = generateTempVarName(constants.LOCAL_PREFIX)
+			newTypeSig.Package = ast.CXPackageIndex(pkg.Index)
+			newTypeSig.Offset = types.Pointer(0)
+			typeSigIdx = prgrm.AddCXTypeSignatureInArray(&newTypeSig)
 		}
 
-		predicate := ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, LineNo).SetType(lastCondExpressionOperatorOutputType)
-		predicate.Package = ast.CXPackageIndex(pkg.Index)
-		predicate.PreviouslyDeclared = true
-		predicateIdx := prgrm.AddCXArgInArray(predicate)
-
-		typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(predicateIdx))
-		typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
 		prgrm.CXAtomicOps[lastCondExpressionIdx].AddOutput(prgrm, typeSigIdx)
 		prgrm.CXAtomicOps[downExpressionIdx].AddInput(prgrm, typeSigIdx)
 	} else {
@@ -94,12 +105,11 @@ func IterationExpressions(prgrm *ast.CXProgram,
 		var predicateIdx ast.CXArgumentIndex
 		if predicateTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			predicateIdx = ast.CXArgumentIndex(predicateTypeSig.Meta)
-		} else {
-			panic("type is not type cx argument deprecate\n\n")
+			prgrm.CXArgs[predicateIdx].Package = ast.CXPackageIndex(pkg.Index)
+			prgrm.CXArgs[predicateIdx].PreviouslyDeclared = true
+		} else if predicateTypeSig.Type == ast.TYPE_ATOMIC || predicateTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
+			// do nothing
 		}
-
-		prgrm.CXArgs[predicateIdx].Package = ast.CXPackageIndex(pkg.Index)
-		prgrm.CXArgs[predicateIdx].PreviouslyDeclared = true
 
 		prgrm.CXAtomicOps[downExpressionIdx].AddInput(prgrm, predicateTypeSigIdx)
 	}
@@ -156,7 +166,7 @@ func trueJmpExpressions(prgrm *ast.CXProgram, opcode int) []ast.CXExpression {
 	expressionIdx := expr.Index
 
 	trueArg := WritePrimary(prgrm, types.BOOL, encoder.Serialize(true), false)
-	typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(trueArg.Index)))
+	typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(trueArg.Index)))
 	typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
 	prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, typeSigIdx)
 	prgrm.CXAtomicOps[expressionIdx].Package = ast.CXPackageIndex(pkg.Index)
@@ -240,7 +250,7 @@ func SelectionExpressions(prgrm *ast.CXProgram, conditionExprs []ast.CXExpressio
 		predicate.Package = ast.CXPackageIndex(pkg.Index)
 
 		predicateIdx := prgrm.AddCXArgInArray(predicate)
-		predicateTypeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(predicateIdx))
+		predicateTypeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(predicateIdx))
 		predicateTypeSigIdx = prgrm.AddCXTypeSignatureInArray(predicateTypeSig)
 		prgrm.CXAtomicOps[lastCondExpressionIdx].AddOutput(prgrm, predicateTypeSigIdx)
 	}
@@ -262,7 +272,7 @@ func SelectionExpressions(prgrm *ast.CXProgram, conditionExprs []ast.CXExpressio
 	skipLines := len(elseExprs)
 
 	trueArg := WritePrimary(prgrm, types.BOOL, encoder.Serialize(true), false)
-	typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(trueArg.Index)))
+	typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(trueArg.Index)))
 	typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
 	prgrm.CXAtomicOps[skipExpressionIdx].AddInput(prgrm, typeSigIdx)
 	prgrm.CXAtomicOps[skipExpressionIdx].ThenLines = skipLines
@@ -394,7 +404,7 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 			out.PreviouslyDeclared = true
 
 			outIdx := prgrm.AddCXArgInArray(out)
-			typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(outIdx))
+			typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(outIdx))
 			typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
 		} else if lastLeftExpressionOperatorOutputTypeSig.Type == ast.TYPE_ATOMIC {
 			typeSig := &ast.CXTypeSignature{}
@@ -440,7 +450,7 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 			out.PreviouslyDeclared = true
 
 			outIdx := prgrm.AddCXArgInArray(out)
-			typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(outIdx))
+			typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(outIdx))
 			typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
 		} else if lastRightExpressionOperatorOutputTypeSig.Type == ast.TYPE_ATOMIC {
 			typeSig := &ast.CXTypeSignature{}
@@ -546,61 +556,113 @@ func UnaryExpression(prgrm *ast.CXProgram, op string, prevExprs []ast.CXExpressi
 	var lastPrevExpressionOutputArg *ast.CXArgument = &ast.CXArgument{}
 	if lastPrevExpressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 		lastPrevExpressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(lastPrevExpressionOutputTypeSig.Meta))
+
+		// Some properties need to be read from the base argument
+		// due to how we calculate dereferences at the moment.
+		lastPrevExpressionOutput := lastPrevExpressionOutputArg
+		baseOut := lastPrevExpressionOutput
+		exprOut := lastPrevExpressionOutput.GetAssignmentElement(prgrm)
+		switch op {
+		case "*":
+			exprOut.DereferenceOperations = append(exprOut.DereferenceOperations, constants.DEREF_POINTER)
+			exprOut.DeclarationSpecifiers = append(exprOut.DeclarationSpecifiers, constants.DECL_DEREF)
+		case "&":
+			baseOut.PassBy = constants.PASSBY_REFERENCE
+
+			// panic(fmt.Sprintf("passby ref baseOut=%+v\n\nexprOut=%+v\n\n", baseOut, exprOut))
+			exprOut.DeclarationSpecifiers = append(exprOut.DeclarationSpecifiers, constants.DECL_POINTER)
+			if len(baseOut.Fields) == 0 && hasDeclSpec(baseOut, constants.DECL_INDEXING) {
+				// If we're referencing an inner element, like an element of a slice (&slc[0])
+				// or a field of a struct (&struct.fld) we no longer need to add
+				// the OBJECT_HEADER_SIZE to the offset. The runtime uses this field to determine this.
+				baseOut.IsInnerReference = true
+			}
+		case "!":
+			if pkg, err := prgrm.GetCurrentPackage(); err == nil {
+				expr := ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_BOOL_NOT])
+				expression, err := prgrm.GetCXAtomicOp(expr.Index)
+				if err != nil {
+					panic(err)
+				}
+				expression.Package = ast.CXPackageIndex(pkg.Index)
+
+				typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(exprOut.Index)))
+				typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
+				expression.AddInput(prgrm, typeSigIdx)
+				prevExprs[len(prevExprs)-1] = *expr
+			} else {
+				panic(err)
+			}
+		case "-":
+			if pkg, err := prgrm.GetCurrentPackage(); err == nil {
+				expr := ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_NEG])
+				expression, err := prgrm.GetCXAtomicOp(expr.Index)
+				if err != nil {
+					panic(err)
+				}
+				expression.Package = ast.CXPackageIndex(pkg.Index)
+				typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(exprOut.Index)))
+				typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
+				expression.AddInput(prgrm, typeSigIdx)
+				prevExprs[len(prevExprs)-1] = *expr
+			} else {
+				panic(err)
+			}
+		}
+	} else if lastPrevExpressionOutputTypeSig.Type == ast.TYPE_ATOMIC {
+		switch op {
+		case "*":
+			// TODO: what is the most efficient alternative for this
+			// exprOut.DereferenceOperations = append(exprOut.DereferenceOperations, constants.DEREF_POINTER)
+			// exprOut.DeclarationSpecifiers = append(exprOut.DeclarationSpecifiers, constants.DECL_DEREF)
+			panic("unary expression op=*")
+		case "&":
+			// TODO: what is the most efficient alternative for this
+			// baseOut.PassBy = constants.PASSBY_REFERENCE
+
+			// // panic(fmt.Sprintf("passby ref baseOut=%+v\n\nexprOut=%+v\n\n", baseOut, exprOut))
+			// exprOut.DeclarationSpecifiers = append(exprOut.DeclarationSpecifiers, constants.DECL_POINTER)
+			// if len(baseOut.Fields) == 0 && hasDeclSpec(baseOut, constants.DECL_INDEXING) {
+			// 	// If we're referencing an inner element, like an element of a slice (&slc[0])
+			// 	// or a field of a struct (&struct.fld) we no longer need to add
+			// 	// the OBJECT_HEADER_SIZE to the offset. The runtime uses this field to determine this.
+			// 	baseOut.IsInnerReference = true
+			// }
+			panic("unary expression op=&")
+		case "!":
+			if pkg, err := prgrm.GetCurrentPackage(); err == nil {
+				expr := ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_BOOL_NOT])
+				expression, err := prgrm.GetCXAtomicOp(expr.Index)
+				if err != nil {
+					panic(err)
+				}
+				expression.Package = ast.CXPackageIndex(pkg.Index)
+
+				typeSigIdx := lastPrevExpressionOutputTypeSig.Index
+				expression.AddInput(prgrm, typeSigIdx)
+				prevExprs[len(prevExprs)-1] = *expr
+			} else {
+				panic(err)
+			}
+		case "-":
+			if pkg, err := prgrm.GetCurrentPackage(); err == nil {
+				expr := ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_NEG])
+				expression, err := prgrm.GetCXAtomicOp(expr.Index)
+				if err != nil {
+					panic(err)
+				}
+				expression.Package = ast.CXPackageIndex(pkg.Index)
+
+				typeSigIdx := lastPrevExpressionOutputTypeSig.Index
+				expression.AddInput(prgrm, typeSigIdx)
+				prevExprs[len(prevExprs)-1] = *expr
+			} else {
+				panic(err)
+			}
+		}
+
 	} else {
 		panic("type is not cx argument deprecate\n\n")
-	}
-
-	// Some properties need to be read from the base argument
-	// due to how we calculate dereferences at the moment.
-	lastPrevExpressionOutput := lastPrevExpressionOutputArg
-	baseOut := lastPrevExpressionOutput
-	exprOut := lastPrevExpressionOutput.GetAssignmentElement(prgrm)
-	switch op {
-	case "*":
-		exprOut.DereferenceOperations = append(exprOut.DereferenceOperations, constants.DEREF_POINTER)
-		exprOut.DeclarationSpecifiers = append(exprOut.DeclarationSpecifiers, constants.DECL_DEREF)
-	case "&":
-		baseOut.PassBy = constants.PASSBY_REFERENCE
-
-		// panic(fmt.Sprintf("passby ref baseOut=%+v\n\nexprOut=%+v\n\n", baseOut, exprOut))
-		exprOut.DeclarationSpecifiers = append(exprOut.DeclarationSpecifiers, constants.DECL_POINTER)
-		if len(baseOut.Fields) == 0 && hasDeclSpec(baseOut, constants.DECL_INDEXING) {
-			// If we're referencing an inner element, like an element of a slice (&slc[0])
-			// or a field of a struct (&struct.fld) we no longer need to add
-			// the OBJECT_HEADER_SIZE to the offset. The runtime uses this field to determine this.
-			baseOut.IsInnerReference = true
-		}
-	case "!":
-		if pkg, err := prgrm.GetCurrentPackage(); err == nil {
-			expr := ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_BOOL_NOT])
-			expression, err := prgrm.GetCXAtomicOp(expr.Index)
-			if err != nil {
-				panic(err)
-			}
-			expression.Package = ast.CXPackageIndex(pkg.Index)
-
-			typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(exprOut.Index)))
-			typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
-			expression.AddInput(prgrm, typeSigIdx)
-			prevExprs[len(prevExprs)-1] = *expr
-		} else {
-			panic(err)
-		}
-	case "-":
-		if pkg, err := prgrm.GetCurrentPackage(); err == nil {
-			expr := ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_NEG])
-			expression, err := prgrm.GetCXAtomicOp(expr.Index)
-			if err != nil {
-				panic(err)
-			}
-			expression.Package = ast.CXPackageIndex(pkg.Index)
-			typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(exprOut.Index)))
-			typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
-			expression.AddInput(prgrm, typeSigIdx)
-			prevExprs[len(prevExprs)-1] = *expr
-		} else {
-			panic(err)
-		}
 	}
 
 	return prevExprs
@@ -643,7 +705,7 @@ func AssociateReturnExpressions(prgrm *ast.CXProgram, idx int, retExprs []ast.CX
 		out.StructType = outParam.StructType
 		out.PreviouslyDeclared = true
 		outIdx := prgrm.AddCXArgInArray(out)
-		typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(outIdx))
+		typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(outIdx))
 		typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
 	} else if fnOutputTypeSig.Type == ast.TYPE_ATOMIC {
 		newCXTypeSig := &ast.CXTypeSignature{}

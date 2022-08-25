@@ -135,26 +135,7 @@ func (fn *CXFunction) AddInput(prgrm *CXProgram, param *CXArgument) *CXFunction 
 	}
 
 	param.Package = fn.Package
-
-	var newField *CXTypeSignature
-	// if atomic type
-	if IsTypeAtomic(param) {
-		newField = &CXTypeSignature{
-			Name:    param.Name,
-			Type:    TYPE_ATOMIC,
-			Meta:    int(param.Type),
-			Package: param.Package,
-		}
-	} else {
-		paramIdx := prgrm.AddCXArgInArray(param)
-
-		newField = &CXTypeSignature{
-			Name:    param.Name,
-			Type:    TYPE_CXARGUMENT_DEPRECATE,
-			Meta:    int(paramIdx),
-			Package: param.Package,
-		}
-	}
+	newField := GetCXTypeSignatureRepresentationOfCXArg(prgrm, param)
 
 	if fn.Inputs == nil {
 		fn.Inputs = &CXStruct{}
@@ -204,25 +185,7 @@ func (fn *CXFunction) AddOutput(prgrm *CXProgram, param *CXArgument) *CXFunction
 
 	param.Package = fn.Package
 
-	var newField *CXTypeSignature
-	// if atomic type
-	if IsTypeAtomic(param) {
-		newField = &CXTypeSignature{
-			Name:    param.Name,
-			Type:    TYPE_ATOMIC,
-			Meta:    int(param.Type),
-			Package: param.Package,
-		}
-	} else {
-		paramIdx := prgrm.AddCXArgInArray(param)
-
-		newField = &CXTypeSignature{
-			Name:    param.Name,
-			Type:    TYPE_CXARGUMENT_DEPRECATE,
-			Meta:    int(paramIdx),
-			Package: param.Package,
-		}
-	}
+	newField := GetCXTypeSignatureRepresentationOfCXArg(prgrm, param)
 
 	if fn.Outputs == nil {
 		fn.Outputs = &CXStruct{}

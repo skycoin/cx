@@ -251,19 +251,32 @@ func GetCXTypeSignatureRepresentationOfCXArg_ForStructs(prgrm *CXProgram, cxArgu
 	return &newCXTypeSignature
 }
 
-func GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm *CXProgram, cxArgument *CXArgument) *CXTypeSignature {
+func GetCXTypeSignatureRepresentationOfCXArg(prgrm *CXProgram, cxArgument *CXArgument) *CXTypeSignature {
 	newCXTypeSignature := CXTypeSignature{
 		Name:    cxArgument.Name,
 		Package: cxArgument.Package,
 	}
 
-	fldIdx := cxArgument.Index
-
-	// All are TYPE_CXARGUMENT_DEPRECATE for now.
-	// FieldIdx or the CXArg ID is in Meta field.
-	newCXTypeSignature.Type = TYPE_CXARGUMENT_DEPRECATE
-	newCXTypeSignature.Meta = int(fldIdx)
-	newCXTypeSignature.Offset = cxArgument.Offset
+	// If atomic type. i.e. i8, i16, i32, f32, etc.
+	if IsTypeAtomic(cxArgument) {
+		newCXTypeSignature.Type = TYPE_ATOMIC
+		newCXTypeSignature.Meta = int(cxArgument.Type)
+		newCXTypeSignature.Offset = cxArgument.Offset
+	} else if IsTypePointerAtomic(cxArgument) {
+		newCXTypeSignature.Type = TYPE_POINTER_ATOMIC
+		newCXTypeSignature.Meta = int(cxArgument.PointerTargetType)
+		newCXTypeSignature.Offset = cxArgument.Offset
+	} else {
+		// TYPE_CXARGUMENT_DEPRECATE
+		// FieldIdx or the CXArg ID is in Meta field.
+		cxArgumentIndex := cxArgument.Index
+		if cxArgument.Index == -1 || cxArgument.Index == 0 {
+			cxArgumentIndex = int(prgrm.AddCXArgInArray(cxArgument))
+		}
+		newCXTypeSignature.Type = TYPE_CXARGUMENT_DEPRECATE
+		newCXTypeSignature.Meta = cxArgumentIndex
+		newCXTypeSignature.Offset = cxArgument.Offset
+	}
 
 	return &newCXTypeSignature
 }

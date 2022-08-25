@@ -629,7 +629,7 @@ slice_literal_expression:
 			        if expressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 				        expressionOutputArg = actions.AST.GetCXArgFromArray(ast.CXArgumentIndex(expressionOutputTypeSig.Meta))
 			        } else {
-				        panic("type is not cx argument deprecate\n\n")
+				        continue
 			        }
 
                                 expressionOutput:= expressionOutputArg

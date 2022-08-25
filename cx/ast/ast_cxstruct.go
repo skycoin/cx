@@ -147,7 +147,7 @@ func (strct *CXStruct) AddField_Globals_CXAtomicOps(prgrm *CXProgram, cxArgIdx C
 		}
 	}
 
-	newCXTypeSignature := GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, cxArgument)
+	newCXTypeSignature := GetCXTypeSignatureRepresentationOfCXArg(prgrm, cxArgument)
 	newCXTypeSignatureIdx := prgrm.AddCXTypeSignatureInArray(newCXTypeSignature)
 	strct.Fields = append(strct.Fields, newCXTypeSignatureIdx)
 

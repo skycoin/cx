@@ -50,7 +50,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		out.Package = prevExpressionOperatorOutput.Package
 		outIdx := prgrm.AddCXArgInArray(out)
 
-		typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(outIdx))
+		typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(outIdx))
 		typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
 		prgrm.CXAtomicOps[prevExpressionIdx].AddOutput(prgrm, typeSigIdx)
 
@@ -70,7 +70,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		useExpressionIdx := useExpr.Index
 
 		prgrm.CXAtomicOps[useExpressionIdx].Package = prgrm.CXAtomicOps[prevExpressionIdx].Package
-		typeSig = ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(inpIdx))
+		typeSig = ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(inpIdx))
 		typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
 		prgrm.CXAtomicOps[useExpressionIdx].AddOutput(prgrm, typeSigIdx)
 
@@ -114,7 +114,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 			if postExpressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 				prgrm.CXArgs[fldIdx].Indexes = append(prgrm.CXArgs[fldIdx].Indexes, postExpressionOutputIndex)
 			} else if postExpressionOutputTypeSig.Type == ast.TYPE_ATOMIC || postExpressionOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
-				panic("type signature is type atomic")
+				prgrm.CXArgs[fldIdx].Indexes = append(prgrm.CXArgs[fldIdx].Indexes, postExpressionOutputIndex)
 			}
 
 		} else {
@@ -130,7 +130,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 			sym.Package = prgrm.CXAtomicOps[postExpressionIdx].Package
 			sym.PreviouslyDeclared = true
 			symIdx := prgrm.AddCXArgInArray(sym)
-			typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(symIdx))
+			typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(symIdx))
 			typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
 			prgrm.CXAtomicOps[postExpressionIdx].AddOutput(prgrm, typeSigIdx)
 
@@ -155,7 +155,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 				idxSym.PreviouslyDeclared = true
 
 				idxSymIdx := prgrm.AddCXArgInArray(idxSym)
-				typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(idxSymIdx))
+				typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(idxSymIdx))
 				typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
 			} else if postExpressionOperatorOutputTypeSig.Type == ast.TYPE_ATOMIC {
 				newTypeSig := &ast.CXTypeSignature{}
@@ -200,7 +200,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 				if postOutsTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 					prgrm.CXArgs[prevOutsIdx].Indexes = append(prgrm.CXArgs[prevOutsIdx].Indexes, postOutsIndex)
 				} else if postOutsTypeSig.Type == ast.TYPE_ATOMIC || postOutsTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
-					panic("type is not cx argument deprecate\n\n")
+					prgrm.CXArgs[prevOutsIdx].Indexes = append(prgrm.CXArgs[prevOutsIdx].Indexes, postOutsIndex)
 				}
 			} else if prevOutsTypeSig.Type == ast.TYPE_ATOMIC || prevOutsTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 				panic("type is not cx argument deprecate\n\n")
@@ -382,7 +382,7 @@ func PostfixExpressionIncDec(prgrm *ast.CXProgram, prevExprs []ast.CXExpression,
 	typeSigIdx := lastPrevExpression.GetOutputs(prgrm)[0]
 	prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, typeSigIdx)
 
-	typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(valArg.Index)))
+	typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(valArg.Index)))
 	typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
 	prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, typeSigIdx)
 
@@ -440,7 +440,7 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		out.PreviouslyDeclared = true
 
 		outIdx := prgrm.AddCXArgInArray(out)
-		typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(outIdx))
+		typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(outIdx))
 		typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
 		prgrm.CXAtomicOps[lastExpressionIdx].AddOutput(prgrm, typeSigIdx)
 
@@ -464,7 +464,7 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		}
 
 		expression.Package = prgrm.CXAtomicOps[lastExpressionIdx].Package
-		typeSig = ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(inpIdx))
+		typeSig = ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(inpIdx))
 		typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
 		expression.AddOutput(prgrm, typeSigIdx)
 		prevExprs = append(prevExprs, *exprCXLine, *expr)
@@ -504,14 +504,14 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 					lastExpressionOutputFieldTypeSig.Offset = valArg.Offset
 				} else if lastExpressionOutputFieldTypeSig.Type == ast.TYPE_ATOMIC {
 					// TODO: Review if this is the correct one
-					typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, valArg)
+					typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, valArg)
 					typeSig.Offset = valArg.Offset
 					typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
 
 					prgrm.CXAtomicOps[lastExpressionIdx].Outputs.Fields[0] = typeSigIdx
 				} else if lastExpressionOutputFieldTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 					// TODO: Review if this is the correct one
-					typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, valArg)
+					typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, valArg)
 					typeSig.Offset = valArg.Offset
 					typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
 

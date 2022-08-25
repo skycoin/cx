@@ -533,8 +533,9 @@ func GetPrintableValue(prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSig
 			return val
 		}
 	} else if argTypeSig.Type == TYPE_ATOMIC || argTypeSig.Type == TYPE_POINTER_ATOMIC {
-		// what to do with type atomic
-		panic("type is not cx argument deprecate")
+		// TODO: what to do with type atomic
+		// temporary return 0 val
+		return "[]"
 	}
 
 	return getNonCollectionValue(prgrm, fp, arg, elt, typ)
