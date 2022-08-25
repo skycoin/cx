@@ -115,7 +115,7 @@ func ExtractGlobals(source []byte, fileName string) ([]GlobalDeclaration, error)
 	rePkg := regexp.MustCompile("package")
 	rePkgName := regexp.MustCompile(`package\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
 	reGlobal := regexp.MustCompile("var")
-	reGlobalName := regexp.MustCompile(`var\s([_a-zA-Z][_a-zA-Z0-9]*)\s+[\[_a-zA-Z][\]_a-zA-Z0-9]*(?:\s*\=\s*[\s\S]+\S+){0,1}`)
+	reGlobalName := regexp.MustCompile(`var\s+([_a-zA-Z]\w*)\s+\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]){0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*(?:\s*\=\s*[\s\S]+\S+){0,1}`)
 	reBodyOpen := regexp.MustCompile("{")
 	reBodyClose := regexp.MustCompile("}")
 
