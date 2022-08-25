@@ -892,3 +892,24 @@ func TestDeclarationExtractor_ExtractAllDeclarations(t *testing.T) {
 		})
 	}
 }
+
+func BenchmarkDeclarationExtractor_ExtractFuncs(b *testing.B) {
+	benchmarks := []struct {
+		scenario string
+		testDir  string
+	}{
+		{scenario: "regular funcs", testDir: "./test_files/ExtractFuncs/HasFuncs.cx"},
+	}
+
+	for _, bm := range benchmarks {
+		b.Run(bm.scenario, func(b *testing.B) {
+			srcBytes, err := os.ReadFile(bm.testDir)
+			if err != nil {
+				b.Fatal(err)
+			}
+			for n := 0; n < b.N; n++ {
+				declaration_extractor.ExtractFuncs(srcBytes, bm.testDir)
+			}
+		})
+	}
+}
