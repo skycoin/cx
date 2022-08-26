@@ -391,7 +391,7 @@ func MakeGlobal(name string, typeCode types.Code, fileName string, fileLine int)
 //           Special functions to determine its type (atomic, array etomic, etc)
 
 func IsTypeAtomic(arg *CXArgument) bool {
-	return arg.Type.IsPrimitive() && !arg.IsSlice && len(arg.Lengths) == 0 && len(arg.Fields) == 0 && (len(arg.DeclarationSpecifiers) == 0 || arg.DeclarationSpecifiers[0] == constants.DECL_BASIC)
+	return arg.Type.IsPrimitive() && !arg.IsSlice && len(arg.Lengths) == 0 && len(arg.Fields) == 0 && len(arg.DereferenceOperations) == 0 && (len(arg.DeclarationSpecifiers) == 0 || (len(arg.DeclarationSpecifiers) == 1 && arg.DeclarationSpecifiers[0] == constants.DECL_BASIC))
 }
 
 func IsTypePointerAtomic(arg *CXArgument) bool {
