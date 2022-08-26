@@ -204,41 +204,12 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fnIdx ast.CXFunctionIndex, inputs
 	pkg.CurrentFunction = fnIdx
 	fn := prgrm.GetFunctionFromArray(fnIdx)
 
-	// errStr1 := "\n"
-	// for i := range exprs {
-	// 	expr, _ := prgrm.GetCXAtomicOpFromExpressions(exprs, i)
-
-	// 	for x, inp := range expr.GetInputs(prgrm) {
-	// 		typeSig := prgrm.GetCXTypeSignatureFromArray(inp)
-	// 		if typeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-	// 			errStr1 += fmt.Sprintf("expr[%v] inp[%v] = %+v\n\n", i, x, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(typeSig.Meta)))
-	// 		} else {
-	// 			errStr1 += fmt.Sprintf("expr[%v] type sig inp[%v] = %+v\n", i, x, typeSig)
-	// 		}
-
-	// 	}
-
-	// 	for y, out := range expr.GetOutputs(prgrm) {
-	// 		typeSig := prgrm.GetCXTypeSignatureFromArray(out)
-
-	// 		if typeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-	// 			errStr1 += fmt.Sprintf("expr[%v] out[%v] = %+v\n\n", i, y, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(typeSig.Meta)))
-	// 		} else {
-	// 			errStr1 += fmt.Sprintf("expr[%v] type sig out[%v] = %+v\n", i, y, typeSig)
-
-	// 		}
-	// 	}
-	// }
-	// println(errStr1)
-	// println("---------------------------------------------------------------------------------------------------------")
-
 	FunctionAddParameters(prgrm, fnIdx, inputs, outputs)
 	ProcessGoTos(prgrm, exprs)
 	AddExprsToFunction(prgrm, fnIdx, exprs)
 
 	ProcessFunctionParameters(prgrm, symbolsData, &offset, fnIdx, fn.GetInputs(prgrm))
 	ProcessFunctionParameters(prgrm, symbolsData, &offset, fnIdx, fn.GetOutputs(prgrm))
-
 	for i, expr := range fn.Expressions {
 		if expr.Type == ast.CX_LINE {
 			continue
@@ -275,46 +246,6 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fnIdx ast.CXFunctionIndex, inputs
 
 	fn.LineCount = len(fn.Expressions)
 	fn.Size = offset
-
-	// errStr2 := "\n"
-	// for x, val := range (*symbolsData).symbols {
-
-	// 	if val.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-	// 		errStr2 += fmt.Sprintf("symbol[%v]=%+v\n", x, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(val.Meta)))
-	// 	} else {
-	// 		errStr2 += fmt.Sprintf("symbol[%v]=%+v\n", x, val)
-
-	// 	}
-
-	// }
-	// println(errStr2)
-
-	// errStr := "\n"
-	// for i := range exprs {
-	// 	expr, _ := prgrm.GetCXAtomicOpFromExpressions(exprs, i)
-
-	// 	for x, inp := range expr.GetInputs(prgrm) {
-	// 		typeSig := prgrm.GetCXTypeSignatureFromArray(inp)
-	// 		if typeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-	// 			errStr += fmt.Sprintf("expr[%v] inp[%v] = %+v\n\n", i, x, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(typeSig.Meta)))
-	// 		} else {
-	// 			errStr += fmt.Sprintf("expr[%v] type sig inp[%v] = %+v\n", i, x, typeSig)
-	// 		}
-
-	// 	}
-
-	// 	for y, out := range expr.GetOutputs(prgrm) {
-	// 		typeSig := prgrm.GetCXTypeSignatureFromArray(out)
-
-	// 		if typeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-	// 			errStr += fmt.Sprintf("expr[%v] out[%v] = %+v\n\n", i, y, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(typeSig.Meta)))
-	// 		} else {
-	// 			errStr += fmt.Sprintf("expr[%v] type sig out[%v] = %+v\n", i, y, typeSig)
-
-	// 		}
-	// 	}
-	// }
-	// println(errStr)
 }
 
 // ProcessTypedOperator gets the proper typed operator for the expression.
@@ -1979,7 +1910,6 @@ func CopyArgFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast
 	if argTypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 		arg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(argTypeSignature.Meta))
 	} else {
-		// panic("type is type cxargument deprecate-argTypeSig CopyArgField()\n\n")
 		arg = nil
 	}
 
@@ -1987,14 +1917,34 @@ func CopyArgFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast
 	if symTypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 		sym = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(symTypeSignature.Meta))
 	} else {
-		// panic("type is type cxargument deprecate-symgTypeSig CopyArgField()\n\n")
-		// panic(fmt.Sprintf("sym=%+v\n\narg=%+v\n\n", symTypeSignature, argTypeSignature))
-
 		sym = nil
 	}
 
 	// TODO: check if this needs a change
-	if sym == nil || arg == nil {
+	if sym == nil && arg == nil {
+		symTypeSignature.Name = argTypeSignature.Name
+		symTypeSignature.Package = argTypeSignature.Package
+		symTypeSignature.Type = argTypeSignature.Type
+		symTypeSignature.Meta = argTypeSignature.Meta
+		symTypeSignature.Offset = argTypeSignature.Offset
+
+		return
+	} else if sym != nil && (len(sym.DeclarationSpecifiers) > 1 || len(sym.DereferenceOperations) > 1) && arg == nil {
+		sym.Name = argTypeSignature.Name
+		sym.Package = argTypeSignature.Package
+		sym.Type = types.Code(argTypeSignature.Meta)
+		sym.Offset = argTypeSignature.Offset
+
+		return
+	} else if sym != nil && arg == nil {
+		symTypeSignature.Name = argTypeSignature.Name
+		symTypeSignature.Package = argTypeSignature.Package
+		symTypeSignature.Type = argTypeSignature.Type
+		symTypeSignature.Meta = argTypeSignature.Meta
+		symTypeSignature.Offset = argTypeSignature.Offset
+
+		return
+	} else if sym == nil && arg != nil {
 		symTypeSignature.Name = argTypeSignature.Name
 		symTypeSignature.Package = argTypeSignature.Package
 		symTypeSignature.Type = argTypeSignature.Type
@@ -2003,23 +1953,6 @@ func CopyArgFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast
 
 		return
 	}
-	// else if sym != nil && arg == nil {
-	// 	symTypeSignature.Name = argTypeSignature.Name
-	// 	symTypeSignature.Package = argTypeSignature.Package
-	// 	symTypeSignature.Type = argTypeSignature.Type
-	// 	symTypeSignature.Meta = argTypeSignature.Meta
-	// 	symTypeSignature.Offset = argTypeSignature.Offset
-
-	// 	return
-	// } else if sym == nil && arg != nil {
-	// 	symTypeSignature.Name = arg.Name
-	// 	symTypeSignature.Package = arg.Package
-	// 	symTypeSignature.Type = ast.TYPE_ATOMIC
-	// 	symTypeSignature.Meta = int(arg.Type)
-	// 	symTypeSignature.Offset = arg.Offset
-
-	// 	return
-	// }
 
 	sym.Name = arg.Name
 	sym.Offset = arg.Offset
