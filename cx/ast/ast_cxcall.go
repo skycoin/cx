@@ -74,7 +74,7 @@ func wipeDeclarationMemory(prgrm *CXProgram, expr *CXExpression) error {
 	var offset types.Pointer
 	if cxAtomicOutputTypeSig.Type == TYPE_CXARGUMENT_DEPRECATE {
 		offset = prgrm.CXArgs[cxAtomicOutputTypeSig.Meta].Offset
-	} else if cxAtomicOutputTypeSig.Type == TYPE_ATOMIC {
+	} else if cxAtomicOutputTypeSig.Type == TYPE_ATOMIC || cxAtomicOutputTypeSig.Type == TYPE_POINTER_ATOMIC {
 		offset = cxAtomicOutputTypeSig.Offset
 	}
 
@@ -124,7 +124,7 @@ func processBuiltInOperators(prgrm *CXProgram, expr *CXExpression, globalInputs 
 			if input.Type == types.POINTER {
 				value.Type = input.PointerTargetType
 			}
-		} else if inputTypeSignature.Type == TYPE_ATOMIC {
+		} else if inputTypeSignature.Type == TYPE_ATOMIC || inputTypeSignature.Type == TYPE_POINTER_ATOMIC {
 			value.Type = types.Code(inputTypeSignature.Meta)
 		}
 
@@ -150,7 +150,7 @@ func processBuiltInOperators(prgrm *CXProgram, expr *CXExpression, globalInputs 
 			if output.Type == types.POINTER {
 				value.Type = output.PointerTargetType
 			}
-		} else if outputTypeSignature.Type == TYPE_ATOMIC {
+		} else if outputTypeSignature.Type == TYPE_ATOMIC || outputTypeSignature.Type == TYPE_POINTER_ATOMIC {
 			value.Type = types.Code(outputTypeSignature.Meta)
 		}
 

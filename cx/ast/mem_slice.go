@@ -26,7 +26,7 @@ func GetSliceOffset(prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSignat
 	if argTypeSig.Type == TYPE_CXARGUMENT_DEPRECATE {
 		arg := prgrm.GetCXArgFromArray(CXArgumentIndex(argTypeSig.Meta))
 		element = arg.GetAssignmentElement(prgrm)
-	} else if argTypeSig.Type == TYPE_ATOMIC {
+	} else if argTypeSig.Type == TYPE_ATOMIC || argTypeSig.Type == TYPE_POINTER_ATOMIC {
 		return types.InvalidPointer
 	}
 

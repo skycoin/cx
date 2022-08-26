@@ -391,5 +391,21 @@ func MakeGlobal(name string, typeCode types.Code, fileName string, fileLine int)
 //           Special functions to determine its type (atomic, array etomic, etc)
 
 func IsTypeAtomic(arg *CXArgument) bool {
-	return arg.Type.IsPrimitive() && !arg.IsSlice && len(arg.Lengths) == 0 && len(arg.Fields) == 0 && len(arg.DeclarationSpecifiers) == 0
+	return arg.Type.IsPrimitive() && !arg.IsSlice && len(arg.Lengths) == 0 && len(arg.Fields) == 0 && len(arg.DereferenceOperations) == 0 && (len(arg.DeclarationSpecifiers) == 0 || (len(arg.DeclarationSpecifiers) == 1 && arg.DeclarationSpecifiers[0] == constants.DECL_BASIC))
+}
+
+func IsTypePointerAtomic(arg *CXArgument) bool {
+	return arg.Type == types.POINTER && arg.PointerTargetType.IsPrimitive() && !arg.IsSlice && len(arg.Lengths) == 0 && len(arg.Fields) == 0
+}
+
+func IsTypeArrayAtomic(arg *CXArgument) bool {
+	return !arg.IsSlice && len(arg.Lengths) == 1 && len(arg.Indexes) == 0 && arg.Type.IsPrimitive()
+}
+
+func IsTypeSliceAtomic(arg *CXArgument) bool {
+	return arg.IsSlice && len(arg.Lengths) == 1 && (arg.Type.IsPrimitive() || arg.Type == types.STR)
+}
+
+func IsTypeStruct(arg *CXArgument) bool {
+	return !arg.IsSlice && len(arg.Lengths) == 0 && arg.Type == types.STRUCT
 }

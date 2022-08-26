@@ -106,7 +106,29 @@ func GetFinalOffset(prgrm *CXProgram, fp types.Pointer, oldArg *CXArgument, argT
 	} else if argTypeSig.Type == TYPE_CXARGUMENT_DEPRECATE {
 		arg = &prgrm.CXArgs[argTypeSig.Meta]
 	} else if argTypeSig.Type == TYPE_ATOMIC {
-		return argTypeSig.Offset
+		argTypeSigOffset := argTypeSig.Offset
+		//Todo: find way to eliminate this check
+		if argTypeSigOffset < prgrm.Stack.Size {
+			// Then it's in the stack, not in data or heap and we need to consider the frame pointer.
+			argTypeSigOffset += fp
+		}
+
+		return argTypeSigOffset
+	} else if argTypeSig.Type == TYPE_POINTER_ATOMIC {
+		finalOffset = types.Read_ptr(prgrm.Memory, argTypeSig.Offset)
+
+		//Todo: find way to eliminate this check
+		if finalOffset < prgrm.Stack.Size {
+			// Then it's in the stack, not in data or heap and we need to consider the frame pointer.
+			finalOffset += fp
+		}
+
+		if finalOffset.IsValid() && finalOffset >= prgrm.Heap.StartsAt {
+			// then it's an object
+			finalOffset += types.OBJECT_HEADER_SIZE
+		}
+
+		return finalOffset
 	}
 	finalOffset = arg.Offset
 

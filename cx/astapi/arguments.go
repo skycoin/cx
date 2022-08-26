@@ -59,7 +59,7 @@ func AddNativeInputToExpression(cxprogram *cxast.CXProgram, packageName, functio
 		panic(err)
 	}
 
-	typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(cxprogram, cxprogram.GetCXArgFromArray(cxast.CXArgumentIndex(argIdx)))
+	typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(cxprogram, cxprogram.GetCXArgFromArray(cxast.CXArgumentIndex(argIdx)))
 	typeSigIdx := cxprogram.AddCXTypeSignatureInArray(typeSig)
 	cxAtomicOp.AddInput(cxprogram, typeSigIdx)
 
@@ -159,7 +159,7 @@ func AddNativeOutputToExpression(cxprogram *cxast.CXProgram, packageName, functi
 		panic(err)
 	}
 
-	typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(cxprogram, cxprogram.GetCXArgFromArray(cxast.CXArgumentIndex(argIdx)))
+	typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(cxprogram, cxprogram.GetCXArgFromArray(cxast.CXArgumentIndex(argIdx)))
 	typeSigIdx := cxprogram.AddCXTypeSignatureInArray(typeSig)
 	cxAtomicOp.AddOutput(cxprogram, typeSigIdx)
 
@@ -448,7 +448,7 @@ func AddLiteralInputToExpression(cxprogram *cxast.CXProgram, packageName, functi
 
 	litArg.Package = cxast.CXPackageIndex(pkg.Index)
 
-	typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(cxprogram, cxprogram.GetCXArgFromArray(cxast.CXArgumentIndex(litArg.Index)))
+	typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(cxprogram, cxprogram.GetCXArgFromArray(cxast.CXArgumentIndex(litArg.Index)))
 	typeSigIdx := cxprogram.AddCXTypeSignatureInArray(typeSig)
 	cxAtomicOp2.AddInput(cxprogram, typeSigIdx)
 

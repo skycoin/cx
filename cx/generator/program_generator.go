@@ -44,7 +44,7 @@ func GenerateRandomExpressions(prgrm *cxast.CXProgram, inputFn *cxast.CXFunction
 		cxAtomicOp.Function = cxast.CXFunctionIndex(inputFn.Index)
 		for c := 0; c < len(op.Inputs); c++ {
 			inpIdx := prgrm.AddCXArgInArray(getRandInp(prgrm, expr))
-			typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(inpIdx))
+			typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(inpIdx))
 			typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
 			cxAtomicOp.AddInput(prgrm, typeSigIdx)
 		}
@@ -75,7 +75,7 @@ func GenerateRandomExpressions(prgrm *cxast.CXProgram, inputFn *cxast.CXFunction
 		} else {
 			for c := 0; c < len(op.Outputs); c++ {
 				outIdx := prgrm.AddCXArgInArray(getRandOut(prgrm, expr))
-				typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(outIdx))
+				typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(outIdx))
 				typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
 				cxAtomicOp.AddOutput(prgrm, typeSigIdx)
 			}
@@ -249,7 +249,7 @@ func addNewExpression(prgrm *cxast.CXProgram, expr *cxast.CXExpression, expressi
 			argToAdd = cxast.CXArgumentIndex(argToAddCXAtomicOpOutputTypeSig.Meta)
 		}
 
-		typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(argToAdd))
+		typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(argToAdd))
 		typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
 		newExprCXAtomicOp.AddInput(prgrm, typeSigIdx)
 	}
@@ -260,7 +260,7 @@ func addNewExpression(prgrm *cxast.CXProgram, expr *cxast.CXExpression, expressi
 	argOut.SetType(types.Code(types.BOOL))
 	argOut.Package = exprCXAtomicOpFunction.Package
 	argOutIdx := prgrm.AddCXArgInArray(argOut)
-	typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(argOutIdx))
+	typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(argOutIdx))
 	typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
 	newExprCXAtomicOp.AddOutput(prgrm, typeSigIdx)
 	exprCXAtomicOpFunction.AddExpression(prgrm, newExprCXLine)

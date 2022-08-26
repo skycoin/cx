@@ -57,6 +57,8 @@ func buildStrGlobals(prgrm *CXProgram, pkg *CXPackage, ast *string) {
 			*ast += fmt.Sprintf("\t\t%d.- Global: %s %s\n", idx, prgrm.GetCXArg(CXArgumentIndex(glbl.Meta)).Name, GetFormattedType(prgrm, prgrm.GetCXArg(CXArgumentIndex(glbl.Meta))))
 		} else if glbl.Type == TYPE_ATOMIC {
 			*ast += fmt.Sprintf("\t\t%d.- Global: %s %s\n", idx, glbl.Name, types.Code(glbl.Meta).Name())
+		} else if glbl.Type == TYPE_POINTER_ATOMIC {
+			*ast += fmt.Sprintf("\t\t%d.- Global: %s *%s\n", idx, glbl.Name, types.Code(glbl.Meta).Name())
 		}
 
 	}
@@ -84,6 +86,9 @@ func buildStrStructs(prgrm *CXProgram, pkg *CXPackage, ast *string) {
 					k, fld.Name, GetFormattedType(prgrm, &fld))
 			} else if typeSignature.Type == TYPE_ATOMIC {
 				*ast += fmt.Sprintf("\t\t\t%d.- Field: %s %s\n",
+					k, typeSignature.Name, types.Code(typeSignature.Meta).Name())
+			} else if typeSignature.Type == TYPE_POINTER_ATOMIC {
+				*ast += fmt.Sprintf("\t\t\t%d.- Field: %s *%s\n",
 					k, typeSignature.Name, types.Code(typeSignature.Meta).Name())
 			}
 		}
@@ -192,6 +197,12 @@ func buildStrFunctions(prgrm *CXProgram, pkg *CXPackage, ast1 *string) {
 							lbl,
 							cxAtomicOpOutputTypeSignature.Name,
 							types.Code(cxAtomicOpOutputTypeSignature.Meta).Name())
+					} else if cxAtomicOpOutputTypeSignature.Type == TYPE_POINTER_ATOMIC {
+						*ast1 += fmt.Sprintf("\t\t\t%d.- Declaration%s: %s *%s\n",
+							k,
+							lbl,
+							cxAtomicOpOutputTypeSignature.Name,
+							types.Code(cxAtomicOpOutputTypeSignature.Meta).Name())
 					}
 				}
 			}
@@ -236,29 +247,17 @@ func getFormattedParam(prgrm *CXProgram, paramTypeSigIdxs []CXTypeSignatureIndex
 	for i, paramTypeSigIdx := range paramTypeSigIdxs {
 		paramTypeSig := prgrm.GetCXTypeSignatureFromArray(paramTypeSigIdx)
 
+		// Checking if this argument comes from an imported package.
+		externalPkg := false
+		if CXPackageIndex(pkg.Index) != paramTypeSig.Package {
+			externalPkg = true
+		}
 		if paramTypeSig.Type == TYPE_CXARGUMENT_DEPRECATE {
 			param := prgrm.GetCXArgFromArray(CXArgumentIndex(paramTypeSig.Meta))
-
 			elt := param.GetAssignmentElement(prgrm)
 
-			// Checking if this argument comes from an imported package.
-			externalPkg := false
-			if CXPackageIndex(pkg.Index) != param.Package {
-				externalPkg = true
-			}
-
 			buf.WriteString(fmt.Sprintf("%s %s", GetFormattedName(prgrm, param, externalPkg, pkg), GetFormattedType(prgrm, elt)))
-
-			if i != len(paramTypeSigIdxs)-1 {
-				buf.WriteString(", ")
-			}
 		} else if paramTypeSig.Type == TYPE_ATOMIC {
-			// Checking if this argument comes from an imported package.
-			externalPkg := false
-			if CXPackageIndex(pkg.Index) != paramTypeSig.Package {
-				externalPkg = true
-			}
-
 			name := paramTypeSig.Name
 
 			// If it's a literal, just override the name with LITERAL_PLACEHOLDER.
@@ -272,10 +271,25 @@ func getFormattedParam(prgrm *CXProgram, paramTypeSigIdxs []CXTypeSignatureIndex
 			}
 
 			buf.WriteString(fmt.Sprintf("%s %s", name, types.Code(paramTypeSig.Meta).Name()))
+		} else if paramTypeSig.Type == TYPE_POINTER_ATOMIC {
 
-			if i != len(paramTypeSigIdxs)-1 {
-				buf.WriteString(", ")
+			name := paramTypeSig.Name
+
+			// If it's a literal, just override the name with LITERAL_PLACEHOLDER.
+			if paramTypeSig.Name == "" {
+				name = constants.LITERAL_PLACEHOLDER
 			}
+
+			// TODO: Check if external pkg and pkg name shown are correct
+			if externalPkg {
+				name = fmt.Sprintf("%s.%s", pkg.Name, name)
+			}
+
+			buf.WriteString(fmt.Sprintf("%s *%s", name, types.Code(paramTypeSig.Meta).Name()))
+		}
+
+		if i != len(paramTypeSigIdxs)-1 {
+			buf.WriteString(", ")
 		}
 
 	}
@@ -339,7 +353,7 @@ func getNonCollectionValue(prgrm *CXProgram, fp types.Pointer, arg, elt *CXArgum
 			if typeSignature.Type == TYPE_CXARGUMENT_DEPRECATE {
 				fldIdx := typeSignature.Meta
 				fldTotalSize = prgrm.CXArgs[fldIdx].TotalSize
-			} else if typeSignature.Type == TYPE_ATOMIC {
+			} else if typeSignature.Type == TYPE_ATOMIC || typeSignature.Type == TYPE_POINTER_ATOMIC {
 				fldTotalSize = types.Code(typeSignature.Type).Size()
 			}
 
@@ -397,7 +411,7 @@ func ReadSliceElements(prgrm *CXProgram, fp types.Pointer, arg, elt *CXArgument,
 			if typeSignature.Type == TYPE_CXARGUMENT_DEPRECATE {
 				fldIdx := typeSignature.Meta
 				fldTotalSize = prgrm.CXArgs[fldIdx].TotalSize
-			} else if typeSignature.Type == TYPE_ATOMIC {
+			} else if typeSignature.Type == TYPE_ATOMIC || typeSignature.Type == TYPE_POINTER_ATOMIC {
 				fldTotalSize = types.Code(typeSignature.Type).Size()
 			}
 
@@ -518,9 +532,10 @@ func GetPrintableValue(prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSig
 
 			return val
 		}
-	} else if argTypeSig.Type == TYPE_ATOMIC {
-		// what to do with type atomic
-		panic("type is not cx argument deprecate")
+	} else if argTypeSig.Type == TYPE_ATOMIC || argTypeSig.Type == TYPE_POINTER_ATOMIC {
+		// TODO: what to do with type atomic
+		// temporary return 0 val
+		return "[]"
 	}
 
 	return getNonCollectionValue(prgrm, fp, arg, elt, typ)
@@ -795,6 +810,9 @@ func SignatureStringOfStruct(prgrm *CXProgram, s *CXStruct) string {
 
 		if typeSignature.Type == TYPE_ATOMIC {
 			fields += fmt.Sprintf(" %s %s;", typeSignature.Name, types.Code(typeSignature.Meta).Name())
+			continue
+		} else if typeSignature.Type == TYPE_POINTER_ATOMIC {
+			fields += fmt.Sprintf(" %s *%s;", typeSignature.Name, types.Code(typeSignature.Meta).Name())
 			continue
 		}
 

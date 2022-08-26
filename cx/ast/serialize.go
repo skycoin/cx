@@ -1105,14 +1105,14 @@ func deserializeExpression(sExpr *serializedExpression, s *SerializedCXProgram, 
 
 		inputCXArgsArray := deserializeArguments(sExpr.InputsOffset, sExpr.InputsSize, s, prgrm)
 		for _, inputCXArg := range inputCXArgsArray {
-			typeSignature := GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, inputCXArg)
+			typeSignature := GetCXTypeSignatureRepresentationOfCXArg(prgrm, inputCXArg)
 			typeSignatureIdx := prgrm.AddCXTypeSignatureInArray(typeSignature)
 			cxAtomicOp.AddInput(prgrm, typeSignatureIdx)
 		}
 
 		outputCXArgsArray := deserializeArguments(sExpr.OutputsOffset, sExpr.OutputsSize, s, prgrm)
 		for _, outputCXArg := range outputCXArgsArray {
-			typeSignature := GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, outputCXArg)
+			typeSignature := GetCXTypeSignatureRepresentationOfCXArg(prgrm, outputCXArg)
 			typeSignatureIdx := prgrm.AddCXTypeSignatureInArray(typeSignature)
 			cxAtomicOp.AddOutput(prgrm, typeSignatureIdx)
 		}

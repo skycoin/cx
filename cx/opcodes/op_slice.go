@@ -54,7 +54,7 @@ func opSliceAppend(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXV
 		if inp1.Type == types.POINTER {
 			inp1Type = inp1.PointerTargetType
 		}
-	} else if inputs[1].TypeSignature.Type == ast.TYPE_ATOMIC {
+	} else if inputs[1].TypeSignature.Type == ast.TYPE_ATOMIC || inputs[1].TypeSignature.Type == ast.TYPE_POINTER_ATOMIC {
 		inp1Type = types.Code(inputs[1].TypeSignature.Meta)
 	}
 
@@ -99,7 +99,7 @@ func opSliceAppend(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXV
 			if inp.Type == types.POINTER {
 				inpType = inp.PointerTargetType
 			}
-		} else if input.TypeSignature.Type == ast.TYPE_ATOMIC {
+		} else if input.TypeSignature.Type == ast.TYPE_ATOMIC || input.TypeSignature.Type == ast.TYPE_POINTER_ATOMIC {
 			inpType = types.Code(input.TypeSignature.Meta)
 		}
 
@@ -156,7 +156,7 @@ func opSliceInsertElement(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []
 		if inp0.Type == types.POINTER {
 			inp0Type = inp0.PointerTargetType
 		}
-	} else if inputs[0].TypeSignature.Type == ast.TYPE_ATOMIC {
+	} else if inputs[0].TypeSignature.Type == ast.TYPE_ATOMIC || inputs[0].TypeSignature.Type == ast.TYPE_POINTER_ATOMIC {
 		inp0 = &ast.CXArgument{}
 		inp0Type = types.Code(inputs[0].TypeSignature.Meta)
 	}
@@ -168,7 +168,7 @@ func opSliceInsertElement(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []
 		if inp2.Type == types.POINTER {
 			inp2Type = inp2.PointerTargetType
 		}
-	} else if inputs[2].TypeSignature.Type == ast.TYPE_ATOMIC {
+	} else if inputs[2].TypeSignature.Type == ast.TYPE_ATOMIC || inputs[2].TypeSignature.Type == ast.TYPE_POINTER_ATOMIC {
 		inp2 = &ast.CXArgument{}
 		inp2Type = types.Code(inputs[2].TypeSignature.Meta)
 	}
@@ -180,7 +180,7 @@ func opSliceInsertElement(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []
 		if out0.Type == types.POINTER {
 			out0Type = out0.PointerTargetType
 		}
-	} else if outputs[0].TypeSignature.Type == ast.TYPE_ATOMIC {
+	} else if outputs[0].TypeSignature.Type == ast.TYPE_ATOMIC || outputs[0].TypeSignature.Type == ast.TYPE_POINTER_ATOMIC {
 		out0 = &ast.CXArgument{}
 		out0Type = types.Code(outputs[0].TypeSignature.Meta)
 	}

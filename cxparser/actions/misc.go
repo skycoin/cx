@@ -95,7 +95,7 @@ func WritePrimaryExprs(prgrm *ast.CXProgram, typeCode types.Code, byts []byte, i
 	expr := ast.MakeAtomicOperatorExpression(prgrm, nil)
 	prgrm.CXAtomicOps[expr.Index].Package = ast.CXPackageIndex(pkg.Index)
 	argIdx := prgrm.AddCXArgInArray(arg)
-	typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(argIdx))
+	typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(argIdx))
 	typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
 	prgrm.CXAtomicOps[expr.Index].AddOutput(prgrm, typeSigIdx)
 
@@ -239,7 +239,7 @@ func PrimaryIdentifier(prgrm *ast.CXProgram, ident string) []ast.CXExpression {
 		panic(err)
 	}
 
-	typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(argIdx))
+	typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(argIdx))
 	typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
 	expression.AddOutput(prgrm, typeSigIdx)
 	expression.Package = ast.CXPackageIndex(pkg.Index)
@@ -267,6 +267,8 @@ func IsAllArgsBasicTypes(prgrm *ast.CXProgram, expr *ast.CXExpression) bool {
 				inpType = inp.PointerTargetType
 			}
 		} else if input.Type == ast.TYPE_ATOMIC {
+			inpType = types.Code(input.Meta)
+		} else if input.Type == ast.TYPE_POINTER_ATOMIC {
 			inpType = types.Code(input.Meta)
 		}
 
