@@ -284,212 +284,156 @@ func getOutputType(prgrm *ast.CXProgram, expr *ast.CXExpression) *ast.CXTypeSign
 	return expressionInputTypeSig
 }
 
-// Assignment handles assignment statements with different operators,
-// like =, :=, +=, *=.
+// ShortDeclarationAssignment handles short assignments for ":=" operators.
 //
 // Input arguments description:
 // 	prgrm - a CXProgram that contains all the data and array of the program.
-// 	toExprs, fromExprs - array of expressions where the assingment
-// 			  		  	 expression will be added.
-// 	assignOp - the assignment operator, "=", ":=", ">>=","<<=",
-// 			   "+=","-=","*=","/=","%=","&=","^=", and "|=".
-func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp string, fromExprs []ast.CXExpression) []ast.CXExpression {
-	lastFromExpressionIdx := len(fromExprs) - 1
-
+// 	pkg - the package the expression belongs.
+// 	toExprs - Contains the output cx arg to be added to the expression.
+// 	fromExprs - Contains the output cx arg to be added to the expression.
+func shortDeclarationAssignment(prgrm *ast.CXProgram, pkg *ast.CXPackage, toExprs []ast.CXExpression, fromExprs []ast.CXExpression) []ast.CXExpression {
 	toExpression, err := prgrm.GetCXAtomicOpFromExpressions(toExprs, 0)
 	if err != nil {
 		panic(err)
 	}
 
+	lastFromExpressionIdx := len(fromExprs) - 1
 	fromExpressionIdx := fromExprs[lastFromExpressionIdx].Index
 	fromExpressionOperator := prgrm.GetFunctionFromArray(prgrm.CXAtomicOps[fromExpressionIdx].Operator)
-	fromExpressionOperatorOutputs := fromExpressionOperator.GetOutputs(prgrm)
-	// Checking if we're trying to assign stuff from a function call
-	// And if that function call actually returns something. If not, throw an error.
-	if fromExpressionOperator != nil && len(fromExpressionOperatorOutputs) == 0 {
-		toExpressionOutputs := toExpression.GetOutputs(prgrm)
-		toExpressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(toExpressionOutputs[0])
 
-		var toExpressionOutputArg *ast.CXArgument = &ast.CXArgument{}
-		if toExpressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-			toExpressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(toExpressionOutputTypeSig.Meta))
-		} else {
-			panic("type is not cx argument deprecate\n\n")
-		}
+	expr := ast.MakeAtomicOperatorExpression(prgrm, nil)
+	expressionIdx := expr.Index
+	prgrm.CXAtomicOps[expressionIdx].Package = ast.CXPackageIndex(pkg.Index)
+	var sym *ast.CXArgument = &ast.CXArgument{}
 
-		println(ast.CompilationError(toExpressionOutputArg.ArgDetails.FileName, toExpressionOutputArg.ArgDetails.FileLine), "trying to use an outputless operator in an assignment")
-		os.Exit(constants.CX_COMPILATION_ERROR)
-	}
+	toExpressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(toExpression.GetOutputs(prgrm)[0])
 
-	pkg, err := prgrm.GetCurrentPackage()
+	fn, err := prgrm.GetCurrentFunction()
 	if err != nil {
 		panic(err)
 	}
 
-	var expr *ast.CXExpression
-
-	exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
-
-	switch assignOp {
-	case ":=":
-		expr = ast.MakeAtomicOperatorExpression(prgrm, nil)
-		expressionIdx := expr.Index
-		prgrm.CXAtomicOps[expressionIdx].Package = ast.CXPackageIndex(pkg.Index)
-		var sym *ast.CXArgument = &ast.CXArgument{}
-
-		toExpressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(toExpression.GetOutputs(prgrm)[0])
-
-		fn, err := prgrm.GetCurrentFunction()
-		if err != nil {
-			panic(err)
-		}
-
-		// Add name in fn.LocalVariables
-		err = fn.AddLocalVariableName(toExpressionOutputTypeSig.Name)
-		if err != nil {
-			panic(err)
-		}
-
-		var typeSigIdx ast.CXTypeSignatureIndex
-		if fromExpressionOperator == nil {
-			fromExpressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(prgrm.CXAtomicOps[fromExpressionIdx].GetOutputs(prgrm)[0])
-			var fromExpressionOutputArg *ast.CXArgument = &ast.CXArgument{}
-			if fromExpressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-				fromExpressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(fromExpressionOutputTypeSig.Meta))
-
-				// then it's a literal
-				sym = ast.MakeArgument(toExpressionOutputTypeSig.Name, CurrentFile, LineNo).SetType(fromExpressionOutputArg.Type)
-				sym.Package = ast.CXPackageIndex(pkg.Index)
-				sym.PreviouslyDeclared = true
-				symIdx := prgrm.AddCXArgInArray(sym)
-
-				typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(symIdx))
-				typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
-			} else if fromExpressionOutputTypeSig.Type == ast.TYPE_ATOMIC {
-				var newTypeSig ast.CXTypeSignature
-				newTypeSig = *fromExpressionOutputTypeSig
-				newTypeSig.Name = toExpressionOutputTypeSig.Name
-				typeSigIdx = prgrm.AddCXTypeSignatureInArray(&newTypeSig)
-			} else if fromExpressionOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
-				var newTypeSig ast.CXTypeSignature
-				newTypeSig = *fromExpressionOutputTypeSig
-				newTypeSig.Name = toExpressionOutputTypeSig.Name
-				typeSigIdx = prgrm.AddCXTypeSignatureInArray(&newTypeSig)
-			}
-
-		} else {
-			outTypeSig := getOutputType(prgrm, &fromExprs[lastFromExpressionIdx])
-
-			if outTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-				outTypeArg := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(outTypeSig.Meta))
-				outType := outTypeArg.Type
-				outTypeIsSlice := outTypeArg.IsSlice
-
-				sym = ast.MakeArgument(toExpressionOutputTypeSig.Name, CurrentFile, LineNo).SetType(outType)
-
-				if fromExprs[lastFromExpressionIdx].IsArrayLiteral() {
-					fromExpressionInputTypeSig := prgrm.GetCXTypeSignatureFromArray(prgrm.CXAtomicOps[fromExpressionIdx].GetInputs(prgrm)[0])
-					var fromExpressionInputArg *ast.CXArgument = &ast.CXArgument{}
-					if fromExpressionInputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-						fromExpressionInputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(fromExpressionInputTypeSig.Meta))
-					} else {
-						panic("type is not cx argument deprecate\n\n")
-					}
-
-					fromCXAtomicOpInputs := fromExpressionInputArg
-					sym.Size = fromCXAtomicOpInputs.Size
-					sym.TotalSize = fromCXAtomicOpInputs.TotalSize
-					sym.Lengths = fromCXAtomicOpInputs.Lengths
-				}
-				if outTypeIsSlice {
-					// if from[idx].Operator.ProgramOutput[0].IsSlice {
-					sym.Lengths = append([]types.Pointer{0}, sym.Lengths...)
-					sym.DeclarationSpecifiers = append(sym.DeclarationSpecifiers, constants.DECL_SLICE)
-				}
-
-				sym.IsSlice = outTypeIsSlice
-				sym.Package = ast.CXPackageIndex(pkg.Index)
-				sym.PreviouslyDeclared = true
-				sym.Offset = outTypeArg.Offset
-				symIdx := prgrm.AddCXArgInArray(sym)
-
-				typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(symIdx))
-				typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
-			} else if outTypeSig.Type == ast.TYPE_ATOMIC {
-				var newTypeSig ast.CXTypeSignature
-				newTypeSig = *outTypeSig
-				newTypeSig.Name = toExpressionOutputTypeSig.Name
-				typeSigIdx = prgrm.AddCXTypeSignatureInArray(&newTypeSig)
-			} else if outTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
-				// TODO: recheck if this should be pointer
-				// or the atomic type its pointing to.
-				var newTypeSig ast.CXTypeSignature
-				newTypeSig = *outTypeSig
-				newTypeSig.Name = toExpressionOutputTypeSig.Name
-				typeSigIdx = prgrm.AddCXTypeSignatureInArray(&newTypeSig)
-			}
-
-		}
-
-		prgrm.CXAtomicOps[expressionIdx].AddOutput(prgrm, typeSigIdx)
-
-		for _, toExpr := range toExprs {
-			if toExpr.Type == ast.CX_LINE {
-				continue
-			}
-			toExprAtomicOp, err := prgrm.GetCXAtomicOp(toExpr.Index)
-			if err != nil {
-				panic(err)
-			}
-
-			toExprAtomicOpOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(toExprAtomicOp.GetOutputs(prgrm)[0])
-			var toExprAtomicOpOutputIdx ast.CXArgumentIndex
-			if toExprAtomicOpOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-				toExprAtomicOpOutputIdx = ast.CXArgumentIndex(toExprAtomicOpOutputTypeSig.Meta)
-			} else {
-				panic("type is not type cx argument deprecate\n\n")
-			}
-
-			prgrm.CXArgs[toExprAtomicOpOutputIdx].PreviouslyDeclared = true
-
-			prgrm.CXArgs[toExprAtomicOpOutputIdx].Type = sym.Type
-			prgrm.CXArgs[toExprAtomicOpOutputIdx].PointerTargetType = sym.PointerTargetType
-			prgrm.CXArgs[toExprAtomicOpOutputIdx].Size = sym.Size
-			prgrm.CXArgs[toExprAtomicOpOutputIdx].TotalSize = sym.TotalSize
-		}
-
-		toExprs = append([]ast.CXExpression{*exprCXLine, *expr}, toExprs...)
-	case ">>=":
-		expr = ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_BITSHR])
-		return ShortAssignment(prgrm, expr, exprCXLine, toExprs, fromExprs, pkg)
-	case "<<=":
-		expr = ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_BITSHL])
-		return ShortAssignment(prgrm, expr, exprCXLine, toExprs, fromExprs, pkg)
-	case "+=":
-		expr = ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_ADD])
-		return ShortAssignment(prgrm, expr, exprCXLine, toExprs, fromExprs, pkg)
-	case "-=":
-		expr = ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_SUB])
-		return ShortAssignment(prgrm, expr, exprCXLine, toExprs, fromExprs, pkg)
-	case "*=":
-		expr = ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_MUL])
-		return ShortAssignment(prgrm, expr, exprCXLine, toExprs, fromExprs, pkg)
-	case "/=":
-		expr = ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_DIV])
-		return ShortAssignment(prgrm, expr, exprCXLine, toExprs, fromExprs, pkg)
-	case "%=":
-		expr = ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_MOD])
-		return ShortAssignment(prgrm, expr, exprCXLine, toExprs, fromExprs, pkg)
-	case "&=":
-		expr = ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_BITAND])
-		return ShortAssignment(prgrm, expr, exprCXLine, toExprs, fromExprs, pkg)
-	case "^=":
-		expr = ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_BITXOR])
-		return ShortAssignment(prgrm, expr, exprCXLine, toExprs, fromExprs, pkg)
-	case "|=":
-		expr = ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_BITOR])
-		return ShortAssignment(prgrm, expr, exprCXLine, toExprs, fromExprs, pkg)
+	// Add name in fn.LocalVariables since its a new local declaration
+	err = fn.AddLocalVariableName(toExpressionOutputTypeSig.Name)
+	if err != nil {
+		panic(err)
 	}
+
+	var typeSigIdx ast.CXTypeSignatureIndex
+	if fromExpressionOperator == nil {
+		fromExpressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(prgrm.CXAtomicOps[fromExpressionIdx].GetOutputs(prgrm)[0])
+		var fromExpressionOutputArg *ast.CXArgument = &ast.CXArgument{}
+		if fromExpressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			fromExpressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(fromExpressionOutputTypeSig.Meta))
+
+			// then it's a literal
+			sym = ast.MakeArgument(toExpressionOutputTypeSig.Name, CurrentFile, LineNo).SetType(fromExpressionOutputArg.Type)
+			sym.Package = ast.CXPackageIndex(pkg.Index)
+			sym.PreviouslyDeclared = true
+			symIdx := prgrm.AddCXArgInArray(sym)
+
+			typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(symIdx))
+			typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
+		} else if fromExpressionOutputTypeSig.Type == ast.TYPE_ATOMIC {
+			var newTypeSig ast.CXTypeSignature
+			newTypeSig = *fromExpressionOutputTypeSig
+			newTypeSig.Name = toExpressionOutputTypeSig.Name
+			typeSigIdx = prgrm.AddCXTypeSignatureInArray(&newTypeSig)
+		} else if fromExpressionOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
+			var newTypeSig ast.CXTypeSignature
+			newTypeSig = *fromExpressionOutputTypeSig
+			newTypeSig.Name = toExpressionOutputTypeSig.Name
+			typeSigIdx = prgrm.AddCXTypeSignatureInArray(&newTypeSig)
+		}
+
+	} else {
+		outTypeSig := getOutputType(prgrm, &fromExprs[lastFromExpressionIdx])
+
+		if outTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			outTypeArg := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(outTypeSig.Meta))
+			outType := outTypeArg.Type
+			outTypeIsSlice := outTypeArg.IsSlice
+
+			sym = ast.MakeArgument(toExpressionOutputTypeSig.Name, CurrentFile, LineNo).SetType(outType)
+
+			if fromExprs[lastFromExpressionIdx].IsArrayLiteral() {
+				fromExpressionInputTypeSig := prgrm.GetCXTypeSignatureFromArray(prgrm.CXAtomicOps[fromExpressionIdx].GetInputs(prgrm)[0])
+				var fromExpressionInputArg *ast.CXArgument = &ast.CXArgument{}
+				if fromExpressionInputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+					fromExpressionInputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(fromExpressionInputTypeSig.Meta))
+				} else {
+					panic("type is not cx argument deprecate\n\n")
+				}
+
+				fromCXAtomicOpInputs := fromExpressionInputArg
+				sym.Size = fromCXAtomicOpInputs.Size
+				sym.TotalSize = fromCXAtomicOpInputs.TotalSize
+				sym.Lengths = fromCXAtomicOpInputs.Lengths
+			}
+			if outTypeIsSlice {
+				// if from[idx].Operator.ProgramOutput[0].IsSlice {
+				sym.Lengths = append([]types.Pointer{0}, sym.Lengths...)
+				sym.DeclarationSpecifiers = append(sym.DeclarationSpecifiers, constants.DECL_SLICE)
+			}
+
+			sym.IsSlice = outTypeIsSlice
+			sym.Package = ast.CXPackageIndex(pkg.Index)
+			sym.PreviouslyDeclared = true
+			sym.Offset = outTypeArg.Offset
+			symIdx := prgrm.AddCXArgInArray(sym)
+
+			typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(symIdx))
+			typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
+		} else if outTypeSig.Type == ast.TYPE_ATOMIC {
+			var newTypeSig ast.CXTypeSignature
+			newTypeSig = *outTypeSig
+			newTypeSig.Name = toExpressionOutputTypeSig.Name
+			typeSigIdx = prgrm.AddCXTypeSignatureInArray(&newTypeSig)
+		} else if outTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
+			// TODO: recheck if this should be pointer
+			// or the atomic type its pointing to.
+			var newTypeSig ast.CXTypeSignature
+			newTypeSig = *outTypeSig
+			newTypeSig.Name = toExpressionOutputTypeSig.Name
+			typeSigIdx = prgrm.AddCXTypeSignatureInArray(&newTypeSig)
+		}
+
+	}
+
+	prgrm.CXAtomicOps[expressionIdx].AddOutput(prgrm, typeSigIdx)
+
+	for _, toExpr := range toExprs {
+		if toExpr.Type == ast.CX_LINE {
+			continue
+		}
+		toExprAtomicOp, err := prgrm.GetCXAtomicOp(toExpr.Index)
+		if err != nil {
+			panic(err)
+		}
+
+		toExprAtomicOpOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(toExprAtomicOp.GetOutputs(prgrm)[0])
+		var toExprAtomicOpOutputIdx ast.CXArgumentIndex
+		if toExprAtomicOpOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			toExprAtomicOpOutputIdx = ast.CXArgumentIndex(toExprAtomicOpOutputTypeSig.Meta)
+		} else {
+			panic("type is not type cx argument deprecate\n\n")
+		}
+
+		prgrm.CXArgs[toExprAtomicOpOutputIdx].PreviouslyDeclared = true
+
+		prgrm.CXArgs[toExprAtomicOpOutputIdx].Type = sym.Type
+		prgrm.CXArgs[toExprAtomicOpOutputIdx].PointerTargetType = sym.PointerTargetType
+		prgrm.CXArgs[toExprAtomicOpOutputIdx].Size = sym.Size
+		prgrm.CXArgs[toExprAtomicOpOutputIdx].TotalSize = sym.TotalSize
+	}
+
+	return append([]ast.CXExpression{*expr}, toExprs...)
+}
+
+func processAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fromExprs []ast.CXExpression, toExpression *ast.CXAtomicOperator) []ast.CXExpression {
+	lastFromExpressionIdx := len(fromExprs) - 1
+	fromExpressionIdx := fromExprs[lastFromExpressionIdx].Index
+	fromExpressionOperator := prgrm.GetFunctionFromArray(prgrm.CXAtomicOps[fromExpressionIdx].Operator)
 
 	toLastExpr, err := prgrm.GetCXAtomicOpFromExpressions(toExprs, len(toExprs)-1)
 	if err != nil {
@@ -546,74 +490,157 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 
 		return append(toExprs[:len(toExprs)-1], fromExprs...)
 	} else {
-		fromExpressionOperatorOutputs := fromExpressionOperator.GetOutputs(prgrm)
-		fromExpressionOperatorOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(fromExpressionOperatorOutputs[0])
-		var fromCXAtomicOpOperatorOutput *ast.CXArgument = &ast.CXArgument{}
-		if fromExpressionOperatorOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-			fromCXAtomicOpOperatorOutput = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(fromExpressionOperatorOutputTypeSig.Meta))
+		toExpressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(toExpression.GetOutputs(prgrm)[0])
+		var toExpressionOutputIdx ast.CXArgumentIndex
+		if toExpressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			toExpressionOutputIdx = ast.CXArgumentIndex(toExpressionOutputTypeSig.Meta)
 
-			if fromExpressionOperator.IsBuiltIn() {
-				// only assigning as if the operator had only one output defined
+			fromExpressionOperatorOutputs := fromExpressionOperator.GetOutputs(prgrm)
+			fromExpressionOperatorOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(fromExpressionOperatorOutputs[0])
+			var fromCXAtomicOpOperatorOutput *ast.CXArgument = &ast.CXArgument{}
+			if fromExpressionOperatorOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				fromCXAtomicOpOperatorOutput = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(fromExpressionOperatorOutputTypeSig.Meta))
+				if fromExpressionOperator.IsBuiltIn() {
+					// only assigning as if the operator had only one output defined
+					if fromExpressionOperator.AtomicOPCode != constants.OP_IDENTITY {
+						// it's a short variable declaration
+						prgrm.CXArgs[toExpressionOutputIdx].Size = fromCXAtomicOpOperatorOutput.Size
+						prgrm.CXArgs[toExpressionOutputIdx].Type = fromCXAtomicOpOperatorOutput.Type
+						prgrm.CXArgs[toExpressionOutputIdx].PointerTargetType = fromCXAtomicOpOperatorOutput.PointerTargetType
+						prgrm.CXArgs[toExpressionOutputIdx].Lengths = fromCXAtomicOpOperatorOutput.Lengths
+					}
 
-				toExpressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(toExpression.GetOutputs(prgrm)[0])
-
-				var toExpressionOutputIdx ast.CXArgumentIndex
-				if toExpressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-					toExpressionOutputIdx = ast.CXArgumentIndex(toExpressionOutputTypeSig.Meta)
+					prgrm.CXArgs[toExpressionOutputIdx].PassBy = fromCXAtomicOpOperatorOutput.PassBy
 				} else {
-					panic("type is not type cx argument deprecate\n\n")
-				}
-				if fromExpressionOperator.AtomicOPCode != constants.OP_IDENTITY {
-					// it's a short variable declaration
+					// we'll delegate multiple-value returns to the 'expression' grammar rule
+					// only assigning as if the operator had only one output defined
 					prgrm.CXArgs[toExpressionOutputIdx].Size = fromCXAtomicOpOperatorOutput.Size
 					prgrm.CXArgs[toExpressionOutputIdx].Type = fromCXAtomicOpOperatorOutput.Type
 					prgrm.CXArgs[toExpressionOutputIdx].PointerTargetType = fromCXAtomicOpOperatorOutput.PointerTargetType
 					prgrm.CXArgs[toExpressionOutputIdx].Lengths = fromCXAtomicOpOperatorOutput.Lengths
+					prgrm.CXArgs[toExpressionOutputIdx].PassBy = fromCXAtomicOpOperatorOutput.PassBy
 				}
+			} else if fromExpressionOperatorOutputTypeSig.Type == ast.TYPE_ATOMIC {
+				if fromExpressionOperator.IsBuiltIn() {
 
-				prgrm.CXArgs[toExpressionOutputIdx].PassBy = fromCXAtomicOpOperatorOutput.PassBy
-			} else {
-				// we'll delegate multiple-value returns to the 'expression' grammar rule
-				// only assigning as if the operator had only one output defined
-				toExpressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(toExpression.GetOutputs(prgrm)[0])
-
-				var toExpressionOutputIdx ast.CXArgumentIndex
-				if toExpressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-					toExpressionOutputIdx = ast.CXArgumentIndex(toExpressionOutputTypeSig.Meta)
+					// only assigning as if the operator had only one output defined
+					if fromExpressionOperator.AtomicOPCode != constants.OP_IDENTITY {
+						// it's a short variable declaration
+						prgrm.CXArgs[toExpressionOutputIdx].Type = types.Code(fromExpressionOperatorOutputTypeSig.Meta)
+					}
 				} else {
-					panic("type is not type cx argument deprecate\n\n")
+					// we'll delegate multiple-value returns to the 'expression' grammar rule
+					// only assigning as if the operator had only one output defined
+					prgrm.CXArgs[toExpressionOutputIdx].Type = types.Code(fromExpressionOperatorOutputTypeSig.Meta)
 				}
-
-				prgrm.CXArgs[toExpressionOutputIdx].Size = fromCXAtomicOpOperatorOutput.Size
-				prgrm.CXArgs[toExpressionOutputIdx].Type = fromCXAtomicOpOperatorOutput.Type
-				prgrm.CXArgs[toExpressionOutputIdx].PointerTargetType = fromCXAtomicOpOperatorOutput.PointerTargetType
-				prgrm.CXArgs[toExpressionOutputIdx].Lengths = fromCXAtomicOpOperatorOutput.Lengths
-				prgrm.CXArgs[toExpressionOutputIdx].PassBy = fromCXAtomicOpOperatorOutput.PassBy
-			}
-		} else if fromExpressionOperatorOutputTypeSig.Type == ast.TYPE_ATOMIC || fromExpressionOperatorOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
-			if fromExpressionOperator.IsBuiltIn() {
-				// only assigning as if the operator had only one output defined
-
-				toExpressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(toExpression.GetOutputs(prgrm)[0])
-				if fromExpressionOperator.AtomicOPCode != constants.OP_IDENTITY {
-					// it's a short variable declaration
-
-					toExpressionOutputTypeSig.Type = fromExpressionOperatorOutputTypeSig.Type
-					toExpressionOutputTypeSig.Meta = fromExpressionOperatorOutputTypeSig.Meta
-					toExpressionOutputTypeSig.Offset = fromExpressionOperatorOutputTypeSig.Offset
+			} else if fromExpressionOperatorOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
+				if fromExpressionOperator.IsBuiltIn() {
+					// only assigning as if the operator had only one output defined
+					if fromExpressionOperator.AtomicOPCode != constants.OP_IDENTITY {
+						// it's a short variable declaration
+						prgrm.CXArgs[toExpressionOutputIdx].Type = types.Code(fromExpressionOperatorOutputTypeSig.Meta)
+					}
+				} else {
+					// we'll delegate multiple-value returns to the 'expression' grammar rule
+					// only assigning as if the operator had only one output defined
+					prgrm.CXArgs[toExpressionOutputIdx].Type = types.POINTER
+					prgrm.CXArgs[toExpressionOutputIdx].PointerTargetType = types.Code(fromExpressionOperatorOutputTypeSig.Meta)
 				}
-			} else {
-				// we'll delegate multiple-value returns to the 'expression' grammar rule
-				// only assigning as if the operator had only one output defined
-				toExpressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(toExpression.GetOutputs(prgrm)[0])
-
-				toExpressionOutputTypeSig.Type = fromExpressionOperatorOutputTypeSig.Type
-				toExpressionOutputTypeSig.Meta = fromExpressionOperatorOutputTypeSig.Meta
-				toExpressionOutputTypeSig.Offset = fromExpressionOperatorOutputTypeSig.Offset
 			}
+		} else {
+			// do nothing
+			panic("type is not cx arg")
 		}
+
 		prgrm.CXAtomicOps[fromExpressionIdx].Outputs = toLastExpr.Outputs
 
 		return append(toExprs[:len(toExprs)-1], fromExprs...)
 	}
+}
+
+func checkIfFunctionCallNeedsAnOutput(prgrm *ast.CXProgram, fromExpressionOperator *ast.CXFunction, toExpression *ast.CXAtomicOperator) {
+	fromExpressionOperatorOutputs := fromExpressionOperator.GetOutputs(prgrm)
+
+	// Checking if we're trying to assign stuff from a function call
+	// And if that function call actually returns something. If not, throw an error.
+	if fromExpressionOperator != nil && len(fromExpressionOperatorOutputs) == 0 {
+		toExpressionOutputs := toExpression.GetOutputs(prgrm)
+		toExpressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(toExpressionOutputs[0])
+
+		var toExpressionOutputArg *ast.CXArgument = &ast.CXArgument{}
+		if toExpressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			toExpressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(toExpressionOutputTypeSig.Meta))
+		} else {
+			panic("type is not cx argument deprecate\n\n")
+		}
+
+		println(ast.CompilationError(toExpressionOutputArg.ArgDetails.FileName, toExpressionOutputArg.ArgDetails.FileLine), "trying to use an outputless operator in an assignment")
+		os.Exit(constants.CX_COMPILATION_ERROR)
+	}
+}
+
+// Assignment handles assignment statements with different operators,
+// like =, :=, +=, *=.
+//
+// Input arguments description:
+// 	prgrm - a CXProgram that contains all the data and array of the program.
+// 	toExprs, fromExprs - array of expressions where the assingment
+// 			  		  	 expression will be added.
+// 	assignOp - the assignment operator, "=", ":=", ">>=","<<=",
+// 			   "+=","-=","*=","/=","%=","&=","^=", and "|=".
+func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp string, fromExprs []ast.CXExpression) []ast.CXExpression {
+	toExpression, err := prgrm.GetCXAtomicOpFromExpressions(toExprs, 0)
+	if err != nil {
+		panic(err)
+	}
+
+	lastFromExpressionIdx := len(fromExprs) - 1
+	fromExpressionIdx := fromExprs[lastFromExpressionIdx].Index
+	fromExpressionOperator := prgrm.GetFunctionFromArray(prgrm.CXAtomicOps[fromExpressionIdx].Operator)
+
+	checkIfFunctionCallNeedsAnOutput(prgrm, fromExpressionOperator, toExpression)
+
+	pkg, err := prgrm.GetCurrentPackage()
+	if err != nil {
+		panic(err)
+	}
+
+	exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
+	switch assignOp {
+	case ":=":
+		shortDeclExprs := shortDeclarationAssignment(prgrm, pkg, toExprs, fromExprs)
+		toExprs = append([]ast.CXExpression{*exprCXLine}, shortDeclExprs...)
+	case ">>=":
+		expr := ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_BITSHR])
+		return ShortAssignment(prgrm, expr, exprCXLine, toExprs, fromExprs, pkg)
+	case "<<=":
+		expr := ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_BITSHL])
+		return ShortAssignment(prgrm, expr, exprCXLine, toExprs, fromExprs, pkg)
+	case "+=":
+		expr := ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_ADD])
+		return ShortAssignment(prgrm, expr, exprCXLine, toExprs, fromExprs, pkg)
+	case "-=":
+		expr := ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_SUB])
+		return ShortAssignment(prgrm, expr, exprCXLine, toExprs, fromExprs, pkg)
+	case "*=":
+		expr := ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_MUL])
+		return ShortAssignment(prgrm, expr, exprCXLine, toExprs, fromExprs, pkg)
+	case "/=":
+		expr := ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_DIV])
+		return ShortAssignment(prgrm, expr, exprCXLine, toExprs, fromExprs, pkg)
+	case "%=":
+		expr := ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_MOD])
+		return ShortAssignment(prgrm, expr, exprCXLine, toExprs, fromExprs, pkg)
+	case "&=":
+		expr := ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_BITAND])
+		return ShortAssignment(prgrm, expr, exprCXLine, toExprs, fromExprs, pkg)
+	case "^=":
+		expr := ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_BITXOR])
+		return ShortAssignment(prgrm, expr, exprCXLine, toExprs, fromExprs, pkg)
+	case "|=":
+		expr := ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_BITOR])
+		return ShortAssignment(prgrm, expr, exprCXLine, toExprs, fromExprs, pkg)
+	}
+
+	return processAssignment(prgrm, toExprs, fromExprs, toExpression)
 }
