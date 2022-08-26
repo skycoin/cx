@@ -453,9 +453,8 @@ func processAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fromExp
 		}
 
 		fromExpressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(prgrm.CXAtomicOps[fromExpressionIdx].GetOutputs(prgrm)[0])
-		var fromExpressionOutputArg *ast.CXArgument = &ast.CXArgument{}
 		if fromExpressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-			fromExpressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(fromExpressionOutputTypeSig.Meta))
+			fromExpressionOutputArg := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(fromExpressionOutputTypeSig.Meta))
 
 			prgrm.CXArgs[toExpressionOutputIdx].Size = fromExpressionOutputArg.Size
 			prgrm.CXArgs[toExpressionOutputIdx].TotalSize = fromExpressionOutputArg.TotalSize
@@ -497,9 +496,8 @@ func processAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fromExp
 
 			fromExpressionOperatorOutputs := fromExpressionOperator.GetOutputs(prgrm)
 			fromExpressionOperatorOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(fromExpressionOperatorOutputs[0])
-			var fromCXAtomicOpOperatorOutput *ast.CXArgument = &ast.CXArgument{}
 			if fromExpressionOperatorOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-				fromCXAtomicOpOperatorOutput = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(fromExpressionOperatorOutputTypeSig.Meta))
+				fromCXAtomicOpOperatorOutput := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(fromExpressionOperatorOutputTypeSig.Meta))
 				if fromExpressionOperator.IsBuiltIn() {
 					// only assigning as if the operator had only one output defined
 					if fromExpressionOperator.AtomicOPCode != constants.OP_IDENTITY {
@@ -521,25 +519,20 @@ func processAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fromExp
 					prgrm.CXArgs[toExpressionOutputIdx].PassBy = fromCXAtomicOpOperatorOutput.PassBy
 				}
 			} else if fromExpressionOperatorOutputTypeSig.Type == ast.TYPE_ATOMIC {
-				if fromExpressionOperator.IsBuiltIn() {
-
-					// only assigning as if the operator had only one output defined
-					if fromExpressionOperator.AtomicOPCode != constants.OP_IDENTITY {
-						// it's a short variable declaration
-						prgrm.CXArgs[toExpressionOutputIdx].Type = types.Code(fromExpressionOperatorOutputTypeSig.Meta)
-					}
+				// only assigning as if the operator had only one output defined
+				if fromExpressionOperator.IsBuiltIn() && fromExpressionOperator.AtomicOPCode != constants.OP_IDENTITY {
+					// it's a short variable declaration
+					prgrm.CXArgs[toExpressionOutputIdx].Type = types.Code(fromExpressionOperatorOutputTypeSig.Meta)
 				} else {
 					// we'll delegate multiple-value returns to the 'expression' grammar rule
 					// only assigning as if the operator had only one output defined
 					prgrm.CXArgs[toExpressionOutputIdx].Type = types.Code(fromExpressionOperatorOutputTypeSig.Meta)
 				}
 			} else if fromExpressionOperatorOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
-				if fromExpressionOperator.IsBuiltIn() {
-					// only assigning as if the operator had only one output defined
-					if fromExpressionOperator.AtomicOPCode != constants.OP_IDENTITY {
-						// it's a short variable declaration
-						prgrm.CXArgs[toExpressionOutputIdx].Type = types.Code(fromExpressionOperatorOutputTypeSig.Meta)
-					}
+				// only assigning as if the operator had only one output defined
+				if fromExpressionOperator.IsBuiltIn() && fromExpressionOperator.AtomicOPCode != constants.OP_IDENTITY {
+					// it's a short variable declaration
+					prgrm.CXArgs[toExpressionOutputIdx].Type = types.Code(fromExpressionOperatorOutputTypeSig.Meta)
 				} else {
 					// we'll delegate multiple-value returns to the 'expression' grammar rule
 					// only assigning as if the operator had only one output defined
@@ -547,9 +540,41 @@ func processAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fromExp
 					prgrm.CXArgs[toExpressionOutputIdx].PointerTargetType = types.Code(fromExpressionOperatorOutputTypeSig.Meta)
 				}
 			}
-		} else {
-			// do nothing
-			panic("type is not cx arg")
+		} else if toExpressionOutputTypeSig.Type == ast.TYPE_ATOMIC {
+			fromExpressionOperatorOutputs := fromExpressionOperator.GetOutputs(prgrm)
+			fromExpressionOperatorOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(fromExpressionOperatorOutputs[0])
+			if fromExpressionOperatorOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				fromCXAtomicOpOperatorOutput := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(fromExpressionOperatorOutputTypeSig.Meta))
+				// only assigning as if the operator had only one output defined
+				if fromExpressionOperator.IsBuiltIn() && fromExpressionOperator.AtomicOPCode != constants.OP_IDENTITY {
+					// it's a short variable declaration
+					toExpressionOutputTypeSig.Meta = int(fromCXAtomicOpOperatorOutput.Type)
+				} else {
+					// we'll delegate multiple-value returns to the 'expression' grammar rule
+					// only assigning as if the operator had only one output defined
+					toExpressionOutputTypeSig.Meta = int(fromCXAtomicOpOperatorOutput.Type)
+				}
+			} else if fromExpressionOperatorOutputTypeSig.Type == ast.TYPE_ATOMIC {
+				// only assigning as if the operator had only one output defined
+				if fromExpressionOperator.IsBuiltIn() && fromExpressionOperator.AtomicOPCode != constants.OP_IDENTITY {
+					// it's a short variable declaration
+					toExpressionOutputTypeSig.Meta = fromExpressionOperatorOutputTypeSig.Meta
+				} else {
+					// we'll delegate multiple-value returns to the 'expression' grammar rule
+					// only assigning as if the operator had only one output defined
+					toExpressionOutputTypeSig.Meta = fromExpressionOperatorOutputTypeSig.Meta
+				}
+			} else if fromExpressionOperatorOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
+				// only assigning as if the operator had only one output defined
+				if fromExpressionOperator.IsBuiltIn() && fromExpressionOperator.AtomicOPCode != constants.OP_IDENTITY {
+					// it's a short variable declaration
+					toExpressionOutputTypeSig.Meta = fromExpressionOperatorOutputTypeSig.Meta
+				} else {
+					// we'll delegate multiple-value returns to the 'expression' grammar rule
+					// only assigning as if the operator had only one output defined
+					toExpressionOutputTypeSig.Meta = fromExpressionOperatorOutputTypeSig.Meta
+				}
+			}
 		}
 
 		prgrm.CXAtomicOps[fromExpressionIdx].Outputs = toLastExpr.Outputs
