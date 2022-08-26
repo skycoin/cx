@@ -237,17 +237,19 @@ func DeclareGlobalInPackage_TYPE_ATOMIC(prgrm *ast.CXProgram, pkg *ast.CXPackage
 	// Treat the name a bit different whether it's defined already or not.
 	if glbl, err := pkg.GetGlobal(prgrm, declarator.Name); err == nil {
 		// then it was only added a reference to the symbol
-		var glblArg *ast.CXArgument = &ast.CXArgument{}
-		if declaration_specifiers.IsSlice { // TODO:PTR move branch in WritePrimary
-			glblArg = WritePrimary(prgrm, declaration_specifiers.Type,
-				make([]byte, types.POINTER_SIZE), true)
-		} else {
-			glblArg = WritePrimary(prgrm, declaration_specifiers.Type,
-				make([]byte, declaration_specifiers.TotalSize), false)
+
+		if glbl.Offset < 0 || !glbl.Offset.IsValid() {
+			var glblArg *ast.CXArgument = &ast.CXArgument{}
+			if declaration_specifiers.IsSlice { // TODO:PTR move branch in WritePrimary
+				glblArg = WritePrimary(prgrm, declaration_specifiers.Type,
+					make([]byte, types.POINTER_SIZE), true)
+			} else {
+				glblArg = WritePrimary(prgrm, declaration_specifiers.Type,
+					make([]byte, declaration_specifiers.TotalSize), false)
+			}
+
+			glbl.Offset = glblArg.Offset
 		}
-
-		glbl.Offset = glblArg.Offset
-
 		glbl.Type = ast.TYPE_ATOMIC
 		glbl.Meta = int(declaration_specifiers.Type)
 
