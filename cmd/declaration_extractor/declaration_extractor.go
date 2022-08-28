@@ -202,7 +202,7 @@ func ExtractEnums(source []byte, fileName string) ([]EnumDeclaration, error) {
 	reEnumInit := regexp.MustCompile(`const\s+\(`)
 	rePrtsOpen := regexp.MustCompile(`\(`)
 	rePrtsClose := regexp.MustCompile(`\)`)
-	reEnumDec := regexp.MustCompile(`([_a-zA-Z][_a-zA-Z0-9]*)\s+([_a-zA-Z][_a-zA-Z0-9]*)|([_a-zA-Z][_a-zA-Z0-9]*)`)
+	reEnumDec := regexp.MustCompile(`([_a-zA-Z][_a-zA-Z0-9]*)(?:\s+([_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*)){0,1}(?:\s*\=\s*[\s\S]+\S+){0,1}`)
 	// reNotSpace := regexp.MustCompile(`\S+`)
 
 	reader := bytes.NewReader(source)
@@ -261,25 +261,30 @@ func ExtractEnums(source []byte, fileName string) ([]EnumDeclaration, error) {
 		}
 
 		// if match is found and enum initialized and parenthesis depth is 1
-		if match := reEnumDec.FindSubmatchIndex(line); match != nil && inPrts == 1 && EnumInit {
+		if enumDec := reEnumDec.FindSubmatch(line); enumDec != nil && inPrts == 1 && EnumInit {
+
+			if !bytes.Equal(enumDec[0], bytes.TrimSpace(line)) {
+				return EnumDeclarationsArray, fmt.Errorf("%v: %v: syntax error: package declaration", fileName, lineno)
+			}
+
+			enumDecIdx := reEnumDec.FindIndex(line)
 
 			var tmp EnumDeclaration
 
 			tmp.PackageID = pkg
 			tmp.FileID = fileName
 
-			tmp.StartOffset = match[0] + currentOffset // offset is current line offset + match index
-			tmp.Length = match[1] - match[0]
+			tmp.StartOffset = enumDecIdx[0] + currentOffset // offset is current line offset + match index
+			tmp.Length = enumDecIdx[1] - enumDecIdx[0]
 			tmp.LineNumber = lineno
 
-			tmp.EnumName = string(source[match[6]+currentOffset : match[7]+currentOffset])
+			tmp.EnumName = string(enumDec[1])
 
 			// If there is type declaration for Enum declaration
 			// i.e. [enum] [type] = iota
 			// set the type to type in declaration
-			if match[2] != -1 {
-				Type = string(source[match[4]+currentOffset : match[5]+currentOffset])
-				tmp.EnumName = string(source[match[2]+currentOffset : match[3]+currentOffset])
+			if enumDec[2] != nil {
+				Type = string(enumDec[2])
 			}
 
 			// otherwise set it to previous type
