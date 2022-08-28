@@ -60,6 +60,15 @@ type FuncDeclaration struct {
 	FuncName    string // name of function being declared
 }
 
+type TypeDefinitionDeclaration struct {
+	PackageID          string // name of package
+	FileID             string // name of file
+	StartOffset        int    // offset with in the file starting from 'func'
+	Length             int    // length of entire declaration i.e. 'func [name] ()' or 'func [name] ([params])' or 'func [name] ([params]) [returns]'
+	LineNumber         int    // line number of declaration
+	TypeDefinitionName string // name of function being declared
+}
+
 // Modified ScanLines to include "\r\n" or "\n" in line
 func scanLinesWithLineTerminator(data []byte, atEOF bool) (advance int, token []byte, err error) {
 	if atEOF && len(data) == 0 {
