@@ -890,6 +890,8 @@ func TestDeclarationExtractor_ExtractAllDeclarations(t *testing.T) {
 	}
 }
 
+// Regex is slower because there’s a lot of conditionals and it’s a long pattern to match.
+// Tokenizing is faster but isn’t as accurate.
 func BenchmarkDeclarationExtractor_ExtractFuncs(b *testing.B) {
 	benchmarks := []struct {
 		scenario string
