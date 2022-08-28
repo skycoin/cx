@@ -3,7 +3,6 @@ package declaration_extractor_test
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -534,8 +533,6 @@ func TestDeclarationExtractor_ExtractFuncs(t *testing.T) {
 			}
 
 			gotFuncs, gotErr := declaration_extractor.ExtractFuncs(ReplaceCommentsWithWhitespaces, fileName)
-
-			fmt.Print(gotFuncs)
 
 			for _, wantFunc := range tc.wantFuncs {
 				var match bool

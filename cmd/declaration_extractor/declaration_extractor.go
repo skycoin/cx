@@ -203,7 +203,6 @@ func ExtractEnums(source []byte, fileName string) ([]EnumDeclaration, error) {
 	rePrtsOpen := regexp.MustCompile(`\(`)
 	rePrtsClose := regexp.MustCompile(`\)`)
 	reEnumDec := regexp.MustCompile(`([_a-zA-Z][_a-zA-Z0-9]*)(?:\s+([_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*)){0,1}(?:\s*\=\s*[\s\S]+\S+){0,1}`)
-	// reNotSpace := regexp.MustCompile(`\S+`)
 
 	reader := bytes.NewReader(source)
 	scanner := bufio.NewScanner(reader)
@@ -314,7 +313,7 @@ func ExtractStructs(source []byte, fileName string) ([]StructDeclaration, error)
 	reStructHeader := regexp.MustCompile(`type\s+([_a-zA-Z][_a-zA-Z0-9]*)\s+struct`)
 	reLeftBrace := regexp.MustCompile("{")
 	reRightBrace := regexp.MustCompile("}")
-	reStructField := regexp.MustCompile(`([_a-zA-Z][_a-zA-Z0-9]*)\s+(?:\[\d*\]\s*){0,1}[_a-zA-Z][_a-zA-Z0-9]*`)
+	reStructField := regexp.MustCompile(`([_a-zA-Z][_a-zA-Z0-9]*)\s+\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]\*{0,1}){0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*`)
 
 	reader := bytes.NewReader(source)
 	scanner := bufio.NewScanner(reader)
@@ -433,7 +432,7 @@ func ExtractFuncs(source []byte, fileName string) ([]FuncDeclaration, error) {
 
 		if match := reFunc.FindIndex(line); match != nil {
 
-			reFunc := regexp.MustCompile(`func(?:(?:\s*\(\s*[_a-zA-Z]\w*\s+\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]){0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*\s*\)\s*)|\s+)([_a-zA-Z]\w*)(?:\s*\(\s*(?:(?:[_a-zA-Z]\w*\s+\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]){0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*\s*,\s*)+[_a-zA-Z]\w*\s+\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]){0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*|(?:[_a-zA-Z]\w*\s+\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]){0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*){0,1})\s*\)){1,2}(?:\s*{){0,1}`)
+			reFunc := regexp.MustCompile(`func(?:(?:\s*\(\s*[_a-zA-Z]\w*\s+\*{0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*\s*\)\s*)|\s+)([_a-zA-Z]\w*)(?:\s*\(\s*(?:(?:[_a-zA-Z]\w*\s+\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]\*{0,1}){0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*\s*,\s*)+[_a-zA-Z]\w*\s+\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]\*{0,1}){0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*|(?:[_a-zA-Z]\w*\s+\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]\*{0,1}){0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*){0,1})\s*\)){1,2}(?:\s*{){0,1}`)
 
 			funcBytes := reFunc.FindSubmatch(line)
 			funcIdx := reFunc.FindIndex(line)
