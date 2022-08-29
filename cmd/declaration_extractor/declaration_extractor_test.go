@@ -253,11 +253,11 @@ func TestDeclarationExtractor_ExtractEnums(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
 			srcBytes, err := os.ReadFile(tc.testDir)
-			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(srcBytes)
-
 			if err != nil {
 				t.Fatal(err)
 			}
+
+			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(srcBytes)
 
 			gotEnums, gotErr := declaration_extractor.ExtractEnums(ReplaceCommentsWithWhitespaces, tc.testDir)
 
@@ -286,6 +286,89 @@ func TestDeclarationExtractor_ExtractEnums(t *testing.T) {
 	}
 }
 
+func TestDeclarationExtractor_ExtractTypeDefinitions(t *testing.T) {
+
+	tests := []struct {
+		scenario            string
+		testDir             string
+		wantTypeDefinitions []declaration_extractor.TypeDefinitionDeclaration
+		wantErr             error
+	}{
+		{
+			scenario: "Has Type Definitions",
+			testDir:  "./test_files/ExtractTypeDefinitions/HasTypeDefinitions.cx",
+			wantTypeDefinitions: []declaration_extractor.TypeDefinitionDeclaration{
+				{
+					PackageID:          "main",
+					FileID:             "./test_files/ExtractTypeDefinitions/HasTypeDefinitions.cx",
+					StartOffset:        14,
+					Length:             18,
+					LineNumber:         3,
+					TypeDefinitionName: "Direction",
+				},
+				{
+					PackageID:          "main",
+					FileID:             "./test_files/ExtractTypeDefinitions/HasTypeDefinitions.cx",
+					StartOffset:        100,
+					Length:             15,
+					LineNumber:         12,
+					TypeDefinitionName: "Season",
+				},
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.scenario, func(t *testing.T) {
+			srcBytes, err := os.ReadFile(tc.testDir)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(srcBytes)
+
+			gotTypeDefinitions, gotErr := declaration_extractor.ExtractTypeDefinitions(ReplaceCommentsWithWhitespaces, tc.testDir)
+
+			for _, wantTypeDef := range tc.wantTypeDefinitions {
+
+				wantTypeDef.StartOffset = setOffset(wantTypeDef.StartOffset, wantTypeDef.LineNumber)
+
+				var gotTypeDefF declaration_extractor.TypeDefinitionDeclaration
+				var match bool
+
+				for _, gotTypeDef := range gotTypeDefinitions {
+
+					if gotTypeDef.TypeDefinitionName == wantTypeDef.TypeDefinitionName {
+
+						gotTypeDefF = gotTypeDef
+						if gotTypeDef == wantTypeDef {
+							match = true
+						}
+
+						break
+					}
+				}
+
+				if !match {
+					t.Errorf("want type definition %v, got %v", wantTypeDef, gotTypeDefF)
+				}
+			}
+
+			if (gotErr != nil && tc.wantErr == nil) ||
+				(gotErr == nil && tc.wantErr != nil) {
+				t.Errorf("want error %v, got %v", tc.wantErr, gotErr)
+			}
+
+			if gotErr != nil && tc.wantErr != nil {
+				if gotErr.Error() != tc.wantErr.Error() {
+					t.Errorf("want error %v, got %v", tc.wantErr, gotErr)
+				}
+			}
+
+		})
+	}
+}
+
 func TestDeclarationExtractor_ExtractStructs(t *testing.T) {
 
 	tests := []struct {
@@ -302,7 +385,7 @@ func TestDeclarationExtractor_ExtractStructs(t *testing.T) {
 					PackageID:   "main",
 					FileID:      "./test_files/ExtractStructs/HasStructs.cx",
 					StartOffset: 58,
-					Length:      17,
+					Length:      19,
 					LineNumber:  5,
 					StructName:  "Point",
 					StructFields: []*declaration_extractor.StructField{
@@ -324,7 +407,7 @@ func TestDeclarationExtractor_ExtractStructs(t *testing.T) {
 					PackageID:   "main",
 					FileID:      "./test_files/ExtractStructs/HasStructs.cx",
 					StartOffset: 121,
-					Length:      19,
+					Length:      21,
 					LineNumber:  11,
 					StructName:  "Strings",
 					StructFields: []*declaration_extractor.StructField{
@@ -364,7 +447,7 @@ func TestDeclarationExtractor_ExtractStructs(t *testing.T) {
 					PackageID:   "main",
 					FileID:      "./test_files/ExtractStructs/HasStructs2.cx",
 					StartOffset: 14,
-					Length:      17,
+					Length:      19,
 					LineNumber:  3,
 					StructName:  "Point",
 					StructFields: []*declaration_extractor.StructField{
@@ -386,7 +469,7 @@ func TestDeclarationExtractor_ExtractStructs(t *testing.T) {
 					PackageID:   "main",
 					FileID:      "./test_files/ExtractStructs/HasStructs2.cx",
 					StartOffset: 51,
-					Length:      18,
+					Length:      20,
 					LineNumber:  8,
 					StructName:  "Canvas",
 					StructFields: []*declaration_extractor.StructField{
@@ -616,6 +699,11 @@ func TestDeclarationExtractor_ReDeclarationCheck(t *testing.T) {
 				t.Fatal(err)
 			}
 
+			typeDefinitions, err := declaration_extractor.ExtractTypeDefinitions(ReplaceCommentsWithWhitespaces, fileName)
+			if err != nil {
+				t.Fatal(err)
+			}
+
 			structs, err := declaration_extractor.ExtractStructs(ReplaceCommentsWithWhitespaces, fileName)
 			if err != nil {
 				t.Fatal(err)
@@ -626,7 +714,7 @@ func TestDeclarationExtractor_ReDeclarationCheck(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			gotReDeclarationError := declaration_extractor.ReDeclarationCheck(globals, enums, structs, funcs)
+			gotReDeclarationError := declaration_extractor.ReDeclarationCheck(globals, enums, typeDefinitions, structs, funcs)
 
 			if (gotReDeclarationError != nil && tc.wantReDeclarationError == nil) ||
 				(gotReDeclarationError == nil && tc.wantReDeclarationError != nil) {
@@ -704,6 +792,11 @@ func TestDeclarationExtractor_GetDeclarations(t *testing.T) {
 				t.Fatal(err)
 			}
 
+			typeDefinitions, err := declaration_extractor.ExtractTypeDefinitions(ReplaceCommentsWithWhitespaces, fileName)
+			if err != nil {
+				t.Fatal(err)
+			}
+
 			structs, err := declaration_extractor.ExtractStructs(ReplaceCommentsWithWhitespaces, fileName)
 			if err != nil {
 				t.Fatal(err)
@@ -714,7 +807,7 @@ func TestDeclarationExtractor_GetDeclarations(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			if declaration_extractor.ReDeclarationCheck(globals, enums, structs, funcs) != nil {
+			if declaration_extractor.ReDeclarationCheck(globals, enums, typeDefinitions, structs, funcs) != nil {
 				t.Fatal(err)
 			}
 

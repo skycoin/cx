@@ -310,7 +310,7 @@ func ExtractEnums(source []byte, fileName string) ([]EnumDeclaration, error) {
 
 }
 
-func ExtractTypeDefinition(source []byte, fileName string) ([]TypeDefinitionDeclaration, error) {
+func ExtractTypeDefinitions(source []byte, fileName string) ([]TypeDefinitionDeclaration, error) {
 
 	var TypeDefinitionDeclarationsArray []TypeDefinitionDeclaration
 	var pkg string
@@ -354,12 +354,15 @@ func ExtractTypeDefinition(source []byte, fileName string) ([]TypeDefinitionDecl
 				return TypeDefinitionDeclarationsArray, fmt.Errorf("%v: %v: syntax error: type definition declaration", fileName, lineno)
 			}
 
-			var tmp TypeDefinitionDeclaration
-			tmp.PackageID = pkg
-			tmp.FileID = fileName
-			tmp.StartOffset = typeDefinitionIdx[0]
-			tmp.Length = typeDefinitionIdx[1] - typeDefinitionIdx[0]
-			tmp.TypeDefinitionName = string(typeDefinition[1])
+			var typeDefinitionDeclaration TypeDefinitionDeclaration
+			typeDefinitionDeclaration.PackageID = pkg
+			typeDefinitionDeclaration.FileID = fileName
+			typeDefinitionDeclaration.StartOffset = typeDefinitionIdx[0] + currentOffset
+			typeDefinitionDeclaration.Length = typeDefinitionIdx[1] - typeDefinitionIdx[0]
+			typeDefinitionDeclaration.LineNumber = lineno
+			typeDefinitionDeclaration.TypeDefinitionName = string(typeDefinition[1])
+
+			TypeDefinitionDeclarationsArray = append(TypeDefinitionDeclarationsArray, typeDefinitionDeclaration)
 
 		}
 		currentOffset += len(line) // increments the currentOffset by line len
@@ -379,8 +382,8 @@ func ExtractStructs(source []byte, fileName string) ([]StructDeclaration, error)
 	reNotSpace := regexp.MustCompile(`\S+`)
 	rePkg := regexp.MustCompile("package")
 	rePkgName := regexp.MustCompile(`package\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
-	reStructHeader := regexp.MustCompile(`type\s+([_a-zA-Z][_a-zA-Z0-9]*)\s+struct(?:\s*{)`)
-	reLeftBrace := regexp.MustCompile("{")
+	reStruct := regexp.MustCompile(`type\s+[_a-zA-Z][_a-zA-Z0-9]*\s+struct`)
+	reStructHeader := regexp.MustCompile(`type\s+([_a-zA-Z][_a-zA-Z0-9]*)\s+struct\s*{`)
 	reRightBrace := regexp.MustCompile("}")
 	reStructField := regexp.MustCompile(`([_a-zA-Z][_a-zA-Z0-9]*)\s+\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]\*{0,1}){0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*`)
 
@@ -414,22 +417,28 @@ func ExtractStructs(source []byte, fileName string) ([]StructDeclaration, error)
 
 		// if struct declaration is found
 		// i.e. type [name] [type]
-		if match := reStructHeader.FindSubmatchIndex(line); match != nil && reLeftBrace.FindIndex(line)[0] > match[0] {
+		if reStruct.Find(line) != nil {
+
+			structHeader := reStructHeader.FindSubmatch(line)
+			structHeaderIdx := reStructHeader.FindIndex(line)
+			if !bytes.Equal(structHeader[0], bytes.TrimSpace(line)) {
+				return StructDeclarationsArray, fmt.Errorf("%v: %v: syntax error: struct declaration", fileName, lineno)
+			}
 
 			structDeclaration.PackageID = pkg
 			structDeclaration.FileID = fileName
 
-			structDeclaration.StartOffset = match[0] + currentOffset // offset is current line offset + match index
-			structDeclaration.Length = match[1] - match[0]
-			structDeclaration.StructName = string(source[match[2]+currentOffset : match[3]+currentOffset])
+			structDeclaration.StartOffset = structHeaderIdx[0] + currentOffset // offset is current line offset + match index
+			structDeclaration.Length = structHeaderIdx[1] - structHeaderIdx[0]
+			structDeclaration.StructName = string(structHeader[1])
 
 			structDeclaration.LineNumber = lineno
 
-			inBlock++
+			inBlock = true
 
 		}
 
-		if match := reRightBrace.FindIndex(line); match != nil && inBlock == 1 {
+		if match := reRightBrace.FindIndex(line); match != nil && inBlock {
 
 			inBlock = false
 			structDeclaration.StructFields = structFieldsArray
@@ -438,7 +447,7 @@ func ExtractStructs(source []byte, fileName string) ([]StructDeclaration, error)
 
 		}
 
-		if inBlock == 1 && structDeclaration.LineNumber < lineno {
+		if inBlock && structDeclaration.LineNumber < lineno {
 
 			var structField StructField
 			matchStructField := reStructField.FindSubmatch(line)
@@ -629,12 +638,14 @@ func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDecla
 	//Variable declarations
 	var Globals []GlobalDeclaration
 	var Enums []EnumDeclaration
+	var TypeDefinitions []TypeDefinitionDeclaration
 	var Structs []StructDeclaration
 	var Funcs []FuncDeclaration
 
 	//Channel declarations
 	globalChannel := make(chan []GlobalDeclaration, len(source))
 	enumChannel := make(chan []EnumDeclaration, len(source))
+	typeDefinitionChannel := make(chan []TypeDefinitionDeclaration, len(source))
 	structChannel := make(chan []StructDeclaration, len(source))
 	funcChannel := make(chan []FuncDeclaration, len(source))
 	errorChannel := make(chan error, len(source))
@@ -646,7 +657,7 @@ func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDecla
 
 		wg.Add(1)
 
-		go func(currentFile *os.File, globalChannel chan<- []GlobalDeclaration, enumChannel chan<- []EnumDeclaration, structChannel chan<- []StructDeclaration, funcChannel chan<- []FuncDeclaration, errorChannel chan<- error, wg *sync.WaitGroup) {
+		go func(currentFile *os.File, globalChannel chan<- []GlobalDeclaration, enumChannel chan<- []EnumDeclaration, typeDefinition chan<- []TypeDefinitionDeclaration, structChannel chan<- []StructDeclaration, funcChannel chan<- []FuncDeclaration, errorChannel chan<- error, wg *sync.WaitGroup) {
 
 			defer wg.Done()
 
@@ -659,7 +670,7 @@ func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDecla
 			fileName := currentFile.Name()
 			replaceComments := ReplaceCommentsWithWhitespaces(srcBytes)
 
-			wg.Add(4)
+			wg.Add(5)
 
 			go func(globalChannel chan<- []GlobalDeclaration, replaceComments []byte, fileName string, wg *sync.WaitGroup) {
 
@@ -691,6 +702,21 @@ func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDecla
 
 			}(enumChannel, replaceComments, fileName, wg)
 
+			go func(typeDefinitionChannel chan<- []TypeDefinitionDeclaration, replaceComments []byte, fileName string, wg *sync.WaitGroup) {
+
+				defer wg.Done()
+
+				typeDefinitions, err := ExtractTypeDefinitions(replaceComments, fileName)
+
+				if err != nil {
+					errorChannel <- err
+					return
+				}
+
+				typeDefinitionChannel <- typeDefinitions
+
+			}(typeDefinitionChannel, replaceComments, fileName, wg)
+
 			go func(structChannel chan<- []StructDeclaration, replaceComments []byte, fileName string, wg *sync.WaitGroup) {
 
 				defer wg.Done()
@@ -721,7 +747,7 @@ func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDecla
 
 			}(funcChannel, replaceComments, fileName, wg)
 
-		}(currentFile, globalChannel, enumChannel, structChannel, funcChannel, errorChannel, &wg)
+		}(currentFile, globalChannel, enumChannel, typeDefinitionChannel, structChannel, funcChannel, errorChannel, &wg)
 	}
 
 	wg.Wait()
@@ -729,12 +755,13 @@ func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDecla
 	// Close all channels for reading
 	close(globalChannel)
 	close(enumChannel)
+	close(typeDefinitionChannel)
 	close(structChannel)
 	close(funcChannel)
 	close(errorChannel)
 
 	//Read from channels concurrently
-	wg.Add(4)
+	wg.Add(5)
 
 	go func() {
 
@@ -753,6 +780,16 @@ func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDecla
 		}
 
 		wg.Done()
+	}()
+
+	go func() {
+
+		for typeDef := range typeDefinitionChannel {
+			TypeDefinitions = append(TypeDefinitions, typeDef...)
+		}
+
+		wg.Done()
+
 	}()
 
 	go func() {
@@ -782,7 +819,7 @@ func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDecla
 		return Globals, Enums, Structs, Funcs, err
 	}
 
-	reDeclarationCheck := ReDeclarationCheck(Globals, Enums, Structs, Funcs)
+	reDeclarationCheck := ReDeclarationCheck(Globals, Enums, TypeDefinitions, Structs, Funcs)
 
 	// there's declaration redeclared return values with error
 	if reDeclarationCheck != nil {
