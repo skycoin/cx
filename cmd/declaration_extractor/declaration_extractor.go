@@ -34,6 +34,15 @@ type EnumDeclaration struct {
 	EnumName    string // name of enum being declared
 }
 
+type TypeDefinitionDeclaration struct {
+	PackageID          string // name of package
+	FileID             string // name of file
+	StartOffset        int    // offset with in the file starting from 'type'
+	Length             int    // length of entire declaration i.e. 'type [name] [data type]'
+	LineNumber         int    // line number of declaration
+	TypeDefinitionName string // name of function being declared
+}
+
 type StructDeclaration struct {
 	PackageID    string         // name of package
 	FileID       string         // name of file
@@ -58,15 +67,6 @@ type FuncDeclaration struct {
 	Length      int    // length of entire declaration i.e. 'func [name] ()' or 'func [name] ([params])' or 'func [name] ([params]) [returns]'
 	LineNumber  int    // line number of declaration
 	FuncName    string // name of function being declared
-}
-
-type TypeDefinitionDeclaration struct {
-	PackageID          string // name of package
-	FileID             string // name of file
-	StartOffset        int    // offset with in the file starting from 'func'
-	Length             int    // length of entire declaration i.e. 'func [name] ()' or 'func [name] ([params])' or 'func [name] ([params]) [returns]'
-	LineNumber         int    // line number of declaration
-	TypeDefinitionName string // name of function being declared
 }
 
 // Modified ScanLines to include "\r\n" or "\n" in line
@@ -310,16 +310,76 @@ func ExtractEnums(source []byte, fileName string) ([]EnumDeclaration, error) {
 
 }
 
+func ExtractTypeDefinition(source []byte, fileName string) ([]TypeDefinitionDeclaration, error) {
+
+	var TypeDefinitionDeclarationsArray []TypeDefinitionDeclaration
+	var pkg string
+
+	// Regexes
+	rePkg := regexp.MustCompile("package")
+	rePkgName := regexp.MustCompile(`package\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
+	reTypeDefinition := regexp.MustCompile(`type\s+([_a-zA-Z][_a-zA-Z0-9]*)\s+([_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*)`)
+
+	reader := bytes.NewReader(source)
+	scanner := bufio.NewScanner(reader)
+	scanner.Split(scanLinesWithLineTerminator) // set scanner SplitFunc to custom ScanLines func at line 55
+
+	var currentOffset int // offset of current line
+	var lineno int        // line number
+
+	//Reading code line by line
+	for scanner.Scan() {
+		line := scanner.Bytes()
+		lineno++
+
+		// Package declaration extraction
+		if rePkg.FindIndex(line) != nil {
+
+			matchPkg := rePkgName.FindSubmatch(line)
+
+			if !bytes.Equal(matchPkg[0], bytes.TrimSpace(line)) {
+				return TypeDefinitionDeclarationsArray, fmt.Errorf("%v: %v: syntax error: package declaration", fileName, lineno)
+			}
+
+			pkg = string(matchPkg[1])
+
+		}
+
+		typeDefinition := reTypeDefinition.FindSubmatch(line)
+		typeDefinitionIdx := reTypeDefinition.FindSubmatchIndex(line)
+
+		if typeDefinition != nil && !bytes.Contains(typeDefinition[2], []byte("struct")) {
+
+			if !bytes.Equal(typeDefinition[0], bytes.TrimSpace(line)) {
+				return TypeDefinitionDeclarationsArray, fmt.Errorf("%v: %v: syntax error: type definition declaration", fileName, lineno)
+			}
+
+			var tmp TypeDefinitionDeclaration
+			tmp.PackageID = pkg
+			tmp.FileID = fileName
+			tmp.StartOffset = typeDefinitionIdx[0]
+			tmp.Length = typeDefinitionIdx[1] - typeDefinitionIdx[0]
+			tmp.TypeDefinitionName = string(typeDefinition[1])
+
+		}
+		currentOffset += len(line) // increments the currentOffset by line len
+
+	}
+
+	return TypeDefinitionDeclarationsArray, nil
+
+}
+
 func ExtractStructs(source []byte, fileName string) ([]StructDeclaration, error) {
 
 	var StructDeclarationsArray []StructDeclaration
 	var pkg string
 
-	// Package
+	// Regexes
 	reNotSpace := regexp.MustCompile(`\S+`)
 	rePkg := regexp.MustCompile("package")
 	rePkgName := regexp.MustCompile(`package\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
-	reStructHeader := regexp.MustCompile(`type\s+([_a-zA-Z][_a-zA-Z0-9]*)\s+struct`)
+	reStructHeader := regexp.MustCompile(`type\s+([_a-zA-Z][_a-zA-Z0-9]*)\s+struct(?:\s*{)`)
 	reLeftBrace := regexp.MustCompile("{")
 	reRightBrace := regexp.MustCompile("}")
 	reStructField := regexp.MustCompile(`([_a-zA-Z][_a-zA-Z0-9]*)\s+\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]\*{0,1}){0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*`)
@@ -330,7 +390,7 @@ func ExtractStructs(source []byte, fileName string) ([]StructDeclaration, error)
 
 	var currentOffset int                   // offset of current line
 	var lineno int                          // line number
-	var inBlock int                         // inBlock
+	var inBlock bool                        // inBlock
 	var structDeclaration StructDeclaration // temporary variable for Struct Declaration
 	var structFieldsArray []*StructField    // struct fields
 
@@ -371,7 +431,7 @@ func ExtractStructs(source []byte, fileName string) ([]StructDeclaration, error)
 
 		if match := reRightBrace.FindIndex(line); match != nil && inBlock == 1 {
 
-			inBlock--
+			inBlock = false
 			structDeclaration.StructFields = structFieldsArray
 			StructDeclarationsArray = append(StructDeclarationsArray, structDeclaration)
 			structFieldsArray = []*StructField{}
@@ -481,7 +541,7 @@ func ExtractFuncs(source []byte, fileName string) ([]FuncDeclaration, error) {
 	return FuncDeclarationsArray, nil
 }
 
-func ReDeclarationCheck(Glbl []GlobalDeclaration, Enum []EnumDeclaration, Strct []StructDeclaration, Func []FuncDeclaration) error {
+func ReDeclarationCheck(Glbl []GlobalDeclaration, Enum []EnumDeclaration, TypeDef []TypeDefinitionDeclaration, Strct []StructDeclaration, Func []FuncDeclaration) error {
 
 	var err error
 
