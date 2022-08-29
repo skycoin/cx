@@ -214,7 +214,12 @@ func GetCXTypeSignatureRepresentationOfCXArg_ForStructs(prgrm *CXProgram, cxArgu
 		// If pointer atomic, i.e. *i32, *f32, etc.
 	} else if IsTypePointerAtomic(cxArgument) {
 		newCXTypeSignature.Type = TYPE_POINTER_ATOMIC
-		newCXTypeSignature.Meta = int(cxArgument.PointerTargetType)
+		newCXTypeSignature.Offset = cxArgument.Offset
+
+		newCXTypeSignature.Meta = int(cxArgument.Type)
+		if cxArgument.Type == types.STR || cxArgument.StructType != nil {
+			newCXTypeSignature.Meta = int(cxArgument.PointerTargetType)
+		}
 
 		// If simple array atomic type, i.e. [5]i32, [2]f64, etc.
 	} else if IsTypeArrayAtomic(cxArgument) {
@@ -264,8 +269,12 @@ func GetCXTypeSignatureRepresentationOfCXArg(prgrm *CXProgram, cxArgument *CXArg
 		newCXTypeSignature.Offset = cxArgument.Offset
 	} else if IsTypePointerAtomic(cxArgument) {
 		newCXTypeSignature.Type = TYPE_POINTER_ATOMIC
-		newCXTypeSignature.Meta = int(cxArgument.PointerTargetType)
 		newCXTypeSignature.Offset = cxArgument.Offset
+
+		newCXTypeSignature.Meta = int(cxArgument.Type)
+		if cxArgument.Type == types.STR || cxArgument.StructType != nil {
+			newCXTypeSignature.Meta = int(cxArgument.PointerTargetType)
+		}
 	} else {
 		// TYPE_CXARGUMENT_DEPRECATE
 		// FieldIdx or the CXArg ID is in Meta field.
