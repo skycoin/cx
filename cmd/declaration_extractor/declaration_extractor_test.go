@@ -91,7 +91,7 @@ func TestDeclarationExtractor_ExtractGlobals(t *testing.T) {
 				{
 					PackageID:          "main",
 					FileID:             "./test_files/ExtractGlobals/HasGlobals.cx",
-					StartOffset:        setOffset(222, 15),
+					StartOffset:        222,
 					Length:             30,
 					LineNumber:         15,
 					GlobalVariableName: "fooV",
@@ -99,7 +99,7 @@ func TestDeclarationExtractor_ExtractGlobals(t *testing.T) {
 				{
 					PackageID:          "main",
 					FileID:             "./test_files/ExtractGlobals/HasGlobals.cx",
-					StartOffset:        setOffset(253, 16),
+					StartOffset:        253,
 					Length:             16,
 					LineNumber:         16,
 					GlobalVariableName: "fooA",
@@ -107,7 +107,7 @@ func TestDeclarationExtractor_ExtractGlobals(t *testing.T) {
 				{
 					PackageID:          "main",
 					FileID:             "./test_files/ExtractGlobals/HasGlobals.cx",
-					StartOffset:        setOffset(270, 17),
+					StartOffset:        270,
 					Length:             12,
 					LineNumber:         17,
 					GlobalVariableName: "fooR",
@@ -122,7 +122,7 @@ func TestDeclarationExtractor_ExtractGlobals(t *testing.T) {
 				{
 					PackageID:          "main",
 					FileID:             "./test_files/ExtractGlobals/HasGlobals2.cx",
-					StartOffset:        setOffset(153, 12),
+					StartOffset:        153,
 					Length:             56,
 					LineNumber:         12,
 					GlobalVariableName: "fooV",
@@ -148,6 +148,8 @@ func TestDeclarationExtractor_ExtractGlobals(t *testing.T) {
 
 			for _, wantGlobal := range tc.wantGlobals {
 
+				wantGlobal.StartOffset = setOffset(wantGlobal.StartOffset, wantGlobal.LineNumber)
+
 				var match bool = false
 				var gotGlobalF declaration_extractor.GlobalDeclaration
 
@@ -170,6 +172,17 @@ func TestDeclarationExtractor_ExtractGlobals(t *testing.T) {
 				}
 
 			}
+
+			if (gotErr != nil && tc.wantErr == nil) ||
+				(gotErr == nil && tc.wantErr != nil) {
+				t.Errorf("want error %v, got %v", tc.wantErr, gotErr)
+			}
+
+			if gotErr != nil && tc.wantErr != nil {
+				if gotErr.Error() != tc.wantErr.Error() {
+					t.Errorf("want error %v, got %v", tc.wantErr, gotErr)
+				}
+			}
 		})
 	}
 }
@@ -189,7 +202,7 @@ func TestDeclarationExtractor_ExtractEnums(t *testing.T) {
 				{
 					PackageID:   "main",
 					FileID:      "./test_files/ExtractEnums/HasEnums.cx",
-					StartOffset: setOffset(26, 4),
+					StartOffset: 26,
 					Length:      17,
 					LineNumber:  4,
 					Type:        "int",
@@ -199,7 +212,7 @@ func TestDeclarationExtractor_ExtractEnums(t *testing.T) {
 				{
 					PackageID:   "main",
 					FileID:      "./test_files/ExtractEnums/HasEnums.cx",
-					StartOffset: setOffset(45, 5),
+					StartOffset: 45,
 					Length:      6,
 					LineNumber:  5,
 					Type:        "int",
@@ -209,7 +222,7 @@ func TestDeclarationExtractor_ExtractEnums(t *testing.T) {
 				{
 					PackageID:   "main",
 					FileID:      "./test_files/ExtractEnums/HasEnums.cx",
-					StartOffset: setOffset(53, 6),
+					StartOffset: 53,
 					Length:      6,
 					LineNumber:  6,
 					Type:        "int",
@@ -219,7 +232,7 @@ func TestDeclarationExtractor_ExtractEnums(t *testing.T) {
 				{
 					PackageID:   "main",
 					FileID:      "./test_files/ExtractEnums/HasEnums.cx",
-					StartOffset: setOffset(61, 7),
+					StartOffset: 61,
 					Length:      6,
 					LineNumber:  7,
 					Type:        "int",
@@ -229,7 +242,7 @@ func TestDeclarationExtractor_ExtractEnums(t *testing.T) {
 				{
 					PackageID:   "main",
 					FileID:      "./test_files/ExtractEnums/HasEnums.cx",
-					StartOffset: setOffset(83, 11),
+					StartOffset: 83,
 					Length:      11,
 					LineNumber:  11,
 					Type:        "",
@@ -239,7 +252,7 @@ func TestDeclarationExtractor_ExtractEnums(t *testing.T) {
 				{
 					PackageID:   "main",
 					FileID:      "./test_files/ExtractEnums/HasEnums.cx",
-					StartOffset: setOffset(99, 12),
+					StartOffset: 99,
 					Length:      11,
 					LineNumber:  12,
 					Type:        "",
@@ -262,8 +275,12 @@ func TestDeclarationExtractor_ExtractEnums(t *testing.T) {
 			gotEnums, gotErr := declaration_extractor.ExtractEnums(ReplaceCommentsWithWhitespaces, tc.testDir)
 
 			for _, wantEnum := range tc.wantEnums {
+
+				wantEnum.StartOffset = setOffset(wantEnum.StartOffset, wantEnum.LineNumber)
+
 				var match bool
 				var gotEnumF declaration_extractor.EnumDeclaration
+
 				for _, gotEnum := range gotEnums {
 					if gotEnum.EnumName == wantEnum.EnumName {
 						if gotEnum == wantEnum {
@@ -279,9 +296,17 @@ func TestDeclarationExtractor_ExtractEnums(t *testing.T) {
 				}
 			}
 
-			if gotErr != tc.wantErr {
-				t.Errorf("want err %v, got %v", tc.wantErr, gotErr)
+			if (gotErr != nil && tc.wantErr == nil) ||
+				(gotErr == nil && tc.wantErr != nil) {
+				t.Errorf("want error %v, got %v", tc.wantErr, gotErr)
 			}
+
+			if gotErr != nil && tc.wantErr != nil {
+				if gotErr.Error() != tc.wantErr.Error() {
+					t.Errorf("want error %v, got %v", tc.wantErr, gotErr)
+				}
+			}
+
 		})
 	}
 }
@@ -385,7 +410,7 @@ func TestDeclarationExtractor_ExtractStructs(t *testing.T) {
 					PackageID:   "main",
 					FileID:      "./test_files/ExtractStructs/HasStructs.cx",
 					StartOffset: 58,
-					Length:      19,
+					Length:      17,
 					LineNumber:  5,
 					StructName:  "Point",
 					StructFields: []*declaration_extractor.StructField{
@@ -407,7 +432,7 @@ func TestDeclarationExtractor_ExtractStructs(t *testing.T) {
 					PackageID:   "main",
 					FileID:      "./test_files/ExtractStructs/HasStructs.cx",
 					StartOffset: 121,
-					Length:      21,
+					Length:      19,
 					LineNumber:  11,
 					StructName:  "Strings",
 					StructFields: []*declaration_extractor.StructField{
@@ -447,7 +472,7 @@ func TestDeclarationExtractor_ExtractStructs(t *testing.T) {
 					PackageID:   "main",
 					FileID:      "./test_files/ExtractStructs/HasStructs2.cx",
 					StartOffset: 14,
-					Length:      19,
+					Length:      17,
 					LineNumber:  3,
 					StructName:  "Point",
 					StructFields: []*declaration_extractor.StructField{
@@ -469,7 +494,7 @@ func TestDeclarationExtractor_ExtractStructs(t *testing.T) {
 					PackageID:   "main",
 					FileID:      "./test_files/ExtractStructs/HasStructs2.cx",
 					StartOffset: 51,
-					Length:      20,
+					Length:      18,
 					LineNumber:  8,
 					StructName:  "Canvas",
 					StructFields: []*declaration_extractor.StructField{
@@ -488,15 +513,12 @@ func TestDeclarationExtractor_ExtractStructs(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
 			srcBytes, err := os.ReadFile(tc.testDir)
-			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(srcBytes)
 			if err != nil {
 				t.Fatal(err)
 			}
+			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(srcBytes)
 
 			gotStructs, gotErr := declaration_extractor.ExtractStructs(ReplaceCommentsWithWhitespaces, tc.testDir)
-			if err != nil {
-				t.Fatal(err)
-			}
 
 			for _, wantStruct := range tc.wantStructs {
 
@@ -551,8 +573,15 @@ func TestDeclarationExtractor_ExtractStructs(t *testing.T) {
 				}
 			}
 
-			if gotErr != tc.wantErr {
-				t.Errorf("want err %v, got %v", tc.wantErr, gotErr)
+			if (gotErr != nil && tc.wantErr == nil) ||
+				(gotErr == nil && tc.wantErr != nil) {
+				t.Errorf("want error %v, got %v", tc.wantErr, gotErr)
+			}
+
+			if gotErr != nil && tc.wantErr != nil {
+				if gotErr.Error() != tc.wantErr.Error() {
+					t.Errorf("want error %v, got %v", tc.wantErr, gotErr)
+				}
 			}
 		})
 	}
@@ -573,32 +602,32 @@ func TestDeclarationExtractor_ExtractFuncs(t *testing.T) {
 				{
 					PackageID:   "main",
 					FileID:      "./test_files/ExtractFuncs/HasFuncs.cx",
-					StartOffset: setOffset(322, 20),
-					Length:      14,
+					StartOffset: 322,
+					Length:      12,
 					LineNumber:  20,
 					FuncName:    "main",
 				},
 				{
 					PackageID:   "main",
 					FileID:      "./test_files/ExtractFuncs/HasFuncs.cx",
-					StartOffset: setOffset(14, 3),
-					Length:      55,
+					StartOffset: 14,
+					Length:      53,
 					LineNumber:  3,
 					FuncName:    "addition",
 				},
 				{
 					PackageID:   "main",
 					FileID:      "./test_files/ExtractFuncs/HasFuncs.cx",
-					StartOffset: setOffset(104, 7),
-					Length:      52,
+					StartOffset: 104,
+					Length:      50,
 					LineNumber:  7,
 					FuncName:    "minus",
 				},
 				{
 					PackageID:   "main",
 					FileID:      "./test_files/ExtractFuncs/HasFuncs.cx",
-					StartOffset: setOffset(226, 15),
-					Length:      31,
+					StartOffset: 226,
+					Length:      29,
 					LineNumber:  15,
 					FuncName:    "printName",
 				},
@@ -609,17 +638,21 @@ func TestDeclarationExtractor_ExtractFuncs(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
 			srcBytes, err := os.ReadFile(tc.testDir)
-			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(srcBytes)
-			fileName := tc.testDir
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			gotFuncs, gotErr := declaration_extractor.ExtractFuncs(ReplaceCommentsWithWhitespaces, fileName)
+			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(srcBytes)
+
+			gotFuncs, gotErr := declaration_extractor.ExtractFuncs(ReplaceCommentsWithWhitespaces, tc.testDir)
 
 			for _, wantFunc := range tc.wantFuncs {
+
+				wantFunc.StartOffset = setOffset(wantFunc.StartOffset, wantFunc.LineNumber)
+
 				var match bool
 				var gotFuncF declaration_extractor.FuncDeclaration
+
 				for _, gotFunc := range gotFuncs {
 					if gotFunc.FuncName == wantFunc.FuncName {
 						if gotFunc == wantFunc {
@@ -634,8 +667,15 @@ func TestDeclarationExtractor_ExtractFuncs(t *testing.T) {
 				}
 			}
 
-			if gotErr != tc.wantErr {
+			if (gotErr != nil && tc.wantErr == nil) ||
+				(gotErr == nil && tc.wantErr != nil) {
 				t.Errorf("want error %v, got %v", tc.wantErr, gotErr)
+			}
+
+			if gotErr != nil && tc.wantErr != nil {
+				if gotErr.Error() != tc.wantErr.Error() {
+					t.Errorf("want error %v, got %v", tc.wantErr, gotErr)
+				}
 			}
 		})
 	}
@@ -739,36 +779,17 @@ func TestDeclarationExtractor_GetDeclarations(t *testing.T) {
 	}{
 		{
 			scenario: "Has declarations",
-			testDir:  "./test_files/test.cx",
+			testDir:  "./test_files/GetDeclarations/HasDeclarations.cx",
 			wantDeclarations: []string{
-				"var apple string",
-				"var banana string",
-				"North Direction",
-				"South",
-				"East",
-				"West",
-				"First Number",
-				"Second",
-				"type person struct",
-				"type animal                      struct",
-				"type Direction int",
+				"var number i32",
+				`var string str = "Hello World"`,
+				"Apple fruit = iota",
+				"Orange",
+				"Banana",
+				"type fruit i64",
+				"type Blender struct",
+				"func (b *Blender) blend ()",
 				"func main ()",
-				"func functionTwo ()",
-				"func functionWithSingleReturn () string",
-			},
-		},
-		{
-			scenario: "Has declarations 2",
-			testDir:  "./test_files/test_2.cx",
-			wantDeclarations: []string{
-				"var global string",
-				"Spring string",
-				"Summer",
-				"Autumn",
-				"Winter",
-				"type object struct",
-				"func add(obj *object, name string, number int)",
-				"func main()",
 			},
 		},
 	}
@@ -811,7 +832,7 @@ func TestDeclarationExtractor_GetDeclarations(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			declarations := declaration_extractor.GetDeclarations(srcBytes, globals, enums, structs, funcs)
+			declarations := declaration_extractor.GetDeclarations(srcBytes, globals, enums, typeDefinitions, structs, funcs)
 
 			for i := range declarations {
 				if declarations[i] != tc.wantDeclarations[i] {
@@ -948,7 +969,7 @@ func TestDeclarationExtractor_ExtractAllDeclarations(t *testing.T) {
 				files = append(files, file)
 			}
 
-			Globals, Enums, Structs, Funcs, Err := declaration_extractor.ExtractAllDeclarations(files)
+			Globals, Enums, Structs, Funcs, gotErr := declaration_extractor.ExtractAllDeclarations(files)
 
 			if len(Globals) == 0 && len(Enums) == 0 && len(Structs) == 0 && len(Funcs) == 0 {
 				t.Error("No Declarations found")
@@ -970,13 +991,14 @@ func TestDeclarationExtractor_ExtractAllDeclarations(t *testing.T) {
 				t.Errorf("want func %v, got %v", tc.wantFuncs, len(Funcs))
 			}
 
-			if Err != nil && tc.wantError == nil {
-				t.Errorf("want error %v, got %v", tc.wantError, Err)
+			if (gotErr != nil && tc.wantError == nil) ||
+				(gotErr == nil && tc.wantError != nil) {
+				t.Errorf("want error %v, got %v", tc.wantError, gotErr)
 			}
 
-			if Err != nil {
-				if Err.Error() != tc.wantError.Error() {
-					t.Errorf("want error %v, got %v", tc.wantError, Err)
+			if gotErr != nil && tc.wantError != nil {
+				if gotErr.Error() != tc.wantError.Error() {
+					t.Errorf("want error %v, got %v", tc.wantError, gotErr)
 				}
 			}
 		})

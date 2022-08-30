@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"regexp"
 	"sync"
 	"unicode"
@@ -147,7 +148,7 @@ func ExtractGlobals(source []byte, fileName string) ([]GlobalDeclaration, error)
 			matchPkg := rePkgName.FindSubmatch(line)
 
 			if !bytes.Equal(matchPkg[0], bytes.TrimSpace(line)) {
-				return GlobalDeclarationsArray, fmt.Errorf("%v: %v: syntax error: package declaration", fileName, lineno)
+				return GlobalDeclarationsArray, fmt.Errorf("%v: %v: syntax error: package declaration", filepath.Base(fileName), lineno)
 			}
 
 			pkg = string(matchPkg[1])
@@ -171,7 +172,7 @@ func ExtractGlobals(source []byte, fileName string) ([]GlobalDeclaration, error)
 			matchGlobalIdx := reGlobalName.FindIndex(line)
 
 			if matchGlobal == nil || !bytes.Equal(matchGlobal[0], bytes.TrimSpace(line)) {
-				return GlobalDeclarationsArray, fmt.Errorf("%v:%v: syntax error: global declaration", fileName, lineno)
+				return GlobalDeclarationsArray, fmt.Errorf("%v:%v: syntax error: global declaration", filepath.Base(fileName), lineno)
 			}
 
 			if inBlock == 0 {
@@ -272,7 +273,7 @@ func ExtractEnums(source []byte, fileName string) ([]EnumDeclaration, error) {
 		if enumDec := reEnumDec.FindSubmatch(line); enumDec != nil && inPrts == 1 && EnumInit {
 
 			if !bytes.Equal(enumDec[0], bytes.TrimSpace(line)) {
-				return EnumDeclarationsArray, fmt.Errorf("%v: %v: syntax error: package declaration", fileName, lineno)
+				return EnumDeclarationsArray, fmt.Errorf("%v: %v: syntax error: package declaration", filepath.Base(fileName), lineno)
 			}
 
 			enumDecIdx := reEnumDec.FindIndex(line)
@@ -318,6 +319,7 @@ func ExtractTypeDefinitions(source []byte, fileName string) ([]TypeDefinitionDec
 	// Regexes
 	rePkg := regexp.MustCompile("package")
 	rePkgName := regexp.MustCompile(`package\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
+	reType := regexp.MustCompile(`type`)
 	reTypeDefinition := regexp.MustCompile(`type\s+([_a-zA-Z][_a-zA-Z0-9]*)\s+([_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*)`)
 
 	reader := bytes.NewReader(source)
@@ -338,33 +340,41 @@ func ExtractTypeDefinitions(source []byte, fileName string) ([]TypeDefinitionDec
 			matchPkg := rePkgName.FindSubmatch(line)
 
 			if !bytes.Equal(matchPkg[0], bytes.TrimSpace(line)) {
-				return TypeDefinitionDeclarationsArray, fmt.Errorf("%v: %v: syntax error: package declaration", fileName, lineno)
+				return TypeDefinitionDeclarationsArray, fmt.Errorf("%v: %v: syntax error: package declaration", filepath.Base(fileName), lineno)
 			}
 
 			pkg = string(matchPkg[1])
 
 		}
 
-		typeDefinition := reTypeDefinition.FindSubmatch(line)
-		typeDefinitionIdx := reTypeDefinition.FindSubmatchIndex(line)
+		if reType.Find(line) != nil {
 
-		if typeDefinition != nil && !bytes.Contains(typeDefinition[2], []byte("struct")) {
+			typeDefinition := reTypeDefinition.FindSubmatch(line)
+			typeDefinitionIdx := reTypeDefinition.FindSubmatchIndex(line)
 
-			if !bytes.Equal(typeDefinition[0], bytes.TrimSpace(line)) {
-				return TypeDefinitionDeclarationsArray, fmt.Errorf("%v: %v: syntax error: type definition declaration", fileName, lineno)
+			if typeDefinition == nil {
+				return TypeDefinitionDeclarationsArray, fmt.Errorf("%v: %v: syntax error: type definition declaration", filepath.Base(fileName), lineno)
 			}
 
-			var typeDefinitionDeclaration TypeDefinitionDeclaration
-			typeDefinitionDeclaration.PackageID = pkg
-			typeDefinitionDeclaration.FileID = fileName
-			typeDefinitionDeclaration.StartOffset = typeDefinitionIdx[0] + currentOffset
-			typeDefinitionDeclaration.Length = typeDefinitionIdx[1] - typeDefinitionIdx[0]
-			typeDefinitionDeclaration.LineNumber = lineno
-			typeDefinitionDeclaration.TypeDefinitionName = string(typeDefinition[1])
+			if !bytes.Contains(typeDefinition[2], []byte("struct")) {
 
-			TypeDefinitionDeclarationsArray = append(TypeDefinitionDeclarationsArray, typeDefinitionDeclaration)
+				if !bytes.Equal(typeDefinition[0], bytes.TrimSpace(line)) {
+					return TypeDefinitionDeclarationsArray, fmt.Errorf("%v: %v: syntax error: type definition declaration", filepath.Base(fileName), lineno)
+				}
 
+				var typeDefinitionDeclaration TypeDefinitionDeclaration
+				typeDefinitionDeclaration.PackageID = pkg
+				typeDefinitionDeclaration.FileID = fileName
+				typeDefinitionDeclaration.StartOffset = typeDefinitionIdx[0] + currentOffset
+				typeDefinitionDeclaration.Length = typeDefinitionIdx[1] - typeDefinitionIdx[0]
+				typeDefinitionDeclaration.LineNumber = lineno
+				typeDefinitionDeclaration.TypeDefinitionName = string(typeDefinition[1])
+
+				TypeDefinitionDeclarationsArray = append(TypeDefinitionDeclarationsArray, typeDefinitionDeclaration)
+
+			}
 		}
+
 		currentOffset += len(line) // increments the currentOffset by line len
 
 	}
@@ -408,7 +418,7 @@ func ExtractStructs(source []byte, fileName string) ([]StructDeclaration, error)
 			matchPkg := rePkgName.FindSubmatch(line)
 
 			if !bytes.Equal(matchPkg[0], bytes.TrimSpace(line)) {
-				return StructDeclarationsArray, fmt.Errorf("%v: %v: syntax error: package declaration", fileName, lineno)
+				return StructDeclarationsArray, fmt.Errorf("%v: %v: syntax error: package declaration", filepath.Base(fileName), lineno)
 			}
 
 			pkg = string(matchPkg[1])
@@ -417,19 +427,18 @@ func ExtractStructs(source []byte, fileName string) ([]StructDeclaration, error)
 
 		// if struct declaration is found
 		// i.e. type [name] [type]
-		if reStruct.Find(line) != nil {
+		if strct := reStruct.FindIndex(line); strct != nil {
 
 			structHeader := reStructHeader.FindSubmatch(line)
-			structHeaderIdx := reStructHeader.FindIndex(line)
 			if !bytes.Equal(structHeader[0], bytes.TrimSpace(line)) {
-				return StructDeclarationsArray, fmt.Errorf("%v: %v: syntax error: struct declaration", fileName, lineno)
+				return StructDeclarationsArray, fmt.Errorf("%v: %v: syntax error: struct declaration", filepath.Base(fileName), lineno)
 			}
 
 			structDeclaration.PackageID = pkg
 			structDeclaration.FileID = fileName
 
-			structDeclaration.StartOffset = structHeaderIdx[0] + currentOffset // offset is current line offset + match index
-			structDeclaration.Length = structHeaderIdx[1] - structHeaderIdx[0]
+			structDeclaration.StartOffset = strct[0] + currentOffset // offset is current line offset + match index
+			structDeclaration.Length = strct[1] - strct[0]
 			structDeclaration.StructName = string(structHeader[1])
 
 			structDeclaration.LineNumber = lineno
@@ -454,7 +463,7 @@ func ExtractStructs(source []byte, fileName string) ([]StructDeclaration, error)
 			matchStructFieldIdx := reStructField.FindSubmatchIndex(line)
 
 			if !bytes.Equal(matchStructField[0], bytes.TrimSpace(line)) && reNotSpace.Find(line) != nil {
-				return StructDeclarationsArray, fmt.Errorf("%v:%v: syntax error:struct field", fileName, lineno)
+				return StructDeclarationsArray, fmt.Errorf("%v:%v: syntax error:struct field", filepath.Base(fileName), lineno)
 			}
 
 			if matchStructField != nil {
@@ -496,7 +505,7 @@ func ExtractFuncs(source []byte, fileName string) ([]FuncDeclaration, error) {
 	// Second, finds out whether the function has a receiver object or not and extracts the func name
 	// Third, finds whether there's one or two pairs of parenthesis
 	// Forth, finds whether there's one or more params in the parenthesis
-	reFuncDec := regexp.MustCompile(`func(?:(?:\s*\(\s*[_a-zA-Z]\w*\s+\*{0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*\s*\)\s*)|\s+)([_a-zA-Z]\w*)(?:\s*\(\s*(?:(?:[_a-zA-Z]\w*\s+\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]\*{0,1}){0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*\s*,\s*)+[_a-zA-Z]\w*\s+\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]\*{0,1}){0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*|(?:[_a-zA-Z]\w*\s+\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]\*{0,1}){0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*){0,1})\s*\)){1,2}(?:\s*{){0,1}`)
+	reFuncDec := regexp.MustCompile(`(func(?:(?:\s*\(\s*[_a-zA-Z]\w*\s+\*{0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*\s*\)\s*)|\s+)([_a-zA-Z]\w*)(?:\s*\(\s*(?:(?:[_a-zA-Z]\w*\s+\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]\*{0,1}){0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*\s*,\s*)+[_a-zA-Z]\w*\s+\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]\*{0,1}){0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*|(?:[_a-zA-Z]\w*\s+\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]\*{0,1}){0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*){0,1})\s*\)){1,2})(?:\s*{){0,1}`)
 
 	reader := bytes.NewReader(source)
 	scanner := bufio.NewScanner(reader)
@@ -516,7 +525,7 @@ func ExtractFuncs(source []byte, fileName string) ([]FuncDeclaration, error) {
 			matchPkg := rePkgName.FindSubmatch(line)
 
 			if !bytes.Equal(matchPkg[0], bytes.TrimSpace(line)) && reNotSpace.Find(line) != nil {
-				return FuncDeclarationsArray, fmt.Errorf("%v: %v: syntax error: package declaration", fileName, lineno)
+				return FuncDeclarationsArray, fmt.Errorf("%v: %v: syntax error: package declaration", filepath.Base(fileName), lineno)
 			}
 
 			pkg = string(matchPkg[1])
@@ -526,19 +535,19 @@ func ExtractFuncs(source []byte, fileName string) ([]FuncDeclaration, error) {
 		if match := reFunc.FindIndex(line); match != nil {
 
 			funcBytes := reFuncDec.FindSubmatch(line)
-			funcIdx := reFuncDec.FindIndex(line)
+			funcIdx := reFuncDec.FindSubmatchIndex(line)
 
 			if funcBytes == nil || !bytes.Equal(funcBytes[0], bytes.TrimSpace(line)) {
-				return FuncDeclarationsArray, fmt.Errorf("%v: %v: syntax error: func declaration", fileName, lineno)
+				return FuncDeclarationsArray, fmt.Errorf("%v: %v: syntax error: func declaration", filepath.Base(fileName), lineno)
 			}
 
 			var funcDeclaration FuncDeclaration
 			funcDeclaration.PackageID = pkg
 			funcDeclaration.FileID = fileName
-			funcDeclaration.StartOffset = match[0] + currentOffset
+			funcDeclaration.StartOffset = funcIdx[2] + currentOffset
 			funcDeclaration.LineNumber = lineno
-			funcDeclaration.FuncName = string(funcBytes[1])
-			funcDeclaration.Length = funcIdx[1] - funcIdx[0]
+			funcDeclaration.FuncName = string(funcBytes[2])
+			funcDeclaration.Length = funcIdx[3] - funcIdx[2]
 
 			FuncDeclarationsArray = append(FuncDeclarationsArray, funcDeclaration)
 
@@ -610,24 +619,28 @@ func ReDeclarationCheck(Glbl []GlobalDeclaration, Enum []EnumDeclaration, TypeDe
 	return err
 }
 
-func GetDeclarations(source []byte, Glbl []GlobalDeclaration, Enum []EnumDeclaration, Strct []StructDeclaration, Func []FuncDeclaration) []string {
+func GetDeclarations(source []byte, Glbls []GlobalDeclaration, Enums []EnumDeclaration, TypeDefs []TypeDefinitionDeclaration, Strcts []StructDeclaration, Funcs []FuncDeclaration) []string {
 
 	var declarations []string
 
-	for i := 0; i < len(Glbl); i++ {
-		declarations = append(declarations, string(source[Glbl[i].StartOffset:Glbl[i].StartOffset+Glbl[i].Length]))
+	for _, glbl := range Glbls {
+		declarations = append(declarations, string(source[glbl.StartOffset:glbl.StartOffset+glbl.Length]))
 	}
 
-	for i := 0; i < len(Enum); i++ {
-		declarations = append(declarations, string(source[Enum[i].StartOffset:Enum[i].StartOffset+Enum[i].Length]))
+	for _, enum := range Enums {
+		declarations = append(declarations, string(source[enum.StartOffset:enum.StartOffset+enum.Length]))
 	}
 
-	for i := 0; i < len(Strct); i++ {
-		declarations = append(declarations, string(source[Strct[i].StartOffset:Strct[i].StartOffset+Strct[i].Length]))
+	for _, typeDef := range TypeDefs {
+		declarations = append(declarations, string(source[typeDef.StartOffset:typeDef.StartOffset+typeDef.Length]))
 	}
 
-	for i := 0; i < len(Func); i++ {
-		declarations = append(declarations, string(source[Func[i].StartOffset:Func[i].StartOffset+Func[i].Length]))
+	for _, strct := range Strcts {
+		declarations = append(declarations, string(source[strct.StartOffset:strct.StartOffset+strct.Length]))
+	}
+
+	for _, fun := range Funcs {
+		declarations = append(declarations, string(source[fun.StartOffset:fun.StartOffset+fun.Length]))
 	}
 
 	return declarations
