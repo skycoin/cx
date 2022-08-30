@@ -115,7 +115,7 @@ func GetFinalOffset(prgrm *CXProgram, fp types.Pointer, oldArg *CXArgument, argT
 
 		return argTypeSigOffset
 	} else if argTypeSig.Type == TYPE_POINTER_ATOMIC {
-		finalOffset = types.Read_ptr(prgrm.Memory, argTypeSig.Offset)
+		finalOffset = argTypeSig.Offset
 
 		//Todo: find way to eliminate this check
 		if finalOffset < prgrm.Stack.Size {
