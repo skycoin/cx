@@ -3,7 +3,6 @@ package declaration_extractor
 import (
 	"bufio"
 	"bytes"
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -147,8 +146,8 @@ func ExtractGlobals(source []byte, fileName string) ([]GlobalDeclaration, error)
 
 			matchPkg := rePkgName.FindSubmatch(line)
 
-			if !bytes.Equal(matchPkg[0], bytes.TrimSpace(line)) {
-				return GlobalDeclarationsArray, fmt.Errorf("%v: %v: syntax error: package declaration", filepath.Base(fileName), lineno)
+			if matchPkg == nil || !bytes.Equal(matchPkg[0], bytes.TrimSpace(line)) {
+				return GlobalDeclarationsArray, fmt.Errorf("%v:%v: syntax error: package declaration", filepath.Base(fileName), lineno)
 			}
 
 			pkg = string(matchPkg[1])
@@ -210,7 +209,6 @@ func ExtractEnums(source []byte, fileName string) ([]EnumDeclaration, error) {
 	rePkg := regexp.MustCompile("package")
 	rePkgName := regexp.MustCompile(`package\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
 	reEnumInit := regexp.MustCompile(`const\s+\(`)
-	rePrtsOpen := regexp.MustCompile(`\(`)
 	rePrtsClose := regexp.MustCompile(`\)`)
 	reEnumDec := regexp.MustCompile(`([_a-zA-Z][_a-zA-Z0-9]*)(?:\s+([_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*)){0,1}(?:\s*\=\s*[\s\S]+\S+){0,1}`)
 
@@ -219,7 +217,6 @@ func ExtractEnums(source []byte, fileName string) ([]EnumDeclaration, error) {
 	scanner.Split(scanLinesWithLineTerminator) // set scanner SplitFunc to custom ScanLines func at line 55
 
 	var EnumInit bool     // is in a enum declaration
-	var inPrts int        // parenthesis depth
 	var Type string       // type for later enum declaration
 	var Index int         // index for enum declaration
 	var currentOffset int // offset of current line
@@ -235,8 +232,8 @@ func ExtractEnums(source []byte, fileName string) ([]EnumDeclaration, error) {
 
 			matchPkg := rePkgName.FindSubmatch(line)
 
-			if !bytes.Equal(matchPkg[0], bytes.TrimSpace(line)) {
-				return EnumDeclarationsArray, fmt.Errorf("%v: %v: syntax error: package declaration", fileName, lineno)
+			if matchPkg == nil || !bytes.Equal(matchPkg[0], bytes.TrimSpace(line)) {
+				return EnumDeclarationsArray, fmt.Errorf("%v:%v: syntax error: package declaration", filepath.Base(fileName), lineno)
 			}
 
 			pkg = string(matchPkg[1])
@@ -247,33 +244,22 @@ func ExtractEnums(source []byte, fileName string) ([]EnumDeclaration, error) {
 		// if const ( is found
 		if locs := reEnumInit.FindAllIndex(line, -1); locs != nil {
 			EnumInit = true
-			inPrts++
 			currentOffset += len(line) // increments the currentOffset by line len
 			continue
 		}
 
-		// if ( is found and enum initialized, increment parenthesis depth
-		if locs := rePrtsOpen.FindAllIndex(line, -1); locs != nil && EnumInit {
-			inPrts++
-		}
-
 		// if ) is found and enum intialized, decrement parenthesis depth
 		if locs := rePrtsClose.FindAllIndex(line, -1); locs != nil && EnumInit {
-			inPrts--
-		}
-
-		// if parenthesis depth is 0, reset all enum related variables
-		if inPrts == 0 {
 			EnumInit = false
 			Type = ""
 			Index = 0
 		}
 
 		// if match is found and enum initialized and parenthesis depth is 1
-		if enumDec := reEnumDec.FindSubmatch(line); enumDec != nil && inPrts == 1 && EnumInit {
+		if enumDec := reEnumDec.FindSubmatch(line); enumDec != nil && EnumInit {
 
 			if !bytes.Equal(enumDec[0], bytes.TrimSpace(line)) {
-				return EnumDeclarationsArray, fmt.Errorf("%v: %v: syntax error: package declaration", filepath.Base(fileName), lineno)
+				return EnumDeclarationsArray, fmt.Errorf("%v:%v: syntax error: enum declaration", filepath.Base(fileName), lineno)
 			}
 
 			enumDecIdx := reEnumDec.FindIndex(line)
@@ -339,8 +325,8 @@ func ExtractTypeDefinitions(source []byte, fileName string) ([]TypeDefinitionDec
 
 			matchPkg := rePkgName.FindSubmatch(line)
 
-			if !bytes.Equal(matchPkg[0], bytes.TrimSpace(line)) {
-				return TypeDefinitionDeclarationsArray, fmt.Errorf("%v: %v: syntax error: package declaration", filepath.Base(fileName), lineno)
+			if matchPkg == nil || !bytes.Equal(matchPkg[0], bytes.TrimSpace(line)) {
+				return TypeDefinitionDeclarationsArray, fmt.Errorf("%v:%v: syntax error: package declaration", filepath.Base(fileName), lineno)
 			}
 
 			pkg = string(matchPkg[1])
@@ -353,13 +339,13 @@ func ExtractTypeDefinitions(source []byte, fileName string) ([]TypeDefinitionDec
 			typeDefinitionIdx := reTypeDefinition.FindSubmatchIndex(line)
 
 			if typeDefinition == nil {
-				return TypeDefinitionDeclarationsArray, fmt.Errorf("%v: %v: syntax error: type definition declaration", filepath.Base(fileName), lineno)
+				return TypeDefinitionDeclarationsArray, fmt.Errorf("%v:%v: syntax error: type definition declaration", filepath.Base(fileName), lineno)
 			}
 
 			if !bytes.Contains(typeDefinition[2], []byte("struct")) {
 
 				if !bytes.Equal(typeDefinition[0], bytes.TrimSpace(line)) {
-					return TypeDefinitionDeclarationsArray, fmt.Errorf("%v: %v: syntax error: type definition declaration", filepath.Base(fileName), lineno)
+					return TypeDefinitionDeclarationsArray, fmt.Errorf("%v:%v: syntax error: type definition declaration", filepath.Base(fileName), lineno)
 				}
 
 				var typeDefinitionDeclaration TypeDefinitionDeclaration
@@ -417,8 +403,8 @@ func ExtractStructs(source []byte, fileName string) ([]StructDeclaration, error)
 
 			matchPkg := rePkgName.FindSubmatch(line)
 
-			if !bytes.Equal(matchPkg[0], bytes.TrimSpace(line)) {
-				return StructDeclarationsArray, fmt.Errorf("%v: %v: syntax error: package declaration", filepath.Base(fileName), lineno)
+			if matchPkg == nil || !bytes.Equal(matchPkg[0], bytes.TrimSpace(line)) {
+				return StructDeclarationsArray, fmt.Errorf("%v:%v: syntax error: package declaration", filepath.Base(fileName), lineno)
 			}
 
 			pkg = string(matchPkg[1])
@@ -431,7 +417,7 @@ func ExtractStructs(source []byte, fileName string) ([]StructDeclaration, error)
 
 			structHeader := reStructHeader.FindSubmatch(line)
 			if !bytes.Equal(structHeader[0], bytes.TrimSpace(line)) {
-				return StructDeclarationsArray, fmt.Errorf("%v: %v: syntax error: struct declaration", filepath.Base(fileName), lineno)
+				return StructDeclarationsArray, fmt.Errorf("%v:%v: syntax error: struct declaration", filepath.Base(fileName), lineno)
 			}
 
 			structDeclaration.PackageID = pkg
@@ -524,8 +510,8 @@ func ExtractFuncs(source []byte, fileName string) ([]FuncDeclaration, error) {
 
 			matchPkg := rePkgName.FindSubmatch(line)
 
-			if !bytes.Equal(matchPkg[0], bytes.TrimSpace(line)) && reNotSpace.Find(line) != nil {
-				return FuncDeclarationsArray, fmt.Errorf("%v: %v: syntax error: package declaration", filepath.Base(fileName), lineno)
+			if matchPkg == nil || !bytes.Equal(matchPkg[0], bytes.TrimSpace(line)) && reNotSpace.Find(line) != nil {
+				return FuncDeclarationsArray, fmt.Errorf("%v:%v: syntax error: package declaration", filepath.Base(fileName), lineno)
 			}
 
 			pkg = string(matchPkg[1])
@@ -538,7 +524,7 @@ func ExtractFuncs(source []byte, fileName string) ([]FuncDeclaration, error) {
 			funcIdx := reFuncDec.FindSubmatchIndex(line)
 
 			if funcBytes == nil || !bytes.Equal(funcBytes[0], bytes.TrimSpace(line)) {
-				return FuncDeclarationsArray, fmt.Errorf("%v: %v: syntax error: func declaration", filepath.Base(fileName), lineno)
+				return FuncDeclarationsArray, fmt.Errorf("%v:%v: syntax error: func declaration", filepath.Base(fileName), lineno)
 			}
 
 			var funcDeclaration FuncDeclaration
@@ -561,17 +547,14 @@ func ExtractFuncs(source []byte, fileName string) ([]FuncDeclaration, error) {
 
 func ReDeclarationCheck(Glbl []GlobalDeclaration, Enum []EnumDeclaration, TypeDef []TypeDefinitionDeclaration, Strct []StructDeclaration, Func []FuncDeclaration) error {
 
-	var err error
-
 	// Checks for the first declaration redeclared
 	// in the order:
-	// Globals -> Enums -> Struct -> Func
+	// Global -> Enum -> Type Definition -> Struct -> Func
 
 	for i := 0; i < len(Glbl); i++ {
 		for j := i + 1; j < len(Glbl); j++ {
 			if Glbl[i].GlobalVariableName == Glbl[j].GlobalVariableName {
-				err = errors.New("global redeclared")
-				return err
+				return fmt.Errorf("%v:%v: redeclaration error: global: %v", filepath.Base(Glbl[j].FileID), Glbl[j].LineNumber, Glbl[i].GlobalVariableName)
 			}
 		}
 	}
@@ -579,8 +562,15 @@ func ReDeclarationCheck(Glbl []GlobalDeclaration, Enum []EnumDeclaration, TypeDe
 	for i := 0; i < len(Enum); i++ {
 		for j := i + 1; j < len(Enum); j++ {
 			if Enum[i].EnumName == Enum[j].EnumName {
-				err = errors.New("enum redeclared")
-				return err
+				return fmt.Errorf("%v:%v: redeclaration error: enum: %v", filepath.Base(Enum[j].FileID), Enum[j].LineNumber, Enum[i].EnumName)
+			}
+		}
+	}
+
+	for i := 0; i < len(TypeDef); i++ {
+		for j := i + 1; j < len(TypeDef); j++ {
+			if TypeDef[i].TypeDefinitionName == TypeDef[j].TypeDefinitionName {
+				return fmt.Errorf("%v:%v: redeclaration error: type definition: %v", filepath.Base(TypeDef[j].FileID), TypeDef[j].LineNumber, TypeDef[i].TypeDefinitionName)
 			}
 		}
 	}
@@ -588,8 +578,7 @@ func ReDeclarationCheck(Glbl []GlobalDeclaration, Enum []EnumDeclaration, TypeDe
 	for i := 0; i < len(Strct); i++ {
 		for j := i + 1; j < len(Strct); j++ {
 			if Strct[i].StructName == Strct[j].StructName {
-				err = errors.New("struct redeclared")
-				return err
+				return fmt.Errorf("%v:%v: redeclaration error: struct: %v", filepath.Base(Strct[j].FileID), Strct[j].LineNumber, Strct[i].StructName)
 			}
 		}
 	}
@@ -599,8 +588,7 @@ func ReDeclarationCheck(Glbl []GlobalDeclaration, Enum []EnumDeclaration, TypeDe
 		for i := 0; i < len(StructFields); i++ {
 			for j := i + 1; j < len(StructFields); j++ {
 				if StructFields[i].StructFieldName == StructFields[j].StructFieldName {
-					err = errors.New("struct field redeclared")
-					return err
+					return fmt.Errorf("%v:%v: redeclaration error: struct field: %v", filepath.Base(structDeclaration.FileID), StructFields[j].LineNumber, StructFields[i].StructFieldName)
 				}
 			}
 		}
@@ -609,14 +597,12 @@ func ReDeclarationCheck(Glbl []GlobalDeclaration, Enum []EnumDeclaration, TypeDe
 	for i := 0; i < len(Func); i++ {
 		for j := i + 1; j < len(Func); j++ {
 			if Func[i].FuncName == Func[j].FuncName {
-				err = errors.New("func redeclared")
-				return err
+				return fmt.Errorf("%v:%v: redeclaration error: func: %v", filepath.Base(Func[j].FileID), Func[j].LineNumber, Func[i].FuncName)
 			}
 		}
 	}
 
-	err = nil
-	return err
+	return nil
 }
 
 func GetDeclarations(source []byte, Glbls []GlobalDeclaration, Enums []EnumDeclaration, TypeDefs []TypeDefinitionDeclaration, Strcts []StructDeclaration, Funcs []FuncDeclaration) []string {
@@ -646,7 +632,7 @@ func GetDeclarations(source []byte, Glbls []GlobalDeclaration, Enums []EnumDecla
 	return declarations
 }
 
-func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDeclaration, []StructDeclaration, []FuncDeclaration, error) {
+func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDeclaration, []TypeDefinitionDeclaration, []StructDeclaration, []FuncDeclaration, error) {
 
 	//Variable declarations
 	var Globals []GlobalDeclaration
@@ -829,15 +815,15 @@ func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDecla
 
 	// there's an error, return values with first error
 	if err := <-errorChannel; err != nil {
-		return Globals, Enums, Structs, Funcs, err
+		return Globals, Enums, TypeDefinitions, Structs, Funcs, err
 	}
 
 	reDeclarationCheck := ReDeclarationCheck(Globals, Enums, TypeDefinitions, Structs, Funcs)
 
 	// there's declaration redeclared return values with error
 	if reDeclarationCheck != nil {
-		return Globals, Enums, Structs, Funcs, reDeclarationCheck
+		return Globals, Enums, TypeDefinitions, Structs, Funcs, reDeclarationCheck
 	}
 
-	return Globals, Enums, Structs, Funcs, nil
+	return Globals, Enums, TypeDefinitions, Structs, Funcs, nil
 }

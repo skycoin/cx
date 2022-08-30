@@ -130,6 +130,27 @@ func TestDeclarationExtractor_ExtractGlobals(t *testing.T) {
 			},
 			wantErr: nil,
 		},
+		{
+			scenario:    "Package Error",
+			testDir:     "./test_files/ExtractGlobals/PackageError.cx",
+			wantGlobals: []declaration_extractor.GlobalDeclaration{},
+			wantErr:     errors.New("PackageError.cx:10: syntax error: package declaration"),
+		},
+		{
+			scenario: "Syntax Error",
+			testDir:  "./test_files/ExtractGlobals/SyntaxError.cx",
+			wantGlobals: []declaration_extractor.GlobalDeclaration{
+				{
+					PackageID:          "main",
+					FileID:             "./test_files/ExtractGlobals/SyntaxError.cx",
+					StartOffset:        153,
+					Length:             56,
+					LineNumber:         12,
+					GlobalVariableName: "fooV",
+				},
+			},
+			wantErr: errors.New("SyntaxError.cx:23: syntax error: global declaration"),
+		},
 	}
 
 	for _, tc := range tests {
@@ -142,9 +163,6 @@ func TestDeclarationExtractor_ExtractGlobals(t *testing.T) {
 			}
 
 			gotGlobals, gotErr := declaration_extractor.ExtractGlobals(ReplaceCommentsWithWhitespaces, fileName)
-			if gotErr != tc.wantErr {
-				t.Errorf("want err %v, got %v", tc.wantErr, gotErr)
-			}
 
 			for _, wantGlobal := range tc.wantGlobals {
 
@@ -196,7 +214,7 @@ func TestDeclarationExtractor_ExtractEnums(t *testing.T) {
 		wantErr   error
 	}{
 		{
-			scenario: "HasEnums.cx",
+			scenario: "Has Enums",
 			testDir:  "./test_files/ExtractEnums/HasEnums.cx",
 			wantEnums: []declaration_extractor.EnumDeclaration{
 				{
@@ -260,6 +278,79 @@ func TestDeclarationExtractor_ExtractEnums(t *testing.T) {
 					EnumName:    "Oranges",
 				},
 			},
+		},
+		{
+			scenario:  "Package Error",
+			testDir:   "./test_files/ExtractEnums/PackageError.cx",
+			wantEnums: []declaration_extractor.EnumDeclaration{},
+			wantErr:   errors.New("PackageError.cx:1: syntax error: package declaration"),
+		},
+		{
+			scenario: "Syntax Error",
+			testDir:  "./test_files/ExtractEnums/SyntaxError.cx",
+			wantEnums: []declaration_extractor.EnumDeclaration{
+				{
+					PackageID:   "main",
+					FileID:      "./test_files/ExtractEnums/SyntaxError.cx",
+					StartOffset: 26,
+					Length:      17,
+					LineNumber:  4,
+					Type:        "int",
+					Value:       0,
+					EnumName:    "Summer",
+				},
+				{
+					PackageID:   "main",
+					FileID:      "./test_files/ExtractEnums/SyntaxError.cx",
+					StartOffset: 45,
+					Length:      6,
+					LineNumber:  5,
+					Type:        "int",
+					Value:       1,
+					EnumName:    "Autumn",
+				},
+				{
+					PackageID:   "main",
+					FileID:      "./test_files/ExtractEnums/SyntaxError.cx",
+					StartOffset: 53,
+					Length:      6,
+					LineNumber:  6,
+					Type:        "int",
+					Value:       2,
+					EnumName:    "Winter",
+				},
+				{
+					PackageID:   "main",
+					FileID:      "./test_files/ExtractEnums/SyntaxError.cx",
+					StartOffset: 61,
+					Length:      6,
+					LineNumber:  7,
+					Type:        "int",
+					Value:       3,
+					EnumName:    "Spring",
+				},
+				{
+					PackageID:   "main",
+					FileID:      "./test_files/ExtractEnums/SyntaxError.cx",
+					StartOffset: 83,
+					Length:      11,
+					LineNumber:  11,
+					Type:        "",
+					Value:       0,
+					EnumName:    "Apples",
+				},
+				{
+					PackageID:   "main",
+					FileID:      "./test_files/ExtractEnums/SyntaxError.cx",
+					StartOffset: 99,
+					Length:      11,
+					LineNumber:  12,
+					Type:        "",
+					Value:       1,
+					EnumName:    "Oranges",
+				},
+			},
+			wantErr: errors.New("SyntaxError.cx:13: syntax error: enum declaration"),
 		},
 	}
 
@@ -696,27 +787,32 @@ func TestDeclarationExtractor_ReDeclarationCheck(t *testing.T) {
 		{
 			scenario:               "Redeclared global",
 			testDir:                "./test_files/ReDeclarationCheck/RedeclaredGlobal.cx",
-			wantReDeclarationError: errors.New("global redeclared"),
+			wantReDeclarationError: errors.New("RedeclaredGlobal.cx:5: redeclaration error: global: banana"),
 		},
 		{
 			scenario:               "Redeclared enum",
 			testDir:                "./test_files/ReDeclarationCheck/RedeclaredEnum.cx",
-			wantReDeclarationError: errors.New("enum redeclared"),
+			wantReDeclarationError: errors.New("RedeclaredEnum.cx:8: redeclaration error: enum: myEnum"),
+		},
+		{
+			scenario:               "Redeclared type definition",
+			testDir:                "./test_files/ReDeclarationCheck/RedeclaredTypeDefinition.cx",
+			wantReDeclarationError: errors.New("RedeclaredTypeDefinition.cx:21: redeclaration error: type definition: Season"),
 		},
 		{
 			scenario:               "Redeclared struct",
 			testDir:                "./test_files/ReDeclarationCheck/RedeclaredStruct.cx",
-			wantReDeclarationError: errors.New("struct redeclared"),
+			wantReDeclarationError: errors.New("RedeclaredStruct.cx:15: redeclaration error: struct: Animal"),
 		},
 		{
 			scenario:               "Redeclared struct field",
 			testDir:                "./test_files/ReDeclarationCheck/RedeclaredStructField.cx",
-			wantReDeclarationError: errors.New("struct field redeclared"),
+			wantReDeclarationError: errors.New("RedeclaredStructField.cx:13: redeclaration error: struct field: name"),
 		},
 		{
 			scenario:               "Redeclared func",
 			testDir:                "./test_files/ReDeclarationCheck/RedeclaredFunc.cx",
-			wantReDeclarationError: errors.New("func redeclared"),
+			wantReDeclarationError: errors.New("RedeclaredFunc.cx:23: redeclaration error: func: add"),
 		},
 	}
 
@@ -847,109 +943,26 @@ func TestDeclarationExtractor_GetDeclarations(t *testing.T) {
 func TestDeclarationExtractor_ExtractAllDeclarations(t *testing.T) {
 
 	tests := []struct {
-		scenario    string
-		testDirs    []string
-		wantGlobals int
-		wantEnums   int
-		wantStructs int
-		wantFuncs   int
-		wantError   error
+		scenario            string
+		testDirs            []string
+		wantGlobals         int
+		wantEnums           int
+		wantTypeDefinitions int
+		wantStructs         int
+		wantFuncs           int
+		wantError           error
 	}{
 		{
 			scenario: "Single file",
 			testDirs: []string{
-				"./test_files/test.cx",
+				"./test_files/ExtractAllDeclarations/singleFile.cx",
 			},
-			wantGlobals: 2,
-			wantEnums:   6,
-			wantStructs: 3,
-			wantFuncs:   3,
-			wantError:   nil,
-		},
-		{
-			scenario: "Single file 2",
-			testDirs: []string{
-				"./test_files/test_2.cx",
-			},
-			wantGlobals: 1,
-			wantEnums:   4,
-			wantStructs: 1,
-			wantFuncs:   2,
-			wantError:   nil,
-		},
-		{
-			scenario: "Mulitple files",
-			testDirs: []string{
-				"./test_files/multiple_files/helper.cx",
-				"./test_files/multiple_files/main.cx",
-				"./test_files/multiple_files/utility.cx",
-				"./test_files/multiple_files/worker.cx",
-			},
-			wantGlobals: 2,
-			wantEnums:   3,
-			wantStructs: 1,
-			wantFuncs:   3,
-			wantError:   nil,
-		},
-		{
-			scenario: "Redeclared Global",
-			testDirs: []string{
-				"./test_files/multiple_files/helper.cx",
-				"./test_files/multiple_files/main.cx",
-				"./test_files/multiple_files/utility.cx",
-				"./test_files/multiple_files/worker.cx",
-				"./test_files/redeclaration_global.cx",
-			},
-			wantGlobals: 5,
-			wantEnums:   9,
-			wantStructs: 4,
-			wantFuncs:   5,
-			wantError:   errors.New("global redeclared"),
-		},
-		{
-			scenario: "Redeclared Enum",
-			testDirs: []string{
-				"./test_files/multiple_files/helper.cx",
-				"./test_files/multiple_files/main.cx",
-				"./test_files/multiple_files/utility.cx",
-				"./test_files/multiple_files/worker.cx",
-				"./test_files/redeclaration_enum.cx",
-			},
-			wantGlobals: 4,
-			wantEnums:   10,
-			wantStructs: 4,
-			wantFuncs:   5,
-			wantError:   errors.New("enum redeclared"),
-		},
-		{
-			scenario: "Redeclared Struct",
-			testDirs: []string{
-				"./test_files/multiple_files/helper.cx",
-				"./test_files/multiple_files/main.cx",
-				"./test_files/multiple_files/utility.cx",
-				"./test_files/multiple_files/worker.cx",
-				"./test_files/redeclaration_struct.cx",
-			},
-			wantGlobals: 4,
-			wantEnums:   9,
-			wantStructs: 5,
-			wantFuncs:   5,
-			wantError:   errors.New("struct redeclared"),
-		},
-		{
-			scenario: "Redeclared Func",
-			testDirs: []string{
-				"./test_files/multiple_files/helper.cx",
-				"./test_files/multiple_files/main.cx",
-				"./test_files/multiple_files/utility.cx",
-				"./test_files/multiple_files/worker.cx",
-				"./test_files/redeclaration_func.cx",
-			},
-			wantGlobals: 4,
-			wantEnums:   9,
-			wantStructs: 4,
-			wantFuncs:   6,
-			wantError:   errors.New("func redeclared"),
+			wantGlobals:         2,
+			wantEnums:           3,
+			wantTypeDefinitions: 1,
+			wantStructs:         1,
+			wantFuncs:           2,
+			wantError:           nil,
 		},
 	}
 
@@ -969,7 +982,7 @@ func TestDeclarationExtractor_ExtractAllDeclarations(t *testing.T) {
 				files = append(files, file)
 			}
 
-			Globals, Enums, Structs, Funcs, gotErr := declaration_extractor.ExtractAllDeclarations(files)
+			Globals, Enums, Structs, TypeDefinitions, Funcs, gotErr := declaration_extractor.ExtractAllDeclarations(files)
 
 			if len(Globals) == 0 && len(Enums) == 0 && len(Structs) == 0 && len(Funcs) == 0 {
 				t.Error("No Declarations found")
@@ -981,6 +994,10 @@ func TestDeclarationExtractor_ExtractAllDeclarations(t *testing.T) {
 
 			if len(Enums) != tc.wantEnums {
 				t.Errorf("want enum %v, got %v", tc.wantEnums, len(Enums))
+			}
+
+			if len(TypeDefinitions) != tc.wantTypeDefinitions {
+				t.Errorf("want type definition %v, got %v", tc.wantTypeDefinitions, len(TypeDefinitions))
 			}
 
 			if len(Structs) != tc.wantStructs {

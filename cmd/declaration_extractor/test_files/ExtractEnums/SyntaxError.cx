@@ -1,0 +1,18 @@
+package main
+
+const (
+    Summer int = iota
+	Autumn
+	Winter
+	Spring
+)
+
+const (
+    Apples  = 0
+    Oranges = 1
+    34Banana = 2
+)
+
+func main () {
+
+}

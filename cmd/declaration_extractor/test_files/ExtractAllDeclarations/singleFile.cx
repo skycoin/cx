@@ -1,0 +1,25 @@
+package main
+
+var number i32
+
+var string str = "Hello World"
+
+type fruit i64
+
+const (
+    Apple fruit = iota
+    Orange
+    Banana
+)
+
+type Blender struct {
+    fruits str
+}
+
+func (b *Blender) blend () {
+    str.print(b.fruits)
+}
+
+func main () {
+    str.print(string)
+}

@@ -7,7 +7,7 @@ how we can recall them in the different functions in main package
 
 // initilization of main package 
 //
-package main
+package
 
 
 // Decelation of Global variables 
