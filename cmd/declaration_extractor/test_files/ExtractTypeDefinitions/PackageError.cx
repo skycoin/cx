@@ -1,4 +1,4 @@
-package main
+package 1main
 
 type Direction i32
 
@@ -12,10 +12,10 @@ const (
 type Season i64
 
 const (
-	Summer Season = 0L
-	Autumn        = 1L
-	Winter        = 2L
-	Spring        = 3L
+	Summer Season = 0
+	Autumn        = 1
+	Winter        = 2
+	Spring        = 3
 )
 
 func (s Season) String() str {

@@ -18,6 +18,8 @@ const (
 	Spring        = 3L
 )
 
+type Animal
+
 func (s Season) String() str {
 	switch s {
 	case Summer:

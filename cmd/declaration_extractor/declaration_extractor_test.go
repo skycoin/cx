@@ -432,6 +432,58 @@ func TestDeclarationExtractor_ExtractTypeDefinitions(t *testing.T) {
 				},
 			},
 		},
+		{
+			scenario:            "Package Error",
+			testDir:             "./test_files/ExtractTypeDefinitions/PackageError.cx",
+			wantTypeDefinitions: []declaration_extractor.TypeDefinitionDeclaration{},
+			wantErr:             errors.New("PackageError.cx:1: syntax error: package declaration"),
+		},
+		{
+			scenario: "Syntax Error",
+			testDir:  "./test_files/ExtractTypeDefinitions/SyntaxError.cx",
+			wantTypeDefinitions: []declaration_extractor.TypeDefinitionDeclaration{
+				{
+					PackageID:          "main",
+					FileID:             "./test_files/ExtractTypeDefinitions/SyntaxError.cx",
+					StartOffset:        14,
+					Length:             18,
+					LineNumber:         3,
+					TypeDefinitionName: "Direction",
+				},
+				{
+					PackageID:          "main",
+					FileID:             "./test_files/ExtractTypeDefinitions/SyntaxError.cx",
+					StartOffset:        100,
+					Length:             15,
+					LineNumber:         12,
+					TypeDefinitionName: "Season",
+				},
+			},
+			wantErr: errors.New("SyntaxError.cx:21: syntax error: type definition declaration"),
+		},
+		{
+			scenario: "Syntax Error 2",
+			testDir:  "./test_files/ExtractTypeDefinitions/SyntaxError2.cx",
+			wantTypeDefinitions: []declaration_extractor.TypeDefinitionDeclaration{
+				{
+					PackageID:          "main",
+					FileID:             "./test_files/ExtractTypeDefinitions/SyntaxError2.cx",
+					StartOffset:        14,
+					Length:             18,
+					LineNumber:         3,
+					TypeDefinitionName: "Direction",
+				},
+				{
+					PackageID:          "main",
+					FileID:             "./test_files/ExtractTypeDefinitions/SyntaxError2.cx",
+					StartOffset:        100,
+					Length:             15,
+					LineNumber:         12,
+					TypeDefinitionName: "Season",
+				},
+			},
+			wantErr: errors.New("SyntaxError2.cx:21: syntax error: type definition declaration"),
+		},
 	}
 
 	for _, tc := range tests {
@@ -599,6 +651,70 @@ func TestDeclarationExtractor_ExtractStructs(t *testing.T) {
 				},
 			},
 		},
+		{
+			scenario:    "Package Error",
+			testDir:     "./test_files/ExtractStructs/PackageError.cx",
+			wantStructs: []declaration_extractor.StructDeclaration{},
+			wantErr:     errors.New("PackageError.cx:2: syntax error: package declaration"),
+		},
+		{
+			scenario: "Syntax Error",
+			testDir:  "./test_files/ExtractStructs/SyntaxError.cx",
+			wantStructs: []declaration_extractor.StructDeclaration{
+				{
+					PackageID:   "main",
+					FileID:      "./test_files/ExtractStructs/SyntaxError.cx",
+					StartOffset: 14,
+					Length:      17,
+					LineNumber:  3,
+					StructName:  "Point",
+					StructFields: []*declaration_extractor.StructField{
+						{
+							StructFieldName: "x",
+							StartOffset:     35,
+							Length:          5,
+							LineNumber:      4,
+						},
+						{
+							StructFieldName: "y",
+							StartOffset:     42,
+							Length:          5,
+							LineNumber:      5,
+						},
+					},
+				},
+			},
+			wantErr: errors.New("SyntaxError.cx:8: syntax error: struct declaration"),
+		},
+		{
+			scenario: "Syntax Error 2",
+			testDir:  "./test_files/ExtractStructs/SyntaxError2.cx",
+			wantStructs: []declaration_extractor.StructDeclaration{
+				{
+					PackageID:   "main",
+					FileID:      "./test_files/ExtractStructs/SyntaxError2.cx",
+					StartOffset: 58,
+					Length:      17,
+					LineNumber:  5,
+					StructName:  "Point",
+					StructFields: []*declaration_extractor.StructField{
+						{
+							StructFieldName: "x",
+							StartOffset:     79,
+							Length:          5,
+							LineNumber:      6,
+						},
+						{
+							StructFieldName: "y",
+							StartOffset:     86,
+							Length:          5,
+							LineNumber:      7,
+						},
+					},
+				},
+			},
+			wantErr: errors.New("SyntaxError2.cx:16: syntax error:struct field"),
+		},
 	}
 
 	for _, tc := range tests {
@@ -723,6 +839,51 @@ func TestDeclarationExtractor_ExtractFuncs(t *testing.T) {
 					FuncName:    "printName",
 				},
 			},
+		},
+		{
+			scenario:  "Package Error",
+			testDir:   "./test_files/ExtractFuncs/PackageError.cx",
+			wantFuncs: []declaration_extractor.FuncDeclaration{},
+			wantErr:   errors.New("PackageError.cx:1: syntax error: package declaration"),
+		},
+		{
+			scenario: "Syntax Error",
+			testDir:  "./test_files/ExtractFuncs/SyntaxError.cx",
+			wantFuncs: []declaration_extractor.FuncDeclaration{
+				{
+					PackageID:   "main",
+					FileID:      "./test_files/ExtractFuncs/SyntaxError.cx",
+					StartOffset: 322,
+					Length:      12,
+					LineNumber:  20,
+					FuncName:    "main",
+				},
+				{
+					PackageID:   "main",
+					FileID:      "./test_files/ExtractFuncs/SyntaxError.cx",
+					StartOffset: 14,
+					Length:      53,
+					LineNumber:  3,
+					FuncName:    "addition",
+				},
+				{
+					PackageID:   "main",
+					FileID:      "./test_files/ExtractFuncs/SyntaxError.cx",
+					StartOffset: 104,
+					Length:      50,
+					LineNumber:  7,
+					FuncName:    "minus",
+				},
+				{
+					PackageID:   "main",
+					FileID:      "./test_files/ExtractFuncs/SyntaxError.cx",
+					StartOffset: 226,
+					Length:      29,
+					LineNumber:  15,
+					FuncName:    "printName",
+				},
+			},
+			wantErr: errors.New("SyntaxError.cx:31: syntax error: func declaration"),
 		},
 	}
 
@@ -955,7 +1116,7 @@ func TestDeclarationExtractor_ExtractAllDeclarations(t *testing.T) {
 		{
 			scenario: "Single file",
 			testDirs: []string{
-				"./test_files/ExtractAllDeclarations/singleFile.cx",
+				"./test_files/ExtractAllDeclarations/SingleFile.cx",
 			},
 			wantGlobals:         2,
 			wantEnums:           3,
@@ -963,6 +1124,34 @@ func TestDeclarationExtractor_ExtractAllDeclarations(t *testing.T) {
 			wantStructs:         1,
 			wantFuncs:           2,
 			wantError:           nil,
+		},
+		{
+			scenario: "Multiple files",
+			testDirs: []string{
+				"./test_files/ExtractAllDeclarations/MultipleFiles/main.cx",
+				"./test_files/ExtractAllDeclarations/MultipleFiles/helper.cx",
+				"./test_files/ExtractAllDeclarations/MultipleFiles/program.cx",
+			},
+			wantGlobals:         3,
+			wantEnums:           12,
+			wantTypeDefinitions: 3,
+			wantStructs:         3,
+			wantFuncs:           5,
+			wantError:           nil,
+		},
+		{
+			scenario: "Global Syntax Error",
+			testDirs: []string{
+				"./test_files/ExtractAllDeclarations/GlobalSyntaxError/main.cx",
+				"./test_files/ExtractAllDeclarations/GlobalSyntaxError/helper.cx",
+				"./test_files/ExtractAllDeclarations/GlobalSyntaxError/program.cx",
+			},
+			wantGlobals:         0,
+			wantEnums:           12,
+			wantTypeDefinitions: 3,
+			wantStructs:         3,
+			wantFuncs:           5,
+			wantError:           errors.New("main.cx:9: syntax error: global declaration"),
 		},
 	}
 

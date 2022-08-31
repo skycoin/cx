@@ -1,0 +1,29 @@
+package main j
+
+func addition (number1 i32, number2 i32) (result i32) {
+    result = number1 + number2
+}
+
+func minus (number1 i32, number2 i32) (result i32) {
+    return number1 + number2
+}
+
+type Player struct {
+    name str
+}
+
+func (p *Player) printName () {
+    str.print("Player information")
+    str.print((*p).name)
+}
+
+func main () {
+    sum := addition(3,4)
+
+    i32.print(sum)
+
+    var p Player
+    p.name = "Michael"
+
+    p.printName()
+}

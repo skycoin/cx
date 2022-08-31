@@ -416,7 +416,7 @@ func ExtractStructs(source []byte, fileName string) ([]StructDeclaration, error)
 		if strct := reStruct.FindIndex(line); strct != nil {
 
 			structHeader := reStructHeader.FindSubmatch(line)
-			if !bytes.Equal(structHeader[0], bytes.TrimSpace(line)) {
+			if structHeader == nil || !bytes.Equal(structHeader[0], bytes.TrimSpace(line)) {
 				return StructDeclarationsArray, fmt.Errorf("%v:%v: syntax error: struct declaration", filepath.Base(fileName), lineno)
 			}
 
@@ -448,7 +448,7 @@ func ExtractStructs(source []byte, fileName string) ([]StructDeclaration, error)
 			matchStructField := reStructField.FindSubmatch(line)
 			matchStructFieldIdx := reStructField.FindSubmatchIndex(line)
 
-			if !bytes.Equal(matchStructField[0], bytes.TrimSpace(line)) && reNotSpace.Find(line) != nil {
+			if reNotSpace.Find(line) != nil && (matchStructField == nil || !bytes.Equal(matchStructField[0], bytes.TrimSpace(line))) {
 				return StructDeclarationsArray, fmt.Errorf("%v:%v: syntax error:struct field", filepath.Base(fileName), lineno)
 			}
 

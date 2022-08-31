@@ -18,6 +18,8 @@ const (
 	Spring        = 3L
 )
 
+type Apple str ui64
+
 func (s Season) String() str {
 	switch s {
 	case Summer:

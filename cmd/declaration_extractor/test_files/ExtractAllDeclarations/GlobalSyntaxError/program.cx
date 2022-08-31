@@ -1,0 +1,42 @@
+package program
+
+type Operation i32
+
+const (
+    add Operation = iota
+    minus
+    multiply
+    divide
+)
+
+type Direction i32
+
+const (
+    North Direction = iota
+    South
+    East
+    West
+)
+
+type Season i64
+
+const (
+	Summer Season = 0L
+	Autumn        = 1L
+	Winter        = 2L
+	Spring        = 3L
+)
+
+func (s Season) String() (string str) {
+	switch s {
+	case Summer:
+		string = "summer"
+	case Autumn:
+		string = "autumn"
+	case Winter:
+		string = "winter"
+	case Spring:
+		string = "spring"
+	}
+	string = "unknown"
+}
