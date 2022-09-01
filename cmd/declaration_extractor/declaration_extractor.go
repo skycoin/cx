@@ -553,7 +553,7 @@ func ReDeclarationCheck(Glbl []GlobalDeclaration, Enum []EnumDeclaration, TypeDe
 
 	for i := 0; i < len(Glbl); i++ {
 		for j := i + 1; j < len(Glbl); j++ {
-			if Glbl[i].GlobalVariableName == Glbl[j].GlobalVariableName {
+			if Glbl[i].GlobalVariableName == Glbl[j].GlobalVariableName && Glbl[i].PackageID == Glbl[j].PackageID {
 				return fmt.Errorf("%v:%v: redeclaration error: global: %v", filepath.Base(Glbl[j].FileID), Glbl[j].LineNumber, Glbl[i].GlobalVariableName)
 			}
 		}
@@ -561,7 +561,7 @@ func ReDeclarationCheck(Glbl []GlobalDeclaration, Enum []EnumDeclaration, TypeDe
 
 	for i := 0; i < len(Enum); i++ {
 		for j := i + 1; j < len(Enum); j++ {
-			if Enum[i].EnumName == Enum[j].EnumName {
+			if Enum[i].EnumName == Enum[j].EnumName && Enum[i].PackageID == Enum[j].PackageID {
 				return fmt.Errorf("%v:%v: redeclaration error: enum: %v", filepath.Base(Enum[j].FileID), Enum[j].LineNumber, Enum[i].EnumName)
 			}
 		}
@@ -569,34 +569,35 @@ func ReDeclarationCheck(Glbl []GlobalDeclaration, Enum []EnumDeclaration, TypeDe
 
 	for i := 0; i < len(TypeDef); i++ {
 		for j := i + 1; j < len(TypeDef); j++ {
-			if TypeDef[i].TypeDefinitionName == TypeDef[j].TypeDefinitionName {
+			if TypeDef[i].TypeDefinitionName == TypeDef[j].TypeDefinitionName && TypeDef[i].PackageID == TypeDef[j].PackageID {
 				return fmt.Errorf("%v:%v: redeclaration error: type definition: %v", filepath.Base(TypeDef[j].FileID), TypeDef[j].LineNumber, TypeDef[i].TypeDefinitionName)
 			}
 		}
 	}
 
 	for i := 0; i < len(Strct); i++ {
-		for j := i + 1; j < len(Strct); j++ {
-			if Strct[i].StructName == Strct[j].StructName {
-				return fmt.Errorf("%v:%v: redeclaration error: struct: %v", filepath.Base(Strct[j].FileID), Strct[j].LineNumber, Strct[i].StructName)
+
+		StructFields := Strct[i].StructFields
+		for m := 0; m < len(StructFields); m++ {
+			for n := m + 1; n < len(StructFields); n++ {
+				if StructFields[m].StructFieldName == StructFields[n].StructFieldName {
+					fmt.Print(Strct[i])
+					fmt.Print(m, n)
+					return fmt.Errorf("%v:%v: redeclaration error: struct field: %v", filepath.Base(Strct[i].FileID), StructFields[n].LineNumber, StructFields[n].StructFieldName)
+				}
 			}
 		}
-	}
 
-	for _, structDeclaration := range Strct {
-		StructFields := structDeclaration.StructFields
-		for i := 0; i < len(StructFields); i++ {
-			for j := i + 1; j < len(StructFields); j++ {
-				if StructFields[i].StructFieldName == StructFields[j].StructFieldName {
-					return fmt.Errorf("%v:%v: redeclaration error: struct field: %v", filepath.Base(structDeclaration.FileID), StructFields[j].LineNumber, StructFields[i].StructFieldName)
-				}
+		for j := i + 1; j < len(Strct); j++ {
+			if Strct[i].StructName == Strct[j].StructName && Strct[i].PackageID == Strct[j].PackageID {
+				return fmt.Errorf("%v:%v: redeclaration error: struct: %v", filepath.Base(Strct[j].FileID), Strct[j].LineNumber, Strct[i].StructName)
 			}
 		}
 	}
 
 	for i := 0; i < len(Func); i++ {
 		for j := i + 1; j < len(Func); j++ {
-			if Func[i].FuncName == Func[j].FuncName {
+			if Func[i].FuncName == Func[j].FuncName && Func[i].PackageID == Func[j].PackageID {
 				return fmt.Errorf("%v:%v: redeclaration error: func: %v", filepath.Base(Func[j].FileID), Func[j].LineNumber, Func[i].FuncName)
 			}
 		}
