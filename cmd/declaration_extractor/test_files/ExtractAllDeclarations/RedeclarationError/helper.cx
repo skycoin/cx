@@ -17,7 +17,7 @@ type Point struct {
 }
 
 //Defining the structure 
-type Strings struct.Method() {
+type Strings struct {
 	lBound i64
 	string str
 	stringA []str

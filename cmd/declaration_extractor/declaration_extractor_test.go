@@ -1153,6 +1153,75 @@ func TestDeclarationExtractor_ExtractAllDeclarations(t *testing.T) {
 			wantFuncs:           5,
 			wantError:           errors.New("main.cx:9: syntax error: global declaration"),
 		},
+		{
+			scenario: "Enum Syntax Error",
+			testDirs: []string{
+				"./test_files/ExtractAllDeclarations/EnumSyntaxError/main.cx",
+				"./test_files/ExtractAllDeclarations/EnumSyntaxError/helper.cx",
+				"./test_files/ExtractAllDeclarations/EnumSyntaxError/program.cx",
+			},
+			wantGlobals:         3,
+			wantEnums:           0,
+			wantTypeDefinitions: 3,
+			wantStructs:         3,
+			wantFuncs:           5,
+			wantError:           errors.New("program.cx:27: syntax error: enum declaration"),
+		},
+		{
+			scenario: "Type Definition Syntax Error",
+			testDirs: []string{
+				"./test_files/ExtractAllDeclarations/TypeDefinitionSyntaxError/main.cx",
+				"./test_files/ExtractAllDeclarations/TypeDefinitionSyntaxError/helper.cx",
+				"./test_files/ExtractAllDeclarations/TypeDefinitionSyntaxError/program.cx",
+			},
+			wantGlobals:         3,
+			wantEnums:           12,
+			wantTypeDefinitions: 0,
+			wantStructs:         3,
+			wantFuncs:           5,
+			wantError:           errors.New("program.cx:21: syntax error: type definition declaration"),
+		}, {
+			scenario: "Struct Syntax Error",
+			testDirs: []string{
+				"./test_files/ExtractAllDeclarations/StructSyntaxError/main.cx",
+				"./test_files/ExtractAllDeclarations/StructSyntaxError/helper.cx",
+				"./test_files/ExtractAllDeclarations/StructSyntaxError/program.cx",
+			},
+			wantGlobals:         3,
+			wantEnums:           12,
+			wantTypeDefinitions: 3,
+			wantStructs:         0,
+			wantFuncs:           5,
+			wantError:           errors.New("helper.cx:20: syntax error: struct declaration"),
+		},
+		{
+			scenario: "Func Syntax Error",
+			testDirs: []string{
+				"./test_files/ExtractAllDeclarations/FuncSyntaxError/main.cx",
+				"./test_files/ExtractAllDeclarations/FuncSyntaxError/helper.cx",
+				"./test_files/ExtractAllDeclarations/FuncSyntaxError/program.cx",
+			},
+			wantGlobals:         3,
+			wantEnums:           12,
+			wantTypeDefinitions: 3,
+			wantStructs:         3,
+			wantFuncs:           2,
+			wantError:           errors.New("helper.cx:34: syntax error: func declaration"),
+		},
+		{
+			scenario: "Redeclaration Error",
+			testDirs: []string{
+				"./test_files/ExtractAllDeclarations/RedeclarationError/main.cx",
+				"./test_files/ExtractAllDeclarations/RedeclarationError/helper.cx",
+				"./test_files/ExtractAllDeclarations/RedeclarationError/program.cx",
+			},
+			wantGlobals:         4,
+			wantEnums:           12,
+			wantTypeDefinitions: 3,
+			wantStructs:         3,
+			wantFuncs:           5,
+			wantError:           errors.New("main.cx:13: redeclaration error: global: number"),
+		},
 	}
 
 	for _, tc := range tests {
@@ -1171,7 +1240,7 @@ func TestDeclarationExtractor_ExtractAllDeclarations(t *testing.T) {
 				files = append(files, file)
 			}
 
-			Globals, Enums, Structs, TypeDefinitions, Funcs, gotErr := declaration_extractor.ExtractAllDeclarations(files)
+			Globals, Enums, TypeDefinitions, Structs, Funcs, gotErr := declaration_extractor.ExtractAllDeclarations(files)
 
 			if len(Globals) == 0 && len(Enums) == 0 && len(Structs) == 0 && len(Funcs) == 0 {
 				t.Error("No Declarations found")

@@ -24,7 +24,7 @@ const (
 	Summer Season = 0L
 	Autumn        = 1L
 	Winter        = 2L
-	Spring        = 3L
+	Spring        =
 )
 
 func (s Season) String() (string str) {

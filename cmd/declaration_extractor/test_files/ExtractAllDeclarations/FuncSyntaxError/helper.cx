@@ -31,7 +31,7 @@ func printPoint (p Point) () {
 }
 
 // This function return structure Point after assigning the assign the values to its elements
-func returnStruct () (p Point) {
+func returnStruct () (p Point) (anotherOutput i32) {
 	p.x = 66
 	p.y = 33
 }

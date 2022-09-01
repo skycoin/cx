@@ -18,7 +18,7 @@ const (
     West
 )
 
-type Season i64 str
+type Season i64
 
 const (
 	Summer Season = 0L
