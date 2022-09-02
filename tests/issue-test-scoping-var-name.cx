@@ -1,0 +1,21 @@
+package main
+
+func main() {
+  var x i32
+  x=5
+
+  for x:=0;x<3;x++{
+    i32.print(x)
+  }
+
+
+  for x:=3;x<6;x++{
+    i32.print(x)
+  }
+  
+  if true {
+    x=6
+  }
+
+i32.print(x)
+}
