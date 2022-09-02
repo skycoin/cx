@@ -115,6 +115,51 @@ func ReplaceCommentsWithWhitespaces(source []byte) []byte {
 	return sourceWithoutComments
 }
 
+func ReplaceStringContentsWithWhitespaces(source []byte) ([]byte, error) {
+
+	var sourceWithoutStringContents []byte = source
+	var inString bool
+	var inRawString bool
+	var lineno int
+
+	for i, char := range source {
+
+		if char == '\n' {
+			lineno++
+		}
+
+		if char == '\n' && inString {
+			return sourceWithoutStringContents, fmt.Errorf("%v: syntax error: quote not terminated", lineno)
+		}
+
+		if char == '"' && !inString && !inRawString {
+			inString = true
+			continue
+		}
+
+		if char == '"' && inString {
+			inString = false
+			continue
+		}
+
+		if char == '`' && !inRawString && !inString {
+			inRawString = true
+			continue
+		}
+
+		if char == '`' && inRawString {
+			inRawString = false
+			continue
+		}
+
+		if (inString || inRawString) && !unicode.IsSpace(rune(char)) {
+			sourceWithoutStringContents[i] = byte(' ')
+		}
+	}
+
+	return sourceWithoutStringContents, nil
+}
+
 func ExtractGlobals(source []byte, fileName string) ([]GlobalDeclaration, error) {
 
 	var GlobalDeclarationsArray []GlobalDeclaration

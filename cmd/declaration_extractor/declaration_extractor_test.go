@@ -76,6 +76,75 @@ func TestDeclarationExtractor_ReplaceCommentsWithWhitespaces(t *testing.T) {
 	}
 }
 
+func TestDeclarationExtractor_ReplaceStringContentsWithWhitespaces(t *testing.T) {
+
+	tests := []struct {
+		scenario                   string
+		testDir                    string
+		wantStringContentsReplaced string
+		wantErr                    error
+	}{
+		{
+			scenario:                   "Has String",
+			testDir:                    "./test_files/ReplaceStringContentsWithWhitespaces/HasString.cx",
+			wantStringContentsReplaced: "./test_files/ReplaceStringContentsWithWhitespaces/HasString.cxStringContentsReplaced.cx",
+			wantErr:                    nil,
+		},
+		{
+			scenario:                   "Syntax Error",
+			testDir:                    "./test_files/ReplaceStringContentsWithWhitespaces/SyntaxError.cx",
+			wantStringContentsReplaced: "./test_files/ReplaceStringContentsWithWhitespaces/SyntaxError.cxStringContentsReplaced.cx",
+			wantErr:                    errors.New("9: syntax error: quote not terminated"),
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.scenario, func(t *testing.T) {
+			srcBytes, err := os.ReadFile(tc.testDir)
+			if err != nil {
+				t.Fatal(err)
+			}
+			wantBytes, err := os.ReadFile(tc.wantStringContentsReplaced)
+			if err != nil {
+				t.Fatal(err)
+			}
+			stringContentsReplaced, gotErr := declaration_extractor.ReplaceStringContentsWithWhitespaces(srcBytes)
+
+			if len(srcBytes) != len(stringContentsReplaced) {
+				t.Errorf("Length not the same: orginal %vbytes, replaced %vbytes", len(srcBytes), len(stringContentsReplaced))
+			}
+
+			srcLines := bytes.Count(srcBytes, []byte("\n")) + 1
+			newLines := bytes.Count(stringContentsReplaced, []byte("\n")) + 1
+
+			if srcLines != newLines {
+				t.Errorf("Lines not equal: original %vlines, new %vlines", srcLines, newLines)
+			}
+
+			if string(stringContentsReplaced) != string(wantBytes) {
+				t.Errorf("want string contents replaced\n%v\ngot\n%v", string(wantBytes), string(stringContentsReplaced))
+				file, err := os.Create(tc.testDir + "StringContentsReplaced.cx")
+				if err != nil {
+					t.Fatal(err)
+				}
+				file.Write(stringContentsReplaced)
+			}
+
+			if (gotErr != nil && tc.wantErr == nil) ||
+				(gotErr == nil && tc.wantErr != nil) {
+				t.Errorf("want error %v, got %v", tc.wantErr, gotErr)
+			}
+
+			if gotErr != nil && tc.wantErr != nil {
+				if gotErr.Error() != tc.wantErr.Error() {
+					t.Errorf("want error %v, got %v", tc.wantErr, gotErr)
+				}
+			}
+
+		})
+	}
+}
+
 func TestDeclarationExtractor_ExtractGlobals(t *testing.T) {
 
 	tests := []struct {
