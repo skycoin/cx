@@ -242,7 +242,7 @@ func SelectionExpressions(prgrm *ast.CXProgram, conditionExprs []ast.CXExpressio
 			} else if lastCondExpressionOperatorOutputTypeSig.Type == ast.TYPE_ATOMIC {
 				lastCondExpressionOperatorOutputArgType = types.Code(lastCondExpressionOperatorOutputTypeSig.Meta)
 			} else if lastCondExpressionOperatorOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
-				lastCondExpressionOperatorOutputArgType = types.POINTER
+				lastCondExpressionOperatorOutputArgType = types.Code(lastCondExpressionOperatorOutputTypeSig.Meta)
 			}
 			predicate.SetType(lastCondExpressionOperatorOutputArgType)
 		}
@@ -312,7 +312,7 @@ func resolveTypeForUnd(prgrm *ast.CXProgram, expr *ast.CXExpression) types.Code 
 		} else if expressionInputTypeSig.Type == ast.TYPE_ATOMIC {
 			expressionInputArgType = types.Code(expressionInputTypeSig.Meta)
 		} else if expressionInputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
-			expressionInputArgType = types.POINTER
+			expressionInputArgType = types.Code(expressionInputTypeSig.Meta)
 		}
 
 		// it's a literal
@@ -328,7 +328,7 @@ func resolveTypeForUnd(prgrm *ast.CXProgram, expr *ast.CXExpression) types.Code 
 		} else if expressionOutputTypeSig.Type == ast.TYPE_ATOMIC {
 			expressionOutputArgType = types.Code(expressionOutputTypeSig.Meta)
 		} else if expressionOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
-			expressionOutputArgType = types.POINTER
+			expressionOutputArgType = types.Code(expressionOutputTypeSig.Meta)
 		}
 
 		// it's an expression with an output
@@ -350,7 +350,7 @@ func resolveTypeForUnd(prgrm *ast.CXProgram, expr *ast.CXExpression) types.Code 
 		} else if expressionOperatorOutputTypeSig.Type == ast.TYPE_ATOMIC {
 			expressionOperatorOutputArgType = types.Code(expressionOperatorOutputTypeSig.Meta)
 		} else if expressionOperatorOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
-			expressionOperatorOutputArgType = types.POINTER
+			expressionOperatorOutputArgType = types.Code(expressionOperatorOutputTypeSig.Meta)
 		}
 
 		// always return first output's type
