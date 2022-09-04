@@ -8,7 +8,13 @@ import (
 
 //TODO: Rework
 func opSliceLen(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	elt := inputs[0].Arg.GetAssignmentElement(prgrm)
+	var inp0 *ast.CXArgument
+	if inputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		inp0 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inputs[0].TypeSignature.Meta))
+	} else {
+		panic("type is not type cx argument deprecate\n\n")
+	}
+	elt := inp0.GetAssignmentElement(prgrm)
 
 	var sliceLen types.Pointer
 	if elt.IsSlice || elt.Type == types.AFF { //TODO: FIX
@@ -30,27 +36,43 @@ func opSliceLen(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 
 //TODO: Rework
 func opSliceAppend(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	inp0, inp1, out0 := inputs[0].Arg, inputs[1].Arg, outputs[0].Arg
+	var inp0, out0 *ast.CXArgument
+	var inp0Type, inp1Type, out0Type types.Code
+	if inputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		inp0 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inputs[0].TypeSignature.Meta))
+		inp0Type = inp0.Type
+		if inp0.Type == types.POINTER {
+			inp0Type = inp0.PointerTargetType
+		}
+	} else {
+		panic("type is not type cx argument deprecate\n\n")
+	}
+
+	if inputs[1].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		inp1 := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inputs[1].TypeSignature.Meta))
+		inp1Type = inp1.Type
+		if inp1.Type == types.POINTER {
+			inp1Type = inp1.PointerTargetType
+		}
+	} else if inputs[1].TypeSignature.Type == ast.TYPE_ATOMIC || inputs[1].TypeSignature.Type == ast.TYPE_POINTER_ATOMIC {
+		inp1Type = types.Code(inputs[1].TypeSignature.Meta)
+	}
+
+	if outputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		out0 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(outputs[0].TypeSignature.Meta))
+		out0Type = out0.Type
+		if out0.Type == types.POINTER {
+			out0Type = out0.PointerTargetType
+		}
+	} else {
+		panic("type is not type cx argument deprecate\n\n")
+	}
+
 	sliceInputs := inputs[1:]
 	sliceInputsLen := types.Cast_int_to_ptr(len(sliceInputs))
 
 	eltInp0 := inp0.GetAssignmentElement(prgrm)
 	eltOut0 := out0.GetAssignmentElement(prgrm)
-
-	inp0Type := inp0.Type
-	inp1Type := inp1.Type
-	out0Type := out0.Type
-	if inp0.Type == types.POINTER {
-		inp0Type = inp0.PointerTargetType
-	}
-
-	if inp1.Type == types.POINTER {
-		inp1Type = inp1.PointerTargetType
-	}
-
-	if out0.Type == types.POINTER {
-		out0Type = out0.PointerTargetType
-	}
 
 	if inp0Type != inp1Type || inp0Type != out0Type || !eltInp0.IsSlice || !eltOut0.IsSlice {
 		panic(constants.CX_RUNTIME_INVALID_ARGUMENT)
@@ -63,16 +85,22 @@ func opSliceAppend(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXV
 	}
 
 	// Preparing slice in case more memory is needed for the new element.
-	outputSliceOffset := ast.SliceAppendResize(prgrm, inputs[0].FramePointer, out0, inp0, ast.GetDerefSizeSlice(prgrm, eltInp0), sliceInputsLen)
+	outputSliceOffset := ast.SliceAppendResize(prgrm, inputs[0].FramePointer, outputs[0].TypeSignature, inputs[0].TypeSignature, ast.GetDerefSizeSlice(prgrm, eltInp0), sliceInputsLen)
 
 	// We need to update the address of the output and input, as the final offsets
 	// could be on the heap and they could have been moved by the GC.
 
 	for i, input := range sliceInputs {
-		inp := input.Arg
-		inpType := inp.Type
-		if inp.Type == types.POINTER {
-			inpType = inp.PointerTargetType
+		var inp *ast.CXArgument
+		var inpType types.Code
+		if input.TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			inp = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(input.TypeSignature.Meta))
+			inpType = inp.Type
+			if inp.Type == types.POINTER {
+				inpType = inp.PointerTargetType
+			}
+		} else if input.TypeSignature.Type == ast.TYPE_ATOMIC || input.TypeSignature.Type == ast.TYPE_POINTER_ATOMIC {
+			inpType = types.Code(input.TypeSignature.Meta)
 		}
 
 		if inp0Type != inpType {
@@ -92,7 +120,18 @@ func opSliceAppend(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXV
 
 //TODO: Rework
 func opSliceResize(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	inp0, out0 := inputs[0].Arg, outputs[0].Arg
+	var inp0, out0 *ast.CXArgument
+	if inputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		inp0 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inputs[0].TypeSignature.Meta))
+	} else {
+		panic("type is not type cx argument deprecate\n\n")
+	}
+
+	if outputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		out0 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(outputs[0].TypeSignature.Meta))
+	} else {
+		panic("type is not type cx argument deprecate\n\n")
+	}
 	fp := inputs[0].FramePointer
 
 	if inp0.Type != out0.Type || !inp0.GetAssignmentElement(prgrm).IsSlice || !out0.GetAssignmentElement(prgrm).IsSlice {
@@ -101,30 +140,52 @@ func opSliceResize(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXV
 
 	eltInp0 := inp0.GetAssignmentElement(prgrm)
 
-	outputSliceOffset := ast.SliceResize(prgrm, fp, out0, inp0, types.Cast_i32_to_ptr(inputs[1].Get_i32(prgrm)), eltInp0.Size)
+	outputSliceOffset := ast.SliceResize(prgrm, fp, outputs[0].TypeSignature, inputs[0].TypeSignature, types.Cast_i32_to_ptr(inputs[1].Get_i32(prgrm)), eltInp0.Size)
 
 	outputs[0].Set_ptr(prgrm, outputSliceOffset)
 }
 
 //TODO: Rework
 func opSliceInsertElement(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	inp0, inp2, out0 := inputs[0].Arg, inputs[2].Arg, outputs[0].Arg
+	var inp0, inp2, out0 *ast.CXArgument
+	var inp0Type, inp2Type, out0Type types.Code
+	if inputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		inp0 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inputs[0].TypeSignature.Meta))
+
+		inp0Type = inp0.Type
+		if inp0.Type == types.POINTER {
+			inp0Type = inp0.PointerTargetType
+		}
+	} else if inputs[0].TypeSignature.Type == ast.TYPE_ATOMIC || inputs[0].TypeSignature.Type == ast.TYPE_POINTER_ATOMIC {
+		inp0 = &ast.CXArgument{}
+		inp0Type = types.Code(inputs[0].TypeSignature.Meta)
+	}
+
+	if inputs[2].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		inp2 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inputs[2].TypeSignature.Meta))
+
+		inp2Type = inp2.Type
+		if inp2.Type == types.POINTER {
+			inp2Type = inp2.PointerTargetType
+		}
+	} else if inputs[2].TypeSignature.Type == ast.TYPE_ATOMIC || inputs[2].TypeSignature.Type == ast.TYPE_POINTER_ATOMIC {
+		inp2 = &ast.CXArgument{}
+		inp2Type = types.Code(inputs[2].TypeSignature.Meta)
+	}
+
+	if outputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		out0 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(outputs[0].TypeSignature.Meta))
+
+		out0Type = out0.Type
+		if out0.Type == types.POINTER {
+			out0Type = out0.PointerTargetType
+		}
+	} else if outputs[0].TypeSignature.Type == ast.TYPE_ATOMIC || outputs[0].TypeSignature.Type == ast.TYPE_POINTER_ATOMIC {
+		out0 = &ast.CXArgument{}
+		out0Type = types.Code(outputs[0].TypeSignature.Meta)
+	}
+
 	fp := inputs[0].FramePointer
-
-	inp0Type := inp0.Type
-	if inp0.Type == types.POINTER {
-		inp0Type = inp0.PointerTargetType
-	}
-
-	inp2Type := inp2.Type
-	if inp2.Type == types.POINTER {
-		inp2Type = inp2.PointerTargetType
-	}
-
-	out0Type := out0.Type
-	if out0.Type == types.POINTER {
-		out0Type = out0.PointerTargetType
-	}
 
 	if inp0Type != inp2Type || inp0Type != out0Type || !inp0.GetAssignmentElement(prgrm).IsSlice || !out0.GetAssignmentElement(prgrm).IsSlice {
 		panic(constants.CX_RUNTIME_INVALID_ARGUMENT)
@@ -136,10 +197,10 @@ func opSliceInsertElement(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []
 	if inp2Type == types.STR || inp2Type == types.AFF {
 		var obj [types.POINTER_SIZE]byte
 		types.Write_ptr(obj[:], 0, types.Read_ptr(prgrm.Memory, inputs[2].Offset))
-		outputSliceOffset = ast.SliceInsert(prgrm, fp, out0, inp0, index, obj[:])
+		outputSliceOffset = ast.SliceInsert(prgrm, fp, outputs[0].TypeSignature, inputs[0].TypeSignature, index, obj[:])
 	} else {
 		obj := inputs[2].Get_bytes(prgrm)
-		outputSliceOffset = ast.SliceInsert(prgrm, fp, out0, inp0, index, obj)
+		outputSliceOffset = ast.SliceInsert(prgrm, fp, outputs[0].TypeSignature, inputs[0].TypeSignature, index, obj)
 	}
 
 	outputs[0].Set_ptr(prgrm, outputSliceOffset)
@@ -147,25 +208,49 @@ func opSliceInsertElement(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []
 
 //TODO: Rework
 func opSliceRemoveElement(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	inp0, out0 := inputs[0].Arg, outputs[0].Arg
+	var inp0, out0 *ast.CXArgument
+	if inputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		inp0 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inputs[0].TypeSignature.Meta))
+	} else {
+		panic("type is not type cx argument deprecate\n\n")
+	}
+
+	if outputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		out0 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(outputs[0].TypeSignature.Meta))
+	} else {
+		panic("type is not type cx argument deprecate\n\n")
+	}
+
 	fp := inputs[0].FramePointer
 
 	if inp0.Type != out0.Type || !inp0.GetAssignmentElement(prgrm).IsSlice || !out0.GetAssignmentElement(prgrm).IsSlice {
 		panic(constants.CX_RUNTIME_INVALID_ARGUMENT)
 	}
 
-	outputSliceOffset := ast.SliceRemove(prgrm, fp, out0, inp0, types.Cast_i32_to_ptr(inputs[1].Get_i32(prgrm)), inp0.GetAssignmentElement(prgrm).Size)
+	outputSliceOffset := ast.SliceRemove(prgrm, fp, outputs[0].TypeSignature, inputs[0].TypeSignature, types.Cast_i32_to_ptr(inputs[1].Get_i32(prgrm)), inp0.GetAssignmentElement(prgrm).Size)
 
 	outputs[0].Set_ptr(prgrm, outputSliceOffset)
 }
 
 func opSliceCopy(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	dstInput := inputs[0].Arg
-	srcInput := inputs[1].Arg
+	var dstInput *ast.CXArgument
+	if inputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		dstInput = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inputs[0].TypeSignature.Meta))
+	} else {
+		panic("type is not type cx argument deprecate\n\n")
+	}
+
+	var srcInput *ast.CXArgument
+	if inputs[1].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		srcInput = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inputs[1].TypeSignature.Meta))
+	} else {
+		panic("type is not type cx argument deprecate\n\n")
+	}
+
 	fp := inputs[0].FramePointer
 
-	dstOffset := ast.GetSliceOffset(prgrm, fp, dstInput)
-	srcOffset := ast.GetSliceOffset(prgrm, fp, srcInput)
+	dstOffset := ast.GetSliceOffset(prgrm, fp, inputs[0].TypeSignature)
+	srcOffset := ast.GetSliceOffset(prgrm, fp, inputs[1].TypeSignature)
 
 	dstElem := dstInput.GetAssignmentElement(prgrm)
 	srcElem := srcInput.GetAssignmentElement(prgrm)

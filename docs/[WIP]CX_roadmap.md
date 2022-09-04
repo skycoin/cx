@@ -20,8 +20,32 @@
     - [ ] CX_GLOBAL_DEF
 
 ## Struct Definition
-- [ ] Complete new CXStruct definition specifications.
-- [ ] Implement new CXStruct definition.
+- [ ] Complete new CXStruct definition specifications
+- [ ] Complete new CXTypeSignature definition specifications.
+- [ ] CXStruct Implementation
+    - [x] CXStruct for function Inputs
+    - [x] CXStruct for function Outputs
+    - [ ] CXStruct for function variable layout
+    - [ ] CXStruct for struct definitions
+- [ ] CXTypeSignature Implementation
+    - [x] atomic
+    - [ ] PointerAtomic
+    - [ ] ArrayAtomic
+    - [ ] ArrayPointerAtomic
+    - [ ] SliceAtomic
+    - [ ] SlicePointerAtomic
+    - [ ] Struct
+    - [ ] PointerStruct
+    - [ ] ArrayStruct
+    - [ ] ArrayPointerStruct
+    - [ ] SliceStruct
+    - [ ] SlicePointerStruct
+    - [ ] Complex
+    - [ ] PointerComplex
+    - [ ] ArrayComplex
+    - [ ] ArrayPointerComplex
+    - [ ] SliceComplex
+    - [ ] SlicePointerComplex
 
 Objectives:
 - To eliminate CxArguments and replace with CXTypeSignature, we need int id codes for types (enum)
@@ -85,10 +109,11 @@ Objectives:
 - so functions in AST can be reduced completely to assembly language and executed natively eventually.
 
 ## CX Compiler Frontend
-- [ ] Stage 1: Package format - This is how we’re representing the file. Every file has a length, a name, and a hash. Every package is a list of files – file structs. And then, we have a list of the package structs. And then, we can serialize it and hash that to get the ID for the whole program.
-- [ ] Stage 2: Declaration Extraction
+- [x] Stage 1: Package format - This is how we’re representing the file. Every file has a length, a name, and a hash. Every package is a list of files – file structs. And then, we have a list of the package structs. And then, we can serialize it and hash that to get the ID for the whole program.
+- [x] Stage 2: Declaration Extraction
 - [ ] Stage 3: Type Checks
 - [ ] Stage 4: Function Body Extraction
+- [ ] Integration of Stage 1-4 to the compiling process
 
 ## CX App Store
 CX App Store will be a downloadable app for windows and mac. Once it is downloaded and installed, when ran, the app will start its own local web app server and automatically open up a web browser that redirects to that web app. It will show lists of CX programs/apps/games that the user can run. For example, the user clicks "CXPacman", it will then automatically open up an OpenGL window that runs the CXPacman game.
@@ -103,7 +128,7 @@ Objectives:
 - [ ] CXS - CXShell
 
 ## CX Playground
-- [ ] Running server
+- [x] Running server
 - [ ] More Functionailities for CXPlayground
 
 ## Misc

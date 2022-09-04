@@ -75,7 +75,7 @@ func buildString(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVal
 					res = append(res, []byte(strconv.FormatFloat(inp.Get_f64(prgrm), 'f', 16, 64))...)
 				}
 			case 'v':
-				res = append(res, []byte(ast.GetPrintableValue(prgrm, inp.FramePointer, inp.Arg))...)
+				res = append(res, []byte(ast.GetPrintableValue(prgrm, inp.FramePointer, inp.TypeSignature))...)
 			case 'b':
 				res = append(res, []byte(strconv.FormatBool(inp.Get_bool(prgrm)))...)
 			}
@@ -92,7 +92,14 @@ func buildString(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVal
 		lInps := len(inputs[specifiersCounter+1:])
 		for c := 0; c < lInps; c++ {
 			inp := &inputs[specifiersCounter+1+c]
-			elt := inp.Arg.GetAssignmentElement(prgrm)
+			var inpArg *ast.CXArgument
+			if inp.TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				inpArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inp.TypeSignature.Meta))
+			} else {
+				panic("type is not type cx argument deprecate\n\n")
+			}
+
+			elt := inpArg.GetAssignmentElement(prgrm)
 			typ := ""
 			_ = typ
 			if elt.StructType != nil {
@@ -104,9 +111,9 @@ func buildString(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVal
 			}
 
 			if c == lInps-1 {
-				extra += fmt.Sprintf("%s=%s", typ, ast.GetPrintableValue(prgrm, inp.FramePointer, elt))
+				extra += fmt.Sprintf("%s=%s", typ, ast.GetPrintableValue(prgrm, inp.FramePointer, inp.TypeSignature))
 			} else {
-				extra += fmt.Sprintf("%s=%s, ", typ, ast.GetPrintableValue(prgrm, inp.FramePointer, elt))
+				extra += fmt.Sprintf("%s=%s, ", typ, ast.GetPrintableValue(prgrm, inp.FramePointer, inp.TypeSignature))
 			}
 
 		}

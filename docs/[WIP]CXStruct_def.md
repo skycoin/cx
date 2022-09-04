@@ -50,3 +50,29 @@ Note:
 - Make one struct for complex type.
 - glob all complex types which will just be cxargs
 - From complex types, move types one by one to FieldTypes
+
+## Progress
+- [ ] CXStruct Implementation
+    - [x] CXStruct for function Inputs
+    - [x] CXStruct for function Outputs
+    - [ ] CXStruct for function variable layout
+    - [ ] CXStruct for struct definitions
+- [ ] CXTypeSignature Implementation
+    - [x] atomic
+    - [ ] PointerAtomic
+    - [ ] ArrayAtomic
+    - [ ] ArrayPointerAtomic
+    - [ ] SliceAtomic
+    - [ ] SlicePointerAtomic
+    - [ ] Struct
+    - [ ] PointerStruct
+    - [ ] ArrayStruct
+    - [ ] ArrayPointerStruct
+    - [ ] SliceStruct
+    - [ ] SlicePointerStruct
+    - [ ] Complex
+    - [ ] PointerComplex
+    - [ ] ArrayComplex
+    - [ ] ArrayPointerComplex
+    - [ ] SliceComplex
+    - [ ] SlicePointerComplex

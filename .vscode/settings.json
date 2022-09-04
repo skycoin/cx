@@ -9,7 +9,7 @@
             "icon": "terminal-bash"
         },
         "zsh": {
-            "path": "zsh",
+            "path": "/bin/zsh",
             "args": [
                 "-l", "-i"
             ]
@@ -29,5 +29,5 @@
             "icon": "terminal-powershell"
         }
     },
-    "terminal.integrated.defaultProfile.osx": "zsh"
+    "terminal.integrated.defaultProfile.osx": "zsh",
 }

@@ -22,6 +22,11 @@ type CXFunction struct {
 	Outputs     *CXStruct      // Output parameters from the function
 	Expressions []CXExpression // Expressions, including control flow statements, in the function
 
+	// contains the name of its local variables
+	// Used to determine if the variables are to be added to the symbols array
+	// Used for local scoping
+	LocalVariables []string
+
 	//TODO: Better Comment for this
 	LineCount int // number of expressions, pre-computed for performance
 
@@ -68,6 +73,7 @@ func MakeFunction(name string, fileName string, fileLine int) *CXFunction {
 		Inputs: &CXStruct{
 			Name: name + "_Input",
 		},
+		LocalVariables: []string{},
 	}
 }
 
@@ -117,7 +123,8 @@ func (fn *CXFunction) GetExpressionByLine(line int) (*CXExpression, error) {
 // AddInput ...
 func (fn *CXFunction) AddInput(prgrm *CXProgram, param *CXArgument) *CXFunction {
 	fnInputs := fn.GetInputs(prgrm)
-	for _, input := range fnInputs {
+	for _, inputIdx := range fnInputs {
+		input := prgrm.GetCXTypeSignatureFromArray(inputIdx)
 		if input.Type == TYPE_CXARGUMENT_DEPRECATE {
 			inp := prgrm.GetCXArgFromArray(CXArgumentIndex(input.Meta))
 			if inp.Name == param.Name {
@@ -128,25 +135,21 @@ func (fn *CXFunction) AddInput(prgrm *CXProgram, param *CXArgument) *CXFunction 
 	}
 
 	param.Package = fn.Package
-	paramIdx := prgrm.AddCXArgInArray(param)
-
-	newField := CXTypeSignature{
-		Name: param.Name,
-		Type: TYPE_CXARGUMENT_DEPRECATE,
-		Meta: int(paramIdx),
-	}
+	newField := GetCXTypeSignatureRepresentationOfCXArg(prgrm, param)
 
 	if fn.Inputs == nil {
 		fn.Inputs = &CXStruct{}
 	}
-	fn.Inputs.AddField_Function(prgrm, &newField)
+
+	newFieldIdx := prgrm.AddCXTypeSignatureInArray(newField)
+	fn.Inputs.AddField_TypeSignature(prgrm, newFieldIdx)
 
 	return fn
 }
 
-func (fn *CXFunction) GetInputs(prgrm *CXProgram) []CXTypeSignature {
+func (fn *CXFunction) GetInputs(prgrm *CXProgram) []CXTypeSignatureIndex {
 	if fn == nil || fn.Inputs == nil {
-		return []CXTypeSignature{}
+		return []CXTypeSignatureIndex{}
 	}
 
 	return fn.Inputs.Fields
@@ -173,32 +176,30 @@ func (fn *CXFunction) GetInputs(prgrm *CXProgram) []CXTypeSignature {
 // AddOutput ...
 func (fn *CXFunction) AddOutput(prgrm *CXProgram, param *CXArgument) *CXFunction {
 	fnOutputs := fn.GetOutputs(prgrm)
-	for _, output := range fnOutputs {
+	for _, outputIdx := range fnOutputs {
+		output := prgrm.GetCXTypeSignatureFromArray(outputIdx)
 		if output.Name == param.Name {
 			return fn
 		}
 	}
 
 	param.Package = fn.Package
-	paramIdx := prgrm.AddCXArgInArray(param)
 
-	newField := CXTypeSignature{
-		Name: param.Name,
-		Type: TYPE_CXARGUMENT_DEPRECATE,
-		Meta: int(paramIdx),
-	}
+	newField := GetCXTypeSignatureRepresentationOfCXArg(prgrm, param)
 
 	if fn.Outputs == nil {
 		fn.Outputs = &CXStruct{}
 	}
-	fn.Outputs.AddField_Function(prgrm, &newField)
+
+	newFieldIdx := prgrm.AddCXTypeSignatureInArray(newField)
+	fn.Outputs.AddField_TypeSignature(prgrm, newFieldIdx)
 
 	return fn
 }
 
-func (fn *CXFunction) GetOutputs(prgrm *CXProgram) []CXTypeSignature {
+func (fn *CXFunction) GetOutputs(prgrm *CXProgram) []CXTypeSignatureIndex {
 	if fn == nil || fn.Outputs == nil {
-		return []CXTypeSignature{}
+		return []CXTypeSignatureIndex{}
 	}
 
 	return fn.Outputs.Fields
@@ -270,6 +271,33 @@ func (fn *CXFunction) RemoveExpression(line int) {
 			fn.Expressions = append(fn.Expressions[:line], fn.Expressions[line+1:]...)
 		}
 	}
+}
+
+func (fn *CXFunction) AddLocalVariableName(name string) error {
+	fn.LocalVariables = append(fn.LocalVariables, name)
+
+	return nil
+}
+
+func (fn *CXFunction) IsLocalVariable(name string) bool {
+	for _, localVar := range fn.LocalVariables {
+		if name == localVar {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (fn *CXFunction) RemoveLocalVariableFromArray(name string) error {
+	for idx, localVar := range fn.LocalVariables {
+		if name == localVar {
+			fn.LocalVariables = append(fn.LocalVariables[:idx], fn.LocalVariables[idx+1:]...)
+			return nil
+		}
+	}
+
+	return nil
 }
 
 // ----------------------------------------------------------------

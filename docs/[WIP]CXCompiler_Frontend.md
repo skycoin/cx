@@ -2,12 +2,12 @@
 
 ## Refactor Compiler Frontend
 ### Stages:
-- [ ] Stage 1: File and Package Loading
+- [x] Stage 1: File and Package Loading
 	- Load CX packages and get imports. Extracting the packages that need to be imported
 	- Loading all modules/files in each package
 	- Function to extract all imports from source file
 
-- [ ] Stage 2: Declaration Extraction
+- [x] Stage 2: Declaration Extraction
 	- Function to extract all global declarations from source file
 	- Function to extract all alias and enum declarations from source file
 	- Function to extract all struct declarations from source files
