@@ -127,6 +127,7 @@ func ReplaceStringContentsWithWhitespaces(source []byte) ([]byte, error) {
 			lineno++
 		}
 
+		//if end of line and quote not terminated
 		if char == '\n' && inString {
 			return sourceWithoutStringContents, fmt.Errorf("%v: syntax error: quote not terminated", lineno)
 		}
