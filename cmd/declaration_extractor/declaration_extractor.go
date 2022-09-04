@@ -96,8 +96,6 @@ func scanLinesWithLineTerminator(data []byte, atEOF bool) (advance int, token []
 
 func ReplaceCommentsWithWhitespaces(source []byte) []byte {
 
-	var sourceWithoutComments []byte = source
-
 	reComment := regexp.MustCompile(`//.*|/\*[\s\S]*?\*/|\"//.*\"`)
 
 	comments := reComment.FindAllIndex(source, -1)
@@ -105,19 +103,20 @@ func ReplaceCommentsWithWhitespaces(source []byte) []byte {
 	// Loops through each character and replaces with whitespcace
 	for i := range comments {
 		for loc := comments[i][0]; loc < comments[i][1]; loc++ {
-			if unicode.IsSpace(rune(sourceWithoutComments[loc])) {
+			if unicode.IsSpace(rune(source[loc])) {
 				continue
 			}
-			sourceWithoutComments[loc] = byte(' ')
+			source[loc] = byte(' ')
 		}
 	}
 
-	return sourceWithoutComments
+	return source
 }
 
 func ReplaceStringContentsWithWhitespaces(source []byte) ([]byte, error) {
 
-	var sourceWithoutStringContents []byte = source
+	var sourceWithoutStringContents []byte
+	sourceWithoutStringContents = append(sourceWithoutStringContents, source...)
 	var inString bool
 	var inRawString bool
 	var lineno int
@@ -626,8 +625,6 @@ func ReDeclarationCheck(Glbl []GlobalDeclaration, Enum []EnumDeclaration, TypeDe
 		for m := 0; m < len(StructFields); m++ {
 			for n := m + 1; n < len(StructFields); n++ {
 				if StructFields[m].StructFieldName == StructFields[n].StructFieldName {
-					fmt.Print(Strct[i])
-					fmt.Print(m, n)
 					return fmt.Errorf("%v:%v: redeclaration error: struct field: %v", filepath.Base(Strct[i].FileID), StructFields[n].LineNumber, StructFields[n].StructFieldName)
 				}
 			}
@@ -714,14 +711,19 @@ func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDecla
 
 			fileName := currentFile.Name()
 			replaceComments := ReplaceCommentsWithWhitespaces(srcBytes)
+			replaceStringContents, err := ReplaceStringContentsWithWhitespaces(replaceComments)
+			if err != nil {
+				errorChannel <- fmt.Errorf("%v:%v", filepath.Base(fileName), err)
+				return
+			}
 
 			wg.Add(5)
 
-			go func(globalChannel chan<- []GlobalDeclaration, replaceComments []byte, fileName string, wg *sync.WaitGroup) {
+			go func(globalChannel chan<- []GlobalDeclaration, replaceStringContents []byte, fileName string, wg *sync.WaitGroup) {
 
 				defer wg.Done()
 
-				globals, err := ExtractGlobals(replaceComments, fileName)
+				globals, err := ExtractGlobals(replaceStringContents, fileName)
 
 				if err != nil {
 					errorChannel <- err
@@ -730,13 +732,13 @@ func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDecla
 
 				globalChannel <- globals
 
-			}(globalChannel, replaceComments, fileName, wg)
+			}(globalChannel, replaceStringContents, fileName, wg)
 
-			go func(enumChannel chan<- []EnumDeclaration, replaceComments []byte, fileName string, wg *sync.WaitGroup) {
+			go func(enumChannel chan<- []EnumDeclaration, replaceStringContents []byte, fileName string, wg *sync.WaitGroup) {
 
 				defer wg.Done()
 
-				enums, err := ExtractEnums(replaceComments, fileName)
+				enums, err := ExtractEnums(replaceStringContents, fileName)
 
 				if err != nil {
 					errorChannel <- err
@@ -745,13 +747,13 @@ func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDecla
 
 				enumChannel <- enums
 
-			}(enumChannel, replaceComments, fileName, wg)
+			}(enumChannel, replaceStringContents, fileName, wg)
 
-			go func(typeDefinitionChannel chan<- []TypeDefinitionDeclaration, replaceComments []byte, fileName string, wg *sync.WaitGroup) {
+			go func(typeDefinitionChannel chan<- []TypeDefinitionDeclaration, replaceStringContents []byte, fileName string, wg *sync.WaitGroup) {
 
 				defer wg.Done()
 
-				typeDefinitions, err := ExtractTypeDefinitions(replaceComments, fileName)
+				typeDefinitions, err := ExtractTypeDefinitions(replaceStringContents, fileName)
 
 				if err != nil {
 					errorChannel <- err
@@ -760,13 +762,13 @@ func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDecla
 
 				typeDefinitionChannel <- typeDefinitions
 
-			}(typeDefinitionChannel, replaceComments, fileName, wg)
+			}(typeDefinitionChannel, replaceStringContents, fileName, wg)
 
-			go func(structChannel chan<- []StructDeclaration, replaceComments []byte, fileName string, wg *sync.WaitGroup) {
+			go func(structChannel chan<- []StructDeclaration, replaceStringContents []byte, fileName string, wg *sync.WaitGroup) {
 
 				defer wg.Done()
 
-				structs, err := ExtractStructs(replaceComments, fileName)
+				structs, err := ExtractStructs(replaceStringContents, fileName)
 
 				if err != nil {
 					errorChannel <- err
@@ -775,13 +777,13 @@ func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDecla
 
 				structChannel <- structs
 
-			}(structChannel, replaceComments, fileName, wg)
+			}(structChannel, replaceStringContents, fileName, wg)
 
-			go func(funcChannel chan<- []FuncDeclaration, replaceComments []byte, fileName string, wg *sync.WaitGroup) {
+			go func(funcChannel chan<- []FuncDeclaration, replaceStringContents []byte, fileName string, wg *sync.WaitGroup) {
 
 				defer wg.Done()
 
-				funcs, err := ExtractFuncs(replaceComments, fileName)
+				funcs, err := ExtractFuncs(replaceStringContents, fileName)
 
 				if err != nil {
 					errorChannel <- err
@@ -790,7 +792,7 @@ func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDecla
 
 				funcChannel <- funcs
 
-			}(funcChannel, replaceComments, fileName, wg)
+			}(funcChannel, replaceStringContents, fileName, wg)
 
 		}(currentFile, globalChannel, enumChannel, typeDefinitionChannel, structChannel, funcChannel, errorChannel, &wg)
 	}

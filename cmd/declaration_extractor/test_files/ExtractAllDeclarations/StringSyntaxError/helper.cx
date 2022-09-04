@@ -26,12 +26,12 @@ type Strings struct {
 
 // This function takes structure Point as an input and print its values 
 func printPoint (p Point) () {
-	str.print("From function")
+	str.print("From fun")
 	i32.print(p.y)
 }
 
 // This function return structure Point after assigning the assign the values to its elements
-func returnStruct () (p Point) (anotherOutput i32) {
+func returnStruct () (p Point) {
 	p.x = 66
 	p.y = 33
 }
