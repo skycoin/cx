@@ -117,7 +117,7 @@ func ReplaceStringContentsWithWhitespaces(source []byte) ([]byte, error) {
 
 	var sourceWithoutStringContents []byte
 	sourceWithoutStringContents = append(sourceWithoutStringContents, source...)
-	var inString bool
+	var inStdString bool
 	var inRawString bool
 	var lineno int
 
@@ -128,21 +128,21 @@ func ReplaceStringContentsWithWhitespaces(source []byte) ([]byte, error) {
 		}
 
 		//if end of line and quote not terminated
-		if char == '\n' && inString {
+		if char == '\n' && inStdString {
 			return sourceWithoutStringContents, fmt.Errorf("%v: syntax error: quote not terminated", lineno)
 		}
 
-		if char == '"' && !inString && !inRawString {
-			inString = true
+		if char == '"' && !inStdString && !inRawString {
+			inStdString = true
 			continue
 		}
 
-		if char == '"' && inString {
-			inString = false
+		if char == '"' && inStdString {
+			inStdString = false
 			continue
 		}
 
-		if char == '`' && !inRawString && !inString {
+		if char == '`' && !inRawString && !inStdString {
 			inRawString = true
 			continue
 		}
@@ -152,7 +152,7 @@ func ReplaceStringContentsWithWhitespaces(source []byte) ([]byte, error) {
 			continue
 		}
 
-		if (inString || inRawString) && !unicode.IsSpace(rune(char)) {
+		if (inStdString || inRawString) && !unicode.IsSpace(rune(char)) {
 			sourceWithoutStringContents[i] = byte(' ')
 		}
 	}
