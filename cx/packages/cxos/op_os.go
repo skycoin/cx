@@ -413,7 +413,18 @@ func opOsWriteBOOL(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXV
 }
 
 func getSlice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) (outputSlicePointer types.Pointer, outputSliceOffset types.Pointer, sizeofElement types.Pointer, count types.Pointer) {
-	inp1, out0 := inputs[1].Arg, outputs[0].Arg
+	var inp1, out0 *ast.CXArgument
+	if inputs[1].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		inp1 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inputs[1].TypeSignature.Meta))
+	} else {
+		panic("type is not type cx argument deprecate\n\n")
+	}
+
+	if outputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		out0 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(outputs[0].TypeSignature.Meta))
+	} else {
+		panic("type is not type cx argument deprecate\n\n")
+	}
 
 	if inp1.Type != out0.Type || !(inp1.GetAssignmentElement(prgrm)).IsSlice || !(out0.GetAssignmentElement(prgrm)).IsSlice {
 		panic(constants.CX_RUNTIME_INVALID_ARGUMENT)
@@ -422,7 +433,7 @@ func getSlice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue)
 	count = inputs[2].Get_ptr(prgrm)
 	outputSlicePointer = outputs[0].Offset
 	sizeofElement = (inp1.GetAssignmentElement(prgrm)).Size
-	outputSliceOffset = ast.SliceResize(prgrm, outputs[0].FramePointer, out0, inp1, count, sizeofElement)
+	outputSliceOffset = ast.SliceResize(prgrm, outputs[0].FramePointer, outputs[0].TypeSignature, inputs[1].TypeSignature, count, sizeofElement)
 	return
 }
 

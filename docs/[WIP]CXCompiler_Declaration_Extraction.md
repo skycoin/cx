@@ -1,10 +1,10 @@
 # CXCompiler: Declaration Extraction
 Goals:
-- [ ] Function to extract all global declarations from source file
-- [ ] Function to extract all alias and enum declarations from source file
-- [ ] Function to extract all struct declarations from source files
-- [ ] Function to extract all function declarations from source file
-- [ ] Function for redeclaration checks
+- [x] Function to extract all global declarations from source file
+- [x] Function to extract all alias and enum declarations from source file
+- [x] Function to extract all struct declarations from source files
+- [x] Function to extract all function declarations from source file
+- [x] Function for redeclaration checks
 
 ## Global Declaration
 Extract all globals declarations but not assignments to globals
@@ -69,12 +69,13 @@ Data Output:
 
 ---
 ## Follow-up milestones:
-- [ ] Use Goroutine to extract declarations (One goroutine per file)
-- [ ] Add the data on a channel instead of adding on an array
+- [x] Use Goroutine to extract declarations (One goroutine per file)
+- [x] Add the data on a channel instead of adding on an array
     - One channel for global declaration
     - One channel for aliases and enums declaration
     - One channel for struct declaration
     - One channel for function declaration
+- [ ] Support array types
 
 ---
 Questions: 

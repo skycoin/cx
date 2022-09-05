@@ -142,13 +142,13 @@ func serializeArgument(prgrm *CXProgram, arg *CXArgument, s *SerializedCXProgram
 
 	s.Arguments[argOff].IsSlice = serializeBoolean(arg.IsSlice)
 	s.Arguments[argOff].IsStruct = serializeBoolean(arg.IsStruct)
-	s.Arguments[argOff].IsLocalDeclaration = serializeBoolean(arg.IsLocalDeclaration)
 	s.Arguments[argOff].PreviouslyDeclared = serializeBoolean(arg.PreviouslyDeclared)
 
 	s.Arguments[argOff].PassBy = int64(arg.PassBy)
 
 	s.Arguments[argOff].LengthsOffset, s.Arguments[argOff].LengthsSize = serializePointers(arg.Lengths, s)
-	s.Arguments[argOff].IndexesOffset, s.Arguments[argOff].IndexesSize = serializeSliceOfArguments(prgrm, prgrm.ConvertIndexArgsToPointerArgs(arg.Indexes), s)
+	// TODO: include Indexes of type CTypeSignature
+	// s.Arguments[argOff].IndexesOffset, s.Arguments[argOff].IndexesSize = serializeSliceOfArguments(prgrm, prgrm.ConvertIndexArgsToPointerArgs(arg.Indexes), s)
 	s.Arguments[argOff].FieldsOffset, s.Arguments[argOff].FieldsSize = serializeSliceOfArguments(prgrm, prgrm.ConvertIndexArgsToPointerArgs(arg.Fields), s)
 	s.Arguments[argOff].InputsOffset, s.Arguments[argOff].InputsSize = serializeSliceOfArguments(prgrm, prgrm.ConvertIndexArgsToPointerArgs(arg.Inputs), s)
 	s.Arguments[argOff].OutputsOffset, s.Arguments[argOff].OutputsSize = serializeSliceOfArguments(prgrm, prgrm.ConvertIndexArgsToPointerArgs(arg.Outputs), s)
@@ -371,7 +371,8 @@ func serializePackageGlobals(prgrm *CXProgram, pkg *CXPackage, s *SerializedCXPr
 		sPkg := &s.Packages[pkgOff]
 
 		var glblArgs []*CXArgument
-		for _, glblFld := range pkg.Globals.Fields {
+		for _, glblFldIdx := range pkg.Globals.Fields {
+			glblFld := prgrm.GetCXTypeSignatureFromArray(glblFldIdx)
 			// Assuming only all are TYPE_CXARGUMENT_DEPRECATE
 			// TODO: To be replaced
 			glbl := prgrm.GetCXArg(CXArgumentIndex(glblFld.Meta))
@@ -978,11 +979,11 @@ func deserializeArgument(sArg *serializedArgument, s *SerializedCXProgram, prgrm
 	// arg.IsPointer = deserializeBool(sArg.IsPointer)
 	// arg.IsReference = deserializeBool(sArg.IsReference)
 	arg.IsStruct = deserializeBool(sArg.IsStruct)
-	arg.IsLocalDeclaration = deserializeBool(sArg.IsLocalDeclaration)
 	arg.PreviouslyDeclared = deserializeBool(sArg.PreviouslyDeclared)
 
 	arg.Lengths = deserializePointers(sArg.LengthsOffset, sArg.LengthsSize, s)
-	arg.Indexes = prgrm.AddPointerArgsToCXArgsArray(deserializeArguments(sArg.IndexesOffset, sArg.IndexesSize, s, prgrm))
+	// TODO: include serializing of CXTypeSignature for indexes
+	// arg.Indexes = prgrm.AddPointerArgsToCXArgsArray(deserializeArguments(sArg.IndexesOffset, sArg.IndexesSize, s, prgrm))
 	arg.Fields = prgrm.AddPointerArgsToCXArgsArray(deserializeArguments(sArg.FieldsOffset, sArg.FieldsSize, s, prgrm))
 	arg.Inputs = prgrm.AddPointerArgsToCXArgsArray(deserializeArguments(sArg.InputsOffset, sArg.InputsSize, s, prgrm))
 	arg.Outputs = prgrm.AddPointerArgsToCXArgsArray(deserializeArguments(sArg.OutputsOffset, sArg.OutputsSize, s, prgrm))
@@ -1104,14 +1105,16 @@ func deserializeExpression(sExpr *serializedExpression, s *SerializedCXProgram, 
 
 		inputCXArgsArray := deserializeArguments(sExpr.InputsOffset, sExpr.InputsSize, s, prgrm)
 		for _, inputCXArg := range inputCXArgsArray {
-			typeSignature := GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, inputCXArg)
-			cxAtomicOp.AddInput(prgrm, typeSignature)
+			typeSignature := GetCXTypeSignatureRepresentationOfCXArg(prgrm, inputCXArg)
+			typeSignatureIdx := prgrm.AddCXTypeSignatureInArray(typeSignature)
+			cxAtomicOp.AddInput(prgrm, typeSignatureIdx)
 		}
 
 		outputCXArgsArray := deserializeArguments(sExpr.OutputsOffset, sExpr.OutputsSize, s, prgrm)
 		for _, outputCXArg := range outputCXArgsArray {
-			typeSignature := GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, outputCXArg)
-			cxAtomicOp.AddOutput(prgrm, typeSignature)
+			typeSignature := GetCXTypeSignatureRepresentationOfCXArg(prgrm, outputCXArg)
+			typeSignatureIdx := prgrm.AddCXTypeSignatureInArray(typeSignature)
+			cxAtomicOp.AddOutput(prgrm, typeSignatureIdx)
 		}
 
 		cxAtomicOp.Label = deserializeString(sExpr.LabelOffset, sExpr.LabelSize, s)

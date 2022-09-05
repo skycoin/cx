@@ -1,0 +1,47 @@
+/*
+This examples show us the global variable deceleration and assinment 
+*/
+
+//  main package 
+//
+package main
+
+
+// Deceleration of Global variables 
+//
+var fooV i32 = i32.add(i32.add(10, 20), i32.add(30, 40))
+
+
+// function 
+//
+func sum (num i32) (res i32) {
+	
+	// local variable
+	res = i32.add(num, 1)
+}
+
+
+// main function 
+//
+func main () {
+	
+	// local variables
+	//
+	var bar i32 = 20;
+
+	// Deceleration of local variable by using an function 
+	//
+	var foo i32 = sum(i32.add(i32.add(10, 10), 1));
+
+// assigning global variable to local variable
+	bar = fooV
+	// assigning an value to a local variable
+	bar = 33;
+
+
+//print the value on the terminal
+	i32.print(foo)
+	i32.print(bar)
+	i32.print(fooV)
+
+}

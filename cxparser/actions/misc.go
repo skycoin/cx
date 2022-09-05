@@ -95,8 +95,9 @@ func WritePrimaryExprs(prgrm *ast.CXProgram, typeCode types.Code, byts []byte, i
 	expr := ast.MakeAtomicOperatorExpression(prgrm, nil)
 	prgrm.CXAtomicOps[expr.Index].Package = ast.CXPackageIndex(pkg.Index)
 	argIdx := prgrm.AddCXArgInArray(arg)
-	typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(argIdx))
-	prgrm.CXAtomicOps[expr.Index].AddOutput(prgrm, typeSig)
+	typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(argIdx))
+	typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
+	prgrm.CXAtomicOps[expr.Index].AddOutput(prgrm, typeSigIdx)
 
 	return []ast.CXExpression{*expr}
 }
@@ -238,8 +239,9 @@ func PrimaryIdentifier(prgrm *ast.CXProgram, ident string) []ast.CXExpression {
 		panic(err)
 	}
 
-	typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg_ForGlobals_CXAtomicOps(prgrm, prgrm.GetCXArgFromArray(argIdx))
-	expression.AddOutput(prgrm, typeSig)
+	typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(argIdx))
+	typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
+	expression.AddOutput(prgrm, typeSigIdx)
 	expression.Package = ast.CXPackageIndex(pkg.Index)
 	return []ast.CXExpression{*expr}
 }
@@ -251,15 +253,23 @@ func IsAllArgsBasicTypes(prgrm *ast.CXProgram, expr *ast.CXExpression) bool {
 		panic(err)
 	}
 
-	for _, input := range expression.GetInputs(prgrm) {
-		var inp *ast.CXArgument
+	for _, inputIdx := range expression.GetInputs(prgrm) {
+		input := prgrm.GetCXTypeSignatureFromArray(inputIdx)
+
+		var inpType types.Code
+
+		var inp *ast.CXArgument = &ast.CXArgument{}
 		if input.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			inp = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(input.Meta))
-		}
 
-		inpType := inp.Type
-		if inp.Type == types.POINTER {
-			inpType = inp.PointerTargetType
+			inpType = inp.Type
+			if inp.Type == types.POINTER {
+				inpType = inp.PointerTargetType
+			}
+		} else if input.Type == ast.TYPE_ATOMIC {
+			inpType = types.Code(input.Meta)
+		} else if input.Type == ast.TYPE_POINTER_ATOMIC {
+			inpType = types.Code(input.Meta)
 		}
 
 		// TODO: Check why STR is considered as basic type.

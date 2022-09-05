@@ -30,9 +30,14 @@ func (op *CXAtomicOperator) GetOperatorName(prgrm *CXProgram) string {
 //                     `CXAtomicOperator` Member handling
 
 // AddInput ...
-func (op *CXAtomicOperator) AddInput(prgrm *CXProgram, typeSignature *CXTypeSignature) *CXAtomicOperator {
+func (op *CXAtomicOperator) AddInput(prgrm *CXProgram, typeSignatureIdx CXTypeSignatureIndex) *CXAtomicOperator {
 	if op.Inputs == nil {
 		op.Inputs = &CXStruct{Package: op.Package}
+	}
+
+	typeSignature := prgrm.GetCXTypeSignatureFromArray(typeSignatureIdx)
+	if typeSignature.Package == -1 {
+		typeSignature.Package = op.Package
 	}
 
 	// Add Package if arg has no package
@@ -43,14 +48,14 @@ func (op *CXAtomicOperator) AddInput(prgrm *CXProgram, typeSignature *CXTypeSign
 		}
 	}
 
-	op.Inputs.AddField_CXAtomicOps(prgrm, typeSignature)
+	op.Inputs.AddField_CXAtomicOps(prgrm, typeSignatureIdx)
 
 	return op
 }
 
-func (op *CXAtomicOperator) GetInputs(prgrm *CXProgram) []CXTypeSignature {
+func (op *CXAtomicOperator) GetInputs(prgrm *CXProgram) []CXTypeSignatureIndex {
 	if op == nil || op.Inputs == nil {
-		return []CXTypeSignature{}
+		return []CXTypeSignatureIndex{}
 	}
 
 	return op.Inputs.Fields
@@ -64,9 +69,14 @@ func (op *CXAtomicOperator) GetInputs(prgrm *CXProgram) []CXTypeSignature {
 // }
 
 // AddOutput ...
-func (op *CXAtomicOperator) AddOutput(prgrm *CXProgram, typeSignature *CXTypeSignature) *CXAtomicOperator {
+func (op *CXAtomicOperator) AddOutput(prgrm *CXProgram, typeSignatureIdx CXTypeSignatureIndex) *CXAtomicOperator {
 	if op.Outputs == nil {
 		op.Outputs = &CXStruct{Package: op.Package}
+	}
+
+	typeSignature := prgrm.GetCXTypeSignatureFromArray(typeSignatureIdx)
+	if typeSignature.Package == -1 {
+		typeSignature.Package = op.Package
 	}
 
 	// Add Package if arg has no package
@@ -77,13 +87,13 @@ func (op *CXAtomicOperator) AddOutput(prgrm *CXProgram, typeSignature *CXTypeSig
 		}
 	}
 
-	op.Outputs.AddField_CXAtomicOps(prgrm, typeSignature)
+	op.Outputs.AddField_CXAtomicOps(prgrm, typeSignatureIdx)
 	return op
 }
 
-func (op *CXAtomicOperator) GetOutputs(prgrm *CXProgram) []CXTypeSignature {
+func (op *CXAtomicOperator) GetOutputs(prgrm *CXProgram) []CXTypeSignatureIndex {
 	if op == nil || op.Outputs == nil {
-		return []CXTypeSignature{}
+		return []CXTypeSignatureIndex{}
 	}
 
 	return op.Outputs.Fields

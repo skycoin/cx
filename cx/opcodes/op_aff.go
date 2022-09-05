@@ -27,8 +27,8 @@ var ofMessages = map[string]string{
 }
 
 // GetInferActions ...
-func GetInferActions(prgrm *ast.CXProgram, inp *ast.CXArgument, fp types.Pointer) []string {
-	inpOffset := ast.GetFinalOffset(prgrm, fp, inp, nil)
+func GetInferActions(prgrm *ast.CXProgram, inp *ast.CXTypeSignature, fp types.Pointer) []string {
+	inpOffset := ast.GetFinalOffset(prgrm, fp, nil, inp)
 
 	off := types.Read_ptr(prgrm.Memory, inpOffset)
 
@@ -46,7 +46,8 @@ func GetInferActions(prgrm *ast.CXProgram, inp *ast.CXArgument, fp types.Pointer
 
 func opAffPrint(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	inp1 := inputs[0]
-	fmt.Println(GetInferActions(prgrm, inp1.Arg, inp1.FramePointer))
+
+	fmt.Println(GetInferActions(prgrm, inp1.TypeSignature, inp1.FramePointer))
 	// for _, aff := range GetInferActions(inp1, fp) {
 	// 	fmt.Println(aff)
 	// }
@@ -73,10 +74,12 @@ func CallAffPredicate(prgrm *ast.CXProgram, fn *ast.CXFunction, predValue []byte
 		prgrm.Memory[newFP+c] = 0
 	}
 
+	newCallOperatorInputTypeSig := prgrm.GetCXTypeSignatureFromArray(newCallOperatorInputs[0])
+
 	// sending value to predicate function
 	types.WriteSlice_byte(
 		prgrm.Memory,
-		ast.GetFinalOffset(prgrm, newFP, nil, &newCallOperatorInputs[0]),
+		ast.GetFinalOffset(prgrm, newFP, nil, newCallOperatorInputTypeSig),
 		predValue)
 
 	var inputs []ast.CXValue
@@ -93,11 +96,13 @@ func CallAffPredicate(prgrm *ast.CXProgram, fn *ast.CXFunction, predValue []byte
 		}
 	}
 
+	newCallOperatorOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(newCallOperatorOutputs[0])
+
 	prevCall.Line--
 	return types.GetSlice_byte(prgrm.Memory, ast.GetFinalOffset(prgrm,
 		newCall.FramePointer,
-		nil, &newCallOperatorOutputs[0]),
-		ast.GetArgSize(prgrm, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(newCallOperatorOutputs[0].Meta))))[0]
+		nil, newCallOperatorOutputTypeSig),
+		newCallOperatorOutputTypeSig.GetSize(prgrm))[0]
 }
 
 // Used by QueryArgument to query inputs and then outputs from expressions.
@@ -174,17 +179,23 @@ func QueryArgument(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpress
 		}
 
 		var inputCXArgsIdxs []ast.CXArgumentIndex
-		for _, input := range exCXAtomicOp.GetInputs(prgrm) {
+		for _, inputIdx := range exCXAtomicOp.GetInputs(prgrm) {
+			input := prgrm.GetCXTypeSignatureFromArray(inputIdx)
 			if input.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 				inputCXArgsIdxs = append(inputCXArgsIdxs, ast.CXArgumentIndex(input.Meta))
+			} else {
+				panic("type is not type cx argument deprecate\n\n")
 			}
 		}
 		queryParam(prgrm, fn, inputCXArgsIdxs, exCXAtomicOp.Label+".Input", argOffsetB, affOffset)
 
 		var outputCXArgsIdxs []ast.CXArgumentIndex
-		for _, output := range exCXAtomicOp.GetOutputs(prgrm) {
+		for _, outputIdx := range exCXAtomicOp.GetOutputs(prgrm) {
+			output := prgrm.GetCXTypeSignatureFromArray(outputIdx)
 			if output.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 				outputCXArgsIdxs = append(outputCXArgsIdxs, ast.CXArgumentIndex(output.Meta))
+			} else {
+				panic("type is not type cx argument deprecate\n\n")
 			}
 		}
 		queryParam(prgrm, fn, outputCXArgsIdxs, exCXAtomicOp.Label+".Output", argOffsetB, affOffset)
@@ -244,7 +255,7 @@ func QueryExpressions(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpr
 }
 
 // TODO: remove params arg
-func getSignatureSlice(prgrm *ast.CXProgram, params []ast.CXArgumentIndex, paramsTypeSig []ast.CXTypeSignature) types.Pointer {
+func getSignatureSlice(prgrm *ast.CXProgram, params []ast.CXArgumentIndex, paramsTypeSig []ast.CXTypeSignatureIndex) types.Pointer {
 	var sliceOffset types.Pointer
 
 	var arrCXArgs []*ast.CXArgument
@@ -252,10 +263,13 @@ func getSignatureSlice(prgrm *ast.CXProgram, params []ast.CXArgumentIndex, param
 		param := prgrm.GetCXArgFromArray(paramIdx)
 		arrCXArgs = append(arrCXArgs, param)
 	}
-	for _, param := range paramsTypeSig {
+	for _, paramIdx := range paramsTypeSig {
+		param := prgrm.GetCXTypeSignatureFromArray(paramIdx)
 		if param.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			arg := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(param.Meta))
 			arrCXArgs = append(arrCXArgs, arg)
+		} else {
+			panic("type is not type cx argument deprecate\n\n")
 		}
 	}
 
@@ -471,7 +485,7 @@ func QueryProgram(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpressi
 	}
 }
 
-func getTarget(prgrm *ast.CXProgram, inp2 *ast.CXArgument, fp types.Pointer, tgtElt *string, tgtArgType *string, tgtArgIndex *int,
+func getTarget(prgrm *ast.CXProgram, inp2 *ast.CXTypeSignature, fp types.Pointer, tgtElt *string, tgtArgType *string, tgtArgIndex *int,
 	tgtPkg *ast.CXPackage, tgtFn *ast.CXFunction, tgtExpr *ast.CXExpression) {
 	for _, aff := range GetInferActions(prgrm, inp2, fp) {
 		switch aff {
@@ -536,7 +550,7 @@ func getTarget(prgrm *ast.CXProgram, inp2 *ast.CXArgument, fp types.Pointer, tgt
 	}
 }
 
-func getAffordances(prgrm *ast.CXProgram, inp1 *ast.CXArgument, fp types.Pointer,
+func getAffordances(prgrm *ast.CXProgram, inp1 *ast.CXTypeSignature, fp types.Pointer,
 	tgtElt string, tgtArgType string, tgtArgIndex int,
 	tgtPkg *ast.CXPackage, tgtFn *ast.CXFunction, tgtExpr *ast.CXExpression,
 	affMsgs map[string]string,
@@ -861,10 +875,27 @@ func readArgAff(prgrm *ast.CXProgram, aff string, tgtFn *ast.CXFunction) *ast.CX
 	}
 
 	if argType == "Input" {
-		return prgrm.GetCXArgFromArray(ast.CXArgumentIndex(affExprAtomicOp.GetInputs(prgrm)[argIdx].Meta))
-	}
-	return prgrm.GetCXArgFromArray(ast.CXArgumentIndex(affExprAtomicOp.GetOutputs(prgrm)[argIdx].Meta))
 
+		affExprAtomicOpInputTypeSig := prgrm.GetCXTypeSignatureFromArray(affExprAtomicOp.GetInputs(prgrm)[argIdx])
+		var arg *ast.CXArgument = &ast.CXArgument{}
+		if affExprAtomicOpInputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			arg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(affExprAtomicOpInputTypeSig.Meta))
+		} else {
+			panic("type is not a cx argumetn deprecate\n\n")
+		}
+
+		return arg
+	}
+
+	affExprAtomicOpOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(affExprAtomicOp.GetOutputs(prgrm)[argIdx])
+	var arg *ast.CXArgument = &ast.CXArgument{}
+	if affExprAtomicOpOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		arg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(affExprAtomicOpOutputTypeSig.Meta))
+	} else {
+		panic("type is not a cx argumetn deprecate\n\n")
+	}
+
+	return arg
 }
 
 // func opAffInform(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
@@ -1144,18 +1175,16 @@ func readArgAff(prgrm *ast.CXProgram, aff string, tgtFn *ast.CXFunction) *ast.CX
 // }
 
 func opAffQuery(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	inp1, out1 := inputs[0].Arg, outputs[0].Arg
-
 	call := prgrm.GetCurrentCall()
 	expr := call.Operator.Expressions[call.Line]
 	fp := inputs[0].FramePointer
 
-	out1Offset := ast.GetFinalOffset(prgrm, fp, out1, nil)
+	out1Offset := ast.GetFinalOffset(prgrm, fp, nil, outputs[0].TypeSignature)
 
 	var affOffset types.Pointer
 
 	var cmd string
-	for _, rule := range GetInferActions(prgrm, inp1, fp) {
+	for _, rule := range GetInferActions(prgrm, inputs[0].TypeSignature, fp) {
 		switch rule {
 		case "filter":
 			cmd = "filter"
@@ -1164,7 +1193,7 @@ func opAffQuery(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 		default:
 			switch cmd {
 			case "filter":
-				inp1Pkg, err := prgrm.GetPackageFromArray(inp1.Package)
+				inp1Pkg, err := prgrm.GetPackageFromArray(inputs[0].TypeSignature.Package)
 				if err != nil {
 					panic(err)
 				}
@@ -1219,9 +1248,12 @@ func opAffQuery(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 					types.Write_ptr(prgrmOffsetB[:], 0, prgrmOffset)
 
 					fnInputs := fn.GetInputs(prgrm)
+					fnInputTypeSig := prgrm.GetCXTypeSignatureFromArray(fnInputs[0])
 					var predInp *ast.CXArgument
-					if fnInputs[0].Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-						predInp = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(fnInputs[0].Meta))
+					if fnInputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+						predInp = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(fnInputTypeSig.Meta))
+					} else {
+						panic("type is not type cx argument deprecate\n\n")
 					}
 
 					if predInp.Type == types.STRUCT {

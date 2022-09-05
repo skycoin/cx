@@ -1,0 +1,30 @@
+// https://github.com/skycoin/cx/issues/48
+
+package main
+
+var count i32=5
+var second f64
+
+func main()() {
+	var test i32
+	test=2
+
+	count = 32
+	second=f32.f64(36.5)
+	
+	test(test, 2,"local int32 error")
+
+	test(count, 32, "int32 error")
+	test(second,f32.f64(36.5),"f64 error")
+
+	i32.print(test)
+
+	i32.print(count)
+	f64.print(second)
+
+	testThis(test)
+}
+
+func testThis(printThis i32){
+	i32.print(printThis)
+}

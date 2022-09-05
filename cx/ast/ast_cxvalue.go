@@ -5,12 +5,12 @@ import (
 )
 
 type CXValue struct {
-	Arg          *CXArgument // TODO:PTR remove Arg
-	Expr         *CXExpression
-	Type         types.Code
-	Offset       types.Pointer
-	Size         types.Pointer
-	FramePointer types.Pointer // TODO:PTR remove FramePointer
+	TypeSignature *CXTypeSignature // TODO:PTR remove Arg/TypeSignature
+	Expr          *CXExpression
+	Type          types.Code
+	Offset        types.Pointer
+	Size          types.Pointer
+	FramePointer  types.Pointer // TODO:PTR remove FramePointer
 }
 
 func (value *CXValue) Get_bool(prgrm *CXProgram) bool {

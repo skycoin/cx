@@ -1,0 +1,37 @@
+package helper
+
+type helpUnit struct {
+    name str
+    task i32
+}
+
+func (h *helpUnit) Output () {
+    str.print(h.name)
+    i32.print(h.task)
+}
+
+// Defining the structure 
+type Point struct {
+	x i32
+	y i32
+}
+
+//Defining the structure 
+type Strings struct {
+	lBound i64
+	string str
+	stringA []str
+	rBound i64
+}
+
+// This function takes structure Point as an input and print its values 
+func printPoint (p Point) () {
+	str.print("From function")
+	i32.print(p.y)
+}
+
+// This function return structure Point after assigning the assign the values to its elements
+func returnStruct () (p Point) (anotherOutput i32) {
+	p.x = 66
+	p.y = 33
+}

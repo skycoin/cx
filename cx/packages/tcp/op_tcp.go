@@ -21,7 +21,25 @@ var conn net.Conn
 var DefaultServer = rpc.NewServer()
 
 func opTCPDial(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	network, address, errorstring := inputs[0].Arg, inputs[1].Arg, outputs[0].Arg
+	var network, address, errorstring *ast.CXArgument
+	if inputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		network = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inputs[0].TypeSignature.Meta))
+	} else {
+		panic("type is not type cx argument deprecate\n\n")
+	}
+
+	if inputs[1].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		address = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inputs[1].TypeSignature.Meta))
+	} else {
+		panic("type is not type cx argument deprecate\n\n")
+	}
+
+	if outputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		errorstring = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(outputs[0].TypeSignature.Meta))
+	} else {
+		panic("type is not type cx argument deprecate\n\n")
+	}
+
 	fp := inputs[0].FramePointer
 
 	log.Println("network", network)
@@ -47,7 +65,25 @@ func opTCPAccept(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVal
 }
 
 func opTCPListen(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	network, address, errorstring := inputs[0].Arg, inputs[1].Arg, outputs[0].Arg
+	var network, address, errorstring *ast.CXArgument
+	if inputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		network = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inputs[0].TypeSignature.Meta))
+	} else {
+		panic("type is not type cx argument deprecate\n\n")
+	}
+
+	if inputs[1].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		address = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inputs[1].TypeSignature.Meta))
+	} else {
+		panic("type is not type cx argument deprecate\n\n")
+	}
+
+	if outputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		errorstring = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(outputs[0].TypeSignature.Meta))
+	} else {
+		panic("type is not type cx argument deprecate\n\n")
+	}
+
 	fp := inputs[0].FramePointer
 
 	log.Println("network", network)

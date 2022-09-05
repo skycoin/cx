@@ -1,0 +1,54 @@
+// Main Package 
+package main
+
+// Defining the structure 
+type Point struct {
+	x i32
+	y i32
+}
+
+//Defining the structure 
+type Strings struct {
+	lBound i64
+	string str
+	stringA []str
+	rBound i64
+}
+
+// This function takes structure Point as an input and print its values 
+func printPoint (p Point) () {
+	str.print("From function")
+	i32.print(p.y)
+}
+
+// This function return structure Point after assigning the assign the values to its elements
+func returnStruct () (p Point) {
+	p.x = 66
+	p.y = 33
+}
+
+
+func main () (out i32) {
+// initialization of structure strs of type Strings  
+	var strs Strings
+var p Point
+// print the values in the element of the structure strs
+	i64.print(strs.lBound)
+	str.print(strs.string)
+	i64.print(strs.rBound)
+
+	str.print("=====")
+// store the value in the element string of structure strs 
+	strs.string = "le chat est rouge"
+	//strs.stringA = []str{"str1", "str23", "012345678901"}
+// store the value in the element stringA of structure strs 
+	strs.stringA = []str{"str1", "str2", "0123456789", "31313131313131"}
+	
+// print the values in the element of the structure strs
+	i64.print(strs.lBound)
+	str.print(strs.string)
+	i64.print(strs.rBound)
+// structure operations through functions 
+p=returnStruct ()
+printPoint (p)
+}

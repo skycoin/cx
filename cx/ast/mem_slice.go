@@ -21,10 +21,17 @@ func IsValidSliceIndex(prgrm *CXProgram, offset types.Pointer, index types.Point
 }
 
 // GetSliceOffset ...
-func GetSliceOffset(prgrm *CXProgram, fp types.Pointer, arg *CXArgument) types.Pointer {
-	element := arg.GetAssignmentElement(prgrm)
+func GetSliceOffset(prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSignature) types.Pointer {
+	var element *CXArgument
+	if argTypeSig.Type == TYPE_CXARGUMENT_DEPRECATE {
+		arg := prgrm.GetCXArgFromArray(CXArgumentIndex(argTypeSig.Meta))
+		element = arg.GetAssignmentElement(prgrm)
+	} else if argTypeSig.Type == TYPE_ATOMIC || argTypeSig.Type == TYPE_POINTER_ATOMIC {
+		return types.InvalidPointer
+	}
+
 	if element.IsSlice {
-		return types.Read_ptr(prgrm.Memory, GetFinalOffset(prgrm, fp, arg, nil))
+		return types.Read_ptr(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, argTypeSig))
 	}
 
 	return types.InvalidPointer
@@ -101,7 +108,7 @@ func SliceResizeEx(prgrm *CXProgram, outputSliceOffset types.Pointer, count type
 }
 
 // SliceResize ...
-func SliceResize(prgrm *CXProgram, fp types.Pointer, out *CXArgument, inp *CXArgument, count types.Pointer, sizeofElement types.Pointer) types.Pointer {
+func SliceResize(prgrm *CXProgram, fp types.Pointer, out *CXTypeSignature, inp *CXTypeSignature, count types.Pointer, sizeofElement types.Pointer) types.Pointer {
 	inputSliceOffset := GetSliceOffset(prgrm, fp, inp)
 	outputSliceOffset := SliceResizeEx(prgrm, inputSliceOffset, count, sizeofElement)
 
@@ -131,13 +138,13 @@ func SliceCopyEx(prgrm *CXProgram, outputSliceOffset types.Pointer, inputSliceOf
 }
 
 // SliceCopy copies the contents from the slice located at `inputSliceOffset` to the slice located at `outputSliceOffset`.
-func SliceCopy(prgrm *CXProgram, fp types.Pointer, outputSliceOffset types.Pointer, inp *CXArgument, count types.Pointer, sizeofElement types.Pointer) {
+func SliceCopy(prgrm *CXProgram, fp types.Pointer, outputSliceOffset types.Pointer, inp *CXTypeSignature, count types.Pointer, sizeofElement types.Pointer) {
 	inputSliceOffset := GetSliceOffset(prgrm, fp, inp)
 	SliceCopyEx(prgrm, outputSliceOffset, inputSliceOffset, count, sizeofElement)
 }
 
 // SliceAppendResize prepares a slice to be able to store a new object of length `sizeofElement`. It checks if the slice needs to be relocated in memory, and if it is needed it relocates it and a new `outputSliceOffset` is calculated for the new slice.
-func SliceAppendResize(prgrm *CXProgram, fp types.Pointer, out *CXArgument, inp *CXArgument, sizeofElement types.Pointer, appendLen types.Pointer) types.Pointer {
+func SliceAppendResize(prgrm *CXProgram, fp types.Pointer, out *CXTypeSignature, inp *CXTypeSignature, sizeofElement types.Pointer, appendLen types.Pointer) types.Pointer {
 	inputSliceOffset := GetSliceOffset(prgrm, fp, inp)
 	var inputSliceLen types.Pointer
 	if inputSliceOffset != 0 && inputSliceOffset.IsValid() {
@@ -162,7 +169,7 @@ func SliceAppendWriteByte(prgrm *CXProgram, outputSliceOffset types.Pointer, obj
 }
 
 // SliceInsert ...
-func SliceInsert(prgrm *CXProgram, fp types.Pointer, out *CXArgument, inp *CXArgument, index types.Pointer, object []byte) types.Pointer {
+func SliceInsert(prgrm *CXProgram, fp types.Pointer, out *CXTypeSignature, inp *CXTypeSignature, index types.Pointer, object []byte) types.Pointer {
 	inputSliceOffset := GetSliceOffset(prgrm, fp, inp)
 
 	var inputSliceLen types.Pointer
@@ -184,7 +191,7 @@ func SliceInsert(prgrm *CXProgram, fp types.Pointer, out *CXArgument, inp *CXArg
 }
 
 // SliceRemove ...
-func SliceRemove(prgrm *CXProgram, fp types.Pointer, out *CXArgument, inp *CXArgument, index types.Pointer, sizeofElement types.Pointer) types.Pointer {
+func SliceRemove(prgrm *CXProgram, fp types.Pointer, out *CXTypeSignature, inp *CXTypeSignature, index types.Pointer, sizeofElement types.Pointer) types.Pointer {
 	inputSliceOffset := GetSliceOffset(prgrm, fp, inp)
 	outputSliceOffset := GetSliceOffset(prgrm, fp, out)
 
@@ -200,7 +207,7 @@ func SliceRemove(prgrm *CXProgram, fp types.Pointer, out *CXArgument, inp *CXArg
 	outputSliceData := GetSliceData(prgrm, outputSliceOffset, sizeofElement)
 	copy(outputSliceData[index*sizeofElement:], outputSliceData[(index+1)*sizeofElement:])
 	outputSliceHeader := GetSliceHeader(prgrm, outputSliceOffset)
-	types.Write_ptr(outputSliceHeader, types.POINTER_SIZE, inputSliceLen - 1)
+	types.Write_ptr(outputSliceHeader, types.POINTER_SIZE, inputSliceLen-1)
 	return outputSliceOffset
 }
 

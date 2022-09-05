@@ -1,0 +1,33 @@
+package main
+
+var apple str
+var banana str
+
+const (
+    myEnum i32
+    myEnums i64
+)
+
+type Animal struct {
+    name str
+}
+
+type Person struct {
+    name str
+}
+
+func add (a i32, b i32) (result i32) {
+    result = a + b
+}
+
+func add () {
+    
+}
+
+func minus (x i32, y i32) (answer i32) {
+    answer = x - y
+}
+
+func main () {
+    str.print("Hello World")
+}

@@ -1,0 +1,46 @@
+// https://github.com/skycoin/cx/issues/249
+
+package main
+
+
+func foo(b bool) (out i32) {
+	out=4
+	i32.print(out)
+	if b {
+		out = -1
+		//i32.print(out)
+		//return out
+		
+	} else {
+		out = 1
+		return out
+	}
+	
+	i32.print(out)
+	return out 
+}
+
+func main()() {
+	test(foo(true), -1, "")
+
+	var c bool=true
+	var try i32
+	var tr i32
+	try=1
+
+	if c {
+		try=2
+		i32.print(try)
+		printTest(try)
+		
+	}
+
+	i32.print(try)
+	i32.print(try)
+}
+
+
+func printTest(b i32){
+	i32.print(b)
+}
+
