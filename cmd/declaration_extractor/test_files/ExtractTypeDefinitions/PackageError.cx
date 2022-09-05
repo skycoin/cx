@@ -1,0 +1,46 @@
+package 1main
+
+type Direction i32
+
+const (
+    North Direction = iota
+    South
+    East
+    West
+)
+
+type Season i64
+
+const (
+	Summer Season = 0
+	Autumn        = 1
+	Winter        = 2
+	Spring        = 3
+)
+
+func (s Season) String() str {
+	switch s {
+	case Summer:
+		return "summer"
+	case Autumn:
+		return "autumn"
+	case Winter:
+		return "winter"
+	case Spring:
+		return "spring"
+	}
+	return "unknown"
+}
+
+func main() {
+
+    // Declaring a variable myDirection with type Direction
+    var myDirection Direction
+    myDirection = West
+
+    if (myDirection == West) {
+      i32.Print(myDirection)
+    }
+
+    str.Print(Winter)
+}

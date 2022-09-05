@@ -1,0 +1,22 @@
+  
+                                                                                                                                                                                                                      
+  
+                                                                
+package main
+
+func main () (out i32) {
+	                          
+	                                           
+
+	out = i32.div(10, 3)                             
+	i32.print(out)
+
+	  
+	                                          
+                     
+	                          
+	                          
+	                          
+	                          
+          
+}

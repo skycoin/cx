@@ -1,0 +1,26 @@
+package main
+
+var myName = "    "
+
+type Fruit str
+
+const (
+    Apple Fruit = "     "
+    Banana Fruit = "      "
+)
+
+var myParagraph str = `                                                         
+                                                                                          
+                                                                                           
+                                                                                          
+                                                                                                      
+                                                                                                  
+                                                            
+                        `
+
+var quote str = `     `
+var backTick = "     "
+
+func main () {
+    str.print("           ")
+}

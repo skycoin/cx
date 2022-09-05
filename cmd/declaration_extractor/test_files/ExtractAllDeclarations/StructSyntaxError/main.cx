@@ -1,0 +1,17 @@
+package main
+
+import "helper"
+
+import "program"
+
+var msg str = "Hello World"
+
+var myHelper helper.helpUnit
+
+var number i32 = 19
+
+func main () {
+
+    str.print(msg)
+
+}
