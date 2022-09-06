@@ -1,7 +1,6 @@
 package type_checks
 
 import (
-	"fmt"
 	"os"
 	"regexp"
 
@@ -50,40 +49,34 @@ func ParseGlobals(globals []declaration_extractor.GlobalDeclaration) error {
 		}
 
 		// Extract Declaration from file
-		reGlobalDeclaration := regexp.MustCompile(`var\s+(\w*)\s+\*{0,1}\s*(?:\[\d*\]){0,1}\s*(\w*)(?:\s*\=\s*[\s\S]+\S+){0,1}`)
+		reGlobalDeclaration := regexp.MustCompile(`var\s+(\w*)\s+(\*){0,1}\s*((?:\[(\d*)\])){0,1}\s*(\w*)(?:\s*\=\s*[\s\S]+\S+){0,1}`)
 		globalDeclaration := source[global.StartOffset : global.StartOffset+global.Length]
 		globalTokens := reGlobalDeclaration.FindSubmatch(globalDeclaration)
 
 		// Add Global to Pkg
-		if _, err := pkg.GetGlobal(actions.AST, global.GlobalVariableName); err != nil {
-			// add Global as CX Argument to CX Package
-			globalArg := ast.MakeArgument(global.GlobalVariableName, "", 0)
-			globalArg.Offset = types.InvalidPointer
-			globalArg.Package = ast.CXPackageIndex(pkg.Index)
-			globalArgIdx := actions.AST.AddCXArgInArray(globalArg)
 
-			pkg.AddGlobal(actions.AST, globalArgIdx)
-		}
+		// add Global as CX Argument to CX Package
+		globalArg := ast.MakeArgument(global.GlobalVariableName, global.FileID, global.LineNumber)
+		globalArg.Offset = types.InvalidPointer
+		globalArg.Package = ast.CXPackageIndex(pkg.Index)
+		globalArgIdx := actions.AST.AddCXArgInArray(globalArg)
 
-		// Create Declarator
-		var declarator *ast.CXArgument
-		if pkg, err := actions.AST.GetCurrentPackage(); err == nil {
-			declarator = ast.MakeArgument("", actions.CurrentFile, actions.LineNo)
-			declarator.SetType(types.UNDEFINED)
-			declarator.Name = global.GlobalVariableName
-			declarator.Package = ast.CXPackageIndex(pkg.Index)
-		} else {
-			return err
-		}
+		pkg.AddGlobal(actions.AST, globalArgIdx)
 
 		var declaration_specifier *ast.CXArgument
-		if val, ok := TypesMap[string(globalTokens[1])]; ok {
-			declaration_specifier = actions.DeclarationSpecifiersBasic(val)
-		} else {
-			return fmt.Errorf("declaration_specifier")
+
+		if globalTokens[2] != nil {
+
 		}
 
-		actions.DeclareGlobalInPackage(actions.AST, nil, declarator, declaration_specifier, nil, false)
+		if globalTokens[3] != nil {
+
+		}
+		if val, ok := TypesMap[string(globalTokens[5])]; ok {
+			declaration_specifier = actions.DeclarationSpecifiersBasic(val)
+		}
+
+		actions.DeclareGlobalInPackage(actions.AST, nil, actions.AST.GetCXArgFromArray(globalArgIdx), declaration_specifier, nil, false)
 
 	}
 	return nil

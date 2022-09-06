@@ -1,6 +1,7 @@
 package type_checks_test
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
@@ -24,129 +25,88 @@ func TestTypeChecks_ParseGlobals(t *testing.T) {
 			testDir:  "./test_files/test.cx",
 			globalsCXArgs: []*ast.CXArgument{
 				{
-					Name:      "Bool",
-					Index:     0,
-					Package:   1,
-					Type:      types.BOOL,
-					Size:      1,
-					TotalSize: 1,
-					Offset:    1048576,
+					Name:    "Bool",
+					Index:   0,
+					Package: 1,
+					Type:    types.BOOL,
 				},
 				{
-					Name:      "Byte",
-					Index:     2,
-					Package:   1,
-					Type:      types.I8,
-					Size:      1,
-					TotalSize: 1,
-					Offset:    1048577,
+					Name:    "Byte",
+					Index:   1,
+					Package: 1,
+					Type:    types.I8,
 				},
 				{
-					Name:      "I16",
-					Index:     4,
-					Package:   1,
-					Type:      types.I16,
-					Size:      2,
-					TotalSize: 2,
-					Offset:    1048578,
+					Name:    "I16",
+					Index:   2,
+					Package: 1,
+					Type:    types.I16,
 				},
 				{
-					Name:      "I32",
-					Index:     6,
-					Package:   1,
-					Type:      types.I32,
-					Size:      4,
-					TotalSize: 4,
-					Offset:    1048580,
+					Name:    "I32",
+					Index:   3,
+					Package: 1,
+					Type:    types.I32,
 				},
 				{
-					Name:      "I64",
-					Index:     8,
-					Package:   1,
-					Type:      types.I64,
-					Size:      8,
-					TotalSize: 8,
-					Offset:    1048584,
+					Name:    "I64",
+					Index:   4,
+					Package: 1,
+					Type:    types.I64,
 				},
 				{
-					Name:      "UByte",
-					Index:     10,
-					Package:   1,
-					Type:      types.UI8,
-					Size:      1,
-					TotalSize: 1,
-					Offset:    1048592,
+					Name:    "UByte",
+					Index:   5,
+					Package: 1,
+					Type:    types.UI8,
 				},
 				{
-					Name:      "UI16",
-					Index:     12,
-					Package:   1,
-					Type:      types.UI16,
-					Size:      2,
-					TotalSize: 2,
-					Offset:    1048593,
+					Name:    "UI16",
+					Index:   6,
+					Package: 1,
+					Type:    types.UI16,
 				},
 				{
-					Name:      "UI32",
-					Index:     14,
-					Package:   1,
-					Type:      types.UI32,
-					Size:      4,
-					TotalSize: 4,
-					Offset:    1048595,
+					Name:    "UI32",
+					Index:   7,
+					Package: 1,
+					Type:    types.UI32,
 				},
 				{
-					Name:      "UI64",
-					Index:     16,
-					Package:   1,
-					Type:      types.UI64,
-					Size:      8,
-					TotalSize: 8,
-					Offset:    1048599,
+					Name:    "UI64",
+					Index:   8,
+					Package: 1,
+					Type:    types.UI64,
 				},
 				{
-					Name:      "F32",
-					Index:     18,
-					Package:   1,
-					Type:      types.F32,
-					Size:      4,
-					TotalSize: 4,
-					Offset:    1048607,
+					Name:    "F32",
+					Index:   9,
+					Package: 1,
+					Type:    types.F32,
 				},
 				{
-					Name:      "F64",
-					Index:     20,
-					Package:   1,
-					Type:      types.F64,
-					Size:      8,
-					TotalSize: 8,
-					Offset:    1048611,
+					Name:    "F64",
+					Index:   10,
+					Package: 1,
+					Type:    types.F64,
 				},
 				{
-					Name:      "string",
-					Index:     22,
-					Package:   1,
-					Type:      types.STR,
-					Size:      8,
-					TotalSize: 8,
-					Offset:    1048619,
+					Name:    "string",
+					Index:   11,
+					Package: 1,
+					Type:    23,
 				},
 				{
-					Name:      "Affordance",
-					Index:     24,
-					Package:   1,
-					Type:      types.AFF,
-					TotalSize: 8,
-					Offset:    1048627,
+					Name:    "Affordance",
+					Index:   12,
+					Package: 1,
+					Type:    25,
 				},
 				{
-					Name:      "intArray",
-					Index:     26,
-					Package:   1,
-					Type:      types.I32,
-					Size:      4,
-					TotalSize: 20,
-					Offset:    1048635,
+					Name:    "intArray",
+					Index:   13,
+					Package: 1,
+					Type:    types.I32,
 				},
 			},
 		},
@@ -155,13 +115,10 @@ func TestTypeChecks_ParseGlobals(t *testing.T) {
 			testDir:  "./test_files/testFile.cx",
 			globalsCXArgs: []*ast.CXArgument{
 				{
-					Name:      "number",
-					Index:     0,
-					Package:   1,
-					Type:      types.I32,
-					Size:      4,
-					TotalSize: 4,
-					Offset:    1048576,
+					Name:    "number",
+					Index:   0,
+					Package: 1,
+					Type:    types.I32,
 				},
 			},
 		},
@@ -169,6 +126,17 @@ func TestTypeChecks_ParseGlobals(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
+
+			// actions.AST = cxinit.MakeProgram()
+			// var files []*os.File
+			// file, err := os.Open(tc.testDir)
+			// if err != nil {
+			// 	t.Fatal()
+			// }
+			// files = append(files, file)
+			// cxparsering.ParseSourceCode(files, []string{tc.testDir})
+
+			// actions.AST.PrintProgram()
 
 			actions.AST = nil
 
@@ -184,8 +152,14 @@ func TestTypeChecks_ParseGlobals(t *testing.T) {
 			}
 
 			Globals, err := declaration_extractor.ExtractGlobals(ReplaceStringContentsWithWhitespaces, tc.testDir)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-			type_checks.ParseGlobals(Globals)
+			err = type_checks.ParseGlobals(Globals)
+			if err != nil {
+				t.Fatal(err)
+			}
 
 			program := actions.AST
 
@@ -204,28 +178,37 @@ func TestTypeChecks_ParseGlobals(t *testing.T) {
 					}
 
 					var match bool
-					var gotGlobal *ast.CXArgument
+					var gotGlobal *ast.CXTypeSignature
 
 					for _, globalIdx := range pkg.Globals.Fields {
-						gotGlobal = program.GetCXArg(ast.CXArgumentIndex(globalIdx))
+						gotGlobal = program.GetCXTypeSignatureFromArray(globalIdx)
 
-						if gotGlobal.Name == wantGlobal.Name &&
-							gotGlobal.Index == wantGlobal.Index &&
-							gotGlobal.Package == wantGlobal.Package &&
-							gotGlobal.Type == wantGlobal.Type {
-							match = true
+						if gotGlobal.Name == wantGlobal.Name {
+
+							if int(gotGlobal.Index) == wantGlobal.Index &&
+								gotGlobal.Package == wantGlobal.Package &&
+								types.Code(gotGlobal.Meta) == wantGlobal.Type {
+								match = true
+							}
+							fmt.Print(types.Code(gotGlobal.Meta), wantGlobal.Type, "\n")
+
 							break
 						}
 
 					}
 
 					if !match {
-						t.Errorf("want global %v, got %v", wantGlobal, gotGlobal)
 
+						if gotGlobal.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+							t.Errorf("want global %v %v %v %v, got %v %v %v %v", wantGlobal.Name, wantGlobal.Index, wantGlobal.Package, wantGlobal.Type.Name(), program.GetCXArg(ast.CXArgumentIndex(gotGlobal.Meta)).Name, gotGlobal.Index, gotGlobal.Package, ast.GetFormattedType(program, program.GetCXArg(ast.CXArgumentIndex(gotGlobal.Meta))))
+						} else {
+							t.Errorf("want global %v %v %v %v, got %v %v %v %v", wantGlobal.Name, wantGlobal.Index, wantGlobal.Package, wantGlobal.Type.Name(), gotGlobal.Name, gotGlobal.Index, gotGlobal.Package, types.Code(gotGlobal.Meta).Name())
+						}
 					}
 				}
 
 			}
+
 		})
 	}
 
