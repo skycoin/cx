@@ -1,0 +1,43 @@
+// https://github.com/skycoin/cx/issues/48
+
+package main
+
+import "args"
+var count i32=5
+var second f64
+
+
+func main(){
+	//var test i32
+	//test=2
+
+	//var test1 i32
+	//test1=5
+
+	//count = 32
+	//second=f32.f64(36.5)
+	
+	//test(test, 2,"local int32 error")
+//	i32.print(test)
+//	i32.print(test1)
+
+//	test(count, 32, "int32 error")
+//	test(second,f32.f64(36.5),"f64 error")
+//	i32.print(count)
+//	f64.print(second)
+
+testArgs()
+}
+
+
+func testArgs(){
+	var glVersion str
+	var glVersionMatch bool
+		printf("glVersion=%v\n",glVersion)
+	printf("glVersionMatch=%b\n",glVersionMatch)
+	if args.Str("++glVersion=gl32", "glVersion", &glVersion, &glVersionMatch){
+
+
+	}
+	
+}

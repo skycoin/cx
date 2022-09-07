@@ -1,0 +1,8 @@
+package main
+
+// crash when calling run with wrong arg count
+func run() {
+}
+func main() {
+  run("test", 55)
+}
