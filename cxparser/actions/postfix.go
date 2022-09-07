@@ -600,8 +600,7 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 				lastExpressionOutputArg.Name = glbl.Name
 				lastExpressionOutputTypeSig.Name = glbl.Name
 
-				lastExpressionOutputArg.Type = types.POINTER
-				lastExpressionOutputArg.PointerTargetType = types.Code(glbl.Meta)
+				lastExpressionOutputArg.Type = types.Code(glbl.Meta)
 				lastExpressionOutputArg.Offset = glbl.Offset
 				lastExpressionOutputArg.Size = types.POINTER.Size()
 				lastExpressionOutputArg.TotalSize = types.POINTER.Size()

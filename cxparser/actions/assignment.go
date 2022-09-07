@@ -540,7 +540,7 @@ func processAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fromExp
 					prgrm.CXArgs[toExpressionOutputIdx].PointerTargetType = types.Code(fromExpressionOperatorOutputTypeSig.Meta)
 				}
 			}
-		} else if toExpressionOutputTypeSig.Type == ast.TYPE_ATOMIC {
+		} else if toExpressionOutputTypeSig.Type == ast.TYPE_ATOMIC || toExpressionOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 			fromExpressionOperatorOutputs := fromExpressionOperator.GetOutputs(prgrm)
 			fromExpressionOperatorOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(fromExpressionOperatorOutputs[0])
 			if fromExpressionOperatorOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {

@@ -1,0 +1,47 @@
+package main
+
+import "args"
+
+func main () () {
+//var p *i32
+//var val i32
+//val=39
+//p=&val
+//i32.print(*p)
+
+//printPointerAddr(p)
+printf("--------------\n")
+testArgsStr()
+}
+
+//func printPointerAddr(inp *i32){
+//    printf("addr=%v\n",inp)
+//}
+
+func testArgsStr(){
+    var glVersion str
+   
+    var res bool
+    var glVersionMatch bool
+   
+    var arg str
+
+    var fps i32
+    var help bool
+    var sepMatch bool
+    var sep2Match bool
+    var sep3Match bool
+
+    arg="++glVersion=gl3"
+    for i:=0;i<5;i++{
+        tRes2:=args.Bool(arg, "help", &help, &sepMatch)
+        tRes1:=args.I32(arg, "fps", &fps, &sep2Match)
+        tRes:=args.Str(arg, "glVersion", &glVersion, &sep3Match)
+        res=args.Str(arg, "glVersion", &glVersion, &glVersionMatch)
+        printf("res=%b\nglVersion=%v\nglVersionMatch=%b\n", res, glVersion,glVersionMatch)
+        glVersion="0"
+        glVersionMatch=false
+        printf("----------\n")
+    }
+  
+}

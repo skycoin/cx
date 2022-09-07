@@ -249,10 +249,10 @@ func PrimaryStructLiteral(prgrm *ast.CXProgram, structName string, structFields 
 					// TODO: give proper change when we implement type_structs
 					// Looks like we have to convert the arg to type cx arg deprecate again
 					newCXArg := &ast.CXArgument{ArgDetails: &ast.CXArgumentDebug{}}
-					newCXArg.Type = types.POINTER
-					newCXArg.PointerTargetType = types.Code(cxAtomicOpOutputTypeSig.Meta)
+					newCXArg.Type = types.Code(cxAtomicOpOutputTypeSig.Meta)
 					newCXArg.Package = ast.CXPackageIndex(pkg.Index)
 					newCXArg.Offset = cxAtomicOpOutputTypeSig.Offset
+					newCXArg.DeclarationSpecifiers = []int{constants.DECL_BASIC, constants.DEREF_POINTER}
 
 					newCXArg.StructType = strct
 					newCXArg.Size = strct.GetStructSize(prgrm)

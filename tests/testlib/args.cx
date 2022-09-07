@@ -134,6 +134,7 @@ func matchStr(arg str, pattern str, match *bool) (success bool) {
 
             if valid == true {
 			    if *match {
+					success = true
                     return
 			    }
 			    *match = true
