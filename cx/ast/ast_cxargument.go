@@ -251,7 +251,6 @@ func (arg *CXArgument) SetType(typeCode types.Code) *CXArgument {
 	arg.Type = typeCode
 	size := typeCode.Size()
 	arg.Size = size
-	arg.TotalSize = size
 	arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_BASIC)
 	return arg
 }
@@ -288,7 +287,6 @@ func MakePointer(arg *CXArgument) *CXArgument {
 	arg.PointerTargetType = arg.Type
 	arg.Type = types.POINTER
 	arg.Size = types.POINTER_SIZE
-	arg.TotalSize = types.POINTER_SIZE
 
 	return arg
 }
@@ -310,7 +308,6 @@ func MakeStructParameter(prgrm *CXProgram, pkgName, strctName, argName string) *
 	arg := MakeArgument(argName, "", -1).SetType(types.STRUCT)
 	// arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_STRUCT)
 	arg.Size = strct.GetStructSize(prgrm)
-	arg.TotalSize = strct.GetStructSize(prgrm)
 	arg.StructType = strct
 
 	return arg

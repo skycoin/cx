@@ -17,6 +17,15 @@ type DereferenceStruct struct {
 	fp          types.Pointer
 }
 
+func TotalLength(lengths []types.Pointer) types.Pointer {
+	total := types.Pointer(1)
+	for _, i := range lengths {
+		total *= i
+	}
+
+	return total
+}
+
 // GetSize ...
 func GetArgSize(prgrm *CXProgram, arg *CXArgument) types.Pointer {
 	if len(arg.Fields) > 0 {
@@ -26,17 +35,23 @@ func GetArgSize(prgrm *CXProgram, arg *CXArgument) types.Pointer {
 	derefCount := len(arg.DereferenceOperations)
 	if derefCount > 0 {
 		deref := arg.DereferenceOperations[derefCount-1]
-		if deref == constants.DEREF_SLICE || deref == constants.DEREF_ARRAY {
-			declCount := len(arg.DeclarationSpecifiers)
-			if declCount > 1 {
-			}
+
+		switch deref {
+		case constants.DEREF_SLICE, constants.DEREF_ARRAY:
 			return arg.Size
+		case constants.DEREF_POINTER:
+			return arg.Type.Size()
 		}
 	}
 
 	for _, decl := range arg.DeclarationSpecifiers {
-		if decl == constants.DECL_POINTER || decl == constants.DECL_SLICE || decl == constants.DECL_ARRAY {
-			return arg.TotalSize
+		switch decl {
+		case constants.DECL_ARRAY:
+			return arg.Size * TotalLength(arg.Lengths)
+		case constants.DECL_POINTER:
+			return arg.Size
+		case constants.DECL_SLICE:
+			return types.POINTER_SIZE
 		}
 	}
 
@@ -44,24 +59,29 @@ func GetArgSize(prgrm *CXProgram, arg *CXArgument) types.Pointer {
 		return arg.StructType.GetStructSize(prgrm)
 	}
 
-	return arg.TotalSize
+	return arg.Size
 }
 
 func GetNativeSize(prgrm *CXProgram, arg *CXArgument) types.Pointer {
 	derefCount := len(arg.DereferenceOperations)
 	if derefCount > 0 {
 		deref := arg.DereferenceOperations[derefCount-1]
-		if deref == constants.DEREF_SLICE || deref == constants.DEREF_ARRAY {
-			declCount := len(arg.DeclarationSpecifiers)
-			if declCount > 1 {
-			}
+		switch deref {
+		case constants.DEREF_SLICE, constants.DEREF_ARRAY:
 			return arg.Size
+		case constants.DEREF_POINTER:
+			return arg.Type.Size()
 		}
 	}
 
 	for _, decl := range arg.DeclarationSpecifiers {
-		if decl == constants.DECL_POINTER || decl == constants.DECL_SLICE || decl == constants.DECL_ARRAY {
-			return arg.TotalSize
+		switch decl {
+		case constants.DECL_ARRAY:
+			return arg.Size * TotalLength(arg.Lengths)
+		case constants.DECL_POINTER:
+			return arg.Size
+		case constants.DECL_SLICE:
+			return types.POINTER_SIZE
 		}
 	}
 
@@ -69,7 +89,7 @@ func GetNativeSize(prgrm *CXProgram, arg *CXArgument) types.Pointer {
 		return arg.StructType.GetStructSize(prgrm)
 	}
 
-	return arg.TotalSize
+	return arg.Size
 }
 
 // GetDerefSize ...
@@ -81,7 +101,7 @@ func GetDerefSize(prgrm *CXProgram, arg *CXArgument, index int, derefPointer boo
 		return arg.StructType.GetStructSize(prgrm)
 	}
 	if derefPointer {
-		return arg.TotalSize
+		return arg.Type.Size()
 	}
 	return arg.Size
 }

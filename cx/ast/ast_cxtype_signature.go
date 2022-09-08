@@ -127,7 +127,6 @@ func (typeSignature *CXTypeSignature) GetCXArgFormat(prgrm *CXProgram) *CXArgume
 		arg.Type = types.Code(typeSignature.Meta)
 		arg.StructType = nil
 		arg.Size = typeSignature.GetSize(prgrm)
-		arg.TotalSize = typeSignature.GetSize(prgrm)
 
 		// TODO: this should not be needed.
 		if len(arg.DeclarationSpecifiers) > 0 {
@@ -141,7 +140,6 @@ func (typeSignature *CXTypeSignature) GetCXArgFormat(prgrm *CXProgram) *CXArgume
 		arg.PointerTargetType = types.Code(typeSignature.Meta)
 		arg.StructType = nil
 		arg.Size = types.POINTER.Size()
-		arg.TotalSize = types.POINTER.Size()
 
 		// TODO: this should not be needed.
 		if len(arg.DeclarationSpecifiers) > 0 {
@@ -155,7 +153,6 @@ func (typeSignature *CXTypeSignature) GetCXArgFormat(prgrm *CXProgram) *CXArgume
 		arg.StructType = nil
 		arg.Size = typeSignature.GetSize(prgrm)
 		arg.Lengths = []types.Pointer{typeSignature.GetArrayLength(prgrm)}
-		arg.TotalSize = typeSignature.GetSize(prgrm) * arg.Lengths[0]
 
 		// TODO: this should not be needed.
 		if len(arg.DeclarationSpecifiers) > 0 {
@@ -169,7 +166,6 @@ func (typeSignature *CXTypeSignature) GetCXArgFormat(prgrm *CXProgram) *CXArgume
 		arg.StructType = nil
 		arg.Size = types.Code(typeSignature.Meta).Size()
 		arg.Lengths = []types.Pointer{0}
-		arg.TotalSize = typeSignature.GetSize(prgrm)
 		arg.IsSlice = true
 
 		// TODO: this should not be needed.

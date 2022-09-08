@@ -352,7 +352,7 @@ func getNonCollectionValue(prgrm *CXProgram, fp types.Pointer, arg, elt *CXArgum
 			var fldTotalSize types.Pointer
 			if typeSignature.Type == TYPE_CXARGUMENT_DEPRECATE {
 				fldIdx := typeSignature.Meta
-				fldTotalSize = prgrm.CXArgs[fldIdx].TotalSize
+				fldTotalSize = GetArgSize(prgrm, &prgrm.CXArgs[fldIdx])
 			} else if typeSignature.Type == TYPE_ATOMIC || typeSignature.Type == TYPE_POINTER_ATOMIC {
 				fldTotalSize = types.Code(typeSignature.Type).Size()
 			}
@@ -410,7 +410,7 @@ func ReadSliceElements(prgrm *CXProgram, fp types.Pointer, arg, elt *CXArgument,
 			var fldTotalSize types.Pointer
 			if typeSignature.Type == TYPE_CXARGUMENT_DEPRECATE {
 				fldIdx := typeSignature.Meta
-				fldTotalSize = prgrm.CXArgs[fldIdx].TotalSize
+				fldTotalSize = GetArgSize(prgrm, &prgrm.CXArgs[fldIdx])
 			} else if typeSignature.Type == TYPE_ATOMIC || typeSignature.Type == TYPE_POINTER_ATOMIC {
 				fldTotalSize = types.Code(typeSignature.Type).Size()
 			}
