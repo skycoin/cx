@@ -73,6 +73,16 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 	}
 	declaration_specifiers.Package = ast.CXPackageIndex(pkg.Index)
 
+	totalSize := declaration_specifiers.Size
+	for _, decl := range declaration_specifiers.DeclarationSpecifiers {
+		switch decl {
+		case constants.DECL_POINTER, constants.DECL_SLICE:
+			totalSize = types.POINTER_SIZE
+		case constants.DECL_ARRAY:
+			totalSize = declaration_specifiers.Size * TotalLength(declaration_specifiers.Lengths)
+		}
+	}
+
 	// Treat the name a bit different whether it's defined already or not.
 	if glbl, err := pkg.GetGlobal(prgrm, declarator.Name); err == nil {
 		// then it was only added a reference to the symbol
@@ -85,7 +95,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 					make([]byte, types.POINTER_SIZE), true)
 			} else {
 				glblArg = WritePrimary(prgrm, declaration_specifiers.Type,
-					make([]byte, declaration_specifiers.TotalSize), false)
+					make([]byte, totalSize), false)
 			}
 
 		}
@@ -113,7 +123,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 				panic("type is not type cx argument deprecate\n\n")
 			}
 
-			if glbl.Offset < 0 || glblCXArg.Size == 0 || glblCXArg.TotalSize == 0 {
+			if glbl.Offset < 0 || glblCXArg.Size == 0 || totalSize == 0 {
 				prgrm.CXArgs[glblIdx].Offset = glblArg.Offset
 				prgrm.CXArgs[glblIdx].PassBy = glblArg.PassBy
 			}
@@ -141,14 +151,13 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 		if declaration_specifiers.IsSlice { // TODO:PTR move branch in WritePrimary
 			glblArg = WritePrimary(prgrm, declaration_specifiers.Type, make([]byte, types.POINTER_SIZE), true)
 		} else {
-			glblArg = WritePrimary(prgrm, declaration_specifiers.Type, make([]byte, declaration_specifiers.TotalSize), false)
+			glblArg = WritePrimary(prgrm, declaration_specifiers.Type, make([]byte, totalSize), false)
 		}
 
 		declaration_specifiers.Name = declarator.Name
 		declaration_specifiers.ArgDetails.FileLine = declarator.ArgDetails.FileLine
 		declaration_specifiers.Offset = glblArg.Offset
 		declaration_specifiers.Size = glblArg.Size
-		declaration_specifiers.TotalSize = glblArg.TotalSize
 		declaration_specifiers.Package = ast.CXPackageIndex(pkg.Index)
 
 		typeSignature := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, declaration_specifiers)

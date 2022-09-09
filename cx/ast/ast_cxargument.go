@@ -112,12 +112,6 @@ type CXArgument struct {
 	// representing the struct type is 10 bytes, then `Size == 10`.
 	Size types.Pointer
 
-	// TotalSize represents how many bytes are referenced by the
-	// `CXArgument` in total. For example, if the `CXArgument`
-	// defines an array of 5 struct instances of size 10 bytes,
-	// then `TotalSize == 50`.
-	TotalSize types.Pointer
-
 	// Offset defines a relative memory offset (used in
 	// conjunction with the frame pointer), in the case of local
 	// variables, or it could define an absolute memory offset, in

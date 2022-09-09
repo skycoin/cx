@@ -32,7 +32,6 @@ func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []a
 	slcVar := ast.MakeArgument(symName, CurrentFile, LineNo)
 	slcVar.SetType(typeCode)
 	slcVar = DeclarationSpecifiers(slcVar, []types.Pointer{0}, constants.DECL_SLICE)
-	slcVar.TotalSize = types.POINTER_SIZE
 	slcVar.Package = ast.CXPackageIndex(pkg.Index)
 	slcVar.PreviouslyDeclared = true
 
@@ -61,12 +60,10 @@ func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []a
 
 			symInp := ast.MakeArgument(symName, CurrentFile, LineNo).SetType(typeCode)
 			symInp.Package = ast.CXPackageIndex(pkg.Index)
-			symInp.TotalSize = types.POINTER_SIZE
 			symInpIdx := prgrm.AddCXArgInArray(symInp)
 
 			symOut := ast.MakeArgument(symName, CurrentFile, LineNo).SetType(typeCode)
 			symOut.Package = ast.CXPackageIndex(pkg.Index)
-			symOut.TotalSize = types.POINTER_SIZE
 			symOutIdx := prgrm.AddCXArgInArray(symOut)
 
 			endPointsCounter++
@@ -105,7 +102,6 @@ func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []a
 					out.PointerTargetType = outArg.PointerTargetType
 					out.StructType = outArg.StructType
 					out.Size = outArg.Size
-					out.TotalSize = ast.GetArgSize(prgrm, outArg)
 					out.PreviouslyDeclared = true
 					out.Package = ast.CXPackageIndex(pkg.Index)
 					outIdx := prgrm.AddCXArgInArray(out)
@@ -147,14 +143,12 @@ func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []a
 	symOutput.IsSlice = true
 	symOutput.Package = ast.CXPackageIndex(pkg.Index)
 	symOutput.PreviouslyDeclared = true
-	symOutput.TotalSize = types.POINTER_SIZE
 	symOutputIdx := prgrm.AddCXArgInArray(symOutput)
 
 	symInput := ast.MakeArgument(symName, CurrentFile, LineNo)
 	symInput.SetType(typeCode)
 	symInput.IsSlice = true
 	symInput.Package = ast.CXPackageIndex(pkg.Index)
-	symInput.TotalSize = types.POINTER_SIZE
 	symInputIdx := prgrm.AddCXArgInArray(symInput)
 
 	symExprExprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
@@ -215,7 +209,6 @@ func PrimaryStructLiteral(prgrm *ast.CXProgram, structName string, structFields 
 					}
 
 					prgrm.CXArgs[cxAtomicOpOutputIdx].Size = strct.GetStructSize(prgrm)
-					prgrm.CXArgs[cxAtomicOpOutputIdx].TotalSize = strct.GetStructSize(prgrm)
 					prgrm.CXArgs[cxAtomicOpOutputIdx].Name = structName
 					cxAtomicOpOutputTypeSig.Name = structName
 
@@ -231,7 +224,6 @@ func PrimaryStructLiteral(prgrm *ast.CXProgram, structName string, structFields 
 
 					newCXArg.StructType = strct
 					newCXArg.Size = strct.GetStructSize(prgrm)
-					newCXArg.TotalSize = strct.GetStructSize(prgrm)
 					newCXArg.Name = structName
 
 					field := ast.MakeArgument(cxAtomicOpOutputTypeSig.Name, CurrentFile, LineNo)
@@ -256,7 +248,6 @@ func PrimaryStructLiteral(prgrm *ast.CXProgram, structName string, structFields 
 
 					newCXArg.StructType = strct
 					newCXArg.Size = strct.GetStructSize(prgrm)
-					newCXArg.TotalSize = strct.GetStructSize(prgrm)
 					newCXArg.Name = structName
 
 					field := ast.MakeArgument(cxAtomicOpOutputTypeSig.Name, CurrentFile, LineNo)
@@ -320,7 +311,6 @@ func PrimaryStructLiteralExternal(prgrm *ast.CXProgram, importName string, struc
 
 						prgrm.CXArgs[cxAtomicOpOutputIdx].StructType = strct
 						prgrm.CXArgs[cxAtomicOpOutputIdx].Size = strct.GetStructSize(prgrm)
-						prgrm.CXArgs[cxAtomicOpOutputIdx].TotalSize = strct.GetStructSize(prgrm)
 						prgrm.CXArgs[cxAtomicOpOutputIdx].Name = structName
 						cxAtomicOpOutputTypeSig.Name = structName
 
@@ -371,7 +361,6 @@ func ArrayLiteralExpression(prgrm *ast.CXProgram, arraySizes []types.Pointer, ty
 	arrVar := ast.MakeArgument(symName, CurrentFile, LineNo)
 	arrVar = DeclarationSpecifiers(arrVar, arraySizes, constants.DECL_ARRAY)
 	arrVar.SetType(typeCode)
-	arrVar.TotalSize = arrVar.Size * TotalLength(arrVar.Lengths)
 	arrVar.Package = ast.CXPackageIndex(pkg.Index)
 	arrVar.PreviouslyDeclared = true
 	arrVarIdx := prgrm.AddCXArgInArray(arrVar)
@@ -419,7 +408,6 @@ func ArrayLiteralExpression(prgrm *ast.CXProgram, arraySizes []types.Pointer, ty
 			sym.Indexes = append(sym.Indexes, indexTypeSignatureIdx)
 			sym.DereferenceOperations = append(sym.DereferenceOperations, constants.DEREF_ARRAY)
 			sym.Lengths = arraySizes
-			sym.TotalSize = sym.Size * TotalLength(sym.Lengths)
 			symIdx := prgrm.AddCXArgInArray(sym)
 
 			symExprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
@@ -458,7 +446,6 @@ func ArrayLiteralExpression(prgrm *ast.CXProgram, arraySizes []types.Pointer, ty
 	symOutput.Lengths = arraySizes
 	symOutput.Package = ast.CXPackageIndex(pkg.Index)
 	symOutput.PreviouslyDeclared = true
-	symOutput.TotalSize = symOutput.Size * TotalLength(symOutput.Lengths)
 	symOutputIdx := prgrm.AddCXArgInArray(symOutput)
 
 	symInput := ast.MakeArgument(symName, CurrentFile, LineNo)
@@ -467,7 +454,6 @@ func ArrayLiteralExpression(prgrm *ast.CXProgram, arraySizes []types.Pointer, ty
 	symInput.Lengths = arraySizes
 	symInput.Package = ast.CXPackageIndex(pkg.Index)
 	symInput.PreviouslyDeclared = true
-	symInput.TotalSize = symInput.Size * TotalLength(symInput.Lengths)
 	symInputIdx := prgrm.AddCXArgInArray(symInput)
 
 	symExprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)

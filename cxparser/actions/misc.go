@@ -42,12 +42,10 @@ func WritePrimary(prgrm *ast.CXProgram, typeCode types.Code, byts []byte, isSlic
 	size := types.Cast_int_to_ptr(len(byts))
 
 	arg.Size = typeCode.Size()
-	arg.TotalSize = size
 	arg.Offset = prgrm.Data.Size + prgrm.Data.StartsAt
 
 	if arg.Type == types.STR || arg.Type == types.AFF {
 		arg.Size = types.POINTER_SIZE
-		arg.TotalSize = types.POINTER_SIZE
 		if isSlice == false {
 			types.Write_ptr(byts, 0, arg.Offset)
 		}
@@ -117,11 +115,8 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 	// argStrct.Size = cxcore.GetArgSize(cxcore.TYPE_STR) + cxcore.GetArgSize(cxcore.TYPE_STR)
 
 	argFldName := ast.MakeField("Name", types.STR, "", 0)
-	argFldName.TotalSize = types.STR.Size()
 	argFldIndex := ast.MakeField("Index", types.I32, "", 0)
-	argFldIndex.TotalSize = types.I32.Size()
 	argFldType := ast.MakeField("Type", types.STR, "", 0)
-	argFldType.TotalSize = types.STR.Size()
 
 	argStrct.AddField(prgrm, argFldName)
 	argStrct.AddField(prgrm, argFldIndex)
@@ -144,7 +139,6 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 	// fnStrct.Size = cxcore.GetArgSize(cxcore.TYPE_STR) + cxcore.GetArgSize(cxcore.TYPE_STR) + cxcore.GetArgSize(cxcore.TYPE_STR)
 
 	fnFldName := ast.MakeField("Name", types.STR, "", 0)
-	fnFldName.TotalSize = types.STR.Size()
 
 	fnFldInpSig := ast.MakeField("InputSignature", types.STR, "", 0)
 	fnFldInpSig.Size = types.STR.Size()
@@ -166,7 +160,6 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 	// strctStrct.Size = cxcore.GetArgSize(cxcore.TYPE_STR)
 
 	strctFldName := ast.MakeField("Name", types.STR, "", 0)
-	strctFldName.TotalSize = types.STR.Size()
 
 	strctStrct.AddField(prgrm, strctFldName)
 
@@ -187,9 +180,7 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 	// callStrct.Size = cxcore.GetArgSize(cxcore.TYPE_STR) + cxcore.GetArgSize(cxcore.TYPE_I32)
 
 	callFldFnName := ast.MakeField("FnName", types.STR, "", 0)
-	callFldFnName.TotalSize = types.STR.Size()
 	callFldFnSize := ast.MakeField("FnSize", types.I32, "", 0)
-	callFldFnSize.TotalSize = types.I32.Size()
 
 	callStrct.AddField(prgrm, callFldFnName)
 	callStrct.AddField(prgrm, callFldFnSize)
@@ -201,9 +192,7 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 	// prgrmStrct.Size = cxcore.GetArgSize(cxcore.TYPE_I32) + cxcore.GetArgSize(cxcore.TYPE_I64)
 
 	prgrmFldCallCounter := ast.MakeField("CallCounter", types.I32, "", 0)
-	prgrmFldCallCounter.TotalSize = types.I32.Size()
 	prgrmFldFreeHeap := ast.MakeField("HeapUsed", types.I64, "", 0)
-	prgrmFldFreeHeap.TotalSize = types.I64.Size()
 
 	// prgrmFldCaller := cxcore.MakeField("Caller", cxcore.TYPE_STRUCT, "", 0)
 	strctPkg, err := prgrm.GetPackageFromArray(callStrct.Package)

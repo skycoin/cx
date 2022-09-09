@@ -153,8 +153,6 @@ func ProcessFunctionParameters(prgrm *ast.CXProgram, symbolsData *SymbolsData, o
 		// }
 
 		GiveOffset(prgrm, symbolsData, paramIdx)
-		SetFinalSize(prgrm, symbolsData, paramIdx)
-
 		AddPointer(prgrm, fn, paramIdx)
 
 		typeSig := prgrm.GetCXTypeSignatureFromArray(paramIdx)
@@ -396,7 +394,6 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 							out = ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, inpExprCXLine.LineNumber).SetType(inpExprAtomicOpInputArg.Type)
 							out.StructType = inpExprAtomicOpInputArg.StructType
 							out.Size = inpExprAtomicOpInputArg.Size
-							out.TotalSize = inpExprAtomicOpOperatorOutputTypeSig.GetSize(prgrm)
 							out.Type = inpExprAtomicOpInputArg.Type
 							out.PointerTargetType = inpExprAtomicOpInputArg.PointerTargetType
 							out.PreviouslyDeclared = true
@@ -438,11 +435,9 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 							}
 							if strct, err := inpExprPkg.GetStruct(prgrm, inpExprAtomicOpOperatorOutputArg.StructType.Name); err == nil {
 								out.Size = strct.GetStructSize(prgrm)
-								out.TotalSize = strct.GetStructSize(prgrm)
 							}
 						} else {
 							out.Size = inpExprAtomicOpOperatorOutputArg.Size
-							out.TotalSize = inpExprAtomicOpOperatorOutputTypeSig.GetSize(prgrm)
 						}
 
 						out.Type = inpExprAtomicOpOperatorOutputArg.Type
@@ -586,7 +581,6 @@ func ProcessOperatorExpression(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 				}
 
 				out.Size = size
-				out.TotalSize = size
 			} else if output.Type == ast.TYPE_ATOMIC || output.Type == ast.TYPE_POINTER_ATOMIC {
 				continue
 			}
@@ -783,8 +777,6 @@ func ProcessExpressionArguments(prgrm *ast.CXProgram, symbolsData *SymbolsData, 
 				}
 			}
 		}
-
-		SetFinalSize(prgrm, symbolsData, typeSignatureIdx)
 
 		AddPointer(prgrm, fn, typeSignatureIdx)
 	}
@@ -1064,7 +1056,6 @@ func checkMatchParamTypes(prgrm *ast.CXProgram, expr *ast.CXExpression, expected
 			if inpType != outType && isInputs {
 				// println(ast.CompilationError(receivedArg.ArgDetails.FileName, receivedArg.ArgDetails.FileLine), fmt.Sprintf("cannot assign value of type '%s' to identifier '%s' of type '%s'", inpType, expressionOutputArg.GetAssignmentElement(prgrm).Name, outType))
 				println(ast.CompilationError("", 0), fmt.Sprintf("cannot assign value of type '%s' to identifier '%s' of type '%s'", inpType, expressionOutputTypeSigName, outType))
-				println(fmt.Sprintf("inp =%+v\n", expressionInputTypeSig))
 			}
 
 		}
@@ -1315,7 +1306,7 @@ func ProcessShortDeclaration(prgrm *ast.CXProgram, expr *ast.CXExpression, expre
 		}
 
 		var argType, argPointerTargetType types.Code
-		var argSize, argTotalSize types.Pointer
+		var argSize types.Pointer
 		if expr.IsMethodCall() {
 			expressionOperator := prgrm.GetFunctionFromArray(expression.Operator)
 			expressionOperatorOutputs := expressionOperator.GetOutputs(prgrm)
@@ -1326,15 +1317,12 @@ func ProcessShortDeclaration(prgrm *ast.CXProgram, expr *ast.CXExpression, expre
 				argType = expressionOperatorOutputArg.Type
 				argPointerTargetType = expressionOperatorOutputArg.PointerTargetType
 				argSize = expressionOperatorOutputArg.Size
-				argTotalSize = expressionOperatorOutputArg.TotalSize
 			} else if expressionOperatorOutputTypeSig.Type == ast.TYPE_ATOMIC {
 				argType = types.Code(expressionOperatorOutputTypeSig.Meta)
 				argSize = types.Code(expressionOperatorOutputTypeSig.Meta).Size()
-				argTotalSize = types.Code(expressionOperatorOutputTypeSig.Meta).Size()
 			} else if expressionOperatorOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 				argType = types.Code(expressionOperatorOutputTypeSig.Meta)
 				argSize = types.Code(expressionOperatorOutputTypeSig.Meta).Size()
-				argTotalSize = types.Code(expressionOperatorOutputTypeSig.Meta).Size()
 			}
 
 		} else {
@@ -1344,15 +1332,12 @@ func ProcessShortDeclaration(prgrm *ast.CXProgram, expr *ast.CXExpression, expre
 				argType = expressionInputArg.Type
 				argPointerTargetType = expressionInputArg.PointerTargetType
 				argSize = expressionInputArg.Size
-				argTotalSize = expressionInputArg.TotalSize
 			} else if expressionInputTypeSig.Type == ast.TYPE_ATOMIC {
 				argType = types.Code(expressionInputTypeSig.Meta)
 				argSize = types.Code(expressionInputTypeSig.Meta).Size()
-				argTotalSize = types.Code(expressionInputTypeSig.Meta).Size()
 			} else if expressionInputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 				argType = types.Code(expressionInputTypeSig.Meta)
 				argSize = types.Code(expressionInputTypeSig.Meta).Size()
-				argTotalSize = types.Code(expressionInputTypeSig.Meta).Size()
 			}
 		}
 
@@ -1364,7 +1349,6 @@ func ProcessShortDeclaration(prgrm *ast.CXProgram, expr *ast.CXExpression, expre
 			prgrm.CXArgs[prevExpressionOutputIdx].Type = argType
 			prgrm.CXArgs[prevExpressionOutputIdx].PointerTargetType = argPointerTargetType
 			prgrm.CXArgs[prevExpressionOutputIdx].Size = argSize
-			prgrm.CXArgs[prevExpressionOutputIdx].TotalSize = argTotalSize
 		} else if prevExpressionOutputTypeSig.Type == ast.TYPE_ATOMIC {
 			prevExpressionOutputTypeSig.Meta = int(argType)
 		} else if prevExpressionOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
@@ -1378,7 +1362,6 @@ func ProcessShortDeclaration(prgrm *ast.CXProgram, expr *ast.CXExpression, expre
 			prgrm.CXArgs[expressionOutputIdx].Type = argType
 			prgrm.CXArgs[expressionOutputIdx].PointerTargetType = argPointerTargetType
 			prgrm.CXArgs[expressionOutputIdx].Size = argSize
-			prgrm.CXArgs[expressionOutputIdx].TotalSize = argTotalSize
 		} else if expressionOutputTypeSig.Type == ast.TYPE_ATOMIC {
 			expressionOutputTypeSig.Meta = int(argType)
 		} else if expressionOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
@@ -1876,16 +1859,14 @@ func ProcessTempVariable(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 					prgrm.CXArgs[outputArgIdx].Type = expressionInput.Type
 					prgrm.CXArgs[outputArgIdx].PointerTargetType = expressionInput.PointerTargetType
 					prgrm.CXArgs[outputArgIdx].Size = expressionInput.Size
-					prgrm.CXArgs[outputArgIdx].TotalSize = expressionInput.TotalSize
 					prgrm.CXArgs[outputArgIdx].PreviouslyDeclared = true
 				} else if expressionInputTypeSig.Type == ast.TYPE_ATOMIC {
 					prgrm.CXArgs[outputArgIdx].Type = types.Code(expressionInputTypeSig.Meta)
 					prgrm.CXArgs[outputArgIdx].Size = types.Code(expressionInputTypeSig.Meta).Size()
-					prgrm.CXArgs[outputArgIdx].TotalSize = types.Code(expressionInputTypeSig.Meta).Size()
 				} else if expressionInputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 					prgrm.CXArgs[outputArgIdx].Type = types.Code(expressionInputTypeSig.Meta)
 					prgrm.CXArgs[outputArgIdx].Size = types.Code(expressionInputTypeSig.Meta).Size()
-					prgrm.CXArgs[outputArgIdx].TotalSize = types.Code(expressionInputTypeSig.Meta).Size()
+
 				}
 
 			} else if outputTypeSig.Type == ast.TYPE_ATOMIC || outputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
@@ -2118,16 +2099,6 @@ func CopyArgFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast
 		sym.Type = arg.Type
 		sym.PointerTargetType = arg.PointerTargetType
 	}
-
-	if !arg.IsStruct {
-		sym.TotalSize = arg.TotalSize
-	} else {
-		if len(sym.Fields) > 0 {
-			sym.TotalSize = prgrm.GetCXArgFromArray(sym.Fields[len(sym.Fields)-1]).TotalSize
-		} else {
-			sym.TotalSize = arg.TotalSize
-		}
-	}
 }
 
 // ProcessSymbolFields copies the correct field values for the sym.Fields from their struct fields.
@@ -2213,7 +2184,6 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignatur
 					nameField.Type = types.Code(typeSignature.Meta)
 					nameField.StructType = nil
 					nameField.Size = typeSignature.GetSize(prgrm)
-					nameField.TotalSize = typeSignature.GetSize(prgrm)
 
 					// TODO: this should not be needed.
 					if len(nameField.DeclarationSpecifiers) > 0 {
@@ -2227,7 +2197,6 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignatur
 					nameField.Type = types.Code(typeSignature.Meta)
 					nameField.StructType = nil
 					nameField.Size = types.Code(typeSignature.Meta).Size()
-					nameField.TotalSize = typeSignature.GetSize(prgrm)
 
 					nameField.DereferenceOperations = append([]int{constants.DECL_BASIC, constants.DEREF_POINTER}, nameField.DereferenceOperations...)
 
@@ -2239,7 +2208,6 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignatur
 					nameField.Size = typeSignature.GetSize(prgrm)
 					nameField.Lengths = []types.Pointer{typeSignature.GetArrayLength(prgrm)}
 					sym.Lengths = []types.Pointer{typeSignature.GetArrayLength(prgrm)}
-					nameField.TotalSize = typeSignature.GetSize(prgrm) * nameField.Lengths[0]
 
 					// TODO: this should not be needed.
 					if len(nameField.DeclarationSpecifiers) > 0 {
@@ -2254,7 +2222,6 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignatur
 					nameField.Size = types.Code(typeSignature.Meta).Size()
 					nameField.Lengths = []types.Pointer{0}
 					sym.Lengths = []types.Pointer{0}
-					nameField.TotalSize = typeSignature.GetSize(prgrm)
 					nameField.IsSlice = true
 
 					// TODO: this should not be needed.
@@ -2291,7 +2258,6 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignatur
 					nameField.Type = field.Type
 					nameField.Lengths = field.Lengths
 					nameField.Size = field.Size
-					nameField.TotalSize = field.TotalSize
 					nameField.PointerTargetType = field.PointerTargetType
 					nameField.StructType = field.StructType
 
@@ -2333,83 +2299,6 @@ func GetGlobalSymbol(prgrm *ast.CXProgram, symbolsData *SymbolsData, symPkg *ast
 			// add name to symbols
 			symbolsData.symbols = append(symbolsData.symbols, glbl)
 			(symbolsData.symbolsIndex)[lastIdx][symPkg.Name+"."+ident] = len(symbolsData.symbols) - 1
-		}
-	}
-}
-
-// SetFinalSize sets the finalSize of 'sym'.
-func SetFinalSize(prgrm *ast.CXProgram, symbolsData *SymbolsData, typeSigIdx ast.CXTypeSignatureIndex) {
-	typeSig := prgrm.GetCXTypeSignatureFromArray(typeSigIdx)
-	var sym *ast.CXArgument = &ast.CXArgument{}
-	if typeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-		sym = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(typeSig.Meta))
-	} else {
-		// panic("type is not cx arg deprecate\n\n")
-		// Final size of atomic type is its size which
-		// is already set. So we return from here
-		return
-	}
-
-	finalSize := sym.TotalSize
-
-	symPkg, err := prgrm.GetPackageFromArray(sym.Package)
-	if err != nil {
-		panic(err)
-	}
-
-	argTypeSignature, err := lookupSymbol(prgrm, symPkg.Name, sym.Name, symbolsData)
-	if err == nil {
-		var arg *ast.CXArgument = &ast.CXArgument{}
-		if argTypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-			arg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(argTypeSignature.Meta))
-		} else if argTypeSignature.Type == ast.TYPE_POINTER_ATOMIC || argTypeSignature.Type == ast.TYPE_ATOMIC {
-			sym.TotalSize = types.Code(argTypeSignature.Meta).Size()
-			return
-		}
-
-		calculateFinalSize(prgrm, &finalSize, sym, arg)
-		for _, fldIdx := range sym.Fields {
-			fld := prgrm.GetCXArgFromArray(fldIdx)
-			finalSize = fld.TotalSize
-			calculateFinalSize(prgrm, &finalSize, fld, arg)
-		}
-	}
-
-	sym.TotalSize = finalSize
-}
-
-// calculateFinalSize calculates final size of 'sym'.
-func calculateFinalSize(prgrm *ast.CXProgram, finalSize *types.Pointer, sym *ast.CXArgument, arg *ast.CXArgument) {
-	idxCounter := 0
-	elt := sym.GetAssignmentElement(prgrm)
-	for _, op := range elt.DereferenceOperations {
-		if elt.IsSlice {
-			continue
-		}
-		switch op {
-		case constants.DEREF_ARRAY:
-			*finalSize /= elt.Lengths[idxCounter]
-			idxCounter++
-		case constants.DEREF_POINTER:
-			if len(arg.DeclarationSpecifiers) > 0 {
-				subSize := types.Pointer(1)
-				for _, decl := range arg.DeclarationSpecifiers {
-					switch decl {
-					case constants.DECL_ARRAY:
-						for _, len := range arg.Lengths {
-							subSize *= len
-						}
-					// case cxcore.DECL_SLICE:
-					// 	subSize = POINTER_SIZE
-					case constants.DECL_BASIC:
-						subSize = sym.Type.Size()
-					case constants.DECL_STRUCT:
-						subSize = arg.StructType.GetStructSize(prgrm)
-					}
-				}
-
-				*finalSize = subSize
-			}
 		}
 	}
 }

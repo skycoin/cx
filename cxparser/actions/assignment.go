@@ -113,7 +113,6 @@ func StructLiteralAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, f
 		aux.DeclarationSpecifiers = append(aux.DeclarationSpecifiers, constants.DECL_POINTER)
 		aux.StructType = outField.StructType
 		aux.Size = outField.Size
-		aux.TotalSize = outField.TotalSize
 		aux.PreviouslyDeclared = true
 		aux.Package = lastFromExpression.Package
 		auxIdx := prgrm.AddCXArgInArray(aux)
@@ -367,7 +366,6 @@ func shortDeclarationAssignment(prgrm *ast.CXProgram, pkg *ast.CXPackage, toExpr
 
 				fromCXAtomicOpInputs := fromExpressionInputArg
 				sym.Size = fromCXAtomicOpInputs.Size
-				sym.TotalSize = fromCXAtomicOpInputs.TotalSize
 				sym.Lengths = fromCXAtomicOpInputs.Lengths
 			}
 			if outTypeIsSlice {
@@ -424,7 +422,6 @@ func shortDeclarationAssignment(prgrm *ast.CXProgram, pkg *ast.CXPackage, toExpr
 		prgrm.CXArgs[toExprAtomicOpOutputIdx].Type = sym.Type
 		prgrm.CXArgs[toExprAtomicOpOutputIdx].PointerTargetType = sym.PointerTargetType
 		prgrm.CXArgs[toExprAtomicOpOutputIdx].Size = sym.Size
-		prgrm.CXArgs[toExprAtomicOpOutputIdx].TotalSize = sym.TotalSize
 	}
 
 	return append([]ast.CXExpression{*expr}, toExprs...)
@@ -457,18 +454,15 @@ func processAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fromExp
 			fromExpressionOutputArg := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(fromExpressionOutputTypeSig.Meta))
 
 			prgrm.CXArgs[toExpressionOutputIdx].Size = fromExpressionOutputArg.Size
-			prgrm.CXArgs[toExpressionOutputIdx].TotalSize = fromExpressionOutputArg.TotalSize
 			prgrm.CXArgs[toExpressionOutputIdx].Type = fromExpressionOutputArg.Type
 			prgrm.CXArgs[toExpressionOutputIdx].PointerTargetType = fromExpressionOutputArg.PointerTargetType
 			prgrm.CXArgs[toExpressionOutputIdx].Lengths = fromExpressionOutputArg.Lengths
 			prgrm.CXArgs[toExpressionOutputIdx].PassBy = fromExpressionOutputArg.PassBy
 		} else if fromExpressionOutputTypeSig.Type == ast.TYPE_ATOMIC {
 			prgrm.CXArgs[toExpressionOutputIdx].Size = types.Code(fromExpressionOutputTypeSig.Meta).Size()
-			prgrm.CXArgs[toExpressionOutputIdx].TotalSize = types.Code(fromExpressionOutputTypeSig.Meta).Size()
 			prgrm.CXArgs[toExpressionOutputIdx].Type = types.Code(fromExpressionOutputTypeSig.Meta)
 		} else if fromExpressionOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 			prgrm.CXArgs[toExpressionOutputIdx].Size = types.Code(fromExpressionOutputTypeSig.Meta).Size()
-			prgrm.CXArgs[toExpressionOutputIdx].TotalSize = types.Code(fromExpressionOutputTypeSig.Meta).Size()
 			prgrm.CXArgs[toExpressionOutputIdx].Type = types.POINTER
 			prgrm.CXArgs[toExpressionOutputIdx].PointerTargetType = types.Code(fromExpressionOutputTypeSig.Meta)
 		}
