@@ -106,12 +106,16 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 			if glbl.Offset < 0 || !glbl.Offset.IsValid() {
 				glbl.Offset = glblArg.Offset
 			}
+
+			glbl.PassBy = declaration_specifiers.PassBy
 		} else if ast.IsTypePointerAtomic(declaration_specifiers) {
 			glbl.Type = ast.TYPE_POINTER_ATOMIC
 			glbl.Meta = int(declaration_specifiers.Type)
 			if glbl.Offset < 0 || !glbl.Offset.IsValid() {
 				glbl.Offset = glblArg.Offset
 			}
+
+			glbl.PassBy = declaration_specifiers.PassBy
 		} else {
 			// its a cxargument_deprecate type
 			var glblIdx int

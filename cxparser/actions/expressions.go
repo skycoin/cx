@@ -77,9 +77,8 @@ func IterationExpressions(prgrm *ast.CXProgram,
 			predicate := ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, LineNo).SetType(lastCondExpressionOperatorOutputType)
 			predicate.Package = ast.CXPackageIndex(pkg.Index)
 			predicate.PreviouslyDeclared = true
-			predicateIdx := prgrm.AddCXArgInArray(predicate)
 
-			typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(predicateIdx))
+			typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, predicate)
 			typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
 		} else if lastCondExpressionOperatorOutputTypeSig.Type == ast.TYPE_ATOMIC {
 			var newTypeSig ast.CXTypeSignature
@@ -249,8 +248,7 @@ func SelectionExpressions(prgrm *ast.CXProgram, conditionExprs []ast.CXExpressio
 		predicate.PreviouslyDeclared = true
 		predicate.Package = ast.CXPackageIndex(pkg.Index)
 
-		predicateIdx := prgrm.AddCXArgInArray(predicate)
-		predicateTypeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(predicateIdx))
+		predicateTypeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, predicate)
 		predicateTypeSigIdx = prgrm.AddCXTypeSignatureInArray(predicateTypeSig)
 		prgrm.CXAtomicOps[lastCondExpressionIdx].AddOutput(prgrm, predicateTypeSigIdx)
 	}
@@ -402,8 +400,7 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 			out.Package = ast.CXPackageIndex(pkg.Index)
 			out.PreviouslyDeclared = true
 
-			outIdx := prgrm.AddCXArgInArray(out)
-			typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(outIdx))
+			typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, out)
 			typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
 		} else if lastLeftExpressionOperatorOutputTypeSig.Type == ast.TYPE_ATOMIC {
 			typeSig := &ast.CXTypeSignature{}
@@ -447,8 +444,7 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 			out.Package = ast.CXPackageIndex(pkg.Index)
 			out.PreviouslyDeclared = true
 
-			outIdx := prgrm.AddCXArgInArray(out)
-			typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(outIdx))
+			typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, out)
 			typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
 		} else if lastRightExpressionOperatorOutputTypeSig.Type == ast.TYPE_ATOMIC {
 			typeSig := &ast.CXTypeSignature{}
@@ -702,8 +698,8 @@ func AssociateReturnExpressions(prgrm *ast.CXProgram, idx int, retExprs []ast.CX
 		out.SetType(outParam.Type)
 		out.StructType = outParam.StructType
 		out.PreviouslyDeclared = true
-		outIdx := prgrm.AddCXArgInArray(out)
-		typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(outIdx))
+
+		typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, out)
 		typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
 	} else if fnOutputTypeSig.Type == ast.TYPE_ATOMIC {
 		newCXTypeSig := &ast.CXTypeSignature{}

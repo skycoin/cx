@@ -399,8 +399,8 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 							out.PreviouslyDeclared = true
 
 							out.Package = inpExprAtomicOp.Package
-							outIdx := prgrm.AddCXArgInArray(out)
-							typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(outIdx))
+
+							typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, out)
 							typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
 						} else if inpExprAtomicOpInputTypeSig.Type == ast.TYPE_ATOMIC {
 							outTypeSig := &ast.CXTypeSignature{}
@@ -443,10 +443,9 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 						out.Type = inpExprAtomicOpOperatorOutputArg.Type
 						out.PointerTargetType = inpExprAtomicOpOperatorOutputArg.PointerTargetType
 						out.PreviouslyDeclared = true
-
 						out.Package = inpExprAtomicOp.Package
-						outIdx := prgrm.AddCXArgInArray(out)
-						typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(outIdx))
+
+						typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, out)
 						typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
 					}
 

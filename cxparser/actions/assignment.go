@@ -115,37 +115,31 @@ func StructLiteralAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, f
 		aux.Size = outField.Size
 		aux.PreviouslyDeclared = true
 		aux.Package = lastFromExpression.Package
-		auxIdx := prgrm.AddCXArgInArray(aux)
+
+		auxtypeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, aux)
+		auxTypeSigIdx := prgrm.AddCXTypeSignatureInArray(auxtypeSig)
 
 		declExprCXLine := ast.MakeCXLineExpression(prgrm, lastFromCXLine.FileName, lastFromCXLine.LineNumber, lastFromCXLine.LineStr)
 		declExpr := ast.MakeAtomicOperatorExpression(prgrm, nil)
 		declExpressionIdx := declExpr.Index
 
 		prgrm.CXAtomicOps[declExpressionIdx].Package = lastFromExpression.Package
+		prgrm.CXAtomicOps[declExpressionIdx].AddOutput(prgrm, auxTypeSigIdx)
 
-		typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(auxIdx))
-		typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
-		prgrm.CXAtomicOps[declExpressionIdx].AddOutput(prgrm, typeSigIdx)
-
-		fromExprs = assignStructLiteralFields(prgrm, toExprs, fromExprs, auxName)
+		out := ast.MakeArgument(toExpressionOutputTypeSig.Name, lastFromCXLine.FileName, lastFromCXLine.LineNumber)
+		out.Package = lastFromExpression.Package
+		outTypeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, out)
+		outTypeSigIdx := prgrm.AddCXTypeSignatureInArray(outTypeSig)
 
 		assignExprCXLine := ast.MakeCXLineExpression(prgrm, lastFromCXLine.FileName, lastFromCXLine.LineNumber, lastFromCXLine.LineStr)
 		assignExpr := ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_IDENTITY])
 		assignExpressionIdx := assignExpr.Index
 
 		prgrm.CXAtomicOps[assignExpressionIdx].Package = lastFromExpression.Package
-		out := ast.MakeArgument(toExpressionOutputTypeSig.Name, lastFromCXLine.FileName, lastFromCXLine.LineNumber)
-		out.Package = lastFromExpression.Package
-		outIdx := prgrm.AddCXArgInArray(out)
-
-		outTypeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(outIdx))
-		outTypeSigIdx := prgrm.AddCXTypeSignatureInArray(outTypeSig)
 		prgrm.CXAtomicOps[assignExpressionIdx].AddOutput(prgrm, outTypeSigIdx)
-
-		auxTypeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(auxIdx))
-		auxTypeSigIdx := prgrm.AddCXTypeSignatureInArray(auxTypeSig)
 		prgrm.CXAtomicOps[assignExpressionIdx].AddInput(prgrm, auxTypeSigIdx)
 
+		fromExprs = assignStructLiteralFields(prgrm, toExprs, fromExprs, auxName)
 		fromExprs = append([]ast.CXExpression{*declExprCXLine, *declExpr}, fromExprs...)
 
 		return append(fromExprs, *assignExprCXLine, *assignExpr)
@@ -232,8 +226,8 @@ func ShortAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression, exprCXLine *a
 			sym := ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, LineNo).SetType(fromExpressionInputArg.Type)
 			sym.Package = ast.CXPackageIndex(pkg.Index)
 			sym.PreviouslyDeclared = true
-			symIdx := prgrm.AddCXArgInArray(sym)
-			typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(symIdx))
+
+			typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, sym)
 			typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
 		} else if fromExpressionInputTypeSig.Type == ast.TYPE_ATOMIC || fromExpressionInputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 			var newTypeSig ast.CXTypeSignature
@@ -329,9 +323,8 @@ func shortDeclarationAssignment(prgrm *ast.CXProgram, pkg *ast.CXPackage, toExpr
 			sym = ast.MakeArgument(toExpressionOutputTypeSig.Name, CurrentFile, LineNo).SetType(fromExpressionOutputArg.Type)
 			sym.Package = ast.CXPackageIndex(pkg.Index)
 			sym.PreviouslyDeclared = true
-			symIdx := prgrm.AddCXArgInArray(sym)
 
-			typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(symIdx))
+			typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, sym)
 			typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
 		} else if fromExpressionOutputTypeSig.Type == ast.TYPE_ATOMIC {
 			var newTypeSig ast.CXTypeSignature
@@ -378,9 +371,8 @@ func shortDeclarationAssignment(prgrm *ast.CXProgram, pkg *ast.CXPackage, toExpr
 			sym.Package = ast.CXPackageIndex(pkg.Index)
 			sym.PreviouslyDeclared = true
 			sym.Offset = outTypeArg.Offset
-			symIdx := prgrm.AddCXArgInArray(sym)
 
-			typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(symIdx))
+			typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, sym)
 			typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
 		} else if outTypeSig.Type == ast.TYPE_ATOMIC {
 			var newTypeSig ast.CXTypeSignature

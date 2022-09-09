@@ -92,8 +92,8 @@ func WritePrimaryExprs(prgrm *ast.CXProgram, typeCode types.Code, byts []byte, i
 
 	expr := ast.MakeAtomicOperatorExpression(prgrm, nil)
 	prgrm.CXAtomicOps[expr.Index].Package = ast.CXPackageIndex(pkg.Index)
-	argIdx := prgrm.AddCXArgInArray(arg)
-	typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(argIdx))
+
+	typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(arg.Index)))
 	typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
 	prgrm.CXAtomicOps[expr.Index].AddOutput(prgrm, typeSigIdx)
 
@@ -220,7 +220,6 @@ func PrimaryIdentifier(prgrm *ast.CXProgram, ident string) []ast.CXExpression {
 	arg.SetType(types.IDENTIFIER)
 	arg.Name = ident
 	arg.Package = ast.CXPackageIndex(pkg.Index)
-	argIdx := prgrm.AddCXArgInArray(arg)
 
 	expr := ast.MakeAtomicOperatorExpression(prgrm, nil)
 	expression, err := prgrm.GetCXAtomicOp(expr.Index)
@@ -228,7 +227,7 @@ func PrimaryIdentifier(prgrm *ast.CXProgram, ident string) []ast.CXExpression {
 		panic(err)
 	}
 
-	typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(argIdx))
+	typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, arg)
 	typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
 	expression.AddOutput(prgrm, typeSigIdx)
 	expression.Package = ast.CXPackageIndex(pkg.Index)
