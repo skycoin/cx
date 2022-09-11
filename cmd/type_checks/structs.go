@@ -1,10 +1,19 @@
 package type_checks
 
-/*
+import (
+	"os"
+	"regexp"
+
+	"github.com/skycoin/cx/cmd/declaration_extractor"
+	"github.com/skycoin/cx/cx/ast"
+	cxinit "github.com/skycoin/cx/cx/init"
+	"github.com/skycoin/cx/cxparser/actions"
+)
+
 // Parse Structs
 // - takes in structs from cx/cmd/declaration_extractor
 // - adds structs to AST
-func ParseStructs(structs []declaration_extractor.StructDeclaration) {
+func ParseStructs(structs []declaration_extractor.StructDeclaration) error {
 
 	// Make porgram
 	if actions.AST == nil {
@@ -31,48 +40,37 @@ func ParseStructs(structs []declaration_extractor.StructDeclaration) {
 
 		}
 
-		structCX := ast.MakeStruct(strct.StructVariableName)
+		structCX := ast.MakeStruct(strct.StructName)
 		structCX.Package = ast.CXPackageIndex(pkg.Index)
 
 		pkg = pkg.AddStruct(actions.AST, structCX)
 
-		file, err := os.Open(strct.FileID)
-
+		src, err := os.ReadFile(strct.FileID)
 		if err != nil {
-			// error handling
-		}
-
-		bracesOpen := regexp.MustCompile("{")
-		bracesClose := regexp.MustCompile("}")
-
-		srcBytes, err := io.ReadAll(file)
-
-		strctDeclaration := srcBytes[strct.StartOffset : strct.StartOffset+strct.Length]
-
-		if !bytes.Contains(strctDeclaration, []byte("struct")) {
-			// not fields to be included
-			fmt.Printf("syntax error: expecting type struct, line %v", strct.LineNumber)
-			continue
+			return err
 		}
 
 		var structFields []*ast.CXArgument
 
+		for _, strctFieldDec := range strct.StructFields {
 
-				structFieldArg := ast.MakeArgument(string(tokens[0]), strct.FileID, strct.LineNumber)
-				structFieldArg = structFieldArg.SetPackage(pkg)
+			structFieldLine := src[strct.StartOffset : strctFieldDec.StartOffset+strctFieldDec.Length]
+			reStructField := regexp.MustCompile(`\w+\s+(\w+)`)
+			structField := reStructField.FindSubmatch(structFieldLine)
 
-				structFieldSpecifier := actions.DeclarationSpecifiersBasic(primitiveTypesMap[string(tokens[1])])
+			structFieldArg := ast.MakeArgument(strctFieldDec.StructFieldName, strct.FileID, strct.LineNumber)
+			structFieldArg = structFieldArg.SetPackage(pkg)
 
-				structFieldSpecifier.Name = structFieldArg.Name
-				structFieldSpecifier.Package = structFieldArg.Package
-				structFieldSpecifier.IsLocalDeclaration = true
+			structFieldSpecifier := actions.DeclarationSpecifiersBasic(TypesMap[string(structField[1])])
 
-				structFields = append(structFields, structFieldSpecifier)
+			structFieldSpecifier.Name = structFieldArg.Name
+			structFieldSpecifier.Package = structFieldArg.Package
 
+			structFields = append(structFields, structFieldSpecifier)
+		}
 
-
-		actions.DeclareStruct(actions.AST, strct.StructVariableName, structFields)
+		actions.DeclareStruct(actions.AST, strct.StructName, structFields)
 
 	}
+	return nil
 }
-*/

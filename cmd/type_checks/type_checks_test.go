@@ -214,21 +214,20 @@ func TestTypeChecks_ParseGlobals(t *testing.T) {
 
 }
 
-/*
-func TestTypeChecks_ParseEnums(t *testing.T) {
+// func TestTypeChecks_ParseEnums(t *testing.T) {
 
-	tests := []struct {
-		scenario string
-		testDir  string
-	}{}
+// 	tests := []struct {
+// 		scenario string
+// 		testDir  string
+// 	}{}
 
-	for _, tc := range tests {
-		t.Run(tc.scenario, func(t *testing.T) {
+// 	for _, tc := range tests {
+// 		t.Run(tc.scenario, func(t *testing.T) {
 
-		})
-	}
+// 		})
+// 	}
 
-}
+// }
 
 func TestTypeChecks_ParseStructs(t *testing.T) {
 
@@ -245,33 +244,13 @@ func TestTypeChecks_ParseStructs(t *testing.T) {
 					Name:    "CustomType",
 					Index:   1,
 					Package: 1,
-					Fields: []ast.CXTypeSignature{
-						{
-							Name:   "fieldA",
-							Offset: 8,
-							Type:   ast.TYPE_CXARGUMENT_DEPRECATE,
-							Meta:   28,
-						},
-						{
-							Name:   "fieldB",
-							Offset: 4,
-							Type:   ast.TYPE_ATOMIC,
-							Meta:   4,
-						},
-					},
+					Fields:  []ast.CXTypeSignatureIndex{},
 				},
 				{
 					Name:    "AnotherType",
 					Index:   2,
 					Package: 1,
-					Fields: []ast.CXTypeSignature{
-						{
-							Name:   "name",
-							Offset: 8,
-							Type:   ast.TYPE_CXARGUMENT_DEPRECATE,
-							Meta:   1,
-						},
-					},
+					Fields:  []ast.CXTypeSignatureIndex{},
 				},
 			},
 		},
@@ -288,9 +267,8 @@ func TestTypeChecks_ParseStructs(t *testing.T) {
 			}
 
 			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(srcBytes)
-			pkg := declaration_extractor.ExtractPackages(ReplaceCommentsWithWhitespaces)
 
-			structs, err := declaration_extractor.ExtractStructs(ReplaceCommentsWithWhitespaces, tc.testDir, pkg)
+			structs, err := declaration_extractor.ExtractStructs(ReplaceCommentsWithWhitespaces, tc.testDir)
 
 			type_checks.ParseStructs(structs)
 
@@ -345,181 +323,181 @@ func TestTypeChecks_ParseStructs(t *testing.T) {
 
 }
 
-func TestTypeChecks_ParseFuncHeaders(t *testing.T) {
+// func TestTypeChecks_ParseFuncHeaders(t *testing.T) {
 
-	tests := []struct {
-		scenario    string
-		testDir     string
-		functionCXs []ast.CXFunction
-	}{
-		{
-			scenario: "Has funcs",
-			testDir:  "./test_files/test.cx",
-			functionCXs: []ast.CXFunction{
-				{
-					Name:     "main",
-					Index:    0,
-					Package:  1,
-					FileName: "./test_files/test.cx",
-					FileLine: 35,
-				},
-				{
-					Name:    "add",
-					Index:   1,
-					Package: 1,
-					Inputs: &ast.CXStruct{
-						Fields: []ast.CXTypeSignature{
-							{
-								Name: "a",
-								Type: ast.TYPE_CXARGUMENT_DEPRECATE,
-								Meta: 0,
-							},
-							{
-								Name: "b",
-								Type: ast.TYPE_CXARGUMENT_DEPRECATE,
-								Meta: 1,
-							},
-						},
-					},
-					Outputs: &ast.CXStruct{
-						Fields: []ast.CXTypeSignature{
-							{
-								Name: "answer",
-								Type: ast.TYPE_CXARGUMENT_DEPRECATE,
-								Meta: 2,
-							},
-						},
-					},
-				},
-				{
-					Name:    "divide",
-					Index:   2,
-					Package: 1,
-					Inputs: &ast.CXStruct{
-						Fields: []ast.CXTypeSignature{
-							{
-								Name: "c",
-								Type: ast.TYPE_CXARGUMENT_DEPRECATE,
-								Meta: 3,
-							},
-							{
-								Name: "d",
-								Type: ast.TYPE_CXARGUMENT_DEPRECATE,
-								Meta: 4,
-							},
-						},
-					},
-					Outputs: &ast.CXStruct{
-						Fields: []ast.CXTypeSignature{
-							{
-								Name: "quotient",
-								Type: ast.TYPE_CXARGUMENT_DEPRECATE,
-								Meta: 5,
-							},
-							{
-								Name: "remainder",
-								Type: ast.TYPE_CXARGUMENT_DEPRECATE,
-								Meta: 6,
-							},
-						},
-					},
-				},
-				{
-					Name:    "printer",
-					Index:   3,
-					Package: 1,
-					Inputs: &ast.CXStruct{
-						Fields: []ast.CXTypeSignature{
-							{
-								Name: "message",
-								Type: ast.TYPE_CXARGUMENT_DEPRECATE,
-								Meta: 7,
-							},
-						},
-					},
-				},
-			},
-		},
-	}
+// 	tests := []struct {
+// 		scenario    string
+// 		testDir     string
+// 		functionCXs []ast.CXFunction
+// 	}{
+// 		{
+// 			scenario: "Has funcs",
+// 			testDir:  "./test_files/test.cx",
+// 			functionCXs: []ast.CXFunction{
+// 				{
+// 					Name:     "main",
+// 					Index:    0,
+// 					Package:  1,
+// 					FileName: "./test_files/test.cx",
+// 					FileLine: 35,
+// 				},
+// 				{
+// 					Name:    "add",
+// 					Index:   1,
+// 					Package: 1,
+// 					Inputs: &ast.CXStruct{
+// 						Fields: []ast.CXTypeSignature{
+// 							{
+// 								Name: "a",
+// 								Type: ast.TYPE_CXARGUMENT_DEPRECATE,
+// 								Meta: 0,
+// 							},
+// 							{
+// 								Name: "b",
+// 								Type: ast.TYPE_CXARGUMENT_DEPRECATE,
+// 								Meta: 1,
+// 							},
+// 						},
+// 					},
+// 					Outputs: &ast.CXStruct{
+// 						Fields: []ast.CXTypeSignature{
+// 							{
+// 								Name: "answer",
+// 								Type: ast.TYPE_CXARGUMENT_DEPRECATE,
+// 								Meta: 2,
+// 							},
+// 						},
+// 					},
+// 				},
+// 				{
+// 					Name:    "divide",
+// 					Index:   2,
+// 					Package: 1,
+// 					Inputs: &ast.CXStruct{
+// 						Fields: []ast.CXTypeSignature{
+// 							{
+// 								Name: "c",
+// 								Type: ast.TYPE_CXARGUMENT_DEPRECATE,
+// 								Meta: 3,
+// 							},
+// 							{
+// 								Name: "d",
+// 								Type: ast.TYPE_CXARGUMENT_DEPRECATE,
+// 								Meta: 4,
+// 							},
+// 						},
+// 					},
+// 					Outputs: &ast.CXStruct{
+// 						Fields: []ast.CXTypeSignature{
+// 							{
+// 								Name: "quotient",
+// 								Type: ast.TYPE_CXARGUMENT_DEPRECATE,
+// 								Meta: 5,
+// 							},
+// 							{
+// 								Name: "remainder",
+// 								Type: ast.TYPE_CXARGUMENT_DEPRECATE,
+// 								Meta: 6,
+// 							},
+// 						},
+// 					},
+// 				},
+// 				{
+// 					Name:    "printer",
+// 					Index:   3,
+// 					Package: 1,
+// 					Inputs: &ast.CXStruct{
+// 						Fields: []ast.CXTypeSignature{
+// 							{
+// 								Name: "message",
+// 								Type: ast.TYPE_CXARGUMENT_DEPRECATE,
+// 								Meta: 7,
+// 							},
+// 						},
+// 					},
+// 				},
+// 			},
+// 		},
+// 	}
 
-	for _, tc := range tests {
-		t.Run(tc.scenario, func(t *testing.T) {
+// 	for _, tc := range tests {
+// 		t.Run(tc.scenario, func(t *testing.T) {
 
-			actions.AST = nil
+// 			actions.AST = nil
 
-			srcBytes, err := os.ReadFile(tc.testDir)
-			if err != nil {
-				t.Error(err)
-			}
+// 			srcBytes, err := os.ReadFile(tc.testDir)
+// 			if err != nil {
+// 				t.Error(err)
+// 			}
 
-			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(srcBytes)
-			pkg := declaration_extractor.ExtractPackages(ReplaceCommentsWithWhitespaces)
+// 			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(srcBytes)
+// 			pkg := declaration_extractor.ExtractPackages(ReplaceCommentsWithWhitespaces)
 
-			funcs, err := declaration_extractor.ExtractFuncs(srcBytes, tc.testDir, pkg)
+// 			funcs, err := declaration_extractor.ExtractFuncs(srcBytes, tc.testDir, pkg)
 
-			type_checks.ParseFuncHeaders(funcs)
+// 			type_checks.ParseFuncHeaders(funcs)
 
-			program := actions.AST
+// 			program := actions.AST
 
-			for _, wantFunc := range tc.functionCXs {
+// 			for _, wantFunc := range tc.functionCXs {
 
-				var match bool
-				var gotFunc *ast.CXFunction
+// 				var match bool
+// 				var gotFunc *ast.CXFunction
 
-				for _, pkgIdx := range program.Packages {
+// 				for _, pkgIdx := range program.Packages {
 
-					pkg, err := program.GetPackageFromArray(pkgIdx)
+// 					pkg, err := program.GetPackageFromArray(pkgIdx)
 
-					if err != nil {
-						t.Log(err)
-					}
+// 					if err != nil {
+// 						t.Log(err)
+// 					}
 
-					for _, funcIdx := range pkg.Functions {
+// 					for _, funcIdx := range pkg.Functions {
 
-						gotFunc = program.GetFunctionFromArray(funcIdx)
+// 						gotFunc = program.GetFunctionFromArray(funcIdx)
 
-						if gotFunc.Name == wantFunc.Name &&
-							gotFunc.Index == wantFunc.Index &&
-							gotFunc.Package == wantFunc.Package {
+// 						if gotFunc.Name == wantFunc.Name &&
+// 							gotFunc.Index == wantFunc.Index &&
+// 							gotFunc.Package == wantFunc.Package {
 
-							var paramMatch int = 2
+// 							var paramMatch int = 2
 
-							for k, wantInput := range wantFunc.GetInputs(program) {
-								gotInput := gotFunc.GetInputs(program)[k]
+// 							for k, wantInput := range wantFunc.GetInputs(program) {
+// 								gotInput := gotFunc.GetInputs(program)[k]
 
-								if gotInput != wantInput {
-									paramMatch--
-									break
-								}
-							}
+// 								if gotInput != wantInput {
+// 									paramMatch--
+// 									break
+// 								}
+// 							}
 
-							for k, wantOutput := range wantFunc.GetOutputs(program) {
-								gotOutput := gotFunc.GetOutputs(program)[k]
+// 							for k, wantOutput := range wantFunc.GetOutputs(program) {
+// 								gotOutput := gotFunc.GetOutputs(program)[k]
 
-								if gotOutput != wantOutput {
-									paramMatch--
-									break
-								}
-							}
+// 								if gotOutput != wantOutput {
+// 									paramMatch--
+// 									break
+// 								}
+// 							}
 
-							if paramMatch == 2 {
-								match = true
-							}
+// 							if paramMatch == 2 {
+// 								match = true
+// 							}
 
-							break
+// 							break
 
-						}
-					}
+// 						}
+// 					}
 
-				}
+// 				}
 
-				if !match {
-					t.Errorf("want func \n%v\n\tInputs: %v\n\tOutputs: %v\n, got \n%v\n\tInputs: %v\n\tOutputs: %v\n", wantFunc, wantFunc.Inputs, wantFunc.Outputs, gotFunc, gotFunc.Inputs, gotFunc.Outputs)
-				}
-			}
+// 				if !match {
+// 					t.Errorf("want func \n%v\n\tInputs: %v\n\tOutputs: %v\n, got \n%v\n\tInputs: %v\n\tOutputs: %v\n", wantFunc, wantFunc.Inputs, wantFunc.Outputs, gotFunc, gotFunc.Inputs, gotFunc.Outputs)
+// 				}
+// 			}
 
-		})
-	}
+// 		})
+// 	}
 
-}
-*/
+// }
+// */
