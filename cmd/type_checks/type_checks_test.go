@@ -190,7 +190,6 @@ func TestTypeChecks_ParseGlobals(t *testing.T) {
 								types.Code(gotGlobal.Meta) == wantGlobal.Type {
 								match = true
 							}
-							fmt.Print(types.Code(gotGlobal.Meta), wantGlobal.Type, "\n")
 
 							break
 						}
@@ -232,9 +231,10 @@ func TestTypeChecks_ParseGlobals(t *testing.T) {
 func TestTypeChecks_ParseStructs(t *testing.T) {
 
 	tests := []struct {
-		scenario  string
-		testDir   string
-		structCXs []ast.CXStruct
+		scenario      string
+		testDir       string
+		structCXs     []ast.CXStruct
+		typeSignature []ast.CXTypeSignature
 	}{
 		{
 			scenario: "Has Structs",
@@ -244,13 +244,13 @@ func TestTypeChecks_ParseStructs(t *testing.T) {
 					Name:    "CustomType",
 					Index:   1,
 					Package: 1,
-					Fields:  []ast.CXTypeSignatureIndex{},
+					Fields:  []ast.CXTypeSignatureIndex{0, 1},
 				},
 				{
 					Name:    "AnotherType",
 					Index:   2,
 					Package: 1,
-					Fields:  []ast.CXTypeSignatureIndex{},
+					Fields:  []ast.CXTypeSignatureIndex{2},
 				},
 			},
 		},
@@ -274,6 +274,8 @@ func TestTypeChecks_ParseStructs(t *testing.T) {
 
 			program := actions.AST
 
+			var ast3 string
+
 			for _, wantStruct := range tc.structCXs {
 
 				var match bool
@@ -292,18 +294,33 @@ func TestTypeChecks_ParseStructs(t *testing.T) {
 					}
 
 					for _, structIdx := range pkg.Structs {
-						gotStruct := program.CXStructs[structIdx]
+						gotStruct = program.CXStructs[structIdx]
 
 						if gotStruct.Name == wantStruct.Name &&
 							(gotStruct.Index == wantStruct.Index ||
 								gotStruct.Package == wantStruct.Package) {
+							ast3 += fmt.Sprintf("want %d. %s, got %d. %s\n", wantStruct.Index, wantStruct.Name, gotStruct.Index, gotStruct.Name)
 
-							for k, wantFields := range wantStruct.Fields {
+							for _, wantFieldIdx := range wantStruct.Fields {
 
-								if wantFields == gotStruct.Fields[k] {
-									match = true
-									break
+								for _, gotFieldIdx := range gotStruct.Fields {
+
+									// gotField := program.GetCXTypeSignatureFromArray(gotFieldIdx)
+
+									if gotFieldIdx == wantFieldIdx {
+										match = true
+										break
+									}
+
+									// if gotField.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+
+									// } else if gotField.Type == ast.TYPE_ATOMIC {
+
+									// } else if gotField.Type == ast.TYPE_POINTER_ATOMIC {
+
+									// }
 								}
+
 							}
 
 							break
