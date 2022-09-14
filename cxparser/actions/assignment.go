@@ -49,6 +49,10 @@ func assignStructLiteralFields(prgrm *ast.CXProgram, toExprs []ast.CXExpression,
 		var toExpressionOutput *ast.CXArgument = &ast.CXArgument{}
 		if toExpressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			toExpressionOutput = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(toExpressionOutputTypeSig.Meta))
+		} else if toExpressionOutputTypeSig.Type == ast.TYPE_ATOMIC || toExpressionOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
+			// TODO: Improve when possible
+			// Do nothing for now since len(toExpressionOutput.Indexes) > 0
+			// of type atomics and type pointer atomics are always 0
 		} else {
 			panic("type is not type cx argument deprecate\n\n")
 		}
@@ -578,11 +582,13 @@ func checkIfFunctionCallNeedsAnOutput(prgrm *ast.CXProgram, fromExpressionOperat
 		toExpressionOutputs := toExpression.GetOutputs(prgrm)
 		toExpressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(toExpressionOutputs[0])
 
-		var toExpressionOutputArg *ast.CXArgument = &ast.CXArgument{}
+		var toExpressionOutputArg *ast.CXArgument = &ast.CXArgument{ArgDetails: &ast.CXArgumentDebug{}}
 		if toExpressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			toExpressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(toExpressionOutputTypeSig.Meta))
 		} else {
-			panic("type is not cx argument deprecate\n\n")
+			// TODO: improve when possible
+			// do nothing for now since CxTypeSignature
+			// does not yet hold file name and file line.
 		}
 
 		println(ast.CompilationError(toExpressionOutputArg.ArgDetails.FileName, toExpressionOutputArg.ArgDetails.FileLine), "trying to use an outputless operator in an assignment")

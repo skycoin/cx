@@ -163,39 +163,6 @@ All "Is" can be removed
 Note: PAssBy is not used too many place
 Note: Low priority for deprecation
 - isnt this same as "pointer"
-
-grep -rn "PassBy" .
-./cxparser/actions/misc.go:425:			arg.PassBy = PASSBY_REFERENCE
-./cxparser/actions/functions.go:666:					out.PassBy = PASSBY_VALUE
-./cxparser/actions/functions.go:678:		if elt.PassBy == PASSBY_REFERENCE &&
-./cxparser/actions/functions.go:712:			out.PassBy = PASSBY_VALUE
-./cxparser/actions/functions.go:723:				assignElt.PassBy = PASSBY_VALUE
-./cxparser/actions/functions.go:915:			expr.Inputs[0].PassBy = PASSBY_REFERENCE
-./cxparser/actions/functions.go:1153:					nameFld.PassBy = fld.PassBy
-./cxparser/actions/functions.go:1157:						nameFld.PassBy = PASSBY_REFERENCE
-./cxparser/actions/literals.go:219:				sym.PassBy = PASSBY_REFERENCE
-./cxparser/actions/expressions.go:336:		baseOut.PassBy = PASSBY_REFERENCE
-./cxparser/actions/assignment.go:57:		out.PassBy = PASSBY_REFERENCE
-./cxparser/actions/assignment.go:208:		to[0].Outputs[0].PassBy = from[idx].Outputs[0].PassBy
-./cxparser/actions/assignment.go:234:			to[0].Outputs[0].PassBy = from[idx].Operator.Outputs[0].PassBy
-./cxparser/actions/assignment.go:244:			to[0].Outputs[0].PassBy = from[idx].Operator.Outputs[0].PassBy
-./cxparser/actions/declarations.go:55:			glbl.PassBy = offExpr[0].Outputs[0].PassBy
-./cxparser/actions/declarations.go:69:				declaration_specifiers.PassBy = glbl.PassBy
-./cxparser/actions/declarations.go:85:				declaration_specifiers.PassBy = glbl.PassBy
-./cxparser/actions/declarations.go:103:			declaration_specifiers.PassBy = glbl.PassBy
-./cxparser/actions/declarations.go:324:			declarationSpecifiers.PassBy = initOut.PassBy
-./cxparser/actions/declarations.go:417:		arg.PassBy = PASSBY_REFERENCE
-./CompilerDevelopment.md:71:* PassBy - an int constant representing how the variable is passed - pass by value, or pass by reference.
-
-./cx/op_http.go:50:	headerFld.PassBy = PASSBY_REFERENCE
-./cx/op_http.go:75:	transferEncodingFld.PassBy = PASSBY_REFERENCE
-./cx/serialize.go:168:	PassBy     int32
-./cx/serialize.go:321:	s.Arguments[argOff].PassBy = int32(arg.PassBy)
-./cx/serialize.go:1009:	arg.PassBy = int(sArg.PassBy)
-./cx/execute.go:366:				if inp.PassBy == PASSBY_REFERENCE {
-./cx/cxargument.go:23:	PassBy                int // pass by value or reference
-./cx/op_misc.go:36:		switch elt.PassBy {
-./cx/utilities.go:184:	if arg.PassBy == PASSBY_REFERENCE {
 */
 
 // ----------------------------------------------------------------
@@ -382,11 +349,14 @@ func MakeGlobal(name string, typeCode types.Code, fileName string, fileLine int)
 //           Special functions to determine its type (atomic, array etomic, etc)
 
 func IsTypeAtomic(arg *CXArgument) bool {
+	// TODO: implement including types.IDENTIFIER
+	// return (arg.Type.IsPrimitive() || arg.Type == types.IDENTIFIER) && !arg.IsSlice && len(arg.Lengths) == 0 && len(arg.Fields) == 0 && len(arg.DereferenceOperations) == 0 && (len(arg.DeclarationSpecifiers) == 0 || (len(arg.DeclarationSpecifiers) == 1 && arg.DeclarationSpecifiers[0] == constants.DECL_BASIC))
+
 	return arg.Type.IsPrimitive() && !arg.IsSlice && len(arg.Lengths) == 0 && len(arg.Fields) == 0 && len(arg.DereferenceOperations) == 0 && (len(arg.DeclarationSpecifiers) == 0 || (len(arg.DeclarationSpecifiers) == 1 && arg.DeclarationSpecifiers[0] == constants.DECL_BASIC))
 }
 
 func IsTypePointerAtomic(arg *CXArgument) bool {
-	return arg.Type.IsPrimitive() && arg.PointerTargetType == 0 && arg.StructType == nil && !arg.IsSlice && len(arg.Lengths) == 0 && len(arg.Fields) == 0 && arg.PassBy == 0 && len(arg.DereferenceOperations) == 0 && (len(arg.DeclarationSpecifiers) == 2 && arg.DeclarationSpecifiers[0] == constants.DECL_BASIC && arg.DeclarationSpecifiers[1] == constants.DECL_POINTER)
+	return arg.Type.IsPrimitive() && arg.PointerTargetType == 0 && arg.StructType == nil && !arg.IsSlice && len(arg.Lengths) == 0 && len(arg.Fields) == 0 && len(arg.DereferenceOperations) == 0 && (len(arg.DeclarationSpecifiers) == 2 && arg.DeclarationSpecifiers[0] == constants.DECL_BASIC && arg.DeclarationSpecifiers[1] == constants.DECL_POINTER)
 }
 
 func IsTypeArrayAtomic(arg *CXArgument) bool {

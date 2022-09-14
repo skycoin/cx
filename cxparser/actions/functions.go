@@ -747,14 +747,6 @@ func ProcessExpressionArguments(prgrm *ast.CXProgram, symbolsData *SymbolsData, 
 		isLocalVar := fn.IsLocalVariable(typeSignatureName)
 		if (arg != nil && arg.PreviouslyDeclared) || IsTempVar(typeSignatureName) || (arg == nil && isLocalVar) {
 			UpdateSymbolsTable(prgrm, symbolsData, typeSignatureIdx, offset, false)
-			// We remove it from local var array since it is already added to the symbols
-			// if isLocalVar {
-			// err := fn.RemoveLocalVariableFromArray(typeSignatureName)
-			// if err != nil {
-			// 	panic(err)
-			// }
-			// }
-
 		} else {
 			UpdateSymbolsTable(prgrm, symbolsData, typeSignatureIdx, offset, true)
 		}
@@ -776,7 +768,6 @@ func ProcessExpressionArguments(prgrm *ast.CXProgram, symbolsData *SymbolsData, 
 				}
 			}
 		}
-
 		AddPointer(prgrm, fn, typeSignatureIdx)
 	}
 }
@@ -964,8 +955,15 @@ func checkMatchParamTypes(prgrm *ast.CXProgram, expr *ast.CXExpression, expected
 			expectedType = ast.GetFormattedType(prgrm, expectedArg)
 		} else if expectedTypeSig.Type == ast.TYPE_ATOMIC {
 			expectedType = types.Code(expectedTypeSig.Meta).Name()
+
+			if expectedTypeSig.PassBy == constants.PASSBY_REFERENCE {
+				expectedType = "*" + expectedType
+			}
 		} else if expectedTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
-			expectedType = "*" + types.Code(expectedTypeSig.Meta).Name()
+			expectedType = types.Code(expectedTypeSig.Meta).Name()
+			if !expectedTypeSig.IsDeref {
+				expectedType = "*" + expectedType
+			}
 		}
 
 		var receivedArg *ast.CXArgument = &ast.CXArgument{ArgDetails: &ast.CXArgumentDebug{}}
@@ -975,8 +973,16 @@ func checkMatchParamTypes(prgrm *ast.CXProgram, expr *ast.CXExpression, expected
 			receivedType = ast.GetFormattedType(prgrm, receivedArg)
 		} else if receivedTypeSig.Type == ast.TYPE_ATOMIC {
 			receivedType = types.Code(receivedTypeSig.Meta).Name()
+
+			if receivedTypeSig.PassBy == constants.PASSBY_REFERENCE {
+				receivedType = "*" + receivedType
+			}
 		} else if receivedTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
-			receivedType = "*" + types.Code(receivedTypeSig.Meta).Name()
+			receivedType = types.Code(receivedTypeSig.Meta).Name()
+
+			if !receivedTypeSig.IsDeref {
+				receivedType = "*" + receivedType
+			}
 		}
 
 		if expr.IsMethodCall() && expectedArg.IsPointer() && i == 0 {
@@ -1032,8 +1038,15 @@ func checkMatchParamTypes(prgrm *ast.CXProgram, expr *ast.CXExpression, expected
 				inpType = ast.GetFormattedType(prgrm, expressionInputArg)
 			} else if expressionInputTypeSig.Type == ast.TYPE_ATOMIC {
 				inpType = types.Code(expressionInputTypeSig.Meta).Name()
+
+				if expressionInputTypeSig.PassBy == constants.PASSBY_REFERENCE {
+					inpType = "*" + inpType
+				}
 			} else if expressionInputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
-				inpType = "*" + types.Code(expressionInputTypeSig.Meta).Name()
+				inpType = types.Code(expressionInputTypeSig.Meta).Name()
+				if !expressionInputTypeSig.IsDeref {
+					inpType = "*" + inpType
+				}
 			}
 
 			var expressionOutputArg *ast.CXArgument = &ast.CXArgument{}
@@ -1045,9 +1058,16 @@ func checkMatchParamTypes(prgrm *ast.CXProgram, expr *ast.CXExpression, expected
 			} else if expressionOutputTypeSig.Type == ast.TYPE_ATOMIC {
 				expressionOutputTypeSigName = expressionOutputTypeSig.Name
 				outType = types.Code(expressionOutputTypeSig.Meta).Name()
+
+				if expressionOutputTypeSig.PassBy == constants.PASSBY_REFERENCE {
+					outType = "*" + outType
+				}
 			} else if expressionOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 				expressionOutputTypeSigName = expressionOutputTypeSig.Name
-				outType = "*" + types.Code(expressionOutputTypeSig.Meta).Name()
+				outType = types.Code(expressionOutputTypeSig.Meta).Name()
+				if !expressionOutputTypeSig.IsDeref {
+					outType = "*" + outType
+				}
 			}
 
 			// We use `isInputs` to only print the error once.
@@ -1307,6 +1327,7 @@ func ProcessShortDeclaration(prgrm *ast.CXProgram, expr *ast.CXExpression, expre
 		var argType, argPointerTargetType types.Code
 		var argSize types.Pointer
 		if expr.IsMethodCall() {
+
 			expressionOperator := prgrm.GetFunctionFromArray(expression.Operator)
 			expressionOperatorOutputs := expressionOperator.GetOutputs(prgrm)
 			expressionOperatorOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(expressionOperatorOutputs[0])
@@ -1759,42 +1780,47 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbolsData
 			var argOut *ast.CXArgument = &ast.CXArgument{}
 			if argOutTypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 				argOut = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(argOutTypeSignature.Meta))
-			} else {
-				panic("type is cx argument deprecate\n\n")
-			}
 
-			// then we found an output
-			if len(prgrm.CXArgs[outIdx].Fields) > 0 {
-				strct := argOut.StructType
+				// then we found an output
+				if len(prgrm.CXArgs[outIdx].Fields) > 0 {
+					strct := argOut.StructType
 
-				if strct == nil {
-					println(ast.CompilationError(argOut.ArgDetails.FileName, argOut.ArgDetails.FileLine), fmt.Sprintf("illegal method call or field access on identifier '%s' of primitive type '%s'", argOut.Name, argOut.Type.Name()))
-					os.Exit(constants.CX_COMPILATION_ERROR)
-				}
-
-				strctPkg, err := prgrm.GetPackageFromArray(strct.Package)
-				if err != nil {
-					panic(err)
-				}
-
-				if fnIdx, err := strctPkg.GetMethod(prgrm, strct.Name+"."+prgrm.GetCXArgFromArray(prgrm.CXArgs[outIdx].Fields[len(prgrm.CXArgs[outIdx].Fields)-1]).Name, strct.Name); err == nil {
-					prgrm.CXAtomicOps[expr.Index].Operator = fnIdx
-				} else {
-					panic("")
-				}
-
-				typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, &prgrm.CXArgs[outIdx])
-				typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
-				newInputs := &ast.CXStruct{Fields: []ast.CXTypeSignatureIndex{typeSigIdx}}
-				if prgrm.CXAtomicOps[expr.Index].Inputs != nil {
-					for _, typeSig := range prgrm.CXAtomicOps[expr.Index].Inputs.Fields {
-						newInputs.AddField_CXAtomicOps(prgrm, typeSig)
+					if strct == nil {
+						println(ast.CompilationError(argOut.ArgDetails.FileName, argOut.ArgDetails.FileLine), fmt.Sprintf("illegal method call or field access on identifier '%s' of primitive type '%s'", argOut.Name, argOut.Type.Name()))
+						os.Exit(constants.CX_COMPILATION_ERROR)
 					}
+
+					strctPkg, err := prgrm.GetPackageFromArray(strct.Package)
+					if err != nil {
+						panic(err)
+					}
+
+					if fnIdx, err := strctPkg.GetMethod(prgrm, strct.Name+"."+prgrm.GetCXArgFromArray(prgrm.CXArgs[outIdx].Fields[len(prgrm.CXArgs[outIdx].Fields)-1]).Name, strct.Name); err == nil {
+						prgrm.CXAtomicOps[expr.Index].Operator = fnIdx
+					} else {
+						panic("")
+					}
+
+					typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, &prgrm.CXArgs[outIdx])
+					typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
+					newInputs := &ast.CXStruct{Fields: []ast.CXTypeSignatureIndex{typeSigIdx}}
+					if prgrm.CXAtomicOps[expr.Index].Inputs != nil {
+						for _, typeSig := range prgrm.CXAtomicOps[expr.Index].Inputs.Fields {
+							newInputs.AddField_CXAtomicOps(prgrm, typeSig)
+						}
+					}
+					prgrm.CXAtomicOps[expr.Index].Inputs = newInputs
+					prgrm.CXAtomicOps[expr.Index].Outputs.Fields = prgrm.CXAtomicOps[expr.Index].Outputs.Fields[1:]
+					prgrm.CXArgs[outIdx].Fields = prgrm.CXArgs[outIdx].Fields[:len(prgrm.CXArgs[outIdx].Fields)-1]
 				}
-				prgrm.CXAtomicOps[expr.Index].Inputs = newInputs
-				prgrm.CXAtomicOps[expr.Index].Outputs.Fields = prgrm.CXAtomicOps[expr.Index].Outputs.Fields[1:]
-				prgrm.CXArgs[outIdx].Fields = prgrm.CXArgs[outIdx].Fields[:len(prgrm.CXArgs[outIdx].Fields)-1]
+			} else if argOutTypeSignature.Type == ast.TYPE_ATOMIC || argOutTypeSignature.Type == ast.TYPE_POINTER_ATOMIC {
+				// TODO: improve
+				// do nothing for now since len(prgrm.CXArgs[outIdx].Fields) > 0
+				// of type atomics and pointers are always zero
+			} else {
+				panic("type is not cx arg deprecate")
 			}
+
 		}
 	}
 }
@@ -1964,9 +1990,16 @@ func CopyArgFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast
 		symTypeSignature.Type = argTypeSignature.Type
 		symTypeSignature.Meta = argTypeSignature.Meta
 		symTypeSignature.Offset = argTypeSignature.Offset
-
 		return
 	}
+
+	// This is for test-pointers when IsTypeAtomic includes types.IDENTIFIER
+	// else if sym == nil && arg != nil && symTypeSignature.PassBy != 0 && arg.Type.IsPrimitive() {
+	// 	symTypeSignature.Meta = int(arg.Type)
+	// 	symTypeSignature.Offset = arg.Offset
+
+	// 	return
+	// }
 
 	sym.Name = arg.Name
 	sym.Offset = arg.Offset

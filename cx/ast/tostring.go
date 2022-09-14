@@ -532,10 +532,43 @@ func GetPrintableValue(prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSig
 
 			return val
 		}
-	} else if argTypeSig.Type == TYPE_ATOMIC || argTypeSig.Type == TYPE_POINTER_ATOMIC {
-		// TODO: what to do with type atomic
-		// temporary return 0 val
-		return "[]"
+	} else if argTypeSig.Type == TYPE_ATOMIC {
+		// TODO: improve this
+
+		if argTypeSig.PassBy == constants.PASSBY_REFERENCE {
+			return fmt.Sprintf("%v", GetFinalOffset(prgrm, fp, nil, argTypeSig))
+		}
+
+		typ = types.Code(argTypeSig.Meta).Name()
+		switch typ {
+		case "bool":
+			return fmt.Sprintf("%v", types.Read_bool(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, argTypeSig)))
+		case "str":
+			return fmt.Sprintf("%v", types.Read_str(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, argTypeSig)))
+		case "i8":
+			return fmt.Sprintf("%v", types.Read_i8(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, argTypeSig)))
+		case "i16":
+			return fmt.Sprintf("%v", types.Read_i16(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, argTypeSig)))
+		case "i32":
+			return fmt.Sprintf("%v", types.Read_i32(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, argTypeSig)))
+		case "i64":
+			return fmt.Sprintf("%v", types.Read_i64(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, argTypeSig)))
+		case "ui8":
+			return fmt.Sprintf("%v", types.Read_ui8(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, argTypeSig)))
+		case "ui16":
+			return fmt.Sprintf("%v", types.Read_ui16(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, argTypeSig)))
+		case "ui32":
+			return fmt.Sprintf("%v", types.Read_ui32(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, argTypeSig)))
+		case "ui64":
+			return fmt.Sprintf("%v", types.Read_ui64(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, argTypeSig)))
+		case "f32":
+			return fmt.Sprintf("%v", types.Read_f32(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, argTypeSig)))
+		case "f64":
+			return fmt.Sprintf("%v", types.Read_f64(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, argTypeSig)))
+		}
+	} else if argTypeSig.Type == TYPE_POINTER_ATOMIC {
+		// TODO: improve this
+		return fmt.Sprintf("%v", types.Read_ptr(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, argTypeSig)))
 	}
 
 	return getNonCollectionValue(prgrm, fp, arg, elt, typ)

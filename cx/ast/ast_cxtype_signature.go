@@ -46,6 +46,9 @@ type CXTypeSignature struct {
 	Type    CXTypeSignature_TYPE
 	Package CXPackageIndex
 
+	PassBy  int  // pass by value or reference
+	IsDeref bool // true if it is dereferencing a pointer, array or slice
+
 	// if type is complex, meta is complex id
 	// if type is struct, meta is struct id
 	// if type is array, meta is CXTypeSignature_Array id
@@ -78,6 +81,10 @@ func (typeSignature *CXTypeSignature) GetSize(prgrm *CXProgram) types.Pointer {
 	case TYPE_ATOMIC:
 		return types.Code(typeSignature.Meta).Size()
 	case TYPE_POINTER_ATOMIC:
+		if typeSignature.IsDeref {
+			return types.Code(typeSignature.Meta).Size()
+		}
+
 		return types.POINTER.Size()
 	case TYPE_ARRAY_ATOMIC:
 		typeSignatureForArray := prgrm.GetTypeSignatureArrayFromArray(typeSignature.Meta)
@@ -199,6 +206,7 @@ func GetCXTypeSignatureRepresentationOfCXArg_ForStructs(prgrm *CXProgram, cxArgu
 	newCXTypeSignature := CXTypeSignature{
 		Name:    cxArgument.Name,
 		Package: cxArgument.Package,
+		PassBy:  cxArgument.PassBy,
 	}
 
 	fieldType := cxArgument.Type
@@ -256,6 +264,7 @@ func GetCXTypeSignatureRepresentationOfCXArg(prgrm *CXProgram, cxArgument *CXArg
 	newCXTypeSignature := CXTypeSignature{
 		Name:    cxArgument.Name,
 		Package: cxArgument.Package,
+		PassBy:  cxArgument.PassBy,
 	}
 
 	// If atomic type. i.e. i8, i16, i32, f32, etc.

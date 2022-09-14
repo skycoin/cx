@@ -165,7 +165,7 @@ func trueJmpExpressions(prgrm *ast.CXProgram, opcode int) []ast.CXExpression {
 	expressionIdx := expr.Index
 
 	trueArg := WritePrimary(prgrm, types.BOOL, encoder.Serialize(true), false)
-	typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(trueArg.Index)))
+	typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, trueArg)
 	typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
 	prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, typeSigIdx)
 	prgrm.CXAtomicOps[expressionIdx].Package = ast.CXPackageIndex(pkg.Index)
@@ -270,7 +270,7 @@ func SelectionExpressions(prgrm *ast.CXProgram, conditionExprs []ast.CXExpressio
 	skipLines := len(elseExprs)
 
 	trueArg := WritePrimary(prgrm, types.BOOL, encoder.Serialize(true), false)
-	typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(trueArg.Index)))
+	typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, trueArg)
 	typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
 	prgrm.CXAtomicOps[skipExpressionIdx].AddInput(prgrm, typeSigIdx)
 	prgrm.CXAtomicOps[skipExpressionIdx].ThenLines = skipLines
@@ -609,7 +609,9 @@ func UnaryExpression(prgrm *ast.CXProgram, op string, prevExprs []ast.CXExpressi
 			// TODO: what is the most efficient alternative for this
 			// exprOut.DereferenceOperations = append(exprOut.DereferenceOperations, constants.DEREF_POINTER)
 			// exprOut.DeclarationSpecifiers = append(exprOut.DeclarationSpecifiers, constants.DECL_DEREF)
-			panic("unary expression op=*")
+
+			// a pointer type that we want to get its value
+			lastPrevExpressionOutputTypeSig.IsDeref = true
 		case "&":
 			// TODO: what is the most efficient alternative for this
 			// baseOut.PassBy = constants.PASSBY_REFERENCE
@@ -622,7 +624,7 @@ func UnaryExpression(prgrm *ast.CXProgram, op string, prevExprs []ast.CXExpressi
 			// 	// the OBJECT_HEADER_SIZE to the offset. The runtime uses this field to determine this.
 			// 	baseOut.IsInnerReference = true
 			// }
-			panic("unary expression op=&")
+			lastPrevExpressionOutputTypeSig.PassBy = constants.PASSBY_REFERENCE
 		case "!":
 			if pkg, err := prgrm.GetCurrentPackage(); err == nil {
 				expr := ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_BOOL_NOT])

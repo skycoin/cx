@@ -93,7 +93,7 @@ func WritePrimaryExprs(prgrm *ast.CXProgram, typeCode types.Code, byts []byte, i
 	expr := ast.MakeAtomicOperatorExpression(prgrm, nil)
 	prgrm.CXAtomicOps[expr.Index].Package = ast.CXPackageIndex(pkg.Index)
 
-	typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(arg.Index)))
+	typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, arg)
 	typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
 	prgrm.CXAtomicOps[expr.Index].AddOutput(prgrm, typeSigIdx)
 
