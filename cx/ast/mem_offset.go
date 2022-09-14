@@ -17,15 +17,6 @@ type DereferenceStruct struct {
 	fp          types.Pointer
 }
 
-func TotalLength(lengths []types.Pointer) types.Pointer {
-	total := types.Pointer(1)
-	for _, i := range lengths {
-		total *= i
-	}
-
-	return total
-}
-
 // GetSize ...
 func GetArgSize(prgrm *CXProgram, arg *CXArgument) types.Pointer {
 	if len(arg.Fields) > 0 {
