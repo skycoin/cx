@@ -8,9 +8,7 @@ import (
 	"github.com/skycoin/cx/cmd/declaration_extractor"
 	"github.com/skycoin/cx/cmd/type_checks"
 	"github.com/skycoin/cx/cx/ast"
-	cxinit "github.com/skycoin/cx/cx/init"
 	cxpackages "github.com/skycoin/cx/cx/packages"
-	cxparsering "github.com/skycoin/cx/cxparser/cxparsing"
 
 	"github.com/skycoin/cx/cx/types"
 	"github.com/skycoin/cx/cxparser/actions"
@@ -130,86 +128,88 @@ func TestTypeChecks_ParseGlobals(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
 
-			actions.AST = cxinit.MakeProgram()
-			var files []*os.File
-			file, err := os.Open(tc.testDir)
+			// actions.AST = cxinit.MakeProgram()
+			// var files []*os.File
+			// file, err := os.Open(tc.testDir)
+			// if err != nil {
+			// 	t.Fatal()
+			// }
+			// files = append(files, file)
+			// cxparsering.ParseSourceCode(files, []string{tc.testDir})
+
+			// actions.AST.PrintProgram()
+
+			actions.AST = nil
+
+			srcBytes, err := os.ReadFile(tc.testDir)
 			if err != nil {
-				t.Fatal()
+				t.Error(err)
 			}
-			files = append(files, file)
-			cxparsering.ParseSourceCode(files, []string{tc.testDir})
+
+			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(srcBytes)
+			ReplaceStringContentsWithWhitespaces, err := declaration_extractor.ReplaceStringContentsWithWhitespaces(ReplaceCommentsWithWhitespaces)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			Globals, err := declaration_extractor.ExtractGlobals(ReplaceStringContentsWithWhitespaces, tc.testDir)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			err = type_checks.ParseGlobals(Globals)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			program := actions.AST
+
+			for _, wantGlobal := range tc.globalsCXArgs {
+
+				for _, pkgIdx := range program.Packages {
+
+					pkg, err := program.GetPackageFromArray(pkgIdx)
+
+					if err != nil {
+						t.Log(err)
+					}
+
+					if cxpackages.IsDefaultPackage(pkg.Name) {
+						continue
+					}
+
+					var match bool
+					var gotGlobal *ast.CXTypeSignature
+
+					for _, globalIdx := range pkg.Globals.Fields {
+						gotGlobal = program.GetCXTypeSignatureFromArray(globalIdx)
+
+						if gotGlobal.Name == wantGlobal.Name {
+
+							if int(gotGlobal.Index) == wantGlobal.Index &&
+								gotGlobal.Package == wantGlobal.Package &&
+								types.Code(gotGlobal.Meta) == wantGlobal.Type {
+								match = true
+							}
+
+							break
+						}
+
+					}
+
+					if !match {
+
+						if gotGlobal.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+							t.Errorf("want global %v %v %v %v, got %v %v %v %v", wantGlobal.Name, wantGlobal.Index, wantGlobal.Package, wantGlobal.Type.Name(), program.GetCXArg(ast.CXArgumentIndex(gotGlobal.Meta)).Name, gotGlobal.Index, gotGlobal.Package, ast.GetFormattedType(program, program.GetCXArg(ast.CXArgumentIndex(gotGlobal.Meta))))
+						} else {
+							t.Errorf("want global %v %v %v %v, got %v %v %v %v", wantGlobal.Name, wantGlobal.Index, wantGlobal.Package, wantGlobal.Type.Name(), gotGlobal.Name, gotGlobal.Index, gotGlobal.Package, types.Code(gotGlobal.Meta).Name())
+						}
+					}
+				}
+
+			}
 
 			actions.AST.PrintProgram()
-
-			// actions.AST = nil
-
-			// srcBytes, err := os.ReadFile(tc.testDir)
-			// if err != nil {
-			// 	t.Error(err)
-			// }
-
-			// ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(srcBytes)
-			// ReplaceStringContentsWithWhitespaces, err := declaration_extractor.ReplaceStringContentsWithWhitespaces(ReplaceCommentsWithWhitespaces)
-			// if err != nil {
-			// 	t.Fatal(err)
-			// }
-
-			// Globals, err := declaration_extractor.ExtractGlobals(ReplaceStringContentsWithWhitespaces, tc.testDir)
-			// if err != nil {
-			// 	t.Fatal(err)
-			// }
-
-			// err = type_checks.ParseGlobals(Globals)
-			// if err != nil {
-			// 	t.Fatal(err)
-			// }
-
-			// program := actions.AST
-
-			// for _, wantGlobal := range tc.globalsCXArgs {
-
-			// 	for _, pkgIdx := range program.Packages {
-
-			// 		pkg, err := program.GetPackageFromArray(pkgIdx)
-
-			// 		if err != nil {
-			// 			t.Log(err)
-			// 		}
-
-			// 		if cxpackages.IsDefaultPackage(pkg.Name) {
-			// 			continue
-			// 		}
-
-			// 		var match bool
-			// 		var gotGlobal *ast.CXTypeSignature
-
-			// 		for _, globalIdx := range pkg.Globals.Fields {
-			// 			gotGlobal = program.GetCXTypeSignatureFromArray(globalIdx)
-
-			// 			if gotGlobal.Name == wantGlobal.Name {
-
-			// 				if int(gotGlobal.Index) == wantGlobal.Index &&
-			// 					gotGlobal.Package == wantGlobal.Package &&
-			// 					types.Code(gotGlobal.Meta) == wantGlobal.Type {
-			// 					match = true
-			// 				}
-
-			// 				break
-			// 			}
-
-			// 		}
-
-			// 		if !match {
-
-			// 			if gotGlobal.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-			// 				t.Errorf("want global %v %v %v %v, got %v %v %v %v", wantGlobal.Name, wantGlobal.Index, wantGlobal.Package, wantGlobal.Type.Name(), program.GetCXArg(ast.CXArgumentIndex(gotGlobal.Meta)).Name, gotGlobal.Index, gotGlobal.Package, ast.GetFormattedType(program, program.GetCXArg(ast.CXArgumentIndex(gotGlobal.Meta))))
-			// 			} else {
-			// 				t.Errorf("want global %v %v %v %v, got %v %v %v %v", wantGlobal.Name, wantGlobal.Index, wantGlobal.Package, wantGlobal.Type.Name(), gotGlobal.Name, gotGlobal.Index, gotGlobal.Package, types.Code(gotGlobal.Meta).Name())
-			// 			}
-			// 		}
-			// 	}
-
-			// }
 
 		})
 	}

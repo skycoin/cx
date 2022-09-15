@@ -49,7 +49,7 @@ func ParseGlobals(globals []declaration_extractor.GlobalDeclaration) error {
 		}
 
 		// Extract Declaration from file
-		reGlobalDeclaration := regexp.MustCompile(`var\s+(\w*)\s+(\*){0,1}\s*((?:\[(\d*)\])){0,1}\s*(\w*)(?:\s*\=\s*[\s\S]+\S+){0,1}`)
+		reGlobalDeclaration := regexp.MustCompile(`var\s+(\w*)\s+([\*\[\]\w]+)(?:\s*\=\s*[\s\S]+\S+){0,1}`)
 		globalDeclaration := source[global.StartOffset : global.StartOffset+global.Length]
 		globalTokens := reGlobalDeclaration.FindSubmatch(globalDeclaration)
 
@@ -63,20 +63,15 @@ func ParseGlobals(globals []declaration_extractor.GlobalDeclaration) error {
 
 		pkg.AddGlobal(actions.AST, globalArgIdx)
 
-		var declaration_specifier *ast.CXArgument
+		var declarationSpecifier *ast.CXArgument
 
-		if globalTokens[2] != nil {
+		typeString, fileName, lineno, declarationSpecifier, err := ParseTypeSpecifier(globalTokens[2], global.FileID, global.LineNumber, declarationSpecifier)
 
+		if typeString != nil && fileName != "" && lineno != 0 {
+			return err
 		}
 
-		if globalTokens[3] != nil {
-
-		}
-		if val, ok := TypesMap[string(globalTokens[5])]; ok {
-			declaration_specifier = actions.DeclarationSpecifiersBasic(val)
-		}
-
-		actions.DeclareGlobalInPackage(actions.AST, nil, actions.AST.GetCXArgFromArray(globalArgIdx), declaration_specifier, nil, false)
+		actions.DeclareGlobalInPackage(actions.AST, nil, actions.AST.GetCXArgFromArray(globalArgIdx), declarationSpecifier, nil, false)
 
 	}
 	return nil
