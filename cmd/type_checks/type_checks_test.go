@@ -8,7 +8,10 @@ import (
 	"github.com/skycoin/cx/cmd/declaration_extractor"
 	"github.com/skycoin/cx/cmd/type_checks"
 	"github.com/skycoin/cx/cx/ast"
+	cxinit "github.com/skycoin/cx/cx/init"
 	cxpackages "github.com/skycoin/cx/cx/packages"
+	cxparsering "github.com/skycoin/cx/cxparser/cxparsing"
+
 	"github.com/skycoin/cx/cx/types"
 	"github.com/skycoin/cx/cxparser/actions"
 )
@@ -127,86 +130,86 @@ func TestTypeChecks_ParseGlobals(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
 
-			// actions.AST = cxinit.MakeProgram()
-			// var files []*os.File
-			// file, err := os.Open(tc.testDir)
+			actions.AST = cxinit.MakeProgram()
+			var files []*os.File
+			file, err := os.Open(tc.testDir)
+			if err != nil {
+				t.Fatal()
+			}
+			files = append(files, file)
+			cxparsering.ParseSourceCode(files, []string{tc.testDir})
+
+			actions.AST.PrintProgram()
+
+			// actions.AST = nil
+
+			// srcBytes, err := os.ReadFile(tc.testDir)
 			// if err != nil {
-			// 	t.Fatal()
+			// 	t.Error(err)
 			// }
-			// files = append(files, file)
-			// cxparsering.ParseSourceCode(files, []string{tc.testDir})
 
-			// actions.AST.PrintProgram()
+			// ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(srcBytes)
+			// ReplaceStringContentsWithWhitespaces, err := declaration_extractor.ReplaceStringContentsWithWhitespaces(ReplaceCommentsWithWhitespaces)
+			// if err != nil {
+			// 	t.Fatal(err)
+			// }
 
-			actions.AST = nil
+			// Globals, err := declaration_extractor.ExtractGlobals(ReplaceStringContentsWithWhitespaces, tc.testDir)
+			// if err != nil {
+			// 	t.Fatal(err)
+			// }
 
-			srcBytes, err := os.ReadFile(tc.testDir)
-			if err != nil {
-				t.Error(err)
-			}
+			// err = type_checks.ParseGlobals(Globals)
+			// if err != nil {
+			// 	t.Fatal(err)
+			// }
 
-			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(srcBytes)
-			ReplaceStringContentsWithWhitespaces, err := declaration_extractor.ReplaceStringContentsWithWhitespaces(ReplaceCommentsWithWhitespaces)
-			if err != nil {
-				t.Fatal(err)
-			}
+			// program := actions.AST
 
-			Globals, err := declaration_extractor.ExtractGlobals(ReplaceStringContentsWithWhitespaces, tc.testDir)
-			if err != nil {
-				t.Fatal(err)
-			}
+			// for _, wantGlobal := range tc.globalsCXArgs {
 
-			err = type_checks.ParseGlobals(Globals)
-			if err != nil {
-				t.Fatal(err)
-			}
+			// 	for _, pkgIdx := range program.Packages {
 
-			program := actions.AST
+			// 		pkg, err := program.GetPackageFromArray(pkgIdx)
 
-			for _, wantGlobal := range tc.globalsCXArgs {
+			// 		if err != nil {
+			// 			t.Log(err)
+			// 		}
 
-				for _, pkgIdx := range program.Packages {
+			// 		if cxpackages.IsDefaultPackage(pkg.Name) {
+			// 			continue
+			// 		}
 
-					pkg, err := program.GetPackageFromArray(pkgIdx)
+			// 		var match bool
+			// 		var gotGlobal *ast.CXTypeSignature
 
-					if err != nil {
-						t.Log(err)
-					}
+			// 		for _, globalIdx := range pkg.Globals.Fields {
+			// 			gotGlobal = program.GetCXTypeSignatureFromArray(globalIdx)
 
-					if cxpackages.IsDefaultPackage(pkg.Name) {
-						continue
-					}
+			// 			if gotGlobal.Name == wantGlobal.Name {
 
-					var match bool
-					var gotGlobal *ast.CXTypeSignature
+			// 				if int(gotGlobal.Index) == wantGlobal.Index &&
+			// 					gotGlobal.Package == wantGlobal.Package &&
+			// 					types.Code(gotGlobal.Meta) == wantGlobal.Type {
+			// 					match = true
+			// 				}
 
-					for _, globalIdx := range pkg.Globals.Fields {
-						gotGlobal = program.GetCXTypeSignatureFromArray(globalIdx)
+			// 				break
+			// 			}
 
-						if gotGlobal.Name == wantGlobal.Name {
+			// 		}
 
-							if int(gotGlobal.Index) == wantGlobal.Index &&
-								gotGlobal.Package == wantGlobal.Package &&
-								types.Code(gotGlobal.Meta) == wantGlobal.Type {
-								match = true
-							}
+			// 		if !match {
 
-							break
-						}
+			// 			if gotGlobal.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			// 				t.Errorf("want global %v %v %v %v, got %v %v %v %v", wantGlobal.Name, wantGlobal.Index, wantGlobal.Package, wantGlobal.Type.Name(), program.GetCXArg(ast.CXArgumentIndex(gotGlobal.Meta)).Name, gotGlobal.Index, gotGlobal.Package, ast.GetFormattedType(program, program.GetCXArg(ast.CXArgumentIndex(gotGlobal.Meta))))
+			// 			} else {
+			// 				t.Errorf("want global %v %v %v %v, got %v %v %v %v", wantGlobal.Name, wantGlobal.Index, wantGlobal.Package, wantGlobal.Type.Name(), gotGlobal.Name, gotGlobal.Index, gotGlobal.Package, types.Code(gotGlobal.Meta).Name())
+			// 			}
+			// 		}
+			// 	}
 
-					}
-
-					if !match {
-
-						if gotGlobal.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-							t.Errorf("want global %v %v %v %v, got %v %v %v %v", wantGlobal.Name, wantGlobal.Index, wantGlobal.Package, wantGlobal.Type.Name(), program.GetCXArg(ast.CXArgumentIndex(gotGlobal.Meta)).Name, gotGlobal.Index, gotGlobal.Package, ast.GetFormattedType(program, program.GetCXArg(ast.CXArgumentIndex(gotGlobal.Meta))))
-						} else {
-							t.Errorf("want global %v %v %v %v, got %v %v %v %v", wantGlobal.Name, wantGlobal.Index, wantGlobal.Package, wantGlobal.Type.Name(), gotGlobal.Name, gotGlobal.Index, gotGlobal.Package, types.Code(gotGlobal.Meta).Name())
-						}
-					}
-				}
-
-			}
+			// }
 
 		})
 	}
@@ -340,181 +343,138 @@ func TestTypeChecks_ParseStructs(t *testing.T) {
 
 }
 
-// func TestTypeChecks_ParseFuncHeaders(t *testing.T) {
+func TestTypeChecks_ParseFuncHeaders(t *testing.T) {
 
-// 	tests := []struct {
-// 		scenario    string
-// 		testDir     string
-// 		functionCXs []ast.CXFunction
-// 	}{
-// 		{
-// 			scenario: "Has funcs",
-// 			testDir:  "./test_files/test.cx",
-// 			functionCXs: []ast.CXFunction{
-// 				{
-// 					Name:     "main",
-// 					Index:    0,
-// 					Package:  1,
-// 					FileName: "./test_files/test.cx",
-// 					FileLine: 35,
-// 				},
-// 				{
-// 					Name:    "add",
-// 					Index:   1,
-// 					Package: 1,
-// 					Inputs: &ast.CXStruct{
-// 						Fields: []ast.CXTypeSignature{
-// 							{
-// 								Name: "a",
-// 								Type: ast.TYPE_CXARGUMENT_DEPRECATE,
-// 								Meta: 0,
-// 							},
-// 							{
-// 								Name: "b",
-// 								Type: ast.TYPE_CXARGUMENT_DEPRECATE,
-// 								Meta: 1,
-// 							},
-// 						},
-// 					},
-// 					Outputs: &ast.CXStruct{
-// 						Fields: []ast.CXTypeSignature{
-// 							{
-// 								Name: "answer",
-// 								Type: ast.TYPE_CXARGUMENT_DEPRECATE,
-// 								Meta: 2,
-// 							},
-// 						},
-// 					},
-// 				},
-// 				{
-// 					Name:    "divide",
-// 					Index:   2,
-// 					Package: 1,
-// 					Inputs: &ast.CXStruct{
-// 						Fields: []ast.CXTypeSignature{
-// 							{
-// 								Name: "c",
-// 								Type: ast.TYPE_CXARGUMENT_DEPRECATE,
-// 								Meta: 3,
-// 							},
-// 							{
-// 								Name: "d",
-// 								Type: ast.TYPE_CXARGUMENT_DEPRECATE,
-// 								Meta: 4,
-// 							},
-// 						},
-// 					},
-// 					Outputs: &ast.CXStruct{
-// 						Fields: []ast.CXTypeSignature{
-// 							{
-// 								Name: "quotient",
-// 								Type: ast.TYPE_CXARGUMENT_DEPRECATE,
-// 								Meta: 5,
-// 							},
-// 							{
-// 								Name: "remainder",
-// 								Type: ast.TYPE_CXARGUMENT_DEPRECATE,
-// 								Meta: 6,
-// 							},
-// 						},
-// 					},
-// 				},
-// 				{
-// 					Name:    "printer",
-// 					Index:   3,
-// 					Package: 1,
-// 					Inputs: &ast.CXStruct{
-// 						Fields: []ast.CXTypeSignature{
-// 							{
-// 								Name: "message",
-// 								Type: ast.TYPE_CXARGUMENT_DEPRECATE,
-// 								Meta: 7,
-// 							},
-// 						},
-// 					},
-// 				},
-// 			},
-// 		},
-// 	}
+	tests := []struct {
+		scenario    string
+		testDir     string
+		functionCXs []ast.CXFunction
+	}{
+		{
+			scenario: "Has funcs",
+			testDir:  "./test_files/test.cx",
+			functionCXs: []ast.CXFunction{
+				{
+					Name:     "main",
+					Index:    0,
+					Package:  1,
+					FileName: "./test_files/test.cx",
+					FileLine: 35,
+				},
+				{
+					Name:    "add",
+					Index:   1,
+					Package: 1,
+					Inputs: &ast.CXStruct{
+						Fields: []ast.CXTypeSignatureIndex{},
+					},
+					Outputs: &ast.CXStruct{
+						Fields: []ast.CXTypeSignatureIndex{},
+					},
+				},
+				{
+					Name:    "divide",
+					Index:   2,
+					Package: 1,
+					Inputs: &ast.CXStruct{
+						Fields: []ast.CXTypeSignatureIndex{},
+					},
+					Outputs: &ast.CXStruct{
+						Fields: []ast.CXTypeSignatureIndex{},
+					},
+				},
+				{
+					Name:    "printer",
+					Index:   3,
+					Package: 1,
+					Inputs: &ast.CXStruct{
+						Fields: []ast.CXTypeSignatureIndex{},
+					},
+				},
+			},
+		},
+	}
 
-// 	for _, tc := range tests {
-// 		t.Run(tc.scenario, func(t *testing.T) {
+	for _, tc := range tests {
+		t.Run(tc.scenario, func(t *testing.T) {
 
-// 			actions.AST = nil
+			actions.AST = nil
 
-// 			srcBytes, err := os.ReadFile(tc.testDir)
-// 			if err != nil {
-// 				t.Error(err)
-// 			}
+			srcBytes, err := os.ReadFile(tc.testDir)
+			if err != nil {
+				t.Error(err)
+			}
 
-// 			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(srcBytes)
-// 			pkg := declaration_extractor.ExtractPackages(ReplaceCommentsWithWhitespaces)
+			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(srcBytes)
+			ReplaceStringContentsWithWhitespaces, err := declaration_extractor.ReplaceStringContentsWithWhitespaces(ReplaceCommentsWithWhitespaces)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-// 			funcs, err := declaration_extractor.ExtractFuncs(srcBytes, tc.testDir, pkg)
+			funcs, err := declaration_extractor.ExtractFuncs(ReplaceStringContentsWithWhitespaces, tc.testDir)
 
-// 			type_checks.ParseFuncHeaders(funcs)
+			type_checks.ParseFuncHeaders(funcs)
 
-// 			program := actions.AST
+			program := actions.AST
 
-// 			for _, wantFunc := range tc.functionCXs {
+			for _, wantFunc := range tc.functionCXs {
 
-// 				var match bool
-// 				var gotFunc *ast.CXFunction
+				var match bool
+				var gotFunc *ast.CXFunction
 
-// 				for _, pkgIdx := range program.Packages {
+				for _, pkgIdx := range program.Packages {
 
-// 					pkg, err := program.GetPackageFromArray(pkgIdx)
+					pkg, err := program.GetPackageFromArray(pkgIdx)
 
-// 					if err != nil {
-// 						t.Log(err)
-// 					}
+					if err != nil {
+						t.Log(err)
+					}
 
-// 					for _, funcIdx := range pkg.Functions {
+					for _, funcIdx := range pkg.Functions {
 
-// 						gotFunc = program.GetFunctionFromArray(funcIdx)
+						gotFunc = program.GetFunctionFromArray(funcIdx)
 
-// 						if gotFunc.Name == wantFunc.Name &&
-// 							gotFunc.Index == wantFunc.Index &&
-// 							gotFunc.Package == wantFunc.Package {
+						if gotFunc.Name == wantFunc.Name &&
+							gotFunc.Index == wantFunc.Index &&
+							gotFunc.Package == wantFunc.Package {
 
-// 							var paramMatch int = 2
+							var paramMatch int = 2
 
-// 							for k, wantInput := range wantFunc.GetInputs(program) {
-// 								gotInput := gotFunc.GetInputs(program)[k]
+							for k, wantInput := range wantFunc.GetInputs(program) {
+								gotInput := gotFunc.GetInputs(program)[k]
 
-// 								if gotInput != wantInput {
-// 									paramMatch--
-// 									break
-// 								}
-// 							}
+								if gotInput != wantInput {
+									paramMatch--
+									break
+								}
+							}
 
-// 							for k, wantOutput := range wantFunc.GetOutputs(program) {
-// 								gotOutput := gotFunc.GetOutputs(program)[k]
+							for k, wantOutput := range wantFunc.GetOutputs(program) {
+								gotOutput := gotFunc.GetOutputs(program)[k]
 
-// 								if gotOutput != wantOutput {
-// 									paramMatch--
-// 									break
-// 								}
-// 							}
+								if gotOutput != wantOutput {
+									paramMatch--
+									break
+								}
+							}
 
-// 							if paramMatch == 2 {
-// 								match = true
-// 							}
+							if paramMatch == 2 {
+								match = true
+							}
 
-// 							break
+							break
 
-// 						}
-// 					}
+						}
+					}
 
-// 				}
+				}
 
-// 				if !match {
-// 					t.Errorf("want func \n%v\n\tInputs: %v\n\tOutputs: %v\n, got \n%v\n\tInputs: %v\n\tOutputs: %v\n", wantFunc, wantFunc.Inputs, wantFunc.Outputs, gotFunc, gotFunc.Inputs, gotFunc.Outputs)
-// 				}
-// 			}
+				if !match {
+					t.Errorf("want func \n%v\n\tInputs: %v\n\tOutputs: %v\n, got \n%v\n\tInputs: %v\n\tOutputs: %v\n", wantFunc, wantFunc.Inputs, wantFunc.Outputs, gotFunc, gotFunc.Inputs, gotFunc.Outputs)
+				}
+			}
 
-// 		})
-// 	}
+		})
+	}
 
-// }
-// */
+}
