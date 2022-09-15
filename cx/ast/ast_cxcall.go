@@ -76,6 +76,8 @@ func wipeDeclarationMemory(prgrm *CXProgram, expr *CXExpression) error {
 		offset = prgrm.CXArgs[cxAtomicOutputTypeSig.Meta].Offset
 	} else if cxAtomicOutputTypeSig.Type == TYPE_ATOMIC || cxAtomicOutputTypeSig.Type == TYPE_POINTER_ATOMIC {
 		offset = cxAtomicOutputTypeSig.Offset
+	} else if cxAtomicOutputTypeSig.Type == TYPE_ARRAY_ATOMIC {
+		offset = cxAtomicOutputTypeSig.Offset
 	}
 
 	for c := types.Pointer(0); c < size; c++ {
@@ -126,6 +128,9 @@ func processBuiltInOperators(prgrm *CXProgram, expr *CXExpression, globalInputs 
 			}
 		} else if inputTypeSignature.Type == TYPE_ATOMIC || inputTypeSignature.Type == TYPE_POINTER_ATOMIC {
 			value.Type = types.Code(inputTypeSignature.Meta)
+		} else if inputTypeSignature.Type == TYPE_ARRAY_ATOMIC {
+			arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(inputTypeSignature.Meta)
+			value.Type = types.Code(arrDetails.Type)
 		}
 
 		value.FramePointer = fp
@@ -152,6 +157,9 @@ func processBuiltInOperators(prgrm *CXProgram, expr *CXExpression, globalInputs 
 			}
 		} else if outputTypeSignature.Type == TYPE_ATOMIC || outputTypeSignature.Type == TYPE_POINTER_ATOMIC {
 			value.Type = types.Code(outputTypeSignature.Meta)
+		} else if outputTypeSignature.Type == TYPE_ARRAY_ATOMIC {
+			arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(outputTypeSignature.Meta)
+			value.Type = types.Code(arrDetails.Type)
 		}
 
 		value.FramePointer = fp

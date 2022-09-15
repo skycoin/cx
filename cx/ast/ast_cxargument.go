@@ -360,7 +360,7 @@ func IsTypePointerAtomic(arg *CXArgument) bool {
 }
 
 func IsTypeArrayAtomic(arg *CXArgument) bool {
-	return !arg.IsSlice && len(arg.Lengths) == 1 && len(arg.Indexes) == 0 && arg.Type.IsPrimitive()
+	return arg.Type.IsPrimitive() && !arg.IsSlice && len(arg.Lengths) > 0 && len(arg.Indexes) == 0 && len(arg.Fields) == 0 && len(arg.DereferenceOperations) == 0 && (len(arg.DeclarationSpecifiers) == 2 && arg.DeclarationSpecifiers[0] == constants.DECL_BASIC && arg.DeclarationSpecifiers[1] == constants.DECL_ARRAY)
 }
 
 func IsTypeSliceAtomic(arg *CXArgument) bool {

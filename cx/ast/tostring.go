@@ -59,6 +59,8 @@ func buildStrGlobals(prgrm *CXProgram, pkg *CXPackage, ast *string) {
 			*ast += fmt.Sprintf("\t\t%d.- Global: %s %s\n", idx, glbl.Name, types.Code(glbl.Meta).Name())
 		} else if glbl.Type == TYPE_POINTER_ATOMIC {
 			*ast += fmt.Sprintf("\t\t%d.- Global: %s *%s\n", idx, glbl.Name, types.Code(glbl.Meta).Name())
+		} else {
+			panic("type is not known")
 		}
 
 	}
@@ -88,6 +90,8 @@ func buildStrStructs(prgrm *CXProgram, pkg *CXPackage, ast *string) {
 			} else if typeSignature.Type == TYPE_POINTER_ATOMIC {
 				*ast += fmt.Sprintf("\t\t\t%d.- Field: %s *%s\n",
 					k, typeSignature.Name, types.Code(typeSignature.Meta).Name())
+			} else {
+				panic("type is not known")
 			}
 		}
 
@@ -200,6 +204,8 @@ func buildStrFunctions(prgrm *CXProgram, pkg *CXPackage, ast1 *string) {
 							lbl,
 							cxAtomicOpOutputTypeSignature.Name,
 							types.Code(cxAtomicOpOutputTypeSignature.Meta).Name())
+					} else {
+						panic("type is not known")
 					}
 				}
 			}
@@ -282,6 +288,8 @@ func getFormattedParam(prgrm *CXProgram, paramTypeSigIdxs []CXTypeSignatureIndex
 			}
 
 			buf.WriteString(fmt.Sprintf("%s *%s", name, types.Code(paramTypeSig.Meta).Name()))
+		} else {
+			panic("type is not known")
 		}
 
 		if i != len(paramTypeSigIdxs)-1 {
@@ -351,6 +359,8 @@ func getNonCollectionValue(prgrm *CXProgram, fp types.Pointer, arg, elt *CXArgum
 				fldTotalSize = GetArgSize(prgrm, &prgrm.CXArgs[fldIdx])
 			} else if typeSignature.Type == TYPE_ATOMIC || typeSignature.Type == TYPE_POINTER_ATOMIC {
 				fldTotalSize = types.Code(typeSignature.Type).Size()
+			} else {
+				panic("type is not known")
 			}
 
 			if c == lFlds-1 {
@@ -409,6 +419,8 @@ func ReadSliceElements(prgrm *CXProgram, fp types.Pointer, arg, elt *CXArgument,
 				fldTotalSize = GetArgSize(prgrm, &prgrm.CXArgs[fldIdx])
 			} else if typeSignature.Type == TYPE_ATOMIC || typeSignature.Type == TYPE_POINTER_ATOMIC {
 				fldTotalSize = types.Code(typeSignature.Type).Size()
+			} else {
+				panic("type is not known")
 			}
 
 			if c == lFlds-1 {
@@ -464,12 +476,10 @@ func GetPrintableValue(prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSig
 				} else {
 					// for Arrays
 					for c := types.Pointer(0); c < elt.Lengths[0]; c++ {
-						if c == elt.Lengths[0]-1 {
-							val += getNonCollectionValue(prgrm, fp+c*elt.Size, arg, elt, typ)
-						} else {
-							val += getNonCollectionValue(prgrm, fp+c*elt.Size, arg, elt, typ) + ", "
+						val += getNonCollectionValue(prgrm, fp+c*elt.Size, arg, elt, typ)
+						if c != elt.Lengths[0]-1 {
+							val += ", "
 						}
-
 					}
 				}
 
@@ -565,6 +575,28 @@ func GetPrintableValue(prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSig
 	} else if argTypeSig.Type == TYPE_POINTER_ATOMIC {
 		// TODO: improve this
 		return fmt.Sprintf("%v", types.Read_ptr(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, argTypeSig)))
+	} else if argTypeSig.Type == TYPE_ARRAY_ATOMIC {
+		arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(argTypeSig.Meta)
+		var val string
+		if len(arrDetails.Lengths) == 1 {
+			val = "["
+			// for Arrays
+			for c := types.Pointer(0); c < arrDetails.Lengths[0]; c++ {
+				val += fmt.Sprintf("%v", types.Read_i32(prgrm.Memory, GetFinalOffset(prgrm, fp+c*types.Code(arrDetails.Type).Size(), nil, argTypeSig)))
+				if c != arrDetails.Lengths[0]-1 {
+					val += ", "
+				}
+			}
+
+			val += "]"
+
+			return val
+		} else {
+			panic("array lengths > 1 ")
+		}
+
+	} else {
+		panic("type is not known")
 	}
 
 	return getNonCollectionValue(prgrm, fp, arg, elt, typ)
@@ -781,12 +813,13 @@ func GetFormattedType(prgrm *CXProgram, typeSig *CXTypeSignature) string {
 			typ = "*" + typ
 		}
 	} else if typeSig.Type == TYPE_ARRAY_ATOMIC {
-		// arrayData := prgrm.GetCXTypeSignatureArrayFromArray(typeSig.Meta)
+		arrayData := prgrm.GetCXTypeSignatureArrayFromArray(typeSig.Meta)
 
-		// typ= types.Code(typeSig.Meta).Name()
-		// if !typeSig.IsDeref {
-		// 	typ = "*" + typ
-		// }
+		for _, len := range arrayData.Lengths {
+			typ = fmt.Sprintf("[%d]%s", len, typ)
+		}
+
+		typ += types.Code(arrayData.Type).Name()
 	} else {
 		panic("type is not known")
 	}
@@ -871,6 +904,8 @@ func SignatureStringOfStruct(prgrm *CXProgram, s *CXStruct) string {
 		} else if typeSignature.Type == TYPE_POINTER_ATOMIC {
 			fields += fmt.Sprintf(" %s *%s;", typeSignature.Name, types.Code(typeSignature.Meta).Name())
 			continue
+		} else {
+			panic("type is not known")
 		}
 
 		fldIdx := typeSignature.Meta

@@ -213,6 +213,8 @@ func processLocalInitialization(prgrm *ast.CXProgram, pkg *ast.CXPackage, initia
 			initOutTypeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
 		} else if initializerExpressionOutputTypeSig.Type == ast.TYPE_ATOMIC || initializerExpressionOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 			initOutTypeSigIdx = initializerExpression.GetOutputs(prgrm)[0]
+		} else {
+			panic("type is not known")
 		}
 
 		prgrm.CXAtomicOps[cxExprAtomicOpIdx].AddOutput(prgrm, localVarIdx)

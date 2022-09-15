@@ -97,6 +97,8 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		prevExpressionOutputTypeSig.Meta = int(argIdx)
 
 		prevExpressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(prevExpressionOutputTypeSig.Meta))
+	} else {
+		panic("type is not known")
 	}
 
 	if len(prevExpressionOutputArg.Fields) > 0 {
@@ -173,6 +175,8 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 				newTypeSig.Meta = postExpressionOperatorOutputTypeSig.Meta
 				newTypeSig.Offset = postExpressionOperatorOutputTypeSig.Offset
 				typeSigIdx = prgrm.AddCXTypeSignatureInArray(newTypeSig)
+			} else {
+				panic("type is not known")
 			}
 
 			prgrm.CXAtomicOps[postExpressionIdx].AddOutput(prgrm, typeSigIdx)
@@ -200,6 +204,8 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 
 			} else if prevOutsTypeSig.Type == ast.TYPE_ATOMIC || prevOutsTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 				panic("type is not cx argument deprecate\n\n")
+			} else {
+				panic("type is not known")
 			}
 
 		}
@@ -320,7 +326,7 @@ func PostfixExpressionFunCall(prgrm *ast.CXProgram, prevExprs []ast.CXExpression
 		} else if lastPrevExpressionOutputTypeSig.Type == ast.TYPE_ATOMIC || lastPrevExpressionOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 			// do nothing
 		} else {
-			panic("type is not cx argument deprecate\n\n")
+			panic("type is not known")
 		}
 	}
 
@@ -509,6 +515,8 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 					typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
 
 					prgrm.CXAtomicOps[lastExpressionIdx].Outputs.Fields[0] = typeSigIdx
+				} else {
+					panic("type is not known")
 				}
 
 				return prevExprs
@@ -562,7 +570,7 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 					lastExpressionOutputTypeSig.Meta = glbl.Meta
 					lastExpressionOutputTypeSig.Offset = glbl.Offset
 				} else {
-					panic("type is not cx argument deprecate\n\n")
+					panic("type is not known")
 				}
 
 			} else if glbl.Type == ast.TYPE_ATOMIC || glbl.Type == ast.TYPE_POINTER_ATOMIC {
@@ -572,7 +580,7 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 				lastExpressionOutputTypeSig.Meta = glbl.Meta
 				lastExpressionOutputTypeSig.Offset = glbl.Offset
 			} else {
-				panic("type is not cx arg deprecate")
+				panic("type is not known")
 			}
 		} else if fn, err := imp.GetFunction(prgrm, ident); err == nil {
 			// then it's a function
@@ -622,6 +630,8 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 			leftExprOutputTypeSig.Meta = int(argIdx)
 
 			leftExprIdx = int(argIdx)
+		} else {
+			panic("type is not known")
 		}
 		// then it's a struct
 		prgrm.CXArgs[leftExprIdx].IsStruct = true
@@ -639,6 +649,8 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 			prgrm.CXArgs[leftExprIdx].Fields = append(prgrm.CXArgs[leftExprIdx].Fields, leftExprFieldIdx)
 		} else if leftExprOutputTypeSig.Type == ast.TYPE_ATOMIC || leftExprOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 			panic("type is not cx arg deprecate")
+		} else {
+			panic("type is not known")
 		}
 
 	}

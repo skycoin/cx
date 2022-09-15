@@ -110,6 +110,8 @@ func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []a
 					newTypeSig.Name = generateTempVarName(constants.LOCAL_PREFIX)
 					newTypeSig.Package = ast.CXPackageIndex(pkg.Index)
 					outTypeSigIdx = prgrm.AddCXTypeSignatureInArray(&newTypeSig)
+				} else {
+					panic("type is not known")
 				}
 
 				exprAtomicOp.Outputs = nil
@@ -255,6 +257,8 @@ func PrimaryStructLiteral(prgrm *ast.CXProgram, structName string, structFields 
 					cxAtomicOpOutputTypeSig.Name = structName
 					cxAtomicOpOutputTypeSig.Type = ast.TYPE_CXARGUMENT_DEPRECATE
 					cxAtomicOpOutputTypeSig.Meta = int(newCXArgIdx)
+				} else {
+					panic("type is not known")
 				}
 
 				expr.ExpressionType = ast.CXEXPR_STRUCT_LITERAL
@@ -312,6 +316,8 @@ func PrimaryStructLiteralExternal(prgrm *ast.CXProgram, importName string, struc
 						prgrm.CXArgs[cxAtomicOpOutputIdx].Fields = append(prgrm.CXArgs[cxAtomicOpOutputIdx].Fields, fieldIdx)
 					} else if cxAtomicOpOutputTypeSig.Type == ast.TYPE_ATOMIC || cxAtomicOpOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 						panic("type signature is type atomic")
+					} else {
+						panic("type is not known")
 					}
 
 					result = append(result, expr)

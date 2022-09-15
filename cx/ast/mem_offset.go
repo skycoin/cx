@@ -145,7 +145,18 @@ func GetFinalOffset(prgrm *CXProgram, fp types.Pointer, oldArg *CXArgument, argT
 		}
 
 		return finalOffset
+	} else if argTypeSig.Type == TYPE_ARRAY_ATOMIC {
+		argTypeSigOffset := argTypeSig.Offset
+
+		//Todo: find way to eliminate this check
+		if argTypeSigOffset < prgrm.Stack.Size {
+			// Then it's in the stack, not in data or heap and we need to consider the frame pointer.
+			argTypeSigOffset += fp
+		}
+
+		return argTypeSigOffset
 	}
+
 	finalOffset = arg.Offset
 
 	//Todo: find way to eliminate this check

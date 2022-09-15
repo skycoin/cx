@@ -69,8 +69,9 @@ type CXTypeSignature struct {
 }
 
 type CXTypeSignature_Array struct {
-	Type   int
-	Length int
+	Type    int
+	Lengths []types.Pointer
+	Indexes []CXTypeSignatureIndex
 }
 
 // ----------------------------------------------------------------
@@ -87,7 +88,7 @@ func (typeSignature *CXTypeSignature) GetSize(prgrm *CXProgram) types.Pointer {
 
 		return types.POINTER.Size()
 	case TYPE_ARRAY_ATOMIC:
-		typeSignatureForArray := prgrm.GetTypeSignatureArrayFromArray(typeSignature.Meta)
+		typeSignatureForArray := prgrm.GetCXTypeSignatureArrayFromArray(typeSignature.Meta)
 		return types.Code(typeSignatureForArray.Type).Size()
 	case TYPE_ARRAY_POINTER_ATOMIC:
 		return types.POINTER.Size()
@@ -121,8 +122,8 @@ func (typeSignature *CXTypeSignature) GetSize(prgrm *CXProgram) types.Pointer {
 func (typeSignature *CXTypeSignature) GetArrayLength(prgrm *CXProgram) types.Pointer {
 	switch typeSignature.Type {
 	case TYPE_ARRAY_ATOMIC:
-		typeSignatureForArray := prgrm.GetTypeSignatureArrayFromArray(typeSignature.Meta)
-		return types.Pointer(typeSignatureForArray.Length)
+		typeSignatureForArray := prgrm.GetCXTypeSignatureArrayFromArray(typeSignature.Meta)
+		return TotalLength(typeSignatureForArray.Lengths)
 	}
 
 	return 0
@@ -155,7 +156,7 @@ func (typeSignature *CXTypeSignature) GetCXArgFormat(prgrm *CXProgram) *CXArgume
 			arg.DeclarationSpecifiers = []int{constants.DECL_POINTER}
 		}
 	} else if typeSignature.Type == TYPE_ARRAY_ATOMIC {
-		typeSignatureArray := prgrm.GetTypeSignatureArrayFromArray(typeSignature.Meta)
+		typeSignatureArray := prgrm.GetCXTypeSignatureArrayFromArray(typeSignature.Meta)
 		arg.Type = types.Code(typeSignatureArray.Type)
 		arg.StructType = nil
 		arg.Size = typeSignature.GetSize(prgrm)
@@ -230,10 +231,10 @@ func GetCXTypeSignatureRepresentationOfCXArg_ForStructs(prgrm *CXProgram, cxArgu
 		newCXTypeSignature.Type = TYPE_ARRAY_ATOMIC
 
 		typeSignatureForArray := &CXTypeSignature_Array{
-			Type:   int(fieldType),
-			Length: int(cxArgument.Lengths[0]),
+			Type:    int(fieldType),
+			Lengths: cxArgument.Lengths,
 		}
-		typeSignatureForArrayIdx := prgrm.AddTypeSignatureArrayInArray(typeSignatureForArray)
+		typeSignatureForArrayIdx := prgrm.AddCXTypeSignatureArrayInArray(typeSignatureForArray)
 
 		newCXTypeSignature.Meta = typeSignatureForArrayIdx
 
@@ -280,6 +281,19 @@ func GetCXTypeSignatureRepresentationOfCXArg(prgrm *CXProgram, cxArgument *CXArg
 		if cxArgument.Type == types.STR || cxArgument.StructType != nil {
 			newCXTypeSignature.Meta = int(cxArgument.PointerTargetType)
 		}
+		// If simple array atomic type, i.e. [5]i32, [2]f64, etc.
+	} else if IsTypeArrayAtomic(cxArgument) {
+		newCXTypeSignature.Type = TYPE_ARRAY_ATOMIC
+
+		typeSignatureForArray := &CXTypeSignature_Array{
+			Type:    int(cxArgument.Type),
+			Lengths: cxArgument.Lengths,
+		}
+		typeSignatureForArrayIdx := prgrm.AddCXTypeSignatureArrayInArray(typeSignatureForArray)
+
+		newCXTypeSignature.Meta = typeSignatureForArrayIdx
+
+		// If slice atomic type, i.e. []i32, []f64, etc.
 	} else {
 		// TYPE_CXARGUMENT_DEPRECATE
 		// FieldIdx or the CXArg ID is in Meta field.

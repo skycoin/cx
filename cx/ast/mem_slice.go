@@ -28,6 +28,8 @@ func GetSliceOffset(prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSignat
 		element = arg.GetAssignmentElement(prgrm)
 	} else if argTypeSig.Type == TYPE_ATOMIC || argTypeSig.Type == TYPE_POINTER_ATOMIC {
 		return types.InvalidPointer
+	} else {
+		panic("type is not known")
 	}
 
 	if element.IsSlice {

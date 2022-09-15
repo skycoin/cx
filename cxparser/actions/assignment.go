@@ -54,7 +54,7 @@ func assignStructLiteralFields(prgrm *ast.CXProgram, toExprs []ast.CXExpression,
 			// Do nothing for now since len(toExpressionOutput.Indexes) > 0
 			// of type atomics and type pointer atomics are always 0
 		} else {
-			panic("type is not type cx argument deprecate\n\n")
+			panic("type is not known")
 		}
 
 		if len(toExpressionOutput.Indexes) > 0 {
@@ -239,6 +239,8 @@ func ShortAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression, exprCXLine *a
 			newTypeSig.Name = generateTempVarName(constants.LOCAL_PREFIX)
 			newTypeSig.Package = ast.CXPackageIndex(pkg.Index)
 			typeSigIdx = prgrm.AddCXTypeSignatureInArray(&newTypeSig)
+		} else {
+			panic("type is not known")
 		}
 
 		prgrm.CXAtomicOps[fromExpressionIdx].AddOutput(prgrm, typeSigIdx)
@@ -274,6 +276,8 @@ func getOutputType(prgrm *ast.CXProgram, expr *ast.CXExpression) *ast.CXTypeSign
 		}
 	} else if expressionOperatorOutputTypeSig.Type == ast.TYPE_ATOMIC || expressionOperatorOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 		return expressionOperatorOutputTypeSig
+	} else {
+		panic("type is not known")
 	}
 
 	expressionInputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetInputs(prgrm)[0])
@@ -340,6 +344,8 @@ func shortDeclarationAssignment(prgrm *ast.CXProgram, pkg *ast.CXPackage, toExpr
 			newTypeSig = *fromExpressionOutputTypeSig
 			newTypeSig.Name = toExpressionOutputTypeSig.Name
 			typeSigIdx = prgrm.AddCXTypeSignatureInArray(&newTypeSig)
+		} else {
+			panic("type is not known")
 		}
 
 	} else {
@@ -390,6 +396,8 @@ func shortDeclarationAssignment(prgrm *ast.CXProgram, pkg *ast.CXPackage, toExpr
 			newTypeSig = *outTypeSig
 			newTypeSig.Name = toExpressionOutputTypeSig.Name
 			typeSigIdx = prgrm.AddCXTypeSignatureInArray(&newTypeSig)
+		} else {
+			panic("type is not known")
 		}
 
 	}
@@ -461,6 +469,8 @@ func processAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fromExp
 			prgrm.CXArgs[toExpressionOutputIdx].Size = types.Code(fromExpressionOutputTypeSig.Meta).Size()
 			prgrm.CXArgs[toExpressionOutputIdx].Type = types.POINTER
 			prgrm.CXArgs[toExpressionOutputIdx].PointerTargetType = types.Code(fromExpressionOutputTypeSig.Meta)
+		} else {
+			panic("type is not known")
 		}
 
 		if fromExprs[lastFromExpressionIdx].IsMethodCall() {
@@ -529,6 +539,8 @@ func processAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fromExp
 					prgrm.CXArgs[toExpressionOutputIdx].Type = types.POINTER
 					prgrm.CXArgs[toExpressionOutputIdx].PointerTargetType = types.Code(fromExpressionOperatorOutputTypeSig.Meta)
 				}
+			} else {
+				panic("type is not known")
 			}
 		} else if toExpressionOutputTypeSig.Type == ast.TYPE_ATOMIC || toExpressionOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 			fromExpressionOperatorOutputs := fromExpressionOperator.GetOutputs(prgrm)
@@ -564,7 +576,11 @@ func processAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fromExp
 					// only assigning as if the operator had only one output defined
 					toExpressionOutputTypeSig.Meta = fromExpressionOperatorOutputTypeSig.Meta
 				}
+			} else {
+				panic("type is not known")
 			}
+		} else {
+			panic("type is not known")
 		}
 
 		prgrm.CXAtomicOps[fromExpressionIdx].Outputs = toLastExpr.Outputs
