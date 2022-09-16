@@ -809,6 +809,7 @@ func GetFormattedType(prgrm *CXProgram, typeSig *CXTypeSignature) string {
 			typ = "*" + typ
 		}
 	} else if typeSig.Type == TYPE_POINTER_ATOMIC {
+		typ = types.Code(typeSig.Meta).Name()
 		if !typeSig.IsDeref {
 			typ = "*" + typ
 		}

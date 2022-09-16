@@ -88,8 +88,7 @@ func (typeSignature *CXTypeSignature) GetSize(prgrm *CXProgram) types.Pointer {
 
 		return types.POINTER.Size()
 	case TYPE_ARRAY_ATOMIC:
-		typeSignatureForArray := prgrm.GetCXTypeSignatureArrayFromArray(typeSignature.Meta)
-		return types.Code(typeSignatureForArray.Type).Size()
+		return typeSignature.GetArraySize(prgrm)
 	case TYPE_ARRAY_POINTER_ATOMIC:
 		return types.POINTER.Size()
 	case TYPE_SLICE_ATOMIC:
@@ -129,6 +128,17 @@ func (typeSignature *CXTypeSignature) GetArrayLength(prgrm *CXProgram) types.Poi
 	return 0
 }
 
+func (typeSignature *CXTypeSignature) GetArraySize(prgrm *CXProgram) types.Pointer {
+	switch typeSignature.Type {
+	case TYPE_ARRAY_ATOMIC:
+		typeSignatureForArray := prgrm.GetCXTypeSignatureArrayFromArray(typeSignature.Meta)
+		arrType := types.Code(typeSignatureForArray.Type)
+		return TotalLength(typeSignatureForArray.Lengths) * arrType.Size()
+	}
+
+	return 0
+}
+
 func (typeSignature *CXTypeSignature) GetCXArgFormat(prgrm *CXProgram) *CXArgument {
 	var arg *CXArgument = &CXArgument{}
 	if typeSignature.Type == TYPE_ATOMIC {
@@ -156,11 +166,13 @@ func (typeSignature *CXTypeSignature) GetCXArgFormat(prgrm *CXProgram) *CXArgume
 			arg.DeclarationSpecifiers = []int{constants.DECL_POINTER}
 		}
 	} else if typeSignature.Type == TYPE_ARRAY_ATOMIC {
+		println("went here")
 		typeSignatureArray := prgrm.GetCXTypeSignatureArrayFromArray(typeSignature.Meta)
 		arg.Type = types.Code(typeSignatureArray.Type)
 		arg.StructType = nil
 		arg.Size = typeSignature.GetSize(prgrm)
-		arg.Lengths = []types.Pointer{typeSignature.GetArrayLength(prgrm)}
+		arg.Lengths = typeSignatureArray.Lengths
+		arg.Indexes = typeSignatureArray.Indexes
 
 		// TODO: this should not be needed.
 		if len(arg.DeclarationSpecifiers) > 0 {
@@ -233,6 +245,7 @@ func GetCXTypeSignatureRepresentationOfCXArg_ForStructs(prgrm *CXProgram, cxArgu
 		typeSignatureForArray := &CXTypeSignature_Array{
 			Type:    int(fieldType),
 			Lengths: cxArgument.Lengths,
+			Indexes: cxArgument.Indexes,
 		}
 		typeSignatureForArrayIdx := prgrm.AddCXTypeSignatureArrayInArray(typeSignatureForArray)
 
@@ -288,6 +301,7 @@ func GetCXTypeSignatureRepresentationOfCXArg(prgrm *CXProgram, cxArgument *CXArg
 		typeSignatureForArray := &CXTypeSignature_Array{
 			Type:    int(cxArgument.Type),
 			Lengths: cxArgument.Lengths,
+			Indexes: cxArgument.Indexes,
 		}
 		typeSignatureForArrayIdx := prgrm.AddCXTypeSignatureArrayInArray(typeSignatureForArray)
 

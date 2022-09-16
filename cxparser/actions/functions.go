@@ -1050,7 +1050,7 @@ func checkMatchExprNumOfInputs(prgrm *ast.CXProgram, expression *ast.CXAtomicOpe
 		} else {
 			// then we need to be strict in the number of inputs
 			println(ast.CompilationError(exprCXLine.FileName, exprCXLine.LineNumber), fmt.Sprintf("operator '%s' expects %d input/s, but %d input argument\n were provided", opName, len(expressionOperatorInputs), len(expression.GetInputs(prgrm))))
-			return
+			os.Exit(constants.CX_COMPILATION_ERROR)
 		}
 	}
 }
@@ -1091,10 +1091,19 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) {
 			expressionInputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetInputs(prgrm)[i])
 			if expressionInputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 				expressionInputArg := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionInputTypeSig.Meta))
-				receivedType = expressionInputArg.Type.Name()
-				if expressionInputArg.PointerTargetType != 0 {
-					receivedType = expressionInputArg.PointerTargetType.Name()
+
+				if expressionInputArg.GetAssignmentElement(prgrm).StructType != nil {
+					// then it's custom type
+					receivedType = expressionInputArg.GetAssignmentElement(prgrm).StructType.Name
+				} else {
+					// then it's native type
+					receivedType = expressionInputArg.GetAssignmentElement(prgrm).Type.Name()
+
+					if expressionInputArg.GetAssignmentElement(prgrm).Type == types.POINTER {
+						receivedType = expressionInputArg.GetAssignmentElement(prgrm).PointerTargetType.Name()
+					}
 				}
+
 			} else if expressionInputTypeSig.Type == ast.TYPE_ATOMIC {
 				receivedType = types.Code(expressionInputTypeSig.Meta).Name()
 			} else if expressionInputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
@@ -1110,9 +1119,17 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) {
 			var expressionOutputArg *ast.CXArgument = &ast.CXArgument{ArgDetails: &ast.CXArgumentDebug{}}
 			if expressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 				expressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionOutputTypeSig.Meta))
-				expectedType = expressionOutputArg.Type.Name()
-				if expressionOutputArg.PointerTargetType != 0 {
-					expectedType = expressionOutputArg.PointerTargetType.Name()
+
+				if expressionOutputArg.GetAssignmentElement(prgrm).StructType != nil {
+					// then it's custom type
+					expectedType = expressionOutputArg.GetAssignmentElement(prgrm).StructType.Name
+				} else {
+					// then it's native type
+					expectedType = expressionOutputArg.GetAssignmentElement(prgrm).Type.Name()
+
+					if expressionOutputArg.GetAssignmentElement(prgrm).Type == types.POINTER {
+						expectedType = expressionOutputArg.GetAssignmentElement(prgrm).PointerTargetType.Name()
+					}
 				}
 			} else if expressionOutputTypeSig.Type == ast.TYPE_ATOMIC {
 				expectedType = types.Code(expressionOutputTypeSig.Meta).Name()
@@ -1130,7 +1147,6 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) {
 					println(ast.CompilationError(expressionOutputArg.ArgDetails.FileName, expressionOutputArg.ArgDetails.FileLine), fmt.Sprintf("field '%s' in struct literal of type '%s' expected argument of type '%s'; '%s' was provided", prgrm.GetCXArgFromArray(expressionOutputArg.Fields[0]).Name, expressionOutputArg.StructType.Name, expectedType, receivedType))
 				} else {
 					println(ast.CompilationError(expressionOutputArg.ArgDetails.FileName, expressionOutputArg.ArgDetails.FileLine), fmt.Sprintf("trying to assign argument of type '%s' to symbol '%s' of type '%s'", receivedType, expressionOutputTypeSig.Name, expectedType))
-					println(fmt.Sprintf("receivedType=%+v\nexpectedType=%+v\n", expressionInputTypeSig, expressionOutputTypeSig))
 				}
 			}
 
@@ -1865,18 +1881,18 @@ func ProcessTempVariable(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 
 // CopyArgFields copies 'arg' fields to 'sym' fields.
 func CopyArgFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast.CXTypeSignature) {
-	var arg *ast.CXArgument = &ast.CXArgument{}
-	if argTypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-		arg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(argTypeSignature.Meta))
-	} else {
-		arg = nil
-	}
-
 	var sym *ast.CXArgument = &ast.CXArgument{}
 	if symTypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 		sym = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(symTypeSignature.Meta))
 	} else {
 		sym = nil
+	}
+
+	var arg *ast.CXArgument = &ast.CXArgument{}
+	if argTypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		arg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(argTypeSignature.Meta))
+	} else {
+		arg = nil
 	}
 
 	// TODO: check if this needs a change
@@ -1921,6 +1937,44 @@ func CopyArgFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast
 			}
 		}
 		sym.DeclarationSpecifiers = declSpec
+
+		return
+	} else if sym != nil && arg == nil && (len(sym.DeclarationSpecifiers) > 1 || len(sym.DereferenceOperations) > 1) && argTypeSignature.Type == ast.TYPE_ARRAY_ATOMIC {
+		arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(argTypeSignature.Meta)
+		sym.Name = argTypeSignature.Name
+		sym.Package = argTypeSignature.Package
+		sym.Type = types.Code(arrDetails.Type)
+		sym.Offset = argTypeSignature.Offset
+
+		if len(sym.Lengths) == 0 {
+			sym.Lengths = arrDetails.Lengths
+		}
+
+		argDeclSpecifiers := []int{constants.DECL_BASIC, constants.DECL_ARRAY}
+		for _, spec := range sym.DeclarationSpecifiers {
+			// checking if we need to remove or add cxcore.DECL_POINTERs
+			// also we could be removing
+			switch spec {
+			case constants.DECL_INDEXING:
+				if argDeclSpecifiers[len(argDeclSpecifiers)-1] == constants.DECL_ARRAY || argDeclSpecifiers[len(argDeclSpecifiers)-1] == constants.DECL_SLICE {
+					argDeclSpecifiers = argDeclSpecifiers[:len(argDeclSpecifiers)-1]
+				} else {
+					println(ast.CompilationError(sym.ArgDetails.FileName, sym.ArgDetails.FileLine), "invalid indexing")
+				}
+			case constants.DECL_DEREF:
+				if argDeclSpecifiers[len(argDeclSpecifiers)-1] == constants.DECL_POINTER {
+					argDeclSpecifiers = argDeclSpecifiers[:len(argDeclSpecifiers)-1]
+				} else {
+					println(ast.CompilationError(sym.ArgDetails.FileName, sym.ArgDetails.FileLine), "invalid indirection")
+				}
+			case constants.DECL_POINTER:
+				// This function is also called so it assigns offset and other fields to signature parameters
+				//
+				argDeclSpecifiers = append(argDeclSpecifiers, constants.DECL_POINTER)
+			}
+		}
+
+		sym.DeclarationSpecifiers = argDeclSpecifiers
 
 		return
 	} else if sym != nil && arg == nil && (len(sym.DeclarationSpecifiers) > 1 || len(sym.DereferenceOperations) > 1) {
@@ -2191,9 +2245,9 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignatur
 					typeSignatureArray := prgrm.GetCXTypeSignatureArrayFromArray(typeSignature.Meta)
 					nameField.Type = types.Code(typeSignatureArray.Type)
 					nameField.StructType = nil
-					nameField.Size = typeSignature.GetSize(prgrm)
-					nameField.Lengths = []types.Pointer{typeSignature.GetArrayLength(prgrm)}
-					sym.Lengths = []types.Pointer{typeSignature.GetArrayLength(prgrm)}
+					nameField.Size = types.Code(typeSignatureArray.Type).Size()
+					nameField.Lengths = typeSignatureArray.Lengths
+					sym.Lengths = typeSignatureArray.Lengths
 
 					// TODO: this should not be needed.
 					if len(nameField.DeclarationSpecifiers) > 0 {
