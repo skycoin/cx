@@ -15,8 +15,76 @@ import (
 )
 
 func TestTypeCheck_ParseTypeSpecifier(t *testing.T) {
+	tests := []struct {
+		scenario   string
+		testString string
+		fileName   string
+		lineno     int
+		wantCXArg  ast.CXArgument
+		wantErr    error
+	}{
+		{
+			scenario:   "Has Type Specifier",
+			testString: "str",
+			fileName:   "./myFile",
+			lineno:     4,
+			wantCXArg:  ast.CXArgument{},
+			wantErr:    nil,
+		},
+		{
+			scenario:   "Has Indentifier",
+			testString: "Animal",
+			fileName:   "./testFile",
+			lineno:     10,
+			wantCXArg:  ast.CXArgument{},
+			wantErr:    nil,
+		},
+		{
+			scenario:   "Has External Indentifier",
+			testString: "tester.Direction",
+			fileName:   "./myFile",
+			lineno:     15,
+			wantCXArg:  ast.CXArgument{},
+			wantErr:    nil,
+		},
+		{
+			scenario:   "Has External Type Specifier",
+			testString: "i32.counter",
+			fileName:   "./myFile",
+			lineno:     23,
+			wantCXArg:  ast.CXArgument{},
+			wantErr:    nil,
+		},
+		{
+			scenario:   "Has Array ",
+			testString: "[5]i64",
+			fileName:   "./testFile",
+			lineno:     67,
+			wantCXArg:  ast.CXArgument{},
+			wantErr:    nil,
+		},
+		{
+			scenario:   "Has Slice",
+			testString: "[]str",
+			fileName:   "./myFile",
+			lineno:     45,
+			wantCXArg:  ast.CXArgument{},
+			wantErr:    nil,
+		},
+	}
 
+	for _, tc := range tests {
+		t.Run(tc.scenario, func(t *testing.T) {
+			var declarationSpecifier *ast.CXArgument
+			specifierByte, fileName, lineno, declarationSpecifier, err := type_checks.ParseTypeSpecifier([]byte(tc.testString), tc.fileName, tc.lineno, declarationSpecifier)
+
+			if err != nil {
+				return nil, err
+			}
+		})
+	}
 }
+
 func TestTypeChecks_ParseGlobals(t *testing.T) {
 
 	tests := []struct {
