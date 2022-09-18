@@ -14,6 +14,9 @@ import (
 	"github.com/skycoin/cx/cxparser/actions"
 )
 
+func TestTypeCheck_ParseTypeSpecifier(t *testing.T) {
+
+}
 func TestTypeChecks_ParseGlobals(t *testing.T) {
 
 	tests := []struct {
