@@ -36,7 +36,7 @@ func ParseParameterDeclaration(parameterString []byte, pkg *ast.CXPackage, fileN
 }
 
 func ParseDeclarationSpecifier(declarationSpecifierByte []byte, fileName string, lineno int, declarationSpecifier *ast.CXArgument) (*ast.CXArgument, error) {
-	reDeclarationSpecifier := regexp.MustCompile(`(\*){0,1}\s*((?:\[(\d*)\])){0,1}\s*([\w.]*)`)
+	reDeclarationSpecifier := regexp.MustCompile(`(\*){0,1}\s*((?:\[(\d*)\])){0,1}\s*([\w\.]*)`)
 	declarationSpecifierTokens := reDeclarationSpecifier.FindSubmatch(declarationSpecifierByte)
 	declarationSpecifierTokensIdx := reDeclarationSpecifier.FindIndex(declarationSpecifierByte)
 
@@ -71,8 +71,6 @@ func ParseDeclarationSpecifier(declarationSpecifierByte []byte, fileName string,
 
 	// Structs
 	if len(declarationSpecifierTokens[4]) != 0 {
-		fmt.Print("worksfsdfsdfdsfsdfsdf")
-
 		newDeclarationSpecifierByte := declarationSpecifierByte[:declarationSpecifierTokensIdx[1]-len(declarationSpecifierTokens[4])]
 		newDeclarationSpecifierArg := actions.DeclarationSpecifiersStruct(actions.AST, string(declarationSpecifierTokens[4]), "", false, fileName, lineno)
 		return ParseDeclarationSpecifier(newDeclarationSpecifierByte, fileName, lineno, newDeclarationSpecifierArg)

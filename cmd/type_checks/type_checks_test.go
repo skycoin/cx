@@ -16,76 +16,76 @@ import (
 
 func TestTypeCheck_ParseDeclarationSpecifier(t *testing.T) {
 	tests := []struct {
-		scenario   string
-		testString string
-		fileName   string
-		lineno     int
-		strctName  string
-		pkgName    string
-		wantCXArg  ast.CXArgument
-		wantErr    error
+		scenario                                string
+		testString                              string
+		fileName                                string
+		lineno                                  int
+		strctName                               string
+		pkgName                                 string
+		wantDeclarationSpecifierFormattedString string
+		wantErr                                 error
 	}{
 		{
-			scenario:   "Has Type Specifier",
-			testString: "str",
-			fileName:   "./myFile",
-			lineno:     4,
-			wantCXArg:  ast.CXArgument{},
-			wantErr:    nil,
+			scenario:                                "Has Type Specifier",
+			testString:                              "str",
+			fileName:                                "./myFile",
+			lineno:                                  4,
+			wantDeclarationSpecifierFormattedString: "str",
+			wantErr:                                 nil,
 		},
 		{
-			scenario:   "Has Indentifier",
-			testString: "Animal",
-			fileName:   "./testFile",
-			lineno:     10,
-			strctName:  "Animal",
-			pkgName:    "",
-			wantCXArg:  ast.CXArgument{},
-			wantErr:    nil,
+			scenario:                                "Has Indentifier",
+			testString:                              "Animal",
+			fileName:                                "./testFile",
+			lineno:                                  10,
+			strctName:                               "Animal",
+			pkgName:                                 "",
+			wantDeclarationSpecifierFormattedString: "Animal",
+			wantErr:                                 nil,
 		},
 		{
-			scenario:   "Has External Indentifier",
-			testString: "tester.Direction",
-			fileName:   "./myFile",
-			lineno:     15,
-			strctName:  "Direction",
-			pkgName:    "tester",
-			wantCXArg:  ast.CXArgument{},
-			wantErr:    nil,
+			scenario:                                "Has External Indentifier",
+			testString:                              "tester.Direction",
+			fileName:                                "./myFile",
+			lineno:                                  15,
+			strctName:                               "Direction",
+			pkgName:                                 "tester",
+			wantDeclarationSpecifierFormattedString: "Direction",
+			wantErr:                                 nil,
 		},
 		{
-			scenario:   "Has External Type Specifier",
-			testString: "i32.counter",
-			fileName:   "./myFile",
-			lineno:     23,
-			strctName:  "counter",
-			pkgName:    "i32",
-			wantCXArg:  ast.CXArgument{},
-			wantErr:    nil,
+			scenario:                                "Has External Type Specifier",
+			testString:                              "i32.counter",
+			fileName:                                "./myFile",
+			lineno:                                  23,
+			strctName:                               "counter",
+			pkgName:                                 "i32",
+			wantDeclarationSpecifierFormattedString: "counter",
+			wantErr:                                 nil,
 		},
 		{
-			scenario:   "Has Array ",
-			testString: "[5]i64",
-			fileName:   "./testFile",
-			lineno:     67,
-			wantCXArg:  ast.CXArgument{},
-			wantErr:    nil,
+			scenario:                                "Has Array ",
+			testString:                              "[5]i64",
+			fileName:                                "./testFile",
+			lineno:                                  67,
+			wantDeclarationSpecifierFormattedString: "[5]i64",
+			wantErr:                                 nil,
 		},
 		{
-			scenario:   "Has Slice",
-			testString: "[]str",
-			fileName:   "./myFile",
-			lineno:     45,
-			wantCXArg:  ast.CXArgument{},
-			wantErr:    nil,
+			scenario:                                "Has Slice",
+			testString:                              "[]str",
+			fileName:                                "./myFile",
+			lineno:                                  45,
+			wantDeclarationSpecifierFormattedString: "[]str",
+			wantErr:                                 nil,
 		},
 		{
-			scenario:   "Has Pointer",
-			testString: "*ui8",
-			fileName:   "./testFile",
-			lineno:     23,
-			wantCXArg:  ast.CXArgument{},
-			wantErr:    nil,
+			scenario:                                "Has Pointer",
+			testString:                              "*ui8",
+			fileName:                                "./testFile",
+			lineno:                                  23,
+			wantDeclarationSpecifierFormattedString: "*ui8",
+			wantErr:                                 nil,
 		},
 	}
 
@@ -107,12 +107,23 @@ func TestTypeCheck_ParseDeclarationSpecifier(t *testing.T) {
 				actions.DeclareImport(actions.AST, tc.pkgName, tc.fileName, tc.lineno)
 			}
 
-			var declarationSpecifier *ast.CXArgument
-			declarationSpecifier, err := type_checks.ParseDeclarationSpecifier([]byte(tc.testString), tc.fileName, tc.lineno, declarationSpecifier)
+			var gotDeclarationSpecifier *ast.CXArgument
+			gotDeclarationSpecifier, gotErr := type_checks.ParseDeclarationSpecifier([]byte(tc.testString), tc.fileName, tc.lineno, gotDeclarationSpecifier)
+			gotDeclarationSpecifierFormattedString := ast.GetFormattedType(actions.AST, gotDeclarationSpecifier)
 
-			t.Error(declarationSpecifier)
-			if err != nil {
-				t.Error(err)
+			if gotDeclarationSpecifierFormattedString != tc.wantDeclarationSpecifierFormattedString {
+				t.Errorf("want %s, got %s", gotDeclarationSpecifierFormattedString, tc.wantDeclarationSpecifierFormattedString)
+			}
+
+			if (gotErr != nil && tc.wantErr == nil) ||
+				(gotErr == nil && tc.wantErr != nil) {
+				t.Errorf("want error %v, got %v", tc.wantErr, gotErr)
+			}
+
+			if gotErr != nil && tc.wantErr != nil {
+				if gotErr.Error() != tc.wantErr.Error() {
+					t.Errorf("want error %v, got %v", tc.wantErr, gotErr)
+				}
 			}
 		})
 	}
