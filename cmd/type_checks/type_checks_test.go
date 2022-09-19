@@ -8,18 +8,20 @@ import (
 	"github.com/skycoin/cx/cmd/declaration_extractor"
 	"github.com/skycoin/cx/cmd/type_checks"
 	"github.com/skycoin/cx/cx/ast"
+	cxinit "github.com/skycoin/cx/cx/init"
 	cxpackages "github.com/skycoin/cx/cx/packages"
-
 	"github.com/skycoin/cx/cx/types"
 	"github.com/skycoin/cx/cxparser/actions"
 )
 
-func TestTypeCheck_ParseTypeSpecifier(t *testing.T) {
+func TestTypeCheck_ParseDeclarationSpecifier(t *testing.T) {
 	tests := []struct {
 		scenario   string
 		testString string
 		fileName   string
 		lineno     int
+		strctName  string
+		pkgName    string
 		wantCXArg  ast.CXArgument
 		wantErr    error
 	}{
@@ -36,6 +38,8 @@ func TestTypeCheck_ParseTypeSpecifier(t *testing.T) {
 			testString: "Animal",
 			fileName:   "./testFile",
 			lineno:     10,
+			strctName:  "Animal",
+			pkgName:    "",
 			wantCXArg:  ast.CXArgument{},
 			wantErr:    nil,
 		},
@@ -44,6 +48,8 @@ func TestTypeCheck_ParseTypeSpecifier(t *testing.T) {
 			testString: "tester.Direction",
 			fileName:   "./myFile",
 			lineno:     15,
+			strctName:  "Direction",
+			pkgName:    "tester",
 			wantCXArg:  ast.CXArgument{},
 			wantErr:    nil,
 		},
@@ -52,6 +58,8 @@ func TestTypeCheck_ParseTypeSpecifier(t *testing.T) {
 			testString: "i32.counter",
 			fileName:   "./myFile",
 			lineno:     23,
+			strctName:  "counter",
+			pkgName:    "i32",
 			wantCXArg:  ast.CXArgument{},
 			wantErr:    nil,
 		},
@@ -71,15 +79,40 @@ func TestTypeCheck_ParseTypeSpecifier(t *testing.T) {
 			wantCXArg:  ast.CXArgument{},
 			wantErr:    nil,
 		},
+		{
+			scenario:   "Has Pointer",
+			testString: "*ui8",
+			fileName:   "./testFile",
+			lineno:     23,
+			wantCXArg:  ast.CXArgument{},
+			wantErr:    nil,
+		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
-			var declarationSpecifier *ast.CXArgument
-			specifierByte, fileName, lineno, declarationSpecifier, err := type_checks.ParseTypeSpecifier([]byte(tc.testString), tc.fileName, tc.lineno, declarationSpecifier)
+			actions.AST = cxinit.MakeProgram()
 
+			if tc.strctName != "" {
+
+				pkg := ast.MakePackage(tc.pkgName)
+				pkgIdx := actions.AST.AddPackage(pkg)
+				strct := ast.MakeStruct(tc.strctName)
+				strct.Package = ast.CXPackageIndex(pkgIdx)
+				pkg = pkg.AddStruct(actions.AST, strct)
+
+			}
+
+			if tc.pkgName != "" {
+				actions.DeclareImport(actions.AST, tc.pkgName, tc.fileName, tc.lineno)
+			}
+
+			var declarationSpecifier *ast.CXArgument
+			declarationSpecifier, err := type_checks.ParseDeclarationSpecifier([]byte(tc.testString), tc.fileName, tc.lineno, declarationSpecifier)
+
+			t.Error(declarationSpecifier)
 			if err != nil {
-				return nil, err
+				t.Error(err)
 			}
 		})
 	}

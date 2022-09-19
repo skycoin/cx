@@ -65,9 +65,9 @@ func ParseGlobals(globals []declaration_extractor.GlobalDeclaration) error {
 
 		var declarationSpecifier *ast.CXArgument
 
-		typeString, fileName, lineno, declarationSpecifier, err := ParseTypeSpecifier(globalTokens[2], global.FileID, global.LineNumber, declarationSpecifier)
+		declarationSpecifier, err = ParseDeclarationSpecifier(globalTokens[2], global.FileID, global.LineNumber, declarationSpecifier)
 
-		if typeString != nil && fileName != "" && lineno != 0 {
+		if err != nil {
 			return err
 		}
 
