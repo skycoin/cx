@@ -359,8 +359,8 @@ func ArrayLiteralExpression(prgrm *ast.CXProgram, arraySizes []types.Pointer, ty
 
 	prgrm.CXAtomicOps[arrVarExprAtomicOpIdx].Package = ast.CXPackageIndex(pkg.Index)
 	arrVar := ast.MakeArgument(symName, CurrentFile, LineNo)
-	arrVar = DeclarationSpecifiers(arrVar, arraySizes, constants.DECL_ARRAY)
 	arrVar.SetType(typeCode)
+	arrVar = DeclarationSpecifiers(arrVar, arraySizes, constants.DECL_ARRAY)
 	arrVar.Package = ast.CXPackageIndex(pkg.Index)
 	arrVar.PreviouslyDeclared = true
 

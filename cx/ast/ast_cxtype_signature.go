@@ -88,6 +88,11 @@ func (typeSignature *CXTypeSignature) GetSize(prgrm *CXProgram) types.Pointer {
 
 		return types.POINTER.Size()
 	case TYPE_ARRAY_ATOMIC:
+		arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(typeSignature.Meta)
+		if len(arrDetails.Indexes) > 0 {
+			return types.Code(arrDetails.Type).Size()
+		}
+
 		return typeSignature.GetArraySize(prgrm)
 	case TYPE_ARRAY_POINTER_ATOMIC:
 		return types.POINTER.Size()
@@ -166,7 +171,6 @@ func (typeSignature *CXTypeSignature) GetCXArgFormat(prgrm *CXProgram) *CXArgume
 			arg.DeclarationSpecifiers = []int{constants.DECL_POINTER}
 		}
 	} else if typeSignature.Type == TYPE_ARRAY_ATOMIC {
-		println("went here")
 		typeSignatureArray := prgrm.GetCXTypeSignatureArrayFromArray(typeSignature.Meta)
 		arg.Type = types.Code(typeSignatureArray.Type)
 		arg.StructType = nil

@@ -816,8 +816,11 @@ func GetFormattedType(prgrm *CXProgram, typeSig *CXTypeSignature) string {
 	} else if typeSig.Type == TYPE_ARRAY_ATOMIC {
 		arrayData := prgrm.GetCXTypeSignatureArrayFromArray(typeSig.Meta)
 
-		for _, len := range arrayData.Lengths {
-			typ = fmt.Sprintf("[%d]%s", len, typ)
+		arrLen := len(arrayData.Lengths) - len(arrayData.Indexes)
+		if arrLen != 0 {
+			for _, len := range arrayData.Lengths[len(arrayData.Indexes):] {
+				typ = fmt.Sprintf("[%d]%s", len, typ)
+			}
 		}
 
 		typ += types.Code(arrayData.Type).Name()

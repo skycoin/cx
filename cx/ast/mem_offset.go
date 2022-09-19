@@ -154,6 +154,20 @@ func GetFinalOffset(prgrm *CXProgram, fp types.Pointer, oldArg *CXArgument, argT
 			argTypeSigOffset += fp
 		}
 
+		arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(argTypeSig.Meta)
+		indexesLen := len(arrDetails.Indexes)
+
+		for i := 0; i < indexesLen; i++ {
+			var subSize = types.Pointer(1)
+			for _, len := range arrDetails.Lengths[i+1:] {
+				subSize *= len
+			}
+
+			sizeToUse := types.Code(arrDetails.Type).Size()
+			sizeOfElement := subSize * sizeToUse
+			argTypeSigOffset += types.Cast_i32_to_ptr(types.Read_i32(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, prgrm.GetCXTypeSignatureFromArray(arrDetails.Indexes[i])))) * sizeOfElement
+		}
+
 		return argTypeSigOffset
 	}
 
