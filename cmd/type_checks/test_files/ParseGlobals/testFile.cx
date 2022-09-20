@@ -1,0 +1,27 @@
+package main
+
+var number i32
+
+type animal struct {
+    name str
+    legs i32
+}
+
+func main()() {
+
+    var hello str = "Hello World!"
+
+    str.print(hello)
+
+    bool.print(is_divisible(10,2))
+
+}
+
+func is_divisible(x i32, y i32) (result bool){
+    if x % y == 0 {
+        result = true
+        return
+    }
+
+    result = false
+}
