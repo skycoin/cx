@@ -435,6 +435,25 @@ func ReadSliceElements(prgrm *CXProgram, fp types.Pointer, arg, elt *CXArgument,
 	}
 }
 
+func arrayPrinter(c types.Pointer, arrayLengths []types.Pointer, closeStr, openStr string) string {
+	val := types.Pointer(1)
+
+	for _, valLen := range arrayLengths {
+		val *= valLen
+	}
+
+	if c%val == 0 {
+		closeStr += "]"
+		openStr += "["
+	}
+
+	if len(arrayLengths) > 1 {
+		return arrayPrinter(c, arrayLengths[1:], closeStr, openStr)
+	}
+
+	return closeStr + " " + openStr
+}
+
 // GetPrintableValue ...
 func GetPrintableValue(prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSignature) string {
 	var arg, elt *CXArgument
@@ -491,47 +510,20 @@ func GetPrintableValue(prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSig
 				finalSize := types.Pointer(1)
 				for _, l := range elt.Lengths {
 					finalSize *= l
-				}
-
-				lens := make([]types.Pointer, len(elt.Lengths))
-				copy(lens, elt.Lengths)
-
-				for c := 0; c < len(lens); c++ {
-					for i := 0; i < len(lens[c+1:]); i++ {
-						lens[c] *= lens[c+i]
-					}
-				}
-
-				for range lens {
 					val += "["
 				}
 
 				// adding first element because of formatting reasons
 				val += getNonCollectionValue(prgrm, fp, arg, elt, typ)
+
 				for c := types.Pointer(1); c < finalSize; c++ {
-					closeCount := 0
-					for _, l := range lens {
-						if c%l == 0 && c != 0 {
-							// val += "] ["
-							closeCount++
-						}
-					}
+					val += arrayPrinter(c, elt.Lengths, "", "")
 
-					if closeCount > 0 {
-						for i := 0; i < closeCount; i++ {
-							val += "]"
-						}
-						val += " "
-						for i := 0; i < closeCount; i++ {
-							val += "["
-						}
+					val += getNonCollectionValue(prgrm, fp+c*elt.Size, arg, elt, typ)
 
-						val += getNonCollectionValue(prgrm, fp+c*elt.Size, arg, elt, typ)
-					} else {
-						val += " " + getNonCollectionValue(prgrm, fp+c*elt.Size, arg, elt, typ)
-					}
 				}
-				for range lens {
+
+				for range elt.Lengths {
 					val += "]"
 				}
 			}
@@ -578,8 +570,9 @@ func GetPrintableValue(prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSig
 	} else if argTypeSig.Type == TYPE_ARRAY_ATOMIC {
 		arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(argTypeSig.Meta)
 		var val string
+
 		if len(arrDetails.Lengths) == 1 {
-			val = "["
+			val += "["
 			// for Arrays
 			for c := types.Pointer(0); c < arrDetails.Lengths[0]; c++ {
 				val += fmt.Sprintf("%v", types.Read_i32(prgrm.Memory, GetFinalOffset(prgrm, fp+c*types.Code(arrDetails.Type).Size(), nil, argTypeSig)))
@@ -592,7 +585,26 @@ func GetPrintableValue(prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSig
 
 			return val
 		} else {
-			panic("array lengths > 1 ")
+			// panic("array lengths > 1 ")
+			arrLengthsLen := len(arrDetails.Lengths)
+			val = "["
+			for i := 0; i < arrLengthsLen; i++ {
+				val += "["
+				// for Arrays
+				for c := types.Pointer(0); c < arrDetails.Lengths[i]; c++ {
+					val += fmt.Sprintf("%v", types.Read_i32(prgrm.Memory, GetFinalOffset(prgrm, fp+c*types.Code(arrDetails.Type).Size(), nil, argTypeSig)))
+					if c != arrDetails.Lengths[i]-1 {
+						val += ", "
+					}
+				}
+
+				val += "]"
+				if i != arrLengthsLen-1 {
+					val += ", "
+				}
+			}
+
+			val += "]"
 		}
 
 	} else {
@@ -824,6 +836,9 @@ func GetFormattedType(prgrm *CXProgram, typeSig *CXTypeSignature) string {
 		}
 
 		typ += types.Code(arrayData.Type).Name()
+		if typeSig.PassBy == constants.PASSBY_REFERENCE {
+			typ = "*" + typ
+		}
 	} else {
 		panic("type is not known")
 	}

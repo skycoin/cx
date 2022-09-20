@@ -530,6 +530,9 @@ func checkSameNativeType(prgrm *ast.CXProgram, expr *ast.CXExpression) error {
 			inpType = types.Code(input.Meta)
 		} else if input.Type == ast.TYPE_POINTER_ATOMIC {
 			inpType = types.Code(input.Meta)
+		} else if input.Type == ast.TYPE_ARRAY_ATOMIC {
+			arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(input.Meta)
+			inpType = types.Code(arrDetails.Type)
 		} else {
 			panic("type is not known")
 		}
@@ -1440,6 +1443,8 @@ func ProcessSliceAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 			} else if input.Type == ast.TYPE_POINTER_ATOMIC {
 				// Continue since pointer atomic types doesnt include slices.
 				continue
+			} else if input.Type == ast.TYPE_ARRAY_ATOMIC {
+				continue
 			} else {
 				panic("type is not known")
 			}
@@ -2011,6 +2016,7 @@ func CopyArgFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast
 		symTypeSignature.Type = argTypeSignature.Type
 		symTypeSignature.Meta = newArrDetailsIdx
 		symTypeSignature.Offset = argTypeSignature.Offset
+		symTypeSignature.PassBy = sym.PassBy
 
 		return
 	} else if sym != nil && arg == nil && (len(sym.DeclarationSpecifiers) > 1 || len(sym.DereferenceOperations) > 1) {
