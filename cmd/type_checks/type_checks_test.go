@@ -112,7 +112,124 @@ func TestTypeCheck_ParseDeclarationSpecifier(t *testing.T) {
 			gotDeclarationSpecifierFormattedString := ast.GetFormattedType(actions.AST, gotDeclarationSpecifier)
 
 			if gotDeclarationSpecifierFormattedString != tc.wantDeclarationSpecifierFormattedString {
-				t.Errorf("want %s, got %s", gotDeclarationSpecifierFormattedString, tc.wantDeclarationSpecifierFormattedString)
+				t.Errorf("want %s, got %s", tc.wantDeclarationSpecifierFormattedString, gotDeclarationSpecifierFormattedString)
+			}
+
+			if (gotErr != nil && tc.wantErr == nil) ||
+				(gotErr == nil && tc.wantErr != nil) {
+				t.Errorf("want error %v, got %v", tc.wantErr, gotErr)
+			}
+
+			if gotErr != nil && tc.wantErr != nil {
+				if gotErr.Error() != tc.wantErr.Error() {
+					t.Errorf("want error %v, got %v", tc.wantErr, gotErr)
+				}
+			}
+		})
+	}
+}
+
+func TestTypeCheck_ParseParameterDeclaration(t *testing.T) {
+	tests := []struct {
+		scenario                                string
+		testString                              string
+		fileName                                string
+		lineno                                  int
+		strctName                               string
+		pkgName                                 string
+		wantParameterDeclarationFormattedString string
+		wantErr                                 error
+	}{
+		{
+			scenario:                                "Has Type Specifier",
+			testString:                              "name str",
+			fileName:                                "./myFile",
+			lineno:                                  4,
+			wantParameterDeclarationFormattedString: "name str",
+			wantErr:                                 nil,
+		},
+		{
+			scenario:                                "Has Indentifier",
+			testString:                              "cat Animal",
+			fileName:                                "./testFile",
+			lineno:                                  10,
+			strctName:                               "Animal",
+			pkgName:                                 "",
+			wantParameterDeclarationFormattedString: "cat Animal",
+			wantErr:                                 nil,
+		},
+		{
+			scenario:                                "Has External Indentifier",
+			testString:                              "North tester.Direction",
+			fileName:                                "./myFile",
+			lineno:                                  15,
+			strctName:                               "Direction",
+			pkgName:                                 "tester",
+			wantParameterDeclarationFormattedString: "North Direction",
+			wantErr:                                 nil,
+		},
+		{
+			scenario:                                "Has External Type Specifier",
+			testString:                              "clock i32.counter",
+			fileName:                                "./myFile",
+			lineno:                                  23,
+			strctName:                               "counter",
+			pkgName:                                 "i32",
+			wantParameterDeclarationFormattedString: "clock counter",
+			wantErr:                                 nil,
+		},
+		{
+			scenario:                                "Has Array ",
+			testString:                              "lottery [5]i64",
+			fileName:                                "./testFile",
+			lineno:                                  67,
+			wantParameterDeclarationFormattedString: "lottery [5]i64",
+			wantErr:                                 nil,
+		},
+		{
+			scenario:                                "Has Slice",
+			testString:                              "months []str",
+			fileName:                                "./myFile",
+			lineno:                                  45,
+			wantParameterDeclarationFormattedString: "months []str",
+			wantErr:                                 nil,
+		},
+		{
+			scenario:                                "Has Pointer",
+			testString:                              "link *ui8",
+			fileName:                                "./testFile",
+			lineno:                                  23,
+			wantParameterDeclarationFormattedString: "link *ui8",
+			wantErr:                                 nil,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.scenario, func(t *testing.T) {
+			actions.AST = cxinit.MakeProgram()
+
+			var pkg *ast.CXPackage
+			pkg = ast.MakePackage(tc.pkgName)
+			pkgIdx := actions.AST.AddPackage(pkg)
+
+			if tc.strctName != "" {
+				strct := ast.MakeStruct(tc.strctName)
+				strct.Package = ast.CXPackageIndex(pkgIdx)
+				pkg = pkg.AddStruct(actions.AST, strct)
+			}
+
+			if tc.pkgName != "" {
+				actions.DeclareImport(actions.AST, tc.pkgName, tc.fileName, tc.lineno)
+			}
+
+			var gotParameterDeclaration *ast.CXArgument
+			gotParameterDeclaration, gotErr := type_checks.ParseParameterDeclaration([]byte(tc.testString), pkg, tc.fileName, tc.lineno)
+			gotParameterDeclarationFormattedName := ast.GetFormattedName(actions.AST, gotParameterDeclaration, false, pkg)
+			gotParameterDeclarationFormattedType := ast.GetFormattedType(actions.AST, gotParameterDeclaration)
+			gotParameterDeclarationFormattedString := gotParameterDeclarationFormattedName + " " + gotParameterDeclarationFormattedType
+
+			if gotParameterDeclarationFormattedString != tc.wantParameterDeclarationFormattedString {
+				t.Errorf("want %s, got %s", tc.wantParameterDeclarationFormattedString, gotParameterDeclarationFormattedString)
 			}
 
 			if (gotErr != nil && tc.wantErr == nil) ||

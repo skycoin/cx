@@ -3,6 +3,7 @@ package type_checks
 import (
 	"bytes"
 	"fmt"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -17,6 +18,10 @@ func ParseParameterDeclaration(parameterString []byte, pkg *ast.CXPackage, fileN
 	var parameterDeclaration *ast.CXArgument
 	reParameterDeclaration := regexp.MustCompile(`(\w+)\s+(.+)`)
 	parameterDeclarationTokens := reParameterDeclaration.FindSubmatch(parameterString)
+
+	if parameterDeclarationTokens == nil || len(parameterDeclarationTokens[0]) == 0 {
+		return nil, fmt.Errorf("%s: %d: parameter declaration error", filepath.Base(fileName), lineno)
+	}
 
 	declarator := ast.MakeArgument("", fileName, lineno)
 	declarator.SetType(types.UNDEFINED)
