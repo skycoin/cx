@@ -585,26 +585,29 @@ func GetPrintableValue(prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSig
 
 			return val
 		} else {
-			// panic("array lengths > 1 ")
-			arrLengthsLen := len(arrDetails.Lengths)
-			val = "["
-			for i := 0; i < arrLengthsLen; i++ {
-				val += "["
-				// for Arrays
-				for c := types.Pointer(0); c < arrDetails.Lengths[i]; c++ {
-					val += fmt.Sprintf("%v", types.Read_i32(prgrm.Memory, GetFinalOffset(prgrm, fp+c*types.Code(arrDetails.Type).Size(), nil, argTypeSig)))
-					if c != arrDetails.Lengths[i]-1 {
-						val += ", "
-					}
-				}
+			val = ""
 
-				val += "]"
-				if i != arrLengthsLen-1 {
-					val += ", "
-				}
+			finalSize := types.Pointer(1)
+			for _, l := range arrDetails.Lengths {
+				finalSize *= l
+				val += "["
 			}
 
-			val += "]"
+			// adding first element because of formatting reasons
+			val += fmt.Sprintf("%v", types.Read_i32(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, argTypeSig)))
+
+			for c := types.Pointer(1); c < finalSize; c++ {
+				val += arrayPrinter(c, arrDetails.Lengths, "", "")
+
+				val += fmt.Sprintf("%v", types.Read_i32(prgrm.Memory, GetFinalOffset(prgrm, fp+c*types.Code(arrDetails.Type).Size(), nil, argTypeSig)))
+
+			}
+
+			for range arrDetails.Lengths {
+				val += "]"
+			}
+
+			return val
 		}
 
 	} else {
