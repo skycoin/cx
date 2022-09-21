@@ -2,7 +2,6 @@ package type_checks
 
 import (
 	"os"
-	"regexp"
 
 	"github.com/skycoin/cx/cmd/declaration_extractor"
 	"github.com/skycoin/cx/cx/ast"
@@ -33,7 +32,7 @@ func ParseStructs(structs []declaration_extractor.StructDeclaration) error {
 			newPkg, err = actions.AST.GetPackageFromArray(pkgIdx)
 
 			if err != nil {
-				// error handling
+				return err
 			}
 
 			pkg = newPkg
@@ -54,17 +53,13 @@ func ParseStructs(structs []declaration_extractor.StructDeclaration) error {
 
 		for _, strctFieldDec := range strct.StructFields {
 
-			structFieldLine := src[strct.StartOffset : strctFieldDec.StartOffset+strctFieldDec.Length]
-			reStructField := regexp.MustCompile(`\w+\s+(\w+)`)
-			structField := reStructField.FindSubmatch(structFieldLine)
+			structFieldLine := src[strctFieldDec.StartOffset : strctFieldDec.StartOffset+strctFieldDec.Length]
 
-			structFieldArg := ast.MakeArgument(strctFieldDec.StructFieldName, strct.FileID, strct.LineNumber)
-			structFieldArg = structFieldArg.SetPackage(pkg)
+			structFieldSpecifier, err := ParseParameterDeclaration(structFieldLine, pkg, strct.FileID, strctFieldDec.LineNumber)
 
-			structFieldSpecifier := actions.DeclarationSpecifiersBasic(TypesMap[string(structField[1])])
-
-			structFieldSpecifier.Name = structFieldArg.Name
-			structFieldSpecifier.Package = structFieldArg.Package
+			if err != nil {
+				return err
+			}
 
 			structFields = append(structFields, structFieldSpecifier)
 		}
