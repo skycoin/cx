@@ -129,6 +129,19 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 			glbl.Meta = typeSignatureForArrayIdx
 
 			glbl.PassBy = declaration_specifiers.PassBy
+		} else if ast.IsTypePointerArrayAtomic(declaration_specifiers) {
+			glbl.Type = ast.TYPE_POINTER_ARRAY_ATOMIC
+
+			typeSignatureForArray := &ast.CXTypeSignature_Array{
+				Type:    int(declaration_specifiers.Type),
+				Lengths: declaration_specifiers.Lengths,
+				Indexes: declaration_specifiers.Indexes,
+			}
+			typeSignatureForArrayIdx := prgrm.AddCXTypeSignatureArrayInArray(typeSignatureForArray)
+
+			glbl.Meta = typeSignatureForArrayIdx
+
+			glbl.PassBy = declaration_specifiers.PassBy
 		} else {
 			// its a cxargument_deprecate type
 			var glblIdx int

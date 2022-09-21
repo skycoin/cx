@@ -573,9 +573,10 @@ func GetPrintableValue(prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSig
 
 		if len(arrDetails.Lengths) == 1 {
 			val += "["
+
 			// for Arrays
 			for c := types.Pointer(0); c < arrDetails.Lengths[0]; c++ {
-				val += fmt.Sprintf("%v", types.Read_i32(prgrm.Memory, GetFinalOffset(prgrm, fp+c*types.Code(arrDetails.Type).Size(), nil, argTypeSig)))
+				val += fmt.Sprintf("%v", types.Read_i32(prgrm.Memory, GetFinalOffset(prgrm, fp+(c*types.Code(arrDetails.Type).Size()), nil, argTypeSig)))
 				if c != arrDetails.Lengths[0]-1 {
 					val += ", "
 				}

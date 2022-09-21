@@ -48,7 +48,7 @@ func popStack(prgrm *CXProgram, call *CXCall) error {
 
 		cxAtomicOpOutput := prgrm.GetCXTypeSignatureFromArray(cxAtomicOpOutputs[i])
 		types.WriteSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, returnFP, nil, cxAtomicOpOutput),
-			types.GetSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, output), output.GetSize(prgrm)))
+			types.GetSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, output), output.GetSize(prgrm, false)))
 	}
 
 	// return the stack pointer to its previous state
@@ -70,7 +70,7 @@ func wipeDeclarationMemory(prgrm *CXProgram, expr *CXExpression) error {
 	newFP := newCall.FramePointer
 	cxAtomicOpOutputs := cxAtomicOp.GetOutputs(prgrm)
 	cxAtomicOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(cxAtomicOpOutputs[0])
-	size := cxAtomicOutputTypeSig.GetSize(prgrm)
+	size := cxAtomicOutputTypeSig.GetSize(prgrm, false)
 	var offset types.Pointer
 	if cxAtomicOutputTypeSig.Type == TYPE_CXARGUMENT_DEPRECATE {
 		offset = prgrm.CXArgs[cxAtomicOutputTypeSig.Meta].Offset
@@ -114,7 +114,7 @@ func processBuiltInOperators(prgrm *CXProgram, expr *CXExpression, globalInputs 
 		inputTypeSignature := prgrm.GetCXTypeSignatureFromArray(inputs[inputIndex])
 		value := &inputValues[inputIndex]
 		value.TypeSignature = inputTypeSignature
-		value.Size = inputTypeSignature.GetSize(prgrm)
+		value.Size = inputTypeSignature.GetSize(prgrm, false)
 		offset := GetFinalOffset(prgrm, fp, nil, inputTypeSignature)
 		value.Offset = offset
 
@@ -143,7 +143,7 @@ func processBuiltInOperators(prgrm *CXProgram, expr *CXExpression, globalInputs 
 
 		value := &outputValues[outputIndex]
 		value.TypeSignature = outputTypeSignature
-		value.Size = outputTypeSignature.GetSize(prgrm)
+		value.Size = outputTypeSignature.GetSize(prgrm, false)
 		offset := GetFinalOffset(prgrm, fp, nil, outputTypeSignature)
 		value.Offset = offset
 
@@ -234,7 +234,7 @@ func processNonAtomicOperators(prgrm *CXProgram, expr *CXExpression, fp types.Po
 			byts = finalOffsetB[:]
 
 		} else {
-			size := input.GetSize(prgrm)
+			size := input.GetSize(prgrm, false)
 			byts = prgrm.Memory[finalOffset : finalOffset+size]
 		}
 

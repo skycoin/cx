@@ -585,9 +585,9 @@ func ProcessOperatorExpression(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 
 						size = ast.GetArgSize(prgrm, expressionInputArg.GetAssignmentElement(prgrm))
 					} else if expressionInputTypeSig.Type == ast.TYPE_ATOMIC {
-						size = expressionInputTypeSig.GetSize(prgrm)
+						size = expressionInputTypeSig.GetSize(prgrm, false)
 					} else if expressionInputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
-						size = expressionInputTypeSig.GetSize(prgrm)
+						size = expressionInputTypeSig.GetSize(prgrm, false)
 					} else {
 						panic("type is not known")
 					}
@@ -624,6 +624,8 @@ func ProcessPointerStructs(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 			// panic("type is not type cx argument deprecate\n\n")
 			continue
 		} else if argTypeSig.Type == ast.TYPE_ARRAY_ATOMIC {
+			continue
+		} else if argTypeSig.Type == ast.TYPE_POINTER_ARRAY_ATOMIC {
 			continue
 		} else {
 			panic("type is not known")
@@ -1571,7 +1573,7 @@ func UpdateSymbolsTable(prgrm *ast.CXProgram, symbolsData *SymbolsData, typeSigI
 				*offset += ast.GetArgSize(prgrm, sym)
 			} else {
 				typeSig.Offset = *offset
-				*offset += typeSig.GetSize(prgrm)
+				*offset += typeSig.GetSize(prgrm, true)
 			}
 		}
 	}
@@ -2265,7 +2267,7 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignatur
 				if nameField.Name == typeSignature.Name && typeSignature.Type == ast.TYPE_ATOMIC {
 					nameField.Type = types.Code(typeSignature.Meta)
 					nameField.StructType = nil
-					nameField.Size = typeSignature.GetSize(prgrm)
+					nameField.Size = typeSignature.GetSize(prgrm, false)
 
 					// TODO: this should not be needed.
 					if len(nameField.DeclarationSpecifiers) > 0 {
