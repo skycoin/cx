@@ -611,6 +611,9 @@ func GetPrintableValue(prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSig
 			return val
 		}
 
+	} else if argTypeSig.Type == TYPE_POINTER_ARRAY_ATOMIC {
+		// TODO: improve this
+		return fmt.Sprintf("%v", types.Read_ptr(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, argTypeSig)))
 	} else {
 		panic("type is not known")
 	}
@@ -843,6 +846,21 @@ func GetFormattedType(prgrm *CXProgram, typeSig *CXTypeSignature) string {
 		if typeSig.PassBy == constants.PASSBY_REFERENCE {
 			typ = "*" + typ
 		}
+	} else if typeSig.Type == TYPE_POINTER_ARRAY_ATOMIC {
+		arrayData := prgrm.GetCXTypeSignatureArrayFromArray(typeSig.Meta)
+
+		arrLen := len(arrayData.Lengths) - len(arrayData.Indexes)
+		if arrLen != 0 {
+			for _, len := range arrayData.Lengths[len(arrayData.Indexes):] {
+				typ = fmt.Sprintf("[%d]%s", len, typ)
+			}
+		}
+
+		typ += types.Code(arrayData.Type).Name()
+		if !typeSig.IsDeref {
+			typ = "*" + typ
+		}
+
 	} else {
 		panic("type is not known")
 	}

@@ -169,6 +169,35 @@ func GetFinalOffset(prgrm *CXProgram, fp types.Pointer, oldArg *CXArgument, argT
 		}
 
 		return argTypeSigOffset
+	} else if argTypeSig.Type == TYPE_POINTER_ARRAY_ATOMIC {
+		finalOffset = argTypeSig.Offset
+
+		//Todo: find way to eliminate this check
+		if finalOffset < prgrm.Stack.Size {
+			// Then it's in the stack, not in data or heap and we need to consider the frame pointer.
+			finalOffset += fp
+		}
+
+		if argTypeSig.IsDeref {
+			finalOffset = types.Read_ptr(prgrm.Memory, finalOffset)
+
+			arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(argTypeSig.Meta)
+			indexesLen := len(arrDetails.Indexes)
+
+			for i := 0; i < indexesLen; i++ {
+				var subSize = types.Pointer(1)
+				for _, len := range arrDetails.Lengths[i+1:] {
+					subSize *= len
+				}
+
+				sizeToUse := types.Code(arrDetails.Type).Size()
+				sizeOfElement := subSize * sizeToUse
+				finalOffset += types.Cast_i32_to_ptr(types.Read_i32(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, prgrm.GetCXTypeSignatureFromArray(arrDetails.Indexes[i])))) * sizeOfElement
+			}
+
+		}
+
+		return finalOffset
 	}
 
 	finalOffset = arg.Offset

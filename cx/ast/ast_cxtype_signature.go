@@ -99,6 +99,13 @@ func (typeSignature *CXTypeSignature) GetSize(prgrm *CXProgram, IsForUpdateSymbo
 
 		return typeSignature.GetArraySize(prgrm)
 	case TYPE_POINTER_ARRAY_ATOMIC:
+		arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(typeSignature.Meta)
+		if typeSignature.IsDeref && len(arrDetails.Indexes) > 0 {
+			return types.Code(arrDetails.Type).Size()
+		} else if typeSignature.IsDeref {
+			return typeSignature.GetArraySize(prgrm)
+		}
+
 		return types.POINTER.Size()
 	case TYPE_SLICE_ATOMIC:
 		return types.POINTER.Size()
@@ -139,7 +146,7 @@ func (typeSignature *CXTypeSignature) GetArrayLength(prgrm *CXProgram) types.Poi
 
 func (typeSignature *CXTypeSignature) GetArraySize(prgrm *CXProgram) types.Pointer {
 	switch typeSignature.Type {
-	case TYPE_ARRAY_ATOMIC:
+	case TYPE_ARRAY_ATOMIC, TYPE_POINTER_ARRAY_ATOMIC:
 		typeSignatureForArray := prgrm.GetCXTypeSignatureArrayFromArray(typeSignature.Meta)
 		arrType := types.Code(typeSignatureForArray.Type)
 		return TotalLength(typeSignatureForArray.Lengths) * arrType.Size()

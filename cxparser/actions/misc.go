@@ -47,6 +47,7 @@ func WritePrimary(prgrm *ast.CXProgram, typeCode types.Code, byts []byte, isSlic
 	if arg.Type == types.STR || arg.Type == types.AFF {
 		arg.Size = types.POINTER_SIZE
 		if isSlice == false {
+
 			types.Write_ptr(byts, 0, arg.Offset)
 		}
 	}
