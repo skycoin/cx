@@ -717,3 +717,44 @@ func TestTypeChecks_ParseFuncHeaders(t *testing.T) {
 	}
 
 }
+
+func TestTypeChecks_ParseAllDeclarations(t *testing.T) {
+	tests := []struct {
+		scenario string
+		testDirs []string
+	}{
+		{
+			scenario: "Has Declarations",
+			testDirs: []string{
+				"./test_files/test.cx",
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.scenario, func(t *testing.T) {
+			var files []*os.File
+
+			for _, testDir := range tc.testDirs {
+
+				file, err := os.Open(testDir)
+
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				files = append(files, file)
+			}
+
+			Globals, Enums, TypeDefinitions, Structs, Funcs, gotErr := declaration_extractor.ExtractAllDeclarations(files)
+
+			if Enums == nil || TypeDefinitions == nil || gotErr != nil {
+
+			}
+
+			type_checks.ParseAllDeclarations(Globals, Structs, Funcs)
+
+			actions.AST.PrintProgram()
+		})
+	}
+}
