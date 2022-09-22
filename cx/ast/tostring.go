@@ -375,6 +375,37 @@ func getNonCollectionValue(prgrm *CXProgram, fp types.Pointer, arg, elt *CXArgum
 	}
 }
 
+func readValue(prgrm *CXProgram, typ string, offset types.Pointer) string {
+	switch typ {
+	case "bool":
+		return fmt.Sprintf("%v", types.Read_bool(prgrm.Memory, offset))
+	case "str":
+		return fmt.Sprintf("%v", types.Read_str(prgrm.Memory, offset))
+	case "i8":
+		return fmt.Sprintf("%v", types.Read_i8(prgrm.Memory, offset))
+	case "i16":
+		return fmt.Sprintf("%v", types.Read_i16(prgrm.Memory, offset))
+	case "i32":
+		return fmt.Sprintf("%v", types.Read_i32(prgrm.Memory, offset))
+	case "i64":
+		return fmt.Sprintf("%v", types.Read_i64(prgrm.Memory, offset))
+	case "ui8":
+		return fmt.Sprintf("%v", types.Read_ui8(prgrm.Memory, offset))
+	case "ui16":
+		return fmt.Sprintf("%v", types.Read_ui16(prgrm.Memory, offset))
+	case "ui32":
+		return fmt.Sprintf("%v", types.Read_ui32(prgrm.Memory, offset))
+	case "ui64":
+		return fmt.Sprintf("%v", types.Read_ui64(prgrm.Memory, offset))
+	case "f32":
+		return fmt.Sprintf("%v", types.Read_f32(prgrm.Memory, offset))
+	case "f64":
+		return fmt.Sprintf("%v", types.Read_f64(prgrm.Memory, offset))
+	}
+
+	return ""
+}
+
 // ReadSliceElements ...
 func ReadSliceElements(prgrm *CXProgram, fp types.Pointer, arg, elt *CXArgument, sliceData []byte, size types.Pointer, typ string) string {
 	switch typ {
@@ -538,32 +569,8 @@ func GetPrintableValue(prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSig
 		}
 
 		typ = types.Code(argTypeSig.Meta).Name()
-		switch typ {
-		case "bool":
-			return fmt.Sprintf("%v", types.Read_bool(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, argTypeSig)))
-		case "str":
-			return fmt.Sprintf("%v", types.Read_str(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, argTypeSig)))
-		case "i8":
-			return fmt.Sprintf("%v", types.Read_i8(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, argTypeSig)))
-		case "i16":
-			return fmt.Sprintf("%v", types.Read_i16(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, argTypeSig)))
-		case "i32":
-			return fmt.Sprintf("%v", types.Read_i32(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, argTypeSig)))
-		case "i64":
-			return fmt.Sprintf("%v", types.Read_i64(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, argTypeSig)))
-		case "ui8":
-			return fmt.Sprintf("%v", types.Read_ui8(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, argTypeSig)))
-		case "ui16":
-			return fmt.Sprintf("%v", types.Read_ui16(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, argTypeSig)))
-		case "ui32":
-			return fmt.Sprintf("%v", types.Read_ui32(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, argTypeSig)))
-		case "ui64":
-			return fmt.Sprintf("%v", types.Read_ui64(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, argTypeSig)))
-		case "f32":
-			return fmt.Sprintf("%v", types.Read_f32(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, argTypeSig)))
-		case "f64":
-			return fmt.Sprintf("%v", types.Read_f64(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, argTypeSig)))
-		}
+
+		return readValue(prgrm, typ, GetFinalOffset(prgrm, fp, nil, argTypeSig))
 	} else if argTypeSig.Type == TYPE_POINTER_ATOMIC {
 		// TODO: improve this
 		return fmt.Sprintf("%v", types.Read_ptr(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, argTypeSig)))
@@ -571,12 +578,13 @@ func GetPrintableValue(prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSig
 		arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(argTypeSig.Meta)
 		var val string
 
+		typ := types.Code(arrDetails.Type).Name()
 		if len(arrDetails.Lengths) == 1 {
 			val += "["
 
 			// for Arrays
 			for c := types.Pointer(0); c < arrDetails.Lengths[0]; c++ {
-				val += fmt.Sprintf("%v", types.Read_i32(prgrm.Memory, GetFinalOffset(prgrm, fp+(c*types.Code(arrDetails.Type).Size()), nil, argTypeSig)))
+				val += readValue(prgrm, typ, GetFinalOffset(prgrm, fp+(c*types.Code(arrDetails.Type).Size()), nil, argTypeSig))
 				if c != arrDetails.Lengths[0]-1 {
 					val += ", "
 				}
@@ -595,13 +603,11 @@ func GetPrintableValue(prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSig
 			}
 
 			// adding first element because of formatting reasons
-			val += fmt.Sprintf("%v", types.Read_i32(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, argTypeSig)))
+			val += readValue(prgrm, typ, GetFinalOffset(prgrm, fp, nil, argTypeSig))
 
 			for c := types.Pointer(1); c < finalSize; c++ {
 				val += arrayPrinter(c, arrDetails.Lengths, "", "")
-
-				val += fmt.Sprintf("%v", types.Read_i32(prgrm.Memory, GetFinalOffset(prgrm, fp+c*types.Code(arrDetails.Type).Size(), nil, argTypeSig)))
-
+				val += readValue(prgrm, typ, GetFinalOffset(prgrm, fp+(c*types.Code(arrDetails.Type).Size()), nil, argTypeSig))
 			}
 
 			for range arrDetails.Lengths {
@@ -612,8 +618,47 @@ func GetPrintableValue(prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSig
 		}
 
 	} else if argTypeSig.Type == TYPE_POINTER_ARRAY_ATOMIC {
-		// TODO: improve this
-		return fmt.Sprintf("%v", types.Read_ptr(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, argTypeSig)))
+		arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(argTypeSig.Meta)
+		var val string
+
+		typ := types.Code(arrDetails.Type).Name()
+		if len(arrDetails.Lengths) == 1 {
+			val += "["
+
+			// for Arrays
+			for c := types.Pointer(0); c < arrDetails.Lengths[0]; c++ {
+				val += readValue(prgrm, typ, GetFinalOffset(prgrm, fp+(c*types.Code(arrDetails.Type).Size()), nil, argTypeSig))
+				if c != arrDetails.Lengths[0]-1 {
+					val += ", "
+				}
+			}
+
+			val += "]"
+
+			return val
+		} else {
+			val = ""
+
+			finalSize := types.Pointer(1)
+			for _, l := range arrDetails.Lengths {
+				finalSize *= l
+				val += "["
+			}
+
+			// adding first element because of formatting reasons
+			readValue(prgrm, typ, GetFinalOffset(prgrm, fp, nil, argTypeSig))
+
+			for c := types.Pointer(1); c < finalSize; c++ {
+				val += arrayPrinter(c, arrDetails.Lengths, "", "")
+				val += readValue(prgrm, typ, GetFinalOffset(prgrm, fp+(c*types.Code(arrDetails.Type).Size()), nil, argTypeSig))
+			}
+
+			for range arrDetails.Lengths {
+				val += "]"
+			}
+
+			return val
+		}
 	} else {
 		panic("type is not known")
 	}
