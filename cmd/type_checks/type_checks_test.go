@@ -513,7 +513,7 @@ func TestTypeChecks_ParseStructs(t *testing.T) {
 					Package: "main",
 					Fields: []StructFieldTypeSignature{
 						{
-							Index: 0,
+							Index: 1,
 							Name:  "name",
 							Type:  "str",
 						},
@@ -541,11 +541,10 @@ func TestTypeChecks_ParseStructs(t *testing.T) {
 
 			program := actions.AST
 
-			var ast3 string
-
 			for _, wantStruct := range tc.structTypeSignatures {
 
 				var match bool
+				var ast3 string
 				var gotStruct ast.CXStruct
 
 				for _, pkgIdx := range program.Packages {
@@ -569,29 +568,37 @@ func TestTypeChecks_ParseStructs(t *testing.T) {
 							ast3 += fmt.Sprintf("want %s %d. %s, got %s %d. %s\n", wantStruct.Package, wantStruct.Index, wantStruct.Name, gotPkgName, gotStruct.Index, gotStruct.Name)
 
 							if gotStruct.Index != wantStruct.Index || len(gotStruct.Fields) != len(wantStruct.Fields) {
-								ast3
+								ast3 += fmt.Sprintf("want %d fields, got %d fields", len(wantStruct.Fields), len(gotStruct.Fields))
 								break
 							}
 
-							var fieldMatches int
-							for _, wantFieldIdx := range wantStruct.Fields {
+							for _, wantField := range wantStruct.Fields {
 
 								for _, gotFieldIdx := range gotStruct.Fields {
 
-									// gotField := program.GetCXTypeSignatureFromArray(gotFieldIdx)
+									gotField := program.GetCXTypeSignatureFromArray(gotFieldIdx)
+									var gotFieldType string
+									var gotFieldIndex int
 
-									if gotFieldIdx == wantFieldIdx {
-										match = true
-										break
+									if gotField.Name == wantField.Name {
+										if gotField.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+											gotFieldArg := program.CXArgs[gotField.Meta]
+											gotFieldIndex = gotFieldArg.Index
+											gotFieldType = ast.GetFormattedType(actions.AST, &gotFieldArg)
+										} else {
+											gotFieldType = types.Code(gotField.Meta).Name()
+											gotFieldIndex = int(gotField.Index)
+										}
+
+										ast3 += fmt.Sprintf("want field %d. %s %s, got %d. %s %s\n", wantField.Index, wantField.Name, wantField.Type, gotFieldIndex, gotField.Name, gotFieldType)
+
+										if gotFieldIndex == wantField.Index &&
+											gotFieldType == wantField.Type {
+											match = true
+											break
+										}
 									}
 
-									// if gotField.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-
-									// } else if gotField.Type == ast.TYPE_ATOMIC {
-
-									// } else if gotField.Type == ast.TYPE_POINTER_ATOMIC {
-
-									// }
 								}
 
 							}
@@ -604,8 +611,9 @@ func TestTypeChecks_ParseStructs(t *testing.T) {
 				}
 
 				if !match {
-					t.Errorf("want struct %v, got %v", wantStruct, gotStruct)
+					t.Error(ast3)
 				}
+
 			}
 
 		})
