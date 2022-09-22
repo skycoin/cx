@@ -1,0 +1,72 @@
+package main
+
+var Bool bool = true
+var Byte i8 = 8B
+var I16 i16 = 16H
+var I32 i32 = 32
+var I64 i64 = 64L
+var UByte ui8 = 9UB
+var UI16 ui16 = 17UH
+var UI32 ui32 = 33U
+var UI64 ui64 = 65UL
+var F32 f32 = 0.32
+var F64 f64 = 0.64D
+var string str = "Hello World"
+var Affordance aff
+
+var intArray [5]i32
+// var stringPointer *str
+
+// var abc string	Var in comment
+/*
+	var apple int
+	- Global in a multiline comment
+*/
+
+func main () {
+
+	bool.print(Bool)
+	i8.print(Byte)
+	i16.print(I16)
+	i32.print(I32)
+	i64.print(I64)
+	ui8.print(UByte)
+	ui16.print(UI16)
+	ui32.print(UI32)
+	ui64.print(UI64)
+	f32.print(F32)
+	f64.print(F64)
+	str.print(string)
+	aff.print(Affordance)
+	
+
+	//Addition
+	answer := add(I32, 6)
+	i32.print(answer)
+
+	//Multiply
+	var quotient i32
+	var remainder f32
+	quotient, remainder = divide(9, 4)
+	i32.print(quotient)
+	f32.print(remainder)
+
+	printer("Print me")
+}
+
+func add(a i32, b i32)(answer i32) {
+	answer = a + b
+}
+
+func divide(c i32, d i32)(quotient i32, remainder f32) {
+	quotient = c/d
+	remainder = i32.f32(c)%i32.f32(d)
+}
+
+func printer(message str)() {
+	str.print(message)
+}
+
+type AnotherType struct {
+	name str
+}
