@@ -382,7 +382,14 @@ func IsTypePointerArrayAtomic(arg *CXArgument) bool {
 }
 
 func IsTypeSliceAtomic(arg *CXArgument) bool {
-	return arg.IsSlice && len(arg.Lengths) == 1 && (arg.Type.IsPrimitive() || arg.Type == types.STR)
+	isThereDeclPointer := false
+	for _, decl := range arg.DeclarationSpecifiers {
+		if decl == constants.DECL_POINTER {
+			isThereDeclPointer = true
+		}
+	}
+
+	return !isThereDeclPointer && arg.IsSlice && len(arg.Lengths) > 0 && (arg.Type.IsPrimitive() || arg.Type == types.STR)
 }
 
 func IsTypeStruct(arg *CXArgument) bool {
