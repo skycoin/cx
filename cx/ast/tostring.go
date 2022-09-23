@@ -628,6 +628,7 @@ func GetPrintableValue(prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSig
 			// for Arrays
 			for c := types.Pointer(0); c < arrDetails.Lengths[0]; c++ {
 				val += readValue(prgrm, typ, GetFinalOffset(prgrm, fp+(c*types.Code(arrDetails.Type).Size()), nil, argTypeSig))
+
 				if c != arrDetails.Lengths[0]-1 {
 					val += ", "
 				}
@@ -646,7 +647,7 @@ func GetPrintableValue(prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSig
 			}
 
 			// adding first element because of formatting reasons
-			readValue(prgrm, typ, GetFinalOffset(prgrm, fp, nil, argTypeSig))
+			val += readValue(prgrm, typ, GetFinalOffset(prgrm, fp, nil, argTypeSig))
 
 			for c := types.Pointer(1); c < finalSize; c++ {
 				val += arrayPrinter(c, arrDetails.Lengths, "", "")
