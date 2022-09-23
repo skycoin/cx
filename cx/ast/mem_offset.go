@@ -196,6 +196,11 @@ func GetFinalOffset(prgrm *CXProgram, fp types.Pointer, oldArg *CXArgument, argT
 			}
 		}
 
+		if finalOffset.IsValid() && finalOffset >= prgrm.Heap.StartsAt {
+			// then it's an object
+			finalOffset += types.OBJECT_HEADER_SIZE
+		}
+
 		return finalOffset
 	}
 
