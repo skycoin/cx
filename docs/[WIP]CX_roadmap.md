@@ -30,8 +30,8 @@
 - [ ] CXTypeSignature Implementation
     - [x] atomic
     - [x] PointerAtomic
-    - [ ] ArrayAtomic
-    - [ ] ArrayPointerAtomic
+    - [x] ArrayAtomic
+    - [x] ArrayPointerAtomic
     - [ ] SliceAtomic
     - [ ] SlicePointerAtomic
     - [ ] Struct
