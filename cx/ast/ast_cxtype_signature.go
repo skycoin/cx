@@ -53,24 +53,20 @@ type CXTypeSignature struct {
 	// if type is struct, meta is struct id
 	// if type is array, meta is CXTypeSignature_Array id
 	// if type is atomic, meta is the atomic type
-	// types.BOOL
-	// types.I8
-	// types.I16
-	// types.I32
-	// types.I64
-	// types.UI8
-	// types.UI16
-	// types.UI32
-	// types.UI64
-	// types.F32
-	// types.F64
-	// types.STR
 	Meta int
 }
 
 type CXTypeSignature_Array struct {
-	Type    int
+	Type int // atomic type
+
+	// length of the array
+	// 1-dimensional array [x]
+	// 2-dimensional array [x y]
+	// 3-dimensional array [x y z]
 	Lengths []types.Pointer
+
+	// Index of the element which
+	// we want to access.
 	Indexes []CXTypeSignatureIndex
 }
 
