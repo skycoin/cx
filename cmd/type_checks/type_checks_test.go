@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/skycoin/cx/cmd/declaration_extractor"
+	"github.com/skycoin/cx/cmd/packageloader/loader"
 	"github.com/skycoin/cx/cmd/type_checks"
 	"github.com/skycoin/cx/cx/ast"
 	cxinit "github.com/skycoin/cx/cx/init"
@@ -719,32 +720,156 @@ func TestTypeChecks_ParseFuncHeaders(t *testing.T) {
 }
 
 func TestTypeChecks_ParseAllDeclarations(t *testing.T) {
+
+	type Global struct {
+		Name string
+		Type string
+	}
+
+	type StructField struct {
+		Name string
+		Type string
+	}
+
+	type Struct struct {
+		Name   string
+		Fields []StructField
+	}
+
+	type Func struct {
+		Name         string
+		RecieverName string
+		RecieverType string
+	}
+
+	type Package struct {
+		Name    string
+		Globals []Global
+		Structs []Struct
+		Funcs   []Func
+	}
+
 	tests := []struct {
-		scenario string
-		testDirs []string
+		scenario    string
+		testDir     string
+		wantProgram []Package
 	}{
 		{
 			scenario: "Has Declarations",
-			testDirs: []string{
-				"./test_files/test.cx",
+			testDir:  "./test_files/ParseAllDeclarations/HasDeclarations",
+			wantProgram: []Package{
+				{
+					Name: "main",
+					Globals: []Global{
+						{
+							Name: "Bool",
+							Type: "bool",
+						},
+						{
+							Name: "Byte",
+							Type: "i8",
+						},
+						{
+							Name: "I16",
+							Type: "i16",
+						},
+						{
+							Name: "I32",
+							Type: "i32",
+						},
+						{
+							Name: "I64",
+							Type: "i64",
+						},
+						{
+							Name: "UByte",
+							Type: "ui8",
+						},
+						{
+							Name: "UI16",
+							Type: "ui16",
+						},
+						{
+							Name: "UI32",
+							Type: "ui32",
+						},
+						{
+							Name: "UI64",
+							Type: "ui64",
+						},
+						{
+							Name: "F32",
+							Type: "f32",
+						},
+						{
+							Name: "F64",
+							Type: "f64",
+						},
+						{
+							Name: "string",
+							Type: "str",
+						},
+						{
+							Name: "Affordance",
+							Type: "[]aff",
+						},
+						{
+							Name: "intArray",
+							Type: "[5]i32",
+						},
+					},
+					Structs: []Struct{
+						{
+							Name: "CustomType",
+							Fields: []StructField{
+								{
+									Name: "fieldA",
+									Type: "str",
+								},
+								{
+									Name: "fieldB",
+									Type: "i32",
+								},
+							},
+						},
+						{
+							Name: "AnotherType",
+							Fields: []StructField{
+								{
+									Name: "name",
+									Type: "str",
+								},
+							},
+						},
+					},
+					Funcs: []Func{
+						{
+							Name: "main",
+						},
+						{
+							Name: "add",
+						},
+						{
+							Name: "divide",
+						},
+						{
+							Name: "printer",
+						},
+						{
+							Name:         "setFieldA",
+							RecieverName: "customType",
+							RecieverType: "CustomType",
+						},
+					},
+				},
 			},
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
-			var files []*os.File
 
-			for _, testDir := range tc.testDirs {
-
-				file, err := os.Open(testDir)
-
-				if err != nil {
-					t.Fatal(err)
-				}
-
-				files = append(files, file)
-			}
+			_, files, _ := loader.ParseArgsForCX([]string{tc.testDir}, false)
 
 			Globals, Enums, TypeDefinitions, Structs, Funcs, gotErr := declaration_extractor.ExtractAllDeclarations(files)
 
@@ -754,7 +879,53 @@ func TestTypeChecks_ParseAllDeclarations(t *testing.T) {
 
 			type_checks.ParseAllDeclarations(Globals, Structs, Funcs)
 
-			actions.AST.PrintProgram()
+			var wantProgramString string
+
+			for i, wantPkg := range tc.wantProgram {
+
+				wantProgramString += fmt.Sprintf("%d.- Package: %s\n", i, wantPkg.Name)
+
+				if len(wantPkg.Globals) > 0 {
+					wantProgramString += "\tGlobals\n"
+				}
+
+				for i, wantGlobal := range wantPkg.Globals {
+					wantProgramString += fmt.Sprintf("\t\t%d.- Global: %s %s\n", i, wantGlobal.Name, wantGlobal.Type)
+				}
+
+				if len(wantPkg.Structs) > 0 {
+					wantProgramString += "\tStructs\n"
+				}
+
+				for i, wantStruct := range wantPkg.Structs {
+					wantProgramString += fmt.Sprintf("\t\t%d.- Struct: %s\n", i, wantStruct.Name)
+					for j, wantField := range wantStruct.Fields {
+						wantProgramString += fmt.Sprintf("\t\t\t%d.- Field: %s %s\n", j, wantField.Name, wantField.Type)
+					}
+				}
+
+				if len(wantPkg.Funcs) > 0 {
+					wantProgramString += "\tFunctions\n"
+				}
+
+				for i, wantFunc := range wantPkg.Funcs {
+					wantFuncName := wantFunc.Name
+					var wantReceiverString string
+					if wantFunc.RecieverName != "" {
+						wantFuncName = wantFunc.RecieverType + "." + wantFuncName
+						wantReceiverString = fmt.Sprintf("%s.%s *%s", wantPkg.Name, wantFunc.RecieverName, wantFunc.RecieverType)
+					}
+
+					wantProgramString += fmt.Sprintf("\t\t%d.- Function: %s (%s) ()\n", i, wantFuncName, wantReceiverString)
+				}
+
+			}
+
+			gotProgramString := ast.ToString(actions.AST)
+
+			if wantProgramString != gotProgramString {
+				t.Errorf("want %v, got %v", wantProgramString, gotProgramString)
+			}
 		})
 	}
 }
