@@ -5,7 +5,6 @@
 - [x] Stage 1: File and Package Loading
 	- Load CX packages and get imports. Extracting the packages that need to be imported
 	- Loading all modules/files in each package
-	- Function to extract all imports from source file
 
 - [x] Stage 2: Declaration Extraction
 	- Function to extract all global declarations from source file

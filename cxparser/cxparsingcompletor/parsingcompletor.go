@@ -2321,11 +2321,11 @@ yydefault:
 				if len(outs) > 0 {
 					outTypeSig := actions.AST.GetCXTypeSignatureFromArray(outs[0])
 
-					var expressionOutputArg *ast.CXArgument = &ast.CXArgument{}
+					var expressionOutputArg *ast.CXArgument = &ast.CXArgument{ArgDetails: &ast.CXArgumentDebug{}}
 					if outTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 						expressionOutputArg = actions.AST.GetCXArgFromArray(ast.CXArgumentIndex(outTypeSig.Meta))
 					} else {
-						panic("type is not cx argument deprecate\n\n")
+						// do nothing
 					}
 
 					println(ast.CompilationError(expressionOutputArg.ArgDetails.FileName, expressionOutputArg.ArgDetails.FileLine), "invalid expression")
