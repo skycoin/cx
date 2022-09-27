@@ -539,6 +539,18 @@ func processAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fromExp
 					prgrm.CXArgs[toExpressionOutputIdx].Type = types.POINTER
 					prgrm.CXArgs[toExpressionOutputIdx].PointerTargetType = types.Code(fromExpressionOperatorOutputTypeSig.Meta)
 				}
+			} else if fromExpressionOperatorOutputTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
+				sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(fromExpressionOperatorOutputTypeSig.Meta)
+
+				// only assigning as if the operator had only one output defined
+				if fromExpressionOperator.IsBuiltIn() && fromExpressionOperator.AtomicOPCode != constants.OP_IDENTITY {
+					// it's a short variable declaration
+					prgrm.CXArgs[toExpressionOutputIdx].Type = types.Code(sliceDetails.Type)
+				} else {
+					// we'll delegate multiple-value returns to the 'expression' grammar rule
+					// only assigning as if the operator had only one output defined
+					prgrm.CXArgs[toExpressionOutputIdx].Type = types.Code(sliceDetails.Type)
+				}
 			} else {
 				panic("type is not known")
 			}

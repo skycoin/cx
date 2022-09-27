@@ -359,6 +359,8 @@ func getNonCollectionValue(prgrm *CXProgram, fp types.Pointer, arg, elt *CXArgum
 				fldTotalSize = GetArgSize(prgrm, &prgrm.CXArgs[fldIdx])
 			} else if typeSignature.Type == TYPE_ATOMIC || typeSignature.Type == TYPE_POINTER_ATOMIC {
 				fldTotalSize = types.Code(typeSignature.Type).Size()
+			} else if typeSignature.Type == TYPE_SLICE_ATOMIC {
+				fldTotalSize = typeSignature.GetSize(prgrm, false)
 			} else {
 				panic("type is not known")
 			}
@@ -450,6 +452,8 @@ func ReadSliceElements(prgrm *CXProgram, fp types.Pointer, arg, elt *CXArgument,
 				fldTotalSize = GetArgSize(prgrm, &prgrm.CXArgs[fldIdx])
 			} else if typeSignature.Type == TYPE_ATOMIC || typeSignature.Type == TYPE_POINTER_ATOMIC {
 				fldTotalSize = types.Code(typeSignature.Type).Size()
+			} else if typeSignature.Type == TYPE_SLICE_ATOMIC {
+				fldTotalSize = typeSignature.GetSize(prgrm, false)
 			} else {
 				panic("type is not known")
 			}
@@ -660,6 +664,58 @@ func GetPrintableValue(prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSig
 
 			return val
 		}
+	} else if argTypeSig.Type == TYPE_SLICE_ATOMIC {
+		arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(argTypeSig.Meta)
+		var val string
+
+		typ := types.Code(arrDetails.Type).Name()
+		if len(arrDetails.Lengths) == 1 {
+			val += "["
+
+			// for slices
+			sizeOfElement := types.Code(arrDetails.Type).Size()
+			sliceOffset := GetSliceOffset(prgrm, fp, argTypeSig)
+			sliceData := GetSlice(prgrm, sliceOffset, sizeOfElement)
+
+			if len(sliceData) != 0 {
+				sliceLen := types.Read_ptr(sliceData, 0)
+				for c := types.Pointer(0); c < sliceLen; c++ {
+					if c == sliceLen-1 {
+						val += ReadSliceElements(prgrm, sliceOffset+constants.SLICE_HEADER_SIZE+types.OBJECT_HEADER_SIZE+c*sizeOfElement, arg, elt, sliceData[types.POINTER_SIZE+c*sizeOfElement:], sizeOfElement, typ)
+					} else {
+						val += ReadSliceElements(prgrm, sliceOffset+constants.SLICE_HEADER_SIZE+types.OBJECT_HEADER_SIZE+c*sizeOfElement, arg, elt, sliceData[types.POINTER_SIZE+c*sizeOfElement:], sizeOfElement, typ) + ", "
+					}
+
+				}
+			}
+
+			val += "]"
+
+			return val
+		} else {
+			val = ""
+
+			finalSize := types.Pointer(1)
+			for _, l := range arrDetails.Lengths {
+				finalSize *= l
+				val += "["
+			}
+
+			// adding first element because of formatting reasons
+			val += readValue(prgrm, typ, GetFinalOffset(prgrm, fp, nil, argTypeSig))
+
+			for c := types.Pointer(1); c < finalSize; c++ {
+				val += arrayPrinter(c, arrDetails.Lengths, "", "")
+				val += readValue(prgrm, typ, GetFinalOffset(prgrm, fp+(c*types.Code(arrDetails.Type).Size()), nil, argTypeSig))
+			}
+
+			for range arrDetails.Lengths {
+				val += "]"
+			}
+
+			return val
+		}
+
 	} else {
 		panic("type is not known")
 	}
@@ -907,6 +963,22 @@ func GetFormattedType(prgrm *CXProgram, typeSig *CXTypeSignature) string {
 			typ = "*" + typ
 		}
 
+	} else if typeSig.Type == TYPE_SLICE_ATOMIC {
+		arrayData := prgrm.GetCXTypeSignatureArrayFromArray(typeSig.Meta)
+
+		if !typeSig.IsDeref {
+			arrLen := len(arrayData.Lengths) - len(arrayData.Indexes)
+			if arrLen != 0 {
+				for i := 0; i < len(arrayData.Lengths[len(arrayData.Indexes):]); i++ {
+					typ = fmt.Sprintf("[]%s", typ)
+				}
+			}
+		}
+
+		typ += types.Code(arrayData.Type).Name()
+		if typeSig.PassBy == constants.PASSBY_REFERENCE {
+			typ = "*" + typ
+		}
 	} else {
 		panic("type is not known")
 	}

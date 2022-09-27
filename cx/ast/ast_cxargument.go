@@ -367,7 +367,7 @@ func IsTypeArrayAtomic(arg *CXArgument) bool {
 		}
 	}
 
-	return !isThereDeclPointer && arg.Type.IsPrimitive() && !arg.IsSlice && len(arg.Lengths) > 0 && len(arg.Indexes) == 0 && len(arg.Fields) == 0 && len(arg.DereferenceOperations) == 0 && (len(arg.DeclarationSpecifiers) >= 2 && arg.DeclarationSpecifiers[0] == constants.DECL_BASIC && arg.DeclarationSpecifiers[1] == constants.DECL_ARRAY)
+	return !isThereDeclPointer && arg.Type.IsPrimitive() && !arg.IsSlice && len(arg.Lengths) > 0 && len(arg.Fields) == 0 && len(arg.DereferenceOperations) == 0 && (len(arg.DeclarationSpecifiers) >= 2 && arg.DeclarationSpecifiers[0] == constants.DECL_BASIC && arg.DeclarationSpecifiers[1] == constants.DECL_ARRAY)
 }
 
 func IsTypePointerArrayAtomic(arg *CXArgument) bool {
@@ -378,7 +378,7 @@ func IsTypePointerArrayAtomic(arg *CXArgument) bool {
 		}
 	}
 
-	return isThereDeclPointer && arg.Type.IsPrimitive() && !arg.IsSlice && len(arg.Lengths) > 0 && len(arg.Indexes) == 0 && len(arg.Fields) == 0 && len(arg.DereferenceOperations) == 0 && (len(arg.DeclarationSpecifiers) >= 2 && arg.DeclarationSpecifiers[0] == constants.DECL_BASIC && arg.DeclarationSpecifiers[1] == constants.DECL_ARRAY)
+	return isThereDeclPointer && arg.Type.IsPrimitive() && !arg.IsSlice && len(arg.Lengths) > 0 && len(arg.Fields) == 0 && len(arg.DereferenceOperations) == 0 && (len(arg.DeclarationSpecifiers) >= 2 && arg.DeclarationSpecifiers[0] == constants.DECL_BASIC && arg.DeclarationSpecifiers[1] == constants.DECL_ARRAY)
 }
 
 func IsTypeSliceAtomic(arg *CXArgument) bool {
@@ -389,7 +389,7 @@ func IsTypeSliceAtomic(arg *CXArgument) bool {
 		}
 	}
 
-	return !isThereDeclPointer && arg.IsSlice && len(arg.Lengths) > 0 && (arg.Type.IsPrimitive() || arg.Type == types.STR)
+	return !isThereDeclPointer && arg.Type.IsPrimitive() && arg.IsSlice && len(arg.Lengths) > 0 && len(arg.Fields) == 0 && len(arg.DereferenceOperations) == 0 && (len(arg.DeclarationSpecifiers) >= 2 && arg.DeclarationSpecifiers[0] == constants.DECL_BASIC && arg.DeclarationSpecifiers[1] == constants.DECL_SLICE)
 }
 
 func IsTypeStruct(arg *CXArgument) bool {
