@@ -879,53 +879,115 @@ func TestTypeChecks_ParseAllDeclarations(t *testing.T) {
 
 			type_checks.ParseAllDeclarations(Globals, Structs, Funcs)
 
-			var wantProgramString string
+			program := actions.AST
 
-			for i, wantPkg := range tc.wantProgram {
-
-				wantProgramString += fmt.Sprintf("%d.- Package: %s\n", i, wantPkg.Name)
-
-				if len(wantPkg.Globals) > 0 {
-					wantProgramString += "\tGlobals\n"
+			for _, wantPkg := range tc.wantProgram {
+				gotPkg, err := actions.AST.GetPackage(wantPkg.Name)
+				if err != nil {
+					t.Fatal(err)
 				}
 
-				for i, wantGlobal := range wantPkg.Globals {
-					wantProgramString += fmt.Sprintf("\t\t%d.- Global: %s %s\n", i, wantGlobal.Name, wantGlobal.Type)
+				if cxpackages.IsDefaultPackage(gotPkg.Name) {
+					continue
 				}
 
-				if len(wantPkg.Structs) > 0 {
-					wantProgramString += "\tStructs\n"
-				}
+				// Globals
+				for _, wantGlobal := range wantPkg.Globals {
+					var gotGlobalType string
+					var match bool
+					var gotGlobal *ast.CXTypeSignature
+					for _, globalIdx := range gotPkg.Globals.Fields {
+						gotGlobal = program.GetCXTypeSignatureFromArray(globalIdx)
 
-				for i, wantStruct := range wantPkg.Structs {
-					wantProgramString += fmt.Sprintf("\t\t%d.- Struct: %s\n", i, wantStruct.Name)
-					for j, wantField := range wantStruct.Fields {
-						wantProgramString += fmt.Sprintf("\t\t\t%d.- Field: %s %s\n", j, wantField.Name, wantField.Type)
+						if gotGlobal.Name == wantGlobal.Name {
+
+							if gotGlobal.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+								gotGlobalType = ast.GetFormattedType(actions.AST, actions.AST.GetCXArg(ast.CXArgumentIndex(gotGlobal.Meta)))
+							} else if gotGlobal.Type == ast.TYPE_ATOMIC {
+								gotGlobalType = types.Code(gotGlobal.Meta).Name()
+							} else if gotGlobal.Type == ast.TYPE_POINTER_ATOMIC {
+								gotGlobalType = "*" + types.Code(gotGlobal.Meta).Name()
+							} else {
+								gotGlobalType = "type is not known"
+							}
+
+							if gotGlobalType == wantGlobal.Type {
+								match = true
+							}
+
+							break
+						}
+
+					}
+
+					if !match {
+						t.Errorf("want global %s %s %s, got %s %s %s", wantPkg.Name, wantGlobal.Name, wantGlobal.Type, gotPkg.Name, gotGlobal.Name, gotGlobalType)
 					}
 				}
 
-				if len(wantPkg.Funcs) > 0 {
-					wantProgramString += "\tFunctions\n"
-				}
+				// Structs
+				for _, wantStruct := range wantPkg.Structs {
+					var match bool
+					var fields string
+					var gotStruct ast.CXStruct
+					for _, structIdx := range gotPkg.Structs {
+						gotStruct = program.CXStructs[structIdx]
 
-				for i, wantFunc := range wantPkg.Funcs {
-					wantFuncName := wantFunc.Name
-					var wantReceiverString string
-					if wantFunc.RecieverName != "" {
-						wantFuncName = wantFunc.RecieverType + "." + wantFuncName
-						wantReceiverString = fmt.Sprintf("%s.%s *%s", wantPkg.Name, wantFunc.RecieverName, wantFunc.RecieverType)
+						if gotStruct.Name == wantStruct.Name {
+
+							var fieldMatch int
+							for _, wantField := range wantStruct.Fields {
+
+								for _, gotFieldIdx := range gotStruct.Fields {
+
+									gotField := program.GetCXTypeSignatureFromArray(gotFieldIdx)
+									var gotFieldType string
+
+									if gotField.Name == wantField.Name {
+										if gotField.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+											gotFieldArg := program.CXArgs[gotField.Meta]
+											gotFieldType = ast.GetFormattedType(actions.AST, &gotFieldArg)
+										} else if gotField.Type == ast.TYPE_ATOMIC {
+											gotFieldType = types.Code(gotField.Meta).Name()
+										} else if gotField.Type == ast.TYPE_POINTER_ATOMIC {
+											gotFieldType = "*" + types.Code(gotField.Meta).Name()
+										} else {
+											gotFieldType = "type is not known"
+										}
+
+										fields += fmt.Sprintf("want field %s %s, got %s %s\n", wantField.Name, wantField.Type, gotField.Name, gotFieldType)
+
+										if gotFieldType == wantField.Type {
+											fieldMatch++
+											break
+										}
+									}
+
+								}
+
+								if fieldMatch == len(wantStruct.Fields) {
+									match = true
+								}
+
+							}
+
+							break
+						}
+
+					}
+					if !match {
+						t.Errorf("want %s %s, got %s %s\n%s", wantPkg.Name, wantStruct.Name, gotPkg.Name, gotStruct.Name, fields)
 					}
 
-					wantProgramString += fmt.Sprintf("\t\t%d.- Function: %s (%s) ()\n", i, wantFuncName, wantReceiverString)
+				}
+
+				// Funcs
+				for _, wantFunc := range wantPkg.Funcs {
+
 				}
 
 			}
 
-			gotProgramString := ast.ToString(actions.AST)
-
-			if wantProgramString != gotProgramString {
-				t.Errorf("want %v, got %v", wantProgramString, gotProgramString)
-			}
 		})
 	}
 }
