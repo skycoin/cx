@@ -153,6 +153,7 @@ func opSliceAppend(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXV
 			ast.SliceAppendWrite(prgrm, outputSliceOffset, obj, inputSliceLen+types.Cast_int_to_ptr(i))
 		}
 	}
+
 	outputs[0].Set_ptr(prgrm, outputSliceOffset)
 }
 

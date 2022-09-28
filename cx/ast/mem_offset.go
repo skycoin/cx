@@ -238,7 +238,6 @@ func GetFinalOffset(prgrm *CXProgram, fp types.Pointer, oldArg *CXArgument, argT
 		}
 
 		return argTypeSigOffset
-
 	}
 
 	finalOffset = arg.Offset
@@ -282,6 +281,7 @@ func CalculateDereference_Slice(prgrm *CXProgram, drfsStruct *DereferenceStruct)
 	indexValue := types.Read_i32(prgrm.Memory, indexOffset)
 
 	drfsStruct.finalOffset += types.Cast_i32_to_ptr(indexValue) * sizeToUse // TODO:PTR Use ptr/Read_ptr, array/slice indexing only works with i32.
+
 	if !IsValidSliceIndex(prgrm, drfsStruct.baseOffset, drfsStruct.finalOffset, sizeToUse) {
 		panic(constants.CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)
 	}

@@ -966,12 +966,10 @@ func GetFormattedType(prgrm *CXProgram, typeSig *CXTypeSignature) string {
 	} else if typeSig.Type == TYPE_SLICE_ATOMIC {
 		arrayData := prgrm.GetCXTypeSignatureArrayFromArray(typeSig.Meta)
 
-		if !typeSig.IsDeref {
-			arrLen := len(arrayData.Lengths) - len(arrayData.Indexes)
-			if arrLen != 0 {
-				for i := 0; i < len(arrayData.Lengths[len(arrayData.Indexes):]); i++ {
-					typ = fmt.Sprintf("[]%s", typ)
-				}
+		arrLen := len(arrayData.Lengths) - len(arrayData.Indexes)
+		if arrLen != 0 {
+			for i := 0; i < len(arrayData.Lengths[len(arrayData.Indexes):]); i++ {
+				typ = fmt.Sprintf("[]%s", typ)
 			}
 		}
 

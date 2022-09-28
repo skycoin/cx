@@ -1335,9 +1335,9 @@ func ProcessShortDeclaration(prgrm *ast.CXProgram, expr *ast.CXExpression, expre
 				argType = types.Code(arrDetails.Type)
 				argSize = types.Code(arrDetails.Type).Size()
 			} else if expressionInputTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
-				arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(expressionInputTypeSig.Meta)
-				argType = types.Code(arrDetails.Type)
-				argSize = types.Code(arrDetails.Type).Size()
+				sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(expressionInputTypeSig.Meta)
+				argType = types.Code(sliceDetails.Type)
+				argSize = types.Code(sliceDetails.Type).Size()
 			} else {
 				panic("type is not known")
 			}
@@ -1359,6 +1359,10 @@ func ProcessShortDeclaration(prgrm *ast.CXProgram, expr *ast.CXExpression, expre
 			arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(prevExpressionOutputTypeSig.Meta)
 			arrDetails.Type = int(argType)
 
+		} else if prevExpressionOutputTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
+			sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(prevExpressionOutputTypeSig.Meta)
+			sliceDetails.Type = int(argType)
+
 		} else {
 			panic("type is not known")
 		}
@@ -1377,6 +1381,9 @@ func ProcessShortDeclaration(prgrm *ast.CXProgram, expr *ast.CXExpression, expre
 		} else if expressionOutputTypeSig.Type == ast.TYPE_ARRAY_ATOMIC {
 			arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(expressionOutputTypeSig.Meta)
 			arrDetails.Type = int(argType)
+		} else if expressionOutputTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
+			sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(expressionOutputTypeSig.Meta)
+			sliceDetails.Type = int(argType)
 		} else {
 			panic("type is not known")
 		}
@@ -2114,7 +2121,6 @@ func CopyArgFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast
 		symTypeSignature.Meta = argTypeSignature.Meta
 		symTypeSignature.Offset = argTypeSignature.Offset
 		symTypeSignature.IsDeref = argTypeSignature.IsDeref
-
 		return
 	} else if sym == nil && arg != nil {
 		symTypeSignature.Name = argTypeSignature.Name
