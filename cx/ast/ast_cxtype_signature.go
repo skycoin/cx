@@ -106,9 +106,10 @@ func (typeSignature *CXTypeSignature) GetSize(prgrm *CXProgram, IsForUpdateSymbo
 	case TYPE_SLICE_ATOMIC:
 		sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(typeSignature.Meta)
 
-		if typeSignature.IsDeref {
+		if typeSignature.IsDeref || len(sliceDetails.Indexes) > 0 {
 			return types.Code(sliceDetails.Type).Size()
 		}
+
 		return types.POINTER_SIZE
 	case TYPE_SLICE_POINTER_ATOMIC:
 		return types.POINTER.Size()
@@ -198,10 +199,11 @@ func (typeSignature *CXTypeSignature) GetCXArgFormat(prgrm *CXProgram) *CXArgume
 		}
 
 	} else if typeSignature.Type == TYPE_SLICE_ATOMIC {
-		arg.Type = types.Code(typeSignature.Meta)
+		sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(typeSignature.Meta)
+		arg.Type = types.Code(sliceDetails.Type)
 		arg.StructType = nil
-		arg.Size = types.Code(typeSignature.Meta).Size()
-		arg.Lengths = []types.Pointer{0}
+		arg.Size = types.Code(sliceDetails.Type).Size()
+		arg.Lengths = sliceDetails.Lengths
 		arg.IsSlice = true
 
 		// TODO: this should not be needed.

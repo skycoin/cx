@@ -546,10 +546,12 @@ func processAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fromExp
 				if fromExpressionOperator.IsBuiltIn() && fromExpressionOperator.AtomicOPCode != constants.OP_IDENTITY {
 					// it's a short variable declaration
 					prgrm.CXArgs[toExpressionOutputIdx].Type = types.Code(sliceDetails.Type)
+					prgrm.CXArgs[toExpressionOutputIdx].Lengths = sliceDetails.Lengths
 				} else {
 					// we'll delegate multiple-value returns to the 'expression' grammar rule
 					// only assigning as if the operator had only one output defined
 					prgrm.CXArgs[toExpressionOutputIdx].Type = types.Code(sliceDetails.Type)
+					prgrm.CXArgs[toExpressionOutputIdx].Lengths = sliceDetails.Lengths
 				}
 			} else {
 				panic("type is not known")

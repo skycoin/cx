@@ -80,7 +80,17 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 			outNewTypeSigIdx := prgrm.AddCXTypeSignatureInArray(&newTypeSig)
 			prgrm.CXAtomicOps[prevExpressionIdx].AddOutput(prgrm, outNewTypeSigIdx)
 
-			inpNewTypeSigIdx := prgrm.AddCXTypeSignatureInArray(&newTypeSig)
+			inpNewTypeSigSlice := ast.CXTypeSignature_Array{}
+			inpNewTypeSigSlice.Type = sliceDetails.Type
+			inpNewTypeSigSlice.Lengths = sliceDetails.Lengths
+			inpNewTypeSigSliceIdx := prgrm.AddCXTypeSignatureArrayInArray(&inpNewTypeSigSlice)
+
+			inpNewTypeSig := ast.CXTypeSignature{}
+			inpNewTypeSig.Name = genName
+			inpNewTypeSig.Package = prevExpressionOperatorOutputTypeSig.Package
+			inpNewTypeSig.Type = prevExpressionOperatorOutputTypeSig.Type
+			inpNewTypeSig.Meta = inpNewTypeSigSliceIdx
+			inpNewTypeSigIdx := prgrm.AddCXTypeSignatureInArray(&inpNewTypeSig)
 			prgrm.CXAtomicOps[useExpressionIdx].AddOutput(prgrm, inpNewTypeSigIdx)
 		} else {
 			panic("type is not known\n")

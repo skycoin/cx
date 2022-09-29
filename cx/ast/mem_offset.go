@@ -109,6 +109,12 @@ func GetDerefSizeSlice(prgrm *CXProgram, typeSignature *CXTypeSignature) types.P
 			return arg.StructType.GetStructSize(prgrm)
 		}
 		return arg.Size
+	} else if typeSignature.Type == TYPE_SLICE_ATOMIC {
+		sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(typeSignature.Meta)
+		if len(sliceDetails.Lengths) > 1 && (len(sliceDetails.Lengths)-len(sliceDetails.Indexes)) > 1 {
+			return types.POINTER_SIZE
+		}
+		return types.Code(sliceDetails.Type).Size()
 	}
 
 	return typeSignature.GetSize(prgrm, false)

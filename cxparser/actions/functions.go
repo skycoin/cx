@@ -1001,6 +1001,7 @@ func checkMatchParamTypes(prgrm *ast.CXProgram, expr *ast.CXExpression, expected
 				}
 
 				println(ast.CompilationError(expressionOutputArg.ArgDetails.FileName, expressionOutputArg.ArgDetails.FileLine), fmt.Sprintf("function '%s' expected receiving variable of type '%s'; '%s' was provided", opName, expectedType, receivedType))
+
 			}
 
 		}
@@ -1965,12 +1966,15 @@ func CopyArgFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast
 
 	// TODO: check if this needs a change
 	if sym == nil && arg == nil {
+		if !(symTypeSignature.Type == ast.TYPE_SLICE_ATOMIC && argTypeSignature.Type == ast.TYPE_SLICE_ATOMIC) {
+			// Only copy meta if sym and arg are not type slice atomic.
+			symTypeSignature.Meta = argTypeSignature.Meta
+		}
+
 		symTypeSignature.Name = argTypeSignature.Name
 		symTypeSignature.Package = argTypeSignature.Package
 		symTypeSignature.Type = argTypeSignature.Type
-		symTypeSignature.Meta = argTypeSignature.Meta
 		symTypeSignature.Offset = argTypeSignature.Offset
-		symTypeSignature.IsDeref = argTypeSignature.IsDeref
 
 		return
 	} else if sym != nil && ast.IsTypePointerAtomic(sym) && argTypeSignature.Type == ast.TYPE_POINTER_ATOMIC {
@@ -2078,7 +2082,7 @@ func CopyArgFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast
 		}
 
 		return
-	} else if sym != nil && arg == nil && (len(sym.DeclarationSpecifiers) > 0 || len(sym.DereferenceOperations) > 0) && argTypeSignature.Type == ast.TYPE_SLICE_ATOMIC {
+	} else if sym != nil && arg == nil && argTypeSignature.Type == ast.TYPE_SLICE_ATOMIC {
 		arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(argTypeSignature.Meta)
 
 		newArrDetails := *arrDetails
