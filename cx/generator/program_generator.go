@@ -117,7 +117,7 @@ func calcFnSize(prgrm *cxast.CXProgram, fn *cxast.CXFunction) (size types.Pointe
 		} else {
 			panic("type is not type cx argument deprecate\n\n")
 		}
-		size += arg.Size
+		size += arg.TotalSize
 	}
 
 	fnOutputs := fn.GetOutputs(prgrm)
@@ -131,7 +131,7 @@ func calcFnSize(prgrm *cxast.CXProgram, fn *cxast.CXFunction) (size types.Pointe
 			panic("type is not type cx argument deprecate\n\n")
 		}
 
-		size += arg.Size
+		size += arg.TotalSize
 	}
 	for _, expr := range fn.Expressions {
 		if expr.Type == cxast.CX_LINE {
@@ -148,7 +148,7 @@ func calcFnSize(prgrm *cxast.CXProgram, fn *cxast.CXFunction) (size types.Pointe
 		/// Not because of practicality, but because multiple returns in CX are currently buggy anyway.
 		if len(cxAtomicOpOperatorOutputs) > 0 {
 			cxAtomicOpOperatorOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(cxAtomicOpOperatorOutputs[0])
-			size += prgrm.GetCXArgFromArray(cxast.CXArgumentIndex(cxAtomicOpOperatorOutputTypeSig.Meta)).Size
+			size += prgrm.GetCXArgFromArray(cxast.CXArgumentIndex(cxAtomicOpOperatorOutputTypeSig.Meta)).TotalSize
 		}
 	}
 
@@ -379,11 +379,11 @@ func determineExpressionOffset(prgrm *cxast.CXProgram, arg *cxast.CXArgument, ex
 	cxAtomicOpFunctionOutputs := cxAtomicOpFunction.GetOutputs(prgrm)
 	// Determining the offset where the expression should be writing to.
 	for c := 0; c < len(cxAtomicOpFunctionInputs); c++ {
-		arg.Offset += cxAtomicOpFunctionInputs[c].Size
+		arg.Offset += cxAtomicOpFunctionInputs[c].TotalSize
 	}
 	for c := 0; c < len(cxAtomicOpFunctionOutputs); c++ {
 		cxAtomicOpFunctionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(cxAtomicOpFunctionOutputs[c])
-		arg.Offset += prgrm.GetCXArgFromArray(cxast.CXArgumentIndex(cxAtomicOpFunctionOutputTypeSig.Meta)).Size
+		arg.Offset += prgrm.GetCXArgFromArray(cxast.CXArgumentIndex(cxAtomicOpFunctionOutputTypeSig.Meta)).TotalSize
 	}
 	for c := 0; c < indexOfSelectedOption; c++ {
 		cxAtomicOp1, err := prgrm.GetCXAtomicOpFromExpressions(cxAtomicOpFunction.Expressions, c)
@@ -396,7 +396,7 @@ func determineExpressionOffset(prgrm *cxast.CXProgram, arg *cxast.CXArgument, ex
 			cxAtomicOp1OperatorOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(cxAtomicOp1OperatorOutputs[0])
 			// TODO: We're only considering one output per operator.
 			/// Not because of practicality, but because multiple returns in CX are currently buggy anyway.
-			arg.Offset += prgrm.GetCXArgFromArray(cxast.CXArgumentIndex(cxAtomicOp1OperatorOutputTypeSig.Meta)).Size
+			arg.Offset += prgrm.GetCXArgFromArray(cxast.CXArgumentIndex(cxAtomicOp1OperatorOutputTypeSig.Meta)).TotalSize
 		}
 	}
 }

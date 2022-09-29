@@ -153,6 +153,8 @@ func ProcessFunctionParameters(prgrm *ast.CXProgram, symbolsData *SymbolsData, o
 		// }
 
 		GiveOffset(prgrm, symbolsData, paramIdx)
+		SetFinalSize(prgrm, symbolsData, paramIdx)
+
 		AddPointer(prgrm, fn, paramIdx)
 
 		typeSig := prgrm.GetCXTypeSignatureFromArray(paramIdx)
@@ -205,6 +207,7 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fnIdx ast.CXFunctionIndex, inputs
 	FunctionAddParameters(prgrm, fnIdx, inputs, outputs)
 	ProcessGoTos(prgrm, exprs)
 	AddExprsToFunction(prgrm, fnIdx, exprs)
+
 	ProcessFunctionParameters(prgrm, symbolsData, &offset, fnIdx, fn.GetInputs(prgrm))
 	ProcessFunctionParameters(prgrm, symbolsData, &offset, fnIdx, fn.GetOutputs(prgrm))
 
@@ -272,8 +275,6 @@ func ProcessTypedOperator(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 			atomicType = types.Code(expressionInputTypeSig.Meta)
 		} else if expressionInputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 			atomicType = types.Code(expressionInputTypeSig.Meta)
-		} else {
-			panic("type is not known")
 		}
 
 		typedOp := ast.GetTypedOperator(atomicType, expressionOperator.AtomicOPCode)
@@ -395,13 +396,14 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 							out = ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, inpExprCXLine.LineNumber).SetType(inpExprAtomicOpInputArg.Type)
 							out.StructType = inpExprAtomicOpInputArg.StructType
 							out.Size = inpExprAtomicOpInputArg.Size
+							out.TotalSize = inpExprAtomicOpOperatorOutputTypeSig.GetSize(prgrm)
 							out.Type = inpExprAtomicOpInputArg.Type
 							out.PointerTargetType = inpExprAtomicOpInputArg.PointerTargetType
 							out.PreviouslyDeclared = true
 
 							out.Package = inpExprAtomicOp.Package
-
-							typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, out)
+							outIdx := prgrm.AddCXArgInArray(out)
+							typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(outIdx))
 							typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
 						} else if inpExprAtomicOpInputTypeSig.Type == ast.TYPE_ATOMIC {
 							outTypeSig := &ast.CXTypeSignature{}
@@ -421,8 +423,6 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 							outTypeSig.Offset = inpExprAtomicOpInputTypeSig.Offset
 
 							typeSigIdx = prgrm.AddCXTypeSignatureInArray(outTypeSig)
-						} else {
-							panic("type is not known")
 						}
 
 					} else {
@@ -438,17 +438,20 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 							}
 							if strct, err := inpExprPkg.GetStruct(prgrm, inpExprAtomicOpOperatorOutputArg.StructType.Name); err == nil {
 								out.Size = strct.GetStructSize(prgrm)
+								out.TotalSize = strct.GetStructSize(prgrm)
 							}
 						} else {
 							out.Size = inpExprAtomicOpOperatorOutputArg.Size
+							out.TotalSize = inpExprAtomicOpOperatorOutputTypeSig.GetSize(prgrm)
 						}
 
 						out.Type = inpExprAtomicOpOperatorOutputArg.Type
 						out.PointerTargetType = inpExprAtomicOpOperatorOutputArg.PointerTargetType
 						out.PreviouslyDeclared = true
-						out.Package = inpExprAtomicOp.Package
 
-						typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, out)
+						out.Package = inpExprAtomicOp.Package
+						outIdx := prgrm.AddCXArgInArray(out)
+						typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(outIdx))
 						typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
 					}
 
@@ -470,8 +473,6 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 
 					inpExprAtomicOp.AddOutput(prgrm, newTypeSigIdx)
 					expression.AddInput(prgrm, newTypeSigIdx)
-				} else {
-					panic("type is not known")
 				}
 
 			}
@@ -511,8 +512,6 @@ func checkSameNativeType(prgrm *ast.CXProgram, expr *ast.CXExpression) error {
 		typeCode = types.Code(expressionInputTypeSig.Meta)
 	} else if expressionInputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 		typeCode = types.Code(expressionInputTypeSig.Meta)
-	} else {
-		panic("type is not known")
 	}
 
 	for _, inputIdx := range expression.GetInputs(prgrm) {
@@ -530,11 +529,6 @@ func checkSameNativeType(prgrm *ast.CXProgram, expr *ast.CXExpression) error {
 			inpType = types.Code(input.Meta)
 		} else if input.Type == ast.TYPE_POINTER_ATOMIC {
 			inpType = types.Code(input.Meta)
-		} else if input.Type == ast.TYPE_ARRAY_ATOMIC {
-			arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(input.Meta)
-			inpType = types.Code(arrDetails.Type)
-		} else {
-			panic("type is not known")
 		}
 
 		if inpType != typeCode {
@@ -585,19 +579,16 @@ func ProcessOperatorExpression(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 
 						size = ast.GetArgSize(prgrm, expressionInputArg.GetAssignmentElement(prgrm))
 					} else if expressionInputTypeSig.Type == ast.TYPE_ATOMIC {
-						size = expressionInputTypeSig.GetSize(prgrm, false)
+						size = expressionInputTypeSig.GetSize(prgrm)
 					} else if expressionInputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
-						size = expressionInputTypeSig.GetSize(prgrm, false)
-					} else {
-						panic("type is not known")
+						size = expressionInputTypeSig.GetSize(prgrm)
 					}
 				}
 
 				out.Size = size
+				out.TotalSize = size
 			} else if output.Type == ast.TYPE_ATOMIC || output.Type == ast.TYPE_POINTER_ATOMIC {
 				continue
-			} else {
-				panic("type is not known")
 			}
 		}
 	}
@@ -623,12 +614,6 @@ func ProcessPointerStructs(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 		} else if argTypeSig.Type == ast.TYPE_ATOMIC || argTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 			// panic("type is not type cx argument deprecate\n\n")
 			continue
-		} else if argTypeSig.Type == ast.TYPE_ARRAY_ATOMIC {
-			continue
-		} else if argTypeSig.Type == ast.TYPE_POINTER_ARRAY_ATOMIC {
-			continue
-		} else {
-			panic("type is not known")
 		}
 
 		for _, fldIdx := range arg.Fields {
@@ -675,12 +660,27 @@ func processTestExpression(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 		opCode := expressionOperator.AtomicOPCode
 		if opCode == constants.OP_ASSERT || opCode == constants.OP_TEST || opCode == constants.OP_PANIC {
 			var inp1Type, inp2Type string
-
 			expressionInputFirstTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetInputs(prgrm)[0])
-			inp1Type = ast.GetFormattedType(prgrm, expressionInputFirstTypeSig)
+			var expressionInputFirstArg *ast.CXArgument = &ast.CXArgument{}
+			if expressionInputFirstTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				expressionInputFirstArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionInputFirstTypeSig.Meta))
+				inp1Type = ast.GetFormattedType(prgrm, expressionInputFirstArg)
+			} else if expressionInputFirstTypeSig.Type == ast.TYPE_ATOMIC {
+				inp1Type = types.Code(expressionInputFirstTypeSig.Meta).Name()
+			} else if expressionInputFirstTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
+				inp1Type = "*" + types.Code(expressionInputFirstTypeSig.Meta).Name()
+			}
 
 			expressionInputSecondTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetInputs(prgrm)[1])
-			inp2Type = ast.GetFormattedType(prgrm, expressionInputSecondTypeSig)
+			var expressionInputSecondArg *ast.CXArgument = &ast.CXArgument{}
+			if expressionInputSecondTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				expressionInputSecondArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionInputSecondTypeSig.Meta))
+				inp2Type = ast.GetFormattedType(prgrm, expressionInputSecondArg)
+			} else if expressionInputSecondTypeSig.Type == ast.TYPE_ATOMIC {
+				inp2Type = types.Code(expressionInputSecondTypeSig.Meta).Name()
+			} else if expressionInputSecondTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
+				inp2Type = "*" + types.Code(expressionInputSecondTypeSig.Meta).Name()
+			}
 
 			if inp1Type != inp2Type {
 				println(ast.CompilationError(CurrentFile, LineNo), fmt.Sprintf("first and second input arguments' types are not equal in '%s' call ('%s' != '%s')", ast.OpNames[expressionOperator.AtomicOPCode], inp1Type, inp2Type))
@@ -696,9 +696,12 @@ func checkIndexType(prgrm *ast.CXProgram, idxIdx ast.CXTypeSignatureIndex) {
 	var idx *ast.CXArgument = &ast.CXArgument{ArgDetails: &ast.CXArgumentDebug{}}
 	if idxTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 		idx = prgrm.GetCXArg(ast.CXArgumentIndex(idxTypeSig.Meta))
+		idxType = ast.GetFormattedType(prgrm, idx)
+	} else if idxTypeSig.Type == ast.TYPE_ATOMIC {
+		idxType = types.Code(idxTypeSig.Meta).Name()
+	} else if idxTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
+		idxType = "*" + types.Code(idxTypeSig.Meta).Name()
 	}
-
-	idxType = ast.GetFormattedType(prgrm, idxTypeSig)
 
 	if idxType != "i32" && idxType != "i64" {
 		println(ast.CompilationError(idx.ArgDetails.FileName, idx.ArgDetails.FileLine), fmt.Sprintf("wrong index type; expected either 'i32' or 'i64', got '%s'", idxType))
@@ -730,6 +733,7 @@ func ProcessExpressionArguments(prgrm *ast.CXProgram, symbolsData *SymbolsData, 
 		if typeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			argIdx = ast.CXArgumentIndex(typeSignature.Meta)
 		} else {
+			// panic(fmt.Sprintf("type is=%v\n\n", typeSignature.Type))
 			argIdx = -1
 		}
 
@@ -750,6 +754,14 @@ func ProcessExpressionArguments(prgrm *ast.CXProgram, symbolsData *SymbolsData, 
 		isLocalVar := fn.IsLocalVariable(typeSignatureName)
 		if (arg != nil && arg.PreviouslyDeclared) || IsTempVar(typeSignatureName) || (arg == nil && isLocalVar) {
 			UpdateSymbolsTable(prgrm, symbolsData, typeSignatureIdx, offset, false)
+			// We remove it from local var array since it is already added to the symbols
+			// if isLocalVar {
+			// err := fn.RemoveLocalVariableFromArray(typeSignatureName)
+			// if err != nil {
+			// 	panic(err)
+			// }
+			// }
+
 		} else {
 			UpdateSymbolsTable(prgrm, symbolsData, typeSignatureIdx, offset, true)
 		}
@@ -771,6 +783,9 @@ func ProcessExpressionArguments(prgrm *ast.CXProgram, symbolsData *SymbolsData, 
 				}
 			}
 		}
+
+		SetFinalSize(prgrm, symbolsData, typeSignatureIdx)
+
 		AddPointer(prgrm, fn, typeSignatureIdx)
 	}
 }
@@ -955,8 +970,23 @@ func checkMatchParamTypes(prgrm *ast.CXProgram, expr *ast.CXExpression, expected
 		var expectedArg *ast.CXArgument = &ast.CXArgument{ArgDetails: &ast.CXArgumentDebug{}}
 		if expectedTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			expectedArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expectedTypeSig.Meta))
+			expectedType = ast.GetFormattedType(prgrm, expectedArg)
+		} else if expectedTypeSig.Type == ast.TYPE_ATOMIC {
+			expectedType = types.Code(expectedTypeSig.Meta).Name()
+		} else if expectedTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
+			expectedType = "*" + types.Code(expectedTypeSig.Meta).Name()
 		}
-		expectedType = ast.GetFormattedType(prgrm, expectedTypeSig)
+
+		var receivedArg *ast.CXArgument = &ast.CXArgument{ArgDetails: &ast.CXArgumentDebug{}}
+		receivedTypeSig := prgrm.GetCXTypeSignatureFromArray(received[i])
+		if receivedTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			receivedArg = prgrm.GetCXArg(ast.CXArgumentIndex(receivedTypeSig.Meta))
+			receivedType = ast.GetFormattedType(prgrm, receivedArg)
+		} else if receivedTypeSig.Type == ast.TYPE_ATOMIC {
+			receivedType = types.Code(receivedTypeSig.Meta).Name()
+		} else if receivedTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
+			receivedType = "*" + types.Code(receivedTypeSig.Meta).Name()
+		}
 
 		if expr.IsMethodCall() && expectedArg.IsPointer() && i == 0 {
 			// if method receiver is pointer, remove *
@@ -966,13 +996,6 @@ func checkMatchParamTypes(prgrm *ast.CXProgram, expr *ast.CXExpression, expected
 				expectedType = expectedType[1:]
 			}
 		}
-
-		var receivedArg *ast.CXArgument = &ast.CXArgument{ArgDetails: &ast.CXArgumentDebug{}}
-		receivedTypeSig := prgrm.GetCXTypeSignatureFromArray(received[i])
-		if receivedTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-			receivedArg = prgrm.GetCXArg(ast.CXArgumentIndex(receivedTypeSig.Meta))
-		}
-		receivedType = ast.GetFormattedType(prgrm, receivedTypeSig)
 
 		if expectedType != receivedType && expectedArg.Type != types.UNDEFINED {
 			var opName string
@@ -993,8 +1016,6 @@ func checkMatchParamTypes(prgrm *ast.CXProgram, expr *ast.CXExpression, expected
 					// expressionOutputArg = &ast.CXArgument{ArgDetails: &ast.CXArgumentDebug{}}
 				} else if expressionOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 					// expressionOutputArg = &ast.CXArgument{ArgDetails: &ast.CXArgumentDebug{}}
-				} else {
-					panic("type is not known")
 				}
 
 				println(ast.CompilationError(expressionOutputArg.ArgDetails.FileName, expressionOutputArg.ArgDetails.FileLine), fmt.Sprintf("function '%s' expected receiving variable of type '%s'; '%s' was provided", opName, expectedType, receivedType))
@@ -1014,55 +1035,39 @@ func checkMatchParamTypes(prgrm *ast.CXProgram, expr *ast.CXExpression, expected
 			var outType, inpType string
 
 			expressionInputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetInputs(prgrm)[0])
-			inpType = ast.GetFormattedType(prgrm, expressionInputTypeSig)
+			var expressionInputArg *ast.CXArgument = &ast.CXArgument{}
+			if expressionInputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				expressionInputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionInputTypeSig.Meta))
+				inpType = ast.GetFormattedType(prgrm, expressionInputArg)
+			} else if expressionInputTypeSig.Type == ast.TYPE_ATOMIC {
+				inpType = types.Code(expressionInputTypeSig.Meta).Name()
+			} else if expressionInputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
+				inpType = "*" + types.Code(expressionInputTypeSig.Meta).Name()
+			}
 
 			var expressionOutputArg *ast.CXArgument = &ast.CXArgument{}
-			expressionOutputTypeSigName := expressionOutputTypeSig.Name
+			var expressionOutputTypeSigName string
 			if expressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 				expressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionOutputTypeSig.Meta))
 				expressionOutputTypeSigName = expressionOutputArg.GetAssignmentElement(prgrm).Name
+				outType = ast.GetFormattedType(prgrm, expressionOutputArg)
+			} else if expressionOutputTypeSig.Type == ast.TYPE_ATOMIC {
+				expressionOutputTypeSigName = expressionOutputTypeSig.Name
+				outType = types.Code(expressionOutputTypeSig.Meta).Name()
+			} else if expressionOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
+				expressionOutputTypeSigName = expressionOutputTypeSig.Name
+				outType = "*" + types.Code(expressionOutputTypeSig.Meta).Name()
 			}
-
-			outType = ast.GetFormattedType(prgrm, expressionOutputTypeSig)
 
 			// We use `isInputs` to only print the error once.
 			// Otherwise we'd print the error twice: once for the input and again for the output
 			if inpType != outType && isInputs {
 				// println(ast.CompilationError(receivedArg.ArgDetails.FileName, receivedArg.ArgDetails.FileLine), fmt.Sprintf("cannot assign value of type '%s' to identifier '%s' of type '%s'", inpType, expressionOutputArg.GetAssignmentElement(prgrm).Name, outType))
 				println(ast.CompilationError("", 0), fmt.Sprintf("cannot assign value of type '%s' to identifier '%s' of type '%s'", inpType, expressionOutputTypeSigName, outType))
+				println(fmt.Sprintf("inp =%+v\n", expressionInputTypeSig))
 			}
 
 		}
-	}
-}
-
-func checkMatchExprNumOfInputs(prgrm *ast.CXProgram, expression *ast.CXAtomicOperator, expressionOperatorInputs []ast.CXTypeSignatureIndex, opName string, exprCXLine *ast.CXLine) {
-	// checking if number of inputs is not the same as the required number of inputs
-	if len(expression.GetInputs(prgrm)) != len(expressionOperatorInputs) {
-		expressionOperatorInputArg := &ast.CXArgument{}
-		if len(expressionOperatorInputs) > 0 {
-			expressionTypeSigIdx := expressionOperatorInputs[len(expressionOperatorInputs)-1]
-			expressionTypeSig := prgrm.GetCXTypeSignatureFromArray(expressionTypeSigIdx)
-			if expressionTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-				expressionOperatorInputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionTypeSig.Meta))
-			}
-		}
-
-		if !(len(expressionOperatorInputs) > 0 && expressionOperatorInputArg.Type != types.UNDEFINED) {
-			// if the last input is of type cxcore.TYPE_UNDEFINED then it might be a variadic function, such as printf
-		} else {
-			// then we need to be strict in the number of inputs
-			println(ast.CompilationError(exprCXLine.FileName, exprCXLine.LineNumber), fmt.Sprintf("operator '%s' expects %d input/s, but %d input argument\n were provided", opName, len(expressionOperatorInputs), len(expression.GetInputs(prgrm))))
-			os.Exit(constants.CX_COMPILATION_ERROR)
-		}
-	}
-}
-
-func checkMatchExprNumOfOutputs(prgrm *ast.CXProgram, expression *ast.CXAtomicOperator, expressionOperatorOutputs []ast.CXTypeSignatureIndex, opName string, exprCXLine *ast.CXLine) {
-	// checking if number of outputs is not the same as the required number of outputs
-	if len(expression.GetOutputs(prgrm)) != len(expressionOperatorOutputs) {
-		println(ast.CompilationError(exprCXLine.FileName, exprCXLine.LineNumber), fmt.Sprintf("operator '%s' expects to return %d output/s, but %d receiving argument/s were provided", opName, len(expressionOperatorOutputs), len(expression.GetOutputs(prgrm))))
-		os.Exit(constants.CX_COMPILATION_ERROR)
 	}
 }
 
@@ -1073,17 +1078,60 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) {
 		panic(err)
 	}
 	expressionOperator := prgrm.GetFunctionFromArray(expression.Operator)
+	expressionOperatorInputs := expressionOperator.GetInputs(prgrm)
+
 	exprCXLine, _ := prgrm.GetPreviousCXLine(exprs, currIndex)
 
 	if expressionOperator != nil {
 		opName := expression.GetOperatorName(prgrm)
-		expressionOperatorInputs := expressionOperator.GetInputs(prgrm)
-		expressionOperatorOutputs := expressionOperator.GetOutputs(prgrm)
 
-		// checking if number of inputs is not the same as the required number of inputs
-		checkMatchExprNumOfInputs(prgrm, expression, expressionOperatorInputs, opName, exprCXLine)
-		// checking if number of outputs is not the same as the required number of outputs
-		checkMatchExprNumOfOutputs(prgrm, expression, expressionOperatorOutputs, opName, exprCXLine)
+		// checking if number of inputs is less than the required number of inputs
+		if len(expression.GetInputs(prgrm)) != len(expressionOperatorInputs) {
+			expressionOperatorInputArg := &ast.CXArgument{}
+			if len(expressionOperatorInputs) > 0 {
+				expressionTypeSigIdx := expressionOperatorInputs[len(expressionOperatorInputs)-1]
+				expressionTypeSig := prgrm.GetCXTypeSignatureFromArray(expressionTypeSigIdx)
+				if expressionTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+					expressionOperatorInputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionTypeSig.Meta))
+				}
+			}
+
+			if !(len(expressionOperatorInputs) > 0 && expressionOperatorInputArg.Type != types.UNDEFINED) {
+				// if the last input is of type cxcore.TYPE_UNDEFINED then it might be a variadic function, such as printf
+			} else {
+				// then we need to be strict in the number of inputs
+				var plural1 string
+				var plural2 string = "s"
+				var plural3 string = "were"
+				if len(expressionOperatorInputs) > 1 {
+					plural1 = "s"
+				}
+				if len(expression.GetInputs(prgrm)) == 1 {
+					plural2 = ""
+					plural3 = "was"
+				}
+
+				println(ast.CompilationError(exprCXLine.FileName, exprCXLine.LineNumber), fmt.Sprintf("operator '%s' expects %d input%s, but %d input argument%s %s provided", opName, len(expressionOperatorInputs), plural1, len(expression.GetInputs(prgrm)), plural2, plural3))
+				return
+			}
+		}
+		expressionOperatorOutputs := expressionOperator.GetOutputs(prgrm)
+		// checking if number of expr.ProgramOutput matches number of Operator.ProgramOutput
+		if len(expression.GetOutputs(prgrm)) != len(expressionOperatorOutputs) {
+			var plural1 string
+			var plural2 string = "s"
+			var plural3 string = "were"
+			if len(expressionOperatorOutputs) > 1 {
+				plural1 = "s"
+			}
+			if len(expression.GetOutputs(prgrm)) == 1 {
+				plural2 = ""
+				plural3 = "was"
+			}
+
+			println(ast.CompilationError(exprCXLine.FileName, exprCXLine.LineNumber), fmt.Sprintf("operator '%s' expects to return %d output%s, but %d receiving argument%s %s provided", opName, len(expressionOperatorOutputs), plural1, len(expression.GetOutputs(prgrm)), plural2, plural3))
+			os.Exit(constants.CX_COMPILATION_ERROR)
+		}
 	}
 
 	if expressionOperator != nil && expressionOperator.IsBuiltIn() && expressionOperator.AtomicOPCode == constants.OP_IDENTITY {
@@ -1092,8 +1140,9 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) {
 			var receivedType string
 
 			expressionInputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetInputs(prgrm)[i])
+			var expressionInputArg *ast.CXArgument = &ast.CXArgument{}
 			if expressionInputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-				expressionInputArg := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionInputTypeSig.Meta))
+				expressionInputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionInputTypeSig.Meta))
 
 				if expressionInputArg.GetAssignmentElement(prgrm).StructType != nil {
 					// then it's custom type
@@ -1106,26 +1155,21 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) {
 						receivedType = expressionInputArg.GetAssignmentElement(prgrm).PointerTargetType.Name()
 					}
 				}
-
 			} else if expressionInputTypeSig.Type == ast.TYPE_ATOMIC {
 				receivedType = types.Code(expressionInputTypeSig.Meta).Name()
 			} else if expressionInputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 				receivedType = types.Code(expressionInputTypeSig.Meta).Name()
-			} else if expressionInputTypeSig.Type == ast.TYPE_ARRAY_ATOMIC {
-				arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(expressionInputTypeSig.Meta)
-				receivedType = types.Code(arrDetails.Type).Name()
-			} else {
-				panic("type is not known")
 			}
 
 			expressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetOutputs(prgrm)[i])
-			var expressionOutputArg *ast.CXArgument = &ast.CXArgument{ArgDetails: &ast.CXArgumentDebug{}}
+			var expressionOutputArg *ast.CXArgument = &ast.CXArgument{}
 			if expressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 				expressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionOutputTypeSig.Meta))
 
 				if expressionOutputArg.GetAssignmentElement(prgrm).StructType != nil {
 					// then it's custom type
 					expectedType = expressionOutputArg.GetAssignmentElement(prgrm).StructType.Name
+
 				} else {
 					// then it's native type
 					expectedType = expressionOutputArg.GetAssignmentElement(prgrm).Type.Name()
@@ -1134,25 +1178,22 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) {
 						expectedType = expressionOutputArg.GetAssignmentElement(prgrm).PointerTargetType.Name()
 					}
 				}
-			} else if expressionOutputTypeSig.Type == ast.TYPE_ATOMIC {
-				expectedType = types.Code(expressionOutputTypeSig.Meta).Name()
-			} else if expressionOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
-				expectedType = types.Code(expressionOutputTypeSig.Meta).Name()
-			} else if expressionOutputTypeSig.Type == ast.TYPE_ARRAY_ATOMIC {
-				arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(expressionOutputTypeSig.Meta)
-				expectedType = types.Code(arrDetails.Type).Name()
-			} else if expressionOutputTypeSig.Type == ast.TYPE_POINTER_ARRAY_ATOMIC {
-				arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(expressionOutputTypeSig.Meta)
-				expectedType = types.Code(arrDetails.Type).Name()
-			} else {
-				panic("type is not known")
-			}
 
-			if receivedType != expectedType {
-				if exprs[currIndex].IsStructLiteral() {
-					println(ast.CompilationError(expressionOutputArg.ArgDetails.FileName, expressionOutputArg.ArgDetails.FileLine), fmt.Sprintf("field '%s' in struct literal of type '%s' expected argument of type '%s'; '%s' was provided", prgrm.GetCXArgFromArray(expressionOutputArg.Fields[0]).Name, expressionOutputArg.StructType.Name, expectedType, receivedType))
-				} else {
-					println(ast.CompilationError(expressionOutputArg.ArgDetails.FileName, expressionOutputArg.ArgDetails.FileLine), fmt.Sprintf("trying to assign argument of type '%s' to symbol '%s' of type '%s'", receivedType, expressionOutputTypeSig.Name, expectedType))
+				if receivedType != expectedType {
+					if exprs[currIndex].IsStructLiteral() {
+						println(ast.CompilationError(expressionOutputArg.ArgDetails.FileName, expressionOutputArg.ArgDetails.FileLine), fmt.Sprintf("field '%s' in struct literal of type '%s' expected argument of type '%s'; '%s' was provided", prgrm.GetCXArgFromArray(expressionOutputArg.Fields[0]).Name, expressionOutputArg.StructType.Name, expectedType, receivedType))
+					} else {
+						println(ast.CompilationError(expressionOutputArg.ArgDetails.FileName, expressionOutputArg.ArgDetails.FileLine), fmt.Sprintf("trying to assign argument of type '%s' to symbol '%s' of type '%s'", receivedType, expressionOutputArg.GetAssignmentElement(prgrm).Name, expectedType))
+					}
+				}
+			} else if expressionOutputTypeSig.Type == ast.TYPE_ATOMIC || expressionOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
+				// panic("type is not cx argument deprecate\n\n")
+				expectedType = types.Code(expressionOutputTypeSig.Meta).Name()
+
+				if receivedType != expectedType {
+					// println(ast.CompilationError(expressionOutputArg.ArgDetails.FileName, expressionOutputArg.ArgDetails.FileLine), fmt.Sprintf("trying to assign argument of type '%s' to symbol '%s' of type '%s'", receivedType, expressionOutputTypeSig.Name, expectedType))
+					println(ast.CompilationError("", 0), fmt.Sprintf("trying to assign argument of type '%s' to symbol '%s' of type '%s'", receivedType, expressionOutputTypeSig.Name, expectedType))
+
 				}
 			}
 
@@ -1195,12 +1236,8 @@ func ProcessStringAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 				continue
 			} else if output.Type == ast.TYPE_POINTER_ATOMIC {
 				continue
-			} else if output.Type == ast.TYPE_ARRAY_ATOMIC {
-				continue
-			} else if output.Type == ast.TYPE_POINTER_ARRAY_ATOMIC {
-				continue
 			} else {
-				panic("type is not known")
+				panic("type is not type cx argument deprecate nor type atomic\n\n")
 			}
 
 			if len(expression.GetInputs(prgrm)) > i {
@@ -1212,12 +1249,8 @@ func ProcessStringAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 					continue
 				} else if expressionInputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 					continue
-				} else if expressionInputTypeSig.Type == ast.TYPE_ARRAY_ATOMIC {
-					continue
-				} else if expressionInputTypeSig.Type == ast.TYPE_POINTER_ARRAY_ATOMIC {
-					continue
 				} else {
-					panic("type is not known")
+					panic("type is not type cx argument deprecate nor type atomic\n\n")
 				}
 
 				out = out.GetAssignmentElement(prgrm)
@@ -1282,9 +1315,8 @@ func ProcessShortDeclaration(prgrm *ast.CXProgram, expr *ast.CXExpression, expre
 		}
 
 		var argType, argPointerTargetType types.Code
-		var argSize types.Pointer
+		var argSize, argTotalSize types.Pointer
 		if expr.IsMethodCall() {
-
 			expressionOperator := prgrm.GetFunctionFromArray(expression.Operator)
 			expressionOperatorOutputs := expressionOperator.GetOutputs(prgrm)
 			expressionOperatorOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(expressionOperatorOutputs[0])
@@ -1294,14 +1326,15 @@ func ProcessShortDeclaration(prgrm *ast.CXProgram, expr *ast.CXExpression, expre
 				argType = expressionOperatorOutputArg.Type
 				argPointerTargetType = expressionOperatorOutputArg.PointerTargetType
 				argSize = expressionOperatorOutputArg.Size
+				argTotalSize = expressionOperatorOutputArg.TotalSize
 			} else if expressionOperatorOutputTypeSig.Type == ast.TYPE_ATOMIC {
 				argType = types.Code(expressionOperatorOutputTypeSig.Meta)
 				argSize = types.Code(expressionOperatorOutputTypeSig.Meta).Size()
+				argTotalSize = types.Code(expressionOperatorOutputTypeSig.Meta).Size()
 			} else if expressionOperatorOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 				argType = types.Code(expressionOperatorOutputTypeSig.Meta)
 				argSize = types.Code(expressionOperatorOutputTypeSig.Meta).Size()
-			} else {
-				panic("type is not known")
+				argTotalSize = types.Code(expressionOperatorOutputTypeSig.Meta).Size()
 			}
 
 		} else {
@@ -1311,18 +1344,15 @@ func ProcessShortDeclaration(prgrm *ast.CXProgram, expr *ast.CXExpression, expre
 				argType = expressionInputArg.Type
 				argPointerTargetType = expressionInputArg.PointerTargetType
 				argSize = expressionInputArg.Size
+				argTotalSize = expressionInputArg.TotalSize
 			} else if expressionInputTypeSig.Type == ast.TYPE_ATOMIC {
 				argType = types.Code(expressionInputTypeSig.Meta)
 				argSize = types.Code(expressionInputTypeSig.Meta).Size()
+				argTotalSize = types.Code(expressionInputTypeSig.Meta).Size()
 			} else if expressionInputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 				argType = types.Code(expressionInputTypeSig.Meta)
 				argSize = types.Code(expressionInputTypeSig.Meta).Size()
-			} else if expressionInputTypeSig.Type == ast.TYPE_ARRAY_ATOMIC {
-				arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(expressionInputTypeSig.Meta)
-				argType = types.Code(arrDetails.Type)
-				argSize = types.Code(arrDetails.Type).Size()
-			} else {
-				panic("type is not known")
+				argTotalSize = types.Code(expressionInputTypeSig.Meta).Size()
 			}
 		}
 
@@ -1334,16 +1364,11 @@ func ProcessShortDeclaration(prgrm *ast.CXProgram, expr *ast.CXExpression, expre
 			prgrm.CXArgs[prevExpressionOutputIdx].Type = argType
 			prgrm.CXArgs[prevExpressionOutputIdx].PointerTargetType = argPointerTargetType
 			prgrm.CXArgs[prevExpressionOutputIdx].Size = argSize
+			prgrm.CXArgs[prevExpressionOutputIdx].TotalSize = argTotalSize
 		} else if prevExpressionOutputTypeSig.Type == ast.TYPE_ATOMIC {
 			prevExpressionOutputTypeSig.Meta = int(argType)
 		} else if prevExpressionOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 			prevExpressionOutputTypeSig.Meta = int(argType)
-		} else if prevExpressionOutputTypeSig.Type == ast.TYPE_ARRAY_ATOMIC {
-			arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(prevExpressionOutputTypeSig.Meta)
-			arrDetails.Type = int(argType)
-
-		} else {
-			panic("type is not known")
 		}
 
 		expressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetOutputs(prgrm)[0])
@@ -1353,15 +1378,11 @@ func ProcessShortDeclaration(prgrm *ast.CXProgram, expr *ast.CXExpression, expre
 			prgrm.CXArgs[expressionOutputIdx].Type = argType
 			prgrm.CXArgs[expressionOutputIdx].PointerTargetType = argPointerTargetType
 			prgrm.CXArgs[expressionOutputIdx].Size = argSize
+			prgrm.CXArgs[expressionOutputIdx].TotalSize = argTotalSize
 		} else if expressionOutputTypeSig.Type == ast.TYPE_ATOMIC {
 			expressionOutputTypeSig.Meta = int(argType)
 		} else if expressionOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 			expressionOutputTypeSig.Meta = int(argType)
-		} else if expressionOutputTypeSig.Type == ast.TYPE_ARRAY_ATOMIC {
-			arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(expressionOutputTypeSig.Meta)
-			arrDetails.Type = int(argType)
-		} else {
-			panic("type is not known")
 		}
 	}
 }
@@ -1451,10 +1472,6 @@ func ProcessSliceAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 			} else if input.Type == ast.TYPE_POINTER_ATOMIC {
 				// Continue since pointer atomic types doesnt include slices.
 				continue
-			} else if input.Type == ast.TYPE_ARRAY_ATOMIC {
-				continue
-			} else {
-				panic("type is not known")
 			}
 
 			assignElt := inp.GetAssignmentElement(prgrm)
@@ -1579,7 +1596,7 @@ func UpdateSymbolsTable(prgrm *ast.CXProgram, symbolsData *SymbolsData, typeSigI
 				*offset += ast.GetArgSize(prgrm, sym)
 			} else {
 				typeSig.Offset = *offset
-				*offset += typeSig.GetSize(prgrm, true)
+				*offset += typeSig.GetSize(prgrm)
 			}
 		}
 	}
@@ -1670,8 +1687,6 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbolsData
 				if argInpTypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 					argInp = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(argInpTypeSignature.Meta))
 				} else if argInpTypeSignature.Type == ast.TYPE_ATOMIC || argInpTypeSignature.Type == ast.TYPE_POINTER_ATOMIC {
-				} else {
-					panic("type is not known")
 				}
 
 				// then we found an input
@@ -1718,8 +1733,6 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbolsData
 						argOutType = types.Code(argOutTypeSignature.Meta).Name()
 					} else if argOutTypeSignature.Type == ast.TYPE_POINTER_ATOMIC {
 						argOutType = types.Code(argOutTypeSignature.Meta).Name()
-					} else {
-						panic("type is not known")
 					}
 
 					strct := argOut.StructType
@@ -1764,47 +1777,42 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbolsData
 			var argOut *ast.CXArgument = &ast.CXArgument{}
 			if argOutTypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 				argOut = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(argOutTypeSignature.Meta))
-
-				// then we found an output
-				if len(prgrm.CXArgs[outIdx].Fields) > 0 {
-					strct := argOut.StructType
-
-					if strct == nil {
-						println(ast.CompilationError(argOut.ArgDetails.FileName, argOut.ArgDetails.FileLine), fmt.Sprintf("illegal method call or field access on identifier '%s' of primitive type '%s'", argOut.Name, argOut.Type.Name()))
-						os.Exit(constants.CX_COMPILATION_ERROR)
-					}
-
-					strctPkg, err := prgrm.GetPackageFromArray(strct.Package)
-					if err != nil {
-						panic(err)
-					}
-
-					if fnIdx, err := strctPkg.GetMethod(prgrm, strct.Name+"."+prgrm.GetCXArgFromArray(prgrm.CXArgs[outIdx].Fields[len(prgrm.CXArgs[outIdx].Fields)-1]).Name, strct.Name); err == nil {
-						prgrm.CXAtomicOps[expr.Index].Operator = fnIdx
-					} else {
-						panic("")
-					}
-
-					typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, &prgrm.CXArgs[outIdx])
-					typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
-					newInputs := &ast.CXStruct{Fields: []ast.CXTypeSignatureIndex{typeSigIdx}}
-					if prgrm.CXAtomicOps[expr.Index].Inputs != nil {
-						for _, typeSig := range prgrm.CXAtomicOps[expr.Index].Inputs.Fields {
-							newInputs.AddField_CXAtomicOps(prgrm, typeSig)
-						}
-					}
-					prgrm.CXAtomicOps[expr.Index].Inputs = newInputs
-					prgrm.CXAtomicOps[expr.Index].Outputs.Fields = prgrm.CXAtomicOps[expr.Index].Outputs.Fields[1:]
-					prgrm.CXArgs[outIdx].Fields = prgrm.CXArgs[outIdx].Fields[:len(prgrm.CXArgs[outIdx].Fields)-1]
-				}
-			} else if argOutTypeSignature.Type == ast.TYPE_ATOMIC || argOutTypeSignature.Type == ast.TYPE_POINTER_ATOMIC {
-				// TODO: improve
-				// do nothing for now since len(prgrm.CXArgs[outIdx].Fields) > 0
-				// of type atomics and pointers are always zero
 			} else {
-				panic("type is not known")
+				panic("type is cx argument deprecate\n\n")
 			}
 
+			// then we found an output
+			if len(prgrm.CXArgs[outIdx].Fields) > 0 {
+				strct := argOut.StructType
+
+				if strct == nil {
+					println(ast.CompilationError(argOut.ArgDetails.FileName, argOut.ArgDetails.FileLine), fmt.Sprintf("illegal method call or field access on identifier '%s' of primitive type '%s'", argOut.Name, argOut.Type.Name()))
+					os.Exit(constants.CX_COMPILATION_ERROR)
+				}
+
+				strctPkg, err := prgrm.GetPackageFromArray(strct.Package)
+				if err != nil {
+					panic(err)
+				}
+
+				if fnIdx, err := strctPkg.GetMethod(prgrm, strct.Name+"."+prgrm.GetCXArgFromArray(prgrm.CXArgs[outIdx].Fields[len(prgrm.CXArgs[outIdx].Fields)-1]).Name, strct.Name); err == nil {
+					prgrm.CXAtomicOps[expr.Index].Operator = fnIdx
+				} else {
+					panic("")
+				}
+
+				typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, &prgrm.CXArgs[outIdx])
+				typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
+				newInputs := &ast.CXStruct{Fields: []ast.CXTypeSignatureIndex{typeSigIdx}}
+				if prgrm.CXAtomicOps[expr.Index].Inputs != nil {
+					for _, typeSig := range prgrm.CXAtomicOps[expr.Index].Inputs.Fields {
+						newInputs.AddField_CXAtomicOps(prgrm, typeSig)
+					}
+				}
+				prgrm.CXAtomicOps[expr.Index].Inputs = newInputs
+				prgrm.CXAtomicOps[expr.Index].Outputs.Fields = prgrm.CXAtomicOps[expr.Index].Outputs.Fields[1:]
+				prgrm.CXArgs[outIdx].Fields = prgrm.CXArgs[outIdx].Fields[:len(prgrm.CXArgs[outIdx].Fields)-1]
+			}
 		}
 	}
 }
@@ -1868,19 +1876,16 @@ func ProcessTempVariable(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 					prgrm.CXArgs[outputArgIdx].Type = expressionInput.Type
 					prgrm.CXArgs[outputArgIdx].PointerTargetType = expressionInput.PointerTargetType
 					prgrm.CXArgs[outputArgIdx].Size = expressionInput.Size
+					prgrm.CXArgs[outputArgIdx].TotalSize = expressionInput.TotalSize
 					prgrm.CXArgs[outputArgIdx].PreviouslyDeclared = true
 				} else if expressionInputTypeSig.Type == ast.TYPE_ATOMIC {
 					prgrm.CXArgs[outputArgIdx].Type = types.Code(expressionInputTypeSig.Meta)
 					prgrm.CXArgs[outputArgIdx].Size = types.Code(expressionInputTypeSig.Meta).Size()
+					prgrm.CXArgs[outputArgIdx].TotalSize = types.Code(expressionInputTypeSig.Meta).Size()
 				} else if expressionInputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 					prgrm.CXArgs[outputArgIdx].Type = types.Code(expressionInputTypeSig.Meta)
 					prgrm.CXArgs[outputArgIdx].Size = types.Code(expressionInputTypeSig.Meta).Size()
-				} else if expressionInputTypeSig.Type == ast.TYPE_ARRAY_ATOMIC {
-					arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(expressionInputTypeSig.Meta)
-					prgrm.CXArgs[outputArgIdx].Type = types.Code(arrDetails.Type)
-					prgrm.CXArgs[outputArgIdx].Size = types.Code(arrDetails.Type).Size()
-				} else {
-					panic("type is not known")
+					prgrm.CXArgs[outputArgIdx].TotalSize = types.Code(expressionInputTypeSig.Meta).Size()
 				}
 
 			} else if outputTypeSig.Type == ast.TYPE_ATOMIC || outputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
@@ -1892,27 +1897,7 @@ func ProcessTempVariable(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 					outputTypeSig.Meta = expressionInputTypeSig.Meta
 				} else if expressionInputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 					outputTypeSig.Meta = expressionInputTypeSig.Meta
-				} else {
-					panic("type is not known")
 				}
-			} else if outputTypeSig.Type == ast.TYPE_ARRAY_ATOMIC {
-				outputArrDetails := prgrm.GetCXTypeSignatureArrayFromArray(outputTypeSig.Meta)
-				expressionInputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetInputs(prgrm)[0])
-				if expressionInputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-					expressionInputArg := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionInputTypeSig.Meta))
-					outputArrDetails.Type = int(expressionInputArg.Type)
-				} else if expressionInputTypeSig.Type == ast.TYPE_ATOMIC {
-					outputArrDetails.Type = expressionInputTypeSig.Meta
-				} else if expressionInputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
-					outputArrDetails.Type = expressionInputTypeSig.Meta
-				} else if expressionInputTypeSig.Type == ast.TYPE_ARRAY_ATOMIC {
-					arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(expressionInputTypeSig.Meta)
-					outputArrDetails.Type = arrDetails.Type
-				} else {
-					panic("type is not known")
-				}
-			} else {
-				panic("type is not known")
 			}
 		}
 	}
@@ -1920,18 +1905,18 @@ func ProcessTempVariable(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 
 // CopyArgFields copies 'arg' fields to 'sym' fields.
 func CopyArgFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast.CXTypeSignature) {
-	var sym *ast.CXArgument = &ast.CXArgument{}
-	if symTypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-		sym = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(symTypeSignature.Meta))
-	} else {
-		sym = nil
-	}
-
 	var arg *ast.CXArgument = &ast.CXArgument{}
 	if argTypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 		arg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(argTypeSignature.Meta))
 	} else {
 		arg = nil
+	}
+
+	var sym *ast.CXArgument = &ast.CXArgument{}
+	if symTypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		sym = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(symTypeSignature.Meta))
+	} else {
+		sym = nil
 	}
 
 	// TODO: check if this needs a change
@@ -1978,76 +1963,6 @@ func CopyArgFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast
 		sym.DeclarationSpecifiers = declSpec
 
 		return
-	} else if sym != nil && arg == nil && (len(sym.DeclarationSpecifiers) > 0 || len(sym.DereferenceOperations) > 0) && argTypeSignature.Type == ast.TYPE_ARRAY_ATOMIC {
-		// arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(argTypeSignature.Meta)
-		// sym.Name = argTypeSignature.Name
-		// sym.Package = argTypeSignature.Package
-		// sym.Type = types.Code(arrDetails.Type)
-		// sym.Offset = argTypeSignature.Offset
-
-		// if len(sym.Lengths) == 0 {
-		// 	sym.Lengths = arrDetails.Lengths
-		// }
-
-		// argDeclSpecifiers := []int{constants.DECL_BASIC, constants.DECL_ARRAY}
-		// for _, spec := range sym.DeclarationSpecifiers {
-		// 	// checking if we need to remove or add cxcore.DECL_POINTERs
-		// 	// also we could be removing
-		// 	switch spec {
-		// 	case constants.DECL_INDEXING:
-		// 		if argDeclSpecifiers[len(argDeclSpecifiers)-1] == constants.DECL_ARRAY || argDeclSpecifiers[len(argDeclSpecifiers)-1] == constants.DECL_SLICE {
-		// 			argDeclSpecifiers = argDeclSpecifiers[:len(argDeclSpecifiers)-1]
-		// 		} else {
-		// 			println(ast.CompilationError(sym.ArgDetails.FileName, sym.ArgDetails.FileLine), "invalid indexing")
-		// 		}
-		// 	case constants.DECL_DEREF:
-		// 		if argDeclSpecifiers[len(argDeclSpecifiers)-1] == constants.DECL_POINTER {
-		// 			argDeclSpecifiers = argDeclSpecifiers[:len(argDeclSpecifiers)-1]
-		// 		} else {
-		// 			println(ast.CompilationError(sym.ArgDetails.FileName, sym.ArgDetails.FileLine), "invalid indirection")
-		// 		}
-		// 	case constants.DECL_POINTER:
-		// 		// This function is also called so it assigns offset and other fields to signature parameters
-		// 		//
-		// 		argDeclSpecifiers = append(argDeclSpecifiers, constants.DECL_POINTER)
-		// 	}
-		// }
-
-		// sym.DeclarationSpecifiers = argDeclSpecifiers
-		arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(argTypeSignature.Meta)
-		newArrDetails := *arrDetails
-		newArrDetails.Indexes = sym.Indexes
-		newArrDetailsIdx := prgrm.AddCXTypeSignatureArrayInArray(&newArrDetails)
-
-		symTypeSignature.Name = argTypeSignature.Name
-		symTypeSignature.Package = argTypeSignature.Package
-		symTypeSignature.Type = argTypeSignature.Type
-		symTypeSignature.Meta = newArrDetailsIdx
-		symTypeSignature.Offset = argTypeSignature.Offset
-		symTypeSignature.PassBy = sym.PassBy
-
-		return
-	} else if sym != nil && arg == nil && (len(sym.DeclarationSpecifiers) > 0 || len(sym.DereferenceOperations) > 0) && argTypeSignature.Type == ast.TYPE_POINTER_ARRAY_ATOMIC {
-		arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(argTypeSignature.Meta)
-
-		newArrDetails := *arrDetails
-		newArrDetails.Indexes = sym.Indexes
-		newArrDetailsIdx := prgrm.AddCXTypeSignatureArrayInArray(&newArrDetails)
-
-		symTypeSignature.Name = argTypeSignature.Name
-		symTypeSignature.Package = argTypeSignature.Package
-		symTypeSignature.Type = argTypeSignature.Type
-		symTypeSignature.Meta = newArrDetailsIdx
-		symTypeSignature.Offset = argTypeSignature.Offset
-		symTypeSignature.PassBy = sym.PassBy
-
-		for _, decl := range sym.DeclarationSpecifiers {
-			if decl == constants.DECL_DEREF {
-				symTypeSignature.IsDeref = true
-			}
-		}
-
-		return
 	} else if sym != nil && arg == nil && (len(sym.DeclarationSpecifiers) > 1 || len(sym.DereferenceOperations) > 1) {
 		sym.Name = argTypeSignature.Name
 		sym.Package = argTypeSignature.Package
@@ -2069,16 +1984,9 @@ func CopyArgFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast
 		symTypeSignature.Type = argTypeSignature.Type
 		symTypeSignature.Meta = argTypeSignature.Meta
 		symTypeSignature.Offset = argTypeSignature.Offset
+
 		return
 	}
-
-	// This is for test-pointers when IsTypeAtomic includes types.IDENTIFIER
-	// else if sym == nil && arg != nil && symTypeSignature.PassBy != 0 && arg.Type.IsPrimitive() {
-	// 	symTypeSignature.Meta = int(arg.Type)
-	// 	symTypeSignature.Offset = arg.Offset
-
-	// 	return
-	// }
 
 	sym.Name = arg.Name
 	sym.Offset = arg.Offset
@@ -2210,6 +2118,16 @@ func CopyArgFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast
 		sym.Type = arg.Type
 		sym.PointerTargetType = arg.PointerTargetType
 	}
+
+	if !arg.IsStruct {
+		sym.TotalSize = arg.TotalSize
+	} else {
+		if len(sym.Fields) > 0 {
+			sym.TotalSize = prgrm.GetCXArgFromArray(sym.Fields[len(sym.Fields)-1]).TotalSize
+		} else {
+			sym.TotalSize = arg.TotalSize
+		}
+	}
 }
 
 // ProcessSymbolFields copies the correct field values for the sym.Fields from their struct fields.
@@ -2294,7 +2212,8 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignatur
 				if nameField.Name == typeSignature.Name && typeSignature.Type == ast.TYPE_ATOMIC {
 					nameField.Type = types.Code(typeSignature.Meta)
 					nameField.StructType = nil
-					nameField.Size = typeSignature.GetSize(prgrm, false)
+					nameField.Size = typeSignature.GetSize(prgrm)
+					nameField.TotalSize = typeSignature.GetSize(prgrm)
 
 					// TODO: this should not be needed.
 					if len(nameField.DeclarationSpecifiers) > 0 {
@@ -2308,17 +2227,19 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignatur
 					nameField.Type = types.Code(typeSignature.Meta)
 					nameField.StructType = nil
 					nameField.Size = types.Code(typeSignature.Meta).Size()
+					nameField.TotalSize = typeSignature.GetSize(prgrm)
 
 					nameField.DereferenceOperations = append([]int{constants.DECL_BASIC, constants.DEREF_POINTER}, nameField.DereferenceOperations...)
 
 					break
 				} else if nameField.Name == typeSignature.Name && typeSignature.Type == ast.TYPE_ARRAY_ATOMIC {
-					typeSignatureArray := prgrm.GetCXTypeSignatureArrayFromArray(typeSignature.Meta)
+					typeSignatureArray := prgrm.GetTypeSignatureArrayFromArray(typeSignature.Meta)
 					nameField.Type = types.Code(typeSignatureArray.Type)
 					nameField.StructType = nil
-					nameField.Size = types.Code(typeSignatureArray.Type).Size()
-					nameField.Lengths = typeSignatureArray.Lengths
-					sym.Lengths = typeSignatureArray.Lengths
+					nameField.Size = typeSignature.GetSize(prgrm)
+					nameField.Lengths = []types.Pointer{typeSignature.GetArrayLength(prgrm)}
+					sym.Lengths = []types.Pointer{typeSignature.GetArrayLength(prgrm)}
+					nameField.TotalSize = typeSignature.GetSize(prgrm) * nameField.Lengths[0]
 
 					// TODO: this should not be needed.
 					if len(nameField.DeclarationSpecifiers) > 0 {
@@ -2333,6 +2254,7 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignatur
 					nameField.Size = types.Code(typeSignature.Meta).Size()
 					nameField.Lengths = []types.Pointer{0}
 					sym.Lengths = []types.Pointer{0}
+					nameField.TotalSize = typeSignature.GetSize(prgrm)
 					nameField.IsSlice = true
 
 					// TODO: this should not be needed.
@@ -2369,6 +2291,7 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignatur
 					nameField.Type = field.Type
 					nameField.Lengths = field.Lengths
 					nameField.Size = field.Size
+					nameField.TotalSize = field.TotalSize
 					nameField.PointerTargetType = field.PointerTargetType
 					nameField.StructType = field.StructType
 
@@ -2410,6 +2333,83 @@ func GetGlobalSymbol(prgrm *ast.CXProgram, symbolsData *SymbolsData, symPkg *ast
 			// add name to symbols
 			symbolsData.symbols = append(symbolsData.symbols, glbl)
 			(symbolsData.symbolsIndex)[lastIdx][symPkg.Name+"."+ident] = len(symbolsData.symbols) - 1
+		}
+	}
+}
+
+// SetFinalSize sets the finalSize of 'sym'.
+func SetFinalSize(prgrm *ast.CXProgram, symbolsData *SymbolsData, typeSigIdx ast.CXTypeSignatureIndex) {
+	typeSig := prgrm.GetCXTypeSignatureFromArray(typeSigIdx)
+	var sym *ast.CXArgument = &ast.CXArgument{}
+	if typeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		sym = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(typeSig.Meta))
+	} else {
+		// panic("type is not cx arg deprecate\n\n")
+		// Final size of atomic type is its size which
+		// is already set. So we return from here
+		return
+	}
+
+	finalSize := sym.TotalSize
+
+	symPkg, err := prgrm.GetPackageFromArray(sym.Package)
+	if err != nil {
+		panic(err)
+	}
+
+	argTypeSignature, err := lookupSymbol(prgrm, symPkg.Name, sym.Name, symbolsData)
+	if err == nil {
+		var arg *ast.CXArgument = &ast.CXArgument{}
+		if argTypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			arg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(argTypeSignature.Meta))
+		} else if argTypeSignature.Type == ast.TYPE_POINTER_ATOMIC || argTypeSignature.Type == ast.TYPE_ATOMIC {
+			sym.TotalSize = types.Code(argTypeSignature.Meta).Size()
+			return
+		}
+
+		calculateFinalSize(prgrm, &finalSize, sym, arg)
+		for _, fldIdx := range sym.Fields {
+			fld := prgrm.GetCXArgFromArray(fldIdx)
+			finalSize = fld.TotalSize
+			calculateFinalSize(prgrm, &finalSize, fld, arg)
+		}
+	}
+
+	sym.TotalSize = finalSize
+}
+
+// calculateFinalSize calculates final size of 'sym'.
+func calculateFinalSize(prgrm *ast.CXProgram, finalSize *types.Pointer, sym *ast.CXArgument, arg *ast.CXArgument) {
+	idxCounter := 0
+	elt := sym.GetAssignmentElement(prgrm)
+	for _, op := range elt.DereferenceOperations {
+		if elt.IsSlice {
+			continue
+		}
+		switch op {
+		case constants.DEREF_ARRAY:
+			*finalSize /= elt.Lengths[idxCounter]
+			idxCounter++
+		case constants.DEREF_POINTER:
+			if len(arg.DeclarationSpecifiers) > 0 {
+				subSize := types.Pointer(1)
+				for _, decl := range arg.DeclarationSpecifiers {
+					switch decl {
+					case constants.DECL_ARRAY:
+						for _, len := range arg.Lengths {
+							subSize *= len
+						}
+					// case cxcore.DECL_SLICE:
+					// 	subSize = POINTER_SIZE
+					case constants.DECL_BASIC:
+						subSize = sym.Type.Size()
+					case constants.DECL_STRUCT:
+						subSize = arg.StructType.GetStructSize(prgrm)
+					}
+				}
+
+				*finalSize = subSize
+			}
 		}
 	}
 }

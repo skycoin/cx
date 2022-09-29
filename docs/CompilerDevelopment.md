@@ -77,6 +77,7 @@ The atomic unit of data in a program is the [CXArgument](https://github.com/skyc
 * FileName - the file this symbol originates from.
 * Type - the specific integer constant that reflects the type of this CXArgument (one of `TYPE_SLICE`, `TYPE_UI8`, etc.)
 * Size - the size of the underlying basic type.
+* TotalSize - total size of an array (only used for Array). 
 * Offset - the location in the program memory this CXArgument resides in.
 * PassBy - an int constant representing how the variable is passed - pass by value, or pass by reference.
 * FileLine - an int used for crash behavior, storing which file line this CXArgument originates from.

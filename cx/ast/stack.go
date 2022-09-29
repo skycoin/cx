@@ -35,8 +35,6 @@ func (cxprogram *CXProgram) PrintStack() {
 				inp = cxprogram.GetCXArgFromArray(CXArgumentIndex(input.Meta))
 			} else if input.Type == TYPE_ATOMIC || input.Type == TYPE_POINTER_ATOMIC {
 				inp = &CXArgument{ArgDetails: &CXArgumentDebug{}}
-			} else {
-				panic("type is not known")
 			}
 
 			fmt.Println("ProgramInput")
@@ -58,8 +56,6 @@ func (cxprogram *CXProgram) PrintStack() {
 				out = cxprogram.GetCXArgFromArray(CXArgumentIndex(output.Meta))
 			} else if output.Type == TYPE_ATOMIC || output.Type == TYPE_POINTER_ATOMIC {
 				out = &CXArgument{ArgDetails: &CXArgumentDebug{}}
-			} else {
-				panic("type is not known")
 			}
 
 			fmt.Println("ProgramOutput")
@@ -89,11 +85,7 @@ func (cxprogram *CXProgram) PrintStack() {
 				if input.Type == TYPE_CXARGUMENT_DEPRECATE {
 					inp = cxprogram.GetCXArgFromArray(CXArgumentIndex(input.Meta))
 				} else if input.Type == TYPE_ATOMIC || input.Type == TYPE_POINTER_ATOMIC {
-					// do nothing
-				} else if input.Type == TYPE_ARRAY_ATOMIC {
-					// do nothing
-				} else if input.Type == TYPE_POINTER_ARRAY_ATOMIC {
-					// do nothing
+					inp = &CXArgument{ArgDetails: &CXArgumentDebug{}}
 				}
 
 				if input.Name == "" || cxAtomicOpOperator == nil {
@@ -154,7 +146,7 @@ func (cxprogram *CXProgram) PrintStack() {
 					exprs += fmt.Sprintf("\t%s : %s() : %s\n", stackValueHeader(out.ArgDetails.FileName, out.ArgDetails.FileLine), cxAtomicOp.GetOperatorName(cxprogram), GetPrintableValue(cxprogram, fp, output))
 
 					dupNames = append(dupNames, outPkg.Name+out.Name)
-				} else if output.Type == TYPE_ATOMIC || output.Type == TYPE_POINTER_ATOMIC || output.Type == TYPE_ARRAY_ATOMIC || output.Type == TYPE_POINTER_ARRAY_ATOMIC {
+				} else if output.Type == TYPE_ATOMIC || output.Type == TYPE_POINTER_ATOMIC {
 					if output.Name == "" || cxAtomicOpOperator == nil {
 						continue
 					}
@@ -180,8 +172,6 @@ func (cxprogram *CXProgram) PrintStack() {
 
 					dupNames = append(dupNames, outputPkg.Name+output.Name)
 
-				} else {
-					panic("type is not known")
 				}
 
 			}

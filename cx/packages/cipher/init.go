@@ -22,14 +22,14 @@ func RegisterPackage(prgrm *ast.CXProgram) {
 	pubkeyFld.DeclarationSpecifiers = append(pubkeyFld.DeclarationSpecifiers, constants.DECL_ARRAY)
 	// pubkeyFld.IsArray = true
 	pubkeyFld.Lengths = []types.Pointer{33} // Yes, PubKey is 33 bytes long.
-	// pubkeyFld.TotalSize = 33                // 33 * 1 byte (ui8)
+	pubkeyFld.TotalSize = 33                // 33 * 1 byte (ui8)
 
 	// SecKey
 	seckeyFld := ast.MakeArgument("SecKey", "", -1).SetType(types.UI8).SetPackage(cPkg)
 	seckeyFld.DeclarationSpecifiers = append(seckeyFld.DeclarationSpecifiers, constants.DECL_ARRAY)
 	// seckeyFld.IsArray = true
 	seckeyFld.Lengths = []types.Pointer{32} // Yes, SecKey is 32 bytes long.
-	// seckeyFld.TotalSize = 33                // 33 * 1 byte (ui8)
+	seckeyFld.TotalSize = 33                // 33 * 1 byte (ui8)
 
 	pubkeyStrct.AddField(prgrm, pubkeyFld)
 	seckeyStrct.AddField(prgrm, seckeyFld)

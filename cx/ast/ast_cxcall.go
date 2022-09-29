@@ -48,7 +48,7 @@ func popStack(prgrm *CXProgram, call *CXCall) error {
 
 		cxAtomicOpOutput := prgrm.GetCXTypeSignatureFromArray(cxAtomicOpOutputs[i])
 		types.WriteSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, returnFP, nil, cxAtomicOpOutput),
-			types.GetSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, output), output.GetSize(prgrm, false)))
+			types.GetSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, output), output.GetSize(prgrm)))
 	}
 
 	// return the stack pointer to its previous state
@@ -70,15 +70,11 @@ func wipeDeclarationMemory(prgrm *CXProgram, expr *CXExpression) error {
 	newFP := newCall.FramePointer
 	cxAtomicOpOutputs := cxAtomicOp.GetOutputs(prgrm)
 	cxAtomicOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(cxAtomicOpOutputs[0])
-	size := cxAtomicOutputTypeSig.GetSize(prgrm, false)
+	size := cxAtomicOutputTypeSig.GetSize(prgrm)
 	var offset types.Pointer
 	if cxAtomicOutputTypeSig.Type == TYPE_CXARGUMENT_DEPRECATE {
 		offset = prgrm.CXArgs[cxAtomicOutputTypeSig.Meta].Offset
 	} else if cxAtomicOutputTypeSig.Type == TYPE_ATOMIC || cxAtomicOutputTypeSig.Type == TYPE_POINTER_ATOMIC {
-		offset = cxAtomicOutputTypeSig.Offset
-	} else if cxAtomicOutputTypeSig.Type == TYPE_ARRAY_ATOMIC {
-		offset = cxAtomicOutputTypeSig.Offset
-	} else if cxAtomicOutputTypeSig.Type == TYPE_POINTER_ARRAY_ATOMIC {
 		offset = cxAtomicOutputTypeSig.Offset
 	}
 
@@ -116,7 +112,7 @@ func processBuiltInOperators(prgrm *CXProgram, expr *CXExpression, globalInputs 
 		inputTypeSignature := prgrm.GetCXTypeSignatureFromArray(inputs[inputIndex])
 		value := &inputValues[inputIndex]
 		value.TypeSignature = inputTypeSignature
-		value.Size = inputTypeSignature.GetSize(prgrm, false)
+		value.Size = inputTypeSignature.GetSize(prgrm)
 		offset := GetFinalOffset(prgrm, fp, nil, inputTypeSignature)
 		value.Offset = offset
 
@@ -130,12 +126,6 @@ func processBuiltInOperators(prgrm *CXProgram, expr *CXExpression, globalInputs 
 			}
 		} else if inputTypeSignature.Type == TYPE_ATOMIC || inputTypeSignature.Type == TYPE_POINTER_ATOMIC {
 			value.Type = types.Code(inputTypeSignature.Meta)
-		} else if inputTypeSignature.Type == TYPE_ARRAY_ATOMIC {
-			arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(inputTypeSignature.Meta)
-			value.Type = types.Code(arrDetails.Type)
-		} else if inputTypeSignature.Type == TYPE_POINTER_ARRAY_ATOMIC {
-			arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(inputTypeSignature.Meta)
-			value.Type = types.Code(arrDetails.Type)
 		}
 
 		value.FramePointer = fp
@@ -148,7 +138,7 @@ func processBuiltInOperators(prgrm *CXProgram, expr *CXExpression, globalInputs 
 
 		value := &outputValues[outputIndex]
 		value.TypeSignature = outputTypeSignature
-		value.Size = outputTypeSignature.GetSize(prgrm, false)
+		value.Size = outputTypeSignature.GetSize(prgrm)
 		offset := GetFinalOffset(prgrm, fp, nil, outputTypeSignature)
 		value.Offset = offset
 
@@ -162,12 +152,6 @@ func processBuiltInOperators(prgrm *CXProgram, expr *CXExpression, globalInputs 
 			}
 		} else if outputTypeSignature.Type == TYPE_ATOMIC || outputTypeSignature.Type == TYPE_POINTER_ATOMIC {
 			value.Type = types.Code(outputTypeSignature.Meta)
-		} else if outputTypeSignature.Type == TYPE_ARRAY_ATOMIC {
-			arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(outputTypeSignature.Meta)
-			value.Type = types.Code(arrDetails.Type)
-		} else if outputTypeSignature.Type == TYPE_POINTER_ARRAY_ATOMIC {
-			arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(outputTypeSignature.Meta)
-			value.Type = types.Code(arrDetails.Type)
 		}
 
 		value.FramePointer = fp
@@ -229,8 +213,8 @@ func processNonAtomicOperators(prgrm *CXProgram, expr *CXExpression, fp types.Po
 		var byts []byte
 
 		finalOffset := GetFinalOffset(prgrm, fp, nil, input)
-		if input.PassBy == constants.PASSBY_REFERENCE || inp.PassBy == constants.PASSBY_REFERENCE {
 
+		if inp.PassBy == constants.PASSBY_REFERENCE {
 			// If we're referencing an inner element, like an element of a slice (&slc[0])
 			// or a field of a struct (&struct.fld) we no longer need to add
 			// the OBJECT_HEADER_SIZE to the offset
@@ -242,7 +226,7 @@ func processNonAtomicOperators(prgrm *CXProgram, expr *CXExpression, fp types.Po
 			byts = finalOffsetB[:]
 
 		} else {
-			size := input.GetSize(prgrm, false)
+			size := input.GetSize(prgrm)
 			byts = prgrm.Memory[finalOffset : finalOffset+size]
 		}
 

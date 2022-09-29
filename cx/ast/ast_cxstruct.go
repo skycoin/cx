@@ -99,9 +99,9 @@ func (strct *CXStruct) AddField(prgrm *CXProgram, cxArgument *CXArgument) *CXStr
 	// 		currentTypeSignature.Offset = prgrm.CXArgs[lastFldIdx].Offset + prgrm.CXArgs[lastFldIdx].TotalSize
 	// 	} else if lastTypeSignature.Type != TYPE_CXARGUMENT_DEPRECATE && currentTypeSignature.Type == TYPE_CXARGUMENT_DEPRECATE {
 	// 		currFldIdx := currentTypeSignature.Meta
-	// 		prgrm.CXArgs[currFldIdx].Offset = lastTypeSignature.Offset + lastTypeSignature.GetSize(prgrm, false)
+	// 		prgrm.CXArgs[currFldIdx].Offset = lastTypeSignature.Offset + lastTypeSignature.GetSize(prgrm)
 	// 	} else if lastTypeSignature.Type != TYPE_CXARGUMENT_DEPRECATE && currentTypeSignature.Type != TYPE_CXARGUMENT_DEPRECATE {
-	// 		currentTypeSignature.Offset = lastTypeSignature.Offset + lastTypeSignature.GetSize(prgrm, false)
+	// 		currentTypeSignature.Offset = lastTypeSignature.Offset + lastTypeSignature.GetSize(prgrm)
 	// 	}
 	// }
 
@@ -175,7 +175,7 @@ func (strct *CXStruct) GetStructSize(prgrm *CXProgram) types.Pointer {
 	var structSize types.Pointer
 	for _, typeSignatureIdx := range strct.Fields {
 		typeSignature := prgrm.GetCXTypeSignatureFromArray(typeSignatureIdx)
-		structSize += typeSignature.GetSize(prgrm, false)
+		structSize += typeSignature.GetSize(prgrm)
 	}
 
 	return structSize

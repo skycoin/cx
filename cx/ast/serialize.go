@@ -134,6 +134,7 @@ func serializeArgument(prgrm *CXProgram, arg *CXArgument, s *SerializedCXProgram
 	}
 
 	s.Arguments[argOff].Size = int64(arg.Size)
+	s.Arguments[argOff].TotalSize = int64(arg.TotalSize)
 	s.Arguments[argOff].Offset = int64(arg.Offset)
 
 	s.Arguments[argOff].DeclarationSpecifiersOffset,
@@ -968,6 +969,7 @@ func deserializeArgument(sArg *serializedArgument, s *SerializedCXProgram, prgrm
 	//arg.StructType = getStructType(sArg, s, prgrm)
 
 	arg.Size = types.Cast_i64_to_ptr(sArg.Size)
+	arg.TotalSize = types.Cast_i64_to_ptr(sArg.TotalSize)
 	arg.Offset = types.Cast_i64_to_ptr(sArg.Offset)
 	arg.PassBy = int(sArg.PassBy)
 

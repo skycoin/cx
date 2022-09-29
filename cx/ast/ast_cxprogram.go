@@ -286,13 +286,13 @@ func (cxprogram *CXProgram) GetCXTypeSignatureFromArray(index CXTypeSignatureInd
 
 // ----------------------------------------------------------------
 //                         `CXProgram` TypeSignature_Array handling
-func (cxprogram *CXProgram) AddCXTypeSignatureArrayInArray(typeSignatureArray *CXTypeSignature_Array) int {
+func (cxprogram *CXProgram) AddTypeSignatureArrayInArray(typeSignatureArray *CXTypeSignature_Array) int {
 	cxprogram.TypeSignatureForArrays = append(cxprogram.TypeSignatureForArrays, *typeSignatureArray)
 
 	return len(cxprogram.TypeSignatureForArrays) - 1
 }
 
-func (cxprogram *CXProgram) GetCXTypeSignatureArrayFromArray(index int) *CXTypeSignature_Array {
+func (cxprogram *CXProgram) GetTypeSignatureArrayFromArray(index int) *CXTypeSignature_Array {
 	if index == -1 {
 		return nil
 	}

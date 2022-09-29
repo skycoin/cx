@@ -49,12 +49,8 @@ func assignStructLiteralFields(prgrm *ast.CXProgram, toExprs []ast.CXExpression,
 		var toExpressionOutput *ast.CXArgument = &ast.CXArgument{}
 		if toExpressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			toExpressionOutput = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(toExpressionOutputTypeSig.Meta))
-		} else if toExpressionOutputTypeSig.Type == ast.TYPE_ATOMIC || toExpressionOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
-			// TODO: Improve when possible
-			// Do nothing for now since len(toExpressionOutput.Indexes) > 0
-			// of type atomics and type pointer atomics are always 0
 		} else {
-			panic("type is not known")
+			panic("type is not type cx argument deprecate\n\n")
 		}
 
 		if len(toExpressionOutput.Indexes) > 0 {
@@ -117,33 +113,40 @@ func StructLiteralAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, f
 		aux.DeclarationSpecifiers = append(aux.DeclarationSpecifiers, constants.DECL_POINTER)
 		aux.StructType = outField.StructType
 		aux.Size = outField.Size
+		aux.TotalSize = outField.TotalSize
 		aux.PreviouslyDeclared = true
 		aux.Package = lastFromExpression.Package
-
-		auxtypeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, aux)
-		auxTypeSigIdx := prgrm.AddCXTypeSignatureInArray(auxtypeSig)
+		auxIdx := prgrm.AddCXArgInArray(aux)
 
 		declExprCXLine := ast.MakeCXLineExpression(prgrm, lastFromCXLine.FileName, lastFromCXLine.LineNumber, lastFromCXLine.LineStr)
 		declExpr := ast.MakeAtomicOperatorExpression(prgrm, nil)
 		declExpressionIdx := declExpr.Index
 
 		prgrm.CXAtomicOps[declExpressionIdx].Package = lastFromExpression.Package
-		prgrm.CXAtomicOps[declExpressionIdx].AddOutput(prgrm, auxTypeSigIdx)
 
-		out := ast.MakeArgument(toExpressionOutputTypeSig.Name, lastFromCXLine.FileName, lastFromCXLine.LineNumber)
-		out.Package = lastFromExpression.Package
-		outTypeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, out)
-		outTypeSigIdx := prgrm.AddCXTypeSignatureInArray(outTypeSig)
+		typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(auxIdx))
+		typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
+		prgrm.CXAtomicOps[declExpressionIdx].AddOutput(prgrm, typeSigIdx)
+
+		fromExprs = assignStructLiteralFields(prgrm, toExprs, fromExprs, auxName)
 
 		assignExprCXLine := ast.MakeCXLineExpression(prgrm, lastFromCXLine.FileName, lastFromCXLine.LineNumber, lastFromCXLine.LineStr)
 		assignExpr := ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_IDENTITY])
 		assignExpressionIdx := assignExpr.Index
 
 		prgrm.CXAtomicOps[assignExpressionIdx].Package = lastFromExpression.Package
+		out := ast.MakeArgument(toExpressionOutputTypeSig.Name, lastFromCXLine.FileName, lastFromCXLine.LineNumber)
+		out.Package = lastFromExpression.Package
+		outIdx := prgrm.AddCXArgInArray(out)
+
+		outTypeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(outIdx))
+		outTypeSigIdx := prgrm.AddCXTypeSignatureInArray(outTypeSig)
 		prgrm.CXAtomicOps[assignExpressionIdx].AddOutput(prgrm, outTypeSigIdx)
+
+		auxTypeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(auxIdx))
+		auxTypeSigIdx := prgrm.AddCXTypeSignatureInArray(auxTypeSig)
 		prgrm.CXAtomicOps[assignExpressionIdx].AddInput(prgrm, auxTypeSigIdx)
 
-		fromExprs = assignStructLiteralFields(prgrm, toExprs, fromExprs, auxName)
 		fromExprs = append([]ast.CXExpression{*declExprCXLine, *declExpr}, fromExprs...)
 
 		return append(fromExprs, *assignExprCXLine, *assignExpr)
@@ -230,8 +233,8 @@ func ShortAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression, exprCXLine *a
 			sym := ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, LineNo).SetType(fromExpressionInputArg.Type)
 			sym.Package = ast.CXPackageIndex(pkg.Index)
 			sym.PreviouslyDeclared = true
-
-			typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, sym)
+			symIdx := prgrm.AddCXArgInArray(sym)
+			typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(symIdx))
 			typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
 		} else if fromExpressionInputTypeSig.Type == ast.TYPE_ATOMIC || fromExpressionInputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 			var newTypeSig ast.CXTypeSignature
@@ -239,8 +242,6 @@ func ShortAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression, exprCXLine *a
 			newTypeSig.Name = generateTempVarName(constants.LOCAL_PREFIX)
 			newTypeSig.Package = ast.CXPackageIndex(pkg.Index)
 			typeSigIdx = prgrm.AddCXTypeSignatureInArray(&newTypeSig)
-		} else {
-			panic("type is not known")
 		}
 
 		prgrm.CXAtomicOps[fromExpressionIdx].AddOutput(prgrm, typeSigIdx)
@@ -276,8 +277,6 @@ func getOutputType(prgrm *ast.CXProgram, expr *ast.CXExpression) *ast.CXTypeSign
 		}
 	} else if expressionOperatorOutputTypeSig.Type == ast.TYPE_ATOMIC || expressionOperatorOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 		return expressionOperatorOutputTypeSig
-	} else {
-		panic("type is not known")
 	}
 
 	expressionInputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetInputs(prgrm)[0])
@@ -331,8 +330,9 @@ func shortDeclarationAssignment(prgrm *ast.CXProgram, pkg *ast.CXPackage, toExpr
 			sym = ast.MakeArgument(toExpressionOutputTypeSig.Name, CurrentFile, LineNo).SetType(fromExpressionOutputArg.Type)
 			sym.Package = ast.CXPackageIndex(pkg.Index)
 			sym.PreviouslyDeclared = true
+			symIdx := prgrm.AddCXArgInArray(sym)
 
-			typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, sym)
+			typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(symIdx))
 			typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
 		} else if fromExpressionOutputTypeSig.Type == ast.TYPE_ATOMIC {
 			var newTypeSig ast.CXTypeSignature
@@ -344,8 +344,6 @@ func shortDeclarationAssignment(prgrm *ast.CXProgram, pkg *ast.CXPackage, toExpr
 			newTypeSig = *fromExpressionOutputTypeSig
 			newTypeSig.Name = toExpressionOutputTypeSig.Name
 			typeSigIdx = prgrm.AddCXTypeSignatureInArray(&newTypeSig)
-		} else {
-			panic("type is not known")
 		}
 
 	} else {
@@ -369,6 +367,7 @@ func shortDeclarationAssignment(prgrm *ast.CXProgram, pkg *ast.CXPackage, toExpr
 
 				fromCXAtomicOpInputs := fromExpressionInputArg
 				sym.Size = fromCXAtomicOpInputs.Size
+				sym.TotalSize = fromCXAtomicOpInputs.TotalSize
 				sym.Lengths = fromCXAtomicOpInputs.Lengths
 			}
 			if outTypeIsSlice {
@@ -381,8 +380,9 @@ func shortDeclarationAssignment(prgrm *ast.CXProgram, pkg *ast.CXPackage, toExpr
 			sym.Package = ast.CXPackageIndex(pkg.Index)
 			sym.PreviouslyDeclared = true
 			sym.Offset = outTypeArg.Offset
+			symIdx := prgrm.AddCXArgInArray(sym)
 
-			typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, sym)
+			typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(symIdx))
 			typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
 		} else if outTypeSig.Type == ast.TYPE_ATOMIC {
 			var newTypeSig ast.CXTypeSignature
@@ -396,8 +396,6 @@ func shortDeclarationAssignment(prgrm *ast.CXProgram, pkg *ast.CXPackage, toExpr
 			newTypeSig = *outTypeSig
 			newTypeSig.Name = toExpressionOutputTypeSig.Name
 			typeSigIdx = prgrm.AddCXTypeSignatureInArray(&newTypeSig)
-		} else {
-			panic("type is not known")
 		}
 
 	}
@@ -426,6 +424,7 @@ func shortDeclarationAssignment(prgrm *ast.CXProgram, pkg *ast.CXPackage, toExpr
 		prgrm.CXArgs[toExprAtomicOpOutputIdx].Type = sym.Type
 		prgrm.CXArgs[toExprAtomicOpOutputIdx].PointerTargetType = sym.PointerTargetType
 		prgrm.CXArgs[toExprAtomicOpOutputIdx].Size = sym.Size
+		prgrm.CXArgs[toExprAtomicOpOutputIdx].TotalSize = sym.TotalSize
 	}
 
 	return append([]ast.CXExpression{*expr}, toExprs...)
@@ -458,19 +457,20 @@ func processAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fromExp
 			fromExpressionOutputArg := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(fromExpressionOutputTypeSig.Meta))
 
 			prgrm.CXArgs[toExpressionOutputIdx].Size = fromExpressionOutputArg.Size
+			prgrm.CXArgs[toExpressionOutputIdx].TotalSize = fromExpressionOutputArg.TotalSize
 			prgrm.CXArgs[toExpressionOutputIdx].Type = fromExpressionOutputArg.Type
 			prgrm.CXArgs[toExpressionOutputIdx].PointerTargetType = fromExpressionOutputArg.PointerTargetType
 			prgrm.CXArgs[toExpressionOutputIdx].Lengths = fromExpressionOutputArg.Lengths
 			prgrm.CXArgs[toExpressionOutputIdx].PassBy = fromExpressionOutputArg.PassBy
 		} else if fromExpressionOutputTypeSig.Type == ast.TYPE_ATOMIC {
 			prgrm.CXArgs[toExpressionOutputIdx].Size = types.Code(fromExpressionOutputTypeSig.Meta).Size()
+			prgrm.CXArgs[toExpressionOutputIdx].TotalSize = types.Code(fromExpressionOutputTypeSig.Meta).Size()
 			prgrm.CXArgs[toExpressionOutputIdx].Type = types.Code(fromExpressionOutputTypeSig.Meta)
 		} else if fromExpressionOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 			prgrm.CXArgs[toExpressionOutputIdx].Size = types.Code(fromExpressionOutputTypeSig.Meta).Size()
+			prgrm.CXArgs[toExpressionOutputIdx].TotalSize = types.Code(fromExpressionOutputTypeSig.Meta).Size()
 			prgrm.CXArgs[toExpressionOutputIdx].Type = types.POINTER
 			prgrm.CXArgs[toExpressionOutputIdx].PointerTargetType = types.Code(fromExpressionOutputTypeSig.Meta)
-		} else {
-			panic("type is not known")
 		}
 
 		if fromExprs[lastFromExpressionIdx].IsMethodCall() {
@@ -539,8 +539,6 @@ func processAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fromExp
 					prgrm.CXArgs[toExpressionOutputIdx].Type = types.POINTER
 					prgrm.CXArgs[toExpressionOutputIdx].PointerTargetType = types.Code(fromExpressionOperatorOutputTypeSig.Meta)
 				}
-			} else {
-				panic("type is not known")
 			}
 		} else if toExpressionOutputTypeSig.Type == ast.TYPE_ATOMIC || toExpressionOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 			fromExpressionOperatorOutputs := fromExpressionOperator.GetOutputs(prgrm)
@@ -576,11 +574,7 @@ func processAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fromExp
 					// only assigning as if the operator had only one output defined
 					toExpressionOutputTypeSig.Meta = fromExpressionOperatorOutputTypeSig.Meta
 				}
-			} else {
-				panic("type is not known")
 			}
-		} else {
-			panic("type is not known")
 		}
 
 		prgrm.CXAtomicOps[fromExpressionIdx].Outputs = toLastExpr.Outputs
@@ -598,13 +592,11 @@ func checkIfFunctionCallNeedsAnOutput(prgrm *ast.CXProgram, fromExpressionOperat
 		toExpressionOutputs := toExpression.GetOutputs(prgrm)
 		toExpressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(toExpressionOutputs[0])
 
-		var toExpressionOutputArg *ast.CXArgument = &ast.CXArgument{ArgDetails: &ast.CXArgumentDebug{}}
+		var toExpressionOutputArg *ast.CXArgument = &ast.CXArgument{}
 		if toExpressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			toExpressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(toExpressionOutputTypeSig.Meta))
 		} else {
-			// TODO: improve when possible
-			// do nothing for now since CxTypeSignature
-			// does not yet hold file name and file line.
+			panic("type is not cx argument deprecate\n\n")
 		}
 
 		println(ast.CompilationError(toExpressionOutputArg.ArgDetails.FileName, toExpressionOutputArg.ArgDetails.FileLine), "trying to use an outputless operator in an assignment")

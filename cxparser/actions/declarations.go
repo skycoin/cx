@@ -21,6 +21,7 @@ func DeclarationSpecifiers(declSpec *ast.CXArgument, arrayLengths []types.Pointe
 	case constants.DECL_POINTER:
 		declSpec.DeclarationSpecifiers = append(declSpec.DeclarationSpecifiers, constants.DECL_POINTER)
 		declSpec.Size = types.POINTER_SIZE
+		declSpec.TotalSize = types.POINTER_SIZE
 
 		if declSpec.Type == types.STR || declSpec.StructType != nil {
 			declSpec.PointerTargetType = declSpec.Type
@@ -34,6 +35,7 @@ func DeclarationSpecifiers(declSpec *ast.CXArgument, arrayLengths []types.Pointe
 		}
 		arg := declSpec
 		arg.Lengths = arrayLengths
+		arg.TotalSize = arg.Size * TotalLength(arg.Lengths)
 
 		return arg
 	case constants.DECL_SLICE:
@@ -41,10 +43,12 @@ func DeclarationSpecifiers(declSpec *ast.CXArgument, arrayLengths []types.Pointe
 		arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_SLICE)
 		arg.IsSlice = true
 		arg.Lengths = append([]types.Pointer{0}, arg.Lengths...)
+		arg.TotalSize = types.POINTER_SIZE
 
 		return arg
 	case constants.DECL_BASIC:
 		arg := declSpec
+		arg.TotalSize = arg.Size
 
 		return arg
 	case constants.DECL_FUNC:
@@ -105,6 +109,7 @@ func DeclarationSpecifiersStruct(prgrm *ast.CXProgram, ident string, pkgName str
 	arg.Type = types.STRUCT
 	arg.StructType = strct
 	arg.Size = strct.GetStructSize(prgrm)
+	arg.TotalSize = strct.GetStructSize(prgrm)
 	arg.Package = ast.CXPackageIndex(pkg.Index)
 	arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_STRUCT)
 
