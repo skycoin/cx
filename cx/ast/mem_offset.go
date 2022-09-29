@@ -26,17 +26,23 @@ func GetArgSize(prgrm *CXProgram, arg *CXArgument) types.Pointer {
 	derefCount := len(arg.DereferenceOperations)
 	if derefCount > 0 {
 		deref := arg.DereferenceOperations[derefCount-1]
-		if deref == constants.DEREF_SLICE || deref == constants.DEREF_ARRAY {
-			declCount := len(arg.DeclarationSpecifiers)
-			if declCount > 1 {
-			}
+
+		switch deref {
+		case constants.DEREF_SLICE, constants.DEREF_ARRAY:
 			return arg.Size
+		case constants.DEREF_POINTER:
+			return arg.Type.Size()
 		}
 	}
 
 	for _, decl := range arg.DeclarationSpecifiers {
-		if decl == constants.DECL_POINTER || decl == constants.DECL_SLICE || decl == constants.DECL_ARRAY {
-			return arg.TotalSize
+		switch decl {
+		case constants.DECL_ARRAY:
+			return arg.Size * TotalLength(arg.Lengths)
+		case constants.DECL_POINTER:
+			return arg.Size
+		case constants.DECL_SLICE:
+			return types.POINTER_SIZE
 		}
 	}
 
@@ -44,24 +50,29 @@ func GetArgSize(prgrm *CXProgram, arg *CXArgument) types.Pointer {
 		return arg.StructType.GetStructSize(prgrm)
 	}
 
-	return arg.TotalSize
+	return arg.Size
 }
 
 func GetNativeSize(prgrm *CXProgram, arg *CXArgument) types.Pointer {
 	derefCount := len(arg.DereferenceOperations)
 	if derefCount > 0 {
 		deref := arg.DereferenceOperations[derefCount-1]
-		if deref == constants.DEREF_SLICE || deref == constants.DEREF_ARRAY {
-			declCount := len(arg.DeclarationSpecifiers)
-			if declCount > 1 {
-			}
+		switch deref {
+		case constants.DEREF_SLICE, constants.DEREF_ARRAY:
 			return arg.Size
+		case constants.DEREF_POINTER:
+			return arg.Type.Size()
 		}
 	}
 
 	for _, decl := range arg.DeclarationSpecifiers {
-		if decl == constants.DECL_POINTER || decl == constants.DECL_SLICE || decl == constants.DECL_ARRAY {
-			return arg.TotalSize
+		switch decl {
+		case constants.DECL_ARRAY:
+			return arg.Size * TotalLength(arg.Lengths)
+		case constants.DECL_POINTER:
+			return arg.Size
+		case constants.DECL_SLICE:
+			return types.POINTER_SIZE
 		}
 	}
 
@@ -69,7 +80,7 @@ func GetNativeSize(prgrm *CXProgram, arg *CXArgument) types.Pointer {
 		return arg.StructType.GetStructSize(prgrm)
 	}
 
-	return arg.TotalSize
+	return arg.Size
 }
 
 // GetDerefSize ...
@@ -81,7 +92,7 @@ func GetDerefSize(prgrm *CXProgram, arg *CXArgument, index int, derefPointer boo
 		return arg.StructType.GetStructSize(prgrm)
 	}
 	if derefPointer {
-		return arg.TotalSize
+		return arg.Type.Size()
 	}
 	return arg.Size
 }
@@ -107,6 +118,7 @@ func GetFinalOffset(prgrm *CXProgram, fp types.Pointer, oldArg *CXArgument, argT
 		arg = &prgrm.CXArgs[argTypeSig.Meta]
 	} else if argTypeSig.Type == TYPE_ATOMIC {
 		argTypeSigOffset := argTypeSig.Offset
+
 		//Todo: find way to eliminate this check
 		if argTypeSigOffset < prgrm.Stack.Size {
 			// Then it's in the stack, not in data or heap and we need to consider the frame pointer.
@@ -116,6 +128,10 @@ func GetFinalOffset(prgrm *CXProgram, fp types.Pointer, oldArg *CXArgument, argT
 		return argTypeSigOffset
 	} else if argTypeSig.Type == TYPE_POINTER_ATOMIC {
 		finalOffset = argTypeSig.Offset
+
+		if argTypeSig.IsDeref {
+			finalOffset = types.Read_ptr(prgrm.Memory, finalOffset)
+		}
 
 		//Todo: find way to eliminate this check
 		if finalOffset < prgrm.Stack.Size {
@@ -129,7 +145,65 @@ func GetFinalOffset(prgrm *CXProgram, fp types.Pointer, oldArg *CXArgument, argT
 		}
 
 		return finalOffset
+	} else if argTypeSig.Type == TYPE_ARRAY_ATOMIC {
+		argTypeSigOffset := argTypeSig.Offset
+
+		//Todo: find way to eliminate this check
+		if argTypeSigOffset < prgrm.Stack.Size {
+			// Then it's in the stack, not in data or heap and we need to consider the frame pointer.
+			argTypeSigOffset += fp
+		}
+
+		arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(argTypeSig.Meta)
+		indexesLen := len(arrDetails.Indexes)
+
+		for i := 0; i < indexesLen; i++ {
+			var subSize = types.Pointer(1)
+			for _, len := range arrDetails.Lengths[i+1:] {
+				subSize *= len
+			}
+
+			sizeToUse := types.Code(arrDetails.Type).Size()
+			sizeOfElement := subSize * sizeToUse
+			argTypeSigOffset += types.Cast_i32_to_ptr(types.Read_i32(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, prgrm.GetCXTypeSignatureFromArray(arrDetails.Indexes[i])))) * sizeOfElement
+		}
+
+		return argTypeSigOffset
+	} else if argTypeSig.Type == TYPE_POINTER_ARRAY_ATOMIC {
+		finalOffset = argTypeSig.Offset
+
+		//Todo: find way to eliminate this check
+		if finalOffset < prgrm.Stack.Size {
+			// Then it's in the stack, not in data or heap and we need to consider the frame pointer.
+			finalOffset += fp
+		}
+
+		if argTypeSig.IsDeref {
+			finalOffset = types.Read_ptr(prgrm.Memory, finalOffset)
+
+			arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(argTypeSig.Meta)
+			indexesLen := len(arrDetails.Indexes)
+
+			for i := 0; i < indexesLen; i++ {
+				var subSize = types.Pointer(1)
+				for _, len := range arrDetails.Lengths[i+1:] {
+					subSize *= len
+				}
+
+				sizeToUse := types.Code(arrDetails.Type).Size()
+				sizeOfElement := subSize * sizeToUse
+				finalOffset += types.Cast_i32_to_ptr(types.Read_i32(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, prgrm.GetCXTypeSignatureFromArray(arrDetails.Indexes[i])))) * sizeOfElement
+			}
+		}
+
+		if finalOffset.IsValid() && finalOffset >= prgrm.Heap.StartsAt {
+			// then it's an object
+			finalOffset += types.OBJECT_HEADER_SIZE
+		}
+
+		return finalOffset
 	}
+
 	finalOffset = arg.Offset
 
 	//Todo: find way to eliminate this check

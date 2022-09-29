@@ -33,6 +33,14 @@ func assert(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) (
 	} else if inputs[0].TypeSignature.Type == ast.TYPE_ATOMIC || inputs[0].TypeSignature.Type == ast.TYPE_POINTER_ATOMIC {
 		byts1 = inputs[0].Get_bytes(prgrm)
 		byts2 = inputs[1].Get_bytes(prgrm)
+	} else if inputs[0].TypeSignature.Type == ast.TYPE_ARRAY_ATOMIC {
+		byts1 = inputs[0].Get_bytes(prgrm)
+		byts2 = inputs[1].Get_bytes(prgrm)
+	} else if inputs[0].TypeSignature.Type == ast.TYPE_POINTER_ARRAY_ATOMIC {
+		byts1 = inputs[0].Get_bytes(prgrm)
+		byts2 = inputs[1].Get_bytes(prgrm)
+	} else {
+		panic("type is not known")
 	}
 
 	same = true

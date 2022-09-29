@@ -77,9 +77,8 @@ func IterationExpressions(prgrm *ast.CXProgram,
 			predicate := ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, LineNo).SetType(lastCondExpressionOperatorOutputType)
 			predicate.Package = ast.CXPackageIndex(pkg.Index)
 			predicate.PreviouslyDeclared = true
-			predicateIdx := prgrm.AddCXArgInArray(predicate)
 
-			typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(predicateIdx))
+			typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, predicate)
 			typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
 		} else if lastCondExpressionOperatorOutputTypeSig.Type == ast.TYPE_ATOMIC {
 			var newTypeSig ast.CXTypeSignature
@@ -95,6 +94,8 @@ func IterationExpressions(prgrm *ast.CXProgram,
 			newTypeSig.Package = ast.CXPackageIndex(pkg.Index)
 			newTypeSig.Offset = types.Pointer(0)
 			typeSigIdx = prgrm.AddCXTypeSignatureInArray(&newTypeSig)
+		} else {
+			panic("type is not known")
 		}
 
 		prgrm.CXAtomicOps[lastCondExpressionIdx].AddOutput(prgrm, typeSigIdx)
@@ -109,6 +110,8 @@ func IterationExpressions(prgrm *ast.CXProgram,
 			prgrm.CXArgs[predicateIdx].PreviouslyDeclared = true
 		} else if predicateTypeSig.Type == ast.TYPE_ATOMIC || predicateTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 			// do nothing
+		} else {
+			panic("type is not known")
 		}
 
 		prgrm.CXAtomicOps[downExpressionIdx].AddInput(prgrm, predicateTypeSigIdx)
@@ -166,7 +169,7 @@ func trueJmpExpressions(prgrm *ast.CXProgram, opcode int) []ast.CXExpression {
 	expressionIdx := expr.Index
 
 	trueArg := WritePrimary(prgrm, types.BOOL, encoder.Serialize(true), false)
-	typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(trueArg.Index)))
+	typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, trueArg)
 	typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
 	prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, typeSigIdx)
 	prgrm.CXAtomicOps[expressionIdx].Package = ast.CXPackageIndex(pkg.Index)
@@ -243,14 +246,15 @@ func SelectionExpressions(prgrm *ast.CXProgram, conditionExprs []ast.CXExpressio
 				lastCondExpressionOperatorOutputArgType = types.Code(lastCondExpressionOperatorOutputTypeSig.Meta)
 			} else if lastCondExpressionOperatorOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 				lastCondExpressionOperatorOutputArgType = types.Code(lastCondExpressionOperatorOutputTypeSig.Meta)
+			} else {
+				panic("type is not known")
 			}
 			predicate.SetType(lastCondExpressionOperatorOutputArgType)
 		}
 		predicate.PreviouslyDeclared = true
 		predicate.Package = ast.CXPackageIndex(pkg.Index)
 
-		predicateIdx := prgrm.AddCXArgInArray(predicate)
-		predicateTypeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(predicateIdx))
+		predicateTypeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, predicate)
 		predicateTypeSigIdx = prgrm.AddCXTypeSignatureInArray(predicateTypeSig)
 		prgrm.CXAtomicOps[lastCondExpressionIdx].AddOutput(prgrm, predicateTypeSigIdx)
 	}
@@ -272,7 +276,7 @@ func SelectionExpressions(prgrm *ast.CXProgram, conditionExprs []ast.CXExpressio
 	skipLines := len(elseExprs)
 
 	trueArg := WritePrimary(prgrm, types.BOOL, encoder.Serialize(true), false)
-	typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(trueArg.Index)))
+	typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, trueArg)
 	typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
 	prgrm.CXAtomicOps[skipExpressionIdx].AddInput(prgrm, typeSigIdx)
 	prgrm.CXAtomicOps[skipExpressionIdx].ThenLines = skipLines
@@ -313,6 +317,8 @@ func resolveTypeForUnd(prgrm *ast.CXProgram, expr *ast.CXExpression) types.Code 
 			expressionInputArgType = types.Code(expressionInputTypeSig.Meta)
 		} else if expressionInputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 			expressionInputArgType = types.Code(expressionInputTypeSig.Meta)
+		} else {
+			panic("type is not known")
 		}
 
 		// it's a literal
@@ -329,6 +335,8 @@ func resolveTypeForUnd(prgrm *ast.CXProgram, expr *ast.CXExpression) types.Code 
 			expressionOutputArgType = types.Code(expressionOutputTypeSig.Meta)
 		} else if expressionOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 			expressionOutputArgType = types.Code(expressionOutputTypeSig.Meta)
+		} else {
+			panic("type is not known")
 		}
 
 		// it's an expression with an output
@@ -351,6 +359,8 @@ func resolveTypeForUnd(prgrm *ast.CXProgram, expr *ast.CXExpression) types.Code 
 			expressionOperatorOutputArgType = types.Code(expressionOperatorOutputTypeSig.Meta)
 		} else if expressionOperatorOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 			expressionOperatorOutputArgType = types.Code(expressionOperatorOutputTypeSig.Meta)
+		} else {
+			panic("type is not known")
 		}
 
 		// always return first output's type
@@ -397,14 +407,12 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 			out := ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, LineNo)
 			out.SetType(resolveTypeForUnd(prgrm, &leftExprs[len(leftExprs)-1]))
 			out.Size = lastLeftExpressionOperatorOutputArg.Size
-			out.TotalSize = lastLeftExpressionOperatorOutputTypeSig.GetSize(prgrm)
 			out.Type = lastLeftExpressionOperatorOutputArg.Type
 			out.PointerTargetType = lastLeftExpressionOperatorOutputArg.PointerTargetType
 			out.Package = ast.CXPackageIndex(pkg.Index)
 			out.PreviouslyDeclared = true
 
-			outIdx := prgrm.AddCXArgInArray(out)
-			typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(outIdx))
+			typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, out)
 			typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
 		} else if lastLeftExpressionOperatorOutputTypeSig.Type == ast.TYPE_ATOMIC {
 			typeSig := &ast.CXTypeSignature{}
@@ -424,6 +432,8 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 			typeSig.Offset = lastLeftExpressionOperatorOutputTypeSig.Offset
 
 			typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
+		} else {
+			panic("type is not known")
 		}
 
 		prgrm.CXAtomicOps[lastLeftExpressionIdx].AddOutput(prgrm, typeSigIdx)
@@ -443,14 +453,12 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 			out := ast.MakeArgument(generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, LineNo)
 			out.SetType(resolveTypeForUnd(prgrm, &rightExprs[len(rightExprs)-1]))
 			out.Size = lastRightExpressionOperatorOutputArg.Size
-			out.TotalSize = lastRightExpressionOperatorOutputTypeSig.GetSize(prgrm)
 			out.Type = lastRightExpressionOperatorOutputArg.Type
 			out.PointerTargetType = lastRightExpressionOperatorOutputArg.PointerTargetType
 			out.Package = ast.CXPackageIndex(pkg.Index)
 			out.PreviouslyDeclared = true
 
-			outIdx := prgrm.AddCXArgInArray(out)
-			typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(outIdx))
+			typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, out)
 			typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
 		} else if lastRightExpressionOperatorOutputTypeSig.Type == ast.TYPE_ATOMIC {
 			typeSig := &ast.CXTypeSignature{}
@@ -470,6 +478,8 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 			typeSig.Offset = lastRightExpressionOperatorOutputTypeSig.Offset
 
 			typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
+		} else {
+			panic("type is not known")
 		}
 
 		prgrm.CXAtomicOps[lastRightExpressionIdx].AddOutput(prgrm, typeSigIdx)
@@ -488,6 +498,8 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 		lastLeftExpressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(lastLeftExpressionOutputTypeSig.Meta))
 	} else if lastLeftExpressionOutputTypeSig.Type == ast.TYPE_ATOMIC || lastLeftExpressionOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 		lastLeftExpressionOutputArg = &ast.CXArgument{}
+	} else {
+		panic("type is not known")
 	}
 
 	if len(lastLeftExpressionOutputArg.Indexes) > 0 || lastLeftExpressionOperator != nil {
@@ -511,6 +523,8 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 		lastRightExpressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(lastRightExpressionOutputTypeSig.Meta))
 	} else if lastRightExpressionOutputTypeSig.Type == ast.TYPE_ATOMIC || lastRightExpressionOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 		lastRightExpressionOutputArg = &ast.CXArgument{}
+	} else {
+		panic("type is not known")
 	}
 
 	if len(lastRightExpressionOutputArg.Indexes) > 0 || lastRightExpressionOperator != nil {
@@ -615,7 +629,9 @@ func UnaryExpression(prgrm *ast.CXProgram, op string, prevExprs []ast.CXExpressi
 			// TODO: what is the most efficient alternative for this
 			// exprOut.DereferenceOperations = append(exprOut.DereferenceOperations, constants.DEREF_POINTER)
 			// exprOut.DeclarationSpecifiers = append(exprOut.DeclarationSpecifiers, constants.DECL_DEREF)
-			panic("unary expression op=*")
+
+			// a pointer type that we want to get its value
+			lastPrevExpressionOutputTypeSig.IsDeref = true
 		case "&":
 			// TODO: what is the most efficient alternative for this
 			// baseOut.PassBy = constants.PASSBY_REFERENCE
@@ -628,7 +644,7 @@ func UnaryExpression(prgrm *ast.CXProgram, op string, prevExprs []ast.CXExpressi
 			// 	// the OBJECT_HEADER_SIZE to the offset. The runtime uses this field to determine this.
 			// 	baseOut.IsInnerReference = true
 			// }
-			panic("unary expression op=&")
+			lastPrevExpressionOutputTypeSig.PassBy = constants.PASSBY_REFERENCE
 		case "!":
 			if pkg, err := prgrm.GetCurrentPackage(); err == nil {
 				expr := ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_BOOL_NOT])
@@ -704,8 +720,8 @@ func AssociateReturnExpressions(prgrm *ast.CXProgram, idx int, retExprs []ast.CX
 		out.SetType(outParam.Type)
 		out.StructType = outParam.StructType
 		out.PreviouslyDeclared = true
-		outIdx := prgrm.AddCXArgInArray(out)
-		typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(outIdx))
+
+		typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, out)
 		typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
 	} else if fnOutputTypeSig.Type == ast.TYPE_ATOMIC {
 		newCXTypeSig := &ast.CXTypeSignature{}
@@ -723,6 +739,8 @@ func AssociateReturnExpressions(prgrm *ast.CXProgram, idx int, retExprs []ast.CX
 		newCXTypeSig.Meta = int(fnOutputTypeSig.Type)
 		newCXTypeSig.Offset = fnOutputTypeSig.Offset
 		typeSigIdx = prgrm.AddCXTypeSignatureInArray(newCXTypeSig)
+	} else {
+		panic("type is not known")
 	}
 
 	lastExpression, err := prgrm.GetCXAtomicOp(lastExpr.Index)

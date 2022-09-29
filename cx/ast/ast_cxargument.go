@@ -112,12 +112,6 @@ type CXArgument struct {
 	// representing the struct type is 10 bytes, then `Size == 10`.
 	Size types.Pointer
 
-	// TotalSize represents how many bytes are referenced by the
-	// `CXArgument` in total. For example, if the `CXArgument`
-	// defines an array of 5 struct instances of size 10 bytes,
-	// then `TotalSize == 50`.
-	TotalSize types.Pointer
-
 	// Offset defines a relative memory offset (used in
 	// conjunction with the frame pointer), in the case of local
 	// variables, or it could define an absolute memory offset, in
@@ -169,39 +163,6 @@ All "Is" can be removed
 Note: PAssBy is not used too many place
 Note: Low priority for deprecation
 - isnt this same as "pointer"
-
-grep -rn "PassBy" .
-./cxparser/actions/misc.go:425:			arg.PassBy = PASSBY_REFERENCE
-./cxparser/actions/functions.go:666:					out.PassBy = PASSBY_VALUE
-./cxparser/actions/functions.go:678:		if elt.PassBy == PASSBY_REFERENCE &&
-./cxparser/actions/functions.go:712:			out.PassBy = PASSBY_VALUE
-./cxparser/actions/functions.go:723:				assignElt.PassBy = PASSBY_VALUE
-./cxparser/actions/functions.go:915:			expr.Inputs[0].PassBy = PASSBY_REFERENCE
-./cxparser/actions/functions.go:1153:					nameFld.PassBy = fld.PassBy
-./cxparser/actions/functions.go:1157:						nameFld.PassBy = PASSBY_REFERENCE
-./cxparser/actions/literals.go:219:				sym.PassBy = PASSBY_REFERENCE
-./cxparser/actions/expressions.go:336:		baseOut.PassBy = PASSBY_REFERENCE
-./cxparser/actions/assignment.go:57:		out.PassBy = PASSBY_REFERENCE
-./cxparser/actions/assignment.go:208:		to[0].Outputs[0].PassBy = from[idx].Outputs[0].PassBy
-./cxparser/actions/assignment.go:234:			to[0].Outputs[0].PassBy = from[idx].Operator.Outputs[0].PassBy
-./cxparser/actions/assignment.go:244:			to[0].Outputs[0].PassBy = from[idx].Operator.Outputs[0].PassBy
-./cxparser/actions/declarations.go:55:			glbl.PassBy = offExpr[0].Outputs[0].PassBy
-./cxparser/actions/declarations.go:69:				declaration_specifiers.PassBy = glbl.PassBy
-./cxparser/actions/declarations.go:85:				declaration_specifiers.PassBy = glbl.PassBy
-./cxparser/actions/declarations.go:103:			declaration_specifiers.PassBy = glbl.PassBy
-./cxparser/actions/declarations.go:324:			declarationSpecifiers.PassBy = initOut.PassBy
-./cxparser/actions/declarations.go:417:		arg.PassBy = PASSBY_REFERENCE
-./CompilerDevelopment.md:71:* PassBy - an int constant representing how the variable is passed - pass by value, or pass by reference.
-
-./cx/op_http.go:50:	headerFld.PassBy = PASSBY_REFERENCE
-./cx/op_http.go:75:	transferEncodingFld.PassBy = PASSBY_REFERENCE
-./cx/serialize.go:168:	PassBy     int32
-./cx/serialize.go:321:	s.Arguments[argOff].PassBy = int32(arg.PassBy)
-./cx/serialize.go:1009:	arg.PassBy = int(sArg.PassBy)
-./cx/execute.go:366:				if inp.PassBy == PASSBY_REFERENCE {
-./cx/cxargument.go:23:	PassBy                int // pass by value or reference
-./cx/op_misc.go:36:		switch elt.PassBy {
-./cx/utilities.go:184:	if arg.PassBy == PASSBY_REFERENCE {
 */
 
 // ----------------------------------------------------------------
@@ -251,7 +212,6 @@ func (arg *CXArgument) SetType(typeCode types.Code) *CXArgument {
 	arg.Type = typeCode
 	size := typeCode.Size()
 	arg.Size = size
-	arg.TotalSize = size
 	arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_BASIC)
 	return arg
 }
@@ -288,7 +248,6 @@ func MakePointer(arg *CXArgument) *CXArgument {
 	arg.PointerTargetType = arg.Type
 	arg.Type = types.POINTER
 	arg.Size = types.POINTER_SIZE
-	arg.TotalSize = types.POINTER_SIZE
 
 	return arg
 }
@@ -310,7 +269,6 @@ func MakeStructParameter(prgrm *CXProgram, pkgName, strctName, argName string) *
 	arg := MakeArgument(argName, "", -1).SetType(types.STRUCT)
 	// arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_STRUCT)
 	arg.Size = strct.GetStructSize(prgrm)
-	arg.TotalSize = strct.GetStructSize(prgrm)
 	arg.StructType = strct
 
 	return arg
@@ -391,19 +349,47 @@ func MakeGlobal(name string, typeCode types.Code, fileName string, fileLine int)
 //           Special functions to determine its type (atomic, array etomic, etc)
 
 func IsTypeAtomic(arg *CXArgument) bool {
+	// TODO: implement including types.IDENTIFIER
+	// return (arg.Type.IsPrimitive() || arg.Type == types.IDENTIFIER) && !arg.IsSlice && len(arg.Lengths) == 0 && len(arg.Fields) == 0 && len(arg.DereferenceOperations) == 0 && (len(arg.DeclarationSpecifiers) == 0 || (len(arg.DeclarationSpecifiers) == 1 && arg.DeclarationSpecifiers[0] == constants.DECL_BASIC))
+
 	return arg.Type.IsPrimitive() && !arg.IsSlice && len(arg.Lengths) == 0 && len(arg.Fields) == 0 && len(arg.DereferenceOperations) == 0 && (len(arg.DeclarationSpecifiers) == 0 || (len(arg.DeclarationSpecifiers) == 1 && arg.DeclarationSpecifiers[0] == constants.DECL_BASIC))
 }
 
 func IsTypePointerAtomic(arg *CXArgument) bool {
-	return arg.Type.IsPrimitive() && arg.PointerTargetType == 0 && arg.StructType == nil && !arg.IsSlice && len(arg.Lengths) == 0 && len(arg.Fields) == 0 && arg.PassBy == 0 && len(arg.DereferenceOperations) == 0 && (len(arg.DeclarationSpecifiers) == 2 && arg.DeclarationSpecifiers[0] == constants.DECL_BASIC && arg.DeclarationSpecifiers[1] == constants.DECL_POINTER)
+	return arg.Type.IsPrimitive() && arg.PointerTargetType == 0 && arg.StructType == nil && !arg.IsSlice && len(arg.Lengths) == 0 && len(arg.Fields) == 0 && len(arg.DereferenceOperations) == 0 && (len(arg.DeclarationSpecifiers) == 2 && arg.DeclarationSpecifiers[0] == constants.DECL_BASIC && arg.DeclarationSpecifiers[1] == constants.DECL_POINTER)
 }
 
 func IsTypeArrayAtomic(arg *CXArgument) bool {
-	return !arg.IsSlice && len(arg.Lengths) == 1 && len(arg.Indexes) == 0 && arg.Type.IsPrimitive()
+	isThereDeclPointer := false
+	for _, decl := range arg.DeclarationSpecifiers {
+		if decl == constants.DECL_POINTER {
+			isThereDeclPointer = true
+		}
+	}
+
+	return !isThereDeclPointer && arg.Type.IsPrimitive() && !arg.IsSlice && len(arg.Lengths) > 0 && len(arg.Indexes) == 0 && len(arg.Fields) == 0 && len(arg.DereferenceOperations) == 0 && (len(arg.DeclarationSpecifiers) >= 2 && arg.DeclarationSpecifiers[0] == constants.DECL_BASIC && arg.DeclarationSpecifiers[1] == constants.DECL_ARRAY)
+}
+
+func IsTypePointerArrayAtomic(arg *CXArgument) bool {
+	isThereDeclPointer := false
+	for _, decl := range arg.DeclarationSpecifiers {
+		if decl == constants.DECL_POINTER {
+			isThereDeclPointer = true
+		}
+	}
+
+	return isThereDeclPointer && arg.Type.IsPrimitive() && !arg.IsSlice && len(arg.Lengths) > 0 && len(arg.Indexes) == 0 && len(arg.Fields) == 0 && len(arg.DereferenceOperations) == 0 && (len(arg.DeclarationSpecifiers) >= 2 && arg.DeclarationSpecifiers[0] == constants.DECL_BASIC && arg.DeclarationSpecifiers[1] == constants.DECL_ARRAY)
 }
 
 func IsTypeSliceAtomic(arg *CXArgument) bool {
-	return arg.IsSlice && len(arg.Lengths) == 1 && (arg.Type.IsPrimitive() || arg.Type == types.STR)
+	isThereDeclPointer := false
+	for _, decl := range arg.DeclarationSpecifiers {
+		if decl == constants.DECL_POINTER {
+			isThereDeclPointer = true
+		}
+	}
+
+	return !isThereDeclPointer && arg.IsSlice && len(arg.Lengths) > 0 && (arg.Type.IsPrimitive() || arg.Type == types.STR)
 }
 
 func IsTypeStruct(arg *CXArgument) bool {

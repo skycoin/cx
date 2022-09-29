@@ -9,26 +9,30 @@ import (
 //TODO: Rework
 func opSliceLen(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	var inp0 *ast.CXArgument
+	var sliceLen types.Pointer
 	if inputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 		inp0 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inputs[0].TypeSignature.Meta))
-	} else {
-		panic("type is not type cx argument deprecate\n\n")
-	}
-	elt := inp0.GetAssignmentElement(prgrm)
 
-	var sliceLen types.Pointer
-	if elt.IsSlice || elt.Type == types.AFF { //TODO: FIX
-		sliceOffset := types.Read_ptr(prgrm.Memory, inputs[0].Offset)
-		if sliceOffset > 0 && sliceOffset.IsValid() {
-			sliceLen = ast.GetSliceLen(prgrm, sliceOffset)
-		} else if sliceOffset < 0 {
-			panic(constants.CX_RUNTIME_ERROR)
+		elt := inp0.GetAssignmentElement(prgrm)
+
+		if elt.IsSlice || elt.Type == types.AFF { //TODO: FIX
+			sliceOffset := types.Read_ptr(prgrm.Memory, inputs[0].Offset)
+			if sliceOffset > 0 && sliceOffset.IsValid() {
+				sliceLen = ast.GetSliceLen(prgrm, sliceOffset)
+			} else if sliceOffset < 0 {
+				panic(constants.CX_RUNTIME_ERROR)
+			}
+			// TODO: Had to add elt.Lengths to avoid doing this for arrays, but not entirely sure why
+		} else if (elt.PointerTargetType == types.STR || elt.Type == types.STR) && elt.Lengths == nil {
+			sliceLen = types.Read_str_size(prgrm.Memory, inputs[0].Offset)
+		} else {
+			sliceLen = elt.Lengths[len(elt.Indexes)]
 		}
-		// TODO: Had to add elt.Lengths to avoid doing this for arrays, but not entirely sure why
-	} else if (elt.PointerTargetType == types.STR || elt.Type == types.STR) && elt.Lengths == nil {
-		sliceLen = types.Read_str_size(prgrm.Memory, inputs[0].Offset)
+	} else if inputs[0].TypeSignature.Type == ast.TYPE_ARRAY_ATOMIC {
+		arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(inputs[0].TypeSignature.Meta)
+		sliceLen = arrDetails.Lengths[len(arrDetails.Indexes)]
 	} else {
-		sliceLen = elt.Lengths[len(elt.Indexes)]
+		panic("type is not known\n\n")
 	}
 
 	outputs[0].Set_i32(prgrm, types.Cast_ptr_to_i32(sliceLen)) // TODO:PTR remove hardcode i32, should use ptr alias.
@@ -56,6 +60,8 @@ func opSliceAppend(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXV
 		}
 	} else if inputs[1].TypeSignature.Type == ast.TYPE_ATOMIC || inputs[1].TypeSignature.Type == ast.TYPE_POINTER_ATOMIC {
 		inp1Type = types.Code(inputs[1].TypeSignature.Meta)
+	} else {
+		panic("type is not known")
 	}
 
 	if outputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
@@ -101,6 +107,8 @@ func opSliceAppend(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXV
 			}
 		} else if input.TypeSignature.Type == ast.TYPE_ATOMIC || input.TypeSignature.Type == ast.TYPE_POINTER_ATOMIC {
 			inpType = types.Code(input.TypeSignature.Meta)
+		} else {
+			panic("type is not known")
 		}
 
 		if inp0Type != inpType {
@@ -159,6 +167,8 @@ func opSliceInsertElement(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []
 	} else if inputs[0].TypeSignature.Type == ast.TYPE_ATOMIC || inputs[0].TypeSignature.Type == ast.TYPE_POINTER_ATOMIC {
 		inp0 = &ast.CXArgument{}
 		inp0Type = types.Code(inputs[0].TypeSignature.Meta)
+	} else {
+		panic("type is not known")
 	}
 
 	if inputs[2].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
@@ -171,6 +181,8 @@ func opSliceInsertElement(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []
 	} else if inputs[2].TypeSignature.Type == ast.TYPE_ATOMIC || inputs[2].TypeSignature.Type == ast.TYPE_POINTER_ATOMIC {
 		inp2 = &ast.CXArgument{}
 		inp2Type = types.Code(inputs[2].TypeSignature.Meta)
+	} else {
+		panic("type is not known")
 	}
 
 	if outputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
@@ -183,6 +195,8 @@ func opSliceInsertElement(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []
 	} else if outputs[0].TypeSignature.Type == ast.TYPE_ATOMIC || outputs[0].TypeSignature.Type == ast.TYPE_POINTER_ATOMIC {
 		out0 = &ast.CXArgument{}
 		out0Type = types.Code(outputs[0].TypeSignature.Meta)
+	} else {
+		panic("type is not known")
 	}
 
 	fp := inputs[0].FramePointer
