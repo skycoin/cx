@@ -902,7 +902,7 @@ func TestTypeChecks_ParseAllDeclarations(t *testing.T) {
 						if gotGlobal.Name == wantGlobal.Name {
 
 							if gotGlobal.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-								gotGlobalType = ast.GetFormattedType(actions.AST, actions.AST.GetCXArg(ast.CXArgumentIndex(gotGlobal.Meta)))
+								gotGlobalType = ast.GetFormattedType(program, program.GetCXArg(ast.CXArgumentIndex(gotGlobal.Meta)))
 							} else if gotGlobal.Type == ast.TYPE_ATOMIC {
 								gotGlobalType = types.Code(gotGlobal.Meta).Name()
 							} else if gotGlobal.Type == ast.TYPE_POINTER_ATOMIC {
@@ -943,25 +943,26 @@ func TestTypeChecks_ParseAllDeclarations(t *testing.T) {
 									gotField := program.GetCXTypeSignatureFromArray(gotFieldIdx)
 									var gotFieldType string
 
-									if gotField.Name == wantField.Name {
-										if gotField.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-											gotFieldArg := program.CXArgs[gotField.Meta]
-											gotFieldType = ast.GetFormattedType(actions.AST, &gotFieldArg)
-										} else if gotField.Type == ast.TYPE_ATOMIC {
-											gotFieldType = types.Code(gotField.Meta).Name()
-										} else if gotField.Type == ast.TYPE_POINTER_ATOMIC {
-											gotFieldType = "*" + types.Code(gotField.Meta).Name()
-										} else {
-											gotFieldType = "type is not known"
-										}
+									if gotField.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+										gotFieldArg := program.CXArgs[gotField.Meta]
+										gotFieldType = ast.GetFormattedType(program, &gotFieldArg)
+									} else if gotField.Type == ast.TYPE_ATOMIC {
+										gotFieldType = types.Code(gotField.Meta).Name()
+									} else if gotField.Type == ast.TYPE_POINTER_ATOMIC {
+										gotFieldType = "*" + types.Code(gotField.Meta).Name()
+									} else {
+										gotFieldType = "type is not known"
+									}
 
-										fields += fmt.Sprintf("want field %s %s, got %s %s\n", wantField.Name, wantField.Type, gotField.Name, gotFieldType)
+									if gotField.Name == wantField.Name {
 
 										if gotFieldType == wantField.Type {
 											fieldMatch++
 											break
 										}
 									}
+
+									fields += fmt.Sprintf("want field %s %s, got %s %s\n", wantField.Name, wantField.Type, gotField.Name, gotFieldType)
 
 								}
 
@@ -984,6 +985,56 @@ func TestTypeChecks_ParseAllDeclarations(t *testing.T) {
 				// Funcs
 				for _, wantFunc := range wantPkg.Funcs {
 
+					var match bool
+
+					var wantFuncName string = wantFunc.Name
+					var wantFuncReciever string
+
+					if wantFunc.RecieverName != "" {
+						wantFuncName = fmt.Sprintf("%s.%s", wantFunc.RecieverType, wantFunc.Name)
+						wantFuncReciever = fmt.Sprintf("%s *%s", wantFunc.RecieverName, wantFunc.RecieverType)
+					}
+
+					var gotFunc *ast.CXFunction
+					var gotFuncReciever string
+					for _, gotFuncIdx := range gotPkg.Functions {
+						gotFuncReciever = ""
+						gotFunc = program.GetFunctionFromArray(gotFuncIdx)
+						gotFuncInputs := gotFunc.GetInputs(program)
+						if len(gotFuncInputs) != 0 {
+							gotRecieverTypeSignatureIdx := gotFuncInputs[0]
+							gotRecieverTypeSignature := program.GetCXTypeSignatureFromArray(gotRecieverTypeSignatureIdx)
+							var gotRecieverName string
+							var gotRecieverType string
+
+							if gotRecieverTypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+								gotRecieverArg := program.CXArgs[gotRecieverTypeSignature.Meta]
+								gotRecieverName = ast.GetFormattedName(program, &gotRecieverArg, false, gotPkg)
+								gotRecieverType = ast.GetFormattedType(program, &gotRecieverArg)
+							} else if gotRecieverTypeSignature.Type == ast.TYPE_ATOMIC {
+								gotRecieverType = types.Code(gotRecieverTypeSignature.Meta).Name()
+							} else if gotRecieverTypeSignature.Type == ast.TYPE_POINTER_ATOMIC {
+								gotRecieverType = "*" + types.Code(gotRecieverTypeSignature.Meta).Name()
+							} else {
+								gotRecieverType = "type is not known"
+							}
+
+							gotFuncReciever = fmt.Sprintf("%s %s", gotRecieverName, gotRecieverType)
+						}
+
+						if gotFunc.Name == wantFuncName {
+							if gotFuncReciever == wantFuncReciever {
+								match = true
+							}
+							break
+						}
+
+					}
+
+					if !match {
+						t.Errorf("want func %s (%s) (), got %s (%s) ()", wantFuncName, wantFuncReciever, gotFunc.Name, gotFuncReciever)
+
+					}
 				}
 
 			}
