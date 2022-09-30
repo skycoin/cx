@@ -26,14 +26,16 @@ func GetSliceOffset(prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSignat
 	if argTypeSig.Type == TYPE_CXARGUMENT_DEPRECATE {
 		arg := prgrm.GetCXArgFromArray(CXArgumentIndex(argTypeSig.Meta))
 		element = arg.GetAssignmentElement(prgrm)
+
+		if element.IsSlice {
+			return types.Read_ptr(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, argTypeSig))
+		}
 	} else if argTypeSig.Type == TYPE_ATOMIC || argTypeSig.Type == TYPE_POINTER_ATOMIC {
 		return types.InvalidPointer
+	} else if argTypeSig.Type == TYPE_SLICE_ATOMIC {
+		return types.Read_ptr(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, argTypeSig))
 	} else {
 		panic("type is not known")
-	}
-
-	if element.IsSlice {
-		return types.Read_ptr(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, argTypeSig))
 	}
 
 	return types.InvalidPointer
