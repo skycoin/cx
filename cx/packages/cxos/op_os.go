@@ -414,25 +414,46 @@ func opOsWriteBOOL(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXV
 
 func getSlice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) (outputSlicePointer types.Pointer, outputSliceOffset types.Pointer, sizeofElement types.Pointer, count types.Pointer) {
 	var inp1, out0 *ast.CXArgument
+
+	var inpType, outType types.Code
+	var inpIsSlice, outIsSlice bool
+	var inpSize types.Pointer
 	if inputs[1].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 		inp1 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inputs[1].TypeSignature.Meta))
+
+		inpType = inp1.Type
+		inpIsSlice = (inp1.GetAssignmentElement(prgrm)).IsSlice
+		inpSize = (inp1.GetAssignmentElement(prgrm)).Size
+	} else if inputs[1].TypeSignature.Type == ast.TYPE_SLICE_ATOMIC {
+		sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(inputs[1].TypeSignature.Meta)
+		inpType = types.Code(sliceDetails.Type)
+		inpIsSlice = true
+		inpSize = inpType.Size()
 	} else {
 		panic("type is not type cx argument deprecate\n\n")
 	}
 
 	if outputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 		out0 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(outputs[0].TypeSignature.Meta))
+
+		outType = out0.Type
+		outIsSlice = (out0.GetAssignmentElement(prgrm)).IsSlice
+	} else if outputs[0].TypeSignature.Type == ast.TYPE_SLICE_ATOMIC {
+		sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(outputs[0].TypeSignature.Meta)
+
+		outType = types.Code(sliceDetails.Type)
+		outIsSlice = true
 	} else {
 		panic("type is not type cx argument deprecate\n\n")
 	}
 
-	if inp1.Type != out0.Type || !(inp1.GetAssignmentElement(prgrm)).IsSlice || !(out0.GetAssignmentElement(prgrm)).IsSlice {
+	if inpType != outType || !inpIsSlice || !outIsSlice {
 		panic(constants.CX_RUNTIME_INVALID_ARGUMENT)
 	}
 
 	count = inputs[2].Get_ptr(prgrm)
 	outputSlicePointer = outputs[0].Offset
-	sizeofElement = (inp1.GetAssignmentElement(prgrm)).Size
+	sizeofElement = inpSize
 	outputSliceOffset = ast.SliceResize(prgrm, outputs[0].FramePointer, outputs[0].TypeSignature, inputs[1].TypeSignature, count, sizeofElement)
 	return
 }

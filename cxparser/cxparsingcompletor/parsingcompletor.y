@@ -625,19 +625,24 @@ slice_literal_expression:
                                 }
 
                                 expressionOutputTypeSig:=actions.AST.GetCXTypeSignatureFromArray(expression.GetOutputs(actions.AST)[0])
-                                var expressionOutputArg *ast.CXArgument = &ast.CXArgument{}
+                                lastExpressionInputTypeSig:=actions.AST.GetCXTypeSignatureFromArray(lastExpression.GetInputs(actions.AST)[0])
 			        if expressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-				        expressionOutputArg = actions.AST.GetCXArgFromArray(ast.CXArgumentIndex(expressionOutputTypeSig.Meta))
-			        } else {
-				        continue
+				        expressionOutputArg := actions.AST.GetCXArgFromArray(ast.CXArgumentIndex(expressionOutputTypeSig.Meta))
+                                        
+                                        if expressionOutputArg.Name == lastExpressionInputTypeSig.Name {
+                                                expressionOutputArg.Lengths = append(expressionOutputArg.Lengths, 0)
+                                                expressionOutputArg.DeclarationSpecifiers = append(expressionOutputArg.DeclarationSpecifiers, constants.DECL_SLICE)
+                                        }
+			        } else if expressionOutputTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
+                                        if expressionOutputTypeSig.Name == lastExpressionInputTypeSig.Name {
+                                                sliceDetails:=actions.AST.GetCXTypeSignatureArrayFromArray(expressionOutputTypeSig.Meta)
+                                                sliceDetails.Lengths = append(sliceDetails.Lengths, 0)
+                                        }
+                                } else {
+                                       continue
 			        }
 
-                                expressionOutput:= expressionOutputArg
-                                lastExpressionInputTypeSig:=actions.AST.GetCXTypeSignatureFromArray(lastExpression.GetInputs(actions.AST)[0])
-				if expressionOutput.Name == lastExpressionInputTypeSig.Name {
-					expressionOutput.Lengths = append(expressionOutput.Lengths, 0)
-					expressionOutput.DeclarationSpecifiers = append(expressionOutput.DeclarationSpecifiers, constants.DECL_SLICE)
-                                }
+                               
 			}
 	
 			$3[len($3)-1].ExpressionType = ast.CXEXPR_ARRAY_LITERAL

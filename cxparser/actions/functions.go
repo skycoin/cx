@@ -272,6 +272,9 @@ func ProcessTypedOperator(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 			atomicType = types.Code(expressionInputTypeSig.Meta)
 		} else if expressionInputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 			atomicType = types.Code(expressionInputTypeSig.Meta)
+		} else if expressionInputTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
+			sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(expressionInputTypeSig.Meta)
+			atomicType = types.Code(sliceDetails.Type)
 		} else {
 			panic("type is not known")
 		}
@@ -511,6 +514,9 @@ func checkSameNativeType(prgrm *ast.CXProgram, expr *ast.CXExpression) error {
 		typeCode = types.Code(expressionInputTypeSig.Meta)
 	} else if expressionInputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 		typeCode = types.Code(expressionInputTypeSig.Meta)
+	} else if expressionInputTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
+		sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(expressionInputTypeSig.Meta)
+		typeCode = types.Code(sliceDetails.Type)
 	} else {
 		panic("type is not known")
 	}
@@ -533,6 +539,9 @@ func checkSameNativeType(prgrm *ast.CXProgram, expr *ast.CXExpression) error {
 		} else if input.Type == ast.TYPE_ARRAY_ATOMIC {
 			arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(input.Meta)
 			inpType = types.Code(arrDetails.Type)
+		} else if input.Type == ast.TYPE_SLICE_ATOMIC {
+			sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(input.Meta)
+			inpType = types.Code(sliceDetails.Type)
 		} else {
 			panic("type is not known")
 		}
@@ -587,6 +596,8 @@ func ProcessOperatorExpression(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 					} else if expressionInputTypeSig.Type == ast.TYPE_ATOMIC {
 						size = expressionInputTypeSig.GetSize(prgrm, false)
 					} else if expressionInputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
+						size = expressionInputTypeSig.GetSize(prgrm, false)
+					} else if expressionInputTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
 						size = expressionInputTypeSig.GetSize(prgrm, false)
 					} else {
 						panic("type is not known")
@@ -1921,7 +1932,7 @@ func ProcessTempVariable(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 					outputTypeSig.Meta = expressionInputTypeSig.Meta
 				} else if expressionInputTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
 					sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(expressionInputTypeSig.Meta)
-					sliceDetails.Type = expressionInputTypeSig.Meta
+					outputTypeSig.Meta = sliceDetails.Type
 				} else {
 					panic("type is not known")
 				}
