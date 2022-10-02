@@ -1,0 +1,21 @@
+// Package main 
+package main
+
+// this is how we can import different packages into other packages 
+// here we are importing the math package 
+import "math"
+// main function
+func main () {
+
+// print a string on the terminal 
+	str.print("hi")
+
+	// initialization of a foo variable 
+	var foo i32
+	//this is how we call the double() function from package math
+	// it return a value into the foo
+	foo = math.double()
+
+	// print i32 value into the terminal 
+	i32.print(foo)
+}

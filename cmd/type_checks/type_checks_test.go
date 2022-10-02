@@ -864,17 +864,73 @@ func TestTypeChecks_ParseAllDeclarations(t *testing.T) {
 				},
 			},
 		},
+		{
+			scenario: "Has Multiple Files",
+			testDir:  "./test_files/ParseAllDeclarations/HasMultipleFiles",
+			wantProgram: []Package{
+				{
+					Name:    "main",
+					Globals: []Global{},
+					Structs: []Struct{},
+					Funcs: []Func{
+						{
+							Name: "main",
+						},
+					},
+				},
+				{
+					Name:    "math",
+					Globals: []Global{},
+					Structs: []Struct{},
+					Funcs: []Func{
+						{
+							Name: "double",
+						},
+					},
+				},
+			},
+		},
+		{
+			scenario: "Has Imports",
+			testDir:  "./test_files/ParseAllDeclarations/HasImports",
+			wantProgram: []Package{
+				{
+					Name:    "main",
+					Globals: []Global{},
+					Structs: []Struct{},
+					Funcs:   []Func{},
+				},
+				{
+					Name:    "helper",
+					Globals: []Global{},
+					Structs: []Struct{},
+					Funcs:   []Func{},
+				},
+				{
+					Name:    "config",
+					Globals: []Global{},
+					Structs: []Struct{},
+					Funcs:   []Func{},
+				},
+			},
+		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
 
+			actions.AST = nil
+
 			_, files, _ := loader.ParseArgsForCX([]string{tc.testDir}, false)
 
+			err := loader.LoadCXProgram("test", files, "redis")
+			if err != nil {
+				t.Fatal(err)
+			}
+
 			Globals, Enums, TypeDefinitions, Structs, Funcs, gotErr := declaration_extractor.ExtractAllDeclarations(files)
-
-			if Enums == nil || TypeDefinitions == nil || gotErr != nil {
-
+			if (Enums != nil && TypeDefinitions != nil) || gotErr != nil {
+				t.Fatal(gotErr)
 			}
 
 			type_checks.ParseAllDeclarations(Globals, Structs, Funcs)
@@ -882,7 +938,7 @@ func TestTypeChecks_ParseAllDeclarations(t *testing.T) {
 			program := actions.AST
 
 			for _, wantPkg := range tc.wantProgram {
-				gotPkg, err := actions.AST.GetPackage(wantPkg.Name)
+				gotPkg, err := program.GetPackage(wantPkg.Name)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -1038,6 +1094,8 @@ func TestTypeChecks_ParseAllDeclarations(t *testing.T) {
 				}
 
 			}
+
+			program.PrintProgram()
 
 		})
 	}

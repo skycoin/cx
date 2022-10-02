@@ -1,0 +1,4 @@
+package config
+
+var Name str = "John"
+var Apple i32 = 43
