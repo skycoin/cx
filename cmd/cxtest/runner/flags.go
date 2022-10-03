@@ -5,14 +5,16 @@ const (
 	TestStable Bits = 1 << iota
 	TestIssue
 	TestGui
-	TestAll = TestStable | TestIssue | TestGui
+	TestExamples
+	TestAll = TestStable | TestIssue | TestGui | TestExamples
 )
 
 var TestBits = map[string]Bits{
-	"all":    TestAll,
-	"stable": TestStable,
-	"issue":  TestIssue,
-	"gui":    TestGui,
+	"all":      TestAll,
+	"stable":   TestStable,
+	"issue":    TestIssue,
+	"gui":      TestGui,
+	"examples": TestExamples,
 }
 
 const (
