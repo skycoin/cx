@@ -739,6 +739,14 @@ func AssociateReturnExpressions(prgrm *ast.CXProgram, idx int, retExprs []ast.CX
 		newCXTypeSig.Meta = int(fnOutputTypeSig.Type)
 		newCXTypeSig.Offset = fnOutputTypeSig.Offset
 		typeSigIdx = prgrm.AddCXTypeSignatureInArray(newCXTypeSig)
+	} else if fnOutputTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
+		newCXTypeSig := &ast.CXTypeSignature{}
+		newCXTypeSig.Name = fnOutputTypeSig.Name
+		newCXTypeSig.Package = fnOutputTypeSig.Package
+		newCXTypeSig.Type = ast.TYPE_SLICE_ATOMIC
+		newCXTypeSig.Meta = fnOutputTypeSig.Meta
+		newCXTypeSig.Offset = fnOutputTypeSig.Offset
+		typeSigIdx = prgrm.AddCXTypeSignatureInArray(newCXTypeSig)
 	} else {
 		panic("type is not known")
 	}
