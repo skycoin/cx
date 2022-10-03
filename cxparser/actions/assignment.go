@@ -36,34 +36,34 @@ func assignStructLiteralFields(prgrm *ast.CXProgram, toExprs []ast.CXExpression,
 		expressionOutputTypeSigIdx := expression.GetOutputs(prgrm)[0]
 		expressionOutput := prgrm.GetCXTypeSignatureFromArray(expressionOutputTypeSigIdx)
 
-		var expressionOutputIdx ast.CXArgumentIndex
 		if expressionOutput.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-			expressionOutputIdx = ast.CXArgumentIndex(expressionOutput.Meta)
+			expressionOutputIdx := ast.CXArgumentIndex(expressionOutput.Meta)
+
+			prgrm.CXArgs[expressionOutputIdx].Name = structLiteralName
+			expressionOutput.Name = structLiteralName
+
+			toExpressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(toExpression.GetOutputs(prgrm)[0])
+			var toExpressionOutput *ast.CXArgument = &ast.CXArgument{}
+			if toExpressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				toExpressionOutput = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(toExpressionOutputTypeSig.Meta))
+			} else if toExpressionOutputTypeSig.Type == ast.TYPE_ATOMIC || toExpressionOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
+				// TODO: Improve when possible
+				// Do nothing for now since len(toExpressionOutput.Indexes) > 0
+				// of type atomics and type pointer atomics are always 0
+			} else {
+				panic("type is not known")
+			}
+
+			if len(toExpressionOutput.Indexes) > 0 {
+				prgrm.CXArgs[expressionOutputIdx].Lengths = toExpressionOutput.Lengths
+				prgrm.CXArgs[expressionOutputIdx].Indexes = toExpressionOutput.Indexes
+				prgrm.CXArgs[expressionOutputIdx].DereferenceOperations = append(prgrm.CXArgs[expressionOutputIdx].DereferenceOperations, constants.DEREF_ARRAY)
+			}
+
+			prgrm.CXArgs[expressionOutputIdx].DereferenceOperations = append(prgrm.CXArgs[expressionOutputIdx].DereferenceOperations, constants.DEREF_FIELD)
 		} else {
 			panic("type is not type cx argument deprecate\n\n")
 		}
-		prgrm.CXArgs[expressionOutputIdx].Name = structLiteralName
-		expressionOutput.Name = structLiteralName
-
-		toExpressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(toExpression.GetOutputs(prgrm)[0])
-		var toExpressionOutput *ast.CXArgument = &ast.CXArgument{}
-		if toExpressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-			toExpressionOutput = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(toExpressionOutputTypeSig.Meta))
-		} else if toExpressionOutputTypeSig.Type == ast.TYPE_ATOMIC || toExpressionOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
-			// TODO: Improve when possible
-			// Do nothing for now since len(toExpressionOutput.Indexes) > 0
-			// of type atomics and type pointer atomics are always 0
-		} else {
-			panic("type is not known")
-		}
-
-		if len(toExpressionOutput.Indexes) > 0 {
-			prgrm.CXArgs[expressionOutputIdx].Lengths = toExpressionOutput.Lengths
-			prgrm.CXArgs[expressionOutputIdx].Indexes = toExpressionOutput.Indexes
-			prgrm.CXArgs[expressionOutputIdx].DereferenceOperations = append(prgrm.CXArgs[expressionOutputIdx].DereferenceOperations, constants.DEREF_ARRAY)
-		}
-
-		prgrm.CXArgs[expressionOutputIdx].DereferenceOperations = append(prgrm.CXArgs[expressionOutputIdx].DereferenceOperations, constants.DEREF_FIELD)
 	}
 
 	return fromExprs
