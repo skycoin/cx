@@ -204,6 +204,12 @@ func buildStrFunctions(prgrm *CXProgram, pkg *CXPackage, ast1 *string) {
 							lbl,
 							cxAtomicOpOutputTypeSignature.Name,
 							types.Code(cxAtomicOpOutputTypeSignature.Meta).Name())
+					} else if cxAtomicOpOutputTypeSignature.Type == TYPE_SLICE_ATOMIC {
+						*ast1 += fmt.Sprintf("\t\t\t%d.- Declaration%s: %s *%s\n",
+							k,
+							lbl,
+							cxAtomicOpOutputTypeSignature.Name,
+							types.Code(types.SLICE).Name())
 					} else {
 						panic("type is not known")
 					}
@@ -288,6 +294,21 @@ func getFormattedParam(prgrm *CXProgram, paramTypeSigIdxs []CXTypeSignatureIndex
 			}
 
 			buf.WriteString(fmt.Sprintf("%s *%s", name, types.Code(paramTypeSig.Meta).Name()))
+		} else if paramTypeSig.Type == TYPE_SLICE_ATOMIC {
+
+			name := paramTypeSig.Name
+
+			// If it's a literal, just override the name with LITERAL_PLACEHOLDER.
+			if paramTypeSig.Name == "" {
+				name = constants.LITERAL_PLACEHOLDER
+			}
+
+			// TODO: Check if external pkg and pkg name shown are correct
+			if externalPkg {
+				name = fmt.Sprintf("%s.%s", pkg.Name, name)
+			}
+
+			buf.WriteString(fmt.Sprintf("%s *%s", name, types.Code(types.SLICE).Name()))
 		} else {
 			panic("type is not known")
 		}
