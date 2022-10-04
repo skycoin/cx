@@ -53,16 +53,8 @@ func buildStrGlobals(prgrm *CXProgram, pkg *CXPackage, ast *string) {
 
 	for idx, glblIdx := range pkg.Globals.Fields {
 		glbl := prgrm.GetCXTypeSignatureFromArray(glblIdx)
-		if glbl.Type == TYPE_CXARGUMENT_DEPRECATE {
-			*ast += fmt.Sprintf("\t\t%d.- Global: %s %s\n", idx, prgrm.GetCXArg(CXArgumentIndex(glbl.Meta)).Name, GetFormattedType(prgrm, glbl))
-		} else if glbl.Type == TYPE_ATOMIC {
-			*ast += fmt.Sprintf("\t\t%d.- Global: %s %s\n", idx, glbl.Name, types.Code(glbl.Meta).Name())
-		} else if glbl.Type == TYPE_POINTER_ATOMIC {
-			*ast += fmt.Sprintf("\t\t%d.- Global: %s *%s\n", idx, glbl.Name, types.Code(glbl.Meta).Name())
-		} else {
-			panic("type is not known")
-		}
 
+		*ast += fmt.Sprintf("\t\t%d.- Global: %s %s\n", idx, glbl.Name, GetFormattedType(prgrm, glbl))
 	}
 }
 
@@ -81,18 +73,9 @@ func buildStrStructs(prgrm *CXProgram, pkg *CXPackage, ast *string) {
 		for k, typeSignatureIdx := range strct.Fields {
 			typeSignature := prgrm.GetCXTypeSignatureFromArray(typeSignatureIdx)
 
-			if typeSignature.Type == TYPE_CXARGUMENT_DEPRECATE {
-				*ast += fmt.Sprintf("\t\t\t%d.- Field: %s %s\n",
-					k, typeSignature.Name, GetFormattedType(prgrm, typeSignature))
-			} else if typeSignature.Type == TYPE_ATOMIC {
-				*ast += fmt.Sprintf("\t\t\t%d.- Field: %s %s\n",
-					k, typeSignature.Name, types.Code(typeSignature.Meta).Name())
-			} else if typeSignature.Type == TYPE_POINTER_ATOMIC {
-				*ast += fmt.Sprintf("\t\t\t%d.- Field: %s *%s\n",
-					k, typeSignature.Name, types.Code(typeSignature.Meta).Name())
-			} else {
-				panic("type is not known")
-			}
+			*ast += fmt.Sprintf("\t\t\t%d.- Field: %s %s\n",
+				k, typeSignature.Name, GetFormattedType(prgrm, typeSignature))
+
 		}
 
 		count++
@@ -186,27 +169,11 @@ func buildStrFunctions(prgrm *CXProgram, pkg *CXPackage, ast1 *string) {
 				cxAtomicOpOutputs := cxAtomicOp.GetOutputs(prgrm)
 				cxAtomicOpOutputTypeSignature := prgrm.GetCXTypeSignatureFromArray(cxAtomicOpOutputs[len(cxAtomicOpOutputs)-1])
 				if len(cxAtomicOpOutputs) > 0 {
-					if cxAtomicOpOutputTypeSignature.Type == TYPE_CXARGUMENT_DEPRECATE {
-						*ast1 += fmt.Sprintf("\t\t\t%d.- Declaration%s: %s %s\n",
-							k,
-							lbl,
-							cxAtomicOpOutputTypeSignature.Name,
-							GetFormattedType(prgrm, cxAtomicOpOutputTypeSignature))
-					} else if cxAtomicOpOutputTypeSignature.Type == TYPE_ATOMIC {
-						*ast1 += fmt.Sprintf("\t\t\t%d.- Declaration%s: %s %s\n",
-							k,
-							lbl,
-							cxAtomicOpOutputTypeSignature.Name,
-							types.Code(cxAtomicOpOutputTypeSignature.Meta).Name())
-					} else if cxAtomicOpOutputTypeSignature.Type == TYPE_POINTER_ATOMIC {
-						*ast1 += fmt.Sprintf("\t\t\t%d.- Declaration%s: %s *%s\n",
-							k,
-							lbl,
-							cxAtomicOpOutputTypeSignature.Name,
-							types.Code(cxAtomicOpOutputTypeSignature.Meta).Name())
-					} else {
-						panic("type is not known")
-					}
+					*ast1 += fmt.Sprintf("\t\t\t%d.- Declaration%s: %s %s\n",
+						k,
+						lbl,
+						cxAtomicOpOutputTypeSignature.Name,
+						GetFormattedType(prgrm, cxAtomicOpOutputTypeSignature))
 				}
 			}
 		}
@@ -255,41 +222,25 @@ func getFormattedParam(prgrm *CXProgram, paramTypeSigIdxs []CXTypeSignatureIndex
 		if CXPackageIndex(pkg.Index) != paramTypeSig.Package {
 			externalPkg = true
 		}
+
 		if paramTypeSig.Type == TYPE_CXARGUMENT_DEPRECATE {
 			param := prgrm.GetCXArgFromArray(CXArgumentIndex(paramTypeSig.Meta))
 
 			buf.WriteString(fmt.Sprintf("%s %s", GetFormattedName(prgrm, param, externalPkg, pkg), GetFormattedType(prgrm, paramTypeSig)))
-		} else if paramTypeSig.Type == TYPE_ATOMIC {
-			name := paramTypeSig.Name
-
-			// If it's a literal, just override the name with LITERAL_PLACEHOLDER.
-			if paramTypeSig.Name == "" {
-				name = constants.LITERAL_PLACEHOLDER
-			}
-
-			// TODO: Check if external pkg and pkg name shown are correct
-			if externalPkg {
-				name = fmt.Sprintf("%s.%s", pkg.Name, name)
-			}
-
-			buf.WriteString(fmt.Sprintf("%s %s", name, types.Code(paramTypeSig.Meta).Name()))
-		} else if paramTypeSig.Type == TYPE_POINTER_ATOMIC {
-
-			name := paramTypeSig.Name
-
-			// If it's a literal, just override the name with LITERAL_PLACEHOLDER.
-			if paramTypeSig.Name == "" {
-				name = constants.LITERAL_PLACEHOLDER
-			}
-
-			// TODO: Check if external pkg and pkg name shown are correct
-			if externalPkg {
-				name = fmt.Sprintf("%s.%s", pkg.Name, name)
-			}
-
-			buf.WriteString(fmt.Sprintf("%s *%s", name, types.Code(paramTypeSig.Meta).Name()))
 		} else {
-			panic("type is not known")
+			name := paramTypeSig.Name
+
+			// If it's a literal, just override the name with LITERAL_PLACEHOLDER.
+			if paramTypeSig.Name == "" {
+				name = constants.LITERAL_PLACEHOLDER
+			}
+
+			// TODO: Check if external pkg and pkg name shown are correct
+			if externalPkg {
+				name = fmt.Sprintf("%s.%s", pkg.Name, name)
+			}
+
+			buf.WriteString(fmt.Sprintf("%s %s", name, GetFormattedType(prgrm, paramTypeSig)))
 		}
 
 		if i != len(paramTypeSigIdxs)-1 {
@@ -1054,20 +1005,7 @@ func SignatureStringOfStruct(prgrm *CXProgram, s *CXStruct) string {
 	fields := ""
 	for _, typeSignatureIdx := range s.Fields {
 		typeSignature := prgrm.GetCXTypeSignatureFromArray(typeSignatureIdx)
-
-		if typeSignature.Type == TYPE_ATOMIC {
-			fields += fmt.Sprintf(" %s %s;", typeSignature.Name, types.Code(typeSignature.Meta).Name())
-			continue
-		} else if typeSignature.Type == TYPE_POINTER_ATOMIC {
-			fields += fmt.Sprintf(" %s *%s;", typeSignature.Name, types.Code(typeSignature.Meta).Name())
-			continue
-		} else {
-			panic("type is not known")
-		}
-
-		fldIdx := typeSignature.Meta
-		fld := prgrm.CXArgs[fldIdx]
-		fields += fmt.Sprintf(" %s %s;", fld.Name, GetFormattedType(prgrm, typeSignature))
+		fields += fmt.Sprintf(" %s %s;", typeSignature.Name, GetFormattedType(prgrm, typeSignature))
 	}
 
 	return fmt.Sprintf("%s struct {%s }", s.Name, fields)
