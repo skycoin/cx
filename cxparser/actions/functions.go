@@ -639,6 +639,8 @@ func ProcessPointerStructs(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 			continue
 		} else if argTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
 			continue
+		} else if argTypeSig.Type == ast.TYPE_POINTER_SLICE_ATOMIC {
+			continue
 		} else {
 			panic("type is not known")
 		}
@@ -2024,41 +2026,6 @@ func CopyArgFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast
 
 		return
 	} else if sym != nil && arg == nil && (len(sym.DeclarationSpecifiers) > 0 || len(sym.DereferenceOperations) > 0) && argTypeSignature.Type == ast.TYPE_ARRAY_ATOMIC {
-		// arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(argTypeSignature.Meta)
-		// sym.Name = argTypeSignature.Name
-		// sym.Package = argTypeSignature.Package
-		// sym.Type = types.Code(arrDetails.Type)
-		// sym.Offset = argTypeSignature.Offset
-
-		// if len(sym.Lengths) == 0 {
-		// 	sym.Lengths = arrDetails.Lengths
-		// }
-
-		// argDeclSpecifiers := []int{constants.DECL_BASIC, constants.DECL_ARRAY}
-		// for _, spec := range sym.DeclarationSpecifiers {
-		// 	// checking if we need to remove or add cxcore.DECL_POINTERs
-		// 	// also we could be removing
-		// 	switch spec {
-		// 	case constants.DECL_INDEXING:
-		// 		if argDeclSpecifiers[len(argDeclSpecifiers)-1] == constants.DECL_ARRAY || argDeclSpecifiers[len(argDeclSpecifiers)-1] == constants.DECL_SLICE {
-		// 			argDeclSpecifiers = argDeclSpecifiers[:len(argDeclSpecifiers)-1]
-		// 		} else {
-		// 			println(ast.CompilationError(sym.ArgDetails.FileName, sym.ArgDetails.FileLine), "invalid indexing")
-		// 		}
-		// 	case constants.DECL_DEREF:
-		// 		if argDeclSpecifiers[len(argDeclSpecifiers)-1] == constants.DECL_POINTER {
-		// 			argDeclSpecifiers = argDeclSpecifiers[:len(argDeclSpecifiers)-1]
-		// 		} else {
-		// 			println(ast.CompilationError(sym.ArgDetails.FileName, sym.ArgDetails.FileLine), "invalid indirection")
-		// 		}
-		// 	case constants.DECL_POINTER:
-		// 		// This function is also called so it assigns offset and other fields to signature parameters
-		// 		//
-		// 		argDeclSpecifiers = append(argDeclSpecifiers, constants.DECL_POINTER)
-		// 	}
-		// }
-
-		// sym.DeclarationSpecifiers = argDeclSpecifiers
 		arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(argTypeSignature.Meta)
 		newArrDetails := *arrDetails
 		newArrDetails.Indexes = sym.Indexes
@@ -2094,6 +2061,35 @@ func CopyArgFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast
 
 		return
 	} else if sym != nil && arg == nil && argTypeSignature.Type == ast.TYPE_SLICE_ATOMIC {
+		arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(argTypeSignature.Meta)
+
+		newArrDetails := *arrDetails
+		newArrDetails.Indexes = sym.Indexes
+		newArrDetailsIdx := prgrm.AddCXTypeSignatureArrayInArray(&newArrDetails)
+
+		symTypeSignature.Name = argTypeSignature.Name
+		symTypeSignature.Package = argTypeSignature.Package
+		symTypeSignature.Type = argTypeSignature.Type
+		symTypeSignature.Meta = newArrDetailsIdx
+		symTypeSignature.Offset = argTypeSignature.Offset
+		symTypeSignature.PassBy = sym.PassBy
+
+		for _, decl := range sym.DeclarationSpecifiers {
+			switch decl {
+			case constants.DECL_DEREF, constants.DEREF_SLICE, constants.DEREF_ARRAY:
+				symTypeSignature.IsDeref = true
+			}
+		}
+
+		for _, deref := range sym.DereferenceOperations {
+			switch deref {
+			case constants.DEREF_SLICE:
+				symTypeSignature.IsDeref = true
+			}
+		}
+
+		return
+	} else if sym != nil && arg == nil && argTypeSignature.Type == ast.TYPE_POINTER_SLICE_ATOMIC {
 		arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(argTypeSignature.Meta)
 
 		newArrDetails := *arrDetails

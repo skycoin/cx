@@ -82,6 +82,8 @@ func wipeDeclarationMemory(prgrm *CXProgram, expr *CXExpression) error {
 		offset = cxAtomicOutputTypeSig.Offset
 	} else if cxAtomicOutputTypeSig.Type == TYPE_SLICE_ATOMIC {
 		offset = cxAtomicOutputTypeSig.Offset
+	} else if cxAtomicOutputTypeSig.Type == TYPE_POINTER_SLICE_ATOMIC {
+		offset = cxAtomicOutputTypeSig.Offset
 	} else {
 		panic("type is not known")
 	}
@@ -143,6 +145,9 @@ func processBuiltInOperators(prgrm *CXProgram, expr *CXExpression, globalInputs 
 		} else if inputTypeSignature.Type == TYPE_SLICE_ATOMIC {
 			sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(inputTypeSignature.Meta)
 			value.Type = types.Code(sliceDetails.Type)
+		} else if inputTypeSignature.Type == TYPE_POINTER_SLICE_ATOMIC {
+			sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(inputTypeSignature.Meta)
+			value.Type = types.Code(sliceDetails.Type)
 		}
 
 		value.FramePointer = fp
@@ -176,6 +181,9 @@ func processBuiltInOperators(prgrm *CXProgram, expr *CXExpression, globalInputs 
 			arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(outputTypeSignature.Meta)
 			value.Type = types.Code(arrDetails.Type)
 		} else if outputTypeSignature.Type == TYPE_SLICE_ATOMIC {
+			sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(outputTypeSignature.Meta)
+			value.Type = types.Code(sliceDetails.Type)
+		} else if outputTypeSignature.Type == TYPE_POINTER_SLICE_ATOMIC {
 			sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(outputTypeSignature.Meta)
 			value.Type = types.Code(sliceDetails.Type)
 		}

@@ -17,7 +17,7 @@ const (
 	TYPE_ARRAY_ATOMIC
 	TYPE_POINTER_ARRAY_ATOMIC
 	TYPE_SLICE_ATOMIC
-	TYPE_SLICE_POINTER_ATOMIC
+	TYPE_POINTER_SLICE_ATOMIC
 
 	TYPE_STRUCT
 	TYPE_POINTER_STRUCT
@@ -111,7 +111,13 @@ func (typeSignature *CXTypeSignature) GetSize(prgrm *CXProgram, IsForUpdateSymbo
 		}
 
 		return types.POINTER_SIZE
-	case TYPE_SLICE_POINTER_ATOMIC:
+	case TYPE_POINTER_SLICE_ATOMIC:
+
+		sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(typeSignature.Meta)
+		if typeSignature.IsDeref || len(sliceDetails.Indexes) > 0 {
+			return types.Code(sliceDetails.Type).Size()
+		}
+
 		return types.POINTER.Size()
 	case TYPE_STRUCT:
 		return prgrm.GetStructFromArray(CXStructIndex(typeSignature.Meta)).GetStructSize(prgrm)
@@ -299,6 +305,19 @@ func GetCXTypeSignatureRepresentationOfCXArg_ForStructs(prgrm *CXProgram, cxArgu
 		typeSignatureForArrayIdx := prgrm.AddCXTypeSignatureArrayInArray(typeSignatureForArray)
 
 		newCXTypeSignature.Meta = typeSignatureForArrayIdx
+	} else if IsTypePointerSliceAtomic(cxArgument) {
+		// If pointer slice atomic type, i.e. *[]i32, *[]f64, etc.
+
+		newCXTypeSignature.Type = TYPE_POINTER_SLICE_ATOMIC
+
+		typeSignatureForArray := &CXTypeSignature_Array{
+			Type:    int(cxArgument.Type),
+			Lengths: cxArgument.Lengths,
+			Indexes: cxArgument.Indexes,
+		}
+		typeSignatureForArrayIdx := prgrm.AddCXTypeSignatureArrayInArray(typeSignatureForArray)
+
+		newCXTypeSignature.Meta = typeSignatureForArrayIdx
 	} else if IsTypeStruct(cxArgument) {
 		// If type is struct
 
@@ -368,6 +387,19 @@ func GetCXTypeSignatureRepresentationOfCXArg(prgrm *CXProgram, cxArgument *CXArg
 		// If slice atomic type, i.e. []i32, []f64, etc.
 
 		newCXTypeSignature.Type = TYPE_SLICE_ATOMIC
+
+		typeSignatureForArray := &CXTypeSignature_Array{
+			Type:    int(cxArgument.Type),
+			Lengths: cxArgument.Lengths,
+			Indexes: cxArgument.Indexes,
+		}
+		typeSignatureForArrayIdx := prgrm.AddCXTypeSignatureArrayInArray(typeSignatureForArray)
+
+		newCXTypeSignature.Meta = typeSignatureForArrayIdx
+	} else if IsTypePointerSliceAtomic(cxArgument) {
+		// If pointer slice atomic type, i.e. *[]i32, *[]f64, etc.
+
+		newCXTypeSignature.Type = TYPE_POINTER_SLICE_ATOMIC
 
 		typeSignatureForArray := &CXTypeSignature_Array{
 			Type:    int(cxArgument.Type),
