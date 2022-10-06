@@ -120,6 +120,7 @@ func GetDerefSizeSlice(prgrm *CXProgram, typeSignature *CXTypeSignature) types.P
 		if len(sliceDetails.Lengths) > 1 && (len(sliceDetails.Lengths)-len(sliceDetails.Indexes)) > 1 {
 			return types.POINTER_SIZE
 		}
+
 		return types.Code(sliceDetails.Type).Size()
 	}
 
@@ -260,29 +261,15 @@ func GetFinalOffset(prgrm *CXProgram, fp types.Pointer, oldArg *CXArgument, argT
 		}
 
 		if argTypeSig.IsDeref {
-			arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(argTypeSig.Meta)
-			indexesLen := len(arrDetails.Indexes)
-			sizeToUse := types.Code(arrDetails.Type).Size()
+			argTypeSigOffset = types.Read_ptr(prgrm.Memory, argTypeSigOffset)
 
-			for i := 0; i < indexesLen; i++ {
-				argTypeSigOffset = types.Read_ptr(prgrm.Memory, argTypeSigOffset)
-				baseOffset := argTypeSigOffset
-
+			if argTypeSigOffset.IsValid() && argTypeSigOffset >= prgrm.Heap.StartsAt {
+				// then it's an object
 				argTypeSigOffset += types.OBJECT_HEADER_SIZE
 				argTypeSigOffset += constants.SLICE_HEADER_SIZE
-
-				indexOffset := GetFinalOffset(prgrm, fp, nil, prgrm.GetCXTypeSignatureFromArray(arrDetails.Indexes[i]))
-				indexValue := types.Read_i32(prgrm.Memory, indexOffset)
-
-				argTypeSigOffset += types.Cast_i32_to_ptr(indexValue) * sizeToUse // TODO:PTR Use ptr/Read_ptr, array/slice indexing only works with i32.
-
-				if !IsValidSliceIndex(prgrm, baseOffset, argTypeSigOffset, sizeToUse) {
-					panic(constants.CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)
-				}
 			}
 		}
 
-		argTypeSigOffset = types.Read_ptr(prgrm.Memory, argTypeSigOffset)
 		return argTypeSigOffset
 	}
 

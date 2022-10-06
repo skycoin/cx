@@ -248,7 +248,6 @@ func processNonAtomicOperators(prgrm *CXProgram, expr *CXExpression, fp types.Po
 
 		finalOffset := GetFinalOffset(prgrm, fp, nil, input)
 		if input.PassBy == constants.PASSBY_REFERENCE || inp.PassBy == constants.PASSBY_REFERENCE {
-
 			// If we're referencing an inner element, like an element of a slice (&slc[0])
 			// or a field of a struct (&struct.fld) we no longer need to add
 			// the OBJECT_HEADER_SIZE to the offset
@@ -269,8 +268,6 @@ func processNonAtomicOperators(prgrm *CXProgram, expr *CXExpression, fp types.Po
 		types.WriteSlice_byte(
 			prgrm.Memory,
 			GetFinalOffset(prgrm, newFP, nil, newCallOperatorInputTypeSignature),
-			// newFP + newCall.Operator.ProgramInput[i].Offset,
-			// GetFinalOffset(prgrm.Memory, newFP, newCall.Operator.ProgramInput[i], MEM_WRITE),
 			byts)
 	}
 
