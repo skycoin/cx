@@ -638,8 +638,13 @@ slice_literal_expression:
                                                 sliceDetails:=actions.AST.GetCXTypeSignatureArrayFromArray(expressionOutputTypeSig.Meta)
                                                 sliceDetails.Lengths = append(sliceDetails.Lengths, 0)
                                         }
-                                } else {
-                                       continue
+                                } else if expressionOutputTypeSig.Type == ast.TYPE_POINTER_SLICE_ATOMIC {
+                                        if expressionOutputTypeSig.Name == lastExpressionInputTypeSig.Name {
+                                                sliceDetails:=actions.AST.GetCXTypeSignatureArrayFromArray(expressionOutputTypeSig.Meta)
+                                                sliceDetails.Lengths = append(sliceDetails.Lengths, 0)
+                                        }
+                                }  else {
+                                        continue
 			        }
 
                                

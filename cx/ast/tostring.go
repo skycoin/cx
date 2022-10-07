@@ -615,7 +615,7 @@ func GetPrintableValue(prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSig
 
 			return val
 		}
-	} else if argTypeSig.Type == TYPE_SLICE_ATOMIC {
+	} else if argTypeSig.Type == TYPE_SLICE_ATOMIC || argTypeSig.Type == TYPE_POINTER_SLICE_ATOMIC {
 		arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(argTypeSig.Meta)
 		var val string
 
@@ -926,6 +926,20 @@ func GetFormattedType(prgrm *CXProgram, typeSig *CXTypeSignature) string {
 
 		typ += types.Code(arrayData.Type).Name()
 		if typeSig.PassBy == constants.PASSBY_REFERENCE {
+			typ = "*" + typ
+		}
+	} else if typeSig.Type == TYPE_POINTER_SLICE_ATOMIC {
+		arrayData := prgrm.GetCXTypeSignatureArrayFromArray(typeSig.Meta)
+
+		arrLen := len(arrayData.Lengths) - len(arrayData.Indexes)
+		if arrLen != 0 {
+			for i := 0; i < len(arrayData.Lengths[len(arrayData.Indexes):]); i++ {
+				typ = fmt.Sprintf("[]%s", typ)
+			}
+		}
+
+		typ += types.Code(arrayData.Type).Name()
+		if !typeSig.IsDeref {
 			typ = "*" + typ
 		}
 	} else {

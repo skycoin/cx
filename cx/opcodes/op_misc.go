@@ -30,7 +30,6 @@ func opIdentity(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 			outputs[0].Set_ptr(prgrm, inputs[0].Offset)
 		} else {
 			outputs[0].Set_bytes(prgrm, inputs[0].Get_bytes(prgrm))
-
 		}
 	} else if outputs[0].TypeSignature.Type == ast.TYPE_POINTER_ATOMIC {
 		outputs[0].Set_ptr(prgrm, inputs[0].Offset)
@@ -39,7 +38,11 @@ func opIdentity(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 	} else if outputs[0].TypeSignature.Type == ast.TYPE_POINTER_ARRAY_ATOMIC {
 		outputs[0].Set_bytes(prgrm, inputs[0].Get_bytes(prgrm))
 	} else if outputs[0].TypeSignature.Type == ast.TYPE_SLICE_ATOMIC {
-		outputs[0].Set_bytes(prgrm, inputs[0].Get_bytes(prgrm))
+		if outputs[0].TypeSignature.PassBy == constants.PASSBY_REFERENCE {
+			outputs[0].Set_ptr(prgrm, inputs[0].Offset)
+		} else {
+			outputs[0].Set_bytes(prgrm, inputs[0].Get_bytes(prgrm))
+		}
 	} else {
 		panic("type is not known")
 	}

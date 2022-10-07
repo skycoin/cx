@@ -115,6 +115,13 @@ func GetDerefSizeSlice(prgrm *CXProgram, typeSignature *CXTypeSignature) types.P
 			return types.POINTER_SIZE
 		}
 		return types.Code(sliceDetails.Type).Size()
+	} else if typeSignature.Type == TYPE_POINTER_SLICE_ATOMIC {
+		sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(typeSignature.Meta)
+		if len(sliceDetails.Lengths) > 1 && (len(sliceDetails.Lengths)-len(sliceDetails.Indexes)) > 1 {
+			return types.POINTER_SIZE
+		}
+
+		return types.Code(sliceDetails.Type).Size()
 	}
 
 	return typeSignature.GetSize(prgrm, false)
@@ -240,6 +247,26 @@ func GetFinalOffset(prgrm *CXProgram, fp types.Pointer, oldArg *CXArgument, argT
 
 			if !IsValidSliceIndex(prgrm, baseOffset, argTypeSigOffset, sizeToUse) {
 				panic(constants.CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)
+			}
+		}
+
+		return argTypeSigOffset
+	} else if argTypeSig.Type == TYPE_POINTER_SLICE_ATOMIC {
+		argTypeSigOffset := argTypeSig.Offset
+
+		//Todo: find way to eliminate this check
+		if argTypeSigOffset < prgrm.Stack.Size {
+			// Then it's in the stack, not in data or heap and we need to consider the frame pointer.
+			argTypeSigOffset += fp
+		}
+
+		if argTypeSig.IsDeref {
+			argTypeSigOffset = types.Read_ptr(prgrm.Memory, argTypeSigOffset)
+
+			if argTypeSigOffset.IsValid() && argTypeSigOffset >= prgrm.Heap.StartsAt {
+				// then it's an object
+				argTypeSigOffset += types.OBJECT_HEADER_SIZE
+				argTypeSigOffset += constants.SLICE_HEADER_SIZE
 			}
 		}
 
