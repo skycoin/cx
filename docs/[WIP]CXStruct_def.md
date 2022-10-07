@@ -63,7 +63,7 @@ Note:
     - [x] ArrayAtomic
     - [x] ArrayPointerAtomic
     - [x] SliceAtomic
-    - [ ] SlicePointerAtomic
+    - [x] SlicePointerAtomic
     - [ ] Struct
     - [ ] PointerStruct
     - [ ] ArrayStruct
