@@ -404,5 +404,5 @@ func IsTypePointerSliceAtomic(arg *CXArgument) bool {
 }
 
 func IsTypeStruct(arg *CXArgument) bool {
-	return !arg.IsSlice && len(arg.Lengths) == 0 && arg.Type == types.STRUCT
+	return !arg.IsSlice && len(arg.Lengths) == 0 && arg.StructType != nil && len(arg.DeclarationSpecifiers) == 1 && arg.DeclarationSpecifiers[0] == constants.DECL_STRUCT
 }
