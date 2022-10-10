@@ -600,7 +600,6 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 					lastExpressionOutputArg.Size = glblArg.Size
 					lastExpressionOutputArg.PointerTargetType = glblArg.PointerTargetType
 					lastExpressionOutputArg.IsSlice = glblArg.IsSlice
-					lastExpressionOutputArg.IsStruct = glblArg.IsStruct
 					lastExpressionOutputArg.Package = glblArg.Package
 				} else if lastExpressionOutputTypeSig.Type == ast.TYPE_ATOMIC || lastExpressionOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 					lastExpressionOutputTypeSig.Name = glbl.Name
@@ -672,7 +671,6 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 			panic("type is not known")
 		}
 		// then it's a struct
-		prgrm.CXArgs[leftExprIdx].IsStruct = true
 
 		leftExprField := ast.MakeArgument(ident, CurrentFile, LineNo)
 		leftPkg, err := prgrm.GetPackageFromArray(leftExprOutputTypeSig.Package)

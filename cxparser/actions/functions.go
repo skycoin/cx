@@ -664,7 +664,7 @@ func ProcessPointerStructs(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 				doesArgHaveDerefPointer = true
 			}
 		}
-		if arg.IsStruct && arg.IsPointer() && len(arg.Fields) > 0 && !doesArgHaveDerefPointer {
+		if arg.IsStruct() && arg.IsPointer() && len(arg.Fields) > 0 && !doesArgHaveDerefPointer {
 			prgrm.CXArgs[arg.Index].DereferenceOperations = append(arg.DereferenceOperations, constants.DEREF_POINTER)
 		}
 	}

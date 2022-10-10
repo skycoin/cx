@@ -50,7 +50,7 @@ type CXTypeSignature struct {
 	IsDeref bool // true if it is dereferencing a pointer, array or slice
 
 	// if type is complex, meta is complex id
-	// if type is struct, meta is struct id
+	// if type is struct, meta is CXTypeSignature_Struct id
 	// if type is array, meta is CXTypeSignature_Array id
 	// if type is atomic, meta is the atomic type
 	Meta int
@@ -68,6 +68,19 @@ type CXTypeSignature_Array struct {
 	// Index of the element which
 	// we want to access.
 	Indexes []CXTypeSignatureIndex
+}
+
+type CXTypeSignature_Struct struct {
+	Type int // atomic type
+
+	// Fields stores what fields are being accessed from the
+	// `CXArgument` and in what order. Whenever a `DEREF_FIELD` in
+	// `DereferenceOperations` is found, we consume a field from
+	// `Field` to determine the new offset to the desired
+	// value.
+	Fields []CXArgumentIndex
+
+	StructType *CXStruct
 }
 
 // ----------------------------------------------------------------

@@ -260,7 +260,7 @@ func DisplaceReferences(prgrm *CXProgram, off types.Pointer, numPkgs int) {
 				panic("type is not cxargument deprecate.")
 			}
 
-			if glbl.IsString() || glbl.IsStruct || glbl.IsSlice {
+			if glbl.IsString() || glbl.IsStruct() || glbl.IsSlice {
 				doDisplaceReferences(prgrm, &updated, glbl.Offset, off, glbl.Type, glbl.DeclarationSpecifiers[1:]) // TODO:PTR remove hardcoded offsets
 			}
 
@@ -277,7 +277,7 @@ func DisplaceReferences(prgrm *CXProgram, off types.Pointer, numPkgs int) {
 						fld = typeSignature.GetCXArgFormat(prgrm)
 					}
 
-					if fld.IsString() || fld.IsStruct || fld.IsSlice {
+					if fld.IsString() || fld.IsStruct() || fld.IsSlice {
 						doDisplaceReferences(prgrm, &updated, glbl.Offset+fld.Offset, off, fld.Type, fld.DeclarationSpecifiers[1:])
 					}
 				}

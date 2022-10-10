@@ -126,7 +126,6 @@ type CXArgument struct {
 
 	StructType         *CXStruct
 	IsSlice            bool
-	IsStruct           bool
 	IsInnerReference   bool // for example: &slice[0] or &struct.field
 	PreviouslyDeclared bool
 }
@@ -137,6 +136,10 @@ func (arg CXArgument) IsPointer() bool {
 
 func (arg CXArgument) IsString() bool {
 	return arg.PointerTargetType == types.STR || arg.Type == types.STR
+}
+
+func (arg CXArgument) IsStruct() bool {
+	return arg.StructType != nil
 }
 
 /*
