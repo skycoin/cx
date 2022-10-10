@@ -533,13 +533,13 @@ func GetPrintableValue(prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSig
 		arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(argTypeSig.Meta)
 		var val string
 
-		typ := types.Code(arrDetails.Type).Name()
+		typ := types.Code(arrDetails.Meta).Name()
 		if len(arrDetails.Lengths) == 1 {
 			val += "["
 
 			// for Arrays
 			for c := types.Pointer(0); c < arrDetails.Lengths[0]; c++ {
-				val += readValue(prgrm, typ, GetFinalOffset(prgrm, fp+(c*types.Code(arrDetails.Type).Size()), nil, argTypeSig))
+				val += readValue(prgrm, typ, GetFinalOffset(prgrm, fp+(c*types.Code(arrDetails.Meta).Size()), nil, argTypeSig))
 				if c != arrDetails.Lengths[0]-1 {
 					val += ", "
 				}
@@ -562,7 +562,7 @@ func GetPrintableValue(prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSig
 
 			for c := types.Pointer(1); c < finalSize; c++ {
 				val += arrayPrinter(c, arrDetails.Lengths, "", "")
-				val += readValue(prgrm, typ, GetFinalOffset(prgrm, fp+(c*types.Code(arrDetails.Type).Size()), nil, argTypeSig))
+				val += readValue(prgrm, typ, GetFinalOffset(prgrm, fp+(c*types.Code(arrDetails.Meta).Size()), nil, argTypeSig))
 			}
 
 			for range arrDetails.Lengths {
@@ -576,13 +576,13 @@ func GetPrintableValue(prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSig
 		arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(argTypeSig.Meta)
 		var val string
 
-		typ := types.Code(arrDetails.Type).Name()
+		typ := types.Code(arrDetails.Meta).Name()
 		if len(arrDetails.Lengths) == 1 {
 			val += "["
 
 			// for Arrays
 			for c := types.Pointer(0); c < arrDetails.Lengths[0]; c++ {
-				val += readValue(prgrm, typ, GetFinalOffset(prgrm, fp+(c*types.Code(arrDetails.Type).Size()), nil, argTypeSig))
+				val += readValue(prgrm, typ, GetFinalOffset(prgrm, fp+(c*types.Code(arrDetails.Meta).Size()), nil, argTypeSig))
 
 				if c != arrDetails.Lengths[0]-1 {
 					val += ", "
@@ -606,7 +606,7 @@ func GetPrintableValue(prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSig
 
 			for c := types.Pointer(1); c < finalSize; c++ {
 				val += arrayPrinter(c, arrDetails.Lengths, "", "")
-				val += readValue(prgrm, typ, GetFinalOffset(prgrm, fp+(c*types.Code(arrDetails.Type).Size()), nil, argTypeSig))
+				val += readValue(prgrm, typ, GetFinalOffset(prgrm, fp+(c*types.Code(arrDetails.Meta).Size()), nil, argTypeSig))
 			}
 
 			for range arrDetails.Lengths {
@@ -619,12 +619,12 @@ func GetPrintableValue(prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSig
 		arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(argTypeSig.Meta)
 		var val string
 
-		typ := types.Code(arrDetails.Type).Name()
+		typ := types.Code(arrDetails.Meta).Name()
 		if len(arrDetails.Lengths) == 1 {
 			val += "["
 
 			// for slices
-			sizeOfElement := types.Code(arrDetails.Type).Size()
+			sizeOfElement := types.Code(arrDetails.Meta).Size()
 			sliceOffset := GetSliceOffset(prgrm, fp, argTypeSig)
 			sliceData := GetSlice(prgrm, sliceOffset, sizeOfElement)
 
@@ -657,7 +657,7 @@ func GetPrintableValue(prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSig
 
 			for c := types.Pointer(1); c < finalSize; c++ {
 				val += arrayPrinter(c, arrDetails.Lengths, "", "")
-				val += readValue(prgrm, typ, GetFinalOffset(prgrm, fp+(c*types.Code(arrDetails.Type).Size()), nil, argTypeSig))
+				val += readValue(prgrm, typ, GetFinalOffset(prgrm, fp+(c*types.Code(arrDetails.Meta).Size()), nil, argTypeSig))
 			}
 
 			for range arrDetails.Lengths {
@@ -895,7 +895,7 @@ func GetFormattedType(prgrm *CXProgram, typeSig *CXTypeSignature) string {
 			}
 		}
 
-		typ += types.Code(arrayData.Type).Name()
+		typ += types.Code(arrayData.Meta).Name()
 		if typeSig.PassBy == constants.PASSBY_REFERENCE {
 			typ = "*" + typ
 		}
@@ -909,7 +909,7 @@ func GetFormattedType(prgrm *CXProgram, typeSig *CXTypeSignature) string {
 			}
 		}
 
-		typ += types.Code(arrayData.Type).Name()
+		typ += types.Code(arrayData.Meta).Name()
 		if !typeSig.IsDeref {
 			typ = "*" + typ
 		}
@@ -924,7 +924,7 @@ func GetFormattedType(prgrm *CXProgram, typeSig *CXTypeSignature) string {
 			}
 		}
 
-		typ += types.Code(arrayData.Type).Name()
+		typ += types.Code(arrayData.Meta).Name()
 		if typeSig.PassBy == constants.PASSBY_REFERENCE {
 			typ = "*" + typ
 		}
@@ -938,7 +938,7 @@ func GetFormattedType(prgrm *CXProgram, typeSig *CXTypeSignature) string {
 			}
 		}
 
-		typ += types.Code(arrayData.Type).Name()
+		typ += types.Code(arrayData.Meta).Name()
 		if !typeSig.IsDeref {
 			typ = "*" + typ
 		}

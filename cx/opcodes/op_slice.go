@@ -61,7 +61,7 @@ func opSliceAppend(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXV
 		input0IsSlice = eltInp0.IsSlice
 	} else if inputs[0].TypeSignature.Type == ast.TYPE_SLICE_ATOMIC || inputs[0].TypeSignature.Type == ast.TYPE_POINTER_SLICE_ATOMIC {
 		sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(inputs[0].TypeSignature.Meta)
-		inp0Type = types.Code(sliceDetails.Type)
+		inp0Type = types.Code(sliceDetails.Meta)
 
 		input0IsSlice = true
 	} else {
@@ -79,7 +79,7 @@ func opSliceAppend(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXV
 	} else if inputs[1].TypeSignature.Type == ast.TYPE_SLICE_ATOMIC || inputs[1].TypeSignature.Type == ast.TYPE_POINTER_SLICE_ATOMIC {
 		sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(inputs[1].TypeSignature.Meta)
 
-		inp1Type = types.Code(sliceDetails.Type)
+		inp1Type = types.Code(sliceDetails.Meta)
 	} else {
 		panic("type is not known")
 	}
@@ -98,7 +98,7 @@ func opSliceAppend(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXV
 
 	} else if outputs[0].TypeSignature.Type == ast.TYPE_SLICE_ATOMIC || outputs[0].TypeSignature.Type == ast.TYPE_POINTER_SLICE_ATOMIC {
 		sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(outputs[0].TypeSignature.Meta)
-		out0Type = types.Code(sliceDetails.Type)
+		out0Type = types.Code(sliceDetails.Meta)
 		outputIsSlice = true
 	} else {
 		panic("type is not known")
@@ -136,7 +136,7 @@ func opSliceAppend(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXV
 			inpType = types.Code(input.TypeSignature.Meta)
 		} else if input.TypeSignature.Type == ast.TYPE_SLICE_ATOMIC {
 			sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(input.TypeSignature.Meta)
-			inpType = types.Code(sliceDetails.Type)
+			inpType = types.Code(sliceDetails.Meta)
 		} else {
 			panic("type is not known")
 		}
@@ -171,9 +171,9 @@ func opSliceResize(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXV
 		inpIsSlice = eltInp0.IsSlice
 	} else if inputs[0].TypeSignature.Type == ast.TYPE_SLICE_ATOMIC {
 		sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(inputs[0].TypeSignature.Meta)
-		inpSize = types.Code(sliceDetails.Type).Size()
+		inpSize = types.Code(sliceDetails.Meta).Size()
 
-		inpType = types.Code(sliceDetails.Type)
+		inpType = types.Code(sliceDetails.Meta)
 		inpIsSlice = true
 	} else {
 		panic("type is not type cx argument deprecate\n\n")
@@ -186,7 +186,7 @@ func opSliceResize(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXV
 	} else if outputs[0].TypeSignature.Type == ast.TYPE_SLICE_ATOMIC {
 		sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(outputs[0].TypeSignature.Meta)
 
-		outType = types.Code(sliceDetails.Type)
+		outType = types.Code(sliceDetails.Meta)
 		outIsSlice = true
 	} else {
 		panic("type is not type cx argument deprecate\n\n")
@@ -223,7 +223,7 @@ func opSliceInsertElement(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []
 	} else if inputs[0].TypeSignature.Type == ast.TYPE_SLICE_ATOMIC {
 		sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(inputs[0].TypeSignature.Meta)
 
-		inp0Type = types.Code(sliceDetails.Type)
+		inp0Type = types.Code(sliceDetails.Meta)
 		inpIsSlice = true
 	} else {
 		panic("type is not known")
@@ -258,7 +258,7 @@ func opSliceInsertElement(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []
 	} else if outputs[0].TypeSignature.Type == ast.TYPE_SLICE_ATOMIC {
 		sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(outputs[0].TypeSignature.Meta)
 
-		out0Type = types.Code(sliceDetails.Type)
+		out0Type = types.Code(sliceDetails.Meta)
 		outIsSlice = true
 	} else {
 		panic("type is not known")
@@ -300,7 +300,7 @@ func opSliceRemoveElement(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []
 	} else if inputs[0].TypeSignature.Type == ast.TYPE_SLICE_ATOMIC {
 		sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(inputs[0].TypeSignature.Meta)
 
-		inpType = types.Code(sliceDetails.Type)
+		inpType = types.Code(sliceDetails.Meta)
 		inpIsSlice = true
 		inpSize = inpType.Size()
 	} else {
@@ -315,7 +315,7 @@ func opSliceRemoveElement(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []
 	} else if outputs[0].TypeSignature.Type == ast.TYPE_SLICE_ATOMIC {
 		sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(outputs[0].TypeSignature.Meta)
 
-		outType = types.Code(sliceDetails.Type)
+		outType = types.Code(sliceDetails.Meta)
 		outIsSlice = true
 	} else {
 		panic("type is not type cx argument deprecate\n\n")
@@ -346,8 +346,8 @@ func opSliceCopy(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVal
 	} else if inputs[0].TypeSignature.Type == ast.TYPE_SLICE_ATOMIC {
 		sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(inputs[0].TypeSignature.Meta)
 
-		dstType = types.Code(sliceDetails.Type)
-		dstSize = types.Code(sliceDetails.Type).Size()
+		dstType = types.Code(sliceDetails.Meta)
+		dstSize = types.Code(sliceDetails.Meta).Size()
 		dstIsSlice = true
 	} else {
 		panic("type is not type cx argument deprecate\n\n")
@@ -366,8 +366,8 @@ func opSliceCopy(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVal
 	} else if inputs[1].TypeSignature.Type == ast.TYPE_SLICE_ATOMIC {
 		sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(inputs[1].TypeSignature.Meta)
 
-		srcType = types.Code(sliceDetails.Type)
-		srcSize = types.Code(sliceDetails.Type).Size()
+		srcType = types.Code(sliceDetails.Meta)
+		srcSize = types.Code(sliceDetails.Meta).Size()
 		srcIsSlice = true
 	} else {
 		panic("type is not type cx argument deprecate\n\n")

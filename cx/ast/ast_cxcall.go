@@ -138,16 +138,16 @@ func processBuiltInOperators(prgrm *CXProgram, expr *CXExpression, globalInputs 
 			value.Type = types.Code(inputTypeSignature.Meta)
 		} else if inputTypeSignature.Type == TYPE_ARRAY_ATOMIC {
 			arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(inputTypeSignature.Meta)
-			value.Type = types.Code(arrDetails.Type)
+			value.Type = types.Code(arrDetails.Meta)
 		} else if inputTypeSignature.Type == TYPE_POINTER_ARRAY_ATOMIC {
 			arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(inputTypeSignature.Meta)
-			value.Type = types.Code(arrDetails.Type)
+			value.Type = types.Code(arrDetails.Meta)
 		} else if inputTypeSignature.Type == TYPE_SLICE_ATOMIC {
 			sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(inputTypeSignature.Meta)
-			value.Type = types.Code(sliceDetails.Type)
+			value.Type = types.Code(sliceDetails.Meta)
 		} else if inputTypeSignature.Type == TYPE_POINTER_SLICE_ATOMIC {
 			sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(inputTypeSignature.Meta)
-			value.Type = types.Code(sliceDetails.Type)
+			value.Type = types.Code(sliceDetails.Meta)
 		}
 
 		value.FramePointer = fp
@@ -176,16 +176,16 @@ func processBuiltInOperators(prgrm *CXProgram, expr *CXExpression, globalInputs 
 			value.Type = types.Code(outputTypeSignature.Meta)
 		} else if outputTypeSignature.Type == TYPE_ARRAY_ATOMIC {
 			arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(outputTypeSignature.Meta)
-			value.Type = types.Code(arrDetails.Type)
+			value.Type = types.Code(arrDetails.Meta)
 		} else if outputTypeSignature.Type == TYPE_POINTER_ARRAY_ATOMIC {
 			arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(outputTypeSignature.Meta)
-			value.Type = types.Code(arrDetails.Type)
+			value.Type = types.Code(arrDetails.Meta)
 		} else if outputTypeSignature.Type == TYPE_SLICE_ATOMIC {
 			sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(outputTypeSignature.Meta)
-			value.Type = types.Code(sliceDetails.Type)
+			value.Type = types.Code(sliceDetails.Meta)
 		} else if outputTypeSignature.Type == TYPE_POINTER_SLICE_ATOMIC {
 			sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(outputTypeSignature.Meta)
-			value.Type = types.Code(sliceDetails.Type)
+			value.Type = types.Code(sliceDetails.Meta)
 		}
 
 		value.FramePointer = fp

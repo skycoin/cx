@@ -244,6 +244,37 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fnIdx ast.CXFunctionIndex, inputs
 
 	fn.LineCount = len(fn.Expressions)
 	fn.Size = offset
+
+	errStr := "\n"
+	errStr += "functionName=" + fn.Name + "\n"
+	for i := range exprs {
+		expr, _ := prgrm.GetCXAtomicOpFromExpressions(exprs, i)
+		if exprs[i].Type == ast.CX_LINE {
+			continue
+		}
+
+		for x, inp := range expr.GetInputs(prgrm) {
+			typeSig := prgrm.GetCXTypeSignatureFromArray(inp)
+			if typeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				errStr += fmt.Sprintf("expr[%v] inp[%v] = %+v\n\n", i, x, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(typeSig.Meta)))
+			} else {
+				errStr += fmt.Sprintf("expr[%v] inp[%v] = %+v\n", i, x, typeSig)
+			}
+
+		}
+
+		for y, out := range expr.GetOutputs(prgrm) {
+			typeSig := prgrm.GetCXTypeSignatureFromArray(out)
+
+			if typeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				errStr += fmt.Sprintf("expr[%v] out[%v] = %+v\n\n", i, y, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(typeSig.Meta)))
+			} else {
+				errStr += fmt.Sprintf("expr[%v] out[%v] = %+v\n", i, y, typeSig)
+
+			}
+		}
+	}
+	println(errStr)
 }
 
 // ProcessTypedOperator gets the proper typed operator for the expression.
@@ -274,7 +305,7 @@ func ProcessTypedOperator(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 			atomicType = types.Code(expressionInputTypeSig.Meta)
 		} else if expressionInputTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
 			sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(expressionInputTypeSig.Meta)
-			atomicType = types.Code(sliceDetails.Type)
+			atomicType = types.Code(sliceDetails.Meta)
 		} else {
 			panic("type is not known")
 		}
@@ -516,7 +547,7 @@ func checkSameNativeType(prgrm *ast.CXProgram, expr *ast.CXExpression) error {
 		typeCode = types.Code(expressionInputTypeSig.Meta)
 	} else if expressionInputTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
 		sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(expressionInputTypeSig.Meta)
-		typeCode = types.Code(sliceDetails.Type)
+		typeCode = types.Code(sliceDetails.Meta)
 	} else {
 		panic("type is not known")
 	}
@@ -538,10 +569,10 @@ func checkSameNativeType(prgrm *ast.CXProgram, expr *ast.CXExpression) error {
 			inpType = types.Code(input.Meta)
 		} else if input.Type == ast.TYPE_ARRAY_ATOMIC {
 			arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(input.Meta)
-			inpType = types.Code(arrDetails.Type)
+			inpType = types.Code(arrDetails.Meta)
 		} else if input.Type == ast.TYPE_SLICE_ATOMIC {
 			sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(input.Meta)
-			inpType = types.Code(sliceDetails.Type)
+			inpType = types.Code(sliceDetails.Meta)
 		} else {
 			panic("type is not known")
 		}
@@ -1130,10 +1161,10 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) {
 				receivedType = types.Code(expressionInputTypeSig.Meta).Name()
 			} else if expressionInputTypeSig.Type == ast.TYPE_ARRAY_ATOMIC {
 				arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(expressionInputTypeSig.Meta)
-				receivedType = types.Code(arrDetails.Type).Name()
+				receivedType = types.Code(arrDetails.Meta).Name()
 			} else if expressionInputTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
 				sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(expressionInputTypeSig.Meta)
-				receivedType = types.Code(sliceDetails.Type).Name()
+				receivedType = types.Code(sliceDetails.Meta).Name()
 			} else {
 				panic("type is not known")
 			}
@@ -1160,13 +1191,13 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) {
 				expectedType = types.Code(expressionOutputTypeSig.Meta).Name()
 			} else if expressionOutputTypeSig.Type == ast.TYPE_ARRAY_ATOMIC {
 				arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(expressionOutputTypeSig.Meta)
-				expectedType = types.Code(arrDetails.Type).Name()
+				expectedType = types.Code(arrDetails.Meta).Name()
 			} else if expressionOutputTypeSig.Type == ast.TYPE_POINTER_ARRAY_ATOMIC {
 				arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(expressionOutputTypeSig.Meta)
-				expectedType = types.Code(arrDetails.Type).Name()
+				expectedType = types.Code(arrDetails.Meta).Name()
 			} else if expressionOutputTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
 				arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(expressionOutputTypeSig.Meta)
-				expectedType = types.Code(arrDetails.Type).Name()
+				expectedType = types.Code(arrDetails.Meta).Name()
 			} else {
 				panic("type is not known")
 			}
@@ -1346,12 +1377,12 @@ func ProcessShortDeclaration(prgrm *ast.CXProgram, expr *ast.CXExpression, expre
 				argSize = types.Code(expressionInputTypeSig.Meta).Size()
 			} else if expressionInputTypeSig.Type == ast.TYPE_ARRAY_ATOMIC {
 				arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(expressionInputTypeSig.Meta)
-				argType = types.Code(arrDetails.Type)
-				argSize = types.Code(arrDetails.Type).Size()
+				argType = types.Code(arrDetails.Meta)
+				argSize = types.Code(arrDetails.Meta).Size()
 			} else if expressionInputTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
 				sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(expressionInputTypeSig.Meta)
-				argType = types.Code(sliceDetails.Type)
-				argSize = types.Code(sliceDetails.Type).Size()
+				argType = types.Code(sliceDetails.Meta)
+				argSize = types.Code(sliceDetails.Meta).Size()
 			} else {
 				panic("type is not known")
 			}
@@ -1371,11 +1402,11 @@ func ProcessShortDeclaration(prgrm *ast.CXProgram, expr *ast.CXExpression, expre
 			prevExpressionOutputTypeSig.Meta = int(argType)
 		} else if prevExpressionOutputTypeSig.Type == ast.TYPE_ARRAY_ATOMIC {
 			arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(prevExpressionOutputTypeSig.Meta)
-			arrDetails.Type = int(argType)
+			arrDetails.Meta = int(argType)
 
 		} else if prevExpressionOutputTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
 			sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(prevExpressionOutputTypeSig.Meta)
-			sliceDetails.Type = int(argType)
+			sliceDetails.Meta = int(argType)
 
 		} else {
 			panic("type is not known")
@@ -1394,10 +1425,10 @@ func ProcessShortDeclaration(prgrm *ast.CXProgram, expr *ast.CXExpression, expre
 			expressionOutputTypeSig.Meta = int(argType)
 		} else if expressionOutputTypeSig.Type == ast.TYPE_ARRAY_ATOMIC {
 			arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(expressionOutputTypeSig.Meta)
-			arrDetails.Type = int(argType)
+			arrDetails.Meta = int(argType)
 		} else if expressionOutputTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
 			sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(expressionOutputTypeSig.Meta)
-			sliceDetails.Type = int(argType)
+			sliceDetails.Meta = int(argType)
 		} else {
 			panic("type is not known")
 		}
@@ -1917,8 +1948,8 @@ func ProcessTempVariable(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 					prgrm.CXArgs[outputArgIdx].Size = types.Code(expressionInputTypeSig.Meta).Size()
 				} else if expressionInputTypeSig.Type == ast.TYPE_ARRAY_ATOMIC {
 					arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(expressionInputTypeSig.Meta)
-					prgrm.CXArgs[outputArgIdx].Type = types.Code(arrDetails.Type)
-					prgrm.CXArgs[outputArgIdx].Size = types.Code(arrDetails.Type).Size()
+					prgrm.CXArgs[outputArgIdx].Type = types.Code(arrDetails.Meta)
+					prgrm.CXArgs[outputArgIdx].Size = types.Code(arrDetails.Meta).Size()
 				} else {
 					panic("type is not known")
 				}
@@ -1934,7 +1965,7 @@ func ProcessTempVariable(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 					outputTypeSig.Meta = expressionInputTypeSig.Meta
 				} else if expressionInputTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
 					sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(expressionInputTypeSig.Meta)
-					outputTypeSig.Meta = sliceDetails.Type
+					outputTypeSig.Meta = sliceDetails.Meta
 				} else {
 					panic("type is not known")
 				}
@@ -1943,14 +1974,14 @@ func ProcessTempVariable(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 				expressionInputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetInputs(prgrm)[0])
 				if expressionInputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 					expressionInputArg := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionInputTypeSig.Meta))
-					outputArrDetails.Type = int(expressionInputArg.Type)
+					outputArrDetails.Meta = int(expressionInputArg.Type)
 				} else if expressionInputTypeSig.Type == ast.TYPE_ATOMIC {
-					outputArrDetails.Type = expressionInputTypeSig.Meta
+					outputArrDetails.Meta = expressionInputTypeSig.Meta
 				} else if expressionInputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
-					outputArrDetails.Type = expressionInputTypeSig.Meta
+					outputArrDetails.Meta = expressionInputTypeSig.Meta
 				} else if expressionInputTypeSig.Type == ast.TYPE_ARRAY_ATOMIC {
 					arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(expressionInputTypeSig.Meta)
-					outputArrDetails.Type = arrDetails.Type
+					outputArrDetails.Meta = arrDetails.Meta
 				} else {
 					panic("type is not known")
 				}
@@ -2386,9 +2417,9 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignatur
 					break
 				} else if nameField.Name == typeSignature.Name && typeSignature.Type == ast.TYPE_ARRAY_ATOMIC {
 					typeSignatureArray := prgrm.GetCXTypeSignatureArrayFromArray(typeSignature.Meta)
-					nameField.Type = types.Code(typeSignatureArray.Type)
+					nameField.Type = types.Code(typeSignatureArray.Meta)
 					nameField.StructType = nil
-					nameField.Size = types.Code(typeSignatureArray.Type).Size()
+					nameField.Size = types.Code(typeSignatureArray.Meta).Size()
 					nameField.Lengths = typeSignatureArray.Lengths
 					sym.Lengths = typeSignatureArray.Lengths
 
@@ -2401,7 +2432,7 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignatur
 					break
 				} else if nameField.Name == typeSignature.Name && typeSignature.Type == ast.TYPE_SLICE_ATOMIC {
 					sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(typeSignature.Meta)
-					nameField.Type = types.Code(sliceDetails.Type)
+					nameField.Type = types.Code(sliceDetails.Meta)
 					nameField.StructType = nil
 					nameField.Size = nameField.Type.Size()
 					nameField.Lengths = sliceDetails.Lengths

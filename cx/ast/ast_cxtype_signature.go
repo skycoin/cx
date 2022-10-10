@@ -57,7 +57,10 @@ type CXTypeSignature struct {
 }
 
 type CXTypeSignature_Array struct {
-	Type int // atomic type
+	// if atomic type, Meta is the atomic type
+	// if struct array or slice type, Meta
+	//  is CXTypeSignature_Struct id
+	Meta int
 
 	// length of the array
 	// 1-dimensional array [x]
@@ -71,8 +74,6 @@ type CXTypeSignature_Array struct {
 }
 
 type CXTypeSignature_Struct struct {
-	Type int // atomic type
-
 	// Fields stores what fields are being accessed from the
 	// `CXArgument` and in what order. Whenever a `DEREF_FIELD` in
 	// `DereferenceOperations` is found, we consume a field from
@@ -103,14 +104,14 @@ func (typeSignature *CXTypeSignature) GetSize(prgrm *CXProgram, IsForUpdateSymbo
 
 		arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(typeSignature.Meta)
 		if len(arrDetails.Indexes) > 0 {
-			return types.Code(arrDetails.Type).Size()
+			return types.Code(arrDetails.Meta).Size()
 		}
 
 		return typeSignature.GetArraySize(prgrm)
 	case TYPE_POINTER_ARRAY_ATOMIC:
 		arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(typeSignature.Meta)
 		if typeSignature.IsDeref && len(arrDetails.Indexes) > 0 {
-			return types.Code(arrDetails.Type).Size()
+			return types.Code(arrDetails.Meta).Size()
 		} else if typeSignature.IsDeref {
 			return typeSignature.GetArraySize(prgrm)
 		}
@@ -120,7 +121,7 @@ func (typeSignature *CXTypeSignature) GetSize(prgrm *CXProgram, IsForUpdateSymbo
 		sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(typeSignature.Meta)
 
 		if typeSignature.IsDeref || len(sliceDetails.Indexes) > 0 {
-			return types.Code(sliceDetails.Type).Size()
+			return types.Code(sliceDetails.Meta).Size()
 		}
 
 		return types.POINTER_SIZE
@@ -128,7 +129,7 @@ func (typeSignature *CXTypeSignature) GetSize(prgrm *CXProgram, IsForUpdateSymbo
 
 		sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(typeSignature.Meta)
 		if typeSignature.IsDeref || len(sliceDetails.Indexes) > 0 {
-			return types.Code(sliceDetails.Type).Size()
+			return types.Code(sliceDetails.Meta).Size()
 		}
 
 		return types.POINTER.Size()
@@ -169,7 +170,7 @@ func (typeSignature *CXTypeSignature) GetArraySize(prgrm *CXProgram) types.Point
 	switch typeSignature.Type {
 	case TYPE_ARRAY_ATOMIC, TYPE_POINTER_ARRAY_ATOMIC:
 		typeSignatureForArray := prgrm.GetCXTypeSignatureArrayFromArray(typeSignature.Meta)
-		arrType := types.Code(typeSignatureForArray.Type)
+		arrType := types.Code(typeSignatureForArray.Meta)
 		return TotalLength(typeSignatureForArray.Lengths) * arrType.Size()
 	}
 
@@ -204,7 +205,7 @@ func (typeSignature *CXTypeSignature) GetCXArgFormat(prgrm *CXProgram) *CXArgume
 		}
 	} else if typeSignature.Type == TYPE_ARRAY_ATOMIC {
 		typeSignatureArray := prgrm.GetCXTypeSignatureArrayFromArray(typeSignature.Meta)
-		arg.Type = types.Code(typeSignatureArray.Type)
+		arg.Type = types.Code(typeSignatureArray.Meta)
 		arg.StructType = nil
 		arg.Size = typeSignature.GetSize(prgrm, false)
 		arg.Lengths = typeSignatureArray.Lengths
@@ -219,9 +220,9 @@ func (typeSignature *CXTypeSignature) GetCXArgFormat(prgrm *CXProgram) *CXArgume
 
 	} else if typeSignature.Type == TYPE_SLICE_ATOMIC {
 		sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(typeSignature.Meta)
-		arg.Type = types.Code(sliceDetails.Type)
+		arg.Type = types.Code(sliceDetails.Meta)
 		arg.StructType = nil
-		arg.Size = types.Code(sliceDetails.Type).Size()
+		arg.Size = types.Code(sliceDetails.Meta).Size()
 		arg.Lengths = sliceDetails.Lengths
 		arg.IsSlice = true
 
@@ -283,7 +284,7 @@ func GetCXTypeSignatureRepresentationOfCXArg_ForStructs(prgrm *CXProgram, cxArgu
 		newCXTypeSignature.Type = TYPE_ARRAY_ATOMIC
 
 		typeSignatureForArray := &CXTypeSignature_Array{
-			Type:    int(fieldType),
+			Meta:    int(fieldType),
 			Lengths: cxArgument.Lengths,
 			Indexes: cxArgument.Indexes,
 		}
@@ -297,7 +298,7 @@ func GetCXTypeSignatureRepresentationOfCXArg_ForStructs(prgrm *CXProgram, cxArgu
 		newCXTypeSignature.Type = TYPE_POINTER_ARRAY_ATOMIC
 
 		typeSignatureForArray := &CXTypeSignature_Array{
-			Type:    int(fieldType),
+			Meta:    int(fieldType),
 			Lengths: cxArgument.Lengths,
 			Indexes: cxArgument.Indexes,
 		}
@@ -311,7 +312,7 @@ func GetCXTypeSignatureRepresentationOfCXArg_ForStructs(prgrm *CXProgram, cxArgu
 		newCXTypeSignature.Type = TYPE_SLICE_ATOMIC
 
 		typeSignatureForArray := &CXTypeSignature_Array{
-			Type:    int(cxArgument.Type),
+			Meta:    int(cxArgument.Type),
 			Lengths: cxArgument.Lengths,
 			Indexes: cxArgument.Indexes,
 		}
@@ -324,7 +325,7 @@ func GetCXTypeSignatureRepresentationOfCXArg_ForStructs(prgrm *CXProgram, cxArgu
 		newCXTypeSignature.Type = TYPE_POINTER_SLICE_ATOMIC
 
 		typeSignatureForArray := &CXTypeSignature_Array{
-			Type:    int(cxArgument.Type),
+			Meta:    int(cxArgument.Type),
 			Lengths: cxArgument.Lengths,
 			Indexes: cxArgument.Indexes,
 		}
@@ -376,7 +377,7 @@ func GetCXTypeSignatureRepresentationOfCXArg(prgrm *CXProgram, cxArgument *CXArg
 		newCXTypeSignature.Type = TYPE_ARRAY_ATOMIC
 
 		typeSignatureForArray := &CXTypeSignature_Array{
-			Type:    int(cxArgument.Type),
+			Meta:    int(cxArgument.Type),
 			Lengths: cxArgument.Lengths,
 			Indexes: cxArgument.Indexes,
 		}
@@ -389,7 +390,7 @@ func GetCXTypeSignatureRepresentationOfCXArg(prgrm *CXProgram, cxArgument *CXArg
 		newCXTypeSignature.Type = TYPE_POINTER_ARRAY_ATOMIC
 
 		typeSignatureForArray := &CXTypeSignature_Array{
-			Type:    int(cxArgument.Type),
+			Meta:    int(cxArgument.Type),
 			Lengths: cxArgument.Lengths,
 			Indexes: cxArgument.Indexes,
 		}
@@ -402,7 +403,7 @@ func GetCXTypeSignatureRepresentationOfCXArg(prgrm *CXProgram, cxArgument *CXArg
 		newCXTypeSignature.Type = TYPE_SLICE_ATOMIC
 
 		typeSignatureForArray := &CXTypeSignature_Array{
-			Type:    int(cxArgument.Type),
+			Meta:    int(cxArgument.Type),
 			Lengths: cxArgument.Lengths,
 			Indexes: cxArgument.Indexes,
 		}
@@ -415,7 +416,7 @@ func GetCXTypeSignatureRepresentationOfCXArg(prgrm *CXProgram, cxArgument *CXArg
 		newCXTypeSignature.Type = TYPE_POINTER_SLICE_ATOMIC
 
 		typeSignatureForArray := &CXTypeSignature_Array{
-			Type:    int(cxArgument.Type),
+			Meta:    int(cxArgument.Type),
 			Lengths: cxArgument.Lengths,
 			Indexes: cxArgument.Indexes,
 		}

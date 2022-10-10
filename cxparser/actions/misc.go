@@ -261,10 +261,10 @@ func IsAllArgsBasicTypes(prgrm *ast.CXProgram, expr *ast.CXExpression) bool {
 			inpType = types.Code(input.Meta)
 		} else if input.Type == ast.TYPE_ARRAY_ATOMIC {
 			arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(input.Meta)
-			inpType = types.Code(arrDetails.Type)
+			inpType = types.Code(arrDetails.Meta)
 		} else if input.Type == ast.TYPE_SLICE_ATOMIC {
 			sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(input.Meta)
-			inpType = types.Code(sliceDetails.Type)
+			inpType = types.Code(sliceDetails.Meta)
 		} else {
 			panic("type is not known")
 		}

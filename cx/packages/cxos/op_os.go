@@ -426,7 +426,7 @@ func getSlice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue)
 		inpSize = (inp1.GetAssignmentElement(prgrm)).Size
 	} else if inputs[1].TypeSignature.Type == ast.TYPE_SLICE_ATOMIC {
 		sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(inputs[1].TypeSignature.Meta)
-		inpType = types.Code(sliceDetails.Type)
+		inpType = types.Code(sliceDetails.Meta)
 		inpIsSlice = true
 		inpSize = inpType.Size()
 	} else {
@@ -441,7 +441,7 @@ func getSlice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue)
 	} else if outputs[0].TypeSignature.Type == ast.TYPE_SLICE_ATOMIC {
 		sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(outputs[0].TypeSignature.Meta)
 
-		outType = types.Code(sliceDetails.Type)
+		outType = types.Code(sliceDetails.Meta)
 		outIsSlice = true
 	} else {
 		panic("type is not type cx argument deprecate\n\n")

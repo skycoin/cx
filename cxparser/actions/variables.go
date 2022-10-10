@@ -120,7 +120,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 			glbl.Type = ast.TYPE_ARRAY_ATOMIC
 
 			typeSignatureForArray := &ast.CXTypeSignature_Array{
-				Type:    int(declaration_specifiers.Type),
+				Meta:    int(declaration_specifiers.Type),
 				Lengths: declaration_specifiers.Lengths,
 				Indexes: declaration_specifiers.Indexes,
 			}
@@ -137,7 +137,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 			glbl.Type = ast.TYPE_POINTER_ARRAY_ATOMIC
 
 			typeSignatureForArray := &ast.CXTypeSignature_Array{
-				Type:    int(declaration_specifiers.Type),
+				Meta:    int(declaration_specifiers.Type),
 				Lengths: declaration_specifiers.Lengths,
 				Indexes: declaration_specifiers.Indexes,
 			}
@@ -155,7 +155,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 			glbl.Type = ast.TYPE_SLICE_ATOMIC
 
 			typeSignatureForArray := &ast.CXTypeSignature_Array{
-				Type:    int(declaration_specifiers.Type),
+				Meta:    int(declaration_specifiers.Type),
 				Lengths: declaration_specifiers.Lengths,
 				Indexes: declaration_specifiers.Indexes,
 			}
@@ -173,7 +173,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 			glbl.Type = ast.TYPE_POINTER_SLICE_ATOMIC
 
 			typeSignatureForArray := &ast.CXTypeSignature_Array{
-				Type:    int(declaration_specifiers.Type),
+				Meta:    int(declaration_specifiers.Type),
 				Lengths: declaration_specifiers.Lengths,
 				Indexes: declaration_specifiers.Indexes,
 			}

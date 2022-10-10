@@ -67,7 +67,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 			sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(prevExpressionOperatorOutputTypeSig.Meta)
 
 			newTypeSigSlice := ast.CXTypeSignature_Array{}
-			newTypeSigSlice.Type = sliceDetails.Type
+			newTypeSigSlice.Meta = sliceDetails.Meta
 			newTypeSigSlice.Lengths = sliceDetails.Lengths
 			newTypeSigSliceIdx := prgrm.AddCXTypeSignatureArrayInArray(&newTypeSigSlice)
 
@@ -81,7 +81,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 			prgrm.CXAtomicOps[prevExpressionIdx].AddOutput(prgrm, outNewTypeSigIdx)
 
 			inpNewTypeSigSlice := ast.CXTypeSignature_Array{}
-			inpNewTypeSigSlice.Type = sliceDetails.Type
+			inpNewTypeSigSlice.Meta = sliceDetails.Meta
 			inpNewTypeSigSlice.Lengths = sliceDetails.Lengths
 			inpNewTypeSigSliceIdx := prgrm.AddCXTypeSignatureArrayInArray(&inpNewTypeSigSlice)
 
