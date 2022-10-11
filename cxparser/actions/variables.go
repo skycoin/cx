@@ -167,6 +167,24 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 			if glbl.Offset < 0 || !glbl.Offset.IsValid() {
 				glbl.Offset = glblArg.Offset
 			}
+		} else if ast.IsTypePointerSliceAtomic(declaration_specifiers) {
+			// If pointer slice atomic type, i.e. *[]i32, *[]f64, etc.
+
+			glbl.Type = ast.TYPE_POINTER_SLICE_ATOMIC
+
+			typeSignatureForArray := &ast.CXTypeSignature_Array{
+				Type:    int(declaration_specifiers.Type),
+				Lengths: declaration_specifiers.Lengths,
+				Indexes: declaration_specifiers.Indexes,
+			}
+
+			typeSignatureForArrayIdx := prgrm.AddCXTypeSignatureArrayInArray(typeSignatureForArray)
+			glbl.Meta = typeSignatureForArrayIdx
+			glbl.PassBy = declaration_specifiers.PassBy
+
+			if glbl.Offset < 0 || !glbl.Offset.IsValid() {
+				glbl.Offset = glblArg.Offset
+			}
 		} else {
 			// its a cxargument_deprecate type
 			var glblIdx int
