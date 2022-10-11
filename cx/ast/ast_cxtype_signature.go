@@ -224,7 +224,6 @@ func (typeSignature *CXTypeSignature) GetCXArgFormat(prgrm *CXProgram) *CXArgume
 		arg.StructType = nil
 		arg.Size = types.Code(sliceDetails.Meta).Size()
 		arg.Lengths = sliceDetails.Lengths
-		arg.IsSlice = true
 
 		// TODO: this should not be needed.
 		if len(arg.DeclarationSpecifiers) > 0 {

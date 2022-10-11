@@ -43,7 +43,6 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 			out.StructType = prevExpressionOperatorOutput.StructType
 			out.Size = prevExpressionOperatorOutput.Size
 			out.Lengths = prevExpressionOperatorOutput.Lengths
-			out.IsSlice = prevExpressionOperatorOutput.IsSlice
 			out.PreviouslyDeclared = true
 			out.Package = prevExpressionOperatorOutput.Package
 
@@ -57,7 +56,6 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 			inp.StructType = prevExpressionOperatorOutput.StructType
 			inp.Size = prevExpressionOperatorOutput.Size
 			inp.Lengths = prevExpressionOperatorOutput.Lengths
-			inp.IsSlice = prevExpressionOperatorOutput.IsSlice
 			inp.PreviouslyDeclared = true
 
 			typeSig = ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, inp)
@@ -599,7 +597,6 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 					lastExpressionOutputArg.StructType = glblArg.StructType
 					lastExpressionOutputArg.Size = glblArg.Size
 					lastExpressionOutputArg.PointerTargetType = glblArg.PointerTargetType
-					lastExpressionOutputArg.IsSlice = glblArg.IsSlice
 					lastExpressionOutputArg.Package = glblArg.Package
 				} else if lastExpressionOutputTypeSig.Type == ast.TYPE_ATOMIC || lastExpressionOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 					lastExpressionOutputTypeSig.Name = glbl.Name

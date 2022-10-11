@@ -1419,12 +1419,12 @@ func ProcessSlice(prgrm *ast.CXProgram, inpIdx ast.CXArgumentIndex) {
 		elt = inp
 	}
 
-	if elt.IsSlice && len(elt.DereferenceOperations) > 0 && elt.DereferenceOperations[len(elt.DereferenceOperations)-1] == constants.DEREF_POINTER {
+	if elt.IsSlicee() && len(elt.DereferenceOperations) > 0 && elt.DereferenceOperations[len(elt.DereferenceOperations)-1] == constants.DEREF_POINTER {
 		elt.DereferenceOperations = elt.DereferenceOperations[:len(elt.DereferenceOperations)-1]
 		return
 	}
 
-	if elt.IsSlice && len(elt.DereferenceOperations) > 0 && len(inp.Fields) == 0 {
+	if elt.IsSlicee() && len(elt.DereferenceOperations) > 0 && len(inp.Fields) == 0 {
 		return
 		// elt.DereferenceOperations = append([]int{cxcore.DEREF_POINTER}, elt.DereferenceOperations...)
 	}
@@ -1471,7 +1471,7 @@ func ProcessSliceAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 		inp = expressionInputArg.GetAssignmentElement(prgrm)
 		out = expressionOutputArg.GetAssignmentElement(prgrm)
 
-		if inp.IsSlice && out.IsSlice && len(inp.Indexes) == 0 && len(out.Indexes) == 0 {
+		if inp.IsSlicee() && out.IsSlicee() && len(inp.Indexes) == 0 && len(out.Indexes) == 0 {
 			out.PassBy = constants.PASSBY_VALUE
 		}
 	}
@@ -1501,7 +1501,7 @@ func ProcessSliceAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 
 			// we want to pass by value if we're sending the slice as a whole (no indexing)
 			// unless it's a pointer to the slice
-			if assignElt.IsSlice && len(assignElt.Indexes) == 0 && !hasDeclSpec(assignElt, constants.DECL_POINTER) {
+			if assignElt.IsSlicee() && len(assignElt.Indexes) == 0 && !hasDeclSpec(assignElt, constants.DECL_POINTER) {
 				assignElt.PassBy = constants.PASSBY_VALUE
 			}
 		}
@@ -2220,7 +2220,6 @@ func CopyArgFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast
 		sym.DeclarationSpecifiers = arg.DeclarationSpecifiers
 	}
 
-	sym.IsSlice = arg.IsSlice
 	sym.StructType = arg.StructType
 
 	// FIXME: In other processes like ProcessSymbolFields the symbol is assigned with lengths.
@@ -2237,7 +2236,7 @@ func CopyArgFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast
 	// below (as in the `arg.IsSlice` check), but the process differs in the
 	// case of a slice struct field.
 	assignElement := sym.GetAssignmentElement(prgrm)
-	if (!arg.IsSlice || hasDerefOp(sym, constants.DEREF_ARRAY)) && arg.StructType != nil && assignElement.IsSlice && assignElement != sym {
+	if (!arg.IsSlicee() || hasDerefOp(sym, constants.DEREF_ARRAY)) && arg.StructType != nil && assignElement.IsSlicee() && assignElement != sym {
 		for i, deref := range assignElement.DereferenceOperations {
 			// The cxgo when reading `foo[5]` in postfix.go does not know if `foo`
 			// is a slice or an array. At this point we now know it's a slice and we need
@@ -2252,7 +2251,7 @@ func CopyArgFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast
 		}
 	}
 
-	if arg.IsSlice {
+	if arg.IsSlicee() {
 		if !hasDerefOp(sym, constants.DEREF_ARRAY) {
 			// Then we're handling the slice itself, and we need to dereference it.
 			sym.DereferenceOperations = append([]int{constants.DEREF_POINTER}, sym.DereferenceOperations...)
@@ -2276,8 +2275,6 @@ func CopyArgFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast
 			sym.Type = symField.Type
 			sym.PointerTargetType = symField.PointerTargetType
 		}
-
-		sym.IsSlice = symField.IsSlice
 	} else {
 		sym.Type = arg.Type
 		sym.PointerTargetType = arg.PointerTargetType
@@ -2406,7 +2403,6 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignatur
 					nameField.Size = nameField.Type.Size()
 					nameField.Lengths = sliceDetails.Lengths
 					sym.Lengths = sliceDetails.Lengths
-					nameField.IsSlice = true
 
 					// TODO: this should not be needed.
 					if len(nameField.DeclarationSpecifiers) > 0 {
@@ -2453,12 +2449,11 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignatur
 						nameField.DeclarationSpecifiers = field.DeclarationSpecifiers
 					}
 
-					if field.IsSlice {
+					if field.IsSlicee() {
 						nameField.DereferenceOperations = append([]int{constants.DEREF_POINTER}, nameField.DereferenceOperations...)
 					}
 
 					nameField.PassBy = field.PassBy
-					nameField.IsSlice = field.IsSlice
 
 					if field.StructType != nil {
 						strct = field.StructType

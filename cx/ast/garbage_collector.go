@@ -28,7 +28,7 @@ func MarkAndCompact(prgrm *CXProgram) {
 				panic("type is not cxargument deprecate.")
 			}
 
-			if (glbl.IsString() || glbl.IsSlice || glbl.Type == types.STR) && glbl.StructType == nil {
+			if (glbl.IsString() || glbl.IsSlicee() || glbl.Type == types.STR) && glbl.StructType == nil {
 				// Getting the offset to the object in the heap
 				heapOffset := types.Read_ptr(prgrm.Memory, glbl.Offset)
 				if heapOffset < prgrm.Heap.StartsAt {
@@ -62,7 +62,7 @@ func MarkAndCompact(prgrm *CXProgram) {
 						continue
 					}
 
-					if fld.IsString() || fld.IsSlice || fld.Type == types.STR {
+					if fld.IsString() || fld.IsSlicee() || fld.Type == types.STR {
 						fldType := fld.Type
 						if fld.Type == types.POINTER {
 							fldType = fld.PointerTargetType
@@ -260,7 +260,7 @@ func DisplaceReferences(prgrm *CXProgram, off types.Pointer, numPkgs int) {
 				panic("type is not cxargument deprecate.")
 			}
 
-			if glbl.IsString() || glbl.IsStruct() || glbl.IsSlice {
+			if glbl.IsString() || glbl.IsStruct() || glbl.IsSlicee() {
 				doDisplaceReferences(prgrm, &updated, glbl.Offset, off, glbl.Type, glbl.DeclarationSpecifiers[1:]) // TODO:PTR remove hardcoded offsets
 			}
 
@@ -277,7 +277,7 @@ func DisplaceReferences(prgrm *CXProgram, off types.Pointer, numPkgs int) {
 						fld = typeSignature.GetCXArgFormat(prgrm)
 					}
 
-					if fld.IsString() || fld.IsStruct() || fld.IsSlice {
+					if fld.IsString() || fld.IsStruct() || fld.IsSlicee() {
 						doDisplaceReferences(prgrm, &updated, glbl.Offset+fld.Offset, off, fld.Type, fld.DeclarationSpecifiers[1:])
 					}
 				}
@@ -426,7 +426,7 @@ func updatePointers(prgrm *CXProgram, oldAddr, newAddr types.Pointer) {
 				panic("type is not cxargument deprecate.")
 			}
 
-			if (glbl.IsPointer() || glbl.IsSlice || glbl.Type == types.STR) && glbl.StructType == nil {
+			if (glbl.IsPointer() || glbl.IsSlicee() || glbl.Type == types.STR) && glbl.StructType == nil {
 				// Getting the offset to the object in the heap
 				heapOffset := types.Read_ptr(prgrm.Memory, glbl.Offset)
 				if heapOffset < prgrm.Heap.StartsAt {
@@ -464,7 +464,7 @@ func updatePointers(prgrm *CXProgram, oldAddr, newAddr types.Pointer) {
 						continue
 					}
 
-					if fld.IsPointer() || fld.IsSlice || fld.Type == types.STR {
+					if fld.IsPointer() || fld.IsSlicee() || fld.Type == types.STR {
 						fldType := fld.Type
 						if fld.Type == types.POINTER {
 							fldType = fld.PointerTargetType

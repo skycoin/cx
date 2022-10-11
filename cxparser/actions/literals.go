@@ -138,13 +138,11 @@ func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []a
 
 	symOutput := ast.MakeArgument(symNameOutput, CurrentFile, LineNo)
 	symOutput.SetType(typeCode)
-	symOutput.IsSlice = true
 	symOutput.Package = ast.CXPackageIndex(pkg.Index)
 	symOutput.PreviouslyDeclared = true
 
 	symInput := ast.MakeArgument(symName, CurrentFile, LineNo)
 	symInput.SetType(typeCode)
-	symInput.IsSlice = true
 	symInput.Package = ast.CXPackageIndex(pkg.Index)
 
 	symExprExprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)

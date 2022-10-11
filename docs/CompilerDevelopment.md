@@ -82,7 +82,6 @@ The atomic unit of data in a program is the [CXArgument](https://github.com/skyc
 * FileLine - an int used for crash behavior, storing which file line this CXArgument originates from.
 * StructType - a CXStruct representing the custom type this variable might be (if struct).
 * Package - the CXPackage this CXArgument resides in.
-* IsSlice - name says it all.
 * PreviouslyDeclared - used by compiler to check if this variable has been declared yet or not, or if there are duplicate declarations.
 * DoesEscape - should this variable be kept alive after the scope ends? (for example, a function returning a pointer to a variable created in the function should keep that variable alive after the scope ends, hence, this should be set to true then).
 

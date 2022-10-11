@@ -125,7 +125,6 @@ type CXArgument struct {
 	ArgDetails *CXArgumentDebug
 
 	StructType         *CXStruct
-	IsSlice            bool
 	PreviouslyDeclared bool
 }
 
@@ -141,21 +140,26 @@ func (arg CXArgument) IsStruct() bool {
 	return arg.StructType != nil
 }
 
+func (arg CXArgument) IsSlicee() bool {
+	if len(arg.Lengths) > 0 {
+		for _, val := range arg.Lengths {
+			if val != 0 {
+				return false
+			}
+		}
+
+		return true
+	}
+
+	return false
+}
+
 /*
 	FileName              string
 - filename and line number
 - can be moved to CX AST annotations (comments to be skipped or map)
 
 	FileLine
-*/
-
-/*
-All "Is" can be removed
-- because there is a constants for type (int) for defining the types
-- could look in definition, specifier
-- but use int lookup
-	IsSlice               bool
-
 */
 
 /*
@@ -278,7 +282,6 @@ func MakeStructParameter(prgrm *CXProgram, pkgName, strctName, argName string) *
 // The current standard library only uses basic types and slices. If more options are needed, modify this function
 func Slice(typeCode types.Code) *CXArgument {
 	arg := Param(typeCode)
-	arg.IsSlice = true
 	arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_SLICE)
 	return arg
 }
@@ -350,13 +353,13 @@ func MakeGlobal(name string, typeCode types.Code, fileName string, fileLine int)
 
 func IsTypeAtomic(arg *CXArgument) bool {
 	// TODO: implement including types.IDENTIFIER
-	// return (arg.Type.IsPrimitive() || arg.Type == types.IDENTIFIER) && !arg.IsSlice && len(arg.Lengths) == 0 && len(arg.Fields) == 0 && len(arg.DereferenceOperations) == 0 && (len(arg.DeclarationSpecifiers) == 0 || (len(arg.DeclarationSpecifiers) == 1 && arg.DeclarationSpecifiers[0] == constants.DECL_BASIC))
+	// return (arg.Type.IsPrimitive() || arg.Type == types.IDENTIFIER) && !arg.IsSlicee() && len(arg.Lengths) == 0 && len(arg.Fields) == 0 && len(arg.DereferenceOperations) == 0 && (len(arg.DeclarationSpecifiers) == 0 || (len(arg.DeclarationSpecifiers) == 1 && arg.DeclarationSpecifiers[0] == constants.DECL_BASIC))
 
-	return arg.Type.IsPrimitive() && !arg.IsSlice && len(arg.Lengths) == 0 && len(arg.Fields) == 0 && len(arg.DereferenceOperations) == 0 && (len(arg.DeclarationSpecifiers) == 0 || (len(arg.DeclarationSpecifiers) == 1 && arg.DeclarationSpecifiers[0] == constants.DECL_BASIC))
+	return arg.Type.IsPrimitive() && !arg.IsSlicee() && len(arg.Lengths) == 0 && len(arg.Fields) == 0 && len(arg.DereferenceOperations) == 0 && (len(arg.DeclarationSpecifiers) == 0 || (len(arg.DeclarationSpecifiers) == 1 && arg.DeclarationSpecifiers[0] == constants.DECL_BASIC))
 }
 
 func IsTypePointerAtomic(arg *CXArgument) bool {
-	return arg.Type.IsPrimitive() && arg.PointerTargetType == 0 && arg.StructType == nil && !arg.IsSlice && len(arg.Lengths) == 0 && len(arg.Fields) == 0 && len(arg.DereferenceOperations) == 0 && (len(arg.DeclarationSpecifiers) == 2 && arg.DeclarationSpecifiers[0] == constants.DECL_BASIC && arg.DeclarationSpecifiers[1] == constants.DECL_POINTER)
+	return arg.Type.IsPrimitive() && arg.PointerTargetType == 0 && arg.StructType == nil && !arg.IsSlicee() && len(arg.Lengths) == 0 && len(arg.Fields) == 0 && len(arg.DereferenceOperations) == 0 && (len(arg.DeclarationSpecifiers) == 2 && arg.DeclarationSpecifiers[0] == constants.DECL_BASIC && arg.DeclarationSpecifiers[1] == constants.DECL_POINTER)
 }
 
 func IsTypeArrayAtomic(arg *CXArgument) bool {
@@ -367,7 +370,7 @@ func IsTypeArrayAtomic(arg *CXArgument) bool {
 		}
 	}
 
-	return !isThereDeclPointer && arg.Type.IsPrimitive() && !arg.IsSlice && len(arg.Lengths) > 0 && len(arg.Fields) == 0 && len(arg.DereferenceOperations) == 0 && (len(arg.DeclarationSpecifiers) >= 2 && arg.DeclarationSpecifiers[0] == constants.DECL_BASIC && arg.DeclarationSpecifiers[1] == constants.DECL_ARRAY)
+	return !isThereDeclPointer && arg.Type.IsPrimitive() && !arg.IsSlicee() && len(arg.Lengths) > 0 && len(arg.Fields) == 0 && len(arg.DereferenceOperations) == 0 && (len(arg.DeclarationSpecifiers) >= 2 && arg.DeclarationSpecifiers[0] == constants.DECL_BASIC && arg.DeclarationSpecifiers[1] == constants.DECL_ARRAY)
 }
 
 func IsTypePointerArrayAtomic(arg *CXArgument) bool {
@@ -378,7 +381,7 @@ func IsTypePointerArrayAtomic(arg *CXArgument) bool {
 		}
 	}
 
-	return isThereDeclPointer && arg.Type.IsPrimitive() && !arg.IsSlice && len(arg.Lengths) > 0 && len(arg.Fields) == 0 && len(arg.DereferenceOperations) == 0 && (len(arg.DeclarationSpecifiers) >= 2 && arg.DeclarationSpecifiers[0] == constants.DECL_BASIC && arg.DeclarationSpecifiers[1] == constants.DECL_ARRAY)
+	return isThereDeclPointer && arg.Type.IsPrimitive() && !arg.IsSlicee() && len(arg.Lengths) > 0 && len(arg.Fields) == 0 && len(arg.DereferenceOperations) == 0 && (len(arg.DeclarationSpecifiers) >= 2 && arg.DeclarationSpecifiers[0] == constants.DECL_BASIC && arg.DeclarationSpecifiers[1] == constants.DECL_ARRAY)
 }
 
 func IsTypeSliceAtomic(arg *CXArgument) bool {
@@ -389,7 +392,7 @@ func IsTypeSliceAtomic(arg *CXArgument) bool {
 		}
 	}
 
-	return !isThereDeclPointer && arg.Type.IsPrimitive() && arg.IsSlice && len(arg.Lengths) > 0 && len(arg.Fields) == 0 && len(arg.DereferenceOperations) == 0 && (len(arg.DeclarationSpecifiers) >= 2 && arg.DeclarationSpecifiers[0] == constants.DECL_BASIC && arg.DeclarationSpecifiers[1] == constants.DECL_SLICE)
+	return !isThereDeclPointer && arg.Type.IsPrimitive() && arg.IsSlicee() && len(arg.Lengths) > 0 && len(arg.Fields) == 0 && len(arg.DereferenceOperations) == 0 && (len(arg.DeclarationSpecifiers) >= 2 && arg.DeclarationSpecifiers[0] == constants.DECL_BASIC && arg.DeclarationSpecifiers[1] == constants.DECL_SLICE)
 }
 
 func IsTypePointerSliceAtomic(arg *CXArgument) bool {
@@ -400,9 +403,9 @@ func IsTypePointerSliceAtomic(arg *CXArgument) bool {
 		}
 	}
 
-	return isThereDeclPointer && arg.Type.IsPrimitive() && arg.IsSlice && len(arg.Lengths) > 0 && len(arg.Fields) == 0 && len(arg.DereferenceOperations) == 0 && (len(arg.DeclarationSpecifiers) >= 2 && arg.DeclarationSpecifiers[0] == constants.DECL_BASIC && arg.DeclarationSpecifiers[1] == constants.DECL_SLICE)
+	return isThereDeclPointer && arg.Type.IsPrimitive() && arg.IsSlicee() && len(arg.Lengths) > 0 && len(arg.Fields) == 0 && len(arg.DereferenceOperations) == 0 && (len(arg.DeclarationSpecifiers) >= 2 && arg.DeclarationSpecifiers[0] == constants.DECL_BASIC && arg.DeclarationSpecifiers[1] == constants.DECL_SLICE)
 }
 
 func IsTypeStruct(arg *CXArgument) bool {
-	return !arg.IsSlice && len(arg.Lengths) == 0 && arg.StructType != nil && len(arg.DeclarationSpecifiers) == 1 && arg.DeclarationSpecifiers[0] == constants.DECL_STRUCT
+	return !arg.IsSlicee() && len(arg.Lengths) == 0 && arg.StructType != nil && len(arg.DeclarationSpecifiers) == 1 && arg.DeclarationSpecifiers[0] == constants.DECL_STRUCT
 }

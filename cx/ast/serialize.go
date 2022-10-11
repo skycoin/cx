@@ -139,7 +139,6 @@ func serializeArgument(prgrm *CXProgram, arg *CXArgument, s *SerializedCXProgram
 	s.Arguments[argOff].DeclarationSpecifiersOffset,
 		s.Arguments[argOff].DeclarationSpecifiersSize = serializeIntegers(arg.DeclarationSpecifiers, s)
 
-	s.Arguments[argOff].IsSlice = serializeBoolean(arg.IsSlice)
 	s.Arguments[argOff].PreviouslyDeclared = serializeBoolean(arg.PreviouslyDeclared)
 
 	s.Arguments[argOff].PassBy = int64(arg.PassBy)
@@ -972,7 +971,6 @@ func deserializeArgument(sArg *serializedArgument, s *SerializedCXProgram, prgrm
 
 	arg.DeclarationSpecifiers = deserializeIntegers(sArg.DeclarationSpecifiersOffset, sArg.DeclarationSpecifiersSize, s)
 
-	arg.IsSlice = deserializeBool(sArg.IsSlice)
 	// arg.IsPointer = deserializeBool(sArg.IsPointer)
 	// arg.IsReference = deserializeBool(sArg.IsReference)
 
