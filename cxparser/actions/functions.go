@@ -244,37 +244,6 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fnIdx ast.CXFunctionIndex, inputs
 
 	fn.LineCount = len(fn.Expressions)
 	fn.Size = offset
-
-	errStr := "\n"
-	errStr += "functionName=" + fn.Name + "\n"
-	for i := range exprs {
-		expr, _ := prgrm.GetCXAtomicOpFromExpressions(exprs, i)
-		if exprs[i].Type == ast.CX_LINE {
-			continue
-		}
-
-		for x, inp := range expr.GetInputs(prgrm) {
-			typeSig := prgrm.GetCXTypeSignatureFromArray(inp)
-			if typeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-				errStr += fmt.Sprintf("expr[%v] inp[%v] = %+v\n\n", i, x, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(typeSig.Meta)))
-			} else {
-				errStr += fmt.Sprintf("expr[%v] inp[%v] = %+v\n", i, x, typeSig)
-			}
-
-		}
-
-		for y, out := range expr.GetOutputs(prgrm) {
-			typeSig := prgrm.GetCXTypeSignatureFromArray(out)
-
-			if typeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-				errStr += fmt.Sprintf("expr[%v] out[%v] = %+v\n\n", i, y, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(typeSig.Meta)))
-			} else {
-				errStr += fmt.Sprintf("expr[%v] out[%v] = %+v\n", i, y, typeSig)
-
-			}
-		}
-	}
-	println(errStr)
 }
 
 // ProcessTypedOperator gets the proper typed operator for the expression.

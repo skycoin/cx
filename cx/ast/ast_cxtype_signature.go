@@ -251,6 +251,26 @@ func (typeSignature *CXTypeSignature) GetCXArgFormat(prgrm *CXProgram) *CXArgume
 	return arg
 }
 
+// IsInnerReference determines if it is an inner reference
+// for example: &slice[0] or &struct.field
+func (typeSignature *CXTypeSignature) IsInnerReference(prgrm *CXProgram) bool {
+	switch typeSignature.Type {
+	case TYPE_CXARGUMENT_DEPRECATE:
+		arg := prgrm.GetCXArgFromArray(CXArgumentIndex(typeSignature.Meta))
+
+		if arg.PassBy == constants.PASSBY_REFERENCE && len(arg.Indexes) > 0 {
+			for _, decl := range arg.DeclarationSpecifiers {
+				if decl == constants.DECL_POINTER {
+					return true
+				}
+			}
+
+		}
+	}
+
+	return false
+}
+
 // Added _ForStructs for now so it will be separate from others for smooth transition.
 // TODO: Remove _ForStructs
 func GetCXTypeSignatureRepresentationOfCXArg_ForStructs(prgrm *CXProgram, cxArgument *CXArgument) *CXTypeSignature {

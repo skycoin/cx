@@ -126,7 +126,6 @@ type CXArgument struct {
 
 	StructType         *CXStruct
 	IsSlice            bool
-	IsInnerReference   bool // for example: &slice[0] or &struct.field
 	PreviouslyDeclared bool
 }
 
@@ -156,8 +155,6 @@ All "Is" can be removed
 - could look in definition, specifier
 - but use int lookup
 	IsSlice               bool
-	IsStruct              bool
-	IsInnerReference      bool // for example: &slice[0] or &struct.field
 
 */
 

@@ -583,14 +583,7 @@ func UnaryExpression(prgrm *ast.CXProgram, op string, prevExprs []ast.CXExpressi
 		case "&":
 			baseOut.PassBy = constants.PASSBY_REFERENCE
 
-			// panic(fmt.Sprintf("passby ref baseOut=%+v\n\nexprOut=%+v\n\n", baseOut, exprOut))
 			exprOut.DeclarationSpecifiers = append(exprOut.DeclarationSpecifiers, constants.DECL_POINTER)
-			if len(baseOut.Fields) == 0 && hasDeclSpec(baseOut, constants.DECL_INDEXING) {
-				// If we're referencing an inner element, like an element of a slice (&slc[0])
-				// or a field of a struct (&struct.fld) we no longer need to add
-				// the OBJECT_HEADER_SIZE to the offset. The runtime uses this field to determine this.
-				baseOut.IsInnerReference = true
-			}
 		case "!":
 			if pkg, err := prgrm.GetCurrentPackage(); err == nil {
 				expr := ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_BOOL_NOT])
@@ -633,17 +626,6 @@ func UnaryExpression(prgrm *ast.CXProgram, op string, prevExprs []ast.CXExpressi
 			// a pointer type that we want to get its value
 			lastPrevExpressionOutputTypeSig.IsDeref = true
 		case "&":
-			// TODO: what is the most efficient alternative for this
-			// baseOut.PassBy = constants.PASSBY_REFERENCE
-
-			// // panic(fmt.Sprintf("passby ref baseOut=%+v\n\nexprOut=%+v\n\n", baseOut, exprOut))
-			// exprOut.DeclarationSpecifiers = append(exprOut.DeclarationSpecifiers, constants.DECL_POINTER)
-			// if len(baseOut.Fields) == 0 && hasDeclSpec(baseOut, constants.DECL_INDEXING) {
-			// 	// If we're referencing an inner element, like an element of a slice (&slc[0])
-			// 	// or a field of a struct (&struct.fld) we no longer need to add
-			// 	// the OBJECT_HEADER_SIZE to the offset. The runtime uses this field to determine this.
-			// 	baseOut.IsInnerReference = true
-			// }
 			lastPrevExpressionOutputTypeSig.PassBy = constants.PASSBY_REFERENCE
 		case "!":
 			if pkg, err := prgrm.GetCurrentPackage(); err == nil {
