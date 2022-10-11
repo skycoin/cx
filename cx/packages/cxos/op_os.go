@@ -422,7 +422,7 @@ func getSlice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue)
 		inp1 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inputs[1].TypeSignature.Meta))
 
 		inpType = inp1.Type
-		inpIsSlice = (inp1.GetAssignmentElement(prgrm)).IsSlicee()
+		inpIsSlice = (inp1.GetAssignmentElement(prgrm)).IsSlice()
 		inpSize = (inp1.GetAssignmentElement(prgrm)).Size
 	} else if inputs[1].TypeSignature.Type == ast.TYPE_SLICE_ATOMIC {
 		sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(inputs[1].TypeSignature.Meta)
@@ -437,7 +437,7 @@ func getSlice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue)
 		out0 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(outputs[0].TypeSignature.Meta))
 
 		outType = out0.Type
-		outIsSlice = (out0.GetAssignmentElement(prgrm)).IsSlicee()
+		outIsSlice = (out0.GetAssignmentElement(prgrm)).IsSlice()
 	} else if outputs[0].TypeSignature.Type == ast.TYPE_SLICE_ATOMIC {
 		sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(outputs[0].TypeSignature.Meta)
 

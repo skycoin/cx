@@ -244,6 +244,37 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fnIdx ast.CXFunctionIndex, inputs
 
 	fn.LineCount = len(fn.Expressions)
 	fn.Size = offset
+
+	// errStr := "\n"
+	// errStr += "functionName=" + fn.Name + "\n"
+	// for i := range exprs {
+	// 	expr, _ := prgrm.GetCXAtomicOpFromExpressions(exprs, i)
+	// 	if exprs[i].Type == ast.CX_LINE {
+	// 		continue
+	// 	}
+
+	// 	for x, inp := range expr.GetInputs(prgrm) {
+	// 		typeSig := prgrm.GetCXTypeSignatureFromArray(inp)
+	// 		if typeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+	// 			errStr += fmt.Sprintf("expr[%v] inp[%v] = %+v\n\n", i, x, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(typeSig.Meta)))
+	// 		} else {
+	// 			errStr += fmt.Sprintf("expr[%v] inp[%v] = %+v\n", i, x, typeSig)
+	// 		}
+
+	// 	}
+
+	// 	for y, out := range expr.GetOutputs(prgrm) {
+	// 		typeSig := prgrm.GetCXTypeSignatureFromArray(out)
+
+	// 		if typeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+	// 			errStr += fmt.Sprintf("expr[%v] out[%v] = %+v\n\n", i, y, prgrm.GetCXArgFromArray(ast.CXArgumentIndex(typeSig.Meta)))
+	// 		} else {
+	// 			errStr += fmt.Sprintf("expr[%v] out[%v] = %+v\n", i, y, typeSig)
+
+	// 		}
+	// 	}
+	// }
+	// println(errStr)
 }
 
 // ProcessTypedOperator gets the proper typed operator for the expression.
@@ -1419,12 +1450,12 @@ func ProcessSlice(prgrm *ast.CXProgram, inpIdx ast.CXArgumentIndex) {
 		elt = inp
 	}
 
-	if elt.IsSlicee() && len(elt.DereferenceOperations) > 0 && elt.DereferenceOperations[len(elt.DereferenceOperations)-1] == constants.DEREF_POINTER {
+	if elt.IsSlice() && len(elt.DereferenceOperations) > 0 && elt.DereferenceOperations[len(elt.DereferenceOperations)-1] == constants.DEREF_POINTER {
 		elt.DereferenceOperations = elt.DereferenceOperations[:len(elt.DereferenceOperations)-1]
 		return
 	}
 
-	if elt.IsSlicee() && len(elt.DereferenceOperations) > 0 && len(inp.Fields) == 0 {
+	if elt.IsSlice() && len(elt.DereferenceOperations) > 0 && len(inp.Fields) == 0 {
 		return
 		// elt.DereferenceOperations = append([]int{cxcore.DEREF_POINTER}, elt.DereferenceOperations...)
 	}
@@ -1471,7 +1502,7 @@ func ProcessSliceAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 		inp = expressionInputArg.GetAssignmentElement(prgrm)
 		out = expressionOutputArg.GetAssignmentElement(prgrm)
 
-		if inp.IsSlicee() && out.IsSlicee() && len(inp.Indexes) == 0 && len(out.Indexes) == 0 {
+		if inp.IsSlice() && out.IsSlice() && len(inp.Indexes) == 0 && len(out.Indexes) == 0 {
 			out.PassBy = constants.PASSBY_VALUE
 		}
 	}
@@ -1501,7 +1532,7 @@ func ProcessSliceAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 
 			// we want to pass by value if we're sending the slice as a whole (no indexing)
 			// unless it's a pointer to the slice
-			if assignElt.IsSlicee() && len(assignElt.Indexes) == 0 && !hasDeclSpec(assignElt, constants.DECL_POINTER) {
+			if assignElt.IsSlice() && len(assignElt.Indexes) == 0 && !hasDeclSpec(assignElt, constants.DECL_POINTER) {
 				assignElt.PassBy = constants.PASSBY_VALUE
 			}
 		}
@@ -2236,7 +2267,7 @@ func CopyArgFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast
 	// below (as in the `arg.IsSlice` check), but the process differs in the
 	// case of a slice struct field.
 	assignElement := sym.GetAssignmentElement(prgrm)
-	if (!arg.IsSlicee() || hasDerefOp(sym, constants.DEREF_ARRAY)) && arg.StructType != nil && assignElement.IsSlicee() && assignElement != sym {
+	if (!arg.IsSlice() || hasDerefOp(sym, constants.DEREF_ARRAY)) && arg.StructType != nil && assignElement.IsSlice() && assignElement != sym {
 		for i, deref := range assignElement.DereferenceOperations {
 			// The cxgo when reading `foo[5]` in postfix.go does not know if `foo`
 			// is a slice or an array. At this point we now know it's a slice and we need
@@ -2251,7 +2282,7 @@ func CopyArgFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast
 		}
 	}
 
-	if arg.IsSlicee() {
+	if arg.IsSlice() {
 		if !hasDerefOp(sym, constants.DEREF_ARRAY) {
 			// Then we're handling the slice itself, and we need to dereference it.
 			sym.DereferenceOperations = append([]int{constants.DEREF_POINTER}, sym.DereferenceOperations...)
@@ -2449,7 +2480,7 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignatur
 						nameField.DeclarationSpecifiers = field.DeclarationSpecifiers
 					}
 
-					if field.IsSlicee() {
+					if field.IsSlice() {
 						nameField.DereferenceOperations = append([]int{constants.DEREF_POINTER}, nameField.DereferenceOperations...)
 					}
 

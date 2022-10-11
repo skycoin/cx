@@ -266,7 +266,7 @@ func getNonCollectionValue(prgrm *CXProgram, fp types.Pointer, arg, elt *CXArgum
 	if arg.IsPointer() {
 		return fmt.Sprintf("%v", types.Read_ptr(prgrm.Memory, GetFinalOffset(prgrm, fp, elt, nil)))
 	}
-	if arg.IsSlicee() {
+	if arg.IsSlice() {
 		return fmt.Sprintf("%v", types.GetSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, fp, elt, nil), GetArgSize(prgrm, elt)))
 	}
 	switch typ {
@@ -461,7 +461,7 @@ func GetPrintableValue(prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSig
 			if len(elt.Lengths) == 1 {
 				val = "["
 
-				if arg.IsSlicee() {
+				if arg.IsSlice() {
 					// for slices
 					sliceOffset := GetSliceOffset(prgrm, fp, argTypeSig)
 

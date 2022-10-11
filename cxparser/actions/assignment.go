@@ -354,7 +354,7 @@ func shortDeclarationAssignment(prgrm *ast.CXProgram, pkg *ast.CXPackage, toExpr
 		if outTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			outTypeArg := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(outTypeSig.Meta))
 			outType := outTypeArg.Type
-			outTypeIsSlice := outTypeArg.IsSlicee()
+			outTypeIsSlice := outTypeArg.IsSlice()
 
 			sym = ast.MakeArgument(toExpressionOutputTypeSig.Name, CurrentFile, LineNo).SetType(outType)
 

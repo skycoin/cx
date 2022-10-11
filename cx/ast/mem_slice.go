@@ -27,7 +27,7 @@ func GetSliceOffset(prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSignat
 		arg := prgrm.GetCXArgFromArray(CXArgumentIndex(argTypeSig.Meta))
 		element = arg.GetAssignmentElement(prgrm)
 
-		if element.IsSlicee() {
+		if element.IsSlice() {
 			return types.Read_ptr(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, argTypeSig))
 		}
 	} else if argTypeSig.Type == TYPE_ATOMIC || argTypeSig.Type == TYPE_POINTER_ATOMIC {

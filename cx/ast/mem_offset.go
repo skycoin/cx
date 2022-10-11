@@ -370,7 +370,7 @@ func CalculateDereferences(prgrm *CXProgram, arg *CXArgument, finalOffset types.
 	if drfsStruct.finalOffset.IsValid() && drfsStruct.finalOffset >= prgrm.Heap.StartsAt && drfsStruct.isPointer {
 		// then it's an object
 		drfsStruct.finalOffset += types.OBJECT_HEADER_SIZE
-		if drfsStruct.arg.IsSlicee() {
+		if drfsStruct.arg.IsSlice() {
 			drfsStruct.finalOffset += constants.SLICE_HEADER_SIZE
 			if !IsValidSliceIndex(prgrm, drfsStruct.baseOffset, drfsStruct.finalOffset, drfsStruct.sizeofElement) {
 				panic(constants.CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)

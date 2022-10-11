@@ -90,7 +90,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 		// if offset is not valid, assign new offset
 		var glblArg *ast.CXArgument = &ast.CXArgument{}
 		if glbl.Offset < 0 || !glbl.Offset.IsValid() {
-			if declaration_specifiers.IsSlicee() { // TODO:PTR move branch in WritePrimary
+			if declaration_specifiers.IsSlice() { // TODO:PTR move branch in WritePrimary
 				glblArg = WritePrimary(prgrm, declaration_specifiers.Type,
 					make([]byte, types.POINTER_SIZE), true)
 			} else {
@@ -221,7 +221,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 	} else {
 		// then it hasn't been defined
 		var glblArg *ast.CXArgument = &ast.CXArgument{}
-		if declaration_specifiers.IsSlicee() { // TODO:PTR move branch in WritePrimary
+		if declaration_specifiers.IsSlice() { // TODO:PTR move branch in WritePrimary
 			glblArg = WritePrimary(prgrm, declaration_specifiers.Type, make([]byte, types.POINTER_SIZE), true)
 		} else {
 			glblArg = WritePrimary(prgrm, declaration_specifiers.Type, make([]byte, totalSize), false)
