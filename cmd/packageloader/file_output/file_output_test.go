@@ -41,7 +41,7 @@ func TestFile_Output_GetImportFiles(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			t.Error(string(files[0].Content))
+			t.Error(len(files))
 		})
 	}
 }

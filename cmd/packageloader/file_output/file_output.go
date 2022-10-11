@@ -5,6 +5,7 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/skycoin/cx/cx/ast"
 	cxinit "github.com/skycoin/cx/cx/init"
 	"github.com/skycoin/cx/cxparser/actions"
 
@@ -35,9 +36,6 @@ func GetImportFiles(packageName string, database string) (files []*loader.File, 
 			return files, err
 		}
 		packageStruct.UnmarshalBinary(packageBytes)
-		if err != nil {
-			return files, err
-		}
 
 		for _, fileString := range packageStruct.Files {
 
@@ -100,4 +98,33 @@ func GetStructBytes(structName string, database string) ([]byte, error) {
 		return listBytes, nil
 	}
 	return []byte{}, errors.New("invalid database")
+}
+
+func AddPkgsToAST(packageName string, database string) (err error) {
+	if actions.AST == nil {
+		actions.AST = cxinit.MakeProgram()
+	}
+
+	var packageList loader.PackageList
+	listBytes, err := GetStructBytes(packageName, database)
+	if err != nil {
+		return err
+	}
+	packageList.UnmarshalBinary(listBytes)
+
+	for _, packageString := range packageList.Packages {
+		var packageStruct loader.Package
+		packageBytes, err := GetStructBytes(packageString, database)
+		if err != nil {
+			return err
+		}
+		packageStruct.UnmarshalBinary(packageBytes)
+
+		if pkg, err := actions.AST.GetPackage(packageStruct.PackageName); err != nil {
+		pkg:
+			ast.MakePackage(packageStruct.PackageName)
+			pkgId := actions.AST.add
+		}
+	}
+	return nil
 }

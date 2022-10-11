@@ -1306,13 +1306,13 @@ func TestDeclarationExtractor_ExtractAllDeclarations(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
 
-			_, sourceCodes, _ := loader.ParseArgsForCX([]string{tc.testDir}, false)
-			err := loader.LoadCXProgram("test", sourceCodes, "bolt")
+			_, sourceCodes, _ := loader.ParseArgsForCX([]string{tc.testDir}, true)
+			err := loader.LoadCXProgram("mypkg1", sourceCodes, "bolt")
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			files, err := file_output.GetImportFiles("test", "bolt")
+			files, err := file_output.GetImportFiles("mypkg1", "bolt")
 			t.Error(len(files))
 			if err != nil {
 				t.Fatal(err)
