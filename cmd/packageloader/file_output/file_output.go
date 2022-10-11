@@ -3,8 +3,6 @@ package file_output
 import (
 	"bufio"
 	"errors"
-	"fmt"
-	"os"
 	"strings"
 
 	cxinit "github.com/skycoin/cx/cx/init"
@@ -17,7 +15,7 @@ import (
 
 // - Adds Imports to AST
 // - Returns Import Files
-func GetImportFiles(packageName string, database string) (files []*os.File, err error) {
+func GetImportFiles(packageName string, database string) (files []*loader.File, err error) {
 
 	if actions.AST == nil {
 		actions.AST = cxinit.MakeProgram()
@@ -50,21 +48,18 @@ func GetImportFiles(packageName string, database string) (files []*os.File, err 
 			}
 			fileStruct.UnmarshalBinary(fileBytes)
 
-			fmt.Print(fileStruct.FileName)
-
-			file, err := os.Open(fileStruct.FileName)
-			if err != nil {
-				return files, err
-			}
-
-			files = append(files, file)
+			files = append(files, &fileStruct)
 
 			scanner := bufio.NewScanner(strings.NewReader(string(fileStruct.Content)))
 			scanner.Split(bufio.ScanWords)
 
+			var lineno int
 			wordBefore := ""
 			for scanner.Scan() {
 
+				if strings.Contains(scanner.Text(), "\n") {
+					lineno++
+				}
 				if scanner.Text() != "import" {
 					wordBefore = scanner.Text()
 					continue
@@ -77,8 +72,9 @@ func GetImportFiles(packageName string, database string) (files []*os.File, err 
 					break
 				}
 				scanner.Scan()
-				importString := scanner.Text()[1 : len(scanner.Text())-1]
-				actions.DeclareImport(actions.AST, importString, fileString, 0)
+				// importString := scanner.Text()[1 : len(scanner.Text())-1]
+
+				// actions.DeclareImport(actions.AST, importString, fileStruct.FileName, lineno)
 				wordBefore = scanner.Text()
 			}
 

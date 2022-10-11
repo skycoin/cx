@@ -14,10 +14,16 @@ func TestFile_Output_GetImportFiles(t *testing.T) {
 		testDir     string
 		database    string
 	}{
+		// {
+		// 	scenario:    "Has Imports",
+		// 	programName: "tester",
+		// 	testDir:     "./test_files/test_valid_program",
+		// 	database:    "bolt",
+		// },
 		{
 			scenario:    "Has Imports",
 			programName: "tester",
-			testDir:     "./test_files/test_valid_program",
+			testDir:     "./test_files/test_tree",
 			database:    "bolt",
 		},
 	}
@@ -29,12 +35,13 @@ func TestFile_Output_GetImportFiles(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
+
 			files, err := file_output.GetImportFiles(tc.programName, tc.database)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			t.Error(files)
+			t.Error(string(files[0].Content))
 		})
 	}
 }
