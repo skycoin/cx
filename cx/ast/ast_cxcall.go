@@ -82,6 +82,8 @@ func wipeDeclarationMemory(prgrm *CXProgram, expr *CXExpression) error {
 		offset = cxAtomicOutputTypeSig.Offset
 	} else if cxAtomicOutputTypeSig.Type == TYPE_SLICE_ATOMIC {
 		offset = cxAtomicOutputTypeSig.Offset
+	} else if cxAtomicOutputTypeSig.Type == TYPE_POINTER_SLICE_ATOMIC {
+		offset = cxAtomicOutputTypeSig.Offset
 	} else {
 		panic("type is not known")
 	}
@@ -143,6 +145,9 @@ func processBuiltInOperators(prgrm *CXProgram, expr *CXExpression, globalInputs 
 		} else if inputTypeSignature.Type == TYPE_SLICE_ATOMIC {
 			sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(inputTypeSignature.Meta)
 			value.Type = types.Code(sliceDetails.Type)
+		} else if inputTypeSignature.Type == TYPE_POINTER_SLICE_ATOMIC {
+			sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(inputTypeSignature.Meta)
+			value.Type = types.Code(sliceDetails.Type)
 		}
 
 		value.FramePointer = fp
@@ -176,6 +181,9 @@ func processBuiltInOperators(prgrm *CXProgram, expr *CXExpression, globalInputs 
 			arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(outputTypeSignature.Meta)
 			value.Type = types.Code(arrDetails.Type)
 		} else if outputTypeSignature.Type == TYPE_SLICE_ATOMIC {
+			sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(outputTypeSignature.Meta)
+			value.Type = types.Code(sliceDetails.Type)
+		} else if outputTypeSignature.Type == TYPE_POINTER_SLICE_ATOMIC {
 			sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(outputTypeSignature.Meta)
 			value.Type = types.Code(sliceDetails.Type)
 		}
@@ -240,7 +248,6 @@ func processNonAtomicOperators(prgrm *CXProgram, expr *CXExpression, fp types.Po
 
 		finalOffset := GetFinalOffset(prgrm, fp, nil, input)
 		if input.PassBy == constants.PASSBY_REFERENCE || inp.PassBy == constants.PASSBY_REFERENCE {
-
 			// If we're referencing an inner element, like an element of a slice (&slc[0])
 			// or a field of a struct (&struct.fld) we no longer need to add
 			// the OBJECT_HEADER_SIZE to the offset
@@ -261,8 +268,6 @@ func processNonAtomicOperators(prgrm *CXProgram, expr *CXExpression, fp types.Po
 		types.WriteSlice_byte(
 			prgrm.Memory,
 			GetFinalOffset(prgrm, newFP, nil, newCallOperatorInputTypeSignature),
-			// newFP + newCall.Operator.ProgramInput[i].Offset,
-			// GetFinalOffset(prgrm.Memory, newFP, newCall.Operator.ProgramInput[i], MEM_WRITE),
 			byts)
 	}
 
