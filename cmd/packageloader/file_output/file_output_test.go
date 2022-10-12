@@ -9,21 +9,43 @@ import (
 )
 
 func TestFile_Output_GetImportFiles(t *testing.T) {
+
+	type pkg struct {
+		pkgName string
+		imports []string
+	}
 	tests := []struct {
 		scenario    string
 		programName string
 		testDir     string
 		database    string
-		files       []*loader.File
+		files       []loader.File
+		packages    []pkg
 	}{
 		{
 			scenario:    "Has Imports",
 			programName: "tester",
 			testDir:     "./test_files/test_valid_program",
 			database:    "bolt",
-			files: []*loader.File{
+			files: []loader.File{
 				{
-					FileName: "",
+					FileName: "testimport.cx",
+				},
+				{
+					FileName: "testfile.cx",
+				},
+				{
+					FileName: "testfile.cx",
+				},
+			},
+			packages: []pkg{
+				{
+					pkgName: "main",
+					imports: []string{
+						"os",
+						"testimport1",
+						"testimport2",
+					},
 				},
 			},
 		},
@@ -32,6 +54,23 @@ func TestFile_Output_GetImportFiles(t *testing.T) {
 			programName: "tester",
 			testDir:     "./test_files/test_tree",
 			database:    "bolt",
+			files: []loader.File{
+				{
+					FileName: "testimport1file1.cx",
+				},
+				{
+					FileName: "testimport1file2.cx",
+				},
+				{
+					FileName: "testimport2file.cx",
+				},
+				{
+					FileName: "testimport3file1.cx",
+				},
+				{
+					FileName: "testmain.cx",
+				},
+			},
 		},
 	}
 
@@ -56,7 +95,58 @@ func TestFile_Output_GetImportFiles(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			t.Error(files)
+			for _, wantFile := range tc.files {
+				var match bool
+				var wantFileName string = wantFile.FileName
+				var gotFileName string
+				for _, gotFile := range files {
+					gotFileName = gotFile.FileName
+					if gotFileName == wantFileName {
+						match = true
+						break
+					}
+				}
+
+				if !match {
+					t.Errorf("want file %s, got %s", wantFileName, gotFileName)
+				}
+			}
+
+			for _, wantPackage := range tc.packages {
+				var match bool
+				var wantPackageName string = wantPackage.pkgName
+				var gotPackageName string
+
+				for _, gotPackageIdx := range actions.AST.Packages {
+					gotPackage, err := actions.AST.GetPackageFromArray(gotPackageIdx)
+					if err != nil {
+						t.Fatal(err)
+					}
+					gotPackageName = gotPackage.Name
+					if gotPackageName == wantPackageName {
+						match = true
+
+						for _, wantImport := range wantPackage.imports {
+							var impMatch bool
+							var gotImpName string
+							for _, gotImportIdx := range gotPackage.Imports {
+								impPkg, err := prgrm.GetPackageFromArray(impIdx)
+								if err != nil {
+									t.Fatal(err)
+								}
+								*ast += fmt.Sprintf("\t\t%d.- Import: %s\n", count, impPkg.Name)								if gotImpor == wantImport {
+								
+							}
+						}
+	
+						break
+					}
+				}
+
+				if !match {
+					t.Errorf("want package %s, got %s", wantPackageName, gotPackageName)
+				}
+			}
 
 		})
 	}
