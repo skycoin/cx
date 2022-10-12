@@ -18,10 +18,6 @@ import (
 // - Returns Import Files
 func GetImportFiles(packageName string, database string) (files []*loader.File, err error) {
 
-	if actions.AST == nil {
-		actions.AST = cxinit.MakeProgram()
-	}
-
 	var packageList loader.PackageList
 	listBytes, err := GetStructBytes(packageName, database)
 	if err != nil {
@@ -36,6 +32,8 @@ func GetImportFiles(packageName string, database string) (files []*loader.File, 
 			return files, err
 		}
 		packageStruct.UnmarshalBinary(packageBytes)
+
+		actions.AST.SelectPackage(packageStruct.PackageName)
 
 		for _, fileString := range packageStruct.Files {
 
@@ -70,9 +68,9 @@ func GetImportFiles(packageName string, database string) (files []*loader.File, 
 					break
 				}
 				scanner.Scan()
-				// importString := scanner.Text()[1 : len(scanner.Text())-1]
+				importString := scanner.Text()[1 : len(scanner.Text())-1]
 
-				// actions.DeclareImport(actions.AST, importString, fileStruct.FileName, lineno)
+				actions.DeclareImport(actions.AST, importString, fileStruct.FileName, lineno)
 				wordBefore = scanner.Text()
 			}
 
@@ -121,9 +119,12 @@ func AddPkgsToAST(packageName string, database string) (err error) {
 		packageStruct.UnmarshalBinary(packageBytes)
 
 		if pkg, err := actions.AST.GetPackage(packageStruct.PackageName); err != nil {
-		pkg:
-			ast.MakePackage(packageStruct.PackageName)
-			pkgId := actions.AST.add
+			pkg = ast.MakePackage(packageStruct.PackageName)
+			pkgIdx := actions.AST.AddPackage(pkg)
+			pkg, err = actions.AST.GetPackageFromArray(pkgIdx)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil
