@@ -353,9 +353,16 @@ func GetCXTypeSignatureRepresentationOfCXArg_ForStructs(prgrm *CXProgram, cxArgu
 		newCXTypeSignature.Meta = typeSignatureForArrayIdx
 	} else if IsTypeStruct(cxArgument) {
 		// If type is struct
-
 		newCXTypeSignature.Type = TYPE_STRUCT
-		newCXTypeSignature.Meta = cxArgument.StructType.Index
+
+		typeSignatureForStruct := &CXTypeSignature_Struct{
+			Fields:     cxArgument.Fields,
+			StructType: cxArgument.StructType,
+		}
+
+		typeSignatureForStructIdx := prgrm.AddCXTypeSignatureStructInArray(typeSignatureForStruct)
+
+		newCXTypeSignature.Meta = typeSignatureForStructIdx
 	} else {
 		fldIdx := prgrm.AddCXArgInArray(cxArgument)
 
@@ -442,6 +449,18 @@ func GetCXTypeSignatureRepresentationOfCXArg(prgrm *CXProgram, cxArgument *CXArg
 		typeSignatureForArrayIdx := prgrm.AddCXTypeSignatureArrayInArray(typeSignatureForArray)
 
 		newCXTypeSignature.Meta = typeSignatureForArrayIdx
+	} else if IsTypeStruct(cxArgument) {
+		// If type is struct
+		newCXTypeSignature.Type = TYPE_STRUCT
+
+		typeSignatureForStruct := &CXTypeSignature_Struct{
+			Fields:     cxArgument.Fields,
+			StructType: cxArgument.StructType,
+		}
+
+		typeSignatureForStructIdx := prgrm.AddCXTypeSignatureStructInArray(typeSignatureForStruct)
+
+		newCXTypeSignature.Meta = typeSignatureForStructIdx
 	} else {
 		// TYPE_CXARGUMENT_DEPRECATE
 		// FieldIdx or the CXArg ID is in Meta field.
