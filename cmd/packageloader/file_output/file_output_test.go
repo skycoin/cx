@@ -55,7 +55,7 @@ func TestFile_Output_GetImportFiles(t *testing.T) {
 			scenario:    "Has Imports",
 			programName: "tester",
 			testDir:     "./test_files/test_tree",
-			database:    "bolt",
+			database:    "redis",
 			files: []loader.File{
 				{
 					FileName: "testimport1file1.cx",
@@ -205,7 +205,7 @@ func TestFile_Output_AddPkgsToAST(t *testing.T) {
 			scenario:    "Has Packages",
 			testDir:     "./test_files/test_valid_program",
 			programName: "MyPkg",
-			database:    "bolt",
+			database:    "redis",
 			packages: []string{
 				"main",
 				"testimport",

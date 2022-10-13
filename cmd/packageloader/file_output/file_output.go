@@ -16,8 +16,11 @@ import (
 
 // - Adds Imports to AST
 // - Returns Import Files
+// - Packages must be added to AST first or an error will occur
+// - Call AddPkgsToAST before calling this function
 func GetImportFiles(packageName string, database string) (files []*loader.File, err error) {
 
+	// Get package list
 	var packageList loader.PackageList
 	listBytes, err := GetStructBytes(packageName, database)
 	if err != nil {
@@ -26,6 +29,8 @@ func GetImportFiles(packageName string, database string) (files []*loader.File, 
 	packageList.UnmarshalBinary(listBytes)
 
 	for _, packageString := range packageList.Packages {
+
+		//  Get package struct
 		var packageStruct loader.Package
 		packageBytes, err := GetStructBytes(packageString, database)
 		if err != nil {
@@ -33,10 +38,12 @@ func GetImportFiles(packageName string, database string) (files []*loader.File, 
 		}
 		packageStruct.UnmarshalBinary(packageBytes)
 
+		// Select package to add imports to
 		actions.AST.SelectPackage(packageStruct.PackageName)
 
 		for _, fileString := range packageStruct.Files {
 
+			// Get file struct
 			var fileStruct loader.File
 			fileBytes, err := GetStructBytes(fileString, database)
 			if err != nil {
@@ -44,6 +51,7 @@ func GetImportFiles(packageName string, database string) (files []*loader.File, 
 			}
 			fileStruct.UnmarshalBinary(fileBytes)
 
+			// Add file struct to array
 			files = append(files, &fileStruct)
 
 			scanner := bufio.NewScanner(strings.NewReader(string(fileStruct.Content)))
@@ -70,6 +78,7 @@ func GetImportFiles(packageName string, database string) (files []*loader.File, 
 				scanner.Scan()
 				importString := scanner.Text()[1 : len(scanner.Text())-1]
 
+				// Declare Import
 				actions.DeclareImport(actions.AST, importString, fileStruct.FileName, lineno)
 				wordBefore = scanner.Text()
 			}
@@ -98,7 +107,9 @@ func GetStructBytes(structName string, database string) ([]byte, error) {
 	return []byte{}, errors.New("invalid database")
 }
 
+// Add packages to AST
 func AddPkgsToAST(packageName string, database string) (err error) {
+	// If there's no AST
 	if actions.AST == nil {
 		actions.AST = cxinit.MakeProgram()
 	}
@@ -118,6 +129,7 @@ func AddPkgsToAST(packageName string, database string) (err error) {
 		}
 		packageStruct.UnmarshalBinary(packageBytes)
 
+		// Adds package if not in AST
 		if pkg, err := actions.AST.GetPackage(packageStruct.PackageName); err != nil {
 			pkg = ast.MakePackage(packageStruct.PackageName)
 			pkgIdx := actions.AST.AddPackage(pkg)
