@@ -19,21 +19,24 @@ func ParseParameterDeclaration(parameterString []byte, pkg *ast.CXPackage, fileN
 	reParameterDeclaration := regexp.MustCompile(`(\w+)\s+(.+)`)
 	parameterDeclarationTokens := reParameterDeclaration.FindSubmatch(parameterString)
 
+	// Check if the tokenized result is empty
 	if parameterDeclarationTokens == nil || len(parameterDeclarationTokens[0]) == 0 {
 		return nil, fmt.Errorf("%s: %d: parameter declaration error", filepath.Base(fileName), lineno)
 	}
 
+	// Set the declarator or the name of the param
 	declarator := ast.MakeArgument("", fileName, lineno)
 	declarator.SetType(types.UNDEFINED)
 	declarator.Package = ast.CXPackageIndex(pkg.Index)
 	declarator.Name = string(parameterDeclarationTokens[1])
 
+	//Set the decalaration type
 	parameterDeclaration, err := ParseDeclarationSpecifier(parameterDeclarationTokens[2], fileName, lineno, parameterDeclaration)
-
 	if err != nil {
 		return nil, err
 	}
 
+	// Merge both CXArgs
 	parameterDeclaration.Name = declarator.Name
 	parameterDeclaration.Package = declarator.Package
 

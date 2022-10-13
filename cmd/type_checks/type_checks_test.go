@@ -895,20 +895,54 @@ func TestTypeChecks_ParseAllDeclarations(t *testing.T) {
 			testDir:  "./test_files/ParseAllDeclarations/HasImports",
 			wantProgram: []Package{
 				{
-					Name:    "main",
-					Globals: []Global{},
+					Name: "main",
+					Globals: []Global{
+						{
+							Name: "dog",
+							Type: "Animal",
+						},
+					},
 					Structs: []Struct{},
-					Funcs:   []Func{},
+					Funcs: []Func{
+						{
+							Name: "main",
+						},
+					},
 				},
 				{
 					Name:    "helper",
 					Globals: []Global{},
-					Structs: []Struct{},
-					Funcs:   []Func{},
+					Structs: []Struct{
+						{
+							Name: "Animal",
+							Fields: []StructField{
+								{
+									Name: "sound",
+									Type: "str",
+								},
+							},
+						},
+					},
+					Funcs: []Func{
+						{
+							Name:         "Speak",
+							RecieverName: "a",
+							RecieverType: "Animal",
+						},
+					},
 				},
 				{
-					Name:    "config",
-					Globals: []Global{},
+					Name: "config",
+					Globals: []Global{
+						{
+							Name: "Name",
+							Type: "str",
+						},
+						{
+							Name: "Apple",
+							Type: "i32",
+						},
+					},
 					Structs: []Struct{},
 					Funcs:   []Func{},
 				},
@@ -923,7 +957,7 @@ func TestTypeChecks_ParseAllDeclarations(t *testing.T) {
 
 			_, files, _ := loader.ParseArgsForCX([]string{tc.testDir}, false)
 
-			err := loader.LoadCXProgram("test", files, "redis")
+			err := loader.LoadCXProgram("test", files, "bolt")
 			if err != nil {
 				t.Fatal(err)
 			}
