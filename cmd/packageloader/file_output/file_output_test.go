@@ -1,6 +1,7 @@
 package file_output_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/skycoin/cx/cmd/packageloader/file_output"
@@ -40,11 +41,12 @@ func TestFile_Output_GetImportFiles(t *testing.T) {
 			},
 			packages: []pkg{
 				{
+					pkgName: "testimport",
+				},
+				{
 					pkgName: "main",
 					imports: []string{
-						"os",
-						"testimport1",
-						"testimport2",
+						"testimport",
 					},
 				},
 			},
@@ -69,6 +71,35 @@ func TestFile_Output_GetImportFiles(t *testing.T) {
 				},
 				{
 					FileName: "testmain.cx",
+				},
+			},
+			packages: []pkg{
+				{
+					pkgName: "main",
+					imports: []string{
+						"os",
+						"testimport1",
+						"testimport2",
+					},
+				},
+				{
+					pkgName: "testimport1",
+					imports: []string{
+						"gl",
+					},
+				},
+				{
+					pkgName: "testimport2",
+					imports: []string{
+						"testimport1",
+						"testimport3",
+					},
+				},
+				{
+					pkgName: "testimport3",
+					imports: []string{
+						"testimport1",
+					},
 				},
 			},
 		},
@@ -116,6 +147,7 @@ func TestFile_Output_GetImportFiles(t *testing.T) {
 				var match bool
 				var wantPackageName string = wantPackage.pkgName
 				var gotPackageName string
+				var imports string
 
 				for _, gotPackageIdx := range actions.AST.Packages {
 					gotPackage, err := actions.AST.GetPackageFromArray(gotPackageIdx)
@@ -124,27 +156,36 @@ func TestFile_Output_GetImportFiles(t *testing.T) {
 					}
 					gotPackageName = gotPackage.Name
 					if gotPackageName == wantPackageName {
-						match = true
+
+						var impMatch int
 
 						for _, wantImport := range wantPackage.imports {
-							var impMatch bool
 							var gotImpName string
 							for _, gotImportIdx := range gotPackage.Imports {
-								impPkg, err := prgrm.GetPackageFromArray(impIdx)
+								gotImport, err := actions.AST.GetPackageFromArray(gotImportIdx)
 								if err != nil {
 									t.Fatal(err)
 								}
-								*ast += fmt.Sprintf("\t\t%d.- Import: %s\n", count, impPkg.Name)								if gotImpor == wantImport {
-								
+								gotImpName = gotImport.Name
+								if gotImpName == wantImport {
+									impMatch++
+									break
+								}
 							}
+
+							imports += fmt.Sprintf("want import %s, got %s\n", wantImport, gotImpName)
 						}
-	
+
+						if impMatch == len(wantPackage.imports) {
+							match = true
+						}
 						break
 					}
+
 				}
 
 				if !match {
-					t.Errorf("want package %s, got %s", wantPackageName, gotPackageName)
+					t.Errorf("want package %s, got %s\n%s", wantPackageName, gotPackageName, imports)
 				}
 			}
 
