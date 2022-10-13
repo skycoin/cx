@@ -11,6 +11,7 @@ import (
 	"github.com/skycoin/cx/cmd/declaration_extractor"
 	"github.com/skycoin/cx/cmd/packageloader/file_output"
 	"github.com/skycoin/cx/cmd/packageloader/loader"
+	"github.com/skycoin/cx/cxparser/actions"
 )
 
 //Sets the offset for windows or other os
@@ -1214,7 +1215,7 @@ func TestDeclarationExtractor_ExtractAllDeclarations(t *testing.T) {
 	}{
 		{
 			scenario:            "Single file",
-			testDir:             "./test_files/ExtractAllDeclarations",
+			testDir:             "./test_files/ExtractAllDeclarations/SingleFile",
 			wantGlobals:         2,
 			wantEnums:           3,
 			wantTypeDefinitions: 1,
@@ -1306,14 +1307,20 @@ func TestDeclarationExtractor_ExtractAllDeclarations(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
 
+			actions.AST = nil
+
 			_, sourceCodes, _ := loader.ParseArgsForCX([]string{tc.testDir}, true)
 			err := loader.LoadCXProgram("mypkg1", sourceCodes, "bolt")
 			if err != nil {
 				t.Fatal(err)
 			}
 
+			err = file_output.AddPkgsToAST("mypkg1", "bolt")
+			if err != nil {
+				t.Fatal(err)
+			}
+
 			files, err := file_output.GetImportFiles("mypkg1", "bolt")
-			t.Error(len(files))
 			if err != nil {
 				t.Fatal(err)
 			}
