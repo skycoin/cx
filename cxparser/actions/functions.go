@@ -641,6 +641,8 @@ func ProcessPointerStructs(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 			continue
 		} else if argTypeSig.Type == ast.TYPE_POINTER_SLICE_ATOMIC {
 			continue
+		} else if argTypeSig.Type == ast.TYPE_STRUCT {
+			continue
 		} else {
 			panic("type is not known")
 		}
@@ -1134,6 +1136,28 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) {
 			} else if expressionInputTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
 				sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(expressionInputTypeSig.Meta)
 				receivedType = types.Code(sliceDetails.Meta).Name()
+			} else if expressionInputTypeSig.Type == ast.TYPE_STRUCT {
+				structDetails := prgrm.GetCXTypeSignatureStructFromArray(expressionInputTypeSig.Meta)
+				fldsLen := len(structDetails.Fields)
+				if fldsLen > 0 {
+					fldIdx := structDetails.Fields[fldsLen-1]
+					fld := prgrm.GetCXArgFromArray(fldIdx)
+					elt := fld.GetAssignmentElement(prgrm)
+
+					if elt.StructType != nil {
+						// then it's custom type
+						receivedType = elt.StructType.Name
+					} else {
+						// then it's native type
+						receivedType = elt.Type.Name()
+
+						if elt.Type == types.POINTER {
+							receivedType = elt.PointerTargetType.Name()
+						}
+					}
+				} else {
+					receivedType = structDetails.StructType.Name
+				}
 			} else {
 				panic("type is not known")
 			}
@@ -1167,6 +1191,28 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) {
 			} else if expressionOutputTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
 				arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(expressionOutputTypeSig.Meta)
 				expectedType = types.Code(arrDetails.Meta).Name()
+			} else if expressionOutputTypeSig.Type == ast.TYPE_STRUCT {
+				structDetails := prgrm.GetCXTypeSignatureStructFromArray(expressionOutputTypeSig.Meta)
+				fldsLen := len(structDetails.Fields)
+				if fldsLen > 0 {
+					fldIdx := structDetails.Fields[fldsLen-1]
+					fld := prgrm.GetCXArgFromArray(fldIdx)
+					elt := fld.GetAssignmentElement(prgrm)
+
+					if elt.StructType != nil {
+						// then it's custom type
+						expectedType = elt.StructType.Name
+					} else {
+						// then it's native type
+						expectedType = elt.Type.Name()
+
+						if elt.Type == types.POINTER {
+							expectedType = elt.PointerTargetType.Name()
+						}
+					}
+				} else {
+					expectedType = structDetails.StructType.Name
+				}
 			} else {
 				panic("type is not known")
 			}
@@ -1223,6 +1269,8 @@ func ProcessStringAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 			} else if output.Type == ast.TYPE_POINTER_ARRAY_ATOMIC {
 				continue
 			} else if output.Type == ast.TYPE_SLICE_ATOMIC {
+				continue
+			} else if output.Type == ast.TYPE_STRUCT {
 				continue
 			} else {
 				panic("type is not known")
@@ -1547,7 +1595,7 @@ func lookupSymbol(prgrm *ast.CXProgram, pkgName, ident string, symbolsData *Symb
 }
 
 // UpdateSymbolsTable adds `sym` to the innermost scope (last element of slice) in `symbols`.
-func UpdateSymbolsTable(prgrm *ast.CXProgram, symbolsData *SymbolsData, typeSigIdx ast.CXTypeSignatureIndex, offset *types.Pointer, shouldExist bool) {
+func UpdateSymbolsTable(prgrm *ast.CXProgram, symbolsData *SymbolsData, typeSigIdx ast.CXTypeSignatureIndex, offset *types.Pointer, shouldAlreadyExist bool) {
 	typeSig := prgrm.GetCXTypeSignatureFromArray(typeSigIdx)
 
 	var sym *ast.CXArgument = &ast.CXArgument{}
@@ -1585,7 +1633,7 @@ func UpdateSymbolsTable(prgrm *ast.CXProgram, symbolsData *SymbolsData, typeSigI
 		_, found := (symbolsData.symbolsIndex)[lastIdx][fullName]
 
 		// then it wasn't found in any scope
-		if err != nil && shouldExist {
+		if err != nil && shouldAlreadyExist {
 			// println(ast.CompilationError(sym.ArgDetails.FileName, sym.ArgDetails.FileLine), "identifier '"+typeSig.Name+"' does not exist")
 			println(ast.CompilationError("", 0), "identifier '"+typeSig.Name+"' does not exist")
 		}
@@ -1596,7 +1644,7 @@ func UpdateSymbolsTable(prgrm *ast.CXProgram, symbolsData *SymbolsData, typeSigI
 		}
 
 		// then it is a new declaration
-		if !shouldExist && !found {
+		if !shouldAlreadyExist && !found {
 			// We remove it from local var array since it is already added to the symbols
 			err := currFn.RemoveLocalVariableFromArray(typeSig.Name)
 			if err != nil {
@@ -2118,6 +2166,21 @@ func CopyArgFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast
 		}
 
 		return
+	} else if sym != nil && arg == nil && argTypeSignature.Type == ast.TYPE_STRUCT {
+		structDetails := prgrm.GetCXTypeSignatureStructFromArray(argTypeSignature.Meta)
+
+		newStructDetails := *structDetails
+		newStructDetails.Fields = sym.Fields
+		newStructDetailsIdx := prgrm.AddCXTypeSignatureStructInArray(&newStructDetails)
+
+		symTypeSignature.Name = argTypeSignature.Name
+		symTypeSignature.Package = argTypeSignature.Package
+		symTypeSignature.Type = argTypeSignature.Type
+		symTypeSignature.Meta = newStructDetailsIdx
+		symTypeSignature.Offset = argTypeSignature.Offset
+		symTypeSignature.PassBy = sym.PassBy
+
+		return
 	} else if sym != nil && arg == nil && (len(sym.DeclarationSpecifiers) > 1 || len(sym.DereferenceOperations) > 1) {
 		sym.Name = argTypeSignature.Name
 		sym.Package = argTypeSignature.Package
@@ -2283,9 +2346,13 @@ func CopyArgFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast
 
 // ProcessSymbolFields copies the correct field values for the sym.Fields from their struct fields.
 func ProcessSymbolFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast.CXTypeSignature) {
-	var arg *ast.CXArgument = &ast.CXArgument{}
+	var argStructType *ast.CXStruct
 	if argTypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-		arg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(argTypeSignature.Meta))
+		arg := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(argTypeSignature.Meta))
+		argStructType = arg.StructType
+	} else if argTypeSignature.Type == ast.TYPE_STRUCT {
+		structDetails := prgrm.GetCXTypeSignatureStructFromArray(argTypeSignature.Meta)
+		argStructType = structDetails.StructType
 	} else {
 		// panic("type is type cxargument deprecate\n\n")
 		// ProcessSymbolFields is only needed for struct types
@@ -2294,8 +2361,13 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignatur
 	}
 
 	var sym *ast.CXArgument = &ast.CXArgument{}
+	var symFields []ast.CXArgumentIndex
 	if symTypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 		sym = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(symTypeSignature.Meta))
+		symFields = sym.Fields
+	} else if symTypeSignature.Type == ast.TYPE_STRUCT {
+		symStructDetails := prgrm.GetCXTypeSignatureStructFromArray(symTypeSignature.Meta)
+		symFields = symStructDetails.Fields
 	} else {
 		// panic("type is type cxargument deprecate\n\n")
 		// ProcessSymbolFields is only needed for struct types
@@ -2303,21 +2375,21 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignatur
 		return
 	}
 
-	if len(sym.Fields) > 0 {
-		if arg.StructType == nil || len(arg.StructType.Fields) == 0 {
-			println(ast.CompilationError(sym.ArgDetails.FileName, sym.ArgDetails.FileLine), fmt.Sprintf("'%s' has no fields", sym.Name))
+	if len(symFields) > 0 {
+		if argStructType == nil || len(argStructType.Fields) == 0 {
+			println(ast.CompilationError(sym.ArgDetails.FileName, sym.ArgDetails.FileLine), fmt.Sprintf("'%s' has no fields", symTypeSignature.Name))
 			return
 		}
 
 		// checking if fields do exist in their StructType
 		// and assigning that StructType to the sym.Field
-		strct := arg.StructType
+		strct := argStructType
 		strctPkg, err := prgrm.GetPackageFromArray(strct.Package)
 		if err != nil {
 			panic(err)
 		}
 
-		for _, fldIdx := range sym.Fields {
+		for _, fldIdx := range symFields {
 			field := prgrm.GetCXArgFromArray(fldIdx)
 			if inFld, err := strct.GetField(prgrm, field.Name); err == nil {
 				if inFld.StructType != nil {
@@ -2325,7 +2397,7 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignatur
 					strct = inFld.StructType
 				}
 			} else {
-				methodName := prgrm.GetCXArgFromArray(sym.Fields[len(sym.Fields)-1]).Name
+				methodName := prgrm.GetCXArgFromArray(symFields[len(symFields)-1]).Name
 				receiverType := strct.Name
 
 				if methodIdx, methodErr := strctPkg.GetMethod(prgrm, receiverType+"."+methodName, receiverType); methodErr == nil {
@@ -2348,10 +2420,10 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignatur
 			}
 		}
 
-		strct = arg.StructType
+		strct = argStructType
 		// then we copy all the type struct fields
-		// to the respective sym.Fields
-		for _, nameFldIdx := range sym.Fields {
+		// to the respective symFields
+		for _, nameFldIdx := range symFields {
 			nameField := prgrm.GetCXArgFromArray(nameFldIdx)
 			if nameField.StructType != nil {
 				strct = nameField.StructType
