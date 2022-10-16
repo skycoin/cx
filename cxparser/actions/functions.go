@@ -275,6 +275,11 @@ func ProcessTypedOperator(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 			atomicType = types.Code(expressionInputTypeSig.Meta)
 		} else if expressionInputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 			atomicType = types.Code(expressionInputTypeSig.Meta)
+		} else if expressionInputTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
+			sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(expressionInputTypeSig.Meta)
+			atomicType = types.Code(sliceDetails.Type)
+		} else {
+			panic("type is not known")
 		}
 
 		typedOp := ast.GetTypedOperator(atomicType, expressionOperator.AtomicOPCode)
@@ -512,6 +517,11 @@ func checkSameNativeType(prgrm *ast.CXProgram, expr *ast.CXExpression) error {
 		typeCode = types.Code(expressionInputTypeSig.Meta)
 	} else if expressionInputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 		typeCode = types.Code(expressionInputTypeSig.Meta)
+	} else if expressionInputTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
+		sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(expressionInputTypeSig.Meta)
+		typeCode = types.Code(sliceDetails.Type)
+	} else {
+		panic("type is not known")
 	}
 
 	for _, inputIdx := range expression.GetInputs(prgrm) {
@@ -529,6 +539,14 @@ func checkSameNativeType(prgrm *ast.CXProgram, expr *ast.CXExpression) error {
 			inpType = types.Code(input.Meta)
 		} else if input.Type == ast.TYPE_POINTER_ATOMIC {
 			inpType = types.Code(input.Meta)
+		} else if input.Type == ast.TYPE_ARRAY_ATOMIC {
+			arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(input.Meta)
+			inpType = types.Code(arrDetails.Type)
+		} else if input.Type == ast.TYPE_SLICE_ATOMIC {
+			sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(input.Meta)
+			inpType = types.Code(sliceDetails.Type)
+		} else {
+			panic("type is not known")
 		}
 
 		if inpType != typeCode {
@@ -581,7 +599,11 @@ func ProcessOperatorExpression(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 					} else if expressionInputTypeSig.Type == ast.TYPE_ATOMIC {
 						size = expressionInputTypeSig.GetSize(prgrm)
 					} else if expressionInputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
-						size = expressionInputTypeSig.GetSize(prgrm)
+						size = expressionInputTypeSig.GetSize(prgrm, false)
+					} else if expressionInputTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
+						size = expressionInputTypeSig.GetSize(prgrm, false)
+					} else {
+						panic("type is not known")
 					}
 				}
 
@@ -612,8 +634,17 @@ func ProcessPointerStructs(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 		if argTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			arg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(argTypeSig.Meta))
 		} else if argTypeSig.Type == ast.TYPE_ATOMIC || argTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
-			// panic("type is not type cx argument deprecate\n\n")
 			continue
+		} else if argTypeSig.Type == ast.TYPE_ARRAY_ATOMIC {
+			continue
+		} else if argTypeSig.Type == ast.TYPE_POINTER_ARRAY_ATOMIC {
+			continue
+		} else if argTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
+			continue
+		} else if argTypeSig.Type == ast.TYPE_POINTER_SLICE_ATOMIC {
+			continue
+		} else {
+			panic("type is not known")
 		}
 
 		for _, fldIdx := range arg.Fields {
@@ -1013,12 +1044,17 @@ func checkMatchParamTypes(prgrm *ast.CXProgram, expr *ast.CXExpression, expected
 				if expressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 					expressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionOutputTypeSig.Meta))
 				} else if expressionOutputTypeSig.Type == ast.TYPE_ATOMIC {
-					// expressionOutputArg = &ast.CXArgument{ArgDetails: &ast.CXArgumentDebug{}}
+					// do nothing
 				} else if expressionOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
-					// expressionOutputArg = &ast.CXArgument{ArgDetails: &ast.CXArgumentDebug{}}
+					// do nothing
+				} else if expressionOutputTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
+					// do nothing
+				} else {
+					panic("type is not known")
 				}
 
 				println(ast.CompilationError(expressionOutputArg.ArgDetails.FileName, expressionOutputArg.ArgDetails.FileLine), fmt.Sprintf("function '%s' expected receiving variable of type '%s'; '%s' was provided", opName, expectedType, receivedType))
+
 			}
 
 		}
@@ -1159,6 +1195,14 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) {
 				receivedType = types.Code(expressionInputTypeSig.Meta).Name()
 			} else if expressionInputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 				receivedType = types.Code(expressionInputTypeSig.Meta).Name()
+			} else if expressionInputTypeSig.Type == ast.TYPE_ARRAY_ATOMIC {
+				arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(expressionInputTypeSig.Meta)
+				receivedType = types.Code(arrDetails.Type).Name()
+			} else if expressionInputTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
+				sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(expressionInputTypeSig.Meta)
+				receivedType = types.Code(sliceDetails.Type).Name()
+			} else {
+				panic("type is not known")
 			}
 
 			expressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetOutputs(prgrm)[i])
@@ -1189,7 +1233,18 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) {
 			} else if expressionOutputTypeSig.Type == ast.TYPE_ATOMIC || expressionOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 				// panic("type is not cx argument deprecate\n\n")
 				expectedType = types.Code(expressionOutputTypeSig.Meta).Name()
-
+			} else if expressionOutputTypeSig.Type == ast.TYPE_ARRAY_ATOMIC {
+				arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(expressionOutputTypeSig.Meta)
+				expectedType = types.Code(arrDetails.Type).Name()
+			} else if expressionOutputTypeSig.Type == ast.TYPE_POINTER_ARRAY_ATOMIC {
+				arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(expressionOutputTypeSig.Meta)
+				expectedType = types.Code(arrDetails.Type).Name()
+			} else if expressionOutputTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
+				arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(expressionOutputTypeSig.Meta)
+				expectedType = types.Code(arrDetails.Type).Name()
+			} else {
+				panic("type is not known")
+			}
 				if receivedType != expectedType {
 					// println(ast.CompilationError(expressionOutputArg.ArgDetails.FileName, expressionOutputArg.ArgDetails.FileLine), fmt.Sprintf("trying to assign argument of type '%s' to symbol '%s' of type '%s'", receivedType, expressionOutputTypeSig.Name, expectedType))
 					println(ast.CompilationError("", 0), fmt.Sprintf("trying to assign argument of type '%s' to symbol '%s' of type '%s'", receivedType, expressionOutputTypeSig.Name, expectedType))
@@ -1236,6 +1291,12 @@ func ProcessStringAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 				continue
 			} else if output.Type == ast.TYPE_POINTER_ATOMIC {
 				continue
+			} else if output.Type == ast.TYPE_ARRAY_ATOMIC {
+				continue
+			} else if output.Type == ast.TYPE_POINTER_ARRAY_ATOMIC {
+				continue
+			} else if output.Type == ast.TYPE_SLICE_ATOMIC {
+				continue
 			} else {
 				panic("type is not type cx argument deprecate nor type atomic\n\n")
 			}
@@ -1248,6 +1309,12 @@ func ProcessStringAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 				} else if expressionInputTypeSig.Type == ast.TYPE_ATOMIC {
 					continue
 				} else if expressionInputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
+					continue
+				} else if expressionInputTypeSig.Type == ast.TYPE_ARRAY_ATOMIC {
+					continue
+				} else if expressionInputTypeSig.Type == ast.TYPE_POINTER_ARRAY_ATOMIC {
+					continue
+				} else if expressionInputTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
 					continue
 				} else {
 					panic("type is not type cx argument deprecate nor type atomic\n\n")
@@ -1352,7 +1419,16 @@ func ProcessShortDeclaration(prgrm *ast.CXProgram, expr *ast.CXExpression, expre
 			} else if expressionInputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 				argType = types.Code(expressionInputTypeSig.Meta)
 				argSize = types.Code(expressionInputTypeSig.Meta).Size()
-				argTotalSize = types.Code(expressionInputTypeSig.Meta).Size()
+			} else if expressionInputTypeSig.Type == ast.TYPE_ARRAY_ATOMIC {
+				arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(expressionInputTypeSig.Meta)
+				argType = types.Code(arrDetails.Type)
+				argSize = types.Code(arrDetails.Type).Size()
+			} else if expressionInputTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
+				sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(expressionInputTypeSig.Meta)
+				argType = types.Code(sliceDetails.Type)
+				argSize = types.Code(sliceDetails.Type).Size()
+			} else {
+				panic("type is not known")
 			}
 		}
 
@@ -1369,6 +1445,16 @@ func ProcessShortDeclaration(prgrm *ast.CXProgram, expr *ast.CXExpression, expre
 			prevExpressionOutputTypeSig.Meta = int(argType)
 		} else if prevExpressionOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 			prevExpressionOutputTypeSig.Meta = int(argType)
+		} else if prevExpressionOutputTypeSig.Type == ast.TYPE_ARRAY_ATOMIC {
+			arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(prevExpressionOutputTypeSig.Meta)
+			arrDetails.Type = int(argType)
+
+		} else if prevExpressionOutputTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
+			sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(prevExpressionOutputTypeSig.Meta)
+			sliceDetails.Type = int(argType)
+
+		} else {
+			panic("type is not known")
 		}
 
 		expressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetOutputs(prgrm)[0])
@@ -1383,6 +1469,14 @@ func ProcessShortDeclaration(prgrm *ast.CXProgram, expr *ast.CXExpression, expre
 			expressionOutputTypeSig.Meta = int(argType)
 		} else if expressionOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 			expressionOutputTypeSig.Meta = int(argType)
+		} else if expressionOutputTypeSig.Type == ast.TYPE_ARRAY_ATOMIC {
+			arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(expressionOutputTypeSig.Meta)
+			arrDetails.Type = int(argType)
+		} else if expressionOutputTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
+			sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(expressionOutputTypeSig.Meta)
+			sliceDetails.Type = int(argType)
+		} else {
+			panic("type is not known")
 		}
 	}
 }
@@ -1472,6 +1566,12 @@ func ProcessSliceAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 			} else if input.Type == ast.TYPE_POINTER_ATOMIC {
 				// Continue since pointer atomic types doesnt include slices.
 				continue
+			} else if input.Type == ast.TYPE_ARRAY_ATOMIC {
+				continue
+			} else if input.Type == ast.TYPE_SLICE_ATOMIC {
+				continue
+			} else {
+				panic("type is not known")
 			}
 
 			assignElt := inp.GetAssignmentElement(prgrm)
@@ -1897,6 +1997,11 @@ func ProcessTempVariable(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 					outputTypeSig.Meta = expressionInputTypeSig.Meta
 				} else if expressionInputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 					outputTypeSig.Meta = expressionInputTypeSig.Meta
+				} else if expressionInputTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
+					sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(expressionInputTypeSig.Meta)
+					outputTypeSig.Meta = sliceDetails.Type
+				} else {
+					panic("type is not known")
 				}
 			}
 		}
@@ -1921,10 +2026,14 @@ func CopyArgFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast
 
 	// TODO: check if this needs a change
 	if sym == nil && arg == nil {
+		if !(symTypeSignature.Type == ast.TYPE_SLICE_ATOMIC && argTypeSignature.Type == ast.TYPE_SLICE_ATOMIC) {
+			// Only copy meta if sym and arg are not type slice atomic.
+			symTypeSignature.Meta = argTypeSignature.Meta
+		}
+
 		symTypeSignature.Name = argTypeSignature.Name
 		symTypeSignature.Package = argTypeSignature.Package
 		symTypeSignature.Type = argTypeSignature.Type
-		symTypeSignature.Meta = argTypeSignature.Meta
 		symTypeSignature.Offset = argTypeSignature.Offset
 
 		return
@@ -1963,6 +2072,99 @@ func CopyArgFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast
 		sym.DeclarationSpecifiers = declSpec
 
 		return
+	} else if sym != nil && arg == nil && (len(sym.DeclarationSpecifiers) > 0 || len(sym.DereferenceOperations) > 0) && argTypeSignature.Type == ast.TYPE_ARRAY_ATOMIC {
+		arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(argTypeSignature.Meta)
+		newArrDetails := *arrDetails
+		newArrDetails.Indexes = sym.Indexes
+		newArrDetailsIdx := prgrm.AddCXTypeSignatureArrayInArray(&newArrDetails)
+
+		symTypeSignature.Name = argTypeSignature.Name
+		symTypeSignature.Package = argTypeSignature.Package
+		symTypeSignature.Type = argTypeSignature.Type
+		symTypeSignature.Meta = newArrDetailsIdx
+		symTypeSignature.Offset = argTypeSignature.Offset
+		symTypeSignature.PassBy = sym.PassBy
+
+		return
+	} else if sym != nil && arg == nil && (len(sym.DeclarationSpecifiers) > 0 || len(sym.DereferenceOperations) > 0) && argTypeSignature.Type == ast.TYPE_POINTER_ARRAY_ATOMIC {
+		arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(argTypeSignature.Meta)
+
+		newArrDetails := *arrDetails
+		newArrDetails.Indexes = sym.Indexes
+		newArrDetailsIdx := prgrm.AddCXTypeSignatureArrayInArray(&newArrDetails)
+
+		symTypeSignature.Name = argTypeSignature.Name
+		symTypeSignature.Package = argTypeSignature.Package
+		symTypeSignature.Type = argTypeSignature.Type
+		symTypeSignature.Meta = newArrDetailsIdx
+		symTypeSignature.Offset = argTypeSignature.Offset
+		symTypeSignature.PassBy = sym.PassBy
+
+		for _, decl := range sym.DeclarationSpecifiers {
+			if decl == constants.DECL_DEREF {
+				symTypeSignature.IsDeref = true
+			}
+		}
+
+		return
+	} else if sym != nil && arg == nil && argTypeSignature.Type == ast.TYPE_SLICE_ATOMIC {
+		arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(argTypeSignature.Meta)
+
+		newArrDetails := *arrDetails
+		newArrDetails.Indexes = sym.Indexes
+		newArrDetailsIdx := prgrm.AddCXTypeSignatureArrayInArray(&newArrDetails)
+
+		symTypeSignature.Name = argTypeSignature.Name
+		symTypeSignature.Package = argTypeSignature.Package
+		symTypeSignature.Type = argTypeSignature.Type
+		symTypeSignature.Meta = newArrDetailsIdx
+		symTypeSignature.Offset = argTypeSignature.Offset
+		symTypeSignature.PassBy = sym.PassBy
+
+		for _, decl := range sym.DeclarationSpecifiers {
+			switch decl {
+			case constants.DECL_DEREF, constants.DEREF_SLICE, constants.DEREF_ARRAY:
+				symTypeSignature.IsDeref = true
+			}
+		}
+
+		for _, deref := range sym.DereferenceOperations {
+			switch deref {
+			case constants.DEREF_SLICE:
+				symTypeSignature.IsDeref = true
+			}
+		}
+
+		return
+	} else if sym != nil && arg == nil && argTypeSignature.Type == ast.TYPE_POINTER_SLICE_ATOMIC {
+		arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(argTypeSignature.Meta)
+
+		newArrDetails := *arrDetails
+		newArrDetails.Indexes = sym.Indexes
+		newArrDetailsIdx := prgrm.AddCXTypeSignatureArrayInArray(&newArrDetails)
+
+		symTypeSignature.Name = argTypeSignature.Name
+		symTypeSignature.Package = argTypeSignature.Package
+		symTypeSignature.Type = argTypeSignature.Type
+		symTypeSignature.Meta = newArrDetailsIdx
+		symTypeSignature.Offset = argTypeSignature.Offset
+		symTypeSignature.PassBy = sym.PassBy
+
+		for _, decl := range sym.DeclarationSpecifiers {
+			switch decl {
+			case constants.DECL_DEREF, constants.DEREF_SLICE, constants.DEREF_ARRAY:
+				symTypeSignature.IsDeref = true
+			}
+		}
+
+		for _, deref := range sym.DereferenceOperations {
+			switch deref {
+			case constants.DEREF_SLICE:
+				symTypeSignature.IsDeref = true
+			}
+		}
+
+		return
 	} else if sym != nil && arg == nil && (len(sym.DeclarationSpecifiers) > 1 || len(sym.DereferenceOperations) > 1) {
 		sym.Name = argTypeSignature.Name
 		sym.Package = argTypeSignature.Package
@@ -1976,7 +2178,7 @@ func CopyArgFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast
 		symTypeSignature.Type = argTypeSignature.Type
 		symTypeSignature.Meta = argTypeSignature.Meta
 		symTypeSignature.Offset = argTypeSignature.Offset
-
+		symTypeSignature.IsDeref = argTypeSignature.IsDeref
 		return
 	} else if sym == nil && arg != nil {
 		symTypeSignature.Name = argTypeSignature.Name
@@ -1984,6 +2186,7 @@ func CopyArgFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast
 		symTypeSignature.Type = argTypeSignature.Type
 		symTypeSignature.Meta = argTypeSignature.Meta
 		symTypeSignature.Offset = argTypeSignature.Offset
+		symTypeSignature.IsDeref = argTypeSignature.IsDeref
 
 		return
 	}
@@ -2249,12 +2452,12 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignatur
 					}
 					break
 				} else if nameField.Name == typeSignature.Name && typeSignature.Type == ast.TYPE_SLICE_ATOMIC {
-					nameField.Type = types.Code(typeSignature.Meta)
+					sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(typeSignature.Meta)
+					nameField.Type = types.Code(sliceDetails.Type)
 					nameField.StructType = nil
-					nameField.Size = types.Code(typeSignature.Meta).Size()
-					nameField.Lengths = []types.Pointer{0}
-					sym.Lengths = []types.Pointer{0}
-					nameField.TotalSize = typeSignature.GetSize(prgrm)
+					nameField.Size = nameField.Type.Size()
+					nameField.Lengths = sliceDetails.Lengths
+					sym.Lengths = sliceDetails.Lengths
 					nameField.IsSlice = true
 
 					// TODO: this should not be needed.

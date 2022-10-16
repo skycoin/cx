@@ -76,6 +76,16 @@ func wipeDeclarationMemory(prgrm *CXProgram, expr *CXExpression) error {
 		offset = prgrm.CXArgs[cxAtomicOutputTypeSig.Meta].Offset
 	} else if cxAtomicOutputTypeSig.Type == TYPE_ATOMIC || cxAtomicOutputTypeSig.Type == TYPE_POINTER_ATOMIC {
 		offset = cxAtomicOutputTypeSig.Offset
+	} else if cxAtomicOutputTypeSig.Type == TYPE_ARRAY_ATOMIC {
+		offset = cxAtomicOutputTypeSig.Offset
+	} else if cxAtomicOutputTypeSig.Type == TYPE_POINTER_ARRAY_ATOMIC {
+		offset = cxAtomicOutputTypeSig.Offset
+	} else if cxAtomicOutputTypeSig.Type == TYPE_SLICE_ATOMIC {
+		offset = cxAtomicOutputTypeSig.Offset
+	} else if cxAtomicOutputTypeSig.Type == TYPE_POINTER_SLICE_ATOMIC {
+		offset = cxAtomicOutputTypeSig.Offset
+	} else {
+		panic("type is not known")
 	}
 
 	for c := types.Pointer(0); c < size; c++ {
@@ -126,6 +136,18 @@ func processBuiltInOperators(prgrm *CXProgram, expr *CXExpression, globalInputs 
 			}
 		} else if inputTypeSignature.Type == TYPE_ATOMIC || inputTypeSignature.Type == TYPE_POINTER_ATOMIC {
 			value.Type = types.Code(inputTypeSignature.Meta)
+		} else if inputTypeSignature.Type == TYPE_ARRAY_ATOMIC {
+			arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(inputTypeSignature.Meta)
+			value.Type = types.Code(arrDetails.Type)
+		} else if inputTypeSignature.Type == TYPE_POINTER_ARRAY_ATOMIC {
+			arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(inputTypeSignature.Meta)
+			value.Type = types.Code(arrDetails.Type)
+		} else if inputTypeSignature.Type == TYPE_SLICE_ATOMIC {
+			sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(inputTypeSignature.Meta)
+			value.Type = types.Code(sliceDetails.Type)
+		} else if inputTypeSignature.Type == TYPE_POINTER_SLICE_ATOMIC {
+			sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(inputTypeSignature.Meta)
+			value.Type = types.Code(sliceDetails.Type)
 		}
 
 		value.FramePointer = fp
@@ -152,6 +174,18 @@ func processBuiltInOperators(prgrm *CXProgram, expr *CXExpression, globalInputs 
 			}
 		} else if outputTypeSignature.Type == TYPE_ATOMIC || outputTypeSignature.Type == TYPE_POINTER_ATOMIC {
 			value.Type = types.Code(outputTypeSignature.Meta)
+		} else if outputTypeSignature.Type == TYPE_ARRAY_ATOMIC {
+			arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(outputTypeSignature.Meta)
+			value.Type = types.Code(arrDetails.Type)
+		} else if outputTypeSignature.Type == TYPE_POINTER_ARRAY_ATOMIC {
+			arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(outputTypeSignature.Meta)
+			value.Type = types.Code(arrDetails.Type)
+		} else if outputTypeSignature.Type == TYPE_SLICE_ATOMIC {
+			sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(outputTypeSignature.Meta)
+			value.Type = types.Code(sliceDetails.Type)
+		} else if outputTypeSignature.Type == TYPE_POINTER_SLICE_ATOMIC {
+			sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(outputTypeSignature.Meta)
+			value.Type = types.Code(sliceDetails.Type)
 		}
 
 		value.FramePointer = fp
@@ -213,8 +247,7 @@ func processNonAtomicOperators(prgrm *CXProgram, expr *CXExpression, fp types.Po
 		var byts []byte
 
 		finalOffset := GetFinalOffset(prgrm, fp, nil, input)
-
-		if inp.PassBy == constants.PASSBY_REFERENCE {
+		if input.PassBy == constants.PASSBY_REFERENCE || inp.PassBy == constants.PASSBY_REFERENCE {
 			// If we're referencing an inner element, like an element of a slice (&slc[0])
 			// or a field of a struct (&struct.fld) we no longer need to add
 			// the OBJECT_HEADER_SIZE to the offset
@@ -235,8 +268,6 @@ func processNonAtomicOperators(prgrm *CXProgram, expr *CXExpression, fp types.Po
 		types.WriteSlice_byte(
 			prgrm.Memory,
 			GetFinalOffset(prgrm, newFP, nil, newCallOperatorInputTypeSignature),
-			// newFP + newCall.Operator.ProgramInput[i].Offset,
-			// GetFinalOffset(prgrm.Memory, newFP, newCall.Operator.ProgramInput[i], MEM_WRITE),
 			byts)
 	}
 

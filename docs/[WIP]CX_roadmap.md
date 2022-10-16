@@ -26,13 +26,13 @@
     - [x] CXStruct for function Inputs
     - [x] CXStruct for function Outputs
     - [ ] CXStruct for function variable layout
-    - [ ] CXStruct for struct definitions
+    - [x] CXStruct for struct definitions
 - [ ] CXTypeSignature Implementation
     - [x] atomic
-    - [ ] PointerAtomic
-    - [ ] ArrayAtomic
-    - [ ] ArrayPointerAtomic
-    - [ ] SliceAtomic
+    - [x] PointerAtomic
+    - [x] ArrayAtomic
+    - [x] ArrayPointerAtomic
+    - [x] SliceAtomic
     - [ ] SlicePointerAtomic
     - [ ] Struct
     - [ ] PointerStruct
