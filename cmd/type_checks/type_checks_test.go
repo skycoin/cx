@@ -417,11 +417,7 @@ func TestTypeChecks_ParseGlobals(t *testing.T) {
 
 						if gotGlobal.Name == wantGlobal.Name {
 
-							if gotGlobal.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-								gotGlobalType = ast.GetFormattedType(actions.AST, actions.AST.GetCXArg(ast.CXArgumentIndex(gotGlobal.Meta)))
-							} else {
-								gotGlobalType = types.Code(gotGlobal.Meta).Name()
-							}
+							gotGlobalType = ast.GetFormattedType(actions.AST, gotGlobal)
 
 							if int(gotGlobal.Index) == wantGlobal.Index &&
 								gotPkgName == wantGlobal.Package &&
@@ -582,14 +578,8 @@ func TestTypeChecks_ParseStructs(t *testing.T) {
 									var gotFieldIndex int
 
 									if gotField.Name == wantField.Name {
-										if gotField.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-											gotFieldArg := program.CXArgs[gotField.Meta]
-											gotFieldIndex = gotFieldArg.Index
-											gotFieldType = ast.GetFormattedType(actions.AST, &gotFieldArg)
-										} else {
-											gotFieldType = types.Code(gotField.Meta).Name()
-											gotFieldIndex = int(gotField.Index)
-										}
+
+										gotFieldType = ast.GetFormattedType(actions.AST, gotField)
 
 										ast3 += fmt.Sprintf("want field %d. %s %s, got %d. %s %s\n", wantField.Index, wantField.Name, wantField.Type, gotFieldIndex, gotField.Name, gotFieldType)
 
@@ -991,15 +981,7 @@ func TestTypeChecks_ParseAllDeclarations(t *testing.T) {
 
 						if gotGlobal.Name == wantGlobal.Name {
 
-							if gotGlobal.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-								gotGlobalType = ast.GetFormattedType(program, program.GetCXArg(ast.CXArgumentIndex(gotGlobal.Meta)))
-							} else if gotGlobal.Type == ast.TYPE_ATOMIC {
-								gotGlobalType = types.Code(gotGlobal.Meta).Name()
-							} else if gotGlobal.Type == ast.TYPE_POINTER_ATOMIC {
-								gotGlobalType = "*" + types.Code(gotGlobal.Meta).Name()
-							} else {
-								gotGlobalType = "type is not known"
-							}
+							gotGlobalType = ast.GetFormattedType(program, gotGlobal)
 
 							if gotGlobalType == wantGlobal.Type {
 								match = true
@@ -1033,16 +1015,7 @@ func TestTypeChecks_ParseAllDeclarations(t *testing.T) {
 									gotField := program.GetCXTypeSignatureFromArray(gotFieldIdx)
 									var gotFieldType string
 
-									if gotField.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-										gotFieldArg := program.CXArgs[gotField.Meta]
-										gotFieldType = ast.GetFormattedType(program, &gotFieldArg)
-									} else if gotField.Type == ast.TYPE_ATOMIC {
-										gotFieldType = types.Code(gotField.Meta).Name()
-									} else if gotField.Type == ast.TYPE_POINTER_ATOMIC {
-										gotFieldType = "*" + types.Code(gotField.Meta).Name()
-									} else {
-										gotFieldType = "type is not known"
-									}
+									gotFieldType = ast.GetFormattedType(program, gotField)
 
 									if gotField.Name == wantField.Name {
 
@@ -1100,7 +1073,7 @@ func TestTypeChecks_ParseAllDeclarations(t *testing.T) {
 							if gotRecieverTypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 								gotRecieverArg := program.CXArgs[gotRecieverTypeSignature.Meta]
 								gotRecieverName = ast.GetFormattedName(program, &gotRecieverArg, false, gotPkg)
-								gotRecieverType = ast.GetFormattedType(program, &gotRecieverArg)
+								gotRecieverType = ast.GetFormattedType(program, gotRecieverTypeSignature)
 							} else if gotRecieverTypeSignature.Type == ast.TYPE_ATOMIC {
 								gotRecieverType = types.Code(gotRecieverTypeSignature.Meta).Name()
 							} else if gotRecieverTypeSignature.Type == ast.TYPE_POINTER_ATOMIC {
