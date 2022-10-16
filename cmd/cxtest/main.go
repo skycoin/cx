@@ -33,11 +33,11 @@ func main() {
 			},
 			&cli.StringFlag{
 				Name:  "enable-tests",
-				Usage: "Enable test set (all, stable, issue, gui, examples)",
+				Usage: "Enable test set (all, stable, issue, gui)",
 			},
 			&cli.StringFlag{
 				Name:  "disable-tests",
-				Usage: "Disable test set (all, stable, issue, gui, examples)",
+				Usage: "Disable test set (all, stable, issue, gui)",
 			},
 			&cli.BoolFlag{
 				Name:  "debug",
@@ -335,32 +335,4 @@ func runTestCases(t *runner.TestRunner) {
 	// // New tests added starting 05/10/2022
 	t.Run("issue-struct-a.cx", runner.CxSuccess, "struct printf")
 	t.Run("issue-struct-b.cx", runner.CxSuccess, "struct printf uninitialized")
-
-	// Examples
-	t.RunEx("./examples/bubble-sort.cx", runner.CxSuccess, "", runner.TestExamples, 0)
-	t.RunEx("./examples/cipher.cx", runner.CxSuccess, "", runner.TestExamples, 0)
-	t.RunEx("./examples/concatenating-strings.cx", runner.CxSuccess, "", runner.TestExamples, 0)
-	t.RunEx("./examples/conversions.cx", runner.CxSuccess, "", runner.TestExamples, 0)
-	t.RunEx("./examples/convert-time.cx", runner.CxSuccess, "", runner.TestExamples, 0)
-	t.RunEx("./examples/digital-root.cx", runner.CxSuccess, "", runner.TestExamples, 0)
-	t.RunEx("./examples/errors.cx", runner.CxRuntimeError, "", runner.TestExamples, 0)
-	t.RunEx("./examples/even-or-odd.cx", runner.CxSuccess, "", runner.TestExamples, 0)
-	t.RunEx("./examples/expressions.cx", runner.CxSuccess, "", runner.TestExamples, 0)
-	t.RunEx("./examples/factorial.cx", runner.CxSuccess, "", runner.TestExamples, 0)
-	t.RunEx("./examples/fibonacci-recursive.cx", runner.CxSuccess, "", runner.TestExamples, 0)
-	t.RunEx("./examples/function-to-function-call.cx", runner.CxSuccess, "", runner.TestExamples, 0)
-	t.RunEx("./examples/hello-world.cx", runner.CxSuccess, "", runner.TestExamples, 0)
-	t.RunEx("./examples/nth-pow.cx", runner.CxSuccess, "", runner.TestExamples, 0)
-	t.RunEx("./examples/nth-recursive-pow.cx", runner.CxSuccess, "", runner.TestExamples, 0)
-	t.RunEx("./examples/packages.cx", runner.CxSuccess, "", runner.TestExamples, 0)
-	// t.RunEx("./examples/program.cx", runner.CxSuccess, "", runner.TestExamples, 0)
-	// t.RunEx("./examples/read-string.cx", runner.CxSuccess, "", runner.TestExamples, 0)
-	// t.RunEx("./examples/regexp.cx", runner.CxSuccess, "", runner.TestExamples, 0)
-	t.RunEx("./examples/return.cx", runner.CxSuccess, "", runner.TestExamples, 0)
-	t.RunEx("./examples/sum-digits-integer.cx", runner.CxSuccess, "", runner.TestExamples, 0)
-	t.RunEx("./examples/temp-converter.cx", runner.CxSuccess, "", runner.TestExamples, 0)
-	t.RunEx("./examples/testing-global-1.cx", runner.CxSuccess, "", runner.TestExamples, 0)
-	t.RunEx("./examples/testing-globals.cx", runner.CxSuccess, "", runner.TestExamples, 0)
-	t.RunEx("./examples/testing-packages.cx", runner.CxSuccess, "", runner.TestExamples, 0)
-	t.RunEx("./examples/testing-pointers-to-arrays-of-structs.cx", runner.CxSuccess, "", runner.TestExamples, 0)
 }

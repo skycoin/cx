@@ -59,10 +59,10 @@ Note:
     - [ ] CXStruct for struct definitions
 - [ ] CXTypeSignature Implementation
     - [x] atomic
-    - [x] PointerAtomic
-    - [x] ArrayAtomic
-    - [x] ArrayPointerAtomic
-    - [x] SliceAtomic
+    - [ ] PointerAtomic
+    - [ ] ArrayAtomic
+    - [ ] ArrayPointerAtomic
+    - [ ] SliceAtomic
     - [ ] SlicePointerAtomic
     - [ ] Struct
     - [ ] PointerStruct
