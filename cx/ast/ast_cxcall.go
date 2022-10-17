@@ -84,6 +84,8 @@ func wipeDeclarationMemory(prgrm *CXProgram, expr *CXExpression) error {
 		offset = cxAtomicOutputTypeSig.Offset
 	} else if cxAtomicOutputTypeSig.Type == TYPE_POINTER_SLICE_ATOMIC {
 		offset = cxAtomicOutputTypeSig.Offset
+	} else if cxAtomicOutputTypeSig.Type == TYPE_STRUCT {
+		offset = cxAtomicOutputTypeSig.Offset
 	} else {
 		panic("type is not known")
 	}

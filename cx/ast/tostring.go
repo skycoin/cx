@@ -944,7 +944,19 @@ func GetFormattedType(prgrm *CXProgram, typeSig *CXTypeSignature) string {
 		}
 	} else if typeSig.Type == TYPE_STRUCT {
 		structDetails := prgrm.GetCXTypeSignatureStructFromArray(typeSig.Meta)
-		typ = structDetails.StructType.Name
+		lenFlds := len(structDetails.Fields)
+		if lenFlds > 0 {
+			fld := prgrm.GetCXArgFromArray(structDetails.Fields[lenFlds-1])
+			fld = fld.GetAssignmentElement(prgrm)
+
+			// TODO: to be replaced with correct
+			// way of getting type, that is not
+			// dependent on CXArg.
+			typ = getFormattedType_CXArg(prgrm, fld)
+		} else {
+			typ = structDetails.StructType.Name
+		}
+
 	} else {
 		panic("type is not known")
 	}
