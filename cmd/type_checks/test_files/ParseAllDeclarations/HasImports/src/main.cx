@@ -1,0 +1,16 @@
+package main
+
+import "helper"
+
+import "config"
+
+var dog helper.Animal
+dog.sound = "bark"
+
+func main() {
+
+    dog.Speak()
+
+    str.print(config.Name)
+    i32.print(config.Apple)
+}
