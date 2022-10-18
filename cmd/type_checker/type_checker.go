@@ -1,4 +1,4 @@
-package type_checks
+package type_checker
 
 import "github.com/skycoin/cx/cmd/declaration_extractor"
 

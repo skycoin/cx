@@ -1,4 +1,4 @@
-package type_checks_test
+package type_checker_test
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 
 	"github.com/skycoin/cx/cmd/declaration_extractor"
 	"github.com/skycoin/cx/cmd/packageloader/loader"
-	"github.com/skycoin/cx/cmd/type_checks"
+	"github.com/skycoin/cx/cmd/type_checker"
 	"github.com/skycoin/cx/cx/ast"
 	cxinit "github.com/skycoin/cx/cx/init"
 	cxpackages "github.com/skycoin/cx/cx/packages"
@@ -15,7 +15,7 @@ import (
 	"github.com/skycoin/cx/cxparser/actions"
 )
 
-func TestTypeCheck_ParseDeclarationSpecifier(t *testing.T) {
+func TestTypeChecker_ParseDeclarationSpecifier(t *testing.T) {
 	tests := []struct {
 		scenario                                string
 		testString                              string
@@ -109,7 +109,7 @@ func TestTypeCheck_ParseDeclarationSpecifier(t *testing.T) {
 			}
 
 			var gotDeclarationSpecifier *ast.CXArgument
-			gotDeclarationSpecifier, gotErr := type_checks.ParseDeclarationSpecifier([]byte(tc.testString), tc.fileName, tc.lineno, gotDeclarationSpecifier)
+			gotDeclarationSpecifier, gotErr := type_checker.ParseDeclarationSpecifier([]byte(tc.testString), tc.fileName, tc.lineno, gotDeclarationSpecifier)
 			gotDeclarationSpecifierFormattedString := ast.GetFormattedType(actions.AST, gotDeclarationSpecifier)
 
 			if gotDeclarationSpecifierFormattedString != tc.wantDeclarationSpecifierFormattedString {
@@ -130,7 +130,7 @@ func TestTypeCheck_ParseDeclarationSpecifier(t *testing.T) {
 	}
 }
 
-func TestTypeCheck_ParseParameterDeclaration(t *testing.T) {
+func TestTypeChecker_ParseParameterDeclaration(t *testing.T) {
 	tests := []struct {
 		scenario                                string
 		testString                              string
@@ -224,7 +224,7 @@ func TestTypeCheck_ParseParameterDeclaration(t *testing.T) {
 			}
 
 			var gotParameterDeclaration *ast.CXArgument
-			gotParameterDeclaration, gotErr := type_checks.ParseParameterDeclaration([]byte(tc.testString), pkg, tc.fileName, tc.lineno)
+			gotParameterDeclaration, gotErr := type_checker.ParseParameterDeclaration([]byte(tc.testString), pkg, tc.fileName, tc.lineno)
 			gotParameterDeclarationFormattedName := ast.GetFormattedName(actions.AST, gotParameterDeclaration, false, pkg)
 			gotParameterDeclarationFormattedType := ast.GetFormattedType(actions.AST, gotParameterDeclaration)
 			gotParameterDeclarationFormattedString := gotParameterDeclarationFormattedName + " " + gotParameterDeclarationFormattedType
@@ -247,7 +247,7 @@ func TestTypeCheck_ParseParameterDeclaration(t *testing.T) {
 	}
 }
 
-func TestTypeChecks_ParseGlobals(t *testing.T) {
+func TestTypeChecker_ParseGlobals(t *testing.T) {
 
 	type GlobalTypeSignature struct {
 		Package string
@@ -386,7 +386,7 @@ func TestTypeChecks_ParseGlobals(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			err = type_checks.ParseGlobals(Globals)
+			err = type_checker.ParseGlobals(Globals)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -462,7 +462,7 @@ func TestTypeChecks_ParseGlobals(t *testing.T) {
 
 // }
 
-func TestTypeChecks_ParseStructs(t *testing.T) {
+func TestTypeChecker_ParseStructs(t *testing.T) {
 
 	type StructFieldTypeSignature struct {
 		Index int
@@ -534,7 +534,7 @@ func TestTypeChecks_ParseStructs(t *testing.T) {
 
 			structs, err := declaration_extractor.ExtractStructs(ReplaceCommentsWithWhitespaces, tc.testDir)
 
-			type_checks.ParseStructs(structs)
+			type_checker.ParseStructs(structs)
 
 			program := actions.AST
 
@@ -612,7 +612,7 @@ func TestTypeChecks_ParseStructs(t *testing.T) {
 
 }
 
-func TestTypeChecks_ParseFuncHeaders(t *testing.T) {
+func TestTypeChecker_ParseFuncHeaders(t *testing.T) {
 
 	tests := []struct {
 		scenario    string
@@ -665,7 +665,7 @@ func TestTypeChecks_ParseFuncHeaders(t *testing.T) {
 
 			funcs, err := declaration_extractor.ExtractFuncs(ReplaceStringContentsWithWhitespaces, tc.testDir)
 
-			type_checks.ParseFuncHeaders(funcs)
+			type_checker.ParseFuncHeaders(funcs)
 
 			program := actions.AST
 
@@ -709,7 +709,7 @@ func TestTypeChecks_ParseFuncHeaders(t *testing.T) {
 
 }
 
-func TestTypeChecks_ParseAllDeclarations(t *testing.T) {
+func TestTypeChecker_ParseAllDeclarations(t *testing.T) {
 
 	type Global struct {
 		Name string
@@ -957,7 +957,7 @@ func TestTypeChecks_ParseAllDeclarations(t *testing.T) {
 				t.Fatal(gotErr)
 			}
 
-			type_checks.ParseAllDeclarations(Globals, Structs, Funcs)
+			type_checker.ParseAllDeclarations(Globals, Structs, Funcs)
 
 			program := actions.AST
 

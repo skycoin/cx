@@ -1,4 +1,4 @@
-package type_checks
+package type_checker
 
 import (
 	"bytes"
