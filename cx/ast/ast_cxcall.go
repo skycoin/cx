@@ -150,6 +150,19 @@ func processBuiltInOperators(prgrm *CXProgram, expr *CXExpression, globalInputs 
 		} else if inputTypeSignature.Type == TYPE_POINTER_SLICE_ATOMIC {
 			sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(inputTypeSignature.Meta)
 			value.Type = types.Code(sliceDetails.Meta)
+		} else if inputTypeSignature.Type == TYPE_STRUCT {
+			structDetails := prgrm.GetCXTypeSignatureStructFromArray(inputTypeSignature.Meta)
+			lenFlds := len(structDetails.Fields)
+			if lenFlds > 0 {
+				fld := prgrm.GetCXArgFromArray(structDetails.Fields[lenFlds-1])
+				value.Type = fld.Type
+				if fld.Type == types.POINTER {
+					value.Type = fld.PointerTargetType
+				}
+			} else {
+				value.Type = types.STRUCT
+			}
+
 		}
 
 		value.FramePointer = fp

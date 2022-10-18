@@ -134,7 +134,13 @@ func (typeSignature *CXTypeSignature) GetSize(prgrm *CXProgram, IsForUpdateSymbo
 
 		return types.POINTER.Size()
 	case TYPE_STRUCT:
-		return prgrm.GetStructFromArray(CXStructIndex(typeSignature.Meta)).GetStructSize(prgrm)
+		structDetails := prgrm.GetCXTypeSignatureStructFromArray(typeSignature.Meta)
+
+		lenFlds := len(structDetails.Fields)
+		if lenFlds > 0 {
+			return GetArgSize(prgrm, &prgrm.CXArgs[structDetails.Fields[lenFlds-1]])
+		}
+		return structDetails.StructType.GetStructSize(prgrm)
 	case TYPE_POINTER_STRUCT:
 	case TYPE_ARRAY_STRUCT:
 	case TYPE_POINTER_ARRAY_STRUCT:

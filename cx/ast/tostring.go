@@ -667,6 +667,37 @@ func GetPrintableValue(prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSig
 			return val
 		}
 
+	} else if argTypeSig.Type == TYPE_STRUCT {
+		// // then it's a struct
+		// var val string
+		// val = "{"
+		// // for _, fld := range elt.StructType.Fields {
+		// lFlds := len(elt.StructType.Fields)
+		// off := types.Pointer(0)
+		// for c := 0; c < lFlds; c++ {
+		// 	typeSignatureIdx := elt.StructType.Fields[c]
+		// 	typeSignature := prgrm.GetCXTypeSignatureFromArray(typeSignatureIdx)
+		// 	var fldTotalSize types.Pointer
+		// 	if typeSignature.Type == TYPE_CXARGUMENT_DEPRECATE {
+		// 		fldIdx := typeSignature.Meta
+		// 		fldTotalSize = GetArgSize(prgrm, &prgrm.CXArgs[fldIdx])
+		// 	} else if typeSignature.Type == TYPE_ATOMIC || typeSignature.Type == TYPE_POINTER_ATOMIC {
+		// 		fldTotalSize = types.Code(typeSignature.Type).Size()
+		// 	} else if typeSignature.Type == TYPE_SLICE_ATOMIC {
+		// 		fldTotalSize = typeSignature.GetSize(prgrm, false)
+		// 	} else {
+		// 		panic("type is not known")
+		// 	}
+
+		// 	if c == lFlds-1 {
+		// 		val += fmt.Sprintf("%s: %s", typeSignature.Name, GetPrintableValue(prgrm, fp+arg.Offset+off, typeSignature))
+		// 	} else {
+		// 		val += fmt.Sprintf("%s: %s, ", typeSignature.Name, GetPrintableValue(prgrm, fp+arg.Offset+off, typeSignature))
+		// 	}
+		// 	off += fldTotalSize
+		// }
+		// val += "}"
+		// return val
 	} else {
 		panic("type is not known")
 	}
