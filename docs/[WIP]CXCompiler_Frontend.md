@@ -14,6 +14,8 @@
 	- Function for redeclaration checks
 
 - [ ] Stage 3: TypeChecks For Signatures/Types/Assigns
+	- Parse Packages
+	- Parse Imports
 	- Parse the globals
 	- Parse the aliases and enums
 	- Parse the structs
