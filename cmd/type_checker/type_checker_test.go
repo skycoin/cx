@@ -110,7 +110,8 @@ func TestTypeChecker_ParseDeclarationSpecifier(t *testing.T) {
 
 			var gotDeclarationSpecifier *ast.CXArgument
 			gotDeclarationSpecifier, gotErr := type_checker.ParseDeclarationSpecifier([]byte(tc.testString), tc.fileName, tc.lineno, gotDeclarationSpecifier)
-			gotDeclarationSpecifierFormattedString := ast.GetFormattedType(actions.AST, gotDeclarationSpecifier)
+			gotTypeSignature := ast.GetCXTypeSignatureRepresentationOfCXArg(actions.AST, gotDeclarationSpecifier)
+			gotDeclarationSpecifierFormattedString := ast.GetFormattedType(actions.AST, gotTypeSignature)
 
 			if gotDeclarationSpecifierFormattedString != tc.wantDeclarationSpecifierFormattedString {
 				t.Errorf("want %s, got %s", tc.wantDeclarationSpecifierFormattedString, gotDeclarationSpecifierFormattedString)
@@ -226,7 +227,8 @@ func TestTypeChecker_ParseParameterDeclaration(t *testing.T) {
 			var gotParameterDeclaration *ast.CXArgument
 			gotParameterDeclaration, gotErr := type_checker.ParseParameterDeclaration([]byte(tc.testString), pkg, tc.fileName, tc.lineno)
 			gotParameterDeclarationFormattedName := ast.GetFormattedName(actions.AST, gotParameterDeclaration, false, pkg)
-			gotParameterDeclarationFormattedType := ast.GetFormattedType(actions.AST, gotParameterDeclaration)
+			gotTypeSignature := ast.GetCXTypeSignatureRepresentationOfCXArg(actions.AST, gotParameterDeclaration)
+			gotParameterDeclarationFormattedType := ast.GetFormattedType(actions.AST, gotTypeSignature)
 			gotParameterDeclarationFormattedString := gotParameterDeclarationFormattedName + " " + gotParameterDeclarationFormattedType
 
 			if gotParameterDeclarationFormattedString != tc.wantParameterDeclarationFormattedString {
