@@ -38,6 +38,30 @@ func opSliceLen(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 		} else if sliceOffset < 0 {
 			panic(constants.CX_RUNTIME_ERROR)
 		}
+	} else if inputs[0].TypeSignature.Type == ast.TYPE_STRUCT {
+		structDetails := prgrm.GetCXTypeSignatureStructFromArray(inputs[0].TypeSignature.Meta)
+
+		fldLen := len(structDetails.Fields)
+		if fldLen > 0 {
+			fld := prgrm.GetCXArgFromArray(structDetails.Fields[fldLen-1])
+			fld = fld.GetAssignmentElement(prgrm)
+
+			if fld.IsSlice() || fld.Type == types.AFF { //TODO: FIX
+				sliceOffset := types.Read_ptr(prgrm.Memory, inputs[0].Offset)
+				if sliceOffset > 0 && sliceOffset.IsValid() {
+					sliceLen = ast.GetSliceLen(prgrm, sliceOffset)
+				} else if sliceOffset < 0 {
+					panic(constants.CX_RUNTIME_ERROR)
+				}
+				// TODO: Had to add elt.Lengths to avoid doing this for arrays, but not entirely sure why
+			} else if (fld.PointerTargetType == types.STR || fld.Type == types.STR) && fld.Lengths == nil {
+				sliceLen = types.Read_str_size(prgrm.Memory, inputs[0].Offset)
+			} else {
+				sliceLen = fld.Lengths[len(fld.Indexes)]
+			}
+		} else {
+			panic("struct has no fields")
+		}
 	} else {
 		panic("type is not known\n\n")
 	}
