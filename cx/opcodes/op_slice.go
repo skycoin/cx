@@ -88,6 +88,21 @@ func opSliceAppend(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXV
 		inp0Type = types.Code(sliceDetails.Meta)
 
 		input0IsSlice = true
+	} else if inputs[0].TypeSignature.Type == ast.TYPE_STRUCT {
+		inp0Type = types.STRUCT
+
+		structDetails := prgrm.GetCXTypeSignatureStructFromArray(inputs[0].TypeSignature.Meta)
+		fldLen := len(structDetails.Fields)
+		if fldLen > 0 {
+			fld := prgrm.GetCXArgFromArray(structDetails.Fields[fldLen-1])
+			fld = fld.GetAssignmentElement(prgrm)
+			input0IsSlice = fld.IsSlice()
+
+			inp0Type = fld.Type
+			if fld.Type == types.POINTER {
+				inp0Type = fld.PointerTargetType
+			}
+		}
 	} else {
 		panic("type is not type cx argument deprecate\n\n")
 	}
@@ -104,6 +119,8 @@ func opSliceAppend(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXV
 		sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(inputs[1].TypeSignature.Meta)
 
 		inp1Type = types.Code(sliceDetails.Meta)
+	} else if inputs[1].TypeSignature.Type == ast.TYPE_STRUCT {
+		inp1Type = types.STRUCT
 	} else {
 		panic("type is not known")
 	}
@@ -124,6 +141,21 @@ func opSliceAppend(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXV
 		sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(outputs[0].TypeSignature.Meta)
 		out0Type = types.Code(sliceDetails.Meta)
 		outputIsSlice = true
+	} else if outputs[0].TypeSignature.Type == ast.TYPE_STRUCT {
+		out0Type = types.STRUCT
+
+		structDetails := prgrm.GetCXTypeSignatureStructFromArray(outputs[0].TypeSignature.Meta)
+		fldLen := len(structDetails.Fields)
+		if fldLen > 0 {
+			fld := prgrm.GetCXArgFromArray(structDetails.Fields[fldLen-1])
+			fld = fld.GetAssignmentElement(prgrm)
+			outputIsSlice = fld.IsSlice()
+
+			out0Type = fld.Type
+			if fld.Type == types.POINTER {
+				out0Type = fld.PointerTargetType
+			}
+		}
 	} else {
 		panic("type is not known")
 	}
@@ -161,6 +193,8 @@ func opSliceAppend(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXV
 		} else if input.TypeSignature.Type == ast.TYPE_SLICE_ATOMIC {
 			sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(input.TypeSignature.Meta)
 			inpType = types.Code(sliceDetails.Meta)
+		} else if input.TypeSignature.Type == ast.TYPE_STRUCT {
+			inpType = types.STRUCT
 		} else {
 			panic("type is not known")
 		}
