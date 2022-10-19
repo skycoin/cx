@@ -280,6 +280,13 @@ func GetFinalOffset(prgrm *CXProgram, fp types.Pointer, oldArg *CXArgument, argT
 			argTypeSigOffset += fp
 		}
 
+		structDetails := prgrm.GetCXTypeSignatureStructFromArray(argTypeSig.Meta)
+		for _, fldIdx := range structDetails.Fields {
+			fld := prgrm.GetCXArgFromArray(fldIdx)
+			argTypeSigOffset += fld.Offset
+			argTypeSigOffset = CalculateDereferences(prgrm, fld, argTypeSigOffset, fp)
+		}
+
 		return argTypeSigOffset
 	}
 
