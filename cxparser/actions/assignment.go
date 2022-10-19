@@ -496,6 +496,7 @@ func processAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fromExp
 			fromExpressionOperatorOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(fromExpressionOperatorOutputs[0])
 			if fromExpressionOperatorOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 				fromCXAtomicOpOperatorOutput := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(fromExpressionOperatorOutputTypeSig.Meta))
+
 				if fromExpressionOperator.IsBuiltIn() {
 					// only assigning as if the operator had only one output defined
 					if fromExpressionOperator.AtomicOPCode != constants.OP_IDENTITY {
@@ -551,6 +552,9 @@ func processAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fromExp
 					prgrm.CXArgs[toExpressionOutputIdx].Type = types.Code(sliceDetails.Meta)
 					prgrm.CXArgs[toExpressionOutputIdx].Lengths = sliceDetails.Lengths
 				}
+			} else if fromExpressionOperatorOutputTypeSig.Type == ast.TYPE_STRUCT {
+				// it's a short variable declaration
+				prgrm.CXArgs[toExpressionOutputIdx].Type = types.STRUCT
 			} else {
 				panic("type is not known")
 			}
