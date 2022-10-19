@@ -183,6 +183,87 @@ func (typeSignature *CXTypeSignature) GetArraySize(prgrm *CXProgram) types.Point
 	return 0
 }
 
+func (typeSignature *CXTypeSignature) GetType(prgrm *CXProgram) types.Code {
+	var atomicType types.Code
+	switch typeSignature.Type {
+	case TYPE_ATOMIC:
+		atomicType = types.Code(typeSignature.Meta)
+	case TYPE_POINTER_ATOMIC:
+		atomicType = types.Code(typeSignature.Meta)
+	case TYPE_ARRAY_ATOMIC:
+		arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(typeSignature.Meta)
+		atomicType = types.Code(arrDetails.Meta)
+	case TYPE_SLICE_ATOMIC:
+		sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(typeSignature.Meta)
+		atomicType = types.Code(sliceDetails.Meta)
+	case TYPE_STRUCT:
+		atomicType = types.STRUCT
+
+		structDetails := prgrm.GetCXTypeSignatureStructFromArray(typeSignature.Meta)
+		fldLen := len(structDetails.Fields)
+		if fldLen > 0 {
+			fld := prgrm.GetCXArgFromArray(structDetails.Fields[fldLen-1])
+			fld = fld.GetAssignmentElement(prgrm)
+
+			atomicType = fld.Type
+			if fld.Type == types.POINTER {
+				atomicType = fld.PointerTargetType
+			}
+		}
+	default:
+		panic("type is not known")
+	}
+
+	return atomicType
+}
+
+func (typeSignature *CXTypeSignature) GetTypeString(prgrm *CXProgram) string {
+	var typeString string
+
+	switch typeSignature.Type {
+	case TYPE_ATOMIC:
+		typeString = types.Code(typeSignature.Meta).Name()
+	case TYPE_POINTER_ATOMIC:
+		typeString = types.Code(typeSignature.Meta).Name()
+	case TYPE_ARRAY_ATOMIC:
+		arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(typeSignature.Meta)
+		typeString = types.Code(arrDetails.Meta).Name()
+	case TYPE_POINTER_ARRAY_ATOMIC:
+		arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(typeSignature.Meta)
+		typeString = types.Code(arrDetails.Meta).Name()
+	case TYPE_SLICE_ATOMIC:
+		arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(typeSignature.Meta)
+		typeString = types.Code(arrDetails.Meta).Name()
+	case TYPE_STRUCT:
+		structDetails := prgrm.GetCXTypeSignatureStructFromArray(typeSignature.Meta)
+		fldsLen := len(structDetails.Fields)
+		if fldsLen > 0 {
+			fldIdx := structDetails.Fields[fldsLen-1]
+			fld := prgrm.GetCXArgFromArray(fldIdx)
+			elt := fld.GetAssignmentElement(prgrm)
+
+			if elt.StructType != nil {
+				// then it's custom type
+				typeString = elt.StructType.Name
+			} else {
+				// then it's native type
+				typeString = elt.Type.Name()
+
+				if elt.Type == types.POINTER {
+					typeString = elt.PointerTargetType.Name()
+				}
+			}
+		} else {
+			typeString = structDetails.StructType.Name
+		}
+	default:
+		panic("type is not known")
+
+	}
+
+	return typeString
+}
+
 func (typeSignature *CXTypeSignature) GetCXArgFormat(prgrm *CXProgram) *CXArgument {
 	var arg *CXArgument = &CXArgument{}
 	if typeSignature.Type == TYPE_ATOMIC {
