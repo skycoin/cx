@@ -145,6 +145,96 @@ func TestDeclarationExtractor_ReplaceStringContentsWithWhitespaces(t *testing.T)
 	}
 }
 
+func TestDeclarationExtractor_ExtractImports(t *testing.T) {
+
+	tests := []struct {
+		scenario    string
+		testDir     string
+		wantImports []declaration_extractor.ImportDeclaration
+		wantErr     error
+	}{
+		{
+			scenario: "Has Imports",
+			testDir:  "./test_files/ExtractImports/HasImports.cx",
+			wantImports: []declaration_extractor.ImportDeclaration{
+				{
+					PackageID:  "bar",
+					FileID:     "./test_files/ExtractImports/HasImports.cx",
+					LineNumber: 34,
+					ImportName: "foo",
+				},
+				{
+					PackageID:  "bar",
+					FileID:     "./test_files/ExtractImports/HasImports.cx",
+					LineNumber: 35,
+					ImportName: "nosal",
+				},
+				{
+					PackageID:  "main",
+					FileID:     "./test_files/ExtractImports/HasImports.cx",
+					LineNumber: 57,
+					ImportName: "foo",
+				},
+				{
+					PackageID:  "main",
+					FileID:     "./test_files/ExtractImports/HasImports.cx",
+					LineNumber: 58,
+					ImportName: "bar",
+				},
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.scenario, func(t *testing.T) {
+			srcBytes, err := os.ReadFile(tc.testDir)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(srcBytes)
+			if err != nil {
+				t.Fatal(filepath.Base(tc.testDir), err)
+			}
+
+			gotImports, gotErr := declaration_extractor.ExtractImports(ReplaceCommentsWithWhitespaces, tc.testDir)
+
+			for _, wantImport := range tc.wantImports {
+
+				var match bool = false
+				var gotImportF declaration_extractor.ImportDeclaration
+
+				for _, gotImport := range gotImports {
+					gotImportF = gotImport
+					if gotImport.ImportName == wantImport.ImportName &&
+						gotImport.PackageID == wantImport.PackageID {
+						if gotImport == wantImport {
+							match = true
+						}
+						break
+					}
+				}
+
+				if !match {
+					t.Errorf("want Import %v, got %v", wantImport, gotImportF)
+				}
+
+				if (gotErr != nil && tc.wantErr == nil) ||
+					(gotErr == nil && tc.wantErr != nil) {
+					t.Errorf("want error %v, got %v", tc.wantErr, gotErr)
+				}
+
+				if gotErr != nil && tc.wantErr != nil {
+					if gotErr.Error() != tc.wantErr.Error() {
+						t.Errorf("want error %v, got %v", tc.wantErr, gotErr)
+					}
+				}
+
+			}
+		})
+	}
+}
+
 func TestDeclarationExtractor_ExtractGlobals(t *testing.T) {
 
 	tests := []struct {
