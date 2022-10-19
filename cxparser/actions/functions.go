@@ -268,15 +268,8 @@ func ProcessTypedOperator(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 		var atomicType types.Code
 		if expressionInputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			atomicType = prgrm.CXArgs[expressionInputTypeSig.Meta].GetType(prgrm)
-		} else if expressionInputTypeSig.Type == ast.TYPE_ATOMIC {
-			atomicType = types.Code(expressionInputTypeSig.Meta)
-		} else if expressionInputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
-			atomicType = types.Code(expressionInputTypeSig.Meta)
-		} else if expressionInputTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
-			sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(expressionInputTypeSig.Meta)
-			atomicType = types.Code(sliceDetails.Meta)
 		} else {
-			panic("type is not known")
+			atomicType = expressionInputTypeSig.GetType(prgrm)
 		}
 
 		typedOp := ast.GetTypedOperator(atomicType, expressionOperator.AtomicOPCode)
@@ -510,15 +503,8 @@ func checkSameNativeType(prgrm *ast.CXProgram, expr *ast.CXExpression) error {
 		if expressionInputArg.Type == types.POINTER {
 			typeCode = expressionInputArg.PointerTargetType
 		}
-	} else if expressionInputTypeSig.Type == ast.TYPE_ATOMIC {
-		typeCode = types.Code(expressionInputTypeSig.Meta)
-	} else if expressionInputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
-		typeCode = types.Code(expressionInputTypeSig.Meta)
-	} else if expressionInputTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
-		sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(expressionInputTypeSig.Meta)
-		typeCode = types.Code(sliceDetails.Meta)
 	} else {
-		panic("type is not known")
+		typeCode = expressionInputTypeSig.GetType(prgrm)
 	}
 
 	for _, inputIdx := range expression.GetInputs(prgrm) {
@@ -532,18 +518,8 @@ func checkSameNativeType(prgrm *ast.CXProgram, expr *ast.CXExpression) error {
 			if inp.Type == types.POINTER {
 				inpType = inp.PointerTargetType
 			}
-		} else if input.Type == ast.TYPE_ATOMIC {
-			inpType = types.Code(input.Meta)
-		} else if input.Type == ast.TYPE_POINTER_ATOMIC {
-			inpType = types.Code(input.Meta)
-		} else if input.Type == ast.TYPE_ARRAY_ATOMIC {
-			arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(input.Meta)
-			inpType = types.Code(arrDetails.Meta)
-		} else if input.Type == ast.TYPE_SLICE_ATOMIC {
-			sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(input.Meta)
-			inpType = types.Code(sliceDetails.Meta)
 		} else {
-			panic("type is not known")
+			inpType = input.GetType(prgrm)
 		}
 
 		if inpType != typeCode {
@@ -1126,95 +1102,29 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) {
 					}
 				}
 
-			} else if expressionInputTypeSig.Type == ast.TYPE_ATOMIC {
-				receivedType = types.Code(expressionInputTypeSig.Meta).Name()
-			} else if expressionInputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
-				receivedType = types.Code(expressionInputTypeSig.Meta).Name()
-			} else if expressionInputTypeSig.Type == ast.TYPE_ARRAY_ATOMIC {
-				arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(expressionInputTypeSig.Meta)
-				receivedType = types.Code(arrDetails.Meta).Name()
-			} else if expressionInputTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
-				sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(expressionInputTypeSig.Meta)
-				receivedType = types.Code(sliceDetails.Meta).Name()
-			} else if expressionInputTypeSig.Type == ast.TYPE_STRUCT {
-				structDetails := prgrm.GetCXTypeSignatureStructFromArray(expressionInputTypeSig.Meta)
-				fldsLen := len(structDetails.Fields)
-				if fldsLen > 0 {
-					fldIdx := structDetails.Fields[fldsLen-1]
-					fld := prgrm.GetCXArgFromArray(fldIdx)
-					elt := fld.GetAssignmentElement(prgrm)
-
-					if elt.StructType != nil {
-						// then it's custom type
-						receivedType = elt.StructType.Name
-					} else {
-						// then it's native type
-						receivedType = elt.Type.Name()
-
-						if elt.Type == types.POINTER {
-							receivedType = elt.PointerTargetType.Name()
-						}
-					}
-				} else {
-					receivedType = structDetails.StructType.Name
-				}
 			} else {
-				panic("type is not known")
+				receivedType = expressionInputTypeSig.GetTypeString(prgrm)
 			}
 
 			expressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetOutputs(prgrm)[i])
 			var expressionOutputArg *ast.CXArgument = &ast.CXArgument{ArgDetails: &ast.CXArgumentDebug{}}
 			if expressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 				expressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionOutputTypeSig.Meta))
+				expressionOutputArg = expressionOutputArg.GetAssignmentElement(prgrm)
 
-				if expressionOutputArg.GetAssignmentElement(prgrm).StructType != nil {
+				if expressionOutputArg.StructType != nil {
 					// then it's custom type
-					expectedType = expressionOutputArg.GetAssignmentElement(prgrm).StructType.Name
+					expectedType = expressionOutputArg.StructType.Name
 				} else {
 					// then it's native type
-					expectedType = expressionOutputArg.GetAssignmentElement(prgrm).Type.Name()
+					expectedType = expressionOutputArg.Type.Name()
 
-					if expressionOutputArg.GetAssignmentElement(prgrm).Type == types.POINTER {
-						expectedType = expressionOutputArg.GetAssignmentElement(prgrm).PointerTargetType.Name()
+					if expressionOutputArg.Type == types.POINTER {
+						expectedType = expressionOutputArg.PointerTargetType.Name()
 					}
-				}
-			} else if expressionOutputTypeSig.Type == ast.TYPE_ATOMIC {
-				expectedType = types.Code(expressionOutputTypeSig.Meta).Name()
-			} else if expressionOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
-				expectedType = types.Code(expressionOutputTypeSig.Meta).Name()
-			} else if expressionOutputTypeSig.Type == ast.TYPE_ARRAY_ATOMIC {
-				arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(expressionOutputTypeSig.Meta)
-				expectedType = types.Code(arrDetails.Meta).Name()
-			} else if expressionOutputTypeSig.Type == ast.TYPE_POINTER_ARRAY_ATOMIC {
-				arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(expressionOutputTypeSig.Meta)
-				expectedType = types.Code(arrDetails.Meta).Name()
-			} else if expressionOutputTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
-				arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(expressionOutputTypeSig.Meta)
-				expectedType = types.Code(arrDetails.Meta).Name()
-			} else if expressionOutputTypeSig.Type == ast.TYPE_STRUCT {
-				structDetails := prgrm.GetCXTypeSignatureStructFromArray(expressionOutputTypeSig.Meta)
-				fldsLen := len(structDetails.Fields)
-				if fldsLen > 0 {
-					fldIdx := structDetails.Fields[fldsLen-1]
-					fld := prgrm.GetCXArgFromArray(fldIdx)
-					elt := fld.GetAssignmentElement(prgrm)
-
-					if elt.StructType != nil {
-						// then it's custom type
-						expectedType = elt.StructType.Name
-					} else {
-						// then it's native type
-						expectedType = elt.Type.Name()
-
-						if elt.Type == types.POINTER {
-							expectedType = elt.PointerTargetType.Name()
-						}
-					}
-				} else {
-					expectedType = structDetails.StructType.Name
 				}
 			} else {
-				panic("type is not known")
+				expectedType = expressionOutputTypeSig.GetTypeString(prgrm)
 			}
 
 			if receivedType != expectedType {
@@ -1540,6 +1450,8 @@ func ProcessSliceAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 			} else if input.Type == ast.TYPE_ARRAY_ATOMIC {
 				continue
 			} else if input.Type == ast.TYPE_SLICE_ATOMIC {
+				continue
+			} else if input.Type == ast.TYPE_STRUCT {
 				continue
 			} else {
 				panic("type is not known")
