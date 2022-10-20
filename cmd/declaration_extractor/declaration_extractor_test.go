@@ -1144,6 +1144,11 @@ func TestDeclarationExtractor_ReDeclarationCheck(t *testing.T) {
 			wantReDeclarationError: nil,
 		},
 		{
+			scenario:               "Redeclared import",
+			testDir:                "./test_files/ReDeclarationCheck/RedeclaredImport.cx",
+			wantReDeclarationError: errors.New("RedeclaredImport.cx:4: redeclaration error: import: testimport"),
+		},
+		{
 			scenario:               "Redeclared global",
 			testDir:                "./test_files/ReDeclarationCheck/RedeclaredGlobal.cx",
 			wantReDeclarationError: errors.New("RedeclaredGlobal.cx:5: redeclaration error: global: banana"),
@@ -1188,6 +1193,11 @@ func TestDeclarationExtractor_ReDeclarationCheck(t *testing.T) {
 				t.Fatal(filepath.Base(tc.testDir), err)
 			}
 
+			imports, err := declaration_extractor.ExtractImports(ReplaceCommentsWithWhitespaces, tc.testDir)
+			if err != nil {
+				t.Fatal(err)
+			}
+
 			globals, err := declaration_extractor.ExtractGlobals(ReplaceStringContentsWithWhitespaces, tc.testDir)
 			if err != nil {
 				t.Fatal(err)
@@ -1213,7 +1223,7 @@ func TestDeclarationExtractor_ReDeclarationCheck(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			gotReDeclarationError := declaration_extractor.ReDeclarationCheck(globals, enums, typeDefinitions, structs, funcs)
+			gotReDeclarationError := declaration_extractor.ReDeclarationCheck(imports, globals, enums, typeDefinitions, structs, funcs)
 
 			if (gotReDeclarationError != nil && tc.wantReDeclarationError == nil) ||
 				(gotReDeclarationError == nil && tc.wantReDeclarationError != nil) {
@@ -1266,6 +1276,11 @@ func TestDeclarationExtractor_GetDeclarations(t *testing.T) {
 				t.Fatal(filepath.Base(tc.testDir), err)
 			}
 
+			imports, err := declaration_extractor.ExtractImports(ReplaceCommentsWithWhitespaces, tc.testDir)
+			if err != nil {
+				t.Fatal(err)
+			}
+
 			globals, err := declaration_extractor.ExtractGlobals(ReplaceStringContentsWithWhitespaces, tc.testDir)
 			if err != nil {
 				t.Fatal(err)
@@ -1291,7 +1306,7 @@ func TestDeclarationExtractor_GetDeclarations(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			if declaration_extractor.ReDeclarationCheck(globals, enums, typeDefinitions, structs, funcs) != nil {
+			if declaration_extractor.ReDeclarationCheck(imports, globals, enums, typeDefinitions, structs, funcs) != nil {
 				t.Fatal(err)
 			}
 
@@ -1312,6 +1327,7 @@ func TestDeclarationExtractor_ExtractAllDeclarations(t *testing.T) {
 	tests := []struct {
 		scenario            string
 		testDirs            []string
+		wantImports         int
 		wantGlobals         int
 		wantEnums           int
 		wantTypeDefinitions int
@@ -1338,6 +1354,7 @@ func TestDeclarationExtractor_ExtractAllDeclarations(t *testing.T) {
 				"./test_files/ExtractAllDeclarations/MultipleFiles/helper.cx",
 				"./test_files/ExtractAllDeclarations/MultipleFiles/program.cx",
 			},
+			wantImports:         2,
 			wantGlobals:         3,
 			wantEnums:           12,
 			wantTypeDefinitions: 3,
@@ -1352,6 +1369,7 @@ func TestDeclarationExtractor_ExtractAllDeclarations(t *testing.T) {
 				"./test_files/ExtractAllDeclarations/GlobalSyntaxError/helper.cx",
 				"./test_files/ExtractAllDeclarations/GlobalSyntaxError/program.cx",
 			},
+			wantImports:         2,
 			wantGlobals:         0,
 			wantEnums:           12,
 			wantTypeDefinitions: 3,
@@ -1366,6 +1384,7 @@ func TestDeclarationExtractor_ExtractAllDeclarations(t *testing.T) {
 				"./test_files/ExtractAllDeclarations/EnumSyntaxError/helper.cx",
 				"./test_files/ExtractAllDeclarations/EnumSyntaxError/program.cx",
 			},
+			wantImports:         2,
 			wantGlobals:         3,
 			wantEnums:           0,
 			wantTypeDefinitions: 3,
@@ -1380,19 +1399,22 @@ func TestDeclarationExtractor_ExtractAllDeclarations(t *testing.T) {
 				"./test_files/ExtractAllDeclarations/TypeDefinitionSyntaxError/helper.cx",
 				"./test_files/ExtractAllDeclarations/TypeDefinitionSyntaxError/program.cx",
 			},
+			wantImports:         2,
 			wantGlobals:         3,
 			wantEnums:           12,
 			wantTypeDefinitions: 0,
 			wantStructs:         3,
 			wantFuncs:           5,
 			wantError:           errors.New("program.cx:21: syntax error: type definition declaration"),
-		}, {
+		},
+		{
 			scenario: "Struct Syntax Error",
 			testDirs: []string{
 				"./test_files/ExtractAllDeclarations/StructSyntaxError/main.cx",
 				"./test_files/ExtractAllDeclarations/StructSyntaxError/helper.cx",
 				"./test_files/ExtractAllDeclarations/StructSyntaxError/program.cx",
 			},
+			wantImports:         2,
 			wantGlobals:         3,
 			wantEnums:           12,
 			wantTypeDefinitions: 3,
@@ -1407,6 +1429,7 @@ func TestDeclarationExtractor_ExtractAllDeclarations(t *testing.T) {
 				"./test_files/ExtractAllDeclarations/FuncSyntaxError/helper.cx",
 				"./test_files/ExtractAllDeclarations/FuncSyntaxError/program.cx",
 			},
+			wantImports:         2,
 			wantGlobals:         3,
 			wantEnums:           12,
 			wantTypeDefinitions: 3,
@@ -1421,6 +1444,7 @@ func TestDeclarationExtractor_ExtractAllDeclarations(t *testing.T) {
 				"./test_files/ExtractAllDeclarations/RedeclarationError/helper.cx",
 				"./test_files/ExtractAllDeclarations/RedeclarationError/program.cx",
 			},
+			wantImports:         2,
 			wantGlobals:         4,
 			wantEnums:           12,
 			wantTypeDefinitions: 3,
@@ -1435,6 +1459,7 @@ func TestDeclarationExtractor_ExtractAllDeclarations(t *testing.T) {
 				"./test_files/ExtractAllDeclarations/StringSyntaxError/helper.cx",
 				"./test_files/ExtractAllDeclarations/StringSyntaxError/program.cx",
 			},
+			wantImports:         2,
 			wantGlobals:         3,
 			wantEnums:           0,
 			wantTypeDefinitions: 0,
@@ -1460,10 +1485,14 @@ func TestDeclarationExtractor_ExtractAllDeclarations(t *testing.T) {
 				files = append(files, file)
 			}
 
-			Globals, Enums, TypeDefinitions, Structs, Funcs, gotErr := declaration_extractor.ExtractAllDeclarations(files)
+			Imports, Globals, Enums, TypeDefinitions, Structs, Funcs, gotErr := declaration_extractor.ExtractAllDeclarations(files)
 
 			if len(Globals) == 0 && len(Enums) == 0 && len(Structs) == 0 && len(Funcs) == 0 {
 				t.Error("No Declarations found")
+			}
+
+			if len(Imports) != tc.wantImports {
+				t.Errorf("want import %v, got %v", tc.wantImports, len(Imports))
 			}
 
 			if len(Globals) != tc.wantGlobals {
