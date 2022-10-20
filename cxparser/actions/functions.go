@@ -1714,12 +1714,8 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbolsData
 					if argOutTypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 						argOut = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(argOutTypeSignature.Meta))
 						argOutType = argOut.Type.Name()
-					} else if argOutTypeSignature.Type == ast.TYPE_ATOMIC {
-						argOutType = types.Code(argOutTypeSignature.Meta).Name()
-					} else if argOutTypeSignature.Type == ast.TYPE_POINTER_ATOMIC {
-						argOutType = types.Code(argOutTypeSignature.Meta).Name()
 					} else {
-						panic("type is not known")
+						argOutType = argOutTypeSignature.GetTypeString(prgrm)
 					}
 
 					strct := argOut.StructType

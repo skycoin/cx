@@ -113,16 +113,8 @@ func opSliceAppend(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXV
 		if inp1.Type == types.POINTER {
 			inp1Type = inp1.PointerTargetType
 		}
-	} else if inputs[1].TypeSignature.Type == ast.TYPE_ATOMIC || inputs[1].TypeSignature.Type == ast.TYPE_POINTER_ATOMIC {
-		inp1Type = types.Code(inputs[1].TypeSignature.Meta)
-	} else if inputs[1].TypeSignature.Type == ast.TYPE_SLICE_ATOMIC || inputs[1].TypeSignature.Type == ast.TYPE_POINTER_SLICE_ATOMIC {
-		sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(inputs[1].TypeSignature.Meta)
-
-		inp1Type = types.Code(sliceDetails.Meta)
-	} else if inputs[1].TypeSignature.Type == ast.TYPE_STRUCT {
-		inp1Type = types.STRUCT
 	} else {
-		panic("type is not known")
+		inp1Type = inputs[1].TypeSignature.GetType(prgrm)
 	}
 
 	if outputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
@@ -188,15 +180,8 @@ func opSliceAppend(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXV
 			if inp.Type == types.POINTER {
 				inpType = inp.PointerTargetType
 			}
-		} else if input.TypeSignature.Type == ast.TYPE_ATOMIC || input.TypeSignature.Type == ast.TYPE_POINTER_ATOMIC {
-			inpType = types.Code(input.TypeSignature.Meta)
-		} else if input.TypeSignature.Type == ast.TYPE_SLICE_ATOMIC {
-			sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(input.TypeSignature.Meta)
-			inpType = types.Code(sliceDetails.Meta)
-		} else if input.TypeSignature.Type == ast.TYPE_STRUCT {
-			inpType = types.STRUCT
 		} else {
-			panic("type is not known")
+			inpType = input.TypeSignature.GetType(prgrm)
 		}
 
 		if inp0Type != inpType {
@@ -294,10 +279,8 @@ func opSliceInsertElement(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []
 		if inp2.Type == types.POINTER {
 			inp2Type = inp2.PointerTargetType
 		}
-	} else if inputs[2].TypeSignature.Type == ast.TYPE_ATOMIC || inputs[2].TypeSignature.Type == ast.TYPE_POINTER_ATOMIC {
-		inp2Type = types.Code(inputs[2].TypeSignature.Meta)
 	} else {
-		panic("type is not known")
+		inp2Type = inputs[2].TypeSignature.GetType(prgrm)
 	}
 
 	if outputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
