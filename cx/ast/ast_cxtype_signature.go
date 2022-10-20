@@ -193,7 +193,13 @@ func (typeSignature *CXTypeSignature) GetType(prgrm *CXProgram) types.Code {
 	case TYPE_ARRAY_ATOMIC:
 		arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(typeSignature.Meta)
 		atomicType = types.Code(arrDetails.Meta)
+	case TYPE_POINTER_ARRAY_ATOMIC:
+		arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(typeSignature.Meta)
+		atomicType = types.Code(arrDetails.Meta)
 	case TYPE_SLICE_ATOMIC:
+		sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(typeSignature.Meta)
+		atomicType = types.Code(sliceDetails.Meta)
+	case TYPE_POINTER_SLICE_ATOMIC:
 		sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(typeSignature.Meta)
 		atomicType = types.Code(sliceDetails.Meta)
 	case TYPE_STRUCT:
