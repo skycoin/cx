@@ -183,6 +183,25 @@ func TestDeclarationExtractor_ExtractImports(t *testing.T) {
 				},
 			},
 		},
+		{
+			scenario: "Has Imports",
+			testDir:  "./test_files/ExtractImports/PackageError.cx",
+			wantImports: []declaration_extractor.ImportDeclaration{
+				{
+					PackageID:  "bar",
+					FileID:     "./test_files/ExtractImports/PackageError.cx",
+					LineNumber: 34,
+					ImportName: "foo",
+				},
+				{
+					PackageID:  "bar",
+					FileID:     "./test_files/ExtractImports/PackageError.cx",
+					LineNumber: 35,
+					ImportName: "nosal",
+				},
+			},
+			wantErr: errors.New("PackageError.cx:54: syntax error: package declaration"),
+		},
 	}
 
 	for _, tc := range tests {

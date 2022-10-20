@@ -1,0 +1,86 @@
+// Package foo is the first package in the example 
+// It is a structure and a function. 
+package foo
+// Global structure in the foo package
+type Point struct {
+	x i32
+	y i32
+}
+
+// Global variable in the package foo
+var num i32 = 15
+
+// Function which print a string 
+func packagename () {
+	str.print("From foo package")
+}
+
+// Package nosal is the second package of the example 
+package nosal
+
+//simple function
+func printvar1() {
+var garr i32 = 40
+	i32.print(garr)
+}
+
+
+// Package bar is the third package in the example 
+package bar
+
+// when we want to use one package in another package then we have to import it first
+// If we are not useing any package like nosal in the this package then we don't need to import it
+// 
+import "foo"
+import "nosal"
+
+// function in package bar but it uses the structure from package foo
+// it show us, how can we recall the any variable or structure from different packages 
+func returnPoint () (resPoint foo.Point) {
+
+	// if we already defined a variable in function return then we don’t need to define it again in CX language 
+	//var resPoint foo.Point.       
+	resPoint = foo.Point{x: 10, y: 20}
+}
+
+// a print function from nosal package
+func printvariable() {
+nosal.printvar1()
+}
+
+
+
+// Main Package is the one package which contain main function 
+package 2main
+
+// import the packages in main function which we want to use. 
+import "foo"
+import "bar"
+
+func main () {
+	// declaration of local variables in main function
+// This is how we can define aa variable from another package. 
+	var aPoint foo.Point
+	aPoint.x = 30
+	aPoint.y = 70
+	i32.print(aPoint.x)
+	i32.print(aPoint.y)
+
+// bar.returnPoint is a function from package bar 
+	aPoint = bar.returnPoint()
+	i32.print(aPoint.x)
+	i32.print(aPoint.y)
+
+// local variable and print the integer 
+	var check i32
+	check = 10
+	i32.print(check)
+	
+// Print the variable from the foo package 	
+	i32.print(foo.num)
+// Recall the function from foo package 
+	foo. packagename ()
+
+bar.printvariable()
+	
+}
