@@ -136,33 +136,8 @@ func processBuiltInOperators(prgrm *CXProgram, expr *CXExpression, globalInputs 
 			if input.Type == types.POINTER {
 				value.Type = input.PointerTargetType
 			}
-		} else if inputTypeSignature.Type == TYPE_ATOMIC || inputTypeSignature.Type == TYPE_POINTER_ATOMIC {
-			value.Type = types.Code(inputTypeSignature.Meta)
-		} else if inputTypeSignature.Type == TYPE_ARRAY_ATOMIC {
-			arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(inputTypeSignature.Meta)
-			value.Type = types.Code(arrDetails.Meta)
-		} else if inputTypeSignature.Type == TYPE_POINTER_ARRAY_ATOMIC {
-			arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(inputTypeSignature.Meta)
-			value.Type = types.Code(arrDetails.Meta)
-		} else if inputTypeSignature.Type == TYPE_SLICE_ATOMIC {
-			sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(inputTypeSignature.Meta)
-			value.Type = types.Code(sliceDetails.Meta)
-		} else if inputTypeSignature.Type == TYPE_POINTER_SLICE_ATOMIC {
-			sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(inputTypeSignature.Meta)
-			value.Type = types.Code(sliceDetails.Meta)
-		} else if inputTypeSignature.Type == TYPE_STRUCT {
-			structDetails := prgrm.GetCXTypeSignatureStructFromArray(inputTypeSignature.Meta)
-			lenFlds := len(structDetails.Fields)
-			if lenFlds > 0 {
-				fld := prgrm.GetCXArgFromArray(structDetails.Fields[lenFlds-1])
-				value.Type = fld.Type
-				if fld.Type == types.POINTER {
-					value.Type = fld.PointerTargetType
-				}
-			} else {
-				value.Type = types.STRUCT
-			}
-
+		} else {
+			value.Type = inputTypeSignature.GetType(prgrm)
 		}
 
 		value.FramePointer = fp
@@ -187,20 +162,8 @@ func processBuiltInOperators(prgrm *CXProgram, expr *CXExpression, globalInputs 
 			if output.Type == types.POINTER {
 				value.Type = output.PointerTargetType
 			}
-		} else if outputTypeSignature.Type == TYPE_ATOMIC || outputTypeSignature.Type == TYPE_POINTER_ATOMIC {
-			value.Type = types.Code(outputTypeSignature.Meta)
-		} else if outputTypeSignature.Type == TYPE_ARRAY_ATOMIC {
-			arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(outputTypeSignature.Meta)
-			value.Type = types.Code(arrDetails.Meta)
-		} else if outputTypeSignature.Type == TYPE_POINTER_ARRAY_ATOMIC {
-			arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(outputTypeSignature.Meta)
-			value.Type = types.Code(arrDetails.Meta)
-		} else if outputTypeSignature.Type == TYPE_SLICE_ATOMIC {
-			sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(outputTypeSignature.Meta)
-			value.Type = types.Code(sliceDetails.Meta)
-		} else if outputTypeSignature.Type == TYPE_POINTER_SLICE_ATOMIC {
-			sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(outputTypeSignature.Meta)
-			value.Type = types.Code(sliceDetails.Meta)
+		} else {
+			value.Type = outputTypeSignature.GetType(prgrm)
 		}
 
 		value.FramePointer = fp
