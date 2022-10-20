@@ -569,14 +569,8 @@ func ProcessOperatorExpression(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 						expressionInputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionInputTypeSig.Meta))
 
 						size = ast.GetArgSize(prgrm, expressionInputArg.GetAssignmentElement(prgrm))
-					} else if expressionInputTypeSig.Type == ast.TYPE_ATOMIC {
-						size = expressionInputTypeSig.GetSize(prgrm, false)
-					} else if expressionInputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
-						size = expressionInputTypeSig.GetSize(prgrm, false)
-					} else if expressionInputTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
-						size = expressionInputTypeSig.GetSize(prgrm, false)
 					} else {
-						panic("type is not known")
+						size = expressionInputTypeSig.GetSize(prgrm, false)
 					}
 				}
 
@@ -1201,6 +1195,8 @@ func ProcessStringAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 					continue
 				} else if expressionInputTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
 					continue
+				} else if expressionInputTypeSig.Type == ast.TYPE_STRUCT {
+					continue
 				} else {
 					panic("type is not known")
 				}
@@ -1594,6 +1590,8 @@ func UpdateSymbolsTable(prgrm *ast.CXProgram, symbolsData *SymbolsData, typeSigI
 // 			  the scoping of the  CXArguments. Each element in the slice
 // 			  corresponds to a different scope. The innermost scope is
 // 			  the last element of the slice.
+
+// TODO: improve structure ASAP
 func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbolsData *SymbolsData) {
 	expression, err := prgrm.GetCXAtomicOp(expr.Index)
 	if err != nil {
@@ -1797,6 +1795,42 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbolsData
 				// TODO: improve
 				// do nothing for now since len(prgrm.CXArgs[outIdx].Fields) > 0
 				// of type atomics and pointers are always zero
+			} else if argOutTypeSignature.Type == ast.TYPE_STRUCT {
+				// TODO: improve this ASAP
+				structDetails := prgrm.GetCXTypeSignatureStructFromArray(argOutTypeSignature.Meta)
+
+				// then we found an output
+				if len(prgrm.CXArgs[outIdx].Fields) > 0 {
+					strct := structDetails.StructType
+
+					if strct == nil {
+						// println(ast.CompilationError(argOut.ArgDetails.FileName, argOut.ArgDetails.FileLine), fmt.Sprintf("illegal method call or field access on identifier '%s' of primitive type '%s'", argOut.Name, argOut.Type.Name()))
+						os.Exit(constants.CX_COMPILATION_ERROR)
+					}
+
+					strctPkg, err := prgrm.GetPackageFromArray(strct.Package)
+					if err != nil {
+						panic(err)
+					}
+
+					if fnIdx, err := strctPkg.GetMethod(prgrm, strct.Name+"."+prgrm.GetCXArgFromArray(prgrm.CXArgs[outIdx].Fields[len(prgrm.CXArgs[outIdx].Fields)-1]).Name, strct.Name); err == nil {
+						prgrm.CXAtomicOps[expr.Index].Operator = fnIdx
+					} else {
+						panic("")
+					}
+
+					typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, &prgrm.CXArgs[outIdx])
+					typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
+					newInputs := &ast.CXStruct{Fields: []ast.CXTypeSignatureIndex{typeSigIdx}}
+					if prgrm.CXAtomicOps[expr.Index].Inputs != nil {
+						for _, typeSig := range prgrm.CXAtomicOps[expr.Index].Inputs.Fields {
+							newInputs.AddField_CXAtomicOps(prgrm, typeSig)
+						}
+					}
+					prgrm.CXAtomicOps[expr.Index].Inputs = newInputs
+					prgrm.CXAtomicOps[expr.Index].Outputs.Fields = prgrm.CXAtomicOps[expr.Index].Outputs.Fields[1:]
+					prgrm.CXArgs[outIdx].Fields = prgrm.CXArgs[outIdx].Fields[:len(prgrm.CXArgs[outIdx].Fields)-1]
+				}
 			} else {
 				panic("type is not known")
 			}
@@ -2340,7 +2374,38 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignatur
 			for _, typeSignatureIdx := range strct.Fields {
 				typeSignature := prgrm.GetCXTypeSignatureFromArray(typeSignatureIdx)
 
-				if nameField.Name == typeSignature.Name && typeSignature.Type == ast.TYPE_ATOMIC {
+				if typeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+					fieldIdx := typeSignature.Meta
+					field := prgrm.CXArgs[fieldIdx]
+
+					if nameField.Name == field.Name {
+						nameField.Type = field.Type
+						nameField.Lengths = field.Lengths
+						nameField.Size = field.Size
+						nameField.PointerTargetType = field.PointerTargetType
+						nameField.StructType = field.StructType
+
+						sym.Lengths = field.Lengths
+
+						if len(nameField.DeclarationSpecifiers) > 0 {
+							nameField.DeclarationSpecifiers = append(field.DeclarationSpecifiers, nameField.DeclarationSpecifiers[1:]...)
+						} else {
+							nameField.DeclarationSpecifiers = field.DeclarationSpecifiers
+						}
+
+						if field.IsSlice() {
+							nameField.DereferenceOperations = append([]int{constants.DEREF_POINTER}, nameField.DereferenceOperations...)
+						}
+
+						nameField.PassBy = field.PassBy
+
+						if field.StructType != nil {
+							strct = field.StructType
+						}
+
+						break
+					}
+				} else if nameField.Name == typeSignature.Name && typeSignature.Type == ast.TYPE_ATOMIC {
 					nameField.Type = types.Code(typeSignature.Meta)
 					nameField.StructType = nil
 					nameField.Size = typeSignature.GetSize(prgrm, false)
@@ -2406,37 +2471,6 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignatur
 						nameField.DeclarationSpecifiers = append([]int{constants.DECL_STRUCT}, nameField.DeclarationSpecifiers[1:]...)
 					} else {
 						nameField.DeclarationSpecifiers = []int{constants.DECL_STRUCT}
-					}
-
-					break
-				}
-
-				fieldIdx := typeSignature.Meta
-				field := prgrm.CXArgs[fieldIdx]
-
-				if nameField.Name == field.Name && typeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-					nameField.Type = field.Type
-					nameField.Lengths = field.Lengths
-					nameField.Size = field.Size
-					nameField.PointerTargetType = field.PointerTargetType
-					nameField.StructType = field.StructType
-
-					sym.Lengths = field.Lengths
-
-					if len(nameField.DeclarationSpecifiers) > 0 {
-						nameField.DeclarationSpecifiers = append(field.DeclarationSpecifiers, nameField.DeclarationSpecifiers[1:]...)
-					} else {
-						nameField.DeclarationSpecifiers = field.DeclarationSpecifiers
-					}
-
-					if field.IsSlice() {
-						nameField.DereferenceOperations = append([]int{constants.DEREF_POINTER}, nameField.DereferenceOperations...)
-					}
-
-					nameField.PassBy = field.PassBy
-
-					if field.StructType != nil {
-						strct = field.StructType
 					}
 
 					break

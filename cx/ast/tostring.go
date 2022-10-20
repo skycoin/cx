@@ -986,6 +986,10 @@ func GetFormattedType(prgrm *CXProgram, typeSig *CXTypeSignature) string {
 			typ = getFormattedType_CXArg(prgrm, fld)
 		} else {
 			typ = structDetails.StructType.Name
+
+			if typeSig.PassBy == constants.PASSBY_REFERENCE {
+				typ = "*" + typ
+			}
 		}
 
 	} else {
