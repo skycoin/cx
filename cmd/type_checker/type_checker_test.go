@@ -736,6 +736,7 @@ func TestTypeChecker_ParseAllDeclarations(t *testing.T) {
 
 	type Package struct {
 		Name    string
+		Imports []string
 		Globals []Global
 		Structs []Struct
 		Funcs   []Func
@@ -752,6 +753,10 @@ func TestTypeChecker_ParseAllDeclarations(t *testing.T) {
 			wantProgram: []Package{
 				{
 					Name: "main",
+					Imports: []string{
+						"helper",
+						"config",
+					},
 					Globals: []Global{
 						{
 							Name: "Bool",
@@ -861,7 +866,10 @@ func TestTypeChecker_ParseAllDeclarations(t *testing.T) {
 			testDir:  "./test_files/ParseAllDeclarations/HasMultipleFiles",
 			wantProgram: []Package{
 				{
-					Name:    "main",
+					Name: "main",
+					Imports: []string{
+						"math",
+					},
 					Globals: []Global{},
 					Structs: []Struct{},
 					Funcs: []Func{
