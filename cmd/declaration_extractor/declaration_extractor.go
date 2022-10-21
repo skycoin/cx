@@ -2,10 +2,10 @@ package declaration_extractor
 
 import (
 	"fmt"
-	"io"
-	"os"
 	"path/filepath"
 	"sync"
+
+	"github.com/skycoin/cx/cmd/packageloader/loader"
 )
 
 func ReDeclarationCheck(Glbl []GlobalDeclaration, Enum []EnumDeclaration, TypeDef []TypeDefinitionDeclaration, Strct []StructDeclaration, Func []FuncDeclaration) error {
@@ -94,7 +94,7 @@ func GetDeclarations(source []byte, Glbls []GlobalDeclaration, Enums []EnumDecla
 	return declarations
 }
 
-func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDeclaration, []TypeDefinitionDeclaration, []StructDeclaration, []FuncDeclaration, error) {
+func ExtractAllDeclarations(source []*loader.File) ([]GlobalDeclaration, []EnumDeclaration, []TypeDefinitionDeclaration, []StructDeclaration, []FuncDeclaration, error) {
 
 	//Variable declarations
 	var Globals []GlobalDeclaration
@@ -118,17 +118,13 @@ func ExtractAllDeclarations(source []*os.File) ([]GlobalDeclaration, []EnumDecla
 
 		wg.Add(1)
 
-		go func(currentFile *os.File, globalChannel chan<- []GlobalDeclaration, enumChannel chan<- []EnumDeclaration, typeDefinition chan<- []TypeDefinitionDeclaration, structChannel chan<- []StructDeclaration, funcChannel chan<- []FuncDeclaration, errorChannel chan<- error, wg *sync.WaitGroup) {
+		go func(currentFile *loader.File, globalChannel chan<- []GlobalDeclaration, enumChannel chan<- []EnumDeclaration, typeDefinition chan<- []TypeDefinitionDeclaration, structChannel chan<- []StructDeclaration, funcChannel chan<- []FuncDeclaration, errorChannel chan<- error, wg *sync.WaitGroup) {
 
 			defer wg.Done()
 
-			srcBytes, err := io.ReadAll(currentFile)
-			if err != nil {
-				errorChannel <- err
-				return
-			}
+			srcBytes := currentFile.Content
 
-			fileName := currentFile.Name()
+			fileName := currentFile.FileName
 			replaceComments := ReplaceCommentsWithWhitespaces(srcBytes)
 			replaceStringContents, err := ReplaceStringContentsWithWhitespaces(replaceComments)
 			if err != nil {
