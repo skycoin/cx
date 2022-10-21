@@ -9,6 +9,9 @@ import (
 	"testing"
 
 	"github.com/skycoin/cx/cmd/declaration_extractor"
+	"github.com/skycoin/cx/cmd/packageloader/file_output"
+	"github.com/skycoin/cx/cmd/packageloader/loader"
+	"github.com/skycoin/cx/cxparser/actions"
 )
 
 //Sets the offset for windows or other os
@@ -1326,7 +1329,7 @@ func TestDeclarationExtractor_ExtractAllDeclarations(t *testing.T) {
 
 	tests := []struct {
 		scenario            string
-		testDirs            []string
+		testDir             string
 		wantImports         int
 		wantGlobals         int
 		wantEnums           int
@@ -1336,10 +1339,8 @@ func TestDeclarationExtractor_ExtractAllDeclarations(t *testing.T) {
 		wantError           error
 	}{
 		{
-			scenario: "Single file",
-			testDirs: []string{
-				"./test_files/ExtractAllDeclarations/SingleFile.cx",
-			},
+			scenario:            "Single file",
+			testDir:             "./test_files/ExtractAllDeclarations/SingleFile",
 			wantGlobals:         2,
 			wantEnums:           3,
 			wantTypeDefinitions: 1,
@@ -1348,12 +1349,8 @@ func TestDeclarationExtractor_ExtractAllDeclarations(t *testing.T) {
 			wantError:           nil,
 		},
 		{
-			scenario: "Multiple files",
-			testDirs: []string{
-				"./test_files/ExtractAllDeclarations/MultipleFiles/main.cx",
-				"./test_files/ExtractAllDeclarations/MultipleFiles/helper.cx",
-				"./test_files/ExtractAllDeclarations/MultipleFiles/program.cx",
-			},
+			scenario:            "Multiple files",
+			testDir:             "./test_files/ExtractAllDeclarations/MultipleFiles",
 			wantImports:         2,
 			wantGlobals:         3,
 			wantEnums:           12,
@@ -1363,12 +1360,8 @@ func TestDeclarationExtractor_ExtractAllDeclarations(t *testing.T) {
 			wantError:           nil,
 		},
 		{
-			scenario: "Global Syntax Error",
-			testDirs: []string{
-				"./test_files/ExtractAllDeclarations/GlobalSyntaxError/main.cx",
-				"./test_files/ExtractAllDeclarations/GlobalSyntaxError/helper.cx",
-				"./test_files/ExtractAllDeclarations/GlobalSyntaxError/program.cx",
-			},
+			scenario:            "Global Syntax Error",
+			testDir:             "./test_files/ExtractAllDeclarations/GlobalSyntaxError",
 			wantImports:         2,
 			wantGlobals:         0,
 			wantEnums:           12,
@@ -1378,12 +1371,8 @@ func TestDeclarationExtractor_ExtractAllDeclarations(t *testing.T) {
 			wantError:           errors.New("main.cx:9: syntax error: global declaration"),
 		},
 		{
-			scenario: "Enum Syntax Error",
-			testDirs: []string{
-				"./test_files/ExtractAllDeclarations/EnumSyntaxError/main.cx",
-				"./test_files/ExtractAllDeclarations/EnumSyntaxError/helper.cx",
-				"./test_files/ExtractAllDeclarations/EnumSyntaxError/program.cx",
-			},
+			scenario:            "Enum Syntax Error",
+			testDir:             "./test_files/ExtractAllDeclarations/EnumSyntaxError",
 			wantImports:         2,
 			wantGlobals:         3,
 			wantEnums:           0,
@@ -1393,12 +1382,8 @@ func TestDeclarationExtractor_ExtractAllDeclarations(t *testing.T) {
 			wantError:           errors.New("program.cx:27: syntax error: enum declaration"),
 		},
 		{
-			scenario: "Type Definition Syntax Error",
-			testDirs: []string{
-				"./test_files/ExtractAllDeclarations/TypeDefinitionSyntaxError/main.cx",
-				"./test_files/ExtractAllDeclarations/TypeDefinitionSyntaxError/helper.cx",
-				"./test_files/ExtractAllDeclarations/TypeDefinitionSyntaxError/program.cx",
-			},
+			scenario:            "Type Definition Syntax Error",
+			testDir:             "./test_files/ExtractAllDeclarations/TypeDefinitionSyntaxError",
 			wantImports:         2,
 			wantGlobals:         3,
 			wantEnums:           12,
@@ -1408,12 +1393,8 @@ func TestDeclarationExtractor_ExtractAllDeclarations(t *testing.T) {
 			wantError:           errors.New("program.cx:21: syntax error: type definition declaration"),
 		},
 		{
-			scenario: "Struct Syntax Error",
-			testDirs: []string{
-				"./test_files/ExtractAllDeclarations/StructSyntaxError/main.cx",
-				"./test_files/ExtractAllDeclarations/StructSyntaxError/helper.cx",
-				"./test_files/ExtractAllDeclarations/StructSyntaxError/program.cx",
-			},
+			scenario:            "Struct Syntax Error",
+			testDir:             "./test_files/ExtractAllDeclarations/StructSyntaxError",
 			wantImports:         2,
 			wantGlobals:         3,
 			wantEnums:           12,
@@ -1423,12 +1404,8 @@ func TestDeclarationExtractor_ExtractAllDeclarations(t *testing.T) {
 			wantError:           errors.New("helper.cx:20: syntax error: struct declaration"),
 		},
 		{
-			scenario: "Func Syntax Error",
-			testDirs: []string{
-				"./test_files/ExtractAllDeclarations/FuncSyntaxError/main.cx",
-				"./test_files/ExtractAllDeclarations/FuncSyntaxError/helper.cx",
-				"./test_files/ExtractAllDeclarations/FuncSyntaxError/program.cx",
-			},
+			scenario:            "Func Syntax Error",
+			testDir:             "./test_files/ExtractAllDeclarations/FuncSyntaxError",
 			wantImports:         2,
 			wantGlobals:         3,
 			wantEnums:           12,
@@ -1438,12 +1415,8 @@ func TestDeclarationExtractor_ExtractAllDeclarations(t *testing.T) {
 			wantError:           errors.New("helper.cx:34: syntax error: func declaration"),
 		},
 		{
-			scenario: "Redeclaration Error",
-			testDirs: []string{
-				"./test_files/ExtractAllDeclarations/RedeclarationError/main.cx",
-				"./test_files/ExtractAllDeclarations/RedeclarationError/helper.cx",
-				"./test_files/ExtractAllDeclarations/RedeclarationError/program.cx",
-			},
+		  scenario:            "Redeclaration Error",
+			testDir:             "./test_files/ExtractAllDeclarations/RedeclarationError",
 			wantImports:         2,
 			wantGlobals:         4,
 			wantEnums:           12,
@@ -1453,12 +1426,8 @@ func TestDeclarationExtractor_ExtractAllDeclarations(t *testing.T) {
 			wantError:           errors.New("main.cx:13: redeclaration error: global: number"),
 		},
 		{
-			scenario: "String Syntax Error",
-			testDirs: []string{
-				"./test_files/ExtractAllDeclarations/StringSyntaxError/main.cx",
-				"./test_files/ExtractAllDeclarations/StringSyntaxError/helper.cx",
-				"./test_files/ExtractAllDeclarations/StringSyntaxError/program.cx",
-			},
+			scenario:            "String Syntax Error",
+			testDir:             "./test_files/ExtractAllDeclarations/StringSyntaxError",
 			wantImports:         2,
 			wantGlobals:         3,
 			wantEnums:           0,
@@ -1472,17 +1441,22 @@ func TestDeclarationExtractor_ExtractAllDeclarations(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
 
-			var files []*os.File
+			actions.AST = nil
 
-			for _, testDir := range tc.testDirs {
+			_, sourceCodes, _ := loader.ParseArgsForCX([]string{tc.testDir}, true)
+			err := loader.LoadCXProgram("mypkg1", sourceCodes, "bolt")
+			if err != nil {
+				t.Fatal(err)
+			}
 
-				file, err := os.Open(testDir)
+			err = file_output.AddPkgsToAST("mypkg1", "bolt")
+			if err != nil {
+				t.Fatal(err)
+			}
 
-				if err != nil {
-					t.Fatal(err)
-				}
-
-				files = append(files, file)
+			files, err := file_output.GetImportFiles("mypkg1", "bolt")
+			if err != nil {
+				t.Fatal(err)
 			}
 
 			Imports, Globals, Enums, TypeDefinitions, Structs, Funcs, gotErr := declaration_extractor.ExtractAllDeclarations(files)
