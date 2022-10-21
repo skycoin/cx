@@ -451,7 +451,7 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 					inpExprAtomicOp.AddOutput(prgrm, typeSigIdx)
 					expression.AddInput(prgrm, typeSigIdx)
 				} else if inpExprAtomicOpOperatorOutputTypeSig.Type == ast.TYPE_ATOMIC {
-					newTypeSig := *prgrm.GetCXTypeSignatureFromArray(inpExprAtomicOpOperatorOutputs[0])
+					newTypeSig := *inpExprAtomicOpOperatorOutputTypeSig
 					newTypeSig.Name = generateTempVarName(constants.LOCAL_PREFIX)
 					newTypeSig.Package = inpExprAtomicOp.Package
 					newTypeSigIdx := prgrm.AddCXTypeSignatureInArray(&newTypeSig)
@@ -459,7 +459,15 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 					inpExprAtomicOp.AddOutput(prgrm, newTypeSigIdx)
 					expression.AddInput(prgrm, newTypeSigIdx)
 				} else if inpExprAtomicOpOperatorOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
-					newTypeSig := *prgrm.GetCXTypeSignatureFromArray(inpExprAtomicOpOperatorOutputs[0])
+					newTypeSig := *inpExprAtomicOpOperatorOutputTypeSig
+					newTypeSig.Name = generateTempVarName(constants.LOCAL_PREFIX)
+					newTypeSig.Package = inpExprAtomicOp.Package
+					newTypeSigIdx := prgrm.AddCXTypeSignatureInArray(&newTypeSig)
+
+					inpExprAtomicOp.AddOutput(prgrm, newTypeSigIdx)
+					expression.AddInput(prgrm, newTypeSigIdx)
+				} else if inpExprAtomicOpOperatorOutputTypeSig.Type == ast.TYPE_STRUCT {
+					newTypeSig := *inpExprAtomicOpOperatorOutputTypeSig
 					newTypeSig.Name = generateTempVarName(constants.LOCAL_PREFIX)
 					newTypeSig.Package = inpExprAtomicOp.Package
 					newTypeSigIdx := prgrm.AddCXTypeSignatureInArray(&newTypeSig)
@@ -667,7 +675,6 @@ func processTestExpression(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 
 			expressionInputSecondTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetInputs(prgrm)[1])
 			inp2Type = ast.GetFormattedType(prgrm, expressionInputSecondTypeSig)
-
 			if inp1Type != inp2Type {
 				println(ast.CompilationError(CurrentFile, LineNo), fmt.Sprintf("first and second input arguments' types are not equal in '%s' call ('%s' != '%s')", ast.OpNames[expressionOperator.AtomicOPCode], inp1Type, inp2Type))
 			}
@@ -980,6 +987,8 @@ func checkMatchParamTypes(prgrm *ast.CXProgram, expr *ast.CXExpression, expected
 				} else if expressionOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 					// do nothing
 				} else if expressionOutputTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
+					// do nothing
+				} else if expressionOutputTypeSig.Type == ast.TYPE_STRUCT {
 					// do nothing
 				} else {
 					panic("type is not known")
@@ -1900,15 +1909,18 @@ func ProcessTempVariable(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 					prgrm.CXArgs[outputArgIdx].Size = expressionInput.Size
 					prgrm.CXArgs[outputArgIdx].PreviouslyDeclared = true
 				} else if expressionInputTypeSig.Type == ast.TYPE_ATOMIC {
-					prgrm.CXArgs[outputArgIdx].Type = types.Code(expressionInputTypeSig.Meta)
+					prgrm.CXArgs[outputArgIdx].Type = expressionInputTypeSig.GetType(prgrm)
 					prgrm.CXArgs[outputArgIdx].Size = types.Code(expressionInputTypeSig.Meta).Size()
 				} else if expressionInputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
-					prgrm.CXArgs[outputArgIdx].Type = types.Code(expressionInputTypeSig.Meta)
+					prgrm.CXArgs[outputArgIdx].Type = expressionInputTypeSig.GetType(prgrm)
 					prgrm.CXArgs[outputArgIdx].Size = types.Code(expressionInputTypeSig.Meta).Size()
 				} else if expressionInputTypeSig.Type == ast.TYPE_ARRAY_ATOMIC {
 					arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(expressionInputTypeSig.Meta)
-					prgrm.CXArgs[outputArgIdx].Type = types.Code(arrDetails.Meta)
+					prgrm.CXArgs[outputArgIdx].Type = expressionInputTypeSig.GetType(prgrm)
 					prgrm.CXArgs[outputArgIdx].Size = types.Code(arrDetails.Meta).Size()
+				} else if expressionInputTypeSig.Type == ast.TYPE_STRUCT {
+					prgrm.CXArgs[outputArgIdx].Type = expressionInputTypeSig.GetType(prgrm)
+					prgrm.CXArgs[outputArgIdx].Size = expressionInputTypeSig.GetSize(prgrm, false)
 				} else {
 					panic("type is not known")
 				}
