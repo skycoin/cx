@@ -12,7 +12,7 @@ type ImportDeclaration struct {
 	PackageID  string // name of package
 	FileID     string // name of file
 	LineNumber int    // line number of declaration
-	ImportName string // name of variable being declared
+	ImportName string // name of import being declared
 }
 
 func ExtractImports(source []byte, fileName string) ([]ImportDeclaration, error) {
@@ -47,6 +47,7 @@ func ExtractImports(source []byte, fileName string) ([]ImportDeclaration, error)
 
 		}
 
+		// Extract Import
 		checkLine := bytes.Split(line, []byte(" "))
 		if bytes.Equal(checkLine[0], []byte("import")) {
 
