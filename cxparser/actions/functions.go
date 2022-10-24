@@ -585,6 +585,8 @@ func ProcessOperatorExpression(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 				out.Size = size
 			} else if output.Type == ast.TYPE_ATOMIC || output.Type == ast.TYPE_POINTER_ATOMIC {
 				continue
+			} else if output.Type == ast.TYPE_STRUCT {
+				continue
 			} else {
 				panic("type is not known")
 			}
