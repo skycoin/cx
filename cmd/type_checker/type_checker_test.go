@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/skycoin/cx/cmd/declaration_extractor"
+	"github.com/skycoin/cx/cmd/packageloader/file_output"
 	"github.com/skycoin/cx/cmd/packageloader/loader"
 	"github.com/skycoin/cx/cmd/type_checker"
 	"github.com/skycoin/cx/cx/ast"
@@ -512,7 +513,7 @@ func TestTypeChecker_ParseStructs(t *testing.T) {
 					Package: "main",
 					Fields: []StructFieldTypeSignature{
 						{
-							Index: 1,
+							Index: 0,
 							Name:  "name",
 							Type:  "str",
 						},
@@ -955,21 +956,28 @@ func TestTypeChecker_ParseAllDeclarations(t *testing.T) {
 
 			actions.AST = nil
 
-			_, files, _ := loader.ParseArgsForCX([]string{tc.testDir}, false)
+			_, sourceCode, _ := loader.ParseArgsForCX([]string{tc.testDir}, false)
 
-			err := loader.LoadCXProgram("test", files, "bolt")
+			err := loader.LoadCXProgram("test", sourceCode, "bolt")
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			Globals, Enums, TypeDefinitions, Structs, Funcs, gotErr := declaration_extractor.ExtractAllDeclarations(files)
+			files, err := file_output.GetImportFiles("test", "bolt")
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			Imports, Globals, Enums, TypeDefinitions, Structs, Funcs, gotErr := declaration_extractor.ExtractAllDeclarations(files)
 			if (Enums != nil && TypeDefinitions != nil) || gotErr != nil {
 				t.Fatal(gotErr)
 			}
 
-			type_checker.ParseAllDeclarations(Globals, Structs, Funcs)
+			type_checker.ParseAllDeclarations(Imports, Globals, Structs, Funcs)
 
 			program := actions.AST
+
+			program.PrintProgram()
 
 			for _, wantPkg := range tc.wantProgram {
 				gotPkg, err := program.GetPackage(wantPkg.Name)
