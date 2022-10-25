@@ -8,11 +8,19 @@ import (
 	"github.com/skycoin/cx/cmd/packageloader/loader"
 )
 
-func ReDeclarationCheck(Glbl []GlobalDeclaration, Enum []EnumDeclaration, TypeDef []TypeDefinitionDeclaration, Strct []StructDeclaration, Func []FuncDeclaration) error {
+func ReDeclarationCheck(Import []ImportDeclaration, Glbl []GlobalDeclaration, Enum []EnumDeclaration, TypeDef []TypeDefinitionDeclaration, Strct []StructDeclaration, Func []FuncDeclaration) error {
 
 	// Checks for the first declaration redeclared
 	// in the order:
-	// Global -> Enum -> Type Definition -> Struct -> Func
+	// Import -> Global -> Enum -> Type Definition -> Struct -> Func
+
+	for i := 0; i < len(Import); i++ {
+		for j := i + 1; j < len(Import); j++ {
+			if Import[i].ImportName == Import[j].ImportName && Import[i].PackageID == Import[j].PackageID && Import[i].FileID == Import[j].FileID {
+				return fmt.Errorf("%v:%v: redeclaration error: import: %v", filepath.Base(Import[j].FileID), Import[j].LineNumber, Import[i].ImportName)
+			}
+		}
+	}
 
 	for i := 0; i < len(Glbl); i++ {
 		for j := i + 1; j < len(Glbl); j++ {
@@ -94,9 +102,10 @@ func GetDeclarations(source []byte, Glbls []GlobalDeclaration, Enums []EnumDecla
 	return declarations
 }
 
-func ExtractAllDeclarations(source []*loader.File) ([]GlobalDeclaration, []EnumDeclaration, []TypeDefinitionDeclaration, []StructDeclaration, []FuncDeclaration, error) {
+func ExtractAllDeclarations(source []*loader.File) ([]ImportDeclaration, []GlobalDeclaration, []EnumDeclaration, []TypeDefinitionDeclaration, []StructDeclaration, []FuncDeclaration, error) {
 
 	//Variable declarations
+	var Imports []ImportDeclaration
 	var Globals []GlobalDeclaration
 	var Enums []EnumDeclaration
 	var TypeDefinitions []TypeDefinitionDeclaration
@@ -104,6 +113,7 @@ func ExtractAllDeclarations(source []*loader.File) ([]GlobalDeclaration, []EnumD
 	var Funcs []FuncDeclaration
 
 	//Channel declarations
+	importChannel := make(chan []ImportDeclaration, len(source))
 	globalChannel := make(chan []GlobalDeclaration, len(source))
 	enumChannel := make(chan []EnumDeclaration, len(source))
 	typeDefinitionChannel := make(chan []TypeDefinitionDeclaration, len(source))
@@ -132,7 +142,22 @@ func ExtractAllDeclarations(source []*loader.File) ([]GlobalDeclaration, []EnumD
 				return
 			}
 
-			wg.Add(5)
+			wg.Add(6)
+
+			go func(importChannel chan<- []ImportDeclaration, replaceComments []byte, fileName string, wg *sync.WaitGroup) {
+
+				defer wg.Done()
+
+				imports, err := ExtractImports(replaceComments, fileName)
+
+				if err != nil {
+					errorChannel <- err
+					return
+				}
+
+				importChannel <- imports
+
+			}(importChannel, replaceComments, fileName, wg)
 
 			go func(globalChannel chan<- []GlobalDeclaration, replaceStringContents []byte, fileName string, wg *sync.WaitGroup) {
 
@@ -215,6 +240,7 @@ func ExtractAllDeclarations(source []*loader.File) ([]GlobalDeclaration, []EnumD
 	wg.Wait()
 
 	// Close all channels for reading
+	close(importChannel)
 	close(globalChannel)
 	close(enumChannel)
 	close(typeDefinitionChannel)
@@ -223,7 +249,17 @@ func ExtractAllDeclarations(source []*loader.File) ([]GlobalDeclaration, []EnumD
 	close(errorChannel)
 
 	//Read from channels concurrently
-	wg.Add(5)
+	wg.Add(6)
+
+	go func() {
+
+		for imprt := range importChannel {
+			Imports = append(Imports, imprt...)
+		}
+
+		wg.Done()
+
+	}()
 
 	go func() {
 
@@ -278,15 +314,15 @@ func ExtractAllDeclarations(source []*loader.File) ([]GlobalDeclaration, []EnumD
 
 	// there's an error, return values with first error
 	if err := <-errorChannel; err != nil {
-		return Globals, Enums, TypeDefinitions, Structs, Funcs, err
+		return Imports, Globals, Enums, TypeDefinitions, Structs, Funcs, err
 	}
 
-	reDeclarationCheck := ReDeclarationCheck(Globals, Enums, TypeDefinitions, Structs, Funcs)
+	reDeclarationCheck := ReDeclarationCheck(Imports, Globals, Enums, TypeDefinitions, Structs, Funcs)
 
 	// there's declaration redeclared return values with error
 	if reDeclarationCheck != nil {
-		return Globals, Enums, TypeDefinitions, Structs, Funcs, reDeclarationCheck
+		return Imports, Globals, Enums, TypeDefinitions, Structs, Funcs, reDeclarationCheck
 	}
 
-	return Globals, Enums, TypeDefinitions, Structs, Funcs, nil
+	return Imports, Globals, Enums, TypeDefinitions, Structs, Funcs, nil
 }
