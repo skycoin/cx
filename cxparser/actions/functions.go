@@ -1609,148 +1609,33 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbolsData
 		panic(err)
 	}
 
-	if expr.IsMethodCall() {
-		var inpIdx ast.CXArgumentIndex = -1
-		var outIdx ast.CXArgumentIndex = -1
-		if len(expression.GetInputs(prgrm)) > 0 {
-			expressionInputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetInputs(prgrm)[0])
-			if expressionInputTypeSig.Name != "" && expressionInputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-				inpIdx = ast.CXArgumentIndex(expressionInputTypeSig.Meta)
-			}
+	if !expr.IsMethodCall() {
+		return
+	}
+
+	var inpIdx ast.CXArgumentIndex = -1
+	var outIdx ast.CXArgumentIndex = -1
+	if len(expression.GetInputs(prgrm)) > 0 {
+		expressionInputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetInputs(prgrm)[0])
+		if expressionInputTypeSig.Name != "" && expressionInputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			inpIdx = ast.CXArgumentIndex(expressionInputTypeSig.Meta)
+		}
+	}
+
+	if len(expression.GetOutputs(prgrm)) > 0 {
+		expressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetOutputs(prgrm)[0])
+		if expressionOutputTypeSig.Name != "" && expressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			outIdx = ast.CXArgumentIndex(expressionOutputTypeSig.Meta)
+		}
+	}
+
+	if inpIdx != -1 {
+		inpPkg, err := prgrm.GetPackageFromArray(prgrm.CXArgs[inpIdx].Package)
+		if err != nil {
+			panic(err)
 		}
 
-		if len(expression.GetOutputs(prgrm)) > 0 {
-			expressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetOutputs(prgrm)[0])
-			if expressionOutputTypeSig.Name != "" && expressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-				outIdx = ast.CXArgumentIndex(expressionOutputTypeSig.Meta)
-			}
-		}
-
-		if inpIdx != -1 {
-			inpPkg, err := prgrm.GetPackageFromArray(prgrm.CXArgs[inpIdx].Package)
-			if err != nil {
-				panic(err)
-			}
-
-			if argInpTypeSignature, err := lookupSymbol(prgrm, inpPkg.Name, prgrm.CXArgs[inpIdx].Name, symbolsData); err != nil {
-				if outIdx == -1 {
-					panic("")
-				}
-
-				outPkg, err := prgrm.GetPackageFromArray(prgrm.CXArgs[outIdx].Package)
-				if err != nil {
-					panic(err)
-				}
-
-				argOutTypeSignature, err := lookupSymbol(prgrm, outPkg.Name, prgrm.CXArgs[outIdx].Name, symbolsData)
-				if err != nil {
-					println(ast.CompilationError(prgrm.CXArgs[outIdx].ArgDetails.FileName, prgrm.CXArgs[outIdx].ArgDetails.FileLine), fmt.Sprintf("identifier '%s' does not exist", prgrm.CXArgs[outIdx].Name))
-					os.Exit(constants.CX_COMPILATION_ERROR)
-				}
-				// then we found an output
-				if len(prgrm.CXArgs[outIdx].Fields) > 0 {
-					var argOut *ast.CXArgument = &ast.CXArgument{}
-					if argOutTypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-						argOut = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(argOutTypeSignature.Meta))
-					} else {
-						panic("type is cx argument deprecate\n\n")
-					}
-
-					strct := argOut.StructType
-					strctPkg, err := prgrm.GetPackageFromArray(strct.Package)
-					if err != nil {
-						panic(err)
-					}
-
-					if fnIdx, err := strctPkg.GetMethod(prgrm, strct.Name+"."+prgrm.GetCXArgFromArray(prgrm.CXArgs[outIdx].Fields[len(prgrm.CXArgs[outIdx].Fields)-1]).Name, strct.Name); err == nil {
-						prgrm.CXAtomicOps[expr.Index].Operator = fnIdx
-					} else {
-						panic("")
-					}
-
-					typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, &prgrm.CXArgs[outIdx])
-					typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
-					prgrm.CXAtomicOps[expr.Index].Inputs.Fields = append([]ast.CXTypeSignatureIndex{typeSigIdx}, prgrm.CXAtomicOps[expr.Index].Inputs.Fields...)
-					prgrm.CXAtomicOps[expr.Index].Outputs.Fields = prgrm.CXAtomicOps[expr.Index].Outputs.Fields[1:]
-					prgrm.CXArgs[outIdx].Fields = prgrm.CXArgs[outIdx].Fields[:len(prgrm.CXArgs[outIdx].Fields)-1]
-				}
-			} else {
-				var argInp *ast.CXArgument = &ast.CXArgument{}
-				if argInpTypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-					argInp = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(argInpTypeSignature.Meta))
-				} else if argInpTypeSignature.Type == ast.TYPE_ATOMIC || argInpTypeSignature.Type == ast.TYPE_POINTER_ATOMIC {
-				} else {
-					panic("type is not known")
-				}
-
-				// then we found an input
-				if len(prgrm.CXArgs[inpIdx].Fields) > 0 && argInp != nil {
-					strct := argInp.StructType
-
-					for _, fldIdx := range prgrm.CXArgs[inpIdx].Fields {
-						field := prgrm.GetCXArgFromArray(fldIdx)
-						if inFld, err := strct.GetField(prgrm, field.Name); err == nil {
-							if inFld.StructType != nil {
-								strct = inFld.StructType
-							}
-						}
-					}
-
-					strctPkg, err := prgrm.GetPackageFromArray(strct.Package)
-					if err != nil {
-						panic(err)
-					}
-
-					if fnIdx, err := strctPkg.GetMethod(prgrm, strct.Name+"."+prgrm.GetCXArgFromArray(prgrm.CXArgs[inpIdx].Fields[len(prgrm.CXArgs[inpIdx].Fields)-1]).Name, strct.Name); err == nil {
-						prgrm.CXAtomicOps[expr.Index].Operator = fnIdx
-					} else {
-						panic(err)
-					}
-
-					prgrm.CXArgs[inpIdx].Fields = prgrm.CXArgs[inpIdx].Fields[:len(prgrm.CXArgs[inpIdx].Fields)-1]
-				} else if len(prgrm.CXArgs[outIdx].Fields) > 0 {
-					outPkg, err := prgrm.GetPackageFromArray(prgrm.CXArgs[outIdx].Package)
-					if err != nil {
-						panic(err)
-					}
-					argOutTypeSignature, err := lookupSymbol(prgrm, outPkg.Name, prgrm.CXArgs[outIdx].Name, symbolsData)
-					if err != nil {
-						panic(err)
-					}
-
-					var argOut *ast.CXArgument = &ast.CXArgument{StructType: nil, ArgDetails: &ast.CXArgumentDebug{}}
-					var argOutType string
-					if argOutTypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-						argOut = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(argOutTypeSignature.Meta))
-						argOutType = argOut.Type.Name()
-					} else {
-						argOutType = argOutTypeSignature.GetTypeString(prgrm)
-					}
-
-					strct := argOut.StructType
-					if strct == nil {
-						println(ast.CompilationError(argOut.ArgDetails.FileName, argOut.ArgDetails.FileLine), fmt.Sprintf("illegal method call or field access on identifier '%s' of primitive type '%s'", argOutTypeSignature.Name, argOutType))
-						os.Exit(constants.CX_COMPILATION_ERROR)
-					}
-
-					prgrm.CXAtomicOps[expr.Index].Inputs.Fields = append(prgrm.CXAtomicOps[expr.Index].Outputs.Fields[:1], prgrm.CXAtomicOps[expr.Index].Inputs.Fields...)
-					prgrm.CXAtomicOps[expr.Index].Outputs.Fields = prgrm.CXAtomicOps[expr.Index].Outputs.Fields[:len(prgrm.CXAtomicOps[expr.Index].Outputs.Fields)-1]
-
-					strctPkg, err := prgrm.GetPackageFromArray(strct.Package)
-					if err != nil {
-						panic(err)
-					}
-
-					if fnIdx, err := strctPkg.GetMethod(prgrm, strct.Name+"."+prgrm.GetCXArgFromArray(prgrm.CXArgs[outIdx].Fields[len(prgrm.CXArgs[outIdx].Fields)-1]).Name, strct.Name); err == nil {
-						prgrm.CXAtomicOps[expr.Index].Operator = fnIdx
-					} else {
-						panic(err)
-					}
-
-					prgrm.CXArgs[outIdx].Fields = prgrm.CXArgs[outIdx].Fields[:len(prgrm.CXArgs[outIdx].Fields)-1]
-				}
-			}
-		} else {
+		if argInpTypeSignature, err := lookupSymbol(prgrm, inpPkg.Name, prgrm.CXArgs[inpIdx].Name, symbolsData); err != nil {
 			if outIdx == -1 {
 				panic("")
 			}
@@ -1765,88 +1650,209 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbolsData
 				println(ast.CompilationError(prgrm.CXArgs[outIdx].ArgDetails.FileName, prgrm.CXArgs[outIdx].ArgDetails.FileLine), fmt.Sprintf("identifier '%s' does not exist", prgrm.CXArgs[outIdx].Name))
 				os.Exit(constants.CX_COMPILATION_ERROR)
 			}
-
-			var argOut *ast.CXArgument = &ast.CXArgument{}
-			if argOutTypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-				argOut = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(argOutTypeSignature.Meta))
-
-				// then we found an output
-				if len(prgrm.CXArgs[outIdx].Fields) > 0 {
-					strct := argOut.StructType
-
-					if strct == nil {
-						println(ast.CompilationError(argOut.ArgDetails.FileName, argOut.ArgDetails.FileLine), fmt.Sprintf("illegal method call or field access on identifier '%s' of primitive type '%s'", argOut.Name, argOut.Type.Name()))
-						os.Exit(constants.CX_COMPILATION_ERROR)
-					}
-
-					strctPkg, err := prgrm.GetPackageFromArray(strct.Package)
-					if err != nil {
-						panic(err)
-					}
-
-					if fnIdx, err := strctPkg.GetMethod(prgrm, strct.Name+"."+prgrm.GetCXArgFromArray(prgrm.CXArgs[outIdx].Fields[len(prgrm.CXArgs[outIdx].Fields)-1]).Name, strct.Name); err == nil {
-						prgrm.CXAtomicOps[expr.Index].Operator = fnIdx
-					} else {
-						panic("")
-					}
-
-					typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, &prgrm.CXArgs[outIdx])
-					typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
-					newInputs := &ast.CXStruct{Fields: []ast.CXTypeSignatureIndex{typeSigIdx}}
-					if prgrm.CXAtomicOps[expr.Index].Inputs != nil {
-						for _, typeSig := range prgrm.CXAtomicOps[expr.Index].Inputs.Fields {
-							newInputs.AddField_CXAtomicOps(prgrm, typeSig)
-						}
-					}
-					prgrm.CXAtomicOps[expr.Index].Inputs = newInputs
-					prgrm.CXAtomicOps[expr.Index].Outputs.Fields = prgrm.CXAtomicOps[expr.Index].Outputs.Fields[1:]
-					prgrm.CXArgs[outIdx].Fields = prgrm.CXArgs[outIdx].Fields[:len(prgrm.CXArgs[outIdx].Fields)-1]
+			// then we found an output
+			if len(prgrm.CXArgs[outIdx].Fields) > 0 {
+				var argOut *ast.CXArgument = &ast.CXArgument{}
+				if argOutTypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+					argOut = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(argOutTypeSignature.Meta))
+				} else {
+					panic("type is cx argument deprecate\n\n")
 				}
-			} else if argOutTypeSignature.Type == ast.TYPE_ATOMIC || argOutTypeSignature.Type == ast.TYPE_POINTER_ATOMIC {
-				// TODO: improve
-				// do nothing for now since len(prgrm.CXArgs[outIdx].Fields) > 0
-				// of type atomics and pointers are always zero
-			} else if argOutTypeSignature.Type == ast.TYPE_STRUCT {
-				// TODO: improve this ASAP
-				structDetails := prgrm.GetCXTypeSignatureStructFromArray(argOutTypeSignature.Meta)
 
-				// then we found an output
-				if len(prgrm.CXArgs[outIdx].Fields) > 0 {
-					strct := structDetails.StructType
-
-					if strct == nil {
-						// println(ast.CompilationError(argOut.ArgDetails.FileName, argOut.ArgDetails.FileLine), fmt.Sprintf("illegal method call or field access on identifier '%s' of primitive type '%s'", argOut.Name, argOut.Type.Name()))
-						os.Exit(constants.CX_COMPILATION_ERROR)
-					}
-
-					strctPkg, err := prgrm.GetPackageFromArray(strct.Package)
-					if err != nil {
-						panic(err)
-					}
-
-					if fnIdx, err := strctPkg.GetMethod(prgrm, strct.Name+"."+prgrm.GetCXArgFromArray(prgrm.CXArgs[outIdx].Fields[len(prgrm.CXArgs[outIdx].Fields)-1]).Name, strct.Name); err == nil {
-						prgrm.CXAtomicOps[expr.Index].Operator = fnIdx
-					} else {
-						panic("")
-					}
-
-					typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, &prgrm.CXArgs[outIdx])
-					typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
-					newInputs := &ast.CXStruct{Fields: []ast.CXTypeSignatureIndex{typeSigIdx}}
-					if prgrm.CXAtomicOps[expr.Index].Inputs != nil {
-						for _, typeSig := range prgrm.CXAtomicOps[expr.Index].Inputs.Fields {
-							newInputs.AddField_CXAtomicOps(prgrm, typeSig)
-						}
-					}
-					prgrm.CXAtomicOps[expr.Index].Inputs = newInputs
-					prgrm.CXAtomicOps[expr.Index].Outputs.Fields = prgrm.CXAtomicOps[expr.Index].Outputs.Fields[1:]
-					prgrm.CXArgs[outIdx].Fields = prgrm.CXArgs[outIdx].Fields[:len(prgrm.CXArgs[outIdx].Fields)-1]
+				strct := argOut.StructType
+				strctPkg, err := prgrm.GetPackageFromArray(strct.Package)
+				if err != nil {
+					panic(err)
 				}
+
+				if fnIdx, err := strctPkg.GetMethod(prgrm, strct.Name+"."+prgrm.GetCXArgFromArray(prgrm.CXArgs[outIdx].Fields[len(prgrm.CXArgs[outIdx].Fields)-1]).Name, strct.Name); err == nil {
+					prgrm.CXAtomicOps[expr.Index].Operator = fnIdx
+				} else {
+					panic("")
+				}
+
+				typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, &prgrm.CXArgs[outIdx])
+				typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
+				prgrm.CXAtomicOps[expr.Index].Inputs.Fields = append([]ast.CXTypeSignatureIndex{typeSigIdx}, prgrm.CXAtomicOps[expr.Index].Inputs.Fields...)
+				prgrm.CXAtomicOps[expr.Index].Outputs.Fields = prgrm.CXAtomicOps[expr.Index].Outputs.Fields[1:]
+				prgrm.CXArgs[outIdx].Fields = prgrm.CXArgs[outIdx].Fields[:len(prgrm.CXArgs[outIdx].Fields)-1]
+			}
+		} else {
+			var argInpStructType *ast.CXStruct
+			if argInpTypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				argInp := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(argInpTypeSignature.Meta))
+				argInpStructType = argInp.StructType
+			} else if argInpTypeSignature.Type == ast.TYPE_ATOMIC || argInpTypeSignature.Type == ast.TYPE_POINTER_ATOMIC {
+			} else if argInpTypeSignature.Type == ast.TYPE_STRUCT {
+				structDetails := prgrm.GetCXTypeSignatureStructFromArray(argInpTypeSignature.Meta)
+				argInpStructType = structDetails.StructType
 			} else {
 				panic("type is not known")
 			}
 
+			// then we found an input
+			if len(prgrm.CXArgs[inpIdx].Fields) > 0 && argInpStructType != nil {
+				strct := argInpStructType
+
+				for _, fldIdx := range prgrm.CXArgs[inpIdx].Fields {
+					field := prgrm.GetCXArgFromArray(fldIdx)
+					if inFld, err := strct.GetField(prgrm, field.Name); err == nil {
+						if inFld.StructType != nil {
+							strct = inFld.StructType
+						}
+					}
+				}
+
+				strctPkg, err := prgrm.GetPackageFromArray(strct.Package)
+				if err != nil {
+					panic(err)
+				}
+
+				if fnIdx, err := strctPkg.GetMethod(prgrm, strct.Name+"."+prgrm.GetCXArgFromArray(prgrm.CXArgs[inpIdx].Fields[len(prgrm.CXArgs[inpIdx].Fields)-1]).Name, strct.Name); err == nil {
+					prgrm.CXAtomicOps[expr.Index].Operator = fnIdx
+				} else {
+					panic(err)
+				}
+
+				prgrm.CXArgs[inpIdx].Fields = prgrm.CXArgs[inpIdx].Fields[:len(prgrm.CXArgs[inpIdx].Fields)-1]
+			} else if len(prgrm.CXArgs[outIdx].Fields) > 0 {
+				outPkg, err := prgrm.GetPackageFromArray(prgrm.CXArgs[outIdx].Package)
+				if err != nil {
+					panic(err)
+				}
+				argOutTypeSignature, err := lookupSymbol(prgrm, outPkg.Name, prgrm.CXArgs[outIdx].Name, symbolsData)
+				if err != nil {
+					panic(err)
+				}
+
+				var argOut *ast.CXArgument = &ast.CXArgument{StructType: nil, ArgDetails: &ast.CXArgumentDebug{}}
+				var argOutType string
+				if argOutTypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+					argOut = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(argOutTypeSignature.Meta))
+					argOutType = argOut.Type.Name()
+				} else {
+					argOutType = argOutTypeSignature.GetTypeString(prgrm)
+				}
+
+				strct := argOut.StructType
+				if strct == nil {
+					println(ast.CompilationError(argOut.ArgDetails.FileName, argOut.ArgDetails.FileLine), fmt.Sprintf("illegal method call or field access on identifier '%s' of primitive type '%s'", argOutTypeSignature.Name, argOutType))
+					os.Exit(constants.CX_COMPILATION_ERROR)
+				}
+
+				prgrm.CXAtomicOps[expr.Index].Inputs.Fields = append(prgrm.CXAtomicOps[expr.Index].Outputs.Fields[:1], prgrm.CXAtomicOps[expr.Index].Inputs.Fields...)
+				prgrm.CXAtomicOps[expr.Index].Outputs.Fields = prgrm.CXAtomicOps[expr.Index].Outputs.Fields[:len(prgrm.CXAtomicOps[expr.Index].Outputs.Fields)-1]
+
+				strctPkg, err := prgrm.GetPackageFromArray(strct.Package)
+				if err != nil {
+					panic(err)
+				}
+
+				if fnIdx, err := strctPkg.GetMethod(prgrm, strct.Name+"."+prgrm.GetCXArgFromArray(prgrm.CXArgs[outIdx].Fields[len(prgrm.CXArgs[outIdx].Fields)-1]).Name, strct.Name); err == nil {
+					prgrm.CXAtomicOps[expr.Index].Operator = fnIdx
+				} else {
+					panic(err)
+				}
+
+				prgrm.CXArgs[outIdx].Fields = prgrm.CXArgs[outIdx].Fields[:len(prgrm.CXArgs[outIdx].Fields)-1]
+			}
 		}
+	} else {
+		if outIdx == -1 {
+			panic("")
+		}
+
+		outPkg, err := prgrm.GetPackageFromArray(prgrm.CXArgs[outIdx].Package)
+		if err != nil {
+			panic(err)
+		}
+
+		argOutTypeSignature, err := lookupSymbol(prgrm, outPkg.Name, prgrm.CXArgs[outIdx].Name, symbolsData)
+		if err != nil {
+			println(ast.CompilationError(prgrm.CXArgs[outIdx].ArgDetails.FileName, prgrm.CXArgs[outIdx].ArgDetails.FileLine), fmt.Sprintf("identifier '%s' does not exist", prgrm.CXArgs[outIdx].Name))
+			os.Exit(constants.CX_COMPILATION_ERROR)
+		}
+
+		var argOut *ast.CXArgument = &ast.CXArgument{}
+		if argOutTypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			argOut = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(argOutTypeSignature.Meta))
+
+			// then we found an output
+			if len(prgrm.CXArgs[outIdx].Fields) > 0 {
+				strct := argOut.StructType
+
+				if strct == nil {
+					println(ast.CompilationError(argOut.ArgDetails.FileName, argOut.ArgDetails.FileLine), fmt.Sprintf("illegal method call or field access on identifier '%s' of primitive type '%s'", argOut.Name, argOut.Type.Name()))
+					os.Exit(constants.CX_COMPILATION_ERROR)
+				}
+
+				strctPkg, err := prgrm.GetPackageFromArray(strct.Package)
+				if err != nil {
+					panic(err)
+				}
+
+				if fnIdx, err := strctPkg.GetMethod(prgrm, strct.Name+"."+prgrm.GetCXArgFromArray(prgrm.CXArgs[outIdx].Fields[len(prgrm.CXArgs[outIdx].Fields)-1]).Name, strct.Name); err == nil {
+					prgrm.CXAtomicOps[expr.Index].Operator = fnIdx
+				} else {
+					panic("")
+				}
+
+				typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, &prgrm.CXArgs[outIdx])
+				typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
+				newInputs := &ast.CXStruct{Fields: []ast.CXTypeSignatureIndex{typeSigIdx}}
+				if prgrm.CXAtomicOps[expr.Index].Inputs != nil {
+					for _, typeSig := range prgrm.CXAtomicOps[expr.Index].Inputs.Fields {
+						newInputs.AddField_CXAtomicOps(prgrm, typeSig)
+					}
+				}
+				prgrm.CXAtomicOps[expr.Index].Inputs = newInputs
+				prgrm.CXAtomicOps[expr.Index].Outputs.Fields = prgrm.CXAtomicOps[expr.Index].Outputs.Fields[1:]
+				prgrm.CXArgs[outIdx].Fields = prgrm.CXArgs[outIdx].Fields[:len(prgrm.CXArgs[outIdx].Fields)-1]
+			}
+		} else if argOutTypeSignature.Type == ast.TYPE_ATOMIC || argOutTypeSignature.Type == ast.TYPE_POINTER_ATOMIC {
+			// TODO: improve
+			// do nothing for now since len(prgrm.CXArgs[outIdx].Fields) > 0
+			// of type atomics and pointers are always zero
+		} else if argOutTypeSignature.Type == ast.TYPE_STRUCT {
+			// TODO: improve this ASAP
+			structDetails := prgrm.GetCXTypeSignatureStructFromArray(argOutTypeSignature.Meta)
+
+			// then we found an output
+			if len(prgrm.CXArgs[outIdx].Fields) > 0 {
+				strct := structDetails.StructType
+
+				if strct == nil {
+					// println(ast.CompilationError(argOut.ArgDetails.FileName, argOut.ArgDetails.FileLine), fmt.Sprintf("illegal method call or field access on identifier '%s' of primitive type '%s'", argOut.Name, argOut.Type.Name()))
+					os.Exit(constants.CX_COMPILATION_ERROR)
+				}
+
+				strctPkg, err := prgrm.GetPackageFromArray(strct.Package)
+				if err != nil {
+					panic(err)
+				}
+
+				if fnIdx, err := strctPkg.GetMethod(prgrm, strct.Name+"."+prgrm.GetCXArgFromArray(prgrm.CXArgs[outIdx].Fields[len(prgrm.CXArgs[outIdx].Fields)-1]).Name, strct.Name); err == nil {
+					prgrm.CXAtomicOps[expr.Index].Operator = fnIdx
+				} else {
+					panic("")
+				}
+
+				typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, &prgrm.CXArgs[outIdx])
+				typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
+				newInputs := &ast.CXStruct{Fields: []ast.CXTypeSignatureIndex{typeSigIdx}}
+				if prgrm.CXAtomicOps[expr.Index].Inputs != nil {
+					for _, typeSig := range prgrm.CXAtomicOps[expr.Index].Inputs.Fields {
+						newInputs.AddField_CXAtomicOps(prgrm, typeSig)
+					}
+				}
+				prgrm.CXAtomicOps[expr.Index].Inputs = newInputs
+				prgrm.CXAtomicOps[expr.Index].Outputs.Fields = prgrm.CXAtomicOps[expr.Index].Outputs.Fields[1:]
+				prgrm.CXArgs[outIdx].Fields = prgrm.CXArgs[outIdx].Fields[:len(prgrm.CXArgs[outIdx].Fields)-1]
+			}
+		} else {
+			panic("type is not known")
+		}
+
 	}
 }
 
@@ -2136,6 +2142,32 @@ func CopyArgFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast
 		symTypeSignature.Offset = argTypeSignature.Offset
 		symTypeSignature.PassBy = sym.PassBy
 
+		if len(sym.Fields) > 0 {
+			elt := sym.GetAssignmentElement(prgrm)
+
+			declSpec := []int{}
+			for c := 0; c < len(elt.DeclarationSpecifiers); c++ {
+				switch elt.DeclarationSpecifiers[c] {
+				case constants.DECL_INDEXING:
+					if declSpec[len(declSpec)-1] == constants.DECL_ARRAY || declSpec[len(declSpec)-1] == constants.DECL_SLICE {
+						declSpec = declSpec[:len(declSpec)-1]
+					} else {
+						println(ast.CompilationError(sym.ArgDetails.FileName, sym.ArgDetails.FileLine), "invalid indexing")
+					}
+				case constants.DECL_DEREF:
+					if declSpec[len(declSpec)-1] == constants.DECL_POINTER {
+						declSpec = declSpec[:len(declSpec)-1]
+					} else {
+						println(ast.CompilationError(sym.ArgDetails.FileName, sym.ArgDetails.FileLine), "invalid indirection")
+					}
+				default:
+					declSpec = append(declSpec, elt.DeclarationSpecifiers[c])
+				}
+			}
+
+			elt.DeclarationSpecifiers = declSpec
+		}
+
 		return
 	} else if sym != nil && arg == nil && (len(sym.DeclarationSpecifiers) > 1 || len(sym.DereferenceOperations) > 1) {
 		sym.Name = argTypeSignature.Name
@@ -2364,12 +2396,12 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignatur
 					var methodOutputArg *ast.CXArgument = &ast.CXArgument{}
 					if methodOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 						methodOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(methodOutputTypeSig.Meta))
-					} else {
-						panic("type is not cx argument deprecate\n\n")
-					}
 
-					field.Type = methodOutputArg.Type
-					field.PointerTargetType = methodOutputArg.PointerTargetType
+						field.Type = methodOutputArg.Type
+						field.PointerTargetType = methodOutputArg.PointerTargetType
+					} else {
+						field.Type = methodOutputTypeSig.GetType(prgrm)
+					}
 				} else {
 					println(ast.CompilationError(field.ArgDetails.FileName, field.ArgDetails.FileLine), err.Error())
 				}
@@ -2474,8 +2506,10 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignatur
 
 					break
 				} else if nameField.Name == typeSignature.Name && typeSignature.Type == ast.TYPE_STRUCT {
+					structDetails := prgrm.GetCXTypeSignatureStructFromArray(typeSignature.Meta)
 					nameField.Type = types.STRUCT
-					nameField.StructType = prgrm.GetStructFromArray(ast.CXStructIndex(typeSignature.Meta))
+					nameField.Fields = structDetails.Fields
+					nameField.StructType = structDetails.StructType
 					if nameField.StructType != nil {
 						strct = nameField.StructType
 					}
