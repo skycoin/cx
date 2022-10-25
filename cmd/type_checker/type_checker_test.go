@@ -250,6 +250,45 @@ func TestTypeChecker_ParseParameterDeclaration(t *testing.T) {
 	}
 }
 
+func TestTypeChecker_ParseImports(t *testing.T) {
+
+	tests := []struct {
+		scenario string
+		testDir  string
+		imports  []string
+	}{
+		{
+			scenario: "Has Imports",
+			testDir:  "./test_files/ParseImports/HasImports.cx",
+			imports:  []string{},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.scenario, func(t *testing.T) {
+			actions.AST = nil
+
+			actions.AST = cxinit.MakeProgram()
+
+			srcBytes, err := os.ReadFile(tc.testDir)
+			if err != nil {
+				t.Error(err)
+			}
+
+			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(srcBytes)
+
+			Imports, err := declaration_extractor.ExtractImports(ReplaceCommentsWithWhitespaces, tc.testDir)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			err = type_checker.ParseImports(Imports)
+
+			actions.AST.PrintProgram()
+		})
+	}
+}
+
 func TestTypeChecker_ParseGlobals(t *testing.T) {
 
 	type GlobalTypeSignature struct {
@@ -954,7 +993,7 @@ func TestTypeChecker_ParseAllDeclarations(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
 
-			actions.AST = nil
+			program := cxinit.MakeProgram()
 
 			_, sourceCode, _ := loader.ParseArgsForCX([]string{tc.testDir}, false)
 
@@ -973,9 +1012,10 @@ func TestTypeChecker_ParseAllDeclarations(t *testing.T) {
 				t.Fatal(gotErr)
 			}
 
-			type_checker.ParseAllDeclarations(Imports, Globals, Structs, Funcs)
-
-			program := actions.AST
+			err = type_checker.ParseAllDeclarations(program, Imports, Globals, Structs, Funcs)
+			if err != nil {
+				t.Fatal(err)
+			}
 
 			program.PrintProgram()
 

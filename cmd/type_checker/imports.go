@@ -46,6 +46,8 @@ func ParseImports(imports []declaration_extractor.ImportDeclaration) error {
 			pkg = newPkg
 		}
 
+		actions.AST.SelectPackage(imprt.PackageID)
+
 		actions.DeclareImport(actions.AST, imprt.ImportName, imprt.FileID, imprt.LineNumber)
 
 	}
