@@ -48,7 +48,11 @@ func opIdentity(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 		//  pass by reference or not
 		// structDetails := prgrm.GetCXTypeSignatureStructFromArray(outputs[0].TypeSignature.Meta)
 
-		outputs[0].Set_bytes(prgrm, inputs[0].Get_bytes(prgrm))
+		if outputs[0].TypeSignature.PassBy == constants.PASSBY_REFERENCE {
+			outputs[0].Set_ptr(prgrm, inputs[0].Offset)
+		} else {
+			outputs[0].Set_bytes(prgrm, inputs[0].Get_bytes(prgrm))
+		}
 	} else {
 		panic("type is not known")
 	}
