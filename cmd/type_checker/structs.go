@@ -5,7 +5,6 @@ import (
 
 	"github.com/skycoin/cx/cmd/declaration_extractor"
 	"github.com/skycoin/cx/cx/ast"
-	cxinit "github.com/skycoin/cx/cx/init"
 	"github.com/skycoin/cx/cxparser/actions"
 )
 
@@ -13,13 +12,6 @@ import (
 // - takes in structs from cx/cmd/declaration_extractor
 // - adds structs to AST
 func ParseStructs(structs []declaration_extractor.StructDeclaration) error {
-
-	// Make porgram
-	if actions.AST == nil {
-		// fmt.Print(actions.AST, "\n")
-		actions.AST = cxinit.MakeProgram()
-		// fmt.Print("missing action API\n", &actions.AST, "\n")
-	}
 
 	for _, strct := range structs {
 

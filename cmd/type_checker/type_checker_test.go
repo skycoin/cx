@@ -260,7 +260,10 @@ func TestTypeChecker_ParseImports(t *testing.T) {
 		{
 			scenario: "Has Imports",
 			testDir:  "./test_files/ParseImports/HasImports.cx",
-			imports:  []string{},
+			imports: []string{
+				"myImport",
+				"anotherImport",
+			},
 		},
 	}
 
@@ -284,7 +287,42 @@ func TestTypeChecker_ParseImports(t *testing.T) {
 
 			err = type_checker.ParseImports(Imports)
 
-			actions.AST.PrintProgram()
+			program := actions.AST
+
+			for _, wantImport := range tc.imports {
+
+				var match bool
+				var gotImport string
+				for _, pkgIdx := range program.Packages {
+					pkg, err := program.GetPackageFromArray(pkgIdx)
+					if err != nil {
+						panic(err)
+					}
+
+					if cxpackages.IsDefaultPackage(pkg.Name) {
+						continue
+					}
+
+					for _, impIdx := range pkg.Imports {
+						impPkg, err := program.GetPackageFromArray(impIdx)
+						if err != nil {
+							panic(err)
+						}
+
+						gotImport = impPkg.Name
+
+						if gotImport == wantImport {
+							match = true
+							break
+						}
+					}
+				}
+
+				if !match {
+					t.Errorf("want import %s, got %s", wantImport, gotImport)
+				}
+			}
+
 		})
 	}
 }
@@ -410,7 +448,7 @@ func TestTypeChecker_ParseGlobals(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
 
-			actions.AST = nil
+			actions.AST = cxinit.MakeProgram()
 
 			srcBytes, err := os.ReadFile(tc.testDir)
 			if err != nil {
@@ -565,7 +603,7 @@ func TestTypeChecker_ParseStructs(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
 
-			actions.AST = nil
+			actions.AST = cxinit.MakeProgram()
 
 			srcBytes, err := os.ReadFile(tc.testDir)
 			if err != nil {
@@ -692,7 +730,7 @@ func TestTypeChecker_ParseFuncHeaders(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
 
-			actions.AST = nil
+			actions.AST = cxinit.MakeProgram()
 
 			srcBytes, err := os.ReadFile(tc.testDir)
 			if err != nil {
@@ -993,7 +1031,7 @@ func TestTypeChecker_ParseAllDeclarations(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
 
-			program := cxinit.MakeProgram()
+			actions.AST = nil
 
 			_, sourceCode, _ := loader.ParseArgsForCX([]string{tc.testDir}, false)
 
@@ -1012,12 +1050,14 @@ func TestTypeChecker_ParseAllDeclarations(t *testing.T) {
 				t.Fatal(gotErr)
 			}
 
-			err = type_checker.ParseAllDeclarations(program, Imports, Globals, Structs, Funcs)
+			err = type_checker.ParseAllDeclarations(Imports, Globals, Structs, Funcs)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			program.PrintProgram()
+			actions.AST.PrintProgram()
+
+			program := actions.AST
 
 			for _, wantPkg := range tc.wantProgram {
 				gotPkg, err := program.GetPackage(wantPkg.Name)

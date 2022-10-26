@@ -6,7 +6,6 @@ import (
 
 	"github.com/skycoin/cx/cmd/declaration_extractor"
 	"github.com/skycoin/cx/cx/ast"
-	cxinit "github.com/skycoin/cx/cx/init"
 	"github.com/skycoin/cx/cx/types"
 	"github.com/skycoin/cx/cxparser/actions"
 )
@@ -15,11 +14,6 @@ import (
 // - takes in globals from cx/cmd/declaration_extractor
 // - adds globals to AST
 func ParseGlobals(globals []declaration_extractor.GlobalDeclaration) error {
-
-	// Make program
-	if actions.AST == nil {
-		actions.AST = cxinit.MakeProgram()
-	}
 
 	// Range over global declarations and parse
 	for _, global := range globals {
