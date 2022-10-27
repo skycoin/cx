@@ -2,6 +2,7 @@ package type_checker
 
 import (
 	"github.com/skycoin/cx/cmd/declaration_extractor"
+	"github.com/skycoin/cx/cmd/packageloader/loader"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cxparser/actions"
 )
@@ -9,7 +10,7 @@ import (
 // Parse Structs
 // - takes in structs from cx/cmd/declaration_extractor
 // - adds structs to AST
-func ParseStructs(structs []declaration_extractor.StructDeclaration) error {
+func ParseStructs(files []*loader.File, structs []declaration_extractor.StructDeclaration) error {
 
 	for _, strct := range structs {
 
@@ -34,7 +35,7 @@ func ParseStructs(structs []declaration_extractor.StructDeclaration) error {
 
 		pkg = pkg.AddStruct(actions.AST, structCX)
 
-		src, err := GetSourceBytes(strct.FileID)
+		src, err := GetSourceBytes(files, strct.FileID)
 		if err != nil {
 			return err
 		}

@@ -461,8 +461,6 @@ func TestTypeChecker_ParseGlobals(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			type_checker.FileArray = files
-
 			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(files[0].Content)
 			ReplaceStringContentsWithWhitespaces, err := declaration_extractor.ReplaceStringContentsWithWhitespaces(ReplaceCommentsWithWhitespaces)
 			if err != nil {
@@ -474,7 +472,7 @@ func TestTypeChecker_ParseGlobals(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			err = type_checker.ParseGlobals(Globals)
+			err = type_checker.ParseGlobals(files, Globals)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -625,13 +623,11 @@ func TestTypeChecker_ParseStructs(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			type_checker.FileArray = files
-
 			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(files[0].Content)
 
 			structs, err := declaration_extractor.ExtractStructs(ReplaceCommentsWithWhitespaces, files[0].FileName)
 
-			type_checker.ParseStructs(structs)
+			type_checker.ParseStructs(files, structs)
 
 			program := actions.AST
 
@@ -761,8 +757,6 @@ func TestTypeChecker_ParseFuncHeaders(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			type_checker.FileArray = files
-
 			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(files[0].Content)
 			ReplaceStringContentsWithWhitespaces, err := declaration_extractor.ReplaceStringContentsWithWhitespaces(ReplaceCommentsWithWhitespaces)
 			if err != nil {
@@ -771,7 +765,7 @@ func TestTypeChecker_ParseFuncHeaders(t *testing.T) {
 
 			funcs, err := declaration_extractor.ExtractFuncs(ReplaceStringContentsWithWhitespaces, files[0].FileName)
 
-			type_checker.ParseFuncHeaders(funcs)
+			type_checker.ParseFuncHeaders(files, funcs)
 
 			program := actions.AST
 
@@ -1076,9 +1070,7 @@ func TestTypeChecker_ParseAllDeclarations(t *testing.T) {
 				t.Fatal(gotErr)
 			}
 
-			type_checker.FileArray = files
-
-			err = type_checker.ParseAllDeclarations(Imports, Globals, Structs, Funcs)
+			err = type_checker.ParseAllDeclarations(files, Imports, Globals, Structs, Funcs)
 			if err != nil {
 				t.Fatal(err)
 			}

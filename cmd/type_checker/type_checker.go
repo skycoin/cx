@@ -2,11 +2,12 @@ package type_checker
 
 import (
 	"github.com/skycoin/cx/cmd/declaration_extractor"
+	"github.com/skycoin/cx/cmd/packageloader/loader"
 	cxinit "github.com/skycoin/cx/cx/init"
 	"github.com/skycoin/cx/cxparser/actions"
 )
 
-func ParseAllDeclarations(imports []declaration_extractor.ImportDeclaration, globals []declaration_extractor.GlobalDeclaration, structs []declaration_extractor.StructDeclaration, funcs []declaration_extractor.FuncDeclaration) error {
+func ParseAllDeclarations(files []*loader.File, imports []declaration_extractor.ImportDeclaration, globals []declaration_extractor.GlobalDeclaration, structs []declaration_extractor.StructDeclaration, funcs []declaration_extractor.FuncDeclaration) error {
 
 	if actions.AST == nil {
 		actions.AST = cxinit.MakeProgram()
@@ -17,17 +18,17 @@ func ParseAllDeclarations(imports []declaration_extractor.ImportDeclaration, glo
 		return err
 	}
 
-	err = ParseStructs(structs)
+	err = ParseStructs(files, structs)
 	if err != nil {
 		return err
 	}
 
-	err = ParseGlobals(globals)
+	err = ParseGlobals(files, globals)
 	if err != nil {
 		return err
 	}
 
-	err = ParseFuncHeaders(funcs)
+	err = ParseFuncHeaders(files, funcs)
 	if err != nil {
 		return err
 	}

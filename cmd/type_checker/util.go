@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/skycoin/cx/cmd/packageloader/loader"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/types"
@@ -111,8 +112,8 @@ func ParseDeclarationSpecifier(declarationSpecifierByte []byte, fileName string,
 	return nil, fmt.Errorf("%v: %d: declaration specifier error", fileName, lineno)
 }
 
-func GetSourceBytes(fileName string) ([]byte, error) {
-	for _, file := range FileArray {
+func GetSourceBytes(files []*loader.File, fileName string) ([]byte, error) {
+	for _, file := range files {
 		if file.FileName == fileName {
 			return file.Content, nil
 		}

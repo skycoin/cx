@@ -4,6 +4,7 @@ import (
 	"regexp"
 
 	"github.com/skycoin/cx/cmd/declaration_extractor"
+	"github.com/skycoin/cx/cmd/packageloader/loader"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cxparser/actions"
 )
@@ -11,7 +12,7 @@ import (
 // Parse Function Headers
 // - takes in funcs from cx/cmd/declaration_extractor
 // - adds func headers to AST
-func ParseFuncHeaders(funcs []declaration_extractor.FuncDeclaration) error {
+func ParseFuncHeaders(files []*loader.File, funcs []declaration_extractor.FuncDeclaration) error {
 
 	for _, fun := range funcs {
 
@@ -34,7 +35,7 @@ func ParseFuncHeaders(funcs []declaration_extractor.FuncDeclaration) error {
 
 		actions.AST.SelectPackage(fun.PackageID)
 
-		source, err := GetSourceBytes(fun.FileID)
+		source, err := GetSourceBytes(files, fun.FileID)
 		if err != nil {
 			return err
 		}
