@@ -1,12 +1,10 @@
 package type_checker
 
 import (
-	"os"
 	"regexp"
 
 	"github.com/skycoin/cx/cmd/declaration_extractor"
 	"github.com/skycoin/cx/cx/ast"
-	cxinit "github.com/skycoin/cx/cx/init"
 	"github.com/skycoin/cx/cxparser/actions"
 )
 
@@ -14,11 +12,6 @@ import (
 // - takes in funcs from cx/cmd/declaration_extractor
 // - adds func headers to AST
 func ParseFuncHeaders(funcs []declaration_extractor.FuncDeclaration) error {
-
-	// Make program
-	if actions.AST == nil {
-		actions.AST = cxinit.MakeProgram()
-	}
 
 	for _, fun := range funcs {
 
@@ -39,7 +32,9 @@ func ParseFuncHeaders(funcs []declaration_extractor.FuncDeclaration) error {
 			pkg = newPkg
 		}
 
-		source, err := os.ReadFile(fun.FileID)
+		actions.AST.SelectPackage(fun.PackageID)
+
+		source, err := GetSourceBytes(fun.FileID)
 		if err != nil {
 			return err
 		}

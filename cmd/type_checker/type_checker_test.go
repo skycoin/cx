@@ -269,7 +269,6 @@ func TestTypeChecker_ParseImports(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
-			actions.AST = nil
 
 			actions.AST = cxinit.MakeProgram()
 
@@ -343,7 +342,7 @@ func TestTypeChecker_ParseGlobals(t *testing.T) {
 	}{
 		{
 			scenario: "Has globals",
-			testDir:  "./test_files/ParseGlobals/test.cx",
+			testDir:  "./test_files/ParseGlobals/HasGlobals",
 			globalTypeSignatures: []GlobalTypeSignature{
 				{
 					Name:    "Bool",
@@ -433,7 +432,7 @@ func TestTypeChecker_ParseGlobals(t *testing.T) {
 		},
 		{
 			scenario: "Has globals 2",
-			testDir:  "./test_files/ParseGlobals/testFile.cx",
+			testDir:  "./test_files/ParseGlobals/HasGlobals2",
 			globalTypeSignatures: []GlobalTypeSignature{
 				{
 					Name:    "number",
@@ -450,18 +449,27 @@ func TestTypeChecker_ParseGlobals(t *testing.T) {
 
 			actions.AST = cxinit.MakeProgram()
 
-			srcBytes, err := os.ReadFile(tc.testDir)
+			_, sourceCode, _ := loader.ParseArgsForCX([]string{tc.testDir}, true)
+
+			err := loader.LoadCXProgram("test", sourceCode, "bolt")
 			if err != nil {
-				t.Error(err)
+				t.Fatal(err)
 			}
 
-			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(srcBytes)
+			files, err := file_output.GetImportFiles("test", "bolt")
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			type_checker.FileArray = files
+
+			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(files[0].Content)
 			ReplaceStringContentsWithWhitespaces, err := declaration_extractor.ReplaceStringContentsWithWhitespaces(ReplaceCommentsWithWhitespaces)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			Globals, err := declaration_extractor.ExtractGlobals(ReplaceStringContentsWithWhitespaces, tc.testDir)
+			Globals, err := declaration_extractor.ExtractGlobals(ReplaceStringContentsWithWhitespaces, files[0].FileName)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -565,7 +573,7 @@ func TestTypeChecker_ParseStructs(t *testing.T) {
 	}{
 		{
 			scenario: "Has Structs",
-			testDir:  "./test_files/ParseStructs/test.cx",
+			testDir:  "./test_files/ParseStructs/HasStructs",
 			structTypeSignatures: []StructTypeSignature{
 				{
 					Name:    "CustomType",
@@ -605,14 +613,23 @@ func TestTypeChecker_ParseStructs(t *testing.T) {
 
 			actions.AST = cxinit.MakeProgram()
 
-			srcBytes, err := os.ReadFile(tc.testDir)
+			_, sourceCode, _ := loader.ParseArgsForCX([]string{tc.testDir}, true)
+
+			err := loader.LoadCXProgram("test", sourceCode, "bolt")
 			if err != nil {
-				t.Error(err)
+				t.Fatal(err)
 			}
 
-			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(srcBytes)
+			files, err := file_output.GetImportFiles("test", "bolt")
+			if err != nil {
+				t.Fatal(err)
+			}
 
-			structs, err := declaration_extractor.ExtractStructs(ReplaceCommentsWithWhitespaces, tc.testDir)
+			type_checker.FileArray = files
+
+			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(files[0].Content)
+
+			structs, err := declaration_extractor.ExtractStructs(ReplaceCommentsWithWhitespaces, files[0].FileName)
 
 			type_checker.ParseStructs(structs)
 
@@ -701,7 +718,7 @@ func TestTypeChecker_ParseFuncHeaders(t *testing.T) {
 	}{
 		{
 			scenario: "Has funcs",
-			testDir:  "./test_files/ParseFuncs/test.cx",
+			testDir:  "./test_files/ParseFuncs/HasFuncs",
 			functionCXs: []ast.CXFunction{
 				{
 					Name:    "main",
@@ -732,18 +749,27 @@ func TestTypeChecker_ParseFuncHeaders(t *testing.T) {
 
 			actions.AST = cxinit.MakeProgram()
 
-			srcBytes, err := os.ReadFile(tc.testDir)
+			_, sourceCode, _ := loader.ParseArgsForCX([]string{tc.testDir}, true)
+
+			err := loader.LoadCXProgram("test", sourceCode, "bolt")
 			if err != nil {
-				t.Error(err)
+				t.Fatal(err)
 			}
 
-			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(srcBytes)
+			files, err := file_output.GetImportFiles("test", "bolt")
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			type_checker.FileArray = files
+
+			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(files[0].Content)
 			ReplaceStringContentsWithWhitespaces, err := declaration_extractor.ReplaceStringContentsWithWhitespaces(ReplaceCommentsWithWhitespaces)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			funcs, err := declaration_extractor.ExtractFuncs(ReplaceStringContentsWithWhitespaces, tc.testDir)
+			funcs, err := declaration_extractor.ExtractFuncs(ReplaceStringContentsWithWhitespaces, files[0].FileName)
 
 			type_checker.ParseFuncHeaders(funcs)
 
@@ -1033,7 +1059,7 @@ func TestTypeChecker_ParseAllDeclarations(t *testing.T) {
 
 			actions.AST = nil
 
-			_, sourceCode, _ := loader.ParseArgsForCX([]string{tc.testDir}, false)
+			_, sourceCode, _ := loader.ParseArgsForCX([]string{tc.testDir}, true)
 
 			err := loader.LoadCXProgram("test", sourceCode, "bolt")
 			if err != nil {
@@ -1050,12 +1076,12 @@ func TestTypeChecker_ParseAllDeclarations(t *testing.T) {
 				t.Fatal(gotErr)
 			}
 
+			type_checker.FileArray = files
+
 			err = type_checker.ParseAllDeclarations(Imports, Globals, Structs, Funcs)
 			if err != nil {
 				t.Fatal(err)
 			}
-
-			actions.AST.PrintProgram()
 
 			program := actions.AST
 
@@ -1071,13 +1097,14 @@ func TestTypeChecker_ParseAllDeclarations(t *testing.T) {
 
 				// Globals
 				for _, wantGlobal := range wantPkg.Globals {
+					var gotGlobalName string
 					var gotGlobalType string
 					var match bool
-					var gotGlobal *ast.CXTypeSignature
 					for _, globalIdx := range gotPkg.Globals.Fields {
-						gotGlobal = program.GetCXTypeSignatureFromArray(globalIdx)
+						gotGlobal := program.GetCXTypeSignatureFromArray(globalIdx)
+						gotGlobalName = gotGlobal.Name
 
-						if gotGlobal.Name == wantGlobal.Name {
+						if gotGlobalName == wantGlobal.Name {
 
 							gotGlobalType = ast.GetFormattedType(program, gotGlobal)
 
@@ -1091,7 +1118,7 @@ func TestTypeChecker_ParseAllDeclarations(t *testing.T) {
 					}
 
 					if !match {
-						t.Errorf("want global %s %s %s, got %s %s %s", wantPkg.Name, wantGlobal.Name, wantGlobal.Type, gotPkg.Name, gotGlobal.Name, gotGlobalType)
+						t.Errorf("want global %s %s %s, got %s %s %s", wantPkg.Name, wantGlobal.Name, wantGlobal.Type, gotPkg.Name, gotGlobalName, gotGlobalType)
 					}
 				}
 
@@ -1156,11 +1183,12 @@ func TestTypeChecker_ParseAllDeclarations(t *testing.T) {
 						wantFuncReciever = fmt.Sprintf("%s *%s", wantFunc.RecieverName, wantFunc.RecieverType)
 					}
 
-					var gotFunc *ast.CXFunction
+					var gotFuncName string
 					var gotFuncReciever string
 					for _, gotFuncIdx := range gotPkg.Functions {
 						gotFuncReciever = ""
-						gotFunc = program.GetFunctionFromArray(gotFuncIdx)
+						gotFunc := program.GetFunctionFromArray(gotFuncIdx)
+						gotFuncName = gotFunc.Name
 						gotFuncInputs := gotFunc.GetInputs(program)
 						if len(gotFuncInputs) != 0 {
 							gotRecieverTypeSignatureIdx := gotFuncInputs[0]
@@ -1193,14 +1221,12 @@ func TestTypeChecker_ParseAllDeclarations(t *testing.T) {
 					}
 
 					if !match {
-						t.Errorf("want func %s (%s) (), got %s (%s) ()", wantFuncName, wantFuncReciever, gotFunc.Name, gotFuncReciever)
+						t.Errorf("want func %s (%s) (), got %s (%s) ()", wantFuncName, wantFuncReciever, gotFuncName, gotFuncReciever)
 
 					}
 				}
 
 			}
-
-			program.PrintProgram()
 
 		})
 	}

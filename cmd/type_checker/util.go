@@ -110,3 +110,13 @@ func ParseDeclarationSpecifier(declarationSpecifierByte []byte, fileName string,
 
 	return nil, fmt.Errorf("%v: %d: declaration specifier error", fileName, lineno)
 }
+
+func GetSourceBytes(fileName string) ([]byte, error) {
+	for _, file := range FileArray {
+		if file.FileName == fileName {
+			return file.Content, nil
+		}
+	}
+
+	return nil, fmt.Errorf("%s not found", fileName)
+}
