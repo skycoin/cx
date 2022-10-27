@@ -1262,7 +1262,7 @@ func ProcessShortDeclaration(prgrm *ast.CXProgram, expr *ast.CXExpression, expre
 			expressionOutputArg := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionOutputTypeSig.Meta))
 			expressionOutputArgType = expressionOutputArg.Type
 		} else {
-			expressionOutputArgType = types.Code(expressionOutputTypeSig.Meta)
+			expressionOutputArgType = expressionOutputTypeSig.GetType(prgrm)
 		}
 	}
 
