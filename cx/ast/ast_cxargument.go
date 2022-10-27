@@ -408,10 +408,16 @@ func IsTypePointerSliceAtomic(arg *CXArgument) bool {
 
 func IsTypeStruct(arg *CXArgument) bool {
 	isThereDeclPointer := false
+	IsThereDeclSlice := false
 	for _, decl := range arg.DeclarationSpecifiers {
 		if decl == constants.DECL_POINTER {
 			isThereDeclPointer = true
 		}
+
+		if decl == constants.DECL_SLICE {
+			IsThereDeclSlice = true
+		}
 	}
-	return !isThereDeclPointer && !arg.IsSlice() && len(arg.Lengths) == 0 && arg.StructType != nil && len(arg.DeclarationSpecifiers) >= 1 && arg.DeclarationSpecifiers[0] == constants.DECL_STRUCT
+
+	return !isThereDeclPointer && !IsThereDeclSlice && !arg.IsSlice() && len(arg.Lengths) == 0 && arg.StructType != nil && len(arg.DeclarationSpecifiers) >= 1 && arg.DeclarationSpecifiers[0] == constants.DECL_STRUCT
 }
