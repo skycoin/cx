@@ -96,6 +96,8 @@ func (cxprogram *CXProgram) PrintStack() {
 					// do nothing
 				} else if input.Type == TYPE_SLICE_ATOMIC {
 					// do nothing
+				} else if input.Type == TYPE_STRUCT {
+					// do nothing
 				}
 
 				if input.Name == "" || cxAtomicOpOperator == nil {
