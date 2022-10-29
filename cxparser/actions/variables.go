@@ -90,7 +90,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 		// if offset is not valid, assign new offset
 		var glblArg *ast.CXArgument = &ast.CXArgument{}
 		if glbl.Offset < 0 || !glbl.Offset.IsValid() {
-			if declaration_specifiers.IsSlice { // TODO:PTR move branch in WritePrimary
+			if declaration_specifiers.IsSlice() { // TODO:PTR move branch in WritePrimary
 				glblArg = WritePrimary(prgrm, declaration_specifiers.Type,
 					make([]byte, types.POINTER_SIZE), true)
 			} else {
@@ -120,7 +120,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 			glbl.Type = ast.TYPE_ARRAY_ATOMIC
 
 			typeSignatureForArray := &ast.CXTypeSignature_Array{
-				Type:    int(declaration_specifiers.Type),
+				Meta:    int(declaration_specifiers.Type),
 				Lengths: declaration_specifiers.Lengths,
 				Indexes: declaration_specifiers.Indexes,
 			}
@@ -137,7 +137,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 			glbl.Type = ast.TYPE_POINTER_ARRAY_ATOMIC
 
 			typeSignatureForArray := &ast.CXTypeSignature_Array{
-				Type:    int(declaration_specifiers.Type),
+				Meta:    int(declaration_specifiers.Type),
 				Lengths: declaration_specifiers.Lengths,
 				Indexes: declaration_specifiers.Indexes,
 			}
@@ -155,7 +155,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 			glbl.Type = ast.TYPE_SLICE_ATOMIC
 
 			typeSignatureForArray := &ast.CXTypeSignature_Array{
-				Type:    int(declaration_specifiers.Type),
+				Meta:    int(declaration_specifiers.Type),
 				Lengths: declaration_specifiers.Lengths,
 				Indexes: declaration_specifiers.Indexes,
 			}
@@ -173,7 +173,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 			glbl.Type = ast.TYPE_POINTER_SLICE_ATOMIC
 
 			typeSignatureForArray := &ast.CXTypeSignature_Array{
-				Type:    int(declaration_specifiers.Type),
+				Meta:    int(declaration_specifiers.Type),
 				Lengths: declaration_specifiers.Lengths,
 				Indexes: declaration_specifiers.Indexes,
 			}
@@ -221,7 +221,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 	} else {
 		// then it hasn't been defined
 		var glblArg *ast.CXArgument = &ast.CXArgument{}
-		if declaration_specifiers.IsSlice { // TODO:PTR move branch in WritePrimary
+		if declaration_specifiers.IsSlice() { // TODO:PTR move branch in WritePrimary
 			glblArg = WritePrimary(prgrm, declaration_specifiers.Type, make([]byte, types.POINTER_SIZE), true)
 		} else {
 			glblArg = WritePrimary(prgrm, declaration_specifiers.Type, make([]byte, totalSize), false)
@@ -281,6 +281,8 @@ func processLocalInitialization(prgrm *ast.CXProgram, pkg *ast.CXPackage, initia
 			typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, prgrm.GetCXArgFromArray(initOutIdx))
 			initOutTypeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
 		} else if initializerExpressionOutputTypeSig.Type == ast.TYPE_ATOMIC || initializerExpressionOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
+			initOutTypeSigIdx = initializerExpression.GetOutputs(prgrm)[0]
+		} else if initializerExpressionOutputTypeSig.Type == ast.TYPE_STRUCT {
 			initOutTypeSigIdx = initializerExpression.GetOutputs(prgrm)[0]
 		} else {
 			panic("type is not known")

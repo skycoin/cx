@@ -84,6 +84,8 @@ func wipeDeclarationMemory(prgrm *CXProgram, expr *CXExpression) error {
 		offset = cxAtomicOutputTypeSig.Offset
 	} else if cxAtomicOutputTypeSig.Type == TYPE_POINTER_SLICE_ATOMIC {
 		offset = cxAtomicOutputTypeSig.Offset
+	} else if cxAtomicOutputTypeSig.Type == TYPE_STRUCT {
+		offset = cxAtomicOutputTypeSig.Offset
 	} else {
 		panic("type is not known")
 	}
@@ -134,20 +136,8 @@ func processBuiltInOperators(prgrm *CXProgram, expr *CXExpression, globalInputs 
 			if input.Type == types.POINTER {
 				value.Type = input.PointerTargetType
 			}
-		} else if inputTypeSignature.Type == TYPE_ATOMIC || inputTypeSignature.Type == TYPE_POINTER_ATOMIC {
-			value.Type = types.Code(inputTypeSignature.Meta)
-		} else if inputTypeSignature.Type == TYPE_ARRAY_ATOMIC {
-			arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(inputTypeSignature.Meta)
-			value.Type = types.Code(arrDetails.Type)
-		} else if inputTypeSignature.Type == TYPE_POINTER_ARRAY_ATOMIC {
-			arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(inputTypeSignature.Meta)
-			value.Type = types.Code(arrDetails.Type)
-		} else if inputTypeSignature.Type == TYPE_SLICE_ATOMIC {
-			sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(inputTypeSignature.Meta)
-			value.Type = types.Code(sliceDetails.Type)
-		} else if inputTypeSignature.Type == TYPE_POINTER_SLICE_ATOMIC {
-			sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(inputTypeSignature.Meta)
-			value.Type = types.Code(sliceDetails.Type)
+		} else {
+			value.Type = inputTypeSignature.GetType(prgrm)
 		}
 
 		value.FramePointer = fp
@@ -172,20 +162,8 @@ func processBuiltInOperators(prgrm *CXProgram, expr *CXExpression, globalInputs 
 			if output.Type == types.POINTER {
 				value.Type = output.PointerTargetType
 			}
-		} else if outputTypeSignature.Type == TYPE_ATOMIC || outputTypeSignature.Type == TYPE_POINTER_ATOMIC {
-			value.Type = types.Code(outputTypeSignature.Meta)
-		} else if outputTypeSignature.Type == TYPE_ARRAY_ATOMIC {
-			arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(outputTypeSignature.Meta)
-			value.Type = types.Code(arrDetails.Type)
-		} else if outputTypeSignature.Type == TYPE_POINTER_ARRAY_ATOMIC {
-			arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(outputTypeSignature.Meta)
-			value.Type = types.Code(arrDetails.Type)
-		} else if outputTypeSignature.Type == TYPE_SLICE_ATOMIC {
-			sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(outputTypeSignature.Meta)
-			value.Type = types.Code(sliceDetails.Type)
-		} else if outputTypeSignature.Type == TYPE_POINTER_SLICE_ATOMIC {
-			sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(outputTypeSignature.Meta)
-			value.Type = types.Code(sliceDetails.Type)
+		} else {
+			value.Type = outputTypeSignature.GetType(prgrm)
 		}
 
 		value.FramePointer = fp
@@ -251,7 +229,7 @@ func processNonAtomicOperators(prgrm *CXProgram, expr *CXExpression, fp types.Po
 			// If we're referencing an inner element, like an element of a slice (&slc[0])
 			// or a field of a struct (&struct.fld) we no longer need to add
 			// the OBJECT_HEADER_SIZE to the offset
-			if inp.IsInnerReference {
+			if input.IsInnerReference(prgrm) {
 				finalOffset -= types.OBJECT_HEADER_SIZE
 			}
 			var finalOffsetB [types.POINTER_SIZE]byte

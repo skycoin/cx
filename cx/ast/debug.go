@@ -16,7 +16,7 @@ func DebugHeap() {
 	// Processing global variables. Adding the address they are pointing to.
 	for _, pkg := range prgrm.Packages {
 		for _, glbl := range pkg.Globals {
-			if glbl.IsPointer || glbl.IsSlice {
+			if glbl.IsPointer || glbl.IsSlice() {
 				heapOffset := helper.Deserialize_i32(prgrm.Memory[glbl.Offset : glbl.Offset+constants.POINTER_SIZE])
 
 				symsToAddrs[heapOffset] = append(symsToAddrs[heapOffset], glbl.Name)

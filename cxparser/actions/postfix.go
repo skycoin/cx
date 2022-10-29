@@ -43,7 +43,6 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 			out.StructType = prevExpressionOperatorOutput.StructType
 			out.Size = prevExpressionOperatorOutput.Size
 			out.Lengths = prevExpressionOperatorOutput.Lengths
-			out.IsSlice = prevExpressionOperatorOutput.IsSlice
 			out.PreviouslyDeclared = true
 			out.Package = prevExpressionOperatorOutput.Package
 
@@ -57,7 +56,6 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 			inp.StructType = prevExpressionOperatorOutput.StructType
 			inp.Size = prevExpressionOperatorOutput.Size
 			inp.Lengths = prevExpressionOperatorOutput.Lengths
-			inp.IsSlice = prevExpressionOperatorOutput.IsSlice
 			inp.PreviouslyDeclared = true
 
 			typeSig = ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, inp)
@@ -67,7 +65,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 			sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(prevExpressionOperatorOutputTypeSig.Meta)
 
 			newTypeSigSlice := ast.CXTypeSignature_Array{}
-			newTypeSigSlice.Type = sliceDetails.Type
+			newTypeSigSlice.Meta = sliceDetails.Meta
 			newTypeSigSlice.Lengths = sliceDetails.Lengths
 			newTypeSigSliceIdx := prgrm.AddCXTypeSignatureArrayInArray(&newTypeSigSlice)
 
@@ -81,7 +79,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 			prgrm.CXAtomicOps[prevExpressionIdx].AddOutput(prgrm, outNewTypeSigIdx)
 
 			inpNewTypeSigSlice := ast.CXTypeSignature_Array{}
-			inpNewTypeSigSlice.Type = sliceDetails.Type
+			inpNewTypeSigSlice.Meta = sliceDetails.Meta
 			inpNewTypeSigSlice.Lengths = sliceDetails.Lengths
 			inpNewTypeSigSliceIdx := prgrm.AddCXTypeSignatureArrayInArray(&inpNewTypeSigSlice)
 
@@ -458,58 +456,93 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		lastExpressionOperatorOutputs := lastExpressionOperator.GetOutputs(prgrm)
 		lastExpressionOperatorOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(lastExpressionOperatorOutputs[0])
 
-		var lastExpressionOperatorOutputArg *ast.CXArgument = &ast.CXArgument{}
+		symName := generateTempVarName(constants.LOCAL_PREFIX)
 		if lastExpressionOperatorOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-			lastExpressionOperatorOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(lastExpressionOperatorOutputTypeSig.Meta))
+			lastExpressionOperatorOutputArg := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(lastExpressionOperatorOutputTypeSig.Meta))
+
+			opOut := lastExpressionOperatorOutputArg
+
+			// we associate the result of the function call to the aux variable
+			out := ast.MakeArgument(symName, lastExprCXLine.FileName, lastExprCXLine.LineNumber)
+			out.SetType(opOut.Type)
+			out.DeclarationSpecifiers = opOut.DeclarationSpecifiers
+			out.StructType = opOut.StructType
+			out.Size = opOut.Size
+			// out.IsArray = opOut.IsArray
+			// out.IsReference = opOut.IsReference
+			out.Lengths = opOut.Lengths
+			out.Package = prgrm.CXAtomicOps[lastExpressionIdx].Package
+			out.PreviouslyDeclared = true
+
+			typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, out)
+			typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
+			prgrm.CXAtomicOps[lastExpressionIdx].AddOutput(prgrm, typeSigIdx)
+
+			// we need to create an expression to hold all the modifications
+			// that will take place after this if statement
+			inp := ast.MakeArgument(symName, lastExprCXLine.FileName, lastExprCXLine.LineNumber)
+			inp.SetType(opOut.Type)
+			inp.DeclarationSpecifiers = opOut.DeclarationSpecifiers
+			inp.StructType = opOut.StructType
+			inp.Size = opOut.Size
+			inp.Package = prgrm.CXAtomicOps[lastExpressionIdx].Package
+
+			exprCXLine := ast.MakeCXLineExpression(prgrm, lastExprCXLine.FileName, lastExprCXLine.LineNumber, lastExprCXLine.LineStr)
+			expr := ast.MakeAtomicOperatorExpression(prgrm, nil)
+
+			expression, err := prgrm.GetCXAtomicOp(expr.Index)
+			if err != nil {
+				panic(err)
+			}
+
+			expression.Package = prgrm.CXAtomicOps[lastExpressionIdx].Package
+			typeSig = ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, inp)
+			typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
+			expression.AddOutput(prgrm, typeSigIdx)
+			prevExprs = append(prevExprs, *exprCXLine, *expr)
+
+			lastExpr = prevExprs[len(prevExprs)-1]
+
+			lastExpressionIdx = lastExpr.Index
+		} else if lastExpressionOperatorOutputTypeSig.Type == ast.TYPE_STRUCT {
+			var newStructDetails ast.CXTypeSignature_Struct
+			structDetails := prgrm.GetCXTypeSignatureStructFromArray(lastExpressionOperatorOutputTypeSig.Meta)
+			newStructDetails = *structDetails
+			outStructDetailsIdx := prgrm.AddCXTypeSignatureStructInArray(&newStructDetails)
+
+			outTypeSig := *lastExpressionOperatorOutputTypeSig
+			outTypeSig.Name = symName
+			outTypeSig.Meta = outStructDetailsIdx
+			outTypeSigIdx := prgrm.AddCXTypeSignatureInArray(&outTypeSig)
+			prgrm.CXAtomicOps[lastExpressionIdx].AddOutput(prgrm, outTypeSigIdx)
+
+			// we need to create an expression to hold all the modifications
+			// that will take place after this if statement
+			inpTypeSig := *lastExpressionOperatorOutputTypeSig
+			inpTypeSig.Name = symName
+			inpStructDetailsIdx := prgrm.AddCXTypeSignatureStructInArray(&newStructDetails)
+			inpTypeSig.Meta = inpStructDetailsIdx
+			inpTypeSigIdx := prgrm.AddCXTypeSignatureInArray(&inpTypeSig)
+
+			exprCXLine := ast.MakeCXLineExpression(prgrm, lastExprCXLine.FileName, lastExprCXLine.LineNumber, lastExprCXLine.LineStr)
+			expr := ast.MakeAtomicOperatorExpression(prgrm, nil)
+
+			expression, err := prgrm.GetCXAtomicOp(expr.Index)
+			if err != nil {
+				panic(err)
+			}
+
+			expression.Package = prgrm.CXAtomicOps[lastExpressionIdx].Package
+			expression.AddOutput(prgrm, inpTypeSigIdx)
+			prevExprs = append(prevExprs, *exprCXLine, *expr)
+
+			lastExpr = prevExprs[len(prevExprs)-1]
+
+			lastExpressionIdx = lastExpr.Index
 		} else {
 			panic("type is not cx argument deprecate\n\n")
 		}
 
-		opOut := lastExpressionOperatorOutputArg
-		symName := generateTempVarName(constants.LOCAL_PREFIX)
-
-		// we associate the result of the function call to the aux variable
-		out := ast.MakeArgument(symName, lastExprCXLine.FileName, lastExprCXLine.LineNumber)
-		out.SetType(opOut.Type)
-		out.DeclarationSpecifiers = opOut.DeclarationSpecifiers
-		out.StructType = opOut.StructType
-		out.Size = opOut.Size
-		// out.IsArray = opOut.IsArray
-		// out.IsReference = opOut.IsReference
-		out.Lengths = opOut.Lengths
-		out.Package = prgrm.CXAtomicOps[lastExpressionIdx].Package
-		out.PreviouslyDeclared = true
-
-		typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, out)
-		typeSigIdx := prgrm.AddCXTypeSignatureInArray(typeSig)
-		prgrm.CXAtomicOps[lastExpressionIdx].AddOutput(prgrm, typeSigIdx)
-
-		// we need to create an expression to hold all the modifications
-		// that will take place after this if statement
-		inp := ast.MakeArgument(symName, lastExprCXLine.FileName, lastExprCXLine.LineNumber)
-		inp.SetType(opOut.Type)
-		inp.DeclarationSpecifiers = opOut.DeclarationSpecifiers
-		inp.StructType = opOut.StructType
-		inp.Size = opOut.Size
-		inp.Package = prgrm.CXAtomicOps[lastExpressionIdx].Package
-
-		exprCXLine := ast.MakeCXLineExpression(prgrm, lastExprCXLine.FileName, lastExprCXLine.LineNumber, lastExprCXLine.LineStr)
-		expr := ast.MakeAtomicOperatorExpression(prgrm, nil)
-
-		expression, err := prgrm.GetCXAtomicOp(expr.Index)
-		if err != nil {
-			panic(err)
-		}
-
-		expression.Package = prgrm.CXAtomicOps[lastExpressionIdx].Package
-		typeSig = ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, inp)
-		typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
-		expression.AddOutput(prgrm, typeSigIdx)
-		prevExprs = append(prevExprs, *exprCXLine, *expr)
-
-		lastExpr = prevExprs[len(prevExprs)-1]
-
-		lastExpressionIdx = lastExpr.Index
 	}
 
 	leftExprOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(prgrm.CXAtomicOps[lastExpressionIdx].GetOutputs(prgrm)[0])
@@ -599,8 +632,6 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 					lastExpressionOutputArg.StructType = glblArg.StructType
 					lastExpressionOutputArg.Size = glblArg.Size
 					lastExpressionOutputArg.PointerTargetType = glblArg.PointerTargetType
-					lastExpressionOutputArg.IsSlice = glblArg.IsSlice
-					lastExpressionOutputArg.IsStruct = glblArg.IsStruct
 					lastExpressionOutputArg.Package = glblArg.Package
 				} else if lastExpressionOutputTypeSig.Type == ast.TYPE_ATOMIC || lastExpressionOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 					lastExpressionOutputTypeSig.Name = glbl.Name
@@ -650,13 +681,25 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 			os.Exit(constants.CX_COMPILATION_ERROR)
 		}
 
-		var leftExprIdx int
+		// then it's a struct
+		leftExprField := ast.MakeArgument(ident, CurrentFile, LineNo)
+		leftPkg, err := prgrm.GetPackageFromArray(leftExprOutputTypeSig.Package)
+		if err != nil {
+			panic(err)
+		}
+		leftExprField.SetType(types.IDENTIFIER)
+		leftExprField.SetPackage(leftPkg)
+		leftExprFieldIdx := prgrm.AddCXArgInArray(leftExprField)
 
+		var leftExprIdx int
 		if leftExprOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			leftExprIdx = leftExprOutputTypeSig.Meta
+
+			prgrm.CXArgs[leftExprIdx].Fields = append(prgrm.CXArgs[leftExprIdx].Fields, leftExprFieldIdx)
 		} else if leftExprOutputTypeSig.Type == ast.TYPE_ATOMIC || leftExprOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 			// TODO: implement correct way when it is possible
 			// temporarily return back to cx arg deprecate
+			// since the arg will become a struct
 			arg := ast.MakeArgument(leftExprOutputTypeSig.Name, CurrentFile, LineNo) // fix: line numbers in errors sometimes report +1 or -1. Issue #195
 			arg.SetType(types.IDENTIFIER)
 			arg.Name = leftExprOutputTypeSig.Name
@@ -668,29 +711,13 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 			leftExprOutputTypeSig.Meta = int(argIdx)
 
 			leftExprIdx = int(argIdx)
-		} else {
-			panic("type is not known")
-		}
-		// then it's a struct
-		prgrm.CXArgs[leftExprIdx].IsStruct = true
-
-		leftExprField := ast.MakeArgument(ident, CurrentFile, LineNo)
-		leftPkg, err := prgrm.GetPackageFromArray(leftExprOutputTypeSig.Package)
-		if err != nil {
-			panic(err)
-		}
-		leftExprField.SetType(types.IDENTIFIER)
-		leftExprField.SetPackage(leftPkg)
-
-		if leftExprOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-			leftExprFieldIdx := prgrm.AddCXArgInArray(leftExprField)
 			prgrm.CXArgs[leftExprIdx].Fields = append(prgrm.CXArgs[leftExprIdx].Fields, leftExprFieldIdx)
-		} else if leftExprOutputTypeSig.Type == ast.TYPE_ATOMIC || leftExprOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
-			panic("type is not cx arg deprecate")
+		} else if leftExprOutputTypeSig.Type == ast.TYPE_STRUCT {
+			structDetails := prgrm.GetCXTypeSignatureStructFromArray(leftExprOutputTypeSig.Meta)
+			structDetails.Fields = append(structDetails.Fields, leftExprFieldIdx)
 		} else {
 			panic("type is not known")
 		}
-
 	}
 
 	return prevExprs

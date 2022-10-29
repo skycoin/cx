@@ -255,18 +255,8 @@ func IsAllArgsBasicTypes(prgrm *ast.CXProgram, expr *ast.CXExpression) bool {
 			if inp.Type == types.POINTER {
 				inpType = inp.PointerTargetType
 			}
-		} else if input.Type == ast.TYPE_ATOMIC {
-			inpType = types.Code(input.Meta)
-		} else if input.Type == ast.TYPE_POINTER_ATOMIC {
-			inpType = types.Code(input.Meta)
-		} else if input.Type == ast.TYPE_ARRAY_ATOMIC {
-			arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(input.Meta)
-			inpType = types.Code(arrDetails.Type)
-		} else if input.Type == ast.TYPE_SLICE_ATOMIC {
-			sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(input.Meta)
-			inpType = types.Code(sliceDetails.Type)
 		} else {
-			panic("type is not known")
+			inpType = input.GetType(prgrm)
 		}
 
 		// TODO: Check why STR is considered as basic type.

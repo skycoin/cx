@@ -266,7 +266,7 @@ func getNonCollectionValue(prgrm *CXProgram, fp types.Pointer, arg, elt *CXArgum
 	if arg.IsPointer() {
 		return fmt.Sprintf("%v", types.Read_ptr(prgrm.Memory, GetFinalOffset(prgrm, fp, elt, nil)))
 	}
-	if arg.IsSlice {
+	if arg.IsSlice() {
 		return fmt.Sprintf("%v", types.GetSlice_byte(prgrm.Memory, GetFinalOffset(prgrm, fp, elt, nil), GetArgSize(prgrm, elt)))
 	}
 	switch typ {
@@ -461,7 +461,7 @@ func GetPrintableValue(prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSig
 			if len(elt.Lengths) == 1 {
 				val = "["
 
-				if arg.IsSlice {
+				if arg.IsSlice() {
 					// for slices
 					sliceOffset := GetSliceOffset(prgrm, fp, argTypeSig)
 
@@ -533,13 +533,13 @@ func GetPrintableValue(prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSig
 		arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(argTypeSig.Meta)
 		var val string
 
-		typ := types.Code(arrDetails.Type).Name()
+		typ := types.Code(arrDetails.Meta).Name()
 		if len(arrDetails.Lengths) == 1 {
 			val += "["
 
 			// for Arrays
 			for c := types.Pointer(0); c < arrDetails.Lengths[0]; c++ {
-				val += readValue(prgrm, typ, GetFinalOffset(prgrm, fp+(c*types.Code(arrDetails.Type).Size()), nil, argTypeSig))
+				val += readValue(prgrm, typ, GetFinalOffset(prgrm, fp+(c*types.Code(arrDetails.Meta).Size()), nil, argTypeSig))
 				if c != arrDetails.Lengths[0]-1 {
 					val += ", "
 				}
@@ -562,7 +562,7 @@ func GetPrintableValue(prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSig
 
 			for c := types.Pointer(1); c < finalSize; c++ {
 				val += arrayPrinter(c, arrDetails.Lengths, "", "")
-				val += readValue(prgrm, typ, GetFinalOffset(prgrm, fp+(c*types.Code(arrDetails.Type).Size()), nil, argTypeSig))
+				val += readValue(prgrm, typ, GetFinalOffset(prgrm, fp+(c*types.Code(arrDetails.Meta).Size()), nil, argTypeSig))
 			}
 
 			for range arrDetails.Lengths {
@@ -576,13 +576,13 @@ func GetPrintableValue(prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSig
 		arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(argTypeSig.Meta)
 		var val string
 
-		typ := types.Code(arrDetails.Type).Name()
+		typ := types.Code(arrDetails.Meta).Name()
 		if len(arrDetails.Lengths) == 1 {
 			val += "["
 
 			// for Arrays
 			for c := types.Pointer(0); c < arrDetails.Lengths[0]; c++ {
-				val += readValue(prgrm, typ, GetFinalOffset(prgrm, fp+(c*types.Code(arrDetails.Type).Size()), nil, argTypeSig))
+				val += readValue(prgrm, typ, GetFinalOffset(prgrm, fp+(c*types.Code(arrDetails.Meta).Size()), nil, argTypeSig))
 
 				if c != arrDetails.Lengths[0]-1 {
 					val += ", "
@@ -606,7 +606,7 @@ func GetPrintableValue(prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSig
 
 			for c := types.Pointer(1); c < finalSize; c++ {
 				val += arrayPrinter(c, arrDetails.Lengths, "", "")
-				val += readValue(prgrm, typ, GetFinalOffset(prgrm, fp+(c*types.Code(arrDetails.Type).Size()), nil, argTypeSig))
+				val += readValue(prgrm, typ, GetFinalOffset(prgrm, fp+(c*types.Code(arrDetails.Meta).Size()), nil, argTypeSig))
 			}
 
 			for range arrDetails.Lengths {
@@ -619,12 +619,12 @@ func GetPrintableValue(prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSig
 		arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(argTypeSig.Meta)
 		var val string
 
-		typ := types.Code(arrDetails.Type).Name()
+		typ := types.Code(arrDetails.Meta).Name()
 		if len(arrDetails.Lengths) == 1 {
 			val += "["
 
 			// for slices
-			sizeOfElement := types.Code(arrDetails.Type).Size()
+			sizeOfElement := types.Code(arrDetails.Meta).Size()
 			sliceOffset := GetSliceOffset(prgrm, fp, argTypeSig)
 			sliceData := GetSlice(prgrm, sliceOffset, sizeOfElement)
 
@@ -657,7 +657,7 @@ func GetPrintableValue(prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSig
 
 			for c := types.Pointer(1); c < finalSize; c++ {
 				val += arrayPrinter(c, arrDetails.Lengths, "", "")
-				val += readValue(prgrm, typ, GetFinalOffset(prgrm, fp+(c*types.Code(arrDetails.Type).Size()), nil, argTypeSig))
+				val += readValue(prgrm, typ, GetFinalOffset(prgrm, fp+(c*types.Code(arrDetails.Meta).Size()), nil, argTypeSig))
 			}
 
 			for range arrDetails.Lengths {
@@ -667,6 +667,37 @@ func GetPrintableValue(prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSig
 			return val
 		}
 
+	} else if argTypeSig.Type == TYPE_STRUCT {
+		// // then it's a struct
+		// var val string
+		// val = "{"
+		// // for _, fld := range elt.StructType.Fields {
+		// lFlds := len(elt.StructType.Fields)
+		// off := types.Pointer(0)
+		// for c := 0; c < lFlds; c++ {
+		// 	typeSignatureIdx := elt.StructType.Fields[c]
+		// 	typeSignature := prgrm.GetCXTypeSignatureFromArray(typeSignatureIdx)
+		// 	var fldTotalSize types.Pointer
+		// 	if typeSignature.Type == TYPE_CXARGUMENT_DEPRECATE {
+		// 		fldIdx := typeSignature.Meta
+		// 		fldTotalSize = GetArgSize(prgrm, &prgrm.CXArgs[fldIdx])
+		// 	} else if typeSignature.Type == TYPE_ATOMIC || typeSignature.Type == TYPE_POINTER_ATOMIC {
+		// 		fldTotalSize = types.Code(typeSignature.Type).Size()
+		// 	} else if typeSignature.Type == TYPE_SLICE_ATOMIC {
+		// 		fldTotalSize = typeSignature.GetSize(prgrm, false)
+		// 	} else {
+		// 		panic("type is not known")
+		// 	}
+
+		// 	if c == lFlds-1 {
+		// 		val += fmt.Sprintf("%s: %s", typeSignature.Name, GetPrintableValue(prgrm, fp+arg.Offset+off, typeSignature))
+		// 	} else {
+		// 		val += fmt.Sprintf("%s: %s, ", typeSignature.Name, GetPrintableValue(prgrm, fp+arg.Offset+off, typeSignature))
+		// 	}
+		// 	off += fldTotalSize
+		// }
+		// val += "}"
+		// return val
 	} else {
 		panic("type is not known")
 	}
@@ -895,7 +926,7 @@ func GetFormattedType(prgrm *CXProgram, typeSig *CXTypeSignature) string {
 			}
 		}
 
-		typ += types.Code(arrayData.Type).Name()
+		typ += types.Code(arrayData.Meta).Name()
 		if typeSig.PassBy == constants.PASSBY_REFERENCE {
 			typ = "*" + typ
 		}
@@ -909,7 +940,7 @@ func GetFormattedType(prgrm *CXProgram, typeSig *CXTypeSignature) string {
 			}
 		}
 
-		typ += types.Code(arrayData.Type).Name()
+		typ += types.Code(arrayData.Meta).Name()
 		if !typeSig.IsDeref {
 			typ = "*" + typ
 		}
@@ -924,7 +955,7 @@ func GetFormattedType(prgrm *CXProgram, typeSig *CXTypeSignature) string {
 			}
 		}
 
-		typ += types.Code(arrayData.Type).Name()
+		typ += types.Code(arrayData.Meta).Name()
 		if typeSig.PassBy == constants.PASSBY_REFERENCE {
 			typ = "*" + typ
 		}
@@ -938,10 +969,29 @@ func GetFormattedType(prgrm *CXProgram, typeSig *CXTypeSignature) string {
 			}
 		}
 
-		typ += types.Code(arrayData.Type).Name()
+		typ += types.Code(arrayData.Meta).Name()
 		if !typeSig.IsDeref {
 			typ = "*" + typ
 		}
+	} else if typeSig.Type == TYPE_STRUCT {
+		structDetails := prgrm.GetCXTypeSignatureStructFromArray(typeSig.Meta)
+		lenFlds := len(structDetails.Fields)
+		if lenFlds > 0 {
+			fld := prgrm.GetCXArgFromArray(structDetails.Fields[lenFlds-1])
+			fld = fld.GetAssignmentElement(prgrm)
+
+			// TODO: to be replaced with correct
+			// way of getting type, that is not
+			// dependent on CXArg.
+			typ = getFormattedType_CXArg(prgrm, fld)
+		} else {
+			typ = structDetails.StructType.Name
+
+			if typeSig.PassBy == constants.PASSBY_REFERENCE {
+				typ = "*" + typ
+			}
+		}
+
 	} else {
 		panic("type is not known")
 	}
