@@ -45,6 +45,7 @@ func ParseParameterDeclaration(parameterString []byte, pkg *ast.CXPackage, fileN
 }
 
 func ParseDeclarationSpecifier(declarationSpecifierByte []byte, fileName string, lineno int, declarationSpecifier *ast.CXArgument) (*ast.CXArgument, error) {
+	// Regex only supports *[3]data_type other complex types not supported like []*str
 	reDeclarationSpecifier := regexp.MustCompile(`(\*){0,1}\s*((?:\[(\d*)\])){0,1}\s*([\w\.]*)`)
 	declarationSpecifierTokens := reDeclarationSpecifier.FindSubmatch(declarationSpecifierByte)
 	declarationSpecifierTokensIdx := reDeclarationSpecifier.FindIndex(declarationSpecifierByte)
@@ -109,9 +110,11 @@ func ParseDeclarationSpecifier(declarationSpecifierByte []byte, fileName string,
 		return actions.DeclarationSpecifiers(declarationSpecifier, []types.Pointer{0}, constants.DECL_POINTER), nil
 	}
 
+	// If bytes don't match any of the regex
 	return nil, fmt.Errorf("%v: %d: declaration specifier error", fileName, lineno)
 }
 
+// Finds the SourceBytes from the files array
 func GetSourceBytes(files []*loader.File, fileName string) ([]byte, error) {
 	for _, file := range files {
 		if file.FileName == fileName {

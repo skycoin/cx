@@ -39,7 +39,6 @@ func ParseGlobals(files []*loader.File, globals []declaration_extractor.GlobalDe
 
 		// Read File
 		source, err := GetSourceBytes(files, global.FileID)
-
 		if err != nil {
 			return err
 		}
@@ -48,8 +47,6 @@ func ParseGlobals(files []*loader.File, globals []declaration_extractor.GlobalDe
 		reGlobalDeclaration := regexp.MustCompile(`var\s+(\w*)\s+([\*\[\]\w\.]+)(?:\s*\=\s*[\s\S]+\S+){0,1}`)
 		globalDeclaration := source[global.StartOffset : global.StartOffset+global.Length]
 		globalTokens := reGlobalDeclaration.FindSubmatch(globalDeclaration)
-
-		// Add Global to Pkg
 
 		// add Global as CX Argument to CX Package
 		globalArg := ast.MakeArgument(global.GlobalVariableName, global.FileID, global.LineNumber)
@@ -62,7 +59,6 @@ func ParseGlobals(files []*loader.File, globals []declaration_extractor.GlobalDe
 		var declarationSpecifier *ast.CXArgument
 
 		declarationSpecifier, err = ParseDeclarationSpecifier(globalTokens[2], global.FileID, global.LineNumber, declarationSpecifier)
-
 		if err != nil {
 			return err
 		}

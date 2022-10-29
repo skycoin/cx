@@ -12,10 +12,12 @@ import (
 // - adds structs to AST
 func ParseStructs(files []*loader.File, structs []declaration_extractor.StructDeclaration) error {
 
+	// Get Package
 	for _, strct := range structs {
 
 		pkg, err := actions.AST.GetPackage(strct.PackageID)
 
+		// If package is not found
 		if err != nil {
 
 			newPkg := ast.MakePackage(strct.PackageID)
@@ -29,6 +31,9 @@ func ParseStructs(files []*loader.File, structs []declaration_extractor.StructDe
 			pkg = newPkg
 
 		}
+
+		// Select Package to Add to AST
+		actions.AST.SelectPackage(strct.PackageID)
 
 		structCX := ast.MakeStruct(strct.StructName)
 		structCX.Package = ast.CXPackageIndex(pkg.Index)
@@ -47,15 +52,12 @@ func ParseStructs(files []*loader.File, structs []declaration_extractor.StructDe
 			structFieldLine := src[strctFieldDec.StartOffset : strctFieldDec.StartOffset+strctFieldDec.Length]
 
 			structFieldSpecifier, err := ParseParameterDeclaration(structFieldLine, pkg, strct.FileID, strctFieldDec.LineNumber)
-
 			if err != nil {
 				return err
 			}
 
 			structFields = append(structFields, structFieldSpecifier)
 		}
-
-		actions.AST.SelectPackage(strct.PackageID)
 
 		actions.DeclareStruct(actions.AST, strct.StructName, structFields)
 

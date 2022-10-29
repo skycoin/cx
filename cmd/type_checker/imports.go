@@ -28,6 +28,7 @@ func ParseImports(imports []declaration_extractor.ImportDeclaration) error {
 		}
 	}
 
+	// Declare import in the correct packages
 	for _, imprt := range imports {
 
 		// Get Package
