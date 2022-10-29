@@ -354,7 +354,7 @@ func shortDeclarationAssignment(prgrm *ast.CXProgram, pkg *ast.CXPackage, toExpr
 		if outTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			outTypeArg := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(outTypeSig.Meta))
 			outType := outTypeArg.Type
-			outTypeIsSlice := outTypeArg.IsSlice
+			outTypeIsSlice := outTypeArg.IsSlice()
 
 			sym = ast.MakeArgument(toExpressionOutputTypeSig.Name, CurrentFile, LineNo).SetType(outType)
 
@@ -372,12 +372,10 @@ func shortDeclarationAssignment(prgrm *ast.CXProgram, pkg *ast.CXPackage, toExpr
 				sym.Lengths = fromCXAtomicOpInputs.Lengths
 			}
 			if outTypeIsSlice {
-				// if from[idx].Operator.ProgramOutput[0].IsSlice {
 				sym.Lengths = append([]types.Pointer{0}, sym.Lengths...)
 				sym.DeclarationSpecifiers = append(sym.DeclarationSpecifiers, constants.DECL_SLICE)
 			}
 
-			sym.IsSlice = outTypeIsSlice
 			sym.Package = ast.CXPackageIndex(pkg.Index)
 			sym.PreviouslyDeclared = true
 			sym.Offset = outTypeArg.Offset
@@ -498,6 +496,7 @@ func processAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fromExp
 			fromExpressionOperatorOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(fromExpressionOperatorOutputs[0])
 			if fromExpressionOperatorOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 				fromCXAtomicOpOperatorOutput := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(fromExpressionOperatorOutputTypeSig.Meta))
+
 				if fromExpressionOperator.IsBuiltIn() {
 					// only assigning as if the operator had only one output defined
 					if fromExpressionOperator.AtomicOPCode != constants.OP_IDENTITY {
@@ -545,14 +544,17 @@ func processAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fromExp
 				// only assigning as if the operator had only one output defined
 				if fromExpressionOperator.IsBuiltIn() && fromExpressionOperator.AtomicOPCode != constants.OP_IDENTITY {
 					// it's a short variable declaration
-					prgrm.CXArgs[toExpressionOutputIdx].Type = types.Code(sliceDetails.Type)
+					prgrm.CXArgs[toExpressionOutputIdx].Type = types.Code(sliceDetails.Meta)
 					prgrm.CXArgs[toExpressionOutputIdx].Lengths = sliceDetails.Lengths
 				} else {
 					// we'll delegate multiple-value returns to the 'expression' grammar rule
 					// only assigning as if the operator had only one output defined
-					prgrm.CXArgs[toExpressionOutputIdx].Type = types.Code(sliceDetails.Type)
+					prgrm.CXArgs[toExpressionOutputIdx].Type = types.Code(sliceDetails.Meta)
 					prgrm.CXArgs[toExpressionOutputIdx].Lengths = sliceDetails.Lengths
 				}
+			} else if fromExpressionOperatorOutputTypeSig.Type == ast.TYPE_STRUCT {
+				// it's a short variable declaration
+				prgrm.CXArgs[toExpressionOutputIdx].Type = types.STRUCT
 			} else {
 				panic("type is not known")
 			}

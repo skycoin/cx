@@ -31,11 +31,13 @@ func (strct *CXStruct) GetField(prgrm *CXProgram, name string) (*CXArgument, err
 		if typeSignature.Name == name {
 			// If type is struct
 			if typeSignature.Type == TYPE_STRUCT {
+				structDetails := prgrm.GetCXTypeSignatureStructFromArray(typeSignature.Meta)
 				return &CXArgument{
 					Name:                  typeSignature.Name,
 					Type:                  types.STRUCT,
 					DeclarationSpecifiers: []int{constants.DECL_STRUCT},
-					StructType:            prgrm.GetStructFromArray(CXStructIndex(typeSignature.Meta)),
+					StructType:            structDetails.StructType,
+					Offset:                typeSignature.Offset,
 				}, nil
 				// If type is not cxargument deprecate
 			} else if typeSignature.Type != TYPE_CXARGUMENT_DEPRECATE {
@@ -44,6 +46,7 @@ func (strct *CXStruct) GetField(prgrm *CXProgram, name string) (*CXArgument, err
 					Type:                  types.Code(typeSignature.Meta),
 					DeclarationSpecifiers: []int{constants.DECL_BASIC},
 					StructType:            nil,
+					Offset:                typeSignature.Offset,
 				}, nil
 			}
 
@@ -52,6 +55,7 @@ func (strct *CXStruct) GetField(prgrm *CXProgram, name string) (*CXArgument, err
 			return &prgrm.CXArgs[fldIdx], nil
 		}
 	}
+
 	return nil, fmt.Errorf("field '%s' not found in struct '%s'", name, strct.Name)
 }
 

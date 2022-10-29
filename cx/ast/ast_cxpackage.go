@@ -69,12 +69,18 @@ func (pkg *CXPackage) GetMethod(prgrm *CXProgram, fnName string, receiverType st
 		fnInputTypeSigIdx := fnInputs[0]
 		fnInputTypeSig := prgrm.GetCXTypeSignatureFromArray(fnInputTypeSigIdx)
 
-		var fnInput *CXArgument = &CXArgument{}
+		var fnInputStructType *CXStruct
 		if fnInputTypeSig.Type == TYPE_CXARGUMENT_DEPRECATE {
-			fnInput = prgrm.GetCXArgFromArray(CXArgumentIndex(fnInputTypeSig.Meta))
+			fnInput := prgrm.GetCXArgFromArray(CXArgumentIndex(fnInputTypeSig.Meta))
+			fnInputStructType = fnInput.StructType
+		} else if fnInputTypeSig.Type == TYPE_STRUCT {
+			structDetails := prgrm.GetCXTypeSignatureStructFromArray(fnInputTypeSig.Meta)
+			fnInputStructType = structDetails.StructType
+		} else {
+			panic("type is not known")
 		}
 
-		if len(fnInputs) > 0 && fnInput.StructType != nil && fnInput.StructType.Name == receiverType {
+		if len(fnInputs) > 0 && fnInputStructType != nil && fnInputStructType.Name == receiverType {
 			return fnIdx, nil
 		}
 	}

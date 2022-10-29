@@ -42,6 +42,25 @@ func assert(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) (
 	} else if inputs[0].TypeSignature.Type == ast.TYPE_SLICE_ATOMIC {
 		byts1 = inputs[0].Get_bytes(prgrm)
 		byts2 = inputs[1].Get_bytes(prgrm)
+	} else if inputs[0].TypeSignature.Type == ast.TYPE_STRUCT {
+		var isStr bool = false
+		structDetails := prgrm.GetCXTypeSignatureStructFromArray(inputs[0].TypeSignature.Meta)
+
+		lenFlds := len(structDetails.Fields)
+		if lenFlds > 0 {
+			fld := prgrm.GetCXArgFromArray(structDetails.Fields[lenFlds-1])
+			if fld.Type == types.STR || fld.PointerTargetType == types.STR {
+				isStr = true
+			}
+		}
+
+		if isStr {
+			byts1 = []byte(inputs[0].Get_str(prgrm))
+			byts2 = []byte(inputs[1].Get_str(prgrm))
+		} else {
+			byts1 = inputs[0].Get_bytes(prgrm)
+			byts2 = inputs[1].Get_bytes(prgrm)
+		}
 	} else {
 		panic("type is not known")
 	}

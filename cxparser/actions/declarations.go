@@ -39,7 +39,6 @@ func DeclarationSpecifiers(declSpec *ast.CXArgument, arrayLengths []types.Pointe
 	case constants.DECL_SLICE:
 		arg := declSpec
 		arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_SLICE)
-		arg.IsSlice = true
 		arg.Lengths = append([]types.Pointer{0}, arg.Lengths...)
 
 		return arg

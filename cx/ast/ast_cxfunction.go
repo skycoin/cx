@@ -125,13 +125,9 @@ func (fn *CXFunction) AddInput(prgrm *CXProgram, param *CXArgument) *CXFunction 
 	fnInputs := fn.GetInputs(prgrm)
 	for _, inputIdx := range fnInputs {
 		input := prgrm.GetCXTypeSignatureFromArray(inputIdx)
-		if input.Type == TYPE_CXARGUMENT_DEPRECATE {
-			inp := prgrm.GetCXArgFromArray(CXArgumentIndex(input.Meta))
-			if inp.Name == param.Name {
-				return fn
-			}
+		if input.Name == param.Name {
+			return fn
 		}
-
 	}
 
 	param.Package = fn.Package

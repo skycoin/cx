@@ -114,14 +114,14 @@ func GetDerefSizeSlice(prgrm *CXProgram, typeSignature *CXTypeSignature) types.P
 		if len(sliceDetails.Lengths) > 1 && (len(sliceDetails.Lengths)-len(sliceDetails.Indexes)) > 1 {
 			return types.POINTER_SIZE
 		}
-		return types.Code(sliceDetails.Type).Size()
+		return types.Code(sliceDetails.Meta).Size()
 	} else if typeSignature.Type == TYPE_POINTER_SLICE_ATOMIC {
 		sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(typeSignature.Meta)
 		if len(sliceDetails.Lengths) > 1 && (len(sliceDetails.Lengths)-len(sliceDetails.Indexes)) > 1 {
 			return types.POINTER_SIZE
 		}
 
-		return types.Code(sliceDetails.Type).Size()
+		return types.Code(sliceDetails.Meta).Size()
 	}
 
 	return typeSignature.GetSize(prgrm, false)
@@ -182,7 +182,7 @@ func GetFinalOffset(prgrm *CXProgram, fp types.Pointer, oldArg *CXArgument, argT
 				subSize *= len
 			}
 
-			sizeToUse := types.Code(arrDetails.Type).Size()
+			sizeToUse := types.Code(arrDetails.Meta).Size()
 			sizeOfElement := subSize * sizeToUse
 			argTypeSigOffset += types.Cast_i32_to_ptr(types.Read_i32(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, prgrm.GetCXTypeSignatureFromArray(arrDetails.Indexes[i])))) * sizeOfElement
 		}
@@ -209,7 +209,7 @@ func GetFinalOffset(prgrm *CXProgram, fp types.Pointer, oldArg *CXArgument, argT
 					subSize *= len
 				}
 
-				sizeToUse := types.Code(arrDetails.Type).Size()
+				sizeToUse := types.Code(arrDetails.Meta).Size()
 				sizeOfElement := subSize * sizeToUse
 				finalOffset += types.Cast_i32_to_ptr(types.Read_i32(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, prgrm.GetCXTypeSignatureFromArray(arrDetails.Indexes[i])))) * sizeOfElement
 			}
@@ -231,7 +231,7 @@ func GetFinalOffset(prgrm *CXProgram, fp types.Pointer, oldArg *CXArgument, argT
 
 		arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(argTypeSig.Meta)
 		indexesLen := len(arrDetails.Indexes)
-		sizeToUse := types.Code(arrDetails.Type).Size()
+		sizeToUse := types.Code(arrDetails.Meta).Size()
 
 		for i := 0; i < indexesLen; i++ {
 			argTypeSigOffset = types.Read_ptr(prgrm.Memory, argTypeSigOffset)
@@ -268,6 +268,23 @@ func GetFinalOffset(prgrm *CXProgram, fp types.Pointer, oldArg *CXArgument, argT
 				argTypeSigOffset += types.OBJECT_HEADER_SIZE
 				argTypeSigOffset += constants.SLICE_HEADER_SIZE
 			}
+		}
+
+		return argTypeSigOffset
+	} else if argTypeSig.Type == TYPE_STRUCT {
+		argTypeSigOffset := argTypeSig.Offset
+
+		//Todo: find way to eliminate this check
+		if argTypeSigOffset < prgrm.Stack.Size {
+			// Then it's in the stack, not in data or heap and we need to consider the frame pointer.
+			argTypeSigOffset += fp
+		}
+
+		structDetails := prgrm.GetCXTypeSignatureStructFromArray(argTypeSig.Meta)
+		for _, fldIdx := range structDetails.Fields {
+			fld := prgrm.GetCXArgFromArray(fldIdx)
+			argTypeSigOffset += fld.Offset
+			argTypeSigOffset = CalculateDereferences(prgrm, fld, argTypeSigOffset, fp)
 		}
 
 		return argTypeSigOffset
@@ -370,7 +387,7 @@ func CalculateDereferences(prgrm *CXProgram, arg *CXArgument, finalOffset types.
 	if drfsStruct.finalOffset.IsValid() && drfsStruct.finalOffset >= prgrm.Heap.StartsAt && drfsStruct.isPointer {
 		// then it's an object
 		drfsStruct.finalOffset += types.OBJECT_HEADER_SIZE
-		if drfsStruct.arg.IsSlice {
+		if drfsStruct.arg.IsSlice() {
 			drfsStruct.finalOffset += constants.SLICE_HEADER_SIZE
 			if !IsValidSliceIndex(prgrm, drfsStruct.baseOffset, drfsStruct.finalOffset, drfsStruct.sizeofElement) {
 				panic(constants.CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)
