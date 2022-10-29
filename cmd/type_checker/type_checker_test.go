@@ -265,6 +265,15 @@ func TestTypeChecker_ParseImports(t *testing.T) {
 				"anotherImport",
 			},
 		},
+		{
+			scenario: "Has Imports 2",
+			testDir:  "./test_files/ParseImports/HasImports2.cx",
+			imports: []string{
+				"os",
+				"testimport2",
+				"testimport1",
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -604,6 +613,29 @@ func TestTypeChecker_ParseStructs(t *testing.T) {
 				},
 			},
 		},
+		{
+			scenario: "Has Structs 2",
+			testDir:  "./test_files/ParseStructs/HasStructs2",
+			structTypeSignatures: []StructTypeSignature{
+				{
+					Name:    "animal",
+					Index:   1,
+					Package: "main",
+					Fields: []StructFieldTypeSignature{
+						{
+							Index: 0,
+							Name:  "name",
+							Type:  "str",
+						},
+						{
+							Index: 1,
+							Name:  "legs",
+							Type:  "i32",
+						},
+					},
+				},
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -734,6 +766,22 @@ func TestTypeChecker_ParseFuncHeaders(t *testing.T) {
 				{
 					Name:    "printer",
 					Index:   3,
+					Package: 1,
+				},
+			},
+		},
+		{
+			scenario: "Has funcs 2",
+			testDir:  "./test_files/ParseFuncs/HasFuncs2",
+			functionCXs: []ast.CXFunction{
+				{
+					Name:    "main",
+					Index:   0,
+					Package: 1,
+				},
+				{
+					Name:    "is_divisible",
+					Index:   1,
 					Package: 1,
 				},
 			},

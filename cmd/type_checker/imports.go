@@ -8,6 +8,7 @@ import (
 
 func ParseImports(imports []declaration_extractor.ImportDeclaration) error {
 
+	// Make and add import packages to AST
 	for _, imprt := range imports {
 		// Get Package
 		pkg, err := actions.AST.GetPackage(imprt.ImportName)
