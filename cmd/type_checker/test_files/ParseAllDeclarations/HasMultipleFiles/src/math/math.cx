@@ -1,0 +1,7 @@
+// Package math, it can be used in any package main
+package math
+
+// this function return a i32 integer value 
+func double () (out i32) {
+	out = i32.add(5, 2)
+}

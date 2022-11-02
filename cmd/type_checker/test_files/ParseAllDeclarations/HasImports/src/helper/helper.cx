@@ -1,0 +1,9 @@
+package helper
+
+type Animal struct {
+    sound str
+}
+
+func (a *Animal) Speak (){
+    str.print(a.sound)
+}
