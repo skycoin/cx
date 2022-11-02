@@ -309,7 +309,7 @@ func getNonCollectionValue(prgrm *CXProgram, fp types.Pointer, arg, elt *CXArgum
 				fldIdx := typeSignature.Meta
 				fldTotalSize = GetArgSize(prgrm, &prgrm.CXArgs[fldIdx])
 			} else if typeSignature.Type == TYPE_ATOMIC || typeSignature.Type == TYPE_POINTER_ATOMIC {
-				fldTotalSize = types.Code(typeSignature.Type).Size()
+				fldTotalSize = types.Code(typeSignature.Meta).Size()
 			} else if typeSignature.Type == TYPE_SLICE_ATOMIC {
 				fldTotalSize = typeSignature.GetSize(prgrm, false)
 			} else {
@@ -402,7 +402,7 @@ func ReadSliceElements(prgrm *CXProgram, fp types.Pointer, arg, elt *CXArgument,
 				fldIdx := typeSignature.Meta
 				fldTotalSize = GetArgSize(prgrm, &prgrm.CXArgs[fldIdx])
 			} else if typeSignature.Type == TYPE_ATOMIC || typeSignature.Type == TYPE_POINTER_ATOMIC {
-				fldTotalSize = types.Code(typeSignature.Type).Size()
+				fldTotalSize = types.Code(typeSignature.Meta).Size()
 			} else if typeSignature.Type == TYPE_SLICE_ATOMIC {
 				fldTotalSize = typeSignature.GetSize(prgrm, false)
 			} else {
@@ -667,37 +667,40 @@ func GetPrintableValue(prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSig
 			return val
 		}
 
-	} else if argTypeSig.Type == TYPE_STRUCT {
-		// // then it's a struct
-		// var val string
-		// val = "{"
-		// // for _, fld := range elt.StructType.Fields {
-		// lFlds := len(elt.StructType.Fields)
-		// off := types.Pointer(0)
-		// for c := 0; c < lFlds; c++ {
-		// 	typeSignatureIdx := elt.StructType.Fields[c]
-		// 	typeSignature := prgrm.GetCXTypeSignatureFromArray(typeSignatureIdx)
-		// 	var fldTotalSize types.Pointer
-		// 	if typeSignature.Type == TYPE_CXARGUMENT_DEPRECATE {
-		// 		fldIdx := typeSignature.Meta
-		// 		fldTotalSize = GetArgSize(prgrm, &prgrm.CXArgs[fldIdx])
-		// 	} else if typeSignature.Type == TYPE_ATOMIC || typeSignature.Type == TYPE_POINTER_ATOMIC {
-		// 		fldTotalSize = types.Code(typeSignature.Type).Size()
-		// 	} else if typeSignature.Type == TYPE_SLICE_ATOMIC {
-		// 		fldTotalSize = typeSignature.GetSize(prgrm, false)
-		// 	} else {
-		// 		panic("type is not known")
-		// 	}
+	} else if argTypeSig.Type == TYPE_STRUCT || argTypeSig.Type == TYPE_POINTER_STRUCT {
+		// then it's a struct
+		structDetails := prgrm.GetCXTypeSignatureStructFromArray(argTypeSig.Meta)
 
-		// 	if c == lFlds-1 {
-		// 		val += fmt.Sprintf("%s: %s", typeSignature.Name, GetPrintableValue(prgrm, fp+arg.Offset+off, typeSignature))
-		// 	} else {
-		// 		val += fmt.Sprintf("%s: %s, ", typeSignature.Name, GetPrintableValue(prgrm, fp+arg.Offset+off, typeSignature))
-		// 	}
-		// 	off += fldTotalSize
-		// }
-		// val += "}"
-		// return val
+		var val string
+		val = "{"
+		lenFlds := len(structDetails.StructType.Fields)
+		off := types.Pointer(0)
+
+		for c := 0; c < lenFlds; c++ {
+			typeSignatureIdx := structDetails.StructType.Fields[c]
+			typeSignature := prgrm.GetCXTypeSignatureFromArray(typeSignatureIdx)
+
+			var fldTotalSize types.Pointer
+			if typeSignature.Type == TYPE_CXARGUMENT_DEPRECATE {
+				fldIdx := typeSignature.Meta
+				fldTotalSize = GetArgSize(prgrm, &prgrm.CXArgs[fldIdx])
+			} else if typeSignature.Type == TYPE_ATOMIC || typeSignature.Type == TYPE_POINTER_ATOMIC {
+				fldTotalSize = types.Code(typeSignature.Meta).Size()
+			} else if typeSignature.Type == TYPE_SLICE_ATOMIC {
+				fldTotalSize = typeSignature.GetSize(prgrm, false)
+			} else {
+				panic("type is not known")
+			}
+
+			val += fmt.Sprintf("%s: %s", typeSignature.Name, GetPrintableValue(prgrm, fp+off+typeSignature.Offset, typeSignature))
+			if c != lenFlds-1 {
+				val += fmt.Sprintf(", ")
+			}
+
+			off += fldTotalSize
+		}
+		val += "}"
+		return val
 	} else {
 		panic("type is not known")
 	}
@@ -992,6 +995,21 @@ func GetFormattedType(prgrm *CXProgram, typeSig *CXTypeSignature) string {
 			}
 		}
 
+	} else if typeSig.Type == TYPE_POINTER_STRUCT {
+		structDetails := prgrm.GetCXTypeSignatureStructFromArray(typeSig.Meta)
+		lenFlds := len(structDetails.Fields)
+		if lenFlds > 0 {
+			fld := prgrm.GetCXArgFromArray(structDetails.Fields[lenFlds-1])
+			fld = fld.GetAssignmentElement(prgrm)
+
+			// TODO: to be replaced with correct
+			// way of getting type, that is not
+			// dependent on CXArg.
+			typ = getFormattedType_CXArg(prgrm, fld)
+		} else {
+			typ = structDetails.StructType.Name
+			typ = "*" + typ
+		}
 	} else {
 		panic("type is not known")
 	}

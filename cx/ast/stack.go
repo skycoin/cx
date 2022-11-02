@@ -98,6 +98,8 @@ func (cxprogram *CXProgram) PrintStack() {
 					// do nothing
 				} else if input.Type == TYPE_STRUCT {
 					// do nothing
+				} else if input.Type == TYPE_POINTER_STRUCT {
+					// do nothing
 				}
 
 				if input.Name == "" || cxAtomicOpOperator == nil {

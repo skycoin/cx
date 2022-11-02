@@ -142,6 +142,18 @@ func (typeSignature *CXTypeSignature) GetSize(prgrm *CXProgram, IsForUpdateSymbo
 		}
 		return structDetails.StructType.GetStructSize(prgrm)
 	case TYPE_POINTER_STRUCT:
+		structDetails := prgrm.GetCXTypeSignatureStructFromArray(typeSignature.Meta)
+
+		lenFlds := len(structDetails.Fields)
+		if lenFlds > 0 {
+			return GetArgSize(prgrm, &prgrm.CXArgs[structDetails.Fields[lenFlds-1]])
+		}
+
+		if typeSignature.IsDeref {
+			return structDetails.StructType.GetStructSize(prgrm)
+		}
+
+		return types.POINTER.Size()
 	case TYPE_ARRAY_STRUCT:
 	case TYPE_POINTER_ARRAY_STRUCT:
 	case TYPE_SLICE_STRUCT:
@@ -216,6 +228,20 @@ func (typeSignature *CXTypeSignature) GetType(prgrm *CXProgram) types.Code {
 				atomicType = fld.PointerTargetType
 			}
 		}
+	case TYPE_POINTER_STRUCT:
+		atomicType = types.STRUCT
+
+		structDetails := prgrm.GetCXTypeSignatureStructFromArray(typeSignature.Meta)
+		fldLen := len(structDetails.Fields)
+		if fldLen > 0 {
+			fld := prgrm.GetCXArgFromArray(structDetails.Fields[fldLen-1])
+			fld = fld.GetAssignmentElement(prgrm)
+
+			atomicType = fld.Type
+			if fld.Type == types.POINTER {
+				atomicType = fld.PointerTargetType
+			}
+		}
 	default:
 		panic("type is not known")
 	}
@@ -241,6 +267,29 @@ func (typeSignature *CXTypeSignature) GetTypeString(prgrm *CXProgram) string {
 		arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(typeSignature.Meta)
 		typeString = types.Code(arrDetails.Meta).Name()
 	case TYPE_STRUCT:
+		structDetails := prgrm.GetCXTypeSignatureStructFromArray(typeSignature.Meta)
+		fldsLen := len(structDetails.Fields)
+		if fldsLen > 0 {
+			fldIdx := structDetails.Fields[fldsLen-1]
+			fld := prgrm.GetCXArgFromArray(fldIdx)
+			elt := fld.GetAssignmentElement(prgrm)
+
+			if elt.StructType != nil {
+				// then it's custom type
+				typeString = elt.StructType.Name
+			} else {
+				// then it's native type
+				typeString = elt.Type.Name()
+
+				if elt.Type == types.POINTER {
+					typeString = elt.PointerTargetType.Name()
+				}
+			}
+		} else {
+			typeString = structDetails.StructType.Name
+		}
+
+	case TYPE_POINTER_STRUCT:
 		structDetails := prgrm.GetCXTypeSignatureStructFromArray(typeSignature.Meta)
 		fldsLen := len(structDetails.Fields)
 		if fldsLen > 0 {
@@ -329,12 +378,24 @@ func (typeSignature *CXTypeSignature) GetCXArgFormat(prgrm *CXProgram) *CXArgume
 
 	} else if typeSignature.Type == TYPE_STRUCT {
 		arg.Type = types.STRUCT
-		arg.StructType = prgrm.GetStructFromArray(CXStructIndex(typeSignature.Meta))
+		structDetails := prgrm.GetCXTypeSignatureStructFromArray(typeSignature.Meta)
+		arg.StructType = structDetails.StructType
 		// TODO: this should not be needed.
 		if len(arg.DeclarationSpecifiers) > 0 {
 			arg.DeclarationSpecifiers = append([]int{constants.DECL_STRUCT}, arg.DeclarationSpecifiers[1:]...)
 		} else {
 			arg.DeclarationSpecifiers = []int{constants.DECL_STRUCT}
+		}
+
+	} else if typeSignature.Type == TYPE_POINTER_STRUCT {
+		arg.Type = types.POINTER
+		structDetails := prgrm.GetCXTypeSignatureStructFromArray(typeSignature.Meta)
+		arg.StructType = structDetails.StructType
+		// TODO: this should not be needed.
+		if len(arg.DeclarationSpecifiers) > 0 {
+			arg.DeclarationSpecifiers = append([]int{constants.DECL_STRUCT, constants.DECL_POINTER}, arg.DeclarationSpecifiers[1:]...)
+		} else {
+			arg.DeclarationSpecifiers = []int{constants.DECL_STRUCT, constants.DECL_POINTER}
 		}
 
 	}
@@ -456,6 +517,18 @@ func GetCXTypeSignatureRepresentationOfCXArg_ForStructs(prgrm *CXProgram, cxArgu
 		typeSignatureForStructIdx := prgrm.AddCXTypeSignatureStructInArray(typeSignatureForStruct)
 
 		newCXTypeSignature.Meta = typeSignatureForStructIdx
+	} else if IsTypePointerStruct(cxArgument) {
+		// If type is struct
+		newCXTypeSignature.Type = TYPE_POINTER_STRUCT
+
+		typeSignatureForStruct := &CXTypeSignature_Struct{
+			Fields:     cxArgument.Fields,
+			StructType: cxArgument.StructType,
+		}
+
+		typeSignatureForStructIdx := prgrm.AddCXTypeSignatureStructInArray(typeSignatureForStruct)
+
+		newCXTypeSignature.Meta = typeSignatureForStructIdx
 	} else {
 		fldIdx := prgrm.AddCXArgInArray(cxArgument)
 
@@ -545,6 +618,18 @@ func GetCXTypeSignatureRepresentationOfCXArg(prgrm *CXProgram, cxArgument *CXArg
 	} else if IsTypeStruct(cxArgument) {
 		// If type is struct
 		newCXTypeSignature.Type = TYPE_STRUCT
+
+		typeSignatureForStruct := &CXTypeSignature_Struct{
+			Fields:     cxArgument.Fields,
+			StructType: cxArgument.StructType,
+		}
+
+		typeSignatureForStructIdx := prgrm.AddCXTypeSignatureStructInArray(typeSignatureForStruct)
+
+		newCXTypeSignature.Meta = typeSignatureForStructIdx
+	} else if IsTypePointerStruct(cxArgument) {
+		// If type is struct
+		newCXTypeSignature.Type = TYPE_POINTER_STRUCT
 
 		typeSignatureForStruct := &CXTypeSignature_Struct{
 			Fields:     cxArgument.Fields,

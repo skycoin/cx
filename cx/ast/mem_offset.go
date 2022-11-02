@@ -288,6 +288,31 @@ func GetFinalOffset(prgrm *CXProgram, fp types.Pointer, oldArg *CXArgument, argT
 		}
 
 		return argTypeSigOffset
+	} else if argTypeSig.Type == TYPE_POINTER_STRUCT {
+		argTypeSigOffset := argTypeSig.Offset
+
+		//Todo: find way to eliminate this check
+		if argTypeSigOffset < prgrm.Stack.Size {
+			// Then it's in the stack, not in data or heap and we need to consider the frame pointer.
+			argTypeSigOffset += fp
+		}
+
+		if argTypeSig.IsDeref {
+			argTypeSigOffset = types.Read_ptr(prgrm.Memory, argTypeSigOffset)
+			if argTypeSigOffset.IsValid() && argTypeSigOffset >= prgrm.Heap.StartsAt {
+				// then it's an object
+				argTypeSigOffset += types.OBJECT_HEADER_SIZE
+			}
+		}
+
+		structDetails := prgrm.GetCXTypeSignatureStructFromArray(argTypeSig.Meta)
+		for _, fldIdx := range structDetails.Fields {
+			fld := prgrm.GetCXArgFromArray(fldIdx)
+			argTypeSigOffset += fld.Offset
+			argTypeSigOffset = CalculateDereferences(prgrm, fld, argTypeSigOffset, fp)
+		}
+
+		return argTypeSigOffset
 	}
 
 	finalOffset = arg.Offset

@@ -76,6 +76,9 @@ func (pkg *CXPackage) GetMethod(prgrm *CXProgram, fnName string, receiverType st
 		} else if fnInputTypeSig.Type == TYPE_STRUCT {
 			structDetails := prgrm.GetCXTypeSignatureStructFromArray(fnInputTypeSig.Meta)
 			fnInputStructType = structDetails.StructType
+		} else if fnInputTypeSig.Type == TYPE_POINTER_STRUCT {
+			structDetails := prgrm.GetCXTypeSignatureStructFromArray(fnInputTypeSig.Meta)
+			fnInputStructType = structDetails.StructType
 		} else {
 			panic("type is not known")
 		}
