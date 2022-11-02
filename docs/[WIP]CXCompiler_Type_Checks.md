@@ -2,10 +2,10 @@
 At this stage all of the types are known. The functions in all packages that can be called, all structs are defined or known, all aliases/enums are defined and known.
 
 ## Goals:
-- [ ] Function to parse the globals
+- [x] Function to parse the globals
 - [ ] Function to parse the aliases and enums
-- [ ] Function to parse the structs
-- [ ] Function to parse function header
+- [x] Function to parse the structs
+- [x] Function to parse function header
 	- Check that it can be converted to New Style Type Signature Format
 	- Check function signature return type (check if valid)
 	- Check if the return return exist, are valid, syntactic errors
