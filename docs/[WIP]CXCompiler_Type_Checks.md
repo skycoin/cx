@@ -2,10 +2,10 @@
 At this stage all of the types are known. The functions in all packages that can be called, all structs are defined or known, all aliases/enums are defined and known.
 
 ## Goals:
-- [ ] Function to parse the globals
+- [X] Function to parse the globals
 - [ ] Function to parse the aliases and enums
-- [ ] Function to parse the structs
-- [ ] Function to parse function header
+- [X] Function to parse the structs
+- [X] Function to parse function header
 	- Check that it can be converted to New Style Type Signature Format
 	- Check function signature return type (check if valid)
 	- Check if the return return exist, are valid, syntactic errors
@@ -16,3 +16,8 @@ At this stage all of the types are known. The functions in all packages that can
 Note: 
 Call AST API directly to build the AST. Then, delete or comment out goyacc code for parsing these 
 
+## Notes
+- Parsing data types only support the pattern/order of *[5]i32 other patterns/orders like [4]\*str aren't supported
+- Parsing enums/aliases and type definitions aren't implemented yet.
+- Type signature checks are done by the Actions API and panics if there's any error
+- Imports verification is done by the Actions API and panics if there's any error
