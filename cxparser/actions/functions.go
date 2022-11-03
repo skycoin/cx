@@ -971,7 +971,7 @@ func checkMatchParamTypes(prgrm *ast.CXProgram, expr *ast.CXExpression, expected
 		}
 		expectedType = ast.GetFormattedType(prgrm, expectedTypeSig)
 
-		if expr.IsMethodCall() && expectedArg.IsPointer() && i == 0 {
+		if expr.IsMethodCall() && (expectedArg.IsPointer() || expectedTypeSig.Type == ast.TYPE_POINTER_STRUCT) && i == 0 {
 			// if method receiver is pointer, remove *
 			if expectedType[0] == '*' {
 				// we need to check if it's not an `str`
@@ -1226,7 +1226,7 @@ func ProcessStringAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 					continue
 				} else if expressionInputTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
 					continue
-				} else if expressionInputTypeSig.Type == ast.TYPE_STRUCT {
+				} else if expressionInputTypeSig.Type == ast.TYPE_STRUCT || expressionInputTypeSig.Type == ast.TYPE_POINTER_STRUCT {
 					continue
 				} else {
 					panic("type is not known")
@@ -1679,9 +1679,8 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbolsData
 				for _, fldIdx := range prgrm.CXArgs[inpIdx].Fields {
 					field := prgrm.GetCXArgFromArray(fldIdx)
 					if inFld, err := strct.GetField(prgrm, field.Name); err == nil {
-						if inFld.Type == ast.TYPE_STRUCT || inFld.Type == ast.TYPE_POINTER_STRUCT {
-							structDetails := prgrm.GetCXTypeSignatureStructFromArray(inFld.Meta)
-							strct = structDetails.StructType
+						if inFld.StructType != nil {
+							strct = inFld.StructType
 						}
 					}
 				}
@@ -1838,7 +1837,7 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbolsData
 			// TODO: improve
 			// do nothing for now since len(prgrm.CXArgs[outIdx].Fields) > 0
 			// of type atomics and pointers are always zero
-		} else if argOutTypeSignature.Type == ast.TYPE_STRUCT {
+		} else if argOutTypeSignature.Type == ast.TYPE_STRUCT || argOutTypeSignature.Type == ast.TYPE_POINTER_STRUCT {
 			// TODO: improve this ASAP
 			structDetails := prgrm.GetCXTypeSignatureStructFromArray(argOutTypeSignature.Meta)
 
@@ -1952,7 +1951,7 @@ func ProcessTempVariable(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 					arrDetails := prgrm.GetCXTypeSignatureArrayFromArray(expressionInputTypeSig.Meta)
 					prgrm.CXArgs[outputArgIdx].Type = expressionInputTypeSig.GetType(prgrm)
 					prgrm.CXArgs[outputArgIdx].Size = types.Code(arrDetails.Meta).Size()
-				} else if expressionInputTypeSig.Type == ast.TYPE_STRUCT {
+				} else if expressionInputTypeSig.Type == ast.TYPE_STRUCT || expressionInputTypeSig.Type == ast.TYPE_POINTER_STRUCT {
 					prgrm.CXArgs[outputArgIdx].Type = expressionInputTypeSig.GetType(prgrm)
 					prgrm.CXArgs[outputArgIdx].Size = expressionInputTypeSig.GetSize(prgrm, false)
 				} else {
@@ -2410,11 +2409,9 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignatur
 		for _, fldIdx := range symFields {
 			field := prgrm.GetCXArgFromArray(fldIdx)
 			if inFld, err := strct.GetField(prgrm, field.Name); err == nil {
-				if inFld.Type == ast.TYPE_STRUCT || inFld.Type == ast.TYPE_POINTER_STRUCT {
-					structDetails := prgrm.GetCXTypeSignatureStructFromArray(inFld.Meta)
-
+				if inFld.StructType != nil {
 					field.StructType = strct
-					strct = structDetails.StructType
+					strct = inFld.StructType
 				}
 			} else {
 				methodName := prgrm.GetCXArgFromArray(symFields[len(symFields)-1]).Name
