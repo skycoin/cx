@@ -436,5 +436,4 @@ func IsTypePointerStruct(arg *CXArgument) bool {
 	}
 
 	return isThereDeclPointer && !IsThereDeclSlice && !arg.IsSlice() && len(arg.Lengths) == 0 && arg.StructType != nil && len(arg.DeclarationSpecifiers) >= 1 && arg.DeclarationSpecifiers[0] == constants.DECL_STRUCT
-	// return false
 }

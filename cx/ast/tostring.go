@@ -1008,7 +1008,10 @@ func GetFormattedType(prgrm *CXProgram, typeSig *CXTypeSignature) string {
 			typ = getFormattedType_CXArg(prgrm, fld)
 		} else {
 			typ = structDetails.StructType.Name
-			typ = "*" + typ
+
+			if !typeSig.IsDeref {
+				typ = "*" + typ
+			}
 		}
 	} else {
 		panic("type is not known")

@@ -25,11 +25,43 @@ type CXStruct struct {
 //                             `CXStruct` Getters
 
 // GetField ...
-func (strct *CXStruct) GetField(prgrm *CXProgram, name string) (*CXTypeSignature, error) {
+func (strct *CXStruct) GetField(prgrm *CXProgram, name string) (*CXArgument, error) {
 	for _, typeSignatureIdx := range strct.Fields {
 		typeSignature := prgrm.GetCXTypeSignatureFromArray(typeSignatureIdx)
 		if typeSignature.Name == name {
-			return typeSignature, nil
+			// If type is struct
+			if typeSignature.Type == TYPE_STRUCT {
+				structDetails := prgrm.GetCXTypeSignatureStructFromArray(typeSignature.Meta)
+				return &CXArgument{
+					Name:                  typeSignature.Name,
+					Type:                  types.STRUCT,
+					DeclarationSpecifiers: []int{constants.DECL_STRUCT},
+					StructType:            structDetails.StructType,
+					Offset:                typeSignature.Offset,
+				}, nil
+
+			} else if typeSignature.Type == TYPE_POINTER_STRUCT {
+				structDetails := prgrm.GetCXTypeSignatureStructFromArray(typeSignature.Meta)
+				return &CXArgument{
+					Name:                  typeSignature.Name,
+					Type:                  types.STRUCT,
+					DeclarationSpecifiers: []int{constants.DECL_STRUCT},
+					StructType:            structDetails.StructType,
+					Offset:                typeSignature.Offset,
+				}, nil
+			} else if typeSignature.Type != TYPE_CXARGUMENT_DEPRECATE {
+				return &CXArgument{
+					Name:                  typeSignature.Name,
+					Type:                  types.Code(typeSignature.Meta),
+					DeclarationSpecifiers: []int{constants.DECL_BASIC},
+					StructType:            nil,
+					Offset:                typeSignature.Offset,
+				}, nil
+			}
+
+			// If type is cxargument deprecate
+			fldIdx := typeSignature.Meta
+			return &prgrm.CXArgs[fldIdx], nil
 		}
 	}
 
