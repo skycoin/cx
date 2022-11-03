@@ -10,10 +10,10 @@ This is how we’re representing the file. Every file has a length, a name, and 
 ## Package Struct
 - PackageName string
 - Blake2Hash UUID
-- Files []UUID
+- Files []UUID // array of Blake2Hash of File structs
 
 ## PackageList Struct
-- Packages []UUID
+- Packages []UUID // array of Blake2Hash of Package structs
 
 ### Compiler Frontend
 1. Check all folders/directory, there should only be one package per folder/directory. Otherwise, give an error.
