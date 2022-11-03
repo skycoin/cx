@@ -39,7 +39,16 @@ func (strct *CXStruct) GetField(prgrm *CXProgram, name string) (*CXArgument, err
 					StructType:            structDetails.StructType,
 					Offset:                typeSignature.Offset,
 				}, nil
-				// If type is not cxargument deprecate
+
+			} else if typeSignature.Type == TYPE_POINTER_STRUCT {
+				structDetails := prgrm.GetCXTypeSignatureStructFromArray(typeSignature.Meta)
+				return &CXArgument{
+					Name:                  typeSignature.Name,
+					Type:                  types.STRUCT,
+					DeclarationSpecifiers: []int{constants.DECL_STRUCT},
+					StructType:            structDetails.StructType,
+					Offset:                typeSignature.Offset,
+				}, nil
 			} else if typeSignature.Type != TYPE_CXARGUMENT_DEPRECATE {
 				return &CXArgument{
 					Name:                  typeSignature.Name,
