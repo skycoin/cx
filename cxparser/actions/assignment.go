@@ -614,16 +614,7 @@ func checkIfFunctionCallNeedsAnOutput(prgrm *ast.CXProgram, fromExpressionOperat
 		toExpressionOutputs := toExpression.GetOutputs(prgrm)
 		toExpressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(toExpressionOutputs[0])
 
-		var toExpressionOutputArg *ast.CXArgument = &ast.CXArgument{ArgDetails: &ast.CXArgumentDebug{}}
-		if toExpressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-			toExpressionOutputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(toExpressionOutputTypeSig.Meta))
-		} else {
-			// TODO: improve when possible
-			// do nothing for now since CxTypeSignature
-			// does not yet hold file name and file line.
-		}
-
-		println(ast.CompilationError(toExpressionOutputArg.ArgDetails.FileName, toExpressionOutputArg.ArgDetails.FileLine), "trying to use an outputless operator in an assignment")
+		println(ast.CompilationError(toExpressionOutputTypeSig.ArgDetails.FileName, toExpressionOutputTypeSig.ArgDetails.FileLine), "trying to use an outputless operator in an assignment")
 		os.Exit(constants.CX_COMPILATION_ERROR)
 	}
 }

@@ -1209,15 +1209,7 @@ expression_statement:
                                
 				if len(outs) > 0 {
                                         outTypeSig:=actions.AST.GetCXTypeSignatureFromArray(outs[0])
-
-                                        var expressionOutputArg *ast.CXArgument = &ast.CXArgument{ArgDetails:&ast.CXArgumentDebug{}}
-			                if outTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-				                expressionOutputArg = actions.AST.GetCXArgFromArray(ast.CXArgumentIndex(outTypeSig.Meta))
-			                } else {
-				               // do nothing
-			                }
-
-					println(ast.CompilationError( expressionOutputArg.ArgDetails.FileName,  expressionOutputArg.ArgDetails.FileLine), "invalid expression")
+					println(ast.CompilationError( outTypeSig.ArgDetails.FileName,  outTypeSig.ArgDetails.FileLine), "invalid expression")
 				} else {
 					println(ast.CompilationError(actions.CurrentFile, actions.LineNo), "invalid expression")
 				}
