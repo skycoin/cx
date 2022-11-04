@@ -69,7 +69,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 			newTypeSigSlice.Lengths = sliceDetails.Lengths
 			newTypeSigSliceIdx := prgrm.AddCXTypeSignatureArrayInArray(&newTypeSigSlice)
 
-			newTypeSig := ast.CXTypeSignature{}
+			newTypeSig := ast.CXTypeSignature{ArgDetails: &ast.CXArgumentDebug{FileName: prevExprCXLine.FileName, FileLine: prevExprCXLine.LineNumber - 1}}
 			newTypeSig.Name = genName
 			newTypeSig.Package = prevExpressionOperatorOutputTypeSig.Package
 			newTypeSig.Type = prevExpressionOperatorOutputTypeSig.Type
@@ -83,7 +83,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 			inpNewTypeSigSlice.Lengths = sliceDetails.Lengths
 			inpNewTypeSigSliceIdx := prgrm.AddCXTypeSignatureArrayInArray(&inpNewTypeSigSlice)
 
-			inpNewTypeSig := ast.CXTypeSignature{}
+			inpNewTypeSig := ast.CXTypeSignature{ArgDetails: &ast.CXArgumentDebug{FileName: prevExprCXLine.FileName, FileLine: prevExprCXLine.LineNumber - 1}}
 			inpNewTypeSig.Name = genName
 			inpNewTypeSig.Package = prevExpressionOperatorOutputTypeSig.Package
 			inpNewTypeSig.Type = prevExpressionOperatorOutputTypeSig.Type
@@ -138,7 +138,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		elt.DeclarationSpecifiers = append(elt.DeclarationSpecifiers, constants.DECL_INDEXING)
 	} else if prevExpressionOutputTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
 		prevExpressionOutputTypeSig.IsDeref = true
-		prevExpressionOutputArg = &ast.CXArgument{ArgDetails: &ast.CXArgumentDebug{}}
+		prevExpressionOutputArg = &ast.CXArgument{ArgDetails: &ast.CXArgumentDebug{FileName: CurrentFile, FileLine: LineNo}}
 	} else {
 		panic("type is not known")
 	}
@@ -192,7 +192,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 				typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, idxSym)
 				typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
 			} else if postExpressionOperatorOutputTypeSig.Type == ast.TYPE_ATOMIC {
-				newTypeSig := &ast.CXTypeSignature{}
+				newTypeSig := &ast.CXTypeSignature{ArgDetails: &ast.CXArgumentDebug{FileName: CurrentFile, FileLine: LineNo}}
 				newTypeSig.Name = generateTempVarName(constants.LOCAL_PREFIX)
 				newTypeSig.Package = prgrm.CXAtomicOps[postExpressionIdx].Package
 				newTypeSig.Type = postExpressionOperatorOutputTypeSig.Type
@@ -200,7 +200,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 				newTypeSig.Offset = postExpressionOperatorOutputTypeSig.Offset
 				typeSigIdx = prgrm.AddCXTypeSignatureInArray(newTypeSig)
 			} else if postExpressionOperatorOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
-				newTypeSig := &ast.CXTypeSignature{}
+				newTypeSig := &ast.CXTypeSignature{ArgDetails: &ast.CXArgumentDebug{FileName: CurrentFile, FileLine: LineNo}}
 				newTypeSig.Name = generateTempVarName(constants.LOCAL_PREFIX)
 				newTypeSig.Package = prgrm.CXAtomicOps[postExpressionIdx].Package
 				newTypeSig.Type = postExpressionOperatorOutputTypeSig.Type
@@ -674,8 +674,7 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 	} else {
 		// then left is not a package name
 		if cxpackages.IsDefaultPackage(leftExprOutputTypeSig.Name) {
-			leftExprIdx := leftExprOutputTypeSig.Meta
-			println(ast.CompilationError(prgrm.CXArgs[leftExprIdx].ArgDetails.FileName, prgrm.CXArgs[leftExprIdx].ArgDetails.FileLine),
+			println(ast.CompilationError(leftExprOutputTypeSig.ArgDetails.FileName, leftExprOutputTypeSig.ArgDetails.FileLine),
 				fmt.Sprintf("identifier '%s' does not exist",
 					leftExprOutputTypeSig.Name))
 			os.Exit(constants.CX_COMPILATION_ERROR)

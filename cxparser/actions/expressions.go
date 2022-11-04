@@ -415,7 +415,7 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 			typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, out)
 			typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
 		} else if lastLeftExpressionOperatorOutputTypeSig.Type == ast.TYPE_ATOMIC {
-			typeSig := &ast.CXTypeSignature{}
+			typeSig := &ast.CXTypeSignature{ArgDetails: &ast.CXArgumentDebug{FileName: CurrentFile, FileLine: LineNo}}
 			typeSig.Name = generateTempVarName(constants.LOCAL_PREFIX)
 			typeSig.Package = lastLeftExpressionOperatorOutputTypeSig.Package
 			typeSig.Type = ast.TYPE_ATOMIC
@@ -424,7 +424,7 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 
 			typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
 		} else if lastLeftExpressionOperatorOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
-			typeSig := &ast.CXTypeSignature{}
+			typeSig := &ast.CXTypeSignature{ArgDetails: &ast.CXArgumentDebug{FileName: CurrentFile, FileLine: LineNo}}
 			typeSig.Name = generateTempVarName(constants.LOCAL_PREFIX)
 			typeSig.Package = lastLeftExpressionOperatorOutputTypeSig.Package
 			typeSig.Type = ast.TYPE_POINTER_ATOMIC
@@ -461,7 +461,7 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 			typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, out)
 			typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
 		} else if lastRightExpressionOperatorOutputTypeSig.Type == ast.TYPE_ATOMIC {
-			typeSig := &ast.CXTypeSignature{}
+			typeSig := &ast.CXTypeSignature{ArgDetails: &ast.CXArgumentDebug{FileName: CurrentFile, FileLine: LineNo}}
 			typeSig.Name = generateTempVarName(constants.LOCAL_PREFIX)
 			typeSig.Package = lastRightExpressionOperatorOutputTypeSig.Package
 			typeSig.Type = ast.TYPE_ATOMIC
@@ -470,7 +470,7 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 
 			typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
 		} else if lastRightExpressionOperatorOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
-			typeSig := &ast.CXTypeSignature{}
+			typeSig := &ast.CXTypeSignature{ArgDetails: &ast.CXArgumentDebug{FileName: CurrentFile, FileLine: LineNo}}
 			typeSig.Name = generateTempVarName(constants.LOCAL_PREFIX)
 			typeSig.Package = lastRightExpressionOperatorOutputTypeSig.Package
 			typeSig.Type = ast.TYPE_POINTER_ATOMIC
@@ -706,7 +706,7 @@ func AssociateReturnExpressions(prgrm *ast.CXProgram, idx int, retExprs []ast.CX
 		typeSig := ast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, out)
 		typeSigIdx = prgrm.AddCXTypeSignatureInArray(typeSig)
 	} else if fnOutputTypeSig.Type == ast.TYPE_ATOMIC {
-		newCXTypeSig := &ast.CXTypeSignature{}
+		newCXTypeSig := &ast.CXTypeSignature{ArgDetails: &ast.CXArgumentDebug{FileName: CurrentFile, FileLine: LineNo}}
 		newCXTypeSig.Name = fnOutputTypeSig.Name
 		newCXTypeSig.Package = fnOutputTypeSig.Package
 		newCXTypeSig.Type = ast.TYPE_ATOMIC
@@ -714,7 +714,7 @@ func AssociateReturnExpressions(prgrm *ast.CXProgram, idx int, retExprs []ast.CX
 		newCXTypeSig.Offset = fnOutputTypeSig.Offset
 		typeSigIdx = prgrm.AddCXTypeSignatureInArray(newCXTypeSig)
 	} else if fnOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
-		newCXTypeSig := &ast.CXTypeSignature{}
+		newCXTypeSig := &ast.CXTypeSignature{ArgDetails: &ast.CXArgumentDebug{FileName: CurrentFile, FileLine: LineNo}}
 		newCXTypeSig.Name = fnOutputTypeSig.Name
 		newCXTypeSig.Package = fnOutputTypeSig.Package
 		newCXTypeSig.Type = ast.TYPE_POINTER_ATOMIC
@@ -722,7 +722,7 @@ func AssociateReturnExpressions(prgrm *ast.CXProgram, idx int, retExprs []ast.CX
 		newCXTypeSig.Offset = fnOutputTypeSig.Offset
 		typeSigIdx = prgrm.AddCXTypeSignatureInArray(newCXTypeSig)
 	} else if fnOutputTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
-		newCXTypeSig := &ast.CXTypeSignature{}
+		newCXTypeSig := &ast.CXTypeSignature{ArgDetails: &ast.CXArgumentDebug{FileName: CurrentFile, FileLine: LineNo}}
 		newCXTypeSig.Name = fnOutputTypeSig.Name
 		newCXTypeSig.Package = fnOutputTypeSig.Package
 		newCXTypeSig.Type = ast.TYPE_SLICE_ATOMIC

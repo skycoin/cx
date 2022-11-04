@@ -54,6 +54,8 @@ type CXTypeSignature struct {
 	// if type is array, meta is CXTypeSignature_Array id
 	// if type is atomic, meta is the atomic type
 	Meta int
+
+	ArgDetails *CXArgumentDebug // Contains file name and file line
 }
 
 type CXTypeSignature_Array struct {
@@ -428,9 +430,10 @@ func (typeSignature *CXTypeSignature) IsInnerReference(prgrm *CXProgram) bool {
 // TODO: Remove _ForStructs
 func GetCXTypeSignatureRepresentationOfCXArg_ForStructs(prgrm *CXProgram, cxArgument *CXArgument) *CXTypeSignature {
 	newCXTypeSignature := CXTypeSignature{
-		Name:    cxArgument.Name,
-		Package: cxArgument.Package,
-		PassBy:  cxArgument.PassBy,
+		Name:       cxArgument.Name,
+		Package:    cxArgument.Package,
+		PassBy:     cxArgument.PassBy,
+		ArgDetails: cxArgument.ArgDetails,
 	}
 
 	fieldType := cxArgument.Type
@@ -545,9 +548,10 @@ func GetCXTypeSignatureRepresentationOfCXArg_ForStructs(prgrm *CXProgram, cxArgu
 
 func GetCXTypeSignatureRepresentationOfCXArg(prgrm *CXProgram, cxArgument *CXArgument) *CXTypeSignature {
 	newCXTypeSignature := CXTypeSignature{
-		Name:    cxArgument.Name,
-		Package: cxArgument.Package,
-		PassBy:  cxArgument.PassBy,
+		Name:       cxArgument.Name,
+		Package:    cxArgument.Package,
+		PassBy:     cxArgument.PassBy,
+		ArgDetails: cxArgument.ArgDetails,
 	}
 
 	if IsTypeAtomic(cxArgument) {

@@ -84,9 +84,7 @@ func (strct *CXStruct) AddField(prgrm *CXProgram, cxArgument *CXArgument) *CXStr
 	for _, typeSignatureIdx := range strct.Fields {
 		typeSignature := prgrm.GetCXTypeSignatureFromArray(typeSignatureIdx)
 		if typeSignature.Name == cxArgument.Name {
-			// fldIdx := typeSignature.Meta
-			// fmt.Printf("%s : duplicate field", CompilationError(prgrm.CXArgs[fldIdx].ArgDetails.FileName, prgrm.CXArgs[fldIdx].ArgDetails.FileLine))
-			fmt.Println("duplicate field")
+			fmt.Printf("%s : duplicate field", CompilationError(typeSignature.ArgDetails.FileName, typeSignature.ArgDetails.FileLine))
 			os.Exit(constants.CX_COMPILATION_ERROR)
 		}
 	}
@@ -128,9 +126,7 @@ func (strct *CXStruct) AddField_TypeSignature(prgrm *CXProgram, fieldIdx CXTypeS
 		typeSignature := prgrm.GetCXTypeSignatureFromArray(typeSignatureIdx)
 		field := prgrm.GetCXTypeSignatureFromArray(fieldIdx)
 		if typeSignature.Name == field.Name {
-			// fldIdx := typeSignature.Meta
-			// fmt.Printf("%s : duplicate field", CompilationError(prgrm.CXArgs[fldIdx].ArgDetails.FileName, prgrm.CXArgs[fldIdx].ArgDetails.FileLine))
-			fmt.Println("duplicate field")
+			fmt.Printf("%s : duplicate field", CompilationError(typeSignature.ArgDetails.FileName, typeSignature.ArgDetails.FileLine))
 			os.Exit(constants.CX_COMPILATION_ERROR)
 		}
 	}
@@ -153,9 +149,7 @@ func (strct *CXStruct) AddField_Globals_CXAtomicOps(prgrm *CXProgram, cxArgIdx C
 	for _, typeSignatureIdx := range strct.Fields {
 		typeSignature := prgrm.GetCXTypeSignatureFromArray(typeSignatureIdx)
 		if typeSignature.Name == cxArgument.Name {
-			// fldIdx := typeSignature.Meta
-			// fmt.Printf("%s : duplicate field", CompilationError(prgrm.CXArgs[fldIdx].ArgDetails.FileName, prgrm.CXArgs[fldIdx].ArgDetails.FileLine))
-			fmt.Println("duplicate field")
+			fmt.Printf("%s : duplicate field", CompilationError(typeSignature.ArgDetails.FileName, typeSignature.ArgDetails.FileLine))
 			os.Exit(constants.CX_COMPILATION_ERROR)
 		}
 	}
