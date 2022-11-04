@@ -16,3 +16,9 @@ At this stage all of the types are known. The functions in all packages that can
 Note: 
 Call AST API directly to build the AST. Then, delete or comment out goyacc code for parsing these 
 
+## Progress
+- Parsing data types only support the pattern/order of *[5]i32 other patterns/orders like [4]\*str aren't supported
+- Performance of parsing data types is not optimal yet can be improved with simpler regex or better algorithm for identifying and removing parts from back to front 
+- Parsing enums/aliases and type definitions aren't implemented yet.
+- Type signature checks are done by the Actions API and panics if there's any error
+- Imports verification is done by the Actions API and panics if there's any error
