@@ -50,10 +50,10 @@ Additional milestones:
 ---
 Findings to be added/fixed/resolved:
 - [ ] Package Struct missing Blake2Hash field
-- [ ] Doesn’t check if there’s more than one packages in a file/directory
+- [ ] Doesn’t check if there’s more than one packages in a folder/directory
 - [ ] Doesn’t check for duplicate imports
 - [ ] Some functions don’t have a reliable unit test yet
 - [ ] Not clear on what it means for package path check
 - [ ] Possible problem if keywords are used as package names? This can be solved but may impact the performance due to more conditionals
-- [ ] output an error if the package file/directory doesn’t follow the naming convention here
+- [ ] output an error if the package folder/directory doesn’t follow the naming convention here
 - [ ] the parent directory naming convention used in the packageName that’s saved in the DB like path/filepath
