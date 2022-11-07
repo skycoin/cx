@@ -13,6 +13,7 @@ import (
 
 type Package struct {
 	PackageName string
+	Blake2Hash  string
 	Files       []string
 }
 
