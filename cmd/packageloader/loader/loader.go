@@ -44,9 +44,10 @@ func createFileMap(files []*os.File) (fileMap map[string][]*os.File, err error) 
 				continue
 			}
 		}
-		if filePackageName == packageName {
-			fileMap[packageName] = append(fileMap[packageName], file)
+		if filePackageName != packageName {
+			return fileMap, fmt.Errorf("package %s found in %v", filePackageName, packageName)
 		}
+		fileMap[packageName] = append(fileMap[packageName], file)
 	}
 	return fileMap, nil
 }

@@ -7,8 +7,8 @@ import (
 	"github.com/skycoin/cx/cmd/packageloader/loader"
 )
 
-const TEST_SRC_PATH_VALID = "test_folder/test_invalid_program/src/"
-const TEST_SRC_PATH_INVALID = "test_folder/test_valid_program/src/"
+const TEST_SRC_PATH_INVALID = "test_folder/test_invalid_program/src/"
+const TEST_SRC_PATH_VALID = "test_folder/test_valid_program/src/"
 const TEST_SRC_PATH_LOOP = "test_folder/test_loop_program/src/"
 const TEST_PACKAGE_FILE = "test_folder/test_various_files/package.cx"
 
