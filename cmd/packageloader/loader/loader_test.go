@@ -85,16 +85,54 @@ func TestCreateFileMap(t *testing.T) {
 }
 
 func TestCreateImportMap(t *testing.T) {
-	_, sourceCodes, _ := loader.ParseArgsForCX([]string{TEST_SRC_PATH_VALID}, true)
-	fileMap, err := loader.CreateFileMap(sourceCodes)
-	if err != nil {
-		t.Error(err)
+	tests := []struct {
+		scenario  string
+		testDir   string
+		importMap map[string][]string
+	}{
+		{
+			scenario: "valid import map",
+			testDir:  TEST_SRC_PATH_VALID,
+			importMap: map[string][]string{
+				"main":       {"testimport"},
+				"testimport": {},
+			},
+		},
 	}
-	_, err = loader.CreateImportMap(fileMap)
-	if err != nil {
-		t.Error(err)
+	for _, tc := range tests {
+		t.Run(tc.scenario, func(t *testing.T) {
+			_, sourceCodes, _ := loader.ParseArgsForCX([]string{TEST_SRC_PATH_VALID}, true)
+			fileMap, err := loader.CreateFileMap(sourceCodes)
+			if err != nil {
+				t.Error(err)
+			}
+			gotImportMap, err := loader.CreateImportMap(fileMap)
+			if err != nil {
+				t.Error(err)
+			}
+			for wantKey, wantValue := range tc.importMap {
+				gotValue, ok := gotImportMap[wantKey]
+				if !ok {
+					t.Fatalf("package %s not found in file map", wantKey)
+				}
+				for _, wantImport := range wantValue {
+					var match bool
+					var gotImportName string
+					for _, gotImport := range gotValue {
+						gotImportName = gotImport
+						if wantImport == gotImportName {
+							match = true
+							break
+						}
+					}
+					if !match {
+						t.Errorf("want import %s, got %s", wantImport, gotImportName)
+					}
+				}
+			}
+		})
 	}
-	//TODO: Find a way to reliably test this function
+
 }
 
 func TestCheckForDependencyLoop(t *testing.T) {
