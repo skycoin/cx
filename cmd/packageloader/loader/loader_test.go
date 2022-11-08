@@ -2,6 +2,7 @@ package loader_test
 
 import (
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/skycoin/cx/cmd/packageloader/loader"
@@ -37,12 +38,50 @@ func TestGetPackageName(t *testing.T) {
 }
 
 func TestCreateFileMap(t *testing.T) {
-	_, sourceCodes, _ := loader.ParseArgsForCX([]string{TEST_SRC_PATH_VALID}, true)
-	_, err := loader.CreateFileMap(sourceCodes)
-	if err != nil {
-		t.Error(err)
+	tests := []struct {
+		scenario string
+		testDir  string
+		fileMap  map[string][]string
+	}{
+		{
+			scenario: "valid file map",
+			testDir:  TEST_SRC_PATH_VALID,
+			fileMap: map[string][]string{
+				"main":       {"testfile.cx", "testfile2.cx"},
+				"testimport": {"testimport.cx"},
+			},
+		},
 	}
-	//TODO: Find a way to reliably test this function
+
+	for _, tc := range tests {
+		t.Run(tc.scenario, func(t *testing.T) {
+			_, sourceCodes, _ := loader.ParseArgsForCX([]string{TEST_SRC_PATH_VALID}, true)
+			gotFileMap, err := loader.CreateFileMap(sourceCodes)
+			if err != nil {
+				t.Error(err)
+			}
+			for wantKey, wantValue := range tc.fileMap {
+				gotValue, ok := gotFileMap[wantKey]
+				if !ok {
+					t.Fatalf("package %s not found in file map", wantKey)
+				}
+				for _, wantFile := range wantValue {
+					var match bool
+					var gotFileName string
+					for _, gotFile := range gotValue {
+						gotFileName = filepath.Base(gotFile.Name())
+						if wantFile == gotFileName {
+							match = true
+							break
+						}
+					}
+					if !match {
+						t.Errorf("want %s, got %s", wantFile, gotFileName)
+					}
+				}
+			}
+		})
+	}
 }
 
 func TestCreateImportMap(t *testing.T) {
