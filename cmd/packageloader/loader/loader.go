@@ -2,6 +2,8 @@ package loader
 
 import (
 	"bufio"
+	"bytes"
+	"encoding/gob"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -180,6 +182,13 @@ func addNewPackage(packageListStruct *PackageList, packageName string, files []*
 	}
 	wg.Wait()
 
+	hash, err := blake2HashFromFileUUID(packageStruct.Files)
+	if err != nil {
+		return err
+	}
+
+	packageStruct.Blake2Hash = string(hash[:])
+
 	packageListStruct.appendPackage(&packageStruct, database)
 
 	return nil
@@ -312,3 +321,18 @@ func ioReadDir(root string) ([]string, error) {
 	}
 	return files, nil
 }
+
+func blake2HashFromFileUUID(fileUUID []string) ([64]byte, error) {
+	var buffer bytes.Buffer
+	encoder := gob.NewEncoder(&buffer)
+
+	err := encoder.Encode(fileUUID)
+	if err != nil {
+		return [64]byte{}, err
+	}
+	return blake2b.Sum512(buffer.Bytes()), nil
+}
+
+// func checkForDuplicates()(err error){
+
+// }
