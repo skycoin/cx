@@ -49,7 +49,7 @@ Additional milestones:
 
 ---
 Findings to be added/fixed/resolved:
-- [ ] Package Struct missing Blake2Hash field // generate from []Files UUID
+- [x] Package Struct missing Blake2Hash field // generate from []Files UUID // need to write unit test for this 
 - [x] Doesn’t check if there’s more than one packages in a folder/directory
 - [x] Doesn’t remove duplicate imports // duplicate imports don't need to be removed since the import is not used by the later stages
 - [ ] Some functions don’t have a reliable unit test yet

@@ -188,7 +188,6 @@ func addNewPackage(packageListStruct *PackageList, packageName string, files []*
 	if err != nil {
 		return err
 	}
-
 	packageStruct.Blake2Hash = string(hash[:])
 
 	packageListStruct.appendPackage(&packageStruct, database)
