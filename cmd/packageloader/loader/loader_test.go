@@ -39,28 +39,34 @@ func TestGetPackageName(t *testing.T) {
 
 func TestCreateFileMap(t *testing.T) {
 	tests := []struct {
-		scenario string
-		testDir  string
-		fileMap  map[string][]string
+		Scenario        string
+		FilesPath       string
+		ExpectedFileMap map[string][]string
+		ExpectedErr     error
 	}{
 		{
-			scenario: "valid file map",
-			testDir:  TEST_SRC_PATH_VALID,
-			fileMap: map[string][]string{
+			Scenario:  "valid file map",
+			FilesPath: TEST_SRC_PATH_VALID,
+			ExpectedFileMap: map[string][]string{
+				"main":       {"testfile.cx", "testfile2.cx"},
+				"testimport": {"testimport.cx"},
+			},
+		},
+		{
+			Scenario:  "invalid file map",
+			FilesPath: TEST_SRC_PATH_INVALID,
+			ExpectedFileMap: map[string][]string{
 				"main":       {"testfile.cx", "testfile2.cx"},
 				"testimport": {"testimport.cx"},
 			},
 		},
 	}
 
-	for _, tc := range tests {
-		t.Run(tc.scenario, func(t *testing.T) {
+	for _, testcase := range tests {
+		t.Run(testcase.Scenario, func(t *testing.T) {
 			_, sourceCodes, _ := loader.ParseArgsForCX([]string{TEST_SRC_PATH_VALID}, true)
-			gotFileMap, err := loader.CreateFileMap(sourceCodes)
-			if err != nil {
-				t.Error(err)
-			}
-			for wantKey, wantValue := range tc.fileMap {
+			gotFileMap, gotErr := loader.CreateFileMap(sourceCodes)
+			for wantKey, wantValue := range testcase.ExpectedFileMap {
 				gotValue, ok := gotFileMap[wantKey]
 				if !ok {
 					t.Fatalf("package %s not found in file map", wantKey)
@@ -80,37 +86,46 @@ func TestCreateFileMap(t *testing.T) {
 					}
 				}
 			}
+			if (gotErr != nil && testcase.ExpectedErr == nil) ||
+				(gotErr == nil && testcase.ExpectedErr != nil) {
+				t.Errorf("want error %v, got %v", testcase.ExpectedErr, gotErr)
+			}
+
+			if gotErr != nil && testcase.ExpectedErr != nil {
+				if gotErr.Error() != testcase.ExpectedErr.Error() {
+					t.Errorf("want error %v, got %v", testcase.ExpectedErr, gotErr)
+				}
+			}
 		})
 	}
 }
 
 func TestCreateImportMap(t *testing.T) {
 	tests := []struct {
-		scenario  string
-		testDir   string
-		importMap map[string][]string
+		Scenario          string
+		FilesPath         string
+		ExpectedImportMap map[string][]string
+		ExpectedErr       error
 	}{
 		{
-			scenario: "valid import map",
-			testDir:  TEST_SRC_PATH_VALID,
-			importMap: map[string][]string{
+			Scenario:  "valid import map",
+			FilesPath: TEST_SRC_PATH_VALID,
+			ExpectedImportMap: map[string][]string{
 				"main":       {"testimport"},
 				"testimport": {},
 			},
 		},
 	}
-	for _, tc := range tests {
-		t.Run(tc.scenario, func(t *testing.T) {
+	for _, testcase := range tests {
+		t.Run(testcase.Scenario, func(t *testing.T) {
 			_, sourceCodes, _ := loader.ParseArgsForCX([]string{TEST_SRC_PATH_VALID}, true)
-			fileMap, err := loader.CreateFileMap(sourceCodes)
-			if err != nil {
-				t.Error(err)
+			ExpectedFileMap, ExpectedErr := loader.CreateFileMap(sourceCodes)
+			if ExpectedErr != nil {
+				t.Error(ExpectedErr)
 			}
-			gotImportMap, err := loader.CreateImportMap(fileMap)
-			if err != nil {
-				t.Error(err)
-			}
-			for wantKey, wantValue := range tc.importMap {
+			gotImportMap, gotErr := loader.CreateImportMap(ExpectedFileMap)
+
+			for wantKey, wantValue := range testcase.ExpectedImportMap {
 				gotValue, ok := gotImportMap[wantKey]
 				if !ok {
 					t.Fatalf("package %s not found in file map", wantKey)
@@ -128,6 +143,16 @@ func TestCreateImportMap(t *testing.T) {
 					if !match {
 						t.Errorf("want import %s, got %s", wantImport, gotImportName)
 					}
+				}
+			}
+			if (gotErr != nil && testcase.ExpectedErr == nil) ||
+				(gotErr == nil && testcase.ExpectedErr != nil) {
+				t.Errorf("want error %v, got %v", testcase.ExpectedErr, gotErr)
+			}
+
+			if gotErr != nil && testcase.ExpectedErr != nil {
+				if gotErr.Error() != testcase.ExpectedErr.Error() {
+					t.Errorf("want error %v, got %v", testcase.ExpectedErr, gotErr)
 				}
 			}
 		})
