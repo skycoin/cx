@@ -25,17 +25,50 @@ func TestContains(t *testing.T) {
 }
 
 func TestGetPackageName(t *testing.T) {
-	file, err := os.Open(TEST_PACKAGE_FILE)
-	if err != nil {
-		t.Error(err)
+	tests := []struct {
+		Scenario            string
+		FilesPath           string
+		ExpectedPackageName string
+		ExpectedErr         error
+	}{
+		{
+			Scenario:            "Test with file that has package name",
+			FilesPath:           TEST_PACKAGE_FILE,
+			ExpectedPackageName: "main",
+			ExpectedErr:         nil,
+		},
+		{
+			Scenario:            "Test with file that has no package name",
+			FilesPath:           "test_folder/test_various_files/nopackage.cx",
+			ExpectedPackageName: "",
+			ExpectedErr:         errors.New("file doesn't contain a package name"),
+		},
 	}
-	testPackageName, err := loader.GetPackageName(file)
-	if err != nil {
-		t.Error(err)
+	for _, testcase := range tests {
+		t.Run(testcase.Scenario, func(t *testing.T) {
+			file, err := os.Open(testcase.FilesPath)
+			if err != nil {
+				t.Error(err)
+			}
+
+			gotPackageName, gotErr := loader.GetPackageName(file)
+
+			if gotPackageName != testcase.ExpectedPackageName {
+				t.Errorf("want package name %s, got %s", testcase.ExpectedPackageName, gotPackageName)
+			}
+
+			if (gotErr != nil && testcase.ExpectedErr == nil) ||
+				(gotErr == nil && testcase.ExpectedErr != nil) {
+				t.Errorf("want error %v, got %v", testcase.ExpectedErr, gotErr)
+			}
+			if gotErr != nil && testcase.ExpectedErr != nil {
+				if gotErr.Error() != testcase.ExpectedErr.Error() {
+					t.Errorf("want error %v, got %v", testcase.ExpectedErr, gotErr)
+				}
+			}
+		})
 	}
-	if testPackageName != "main" {
-		t.Error("Wrong package name:", testPackageName)
-	}
+
 }
 
 func TestCreateFileMap(t *testing.T) {
