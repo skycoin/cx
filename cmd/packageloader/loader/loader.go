@@ -83,7 +83,9 @@ func createImportMap(fileMap map[string][]*os.File) (importMap map[string][]stri
 			}
 			packageImports = append(packageImports, newImports...)
 		}
-		importMap[packageName] = packageImports
+
+		packageImportsWithoutDuplicates := removeDuplicates(packageImports)
+		importMap[packageName] = packageImportsWithoutDuplicates
 	}
 	return importMap, nil
 }
@@ -333,6 +335,14 @@ func blake2HashFromFileUUID(fileUUID []string) ([64]byte, error) {
 	return blake2b.Sum512(buffer.Bytes()), nil
 }
 
-// func checkForDuplicates()(err error){
+func removeDuplicates(imports []string) []string {
+	var newImports []string
+	for _, imprt := range imports {
+		if Contains(newImports, imprt) {
+			continue
+		}
+		newImports = append(newImports, imprt)
+	}
 
-// }
+	return newImports
+}
