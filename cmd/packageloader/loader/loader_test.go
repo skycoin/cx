@@ -1,6 +1,7 @@
 package loader_test
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"testing"
@@ -53,23 +54,29 @@ func TestCreateFileMap(t *testing.T) {
 			},
 		},
 		{
-			Scenario:  "invalid file map",
+			Scenario:  "error in main package",
 			FilesPath: TEST_SRC_PATH_INVALID,
 			ExpectedFileMap: map[string][]string{
-				"main":       {"testfile.cx", "testfile2.cx"},
-				"testimport": {"testimport.cx"},
+				"main": {"testfile.cx"},
 			},
+			ExpectedErr: errors.New("testfile2.cx: package error: package main2 found in main"),
+		},
+		{
+			Scenario:        "multiple packages in directory",
+			FilesPath:       "test_folder/test_package_error_program",
+			ExpectedFileMap: map[string][]string{},
+			ExpectedErr:     errors.New("testimportFile2.cx: package error: package testimport2 found in testimport"),
 		},
 	}
 
 	for _, testcase := range tests {
 		t.Run(testcase.Scenario, func(t *testing.T) {
-			_, sourceCodes, _ := loader.ParseArgsForCX([]string{TEST_SRC_PATH_VALID}, true)
+			_, sourceCodes, _ := loader.ParseArgsForCX([]string{testcase.FilesPath}, true)
 			gotFileMap, gotErr := loader.CreateFileMap(sourceCodes)
 			for wantKey, wantValue := range testcase.ExpectedFileMap {
 				gotValue, ok := gotFileMap[wantKey]
 				if !ok {
-					t.Fatalf("package %s not found in file map", wantKey)
+					t.Errorf("package %s not found in file map", wantKey)
 				}
 				for _, wantFile := range wantValue {
 					var match bool
@@ -82,7 +89,7 @@ func TestCreateFileMap(t *testing.T) {
 						}
 					}
 					if !match {
-						t.Errorf("want %s, got %s", wantFile, gotFileName)
+						t.Errorf("want file %s, got %s", wantFile, gotFileName)
 					}
 				}
 			}
@@ -118,12 +125,12 @@ func TestCreateImportMap(t *testing.T) {
 	}
 	for _, testcase := range tests {
 		t.Run(testcase.Scenario, func(t *testing.T) {
-			_, sourceCodes, _ := loader.ParseArgsForCX([]string{TEST_SRC_PATH_VALID}, true)
-			ExpectedFileMap, ExpectedErr := loader.CreateFileMap(sourceCodes)
-			if ExpectedErr != nil {
-				t.Error(ExpectedErr)
+			_, sourceCodes, _ := loader.ParseArgsForCX([]string{testcase.FilesPath}, true)
+			fileMap, err := loader.CreateFileMap(sourceCodes)
+			if err != nil {
+				t.Error(err)
 			}
-			gotImportMap, gotErr := loader.CreateImportMap(ExpectedFileMap)
+			gotImportMap, gotErr := loader.CreateImportMap(fileMap)
 
 			for wantKey, wantValue := range testcase.ExpectedImportMap {
 				gotValue, ok := gotImportMap[wantKey]

@@ -41,13 +41,14 @@ func createFileMap(files []*os.File) (fileMap map[string][]*os.File, err error) 
 			return fileMap, err
 		}
 		if packageName == "src" {
-			if filePackageName == "main" {
-				fileMap["main"] = append(fileMap["main"], file)
-				continue
+			if filePackageName != "main" {
+				return fileMap, fmt.Errorf("%s: package error: package %s found in main", filepath.Base(file.Name()), filePackageName)
 			}
+			fileMap["main"] = append(fileMap["main"], file)
+			continue
 		}
 		if filePackageName != packageName {
-			return fileMap, fmt.Errorf("package %s found in %v", filePackageName, packageName)
+			return fileMap, fmt.Errorf("%s: package error: package %s found in %v", filepath.Base(file.Name()), filePackageName, packageName)
 		}
 		fileMap[packageName] = append(fileMap[packageName], file)
 	}
