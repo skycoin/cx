@@ -51,7 +51,7 @@ Additional milestones:
 Findings to be added/fixed/resolved:
 - [x] Package Struct missing Blake2Hash field // generate from []Files UUID // need to write unit test for this 
 - [x] Doesn’t check if there’s more than one packages in a folder/directory
-- [x] Doesn’t remove duplicate imports // duplicate imports don't need to be removed since the import is not used by the later stages
+- [x] Doesn’t remove duplicate imports // duplicate imports don't need to be removed since the import map is not used by the later stages
 - [ ] Some functions don’t have a reliable unit test yet
 - [ ] Not clear on what it means for package path check
 - [x] Possible problem if keywords are used as package names? This can be solved but may impact the performance due to more conditionals // declaration_extractor partially does this with syntax checking
