@@ -49,11 +49,11 @@ Additional milestones:
 
 ---
 Findings to be added/fixed/resolved:
-- [ ] Package Struct missing Blake2Hash field
-- [ ] Doesn’t check if there’s more than one packages in a folder/directory
-- [ ] Doesn’t check for duplicate imports
+- [ ] Package Struct missing Blake2Hash field // generate from []File UUID
+- [x] Doesn’t check if there’s more than one packages in a folder/directory
+- [ ] Doesn’t remove duplicate imports
 - [ ] Some functions don’t have a reliable unit test yet
 - [ ] Not clear on what it means for package path check
-- [ ] Possible problem if keywords are used as package names? This can be solved but may impact the performance due to more conditionals
-- [ ] output an error if the package folder/directory doesn’t follow the naming convention here
-- [ ] the parent directory naming convention used in the packageName that’s saved in the DB like path/filepath
+- [ ] Possible problem if keywords are used as package names? This can be solved but may impact the performance due to more conditionals // declaration_extractor partially does this with syntax checking
+- [ ] output an error if the package folder/directory doesn’t follow the naming convention here // declaration_extractor does this
+- [ ] the parent directory naming convention used in the packageName that’s saved in the DB like path/filepath // do we need to check this if declaration_extractor checks the package name or still do it for the DB?
