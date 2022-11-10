@@ -138,6 +138,7 @@ func LoadCXProgram(programName string, sourceCode []*os.File, database string) (
 		return err
 	}
 
+	// STEP 10 recursive
 	err = loadPackages(&packageListStruct, "main", importMap, fileMap, database)
 	if err != nil {
 		return err
