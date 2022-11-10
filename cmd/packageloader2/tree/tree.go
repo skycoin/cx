@@ -5,9 +5,9 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/skycoin/cx/cmd/packageloader/bolt"
-	"github.com/skycoin/cx/cmd/packageloader/loader"
-	"github.com/skycoin/cx/cmd/packageloader/redis"
+	"github.com/skycoin/cx/cmd/packageloader2/bolt"
+	"github.com/skycoin/cx/cmd/packageloader2/loader"
+	"github.com/skycoin/cx/cmd/packageloader2/redis"
 )
 
 func GetImportTree(packageName string, database string) (output string, err error) {

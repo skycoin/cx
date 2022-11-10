@@ -1,6 +1,6 @@
 
 build:
-	go build -o packageloader
+	go build -o packageloader2
 
 test_loader:
 	go test ./loader -v -coverprofile cover.out
@@ -19,16 +19,16 @@ test_encoder:
 
 test_tree:
 	make build
-	./packageloader -redis -load -name TestTree -path ./tree/test_tree
-	./packageloader -load -name TestTree -path ./tree/test_tree
+	./packageloader2 -redis -load -name TestTree -path ./tree/test_tree
+	./packageloader2 -load -name TestTree -path ./tree/test_tree
 	go test ./tree -v -coverprofile cover.out
 	go tool cover -html=cover.out -o cover.html
 	xdg-open cover.html
 
 test_graph:
 	make build
-	./packageloader -redis -load -name TestTree -path ./tree/test_tree
-	./packageloader -load -name TestTree -path ./tree/test_tree
+	./packageloader2 -redis -load -name TestTree -path ./tree/test_tree
+	./packageloader2 -load -name TestTree -path ./tree/test_tree
 	go test ./graph -v -coverprofile cover.out
 	go tool cover -html=cover.out -o cover.html
 	xdg-open cover.html

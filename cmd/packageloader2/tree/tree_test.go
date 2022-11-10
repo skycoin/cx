@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/skycoin/cx/cmd/packageloader/bolt"
+	"github.com/skycoin/cx/cmd/packageloader2/bolt"
 )
 
 func TestTree(t *testing.T) {

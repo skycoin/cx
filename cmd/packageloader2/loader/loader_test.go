@@ -305,11 +305,11 @@ func TestLoadCXProgram(t *testing.T) {
 	}
 	for _, testcase := range tests {
 		t.Run(testcase.Scenario, func(t *testing.T) {
-			_, sourceCodes, _ := loader.ParseArgsForCX([]string{testcase.FilesPath}, false)
+			_, sourceCodes, _ := loader.ParseArgsForCX([]string{testcase.FilesPath}, true)
 			err := loader.LoadCXProgram("test", sourceCodes, testcase.Database)
-			// if err != nil {
-			t.Error(err)
-			// }
+			if err != nil {
+				t.Error(err)
+			}
 		})
 	}
 }

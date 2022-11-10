@@ -122,33 +122,31 @@ func checkForDependencyLoop(importMap map[string][]string) (err error) {
 }
 
 func LoadCXProgram(programName string, sourceCode []*os.File, database string) (err error) {
+	// STEP 1
 	fileMap, err := createFileMap(sourceCode)
 	if err != nil {
 		return err
 	}
 
+	// STEP 2
 	var packageListStruct PackageList
 	importMap := make(map[string][]string)
 
+	// STEP 3
 	err = addNewPackage(&packageListStruct, "main", fileMap["main"], importMap, database)
 	if err != nil {
 		return err
 	}
 
-	for _, imprt := range importMap["main"] {
-		err = addNewPackage(&packageListStruct, imprt, fileMap[imprt], importMap, database)
-		if err != nil {
-			return err
-		}
+	err = loadPackages(&packageListStruct, "main", importMap, fileMap, database)
+	if err != nil {
+		return err
 	}
 
 	err = checkForDependencyLoop(importMap)
 	if err != nil {
 		return err
 	}
-
-	fmt.Print(importMap, "\n")
-	fmt.Print(packageListStruct, "\n")
 
 	switch database {
 	case "redis":
@@ -171,6 +169,7 @@ func addNewPackage(packageListStruct *PackageList, packageName string, files []*
 		return err
 	}
 
+	// STEP 9
 	importList, err := createImportList(files, []string{})
 	if err != nil {
 		return err
@@ -180,6 +179,7 @@ func addNewPackage(packageListStruct *PackageList, packageName string, files []*
 
 	importMap[packageName] = newImportList
 
+	// STEP 8
 	packageListStruct.appendPackage(&packageStruct, database)
 
 	return nil
@@ -331,9 +331,11 @@ func createPackageStruct(name string, files []*os.File, packageStruct Package, d
 		return packageStruct, nil
 	}
 
+	// STEP 4
 	// Set package name
 	packageStruct.PackageName = name
 
+	// STEP 5
 	// Create file struct
 	currentIndex := len(files) - 1
 	currentFile := files[currentIndex]
@@ -342,6 +344,7 @@ func createPackageStruct(name string, files []*os.File, packageStruct Package, d
 		return packageStruct, err
 	}
 
+	// STEP 6
 	// Append file struct
 	err = packageStruct.appendFile(&fileStruct, database)
 	if err != nil {
@@ -351,6 +354,7 @@ func createPackageStruct(name string, files []*os.File, packageStruct Package, d
 	// Remove file from slice
 	newFiles := files[:currentIndex]
 
+	// STEP 7
 	if len(newFiles) == 0 {
 		hash, err := blake2HashFromFileUUID(packageStruct.Files)
 		if err != nil {
@@ -388,4 +392,23 @@ func removeDuplicates(imports []string) []string {
 		}
 	}
 	return newImports
+}
+
+func loadPackages(packageListStruct *PackageList, importName string, importMap map[string][]string, fileMap map[string][]*os.File, database string) error {
+	for _, imprt := range importMap[importName] {
+
+		// STEP 10
+		file, ok := fileMap[imprt]
+		if !ok && !Contains(SKIP_PACKAGES, imprt) {
+			return fmt.Errorf("import %s not found", imprt)
+		}
+		err := addNewPackage(packageListStruct, imprt, file, importMap, database)
+		if err != nil {
+			return err
+		}
+
+		loadPackages(packageListStruct, imprt, importMap, fileMap, database)
+
+	}
+	return nil
 }

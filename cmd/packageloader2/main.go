@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/skycoin/cx/cmd/packageloader/encoder"
-	"github.com/skycoin/cx/cmd/packageloader/graph"
-	"github.com/skycoin/cx/cmd/packageloader/loader"
-	"github.com/skycoin/cx/cmd/packageloader/tree"
+	"github.com/skycoin/cx/cmd/packageloader2/encoder"
+	"github.com/skycoin/cx/cmd/packageloader2/graph"
+	"github.com/skycoin/cx/cmd/packageloader2/loader"
+	"github.com/skycoin/cx/cmd/packageloader2/tree"
 )
 
 func main() {
