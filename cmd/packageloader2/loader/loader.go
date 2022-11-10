@@ -10,7 +10,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"sync"
 
 	"github.com/skycoin/cx/cmd/packageloader2/bolt"
 	"github.com/skycoin/cx/cmd/packageloader2/redis"
@@ -129,6 +128,27 @@ func LoadCXProgram(programName string, sourceCode []*os.File, database string) (
 	}
 
 	var packageListStruct PackageList
+	importMap := make(map[string][]string)
+
+	err = addNewPackage(&packageListStruct, "main", fileMap["main"], importMap, database)
+	if err != nil {
+		return err
+	}
+
+	for _, imprt := range importMap["main"] {
+		err = addNewPackage(&packageListStruct, imprt, fileMap[imprt], importMap, database)
+		if err != nil {
+			return err
+		}
+	}
+
+	err = checkForDependencyLoop(importMap)
+	if err != nil {
+		return err
+	}
+
+	fmt.Print(importMap, "\n")
+	fmt.Print(packageListStruct, "\n")
 
 	switch database {
 	case "redis":
@@ -144,40 +164,21 @@ func LoadCXProgram(programName string, sourceCode []*os.File, database string) (
 	return nil
 }
 
-func addNewPackage(packageListStruct *PackageList, packageName string, files []*os.File, database string) error {
-	packageStruct := Package{
-		PackageName: packageName,
-	}
+func addNewPackage(packageListStruct *PackageList, packageName string, files []*os.File, importMap map[string][]string, database string) error {
 
-	var wg sync.WaitGroup
-	for _, file := range files {
-		wg.Add(1)
-		errs := make(chan error)
-		go func(file *os.File) {
-			defer wg.Done()
-			fileStruct, err := fileStructFromFile(file)
-			if err != nil {
-				errs <- err
-			}
-			err = packageStruct.appendFile(&fileStruct, database)
-			if err != nil {
-				errs <- err
-			}
-			close(errs)
-		}(file)
-		for err := range errs {
-			if err != nil {
-				return err
-			}
-		}
-	}
-	wg.Wait()
-
-	hash, err := blake2HashFromFileUUID(packageStruct.Files)
+	packageStruct, err := createPackageStruct(packageName, files, Package{}, database)
 	if err != nil {
 		return err
 	}
-	packageStruct.Blake2Hash = string(hash[:])
+
+	importList, err := createImportList(files, []string{})
+	if err != nil {
+		return err
+	}
+
+	newImportList := removeDuplicates(importList)
+
+	importMap[packageName] = newImportList
 
 	packageListStruct.appendPackage(&packageStruct, database)
 
@@ -325,12 +326,15 @@ func blake2HashFromFileUUID(fileUUID []string) ([64]byte, error) {
 
 func createPackageStruct(name string, files []*os.File, packageStruct Package, database string) (Package, error) {
 
+	// Base case
 	if len(files) == 0 {
 		return packageStruct, nil
 	}
 
+	// Set package name
 	packageStruct.PackageName = name
 
+	// Create file struct
 	currentIndex := len(files) - 1
 	currentFile := files[currentIndex]
 	fileStruct, err := fileStructFromFile(currentFile)
@@ -338,12 +342,14 @@ func createPackageStruct(name string, files []*os.File, packageStruct Package, d
 		return packageStruct, err
 	}
 
+	// Append file struct
 	err = packageStruct.appendFile(&fileStruct, database)
 	if err != nil {
 		return packageStruct, err
 	}
 
-	newFiles := files[:currentIndex-1]
+	// Remove file from slice
+	newFiles := files[:currentIndex]
 
 	if len(newFiles) == 0 {
 		hash, err := blake2HashFromFileUUID(packageStruct.Files)
@@ -355,4 +361,31 @@ func createPackageStruct(name string, files []*os.File, packageStruct Package, d
 	}
 
 	return createPackageStruct(name, newFiles, packageStruct, database)
+}
+
+func createImportList(files []*os.File, importsList []string) ([]string, error) {
+
+	if len(files) == 0 {
+		return importsList, nil
+	}
+	currentIndex := len(files) - 1
+	currentFile := files[currentIndex]
+	imports, err := getImports(currentFile)
+	if err != nil {
+		return nil, err
+	}
+	importsList = append(importsList, imports...)
+	newFiles := files[:currentIndex]
+
+	return createImportList(newFiles, importsList)
+}
+
+func removeDuplicates(imports []string) []string {
+	var newImports []string
+	for _, imprt := range imports {
+		if !Contains(newImports, imprt) {
+			newImports = append(newImports, imprt)
+		}
+	}
+	return newImports
 }

@@ -251,37 +251,37 @@ func TestFileStructFromFile(t *testing.T) {
 	}
 }
 
-func TestAddNewPackage(t *testing.T) {
-	tests := []struct {
-		Scenario  string
-		FilesPath string
-		Database  string
-	}{
-		{
-			Scenario:  "Test adding package to Redis database",
-			FilesPath: TEST_SRC_PATH_VALID,
-			Database:  "redis",
-		},
-		{
-			Scenario:  "Test adding package to Bolt database",
-			FilesPath: TEST_SRC_PATH_VALID,
-			Database:  "bolt",
-		},
-	}
-	for _, testcase := range tests {
-		t.Run(testcase.Scenario, func(t *testing.T) {
-			_, sourceCodes, _ := loader.ParseArgsForCX([]string{testcase.FilesPath}, false)
-			testPackageStruct := loader.PackageList{}
-			err := loader.AddNewPackage(&testPackageStruct, "main", sourceCodes, testcase.Database)
-			if err != nil {
-				t.Error(err)
-			}
-			if len(testPackageStruct.Packages) != 1 {
-				t.Error("Wrong number of packages added")
-			}
-		})
-	}
-}
+// func TestAddNewPackage(t *testing.T) {
+// 	tests := []struct {
+// 		Scenario  string
+// 		FilesPath string
+// 		Database  string
+// 	}{
+// 		{
+// 			Scenario:  "Test adding package to Redis database",
+// 			FilesPath: TEST_SRC_PATH_VALID,
+// 			Database:  "redis",
+// 		},
+// 		{
+// 			Scenario:  "Test adding package to Bolt database",
+// 			FilesPath: TEST_SRC_PATH_VALID,
+// 			Database:  "bolt",
+// 		},
+// 	}
+// 	for _, testcase := range tests {
+// 		t.Run(testcase.Scenario, func(t *testing.T) {
+// 			_, sourceCodes, _ := loader.ParseArgsForCX([]string{testcase.FilesPath}, false)
+// 			testPackageStruct := loader.PackageList{}
+// 			err := loader.AddNewPackage(&testPackageStruct, "main", sourceCodes, testcase.Database)
+// 			if err != nil {
+// 				t.Error(err)
+// 			}
+// 			if len(testPackageStruct.Packages) != 1 {
+// 				t.Error("Wrong number of packages added")
+// 			}
+// 		})
+// 	}
+// }
 
 func TestLoadCXProgram(t *testing.T) {
 	tests := []struct {
@@ -307,9 +307,9 @@ func TestLoadCXProgram(t *testing.T) {
 		t.Run(testcase.Scenario, func(t *testing.T) {
 			_, sourceCodes, _ := loader.ParseArgsForCX([]string{testcase.FilesPath}, false)
 			err := loader.LoadCXProgram("test", sourceCodes, testcase.Database)
-			if err != nil {
-				t.Error(err)
-			}
+			// if err != nil {
+			t.Error(err)
+			// }
 		})
 	}
 }
