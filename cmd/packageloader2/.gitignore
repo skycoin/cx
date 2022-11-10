@@ -1,0 +1,7 @@
+cover.html
+cover.out
+packageloader
+encoder/test_redis
+encoder/test_bolt
+.vscode
+program_list.db
