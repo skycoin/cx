@@ -144,6 +144,7 @@ func LoadCXProgram(programName string, sourceCode []*os.File, database string) (
 		return err
 	}
 
+	// check dependency loop
 	err = checkForDependencyLoop(importMap)
 	if err != nil {
 		return err
@@ -176,8 +177,10 @@ func addNewPackage(packageListStruct *PackageList, packageName string, files []*
 		return err
 	}
 
+	// Remove duplicates
 	newImportList := removeDuplicates(importList)
 
+	// add to import map
 	importMap[packageName] = newImportList
 
 	// STEP 8
@@ -326,6 +329,7 @@ func blake2HashFromFileUUID(fileUUID []string) ([64]byte, error) {
 }
 
 func createPackageStruct(name string, files []*os.File, packageStruct Package, database string) (Package, error) {
+	// Recursive function
 
 	// Base case
 	if len(files) == 0 {
@@ -369,16 +373,22 @@ func createPackageStruct(name string, files []*os.File, packageStruct Package, d
 }
 
 func createImportList(files []*os.File, importsList []string) ([]string, error) {
+	// Recursive function
 
+	// Base case
 	if len(files) == 0 {
 		return importsList, nil
 	}
+
+	// Gets imports
 	currentIndex := len(files) - 1
 	currentFile := files[currentIndex]
 	imports, err := getImports(currentFile)
 	if err != nil {
 		return nil, err
 	}
+
+	// Removes file from list
 	importsList = append(importsList, imports...)
 	newFiles := files[:currentIndex]
 
@@ -396,18 +406,25 @@ func removeDuplicates(imports []string) []string {
 }
 
 func loadPackages(packageListStruct *PackageList, importName string, importMap map[string][]string, fileMap map[string][]*os.File, database string) error {
+	// Recursive and loop based
+	// Calls itself for imports of imports
+
+	// loops over import list
 	for _, imprt := range importMap[importName] {
 
 		// STEP 10
+		// Checks if package is found in the directory
 		file, ok := fileMap[imprt]
 		if !ok && !Contains(SKIP_PACKAGES, imprt) {
 			return fmt.Errorf("import %s not found", imprt)
 		}
+		// Add package
 		err := addNewPackage(packageListStruct, imprt, file, importMap, database)
 		if err != nil {
 			return err
 		}
 
+		// Call itself for loading imports of the import
 		loadPackages(packageListStruct, imprt, importMap, fileMap, database)
 
 	}
