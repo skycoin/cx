@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/skycoin/cx/cmd/packageloader/loader"
+	"github.com/skycoin/cx/cmd/packageloader2/loader"
 )
 
 const TEST_SRC_PATH_INVALID = "test_folder/test_invalid_program/src/"

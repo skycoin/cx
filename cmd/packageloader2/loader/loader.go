@@ -127,19 +127,8 @@ func LoadCXProgram(programName string, sourceCode []*os.File, database string) (
 	if err != nil {
 		return err
 	}
-	importMap, err := createImportMap(fileMap)
-	if err != nil {
-		return err
-	}
-	err = checkForDependencyLoop(importMap)
-	if err != nil {
-		return
-	}
 
-	packageListStruct := PackageList{}
-	for key, files := range fileMap {
-		addNewPackage(&packageListStruct, key, files, database)
-	}
+	var packageListStruct PackageList
 
 	switch database {
 	case "redis":
@@ -332,4 +321,38 @@ func blake2HashFromFileUUID(fileUUID []string) ([64]byte, error) {
 		return [64]byte{}, err
 	}
 	return blake2b.Sum512(buffer.Bytes()), nil
+}
+
+func createPackageStruct(name string, files []*os.File, packageStruct Package, database string) (Package, error) {
+
+	if len(files) == 0 {
+		return packageStruct, nil
+	}
+
+	packageStruct.PackageName = name
+
+	currentIndex := len(files) - 1
+	currentFile := files[currentIndex]
+	fileStruct, err := fileStructFromFile(currentFile)
+	if err != nil {
+		return packageStruct, err
+	}
+
+	err = packageStruct.appendFile(&fileStruct, database)
+	if err != nil {
+		return packageStruct, err
+	}
+
+	newFiles := files[:currentIndex-1]
+
+	if len(newFiles) == 0 {
+		hash, err := blake2HashFromFileUUID(packageStruct.Files)
+		if err != nil {
+			return packageStruct, err
+		}
+
+		packageStruct.Blake2Hash = string(hash[:])
+	}
+
+	return createPackageStruct(name, newFiles, packageStruct, database)
 }
