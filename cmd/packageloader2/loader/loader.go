@@ -418,6 +418,10 @@ func loadPackages(packageListStruct *PackageList, importName string, importMap m
 		if !ok && !Contains(SKIP_PACKAGES, imprt) {
 			return fmt.Errorf("import %s not found", imprt)
 		}
+		if Contains(SKIP_PACKAGES, imprt) {
+			continue
+		}
+
 		// Add package
 		err := addNewPackage(packageListStruct, imprt, file, importMap, database)
 		if err != nil {
