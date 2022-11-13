@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"github.com/skycoin/cx/cmd/packageloader2/bolt"
 	"github.com/skycoin/cx/cmd/packageloader2/redis"
@@ -72,23 +73,6 @@ func getPackageName(file *os.File) (string, error) {
 	return "", errors.New("file doesn't contain a package name")
 }
 
-func createImportMap(fileMap map[string][]*os.File) (importMap map[string][]string, err error) {
-	importMap = make(map[string][]string)
-	for packageName := range fileMap {
-		packageImports := []string{}
-		for _, file := range fileMap[packageName] {
-			newImports, err := getImports(file)
-			if err != nil {
-				return importMap, err
-			}
-			packageImports = append(packageImports, newImports...)
-		}
-
-		importMap[packageName] = packageImports
-	}
-	return importMap, nil
-}
-
 func getImports(file *os.File) (imports []string, err error) {
 	openFile, err := os.Open(file.Name())
 	if err != nil {
@@ -122,29 +106,25 @@ func checkForDependencyLoop(importMap map[string][]string) (err error) {
 }
 
 func LoadCXProgram(programName string, sourceCode []*os.File, database string) (err error) {
-	// STEP 1
+
 	fileMap, err := createFileMap(sourceCode)
 	if err != nil {
 		return err
 	}
 
-	// STEP 2
 	var packageListStruct PackageList
 	importMap := make(map[string][]string)
 
-	// STEP 3
-	err = addNewPackage(&packageListStruct, "main", fileMap["main"], importMap, database)
+	err = addNewPackage(&packageListStruct, "main", fileMap, importMap, database)
 	if err != nil {
 		return err
 	}
 
-	// STEP 10 recursive
-	err = loadPackages(&packageListStruct, "main", importMap, fileMap, database)
+	err = loadImportPackages(&packageListStruct, "main", fileMap, importMap, database)
 	if err != nil {
 		return err
 	}
 
-	// check dependency loop
 	err = checkForDependencyLoop(importMap)
 	if err != nil {
 		return err
@@ -164,26 +144,37 @@ func LoadCXProgram(programName string, sourceCode []*os.File, database string) (
 	return nil
 }
 
-func addNewPackage(packageListStruct *PackageList, packageName string, files []*os.File, importMap map[string][]string, database string) error {
+// Adds a new package to the package list and the package's imports to the import map
+// 1. pass the package list pointer
+// 2. pass the name of the package to be imported
+// 3. pass the
+func addNewPackage(packageListStruct *PackageList, packageName string, fileMap map[string][]*os.File, importMap map[string][]string, database string) error {
+
+	files, ok := fileMap[packageName]
+
+	// Checks if package is found in the directory
+	if !ok && !Contains(SKIP_PACKAGES, packageName) {
+		return fmt.Errorf("import %s not found", packageName)
+	}
+	// Skip if the import is a built-in package
+	if Contains(SKIP_PACKAGES, packageName) {
+		return nil
+	}
 
 	packageStruct, err := createPackageStruct(packageName, files, Package{}, database)
 	if err != nil {
 		return err
 	}
 
-	// STEP 9
 	importList, err := createImportList(files, []string{})
 	if err != nil {
 		return err
 	}
 
-	// Remove duplicates
 	newImportList := removeDuplicates(importList)
 
-	// add to import map
 	importMap[packageName] = newImportList
 
-	// STEP 8
 	packageListStruct.appendPackage(&packageStruct, database)
 
 	return nil
@@ -317,6 +308,7 @@ func ioReadDir(root string) ([]string, error) {
 	return files, nil
 }
 
+// Creates Blake2Hash from file UUIDs
 func blake2HashFromFileUUID(fileUUID []string) ([64]byte, error) {
 	var buffer bytes.Buffer
 	encoder := gob.NewEncoder(&buffer)
@@ -328,19 +320,21 @@ func blake2HashFromFileUUID(fileUUID []string) ([64]byte, error) {
 	return blake2b.Sum512(buffer.Bytes()), nil
 }
 
+// Creates Package Struct
+// 1. name - name of the struct
+// 2. files - file list that are part of the package
+// 3. packageStruct - pass an empty package struct "Package{}"
+// 4. database - "redis" or "bolt"
+// This function works recursively
 func createPackageStruct(name string, files []*os.File, packageStruct Package, database string) (Package, error) {
-	// Recursive function
 
 	// Base case
 	if len(files) == 0 {
 		return packageStruct, nil
 	}
 
-	// STEP 4
-	// Set package name
 	packageStruct.PackageName = name
 
-	// STEP 5
 	// Create file struct
 	currentIndex := len(files) - 1
 	currentFile := files[currentIndex]
@@ -349,7 +343,6 @@ func createPackageStruct(name string, files []*os.File, packageStruct Package, d
 		return packageStruct, err
 	}
 
-	// STEP 6
 	// Append file struct
 	err = packageStruct.appendFile(&fileStruct, database)
 	if err != nil {
@@ -359,7 +352,7 @@ func createPackageStruct(name string, files []*os.File, packageStruct Package, d
 	// Remove file from slice
 	newFiles := files[:currentIndex]
 
-	// STEP 7
+	// Generate Blake2Hash and add to package struct
 	if len(newFiles) == 0 {
 		hash, err := blake2HashFromFileUUID(packageStruct.Files)
 		if err != nil {
@@ -372,12 +365,14 @@ func createPackageStruct(name string, files []*os.File, packageStruct Package, d
 	return createPackageStruct(name, newFiles, packageStruct, database)
 }
 
-func createImportList(files []*os.File, importsList []string) ([]string, error) {
-	// Recursive function
-
+// Create an import list from the list of files
+// 1. pass the files list to files
+// 2. pass an empty string slice "[]string{}" to importList
+// This function works recursively
+func createImportList(files []*os.File, importList []string) ([]string, error) {
 	// Base case
 	if len(files) == 0 {
-		return importsList, nil
+		return importList, nil
 	}
 
 	// Gets imports
@@ -385,52 +380,63 @@ func createImportList(files []*os.File, importsList []string) ([]string, error) 
 	currentFile := files[currentIndex]
 	imports, err := getImports(currentFile)
 	if err != nil {
-		return nil, err
+		return importList, err
 	}
 
 	// Removes file from list
-	importsList = append(importsList, imports...)
+	importList = append(importList, imports...)
 	newFiles := files[:currentIndex]
 
-	return createImportList(newFiles, importsList)
+	return createImportList(newFiles, importList)
 }
 
-func removeDuplicates(imports []string) []string {
-	var newImports []string
-	for _, imprt := range imports {
-		if !Contains(newImports, imprt) {
-			newImports = append(newImports, imprt)
+// Removes Duplicates from list
+func removeDuplicates(list []string) []string {
+	var newList []string
+	for _, elem := range list {
+		if !Contains(newList, elem) {
+			newList = append(newList, elem)
 		}
 	}
-	return newImports
+	return newList
 }
 
-func loadPackages(packageListStruct *PackageList, importName string, importMap map[string][]string, fileMap map[string][]*os.File, database string) error {
-	// Recursive and loop based
-	// Calls itself for imports of imports
+// Loads Import Packages
+// 1. packageListStruct - package list pointer
+// 2. importName - package with imports
+// 3. fileMap - file map that contains the files, not an empty map
+// 4. importMap - import map that contains the imports, not an empty map
+// 5. database - "redis" or "bolt"
+// This function works recursive loading the import packages and then loading import packages of imports
+func loadImportPackages(packageListStruct *PackageList, importName string, fileMap map[string][]*os.File, importMap map[string][]string, database string) error {
 
+	errChannel := make(chan error, len(importMap))
+
+	var wg sync.WaitGroup
 	// loops over import list
 	for _, imprt := range importMap[importName] {
 
-		// STEP 10
-		// Checks if package is found in the directory
-		file, ok := fileMap[imprt]
-		if !ok && !Contains(SKIP_PACKAGES, imprt) {
-			return fmt.Errorf("import %s not found", imprt)
-		}
-		if Contains(SKIP_PACKAGES, imprt) {
-			continue
-		}
+		wg.Add(1)
 
-		// Add package
-		err := addNewPackage(packageListStruct, imprt, file, importMap, database)
-		if err != nil {
-			return err
-		}
+		go func(packageListStruct *PackageList, imprt string, fileMap map[string][]*os.File, importMap map[string][]string, database string) {
+			defer wg.Done()
+			// Add package
+			err := addNewPackage(packageListStruct, imprt, fileMap, importMap, database)
+			if err != nil {
+				errChannel <- err
+				return
+			}
 
-		// Call itself for loading imports of the import
-		loadPackages(packageListStruct, imprt, importMap, fileMap, database)
+			// Call itself for loading imports of the import
+			loadImportPackages(packageListStruct, imprt, fileMap, importMap, database)
+		}(packageListStruct, imprt, fileMap, importMap, database)
 
+	}
+
+	wg.Wait()
+	close(errChannel)
+	if err := <-errChannel; err != nil {
+		return err
 	}
 	return nil
 }

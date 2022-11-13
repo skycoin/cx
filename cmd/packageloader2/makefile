@@ -11,8 +11,8 @@ test_encoder:
 	make build
 	sudo rm -r ./encoder/test_redis/
 	sudo rm -r ./encoder/test_bolt/
-	./packageloader -redis -load -name Test -path ./loader/test_folder/test_valid_program
-	./packageloader -load -name Test -path ./loader/test_folder/test_valid_program
+	./packageloader2 -redis -load -name Test -path ./loader/test_folder/test_valid_program
+	./packageloader2 -load -name Test -path ./loader/test_folder/test_valid_program
 	go test ./encoder -v -coverprofile cover.out
 	go tool cover -html=cover.out -o cover.html
 	xdg-open cover.html
