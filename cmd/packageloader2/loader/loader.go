@@ -107,6 +107,7 @@ func checkForDependencyLoop(importMap map[string][]string) (err error) {
 
 func LoadCXProgram(programName string, sourceCode []*os.File, database string) (err error) {
 
+	// Gets the source files
 	fileMap, err := createFileMap(sourceCode)
 	if err != nil {
 		return err
@@ -115,11 +116,13 @@ func LoadCXProgram(programName string, sourceCode []*os.File, database string) (
 	var packageListStruct PackageList
 	importMap := make(map[string][]string)
 
+	// Start with the main package
 	err = addNewPackage(&packageListStruct, "main", fileMap, importMap, database)
 	if err != nil {
 		return err
 	}
 
+	// load the imported packages
 	err = loadImportPackages(&packageListStruct, "main", fileMap, importMap, database)
 	if err != nil {
 		return err
@@ -144,37 +147,43 @@ func LoadCXProgram(programName string, sourceCode []*os.File, database string) (
 	return nil
 }
 
-// Adds a new package to the package list and the package's imports to the import map
-// 1. pass the package list pointer
-// 2. pass the name of the package to be imported
-// 3. pass the
+//  Adds a new package to the package list and add imports of the new package to the import map
+//  1. packageListStruct - package list pointer
+//  2. packageName -  name of package to be added
+//  3. fileMap - file map that contains the files
+//  4. importMap - import map that contains the imports
+//  5. database - "redis" or "bolt"
+// This function contains steps 4 - 9 of package loader
 func addNewPackage(packageListStruct *PackageList, packageName string, fileMap map[string][]*os.File, importMap map[string][]string, database string) error {
 
-	files, ok := fileMap[packageName]
-
 	// Checks if package is found in the directory
+	files, ok := fileMap[packageName]
 	if !ok && !Contains(SKIP_PACKAGES, packageName) {
 		return fmt.Errorf("import %s not found", packageName)
 	}
+
 	// Skip if the import is a built-in package
 	if Contains(SKIP_PACKAGES, packageName) {
 		return nil
 	}
 
+	// Creates the package struct
 	packageStruct, err := createPackageStruct(packageName, files, Package{}, database)
 	if err != nil {
 		return err
 	}
 
+	// Creates the import list
 	importList, err := createImportList(files, []string{})
 	if err != nil {
 		return err
 	}
 
+	// Removes duplicates of imports and adds them to the import map
 	newImportList := removeDuplicates(importList)
-
 	importMap[packageName] = newImportList
 
+	// Append the package to the package struct
 	packageListStruct.appendPackage(&packageStruct, database)
 
 	return nil
@@ -320,11 +329,11 @@ func blake2HashFromFileUUID(fileUUID []string) ([64]byte, error) {
 	return blake2b.Sum512(buffer.Bytes()), nil
 }
 
-// Creates Package Struct
-// 1. name - name of the struct
-// 2. files - file list that are part of the package
-// 3. packageStruct - pass an empty package struct "Package{}"
-// 4. database - "redis" or "bolt"
+//  Creates Package Struct
+//  1. name - name of the struct
+//  2. files - file list that are part of the package
+//  3. packageStruct - pass an empty package struct "Package{}"
+//  4. database - "redis" or "bolt"
 // This function works recursively
 func createPackageStruct(name string, files []*os.File, packageStruct Package, database string) (Package, error) {
 
@@ -365,9 +374,9 @@ func createPackageStruct(name string, files []*os.File, packageStruct Package, d
 	return createPackageStruct(name, newFiles, packageStruct, database)
 }
 
-// Create an import list from the list of files
-// 1. pass the files list to files
-// 2. pass an empty string slice "[]string{}" to importList
+//  Create an import list from the list of files
+// 	1. files - files list
+// 	2. importList - empty string slice "[]string{}"
 // This function works recursively
 func createImportList(files []*os.File, importList []string) ([]string, error) {
 	// Base case
@@ -401,13 +410,13 @@ func removeDuplicates(list []string) []string {
 	return newList
 }
 
-// Loads Import Packages
-// 1. packageListStruct - package list pointer
-// 2. importName - package with imports
-// 3. fileMap - file map that contains the files, not an empty map
-// 4. importMap - import map that contains the imports, not an empty map
-// 5. database - "redis" or "bolt"
-// This function works recursive loading the import packages and then loading import packages of imports
+//  Loads Import Packages
+// 	1. packageListStruct - package list pointer
+// 	2. importName - package with imports
+// 	3. fileMap - file map that contains the files
+// 	4. importMap - import map that contains the imports
+// 	5. database - "redis" or "bolt"
+// This function works recursively, loading the import packages and then loading import packages of imports
 func loadImportPackages(packageListStruct *PackageList, importName string, fileMap map[string][]*os.File, importMap map[string][]string, database string) error {
 
 	errChannel := make(chan error, len(importMap))
@@ -418,7 +427,7 @@ func loadImportPackages(packageListStruct *PackageList, importName string, fileM
 
 		wg.Add(1)
 
-		go func(packageListStruct *PackageList, imprt string, fileMap map[string][]*os.File, importMap map[string][]string, database string) {
+		go func(packageListStruct *PackageList, imprt string, fileMap map[string][]*os.File, importMap map[string][]string, database string, wg *sync.WaitGroup) {
 			defer wg.Done()
 			// Add package
 			err := addNewPackage(packageListStruct, imprt, fileMap, importMap, database)
@@ -429,14 +438,16 @@ func loadImportPackages(packageListStruct *PackageList, importName string, fileM
 
 			// Call itself for loading imports of the import
 			loadImportPackages(packageListStruct, imprt, fileMap, importMap, database)
-		}(packageListStruct, imprt, fileMap, importMap, database)
+		}(packageListStruct, imprt, fileMap, importMap, database, &wg)
 
 	}
 
 	wg.Wait()
+
 	close(errChannel)
 	if err := <-errChannel; err != nil {
 		return err
 	}
+
 	return nil
 }
