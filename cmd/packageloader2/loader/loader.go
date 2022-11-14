@@ -18,200 +18,6 @@ import (
 	"golang.org/x/crypto/blake2b"
 )
 
-var SKIP_PACKAGES = []string{"al", "gl", "glfw", "time", "os", "gltext", "cx", "json", "cipher", "tcp"}
-var FileHashMap = make(map[string]string)
-var PackageHashMap = make(map[string]string)
-
-func Contains(list []string, element string) bool {
-	for _, elem := range list {
-		if elem == element {
-			return true
-		}
-	}
-	return false
-}
-
-func createFileMap(files []*os.File) (fileMap map[string][]*os.File, err error) {
-	fileMap = make(map[string][]*os.File)
-	for _, file := range files {
-		path := strings.Split(file.Name(), "/")
-		packageName := path[len(path)-2]
-		filePackageName, err := getPackageName(file)
-		if err != nil {
-			return fileMap, err
-		}
-		if packageName == "src" {
-			if filePackageName != "main" {
-				return fileMap, fmt.Errorf("%s: package error: package %s found in main", filepath.Base(file.Name()), filePackageName)
-			}
-			fileMap["main"] = append(fileMap["main"], file)
-			continue
-		}
-		if filePackageName != packageName {
-			return fileMap, fmt.Errorf("%s: package error: package %s found in %v", filepath.Base(file.Name()), filePackageName, packageName)
-		}
-		fileMap[packageName] = append(fileMap[packageName], file)
-	}
-	return fileMap, nil
-}
-
-func getPackageName(file *os.File) (string, error) {
-	openFile, err := os.Open(file.Name())
-	if err != nil {
-		return "", err
-	}
-	defer openFile.Close()
-
-	scanner := bufio.NewScanner(openFile)
-
-	for scanner.Scan() {
-		line := strings.Split(scanner.Text(), " ")
-		if line[0] == "package" {
-			return line[1], nil
-		}
-	}
-	return "", errors.New("file doesn't contain a package name")
-}
-
-func getImports(file *os.File) (imports []string, err error) {
-	openFile, err := os.Open(file.Name())
-	if err != nil {
-		return imports, err
-	}
-	defer openFile.Close()
-
-	scanner := bufio.NewScanner(openFile)
-
-	for scanner.Scan() {
-		line := strings.Split(scanner.Text(), " ")
-		if line[0] == "import" {
-			imports = append(imports, line[1][1:len(line[1])-1])
-		}
-	}
-	return imports, nil
-}
-
-func checkForDependencyLoop(importMap map[string][]string) (err error) {
-	for packageName := range importMap {
-		for _, importName := range importMap[packageName] {
-			if importName == packageName {
-				return errors.New("Module " + packageName + " imports itself")
-			}
-			if Contains(importMap[importName], packageName) {
-				return errors.New("Dependency loop between modules " + packageName + " and " + importName)
-			}
-		}
-	}
-	return nil
-}
-
-func LoadCXProgram(programName string, sourceCode []*os.File, database string) (err error) {
-
-	// Gets the source files
-	fileMap, err := createFileMap(sourceCode)
-	if err != nil {
-		return err
-	}
-
-	var packageListStruct PackageList
-	importMap := make(map[string][]string)
-
-	// Start with the main package
-	err = addNewPackage(&packageListStruct, "main", fileMap, importMap, database)
-	if err != nil {
-		return err
-	}
-
-	// load the imported packages
-	err = loadImportPackages(&packageListStruct, "main", fileMap, importMap, database)
-	if err != nil {
-		return err
-	}
-
-	err = checkForDependencyLoop(importMap)
-	if err != nil {
-		return err
-	}
-
-	switch database {
-	case "redis":
-		redis.Add(programName, packageListStruct)
-	case "bolt":
-		value, err := packageListStruct.MarshalBinary()
-		if err != nil {
-			return err
-		}
-		bolt.Add(programName, value)
-	}
-
-	return nil
-}
-
-//  Adds a new package to the package list and add imports of the new package to the import map
-//  1. packageListStruct - package list pointer
-//  2. packageName -  name of package to be added
-//  3. fileMap - file map that contains the files
-//  4. importMap - import map that contains the imports
-//  5. database - "redis" or "bolt"
-// This function contains steps 4 - 9 of package loader
-func addNewPackage(packageListStruct *PackageList, packageName string, fileMap map[string][]*os.File, importMap map[string][]string, database string) error {
-
-	// Checks if package is found in the directory
-	files, ok := fileMap[packageName]
-	if !ok && !Contains(SKIP_PACKAGES, packageName) {
-		return fmt.Errorf("import %s not found", packageName)
-	}
-
-	// Skip if the import is a built-in package
-	if Contains(SKIP_PACKAGES, packageName) {
-		return nil
-	}
-
-	// Creates the package struct
-	packageStruct, err := createPackageStruct(packageName, files, Package{}, database)
-	if err != nil {
-		return err
-	}
-
-	// Creates the import list
-	importList, err := createImportList(files, []string{})
-	if err != nil {
-		return err
-	}
-
-	// Removes duplicates of imports and adds them to the import map
-	newImportList := removeDuplicates(importList)
-	importMap[packageName] = newImportList
-
-	// Append the package to the package struct
-	packageListStruct.appendPackage(&packageStruct, database)
-
-	return nil
-}
-
-func fileStructFromFile(file *os.File) (File, error) {
-	path := strings.Split(file.Name(), "/")
-	fileName := path[len(path)-1]
-	fileInfo, err := file.Stat()
-	if err != nil {
-		return File{}, err
-	}
-	fileBytes, err := ioutil.ReadFile(file.Name())
-	if err != nil {
-		return File{}, err
-	}
-	fileHash := blake2b.Sum512(fileBytes)
-
-	fileStruct := File{
-		FileName:   fileName,
-		Length:     uint32(fileInfo.Size()),
-		Content:    fileBytes,
-		Blake2Hash: string(fileHash[:]),
-	}
-
-	return fileStruct, nil
-}
-
 func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCode []*os.File, fileNames []string) {
 	skip := false // flag for skipping arg
 
@@ -293,6 +99,48 @@ func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCod
 	return cxArgs, sourceCode, fileNames
 }
 
+func LoadCXProgram(programName string, sourceCode []*os.File, database string) (err error) {
+
+	// Gets the source files
+	fileMap, err := createFileMap(sourceCode)
+	if err != nil {
+		return err
+	}
+
+	var packageListStruct PackageList
+	importMap := make(map[string][]string)
+
+	// Start with the main package
+	err = addNewPackage(&packageListStruct, "main", fileMap, importMap, database)
+	if err != nil {
+		return err
+	}
+
+	// load the imported packages
+	err = loadImportPackages(&packageListStruct, "main", fileMap, importMap, database)
+	if err != nil {
+		return err
+	}
+
+	err = checkForDependencyLoop(importMap)
+	if err != nil {
+		return err
+	}
+
+	switch database {
+	case "redis":
+		redis.Add(programName, packageListStruct)
+	case "bolt":
+		value, err := packageListStruct.MarshalBinary()
+		if err != nil {
+			return err
+		}
+		bolt.Add(programName, value)
+	}
+
+	return nil
+}
+
 func filePathWalkDir(root string) ([]string, error) {
 	var files []string
 	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
@@ -315,6 +163,145 @@ func ioReadDir(root string) ([]string, error) {
 		files = append(files, fmt.Sprintf("%s/%s", root, file.Name()))
 	}
 	return files, nil
+}
+
+func createFileMap(files []*os.File) (fileMap map[string][]*os.File, err error) {
+	fileMap = make(map[string][]*os.File)
+	for _, file := range files {
+		path := strings.Split(file.Name(), "/")
+		packageName := path[len(path)-2]
+		filePackageName, err := getPackageName(file)
+		if err != nil {
+			return fileMap, err
+		}
+		if packageName == "src" {
+			if filePackageName != "main" {
+				return fileMap, fmt.Errorf("%s: package error: package %s found in main", filepath.Base(file.Name()), filePackageName)
+			}
+			fileMap["main"] = append(fileMap["main"], file)
+			continue
+		}
+		if filePackageName != packageName {
+			return fileMap, fmt.Errorf("%s: package error: package %s found in %v", filepath.Base(file.Name()), filePackageName, packageName)
+		}
+		fileMap[packageName] = append(fileMap[packageName], file)
+	}
+	return fileMap, nil
+}
+
+func getPackageName(file *os.File) (string, error) {
+	openFile, err := os.Open(file.Name())
+	if err != nil {
+		return "", err
+	}
+	defer openFile.Close()
+
+	scanner := bufio.NewScanner(openFile)
+
+	for scanner.Scan() {
+		line := strings.Split(scanner.Text(), " ")
+		if line[0] == "package" {
+			return line[1], nil
+		}
+	}
+	return "", errors.New("file doesn't contain a package name")
+}
+
+//  Adds a new package to the package list and add imports of the new package to the import map
+//  1. packageListStruct - package list pointer
+//  2. packageName -  name of package to be added
+//  3. fileMap - file map that contains the files
+//  4. importMap - import map that contains the imports
+//  5. database - "redis" or "bolt"
+// This function contains steps 4 - 9 of package loader
+func addNewPackage(packageListStruct *PackageList, packageName string, fileMap map[string][]*os.File, importMap map[string][]string, database string) error {
+
+	// Checks if package is found in the directory
+	files, ok := fileMap[packageName]
+	if !ok && !Contains(SKIP_PACKAGES, packageName) {
+		return fmt.Errorf("import %s not found", packageName)
+	}
+
+	// Skip if the import is a built-in package
+	if Contains(SKIP_PACKAGES, packageName) {
+		return nil
+	}
+
+	// Creates the package struct
+	packageStruct, err := createPackageStruct(packageName, files, Package{}, database)
+	if err != nil {
+		return err
+	}
+
+	// Creates the import list
+	importList, err := createImportList(files, []string{})
+	if err != nil {
+		return err
+	}
+
+	// Removes duplicates of imports and adds them to the import map
+	newImportList := removeDuplicates(importList)
+	importMap[packageName] = newImportList
+
+	// Append the package to the package struct
+	packageListStruct.appendPackage(&packageStruct, database)
+
+	return nil
+}
+
+func getImports(file *os.File) (imports []string, err error) {
+	openFile, err := os.Open(file.Name())
+	if err != nil {
+		return imports, err
+	}
+	defer openFile.Close()
+
+	scanner := bufio.NewScanner(openFile)
+
+	for scanner.Scan() {
+		line := strings.Split(scanner.Text(), " ")
+		if line[0] == "import" {
+			imports = append(imports, line[1][1:len(line[1])-1])
+		}
+	}
+	return imports, nil
+}
+
+func checkForDependencyLoop(importMap map[string][]string) (err error) {
+	for packageName := range importMap {
+		for _, importName := range importMap[packageName] {
+			if importName == packageName {
+				return errors.New("Module " + packageName + " imports itself")
+			}
+			if Contains(importMap[importName], packageName) {
+				return errors.New("Dependency loop between modules " + packageName + " and " + importName)
+			}
+		}
+	}
+	return nil
+}
+
+func fileStructFromFile(file *os.File) (File, error) {
+	path := strings.Split(file.Name(), "/")
+	fileName := path[len(path)-1]
+	fileInfo, err := file.Stat()
+	if err != nil {
+		return File{}, err
+	}
+	fileBytes, err := ioutil.ReadFile(file.Name())
+	if err != nil {
+		return File{}, err
+	}
+	fileHash := blake2b.Sum512(fileBytes)
+
+	fileStruct := File{
+		FileName:   fileName,
+		Length:     uint32(fileInfo.Size()),
+		Content:    fileBytes,
+		Blake2Hash: string(fileHash[:]),
+	}
+
+	return fileStruct, nil
 }
 
 // Creates Blake2Hash from file UUIDs
@@ -397,17 +384,6 @@ func createImportList(files []*os.File, importList []string) ([]string, error) {
 	newFiles := files[:currentIndex]
 
 	return createImportList(newFiles, importList)
-}
-
-// Removes Duplicates from list
-func removeDuplicates(list []string) []string {
-	var newList []string
-	for _, elem := range list {
-		if !Contains(newList, elem) {
-			newList = append(newList, elem)
-		}
-	}
-	return newList
 }
 
 //  Loads Import Packages
