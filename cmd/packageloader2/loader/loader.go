@@ -219,7 +219,7 @@ func addNewPackage(packageListStruct *PackageList, packageName string, fileMap m
 	// Checks if package is found in the directory
 	files, ok := fileMap[packageName]
 	if !ok && !Contains(SKIP_PACKAGES, packageName) {
-		return fmt.Errorf("import %s not found", packageName)
+		return fmt.Errorf("package %s not found", packageName)
 	}
 
 	// Skip if the import is a built-in package
