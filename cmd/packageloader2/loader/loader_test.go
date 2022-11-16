@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/skycoin/cx/cmd/packageloader2/loader"
@@ -106,6 +107,12 @@ func TestCreateFileMap(t *testing.T) {
 				"main":       {"testfile.cx", "testfile2.cx"},
 				"testimport": {"testimport.cx"},
 			},
+		},
+		{
+			Scenario:    "no package name",
+			FilesPath:   "test_folder/test_various_files/nopackage.cx",
+			WantFileMap: map[string][]string{},
+			WantErr:     errors.New("file doesn't contain a package name"),
 		},
 		{
 			Scenario:  "error in main package",
@@ -219,7 +226,7 @@ func TestAddNewPackage(t *testing.T) {
 			Database:             "redis",
 			WantNumberOfPackages: 1,
 			WantImportMap: map[string][]string{
-				"main": {"testimport"},
+				"main": {"os", "testimport"},
 			},
 			WantErr: nil,
 		},
@@ -237,7 +244,7 @@ func TestAddNewPackage(t *testing.T) {
 			Database:             "bolt",
 			WantNumberOfPackages: 1,
 			WantImportMap: map[string][]string{
-				"main": {"testimport"},
+				"main": {"os", "testimport"},
 			},
 			WantErr: nil,
 		},
@@ -285,14 +292,93 @@ func TestAddNewPackage(t *testing.T) {
 
 func TestLoadImportPackages(t *testing.T) {
 	tests := []struct {
-		Scenario  string
-		FilesPath string
-		Database  string
-	}{}
+		Scenario             string
+		FilesPath            string
+		Database             string
+		WantNumberOfPackages int
+		WantImportMap        map[string][]string
+		WantErr              error
+	}{
+		{
+			Scenario:             "Test adding package to Redis database",
+			FilesPath:            TEST_SRC_PATH_VALID,
+			Database:             "redis",
+			WantNumberOfPackages: 2,
+			WantImportMap: map[string][]string{
+				"main":       {"os", "testimport"},
+				"testimport": {},
+			},
+			WantErr: nil,
+		},
+		{
+			Scenario:             "Test adding package to Redis database with missing package",
+			FilesPath:            "test_folder/test_import_package_error/",
+			Database:             "redis",
+			WantNumberOfPackages: 2,
+			WantImportMap: map[string][]string{
+				"main":       {"os", "testimport"},
+				"testimport": {"testimport2"},
+			},
+			WantErr: errors.New("package main not found"),
+		},
+		{
+			Scenario:             "Test adding package to Bolt database",
+			FilesPath:            TEST_SRC_PATH_VALID,
+			Database:             "bolt",
+			WantNumberOfPackages: 2,
+			WantImportMap: map[string][]string{
+				"main":       {"os", "testimport"},
+				"testimport": {},
+			},
+			WantErr: nil,
+		},
+		{
+			Scenario:             "Test adding package to Bolt database with missing package",
+			FilesPath:            "test_folder/test_import_package_error/",
+			Database:             "bolt",
+			WantNumberOfPackages: 2,
+			WantImportMap: map[string][]string{
+				"main":       {"os", "testimport"},
+				"testimport": {"testimport2"},
+			},
+			WantErr: errors.New("package main not found"),
+		},
+	}
 
 	for _, testcase := range tests {
 		t.Run(testcase.Scenario, func(t *testing.T) {
+			_, sourceCodes, _ := loader.ParseArgsForCX([]string{testcase.FilesPath}, true)
+			fileMap, err := loader.CreateFileMap(sourceCodes)
+			if err != nil {
+				t.Error(err)
+			}
+			gotImportMap := make(map[string][]string)
+			testPackageStruct := loader.PackageList{}
+			err = loader.AddNewPackage(&testPackageStruct, "main", fileMap, gotImportMap, testcase.Database)
+			if err != nil {
+				t.Error(err)
+			}
 
+			gotErr := loader.LoadImportPackages(&testPackageStruct, "main", fileMap, gotImportMap, testcase.Database)
+
+			gotNumberOfPackages := len(testPackageStruct.Packages)
+			if gotNumberOfPackages != testcase.WantNumberOfPackages {
+				t.Errorf("want %d packages, got %d packages", testcase.WantNumberOfPackages, gotNumberOfPackages)
+			}
+
+			if !reflect.DeepEqual(gotImportMap, testcase.WantImportMap) {
+				t.Errorf("want import map %v, got %v", testcase.WantImportMap, gotImportMap)
+			}
+
+			if (gotErr != nil && testcase.WantErr == nil) ||
+				(gotErr == nil && testcase.WantErr != nil) {
+				t.Errorf("want error %v, got %v", testcase.WantErr, gotErr)
+			}
+			if gotErr != nil && testcase.WantErr != nil {
+				if gotErr.Error() != testcase.WantErr.Error() {
+					t.Errorf("want error %v, got %v", testcase.WantErr, gotErr)
+				}
+			}
 		})
 	}
 }
@@ -337,7 +423,8 @@ func TestCheckForDependencyLoop(t *testing.T) {
 			}
 
 			if gotErr != nil && testcase.WantErr != nil {
-				if gotErr.Error() != testcase.WantErr.Error() {
+				if gotErr.Error() != testcase.WantErr.Error() &&
+					!(strings.Contains(gotErr.Error(), "between") && strings.Contains(testcase.WantErr.Error(), "between")) {
 					t.Errorf("want error %v, got %v", testcase.WantErr, gotErr)
 				}
 			}

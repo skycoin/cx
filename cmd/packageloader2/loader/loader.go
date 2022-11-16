@@ -395,11 +395,10 @@ func createImportList(files []*os.File, importList []string) ([]string, error) {
 // This function works recursively, loading the import packages and then loading import packages of imports
 func loadImportPackages(packageListStruct *PackageList, importName string, fileMap map[string][]*os.File, importMap map[string][]string, database string) error {
 
-	errChannel := make(chan error, len(importMap))
-
 	var wg sync.WaitGroup
 	// loops over import list
 	for _, imprt := range importMap[importName] {
+		errChannel := make(chan error, len(importMap))
 
 		wg.Add(1)
 
@@ -414,16 +413,15 @@ func loadImportPackages(packageListStruct *PackageList, importName string, fileM
 
 			// Call itself for loading imports of the import
 			loadImportPackages(packageListStruct, imprt, fileMap, importMap, database)
+			close(errChannel)
 		}(packageListStruct, imprt, fileMap, importMap, database, &wg)
+		if err := <-errChannel; err != nil {
+			return err
+		}
 
 	}
 
 	wg.Wait()
-
-	close(errChannel)
-	if err := <-errChannel; err != nil {
-		return err
-	}
 
 	return nil
 }

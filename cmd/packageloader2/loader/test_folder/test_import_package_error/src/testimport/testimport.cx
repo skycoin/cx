@@ -1,0 +1,3 @@
+package testimport
+
+import "testimport2"
