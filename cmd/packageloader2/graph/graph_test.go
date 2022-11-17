@@ -16,12 +16,12 @@ func TestTree(t *testing.T) {
 		{
 			Scenario:       "Test with Redis database",
 			Database:       "redis",
-			ExpectedResult: "id=0, module=main, imports=4,1,2,\nid=1, module=testimport2, imports=2,3,\nid=2, module=testimport1, imports=5,\nid=3, module=testimport3, imports=2,\nid=4, module=os, imports=,\nid=5, module=gl, imports=,\n",
+			ExpectedResult: "id=0, module=main, imports=4,2,1,\nid=1, module=testimport1, imports=5,\nid=2, module=testimport2, imports=1,3,\nid=3, module=testimport3, imports=1,\nid=4, module=os, imports=,\nid=5, module=gl, imports=,\n",
 		},
 		{
 			Scenario:       "Test with Bolt database",
 			Database:       "bolt",
-			ExpectedResult: "id=0, module=main, imports=4,1,2,\nid=1, module=testimport2, imports=2,3,\nid=2, module=testimport1, imports=5,\nid=3, module=testimport3, imports=2,\nid=4, module=os, imports=,\nid=5, module=gl, imports=,\n",
+			ExpectedResult: "id=0, module=main, imports=4,2,1,\nid=1, module=testimport1, imports=5,\nid=2, module=testimport2, imports=1,3,\nid=3, module=testimport3, imports=1,\nid=4, module=os, imports=,\nid=5, module=gl, imports=,\n",
 		},
 	}
 	for _, testcase := range tests {
