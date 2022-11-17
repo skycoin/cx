@@ -10,7 +10,7 @@ func Contains(list []string, element string) bool {
 }
 
 // Removes Duplicates from list
-func removeDuplicates(list []string) []string {
+func RemoveDuplicates(list []string) []string {
 	var newList []string
 	for _, elem := range list {
 		if !Contains(newList, elem) {

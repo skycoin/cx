@@ -207,12 +207,13 @@ func getPackageName(file *os.File) (string, error) {
 	return "", errors.New("file doesn't contain a package name")
 }
 
-//  Adds a new package to the package list and add imports of the new package to the import map
-//  1. packageListStruct - package list pointer
-//  2. packageName -  name of package to be added
-//  3. fileMap - file map that contains the files
-//  4. importMap - import map that contains the imports
-//  5. database - "redis" or "bolt"
+//	Adds a new package to the package list and add imports of the new package to the import map
+//	1. packageListStruct - package list pointer
+//	2. packageName -  name of package to be added
+//	3. fileMap - file map that contains the files
+//	4. importMap - import map that contains the imports
+//	5. database - "redis" or "bolt"
+//
 // This function contains steps 4 - 9 of package loader
 func addNewPackage(packageListStruct *PackageList, packageName string, fileMap map[string][]*os.File, importMap map[string][]string, database string) error {
 
@@ -240,7 +241,7 @@ func addNewPackage(packageListStruct *PackageList, packageName string, fileMap m
 	}
 
 	// Removes duplicates of imports and adds them to the import map
-	newImportList := removeDuplicates(importList)
+	newImportList := RemoveDuplicates(importList)
 	importMap[packageName] = newImportList
 
 	// Append the package to the package struct
@@ -316,11 +317,12 @@ func blake2HashFromFileUUID(fileUUID []string) ([64]byte, error) {
 	return blake2b.Sum512(buffer.Bytes()), nil
 }
 
-//  Creates Package Struct
-//  1. name - name of the struct
-//  2. files - file list that are part of the package
-//  3. packageStruct - pass an empty package struct "Package{}"
-//  4. database - "redis" or "bolt"
+//	Creates Package Struct
+//	1. name - name of the struct
+//	2. files - file list that are part of the package
+//	3. packageStruct - pass an empty package struct "Package{}"
+//	4. database - "redis" or "bolt"
+//
 // This function works recursively
 func createPackageStruct(name string, files []*os.File, packageStruct Package, database string) (Package, error) {
 
@@ -361,9 +363,10 @@ func createPackageStruct(name string, files []*os.File, packageStruct Package, d
 	return createPackageStruct(name, newFiles, packageStruct, database)
 }
 
-//  Create an import list from the list of files
-// 	1. files - files list
-// 	2. importList - empty string slice "[]string{}"
+//	 Create an import list from the list of files
+//		1. files - files list
+//		2. importList - empty string slice "[]string{}"
+//
 // This function works recursively
 func createImportList(files []*os.File, importList []string) ([]string, error) {
 	// Base case
@@ -386,12 +389,13 @@ func createImportList(files []*os.File, importList []string) ([]string, error) {
 	return createImportList(newFiles, importList)
 }
 
-//  Loads Import Packages
-// 	1. packageListStruct - package list pointer
-// 	2. importName - package with imports
-// 	3. fileMap - file map that contains the files
-// 	4. importMap - import map that contains the imports
-// 	5. database - "redis" or "bolt"
+//	 Loads Import Packages
+//		1. packageListStruct - package list pointer
+//		2. importName - package with imports
+//		3. fileMap - file map that contains the files
+//		4. importMap - import map that contains the imports
+//		5. database - "redis" or "bolt"
+//
 // This function works recursively, loading the import packages and then loading import packages of imports
 func loadImportPackages(packageListStruct *PackageList, importName string, fileMap map[string][]*os.File, importMap map[string][]string, database string) error {
 
