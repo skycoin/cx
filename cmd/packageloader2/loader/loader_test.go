@@ -319,7 +319,7 @@ func TestLoadImportPackages(t *testing.T) {
 				"main":       {"os", "testimport"},
 				"testimport": {"testimport2"},
 			},
-			WantErr: errors.New("package main not found"),
+			WantErr: errors.New("package testimport2 not found"),
 		},
 		{
 			Scenario:             "Test adding package to Bolt database",
@@ -341,7 +341,7 @@ func TestLoadImportPackages(t *testing.T) {
 				"main":       {"os", "testimport"},
 				"testimport": {"testimport2"},
 			},
-			WantErr: errors.New("package main not found"),
+			WantErr: errors.New("package testimport2 not found"),
 		},
 	}
 
