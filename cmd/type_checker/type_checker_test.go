@@ -740,15 +740,23 @@ func TestTypeChecker_ParseStructs(t *testing.T) {
 
 func TestTypeChecker_ParseFuncHeaders(t *testing.T) {
 
+	type CXFunc struct {
+		Name    string
+		Index   int
+		Package int
+		Inputs  string
+		Outputs string
+	}
+
 	tests := []struct {
 		scenario    string
 		testDir     string
-		functionCXs []ast.CXFunction
+		functionCXs []CXFunc
 	}{
 		{
 			scenario: "Has funcs",
 			testDir:  "./test_files/ParseFuncs/HasFuncs",
-			functionCXs: []ast.CXFunction{
+			functionCXs: []CXFunc{
 				{
 					Name:    "main",
 					Index:   0,
@@ -758,23 +766,28 @@ func TestTypeChecker_ParseFuncHeaders(t *testing.T) {
 					Name:    "add",
 					Index:   1,
 					Package: 1,
+					Inputs:  "a i32, b i32",
+					Outputs: "answer i32",
 				},
 				{
 					Name:    "divide",
 					Index:   2,
 					Package: 1,
+					Inputs:  "c i32, d i32",
+					Outputs: "quotient i32, remainder f32",
 				},
 				{
 					Name:    "printer",
 					Index:   3,
 					Package: 1,
+					Inputs:  "message str",
 				},
 			},
 		},
 		{
 			scenario: "Has funcs 2",
 			testDir:  "./test_files/ParseFuncs/HasFuncs2",
-			functionCXs: []ast.CXFunction{
+			functionCXs: []CXFunc{
 				{
 					Name:    "main",
 					Index:   0,
@@ -784,6 +797,8 @@ func TestTypeChecker_ParseFuncHeaders(t *testing.T) {
 					Name:    "is_divisible",
 					Index:   1,
 					Package: 1,
+					Inputs:  "x i32, y i32",
+					Outputs: "result bool",
 				},
 			},
 		},
@@ -821,7 +836,15 @@ func TestTypeChecker_ParseFuncHeaders(t *testing.T) {
 			for _, wantFunc := range tc.functionCXs {
 
 				var match bool
+
+				var wantFuncName string = wantFunc.Name
+				var wantFuncInputs string = wantFunc.Inputs
+				var wantFuncOutputs string = wantFunc.Outputs
+
 				var gotFunc *ast.CXFunction
+				var gotFuncName string
+				var gotFuncInputs string
+				var gotFuncOutputs string
 
 				for _, pkgIdx := range program.Packages {
 
@@ -831,25 +854,34 @@ func TestTypeChecker_ParseFuncHeaders(t *testing.T) {
 						t.Log(err)
 					}
 
-					for _, funcIdx := range pkg.Functions {
+					for _, gotFuncIdx := range pkg.Functions {
+						gotFunc = program.GetFunctionFromArray(gotFuncIdx)
+						gotFuncName = gotFunc.Name
 
-						gotFunc = program.GetFunctionFromArray(funcIdx)
+						var inps bytes.Buffer
+						var outs bytes.Buffer
 
-						if gotFunc.Name == wantFunc.Name &&
+						getFormattedParam(program, gotFunc.GetInputs(program), pkg, &inps)
+						getFormattedParam(program, gotFunc.GetOutputs(program), pkg, &outs)
+
+						gotFuncInputs = inps.String()
+						gotFuncOutputs = outs.String()
+
+						if gotFuncName == wantFuncName &&
 							gotFunc.Index == wantFunc.Index &&
-							gotFunc.Package == wantFunc.Package {
-
-							match = true
-
+							int(gotFunc.Package) == wantFunc.Package {
+							if gotFuncInputs == wantFuncInputs && gotFuncOutputs == wantFuncOutputs {
+								match = true
+							}
 							break
-
 						}
+
 					}
 
 				}
 
 				if !match {
-					t.Errorf("want func \n%v\n\tInputs: %v\n\tOutputs: %v\n, got \n%v\n\tInputs: %v\n\tOutputs: %v\n", wantFunc, wantFunc.Inputs, wantFunc.Outputs, gotFunc, gotFunc.Inputs, gotFunc.Outputs)
+					t.Errorf("want func %d %d. %s (%s) (%s), got %d %d. %s (%s) (%s)", wantFunc.Package, wantFunc.Index, wantFuncName, wantFuncInputs, wantFuncOutputs, gotFunc.Package, gotFunc.Index, gotFuncName, gotFuncInputs, gotFuncOutputs)
 				}
 			}
 
