@@ -59,6 +59,6 @@ Findings to be added/fixed/resolved:
 - [x] the parent directory naming convention used in the packageName that’s saved in the DB like path/filepath // do we need to check this if declaration_extractor checks the package name or still do it for the DB?
 
 ### Notes
-- loadImportPackages unit test not working because of reflect.DeepEqual
+- loadImportPackages unit test test case not working because of reflect.DeepEqual
 - some unit tests are not written yet because depend on errors ouputted from deeper level functions
-- some inconsistencies with some unit test because of concurrency especially test_graph
+- some inconsistencies with some unit test because of concurrency especially test_graph, sometimes the package id's are swapped
