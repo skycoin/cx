@@ -60,5 +60,6 @@ Findings to be added/fixed/resolved:
 
 ### Notes
 - loadImportPackages unit test test case not working because of reflect.DeepEqual
-- some unit tests are not written yet because depend on errors ouputted from deeper level functions
-- some inconsistencies with some unit test because of concurrency especially test_graph, sometimes the package id's are swapped
+- some unit tests are not written yet because depend on errors returned from deeper level functions
+- some inconsistency with test_graph the bolt database test case
+- test_graph test case not working for original package loader even before changes
