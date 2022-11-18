@@ -63,3 +63,4 @@ Findings to be added/fixed/resolved:
 - some unit tests are not written yet because depend on errors returned from deeper level functions
 - some inconsistency with test_graph the bolt database test case
 - test_graph test case not working for original package loader even before changes
+- loader v2 test coverage 83.7%
