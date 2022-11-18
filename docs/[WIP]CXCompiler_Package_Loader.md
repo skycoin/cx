@@ -57,10 +57,5 @@ Findings to be added/fixed/resolved:
 - [x] Possible problem if keywords are used as package names? This can be solved but may impact the performance due to more conditionals // declaration_extractor partially does this with syntax checking
 - [x] output an error if the package folder/directory doesn’t follow the naming convention here // declaration_extractor does this
 - [x] the parent directory naming convention used in the packageName that’s saved in the DB like path/filepath // do we need to check this if declaration_extractor checks the package name or still do it for the DB?
-
-### Notes
-- loadImportPackages unit test test case not working because of reflect.DeepEqual
-- some unit tests are not written yet because depend on errors returned from deeper level functions
-- some inconsistency with test_graph the bolt database test case
-- test_graph test case not working for original package loader even before changes
-- loader v2 test coverage 83.7%
+- [ ]some unit tests are not written yet because depend on errors returned from deeper level functions
+- [ ]test_graph is having issues with packages being added concurrently
