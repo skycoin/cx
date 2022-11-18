@@ -2,8 +2,6 @@ package loader
 
 import (
 	"bufio"
-	"bytes"
-	"encoding/gob"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -41,16 +39,14 @@ func createFileMap(files []*os.File) (fileMap map[string][]*os.File, err error) 
 			return fileMap, err
 		}
 		if packageName == "src" {
-			if filePackageName != "main" {
-				return fileMap, fmt.Errorf("%s: package error: package %s found in main", filepath.Base(file.Name()), filePackageName)
+			if filePackageName == "main" {
+				fileMap["main"] = append(fileMap["main"], file)
+				continue
 			}
-			fileMap["main"] = append(fileMap["main"], file)
-			continue
 		}
-		if filePackageName != packageName {
-			return fileMap, fmt.Errorf("%s: package error: package %s found in %v", filepath.Base(file.Name()), filePackageName, packageName)
+		if filePackageName == packageName {
+			fileMap[packageName] = append(fileMap[packageName], file)
 		}
-		fileMap[packageName] = append(fileMap[packageName], file)
 	}
 	return fileMap, nil
 }
@@ -84,7 +80,6 @@ func createImportMap(fileMap map[string][]*os.File) (importMap map[string][]stri
 			}
 			packageImports = append(packageImports, newImports...)
 		}
-
 		importMap[packageName] = packageImports
 	}
 	return importMap, nil
@@ -183,12 +178,6 @@ func addNewPackage(packageListStruct *PackageList, packageName string, files []*
 		}
 	}
 	wg.Wait()
-
-	hash, err := blake2HashFromFileUUID(packageStruct.Files)
-	if err != nil {
-		return err
-	}
-	packageStruct.Blake2Hash = string(hash[:])
 
 	packageListStruct.appendPackage(&packageStruct, database)
 
@@ -321,15 +310,4 @@ func ioReadDir(root string) ([]string, error) {
 		files = append(files, fmt.Sprintf("%s/%s", root, file.Name()))
 	}
 	return files, nil
-}
-
-func blake2HashFromFileUUID(fileUUID []string) ([64]byte, error) {
-	var buffer bytes.Buffer
-	encoder := gob.NewEncoder(&buffer)
-
-	err := encoder.Encode(fileUUID)
-	if err != nil {
-		return [64]byte{}, err
-	}
-	return blake2b.Sum512(buffer.Bytes()), nil
 }
