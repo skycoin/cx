@@ -1,6 +1,7 @@
 package type_checker_test
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"testing"
@@ -10,9 +11,9 @@ import (
 	"github.com/skycoin/cx/cmd/packageloader/loader"
 	"github.com/skycoin/cx/cmd/type_checker"
 	"github.com/skycoin/cx/cx/ast"
+	"github.com/skycoin/cx/cx/constants"
 	cxinit "github.com/skycoin/cx/cx/init"
 	cxpackages "github.com/skycoin/cx/cx/packages"
-	"github.com/skycoin/cx/cx/types"
 	"github.com/skycoin/cx/cxparser/actions"
 )
 
@@ -875,9 +876,9 @@ func TestTypeChecker_ParseAllDeclarations(t *testing.T) {
 	}
 
 	type Func struct {
-		Name         string
-		RecieverName string
-		RecieverType string
+		Name    string
+		Inputs  string
+		Outputs string
 	}
 
 	type Package struct {
@@ -990,18 +991,22 @@ func TestTypeChecker_ParseAllDeclarations(t *testing.T) {
 							Name: "main",
 						},
 						{
-							Name: "add",
+							Name:    "add",
+							Inputs:  "a i32, b i32",
+							Outputs: "answer i32",
 						},
 						{
-							Name: "divide",
+							Name:    "divide",
+							Inputs:  "c i32, d i32",
+							Outputs: "quotient i32, remainder f32",
 						},
 						{
-							Name: "printer",
+							Name:   "printer",
+							Inputs: "message str",
 						},
 						{
-							Name:         "setFieldA",
-							RecieverName: "customType",
-							RecieverType: "CustomType",
+							Name:   "CustomType.setFieldA",
+							Inputs: "main.customType *CustomType, string str",
 						},
 					},
 				},
@@ -1030,7 +1035,8 @@ func TestTypeChecker_ParseAllDeclarations(t *testing.T) {
 					Structs: []Struct{},
 					Funcs: []Func{
 						{
-							Name: "double",
+							Name:    "double",
+							Outputs: "out i32",
 						},
 					},
 				},
@@ -1071,9 +1077,8 @@ func TestTypeChecker_ParseAllDeclarations(t *testing.T) {
 					},
 					Funcs: []Func{
 						{
-							Name:         "Speak",
-							RecieverName: "a",
-							RecieverType: "Animal",
+							Name:   "Animal.Speak",
+							Inputs: "helper.a *Animal",
 						},
 					},
 				},
@@ -1216,43 +1221,27 @@ func TestTypeChecker_ParseAllDeclarations(t *testing.T) {
 					var match bool
 
 					var wantFuncName string = wantFunc.Name
-					var wantFuncReciever string
-
-					if wantFunc.RecieverName != "" {
-						wantFuncName = fmt.Sprintf("%s.%s", wantFunc.RecieverType, wantFunc.Name)
-						wantFuncReciever = fmt.Sprintf("%s *%s", wantFunc.RecieverName, wantFunc.RecieverType)
-					}
+					var wantFuncInputs string = wantFunc.Inputs
+					var wantFuncOutputs string = wantFunc.Outputs
 
 					var gotFuncName string
-					var gotFuncReciever string
+					var gotFuncInputs string
+					var gotFuncOutputs string
 					for _, gotFuncIdx := range gotPkg.Functions {
-						gotFuncReciever = ""
 						gotFunc := program.GetFunctionFromArray(gotFuncIdx)
 						gotFuncName = gotFunc.Name
-						gotFuncInputs := gotFunc.GetInputs(program)
-						if len(gotFuncInputs) != 0 {
-							gotRecieverTypeSignatureIdx := gotFuncInputs[0]
-							gotRecieverTypeSignature := program.GetCXTypeSignatureFromArray(gotRecieverTypeSignatureIdx)
-							var gotRecieverName string
-							var gotRecieverType string
 
-							if gotRecieverTypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-								gotRecieverArg := program.CXArgs[gotRecieverTypeSignature.Meta]
-								gotRecieverName = ast.GetFormattedName(program, &gotRecieverArg, false, gotPkg)
-								gotRecieverType = ast.GetFormattedType(program, gotRecieverTypeSignature)
-							} else if gotRecieverTypeSignature.Type == ast.TYPE_ATOMIC {
-								gotRecieverType = types.Code(gotRecieverTypeSignature.Meta).Name()
-							} else if gotRecieverTypeSignature.Type == ast.TYPE_POINTER_ATOMIC {
-								gotRecieverType = "*" + types.Code(gotRecieverTypeSignature.Meta).Name()
-							} else {
-								gotRecieverType = "type is not known"
-							}
+						var inps bytes.Buffer
+						var outs bytes.Buffer
 
-							gotFuncReciever = fmt.Sprintf("%s %s", gotRecieverName, gotRecieverType)
-						}
+						getFormattedParam(program, gotFunc.GetInputs(program), gotPkg, &inps)
+						getFormattedParam(program, gotFunc.GetOutputs(program), gotPkg, &outs)
 
-						if gotFunc.Name == wantFuncName {
-							if gotFuncReciever == wantFuncReciever {
+						gotFuncInputs = inps.String()
+						gotFuncOutputs = outs.String()
+
+						if gotFuncName == wantFuncName {
+							if gotFuncInputs == wantFuncInputs && gotFuncOutputs == wantFuncOutputs {
 								match = true
 							}
 							break
@@ -1261,7 +1250,7 @@ func TestTypeChecker_ParseAllDeclarations(t *testing.T) {
 					}
 
 					if !match {
-						t.Errorf("want func %s (%s) (), got %s (%s) ()", wantFuncName, wantFuncReciever, gotFuncName, gotFuncReciever)
+						t.Errorf("want func %s (%s) (%s), got %s (%s) (%s)", wantFuncName, wantFuncInputs, wantFuncOutputs, gotFuncName, gotFuncInputs, gotFuncOutputs)
 
 					}
 				}
@@ -1269,5 +1258,42 @@ func TestTypeChecker_ParseAllDeclarations(t *testing.T) {
 			}
 
 		})
+	}
+}
+
+func getFormattedParam(prgrm *ast.CXProgram, paramTypeSigIdxs []ast.CXTypeSignatureIndex, pkg *ast.CXPackage, buf *bytes.Buffer) {
+	for i, paramTypeSigIdx := range paramTypeSigIdxs {
+		paramTypeSig := prgrm.GetCXTypeSignatureFromArray(paramTypeSigIdx)
+
+		// Checking if this argument comes from an imported package.
+		externalPkg := false
+		if ast.CXPackageIndex(pkg.Index) != paramTypeSig.Package {
+			externalPkg = true
+		}
+
+		if paramTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			param := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(paramTypeSig.Meta))
+
+			buf.WriteString(fmt.Sprintf("%s %s", ast.GetFormattedName(prgrm, param, externalPkg, pkg), ast.GetFormattedType(prgrm, paramTypeSig)))
+		} else {
+			name := paramTypeSig.Name
+
+			// If it's a literal, just override the name with LITERAL_PLACEHOLDER.
+			if paramTypeSig.Name == "" {
+				name = constants.LITERAL_PLACEHOLDER
+			}
+
+			// TODO: Check if external pkg and pkg name shown are correct
+			if externalPkg {
+				name = fmt.Sprintf("%s.%s", pkg.Name, name)
+			}
+
+			buf.WriteString(fmt.Sprintf("%s %s", name, ast.GetFormattedType(prgrm, paramTypeSig)))
+		}
+
+		if i != len(paramTypeSigIdxs)-1 {
+			buf.WriteString(", ")
+		}
+
 	}
 }

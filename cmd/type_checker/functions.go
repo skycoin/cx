@@ -1,6 +1,7 @@
 package type_checker
 
 import (
+	"bytes"
 	"regexp"
 
 	"github.com/skycoin/cx/cmd/declaration_extractor"
@@ -42,7 +43,7 @@ func ParseFuncHeaders(files []*loader.File, funcs []declaration_extractor.FuncDe
 
 		funcDeclarationLine := source[fun.StartOffset : fun.StartOffset+fun.Length]
 
-		reFuncMethod := regexp.MustCompile(`func\s*\(\s*(.+)\s*\)`)
+		reFuncMethod := regexp.MustCompile(`func\s*\(\s*(.+)\s*\)\s*\S+\s*\(([\s\w,]*)\)(?:\s*\(([\s\w,]*)\))*`)
 		funcMethod := reFuncMethod.FindSubmatch(funcDeclarationLine)
 
 		if funcMethod != nil {
@@ -50,11 +51,81 @@ func ParseFuncHeaders(files []*loader.File, funcs []declaration_extractor.FuncDe
 			if err != nil {
 				return err
 			}
-			actions.FunctionHeader(actions.AST, fun.FuncName, []*ast.CXArgument{receiverArg}, true)
+
+			fnIdx := actions.FunctionHeader(actions.AST, fun.FuncName, []*ast.CXArgument{receiverArg}, true)
+
+			var inputs []*ast.CXArgument
+			var outputs []*ast.CXArgument
+
+			if funcMethod[2] != nil && len(funcMethod[2]) != 0 {
+				inputs, err = ParseFuncParameters(funcMethod[2], pkg, fun.FileID, fun.LineNumber)
+				if err != nil {
+					return err
+				}
+			}
+
+			if funcMethod[3] != nil && len(funcMethod[3]) != 0 {
+				outputs, err = ParseFuncParameters(funcMethod[3], pkg, fun.FileID, fun.LineNumber)
+				if err != nil {
+					return err
+				}
+			}
+
+			PreFunctionDeclaration(fnIdx, inputs, outputs)
+
 		} else {
-			actions.FunctionHeader(actions.AST, fun.FuncName, nil, false)
+
+			reFuncRegular := regexp.MustCompile(`func\s*\S+\s*\(([\s\w,]*)\)(?:\s*\(([\s\w,]*)\))*`)
+			funcRegular := reFuncRegular.FindSubmatch(funcDeclarationLine)
+
+			fnIdx := actions.FunctionHeader(actions.AST, fun.FuncName, nil, false)
+
+			var inputs []*ast.CXArgument
+			var outputs []*ast.CXArgument
+
+			if funcRegular[1] != nil && len(funcRegular[1]) != 0 {
+				inputs, err = ParseFuncParameters(funcRegular[1], pkg, fun.FileID, fun.LineNumber)
+				if err != nil {
+					return err
+				}
+			}
+
+			if funcRegular[2] != nil && len(funcRegular[2]) != 0 {
+				outputs, err = ParseFuncParameters(funcRegular[2], pkg, fun.FileID, fun.LineNumber)
+				if err != nil {
+					return err
+				}
+			}
+
+			PreFunctionDeclaration(fnIdx, inputs, outputs)
 		}
 
 	}
 	return nil
+}
+
+func ParseFuncParameters(paramBytes []byte, pkg *ast.CXPackage, fileName string, lineno int) ([]*ast.CXArgument, error) {
+	var parameterList []*ast.CXArgument
+
+	tokens := bytes.Split(paramBytes, []byte(","))
+	for _, token := range tokens {
+		parameter, err := ParseParameterDeclaration(token, pkg, fileName, lineno)
+		if err != nil {
+			return nil, err
+		}
+		parameterList = append(parameterList, parameter)
+	}
+
+	return parameterList, nil
+}
+
+func PreFunctionDeclaration(fnIdx ast.CXFunctionIndex, inputs []*ast.CXArgument, outputs []*ast.CXArgument) {
+	fn := actions.AST.GetFunctionFromArray(fnIdx)
+	// adding inputs, outputs
+	for _, inp := range inputs {
+		fn.AddInput(actions.AST, inp)
+	}
+	for _, out := range outputs {
+		fn.AddOutput(actions.AST, out)
+	}
 }
