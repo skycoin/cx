@@ -7,6 +7,9 @@ import (
 	"github.com/skycoin/cx/cmd/packageloader/bolt"
 )
 
+// Test currently fails because the graph is dependent on the order packages are added
+// since loader adds packages concurrently the ids and order are different each time
+// but the package and imports are correct
 func TestTree(t *testing.T) {
 	tests := []struct {
 		Scenario       string
