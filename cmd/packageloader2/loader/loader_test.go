@@ -2,6 +2,7 @@ package loader_test
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -326,17 +327,17 @@ func TestLoadImportPackages(t *testing.T) {
 		WantImportMap        map[string][]string
 		WantErr              error
 	}{
-		// {
-		// 	Scenario:             "Test adding package to Redis database",
-		// 	FilesPath:            TEST_SRC_PATH_VALID,
-		// 	Database:             "redis",
-		// 	WantNumberOfPackages: 2,
-		// 	WantImportMap: map[string][]string{
-		// 		"main":       {"os", "testimport"},
-		// 		"testimport": {},
-		// 	},
-		// 	WantErr: nil,
-		// },
+		{
+			Scenario:             "Test adding package to Redis database",
+			FilesPath:            TEST_SRC_PATH_VALID,
+			Database:             "redis",
+			WantNumberOfPackages: 2,
+			WantImportMap: map[string][]string{
+				"main":       {"os", "testimport"},
+				"testimport": {},
+			},
+			WantErr: nil,
+		},
 		{
 			Scenario:             "Test adding package to Redis database with missing package",
 			FilesPath:            "test_folder/test_import_package_error/",
@@ -348,17 +349,17 @@ func TestLoadImportPackages(t *testing.T) {
 			},
 			WantErr: errors.New("package testimport2 not found"),
 		},
-		// {
-		// 	Scenario:             "Test adding package to Bolt database",
-		// 	FilesPath:            TEST_SRC_PATH_VALID,
-		// 	Database:             "bolt",
-		// 	WantNumberOfPackages: 2,
-		// 	WantImportMap: map[string][]string{
-		// 		"main":       {"os", "testimport"},
-		// 		"testimport": {},
-		// 	},
-		// 	WantErr: nil,
-		// },
+		{
+			Scenario:             "Test adding package to Bolt database",
+			FilesPath:            TEST_SRC_PATH_VALID,
+			Database:             "bolt",
+			WantNumberOfPackages: 2,
+			WantImportMap: map[string][]string{
+				"main":       {"os", "testimport"},
+				"testimport": {},
+			},
+			WantErr: nil,
+		},
 		{
 			Scenario:             "Test adding package to Bolt database with missing package",
 			FilesPath:            "test_folder/test_import_package_error/",
@@ -393,7 +394,7 @@ func TestLoadImportPackages(t *testing.T) {
 				t.Errorf("want %d packages, got %d packages", testcase.WantNumberOfPackages, gotNumberOfPackages)
 			}
 
-			if !reflect.DeepEqual(gotImportMap, testcase.WantImportMap) {
+			if fmt.Sprint(gotImportMap) != fmt.Sprint(testcase.WantImportMap) {
 				t.Errorf("want import map %v, got %v", testcase.WantImportMap, gotImportMap)
 			}
 
