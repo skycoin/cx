@@ -45,16 +45,16 @@ func ParseParameterDeclaration(parameterString []byte, pkg *ast.CXPackage, fileN
 }
 
 func ParseDeclarationSpecifier(declarationSpecifierByte []byte, fileName string, lineno int, declarationSpecifier *ast.CXArgument) (*ast.CXArgument, error) {
-	fmt.Print(string(declarationSpecifierByte), "\n")
-
 	// Base case if all parts are parsed
 	if declarationSpecifierByte == nil || len(declarationSpecifierByte) == 0 {
 		return declarationSpecifier, nil
 	}
 
+	// Checks last byte to determine what to parse
 	lastByte := declarationSpecifierByte[len(declarationSpecifierByte)-1]
 
 	if unicode.IsLetter(rune(lastByte)) || unicode.IsNumber(rune(lastByte)) || lastByte == '_' {
+
 		reWords := regexp.MustCompile(`[\w\.]+`)
 		words := reWords.FindAll(declarationSpecifierByte, -1)
 		wordsIdx := reWords.FindAllIndex(declarationSpecifierByte, -1)
@@ -63,42 +63,40 @@ func ParseDeclarationSpecifier(declarationSpecifierByte []byte, fileName string,
 		dataType := words[len(words)-1]
 		splitDataType := bytes.Split(dataType, []byte("."))
 
+		newDeclarationSpecifierByte := declarationSpecifierByte[:newLastIdx]
+
 		if len(splitDataType) == 1 {
 
 			// Types like i32, str, aff, etc...
 			if val, ok := TypesMap[string(splitDataType[0])]; ok {
-				newDeclarationSpecifierByte := declarationSpecifierByte[:newLastIdx]
 				newDeclarationSpecifierArg := actions.DeclarationSpecifiersBasic(val)
 				return ParseDeclarationSpecifier(newDeclarationSpecifierByte, fileName, lineno, newDeclarationSpecifierArg)
 			}
 
 			// Structs
-			newDeclarationSpecifierByte := declarationSpecifierByte[:newLastIdx]
 			newDeclarationSpecifierArg := actions.DeclarationSpecifiersStruct(actions.AST, string(splitDataType[0]), "", false, fileName, lineno)
 			return ParseDeclarationSpecifier(newDeclarationSpecifierByte, fileName, lineno, newDeclarationSpecifierArg)
 		}
 
 		// External types
 		if val, ok := TypesMap[string(splitDataType[0])]; ok {
-			newDeclarationSpecifierByte := declarationSpecifierByte[:newLastIdx]
 			newDeclarationSpecifierArg := actions.DeclarationSpecifiersStruct(actions.AST, string(splitDataType[1]), val.Name(), true, fileName, lineno)
 			return ParseDeclarationSpecifier(newDeclarationSpecifierByte, fileName, lineno, newDeclarationSpecifierArg)
 		}
 
 		// External structs
-		newDeclarationSpecifierByte := declarationSpecifierByte[:newLastIdx]
 		newDeclarationSpecifierArg := actions.DeclarationSpecifiersStruct(actions.AST, string(splitDataType[1]), string(splitDataType[0]), true, fileName, lineno)
 		return ParseDeclarationSpecifier(newDeclarationSpecifierByte, fileName, lineno, newDeclarationSpecifierArg)
 	}
 
 	if lastByte == ']' {
-
 		reBrackets := regexp.MustCompile(`\[\s*(\d*)\s*\]`)
 		brackets := reBrackets.FindAllSubmatch(declarationSpecifierByte, -1)
 		bracketsIdx := reBrackets.FindAllIndex(declarationSpecifierByte, -1)
 		newLastIdx := bracketsIdx[len(bracketsIdx)-1][0]
 		reNumber := regexp.MustCompile(`\d+`)
 		number := reNumber.Find(brackets[len(brackets)-1][1])
+		newDeclarationSpecifierByte := declarationSpecifierByte[:newLastIdx]
 
 		// Arrays
 		if number != nil {
@@ -106,14 +104,13 @@ func ParseDeclarationSpecifier(declarationSpecifierByte []byte, fileName string,
 			if err != nil {
 				return declarationSpecifier, err
 			}
-			newDeclarationSpecifierByte := declarationSpecifierByte[:newLastIdx]
-			newDeclarationSpecifierArg := actions.DeclarationSpecifiers(declarationSpecifier, types.Cast_sint_to_sptr([]int{byteToInt}), constants.DECL_ARRAY)
 
+			declarationSpecifier.Lengths = append(declarationSpecifier.Lengths, types.Pointer(byteToInt))
+			newDeclarationSpecifierArg := actions.DeclarationSpecifiers(declarationSpecifier, declarationSpecifier.Lengths, constants.DECL_ARRAY)
 			return ParseDeclarationSpecifier(newDeclarationSpecifierByte, fileName, lineno, newDeclarationSpecifierArg)
 		}
 
 		// Slices
-		newDeclarationSpecifierByte := declarationSpecifierByte[:newLastIdx]
 		newDeclarationSpecifierArg := actions.DeclarationSpecifiers(declarationSpecifier, []types.Pointer{0}, constants.DECL_SLICE)
 		return ParseDeclarationSpecifier(newDeclarationSpecifierByte, fileName, lineno, newDeclarationSpecifierArg)
 	}
