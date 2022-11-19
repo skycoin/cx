@@ -90,6 +90,22 @@ func TestTypeChecker_ParseDeclarationSpecifier(t *testing.T) {
 			wantDeclarationSpecifierFormattedString: "*ui8",
 			wantErr:                                 nil,
 		},
+		{
+			scenario:                                "Has Pointer Array",
+			testString:                              "[5]*ui8",
+			fileName:                                "./testFile",
+			lineno:                                  6,
+			wantDeclarationSpecifierFormattedString: "[5]*ui8",
+			wantErr:                                 nil,
+		},
+		{
+			scenario:                                "Has 2D Array",
+			testString:                              "[5][10]ui8",
+			fileName:                                "./testFile",
+			lineno:                                  21,
+			wantDeclarationSpecifierFormattedString: "[5][10]ui8",
+			wantErr:                                 nil,
+		},
 	}
 
 	for _, tc := range tests {
