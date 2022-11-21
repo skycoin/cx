@@ -47,3 +47,15 @@ Additional milestones:
 - [ ] Use goroutine to load the packages
     - one goroutine per file
 
+---
+Findings to be added/fixed/resolved:
+- [x] Package Struct missing Blake2Hash field // generate from []Files UUID // need to write unit test for this 
+- [x] Doesn’t check if there’s more than one packages in a folder/directory
+- [x] Doesn’t remove duplicate imports // duplicate imports don't need to be removed since the import map is not used by the later stages
+- [x] Some functions don’t have a reliable unit test yet
+- [x] Not clear on what it means for package path check // now only imports dependencies and ignores others
+- [x] Possible problem if keywords are used as package names? This can be solved but may impact the performance due to more conditionals // declaration_extractor partially does this with syntax checking
+- [x] output an error if the package folder/directory doesn’t follow the naming convention here // declaration_extractor does this
+- [x] the parent directory naming convention used in the packageName that’s saved in the DB like path/filepath // do we need to check this if declaration_extractor checks the package name or still do it for the DB?
+- [ ]some unit tests are not written yet because depend on errors returned from deeper level functions
+- [ ]test_graph is having issues with packages being added concurrently
