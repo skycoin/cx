@@ -1,10 +1,10 @@
 package main
 
-var number i32
+var varnumber i32
 
 var string str = "Hello World"
 
-type fruit i64
+type fruittype i64
 
 const (
     Apple fruit = iota
@@ -16,7 +16,7 @@ type Blender struct {
     fruits str
 }
 
-func (b *Blender) blend () {
+func (b *Blender) funcblend () {
     str.print(b.fruits)
 }
 

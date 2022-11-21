@@ -22,9 +22,9 @@ func ExtractTypeDefinitions(source []byte, fileName string) ([]TypeDefinitionDec
 	var pkg string
 
 	// Regexes
-	rePkg := regexp.MustCompile("package")
+	rePkg := regexp.MustCompile(`^(?:.+\s+|\s*)package(?:\s+[\S\s]+|\s*)$`)
 	rePkgName := regexp.MustCompile(`package\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
-	reType := regexp.MustCompile(`type`)
+	reType := regexp.MustCompile(`(?:.+\s+|\s*)type(?:\s+[\S\s]+|\s*)$`)
 	reTypeDefinition := regexp.MustCompile(`type\s+([_a-zA-Z][_a-zA-Z0-9]*)\s+([_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*)`)
 
 	reader := bytes.NewReader(source)

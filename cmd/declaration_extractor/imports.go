@@ -21,7 +21,7 @@ func ExtractImports(source []byte, fileName string) ([]ImportDeclaration, error)
 	var pkg string
 
 	//Regexs
-	rePkg := regexp.MustCompile(`^(?:.+\s+|)package(?:\s+.+|)$`)
+	rePkg := regexp.MustCompile(`^(?:.+\s+|\s*)package(?:\s+[\S\s]+|\s*)$`)
 	rePkgName := regexp.MustCompile(`^\s*package\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
 
 	reader := bytes.NewReader(source)

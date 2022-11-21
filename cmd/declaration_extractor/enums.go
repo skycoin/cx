@@ -25,7 +25,7 @@ func ExtractEnums(source []byte, fileName string) ([]EnumDeclaration, error) {
 	var pkg string
 
 	//Regexes
-	rePkg := regexp.MustCompile("package")
+	rePkg := regexp.MustCompile(`^(?:.+\s+|\s*)package(?:\s+[\S\s]+|\s*)$`)
 	rePkgName := regexp.MustCompile(`package\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
 	reEnumInit := regexp.MustCompile(`const\s+\(`)
 	rePrtsClose := regexp.MustCompile(`\)`)

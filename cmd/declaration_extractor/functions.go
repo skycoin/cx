@@ -23,9 +23,9 @@ func ExtractFuncs(source []byte, fileName string) ([]FuncDeclaration, error) {
 	var pkg string
 
 	// Regexes
-	rePkg := regexp.MustCompile("package")
+	rePkg := regexp.MustCompile(`^(?:.+\s+|\s*)package(?:\s+[\S\s]+|\s*)$`)
 	rePkgName := regexp.MustCompile(`package\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
-	reFunc := regexp.MustCompile(`func`)
+	reFunc := regexp.MustCompile(`^(?:.+\s+|\s*)func(?:\s+[\S\s]+|\([\S\s]+|\s*)$`)
 	reNotSpace := regexp.MustCompile(`\S+`)
 
 	// Func Declaration regex for name extraction and syntax checking
