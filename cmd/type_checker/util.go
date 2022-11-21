@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strconv"
-	"strings"
+	"unicode"
 
 	"github.com/skycoin/cx/cmd/packageloader/loader"
 	"github.com/skycoin/cx/cx/ast"
@@ -45,72 +45,86 @@ func ParseParameterDeclaration(parameterString []byte, pkg *ast.CXPackage, fileN
 }
 
 func ParseDeclarationSpecifier(declarationSpecifierByte []byte, fileName string, lineno int, declarationSpecifier *ast.CXArgument) (*ast.CXArgument, error) {
-	// Regex only supports *[3]data_type other complex types not supported like []*str
-	reDeclarationSpecifier := regexp.MustCompile(`(\*){0,1}\s*((?:\[(\d*)\])){0,1}\s*([\w\.]*)`)
-	declarationSpecifierTokens := reDeclarationSpecifier.FindSubmatch(declarationSpecifierByte)
-	declarationSpecifierTokensIdx := reDeclarationSpecifier.FindIndex(declarationSpecifierByte)
-
 	// Base case if all parts are parsed
-	if declarationSpecifierByte == nil || declarationSpecifierTokensIdx[1] == 0 {
+	if declarationSpecifierByte == nil || len(declarationSpecifierByte) == 0 {
 		return declarationSpecifier, nil
 	}
 
-	// Types like i32, str, aff, etc...
-	if val, ok := TypesMap[string(declarationSpecifierTokens[4])]; ok {
-		newDeclarationSpecifierByte := declarationSpecifierByte[:declarationSpecifierTokensIdx[1]-len(declarationSpecifierTokens[4])]
-		newDeclarationSpecifierArg := actions.DeclarationSpecifiersBasic(val)
-		return ParseDeclarationSpecifier(newDeclarationSpecifierByte, fileName, lineno, newDeclarationSpecifierArg)
-	}
+	// Checks last byte to determine what to parse
+	lastByte := declarationSpecifierByte[len(declarationSpecifierByte)-1]
 
-	// External structs and types like myPackage.Animal
-	if bytes.Contains(declarationSpecifierTokens[4], []byte(".")) {
-		tokens := strings.Split(string(declarationSpecifierTokens[4]), ".")
+	if unicode.IsLetter(rune(lastByte)) || unicode.IsNumber(rune(lastByte)) || lastByte == '_' {
+
+		reWords := regexp.MustCompile(`[\w\.]+`)
+		words := reWords.FindAll(declarationSpecifierByte, -1)
+		wordsIdx := reWords.FindAllIndex(declarationSpecifierByte, -1)
+		newLastIdx := wordsIdx[len(wordsIdx)-1][0]
+
+		dataType := words[len(words)-1]
+		splitDataType := bytes.Split(dataType, []byte("."))
+
+		newDeclarationSpecifierByte := declarationSpecifierByte[:newLastIdx]
+
+		if len(splitDataType) == 1 {
+
+			// Types like i32, str, aff, etc...
+			if val, ok := TypesMap[string(splitDataType[0])]; ok {
+				newDeclarationSpecifierArg := actions.DeclarationSpecifiersBasic(val)
+				return ParseDeclarationSpecifier(newDeclarationSpecifierByte, fileName, lineno, newDeclarationSpecifierArg)
+			}
+
+			// Structs
+			newDeclarationSpecifierArg := actions.DeclarationSpecifiersStruct(actions.AST, string(splitDataType[0]), "", false, fileName, lineno)
+			return ParseDeclarationSpecifier(newDeclarationSpecifierByte, fileName, lineno, newDeclarationSpecifierArg)
+		}
 
 		// External types
-		if val, ok := TypesMap[tokens[0]]; ok {
-			newDeclarationSpecifierByte := declarationSpecifierByte[:declarationSpecifierTokensIdx[1]-len(declarationSpecifierTokens[4])]
-			newDeclarationSpecifierArg := actions.DeclarationSpecifiersStruct(actions.AST, tokens[1], val.Name(), true, fileName, lineno)
+		if val, ok := TypesMap[string(splitDataType[0])]; ok {
+			newDeclarationSpecifierArg := actions.DeclarationSpecifiersStruct(actions.AST, string(splitDataType[1]), val.Name(), true, fileName, lineno)
 			return ParseDeclarationSpecifier(newDeclarationSpecifierByte, fileName, lineno, newDeclarationSpecifierArg)
 		}
 
 		// External structs
-		newDeclarationSpecifierByte := declarationSpecifierByte[:declarationSpecifierTokensIdx[1]-len(declarationSpecifierTokens[4])]
-		newDeclarationSpecifierArg := actions.DeclarationSpecifiersStruct(actions.AST, tokens[1], tokens[0], true, fileName, lineno)
+		newDeclarationSpecifierArg := actions.DeclarationSpecifiersStruct(actions.AST, string(splitDataType[1]), string(splitDataType[0]), true, fileName, lineno)
 		return ParseDeclarationSpecifier(newDeclarationSpecifierByte, fileName, lineno, newDeclarationSpecifierArg)
 	}
 
-	// Structs
-	if len(declarationSpecifierTokens[4]) != 0 {
-		newDeclarationSpecifierByte := declarationSpecifierByte[:declarationSpecifierTokensIdx[1]-len(declarationSpecifierTokens[4])]
-		newDeclarationSpecifierArg := actions.DeclarationSpecifiersStruct(actions.AST, string(declarationSpecifierTokens[4]), "", false, fileName, lineno)
-		return ParseDeclarationSpecifier(newDeclarationSpecifierByte, fileName, lineno, newDeclarationSpecifierArg)
-	}
+	if lastByte == ']' {
+		reBrackets := regexp.MustCompile(`\[\s*(\d*)\s*\]`)
+		brackets := reBrackets.FindAllSubmatch(declarationSpecifierByte, -1)
+		bracketsIdx := reBrackets.FindAllIndex(declarationSpecifierByte, -1)
+		newLastIdx := bracketsIdx[len(bracketsIdx)-1][0]
+		reNumber := regexp.MustCompile(`\d+`)
+		number := reNumber.Find(brackets[len(brackets)-1][1])
+		newDeclarationSpecifierByte := declarationSpecifierByte[:newLastIdx]
 
-	// Arrays
-	if declarationSpecifierTokens[2] != nil && len(declarationSpecifierTokens[3]) != 0 {
-		byteToInt, err := strconv.Atoi(string(declarationSpecifierTokens[3]))
-		if err != nil {
-			return declarationSpecifier, err
+		// Arrays
+		if number != nil {
+			byteToInt, err := strconv.Atoi(string(number))
+			if err != nil {
+				return declarationSpecifier, err
+			}
+
+			declarationSpecifier.Lengths = append(declarationSpecifier.Lengths, types.Pointer(byteToInt))
+			newDeclarationSpecifierArg := actions.DeclarationSpecifiers(declarationSpecifier, declarationSpecifier.Lengths, constants.DECL_ARRAY)
+			return ParseDeclarationSpecifier(newDeclarationSpecifierByte, fileName, lineno, newDeclarationSpecifierArg)
 		}
 
-		newDeclarationSpecifierByte := declarationSpecifierByte[:declarationSpecifierTokensIdx[1]-len(declarationSpecifierTokens[2])]
-		newDeclarationSpecifierArg := actions.DeclarationSpecifiers(declarationSpecifier, types.Cast_sint_to_sptr([]int{byteToInt}), constants.DECL_ARRAY)
-		return ParseDeclarationSpecifier(newDeclarationSpecifierByte, fileName, lineno, newDeclarationSpecifierArg)
-	}
-
-	// Slices
-	if declarationSpecifierTokens[2] != nil && len(declarationSpecifierTokens[3]) == 0 {
-		newDeclarationSpecifierByte := declarationSpecifierByte[:declarationSpecifierTokensIdx[1]-len(declarationSpecifierTokens[2])]
+		// Slices
 		newDeclarationSpecifierArg := actions.DeclarationSpecifiers(declarationSpecifier, []types.Pointer{0}, constants.DECL_SLICE)
 		return ParseDeclarationSpecifier(newDeclarationSpecifierByte, fileName, lineno, newDeclarationSpecifierArg)
 	}
 
 	// Pointer
-	if declarationSpecifierTokens[1] != nil {
-		return actions.DeclarationSpecifiers(declarationSpecifier, []types.Pointer{0}, constants.DECL_POINTER), nil
+	if lastByte == '*' {
+		newLastIdx := bytes.LastIndex(declarationSpecifierByte, []byte("*"))
+		newDeclarationSpecifierByte := declarationSpecifierByte[:newLastIdx]
+		newDeclarationSpecifierArg := actions.DeclarationSpecifiers(declarationSpecifier, []types.Pointer{0}, constants.DECL_POINTER)
+		return ParseDeclarationSpecifier(newDeclarationSpecifierByte, fileName, lineno, newDeclarationSpecifierArg)
+
 	}
 
-	// If bytes don't match any of the regex
+	// If bytes don't match any of the cases
 	return nil, fmt.Errorf("%v: %d: declaration specifier error", fileName, lineno)
 }
 
