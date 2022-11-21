@@ -32,7 +32,7 @@ func ExtractStructs(source []byte, fileName string) ([]StructDeclaration, error)
 
 	// Regexes
 	reNotSpace := regexp.MustCompile(`\S+`)
-	rePkg := regexp.MustCompile("package")
+	rePkg := regexp.MustCompile(`^(?:.+\s+|\s*)package(?:\s+[\S\s]+|\s*)$`)
 	rePkgName := regexp.MustCompile(`package\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
 	reStruct := regexp.MustCompile(`type\s+[_a-zA-Z][_a-zA-Z0-9]*\s+struct`)
 	reStructHeader := regexp.MustCompile(`type\s+([_a-zA-Z][_a-zA-Z0-9]*)\s+struct\s*{`)

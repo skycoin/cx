@@ -1453,7 +1453,7 @@ func TestDeclarationExtractor_ExtractAllDeclarations(t *testing.T) {
 
 			Imports, Globals, Enums, TypeDefinitions, Structs, Funcs, gotErr := declaration_extractor.ExtractAllDeclarations(files)
 
-			if len(Globals) == 0 && len(Enums) == 0 && len(Structs) == 0 && len(Funcs) == 0 {
+			if len(Imports) == 0 && len(Globals) == 0 && len(Enums) == 0 && len(Structs) == 0 && len(Funcs) == 0 {
 				t.Error("No Declarations found")
 			}
 

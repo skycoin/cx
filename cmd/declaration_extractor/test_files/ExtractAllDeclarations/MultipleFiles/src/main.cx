@@ -1,12 +1,12 @@
 package main
 
-import "helper"
+import "helperpackage"
 
 import "program"
 
 var msg str = "Hello World"
 
-var myHelper helper.helpUnit
+var myHelper helperpackage.helpUnit
 
 var number i32 = 19
 

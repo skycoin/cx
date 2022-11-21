@@ -25,9 +25,9 @@ func ExtractGlobals(source []byte, fileName string) ([]GlobalDeclaration, error)
 	var pkg string
 
 	//Regexs
-	rePkg := regexp.MustCompile("package")
+	rePkg := regexp.MustCompile(`^(?:.+\s+|\s*)package(?:\s+[\S\s]+|\s*)$`)
 	rePkgName := regexp.MustCompile(`package\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
-	reGlobal := regexp.MustCompile("var")
+	reGlobal := regexp.MustCompile(`^(?:.+\s+|\s*)var(?:\s+[\S\s]+|\s*)$`)
 	reGlobalName := regexp.MustCompile(`var\s+([_a-zA-Z]\w*)\s+\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]){0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*(?:\s*\=\s*[\s\S]+\S+){0,1}`)
 	reBodyOpen := regexp.MustCompile("{")
 	reBodyClose := regexp.MustCompile("}")
@@ -69,7 +69,7 @@ func ExtractGlobals(source []byte, fileName string) ([]GlobalDeclaration, error)
 		}
 
 		// if match is found and body depth is 0
-		if reGlobal.FindAllIndex(line, -1) != nil {
+		if reGlobal.FindIndex(line) != nil {
 
 			matchGlobal := reGlobalName.FindSubmatch(line)
 			matchGlobalIdx := reGlobalName.FindIndex(line)
