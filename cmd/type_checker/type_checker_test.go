@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	"github.com/skycoin/cx/cmd/declaration_extractor"
-	"github.com/skycoin/cx/cmd/packageloader/file_output"
-	"github.com/skycoin/cx/cmd/packageloader/loader"
+	"github.com/skycoin/cx/cmd/packageloader2/file_output"
+	"github.com/skycoin/cx/cmd/packageloader2/loader"
 	"github.com/skycoin/cx/cmd/type_checker"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
@@ -491,9 +491,9 @@ func TestTypeChecker_ParseGlobals(t *testing.T) {
 
 			actions.AST = cxinit.MakeProgram()
 
-			_, sourceCode, _ := loader.ParseArgsForCX([]string{tc.testDir}, true)
+			_, sourceCode, _, rootDir := loader.ParseArgsForCX([]string{tc.testDir}, true)
 
-			err := loader.LoadCXProgram("test", sourceCode, "bolt")
+			err := loader.LoadCXProgram("test", sourceCode, rootDir, "bolt")
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -676,9 +676,9 @@ func TestTypeChecker_ParseStructs(t *testing.T) {
 
 			actions.AST = cxinit.MakeProgram()
 
-			_, sourceCode, _ := loader.ParseArgsForCX([]string{tc.testDir}, true)
+			_, sourceCode, _, rootDir := loader.ParseArgsForCX([]string{tc.testDir}, true)
 
-			err := loader.LoadCXProgram("test", sourceCode, "bolt")
+			err := loader.LoadCXProgram("test", sourceCode, rootDir, "bolt")
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -841,9 +841,9 @@ func TestTypeChecker_ParseFuncHeaders(t *testing.T) {
 
 			actions.AST = cxinit.MakeProgram()
 
-			_, sourceCode, _ := loader.ParseArgsForCX([]string{tc.testDir}, true)
+			_, sourceCode, _, rootDir := loader.ParseArgsForCX([]string{tc.testDir}, true)
 
-			err := loader.LoadCXProgram("test", sourceCode, "bolt")
+			err := loader.LoadCXProgram("test", sourceCode, rootDir, "bolt")
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -1170,9 +1170,9 @@ func TestTypeChecker_ParseAllDeclarations(t *testing.T) {
 
 			actions.AST = nil
 
-			_, sourceCode, _ := loader.ParseArgsForCX([]string{tc.testDir}, true)
+			_, sourceCode, _, rootDir := loader.ParseArgsForCX([]string{tc.testDir}, true)
 
-			err := loader.LoadCXProgram("test", sourceCode, "bolt")
+			err := loader.LoadCXProgram("test", sourceCode, rootDir, "bolt")
 			if err != nil {
 				t.Fatal(err)
 			}

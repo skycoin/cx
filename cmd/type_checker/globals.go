@@ -4,7 +4,7 @@ import (
 	"regexp"
 
 	"github.com/skycoin/cx/cmd/declaration_extractor"
-	"github.com/skycoin/cx/cmd/packageloader/loader"
+	"github.com/skycoin/cx/cmd/packageloader2/loader"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/types"
 	"github.com/skycoin/cx/cxparser/actions"

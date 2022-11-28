@@ -5,7 +5,7 @@ import (
 	"regexp"
 
 	"github.com/skycoin/cx/cmd/declaration_extractor"
-	"github.com/skycoin/cx/cmd/packageloader/loader"
+	"github.com/skycoin/cx/cmd/packageloader2/loader"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cxparser/actions"
 )
@@ -43,26 +43,26 @@ func ParseFuncHeaders(files []*loader.File, funcs []declaration_extractor.FuncDe
 
 		funcDeclarationLine := source[fun.StartOffset : fun.StartOffset+fun.Length]
 
-		reFuncMethod := regexp.MustCompile(`func\s*\(\s*(.+)\s*\)\s*\S+\s*\(([\s\w,]*)\)(?:\s*\(([\s\w,]*)\))*`)
-		funcMethod := reFuncMethod.FindSubmatch(funcDeclarationLine)
+		reFuncMethod := regexp.MustCompile(`func\s*\(\s*.+\s*\)`)
+		funcMethod := reFuncMethod.Find(funcDeclarationLine)
+		reParams := regexp.MustCompile(`\(([\s\w\*\[\],]*)\)`)
+		params := reParams.FindAllSubmatch(funcDeclarationLine, -1)
 
 		if funcMethod != nil {
-			receiverArg, err := ParseParameterDeclaration(funcMethod[1], pkg, fun.FileID, fun.LineNumber)
+			receiverArg, err := ParseParameterDeclaration(params[0][1], pkg, fun.FileID, fun.LineNumber)
 			if err != nil {
 				return err
 			}
 
-			fnIdx := actions.FunctionHeader(actions.AST, fun.FuncName, []*ast.CXArgument{receiverArg}, true)
-
 			var inputs []*ast.CXArgument
 			var outputs []*ast.CXArgument
 
-			if funcMethod[2] != nil && len(funcMethod[2]) != 0 {
-				inputs, err = ParseFuncParameters(funcMethod[2], pkg, fun.FileID, fun.LineNumber)
-				if err != nil {
-					return err
-				}
-			}
+			fnName := receiverArg.StructType.Name + "." + fun.FuncName
+
+			fn := ast.MakeFunction(fnName, actions.CurrentFile, fun.LineNumber)
+			_, fnIdx := pkg.AddFunction(actions.AST, fn)
+			newFn := actions.AST.GetFunctionFromArray(fnIdx)
+			newFn.AddInput(actions.AST, receiverArg)
 
 			if funcMethod[3] != nil && len(funcMethod[3]) != 0 {
 				outputs, err = ParseFuncParameters(funcMethod[3], pkg, fun.FileID, fun.LineNumber)

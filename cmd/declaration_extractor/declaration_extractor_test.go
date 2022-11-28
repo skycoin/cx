@@ -9,8 +9,8 @@ import (
 	"testing"
 
 	"github.com/skycoin/cx/cmd/declaration_extractor"
-	"github.com/skycoin/cx/cmd/packageloader/file_output"
-	"github.com/skycoin/cx/cmd/packageloader/loader"
+	"github.com/skycoin/cx/cmd/packageloader2/file_output"
+	"github.com/skycoin/cx/cmd/packageloader2/loader"
 )
 
 //Sets the offset for windows or other os
@@ -1146,11 +1146,6 @@ func TestDeclarationExtractor_ReDeclarationCheck(t *testing.T) {
 			wantReDeclarationError: nil,
 		},
 		{
-			scenario:               "Redeclared import",
-			testDir:                "./test_files/ReDeclarationCheck/RedeclaredImport.cx",
-			wantReDeclarationError: errors.New("RedeclaredImport.cx:4: redeclaration error: import: testimport"),
-		},
-		{
 			scenario:               "Redeclared global",
 			testDir:                "./test_files/ReDeclarationCheck/RedeclaredGlobal.cx",
 			wantReDeclarationError: errors.New("RedeclaredGlobal.cx:5: redeclaration error: global: banana"),
@@ -1185,6 +1180,17 @@ func TestDeclarationExtractor_ReDeclarationCheck(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
 			srcBytes, err := os.ReadFile(tc.testDir)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			_, sourceCodes, _, rootDir := loader.ParseArgsForCX([]string{tc.testDir}, true)
+			err = loader.LoadCXProgram("test", sourceCodes, rootDir, "bolt")
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			files, err := file_output.GetImportFiles("test", "bolt")
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -1225,7 +1231,7 @@ func TestDeclarationExtractor_ReDeclarationCheck(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			gotReDeclarationError := declaration_extractor.ReDeclarationCheck(imports, globals, enums, typeDefinitions, structs, funcs)
+			gotReDeclarationError := declaration_extractor.ReDeclarationCheck(imports, globals, enums, typeDefinitions, structs, funcs, files)
 
 			if (gotReDeclarationError != nil && tc.wantReDeclarationError == nil) ||
 				(gotReDeclarationError == nil && tc.wantReDeclarationError != nil) {
@@ -1278,11 +1284,6 @@ func TestDeclarationExtractor_GetDeclarations(t *testing.T) {
 				t.Fatal(filepath.Base(tc.testDir), err)
 			}
 
-			imports, err := declaration_extractor.ExtractImports(ReplaceCommentsWithWhitespaces, tc.testDir)
-			if err != nil {
-				t.Fatal(err)
-			}
-
 			globals, err := declaration_extractor.ExtractGlobals(ReplaceStringContentsWithWhitespaces, tc.testDir)
 			if err != nil {
 				t.Fatal(err)
@@ -1305,10 +1306,6 @@ func TestDeclarationExtractor_GetDeclarations(t *testing.T) {
 
 			funcs, err := declaration_extractor.ExtractFuncs(ReplaceStringContentsWithWhitespaces, tc.testDir)
 			if err != nil {
-				t.Fatal(err)
-			}
-
-			if declaration_extractor.ReDeclarationCheck(imports, globals, enums, typeDefinitions, structs, funcs) != nil {
 				t.Fatal(err)
 			}
 
@@ -1440,8 +1437,8 @@ func TestDeclarationExtractor_ExtractAllDeclarations(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
 
-			_, sourceCodes, _ := loader.ParseArgsForCX([]string{tc.testDir}, true)
-			err := loader.LoadCXProgram("mypkg1", sourceCodes, "bolt")
+			_, sourceCodes, _, rootDir := loader.ParseArgsForCX([]string{tc.testDir}, true)
+			err := loader.LoadCXProgram("mypkg1", sourceCodes, rootDir, "bolt")
 			if err != nil {
 				t.Fatal(err)
 			}

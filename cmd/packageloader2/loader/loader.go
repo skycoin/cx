@@ -126,6 +126,7 @@ func LoadCXProgram(programName string, sourceCode []*os.File, rootDir []string, 
 			return err
 		}
 
+		var mx sync.Mutex
 		importMap := make(map[string][]string)
 
 		files, ok := fileMap["main"]
@@ -135,7 +136,7 @@ func LoadCXProgram(programName string, sourceCode []*os.File, rootDir []string, 
 
 		// Dependency loops are checked before adding to DB
 		// Step 9
-		err = checkImports("main", files, importMap)
+		err = checkImports("main", files, importMap, &mx)
 		if err != nil {
 			return err
 		}
@@ -147,7 +148,7 @@ func LoadCXProgram(programName string, sourceCode []*os.File, rootDir []string, 
 		}
 
 		// load the imported packages
-		err = loadImportPackages(&packageListStruct, "main", fileMap, importMap, database)
+		err = loadImportPackages(&packageListStruct, "main", fileMap, importMap, database, &mx)
 		if err != nil {
 			return err
 		}
@@ -415,7 +416,7 @@ func createImportList(files []*os.File, importList []string) ([]string, error) {
 //		5. database - "redis" or "bolt"
 //
 // This function works recursively, loading the import packages and then loading import packages of imports
-func loadImportPackages(packageListStruct *PackageList, importName string, fileMap map[string][]*os.File, importMap map[string][]string, database string) error {
+func loadImportPackages(packageListStruct *PackageList, importName string, fileMap map[string][]*os.File, importMap map[string][]string, database string, mx *sync.Mutex) error {
 
 	errChannel := make(chan error, len(importMap))
 
@@ -425,7 +426,7 @@ func loadImportPackages(packageListStruct *PackageList, importName string, fileM
 
 		wg.Add(1)
 
-		go func(packageListStruct *PackageList, imprt string, fileMap map[string][]*os.File, importMap map[string][]string, database string, errChannel chan error, wg *sync.WaitGroup) {
+		go func(packageListStruct *PackageList, imprt string, fileMap map[string][]*os.File, importMap map[string][]string, database string, errChannel chan error, wg *sync.WaitGroup, mx *sync.Mutex) {
 			defer wg.Done()
 			files, ok := fileMap[imprt]
 
@@ -456,7 +457,7 @@ func loadImportPackages(packageListStruct *PackageList, importName string, fileM
 				return
 			}
 
-			err := checkImports(imprt, files, importMap)
+			err := checkImports(imprt, files, importMap, mx)
 			if err != nil {
 				errChannel <- err
 				return
@@ -470,13 +471,13 @@ func loadImportPackages(packageListStruct *PackageList, importName string, fileM
 			}
 
 			// Call itself for loading imports of the import
-			err = loadImportPackages(packageListStruct, imprt, fileMap, importMap, database)
+			err = loadImportPackages(packageListStruct, imprt, fileMap, importMap, database, mx)
 			if err != nil {
 				errChannel <- err
 				return
 			}
 
-		}(packageListStruct, imprt, fileMap, importMap, database, errChannel, &wg)
+		}(packageListStruct, imprt, fileMap, importMap, database, errChannel, &wg, mx)
 
 	}
 
@@ -512,7 +513,7 @@ func hasMultiplePkgs(file *os.File) bool {
 	return false
 }
 
-func checkImports(packageName string, files []*os.File, importMap map[string][]string) error {
+func checkImports(packageName string, files []*os.File, importMap map[string][]string, mx *sync.Mutex) error {
 	// Creates the import list
 	importList, err := createImportList(files, []string{})
 	if err != nil {
@@ -522,7 +523,6 @@ func checkImports(packageName string, files []*os.File, importMap map[string][]s
 	// Removes duplicates of imports and adds them to the import map
 	newImportList := RemoveDuplicates(importList)
 
-	var mx sync.Mutex
 	mx.Lock()
 	importMap[packageName] = newImportList
 	mx.Unlock()

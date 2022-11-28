@@ -3,15 +3,11 @@ package file_output
 import (
 	"errors"
 
-	"github.com/skycoin/cx/cmd/packageloader/bolt"
-	"github.com/skycoin/cx/cmd/packageloader/loader"
-	"github.com/skycoin/cx/cmd/packageloader/redis"
+	"github.com/skycoin/cx/cmd/packageloader2/bolt"
+	"github.com/skycoin/cx/cmd/packageloader2/loader"
+	"github.com/skycoin/cx/cmd/packageloader2/redis"
 )
 
-// - Adds Imports to AST
-// - Returns Import Files
-// - Packages must be added to AST first or an error will occur
-// - Call AddPkgsToAST before calling this function
 func GetImportFiles(packageName string, database string) (files []*loader.File, err error) {
 
 	// Get package list

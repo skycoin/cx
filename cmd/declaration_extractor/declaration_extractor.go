@@ -5,10 +5,10 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/skycoin/cx/cmd/packageloader/loader"
+	"github.com/skycoin/cx/cmd/packageloader2/loader"
 )
 
-func ReDeclarationCheck(Import []ImportDeclaration, Glbl []GlobalDeclaration, Enum []EnumDeclaration, TypeDef []TypeDefinitionDeclaration, Strct []StructDeclaration, Func []FuncDeclaration) error {
+func ReDeclarationCheck(Import []ImportDeclaration, Glbl []GlobalDeclaration, Enum []EnumDeclaration, TypeDef []TypeDefinitionDeclaration, Strct []StructDeclaration, Func []FuncDeclaration, files []*loader.File) error {
 
 	// Checks for the first declaration redeclared
 	// in the order:
@@ -67,7 +67,17 @@ func ReDeclarationCheck(Import []ImportDeclaration, Glbl []GlobalDeclaration, En
 	for i := 0; i < len(Func); i++ {
 		for j := i + 1; j < len(Func); j++ {
 			if Func[i].FuncName == Func[j].FuncName && Func[i].PackageID == Func[j].PackageID {
-				return fmt.Errorf("%v:%v: redeclaration error: func: %v", filepath.Base(Func[j].FileID), Func[j].LineNumber, Func[i].FuncName)
+				funcMethod1, err := ExtractMethod(Func[i], files)
+				if err != nil {
+					return err
+				}
+				funcMethod2, err := ExtractMethod(Func[j], files)
+				if err != nil {
+					return err
+				}
+				if funcMethod1 == funcMethod2 {
+					return fmt.Errorf("%v:%v: redeclaration error: func: %v", filepath.Base(Func[j].FileID), Func[j].LineNumber, Func[i].FuncName)
+				}
 			}
 		}
 	}
@@ -317,7 +327,7 @@ func ExtractAllDeclarations(source []*loader.File) ([]ImportDeclaration, []Globa
 		return Imports, Globals, Enums, TypeDefinitions, Structs, Funcs, err
 	}
 
-	reDeclarationCheck := ReDeclarationCheck(Imports, Globals, Enums, TypeDefinitions, Structs, Funcs)
+	reDeclarationCheck := ReDeclarationCheck(Imports, Globals, Enums, TypeDefinitions, Structs, Funcs, source)
 
 	// there's declaration redeclared return values with error
 	if reDeclarationCheck != nil {

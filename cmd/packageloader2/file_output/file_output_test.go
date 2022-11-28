@@ -3,8 +3,8 @@ package file_output_test
 import (
 	"testing"
 
-	"github.com/skycoin/cx/cmd/packageloader/file_output"
-	"github.com/skycoin/cx/cmd/packageloader/loader"
+	"github.com/skycoin/cx/cmd/packageloader2/file_output"
+	"github.com/skycoin/cx/cmd/packageloader2/loader"
 	"github.com/skycoin/cx/cxparser/actions"
 )
 

@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"unicode"
 
-	"github.com/skycoin/cx/cmd/packageloader/loader"
+	"github.com/skycoin/cx/cmd/packageloader2/loader"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/types"
@@ -17,7 +17,7 @@ import (
 
 func ParseParameterDeclaration(parameterString []byte, pkg *ast.CXPackage, fileName string, lineno int) (*ast.CXArgument, error) {
 	var parameterDeclaration *ast.CXArgument
-	reParameterDeclaration := regexp.MustCompile(`(\w+)\s+(.+)`)
+	reParameterDeclaration := regexp.MustCompile(`(\w+)((?:(?:\s*[\[\]\*\d]+|\s+)\w+(?:\.\w+)*))`)
 	parameterDeclarationTokens := reParameterDeclaration.FindSubmatch(parameterString)
 
 	// Check if the tokenized result is empty
@@ -32,7 +32,7 @@ func ParseParameterDeclaration(parameterString []byte, pkg *ast.CXPackage, fileN
 	declarator.Name = string(parameterDeclarationTokens[1])
 
 	//Set the decalaration type
-	parameterDeclaration, err := ParseDeclarationSpecifier(parameterDeclarationTokens[2], fileName, lineno, parameterDeclaration)
+	parameterDeclaration, err := ParseDeclarationSpecifier(bytes.TrimSpace(parameterDeclarationTokens[2]), fileName, lineno, parameterDeclaration)
 	if err != nil {
 		return nil, err
 	}
