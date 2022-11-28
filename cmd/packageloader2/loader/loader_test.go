@@ -160,8 +160,8 @@ func TestCreateFileMap(t *testing.T) {
 
 	for _, testcase := range tests {
 		t.Run(testcase.Scenario, func(t *testing.T) {
-			_, sourceCodes, _ := loader.ParseArgsForCX([]string{testcase.FilesPath}, true)
-			gotFileMap, gotErr := loader.CreateFileMap(sourceCodes)
+			_, sourceCodes, _, rootDir := loader.ParseArgsForCX([]string{testcase.FilesPath}, true)
+			gotFileMap, gotErr := loader.CreateFileMap(sourceCodes, rootDir)
 			for wantKey, wantValue := range testcase.WantFileMap {
 				gotValue, ok := gotFileMap[wantKey]
 				if !ok {
@@ -245,7 +245,6 @@ func TestAddNewPackage(t *testing.T) {
 		FilesPath            string
 		Database             string
 		WantNumberOfPackages int
-		WantImportMap        map[string][]string
 		WantErr              error
 	}{
 		{
@@ -253,56 +252,38 @@ func TestAddNewPackage(t *testing.T) {
 			FilesPath:            TEST_SRC_PATH_VALID,
 			Database:             "redis",
 			WantNumberOfPackages: 1,
-			WantImportMap: map[string][]string{
-				"main": {"os", "testimport"},
-			},
+
 			WantErr: nil,
-		},
-		{
-			Scenario:             "Test adding package to Redis database with missing package",
-			FilesPath:            "test_folder/test_valid_program/",
-			Database:             "redis",
-			WantNumberOfPackages: 0,
-			WantImportMap:        map[string][]string{},
-			WantErr:              errors.New("package main not found"),
 		},
 		{
 			Scenario:             "Test adding package to Bolt database",
 			FilesPath:            TEST_SRC_PATH_VALID,
 			Database:             "bolt",
 			WantNumberOfPackages: 1,
-			WantImportMap: map[string][]string{
-				"main": {"os", "testimport"},
-			},
+
 			WantErr: nil,
-		},
-		{
-			Scenario:             "Test adding package to Bolt database with missing package",
-			FilesPath:            "test_folder/test_valid_program/",
-			Database:             "bolt",
-			WantNumberOfPackages: 0,
-			WantImportMap:        map[string][]string{},
-			WantErr:              errors.New("package main not found"),
 		},
 	}
 	for _, testcase := range tests {
 		t.Run(testcase.Scenario, func(t *testing.T) {
-			_, sourceCodes, _ := loader.ParseArgsForCX([]string{testcase.FilesPath}, false)
-			fileMap, err := loader.CreateFileMap(sourceCodes)
+			_, sourceCodes, _, rootDir := loader.ParseArgsForCX([]string{testcase.FilesPath}, false)
+			fileMap, err := loader.CreateFileMap(sourceCodes, rootDir)
 			if err != nil {
 				t.Error(err)
 			}
-			gotImportMap := make(map[string][]string)
+
 			testPackageStruct := loader.PackageList{}
-			gotErr := loader.AddNewPackage(&testPackageStruct, "main", fileMap, gotImportMap, testcase.Database)
+
+			files, ok := fileMap["main"]
+			if !ok {
+				t.Error("package main not found")
+			}
+
+			gotErr := loader.AddNewPackage(&testPackageStruct, "main", files, testcase.Database)
 
 			gotNumberOfPackages := len(testPackageStruct.Packages)
 			if gotNumberOfPackages != testcase.WantNumberOfPackages {
 				t.Errorf("want %d packages, got %d packages", testcase.WantNumberOfPackages, gotNumberOfPackages)
-			}
-
-			if !reflect.DeepEqual(gotImportMap, testcase.WantImportMap) {
-				t.Errorf("want import map %v, got %v", testcase.WantImportMap, gotImportMap)
 			}
 
 			if (gotErr != nil && testcase.WantErr == nil) ||
@@ -339,17 +320,6 @@ func TestLoadImportPackages(t *testing.T) {
 			WantErr: nil,
 		},
 		{
-			Scenario:             "Test adding package to Redis database with missing package",
-			FilesPath:            "test_folder/test_import_package_error/",
-			Database:             "redis",
-			WantNumberOfPackages: 2,
-			WantImportMap: map[string][]string{
-				"main":       {"os", "testimport"},
-				"testimport": {"testimport2"},
-			},
-			WantErr: errors.New("package testimport2 not found"),
-		},
-		{
 			Scenario:             "Test adding package to Bolt database",
 			FilesPath:            TEST_SRC_PATH_VALID,
 			Database:             "bolt",
@@ -360,29 +330,29 @@ func TestLoadImportPackages(t *testing.T) {
 			},
 			WantErr: nil,
 		},
-		{
-			Scenario:             "Test adding package to Bolt database with missing package",
-			FilesPath:            "test_folder/test_import_package_error/",
-			Database:             "bolt",
-			WantNumberOfPackages: 2,
-			WantImportMap: map[string][]string{
-				"main":       {"os", "testimport"},
-				"testimport": {"testimport2"},
-			},
-			WantErr: errors.New("package testimport2 not found"),
-		},
 	}
 
 	for _, testcase := range tests {
 		t.Run(testcase.Scenario, func(t *testing.T) {
-			_, sourceCodes, _ := loader.ParseArgsForCX([]string{testcase.FilesPath}, true)
-			fileMap, err := loader.CreateFileMap(sourceCodes)
+			_, sourceCodes, _, rootDir := loader.ParseArgsForCX([]string{testcase.FilesPath}, true)
+			fileMap, err := loader.CreateFileMap(sourceCodes, rootDir)
 			if err != nil {
 				t.Error(err)
 			}
 			gotImportMap := make(map[string][]string)
 			testPackageStruct := loader.PackageList{}
-			err = loader.AddNewPackage(&testPackageStruct, "main", fileMap, gotImportMap, testcase.Database)
+
+			files, ok := fileMap["main"]
+			if !ok {
+				t.Error("package main not found")
+			}
+
+			err = loader.AddNewPackage(&testPackageStruct, "main", files, testcase.Database)
+			if err != nil {
+				t.Error(err)
+			}
+
+			err = loader.CheckImports("main", files, gotImportMap)
 			if err != nil {
 				t.Error(err)
 			}
@@ -443,7 +413,7 @@ func TestCheckForDependencyLoop(t *testing.T) {
 
 	for _, testcase := range tests {
 		t.Run(testcase.Scenario, func(t *testing.T) {
-			gotErr := loader.CheckForDependencyLoop(testcase.ImportMap)
+			gotErr := loader.CheckForDependencyLoop(testcase.ImportMap, "main")
 
 			if (gotErr != nil && testcase.WantErr == nil) ||
 				(gotErr == nil && testcase.WantErr != nil) {
@@ -482,8 +452,8 @@ func TestLoadCXProgram(t *testing.T) {
 	}
 	for _, testcase := range tests {
 		t.Run(testcase.Scenario, func(t *testing.T) {
-			_, sourceCodes, _ := loader.ParseArgsForCX([]string{testcase.FilesPath}, true)
-			err := loader.LoadCXProgram("test", sourceCodes, testcase.Database)
+			_, sourceCodes, _, rootDir := loader.ParseArgsForCX([]string{testcase.FilesPath}, true)
+			err := loader.LoadCXProgram("test", sourceCodes, rootDir, testcase.Database)
 			if err != nil {
 				t.Error(err)
 			}
