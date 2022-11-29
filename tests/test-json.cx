@@ -1,6 +1,7 @@
 package main
 
 import "json"
+import "json2"
 
 var debug bool
 func debugOutput(s str) {
@@ -10,34 +11,34 @@ func debugOutput(s str) {
 }
 
 func testDelim(file i32, d i32) {
-	panic(json.MatchDelim(file, d), true, "failed to match delimiter")
+	panic(json2.MatchDelim(file, d), true, "failed to match delimiter")
 	debugOutput(sprintf("DELIM %d\n", d))
 }
 
  func testStr(file i32, s str) {
 	var value str
-	panic(json.ReadStr(file, &value), true, sprintf("failed to read str value '%s'", s))
+	panic(json2.ReadStr(file, &value), true, sprintf("failed to read str value '%s'", s))
 	panic(s, value, "str values don't match")
 	debugOutput(sprintf("STR %s\n", value))
 }
 
 func testI64(file i32, i i64) {
 	var value i64
-	panic(json.ReadI64(file, &value), true, "failed to read i64 value")
+	panic(json2.ReadI64(file, &value), true, "failed to read i64 value")
 	panic(i, value, "i64 values don't match")
 	debugOutput(sprintf("I64 %d\n", value))
 }
 
 func testF64(file i32, f f64) {
 	var value f64
-	panic(json.ReadF64(file, &value), true, "failed to read f64 value")
+	panic(json2.ReadF64(file, &value), true, "failed to read f64 value")
 	panic(f, value, "f64 values don't match")
 	debugOutput(sprintf("F64 %f\n", value))
 }
 
 func testBool(file i32, b bool) {
 	var value bool
-	panic(json.ReadBool(file, &value), true, "failed to read bool value")
+	panic(json2.ReadBool(file, &value), true, "failed to read bool value")
 	panic(b, value, "bool values don't match")
 	debugOutput(sprintf("Bool %b\n", value))
 }
@@ -59,7 +60,7 @@ func testKeyValueBool(file i32, s str, b bool) {
 
 func testStrSlice(file i32, s []str) {
 	var values []str
-	panic(json.ReadStrSlice(file, &values), true, "failed to read []str")
+	panic(json2.ReadStrSlice(file, &values), true, "failed to read []str")
 	panic(len(s), len(values), sprintf("failed to read []str: lens don't match, %d != %d", len(s), len(values)))
 	var count i32 = len(s)
 	for i := 0; i < count; i++ {
@@ -70,7 +71,7 @@ func testStrSlice(file i32, s []str) {
 
 func testF32Slice(file i32, s []f32) {
 	var values []f32
-	panic(json.ReadF32Slice(file, &values), true, "failed to read []f32")
+	panic(json2.ReadF32Slice(file, &values), true, "failed to read []f32")
 	panic(len(s), len(values), sprintf("failed to read []f32:  lens don't match, %d != %d", len(s), len(values)))
 	var count i32 = len(s)
 	for i := 0; i < count; i++ {
@@ -81,7 +82,7 @@ func testF32Slice(file i32, s []f32) {
 
 func testI32Slice(file i32, s []i32) {
 	var values []i32
-	panic(json.ReadI32Slice(file, &values), true, "failed to read []i32")
+	panic(json2.ReadI32Slice(file, &values), true, "failed to read []i32")
 	panic(len(s), len(values), sprintf("failed to read []i32: lens don't match, %d != %d", len(s), len(values)))
 	var count i32 = len(s)
 	for i := 0; i < count; i++ {
@@ -138,22 +139,22 @@ func main() {
 	var vec4 [4]f32
 
 	testStr(file_0, "[2]f32")
-	panic(json.ReadF32Vec3(file_0, &vec3), false, "must return an error")
+	panic(json2.ReadF32Vec3(file_0, &vec3), false, "must return an error")
 	testDelim(file_0, json.DELIM_SQUARE_RIGHT)
 
 	testStr(file_0, "[3]f32")
-	panic(json.ReadF32Vec3(file_0, &vec3), true, "failed to read [3]f32")
+	panic(json2.ReadF32Vec3(file_0, &vec3), true, "failed to read [3]f32")
 	var testv3f32 [3]f32 = [3]f32 {4.0, 5.0, 6.0}
 	panic(vec3, testv3f32, "vec3 don't match")
 
 	testStr(file_0, "[4]f32")
-	panic(json.ReadF32Vec4(file_0, &vec4), true, "failed to read [4]f32")
+	panic(json2.ReadF32Vec4(file_0, &vec4), true, "failed to read [4]f32")
 	var testv4f32 [4]f32 = [4]f32 {7.0, 8.0, 9.0, 10.0}
 	panic(vec4, testv4f32, "vec4 don't match")
 
 	testStr(file_0, "[5]f32")
-	panic(json.ReadF32Vec4(file_0, &vec4), false, "must return an error")
-	panic(json.MatchDelim(file_0, json.DELIM_SQUARE_RIGHT), true, "failed to match delim")
+	panic(json2.ReadF32Vec4(file_0, &vec4), false, "must return an error")
+	panic(json2.MatchDelim(file_0, json.DELIM_SQUARE_RIGHT), true, "failed to match delim")
 
 	testStr(file_0, "[]f32")
 	var testvf32 []f32 = []f32{16.0, 17.0, 18.0, 19.0, 20.0}

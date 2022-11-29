@@ -67,6 +67,10 @@ func ExtractTypeDefinitions(source []byte, fileName string) ([]TypeDefinitionDec
 					return TypeDefinitionDeclarationsArray, fmt.Errorf("%v:%v: syntax error: type definition declaration", filepath.Base(fileName), lineno)
 				}
 
+				if pkg == "" {
+					return TypeDefinitionDeclarationsArray, fmt.Errorf("%v:%v: no package declared for type definition declaration", filepath.Base(fileName), lineno)
+				}
+
 				var typeDefinitionDeclaration TypeDefinitionDeclaration
 				typeDefinitionDeclaration.PackageID = pkg
 				typeDefinitionDeclaration.FileID = fileName

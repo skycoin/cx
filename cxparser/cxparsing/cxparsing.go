@@ -2,16 +2,20 @@ package cxparsering
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"os"
 
+	"github.com/skycoin/cx/cmd/declaration_extractor"
+	"github.com/skycoin/cx/cmd/packageloader2/file_output"
+	"github.com/skycoin/cx/cmd/packageloader2/loader"
+	"github.com/skycoin/cx/cmd/type_checker"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/globals"
 	"github.com/skycoin/cx/cx/types"
 
 	"github.com/skycoin/cx/cxparser/actions"
-	cxpartialparsing "github.com/skycoin/cx/cxparser/cxpartialparsing"
 	"github.com/skycoin/cx/cxparser/util/profiling"
 )
 
@@ -27,19 +31,32 @@ import (
 
 	 step 2 : passtwo
 */
-func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
+func ParseSourceCode(sourceCode []*os.File, fileNames []string, rootDir []string) {
 
 	//local
-	cxpartialparsing.Program = actions.AST
+	// cxpartialparsing.Program = actions.AST
 
+	parseErrors := 0
+
+	err := loader.LoadCXProgram("main", sourceCode, rootDir, "bolt")
+	if err != nil {
+		fmt.Print(err)
+		parseErrors++
+	}
+
+	files, err := file_output.GetImportFiles("main", "bolt")
+	if err != nil {
+		fmt.Print(err)
+		parseErrors++
+	}
 	/*
 		Copy the contents of the file pointers containing the CX source
 		code into sourceCodeStrings
 	*/
-	sourceCodeStrings := make([]string, len(sourceCode))
-	for i, source := range sourceCode {
+	sourceCodeStrings := make([]string, len(files))
+	for i, source := range files {
 		tmp := bytes.NewBuffer(nil)
-		io.Copy(tmp, source)
+		io.Copy(tmp, bytes.NewReader(source.Content))
 		sourceCodeStrings[i] = tmp.String()
 	}
 
@@ -49,12 +66,28 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 		can be of a custom type (and it could be imported) the signatures
 		of functions and methods are added in the cxpartialparsing.y pass
 	*/
-	parseErrors := 0
-	if len(sourceCode) > 0 {
-		parseErrors = Preliminarystage(sourceCodeStrings, fileNames)
+
+	// if len(sourceCode) > 0 {
+	// 	parseErrors = Preliminarystage(sourceCodeStrings, fileNames)
+	// }
+
+	// actions.AST = cxpartialparsing.Program
+
+	Imports, Globals, Enums, TypeDefinitions, Structs, Funcs, err := declaration_extractor.ExtractAllDeclarations(files)
+	if err != nil {
+		fmt.Print(err)
+		parseErrors++
 	}
 
-	actions.AST = cxpartialparsing.Program
+	if Enums != nil && TypeDefinitions != nil {
+
+	}
+
+	err = type_checker.ParseAllDeclarations(files, Imports, Globals, Structs, Funcs)
+	if err != nil {
+		fmt.Print(err)
+		parseErrors++
+	}
 
 	if globals.FoundCompileErrors || parseErrors > 0 {
 		profiling.CleanupAndExit(constants.CX_COMPILATION_ERROR)
@@ -96,8 +129,8 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 
 		b := bytes.NewBufferString(source)
 
-		if len(fileNames) > 0 {
-			actions.CurrentFile = fileNames[i]
+		if len(files) > 0 {
+			actions.CurrentFile = files[i].FileName
 		}
 
 		profiling.StartProfile(actions.CurrentFile)

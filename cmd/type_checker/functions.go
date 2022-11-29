@@ -49,13 +49,11 @@ func ParseFuncHeaders(files []*loader.File, funcs []declaration_extractor.FuncDe
 		params := reParams.FindAllSubmatch(funcDeclarationLine, -1)
 
 		if funcMethod != nil {
+
 			receiverArg, err := ParseParameterDeclaration(params[0][1], pkg, fun.FileID, fun.LineNumber)
 			if err != nil {
 				return err
 			}
-
-			var inputs []*ast.CXArgument
-			var outputs []*ast.CXArgument
 
 			fnName := receiverArg.StructType.Name + "." + fun.FuncName
 
@@ -64,10 +62,22 @@ func ParseFuncHeaders(files []*loader.File, funcs []declaration_extractor.FuncDe
 			newFn := actions.AST.GetFunctionFromArray(fnIdx)
 			newFn.AddInput(actions.AST, receiverArg)
 
-			if funcMethod[3] != nil && len(funcMethod[3]) != 0 {
-				outputs, err = ParseFuncParameters(funcMethod[3], pkg, fun.FileID, fun.LineNumber)
+			var inputs []*ast.CXArgument
+			var outputs []*ast.CXArgument
+
+			if params[1][1] != nil && len(params[1][1]) != 0 {
+				inputs, err = ParseFuncParameters(params[1][1], pkg, fun.FileID, fun.LineNumber)
 				if err != nil {
 					return err
+				}
+			}
+
+			if len(params) == 3 {
+				if params[2][1] != nil && len(params[2][1]) != 0 {
+					outputs, err = ParseFuncParameters(params[2][1], pkg, fun.FileID, fun.LineNumber)
+					if err != nil {
+						return err
+					}
 				}
 			}
 
@@ -75,25 +85,25 @@ func ParseFuncHeaders(files []*loader.File, funcs []declaration_extractor.FuncDe
 
 		} else {
 
-			reFuncRegular := regexp.MustCompile(`func\s*\S+\s*\(([\s\w,]*)\)(?:\s*\(([\s\w,]*)\))*`)
-			funcRegular := reFuncRegular.FindSubmatch(funcDeclarationLine)
-
-			fnIdx := actions.FunctionHeader(actions.AST, fun.FuncName, nil, false)
+			fn := ast.MakeFunction(fun.FuncName, fun.FileID, fun.LineNumber)
+			_, fnIdx := pkg.AddFunction(actions.AST, fn)
 
 			var inputs []*ast.CXArgument
 			var outputs []*ast.CXArgument
 
-			if funcRegular[1] != nil && len(funcRegular[1]) != 0 {
-				inputs, err = ParseFuncParameters(funcRegular[1], pkg, fun.FileID, fun.LineNumber)
+			if params[0][1] != nil && len(params[0][1]) != 0 {
+				inputs, err = ParseFuncParameters(params[0][1], pkg, fun.FileID, fun.LineNumber)
 				if err != nil {
 					return err
 				}
 			}
 
-			if funcRegular[2] != nil && len(funcRegular[2]) != 0 {
-				outputs, err = ParseFuncParameters(funcRegular[2], pkg, fun.FileID, fun.LineNumber)
-				if err != nil {
-					return err
+			if len(params) == 2 {
+				if params[1][1] != nil && len(params[1][1]) != 0 {
+					outputs, err = ParseFuncParameters(params[1][1], pkg, fun.FileID, fun.LineNumber)
+					if err != nil {
+						return err
+					}
 				}
 			}
 
@@ -101,6 +111,7 @@ func ParseFuncHeaders(files []*loader.File, funcs []declaration_extractor.FuncDe
 		}
 
 	}
+
 	return nil
 }
 

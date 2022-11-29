@@ -81,6 +81,10 @@ func ExtractEnums(source []byte, fileName string) ([]EnumDeclaration, error) {
 				return EnumDeclarationsArray, fmt.Errorf("%v:%v: syntax error: enum declaration", filepath.Base(fileName), lineno)
 			}
 
+			if pkg == "" {
+				return EnumDeclarationsArray, fmt.Errorf("%v:%v: no package declared for enum declaration", filepath.Base(fileName), lineno)
+			}
+
 			enumDecIdx := reEnumDec.FindIndex(line)
 
 			var tmp EnumDeclaration

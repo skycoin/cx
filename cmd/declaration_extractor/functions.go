@@ -79,6 +79,10 @@ func ExtractFuncs(source []byte, fileName string) ([]FuncDeclaration, error) {
 				return FuncDeclarationsArray, fmt.Errorf("%v:%v: syntax error: func declaration", filepath.Base(fileName), lineno)
 			}
 
+			if pkg == "" {
+				return FuncDeclarationsArray, fmt.Errorf("%v:%v: no package declared for func declaration", filepath.Base(fileName), lineno)
+			}
+
 			var funcDeclaration FuncDeclaration
 			funcDeclaration.PackageID = pkg
 			funcDeclaration.FileID = fileName

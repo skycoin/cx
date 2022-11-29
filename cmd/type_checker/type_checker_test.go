@@ -1070,7 +1070,7 @@ func TestTypeChecker_ParseAllDeclarations(t *testing.T) {
 						},
 						{
 							Name:   "CustomType.setFieldA",
-							Inputs: "main.customType *CustomType, string str",
+							Inputs: "customType *CustomType, string str",
 						},
 					},
 				},
@@ -1142,7 +1142,7 @@ func TestTypeChecker_ParseAllDeclarations(t *testing.T) {
 					Funcs: []Func{
 						{
 							Name:   "Animal.Speak",
-							Inputs: "helper.a *Animal",
+							Inputs: "a *Animal",
 						},
 					},
 				},

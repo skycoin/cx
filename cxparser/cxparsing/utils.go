@@ -169,7 +169,7 @@ func Preliminarystage(srcStrs, srcNames []string) int {
 					if _, err := cxpartialparsing.Program.GetPackage(pkgName); err != nil && !cxpackages.IsDefaultPackage(pkgName) {
 						// _, sourceCode, srcNames := ParseArgsForCX([]string{fmt.Sprintf("%s%s", SRCPATH, pkgName)}, false)
 						_, sourceCode, fileNames := ast.ParseArgsForCX([]string{filepath.Join(globals.SRCPATH, pkgName)}, false)
-						ParseSourceCode(sourceCode, fileNames)
+						ParseSourceCode(sourceCode, fileNames, fileNames)
 					}
 				}
 			}

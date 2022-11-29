@@ -76,6 +76,10 @@ func ExtractStructs(source []byte, fileName string) ([]StructDeclaration, error)
 				return StructDeclarationsArray, fmt.Errorf("%v:%v: syntax error: struct declaration", filepath.Base(fileName), lineno)
 			}
 
+			if pkg == "" {
+				return StructDeclarationsArray, fmt.Errorf("%v:%v: no package declared for global declaration", filepath.Base(fileName), lineno)
+			}
+
 			structDeclaration.PackageID = pkg
 			structDeclaration.FileID = fileName
 

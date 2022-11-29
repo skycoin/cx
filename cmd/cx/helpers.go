@@ -25,7 +25,7 @@ import (
 	"github.com/skycoin/cx/cxparser/util/profiling"
 )
 
-func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File) bool {
+func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File, rootDir []string) bool {
 
 	profile := profiling.StartCPUProfile("parse")
 	defer profiling.StopCPUProfile(profile)
@@ -40,7 +40,7 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 	}
 
 	// Parsing all the source code files sent as CLI arguments to CX.
-	cxparsing.ParseSourceCode(sourceCode, fileNames)
+	cxparsing.ParseSourceCode(sourceCode, fileNames, rootDir)
 
 	// Checking if a main package exists. If not, create and add it to `AST`.
 	if _, err := actions.AST.GetFunction(constants.MAIN_FUNC, constants.MAIN_PKG); err != nil {
