@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"strings"
+	"sync"
 	"testing"
 
 	"github.com/skycoin/cx/cmd/packageloader2/loader"
@@ -339,6 +340,7 @@ func TestLoadImportPackages(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
+			var mx sync.Mutex
 			gotImportMap := make(map[string][]string)
 			testPackageStruct := loader.PackageList{}
 
@@ -352,12 +354,12 @@ func TestLoadImportPackages(t *testing.T) {
 				t.Error(err)
 			}
 
-			err = loader.CheckImports("main", files, gotImportMap)
+			err = loader.CheckImports("main", files, gotImportMap, &mx)
 			if err != nil {
 				t.Error(err)
 			}
 
-			gotErr := loader.LoadImportPackages(&testPackageStruct, "main", fileMap, gotImportMap, testcase.Database)
+			gotErr := loader.LoadImportPackages(&testPackageStruct, "main", fileMap, gotImportMap, testcase.Database, &mx)
 
 			gotNumberOfPackages := len(testPackageStruct.Packages)
 			if gotNumberOfPackages != testcase.WantNumberOfPackages {
