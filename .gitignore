@@ -101,3 +101,5 @@ fabric.properties
 out
 gen
 *.rdb
+*.db
+cmd/cxbenchmark/bin/cx

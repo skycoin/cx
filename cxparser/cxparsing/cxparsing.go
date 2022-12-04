@@ -38,13 +38,13 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string, rootDir []string
 
 	parseErrors := 0
 
-	err := loader.LoadCXProgram("main", sourceCode, rootDir, "bolt")
+	err := loader.LoadCXProgram("main", sourceCode, rootDir, "redis")
 	if err != nil {
 		fmt.Print(err)
 		parseErrors++
 	}
 
-	files, err := file_output.GetImportFiles("main", "bolt")
+	files, err := file_output.GetImportFiles("main", "redis")
 	if err != nil {
 		fmt.Print(err)
 		parseErrors++
