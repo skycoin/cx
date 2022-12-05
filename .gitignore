@@ -103,3 +103,4 @@ gen
 *.rdb
 *.db
 cmd/cxbenchmark/bin/cx
+*.out
