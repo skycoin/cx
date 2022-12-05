@@ -256,7 +256,7 @@ func getPackageName(file *os.File) (string, error) {
 func addNewPackage(packageListStruct *PackageList, packageName string, files []*os.File, database string) error {
 
 	// Creates the package struct
-	packageStruct, err := createPackageStruct(packageName, files, Package{}, database)
+	packageStruct, err := createPackageStruct(packageName, files, database)
 	if err != nil {
 		return err
 	}
@@ -339,43 +339,36 @@ func blake2HashFromFileUUID(fileUUID []string) ([64]byte, error) {
 //	4. database - "redis" or "bolt"
 //
 // This function works recursively
-func createPackageStruct(name string, files []*os.File, packageStruct Package, database string) (Package, error) {
+func createPackageStruct(name string, files []*os.File, database string) (Package, error) {
 
-	// Base case
-	if len(files) == 0 {
-		return packageStruct, nil
-	}
+	var packageStruct Package
 
-	packageStruct.PackageName = name
+	for _, currentFile := range files {
+		packageStruct.PackageName = name
 
-	// Create file struct
-	currentIndex := len(files) - 1
-	currentFile := files[currentIndex]
-	fileStruct, err := fileStructFromFile(currentFile)
-	if err != nil {
-		return packageStruct, err
-	}
-
-	// Append file struct
-	err = packageStruct.appendFile(&fileStruct, database)
-	if err != nil {
-		return packageStruct, err
-	}
-
-	// Remove file from slice
-	newFiles := files[:currentIndex]
-
-	// Generate Blake2Hash and add to package struct
-	if len(newFiles) == 0 {
-		hash, err := blake2HashFromFileUUID(packageStruct.Files)
+		// Create file struct
+		fileStruct, err := fileStructFromFile(currentFile)
 		if err != nil {
 			return packageStruct, err
 		}
 
-		packageStruct.Blake2Hash = string(hash[:])
+		// Append file struct
+		err = packageStruct.appendFile(&fileStruct, database)
+		if err != nil {
+			return packageStruct, err
+		}
+
 	}
 
-	return createPackageStruct(name, newFiles, packageStruct, database)
+	// Generate Blake2Hash and add to package struct
+	hash, err := blake2HashFromFileUUID(packageStruct.Files)
+	if err != nil {
+		return packageStruct, err
+	}
+
+	packageStruct.Blake2Hash = string(hash[:])
+
+	return packageStruct, nil
 }
 
 //	 Create an import list from the list of files
@@ -383,29 +376,27 @@ func createPackageStruct(name string, files []*os.File, packageStruct Package, d
 //		2. importList - empty string slice "[]string{}"
 //
 // This function works recursively
-func createImportList(files []*os.File, importList []string) ([]string, error) {
-	// Base case
-	if len(files) == 0 {
-		return importList, nil
+func createImportList(files []*os.File) ([]string, error) {
+
+	var importList []string
+
+	for _, currentFile := range files {
+		if hasMultiplePkgs(currentFile) {
+			return importList, fmt.Errorf("%s: multiple packages found in one file", filepath.Base(currentFile.Name()))
+		}
+
+		// Gets imports
+		imports, err := getImports(currentFile)
+		if err != nil {
+			return importList, err
+		}
+
+		// Removes file from list
+		importList = append(importList, imports...)
+
 	}
 
-	currentIndex := len(files) - 1
-	currentFile := files[currentIndex]
-	if hasMultiplePkgs(currentFile) {
-		return importList, fmt.Errorf("%s: multiple packages found in one file", filepath.Base(currentFile.Name()))
-	}
-
-	// Gets imports
-	imports, err := getImports(currentFile)
-	if err != nil {
-		return importList, err
-	}
-
-	// Removes file from list
-	importList = append(importList, imports...)
-	newFiles := files[:currentIndex]
-
-	return createImportList(newFiles, importList)
+	return importList, nil
 }
 
 //	 Loads Import Packages
@@ -515,7 +506,7 @@ func hasMultiplePkgs(file *os.File) bool {
 
 func checkImports(packageName string, files []*os.File, importMap map[string][]string, mx *sync.Mutex) error {
 	// Creates the import list
-	importList, err := createImportList(files, []string{})
+	importList, err := createImportList(files)
 	if err != nil {
 		return err
 	}

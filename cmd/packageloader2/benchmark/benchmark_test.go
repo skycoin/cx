@@ -8,7 +8,7 @@ import (
 	"github.com/skycoin/cx/cxparser/actions"
 )
 
-func BenchmarkPackageloader(b *testing.B) {
+func BenchmarkPackageloaderBolt(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		actions.AST = nil
 
@@ -20,6 +20,24 @@ func BenchmarkPackageloader(b *testing.B) {
 		}
 
 		_, err = file_output.GetImportFiles("test", "bolt")
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+func BenchmarkPackageloaderRedis(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		actions.AST = nil
+
+		_, sourceCode, _, rootDir := loader.ParseArgsForCX([]string{"./test_files/test.cx"}, true)
+
+		err := loader.LoadCXProgram("test", sourceCode, rootDir, "redis")
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		_, err = file_output.GetImportFiles("test", "redis")
 		if err != nil {
 			b.Fatal(err)
 		}
