@@ -65,3 +65,27 @@ func BenchmarkTypeCheckerRedis(b *testing.B) {
 
 	}
 }
+
+func BenchmarkTypeCheckerNoSave(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		actions.AST = nil
+
+		_, sourceCode, _, rootDir := loader.ParseArgsForCX([]string{"./test_files/test.cx"}, true)
+
+		files, err := loader.LoadCXProgramNoSave(sourceCode, rootDir)
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		Imports, Globals, Enums, TypeDefinitions, Structs, Funcs, gotErr := declaration_extractor.ExtractAllDeclarations(files)
+		if (Enums != nil && TypeDefinitions != nil) || gotErr != nil {
+			b.Fatal(gotErr)
+		}
+
+		err = type_checker.ParseAllDeclarations(files, Imports, Globals, Structs, Funcs)
+		if err != nil {
+			b.Fatal(err)
+		}
+
+	}
+}

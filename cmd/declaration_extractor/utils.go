@@ -110,3 +110,12 @@ func GetSourceBytes(files []*loader.File, fileName string) ([]byte, error) {
 
 	return nil, fmt.Errorf("%s not found", fileName)
 }
+
+func contains(list [][]byte, element []byte) bool {
+	for _, item := range list {
+		if bytes.Equal(item, element) {
+			return true
+		}
+	}
+	return false
+}

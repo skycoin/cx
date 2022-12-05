@@ -7,7 +7,6 @@ import (
 	"os"
 
 	"github.com/skycoin/cx/cmd/declaration_extractor"
-	"github.com/skycoin/cx/cmd/packageloader2/file_output"
 	"github.com/skycoin/cx/cmd/packageloader2/loader"
 	"github.com/skycoin/cx/cmd/type_checker"
 	"github.com/skycoin/cx/cx/ast"
@@ -38,13 +37,13 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string, rootDir []string
 
 	parseErrors := 0
 
-	err := loader.LoadCXProgram("main", sourceCode, rootDir, "redis")
-	if err != nil {
-		fmt.Print(err)
-		parseErrors++
-	}
+	// err := loader.LoadCXProgram("main", sourceCode, rootDir, "redis")
+	// if err != nil {
+	// 	fmt.Print(err)
+	// 	parseErrors++
+	// }
 
-	files, err := file_output.GetImportFiles("main", "redis")
+	files, err := loader.LoadCXProgramNoSave(sourceCode, rootDir)
 	if err != nil {
 		fmt.Print(err)
 		parseErrors++

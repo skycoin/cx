@@ -25,8 +25,7 @@ func ExtractEnums(source []byte, fileName string) ([]EnumDeclaration, error) {
 	var pkg string
 
 	//Regexes
-	rePkg := regexp.MustCompile(`^(?:.+\s+|\s*)package(?:\s+[\S\s]+|\s*)$`)
-	rePkgName := regexp.MustCompile(`package\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
+	reName := regexp.MustCompile(`[_a-zA-Z]\w*`)
 	reEnumInit := regexp.MustCompile(`const\s+\(`)
 	rePrtsClose := regexp.MustCompile(`\)`)
 	reEnumDec := regexp.MustCompile(`([_a-zA-Z][_a-zA-Z0-9]*)(?:\s+([_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*)){0,1}(?:\s*\=\s*[\s\S]+\S+){0,1}`)
@@ -46,17 +45,18 @@ func ExtractEnums(source []byte, fileName string) ([]EnumDeclaration, error) {
 		line := scanner.Bytes()
 		lineno++
 
+		tokens := bytes.Fields(line)
 		// Package declaration extraction
-		if rePkg.FindIndex(line) != nil {
-
-			matchPkg := rePkgName.FindSubmatch(line)
-
-			if matchPkg == nil || !bytes.Equal(matchPkg[0], bytes.TrimSpace(line)) {
+		if contains(tokens, []byte("package")) {
+			if len(tokens) != 2 {
 				return EnumDeclarationsArray, fmt.Errorf("%v:%v: syntax error: package declaration", filepath.Base(fileName), lineno)
 			}
+			name := reName.Find(tokens[1])
+			if name == nil || len(name) != len(tokens[1]) {
+				return EnumDeclarationsArray, fmt.Errorf("%v:%v: syntax error: package declaration", filepath.Base(fileName), lineno)
 
-			pkg = string(matchPkg[1])
-
+			}
+			pkg = string(name)
 		}
 
 		// initialize enum, increment parenthesis depth and skip to next line

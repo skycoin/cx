@@ -25,11 +25,7 @@ func ExtractFuncs(source []byte, fileName string) ([]FuncDeclaration, error) {
 	var pkg string
 
 	// Regexes
-	rePkg := regexp.MustCompile(`^(?:.+\s+|\s*)package(?:\s+[\S\s]+|\s*)$`)
-	rePkgName := regexp.MustCompile(`package\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
-	reFunc := regexp.MustCompile(`^(?:.+\s+|\s*)func(?:\s+[\S\s]+|\([\S\s]+|\s*)$`)
-	reNotSpace := regexp.MustCompile(`\S+`)
-
+	reName := regexp.MustCompile(`[_a-zA-Z]\w*`)
 	// Func Declaration regex for name extraction and syntax checking
 	// Components:
 	// func - func keyword
@@ -57,20 +53,21 @@ func ExtractFuncs(source []byte, fileName string) ([]FuncDeclaration, error) {
 		line := scanner.Bytes()
 		lineno++
 
+		tokens := bytes.Fields(line)
 		// Package declaration extraction
-		if rePkg.FindIndex(line) != nil {
-
-			matchPkg := rePkgName.FindSubmatch(line)
-
-			if matchPkg == nil || !bytes.Equal(matchPkg[0], bytes.TrimSpace(line)) && reNotSpace.Find(line) != nil {
+		if contains(tokens, []byte("package")) {
+			if len(tokens) != 2 {
 				return FuncDeclarationsArray, fmt.Errorf("%v:%v: syntax error: package declaration", filepath.Base(fileName), lineno)
 			}
+			name := reName.Find(tokens[1])
+			if name == nil || len(name) != len(tokens[1]) {
+				return FuncDeclarationsArray, fmt.Errorf("%v:%v: syntax error: package declaration", filepath.Base(fileName), lineno)
 
-			pkg = string(matchPkg[1])
-
+			}
+			pkg = string(name)
 		}
 
-		if match := reFunc.FindIndex(line); match != nil {
+		if contains(tokens, []byte("func")) {
 
 			funcBytes := reFuncDec.FindSubmatch(line)
 			funcIdx := reFuncDec.FindSubmatchIndex(line)
@@ -79,17 +76,13 @@ func ExtractFuncs(source []byte, fileName string) ([]FuncDeclaration, error) {
 				return FuncDeclarationsArray, fmt.Errorf("%v:%v: syntax error: func declaration", filepath.Base(fileName), lineno)
 			}
 
-			if pkg == "" {
-				return FuncDeclarationsArray, fmt.Errorf("%v:%v: no package declared for func declaration", filepath.Base(fileName), lineno)
-			}
-
 			var funcDeclaration FuncDeclaration
 			funcDeclaration.PackageID = pkg
 			funcDeclaration.FileID = fileName
 			funcDeclaration.StartOffset = funcIdx[2] + currentOffset
 			funcDeclaration.LineNumber = lineno
 			funcDeclaration.FuncName = string(funcBytes[2])
-			funcDeclaration.Length = funcIdx[3] - funcIdx[2]
+			funcDeclaration.Length = len(line)
 
 			FuncDeclarationsArray = append(FuncDeclarationsArray, funcDeclaration)
 

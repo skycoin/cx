@@ -43,3 +43,16 @@ func BenchmarkPackageloaderRedis(b *testing.B) {
 		}
 	}
 }
+
+func BenchmarkPackageloaderNoSave(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		actions.AST = nil
+
+		_, sourceCode, _, rootDir := loader.ParseArgsForCX([]string{"./test_files/test.cx"}, true)
+
+		_, err := loader.LoadCXProgramNoSave(sourceCode, rootDir)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}

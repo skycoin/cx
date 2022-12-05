@@ -54,3 +54,22 @@ func BenchmarkDeclarationExtractorRedis(b *testing.B) {
 
 	}
 }
+
+func BenchmarkDeclarationExtractorNoSave(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		actions.AST = nil
+
+		_, sourceCode, _, rootDir := loader.ParseArgsForCX([]string{"./test_files/test.cx"}, true)
+
+		files, err := loader.LoadCXProgramNoSave(sourceCode, rootDir)
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		_, _, _, _, _, _, gotErr := declaration_extractor.ExtractAllDeclarations(files)
+		if gotErr != nil {
+			b.Fatal(gotErr)
+		}
+
+	}
+}
