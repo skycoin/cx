@@ -151,5 +151,5 @@ else
 	mkdir -p $(PWD)/cmd/cxbenchmark/bin/
 	rm -f $(PWD)/cmd/cxbenchmark/bin/$(CXEXE)
 	cp $(PWD)/bin/$(CXEXE) $(PWD)/cmd/cxbenchmark/bin/
-	go test $(PWD)/cmd/cxbenchmark -run BenchmarkCX -tags ptr32 -count=10 -bench=.
+	go test $(PWD)/cmd/cxbenchmark -run BenchmarkCX -tags ptr32 -count=10 -bench=. -benchmem
 endif

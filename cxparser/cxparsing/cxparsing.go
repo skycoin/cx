@@ -3,6 +3,7 @@ package cxparsering
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"os"
 
 	"github.com/skycoin/cx/cmd/declaration_extractor"
@@ -51,12 +52,12 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string, rootDir []string
 		Copy the contents of the file pointers containing the CX source
 		code into sourceCodeStrings
 	*/
-	// sourceCodeStrings := make([]string, len(files))
-	// for i, source := range files {
-	// 	tmp := bytes.NewBuffer(nil)
-	// 	io.Copy(tmp, bytes.NewReader(source.Content))
-	// 	sourceCodeStrings[i] = tmp.String()
-	// }
+	sourceCodeStrings := make([]string, len(files))
+	for i, source := range files {
+		tmp := bytes.NewBuffer(nil)
+		io.Copy(tmp, bytes.NewReader(source.Content))
+		sourceCodeStrings[i] = tmp.String()
+	}
 
 	/*
 		We need to traverse the elements by hierarchy first add all the
@@ -113,7 +114,7 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string, rootDir []string
 	 The pass two of parsing that generates the actual output.
 	*/
 
-	for i, source := range files {
+	for i, source := range sourceCodeStrings {
 
 		/*
 			Because of an unkown reason, sometimes some CX programs
@@ -121,11 +122,11 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string, rootDir []string
 			Adding a newline character solves this.
 		*/
 
-		source.Content = append(source.Content, '\n')
+		source = source + "\n"
 
 		actions.LineNo = 1
 
-		b := bytes.NewBufferString(string(source.Content))
+		b := bytes.NewBufferString(source)
 
 		if len(files) > 0 {
 			actions.CurrentFile = files[i].FileName
