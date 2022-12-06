@@ -455,10 +455,12 @@ func TestLoadCXProgram(t *testing.T) {
 	for _, testcase := range tests {
 		t.Run(testcase.Scenario, func(t *testing.T) {
 			_, sourceCodes, _, rootDir := loader.ParseArgsForCX([]string{testcase.FilesPath}, true)
-			err := loader.LoadCXProgram("test", sourceCodes, rootDir, testcase.Database)
+			files, err := loader.LoadCXProgramNoSave(sourceCodes, rootDir)
 			if err != nil {
 				t.Error(err)
 			}
+			t.Error(files)
+
 		})
 	}
 }
