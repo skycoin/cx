@@ -29,7 +29,6 @@ func LoadCXProgramNoSave(sourceCode []*os.File, rootDir []string) (files []*File
 		return files, err
 	}
 
-	var mx sync.Mutex
 	importMap := make(map[string][]string)
 
 	sourceCodes, ok := fileMap["main"]
@@ -39,7 +38,7 @@ func LoadCXProgramNoSave(sourceCode []*os.File, rootDir []string) (files []*File
 
 	// Dependency loops are checked before adding to DB
 	// Step 9
-	err = checkImports("main", sourceCodes, importMap, &mx)
+	err = checkImports("main", sourceCodes, importMap)
 	if err != nil {
 		return files, err
 	}
@@ -52,7 +51,7 @@ func LoadCXProgramNoSave(sourceCode []*os.File, rootDir []string) (files []*File
 	files = append(files, fileStructs...)
 
 	// load the imported packages
-	err = loadImportPackagesNoSave(&files, "main", fileMap, importMap, &mx)
+	err = loadImportPackagesNoSave(&files, "main", fileMap, importMap)
 	if err != nil {
 		return files, err
 	}
@@ -68,7 +67,7 @@ func LoadCXProgramNoSave(sourceCode []*os.File, rootDir []string) (files []*File
 //		5. database - "redis" or "bolt"
 //
 // This function works recursively, loading the import packages and then loading import packages of imports
-func loadImportPackagesNoSave(fileList *[]*File, importName string, fileMap map[string][]*os.File, importMap map[string][]string, mx *sync.Mutex) error {
+func loadImportPackagesNoSave(fileList *[]*File, importName string, fileMap map[string][]*os.File, importMap map[string][]string) error {
 
 	errChannel := make(chan error, len(importMap))
 
@@ -78,7 +77,7 @@ func loadImportPackagesNoSave(fileList *[]*File, importName string, fileMap map[
 
 		wg.Add(1)
 
-		go func(fileList *[]*File, imprt string, fileMap map[string][]*os.File, importMap map[string][]string, errChannel chan error, wg *sync.WaitGroup, mx *sync.Mutex) {
+		go func(fileList *[]*File, imprt string, fileMap map[string][]*os.File, importMap map[string][]string, errChannel chan error, wg *sync.WaitGroup) {
 			defer wg.Done()
 			files, ok := fileMap[imprt]
 
@@ -109,7 +108,7 @@ func loadImportPackagesNoSave(fileList *[]*File, importName string, fileMap map[
 				return
 			}
 
-			err := checkImports(imprt, files, importMap, mx)
+			err := checkImports(imprt, files, importMap)
 			if err != nil {
 				errChannel <- err
 				return
@@ -124,13 +123,13 @@ func loadImportPackagesNoSave(fileList *[]*File, importName string, fileMap map[
 			*fileList = append(*fileList, fileStructList...)
 
 			// Call itself for loading imports of the import
-			err = loadImportPackagesNoSave(fileList, imprt, fileMap, importMap, mx)
+			err = loadImportPackagesNoSave(fileList, imprt, fileMap, importMap)
 			if err != nil {
 				errChannel <- err
 				return
 			}
 
-		}(fileList, imprt, fileMap, importMap, errChannel, &wg, mx)
+		}(fileList, imprt, fileMap, importMap, errChannel, &wg)
 
 	}
 

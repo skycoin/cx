@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"fmt"
 	"path/filepath"
-	"regexp"
 )
 
 // All units for offset/length are in counted in bytes
@@ -25,9 +24,6 @@ func ExtractGlobals(source []byte, fileName string) ([]GlobalDeclaration, error)
 	var pkg string
 
 	//Regexs
-	reName := regexp.MustCompile(`[_a-zA-Z]\w*`)
-	reBodyOpen := regexp.MustCompile("{")
-	reBodyClose := regexp.MustCompile("}")
 
 	reader := bytes.NewReader(source)
 	scanner := bufio.NewScanner(reader)

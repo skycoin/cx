@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"fmt"
 	"path/filepath"
-	"regexp"
 )
 
 type ImportDeclaration struct {
@@ -19,9 +18,6 @@ func ExtractImports(source []byte, fileName string) ([]ImportDeclaration, error)
 
 	var ImportDeclarationsArray []ImportDeclaration
 	var pkg string
-
-	//Regexs
-	reName := regexp.MustCompile(`[_a-zA-Z]\w*`)
 
 	reader := bytes.NewReader(source)
 	scanner := bufio.NewScanner(reader)

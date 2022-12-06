@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"fmt"
 	"path/filepath"
-	"regexp"
 )
 
 type TypeDefinitionDeclaration struct {
@@ -20,10 +19,6 @@ type TypeDefinitionDeclaration struct {
 func ExtractTypeDefinitions(source []byte, fileName string) ([]TypeDefinitionDeclaration, error) {
 	var TypeDefinitionDeclarationsArray []TypeDefinitionDeclaration
 	var pkg string
-
-	// Regexes
-	reName := regexp.MustCompile(`[_a-zA-Z]\w*`)
-	reTypeDefinition := regexp.MustCompile(`type\s+([_a-zA-Z][_a-zA-Z0-9]*)\s+([_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*)`)
 
 	reader := bytes.NewReader(source)
 	scanner := bufio.NewScanner(reader)
