@@ -11,7 +11,7 @@ import (
 
 var DBPath string
 
-func init() {
+func Start() {
 	path, err := os.Executable()
 	if err != nil {
 		log.Fatal(err)

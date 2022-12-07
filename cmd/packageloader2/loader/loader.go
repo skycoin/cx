@@ -109,6 +109,13 @@ func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCod
 
 func LoadCXProgram(programName string, sourceCode []*os.File, rootDir []string, database string) (err error) {
 
+	switch database {
+	case "redis":
+		redis.Start()
+	case "bolt":
+		bolt.Start()
+	}
+
 	var packageListStruct PackageList
 
 	// If it's a single file program with all the packages in one file

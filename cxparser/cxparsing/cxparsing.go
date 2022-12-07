@@ -43,7 +43,7 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string, rootDir []string
 	// 	parseErrors++
 	// }
 
-	// files, err := file_output.GetImportFiles("test", "bolt")
+	// files, err := file_output.GetImportFiles("test", "redis")
 	// if err != nil {
 	// 	fmt.Print(err)
 	// 	parseErrors++
