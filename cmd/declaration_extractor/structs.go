@@ -87,7 +87,7 @@ func ExtractStructs(source []byte, fileName string) ([]StructDeclaration, error)
 
 		}
 
-		if match := reRightBrace.FindIndex(line); match != nil && inBlock {
+		if contains(tokens, []byte("}")) && inBlock {
 
 			inBlock = false
 			structDeclaration.StructFields = structFieldsArray

@@ -53,12 +53,12 @@ func ExtractGlobals(source []byte, fileName string) ([]GlobalDeclaration, error)
 		}
 
 		// if {  is found increment body depth
-		if locs := reBodyOpen.FindAllIndex(line, -1); locs != nil {
+		if containsC(tokens, []byte("{")) {
 			inBlock++
 		}
 
 		// if } is found decrement body depth
-		if locs := reBodyClose.FindAllIndex(line, -1); locs != nil {
+		if containsC(tokens, []byte("}")) {
 			inBlock--
 		}
 

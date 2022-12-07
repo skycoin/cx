@@ -54,22 +54,23 @@ func ExtractEnums(source []byte, fileName string) ([]EnumDeclaration, error) {
 
 		// initialize enum, increment parenthesis depth and skip to next line
 		// if const ( is found
-		if locs := reEnumInit.FindAllIndex(line, -1); locs != nil {
+		if locs := reEnumInit.FindIndex(line); locs != nil {
 			EnumInit = true
 			currentOffset += len(line) // increments the currentOffset by line len
 			continue
 		}
 
 		// if ) is found and enum intialized, decrement parenthesis depth
-		if locs := rePrtsClose.FindAllIndex(line, -1); locs != nil && EnumInit {
+		if contains(tokens, []byte(")")) && EnumInit {
 			EnumInit = false
 			Type = ""
 			Index = 0
 		}
 
 		// if match is found and enum initialized and parenthesis depth is 1
-		if enumDec := reEnumDec.FindSubmatch(line); enumDec != nil && EnumInit {
+		if len(tokens) > 0 && EnumInit {
 
+			enumDec := reEnumDec.FindSubmatch(line)
 			if !bytes.Equal(enumDec[0], bytes.TrimSpace(line)) {
 				return EnumDeclarationsArray, fmt.Errorf("%v:%v: syntax error: enum declaration", filepath.Base(fileName), lineno)
 			}

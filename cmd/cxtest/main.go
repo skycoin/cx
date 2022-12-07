@@ -126,7 +126,7 @@ func Execute(c *cli.Context) error {
 	fmt.Printf("%d were successful\n", tester.TestSuccess)
 	fmt.Printf("%d failed\n", tester.TestCount-tester.TestSuccess)
 	fmt.Printf("%d skipped\n", tester.TestSkipped)
-	fmt.Printf("Test took %v", timerTime)
+	fmt.Printf("Test took %v\n", timerTime)
 
 	if tester.TestCount == 0 || (tester.TestSuccess != tester.TestCount) {
 		return errors.New("not all test succeeded")

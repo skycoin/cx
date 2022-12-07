@@ -37,19 +37,24 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string, rootDir []string
 
 	parseErrors := 0
 
-	// err := loader.LoadCXProgram("main", sourceCode, rootDir, "redis")
+	// err := loader.LoadCXProgram("main", sourceCode, rootDir, "bolt")
 	// if err != nil {
 	// 	fmt.Print(err)
 	// 	parseErrors++
 	// }
 
-	profiling.StartProfile("PackageLoader")
+	// files, err := file_output.GetImportFiles("test", "bolt")
+	// if err != nil {
+	// 	fmt.Print(err)
+	// 	parseErrors++
+	// }
+
 	files, err := loader.LoadCXProgramNoSave(sourceCode, rootDir)
 	if err != nil {
 		fmt.Print(err)
 		parseErrors++
 	}
-	profiling.StopProfile("PackageLoader")
+
 	/*
 		Copy the contents of the file pointers containing the CX source
 		code into sourceCodeStrings
@@ -74,7 +79,6 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string, rootDir []string
 
 	// actions.AST = cxpartialparsing.Program
 
-	profiling.StartProfile("DeclarationExtractor")
 	Imports, Globals, Enums, TypeDefinitions, Structs, Funcs, err := declaration_extractor.ExtractAllDeclarations(files)
 	if err != nil {
 		fmt.Print(err)
@@ -84,15 +88,12 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string, rootDir []string
 	if Enums != nil && TypeDefinitions != nil {
 
 	}
-	profiling.StopProfile("DeclarationExtractor")
 
-	profiling.StartProfile("TypeChecker")
 	err = type_checker.ParseAllDeclarations(files, Imports, Globals, Structs, Funcs)
 	if err != nil {
 		fmt.Print(err)
 		parseErrors++
 	}
-	profiling.StopProfile("TypeChecker")
 
 	if globals.FoundCompileErrors || parseErrors > 0 {
 		profiling.CleanupAndExit(constants.CX_COMPILATION_ERROR)

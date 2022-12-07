@@ -119,3 +119,12 @@ func contains(list [][]byte, element []byte) bool {
 	}
 	return false
 }
+
+func containsC(list [][]byte, element []byte) bool {
+	for _, item := range list {
+		if bytes.Contains(item, element) {
+			return true
+		}
+	}
+	return false
+}
