@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"fmt"
 	"path/filepath"
-	"regexp"
 )
 
 type EnumDeclaration struct {
@@ -23,13 +22,6 @@ func ExtractEnums(source []byte, fileName string) ([]EnumDeclaration, error) {
 
 	var EnumDeclarationsArray []EnumDeclaration
 	var pkg string
-
-	//Regexes
-	rePkg := regexp.MustCompile(`^(?:.+\s+|\s*)package(?:\s+[\S\s]+|\s*)$`)
-	rePkgName := regexp.MustCompile(`package\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
-	reEnumInit := regexp.MustCompile(`const\s+\(`)
-	rePrtsClose := regexp.MustCompile(`\)`)
-	reEnumDec := regexp.MustCompile(`([_a-zA-Z][_a-zA-Z0-9]*)(?:\s+([_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*)){0,1}(?:\s*\=\s*[\s\S]+\S+){0,1}`)
 
 	reader := bytes.NewReader(source)
 	scanner := bufio.NewScanner(reader)

@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"fmt"
 	"path/filepath"
-	"regexp"
 )
 
 type StructDeclaration struct {
@@ -29,15 +28,6 @@ func ExtractStructs(source []byte, fileName string) ([]StructDeclaration, error)
 
 	var StructDeclarationsArray []StructDeclaration
 	var pkg string
-
-	// Regexes
-	reNotSpace := regexp.MustCompile(`\S+`)
-	rePkg := regexp.MustCompile(`^(?:.+\s+|\s*)package(?:\s+[\S\s]+|\s*)$`)
-	rePkgName := regexp.MustCompile(`package\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
-	reStruct := regexp.MustCompile(`type\s+[_a-zA-Z][_a-zA-Z0-9]*\s+struct`)
-	reStructHeader := regexp.MustCompile(`type\s+([_a-zA-Z][_a-zA-Z0-9]*)\s+struct\s*{`)
-	reRightBrace := regexp.MustCompile("}")
-	reStructField := regexp.MustCompile(`([_a-zA-Z][_a-zA-Z0-9]*)\s+\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]\*{0,1}){0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*`)
 
 	reader := bytes.NewReader(source)
 	scanner := bufio.NewScanner(reader)

@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"fmt"
 	"path/filepath"
-	"regexp"
 )
 
 // All units for offset/length are in counted in bytes
@@ -23,14 +22,6 @@ func ExtractGlobals(source []byte, fileName string) ([]GlobalDeclaration, error)
 
 	var GlobalDeclarationsArray []GlobalDeclaration
 	var pkg string
-
-	//Regexs
-	rePkg := regexp.MustCompile(`^(?:.+\s+|\s*)package(?:\s+[\S\s]+|\s*)$`)
-	rePkgName := regexp.MustCompile(`package\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
-	reGlobal := regexp.MustCompile(`^(?:.+\s+|\s*)var(?:\s+[\S\s]+|\s*)$`)
-	reGlobalName := regexp.MustCompile(`var\s+([_a-zA-Z]\w*)\s+\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]){0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*(?:\s*\=\s*[\s\S]+\S+){0,1}`)
-	reBodyOpen := regexp.MustCompile("{")
-	reBodyClose := regexp.MustCompile("}")
 
 	reader := bytes.NewReader(source)
 	scanner := bufio.NewScanner(reader)
@@ -59,12 +50,12 @@ func ExtractGlobals(source []byte, fileName string) ([]GlobalDeclaration, error)
 		}
 
 		// if {  is found increment body depth
-		if locs := reBodyOpen.FindAllIndex(line, -1); locs != nil {
+		if locs := reLeftBrace.FindAllIndex(line, -1); locs != nil {
 			inBlock++
 		}
 
 		// if } is found decrement body depth
-		if locs := reBodyClose.FindAllIndex(line, -1); locs != nil {
+		if locs := reRightBrace.FindAllIndex(line, -1); locs != nil {
 			inBlock--
 		}
 
