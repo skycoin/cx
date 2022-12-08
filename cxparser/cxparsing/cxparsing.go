@@ -14,7 +14,6 @@ import (
 	"github.com/skycoin/cx/cx/types"
 
 	"github.com/skycoin/cx/cxparser/actions"
-	cxpartialparsing "github.com/skycoin/cx/cxparser/cxpartialparsing"
 	"github.com/skycoin/cx/cxparser/util/profiling"
 )
 
@@ -33,7 +32,7 @@ import (
 func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 
 	//local
-	cxpartialparsing.Program = actions.AST
+	// cxpartialparsing.Program = actions.AST
 
 	/*
 		Copy the contents of the file pointers containing the CX source
@@ -54,20 +53,22 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 	*/
 	parseErrors := 0
 	if len(sourceCode) > 0 {
-		Imports, Globals, Enums, TypeDefinitions, Structs, Funcs, err := declaration_extractor.ExtractAllDeclarations(sourceCode)
-		if (Enums != nil && TypeDefinitions != nil) || err != nil {
-			parseErrors++
-			fmt.Println(err)
-		}
-
-		err = type_checker.ParseAllDeclarations(Imports, Globals, Structs, Funcs)
-		if err != nil {
-			parseErrors++
-			fmt.Println(err)
-		}
+		parseErrors = Preliminarystage(sourceCodeStrings, fileNames)
 	}
 
-	actions.AST = cxpartialparsing.Program
+	Imports, Globals, Enums, TypeDefinitions, Structs, Funcs, err := declaration_extractor.ExtractAllDeclarations(sourceCode)
+	if (Enums != nil && TypeDefinitions != nil) || err != nil {
+		parseErrors++
+		fmt.Println(err)
+	}
+
+	err = type_checker.ParseAllDeclarations(Imports, Globals, Structs, Funcs)
+	if err != nil {
+		parseErrors++
+		fmt.Println(err)
+	}
+
+	// actions.AST = cxpartialparsing.Program
 
 	if globals.FoundCompileErrors || parseErrors > 0 {
 		profiling.CleanupAndExit(constants.CX_COMPILATION_ERROR)

@@ -66,7 +66,17 @@ func ReDeclarationCheck(Import []ImportDeclaration, Glbl []GlobalDeclaration, En
 	for i := 0; i < len(Func); i++ {
 		for j := i + 1; j < len(Func); j++ {
 			if Func[i].FuncName == Func[j].FuncName && Func[i].PackageID == Func[j].PackageID {
-				return fmt.Errorf("%v:%v: redeclaration error: func: %v", filepath.Base(Func[j].FileID), Func[j].LineNumber, Func[i].FuncName)
+				funcMethod1, err := ExtractMethod(Func[i])
+				if err != nil {
+					return err
+				}
+				funcMethod2, err := ExtractMethod(Func[j])
+				if err != nil {
+					return err
+				}
+				if funcMethod1 == funcMethod2 {
+					return fmt.Errorf("%v:%v: redeclaration error: func: %v", filepath.Base(Func[j].FileID), Func[j].LineNumber, Func[i].FuncName)
+				}
 			}
 		}
 	}

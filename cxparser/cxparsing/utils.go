@@ -10,16 +10,14 @@ import (
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/globals"
 	cxpackages "github.com/skycoin/cx/cx/packages"
-	"github.com/skycoin/cx/cx/types"
 	"github.com/skycoin/cx/cxparser/actions"
-	cxpartialparsing "github.com/skycoin/cx/cxparser/cxpartialparsing"
 	"github.com/skycoin/cx/cxparser/util/profiling"
 )
 
 // preliminarystage performs a first pass for the CX cxgo. Globals, packages and
 // custom types are added to `cxpartialparsing.Program`.
 func Preliminarystage(srcStrs, srcNames []string) int {
-	var prePkg *ast.CXPackage
+	// var prePkg *ast.CXPackage
 	parseErrors := 0
 
 	reMultiCommentOpen := regexp.MustCompile(`/\*`)
@@ -28,14 +26,14 @@ func Preliminarystage(srcStrs, srcNames []string) int {
 
 	rePkg := regexp.MustCompile("package")
 	rePkgName := regexp.MustCompile(`(^|[\s])package\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
-	reStrct := regexp.MustCompile("type")
-	reStrctName := regexp.MustCompile(`(^|[\s])type\s+([_a-zA-Z][_a-zA-Z0-9]*)?\s`)
+	// reStrct := regexp.MustCompile("type")
+	// reStrctName := regexp.MustCompile(`(^|[\s])type\s+([_a-zA-Z][_a-zA-Z0-9]*)?\s`)
 
-	reGlbl := regexp.MustCompile("var")
-	reGlblName := regexp.MustCompile(`(^|[\s])var\s([_a-zA-Z][_a-zA-Z0-9]*)`)
+	// reGlbl := regexp.MustCompile("var")
+	// reGlblName := regexp.MustCompile(`(^|[\s])var\s([_a-zA-Z][_a-zA-Z0-9]*)`)
 
-	reBodyOpen := regexp.MustCompile("{")
-	reBodyClose := regexp.MustCompile("}")
+	// reBodyOpen := regexp.MustCompile("{")
+	// reBodyClose := regexp.MustCompile("}")
 
 	reImp := regexp.MustCompile("import")
 	reImpName := regexp.MustCompile(`(^|[\s])import\s+"([_a-zA-Z][_a-zA-Z0-9/-]*)"`)
@@ -80,41 +78,41 @@ func Preliminarystage(srcStrs, srcNames []string) int {
 				}
 
 				if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
-					if pkg, err := cxpartialparsing.Program.GetPackage(match[len(match)-1]); err != nil {
+					if _, err := actions.AST.GetPackage(match[len(match)-1]); err != nil {
 						// then it hasn't been added
 						newPkg := ast.MakePackage(match[len(match)-1])
-						pkgIdx := cxpartialparsing.Program.AddPackage(newPkg)
-						newPkg, err = cxpartialparsing.Program.GetPackageFromArray(pkgIdx)
+						pkgIdx := actions.AST.AddPackage(newPkg)
+						newPkg, err = actions.AST.GetPackageFromArray(pkgIdx)
 						if err != nil {
 							panic(err)
 						}
-						prePkg = newPkg
+						// prePkg = newPkg
 					} else {
-						prePkg = pkg
+						// prePkg = pkg
 					}
 				}
 			}
 
-			// 1-b. Identify all the structs
-			if loc := reStrct.FindIndex(line); loc != nil {
-				if (commentLoc != nil && commentLoc[0] < loc[0]) ||
-					(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
-					(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
-					// then it's commented out
-					continue
-				}
+			// // 1-b. Identify all the structs
+			// if loc := reStrct.FindIndex(line); loc != nil {
+			// 	if (commentLoc != nil && commentLoc[0] < loc[0]) ||
+			// 		(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
+			// 		(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
+			// 		// then it's commented out
+			// 		continue
+			// 	}
 
-				if match := reStrctName.FindStringSubmatch(string(line)); match != nil {
-					if prePkg == nil {
-						println(ast.CompilationError(srcName, lineno),
-							"No package defined")
-					} else if _, err := cxpartialparsing.Program.GetStruct(match[len(match)-1], prePkg.Name); err != nil {
-						// then it hasn't been added
-						strct := ast.MakeStruct(match[len(match)-1])
-						prePkg.AddStruct(cxpartialparsing.Program, strct)
-					}
-				}
-			}
+			// 	if match := reStrctName.FindStringSubmatch(string(line)); match != nil {
+			// 		if prePkg == nil {
+			// 			println(ast.CompilationError(srcName, lineno),
+			// 				"No package defined")
+			// 		} else if _, err := cxpartialparsing.Program.GetStruct(match[len(match)-1], prePkg.Name); err != nil {
+			// 			// then it hasn't been added
+			// 			strct := ast.MakeStruct(match[len(match)-1])
+			// 			prePkg.AddStruct(cxpartialparsing.Program, strct)
+			// 		}
+			// 	}
+			// }
 		}
 		profiling.StopProfile(srcName)
 	} // for range srcStrs
@@ -127,7 +125,7 @@ func Preliminarystage(srcStrs, srcNames []string) int {
 	for i, source := range srcStrs {
 		profiling.StartProfile(srcNames[i])
 		// inBlock needs to be 0 to guarantee that we're in the global scope
-		var inBlock int
+		// var inBlock int
 		var commentedCode bool
 
 		scanner := bufio.NewScanner(strings.NewReader(source))
@@ -166,7 +164,7 @@ func Preliminarystage(srcStrs, srcNames []string) int {
 				if match := reImpName.FindStringSubmatch(string(line)); match != nil {
 					pkgName := match[len(match)-1]
 					// Checking if `pkgName` already exists and if it's not a standard library package.
-					if _, err := cxpartialparsing.Program.GetPackage(pkgName); err != nil && !cxpackages.IsDefaultPackage(pkgName) {
+					if _, err := actions.AST.GetPackage(pkgName); err != nil && !cxpackages.IsDefaultPackage(pkgName) {
 						// _, sourceCode, srcNames := ParseArgsForCX([]string{fmt.Sprintf("%s%s", SRCPATH, pkgName)}, false)
 						_, sourceCode, fileNames := ast.ParseArgsForCX([]string{filepath.Join(globals.SRCPATH, pkgName)}, false)
 						ParseSourceCode(sourceCode, fileNames)
@@ -174,100 +172,100 @@ func Preliminarystage(srcStrs, srcNames []string) int {
 				}
 			}
 
-			// we search for packages at the same time, so we can know to what package to add the global
-			if loc := rePkg.FindIndex(line); loc != nil {
-				if (commentLoc != nil && commentLoc[0] < loc[0]) ||
-					(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
-					(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
-					// then it's commented out
-					continue
-				}
+			// // we search for packages at the same time, so we can know to what package to add the global
+			// if loc := rePkg.FindIndex(line); loc != nil {
+			// 	if (commentLoc != nil && commentLoc[0] < loc[0]) ||
+			// 		(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
+			// 		(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
+			// 		// then it's commented out
+			// 		continue
+			// 	}
 
-				if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
-					if pkg, err := cxpartialparsing.Program.GetPackage(match[len(match)-1]); err != nil {
-						// then it hasn't been added
-						prePkg = ast.MakePackage(match[len(match)-1])
-						pkgIdx := cxpartialparsing.Program.AddPackage(prePkg)
-						prePkg, err = cxpartialparsing.Program.GetPackageFromArray(pkgIdx)
-						if err != nil {
-							panic(err)
-						}
-					} else {
-						prePkg = pkg
-					}
-				}
-			}
+			// 	if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
+			// 		if pkg, err := cxpartialparsing.Program.GetPackage(match[len(match)-1]); err != nil {
+			// 			// then it hasn't been added
+			// 			prePkg = ast.MakePackage(match[len(match)-1])
+			// 			pkgIdx := cxpartialparsing.Program.AddPackage(prePkg)
+			// 			prePkg, err = cxpartialparsing.Program.GetPackageFromArray(pkgIdx)
+			// 			if err != nil {
+			// 				panic(err)
+			// 			}
+			// 		} else {
+			// 			prePkg = pkg
+			// 		}
+			// 	}
+			// }
 
-			if locs := reBodyOpen.FindAllIndex(line, -1); locs != nil {
-				for _, loc := range locs {
-					if !(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
-						// then it's outside of a */, e.g. `*/ }`
-						if (commentLoc == nil && multiCommentOpenLoc == nil && multiCommentCloseLoc == nil) ||
-							(commentLoc != nil && commentLoc[0] > loc[0]) ||
-							(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] > loc[0]) ||
-							(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] < loc[0]) {
-							// then we have an uncommented opening bracket
-							inBlock++
-						}
-					}
-				}
-			}
-			if locs := reBodyClose.FindAllIndex(line, -1); locs != nil {
-				for _, loc := range locs {
-					if !(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
-						if (commentLoc == nil && multiCommentOpenLoc == nil && multiCommentCloseLoc == nil) ||
-							(commentLoc != nil && commentLoc[0] > loc[0]) ||
-							(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] > loc[0]) ||
-							(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] < loc[0]) {
-							// then we have an uncommented closing bracket
-							inBlock--
-						}
-					}
-				}
-			}
+			// if locs := reBodyOpen.FindAllIndex(line, -1); locs != nil {
+			// 	for _, loc := range locs {
+			// 		if !(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
+			// 			// then it's outside of a */, e.g. `*/ }`
+			// 			if (commentLoc == nil && multiCommentOpenLoc == nil && multiCommentCloseLoc == nil) ||
+			// 				(commentLoc != nil && commentLoc[0] > loc[0]) ||
+			// 				(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] > loc[0]) ||
+			// 				(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] < loc[0]) {
+			// 				// then we have an uncommented opening bracket
+			// 				inBlock++
+			// 			}
+			// 		}
+			// 	}
+			// }
+			// if locs := reBodyClose.FindAllIndex(line, -1); locs != nil {
+			// 	for _, loc := range locs {
+			// 		if !(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
+			// 			if (commentLoc == nil && multiCommentOpenLoc == nil && multiCommentCloseLoc == nil) ||
+			// 				(commentLoc != nil && commentLoc[0] > loc[0]) ||
+			// 				(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] > loc[0]) ||
+			// 				(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] < loc[0]) {
+			// 				// then we have an uncommented closing bracket
+			// 				inBlock--
+			// 			}
+			// 		}
+			// 	}
+			// }
 
-			// we could have this situation: {var local i32}
-			// but we don't care about this, as the later passes will throw an error as it's invalid syntax
+			// // we could have this situation: {var local i32}
+			// // but we don't care about this, as the later passes will throw an error as it's invalid syntax
 
-			if loc := rePkg.FindIndex(line); loc != nil {
-				if (commentLoc != nil && commentLoc[0] < loc[0]) ||
-					(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
-					(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
-					// then it's commented out
-					continue
-				}
+			// if loc := rePkg.FindIndex(line); loc != nil {
+			// 	if (commentLoc != nil && commentLoc[0] < loc[0]) ||
+			// 		(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
+			// 		(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
+			// 		// then it's commented out
+			// 		continue
+			// 	}
 
-				if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
-					if pkg, err := cxpartialparsing.Program.GetPackage(match[len(match)-1]); err != nil {
-						// it should be already present
-						panic(err)
-					} else {
-						prePkg = pkg
-					}
-				}
-			}
+			// 	if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
+			// 		if pkg, err := cxpartialparsing.Program.GetPackage(match[len(match)-1]); err != nil {
+			// 			// it should be already present
+			// 			panic(err)
+			// 		} else {
+			// 			prePkg = pkg
+			// 		}
+			// 	}
+			// }
 
-			// finally, if we read a "var" and we're in global scope, we add the global without any type
-			// the type will be determined later on
-			if loc := reGlbl.FindIndex(line); loc != nil {
-				if (commentLoc != nil && commentLoc[0] < loc[0]) ||
-					(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
-					(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) || inBlock != 0 {
-					// then it's commented out or inside a block
-					continue
-				}
-				if match := reGlblName.FindStringSubmatch(string(line)); match != nil {
-					if _, err := prePkg.GetGlobal(actions.AST, match[len(match)-1]); err != nil {
-						// then it hasn't been added
-						arg := ast.MakeArgument(match[len(match)-1], "", 0)
-						arg.Offset = types.InvalidPointer
-						arg.Package = ast.CXPackageIndex(prePkg.Index)
-						argIdx := actions.AST.AddCXArgInArray(arg)
+			// // finally, if we read a "var" and we're in global scope, we add the global without any type
+			// // the type will be determined later on
+			// if loc := reGlbl.FindIndex(line); loc != nil {
+			// 	if (commentLoc != nil && commentLoc[0] < loc[0]) ||
+			// 		(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
+			// 		(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) || inBlock != 0 {
+			// 		// then it's commented out or inside a block
+			// 		continue
+			// 	}
+			// 	if match := reGlblName.FindStringSubmatch(string(line)); match != nil {
+			// 		if _, err := prePkg.GetGlobal(actions.AST, match[len(match)-1]); err != nil {
+			// 			// then it hasn't been added
+			// 			arg := ast.MakeArgument(match[len(match)-1], "", 0)
+			// 			arg.Offset = types.InvalidPointer
+			// 			arg.Package = ast.CXPackageIndex(prePkg.Index)
+			// 			argIdx := actions.AST.AddCXArgInArray(arg)
 
-						prePkg.AddGlobal(actions.AST, argIdx)
-					}
-				}
-			}
+			// 			prePkg.AddGlobal(actions.AST, argIdx)
+			// 		}
+			// 	}
+			// }
 		}
 		profiling.StopProfile(srcNames[i])
 	}
@@ -275,18 +273,18 @@ func Preliminarystage(srcStrs, srcNames []string) int {
 
 	profiling.StartProfile("3. cxpartialparsing")
 
-	for i, source := range srcStrs {
-		profiling.StartProfile(srcNames[i])
-		source = source + "\n"
-		if len(srcNames) > 0 {
-			cxpartialparsing.CurrentFileName = srcNames[i]
-		}
-		/*
-			passone
-		*/
-		parseErrors += Passone(source)
-		profiling.StopProfile(srcNames[i])
-	}
+	// for i, source := range srcStrs {
+	// 	profiling.StartProfile(srcNames[i])
+	// 	source = source + "\n"
+	// 	if len(srcNames) > 0 {
+	// 		cxpartialparsing.CurrentFileName = srcNames[i]
+	// 	}
+	// 	/*
+	// 		passone
+	// 	*/
+	// 	parseErrors += Passone(source)
+	// 	profiling.StopProfile(srcNames[i])
+	// }
 
 	profiling.StopProfile("3. cxpartialparsing")
 	return parseErrors
