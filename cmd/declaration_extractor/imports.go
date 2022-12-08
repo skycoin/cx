@@ -51,6 +51,10 @@ func ExtractImports(source []byte, fileName string) ([]ImportDeclaration, error)
 		checkLine := bytes.Split(line, []byte(" "))
 		if bytes.Equal(checkLine[0], []byte("import")) {
 
+			if pkg == "" {
+				return ImportDeclarationsArray, fmt.Errorf("%v:%v: syntax error: missing package", filepath.Base(fileName), lineno)
+			}
+
 			var tmp ImportDeclaration
 
 			tmp.PackageID = pkg

@@ -73,6 +73,10 @@ func ExtractGlobals(source []byte, fileName string) ([]GlobalDeclaration, error)
 			// if match is found and body depth is 0
 			if reGlobal.FindIndex(line) != nil {
 
+				if pkg == "" {
+					return GlobalDeclarationsArray, fmt.Errorf("%v:%v: syntax error: missing package", filepath.Base(fileName), lineno)
+				}
+
 				matchGlobal := reGlobalName.FindSubmatch(line)
 				matchGlobalIdx := reGlobalName.FindIndex(line)
 

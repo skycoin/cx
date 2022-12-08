@@ -77,6 +77,10 @@ func ExtractEnums(source []byte, fileName string) ([]EnumDeclaration, error) {
 		// if match is found and enum initialized and parenthesis depth is 1
 		if enumDec := reEnumDec.FindSubmatch(line); enumDec != nil && EnumInit {
 
+			if pkg == "" {
+				return EnumDeclarationsArray, fmt.Errorf("%v:%v: syntax error: missing package", filepath.Base(fileName), lineno)
+			}
+
 			if !bytes.Equal(enumDec[0], bytes.TrimSpace(line)) {
 				return EnumDeclarationsArray, fmt.Errorf("%v:%v: syntax error: enum declaration", filepath.Base(fileName), lineno)
 			}

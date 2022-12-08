@@ -74,6 +74,10 @@ func ExtractFuncs(source []byte, fileName string) ([]FuncDeclaration, error) {
 			funcBytes := reFuncDec.FindSubmatch(line)
 			funcIdx := reFuncDec.FindSubmatchIndex(line)
 
+			if pkg == "" {
+				return FuncDeclarationsArray, fmt.Errorf("%v:%v: syntax error: missing package", filepath.Base(fileName), lineno)
+			}
+
 			if funcBytes == nil || !bytes.Equal(funcBytes[0], bytes.TrimSpace(line)) {
 				return FuncDeclarationsArray, fmt.Errorf("%v:%v: syntax error: func declaration", filepath.Base(fileName), lineno)
 			}

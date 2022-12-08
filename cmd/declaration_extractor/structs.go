@@ -100,6 +100,10 @@ func ExtractStructs(source []byte, fileName string) ([]StructDeclaration, error)
 
 		if inBlock && structDeclaration.LineNumber < lineno {
 
+			if pkg == "" {
+				return StructDeclarationsArray, fmt.Errorf("%v:%v: syntax error: missing package", filepath.Base(fileName), lineno)
+			}
+
 			var structField StructField
 			matchStructField := reStructField.FindSubmatch(line)
 			matchStructFieldIdx := reStructField.FindSubmatchIndex(line)

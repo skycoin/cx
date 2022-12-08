@@ -54,6 +54,10 @@ func ExtractTypeDefinitions(source []byte, fileName string) ([]TypeDefinitionDec
 
 		if reType.Find(line) != nil {
 
+			if pkg == "" {
+				return TypeDefinitionDeclarationsArray, fmt.Errorf("%v:%v: syntax error: missing package", filepath.Base(fileName), lineno)
+			}
+
 			typeDefinition := reTypeDefinition.FindSubmatch(line)
 			typeDefinitionIdx := reTypeDefinition.FindSubmatchIndex(line)
 
