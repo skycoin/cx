@@ -2,10 +2,10 @@ package type_checker
 
 import (
 	"bytes"
+	"os"
 	"regexp"
 
 	"github.com/skycoin/cx/cmd/declaration_extractor"
-	"github.com/skycoin/cx/cmd/packageloader/loader"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cxparser/actions"
 )
@@ -13,7 +13,7 @@ import (
 // Parse Function Headers
 // - takes in funcs from cx/cmd/declaration_extractor
 // - adds func headers to AST
-func ParseFuncHeaders(files []*loader.File, funcs []declaration_extractor.FuncDeclaration) error {
+func ParseFuncHeaders(funcs []declaration_extractor.FuncDeclaration) error {
 
 	for _, fun := range funcs {
 
@@ -36,38 +36,48 @@ func ParseFuncHeaders(files []*loader.File, funcs []declaration_extractor.FuncDe
 
 		actions.AST.SelectPackage(fun.PackageID)
 
-		source, err := GetSourceBytes(files, fun.FileID)
+		source, err := os.ReadFile(fun.FileID)
 		if err != nil {
 			return err
 		}
 
 		funcDeclarationLine := source[fun.StartOffset : fun.StartOffset+fun.Length]
 
-		reFuncMethod := regexp.MustCompile(`func\s*\(\s*(.+)\s*\)\s*\S+\s*\(([\s\w,]*)\)(?:\s*\(([\s\w,]*)\))*`)
-		funcMethod := reFuncMethod.FindSubmatch(funcDeclarationLine)
+		reFuncMethod := regexp.MustCompile(`func\s*\(\s*.+\s*\)`)
+		funcMethod := reFuncMethod.Find(funcDeclarationLine)
+		reParams := regexp.MustCompile(`\(([\s\w\*\[\],]*)\)`)
+		params := reParams.FindAllSubmatch(funcDeclarationLine, -1)
 
 		if funcMethod != nil {
-			receiverArg, err := ParseParameterDeclaration(funcMethod[1], pkg, fun.FileID, fun.LineNumber)
+
+			receiverArg, err := ParseParameterDeclaration(params[0][1], pkg, fun.FileID, fun.LineNumber)
 			if err != nil {
 				return err
 			}
 
-			fnIdx := actions.FunctionHeader(actions.AST, fun.FuncName, []*ast.CXArgument{receiverArg}, true)
+			fnName := receiverArg.StructType.Name + "." + fun.FuncName
+
+			fn := ast.MakeFunction(fnName, actions.CurrentFile, fun.LineNumber)
+			_, fnIdx := pkg.AddFunction(actions.AST, fn)
+			newFn := actions.AST.GetFunctionFromArray(fnIdx)
+			newFn.AddInput(actions.AST, receiverArg)
 
 			var inputs []*ast.CXArgument
 			var outputs []*ast.CXArgument
 
-			if funcMethod[2] != nil && len(funcMethod[2]) != 0 {
-				inputs, err = ParseFuncParameters(funcMethod[2], pkg, fun.FileID, fun.LineNumber)
+			if params[1][1] != nil && len(params[1][1]) != 0 {
+				inputs, err = ParseFuncParameters(params[1][1], pkg, fun.FileID, fun.LineNumber)
 				if err != nil {
 					return err
 				}
 			}
 
-			if funcMethod[3] != nil && len(funcMethod[3]) != 0 {
-				outputs, err = ParseFuncParameters(funcMethod[3], pkg, fun.FileID, fun.LineNumber)
-				if err != nil {
-					return err
+			if len(params) == 3 {
+				if params[2][1] != nil && len(params[2][1]) != 0 {
+					outputs, err = ParseFuncParameters(params[2][1], pkg, fun.FileID, fun.LineNumber)
+					if err != nil {
+						return err
+					}
 				}
 			}
 
@@ -75,25 +85,25 @@ func ParseFuncHeaders(files []*loader.File, funcs []declaration_extractor.FuncDe
 
 		} else {
 
-			reFuncRegular := regexp.MustCompile(`func\s*\S+\s*\(([\s\w,]*)\)(?:\s*\(([\s\w,]*)\))*`)
-			funcRegular := reFuncRegular.FindSubmatch(funcDeclarationLine)
-
-			fnIdx := actions.FunctionHeader(actions.AST, fun.FuncName, nil, false)
+			fn := ast.MakeFunction(fun.FuncName, fun.FileID, fun.LineNumber)
+			_, fnIdx := pkg.AddFunction(actions.AST, fn)
 
 			var inputs []*ast.CXArgument
 			var outputs []*ast.CXArgument
 
-			if funcRegular[1] != nil && len(funcRegular[1]) != 0 {
-				inputs, err = ParseFuncParameters(funcRegular[1], pkg, fun.FileID, fun.LineNumber)
+			if params[0][1] != nil && len(params[0][1]) != 0 {
+				inputs, err = ParseFuncParameters(params[0][1], pkg, fun.FileID, fun.LineNumber)
 				if err != nil {
 					return err
 				}
 			}
 
-			if funcRegular[2] != nil && len(funcRegular[2]) != 0 {
-				outputs, err = ParseFuncParameters(funcRegular[2], pkg, fun.FileID, fun.LineNumber)
-				if err != nil {
-					return err
+			if len(params) == 2 {
+				if params[1][1] != nil && len(params[1][1]) != 0 {
+					outputs, err = ParseFuncParameters(params[1][1], pkg, fun.FileID, fun.LineNumber)
+					if err != nil {
+						return err
+					}
 				}
 			}
 
@@ -101,6 +111,7 @@ func ParseFuncHeaders(files []*loader.File, funcs []declaration_extractor.FuncDe
 		}
 
 	}
+
 	return nil
 }
 

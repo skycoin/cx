@@ -2,10 +2,9 @@ package declaration_extractor
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"sync"
-
-	"github.com/skycoin/cx/cmd/packageloader/loader"
 )
 
 func ReDeclarationCheck(Import []ImportDeclaration, Glbl []GlobalDeclaration, Enum []EnumDeclaration, TypeDef []TypeDefinitionDeclaration, Strct []StructDeclaration, Func []FuncDeclaration) error {
@@ -102,7 +101,7 @@ func GetDeclarations(source []byte, Glbls []GlobalDeclaration, Enums []EnumDecla
 	return declarations
 }
 
-func ExtractAllDeclarations(source []*loader.File) ([]ImportDeclaration, []GlobalDeclaration, []EnumDeclaration, []TypeDefinitionDeclaration, []StructDeclaration, []FuncDeclaration, error) {
+func ExtractAllDeclarations(source []*os.File) ([]ImportDeclaration, []GlobalDeclaration, []EnumDeclaration, []TypeDefinitionDeclaration, []StructDeclaration, []FuncDeclaration, error) {
 
 	//Variable declarations
 	var Imports []ImportDeclaration
@@ -128,13 +127,17 @@ func ExtractAllDeclarations(source []*loader.File) ([]ImportDeclaration, []Globa
 
 		wg.Add(1)
 
-		go func(currentFile *loader.File, globalChannel chan<- []GlobalDeclaration, enumChannel chan<- []EnumDeclaration, typeDefinition chan<- []TypeDefinitionDeclaration, structChannel chan<- []StructDeclaration, funcChannel chan<- []FuncDeclaration, errorChannel chan<- error, wg *sync.WaitGroup) {
+		go func(currentFile *os.File, globalChannel chan<- []GlobalDeclaration, enumChannel chan<- []EnumDeclaration, typeDefinition chan<- []TypeDefinitionDeclaration, structChannel chan<- []StructDeclaration, funcChannel chan<- []FuncDeclaration, errorChannel chan<- error, wg *sync.WaitGroup) {
 
 			defer wg.Done()
 
-			srcBytes := currentFile.Content
+			srcBytes, err := os.ReadFile(currentFile.Name())
+			fileName := currentFile.Name()
+			if err != nil {
+				errorChannel <- fmt.Errorf("%v:%v", filepath.Base(fileName), err)
+				return
+			}
 
-			fileName := currentFile.FileName
 			replaceComments := ReplaceCommentsWithWhitespaces(srcBytes)
 			replaceStringContents, err := ReplaceStringContentsWithWhitespaces(replaceComments)
 			if err != nil {

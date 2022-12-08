@@ -2,9 +2,12 @@ package cxparsering
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"os"
 
+	"github.com/skycoin/cx/cmd/declaration_extractor"
+	"github.com/skycoin/cx/cmd/type_checker"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/globals"
@@ -51,7 +54,17 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 	*/
 	parseErrors := 0
 	if len(sourceCode) > 0 {
-		parseErrors = Preliminarystage(sourceCodeStrings, fileNames)
+		Imports, Globals, Enums, TypeDefinitions, Structs, Funcs, err := declaration_extractor.ExtractAllDeclarations(sourceCode)
+		if (Enums != nil && TypeDefinitions != nil) || err != nil {
+			parseErrors++
+			fmt.Println(err)
+		}
+
+		err = type_checker.ParseAllDeclarations(Imports, Globals, Structs, Funcs)
+		if err != nil {
+			parseErrors++
+			fmt.Println(err)
+		}
 	}
 
 	actions.AST = cxpartialparsing.Program

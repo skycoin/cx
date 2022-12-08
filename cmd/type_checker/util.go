@@ -8,7 +8,6 @@ import (
 	"strconv"
 	"unicode"
 
-	"github.com/skycoin/cx/cmd/packageloader/loader"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/types"
@@ -126,15 +125,4 @@ func ParseDeclarationSpecifier(declarationSpecifierByte []byte, fileName string,
 
 	// If bytes don't match any of the cases
 	return nil, fmt.Errorf("%v: %d: declaration specifier error", fileName, lineno)
-}
-
-// Finds the SourceBytes from the files array
-func GetSourceBytes(files []*loader.File, fileName string) ([]byte, error) {
-	for _, file := range files {
-		if file.FileName == fileName {
-			return file.Content, nil
-		}
-	}
-
-	return nil, fmt.Errorf("%s not found", fileName)
 }
