@@ -66,19 +66,18 @@ func ExtractFuncs(source []byte, fileName string) ([]FuncDeclaration, error) {
 
 		if contains(tokens, []byte("func")) {
 
-			funcBytes := reFuncDec.FindSubmatch(line)
 			funcIdx := reFuncDec.FindSubmatchIndex(line)
 
-			if funcBytes == nil || !bytes.Equal(funcBytes[0], bytes.TrimSpace(line)) {
+			if funcIdx == nil || !bytes.Equal(line[funcIdx[0]:funcIdx[1]], bytes.TrimSpace(line)) {
 				return FuncDeclarationsArray, fmt.Errorf("%v:%v: syntax error: func declaration", filepath.Base(fileName), lineno)
 			}
 
 			var funcDeclaration FuncDeclaration
 			funcDeclaration.PackageID = pkg
 			funcDeclaration.FileID = fileName
-			funcDeclaration.StartOffset = funcIdx[2] + currentOffset
+			funcDeclaration.StartOffset = currentOffset
 			funcDeclaration.LineNumber = lineno
-			funcDeclaration.FuncName = string(funcBytes[2])
+			funcDeclaration.FuncName = string(line[funcIdx[4]:funcIdx[5]])
 			funcDeclaration.Length = len(line)
 
 			FuncDeclarationsArray = append(FuncDeclarationsArray, funcDeclaration)

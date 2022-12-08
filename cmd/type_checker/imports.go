@@ -11,11 +11,27 @@ import (
 
 func ParseImports(imports []declaration_extractor.ImportDeclaration) error {
 
-	// Make and add import packages to AST
+	// Declare import in the correct packages
 	for _, imprt := range imports {
+
 		// Get Package
-		pkg, err := actions.AST.GetPackage(imprt.ImportName)
-		if (err != nil || pkg == nil) && !packages.IsDefaultPackage(imprt.ImportName) {
+		pkg, err := actions.AST.GetPackage(imprt.PackageID)
+		// If package not in AST
+		if err != nil || pkg == nil {
+
+			newPkg := ast.MakePackage(imprt.PackageID)
+			pkgIdx := actions.AST.AddPackage(newPkg)
+			newPkg, err := actions.AST.GetPackageFromArray(pkgIdx)
+
+			if err != nil {
+				return err
+			}
+
+			pkg = newPkg
+		}
+
+		impPkg, err := actions.AST.GetPackage(imprt.ImportName)
+		if (err != nil || impPkg == nil) && !packages.IsDefaultPackage(imprt.ImportName) {
 
 			var imprtName string = imprt.ImportName
 
@@ -32,28 +48,7 @@ func ParseImports(imports []declaration_extractor.ImportDeclaration) error {
 				return err
 			}
 
-			pkg = newPkg
-		}
-	}
-
-	// Declare import in the correct packages
-	for _, imprt := range imports {
-
-		// Get Package
-		pkg, err := actions.AST.GetPackage(imprt.PackageID)
-
-		// If package not in AST
-		if err != nil || pkg == nil {
-
-			newPkg := ast.MakePackage(imprt.PackageID)
-			pkgIdx := actions.AST.AddPackage(newPkg)
-			newPkg, err := actions.AST.GetPackageFromArray(pkgIdx)
-
-			if err != nil {
-				return err
-			}
-
-			pkg = newPkg
+			impPkg = newPkg
 		}
 
 		actions.AST.SelectPackage(imprt.PackageID)

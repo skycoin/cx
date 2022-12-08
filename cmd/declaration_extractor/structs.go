@@ -99,18 +99,22 @@ func ExtractStructs(source []byte, fileName string) ([]StructDeclaration, error)
 		if inBlock && structDeclaration.LineNumber < lineno {
 
 			var structField StructField
-			matchStructField := reStructField.FindSubmatch(line)
-			matchStructFieldIdx := reStructField.FindSubmatchIndex(line)
-
-			if reNotSpace.Find(line) != nil && (matchStructField == nil || !bytes.Equal(matchStructField[0], bytes.TrimSpace(line))) {
+			if len(tokens) != 2 && len(tokens) != 0 {
 				return StructDeclarationsArray, fmt.Errorf("%v:%v: syntax error:struct field", filepath.Base(fileName), lineno)
 			}
 
-			if matchStructField != nil {
-				structField.StartOffset = matchStructFieldIdx[0] + currentOffset
-				structField.Length = matchStructFieldIdx[1] - matchStructFieldIdx[0]
+			if len(tokens) == 2 {
+				name := reName.Find(tokens[0])
+				dataType := reDataType.Find(tokens[1])
+
+				if name == nil || len(name) != len(tokens[0]) || dataType == nil || len(dataType) != len(tokens[1]) {
+					return StructDeclarationsArray, fmt.Errorf("%v:%v: syntax error:struct field", filepath.Base(fileName), lineno)
+				}
+
+				structField.StartOffset = currentOffset
+				structField.Length = len(line)
 				structField.LineNumber = lineno
-				structField.StructFieldName = string(matchStructField[1])
+				structField.StructFieldName = string(name)
 				structFieldsArray = append(structFieldsArray, &structField)
 			}
 		}

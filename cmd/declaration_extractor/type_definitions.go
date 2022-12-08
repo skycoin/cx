@@ -48,16 +48,15 @@ func ExtractTypeDefinitions(source []byte, fileName string) ([]TypeDefinitionDec
 
 		if contains(tokens, []byte("type")) {
 
-			typeDefinition := reTypeDefinition.FindSubmatch(line)
-			typeDefinitionIdx := reTypeDefinition.FindSubmatchIndex(line)
-
-			if typeDefinition == nil {
+			if len(tokens) < 3 || len(tokens) > 4 {
 				return TypeDefinitionDeclarationsArray, fmt.Errorf("%v:%v: syntax error: type definition declaration", filepath.Base(fileName), lineno)
 			}
 
-			if !bytes.Contains(typeDefinition[2], []byte("struct")) {
+			if !bytes.Contains(tokens[2], []byte("struct")) {
 
-				if !bytes.Equal(typeDefinition[0], bytes.TrimSpace(line)) {
+				name := reName.Find(tokens[0])
+				dataType := reDataType.Find(tokens[1])
+				if name == nil || len(name) != len(tokens[0]) || dataType == nil || len(dataType) != len(tokens[1]) {
 					return TypeDefinitionDeclarationsArray, fmt.Errorf("%v:%v: syntax error: type definition declaration", filepath.Base(fileName), lineno)
 				}
 
@@ -68,10 +67,10 @@ func ExtractTypeDefinitions(source []byte, fileName string) ([]TypeDefinitionDec
 				var typeDefinitionDeclaration TypeDefinitionDeclaration
 				typeDefinitionDeclaration.PackageID = pkg
 				typeDefinitionDeclaration.FileID = fileName
-				typeDefinitionDeclaration.StartOffset = typeDefinitionIdx[0] + currentOffset
-				typeDefinitionDeclaration.Length = typeDefinitionIdx[1] - typeDefinitionIdx[0]
+				typeDefinitionDeclaration.StartOffset = currentOffset
+				typeDefinitionDeclaration.Length = len(line)
 				typeDefinitionDeclaration.LineNumber = lineno
-				typeDefinitionDeclaration.TypeDefinitionName = string(typeDefinition[1])
+				typeDefinitionDeclaration.TypeDefinitionName = string(tokens[1])
 
 				TypeDefinitionDeclarationsArray = append(TypeDefinitionDeclarationsArray, typeDefinitionDeclaration)
 
