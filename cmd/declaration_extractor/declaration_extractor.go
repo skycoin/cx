@@ -175,7 +175,7 @@ func ExtractAllDeclarations(source []*os.File) ([]ImportDeclaration, []GlobalDec
 
 			defer wg.Done()
 
-			srcBytes, err := os.ReadFile(currentFile.Name())
+			srcBytes, err := o.ReadFile(currentFile.Name())
 			fileName := currentFile.Name()
 			if err != nil {
 				errorChannel <- fmt.Errorf("%v:%v", filepath.Base(fileName), err)
