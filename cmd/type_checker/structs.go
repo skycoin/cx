@@ -40,6 +40,35 @@ func ParseStructs(structs []declaration_extractor.StructDeclaration) error {
 		structCX.Package = ast.CXPackageIndex(pkg.Index)
 
 		pkg = pkg.AddStruct(actions.AST, structCX)
+	}
+
+	// Get Package
+	for _, strct := range structs {
+
+		pkg, err := actions.AST.GetPackage(strct.PackageID)
+
+		// If package is not found
+		if err != nil {
+
+			newPkg := ast.MakePackage(strct.PackageID)
+			pkgIdx := actions.AST.AddPackage(newPkg)
+			newPkg, err = actions.AST.GetPackageFromArray(pkgIdx)
+
+			if err != nil {
+				return err
+			}
+
+			pkg = newPkg
+
+		}
+
+		// Select Package to Add to AST
+		actions.AST.SelectPackage(strct.PackageID)
+
+		structCX := ast.MakeStruct(strct.StructName)
+		structCX.Package = ast.CXPackageIndex(pkg.Index)
+
+		pkg = pkg.AddStruct(actions.AST, structCX)
 
 		src, err := os.ReadFile(strct.FileID)
 		if err != nil {
