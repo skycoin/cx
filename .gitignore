@@ -104,3 +104,4 @@ gen
 *.db
 cmd/cxbenchmark/bin/cx
 *.out
+*.test
