@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"fmt"
 	"path/filepath"
+	"regexp"
 )
 
 type TypeDefinitionDeclaration struct {
@@ -20,6 +21,12 @@ func ExtractTypeDefinitions(source []byte, fileName string) ([]TypeDefinitionDec
 	var TypeDefinitionDeclarationsArray []TypeDefinitionDeclaration
 	var pkg string
 
+	// Regexes
+	rePkg := regexp.MustCompile(`^(?:.+\s+|\s*)package(?:\s+[\S\s]+|\s*)$`)
+	rePkgName := regexp.MustCompile(`package\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
+	reType := regexp.MustCompile(`(?:.+\s+|\s*)type(?:\s+[\S\s]+|\s*)$`)
+	reTypeDefinition := regexp.MustCompile(`type\s+([_a-zA-Z][_a-zA-Z0-9]*)\s+([_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*)`)
+
 	reader := bytes.NewReader(source)
 	scanner := bufio.NewScanner(reader)
 	scanner.Split(scanLinesWithLineTerminator) // set scanner SplitFunc to custom ScanLines func at line 55
@@ -32,45 +39,41 @@ func ExtractTypeDefinitions(source []byte, fileName string) ([]TypeDefinitionDec
 		line := scanner.Bytes()
 		lineno++
 
-		tokens := bytes.Fields(line)
 		// Package declaration extraction
-		if contains(tokens, []byte("package")) {
-			if len(tokens) != 2 {
-				return TypeDefinitionDeclarationsArray, fmt.Errorf("%v:%v: syntax error: package declaration", filepath.Base(fileName), lineno)
-			}
-			name := reName.Find(tokens[1])
-			if name == nil || len(name) != len(tokens[1]) {
-				return TypeDefinitionDeclarationsArray, fmt.Errorf("%v:%v: syntax error: package declaration", filepath.Base(fileName), lineno)
+		if rePkg.FindIndex(line) != nil {
 
+			matchPkg := rePkgName.FindSubmatch(line)
+
+			if matchPkg == nil || !bytes.Equal(matchPkg[0], bytes.TrimSpace(line)) {
+				return TypeDefinitionDeclarationsArray, fmt.Errorf("%v:%v: syntax error: package declaration", filepath.Base(fileName), lineno)
 			}
-			pkg = string(name)
+
+			pkg = string(matchPkg[1])
+
 		}
 
-		if contains(tokens, []byte("type")) {
+		if reType.Find(line) != nil {
 
-			if len(tokens) < 3 || len(tokens) > 4 {
+			typeDefinition := reTypeDefinition.FindSubmatch(line)
+			typeDefinitionIdx := reTypeDefinition.FindSubmatchIndex(line)
+
+			if typeDefinition == nil {
 				return TypeDefinitionDeclarationsArray, fmt.Errorf("%v:%v: syntax error: type definition declaration", filepath.Base(fileName), lineno)
 			}
 
-			if !bytes.Contains(tokens[2], []byte("struct")) {
+			if !bytes.Contains(typeDefinition[2], []byte("struct")) {
 
-				name := reName.Find(tokens[0])
-				dataType := reDataType.Find(tokens[1])
-				if name == nil || len(name) != len(tokens[0]) || dataType == nil || len(dataType) != len(tokens[1]) {
+				if !bytes.Equal(typeDefinition[0], bytes.TrimSpace(line)) {
 					return TypeDefinitionDeclarationsArray, fmt.Errorf("%v:%v: syntax error: type definition declaration", filepath.Base(fileName), lineno)
-				}
-
-				if pkg == "" {
-					return TypeDefinitionDeclarationsArray, fmt.Errorf("%v:%v: no package declared for type definition declaration", filepath.Base(fileName), lineno)
 				}
 
 				var typeDefinitionDeclaration TypeDefinitionDeclaration
 				typeDefinitionDeclaration.PackageID = pkg
 				typeDefinitionDeclaration.FileID = fileName
-				typeDefinitionDeclaration.StartOffset = currentOffset
-				typeDefinitionDeclaration.Length = len(line)
+				typeDefinitionDeclaration.StartOffset = typeDefinitionIdx[0] + currentOffset
+				typeDefinitionDeclaration.Length = typeDefinitionIdx[1] - typeDefinitionIdx[0]
 				typeDefinitionDeclaration.LineNumber = lineno
-				typeDefinitionDeclaration.TypeDefinitionName = string(tokens[1])
+				typeDefinitionDeclaration.TypeDefinitionName = string(typeDefinition[1])
 
 				TypeDefinitionDeclarationsArray = append(TypeDefinitionDeclarationsArray, typeDefinitionDeclaration)
 

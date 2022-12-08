@@ -14,7 +14,6 @@ import (
 
 	"github.com/skycoin/cx/cmd/packageloader2/bolt"
 	"github.com/skycoin/cx/cmd/packageloader2/redis"
-	"github.com/skycoin/cx/cx/globals"
 	"github.com/skycoin/cx/cx/util"
 	"golang.org/x/crypto/blake2b"
 )
@@ -23,7 +22,7 @@ var SKIP_PACKAGES = []string{"al", "gl", "glfw", "time", "os", "gltext", "cx", "
 var FileHashMap = make(map[string]string)
 var PackageHashMap = make(map[string]string)
 
-func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCode []*os.File, fileNames []string, rootDir []string) {
+func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCode []*os.File, fileNames []string) {
 	skip := false // flag for skipping arg
 
 	for _, arg := range args {
@@ -59,7 +58,6 @@ func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCod
 		case mode.IsDir():
 			var fileList []string
 			var err error
-			dir := filepath.Dir(arg)
 
 			// Checking if we want to check all subdirectories.
 			if alsoSubdirs {
@@ -88,7 +86,6 @@ func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCod
 					// only loading .cx files
 					sourceCode = append(sourceCode, file)
 					fileNames = append(fileNames, fiName)
-					rootDir = append(rootDir, dir)
 				}
 			}
 		case mode.IsRegular():
@@ -100,64 +97,38 @@ func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCod
 
 			fileNames = append(fileNames, file.Name())
 			sourceCode = append(sourceCode, file)
-			rootDir = append(rootDir, filepath.Base(file.Name()))
 		}
 	}
 
-	return cxArgs, sourceCode, fileNames, rootDir
+	return cxArgs, sourceCode, fileNames
 }
 
-func LoadCXProgram(programName string, sourceCode []*os.File, rootDir []string, database string) (err error) {
+func LoadCXProgram(programName string, sourceCode []*os.File, database string) (err error) {
 
-	switch database {
-	case "redis":
-		redis.Start()
-	case "bolt":
-		bolt.Start()
+	// Gets the source files
+	fileMap, err := createFileMap(sourceCode)
+	if err != nil {
+		return err
 	}
 
 	var packageListStruct PackageList
+	importMap := make(map[string][]string)
 
-	// If it's a single file program with all the packages in one file
-	if len(sourceCode) == 1 && hasMultiplePkgs(sourceCode[0]) {
-		err := addNewPackage(&packageListStruct, "main", sourceCode, database)
-		if err != nil {
-			return err
-		}
-	} else {
-		// Else it's a multiple files program
+	// Start with the main package
+	err = addNewPackage(&packageListStruct, "main", fileMap, importMap, database)
+	if err != nil {
+		return err
+	}
 
-		// Gets the source files
-		fileMap, err := createFileMap(sourceCode, rootDir)
-		if err != nil {
-			return err
-		}
+	// load the imported packages
+	err = loadImportPackages(&packageListStruct, "main", fileMap, importMap, database)
+	if err != nil {
+		return err
+	}
 
-		importMap := make(map[string][]string)
-
-		files, ok := fileMap["main"]
-		if !ok {
-			return fmt.Errorf("main package not found")
-		}
-
-		// Dependency loops are checked before adding to DB
-		// Step 9
-		err = checkImports("main", files, importMap)
-		if err != nil {
-			return err
-		}
-
-		// Start with the main package
-		err = addNewPackage(&packageListStruct, "main", files, database)
-		if err != nil {
-			return err
-		}
-
-		// load the imported packages
-		err = loadImportPackages(&packageListStruct, "main", fileMap, importMap, database)
-		if err != nil {
-			return err
-		}
+	err = checkForDependencyLoop(importMap)
+	if err != nil {
+		return err
 	}
 
 	switch database {
@@ -198,39 +169,26 @@ func ioReadDir(root string) ([]string, error) {
 	return files, nil
 }
 
-func createFileMap(files []*os.File, rootDir []string) (fileMap map[string][]*os.File, err error) {
+func createFileMap(files []*os.File) (fileMap map[string][]*os.File, err error) {
 	fileMap = make(map[string][]*os.File)
-	for i, file := range files {
+	for _, file := range files {
+		path := strings.Split(file.Name(), "/")
+		packageName := path[len(path)-2]
 		filePackageName, err := getPackageName(file)
 		if err != nil {
 			return fileMap, err
 		}
-
-		// If there's no root dir or the root dir is the file itself
-		if strings.Contains(rootDir[i], ".cx") {
-			fileMap[filePackageName] = append(fileMap[filePackageName], file)
-		} else {
-			// If there's root dir
-			path := strings.Split(file.Name(), "/")
-			packageName := path[len(path)-2]
-
-			// If the package dir is the root dir or src then it's the main package
-			if packageName == rootDir[i] || packageName == "src" {
-				if filePackageName != "main" {
-					return fileMap, fmt.Errorf("%s: package error: package %s found in main", filepath.Base(file.Name()), filePackageName)
-				}
-				fileMap["main"] = append(fileMap["main"], file)
-				continue
+		if packageName == "src" {
+			if filePackageName != "main" {
+				return fileMap, fmt.Errorf("%s: package error: package %s found in main", filepath.Base(file.Name()), filePackageName)
 			}
-
-			// If there's other packages found in the same dir
-			if filePackageName != packageName {
-				return fileMap, fmt.Errorf("%s: package error: package %s found in %v", filepath.Base(file.Name()), filePackageName, packageName)
-			}
-
-			fileMap[packageName] = append(fileMap[packageName], file)
+			fileMap["main"] = append(fileMap["main"], file)
+			continue
 		}
-
+		if filePackageName != packageName {
+			return fileMap, fmt.Errorf("%s: package error: package %s found in %v", filepath.Base(file.Name()), filePackageName, packageName)
+		}
+		fileMap[packageName] = append(fileMap[packageName], file)
 	}
 	return fileMap, nil
 }
@@ -256,16 +214,39 @@ func getPackageName(file *os.File) (string, error) {
 //	Adds a new package to the package list and add imports of the new package to the import map
 //	1. packageListStruct - package list pointer
 //	2. packageName -  name of package to be added
-//	3. database - "redis" or "bolt"
+//	3. fileMap - file map that contains the files
+//	4. importMap - import map that contains the imports
+//	5. database - "redis" or "bolt"
 //
-// This function contains steps 4 - 8 of package loader
-func addNewPackage(packageListStruct *PackageList, packageName string, files []*os.File, database string) error {
+// This function contains steps 4 - 9 of package loader
+func addNewPackage(packageListStruct *PackageList, packageName string, fileMap map[string][]*os.File, importMap map[string][]string, database string) error {
+
+	// Checks if package is found in the directory
+	files, ok := fileMap[packageName]
+	if !ok && !Contains(SKIP_PACKAGES, packageName) {
+		return fmt.Errorf("package %s not found", packageName)
+	}
+
+	// Skip if the import is a built-in package
+	if Contains(SKIP_PACKAGES, packageName) {
+		return nil
+	}
 
 	// Creates the package struct
-	packageStruct, err := createPackageStruct(packageName, files, database)
+	packageStruct, err := createPackageStruct(packageName, files, Package{}, database)
 	if err != nil {
 		return err
 	}
+
+	// Creates the import list
+	importList, err := createImportList(files, []string{})
+	if err != nil {
+		return err
+	}
+
+	// Removes duplicates of imports and adds them to the import map
+	newImportList := RemoveDuplicates(importList)
+	importMap[packageName] = newImportList
 
 	// Append the package to the package struct
 	packageListStruct.appendPackage(&packageStruct, database)
@@ -291,13 +272,15 @@ func getImports(file *os.File) (imports []string, err error) {
 	return imports, nil
 }
 
-func checkForDependencyLoop(importMap map[string][]string, packageName string) (err error) {
-	for _, importName := range importMap[packageName] {
-		if importName == packageName {
-			return errors.New("Module " + packageName + " imports itself")
-		}
-		if Contains(importMap[importName], packageName) {
-			return errors.New("Dependency loop between modules " + packageName + " and " + importName)
+func checkForDependencyLoop(importMap map[string][]string) (err error) {
+	for packageName := range importMap {
+		for _, importName := range importMap[packageName] {
+			if importName == packageName {
+				return errors.New("Module " + packageName + " imports itself")
+			}
+			if Contains(importMap[importName], packageName) {
+				return errors.New("Dependency loop between modules " + packageName + " and " + importName)
+			}
 		}
 	}
 	return nil
@@ -345,36 +328,43 @@ func blake2HashFromFileUUID(fileUUID []string) ([64]byte, error) {
 //	4. database - "redis" or "bolt"
 //
 // This function works recursively
-func createPackageStruct(name string, files []*os.File, database string) (Package, error) {
+func createPackageStruct(name string, files []*os.File, packageStruct Package, database string) (Package, error) {
 
-	var packageStruct Package
-
-	for _, currentFile := range files {
-		packageStruct.PackageName = name
-
-		// Create file struct
-		fileStruct, err := fileStructFromFile(currentFile)
-		if err != nil {
-			return packageStruct, err
-		}
-
-		// Append file struct
-		err = packageStruct.appendFile(&fileStruct, database)
-		if err != nil {
-			return packageStruct, err
-		}
-
+	// Base case
+	if len(files) == 0 {
+		return packageStruct, nil
 	}
 
-	// Generate Blake2Hash and add to package struct
-	hash, err := blake2HashFromFileUUID(packageStruct.Files)
+	packageStruct.PackageName = name
+
+	// Create file struct
+	currentIndex := len(files) - 1
+	currentFile := files[currentIndex]
+	fileStruct, err := fileStructFromFile(currentFile)
 	if err != nil {
 		return packageStruct, err
 	}
 
-	packageStruct.Blake2Hash = string(hash[:])
+	// Append file struct
+	err = packageStruct.appendFile(&fileStruct, database)
+	if err != nil {
+		return packageStruct, err
+	}
 
-	return packageStruct, nil
+	// Remove file from slice
+	newFiles := files[:currentIndex]
+
+	// Generate Blake2Hash and add to package struct
+	if len(newFiles) == 0 {
+		hash, err := blake2HashFromFileUUID(packageStruct.Files)
+		if err != nil {
+			return packageStruct, err
+		}
+
+		packageStruct.Blake2Hash = string(hash[:])
+	}
+
+	return createPackageStruct(name, newFiles, packageStruct, database)
 }
 
 //	 Create an import list from the list of files
@@ -382,27 +372,25 @@ func createPackageStruct(name string, files []*os.File, database string) (Packag
 //		2. importList - empty string slice "[]string{}"
 //
 // This function works recursively
-func createImportList(files []*os.File) ([]string, error) {
-
-	var importList []string
-
-	for _, currentFile := range files {
-		if hasMultiplePkgs(currentFile) {
-			return importList, fmt.Errorf("%s: multiple packages found in one file", filepath.Base(currentFile.Name()))
-		}
-
-		// Gets imports
-		imports, err := getImports(currentFile)
-		if err != nil {
-			return importList, err
-		}
-
-		// Removes file from list
-		importList = append(importList, imports...)
-
+func createImportList(files []*os.File, importList []string) ([]string, error) {
+	// Base case
+	if len(files) == 0 {
+		return importList, nil
 	}
 
-	return importList, nil
+	// Gets imports
+	currentIndex := len(files) - 1
+	currentFile := files[currentIndex]
+	imports, err := getImports(currentFile)
+	if err != nil {
+		return importList, err
+	}
+
+	// Removes file from list
+	importList = append(importList, imports...)
+	newFiles := files[:currentIndex]
+
+	return createImportList(newFiles, importList)
 }
 
 //	 Loads Import Packages
@@ -425,43 +413,8 @@ func loadImportPackages(packageListStruct *PackageList, importName string, fileM
 
 		go func(packageListStruct *PackageList, imprt string, fileMap map[string][]*os.File, importMap map[string][]string, database string, errChannel chan error, wg *sync.WaitGroup) {
 			defer wg.Done()
-			files, ok := fileMap[imprt]
-
-			// If package is not found check if it's in the cxpath
-			if !ok && !Contains(SKIP_PACKAGES, imprt) {
-				_, rootDir, sourceCode, _ := ParseArgsForCX([]string{filepath.Join(globals.SRCPATH, imprt)}, true)
-				tmpMap, err := createFileMap(rootDir, sourceCode)
-				if err != nil {
-					errChannel <- err
-					return
-				}
-				for k, v := range tmpMap {
-					fileMap[k] = v
-				}
-				if strings.Contains(imprt, "/") {
-					tokens := strings.Split(imprt, "/")
-					imprt = tokens[len(tokens)-1]
-				}
-				files, ok = fileMap[imprt]
-				if !ok {
-					errChannel <- fmt.Errorf("package %s not found", imprt)
-					return
-				}
-			}
-
-			// Skip if the import is a built-in package
-			if Contains(SKIP_PACKAGES, imprt) {
-				return
-			}
-
-			err := checkImports(imprt, files, importMap)
-			if err != nil {
-				errChannel <- err
-				return
-			}
-
 			// Add package
-			err = addNewPackage(packageListStruct, imprt, files, database)
+			err := addNewPackage(packageListStruct, imprt, fileMap, importMap, database)
 			if err != nil {
 				errChannel <- err
 				return
@@ -488,43 +441,5 @@ func loadImportPackages(packageListStruct *PackageList, importName string, fileM
 		}
 	}
 
-	return nil
-}
-
-func hasMultiplePkgs(file *os.File) bool {
-
-	var counter int
-
-	scanner := bufio.NewScanner(file)
-
-	for scanner.Scan() {
-		line := strings.Split(scanner.Text(), " ")
-		if line[0] == "package" {
-			counter++
-		}
-		if counter > 1 {
-			return true
-		}
-	}
-
-	return false
-}
-
-func checkImports(packageName string, files []*os.File, importMap map[string][]string) error {
-	// Creates the import list
-	importList, err := createImportList(files)
-	if err != nil {
-		return err
-	}
-
-	// Removes duplicates of imports and adds them to the import map
-	newImportList := RemoveDuplicates(importList)
-
-	importMap[packageName] = newImportList
-
-	err = checkForDependencyLoop(importMap, packageName)
-	if err != nil {
-		return err
-	}
 	return nil
 }

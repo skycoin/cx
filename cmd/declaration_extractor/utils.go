@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"regexp"
 	"unicode"
-
-	"github.com/skycoin/cx/cmd/packageloader2/loader"
 )
 
 // Modified ScanLines to include "\r\n" or "\n" in line
@@ -98,33 +96,4 @@ func ReplaceStringContentsWithWhitespaces(source []byte) ([]byte, error) {
 	}
 
 	return sourceWithoutStringContents, nil
-}
-
-// Finds the SourceBytes from the files array
-func GetSourceBytes(files []*loader.File, fileName string) ([]byte, error) {
-	for _, file := range files {
-		if file.FileName == fileName {
-			return file.Content, nil
-		}
-	}
-
-	return nil, fmt.Errorf("%s not found", fileName)
-}
-
-func contains(list [][]byte, element []byte) bool {
-	for _, item := range list {
-		if bytes.Equal(item, element) {
-			return true
-		}
-	}
-	return false
-}
-
-func containsC(list [][]byte, element []byte) bool {
-	for _, item := range list {
-		if bytes.Contains(item, element) {
-			return true
-		}
-	}
-	return false
 }

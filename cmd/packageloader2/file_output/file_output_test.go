@@ -3,8 +3,8 @@ package file_output_test
 import (
 	"testing"
 
-	"github.com/skycoin/cx/cmd/packageloader2/file_output"
-	"github.com/skycoin/cx/cmd/packageloader2/loader"
+	"github.com/skycoin/cx/cmd/packageloader/file_output"
+	"github.com/skycoin/cx/cmd/packageloader/loader"
 	"github.com/skycoin/cx/cxparser/actions"
 )
 
@@ -68,8 +68,8 @@ func TestFile_Output_GetImportFiles(t *testing.T) {
 
 			actions.AST = nil
 
-			_, sourceCodes, _, rootDir := loader.ParseArgsForCX([]string{tc.testDir}, true)
-			err := loader.LoadCXProgram(tc.programName, sourceCodes, rootDir, tc.database)
+			_, sourceCodes, _ := loader.ParseArgsForCX([]string{tc.testDir}, true)
+			err := loader.LoadCXProgram(tc.programName, sourceCodes, tc.database)
 			if err != nil {
 				t.Fatal(err)
 			}

@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"fmt"
 	"path/filepath"
+	"regexp"
 )
 
 type ImportDeclaration struct {
@@ -19,6 +20,10 @@ func ExtractImports(source []byte, fileName string) ([]ImportDeclaration, error)
 	var ImportDeclarationsArray []ImportDeclaration
 	var pkg string
 
+	//Regexs
+	rePkg := regexp.MustCompile(`^(?:.+\s+|\s*)package(?:\s+[\S\s]+|\s*)$`)
+	rePkgName := regexp.MustCompile(`^\s*package\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
+
 	reader := bytes.NewReader(source)
 	scanner := bufio.NewScanner(reader)
 
@@ -29,26 +34,22 @@ func ExtractImports(source []byte, fileName string) ([]ImportDeclaration, error)
 		line := scanner.Bytes()
 		lineno++
 
-		tokens := bytes.Fields(line)
 		// Package declaration extraction
-		if contains(tokens, []byte("package")) {
-			if len(tokens) != 2 {
-				return ImportDeclarationsArray, fmt.Errorf("%v:%v: syntax error: package declaration", filepath.Base(fileName), lineno)
-			}
-			name := reName.Find(tokens[1])
-			if name == nil || len(name) != len(tokens[1]) {
-				return ImportDeclarationsArray, fmt.Errorf("%v:%v: syntax error: package declaration", filepath.Base(fileName), lineno)
+		if rePkg.FindIndex(line) != nil {
 
+			matchPkg := rePkgName.FindSubmatch(line)
+
+			if matchPkg == nil || !bytes.Equal(matchPkg[0], bytes.TrimSpace(line)) {
+				return ImportDeclarationsArray, fmt.Errorf("%v:%v: syntax error: package declaration", filepath.Base(fileName), lineno)
 			}
-			pkg = string(name)
+
+			pkg = string(matchPkg[1])
+
 		}
 
 		// Extract Import
-		if contains(tokens, []byte("import")) {
-
-			if pkg == "" {
-				return ImportDeclarationsArray, fmt.Errorf("%v:%v: no package declared for global declaration", filepath.Base(fileName), lineno)
-			}
+		checkLine := bytes.Split(line, []byte(" "))
+		if bytes.Equal(checkLine[0], []byte("import")) {
 
 			var tmp ImportDeclaration
 
@@ -56,7 +57,7 @@ func ExtractImports(source []byte, fileName string) ([]ImportDeclaration, error)
 			tmp.FileID = fileName
 			tmp.LineNumber = lineno
 
-			tmp.ImportName = string(tokens[1][1 : len(tokens[1])-1])
+			tmp.ImportName = string(checkLine[1][1 : len(checkLine[1])-1])
 
 			ImportDeclarationsArray = append(ImportDeclarationsArray, tmp)
 		}

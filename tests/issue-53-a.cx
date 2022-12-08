@@ -1,8 +1,8 @@
 // https://github.com/skycoin/cx/issues/53
 
-package main
-
 import "cx"
+
+package main
 
 type Too struct {
 	a i32

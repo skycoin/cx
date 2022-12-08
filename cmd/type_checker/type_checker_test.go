@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	"github.com/skycoin/cx/cmd/declaration_extractor"
-	"github.com/skycoin/cx/cmd/packageloader2/file_output"
-	"github.com/skycoin/cx/cmd/packageloader2/loader"
+	"github.com/skycoin/cx/cmd/packageloader/file_output"
+	"github.com/skycoin/cx/cmd/packageloader/loader"
 	"github.com/skycoin/cx/cmd/type_checker"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
@@ -491,9 +491,9 @@ func TestTypeChecker_ParseGlobals(t *testing.T) {
 
 			actions.AST = cxinit.MakeProgram()
 
-			_, sourceCode, _, rootDir := loader.ParseArgsForCX([]string{tc.testDir}, true)
+			_, sourceCode, _ := loader.ParseArgsForCX([]string{tc.testDir}, true)
 
-			err := loader.LoadCXProgram("test", sourceCode, rootDir, "bolt")
+			err := loader.LoadCXProgram("test", sourceCode, "bolt")
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -676,9 +676,9 @@ func TestTypeChecker_ParseStructs(t *testing.T) {
 
 			actions.AST = cxinit.MakeProgram()
 
-			_, sourceCode, _, rootDir := loader.ParseArgsForCX([]string{tc.testDir}, true)
+			_, sourceCode, _ := loader.ParseArgsForCX([]string{tc.testDir}, true)
 
-			err := loader.LoadCXProgram("test", sourceCode, rootDir, "bolt")
+			err := loader.LoadCXProgram("test", sourceCode, "bolt")
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -841,9 +841,9 @@ func TestTypeChecker_ParseFuncHeaders(t *testing.T) {
 
 			actions.AST = cxinit.MakeProgram()
 
-			_, sourceCode, _, rootDir := loader.ParseArgsForCX([]string{tc.testDir}, true)
+			_, sourceCode, _ := loader.ParseArgsForCX([]string{tc.testDir}, true)
 
-			err := loader.LoadCXProgram("test", sourceCode, rootDir, "bolt")
+			err := loader.LoadCXProgram("test", sourceCode, "bolt")
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -1070,7 +1070,7 @@ func TestTypeChecker_ParseAllDeclarations(t *testing.T) {
 						},
 						{
 							Name:   "CustomType.setFieldA",
-							Inputs: "customType *CustomType, string str",
+							Inputs: "main.customType *CustomType, string str",
 						},
 					},
 				},
@@ -1142,7 +1142,7 @@ func TestTypeChecker_ParseAllDeclarations(t *testing.T) {
 					Funcs: []Func{
 						{
 							Name:   "Animal.Speak",
-							Inputs: "a *Animal",
+							Inputs: "helper.a *Animal",
 						},
 					},
 				},
@@ -1170,22 +1170,17 @@ func TestTypeChecker_ParseAllDeclarations(t *testing.T) {
 
 			actions.AST = nil
 
-			_, sourceCode, _, rootDir := loader.ParseArgsForCX([]string{tc.testDir}, true)
-			files, err := loader.LoadCXProgramNoSave(sourceCode, rootDir)
+			_, sourceCode, _ := loader.ParseArgsForCX([]string{tc.testDir}, true)
+
+			err := loader.LoadCXProgram("test", sourceCode, "bolt")
 			if err != nil {
-				fmt.Print(err)
-				// parseErrors++
+				t.Fatal(err)
 			}
 
-			// err := loader.LoadCXProgram("test", sourceCode, rootDir, "bolt")
-			// if err != nil {
-			// 	t.Fatal(err)
-			// }
-
-			// files, err := file_output.GetImportFiles("test", "bolt")
-			// if err != nil {
-			// 	t.Fatal(err)
-			// }
+			files, err := file_output.GetImportFiles("test", "bolt")
+			if err != nil {
+				t.Fatal(err)
+			}
 
 			Imports, Globals, Enums, TypeDefinitions, Structs, Funcs, gotErr := declaration_extractor.ExtractAllDeclarations(files)
 			if (Enums != nil && TypeDefinitions != nil) || gotErr != nil {

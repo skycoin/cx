@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"fmt"
 	"path/filepath"
+	"regexp"
 )
 
 type StructDeclaration struct {
@@ -29,8 +30,14 @@ func ExtractStructs(source []byte, fileName string) ([]StructDeclaration, error)
 	var StructDeclarationsArray []StructDeclaration
 	var pkg string
 
-	// reStruct := regexp.MustCompile(`type\s+[_a-zA-Z][_a-zA-Z0-9]*\s+struct`)
-	// reStructHeader := regexp.MustCompile(`type\s+([_a-zA-Z][_a-zA-Z0-9]*)\s+struct\s*{`)
+	// Regexes
+	reNotSpace := regexp.MustCompile(`\S+`)
+	rePkg := regexp.MustCompile(`^(?:.+\s+|\s*)package(?:\s+[\S\s]+|\s*)$`)
+	rePkgName := regexp.MustCompile(`package\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
+	reStruct := regexp.MustCompile(`type\s+[_a-zA-Z][_a-zA-Z0-9]*\s+struct`)
+	reStructHeader := regexp.MustCompile(`type\s+([_a-zA-Z][_a-zA-Z0-9]*)\s+struct\s*{`)
+	reRightBrace := regexp.MustCompile("}")
+	reStructField := regexp.MustCompile(`([_a-zA-Z][_a-zA-Z0-9]*)\s+\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]\*{0,1}){0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*`)
 
 	reader := bytes.NewReader(source)
 	scanner := bufio.NewScanner(reader)
@@ -47,39 +54,34 @@ func ExtractStructs(source []byte, fileName string) ([]StructDeclaration, error)
 		line := scanner.Bytes()
 		lineno++
 
-		tokens := bytes.Fields(line)
 		// Package declaration extraction
-		if contains(tokens, []byte("package")) {
-			if len(tokens) != 2 {
-				return StructDeclarationsArray, fmt.Errorf("%v:%v: syntax error: package declaration", filepath.Base(fileName), lineno)
-			}
-			name := reName.Find(tokens[1])
-			if name == nil || len(name) != len(tokens[1]) {
-				return StructDeclarationsArray, fmt.Errorf("%v:%v: syntax error: package declaration", filepath.Base(fileName), lineno)
+		if rePkg.FindIndex(line) != nil {
 
+			matchPkg := rePkgName.FindSubmatch(line)
+
+			if matchPkg == nil || !bytes.Equal(matchPkg[0], bytes.TrimSpace(line)) {
+				return StructDeclarationsArray, fmt.Errorf("%v:%v: syntax error: package declaration", filepath.Base(fileName), lineno)
 			}
-			pkg = string(name)
+
+			pkg = string(matchPkg[1])
+
 		}
 
 		// if struct declaration is found
 		// i.e. type [name] [type]
-		if len(tokens) >= 3 && contains(tokens, []byte("type")) && contains(tokens, []byte("struct")) {
+		if strct := reStruct.FindIndex(line); strct != nil {
 
-			name := reName.Find(tokens[1])
-			if name == nil || len(name) != len(tokens[1]) {
+			structHeader := reStructHeader.FindSubmatch(line)
+			if structHeader == nil || !bytes.Equal(structHeader[0], bytes.TrimSpace(line)) {
 				return StructDeclarationsArray, fmt.Errorf("%v:%v: syntax error: struct declaration", filepath.Base(fileName), lineno)
-			}
-
-			if pkg == "" {
-				return StructDeclarationsArray, fmt.Errorf("%v:%v: no package declared for global declaration", filepath.Base(fileName), lineno)
 			}
 
 			structDeclaration.PackageID = pkg
 			structDeclaration.FileID = fileName
 
-			structDeclaration.StartOffset = currentOffset // offset is current line offset + match index
-			structDeclaration.Length = len(line)
-			structDeclaration.StructName = string(name)
+			structDeclaration.StartOffset = strct[0] + currentOffset // offset is current line offset + match index
+			structDeclaration.Length = strct[1] - strct[0]
+			structDeclaration.StructName = string(structHeader[1])
 
 			structDeclaration.LineNumber = lineno
 
@@ -87,7 +89,7 @@ func ExtractStructs(source []byte, fileName string) ([]StructDeclaration, error)
 
 		}
 
-		if contains(tokens, []byte("}")) && inBlock {
+		if match := reRightBrace.FindIndex(line); match != nil && inBlock {
 
 			inBlock = false
 			structDeclaration.StructFields = structFieldsArray
@@ -99,22 +101,18 @@ func ExtractStructs(source []byte, fileName string) ([]StructDeclaration, error)
 		if inBlock && structDeclaration.LineNumber < lineno {
 
 			var structField StructField
-			if len(tokens) != 2 && len(tokens) != 0 {
+			matchStructField := reStructField.FindSubmatch(line)
+			matchStructFieldIdx := reStructField.FindSubmatchIndex(line)
+
+			if reNotSpace.Find(line) != nil && (matchStructField == nil || !bytes.Equal(matchStructField[0], bytes.TrimSpace(line))) {
 				return StructDeclarationsArray, fmt.Errorf("%v:%v: syntax error:struct field", filepath.Base(fileName), lineno)
 			}
 
-			if len(tokens) == 2 {
-				name := reName.Find(tokens[0])
-				dataType := reDataType.Find(tokens[1])
-
-				if name == nil || len(name) != len(tokens[0]) || dataType == nil || len(dataType) != len(tokens[1]) {
-					return StructDeclarationsArray, fmt.Errorf("%v:%v: syntax error:struct field", filepath.Base(fileName), lineno)
-				}
-
-				structField.StartOffset = currentOffset
-				structField.Length = len(line)
+			if matchStructField != nil {
+				structField.StartOffset = matchStructFieldIdx[0] + currentOffset
+				structField.Length = matchStructFieldIdx[1] - matchStructFieldIdx[0]
 				structField.LineNumber = lineno
-				structField.StructFieldName = string(name)
+				structField.StructFieldName = string(matchStructField[1])
 				structFieldsArray = append(structFieldsArray, &structField)
 			}
 		}

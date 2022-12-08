@@ -3,20 +3,12 @@ package declaration_extractor
 import (
 	"fmt"
 	"path/filepath"
-	"regexp"
 	"sync"
 
-	"github.com/skycoin/cx/cmd/packageloader2/loader"
+	"github.com/skycoin/cx/cmd/packageloader/loader"
 )
 
-//Regexes
-var reName = regexp.MustCompile(`[_a-zA-Z]\w*`)
-var reDataType = regexp.MustCompile(`(?:\[(?:[1-9]\d+|[0-9]){0,1}\]\*{0,1}){0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*`)
-var reEnumInit = regexp.MustCompile(`const\s+\(`)
-var reEnumDec = regexp.MustCompile(`([_a-zA-Z][_a-zA-Z0-9]*)(?:\s+([_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*)){0,1}(?:\s*\=\s*[\s\S]+\S+){0,1}`)
-var reFuncDec = regexp.MustCompile(`(func(?:(?:\s*\(\s*[_a-zA-Z]\w*\s+\*{0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*\s*\)\s*)|\s+)([_a-zA-Z]\w*)(?:\s*\(\s*(?:(?:[_a-zA-Z]\w*(?:\s*\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]\*{0,1}){0,1}\s*|\s+)[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*\s*,\s*)+[_a-zA-Z]\w*(?:\s*\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]\*{0,1}){0,1}|\s+)\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*|(?:[_a-zA-Z]\w*(?:\s*\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]\*{0,1}){0,1}\s*|\s+)[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*){0,1})\s*\)){1,2})(?:\s*{){0,1}`)
-
-func ReDeclarationCheck(Import []ImportDeclaration, Glbl []GlobalDeclaration, Enum []EnumDeclaration, TypeDef []TypeDefinitionDeclaration, Strct []StructDeclaration, Func []FuncDeclaration, files []*loader.File) error {
+func ReDeclarationCheck(Import []ImportDeclaration, Glbl []GlobalDeclaration, Enum []EnumDeclaration, TypeDef []TypeDefinitionDeclaration, Strct []StructDeclaration, Func []FuncDeclaration) error {
 
 	// Checks for the first declaration redeclared
 	// in the order:
@@ -75,17 +67,7 @@ func ReDeclarationCheck(Import []ImportDeclaration, Glbl []GlobalDeclaration, En
 	for i := 0; i < len(Func); i++ {
 		for j := i + 1; j < len(Func); j++ {
 			if Func[i].FuncName == Func[j].FuncName && Func[i].PackageID == Func[j].PackageID {
-				funcMethod1, err := ExtractMethod(Func[i], files)
-				if err != nil {
-					return err
-				}
-				funcMethod2, err := ExtractMethod(Func[j], files)
-				if err != nil {
-					return err
-				}
-				if funcMethod1 == funcMethod2 {
-					return fmt.Errorf("%v:%v: redeclaration error: func: %v", filepath.Base(Func[j].FileID), Func[j].LineNumber, Func[i].FuncName)
-				}
+				return fmt.Errorf("%v:%v: redeclaration error: func: %v", filepath.Base(Func[j].FileID), Func[j].LineNumber, Func[i].FuncName)
 			}
 		}
 	}
@@ -335,7 +317,7 @@ func ExtractAllDeclarations(source []*loader.File) ([]ImportDeclaration, []Globa
 		return Imports, Globals, Enums, TypeDefinitions, Structs, Funcs, err
 	}
 
-	reDeclarationCheck := ReDeclarationCheck(Imports, Globals, Enums, TypeDefinitions, Structs, Funcs, source)
+	reDeclarationCheck := ReDeclarationCheck(Imports, Globals, Enums, TypeDefinitions, Structs, Funcs)
 
 	// there's declaration redeclared return values with error
 	if reDeclarationCheck != nil {
