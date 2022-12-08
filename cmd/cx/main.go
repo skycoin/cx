@@ -9,7 +9,6 @@ import (
 	"github.com/skycoin/cx/cx/util"
 
 	repl "github.com/skycoin/cx/cmd/cxrepl"
-	"github.com/skycoin/cx/cmd/packageloader2/loader"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/execute"
@@ -150,7 +149,7 @@ func Run(args []string) {
 	}
 
 	// options, file pointers, filenames
-	cxArgs, sourceCode, fileNames, rootDir := loader.ParseArgsForCX(commandLine.Args(), true)
+	cxArgs, sourceCode, fileNames := ast.ParseArgsForCX(commandLine.Args(), true)
 
 	// Propagate some options out to other packages.
 	parsingcompletor.DebugLexer = options.debugLexer
@@ -162,7 +161,7 @@ func Run(args []string) {
 	// Load op code tables
 	parsingcompletor.InitCXCore()
 
-	if run := parseProgram(options, fileNames, sourceCode, rootDir); run {
+	if run := parseProgram(options, fileNames, sourceCode); run {
 
 		if checkAST(args) {
 			printProgramAST(options, cxArgs, sourceCode)
