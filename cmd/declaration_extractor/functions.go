@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"os"
 	"path/filepath"
 	"regexp"
 )
@@ -80,7 +81,7 @@ func ExtractFuncs(source []byte, fileName string) ([]FuncDeclaration, error) {
 
 func ExtractMethod(fun FuncDeclaration) (string, error) {
 
-	bytes, err := o.ReadFile(fun.FileID)
+	bytes, err := os.ReadFile(fun.FileID)
 	if err != nil {
 		return "", err
 	}
