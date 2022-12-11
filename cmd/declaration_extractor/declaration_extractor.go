@@ -2,7 +2,6 @@ package declaration_extractor
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
 	"regexp"
 	"sync"
@@ -145,7 +144,7 @@ func GetDeclarations(source []byte, Glbls []GlobalDeclaration, Enums []EnumDecla
 	return declarations
 }
 
-func ExtractAllDeclarations(source []*os.File) ([]ImportDeclaration, []GlobalDeclaration, []EnumDeclaration, []TypeDefinitionDeclaration, []StructDeclaration, []FuncDeclaration, error) {
+func ExtractAllDeclarations(sourceCodeStrings []string, fileNames []string) ([]ImportDeclaration, []GlobalDeclaration, []EnumDeclaration, []TypeDefinitionDeclaration, []StructDeclaration, []FuncDeclaration, error) {
 
 	//Variable declarations
 	var Imports []ImportDeclaration
@@ -156,32 +155,26 @@ func ExtractAllDeclarations(source []*os.File) ([]ImportDeclaration, []GlobalDec
 	var Funcs []FuncDeclaration
 
 	//Channel declarations
-	importChannel := make(chan []ImportDeclaration, len(source))
-	globalChannel := make(chan []GlobalDeclaration, len(source))
-	enumChannel := make(chan []EnumDeclaration, len(source))
-	typeDefinitionChannel := make(chan []TypeDefinitionDeclaration, len(source))
-	structChannel := make(chan []StructDeclaration, len(source))
-	funcChannel := make(chan []FuncDeclaration, len(source))
-	errorChannel := make(chan error, len(source))
+	importChannel := make(chan []ImportDeclaration, len(sourceCodeStrings))
+	globalChannel := make(chan []GlobalDeclaration, len(sourceCodeStrings))
+	enumChannel := make(chan []EnumDeclaration, len(sourceCodeStrings))
+	typeDefinitionChannel := make(chan []TypeDefinitionDeclaration, len(sourceCodeStrings))
+	structChannel := make(chan []StructDeclaration, len(sourceCodeStrings))
+	funcChannel := make(chan []FuncDeclaration, len(sourceCodeStrings))
+	errorChannel := make(chan error, len(sourceCodeStrings))
 
 	var wg sync.WaitGroup
 
 	// concurrent extractions start
-	for _, currentFile := range source {
+	for i, sourceCode := range sourceCodeStrings {
 
 		wg.Add(1)
 
-		go func(currentFile *os.File, globalChannel chan<- []GlobalDeclaration, enumChannel chan<- []EnumDeclaration, typeDefinition chan<- []TypeDefinitionDeclaration, structChannel chan<- []StructDeclaration, funcChannel chan<- []FuncDeclaration, errorChannel chan<- error, wg *sync.WaitGroup) {
+		go func(sourceCode string, fileName string, globalChannel chan<- []GlobalDeclaration, enumChannel chan<- []EnumDeclaration, typeDefinition chan<- []TypeDefinitionDeclaration, structChannel chan<- []StructDeclaration, funcChannel chan<- []FuncDeclaration, errorChannel chan<- error, wg *sync.WaitGroup) {
 
 			defer wg.Done()
 
-			srcBytes, err := os.ReadFile(currentFile.Name())
-			fileName := currentFile.Name()
-			if err != nil {
-				errorChannel <- fmt.Errorf("%v:%v", filepath.Base(fileName), err)
-				return
-			}
-
+			srcBytes := []byte(sourceCode)
 			replaceComments := ReplaceCommentsWithWhitespaces(srcBytes)
 			replaceStringContents, err := ReplaceStringContentsWithWhitespaces(replaceComments)
 			if err != nil {
@@ -281,7 +274,7 @@ func ExtractAllDeclarations(source []*os.File) ([]ImportDeclaration, []GlobalDec
 
 			}(funcChannel, replaceStringContents, fileName, wg)
 
-		}(currentFile, globalChannel, enumChannel, typeDefinitionChannel, structChannel, funcChannel, errorChannel, &wg)
+		}(sourceCode, fileNames[i], globalChannel, enumChannel, typeDefinitionChannel, structChannel, funcChannel, errorChannel, &wg)
 	}
 
 	wg.Wait()
