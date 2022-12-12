@@ -3,10 +3,10 @@ package cxparsering
 import (
 	"bytes"
 	"fmt"
-	"io"
 	"os"
 
 	"github.com/skycoin/cx/cmd/declaration_extractor"
+	"github.com/skycoin/cx/cmd/fileloader"
 	"github.com/skycoin/cx/cmd/type_checker"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
@@ -29,7 +29,7 @@ import (
 
 	 step 2 : passtwo
 */
-func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
+func ParseSourceCode(sourceCode []*os.File) {
 
 	//local
 	// cxpartialparsing.Program = actions.AST
@@ -38,11 +38,16 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 		Copy the contents of the file pointers containing the CX source
 		code into sourceCodeStrings
 	*/
-	sourceCodeStrings := make([]string, len(sourceCode))
-	for i, source := range sourceCode {
-		tmp := bytes.NewBuffer(nil)
-		io.Copy(tmp, source)
-		sourceCodeStrings[i] = tmp.String()
+	// sourceCodeStrings := make([]string, len(sourceCode))
+	// for i, source := range sourceCode {
+	// 	tmp := bytes.NewBuffer(nil)
+	// 	io.Copy(tmp, source)
+	// 	sourceCodeStrings[i] = tmp.String()
+	// }
+
+	sourceCodeStrings, fileNames, err := fileloader.LoadFiles(sourceCode)
+	if err != nil {
+		fmt.Print(err)
 	}
 
 	/*

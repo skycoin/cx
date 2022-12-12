@@ -2,13 +2,11 @@ package cxparsering
 
 import (
 	"bufio"
-	"path/filepath"
 	"regexp"
 	"strings"
 
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
-	"github.com/skycoin/cx/cx/globals"
 	cxpackages "github.com/skycoin/cx/cx/packages"
 	"github.com/skycoin/cx/cxparser/actions"
 	"github.com/skycoin/cx/cxparser/util/profiling"
@@ -166,8 +164,8 @@ func Preliminarystage(srcStrs, srcNames []string) int {
 					// Checking if `pkgName` already exists and if it's not a standard library package.
 					if _, err := actions.AST.GetPackage(pkgName); err != nil && !cxpackages.IsDefaultPackage(pkgName) {
 						// _, sourceCode, srcNames := ParseArgsForCX([]string{fmt.Sprintf("%s%s", SRCPATH, pkgName)}, false)
-						_, sourceCode, fileNames := ast.ParseArgsForCX([]string{filepath.Join(globals.SRCPATH, pkgName)}, false)
-						ParseSourceCode(sourceCode, fileNames)
+						// _, sourceCode, fileNames := ast.ParseArgsForCX([]string{filepath.Join(globals.SRCPATH, pkgName)}, false)
+						// ParseSourceCode(sourceCode, fileNames)
 					}
 				}
 			}
