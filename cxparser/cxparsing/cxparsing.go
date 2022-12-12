@@ -44,11 +44,8 @@ func ParseSourceCode(sourceCode []*os.File) {
 	// 	io.Copy(tmp, source)
 	// 	sourceCodeStrings[i] = tmp.String()
 	// }
-
-	sourceCodeStrings, fileNames, err := fileloader.LoadFiles(sourceCode)
-	if err != nil {
-		fmt.Print(err)
-	}
+	var sourceCodeStrings []string
+	var fileNames []string
 
 	/*
 		We need to traverse the elements by hierarchy first add all the
@@ -58,19 +55,24 @@ func ParseSourceCode(sourceCode []*os.File) {
 	*/
 	parseErrors := 0
 	if len(sourceCode) > 0 {
-		parseErrors = Preliminarystage(sourceCodeStrings, fileNames)
-	}
+		sourceCodeStrings, fileNames, err := fileloader.LoadFiles(sourceCode)
+		if err != nil {
+			parseErrors++
+			fmt.Print(err)
+		}
 
-	Imports, Globals, Enums, TypeDefinitions, Structs, Funcs, err := declaration_extractor.ExtractAllDeclarations(sourceCodeStrings, fileNames)
-	if (Enums != nil && TypeDefinitions != nil) || err != nil {
-		parseErrors++
-		fmt.Println(err)
-	}
+		Imports, Globals, Enums, TypeDefinitions, Structs, Funcs, err := declaration_extractor.ExtractAllDeclarations(sourceCodeStrings, fileNames)
+		if (Enums != nil && TypeDefinitions != nil) || err != nil {
+			parseErrors++
+			fmt.Println(err)
+		}
 
-	err = type_checker.ParseAllDeclarations(Imports, Globals, Structs, Funcs)
-	if err != nil {
-		parseErrors++
-		fmt.Println(err)
+		err = type_checker.ParseAllDeclarations(Imports, Globals, Structs, Funcs)
+		if err != nil {
+			parseErrors++
+			fmt.Println(err)
+		}
+
 	}
 
 	// actions.AST = cxpartialparsing.Program

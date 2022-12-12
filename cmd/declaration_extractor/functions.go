@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -81,10 +82,14 @@ func ExtractFuncs(source []byte, fileName string) ([]FuncDeclaration, error) {
 
 func ExtractMethod(fun FuncDeclaration) (string, error) {
 
-	bytes, err := os.ReadFile(fun.FileID)
+	file, err := os.Open(fun.FileID)
 	if err != nil {
 		return "", err
 	}
+
+	tmp := bytes.NewBuffer(nil)
+	io.Copy(tmp, file)
+	bytes := tmp.Bytes()
 
 	reFuncMethod := regexp.MustCompile(`func\s*\(\s*\w+\s+(\w+)\s*\)`)
 	funcMethod := reFuncMethod.FindSubmatch(bytes[fun.StartOffset : fun.StartOffset+fun.Length])

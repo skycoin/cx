@@ -2,6 +2,7 @@ package type_checker
 
 import (
 	"bytes"
+	"io"
 	"os"
 	"regexp"
 
@@ -36,10 +37,14 @@ func ParseFuncHeaders(funcs []declaration_extractor.FuncDeclaration) error {
 
 		actions.AST.SelectPackage(fun.PackageID)
 
-		source, err := os.ReadFile(fun.FileID)
+		file, err := os.Open(fun.FileID)
 		if err != nil {
 			return err
 		}
+
+		tmp := bytes.NewBuffer(nil)
+		io.Copy(tmp, file)
+		source := tmp.Bytes()
 
 		funcDeclarationLine := source[fun.StartOffset : fun.StartOffset+fun.Length]
 

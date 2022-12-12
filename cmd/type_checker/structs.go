@@ -1,6 +1,8 @@
 package type_checker
 
 import (
+	"bytes"
+	"io"
 	"os"
 
 	"github.com/skycoin/cx/cmd/declaration_extractor"
@@ -70,10 +72,14 @@ func ParseStructs(structs []declaration_extractor.StructDeclaration) error {
 
 		pkg = pkg.AddStruct(actions.AST, structCX)
 
-		src, err := os.ReadFile(strct.FileID)
+		file, err := os.Open(strct.FileID)
 		if err != nil {
 			return err
 		}
+
+		tmp := bytes.NewBuffer(nil)
+		io.Copy(tmp, file)
+		src := tmp.Bytes()
 
 		var structFields []*ast.CXArgument
 

@@ -1,6 +1,8 @@
 package type_checker
 
 import (
+	"bytes"
+	"io"
 	"os"
 	"regexp"
 
@@ -38,10 +40,14 @@ func ParseGlobals(globals []declaration_extractor.GlobalDeclaration) error {
 		actions.AST.SelectPackage(global.PackageID)
 
 		// Read File
-		source, err := os.ReadFile(global.FileID)
+		file, err := os.Open(global.FileID)
 		if err != nil {
 			return err
 		}
+
+		tmp := bytes.NewBuffer(nil)
+		io.Copy(tmp, file)
+		source := tmp.Bytes()
 
 		// Extract Declaration from file
 		reGlobalDeclaration := regexp.MustCompile(`var\s+(\w*)\s+([\*\[\]\w\.]+)(?:\s*\=\s*[\s\S]+\S+){0,1}`)
