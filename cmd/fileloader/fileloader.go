@@ -15,6 +15,16 @@ import (
 	"github.com/skycoin/cx/cxparser/util/profiling"
 )
 
+var reMultiCommentOpen = regexp.MustCompile(`/\*`)
+var reMultiCommentClose = regexp.MustCompile(`\*/`)
+var reComment = regexp.MustCompile("//")
+
+var rePkg = regexp.MustCompile("package")
+var rePkgName = regexp.MustCompile(`(^|[\s])package\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
+
+var reImp = regexp.MustCompile("import")
+var reImpName = regexp.MustCompile(`(^|[\s])import\s+"([_a-zA-Z][_a-zA-Z0-9/-]*)"`)
+
 func LoadFiles(sourceCode []*os.File) (sourceCodeStrings [][]byte, fileNames []string, err error) {
 	for _, source := range sourceCode {
 		tmp := bytes.NewBuffer(nil)
@@ -22,16 +32,6 @@ func LoadFiles(sourceCode []*os.File) (sourceCodeStrings [][]byte, fileNames []s
 		sourceCodeStrings = append(sourceCodeStrings, tmp.Bytes())
 		fileNames = append(fileNames, source.Name())
 	}
-
-	reMultiCommentOpen := regexp.MustCompile(`/\*`)
-	reMultiCommentClose := regexp.MustCompile(`\*/`)
-	reComment := regexp.MustCompile("//")
-
-	rePkg := regexp.MustCompile("package")
-	rePkgName := regexp.MustCompile(`(^|[\s])package\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
-
-	reImp := regexp.MustCompile("import")
-	reImpName := regexp.MustCompile(`(^|[\s])import\s+"([_a-zA-Z][_a-zA-Z0-9/-]*)"`)
 
 	profiling.StartProfile("1. packages/structs")
 	// 1. Identify all the packages and structs
