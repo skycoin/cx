@@ -144,7 +144,7 @@ func GetDeclarations(source []byte, Glbls []GlobalDeclaration, Enums []EnumDecla
 	return declarations
 }
 
-func ExtractAllDeclarations(sourceCodeStrings [][]byte, fileNames []string) ([]ImportDeclaration, []GlobalDeclaration, []EnumDeclaration, []TypeDefinitionDeclaration, []StructDeclaration, []FuncDeclaration, error) {
+func ExtractAllDeclarations(sourceCodeStrings []string, fileNames []string) ([]ImportDeclaration, []GlobalDeclaration, []EnumDeclaration, []TypeDefinitionDeclaration, []StructDeclaration, []FuncDeclaration, error) {
 
 	//Variable declarations
 	var Imports []ImportDeclaration
@@ -170,10 +170,11 @@ func ExtractAllDeclarations(sourceCodeStrings [][]byte, fileNames []string) ([]I
 
 		wg.Add(1)
 
-		go func(srcBytes []byte, fileName string, globalChannel chan<- []GlobalDeclaration, enumChannel chan<- []EnumDeclaration, typeDefinition chan<- []TypeDefinitionDeclaration, structChannel chan<- []StructDeclaration, funcChannel chan<- []FuncDeclaration, errorChannel chan<- error, wg *sync.WaitGroup) {
+		go func(sourceCode string, fileName string, globalChannel chan<- []GlobalDeclaration, enumChannel chan<- []EnumDeclaration, typeDefinition chan<- []TypeDefinitionDeclaration, structChannel chan<- []StructDeclaration, funcChannel chan<- []FuncDeclaration, errorChannel chan<- error, wg *sync.WaitGroup) {
 
 			defer wg.Done()
 
+			srcBytes := []byte(sourceCode)
 			replaceComments := ReplaceCommentsWithWhitespaces(srcBytes)
 			replaceStringContents, err := ReplaceStringContentsWithWhitespaces(replaceComments)
 			if err != nil {
