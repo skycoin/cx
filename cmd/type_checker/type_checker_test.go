@@ -3,12 +3,13 @@ package type_checker_test
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/skycoin/cx/cmd/declaration_extractor"
-	"github.com/skycoin/cx/cmd/packageloader/file_output"
-	"github.com/skycoin/cx/cmd/packageloader/loader"
+	"github.com/skycoin/cx/cmd/fileloader"
 	"github.com/skycoin/cx/cmd/type_checker"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
@@ -314,10 +315,13 @@ func TestTypeChecker_ParseImports(t *testing.T) {
 
 			actions.AST = cxinit.MakeProgram()
 
-			srcBytes, err := os.ReadFile(tc.testDir)
+			file, err := os.Open(tc.testDir)
 			if err != nil {
-				t.Error(err)
+				t.Fatal(err)
 			}
+			src := bytes.NewBuffer(nil)
+			io.Copy(src, file)
+			srcBytes := src.Bytes()
 
 			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(srcBytes)
 
@@ -491,30 +495,26 @@ func TestTypeChecker_ParseGlobals(t *testing.T) {
 
 			actions.AST = cxinit.MakeProgram()
 
-			_, sourceCode, _ := loader.ParseArgsForCX([]string{tc.testDir}, true)
-
-			err := loader.LoadCXProgram("test", sourceCode, "bolt")
+			file, err := os.Open(tc.testDir)
 			if err != nil {
 				t.Fatal(err)
 			}
+			src := bytes.NewBuffer(nil)
+			io.Copy(src, file)
+			srcBytes := src.Bytes()
 
-			files, err := file_output.GetImportFiles("test", "bolt")
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(files[0].Content)
+			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(srcBytes)
 			ReplaceStringContentsWithWhitespaces, err := declaration_extractor.ReplaceStringContentsWithWhitespaces(ReplaceCommentsWithWhitespaces)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			Globals, err := declaration_extractor.ExtractGlobals(ReplaceStringContentsWithWhitespaces, files[0].FileName)
+			Globals, err := declaration_extractor.ExtractGlobals(ReplaceStringContentsWithWhitespaces, filepath.Base(tc.testDir))
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			err = type_checker.ParseGlobals(files, Globals)
+			err = type_checker.ParseGlobals(Globals)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -613,7 +613,7 @@ func TestTypeChecker_ParseStructs(t *testing.T) {
 	}{
 		{
 			scenario: "Has Structs",
-			testDir:  "./test_files/ParseStructs/HasStructs",
+			testDir:  "./test_files/ParseStructs/test.cx",
 			structTypeSignatures: []StructTypeSignature{
 				{
 					Name:    "CustomType",
@@ -648,7 +648,7 @@ func TestTypeChecker_ParseStructs(t *testing.T) {
 		},
 		{
 			scenario: "Has Structs 2",
-			testDir:  "./test_files/ParseStructs/HasStructs2",
+			testDir:  "./test_files/ParseStructs/testFile.cx",
 			structTypeSignatures: []StructTypeSignature{
 				{
 					Name:    "animal",
@@ -676,23 +676,22 @@ func TestTypeChecker_ParseStructs(t *testing.T) {
 
 			actions.AST = cxinit.MakeProgram()
 
-			_, sourceCode, _ := loader.ParseArgsForCX([]string{tc.testDir}, true)
-
-			err := loader.LoadCXProgram("test", sourceCode, "bolt")
+			file, err := os.Open(tc.testDir)
 			if err != nil {
 				t.Fatal(err)
 			}
+			src := bytes.NewBuffer(nil)
+			io.Copy(src, file)
+			srcBytes := src.Bytes()
 
-			files, err := file_output.GetImportFiles("test", "bolt")
+			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(srcBytes)
+
+			structs, err := declaration_extractor.ExtractStructs(ReplaceCommentsWithWhitespaces, tc.testDir)
+
+			err = type_checker.ParseStructs(structs)
 			if err != nil {
 				t.Fatal(err)
 			}
-
-			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(files[0].Content)
-
-			structs, err := declaration_extractor.ExtractStructs(ReplaceCommentsWithWhitespaces, files[0].FileName)
-
-			type_checker.ParseStructs(files, structs)
 
 			program := actions.AST
 
@@ -787,7 +786,7 @@ func TestTypeChecker_ParseFuncHeaders(t *testing.T) {
 	}{
 		{
 			scenario: "Has funcs",
-			testDir:  "./test_files/ParseFuncs/HasFuncs",
+			testDir:  "./test_files/ParseFuncs/test.cx",
 			functionCXs: []CXFunc{
 				{
 					Name:    "main",
@@ -818,7 +817,7 @@ func TestTypeChecker_ParseFuncHeaders(t *testing.T) {
 		},
 		{
 			scenario: "Has funcs 2",
-			testDir:  "./test_files/ParseFuncs/HasFuncs2",
+			testDir:  "./test_files/ParseFuncs/testFile.cx",
 			functionCXs: []CXFunc{
 				{
 					Name:    "main",
@@ -841,27 +840,29 @@ func TestTypeChecker_ParseFuncHeaders(t *testing.T) {
 
 			actions.AST = cxinit.MakeProgram()
 
-			_, sourceCode, _ := loader.ParseArgsForCX([]string{tc.testDir}, true)
-
-			err := loader.LoadCXProgram("test", sourceCode, "bolt")
+			file, err := os.Open(tc.testDir)
 			if err != nil {
 				t.Fatal(err)
 			}
+			src := bytes.NewBuffer(nil)
+			io.Copy(src, file)
+			srcBytes := src.Bytes()
 
-			files, err := file_output.GetImportFiles("test", "bolt")
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(files[0].Content)
+			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(srcBytes)
 			ReplaceStringContentsWithWhitespaces, err := declaration_extractor.ReplaceStringContentsWithWhitespaces(ReplaceCommentsWithWhitespaces)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			funcs, err := declaration_extractor.ExtractFuncs(ReplaceStringContentsWithWhitespaces, files[0].FileName)
+			funcs, err := declaration_extractor.ExtractFuncs(ReplaceStringContentsWithWhitespaces, tc.testDir)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-			type_checker.ParseFuncHeaders(files, funcs)
+			err = type_checker.ParseFuncHeaders(funcs)
+			if err != nil {
+				t.Fatal(err)
+			}
 
 			program := actions.AST
 
@@ -1070,7 +1071,7 @@ func TestTypeChecker_ParseAllDeclarations(t *testing.T) {
 						},
 						{
 							Name:   "CustomType.setFieldA",
-							Inputs: "main.customType *CustomType, string str",
+							Inputs: "customType *CustomType, string str",
 						},
 					},
 				},
@@ -1142,7 +1143,7 @@ func TestTypeChecker_ParseAllDeclarations(t *testing.T) {
 					Funcs: []Func{
 						{
 							Name:   "Animal.Speak",
-							Inputs: "helper.a *Animal",
+							Inputs: "a *Animal",
 						},
 					},
 				},
@@ -1168,26 +1169,21 @@ func TestTypeChecker_ParseAllDeclarations(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
 
-			actions.AST = nil
+			actions.AST = cxinit.MakeProgram()
 
-			_, sourceCode, _ := loader.ParseArgsForCX([]string{tc.testDir}, true)
+			_, sourceCodes, _ := ast.ParseArgsForCX([]string{tc.testDir}, true)
 
-			err := loader.LoadCXProgram("test", sourceCode, "bolt")
+			sourceCodesStrings, fileNames, err := fileloader.LoadFiles(sourceCodes)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			files, err := file_output.GetImportFiles("test", "bolt")
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			Imports, Globals, Enums, TypeDefinitions, Structs, Funcs, gotErr := declaration_extractor.ExtractAllDeclarations(files)
+			Imports, Globals, Enums, TypeDefinitions, Structs, Funcs, gotErr := declaration_extractor.ExtractAllDeclarations(sourceCodesStrings, fileNames)
 			if (Enums != nil && TypeDefinitions != nil) || gotErr != nil {
 				t.Fatal(gotErr)
 			}
 
-			err = type_checker.ParseAllDeclarations(files, Imports, Globals, Structs, Funcs)
+			err = type_checker.ParseAllDeclarations(Imports, Globals, Structs, Funcs)
 			if err != nil {
 				t.Fatal(err)
 			}
