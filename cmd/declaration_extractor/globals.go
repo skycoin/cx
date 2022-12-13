@@ -35,34 +35,35 @@ func ExtractGlobals(source []byte, fileName string) ([]GlobalDeclaration, error)
 
 		line := scanner.Bytes()
 		lineno++
+		tokens := bytes.Fields(line)
 
 		// Package declaration extraction
-		if rePkg.FindIndex(line) != nil {
+		if ContainsTokenByte(tokens, []byte("package")) {
 
-			matchPkg := rePkgName.FindSubmatch(line)
+			name := reName.Find(tokens[1])
 
-			if matchPkg == nil || !bytes.Equal(matchPkg[0], bytes.TrimSpace(line)) {
+			if len(tokens) != 2 || len(tokens[1]) != len(name) {
 				return GlobalDeclarationsArray, fmt.Errorf("%v:%v: syntax error: package declaration", filepath.Base(fileName), lineno)
 			}
 
-			pkg = string(matchPkg[1])
+			pkg = string(name)
 
 		}
 
 		// if {  is found increment body depth
-		if locs := reLeftBrace.FindAllIndex(line, -1); locs != nil {
+		if ContainsTokenByteInToken(tokens, []byte("{")) {
 			inBlock++
 		}
 
 		// if } is found decrement body depth
-		if locs := reRightBrace.FindAllIndex(line, -1); locs != nil {
+		if ContainsTokenByteInToken(tokens, []byte("}")) {
 			inBlock--
 		}
 
 		if inBlock == 0 {
 
 			// if match is found and body depth is 0
-			if reGlobal.FindIndex(line) != nil {
+			if ContainsTokenByte(tokens, []byte("var")) {
 
 				if pkg == "" {
 					return GlobalDeclarationsArray, fmt.Errorf("%v:%v: syntax error: missing package", filepath.Base(fileName), lineno)

@@ -34,7 +34,7 @@ func LoadFiles(sourceCode []*os.File) (sourceCodeStrings []string, fileNames []s
 	reImp := regexp.MustCompile("import")
 	reImpName := regexp.MustCompile(`(^|[\s])import\s+"([_a-zA-Z][_a-zA-Z0-9/-]*)"`)
 
-	profiling.StartProfile("1. packages/structs")
+	profiling.StartProfile("1. packages")
 	// 1. Identify all the packages and structs
 	for srcI, srcStr := range sourceCodeStrings {
 		srcName := fileNames[srcI]
@@ -43,10 +43,8 @@ func LoadFiles(sourceCode []*os.File) (sourceCodeStrings []string, fileNames []s
 		reader := strings.NewReader(srcStr)
 		scanner := bufio.NewScanner(reader)
 		var commentedCode bool
-		var lineno = 0
 		for scanner.Scan() {
 			line := scanner.Bytes()
-			lineno++
 
 			// Identify whether we are in a comment or not.
 			commentLoc := reComment.FindIndex(line)
@@ -82,28 +80,19 @@ func LoadFiles(sourceCode []*os.File) (sourceCodeStrings []string, fileNames []s
 						if err != nil {
 							panic(err)
 						}
-						// prePkg = newPkg
-					} else {
-						// prePkg = pkg
 					}
 				}
 			}
 
-			// // 1-b. Identify all the structs
-
 		}
 		profiling.StopProfile(srcName)
 	} // for range sourceCodeStrings
-	profiling.StopProfile("1. packages/structs")
+	profiling.StopProfile("1. packages")
 
-	profiling.StartProfile("2. globals")
-	// 2. Identify all global variables
-	//    We also identify packages again, so we know to what
-	//    package we're going to add the variable declaration to.
+	profiling.StartProfile("2. imports")
 	for i, source := range sourceCodeStrings {
 		profiling.StartProfile(fileNames[i])
-		// inBlock needs to be 0 to guarantee that we're in the global scope
-		// var inBlock int
+
 		var commentedCode bool
 
 		scanner := bufio.NewScanner(strings.NewReader(source))
@@ -158,7 +147,7 @@ func LoadFiles(sourceCode []*os.File) (sourceCodeStrings []string, fileNames []s
 		}
 		profiling.StopProfile(fileNames[i])
 	}
-	profiling.StopProfile("2. globals")
+	profiling.StopProfile("2. imports")
 
 	return sourceCodeStrings, fileNames, nil
 }

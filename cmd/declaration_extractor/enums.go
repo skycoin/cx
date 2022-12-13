@@ -37,30 +37,31 @@ func ExtractEnums(source []byte, fileName string) ([]EnumDeclaration, error) {
 
 		line := scanner.Bytes()
 		lineno++
+		tokens := bytes.Fields(line)
 
 		// Package declaration extraction
-		if rePkg.FindIndex(line) != nil {
+		if ContainsTokenByte(tokens, []byte("package")) {
 
-			matchPkg := rePkgName.FindSubmatch(line)
+			name := reName.Find(tokens[1])
 
-			if matchPkg == nil || !bytes.Equal(matchPkg[0], bytes.TrimSpace(line)) {
+			if len(tokens) != 2 || len(tokens[1]) != len(name) {
 				return EnumDeclarationsArray, fmt.Errorf("%v:%v: syntax error: package declaration", filepath.Base(fileName), lineno)
 			}
 
-			pkg = string(matchPkg[1])
+			pkg = string(name)
 
 		}
 
 		// initialize enum, increment parenthesis depth and skip to next line
 		// if const ( is found
-		if locs := reEnumInit.FindAllIndex(line, -1); locs != nil {
+		if ContainsTokenByteInToken(tokens, []byte("const")) && ContainsTokenByte(tokens, []byte("(")) {
 			EnumInit = true
 			currentOffset += len(line) // increments the currentOffset by line len
 			continue
 		}
 
 		// if ) is found and enum intialized, decrement parenthesis depth
-		if locs := rePrtsClose.FindAllIndex(line, -1); locs != nil && EnumInit {
+		if ContainsTokenByte(tokens, []byte(")")) && EnumInit {
 			EnumInit = false
 			Type = ""
 			Index = 0

@@ -8,12 +8,8 @@ import (
 )
 
 //Regexes
-var rePkg = regexp.MustCompile(`^(?:.+\s+|\s*)package(?:\s+[\S\s]+|\s*)$`)
-var rePkgName = regexp.MustCompile(`package\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
-var reEnumInit = regexp.MustCompile(`const\s+\(`)
-var rePrtsClose = regexp.MustCompile(`\)`)
+var reName = regexp.MustCompile(`[_a-zA-Z][_a-zA-Z0-9]*`)
 var reEnumDec = regexp.MustCompile(`([_a-zA-Z][_a-zA-Z0-9]*)(?:\s+([_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*)){0,1}(?:\s*\=\s*[\s\S]+\S+){0,1}`)
-var reFunc = regexp.MustCompile(`^(?:.+\s+|\s*)func(?:\s+[\S\s]+|\([\S\s]+|\s*)$`)
 var reNotSpace = regexp.MustCompile(`\S+`)
 
 // Func Declaration regex for name extraction and syntax checking
@@ -30,14 +26,10 @@ var reNotSpace = regexp.MustCompile(`\S+`)
 // Third, finds whether there's one or two pairs of parenthesis
 // Forth, finds whether there's one or more params in the parenthesis
 var reFuncDec = regexp.MustCompile(`(func(?:(?:\s*\(\s*[_a-zA-Z]\w*\s+\*{0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*\s*\)\s*)|\s+)([_a-zA-Z]\w*)(?:\s*\(\s*(?:(?:[_a-zA-Z]\w*(?:\s*\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]\*{0,1}){0,1}\s*|\s+)[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*\s*,\s*)+[_a-zA-Z]\w*(?:\s*\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]\*{0,1}){0,1}|\s+)\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*|(?:[_a-zA-Z]\w*(?:\s*\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]\*{0,1}){0,1}\s*|\s+)[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*){0,1})\s*\)){1,2})(?:\s*{){0,1}`)
-var reGlobal = regexp.MustCompile(`^(?:.+\s+|\s*)var(?:\s+[\S\s]+|\s*)$`)
 var reGlobalName = regexp.MustCompile(`var\s+([_a-zA-Z]\w*)\s+\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]){0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*(?:\s*\=\s*[\s\S]+\S+){0,1}`)
-var reLeftBrace = regexp.MustCompile("{")
 var reStruct = regexp.MustCompile(`type\s+[_a-zA-Z][_a-zA-Z0-9]*\s+struct`)
 var reStructHeader = regexp.MustCompile(`type\s+([_a-zA-Z][_a-zA-Z0-9]*)\s+struct\s*{`)
-var reRightBrace = regexp.MustCompile("}")
 var reStructField = regexp.MustCompile(`([_a-zA-Z][_a-zA-Z0-9]*)\s+\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]\*{0,1}){0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*`)
-var reType = regexp.MustCompile(`^(?:.+\s+|\s*)type(?:\s+[\S\s]+|\s*)$`)
 var reTypeDefinition = regexp.MustCompile(`type\s+([_a-zA-Z][_a-zA-Z0-9]*)\s+([_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*)`)
 
 func ReDeclarationCheck(Import []ImportDeclaration, Glbl []GlobalDeclaration, Enum []EnumDeclaration, TypeDef []TypeDefinitionDeclaration, Strct []StructDeclaration, Func []FuncDeclaration) error {

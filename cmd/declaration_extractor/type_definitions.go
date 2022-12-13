@@ -31,21 +31,22 @@ func ExtractTypeDefinitions(source []byte, fileName string) ([]TypeDefinitionDec
 	for scanner.Scan() {
 		line := scanner.Bytes()
 		lineno++
+		tokens := bytes.Fields(line)
 
 		// Package declaration extraction
-		if rePkg.FindIndex(line) != nil {
+		if ContainsTokenByte(tokens, []byte("package")) {
 
-			matchPkg := rePkgName.FindSubmatch(line)
+			name := reName.Find(tokens[1])
 
-			if matchPkg == nil || !bytes.Equal(matchPkg[0], bytes.TrimSpace(line)) {
+			if len(tokens) != 2 || len(tokens[1]) != len(name) {
 				return TypeDefinitionDeclarationsArray, fmt.Errorf("%v:%v: syntax error: package declaration", filepath.Base(fileName), lineno)
 			}
 
-			pkg = string(matchPkg[1])
+			pkg = string(name)
 
 		}
 
-		if reType.Find(line) != nil {
+		if ContainsTokenByte(tokens, []byte("type")) {
 
 			if pkg == "" {
 				return TypeDefinitionDeclarationsArray, fmt.Errorf("%v:%v: syntax error: missing package", filepath.Base(fileName), lineno)

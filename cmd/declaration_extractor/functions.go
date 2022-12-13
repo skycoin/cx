@@ -35,21 +35,22 @@ func ExtractFuncs(source []byte, fileName string) ([]FuncDeclaration, error) {
 	for scanner.Scan() {
 		line := scanner.Bytes()
 		lineno++
+		tokens := bytes.Fields(line)
 
 		// Package declaration extraction
-		if rePkg.FindIndex(line) != nil {
+		if ContainsTokenByte(tokens, []byte("package")) {
 
-			matchPkg := rePkgName.FindSubmatch(line)
+			name := reName.Find(tokens[1])
 
-			if matchPkg == nil || !bytes.Equal(matchPkg[0], bytes.TrimSpace(line)) && reNotSpace.Find(line) != nil {
+			if len(tokens) != 2 || len(tokens[1]) != len(name) {
 				return FuncDeclarationsArray, fmt.Errorf("%v:%v: syntax error: package declaration", filepath.Base(fileName), lineno)
 			}
 
-			pkg = string(matchPkg[1])
+			pkg = string(name)
 
 		}
 
-		if match := reFunc.FindIndex(line); match != nil {
+		if ContainsTokenByte(tokens, []byte("func")) || ContainsTokenByte(tokens, []byte("func(")) {
 
 			funcBytes := reFuncDec.FindSubmatch(line)
 			funcIdx := reFuncDec.FindSubmatchIndex(line)

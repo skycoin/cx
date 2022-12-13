@@ -28,23 +28,23 @@ func ExtractImports(source []byte, fileName string) ([]ImportDeclaration, error)
 
 		line := scanner.Bytes()
 		lineno++
+		tokens := bytes.Fields(line)
 
 		// Package declaration extraction
-		if rePkg.FindIndex(line) != nil {
+		if ContainsTokenByte(tokens, []byte("package")) {
 
-			matchPkg := rePkgName.FindSubmatch(line)
+			name := reName.Find(tokens[1])
 
-			if matchPkg == nil || !bytes.Equal(matchPkg[0], bytes.TrimSpace(line)) {
+			if len(tokens) != 2 || len(tokens[1]) != len(name) {
 				return ImportDeclarationsArray, fmt.Errorf("%v:%v: syntax error: package declaration", filepath.Base(fileName), lineno)
 			}
 
-			pkg = string(matchPkg[1])
+			pkg = string(name)
 
 		}
 
 		// Extract Import
-		checkLine := bytes.Split(line, []byte(" "))
-		if bytes.Equal(checkLine[0], []byte("import")) {
+		if ContainsTokenByte(tokens, []byte("import")) {
 
 			if pkg == "" {
 				return ImportDeclarationsArray, fmt.Errorf("%v:%v: syntax error: missing package", filepath.Base(fileName), lineno)
@@ -56,7 +56,7 @@ func ExtractImports(source []byte, fileName string) ([]ImportDeclaration, error)
 			tmp.FileID = fileName
 			tmp.LineNumber = lineno
 
-			tmp.ImportName = string(checkLine[1][1 : len(checkLine[1])-1])
+			tmp.ImportName = string(tokens[1][1 : len(tokens[1])-1])
 
 			ImportDeclarationsArray = append(ImportDeclarationsArray, tmp)
 		}
