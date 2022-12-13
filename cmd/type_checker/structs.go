@@ -35,13 +35,8 @@ func ParseStructs(structs []declaration_extractor.StructDeclaration) error {
 
 		}
 
-		// Select Package to Add to AST
-		actions.AST.SelectPackage(strct.PackageID)
-
 		structCX := ast.MakeStruct(strct.StructName)
-		structCX.Package = ast.CXPackageIndex(pkg.Index)
-
-		pkg = pkg.AddStruct(actions.AST, structCX)
+		pkg.AddStruct(actions.AST, structCX)
 	}
 
 	// Get Package
@@ -66,11 +61,6 @@ func ParseStructs(structs []declaration_extractor.StructDeclaration) error {
 
 		// Select Package to Add to AST
 		actions.AST.SelectPackage(strct.PackageID)
-
-		structCX := ast.MakeStruct(strct.StructName)
-		structCX.Package = ast.CXPackageIndex(pkg.Index)
-
-		pkg = pkg.AddStruct(actions.AST, structCX)
 
 		file, err := os.Open(strct.FileID)
 		if err != nil {
