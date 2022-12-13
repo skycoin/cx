@@ -9,6 +9,7 @@ import (
 
 //Regexes
 var reName = regexp.MustCompile(`[_a-zA-Z][_a-zA-Z0-9]*`)
+var reEnumInit = regexp.MustCompile(`const\s+\(`)
 var reEnumDec = regexp.MustCompile(`([_a-zA-Z][_a-zA-Z0-9]*)(?:\s+([_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*)){0,1}(?:\s*\=\s*[\s\S]+\S+){0,1}`)
 var reNotSpace = regexp.MustCompile(`\S+`)
 

@@ -36,6 +36,10 @@ func ExtractTypeDefinitions(source []byte, fileName string) ([]TypeDefinitionDec
 		// Package declaration extraction
 		if ContainsTokenByte(tokens, []byte("package")) {
 
+			if len(tokens) != 2 {
+				return TypeDefinitionDeclarationsArray, fmt.Errorf("%v:%v: syntax error: package declaration", filepath.Base(fileName), lineno)
+			}
+
 			name := reName.Find(tokens[1])
 
 			if len(tokens) != 2 || len(tokens[1]) != len(name) {

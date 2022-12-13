@@ -12,6 +12,8 @@ import (
 	"github.com/skycoin/cx/cmd/declaration_extractor"
 	"github.com/skycoin/cx/cmd/fileloader"
 	"github.com/skycoin/cx/cx/ast"
+	cxinit "github.com/skycoin/cx/cx/init"
+	"github.com/skycoin/cx/cxparser/actions"
 )
 
 //Sets the offset for windows or other os
@@ -1479,6 +1481,8 @@ func TestDeclarationExtractor_ExtractAllDeclarations(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
+
+			actions.AST = cxinit.MakeProgram()
 
 			_, sourceCodes, _ := ast.ParseArgsForCX([]string{tc.testDir}, true)
 

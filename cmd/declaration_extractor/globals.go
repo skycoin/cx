@@ -40,9 +40,13 @@ func ExtractGlobals(source []byte, fileName string) ([]GlobalDeclaration, error)
 		// Package declaration extraction
 		if ContainsTokenByte(tokens, []byte("package")) {
 
+			if len(tokens) != 2 {
+				return GlobalDeclarationsArray, fmt.Errorf("%v:%v: syntax error: package declaration", filepath.Base(fileName), lineno)
+			}
+
 			name := reName.Find(tokens[1])
 
-			if len(tokens) != 2 || len(tokens[1]) != len(name) {
+			if len(tokens[1]) != len(name) {
 				return GlobalDeclarationsArray, fmt.Errorf("%v:%v: syntax error: package declaration", filepath.Base(fileName), lineno)
 			}
 

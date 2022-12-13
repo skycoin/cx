@@ -42,9 +42,13 @@ func ExtractEnums(source []byte, fileName string) ([]EnumDeclaration, error) {
 		// Package declaration extraction
 		if ContainsTokenByte(tokens, []byte("package")) {
 
+			if len(tokens) != 2 {
+				return EnumDeclarationsArray, fmt.Errorf("%v:%v: syntax error: package declaration", filepath.Base(fileName), lineno)
+			}
+
 			name := reName.Find(tokens[1])
 
-			if len(tokens) != 2 || len(tokens[1]) != len(name) {
+			if len(tokens[1]) != len(name) {
 				return EnumDeclarationsArray, fmt.Errorf("%v:%v: syntax error: package declaration", filepath.Base(fileName), lineno)
 			}
 
@@ -54,7 +58,7 @@ func ExtractEnums(source []byte, fileName string) ([]EnumDeclaration, error) {
 
 		// initialize enum, increment parenthesis depth and skip to next line
 		// if const ( is found
-		if ContainsTokenByteInToken(tokens, []byte("const")) && ContainsTokenByte(tokens, []byte("(")) {
+		if reEnumInit.Find(line) != nil {
 			EnumInit = true
 			currentOffset += len(line) // increments the currentOffset by line len
 			continue
