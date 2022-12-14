@@ -61,8 +61,8 @@ func ParseSourceCode(sourceCode []*os.File) {
 			fmt.Print(err)
 		}
 
-		Imports, Globals, Enums, TypeDefinitions, Structs, Funcs, err := declaration_extractor.ExtractAllDeclarations(sourceCodeStrings, fileNames)
-		if (Enums != nil && TypeDefinitions != nil) || err != nil {
+		Imports, Globals, _, _, Structs, Funcs, err := declaration_extractor.ExtractAllDeclarations(sourceCodeStrings, fileNames)
+		if err != nil {
 			parseErrors++
 			fmt.Println(err)
 		}

@@ -1563,3 +1563,21 @@ func BenchmarkDeclarationExtractor_ExtractFuncs(b *testing.B) {
 		})
 	}
 }
+
+func BenchmarkDeclarationExtractor_ExtractAllDeclarations(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		actions.AST = cxinit.MakeProgram()
+
+		_, sourceCodes, _ := ast.ParseArgsForCX([]string{"./test_files/ExtractAllDeclarations/test.cx"}, true)
+
+		sourceCodeStrings, fileNames, err := fileloader.LoadFiles(sourceCodes)
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		_, _, _, _, _, _, err = declaration_extractor.ExtractAllDeclarations(sourceCodeStrings, fileNames)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}

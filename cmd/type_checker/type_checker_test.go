@@ -1173,13 +1173,13 @@ func TestTypeChecker_ParseAllDeclarations(t *testing.T) {
 
 			_, sourceCodes, _ := ast.ParseArgsForCX([]string{tc.testDir}, true)
 
-			sourceCodesStrings, fileNames, err := fileloader.LoadFiles(sourceCodes)
+			sourceCodeStrings, fileNames, err := fileloader.LoadFiles(sourceCodes)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			Imports, Globals, Enums, TypeDefinitions, Structs, Funcs, gotErr := declaration_extractor.ExtractAllDeclarations(sourceCodesStrings, fileNames)
-			if (Enums != nil && TypeDefinitions != nil) || gotErr != nil {
+			Imports, Globals, _, _, Structs, Funcs, gotErr := declaration_extractor.ExtractAllDeclarations(sourceCodeStrings, fileNames)
+			if gotErr != nil {
 				t.Fatal(gotErr)
 			}
 
@@ -1355,5 +1355,28 @@ func getFormattedParam(prgrm *ast.CXProgram, paramTypeSigIdxs []ast.CXTypeSignat
 			buf.WriteString(", ")
 		}
 
+	}
+}
+
+func BenchmarkTypeChecker_ParseAllDeclarations(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		actions.AST = cxinit.MakeProgram()
+
+		_, sourceCodes, _ := ast.ParseArgsForCX([]string{"./test_files/ParseAllDeclarations/HasDeclarations"}, true)
+
+		sourceCodeStrings, fileNames, err := fileloader.LoadFiles(sourceCodes)
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		Imports, Globals, _, _, Structs, Funcs, err := declaration_extractor.ExtractAllDeclarations(sourceCodeStrings, fileNames)
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		err = type_checker.ParseAllDeclarations(Imports, Globals, Structs, Funcs)
+		if err != nil {
+			b.Fatal(err)
+		}
 	}
 }

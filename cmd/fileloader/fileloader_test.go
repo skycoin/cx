@@ -69,3 +69,16 @@ func TestFileLoader_LoadFiles(t *testing.T) {
 		})
 	}
 }
+
+func BenchmarkFileLoader_LoadFiles(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		actions.AST = cxinit.MakeProgram()
+
+		_, sourceCodes, _ := ast.ParseArgsForCX([]string{"./test_files/One_file_one_package.cx"}, true)
+
+		_, _, err := fileloader.LoadFiles(sourceCodes)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
