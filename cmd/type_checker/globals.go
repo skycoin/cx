@@ -62,9 +62,7 @@ func ParseGlobals(globals []declaration_extractor.GlobalDeclaration) error {
 
 		pkg.AddGlobal(actions.AST, globalArgIdx)
 
-		var declarationSpecifier *ast.CXArgument
-
-		declarationSpecifier, err = ParseDeclarationSpecifier(globalTokens[2], global.FileID, global.LineNumber, declarationSpecifier)
+		declarationSpecifier, err := ParseDeclarationSpecifier(globalTokens[2], global.FileID, global.LineNumber)
 		if err != nil {
 			return err
 		}

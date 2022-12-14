@@ -143,8 +143,7 @@ func TestTypeChecker_ParseDeclarationSpecifier(t *testing.T) {
 				actions.DeclareImport(actions.AST, tc.pkgName, tc.fileName, tc.lineno)
 			}
 
-			var gotDeclarationSpecifier *ast.CXArgument
-			gotDeclarationSpecifier, gotErr := type_checker.ParseDeclarationSpecifier([]byte(tc.testString), tc.fileName, tc.lineno, gotDeclarationSpecifier)
+			gotDeclarationSpecifier, gotErr := type_checker.ParseDeclarationSpecifier([]byte(tc.testString), tc.fileName, tc.lineno)
 			gotTypeSignature := ast.GetCXTypeSignatureRepresentationOfCXArg(actions.AST, gotDeclarationSpecifier)
 			gotDeclarationSpecifierFormattedString := ast.GetFormattedType(actions.AST, gotTypeSignature)
 
