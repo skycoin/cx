@@ -35,6 +35,8 @@ func ParseFuncHeaders(funcs []declaration_extractor.FuncDeclaration) error {
 			pkg = newPkg
 		}
 
+		actions.AST.SelectPackage(fun.PackageID)
+
 		file, err := os.Open(fun.FileID)
 		if err != nil {
 			return err
