@@ -96,7 +96,7 @@ func ExtractMethod(fun FuncDeclaration) (string, error) {
 	io.Copy(tmp, file)
 	bytes := tmp.Bytes()
 
-	reFuncMethod := regexp.MustCompile(`func\s*\(\s*\w+\s+(\w+)\s*\)`)
+	reFuncMethod := regexp.MustCompile(`func\s*\(\s*\w+\s+([\w\*]+)\s*\)`)
 	funcMethod := reFuncMethod.FindSubmatch(bytes[fun.StartOffset : fun.StartOffset+fun.Length])
 	if funcMethod == nil {
 		return "", nil

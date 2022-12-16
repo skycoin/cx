@@ -50,7 +50,7 @@ func ParseFuncHeaders(funcs []declaration_extractor.FuncDeclaration) error {
 
 		reFuncMethod := regexp.MustCompile(`func\s*\(\s*.+\s*\)`)
 		funcMethod := reFuncMethod.Find(funcDeclarationLine)
-		reParams := regexp.MustCompile(`\(([\s\w\*\[\],]*)\)`)
+		reParams := regexp.MustCompile(`\(([\s\w\*\[\],\.]*)\)`)
 		params := reParams.FindAllSubmatch(funcDeclarationLine, -1)
 
 		if funcMethod != nil {
