@@ -55,7 +55,8 @@ func ParseSourceCode(sourceCode []*os.File) {
 	*/
 	parseErrors := 0
 	if len(sourceCode) > 0 {
-		sourceCodeStrings, fileNames, err := fileloader.LoadFiles(sourceCode)
+		var err error
+		sourceCodeStrings, fileNames, err = fileloader.LoadFiles(sourceCode)
 		if err != nil {
 			parseErrors++
 			fmt.Print(err)
