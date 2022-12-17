@@ -120,7 +120,7 @@ func ParseDeclarationSpecifier(declarationSpecifierByte []byte, fileName string,
 			continue
 		}
 		// If bytes don't match any of the cases
-		return nil, fmt.Errorf("%v: %d: declaration specifier error", fileName, lineno)
+		return declarationSpecifier, fmt.Errorf("%v: %d: declaration specifier error", fileName, lineno)
 	}
 
 	return declarationSpecifier, nil
