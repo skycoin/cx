@@ -44,7 +44,7 @@ func ParseSourceCode(sourceCode []*os.File) {
 	// 	io.Copy(tmp, source)
 	// 	sourceCodeStrings[i] = tmp.String()
 	// }
-	var sourceCodeStrings [][]byte
+	var sourceCodeStrings []string
 	var fileNames []string
 
 	/*
@@ -112,11 +112,11 @@ func ParseSourceCode(sourceCode []*os.File) {
 			Adding a newline character solves this.
 		*/
 
-		source = append(source, '\n')
+		source = source + "\n"
 
 		actions.LineNo = 1
 
-		b := bytes.NewBuffer(source)
+		b := bytes.NewBufferString(source)
 
 		if len(fileNames) > 0 {
 			actions.CurrentFile = fileNames[i]
