@@ -7,7 +7,6 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"strings"
 
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/globals"
@@ -16,11 +15,11 @@ import (
 	"github.com/skycoin/cx/cxparser/util/profiling"
 )
 
-func LoadFiles(sourceCode []*os.File) (sourceCodeStrings []string, fileNames []string, err error) {
+func LoadFiles(sourceCode []*os.File) (sourceCodeStrings [][]byte, fileNames []string, err error) {
 	for _, source := range sourceCode {
 		tmp := bytes.NewBuffer(nil)
 		io.Copy(tmp, source)
-		sourceCodeStrings = append(sourceCodeStrings, tmp.String())
+		sourceCodeStrings = append(sourceCodeStrings, tmp.Bytes())
 		fileNames = append(fileNames, source.Name())
 	}
 
@@ -40,7 +39,7 @@ func LoadFiles(sourceCode []*os.File) (sourceCodeStrings []string, fileNames []s
 		srcName := fileNames[srcI]
 		profiling.StartProfile(srcName)
 
-		reader := strings.NewReader(srcStr)
+		reader := bytes.NewReader(srcStr)
 		scanner := bufio.NewScanner(reader)
 		var commentedCode bool
 		for scanner.Scan() {
@@ -95,7 +94,7 @@ func LoadFiles(sourceCode []*os.File) (sourceCodeStrings []string, fileNames []s
 
 		var commentedCode bool
 
-		scanner := bufio.NewScanner(strings.NewReader(source))
+		scanner := bufio.NewScanner(bytes.NewReader(source))
 		for scanner.Scan() {
 			line := scanner.Bytes()
 
