@@ -125,3 +125,12 @@ func ParseDeclarationSpecifier(declarationSpecifierByte []byte, fileName string,
 
 	return declarationSpecifier, nil
 }
+
+func getSourceByte(wantSourceCode string, sourceCode []string, fileNames []string) []byte {
+	for i, fileName := range fileNames {
+		if fileName == wantSourceCode {
+			return []byte(sourceCode[i])
+		}
+	}
+	return nil
+}

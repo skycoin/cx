@@ -1,10 +1,6 @@
 package type_checker
 
 import (
-	"bytes"
-	"io"
-	"os"
-
 	"github.com/skycoin/cx/cmd/declaration_extractor"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cxparser/actions"
@@ -13,7 +9,7 @@ import (
 // Parse Structs
 // - takes in structs from cx/cmd/declaration_extractor
 // - adds structs to AST
-func ParseStructs(structs []declaration_extractor.StructDeclaration) error {
+func ParseStructs(structs []declaration_extractor.StructDeclaration, sourceCodes []string, fileNames []string) error {
 
 	// Get Package
 	for _, strct := range structs {
@@ -62,14 +58,7 @@ func ParseStructs(structs []declaration_extractor.StructDeclaration) error {
 		// Select Package to Add to AST
 		actions.AST.SelectPackage(strct.PackageID)
 
-		file, err := os.Open(strct.FileID)
-		if err != nil {
-			return err
-		}
-
-		tmp := bytes.NewBuffer(nil)
-		io.Copy(tmp, file)
-		src := tmp.Bytes()
+		src := getSourceByte(strct.FileID, sourceCodes, fileNames)
 
 		var structFields []*ast.CXArgument
 

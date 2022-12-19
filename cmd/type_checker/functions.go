@@ -2,8 +2,6 @@ package type_checker
 
 import (
 	"bytes"
-	"io"
-	"os"
 	"regexp"
 
 	"github.com/skycoin/cx/cmd/declaration_extractor"
@@ -14,7 +12,7 @@ import (
 // Parse Function Headers
 // - takes in funcs from cx/cmd/declaration_extractor
 // - adds func headers to AST
-func ParseFuncHeaders(funcs []declaration_extractor.FuncDeclaration) error {
+func ParseFuncHeaders(funcs []declaration_extractor.FuncDeclaration, sourceCodes []string, fileNames []string) error {
 
 	for _, fun := range funcs {
 
@@ -37,14 +35,7 @@ func ParseFuncHeaders(funcs []declaration_extractor.FuncDeclaration) error {
 
 		actions.AST.SelectPackage(fun.PackageID)
 
-		file, err := os.Open(fun.FileID)
-		if err != nil {
-			return err
-		}
-
-		tmp := bytes.NewBuffer(nil)
-		io.Copy(tmp, file)
-		source := tmp.Bytes()
+		source := getSourceByte(fun.FileID, sourceCodes, fileNames)
 
 		funcDeclarationLine := source[fun.StartOffset : fun.StartOffset+fun.Length]
 

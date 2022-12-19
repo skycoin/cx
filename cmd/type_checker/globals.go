@@ -1,9 +1,6 @@
 package type_checker
 
 import (
-	"bytes"
-	"io"
-	"os"
 	"regexp"
 
 	"github.com/skycoin/cx/cmd/declaration_extractor"
@@ -15,7 +12,7 @@ import (
 // Parse Globals
 // - takes in globals from cx/cmd/declaration_extractor
 // - adds globals to AST
-func ParseGlobals(globals []declaration_extractor.GlobalDeclaration) error {
+func ParseGlobals(globals []declaration_extractor.GlobalDeclaration, sourceCodes []string, fileNames []string) error {
 
 	// Range over global declarations and parse
 	for _, global := range globals {
@@ -40,14 +37,7 @@ func ParseGlobals(globals []declaration_extractor.GlobalDeclaration) error {
 		actions.AST.SelectPackage(global.PackageID)
 
 		// Read File
-		file, err := os.Open(global.FileID)
-		if err != nil {
-			return err
-		}
-
-		tmp := bytes.NewBuffer(nil)
-		io.Copy(tmp, file)
-		source := tmp.Bytes()
+		source := getSourceByte(global.FileID, sourceCodes, fileNames)
 
 		// Extract Declaration from file
 		reGlobalDeclaration := regexp.MustCompile(`var\s+(\w*)\s+([\*\[\]\w\.]+)`)
