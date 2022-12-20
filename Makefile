@@ -143,3 +143,13 @@ dep: ## Update go vendor
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+
+benchmark: #Benchmark
+ifndef CXVERSION
+	@echo "$(CXEXE) not found in $(PWD)/bin, please run make install first"
+else
+	mkdir -p $(PWD)/cmd/cxbenchmark/bin/
+	rm -f $(PWD)/cmd/cxbenchmark/bin/$(CXEXE)
+	cp $(PWD)/bin/$(CXEXE) $(PWD)/cmd/cxbenchmark/bin/
+	go test $(PWD)/cmd/cxbenchmark -run BenchmarkCX -tags ptr32 -count=10 -bench=. -benchmem
+endif

@@ -2,16 +2,18 @@ package cxparsering
 
 import (
 	"bytes"
-	"io"
+	"fmt"
 	"os"
 
+	"github.com/skycoin/cx/cmd/declaration_extractor"
+	"github.com/skycoin/cx/cmd/fileloader"
+	"github.com/skycoin/cx/cmd/type_checker"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/constants"
 	"github.com/skycoin/cx/cx/globals"
 	"github.com/skycoin/cx/cx/types"
 
 	"github.com/skycoin/cx/cxparser/actions"
-	cxpartialparsing "github.com/skycoin/cx/cxparser/cxpartialparsing"
 	"github.com/skycoin/cx/cxparser/util/profiling"
 )
 
@@ -27,21 +29,23 @@ import (
 
 	 step 2 : passtwo
 */
-func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
+func ParseSourceCode(sourceCode []*os.File) {
 
 	//local
-	cxpartialparsing.Program = actions.AST
+	// cxpartialparsing.Program = actions.AST
 
 	/*
 		Copy the contents of the file pointers containing the CX source
 		code into sourceCodeStrings
 	*/
-	sourceCodeStrings := make([]string, len(sourceCode))
-	for i, source := range sourceCode {
-		tmp := bytes.NewBuffer(nil)
-		io.Copy(tmp, source)
-		sourceCodeStrings[i] = tmp.String()
-	}
+	// sourceCodeStrings := make([]string, len(sourceCode))
+	// for i, source := range sourceCode {
+	// 	tmp := bytes.NewBuffer(nil)
+	// 	io.Copy(tmp, source)
+	// 	sourceCodeStrings[i] = tmp.String()
+	// }
+	var sourceCodeStrings []string
+	var fileNames []string
 
 	/*
 		We need to traverse the elements by hierarchy first add all the
@@ -51,10 +55,28 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 	*/
 	parseErrors := 0
 	if len(sourceCode) > 0 {
-		parseErrors = Preliminarystage(sourceCodeStrings, fileNames)
+		var err error
+		sourceCodeStrings, fileNames, err = fileloader.LoadFiles(sourceCode)
+		if err != nil {
+			parseErrors++
+			fmt.Print(err)
+		}
+
+		Imports, Globals, _, _, Structs, Funcs, err := declaration_extractor.ExtractAllDeclarations(sourceCodeStrings, fileNames)
+		if err != nil {
+			parseErrors++
+			fmt.Println(err)
+		}
+
+		err = type_checker.ParseAllDeclarations(Imports, Globals, Structs, Funcs)
+		if err != nil {
+			parseErrors++
+			fmt.Println(err)
+		}
+
 	}
 
-	actions.AST = cxpartialparsing.Program
+	// actions.AST = cxpartialparsing.Program
 
 	if globals.FoundCompileErrors || parseErrors > 0 {
 		profiling.CleanupAndExit(constants.CX_COMPILATION_ERROR)

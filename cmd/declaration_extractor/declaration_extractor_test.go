@@ -3,14 +3,17 @@ package declaration_extractor_test
 import (
 	"bytes"
 	"errors"
+	"io"
 	"os"
 	"path/filepath"
 	"runtime"
 	"testing"
 
 	"github.com/skycoin/cx/cmd/declaration_extractor"
-	"github.com/skycoin/cx/cmd/packageloader/file_output"
-	"github.com/skycoin/cx/cmd/packageloader/loader"
+	"github.com/skycoin/cx/cmd/fileloader"
+	"github.com/skycoin/cx/cx/ast"
+	cxinit "github.com/skycoin/cx/cx/init"
+	"github.com/skycoin/cx/cxparser/actions"
 )
 
 //Sets the offset for windows or other os
@@ -45,14 +48,22 @@ func TestDeclarationExtractor_ReplaceCommentsWithWhitespaces(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
-			srcBytes, err := os.ReadFile(tc.testDir)
+			file, err := os.Open(tc.testDir)
 			if err != nil {
 				t.Fatal(err)
 			}
-			wantBytes, err := os.ReadFile(tc.wantCommentReplaced)
+			src := bytes.NewBuffer(nil)
+			io.Copy(src, file)
+			srcBytes := src.Bytes()
+
+			wantFile, err := os.Open(tc.wantCommentReplaced)
 			if err != nil {
 				t.Fatal(err)
 			}
+			wantSrc := bytes.NewBuffer(nil)
+			io.Copy(wantSrc, wantFile)
+			wantBytes := wantSrc.Bytes()
+
 			commentReplaced := declaration_extractor.ReplaceCommentsWithWhitespaces(srcBytes)
 
 			if len(srcBytes) != len(commentReplaced) {
@@ -102,14 +113,21 @@ func TestDeclarationExtractor_ReplaceStringContentsWithWhitespaces(t *testing.T)
 
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
-			srcBytes, err := os.ReadFile(tc.testDir)
+			file, err := os.Open(tc.testDir)
 			if err != nil {
 				t.Fatal(err)
 			}
-			wantBytes, err := os.ReadFile(tc.wantStringContentsReplaced)
+			src := bytes.NewBuffer(nil)
+			io.Copy(src, file)
+			srcBytes := src.Bytes()
+
+			wantFile, err := os.Open(tc.wantStringContentsReplaced)
 			if err != nil {
 				t.Fatal(err)
 			}
+			wantSrc := bytes.NewBuffer(nil)
+			io.Copy(wantSrc, wantFile)
+			wantBytes := wantSrc.Bytes()
 			stringContentsReplaced, gotErr := declaration_extractor.ReplaceStringContentsWithWhitespaces(srcBytes)
 
 			if len(srcBytes) != len(stringContentsReplaced) {
@@ -208,10 +226,13 @@ func TestDeclarationExtractor_ExtractImports(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
-			srcBytes, err := os.ReadFile(tc.testDir)
+			file, err := os.Open(tc.testDir)
 			if err != nil {
 				t.Fatal(err)
 			}
+			src := bytes.NewBuffer(nil)
+			io.Copy(src, file)
+			srcBytes := src.Bytes()
 
 			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(srcBytes)
 			if err != nil {
@@ -335,10 +356,13 @@ func TestDeclarationExtractor_ExtractGlobals(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
-			srcBytes, err := os.ReadFile(tc.testDir)
+			file, err := os.Open(tc.testDir)
 			if err != nil {
 				t.Fatal(err)
 			}
+			src := bytes.NewBuffer(nil)
+			io.Copy(src, file)
+			srcBytes := src.Bytes()
 
 			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(srcBytes)
 			ReplaceStringContentsWithWhitespaces, err := declaration_extractor.ReplaceStringContentsWithWhitespaces(ReplaceCommentsWithWhitespaces)
@@ -540,10 +564,13 @@ func TestDeclarationExtractor_ExtractEnums(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
-			srcBytes, err := os.ReadFile(tc.testDir)
+			file, err := os.Open(tc.testDir)
 			if err != nil {
 				t.Fatal(err)
 			}
+			src := bytes.NewBuffer(nil)
+			io.Copy(src, file)
+			srcBytes := src.Bytes()
 
 			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(srcBytes)
 			ReplaceStringContentsWithWhitespaces, err := declaration_extractor.ReplaceStringContentsWithWhitespaces(ReplaceCommentsWithWhitespaces)
@@ -676,10 +703,13 @@ func TestDeclarationExtractor_ExtractTypeDefinitions(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
-			srcBytes, err := os.ReadFile(tc.testDir)
+			file, err := os.Open(tc.testDir)
 			if err != nil {
 				t.Fatal(err)
 			}
+			src := bytes.NewBuffer(nil)
+			io.Copy(src, file)
+			srcBytes := src.Bytes()
 
 			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(srcBytes)
 			ReplaceStringContentsWithWhitespaces, err := declaration_extractor.ReplaceStringContentsWithWhitespaces(ReplaceCommentsWithWhitespaces)
@@ -911,10 +941,13 @@ func TestDeclarationExtractor_ExtractStructs(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
-			srcBytes, err := os.ReadFile(tc.testDir)
+			file, err := os.Open(tc.testDir)
 			if err != nil {
 				t.Fatal(err)
 			}
+			src := bytes.NewBuffer(nil)
+			io.Copy(src, file)
+			srcBytes := src.Bytes()
 			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(srcBytes)
 			ReplaceStringContentsWithWhitespaces, err := declaration_extractor.ReplaceStringContentsWithWhitespaces(ReplaceCommentsWithWhitespaces)
 			if err != nil {
@@ -1085,10 +1118,13 @@ func TestDeclarationExtractor_ExtractFuncs(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
-			srcBytes, err := os.ReadFile(tc.testDir)
+			file, err := os.Open(tc.testDir)
 			if err != nil {
 				t.Fatal(err)
 			}
+			src := bytes.NewBuffer(nil)
+			io.Copy(src, file)
+			srcBytes := src.Bytes()
 
 			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(srcBytes)
 			ReplaceStringContentsWithWhitespaces, err := declaration_extractor.ReplaceStringContentsWithWhitespaces(ReplaceCommentsWithWhitespaces)
@@ -1184,10 +1220,13 @@ func TestDeclarationExtractor_ReDeclarationCheck(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
-			srcBytes, err := os.ReadFile(tc.testDir)
+			file, err := os.Open(tc.testDir)
 			if err != nil {
 				t.Fatal(err)
 			}
+			src := bytes.NewBuffer(nil)
+			io.Copy(src, file)
+			srcBytes := src.Bytes()
 
 			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(srcBytes)
 			ReplaceStringContentsWithWhitespaces, err := declaration_extractor.ReplaceStringContentsWithWhitespaces(ReplaceCommentsWithWhitespaces)
@@ -1267,10 +1306,13 @@ func TestDeclarationExtractor_GetDeclarations(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
-			srcBytes, err := os.ReadFile(tc.testDir)
+			file, err := os.Open(tc.testDir)
 			if err != nil {
 				t.Fatal(err)
 			}
+			src := bytes.NewBuffer(nil)
+			io.Copy(src, file)
+			srcBytes := src.Bytes()
 
 			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(srcBytes)
 			ReplaceStringContentsWithWhitespaces, err := declaration_extractor.ReplaceStringContentsWithWhitespaces(ReplaceCommentsWithWhitespaces)
@@ -1440,18 +1482,16 @@ func TestDeclarationExtractor_ExtractAllDeclarations(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
 
-			_, sourceCodes, _ := loader.ParseArgsForCX([]string{tc.testDir}, true)
-			err := loader.LoadCXProgram("mypkg1", sourceCodes, "bolt")
+			actions.AST = cxinit.MakeProgram()
+
+			_, sourceCodes, _ := ast.ParseArgsForCX([]string{tc.testDir}, true)
+
+			sourceCodesStrings, fileNames, err := fileloader.LoadFiles(sourceCodes)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			files, err := file_output.GetImportFiles("mypkg1", "bolt")
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			Imports, Globals, Enums, TypeDefinitions, Structs, Funcs, gotErr := declaration_extractor.ExtractAllDeclarations(files)
+			Imports, Globals, Enums, TypeDefinitions, Structs, Funcs, gotErr := declaration_extractor.ExtractAllDeclarations(sourceCodesStrings, fileNames)
 
 			if len(Imports) == 0 && len(Globals) == 0 && len(Enums) == 0 && len(Structs) == 0 && len(Funcs) == 0 {
 				t.Error("No Declarations found")
@@ -1502,18 +1542,42 @@ func BenchmarkDeclarationExtractor_ExtractFuncs(b *testing.B) {
 		scenario string
 		testDir  string
 	}{
-		{scenario: "regular funcs", testDir: "./test_files/ExtractFuncs/HasFuncs.cx"},
+		{
+			scenario: "regular funcs",
+			testDir:  "./test_files/ExtractFuncs/HasFuncs.cx",
+		},
 	}
 
 	for _, bm := range benchmarks {
 		b.Run(bm.scenario, func(b *testing.B) {
-			srcBytes, err := os.ReadFile(bm.testDir)
+			file, err := os.Open(bm.testDir)
 			if err != nil {
 				b.Fatal(err)
 			}
+			src := bytes.NewBuffer(nil)
+			io.Copy(src, file)
+			srcBytes := src.Bytes()
 			for n := 0; n < b.N; n++ {
 				declaration_extractor.ExtractFuncs(srcBytes, bm.testDir)
 			}
 		})
+	}
+}
+
+func BenchmarkDeclarationExtractor_ExtractAllDeclarations(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		actions.AST = cxinit.MakeProgram()
+
+		_, sourceCodes, _ := ast.ParseArgsForCX([]string{"./test_files/ExtractAllDeclarations/test.cx"}, true)
+
+		sourceCodeStrings, fileNames, err := fileloader.LoadFiles(sourceCodes)
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		_, _, _, _, _, _, err = declaration_extractor.ExtractAllDeclarations(sourceCodeStrings, fileNames)
+		if err != nil {
+			b.Fatal(err)
+		}
 	}
 }

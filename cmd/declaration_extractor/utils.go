@@ -97,3 +97,21 @@ func ReplaceStringContentsWithWhitespaces(source []byte) ([]byte, error) {
 
 	return sourceWithoutStringContents, nil
 }
+
+func ContainsTokenByte(tokenList [][]byte, tokenByte []byte) bool {
+	for _, token := range tokenList {
+		if bytes.Equal(token, tokenByte) {
+			return true
+		}
+	}
+	return false
+}
+
+func ContainsTokenByteInToken(tokenList [][]byte, tokenByte []byte) bool {
+	for _, token := range tokenList {
+		if bytes.Contains(token, tokenByte) {
+			return true
+		}
+	}
+	return false
+}

@@ -1,10 +1,12 @@
 package type_checker
 
 import (
+	"bytes"
+	"io"
+	"os"
 	"regexp"
 
 	"github.com/skycoin/cx/cmd/declaration_extractor"
-	"github.com/skycoin/cx/cmd/packageloader/loader"
 	"github.com/skycoin/cx/cx/ast"
 	"github.com/skycoin/cx/cx/types"
 	"github.com/skycoin/cx/cxparser/actions"
@@ -13,7 +15,7 @@ import (
 // Parse Globals
 // - takes in globals from cx/cmd/declaration_extractor
 // - adds globals to AST
-func ParseGlobals(files []*loader.File, globals []declaration_extractor.GlobalDeclaration) error {
+func ParseGlobals(globals []declaration_extractor.GlobalDeclaration) error {
 
 	// Range over global declarations and parse
 	for _, global := range globals {
@@ -38,13 +40,17 @@ func ParseGlobals(files []*loader.File, globals []declaration_extractor.GlobalDe
 		actions.AST.SelectPackage(global.PackageID)
 
 		// Read File
-		source, err := GetSourceBytes(files, global.FileID)
+		file, err := os.Open(global.FileID)
 		if err != nil {
 			return err
 		}
 
+		tmp := bytes.NewBuffer(nil)
+		io.Copy(tmp, file)
+		source := tmp.Bytes()
+
 		// Extract Declaration from file
-		reGlobalDeclaration := regexp.MustCompile(`var\s+(\w*)\s+([\*\[\]\w\.]+)(?:\s*\=\s*[\s\S]+\S+){0,1}`)
+		reGlobalDeclaration := regexp.MustCompile(`var\s+(\w*)\s+([\*\[\]\w\.]+)`)
 		globalDeclaration := source[global.StartOffset : global.StartOffset+global.Length]
 		globalTokens := reGlobalDeclaration.FindSubmatch(globalDeclaration)
 
@@ -56,9 +62,7 @@ func ParseGlobals(files []*loader.File, globals []declaration_extractor.GlobalDe
 
 		pkg.AddGlobal(actions.AST, globalArgIdx)
 
-		var declarationSpecifier *ast.CXArgument
-
-		declarationSpecifier, err = ParseDeclarationSpecifier(globalTokens[2], global.FileID, global.LineNumber, declarationSpecifier)
+		declarationSpecifier, err := ParseDeclarationSpecifier(globalTokens[2], global.FileID, global.LineNumber)
 		if err != nil {
 			return err
 		}

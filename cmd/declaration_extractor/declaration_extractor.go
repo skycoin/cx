@@ -3,10 +3,35 @@ package declaration_extractor
 import (
 	"fmt"
 	"path/filepath"
+	"regexp"
 	"sync"
-
-	"github.com/skycoin/cx/cmd/packageloader/loader"
 )
+
+//Regexes
+var reName = regexp.MustCompile(`[_a-zA-Z][_a-zA-Z0-9]*`)
+var reEnumInit = regexp.MustCompile(`const\s+\(`)
+var reEnumDec = regexp.MustCompile(`([_a-zA-Z][_a-zA-Z0-9]*)(?:\s+([_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*)){0,1}(?:\s*\=\s*[\s\S]+\S+){0,1}`)
+var reNotSpace = regexp.MustCompile(`\S+`)
+
+// Func Declaration regex for name extraction and syntax checking
+// Components:
+// func - func keyword
+// (?:\s*\(\s*[_a-zA-Z]\w*\s+\*{0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*\s*\)\s*)|\s+) -  [space/no space] [([reciever object]) [name] | [space]]
+// ([_a-zA-Z]\w*) - name of func
+// (?:\s*\(\s*(?:(?:[_a-zA-Z]\w*\s+\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]\*{0,1}){0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*\s*,\s*)+[_a-zA-Z]\w*\s+\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]\*{0,1}){0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*|(?:[_a-zA-Z]\w*\s+\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]\*{0,1}){0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*){0,1})\s*\)){1,2} - [[space/no space] ([params])]{1,2}
+//		(?:(?:[_a-zA-Z]\w*\s+\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]\*{0,1}){0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*\s*,\s*)+[_a-zA-Z]\w*\s+\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]\*{0,1}){0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*|(?:[_a-zA-Z]\w*\s+\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]\*{0,1}){0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*){0,1}) - [[param name] [data type] [,]]{0,1} [param name] [data type] | [param name] [data type]
+// 			(?:[_a-zA-Z]\w*\s+\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]\*{0,1}){0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)* - [param name] [*]{0,1} [\[[1-9][0-9]+|[0-9]\][*]{0,1}]{0,1} [word] [[.][word]]*
+//
+// First, finds the func keyword
+// Second, finds out whether the function has a receiver object or not and extracts the func name
+// Third, finds whether there's one or two pairs of parenthesis
+// Forth, finds whether there's one or more params in the parenthesis
+var reFuncDec = regexp.MustCompile(`(func(?:(?:\s*\(\s*[_a-zA-Z]\w*\s+\*{0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*\s*\)\s*)|\s+)([_a-zA-Z]\w*)(?:\s*\(\s*(?:(?:[_a-zA-Z]\w*(?:\s*\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]\*{0,1}){0,1}\s*|\s+)[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*\s*,\s*)+[_a-zA-Z]\w*(?:\s*\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]\*{0,1}){0,1}|\s+)\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*|(?:[_a-zA-Z]\w*(?:\s*\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]\*{0,1}){0,1}\s*|\s+)[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*){0,1})\s*\)){1,2})(?:\s*{){0,1}`)
+var reGlobalName = regexp.MustCompile(`var\s+([_a-zA-Z]\w*)\s+\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]){0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*(?:\s*\=\s*[\s\S]+\S+){0,1}`)
+var reStruct = regexp.MustCompile(`type\s+[_a-zA-Z][_a-zA-Z0-9]*\s+struct`)
+var reStructHeader = regexp.MustCompile(`type\s+([_a-zA-Z][_a-zA-Z0-9]*)\s+struct\s*{`)
+var reStructField = regexp.MustCompile(`([_a-zA-Z][_a-zA-Z0-9]*)\s+\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]\*{0,1}){0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*`)
+var reTypeDefinition = regexp.MustCompile(`type\s+([_a-zA-Z][_a-zA-Z0-9]*)\s+([_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*)`)
 
 func ReDeclarationCheck(Import []ImportDeclaration, Glbl []GlobalDeclaration, Enum []EnumDeclaration, TypeDef []TypeDefinitionDeclaration, Strct []StructDeclaration, Func []FuncDeclaration) error {
 
@@ -67,7 +92,17 @@ func ReDeclarationCheck(Import []ImportDeclaration, Glbl []GlobalDeclaration, En
 	for i := 0; i < len(Func); i++ {
 		for j := i + 1; j < len(Func); j++ {
 			if Func[i].FuncName == Func[j].FuncName && Func[i].PackageID == Func[j].PackageID {
-				return fmt.Errorf("%v:%v: redeclaration error: func: %v", filepath.Base(Func[j].FileID), Func[j].LineNumber, Func[i].FuncName)
+				funcMethod1, err := ExtractMethod(Func[i])
+				if err != nil {
+					return err
+				}
+				funcMethod2, err := ExtractMethod(Func[j])
+				if err != nil {
+					return err
+				}
+				if funcMethod1 == funcMethod2 {
+					return fmt.Errorf("%v:%v: redeclaration error: func: %v", filepath.Base(Func[j].FileID), Func[j].LineNumber, Func[i].FuncName)
+				}
 			}
 		}
 	}
@@ -102,7 +137,7 @@ func GetDeclarations(source []byte, Glbls []GlobalDeclaration, Enums []EnumDecla
 	return declarations
 }
 
-func ExtractAllDeclarations(source []*loader.File) ([]ImportDeclaration, []GlobalDeclaration, []EnumDeclaration, []TypeDefinitionDeclaration, []StructDeclaration, []FuncDeclaration, error) {
+func ExtractAllDeclarations(sourceCodeStrings []string, fileNames []string) ([]ImportDeclaration, []GlobalDeclaration, []EnumDeclaration, []TypeDefinitionDeclaration, []StructDeclaration, []FuncDeclaration, error) {
 
 	//Variable declarations
 	var Imports []ImportDeclaration
@@ -113,28 +148,26 @@ func ExtractAllDeclarations(source []*loader.File) ([]ImportDeclaration, []Globa
 	var Funcs []FuncDeclaration
 
 	//Channel declarations
-	importChannel := make(chan []ImportDeclaration, len(source))
-	globalChannel := make(chan []GlobalDeclaration, len(source))
-	enumChannel := make(chan []EnumDeclaration, len(source))
-	typeDefinitionChannel := make(chan []TypeDefinitionDeclaration, len(source))
-	structChannel := make(chan []StructDeclaration, len(source))
-	funcChannel := make(chan []FuncDeclaration, len(source))
-	errorChannel := make(chan error, len(source))
+	importChannel := make(chan []ImportDeclaration, len(sourceCodeStrings))
+	globalChannel := make(chan []GlobalDeclaration, len(sourceCodeStrings))
+	enumChannel := make(chan []EnumDeclaration, len(sourceCodeStrings))
+	typeDefinitionChannel := make(chan []TypeDefinitionDeclaration, len(sourceCodeStrings))
+	structChannel := make(chan []StructDeclaration, len(sourceCodeStrings))
+	funcChannel := make(chan []FuncDeclaration, len(sourceCodeStrings))
+	errorChannel := make(chan error, len(sourceCodeStrings))
 
 	var wg sync.WaitGroup
 
 	// concurrent extractions start
-	for _, currentFile := range source {
+	for i, sourceCode := range sourceCodeStrings {
 
 		wg.Add(1)
 
-		go func(currentFile *loader.File, globalChannel chan<- []GlobalDeclaration, enumChannel chan<- []EnumDeclaration, typeDefinition chan<- []TypeDefinitionDeclaration, structChannel chan<- []StructDeclaration, funcChannel chan<- []FuncDeclaration, errorChannel chan<- error, wg *sync.WaitGroup) {
+		go func(sourceCode string, fileName string, globalChannel chan<- []GlobalDeclaration, enumChannel chan<- []EnumDeclaration, typeDefinition chan<- []TypeDefinitionDeclaration, structChannel chan<- []StructDeclaration, funcChannel chan<- []FuncDeclaration, errorChannel chan<- error, wg *sync.WaitGroup) {
 
 			defer wg.Done()
 
-			srcBytes := currentFile.Content
-
-			fileName := currentFile.FileName
+			srcBytes := []byte(sourceCode)
 			replaceComments := ReplaceCommentsWithWhitespaces(srcBytes)
 			replaceStringContents, err := ReplaceStringContentsWithWhitespaces(replaceComments)
 			if err != nil {
@@ -234,7 +267,7 @@ func ExtractAllDeclarations(source []*loader.File) ([]ImportDeclaration, []Globa
 
 			}(funcChannel, replaceStringContents, fileName, wg)
 
-		}(currentFile, globalChannel, enumChannel, typeDefinitionChannel, structChannel, funcChannel, errorChannel, &wg)
+		}(sourceCode, fileNames[i], globalChannel, enumChannel, typeDefinitionChannel, structChannel, funcChannel, errorChannel, &wg)
 	}
 
 	wg.Wait()
