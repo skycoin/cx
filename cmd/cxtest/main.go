@@ -113,7 +113,9 @@ func Execute(c *cli.Context) error {
 	var start = time.Now().Unix()
 
 	fmt.Printf("Running CX tests in dir: '%s'\n", workingDir)
+	timerStart := time.Now()
 	runTestCases(tester)
+	timerTime := time.Since(timerStart)
 	end := time.Now().Unix()
 
 	if runner.Has(logMask, runner.LogTime) {
@@ -124,6 +126,7 @@ func Execute(c *cli.Context) error {
 	fmt.Printf("%d were successful\n", tester.TestSuccess)
 	fmt.Printf("%d failed\n", tester.TestCount-tester.TestSuccess)
 	fmt.Printf("%d skipped\n", tester.TestSkipped)
+	fmt.Printf("Time took %v\n", timerTime)
 
 	if tester.TestCount == 0 || (tester.TestSuccess != tester.TestCount) {
 		return errors.New("not all test succeeded")

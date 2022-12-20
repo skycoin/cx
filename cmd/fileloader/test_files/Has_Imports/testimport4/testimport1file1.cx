@@ -1,0 +1,3 @@
+package testimport4
+
+import "gl"

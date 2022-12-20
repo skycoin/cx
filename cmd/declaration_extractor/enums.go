@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"fmt"
 	"path/filepath"
-	"regexp"
 )
 
 type EnumDeclaration struct {
@@ -24,13 +23,6 @@ func ExtractEnums(source []byte, fileName string) ([]EnumDeclaration, error) {
 	var EnumDeclarationsArray []EnumDeclaration
 	var pkg string
 
-	//Regexes
-	rePkg := regexp.MustCompile(`^(?:.+\s+|\s*)package(?:\s+[\S\s]+|\s*)$`)
-	rePkgName := regexp.MustCompile(`package\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
-	reEnumInit := regexp.MustCompile(`const\s+\(`)
-	rePrtsClose := regexp.MustCompile(`\)`)
-	reEnumDec := regexp.MustCompile(`([_a-zA-Z][_a-zA-Z0-9]*)(?:\s+([_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*)){0,1}(?:\s*\=\s*[\s\S]+\S+){0,1}`)
-
 	reader := bytes.NewReader(source)
 	scanner := bufio.NewScanner(reader)
 	scanner.Split(scanLinesWithLineTerminator) // set scanner SplitFunc to custom ScanLines func at line 55
@@ -45,30 +37,35 @@ func ExtractEnums(source []byte, fileName string) ([]EnumDeclaration, error) {
 
 		line := scanner.Bytes()
 		lineno++
+		tokens := bytes.Fields(line)
 
 		// Package declaration extraction
-		if rePkg.FindIndex(line) != nil {
+		if ContainsTokenByte(tokens, []byte("package")) {
 
-			matchPkg := rePkgName.FindSubmatch(line)
-
-			if matchPkg == nil || !bytes.Equal(matchPkg[0], bytes.TrimSpace(line)) {
+			if len(tokens) != 2 {
 				return EnumDeclarationsArray, fmt.Errorf("%v:%v: syntax error: package declaration", filepath.Base(fileName), lineno)
 			}
 
-			pkg = string(matchPkg[1])
+			name := reName.Find(tokens[1])
+
+			if len(tokens[1]) != len(name) {
+				return EnumDeclarationsArray, fmt.Errorf("%v:%v: syntax error: package declaration", filepath.Base(fileName), lineno)
+			}
+
+			pkg = string(name)
 
 		}
 
 		// initialize enum, increment parenthesis depth and skip to next line
 		// if const ( is found
-		if locs := reEnumInit.FindAllIndex(line, -1); locs != nil {
+		if reEnumInit.Find(line) != nil {
 			EnumInit = true
 			currentOffset += len(line) // increments the currentOffset by line len
 			continue
 		}
 
 		// if ) is found and enum intialized, decrement parenthesis depth
-		if locs := rePrtsClose.FindAllIndex(line, -1); locs != nil && EnumInit {
+		if ContainsTokenByte(tokens, []byte(")")) && EnumInit {
 			EnumInit = false
 			Type = ""
 			Index = 0
@@ -76,6 +73,10 @@ func ExtractEnums(source []byte, fileName string) ([]EnumDeclaration, error) {
 
 		// if match is found and enum initialized and parenthesis depth is 1
 		if enumDec := reEnumDec.FindSubmatch(line); enumDec != nil && EnumInit {
+
+			if pkg == "" {
+				return EnumDeclarationsArray, fmt.Errorf("%v:%v: syntax error: missing package", filepath.Base(fileName), lineno)
+			}
 
 			if !bytes.Equal(enumDec[0], bytes.TrimSpace(line)) {
 				return EnumDeclarationsArray, fmt.Errorf("%v:%v: syntax error: enum declaration", filepath.Base(fileName), lineno)

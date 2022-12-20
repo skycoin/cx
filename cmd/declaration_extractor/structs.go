@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"fmt"
 	"path/filepath"
-	"regexp"
 )
 
 type StructDeclaration struct {
@@ -30,15 +29,6 @@ func ExtractStructs(source []byte, fileName string) ([]StructDeclaration, error)
 	var StructDeclarationsArray []StructDeclaration
 	var pkg string
 
-	// Regexes
-	reNotSpace := regexp.MustCompile(`\S+`)
-	rePkg := regexp.MustCompile(`^(?:.+\s+|\s*)package(?:\s+[\S\s]+|\s*)$`)
-	rePkgName := regexp.MustCompile(`package\s+([_a-zA-Z][_a-zA-Z0-9]*)`)
-	reStruct := regexp.MustCompile(`type\s+[_a-zA-Z][_a-zA-Z0-9]*\s+struct`)
-	reStructHeader := regexp.MustCompile(`type\s+([_a-zA-Z][_a-zA-Z0-9]*)\s+struct\s*{`)
-	reRightBrace := regexp.MustCompile("}")
-	reStructField := regexp.MustCompile(`([_a-zA-Z][_a-zA-Z0-9]*)\s+\*{0,1}\s*(?:\[(?:[1-9]\d+|[0-9]){0,1}\]\*{0,1}){0,1}\s*[_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*)*`)
-
 	reader := bytes.NewReader(source)
 	scanner := bufio.NewScanner(reader)
 	scanner.Split(scanLinesWithLineTerminator) // set scanner SplitFunc to custom ScanLines func at line 55
@@ -53,17 +43,22 @@ func ExtractStructs(source []byte, fileName string) ([]StructDeclaration, error)
 	for scanner.Scan() {
 		line := scanner.Bytes()
 		lineno++
+		tokens := bytes.Fields(line)
 
 		// Package declaration extraction
-		if rePkg.FindIndex(line) != nil {
+		if ContainsTokenByte(tokens, []byte("package")) {
 
-			matchPkg := rePkgName.FindSubmatch(line)
-
-			if matchPkg == nil || !bytes.Equal(matchPkg[0], bytes.TrimSpace(line)) {
+			if len(tokens) != 2 {
 				return StructDeclarationsArray, fmt.Errorf("%v:%v: syntax error: package declaration", filepath.Base(fileName), lineno)
 			}
 
-			pkg = string(matchPkg[1])
+			name := reName.Find(tokens[1])
+
+			if len(tokens) != 2 || len(tokens[1]) != len(name) {
+				return StructDeclarationsArray, fmt.Errorf("%v:%v: syntax error: package declaration", filepath.Base(fileName), lineno)
+			}
+
+			pkg = string(name)
 
 		}
 
@@ -89,7 +84,7 @@ func ExtractStructs(source []byte, fileName string) ([]StructDeclaration, error)
 
 		}
 
-		if match := reRightBrace.FindIndex(line); match != nil && inBlock {
+		if ContainsTokenByteInToken(tokens, []byte("}")) && inBlock {
 
 			inBlock = false
 			structDeclaration.StructFields = structFieldsArray
@@ -99,6 +94,10 @@ func ExtractStructs(source []byte, fileName string) ([]StructDeclaration, error)
 		}
 
 		if inBlock && structDeclaration.LineNumber < lineno {
+
+			if pkg == "" {
+				return StructDeclarationsArray, fmt.Errorf("%v:%v: syntax error: missing package", filepath.Base(fileName), lineno)
+			}
 
 			var structField StructField
 			matchStructField := reStructField.FindSubmatch(line)
