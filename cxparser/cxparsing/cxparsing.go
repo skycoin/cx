@@ -68,7 +68,7 @@ func ParseSourceCode(sourceCode []*os.File) {
 			fmt.Println(err)
 		}
 
-		err = type_checker.ParseAllDeclarations(Imports, Globals, Structs, Funcs, sourceCodeStrings, fileNames)
+		err = type_checker.ParseAllDeclarations(Imports, Globals, Structs, Funcs)
 		if err != nil {
 			parseErrors++
 			fmt.Println(err)

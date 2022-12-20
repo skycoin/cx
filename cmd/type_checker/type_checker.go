@@ -6,7 +6,7 @@ import (
 	"github.com/skycoin/cx/cxparser/actions"
 )
 
-func ParseAllDeclarations(imports []declaration_extractor.ImportDeclaration, globals []declaration_extractor.GlobalDeclaration, structs []declaration_extractor.StructDeclaration, funcs []declaration_extractor.FuncDeclaration, sourceCodes []string, fileNames []string) error {
+func ParseAllDeclarations(imports []declaration_extractor.ImportDeclaration, globals []declaration_extractor.GlobalDeclaration, structs []declaration_extractor.StructDeclaration, funcs []declaration_extractor.FuncDeclaration) error {
 
 	// Make AST if not made yet
 	if actions.AST == nil {
@@ -18,17 +18,17 @@ func ParseAllDeclarations(imports []declaration_extractor.ImportDeclaration, glo
 		return err
 	}
 
-	err = ParseStructs(structs, sourceCodes, fileNames)
+	err = ParseStructs(structs)
 	if err != nil {
 		return err
 	}
 
-	err = ParseGlobals(globals, sourceCodes, fileNames)
+	err = ParseGlobals(globals)
 	if err != nil {
 		return err
 	}
 
-	err = ParseFuncHeaders(funcs, sourceCodes, fileNames)
+	err = ParseFuncHeaders(funcs)
 	if err != nil {
 		return err
 	}
